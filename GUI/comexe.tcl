@@ -423,21 +423,22 @@ proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
   global AbortSeries SeriesActive
   set SeriesActive 1
   set AbortSeries 0
-  set j -1
+  set step 0
   foreach v $vl {
     set com $c
     # substitute special options by list values
     for {set i 0} {$i < $ll} {incr i} {
       regsub \#$i\# $com [lindex $v $i] com
     }
-    showText "BBB\n\n\nSeries Step [incr j]\nValues: $v\n"
+    set pre s[lindex $tindl $step]_
+    incr step
+    showText "BBB\n\n\nSeries Step $step\nValues: $v\n"
     startAction $com
     if $AbortSeries break
     if {$copy == 0} continue
     catch {
       set so ""
       upvar #0 defdirectory_ P
-      set pre s[lindex $tindl [incr j]]_
       foreach fn $cfiles {
 	set fb [file join $cdir $pre$fn]
 	file copy -force [file join $P $fn] $fb

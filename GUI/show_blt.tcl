@@ -35,8 +35,13 @@ proc showDPoint {w x y} {
 }
 
 proc showXYfile {fname} {
-  if {[catch {open $fname r} f] || [eof $f]} {
+  if [catch {open $fname r} f] {
     showText "! can't open $fname"
+    return
+  }
+  if [eof $f] {
+    close $f
+    showText "! empty $fname"
     return
   }
   global GraphOptions plotmode buttonColor bgColor scrollWidth
