@@ -68,6 +68,7 @@ typedef enum
 	VT_MONOC_ANALY =  45,
 	VT_POL_HE3     =  51,
 	VT_POL_SM      =  52,
+	VT_POL_MIRROR  =  53,
 	VT_FLIP_COIL   =  55,
 	VT_FLIP_GRAD   =  56,
 	VT_RES_DRABKIN =  59,

@@ -32,22 +32,22 @@ FILE* LogFilePtr;        /* pointer to the log file stream              */
 
 double ENERGY_FROM_LAMBDA(double x) 
 {	
-	return(81805.048 / x / x); /*[ueV]*/
+	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
 double LAMBDA_FROM_ENERGY(double x)
 {
-	return(sqrt(81805.048 / x));  /*[ueV]*/
+	return(sqrt(81805.048 / x)); /* [ueV]   -> [Ang] */
 }
 
 double ENERGY_FROM_V(double x) 
 {
-	return(0.5227032667573 * x * x); /*[ueV]*/
+	return(0.5227033 * x * x);   /* [cm/ms] -> [ueV] */
 }
 
 double V_FROM_LAMBDA(double x)
 {
-	return(395.60346 / x); /* cm/ms 395.6034613488 */
+	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
 
