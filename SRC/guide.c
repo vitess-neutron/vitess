@@ -91,10 +91,14 @@ double GuideEntranceHeight=0.0,
        GuideExitWidth=0.0, 
        GuideMaxHeight=0.0,     /* max. height and width of guide for elliptic shape */
        GuideMaxWidth=0.0,
+       FocusY  = 0.0,          /* position of focus point for parabolic or elliptic shape */
+       FocusZ  = 0.0, 
 		 PhiAnfY =90.0,          /* phases for elliptic shape */
 		 PhiAnfZ =90.0,
 		 LcntrY  = 0.0,          /* centre positions of ellipse */
-		 LcntrZ  = 0.0, 
+		 LcntrZ  = 0.0,
+       AxisY   = 0.0,          /* long axes of ellipse */
+       AxisZ   = 0.0, 
        Radius  = 0.0, 
        piecelength=0.0,        /* length of 1 piece of the guide */
        dTotalLength,           /* total length of the guide  */
@@ -164,14 +168,15 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.11");
+	print_module_name("guide 2.11a");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
-	fprintf(LogFilePtr, "Horizontal: ");
+	fprintf(LogFilePtr, "Horizontal: \n");
 	switch (eGuideShapeY)
 	{	case VT_ELLIPTIC: 
-			fprintf(LogFilePtr, "elliptic shape, max. width: %6.3f cm  at %8.2f cm\n", GuideMaxWidth, LcntrY); 
+			fprintf(LogFilePtr, "elliptic shape, max. width :%7.3f cm  at %8.2f cm\n", GuideMaxWidth, LcntrY); 
+			fprintf(LogFilePtr, "long half axis, focus point:%7.2f cm     %8.2f cm\n", AxisY, FocusY); 
 			break;
 		case VT_PARABOLIC:
 			fprintf(LogFilePtr, "parabolic shape\n"); 
@@ -186,10 +191,11 @@ int main(int argc, char *argv[])
 			else    fprintf(LogFilePtr, "constant width\n");
 			break;
 	}
-	fprintf(LogFilePtr, "Vertical  : ");
+	fprintf(LogFilePtr, "Vertical  : \n");
 	switch (eGuideShapeZ)
 	{	case VT_ELLIPTIC: 
-			fprintf(LogFilePtr, "elliptic shape, max. height:%6.3f cm  at %8.2f cm\n", GuideMaxHeight, LcntrZ); 
+			fprintf(LogFilePtr, "elliptic shape, max. height:%7.3f cm  at %8.2f cm\n", GuideMaxHeight, LcntrZ); 
+			fprintf(LogFilePtr, "long half axis, focus point:%7.2f cm     %8.2f cm\n", AxisZ, FocusZ); 
 			break;
 		case VT_PARABOLIC:
 			fprintf(LogFilePtr, "parabolic shape\n"); 
@@ -699,7 +705,8 @@ void OwnInit   (int argc, char *argv[])
 	Zpce  = calloc(nPieces+1, sizeof(double));
 	Wchan = calloc(nPieces+1, sizeof(double)); 
 
-	if (nPieces > 1)
+	if (eGuideShapeY==VT_ELLIPTIC || eGuideShapeY==VT_PARABOLIC ||
+	    eGuideShapeZ==VT_ELLIPTIC || eGuideShapeZ==VT_PARABOLIC   )
 		pFile = fopen(FullParName("guide_shape.dat"), "w+"); 
 	for(j=0; j <= nPieces; j++)
 	{	Ypce [j] = Width (j*piecelength)/2.0;
@@ -773,10 +780,10 @@ void OwnCleanup()
 double Height(double dLength)
 {
 	double dHeight=0.0,
-	       L_end,         /* end of parabel and center of ellipse      */
-	       A,             /* factor of quadratic term in parabola or long axis in ellipse */
-	       V_anf, V_end,  /* intermediate values                       */
-	       Phi, Phi_end;  /* phases in ellipse                         */
+	       L_end,         /* end of parabel or center of ellipse   */
+	       A,             /* factor of quadratic term in parabola  */
+	       V_anf, V_end,  /* intermediate values                   */
+	       Phi, Phi_end;  /* phases in ellipse                     */
 
 	switch (eGuideShapeZ)
 	{
@@ -798,8 +805,9 @@ double Height(double dLength)
 			V_anf   =-cos(PhiAnfZ);
 			V_end   = cos(Phi_end);
 			LcntrZ  = dTotalLength * V_anf / (V_anf+V_end);
-			A       = LcntrZ / V_anf;
-			Phi     = acos((dLength - LcntrZ)/A);
+			AxisZ   = LcntrZ / V_anf;
+			FocusZ  = LcntrZ + sqrt(sq(AxisZ) - sq(GuideMaxHeight));
+			Phi     = acos((dLength - LcntrZ)/AxisZ);
 			dHeight = GuideMaxHeight*sin(Phi);
 			break;
 		default:
@@ -837,8 +845,9 @@ double Width(double dLength)
 			V_anf   =-cos(PhiAnfY);
 			V_end   = cos(Phi_end);
 			LcntrY  = dTotalLength * V_anf / (V_anf+V_end);
-			A       = LcntrY / V_anf;
-			Phi     = acos((dLength - LcntrY)/A); 
+			AxisY   = LcntrY / V_anf;
+			FocusY  = LcntrY + sqrt(sq(AxisY) - sq(GuideMaxWidth));
+			Phi     = acos((dLength - LcntrY)/AxisY); 
 			dWidth  = GuideMaxWidth*sin(Phi);
 			break;
 		default:
