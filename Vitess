@@ -102,7 +102,7 @@ set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
 
 ### execute all tcl source files
 set modl {tools check entries help ldstore menu windows 
-  show vitess comexe control}
+  show vitess comexe digest control}
 if $NoBLT {
   lappend modl show_plain
 } else {
