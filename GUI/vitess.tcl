@@ -67,7 +67,7 @@ proc makeModuleSets {} {
     {velselect {} velselect}
     {collimator_soller {} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
-    {polariser {polariser_he3 polariser_sm} {polariser_he3 polariser_sm}}
+    {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
     {magnetic_field {precessionfield rotating_field} {precessionfield rotating_field}}
@@ -479,6 +479,9 @@ set detectorESET {
   {grid radio on {
     "detector grid" "If the detector grid is switched off, the exact neutron position is written to the output file." "" g}
     {on off} {1 0}}
+  {det_tof radio calc {
+    "TOF option" "calc: TOF inside detector is calculated (incl. probability distr.) no: no TOF treatment" "" o}
+    {no calc} {0 1}}
 }
 
 proc detectorCheckErr {{app _}} {
@@ -1141,6 +1144,35 @@ set polariser_he3ESET {
   {oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
 }
 
+### polarising
+### mirror
+gSet pol_mirrorESET {
+  {pm_ufile pareditablefile mirr3+.dat {"Up-reflectivity\nfile" "reflectivity data file for Up neutrons" "" U}}
+  {pm_dfile pareditablefile mirr1a.dat {"Down-reflectivit\nfile" "reflectivity data file for Down neutrons" "" D}}
+  {pm_obs radio transmission {"mode" "choose between measuring in reflection and transmission" "" T}
+    {reflection transmission} {0 1}}
+  {"Mirror size" header}
+  {pm_dx float 60 {"length [cm]" "length of the polarising mirror (along beam axis)" "" L} gt0 "" 1}
+  {pm_dy float 10 {"width or\nheight [cm]" "width or height of the polarising mirror" "" W} gt0 "" 1}
+  {"Mirror position and orientation" header}
+  {pm_ori radio horizontal {"orientation" "choose between vertical and horizontal orientation of the mirror" "" O}
+    {horizontal vertical} {0 1}}
+  {pm_x float 100 {"position\nX [cm]" "x center position of the polarizing mirror" "" X}}
+  {pm_y float 0   {"position\nY [cm]" "y center position of the polarizing mirror" "" Y}}
+  {pm_z float 0   {"position\nZ [cm]" "z center position of the polarizing mirror" "" Z}}
+  {pm_voff float 1 {"inclination [deg]" "rotation angle of the polarizing mirror" "" V}}
+  {"Analysis direction" header}
+  {pm_ax float 1 {"analysis dir.\nX [-]" "x direction vector component of the quantization direction" "" a}}
+  {pm_ay float 0 {"analysis dir.\nY [-]" "y direction vector component of the quantization direction" "" b}}
+  {pm_az float 0 {"analysis dir.\nZ [-]" "z direction vector component of the quantization direction" "" c}}
+  {"Output frame" header}
+  {pm_ox float 200 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" x}}
+  {pm_oy float 0   {"output\nY [cm]" "y position of the output frame (in the input frame)" "" y}}
+  {pm_oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" z}}
+  {pm_r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (first rotation)" "" h}}
+  {pm_r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (second rotation)" "" v}}
+}
+
 ### polariser
 ###        sm
 set polariser_smESET {
@@ -1161,6 +1193,8 @@ set polariser_smESET {
   {r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (0, 0 means parallel to original X)" "" h}}
   {r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (0, 0 means parallel to original X)" "" v}}
 }
+
+
 
 ### pol file description
 
@@ -1473,6 +1507,8 @@ set mA {
     "minimal\nwavelength [A]" "lower bound of the monitored interval" "" m} ge0 "" 1}
   {max_w float 20 {
     "maximal\nwavelength [A]" "upper bound of the monitored interval" "" M} gt0  "" 1}
+  {reff pareditablefile "" {
+    "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
 }
 
 set pA {
