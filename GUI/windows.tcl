@@ -279,6 +279,14 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
   if {$set != ""} {
     setGlobals 0 $set $app
   }
+  if {$geo != "" && [getSystem] == "windows"} {
+    # adjust windows to be higher: 90 % margin to top
+    if {4 == [scan $geo "%dx%d+%d+%d" width height gx gy]} {
+      set geo ${width}x${height}+${gx}+[expr int(0.9*$gy)]
+    } elseif {2 == [scan $geo "+%d+%d" gx gy]} {
+      set geo +${gx}+[expr int(0.9*$gy)]
+    }
+  }
   if [winfo exists $w] {
     # try to set title and icon name for existing widgets
     set wt [winfo toplevel $w]

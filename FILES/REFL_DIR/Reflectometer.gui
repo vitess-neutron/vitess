@@ -13,6 +13,7 @@ gSet a_6 {5}
 gSet a_7 {5}
 gSet a_8 {5}
 gSet a_9 {6}
+gSet absorb_3 {0.01}
 gSet absorb_4 {0.01}
 gSet absorb_7 {}
 gSet absorp_1 {}
@@ -382,8 +383,8 @@ gSet bfact_7 {yes}
 gSet bfact_8 {yes}
 gSet bfact_9 {yes}
 gSet bff_5 {revm.dat}
-gSet bfontfamily {Helvetica}
-gSet bfontsize {12}
+gSet bfontfamily {Arial}
+gSet bfontsize {9}
 gSet bfonttype {bold}
 gSet bfp_5 {revp.dat}
 gSet bgColor {#dce2ff}
@@ -453,10 +454,13 @@ gSet brefl_filename_9 {mirr1-5_95.dat}
 gSet buf_size_ {10000}
 gSet buffersize {10000}
 gSet buttonColor {#98b4a0}
+gSet bx_3 {0}
 gSet bx_4 {0}
 gSet bx_7 {}
+gSet by_3 {1.2892}
 gSet by_4 {1.2892}
 gSet by_7 {}
+gSet bz_3 {0}
 gSet bz_4 {0}
 gSet bz_7 {}
 gSet c_1 {5}
@@ -596,6 +600,7 @@ gSet chans_9 {100}
 gSet chgampl_5 {sinus}
 gSet chgamplgui_5 {linear}
 gSet chguidedch_5 {0X}
+gSet chi_3 {0}
 gSet chi_4 {0}
 gSet chi_7 {}
 gSet chop_file_1 {C093.dat}
@@ -663,6 +668,7 @@ gSet collimator_sollerESET.active {.x.m.r.modf.c.f.collimator_soller}
 gSet color1_1 {1}
 gSet color2_1 {}
 gSet comode {action}
+gSet conmax_1 {90}
 gSet conmax_10 {90}
 gSet conmax_11 {90}
 gSet conmax_12 {90}
@@ -675,6 +681,7 @@ gSet conmax_6 {90}
 gSet conmax_7 {90}
 gSet conmax_8 {90}
 gSet conmax_9 {90}
+gSet conmin_1 {-90}
 gSet conmin_10 {-90}
 gSet conmin_11 {-90}
 gSet conmin_12 {-90}
@@ -687,6 +694,7 @@ gSet conmin_6 {-90}
 gSet conmin_7 {-90}
 gSet conmin_8 {-90}
 gSet conmin_9 {-90}
+gSet conopt_1 {vertical}
 gSet conopt_10 {horizontal}
 gSet conopt_11 {horizontal}
 gSet conopt_12 {horizontal}
@@ -1007,7 +1015,7 @@ gSet decl_6 {0}
 gSet decl_7 {0}
 gSet decl_8 {0}
 gSet decl_9 {0}
-gSet defdirectory_ {/net/home/dmf/control/vitess/FILES/REFL_DIR}
+gSet defdirectory_ {C:/Programme/VITESS_2_5_1/FILES/REFL_DIR}
 gSet deffreq_5 {0}
 gSet dens_1 {0.1e19}
 gSet dens_10 {0.1e19}
@@ -1453,6 +1461,7 @@ gSet eval_colour_10 {0}
 gSet eval_colour_11 {0}
 gSet eval_colour_12 {}
 gSet eval_colour_13 {}
+gSet eval_colour_6 {}
 gSet eval_colour_8 {0}
 gSet eval_colour_9 {0}
 gSet eval_elastESET.active {.x.m.r.modf.c.f.eval_elast}
@@ -1865,8 +1874,8 @@ gSet height_6 {1}
 gSet height_7 {0.5}
 gSet height_8 {1}
 gSet height_9 {1}
-gSet hfontfamily {Helvetica}
-gSet hfontsize {13}
+gSet hfontfamily {Arial}
+gSet hfontsize {9}
 gSet hfonttype {bold}
 gSet hma_1 {}
 gSet hma_10 {3}
@@ -1972,6 +1981,16 @@ gSet ifile_6 {}
 gSet ifile_7 {}
 gSet ifile_8 {}
 gSet ifile_9 {}
+gSet imatfile_2 {}
+gSet imatfile_4 {}
+gSet imatfile_5 {}
+gSet imatfile_6 {}
+gSet imatfile_7 {}
+gSet imathick_2 {}
+gSet imathick_4 {}
+gSet imathick_5 {}
+gSet imathick_6 {}
+gSet imathick_7 {}
 gSet inampld_5 {}
 gSet incoscat_1 {no}
 gSet incoscat_10 {no}
@@ -2017,7 +2036,7 @@ gSet inh_8 {homogeneous}
 gSet inh_9 {homogeneous}
 gSet inputESET.active {.x.input}
 gSet insname_ {Reflectometer}
-gSet instrumentfile {newfile}
+gSet instrumentfile {Reflectometer}
 gSet isoESET.active {.feditpf.v}
 gSet itemlabwidth {16}
 gSet keyabut_1 {no}
@@ -2033,6 +2052,10 @@ gSet keyabut_6 {no}
 gSet keyabut_7 {yes}
 gSet keyabut_8 {no}
 gSet keyabut_9 {no}
+gSet keyshape_y_3 {curved}
+gSet keyshape_y_5 {constant}
+gSet keyshape_z_3 {constant}
+gSet keyshape_z_5 {constant}
 gSet kx_1 {1.0471975512}
 gSet kx_10 {0.943421217294}
 gSet kx_11 {1.0471975512}
@@ -2191,8 +2214,8 @@ gSet lf_6 {6}
 gSet lf_7 {6}
 gSet lf_8 {6}
 gSet lf_9 {6}
-gSet lfontfamily {Courier}
-gSet lfontsize {11}
+gSet lfontfamily {Lucida Console}
+gSet lfontsize {8}
 gSet lfonttype {bold}
 gSet lmoBigFrame {1}
 gSet lmoESET.active {.feditmodfile.v.c.f}
@@ -2240,6 +2263,7 @@ gSet mat_8 {10}
 gSet mat_9 {10}
 gSet matfile_12 {}
 gSet matfile_13 {}
+gSet matfile_2 {}
 gSet matfile_3 {}
 gSet matfile_4 {}
 gSet matfile_5 {}
@@ -2258,7 +2282,11 @@ gSet mav_6 {6}
 gSet mav_7 {6}
 gSet mav_8 {6}
 gSet mav_9 {6}
-gSet maxModule {30}
+gSet maxModule {40}
+gSet max_ang_y_3 {}
+gSet max_ang_y_5 {}
+gSet max_ang_z_3 {}
+gSet max_ang_z_5 {}
 gSet max_div_1 {1}
 gSet max_div_10 {180}
 gSet max_div_11 {2}
@@ -2474,8 +2502,8 @@ gSet mfiler_6 {gadolinium.dat}
 gSet mfiler_7 {gadolinium.dat}
 gSet mfiler_8 {}
 gSet mfiler_9 {gadolinium.dat}
-gSet mfontfamily {Helvetica}
-gSet mfontsize {12}
+gSet mfontfamily {Arial}
+gSet mfontsize {9}
 gSet mfonttype {bold}
 gSet mfsatur_5 {1e19}
 gSet min_div_1 {-1}
@@ -2811,7 +2839,11 @@ gSet monitor_file_9 {FILES/pos.dat}
 gSet monitor_file_r_10 {1}
 gSet monitor_file_r_12 {0}
 gSet monitor_file_r_13 {0}
+gSet monitor_file_r_2 {0}
 gSet monitor_file_r_3 {1}
+gSet monitor_file_r_4 {0}
+gSet monitor_file_r_5 {0}
+gSet monitor_file_r_6 {1}
 gSet monitor_file_r_8 {0}
 gSet monitor_file_r_9 {1}
 gSet monpol_divyESET.active {.x.m.r.modf.c.f.monpol_divy}
@@ -2880,6 +2912,7 @@ gSet mtrl_colour_13 {}
 gSet mtrl_colour_2 {}
 gSet mtrl_colour_3 {}
 gSet mtrl_colour_4 {}
+gSet mtrl_colour_5 {0}
 gSet mtrl_colour_6 {}
 gSet mtrl_colour_7 {0}
 gSet mtrl_colour_8 {0}
@@ -3016,6 +3049,7 @@ gSet nifref_7 {transmitted}
 gSet nifref_8 {transmitted}
 gSet nifref_9 {transmitted}
 gSet noBLT {0}
+gSet norm_3 {1}
 gSet norm_4 {1}
 gSet norm_7 {}
 gSet nrow_1 {1}
@@ -3322,6 +3356,7 @@ gSet oh_7 {0}
 gSet oh_8 {0}
 gSet oh_9 {0}
 gSet omag_5 {}
+gSet omega_3 {0}
 gSet omega_4 {0}
 gSet omega_7 {}
 gSet opolout_5 {}
@@ -4332,7 +4367,7 @@ gSet sel_6 {all}
 gSet sel_7 {all}
 gSet sel_8 {all}
 gSet sel_9 {all}
-gSet separate1 {hidden}
+gSet separate1 {here}
 gSet separate10 {hidden}
 gSet separate11 {hidden}
 gSet separate12 {hidden}
@@ -4354,7 +4389,7 @@ gSet separate26 {hidden}
 gSet separate27 {hidden}
 gSet separate28 {hidden}
 gSet separate29 {hidden}
-gSet separate3 {hidden}
+gSet separate3 {here}
 gSet separate30 {hidden}
 gSet separate31 {hidden}
 gSet separate32 {hidden}
@@ -4366,7 +4401,7 @@ gSet separate37 {hidden}
 gSet separate38 {hidden}
 gSet separate39 {hidden}
 gSet separate4 {hidden}
-gSet separate5 {hidden}
+gSet separate5 {here}
 gSet separate6 {hidden}
 gSet separate7 {hidden}
 gSet separate8 {hidden}
@@ -4456,7 +4491,7 @@ gSet seriest1.2_ {2:P}
 gSet seriest2.0_ {phi}
 gSet seriest2.1_ {theta}
 gSet seriest2.2_ {grefdat}
-gSet serif {Courier}
+gSet serif {Lucida Console}
 gSet setiname_ {Reflectometer}
 gSet setsimpar1_ {}
 gSet sfac_1 {from file}
@@ -4499,6 +4534,8 @@ gSet sfile_7 {elast.eva}
 gSet sfile_8 {spectsans.dat}
 gSet sfile_9 {elastpow.dat}
 gSet sfile_r_13 {1}
+gSet sfile_r_6 {1}
+gSet sfile_r_8 {1}
 gSet sfpath_1 {152}
 gSet sfpath_10 {200}
 gSet sfpath_11 {152}
@@ -4602,12 +4639,15 @@ gSet source_HMIESET.active {.x.m.r.modf.c.f.source_HMI}
 gSet source_ILLESET.active {.x.m.r.modf.c.f.source_ILL}
 gSet source_IPNSESET.active {.x.m.r.modf.c.f.source_IPNS}
 gSet source_ISIS-1ESET.active {.x.m.r.modf.c.f.source_ISIS-1}
+gSet source_SNSESET.active {.x.m.r.modf.c.f.source_SNS}
 gSet source_const_waveESET.active {.x.m.r.modf.c.f.source_const_wave}
 gSet source_cwsESET.active {.x.mm.w1.source_cws}
 gSet source_lpssESET.active {.x.m.r.modf.c.f.source_lpss}
 gSet source_spssESET.active {.x.mm.m1.source_spss}
+gSet spac_3 {Lorentzian}
 gSet spac_4 {Lorentzian}
 gSet spac_7 {Lorentzian}
+gSet spaceESET.active {.x.m.r.modf.c.f.space}
 gSet spacer_width_1 {}
 gSet spacer_width_10 {}
 gSet spacer_width_11 {}
@@ -4665,10 +4705,11 @@ gSet spiqua_6 {OY}
 gSet spiqua_7 {OZ}
 gSet spiqua_8 {OX}
 gSet spiqua_9 {OZ}
+gSet spread_3 {0.0005}
 gSet spread_4 {0.0005}
 gSet spread_7 {0.0001}
 gSet sscESET.active {.feditparfile.v}
-gSet sserif {Helvetica}
+gSet sserif {Arial}
 gSet step_1 {0}
 gSet step_10 {0}
 gSet step_11 {0}
@@ -4794,8 +4835,8 @@ gSet tfile_6 {transmission.dat}
 gSet tfile_7 {transmission.dat}
 gSet tfile_8 {}
 gSet tfile_9 {transmission.dat}
-gSet tfontfamily {Helvetica}
-gSet tfontsize {10}
+gSet tfontfamily {Arial}
+gSet tfontsize {8}
 gSet tfonttype {normal}
 gSet theta_1 {0.065}
 gSet theta_10 {0}
@@ -5163,7 +5204,7 @@ gSet vertang_6 {0}
 gSet vertang_7 {0}
 gSet vertang_8 {0}
 gSet vertang_9 {0}
-gSet visM1 {--inactive--}
+gSet visM1 {source_ESS_LPTS}
 gSet visM10 {--inactive--}
 gSet visM11 {--inactive--}
 gSet visM12 {--inactive--}
@@ -5171,13 +5212,13 @@ gSet visM13 {--inactive--}
 gSet visM14 {--inactive--}
 gSet visM16 {--inactive--}
 gSet visM2 {--inactive--}
-gSet visM3 {--inactive--}
+gSet visM3 {guide}
 gSet visM31 {--inactive--}
 gSet visM32 {--inactive--}
 gSet visM33 {--inactive--}
 gSet visM34 {--inactive--}
 gSet visM4 {--inactive--}
-gSet visM5 {--inactive--}
+gSet visM5 {guide}
 gSet visM6 {--inactive--}
 gSet visM7 {--inactive--}
 gSet visM8 {--inactive--}

@@ -934,7 +934,7 @@ set chop1Add {
   {z float 0 {"position\nZ [cm]" "center position z of the Fermi chopper" "" V}}
   {a float 5 {"height [cm]" "height of the Fermi chopper" "" a} gt0}
   {b float 4 {"width [cm]" "width of the Fermi chopper" "" b} gt0}
-  {c float 3 {"depth [cm]" "depth of the Fermi chopper" "" c} gt0}
+  {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper" "" c} gt0}
   {chans int 20 {"number of\nchannels" "number of straight channels" "" l} ge1}
   {wall float 0.02 {"wall\nthickness [cm]" "thickness of the wall between channels" "" m} ge0}
   {dia float 7.1 {"diameter [cm]" "diameter of the shadowing cylinder" "" r} gt0}
@@ -1364,9 +1364,9 @@ set rotating_fieldESET {
   {"Rotation of Precession Volume" header}
   {rotproc float 0 {"horizontal\noffset [deg]" "Horizontal (around axis OZ) angle of the field volume" "" i}}
   {"Output Plane" header}
-  {ox float 10 {"output\nX [deg]" "position of the output frame (in the input frame)" "" p}}
-  {oy float  0 {"output\nY [deg]" "position of the output frame (in the input frame)" "" r}}
-  {oz float  0 {"output\nZ [deg]" "position of the output frame (in the input frame)" "" s}}
+  {ox float 10 {"output\nX [cm]" "position of the output frame (in the input frame)" "" p}}
+  {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" r}}
+  {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" s}}
   {"Number of Domains"  header}
   {nx int 40 {"domains in\nX direction" "Number of domains in the X direction" "" C} gt0}
   {ny int 20 {"domains in\nY direction" "Number of domains in the Y direction" "" D} gt0}

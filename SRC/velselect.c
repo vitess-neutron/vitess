@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	print_module_name("velselect 1.2");
+	print_module_name("velselect 1.2a");
 
 	/* definition of mean windowwidth, corresponding angle and angle with respect to interslotspacing */
 	winwdth = (2.0*M_PI*DistOrigin/(double)winnum) -2.0*DistOrigin*asin(spacer/(2.0*DistOrigin));
@@ -123,6 +123,7 @@ int main(int argc, char *argv[])
 
 			/* all angles between -PI and PI; 0 corresponds to z-axis */
 			while (Rotang >= M_PI) Rotang-=2.0*M_PI;
+			while (Rotang < -M_PI) Rotang+=2.0*M_PI;
 
 			/* Loop over all windows of the velsel. */
 			for(n=0; n<winnum;n++)

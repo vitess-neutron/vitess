@@ -382,8 +382,8 @@ gSet bfact_7 {yes}
 gSet bfact_8 {yes}
 gSet bfact_9 {yes}
 gSet bff_5 {revm.dat}
-gSet bfontfamily {Helvetica}
-gSet bfontsize {12}
+gSet bfontfamily {Arial}
+gSet bfontsize {9}
 gSet bfonttype {bold}
 gSet bfp_5 {revp.dat}
 gSet bgColor {#dce2ff}
@@ -1007,7 +1007,7 @@ gSet decl_6 {0}
 gSet decl_7 {0}
 gSet decl_8 {0}
 gSet decl_9 {0}
-gSet defdirectory_ {/net/home/dmf/control/vitess/FILES/REFL_DIR}
+gSet defdirectory_ {C:/Programme/VITESS_2_5_1/FILES/REFL_DIR}
 gSet deffreq_5 {0}
 gSet dens_1 {0.1e19}
 gSet dens_10 {0.1e19}
@@ -1865,8 +1865,8 @@ gSet height_6 {1}
 gSet height_7 {0.5}
 gSet height_8 {1}
 gSet height_9 {1}
-gSet hfontfamily {Helvetica}
-gSet hfontsize {13}
+gSet hfontfamily {Arial}
+gSet hfontsize {9}
 gSet hfonttype {bold}
 gSet hma_1 {}
 gSet hma_10 {3}
@@ -2017,7 +2017,7 @@ gSet inh_8 {homogeneous}
 gSet inh_9 {homogeneous}
 gSet inputESET.active {.x.input}
 gSet insname_ {Reflectometer}
-gSet instrumentfile {newfileC}
+gSet instrumentfile {ReflectometerC}
 gSet isoESET.active {.feditpf.v}
 gSet itemlabwidth {16}
 gSet keyabut_1 {no}
@@ -2033,6 +2033,10 @@ gSet keyabut_6 {no}
 gSet keyabut_7 {yes}
 gSet keyabut_8 {no}
 gSet keyabut_9 {no}
+gSet keyshape_y_3 {curved}
+gSet keyshape_y_5 {constant}
+gSet keyshape_z_3 {constant}
+gSet keyshape_z_5 {constant}
 gSet kx_1 {1.0471975512}
 gSet kx_10 {0.943421217294}
 gSet kx_11 {1.0471975512}
@@ -2191,8 +2195,8 @@ gSet lf_6 {6}
 gSet lf_7 {6}
 gSet lf_8 {6}
 gSet lf_9 {6}
-gSet lfontfamily {Courier}
-gSet lfontsize {11}
+gSet lfontfamily {Lucida Console}
+gSet lfontsize {8}
 gSet lfonttype {bold}
 gSet lmoBigFrame {1}
 gSet lmoESET.active {.feditmodfile.v.c.f}
@@ -2258,7 +2262,11 @@ gSet mav_6 {6}
 gSet mav_7 {6}
 gSet mav_8 {6}
 gSet mav_9 {6}
-gSet maxModule {30}
+gSet maxModule {40}
+gSet max_ang_y_3 {90}
+gSet max_ang_y_5 {90}
+gSet max_ang_z_3 {90}
+gSet max_ang_z_5 {90}
 gSet max_div_1 {1}
 gSet max_div_10 {180}
 gSet max_div_11 {2}
@@ -2474,8 +2482,8 @@ gSet mfiler_6 {gadolinium.dat}
 gSet mfiler_7 {gadolinium.dat}
 gSet mfiler_8 {}
 gSet mfiler_9 {gadolinium.dat}
-gSet mfontfamily {Helvetica}
-gSet mfontsize {12}
+gSet mfontfamily {Arial}
+gSet mfontsize {9}
 gSet mfonttype {bold}
 gSet mfsatur_5 {1e19}
 gSet min_div_1 {-1}
@@ -4354,7 +4362,7 @@ gSet separate26 {hidden}
 gSet separate27 {hidden}
 gSet separate28 {hidden}
 gSet separate29 {hidden}
-gSet separate3 {hidden}
+gSet separate3 {here}
 gSet separate30 {hidden}
 gSet separate31 {hidden}
 gSet separate32 {hidden}
@@ -4366,7 +4374,7 @@ gSet separate37 {hidden}
 gSet separate38 {hidden}
 gSet separate39 {hidden}
 gSet separate4 {hidden}
-gSet separate5 {hidden}
+gSet separate5 {here}
 gSet separate6 {hidden}
 gSet separate7 {hidden}
 gSet separate8 {hidden}
@@ -4456,7 +4464,7 @@ gSet seriest1.2_ {2:P}
 gSet seriest2.0_ {phi}
 gSet seriest2.1_ {theta}
 gSet seriest2.2_ {grefdat}
-gSet serif {Courier}
+gSet serif {Lucida Console}
 gSet setiname_ {ReflectometerT}
 gSet setsimpar1_ {}
 gSet sfac_1 {from file}
@@ -4668,7 +4676,7 @@ gSet spiqua_9 {OZ}
 gSet spread_4 {0.0005}
 gSet spread_7 {0.0001}
 gSet sscESET.active {.feditparfile.v}
-gSet sserif {Helvetica}
+gSet sserif {Arial}
 gSet step_1 {0}
 gSet step_10 {0}
 gSet step_11 {0}
@@ -4794,8 +4802,8 @@ gSet tfile_6 {transmission.dat}
 gSet tfile_7 {transmission.dat}
 gSet tfile_8 {}
 gSet tfile_9 {transmission.dat}
-gSet tfontfamily {Helvetica}
-gSet tfontsize {10}
+gSet tfontfamily {Arial}
+gSet tfontsize {8}
 gSet tfonttype {normal}
 gSet theta_1 {0.065}
 gSet theta_10 {0}
@@ -5171,13 +5179,13 @@ gSet visM13 {--inactive--}
 gSet visM14 {--inactive--}
 gSet visM16 {--inactive--}
 gSet visM2 {--inactive--}
-gSet visM3 {--inactive--}
+gSet visM3 {guide}
 gSet visM31 {--inactive--}
 gSet visM32 {--inactive--}
 gSet visM33 {--inactive--}
 gSet visM34 {--inactive--}
 gSet visM4 {--inactive--}
-gSet visM5 {--inactive--}
+gSet visM5 {guide}
 gSet visM6 {--inactive--}
 gSet visM7 {--inactive--}
 gSet visM8 {--inactive--}

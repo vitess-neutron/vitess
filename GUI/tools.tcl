@@ -184,9 +184,10 @@ proc helpFrame {w {mode ""}} {
   $w insert end {
 
 You can get help about every
- - parameter by clicking on its name
- - module by clicking on the module number or choosing the menu Help}
+  - parameter by clicking on its name (see also help for module)
+  - module by clicking on the module number or choosing the menu Help
 
+}
   helpLink $w Help t10
   $w insert end {
 

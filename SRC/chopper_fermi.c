@@ -276,7 +276,7 @@ my_exit:;
 void OwnInit(int argc, char *argv[])
 {
   fprintf(LogFilePtr," \n");
-  print_module_name("Fermi-Chopper 1.14");
+  print_module_name("Fermi-Chopper 1.14a");
 
   /*    INPUT  */
 
@@ -383,7 +383,7 @@ void OwnInit(int argc, char *argv[])
 
       main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
       if(depth > main_depth) {
-	fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'height'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.)));
+	fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.)));
 
 	exit(-1);
       }
@@ -500,7 +500,7 @@ void OwnInit(int argc, char *argv[])
 
 				  main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
 				  if(depth > main_depth) {
-					fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'height'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.))); exit(-1);}
+					fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.))); exit(-1);}
 
 
 		  

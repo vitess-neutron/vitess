@@ -18,6 +18,7 @@ my $unixout = $ARGV[0] =~ /u/i;
 my $mscdir = 'c:|programme|microsoft visual studio .net 2003|vc7';
 #my $spath = 'e:|control|vitess|SRC';
 my $sroot = 'h:|control';
+my $svnroot = 'h:|control|vitess|trunk';
 
 my $unixcomment =<<'EOS';
 #
@@ -191,6 +192,7 @@ my $s = <<EOS;
 # Vitess NMAKE File
 CPATH=$mscdir
 SROOT=$sroot
+SVNROOT=$svnroot
 EOS
 
 $s .= <<'EOS';
@@ -200,7 +202,7 @@ LPATH=$(CPATH)|lib
 IPATH2=$(CPATH2)|include
 LPATH2=$(CPATH2)|lib
 
-SPATH=$(SROOT)|vitess|SRC
+SPATH=$(SVNROOT)|SRC
 GPATH=$(SROOT)|g2_win
 
 !IF "$(OS)" == "Windows_NT"
