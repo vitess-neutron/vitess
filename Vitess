@@ -1,6 +1,6 @@
+#!/usr/bin/bltwish
 #!/usr/local/bin/bltwish
 #!/usr/local/bin/wish8.4
-#!/usr/bin/bltwish
 #!/net/bin/wish -f
 ### VITESS simulation GUI start script
 

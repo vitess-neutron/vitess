@@ -53,6 +53,8 @@ proc showXYfile {fname} {
   vector create VY
 
   set hf 0;				# header found?
+  set xtitle ""
+  set ytitle ""
   while {[gets $f ins] > 0} {
     if {$hf} {
       if {2 != [scan $ins "%f%f" x y]} continue
@@ -64,8 +66,12 @@ proc showXYfile {fname} {
       # match contains column descriptions
     } elseif [regexp {^ *[a-zA-Z]} $ins] {
       set match $ins
+    } else {
+      set match ""
     }
-    regexp {^([^ ]+) *([^ ]+)} $match a xtitle ytitle
+    if {$match != ""} {
+      regexp {^([^ ]+) *([^ ]+)} $match a xtitle ytitle
+    }
     set hf 1
   }
   close $f
