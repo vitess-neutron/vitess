@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	Endpoint.D           = 0.0;
 
 	Init(argc, argv, VT_CHOP_DISC);
-	print_module_name("Space and Chopper 1.8");
+	print_module_name("Space and Chopper 1.8a");
 	OwnInit(argc, argv);
 
 	CenterX   = 0.0; 
@@ -338,7 +338,8 @@ void OwnCleanup()
 	short  dir=0;
 	double time, phi0=0.0, 
 	       phi_wnd1, phi_wnd2, phi_wnd3;
-	double dTimeMeas,    /* measuring time (not needed) */
+	double dTimeMeas,    /* measuring time  (not needed here) */
+	       dFreq,        /* pulse frequency (not needed here) */
 	       dLmbdWanted,  /* desired wavelength          */
 	       dLength,      /* length of the instrument until chopper module */
 	       dRotZ, dRotY; /* orientation of the output of the previous component (not needed) */
@@ -351,7 +352,7 @@ void OwnCleanup()
 	fprintf(LogFilePtr," \n");
 
 	/* set description for instrument plot */
-	ReadSimData  (&dTimeMeas, &dLmbdWanted);	
+	ReadSimData  (&dTimeMeas, &dLmbdWanted, &dFreq);	
 	if (dLmbdWanted > 0.0)
 	{	ReadInstrData(&nModuleNo, EndPos, &dLength, &dRotZ, &dRotY);
 		time = (dLength-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(dLmbdWanted)); /* velocity in m/s instead of cm/ms */

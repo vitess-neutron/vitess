@@ -336,8 +336,8 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 		/* calculating the number of intersection points to come
 	      (result of LineIntersects.... are ordered t0 < t1  */
 		*pNisp = 0;
-		if (t[1] > 0.0) (*pNisp)++;
-		if (t[0] > 0.0) (*pNisp)++;
+		if (t[1] >= 0.0) (*pNisp)++;
+		if (t[0] >= 0.0) (*pNisp)++;
 		return TRUE;
 	}
 	else

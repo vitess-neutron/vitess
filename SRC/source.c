@@ -58,7 +58,8 @@ double    NumberOfNeutrons=0,
           PolVecX     =  0.0,  /* polarisation            */
           PolVecY     =  0.0, 
           PolVecZ     =  0.0, 
-          Polarization=  0.0, 
+          PolDegree   =  0.0,  /* degree of polarization [%] */
+          FracPolDir  =  0.0,  /* fraction of neutrons in polarization direction */
 
           Declination =  0.0,  /* declination between mod. surface normal and propagation window */
           dDistWnd    =  0.0,  /* distance moderator - window                                    */
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize */
 	Init             (argc, argv, VT_SOURCE);
-	print_module_name("Source and Window 1.11");
+	print_module_name("Source and Window 1.11a");
 	OwnInit          (argc, argv);
 	CenterX   = 0.0; 
 	CenterY   = 0.0;
@@ -137,8 +138,7 @@ int main(int argc, char *argv[])
 
 	/* normalise polarization direction */
 	PolNorm= sqrt(PolVecX*PolVecX + PolVecY*PolVecY + PolVecZ*PolVecZ);
-	if(PolNorm==0.0) {fprintf(LogFilePtr,"ERROR: you have to give a polarization direction"); 
-	                  exit(99);}
+	if(PolNorm==0.0) Error("you have to give a polarization direction"); 
 	PolVecX=PolVecX/PolNorm;
 	PolVecY=PolVecY/PolNorm;
 	PolVecZ=PolVecZ/PolNorm;
@@ -326,19 +326,18 @@ int main(int argc, char *argv[])
 	stPicture.nNumber = nNumMod;
 	stPicture.pDescr  = sText;
 	WriteInstrData(0, NullPos,0.0, 0.0,0.0);
-	WriteSimData  (dTimeMeas, dLmbdWant);
+	WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
 	/* Propagation, Polarisation */
 	fprintf(LogFilePtr, "window (W x H)               : %7.3f cm  x %7.3f cm \n", WindowWidth, WindowHeight);
 	fprintf(LogFilePtr, "  in a distance of           : %7.3f m   \n",            dDistWnd/100.);
 	fprintf(LogFilePtr, "  with a declination of      : %7.3f°    \n",            Declination);
-	fprintf(LogFilePtr, "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n", Polarization, PolVecX, PolVecY, PolVecZ);
+	fprintf(LogFilePtr, "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n", PolDegree, PolVecX, PolVecY, PolVecZ);
 	if (pTraceFileName!=NULL)
 		fprintf(LogFilePtr, "trace file used              : %s\n", pTraceFileName);
 
 	/* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
-	Polarization = Polarization/100.0;
-	Polarization += (1. - Polarization) * 0.5 ; 
+	FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
 
 	dDecCos =  cos(Declination*M_PI/180.0);
 	dDecSin = -sin(Declination*M_PI/180.0);
@@ -483,7 +482,7 @@ int main(int argc, char *argv[])
 		/* Polarization - spin vectors selected for each trajectory 
 		   from one of the eigenvectors  in the polarisation direction */
 		helpvalue=ran3(&idum);
-		if (helpvalue<=Polarization) 
+		if (helpvalue <= FracPolDir) 
 		{	/* spin eigenvector No 1 */
 			Input.Spin[0]= PolVecX; 
 			Input.Spin[1]= PolVecY; 
@@ -671,9 +670,9 @@ void OwnInit(int argc, char **argv)
 					PolVecZ = atof(arg);  
 					break;
 				case 'P':
-					Polarization = atof(arg); 
-					if(fabs(Polarization) > 100.)
-						Error("polarization must be < 100 ");
+					PolDegree = atof(arg); 
+					if(fabs(PolDegree) > 100.)
+						Error("polarization degree must be <= 100 ");
 					break;
 
 				/* propagation */
