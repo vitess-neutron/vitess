@@ -1,0 +1,5 @@
+# Source
+# Name  freq  pulse_len
+# Moderators:  center size  distribution files  time
+# Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d  min max
+300 0 R 0 0 0 10 10 0 1e8 0 constant_source.dat none none 0 0 0 0 0 

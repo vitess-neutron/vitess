@@ -1,0 +1,17 @@
+This is a rather a collection of important modules and a demonstration of the visualisation
+than an instrument.
+The path of the neutrons through the bender is shown; the colour changes after the first 
+reflection. Additionally the arriving of the neutron at the detector is monitored using the 
+visual module.
+The visualisation during the simulation is not yet satisfactory - we will work on that - but 
+postscript files are generated so that one can look at the pictures after the simulation. 
+Unfortunately these files and the 'surface files' are saved in the VITESS directory 
+(e.g. 'C:\Program\VITESS') instead of the parameter directory; this will be changed in the 
+next version.
+The SNS source with the hydrogen moderator is used. Gravity was included in the simulation.
+The use of the module 'straight Fermi chopper' is demonstrated as well as the use of the 
+module 'powder_sample'. 
+A cylindrical detector with its center at the exact backscattering position is used. Roughly 
+the whole backscattering is regarded; it can be seen in 'visual.ps'. For this simulation, 
+'RadialBender.gui' (with a high number of trajectories) is used. For the visuatisation of 
+the bender, 'RadialBenderPS.gui' (with only 1000 trajectories) is used.

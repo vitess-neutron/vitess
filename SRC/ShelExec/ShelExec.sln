@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShelExec", "ShelExec.vcproj", "{638CBA2B-F925-4967-AA52-5BAEA7789601}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+		Unicode Debug = Unicode Debug
+		Unicode Release = Unicode Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Debug.ActiveCfg = Debug|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Debug.Build.0 = Debug|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Release.ActiveCfg = Release|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Release.Build.0 = Release|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Unicode Debug.ActiveCfg = Unicode Debug|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Unicode Debug.Build.0 = Unicode Debug|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Unicode Release.ActiveCfg = Unicode Release|Win32
+		{638CBA2B-F925-4967-AA52-5BAEA7789601}.Unicode Release.Build.0 = Unicode Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,6 @@
+This is not an existing instrument, but an example to show the use of the S(Q)-sample.
+
+The file 'argon_like.dat' is created by an analytical function to give a S(Q) behaviour that 
+looks similar to that of Argon.
+To see the effect of the sample, the instrument can also be run using the file 'isotropic.dat'
+which assigns S=1 in the whole Q range.

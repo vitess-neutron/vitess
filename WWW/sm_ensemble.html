@@ -1,0 +1,262 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="Author" content="geza">
+  <title>VITESS Supermirror Ensemble</title>
+</head>
+  <body>
+   <b><font size="+3">VITESS Supermirror-Ensemble</font></b>   
+<p>This module simulates an ensemble of supermirror (SM) planes of up to 10
+elements. This can be used for the simulation of more complicated guide systems,
+with branch geometry. For example one can use 4 elements as a normal guide
+and put one transparent element into this tilted by an angle relative to
+the main (beam) axis and use it as polarizer. Both sides of the supermirror
+ plates reflect. <br>
+ The visualisation of neutron paths or collision points available. The module
+ will visualise only first 10000 trajectories or points. Also you can choose
+a device for visualisation: display, file or both. <br>
+  &nbsp; <br>
+  &nbsp; <br>
+  &nbsp;   
+<table border="1" cols="3" width="84%">
+   <tbody>
+      <tr>
+   <td>Parameter</td>
+    <td>Description</td>
+    <td>Command Option</td>
+   </tr>
+    <tr>
+   <td>geometry and reflectivity data file</td>
+    <td>In this file are given: the shape, position, angle, angular spread, 
+ 'up' and 'down' reflectivity, absorbtion (see below)</td>
+    <td>-P</td>
+   </tr>
+    <tr>
+   <td>stop at collisions</td>
+    <td>At this number of collisions it stops and writes out the trajectory. 
+ This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. 
+ collisions.</td>
+    <td>-M</td>
+   </tr>
+    <tr>
+        <td valign="top">spin quantisation direction <br>
+        </td>
+        <td valign="top">direction of spin quantisation in accordance with
+ input data (e.g.source module)<br>
+        </td>
+        <td valign="top">-Q<br>
+        </td>
+      </tr>
+      <tr>
+   <td>visualisation</td>
+    <td>If 'yes' (1), it writes out the collisions into a file "collisions.dat".
+ Else: it visualises the trajectories</td>
+    <td>-T</td>
+   </tr>
+
+      <tr>
+   <td>device</td>
+    <td>Choose the device for visualisation: 1 - display, 2 - file, 3 -
+display+file </td>
+    <td>-o</td>
+   </tr>
+
+
+    <tr>
+   <td><font color="#000000">output frame</font>               
+      <p><font color="#000000">X',Y',Z'</font> </p>
+               
+      <p><font color="#000000">[cm]</font></p>
+        </td>
+    <td><font color="#000000">The position of the output frame origin in
+the  original frame. It represents the translation vector applied to shift
+the  origin of the original (input) frame to the new (output) position.</font></td>
+    <td>-r, -s, -t</td>
+   </tr>
+    <tr>
+   <td><font color="#000000">output angle&nbsp;</font> <br>
+        <font color="#000000">horizontal, vertical</font>               
+      <p><font color="#000000">[deg]</font></p>
+        </td>
+    <td><font color="#000000">A rotation about the Z axis and then a rotation 
+ about the (new)Y axis defines a new orientation for the neutrons written 
+to the output.</font></td>
+    <td>-h, -v</td>
+   </tr>
+         
+  </tbody>  
+</table>
+    </p>
+   
+<p>The shape and position of the SM elements has to be given in the file "geometry
+and reflectivity data". </p>
+   
+<p>Example: </p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 118.75&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -118.75&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -118.75&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 118.75&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 118.75&nbsp; -2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.000&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- A&nbsp; 1 ----- 
+</p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -181.25&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -181.25&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 418.75&nbsp; -2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.000&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 
+ 00.0002375&nbsp; 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 
+ 00.0002375&nbsp; 00.0000&nbsp;&nbsp;&nbsp;&nbsp; ----- B&nbsp; 2 ----- </p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -300.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -300.00&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 300.00&nbsp;&nbsp; 2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 90.000&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- C&nbsp; 3 ----- 
+</p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 181.23&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -181.23&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -181.23&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 181.23&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 418.75&nbsp; -5.89&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.917&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00097&nbsp;&nbsp;&nbsp; 0.00098&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- D&nbsp; 4 ----- 
+<br>
+  &nbsp; </p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 300.01&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -300.01&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -300.01&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 300.01&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 300.00&nbsp; -0.99&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 89.620&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.30&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00202&nbsp;&nbsp;&nbsp; 0.0034900&nbsp;&nbsp;&nbsp; 0.90&nbsp;&nbsp; 00.0002375&nbsp;
+ 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00081&nbsp;&nbsp;&nbsp;
+ 0.00082&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 00.0002375&nbsp;
+00.0000&nbsp;&nbsp;&nbsp;&nbsp;  ----- E&nbsp; 5 ----- </p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 150.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
+ -150.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -150.00&nbsp;&nbsp;&nbsp;&nbsp;
+ -5.00&nbsp;&nbsp;&nbsp;&nbsp; 150.00&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
+ 150.00&nbsp;&nbsp; 1.99&nbsp;&nbsp; 0.00&nbsp;&nbsp; -89.620&nbsp;&nbsp;&nbsp;
+ 0.000&nbsp;&nbsp; 0.30&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00202&nbsp;&nbsp;&nbsp; 0.0034900&nbsp;&nbsp;&nbsp; 0.90&nbsp;&nbsp; 00.0002375&nbsp;
+ 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00081&nbsp;&nbsp;&nbsp;
+ 0.00082&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 00.0002375&nbsp;
+00.0000&nbsp;&nbsp;&nbsp;&nbsp;  ----- F&nbsp; 6 ----- <br>
+  &nbsp; </p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ -2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -2.98&nbsp;&nbsp; 
+ -300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp; -300.00&nbsp;&nbsp;&nbsp; 
+ 300.00&nbsp;&nbsp; 0.00&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp;&nbsp; 
+ 90.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- G&nbsp; 7 ----- 
+</p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ -2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -2.98&nbsp;&nbsp; 
+ -300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp; -300.00&nbsp;&nbsp;&nbsp; 
+ 300.00&nbsp;&nbsp; 0.00&nbsp; -5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp; -90.000&nbsp;&nbsp;
+0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00205&nbsp;&nbsp;&nbsp;
+0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- H&nbsp; 8 ----- 
+</p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ -5.80&nbsp;&nbsp; -181.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp; 
+-181.25&nbsp;&nbsp;&nbsp; 418.75&nbsp; -2.98&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; 
+0.000&nbsp;&nbsp; 90.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- I&nbsp; 9 ----- 
+</p>
+   
+<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ -5.80&nbsp;&nbsp; 181.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp; 
+ -181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp;&nbsp; 
+ 418.75&nbsp; -2.98&nbsp; -5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp; -90.000&nbsp;&nbsp; 
+ 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00205&nbsp;&nbsp;&nbsp; 
+ 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
+ 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- J 10 ----- </p>
+   
+<p>on/off&nbsp;&nbsp;&nbsp; y1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ y2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ y3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ y4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Z&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ H/&deg;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V/&deg;&nbsp;&nbsp;&nbsp;&nbsp; h/&deg;&nbsp;&nbsp;&nbsp;&nbsp; 
+ v/&deg;&nbsp;&nbsp;&nbsp; Up: thetaC&nbsp;&nbsp;&nbsp; thetaCSM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ R&nbsp;&nbsp;&nbsp;&nbsp; mue*d&nbsp;&nbsp;&nbsp;&nbsp; mue_incoh*d&nbsp;&nbsp;&nbsp; 
+ Down: thetaC&nbsp;&nbsp;&nbsp; thetaCSM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ R&nbsp;&nbsp;&nbsp;&nbsp; mue*d&nbsp;&nbsp;&nbsp;&nbsp; mu_incoh*d&nbsp;&nbsp;&nbsp;&nbsp; 
+ wall label <br>
+  &nbsp; </p>
+   
+<p>EXPLANATIONS: </p>
+   
+<p>1) on/off tells if the wall is active (i.e. you can switch it off) <br>
+  2) Let us assume that first the 10 elements lie in a plane perpendicular 
+to the beam. Then y<sub>i</sub>, z<sub>i</sub> i=1,..,4 defines the positions 
+ of the element corners (you can also form a triangle if 3 'corners' are co-linear).
+For all i we have x<sub>i</sub>=0. X,Y,Z gives the translation of the element
+centres to the rigth place in the final geometry and H/&deg; ,&nbsp;&nbsp;
+V/&deg; are the Euler rotation angles which define the final normal vector
+when the element was rotated into the right direction. Now one has a defined
+geometry. </p>
+   
+<p><img src="DefineGeomSME.gif" height="759" width="498">
+   </p>
+   
+<p>3) h/&deg;,&nbsp;&nbsp; v/&deg; is the full width of the rectangular distribution
+ expected for the uncertainties of the plane adjustment. <br>
+  4) Up/Down: thetaC [rad],&nbsp;&nbsp;&nbsp; thetaCSM [rad],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ R&nbsp;&nbsp;&nbsp;&nbsp; give the shape of the reflectivity curve for both
+ spin states. R = reflectivity at thetaCSM&nbsp; (generally R &lt; 1). <br>
+  5) mue*d&nbsp; (wavelength dependent),&nbsp;&nbsp;&nbsp; mu_incoh*d (wavelength
+ independent) give the attenuation coefficients [1/cm] &times; d i.e. supermirror 
+thickness in cm. <br>
+  6) 'wall label' is the name given by the user to the walls (no real input) 
+ </p>
+   
+<p> <br>
+  &nbsp; <br>
+  &nbsp; </p>
+   
+<p> </p>
+   
+<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+  <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>   
+<p><!-- hhmts start --><font size="-1">Last modified: Fri Jul&nbsp; 4 16:51:30
+ MEST 2003</font><font size="-1">, G. Zs.</font><!-- hhmts end --> <br>
+  &nbsp; </p>
+  <br>
+  <br>
+ <br>
+</body>
+</html>

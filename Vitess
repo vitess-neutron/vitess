@@ -1,0 +1,132 @@
+#!/usr/local/bin/bltwish
+#!/usr/local/bin/wish8.4
+#!/usr/bin/bltwish
+#!/net/bin/wish -f
+### VITESS simulation GUI start script
+
+# try to use BLT
+set NoBLT [catch {package require BLT}]
+
+switch $tcl_platform(platform) {
+  unix {
+    switch $tcl_platform(os) {
+      OSF1 - SunOS - Linux {}
+      default {
+	puts "System not supported.\n"
+	exit
+      }
+    }
+    # Browser for HTML help display:
+    # Select whatever is installed from mozilla, netscape, ...
+    # It should be callable as
+    # mozilla -remote openURL(file:vitess.html)
+    # otherwise change help.tcl accordingly
+    set Browser ""
+    foreach b {mozilla netscape communicator} {
+      catch {
+	catch {exec sh -c "which $b"} bb
+	if {$bb != "" && [file exists $bb]} {
+	  set Browser $bb
+	}
+      }
+      if {$Browser != ""} break
+    }
+    catch {unset b bb} 
+    if {$Browser == ""} {
+      puts "no browser found!"
+    }
+    set serif Courier
+    set sserif Helvetica
+
+    set s [glob [info script]]
+    set i [string last / $s]
+    incr i -1
+    if {$i >= 0} {
+      set s [string range $s 0 $i]
+      if {[file pathtype $s] == "relative"} {
+	set SourceDirectory [file join [pwd] $s]
+      } else {
+	set SourceDirectory $s
+      }
+    } else {
+      set SourceDirectory [pwd]
+    }
+    set ExeDirectory [file join $SourceDirectory MODULES]
+    set ExeSuffix "_$tcl_platform(os)"
+    set KillProg kill
+    set PsCheck PsCheckUnix
+    set WinPos +50+0
+    set TextPos +620+0
+    set MaxOutstringLength 90
+  }
+  windows {
+    set SourceDirectory [pwd]
+    set ExeDirectory [file join $SourceDirectory MODULES]
+    set ExeSuffix ".exe"
+    set HelpApp [file join $ExeDirectory helpa.exe]
+    set KillProg $HelpApp
+    set PsCheck PsCheckWindows
+    set WinPos +0+0
+    set TextPos +620+0
+    set MaxOutstringLength 80
+    set Browser [file join $ExeDirectory shelexec.exe]
+    set serif "Lucida Console"
+    set sserif Arial
+    catch {exec $KillProg C} res
+  }
+  default {
+    puts "System not supported.\n"
+    exit
+  }
+}
+catch {unset ld place resname s i}
+set GUIDir [file join $SourceDirectory GUI]
+set auto_path [linsert $auto_path 0 $GUIDir]
+###    use tk_chooseColor to find better colors
+set c #dce2ff
+set bgColor $c
+set labColor $c
+set entryColor #aedace
+set radioColor $c
+set buttonColor #98b4a0
+set menuButtonColor $c
+set canvasColor $c
+set menuColor $c
+
+set itemlabwidth 16
+set fileentrywidth 48
+
+set scrollWidth 8
+
+set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
+
+### execute all tcl source files
+set modl {tools check entries help ldstore menu windows 
+  show vitess comexe control}
+if $NoBLT {
+  lappend modl show_plain
+} else {
+  lappend modl show_blt
+}
+if [catch {package require md5}] {
+  lappend modl md5x
+}
+foreach f $modl {
+  source [file join $GUIDir $f.tcl]
+}
+unset modl
+
+### start main widget of Xcontrol, reading experiment environment
+controlGUI $SourceDirectory vitess.tcl .x $WinPos
+
+### show message window and update, to have these placed nicely
+showText ""
+switch $tcl_platform(platform) {
+  windows {
+    wm iconify .x
+    wm deiconify .x
+  }
+  default update
+}
+### VITESS parameter directory entry must have a reasonable value
+forceParamDir

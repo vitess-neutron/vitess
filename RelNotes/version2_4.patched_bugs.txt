@@ -1,0 +1,33 @@
+This is a description of bugs found in version 2.4.
+
+These bugs have been corrected in the distribution files
+if not otherwise stated.
+
+Modules
+-------
+Major overhaul of module rotating_field: see html description.
+
+Some minor errors have be corrected for chopper_disc,
+chopper_fermi, chop_phases, ma_geom, monochr_analyser, and source.
+
+Tool rvitess
+------------
+Binary output files could be read with Linux only.
+rvitess now reads ASCII output files written with the writeout
+module on all platforms, and binary output files produced
+on the same platform.
+
+vitess.tcl
+----------
+Some help texts and option mappings were incorrect.
+When stopping simulations on Unix systems the pipe processes
+were not stopped in the order of process creation. This resulted
+in incomplete text output of modules.
+.gui files contained superfluous information.
+
+examples
+--------
+Some examples were not run with version 2.4.
+
+
+

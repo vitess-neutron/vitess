@@ -1,0 +1,5 @@
+This is a SANS instrument installed at a reactor source.
+
+The wavelength dependence of the flux is approached by a Maxwellian distribution of 45 K. A total flux at the moderator of 1.0E13 n/(cm²s) was assumed.
+
+Gravity was included in the simulation.

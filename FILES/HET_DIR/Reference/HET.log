@@ -1,0 +1,311 @@
+description O.K.
+
+Parameter directory is C:/Programme/Vitess_2_5/FILES/HET
+Starting simulation
+C:/Programme/Vitess_2_5/MODULES/source.exe -S2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog1 -R50 -N- -aC:/Programme/Vitess_2_5/FILES/HET/HET.mod -n500000 -m1.22 -t0 -y0.1 -M1.3 -T0.1 -z0.1 -d0 -P0 -X1 -Y0 -V0 -D0 -w10 -h10 -i0 -A0 -k0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog2 -OC:/Programme/Vitess_2_5/FILES/HET/time0.dat -n100 -f0 -m0.00 -M0.1 -p1 -e0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k1 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog3 -OC:/Programme/Vitess_2_5/FILES/HET/lambdainitial.dat -n100 -f0 -m1.2 -M1.32 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/Vitess_2_5/MODULES/spacewindow.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog4 -l280 -R1 -r10 -y0 -z0 -S0 -c6 -T0 
+| C:/Programme/Vitess_2_5/MODULES/guide.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog5 -Y0 -Z0 -w6 -h6 -W6 -H6 -p525 -N1 -R0 -iC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -IC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -jC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -r0 -y10 -z10 -a0 
+| C:/Programme/Vitess_2_5/MODULES/chopper_disc.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog6 -s0 -o0 -g0 -z0 -p1 -c0 -CC:/Programme/Vitess_2_5/FILES/HET/chop_bck.dat -l35 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog7 -OC:/Programme/Vitess_2_5/FILES/HET/timeafterDC.dat -n100 -C0 -f0 -m2.55 -M2.9 -p1 -e0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k1 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog8 -OC:/Programme/Vitess_2_5/FILES/HET/lambdabckg.dat -n100 -f0 -m1.2 -M1.32 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/Vitess_2_5/MODULES/guide.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog9 -w6 -h6 -W6 -H6 -p140 -N1 -R0 -iC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -IC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -jC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -r0 -a0 
+| C:/Programme/Vitess_2_5/MODULES/spacewindow.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog10 -l15 -R1 -r10 -y0 -z0 -S0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog11 -OC:/Programme/Vitess_2_5/FILES/HET/beforeFC.dat -n100 -f0 -m3 -M3.4 -p1 -e0 
+| C:/Programme/Vitess_2_5/MODULES/chopper_fermi.exe -O2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog12 -X5 -Y0 -V0 -a7 -b6.328 -c1.808 -l28 -m0.055 -r10 -n300 -q-348.084 -GC:/Programme/Vitess_2_5/FILES/HET/ch_fermi_geom.dat 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog13 -OC:/Programme/Vitess_2_5/FILES/HET/timefinal.dat -n100 -f0 -m3.24 -M3.28 -p1 -e0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k1 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog14 -OC:/Programme/Vitess_2_5/FILES/HET/lambdafinal.dat -n75 -f0 -m1.22 -M1.3 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/Vitess_2_5/MODULES/spacewindow.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog15 -l15 -R1 -r10 -y0 -z0 -S0 -c6 
+| C:/Programme/Vitess_2_5/MODULES/guide.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog16 -Y0 -Z0 -w5 -h5 -W5 -H5 -p140 -N1 -R0 -iC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -IC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -jC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -JC:/Programme/Vitess_2_5/FILES/HET/mirr1b.dat -r0 -a0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k2 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog17 -OC:/Programme/Vitess_2_5/FILES/HET/time.dat -n200 -f0 -m3.7 -M3.8 -p1 -e0 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k1 --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog18 -OC:/Programme/Vitess_2_5/FILES/HET/lambda.dat -n100 -f0 -m1.23 -M1.3 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/Vitess_2_5/MODULES/sample_elasticisotr.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog19 -PC:/Programme/Vitess_2_5/FILES/HET/HET_sample.iso -A1 
+| C:/Programme/Vitess_2_5/MODULES/detector.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog20 -Gcub -h20 -w20 -t0.2 -e1 -T0 -P0 -D250 -c1 -r1 -A1 -M0 -g1 
+| C:/Programme/Vitess_2_5/MODULES/eval_inelast.exe --Z1 --G0 --U1.e-35 --B10000 --PC:/Programme/Vitess_2_5/FILES/HET --LC:/Programme/Vitess_2_5/FILES/HET/vpipelog21 -EC:/Programme/Vitess_2_5/FILES/HET/tofsp.dat -GC:/Programme/Vitess_2_5/FILES/HET/energysp.dat -A0 -c1.2791 -a1180 -b250 -C75 -e4.55 -g4.85 -d-0.005 -h0 -j0 -k360 -i300 -D0 --Fno_file
+simulation (c0 a08 eac cf8 ebc 8d8 b48 654 9d8 280 234 ca4 750 5c8 cb4 66c de4 518 c38 ae0 81c ) (192 2568 3756 3320 3772 2264 2888 1620 2520 640 564 3236 1872 1480 3252 1644 3556 1304 3128 2784 2076) is active
+....................................................................................------------------------------
+
+
+VITESS version 2.5 module Source and Window 1.10b
+
+> Simulation of short pulsed spallation source - <
+pulse frequency              :  50.000 Hz 
+
+wavelength-time distr. file  : Isis1.HET 
+total neutron flux (in 2*pi) : 1.3061e+014 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :   7.000 cm  x   7.000 cm 
+angle of opening used        :   0.200°    x   0.200°   
+time averaged neutron current: 1.2411e+010 n/s in 0.000012 str
+wavelength band used         :   1.220 Ang -   1.300 Ang
+time interval used           :   0.000 ms  -   0.100 ms 
+
+window (W x H)               :  10.000 cm  x  10.000 cm 
+  in a distance of           :   0.000 m   
+  with a declination of      :   0.000°    
+polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+Center of beam at window     :(  0.000   -0.006   -0.004) cm 
+Average TOF                  :   0.020 ms 
+
+Gravity is disabled 
+Cutoff probability per traj. : 1.000e-035 
+
+number of trajectories started         :      500000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :      500000
+(time averaged) neutron count rate     : 1.4779e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 2 number of trajectories read         :     500000
+   number of trajectories written      :     500000
+(time averaged) neutron count rate     : 1.4779e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 3 number of trajectories read         :     500000
+   number of trajectories written      :     500000
+(time averaged) neutron count rate     : 1.4779e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.10
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.000000 cm 
+Gravity is disabled 
+Distance between plane x=0 and window plane  280.000000 cm 
+Center of beam: X = 280.000000 cm Y = -0.005524 cm Z = -0.003887 cm TOF = 0.911285 ms  
+ 
+ 4 number of trajectories read         :     500000
+   number of trajectories written      :     500000
+(time averaged) neutron count rate     : 1.4779e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module guide 2.10b
+
+NOTE: coating of top wall also used for bottom wall 
+Horizontal: constant width
+Vertical  : constant height
+Guide consists of 1 piece(s)
+Total length of guide   :    5.250 m
+Width x Height          :    6.000 x   6.000 cm²
+Inside guide abutment loss is disabled 
+The walls have no waviness 
+ 
+ 5 number of trajectories read         :      500000
+   number of trajectories written      :      362912
+(time averaged) neutron count rate     : 1.0843e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Chopper 1.8
+Ideal absorption in chopper disk assumed
+Radius of chopper           :   47.00         cm
+Center of chopper axle (Z,Y): (-45.00, +0.00) cm
+Chopper open at t=0 (without offset) for a window at 0.0   deg
+Window 1:
+  Position :   0.00 deg
+  Aperture :  20.00 deg
+  Height   :  40.00 cm
+Center of beam before the chopper: X = 35.000000 cm Y = -0.010665 cm Z = 0.005775 cm TOF = 2.693808 ms 
+
+Error: 62315 trajectories passed outside the chopper.
+First trajectory has ID AA000000001.
+ 
+ 6 number of trajectories read         :     362912
+   number of trajectories written      :     362912
+(time averaged) neutron count rate     : 1.0843e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 7 number of trajectories read         :     362912
+   number of trajectories written      :     362912
+(time averaged) neutron count rate     : 1.0843e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 8 number of trajectories read         :     362912
+   number of trajectories written      :     362912
+(time averaged) neutron count rate     : 1.0843e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module guide 2.10b
+
+NOTE: coating of top wall also used for bottom wall 
+Horizontal: constant width
+Vertical  : constant height
+Guide consists of 1 piece(s)
+Total length of guide   :    1.400 m
+Width x Height          :    6.000 x   6.000 cm²
+Inside guide abutment loss is disabled 
+The walls have no waviness 
+ 
+ 9 number of trajectories read         :      362912
+   number of trajectories written      :      359206
+(time averaged) neutron count rate     : 1.0727e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.10
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.000000 cm 
+Gravity is disabled 
+Distance between plane x=0 and window plane  15.000000 cm 
+Center of beam: X = 15.000000 cm Y = -0.010725 cm Z = 0.006449 cm TOF = 3.187197 ms  
+ 
+10 number of trajectories read         :     359206
+   number of trajectories written      :     359206
+(time averaged) neutron count rate     : 1.0727e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+11 number of trajectories read         :     359206
+   number of trajectories written      :     359206
+(time averaged) neutron count rate     : 1.0727e+008 n/s 
+------------------------------
+ 
+
+
+VITESS version 2.5 module Fermi-Chopper 1.10
+
+Curved Fermi chopper activated 
+
+Radius of curvature (parabolic approximation):
+	58.040419 cm at center
+	58.687717 cm at circumference
+Channel width: 0.169036 cm
+Phase set is -348.084000°.
+ 
+12 number of trajectories read         :      359206
+   number of trajectories written      :        9250
+(time averaged) neutron count rate     : 2.7415e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+13 number of trajectories read         :       9250
+   number of trajectories written      :       9250
+(time averaged) neutron count rate     : 2.7415e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+14 number of trajectories read         :       9250
+   number of trajectories written      :       9250
+(time averaged) neutron count rate     : 2.7415e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.10
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.000000 cm 
+Gravity is disabled 
+Distance between plane x=0 and window plane  15.000000 cm 
+Center of beam: X = 15.000000 cm Y = 0.112078 cm Z = 0.017337 cm TOF = 3.292616 ms  
+ 
+15 number of trajectories read         :       9250
+   number of trajectories written      :       9250
+(time averaged) neutron count rate     : 2.7415e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module guide 2.10b
+Horizontal: constant width
+Vertical  : constant height
+Guide consists of 1 piece(s)
+Total length of guide   :    1.400 m
+Width x Height          :    5.000 x   5.000 cm²
+Inside guide abutment loss is disabled 
+The walls have no waviness 
+ 
+16 number of trajectories read         :        9250
+   number of trajectories written      :        6037
+(time averaged) neutron count rate     : 1.7886e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+17 number of trajectories read         :       6037
+   number of trajectories written      :       6037
+(time averaged) neutron count rate     : 1.7886e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+18 number of trajectories read         :       6037
+   number of trajectories written      :       6037
+(time averaged) neutron count rate     : 1.7886e+006 n/s 
+------------------------------
+ 
+
+
+VITESS version 2.5 module sample_elasticisotr 1.2
+
+	repetition rate		=     1
+             sample geometry:	'cylinder'
+	scattered dir.		:     0.987688    0.156434    0.000000 
+19 number of trajectories read         :       6037
+   number of trajectories written      :       3800
+(time averaged) neutron count rate     : 1.7646e+001 n/s 
+------------------------------
+
+
+VITESS version 2.5 module detector 1.4
+ 
+20 number of trajectories read         :        3800
+   number of trajectories written      :        3800
+(time averaged) neutron count rate     : 1.1905e+001 n/s 
+------------------------------
+ 
+
+
+VITESS version 2.5 module eval_inelast 1.2
+	TOF spectrum file: 'C:/Programme/Vitess_2_5/FILES/HET/tofsp.dat'
+	energy spectrum file: 'C:/Programme/Vitess_2_5/FILES/HET/energysp.dat'
+	number of bins		=  75
+	primary flight path		=  1180.0000
+	secondary flight path	=   250.0000
+	reference wavelength	=     1.2791
+	time offset		=    -0.0050
+	minimal time		=     4.5500
+	maximal time		=     4.8500
+	gradient of timebins	=     0.0000
+	temperature		=   300.0000
+	angle			=     0.0000
+	angle range		=   360.0000
+option 'direct geometry'
+not divided by Bose-factor
+computed reference values:
+	energy			=    50.0001 meV
+	velocity			=   309.2827 cm/ms
+	MinTOF_effective		=     4.5550 ms
+	MaxTOF_effective		=     4.8550 ms
+	TOF_total_elast		=     4.6236 ms
+	TOF_fixed_energy_side	=     3.8153 ms
+	minimal energy transfer	=    -9.7035 meV
+	maximal energy transfer	=    19.7796 meV
+
+21 number of trajectories read         :       3800
+   number of trajectories written      :       3800
+(time averaged) neutron count rate     : 1.1905e+001 n/s 
+------------------------------
+simulation finished
+
+

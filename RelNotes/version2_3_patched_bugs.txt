@@ -1,0 +1,66 @@
+This is a description of bugs found in version 2.3.
+
+These bugs have been corrected in the distribution files
+if not otherwise stated.
+
+
+Module Source
+-------------
+Analytical calculation of the pulse shape from input data 'tau_1' and 'tau_2'
+ (pulse shapes calculated from 'tau_1' and 'tau_2' were a factor 1000
+ too short due to a missing conversion from ms to s.
+ This did not happen, if ESS or SNS were chosen (in any way) to define
+ the pulse.)
+affected source files: source.c src_modchar.c
+
+Tool DirectView
+---------------
+Calculation of 'actual curvature' corrected
+for case: straight part before bender greater zero
+ (The width D of the bender was omitted, i.e.  alpha = L / R_i  was calculated
+  instead of  alpha = L /(R_i + D/2)  (L: Length of bender, R_i: inner radius)
+
+  This gave too large values of alpha and therefore too small values for the
+  length (of the second straight guide) necessary to prevent direct view.)
+affected files: direct_view.c
+
+Tool GenerBatch
+---------------
+1. BUFLEN increased
+    (string was too short for module bender under certain circumstances)
+2. subst command improved
+    (error occurred if logical drive P: or V: already existed or
+         if directory was the root directory (of a drive))
+3. MAX_SIM simulations rendered possible
+    (number of ll  simulation was limited by MAX_PAR (=15) instead of
+    MAX_SIM (=25))
+4. deleting tabs in 'GetLine'
+    (Apart from comments, line feeds, carriage returns and leading blanks,
+     tabs are also removed from the lines read from input files)
+5. Improved message at the end of the batch
+
+Additional changes:
+1. higher number of possíble files and simulations
+    (now 10 files can be copied (instead of 5) and 100 simulations performed
+    instead 25)
+2. collection of results
+    (for files with extension 'col' all data are collected in 'Collect.dat')
+affected source files: gener_batch.c gener_batch.html
+
+VITESS GUI
+----------
+Module rotating_field: You may specify negative values for the
+X, Y and Z components of the magnetic field now.
+Module mon2_div: angle ranges from -180 to 180 degree are allowed now.
+Saving a simulation via Save Instrument / Save As sets the instrument
+name - saving to C:\a_something.gui set the name to a_something.
+You may change the font used for menubar elements in the GUI now.
+affected files:  control.tcl ldstore.tcl menu.tcl tools.tcl vitess.tcl
+
+VITESS documentation
+--------------------
+Corrected: guide.html
+Some files where missing:
+ModFlux.gif source1.gif source2.gif LogInterpol.gif
+Maxwellian.gif TrajCur.gif gener_batch.html flux_cw.gif
+flux_pulse.gif

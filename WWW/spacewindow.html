@@ -1,0 +1,83 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (WinNT; I) [Netscape]">
+   <title>Module Window</title>
+</head>
+<body bgcolor="#DCE2FE">
+
+<h1>VITESS Module Window</h1>
+
+<pre>The module <b>window</b> simulates free propagation of neutrons from (x=0) to a
+rectangular or circular window which may be defined as a slit, collimator
+entrance or exit, or just characterising a space region of interest.
+
+The neutrons at x=0 have been calculated by previous modules (naturally they may
+differ with respect to y and z-coordinates, divergence, wavelength and time) and
+only those hitting the window are considered further on in case of ideal transmission
+or are transmited via the "inner  material". Other neutrons are absorbing in case of ideal 
+absorption or transmitting via the "outer" material. <br>
+
+Their x-coordinates are reset to 0 as usually has to be done by each module after finishing its
+specific calculation.
+
+<img SRC="window1.gif" height=259 width=575></pre>
+&nbsp;The distance to the rectangular propagation window (with its normal
+vector along the x-axis) is simply defined as the projection on the x-axis,
+which is the natural choice for most of the cases anyway. rectangular window:
+The four input window coordinates define the rectangle by its bordering
+values along the y- and z-axis, correspondingly. circular window: The window
+radius and the y- and z-coordinates of the window centre have to be given.&nbsp;
+
+There are two kinds of material can be chosen. Outer material is meaning the  
+"absorbtion" material for the collimator. Inner material is meaning the "transmission"
+material for the collimator. The thickness for the each material must be given too.
+If the thickness of material is given zero, so for outer material is meaning the ideal
+absorbtion. For the inner material is meaning the ideal transmission.<br>
+
+<br> For the inner material data can be red from the file, which has the structure, given
+below. If the file is given, the exp. transmission is activating automaticly, otherwise the ideal
+transmission is acivated.<br>
+
+<br>
+<b>List of outer materials, which are included in the module </b>
+<br>Value 0 - Read data from file, which created by user
+<br>Value 1 - Gd: Gadolinium.
+<br>Value 2 - Cd: Cadmium.
+<br>Value 3 - B: Bor10.
+<br>Value 4 - Eu
+<br>Value 5 - Si: Silicon.
+<br>Value 6 - Ideal absorbtion
+<br>For values 1-4 wavelength range must be 0.3 ... 28 A in the source module or virtual source
+<br>Foe value 5 wavelength range must be 1 .. 20 A in the source module or virtual source
+<br>This data was given by Thomas Krist, HMI, Berlin.
+<br>
+<br>
+The format of file, which is describing the transmission is:
+<br>Wavelength, A            Value MU, cm^(-1)
+<br>...............................................................
+<br>
+<br>The wavelength values in the table must be increasing!!!
+<br>Then, the transmission is calculated by formula:
+Transmission = exp(-MU*Distance); 
+<br> where Distance is length of flight of neutron in given material in cm, which 
+calculated automaticly. During passing the neutrons via material, the Transmission 
+is multiply in the neutron probability.<br>
+
+<br>Please note.
+<br>The wavelength range must be from smallest to longest wavelength in the table. 
+If you used material from list and/or material from file, please choose the 
+minimal and maximum wavelength values in the source module (or virtual source), 
+which do not extend the wavelength range for the absorption (outer) and 
+transmission (inner) materials.
+
+
+
+<hr><a href="vitess.html">Back to VITESS overview</a>
+<br><a href="mailto:vitess@hmi.de">vitess@hmi.de</a>
+<p><!-- hhmts start --><font size=-1>Last modified: <!--#echo var="LAST_MODIFIED"  -->
+</font><!-- hhmts end -->
+</body>
+</html>
+

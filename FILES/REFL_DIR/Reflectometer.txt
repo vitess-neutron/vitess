@@ -1,0 +1,7 @@
+This is a simulation of a reflectometer installed on the cold moderator of the 16.667 Hz 
+long pulse target station of the ESS. Source and moderator are described by the moderator 
+description file 'EssLPTherm.src'.
+By giving the Name 'ESS' in that file, the analytical function describing the wavelength 
+and time dependence of the flux are chosen.
+
+Gravity was included in the simulation.

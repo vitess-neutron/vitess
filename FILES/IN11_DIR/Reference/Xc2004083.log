@@ -1,0 +1,294 @@
+23.03.2004 10:39:42 Parameter directory is G:/Vitess2_5alpha5/FILES/IN11_DIR
+Starting simulation
+G:/Vitess2_5alpha5/MODULES/source.exe -S1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog1 -n100000 -A0 -k0 -aG:/Vitess2_5alpha5/FILES/IN11_DIR/IllColdSrcCold.mod -y0.15 -z0.15 -m5.25 -M6.75 -t0 -T0 -d0 -P0 -X1 -Y0 -V0 -D100 -w1000 -h1000 -i0 
+| G:/Vitess2_5alpha5/MODULES/monitor1.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog2 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/lambda0.dat -n100 -m5.25 -M6.75 -p1 -e0 -t-1.e10 -T1.e10 
+| G:/Vitess2_5alpha5/MODULES/velselect.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog3 -l30 -s275 -w72 -c45 -r20 -o15 -d0.1 
+| G:/Vitess2_5alpha5/MODULES/monitor1.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog4 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/lambda1.dat -n100 -m5.25 -M6.75 -p1 -e0 -t-1.e10 -T1.e10 
+| G:/Vitess2_5alpha5/MODULES/polariser_sm.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog5 -PG:/Vitess2_5alpha5/FILES/IN11_DIR/polariser_SM.par -UG:/Vitess2_5alpha5/FILES/IN11_DIR/mirr2.dat -DG:/Vitess2_5alpha5/FILES/IN11_DIR/mirr0_5.dat -a16 -b0 -c0 -H0 -V0.5 -R32 -E0 -G0 -h0 -v1.0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog6 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda0.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a1 -b0 -c0 
+| G:/Vitess2_5alpha5/MODULES/flipper_coil.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog7 -k1 -l0 -m0 -y1 -i0 -j0 -X2 -Y10 -V10 -G3.9970772 -H3.9970772 -t0.2 -N50 -p2 -r0 -s0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog8 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda1.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| G:/Vitess2_5alpha5/MODULES/precessionfield.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog9 -PG:/Vitess2_5alpha5/FILES/IN11_DIR/magneticmap1.dat -O0 -k50 -l0 -m0 -i0 -j0 -p100 -r0 -s0 -X100 -Y10 -V10 -T100 -G0 -H0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog10 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda2.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| G:/Vitess2_5alpha5/MODULES/flipper_coil.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog11 -k1 -l0 -m0 -y1 -i0 -j0 -X2 -Y10 -V10 -G3.9970772 -H3.9970772 -t0.2 -N50 -p2 -r0 -s0 
+| G:/Vitess2_5alpha5/MODULES/flipper_coil.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog12 -k1 -l0 -m0 -y1 -i0 -j0 -X2 -Y10 -V10 -G3.9970772 -H-3.9970772 -t0.2 -N50 -p2 -r0 -s0 
+| G:/Vitess2_5alpha5/MODULES/sample_inelast.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog13 -PG:/Vitess2_5alpha5/FILES/IN11_DIR/IN11samp.ine -a0 -b0.24 -c1 -d0 -T1 -A1 -x0 -y0 -z0 -D0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog14 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda3.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| G:/Vitess2_5alpha5/MODULES/precessionfield.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog15 -PG:/Vitess2_5alpha5/FILES/IN11_DIR/magneticmap2.dat -O0 -k60 -l0 -m0 -i0 -j0 -p110 -r0 -s0 -X100 -Y10 -V10 -T100 -G0 -H0 
+| G:/Vitess2_5alpha5/MODULES/flipper_coil.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog16 -k1 -l0 -m0 -y1 -i0 -j0 -X2 -Y10 -V10 -G3.9970772 -H-3.9970772 -t0.2 -N50 -p2 -r0 -s0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog17 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda4.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a1 -b0 -c0 
+| G:/Vitess2_5alpha5/MODULES/polariser_sm.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog18 -PG:/Vitess2_5alpha5/FILES/IN11_DIR/polariser_SM.par -UG:/Vitess2_5alpha5/FILES/IN11_DIR/mirr2.dat -DG:/Vitess2_5alpha5/FILES/IN11_DIR/mirr0_5.dat -a16 -b0 -c0 -H0 -V0.5 -R32 -E0 -G0 -h0 -v1.0 
+| G:/Vitess2_5alpha5/MODULES/monitorpol_1d.exe -k1 --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog19 -OG:/Vitess2_5alpha5/FILES/IN11_DIR/p_lambda5.dat -n100 -m5.36 -M6.62 -p1 -e0 -t-1.e10 -T1.e10 -a1 -b0 -c0 
+| G:/Vitess2_5alpha5/MODULES/detector.exe --Z1 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5alpha5/FILES/IN11_DIR --LG:/Vitess2_5alpha5/FILES/IN11_DIR/vpipelog20 -Gcub -h10 -w10 -t0.2 -e0.95 -T0 -P0 -D50 -c1 -r1 -A1 -M0 -g1 --Fno_file
+23.03.2004 10:39:44 simulation (da0 c10 424 818 908 5dc f5c f44 aac 468 9c8 fa0 26c 460 fb0 a8c f94 ad8 3a0 ff4 ) (3488 3088 1060 2072 2312 1500 3932 3908 2732 1128 2504 4000 620 1120 4016 2700 3988 2776 928 4084) is active
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module Source and Window 1.9c
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 > Simulation of constant wave source  <
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 wavelength distribution file : ill_cold_cs.dat 
+23.03.2004 10:39:48 total neutron flux (in 2*pi) : 1.0000e+014 n/(cm²s) 
+23.03.2004 10:39:48 moderator diameter           :  16.000 cm 
+23.03.2004 10:39:48 moderator position           :(  0.000    0.000    0.000) cm 
+23.03.2004 10:39:48 angle of opening used        :   0.300°    x   0.300°   
+23.03.2004 10:39:48 time averaged neutron current: 8.7730e+010 n/s in 0.000027 str
+23.03.2004 10:39:48 wavelength band used         :   5.250 Ang -   6.750 Ang
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 window (W x H)               : 1000.000 cm  x 1000.000 cm 
+23.03.2004 10:39:48   in a distance of           :   1.000 m   
+23.03.2004 10:39:48   with a declination of      :   0.000°    
+23.03.2004 10:39:48 polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Gravity is enabled 
+23.03.2004 10:39:48 Cutoff probability for one trajectory 1.000e-025 
+23.03.2004 10:39:48 Center of beam at window     :(100.000   -0.022   -0.018) cm 
+23.03.2004 10:39:48 Average TOF                  :   1.490 ms 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 number of trajectories started     :         100000
+23.03.2004 10:39:48  1 number of trajectories read         :          0
+23.03.2004 10:39:48    number of trajectories written      :     100000
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 8.3037e+009 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitor1 1.4
+23.03.2004 10:39:48 Norm:  1.000000
+23.03.2004 10:39:48  2 number of trajectories read         :     100000
+23.03.2004 10:39:48    number of trajectories written      :     100000
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 8.3037e+009 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module velselect 1.2
+23.03.2004 10:39:48  3 number of trajectories read         :     100000
+23.03.2004 10:39:48    number of trajectories written      :      31887
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 2.6167e+009 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitor1 1.4
+23.03.2004 10:39:48 Norm:  1.000000
+23.03.2004 10:39:48  4 number of trajectories read         :      31887
+23.03.2004 10:39:48    number of trajectories written      :      31887
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 2.6167e+009 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module polarizer_sm 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 data from parameter file: 'G:/Vitess2_5alpha5/FILES/IN11_DIR/polariser_SM.par':
+23.03.2004 10:39:48 	guide_fieldX			=   100.0000
+23.03.2004 10:39:48 	guide_fieldY			=     0.0000
+23.03.2004 10:39:48 	guide_fieldZ			=     0.0000
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 	cutoff probability		=     1.0e-025
+23.03.2004 10:39:48 	position x, y, z		=    16.0000,    0.0000,    0.0000
+23.03.2004 10:39:48 	length, height, width  =    30.0000,   10.0000,   10.0000
+23.03.2004 10:39:48 	offset angle horiz		=     0.0000
+23.03.2004 10:39:48 	offset angle vert		=     0.5000
+23.03.2004 10:39:48 	output horizontal angle	=    0.0000
+23.03.2004 10:39:48 	output vertical angle	=    1.0000
+23.03.2004 10:39:48 	X',Y',Z'			=   32.0000,    0.0000,    0.0000
+23.03.2004 10:39:48  5 number of trajectories read         :      31887
+23.03.2004 10:39:48    number of trajectories written      :       9083
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2996e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: 0.93373 
+23.03.2004 10:39:48  6 number of trajectories read         :       9083
+23.03.2004 10:39:48    number of trajectories written      :       9083
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2996e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module flipper_coil 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 Number of precessions  in flipper coil  : 0.461539
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48  7 number of trajectories read         :       9083
+23.03.2004 10:39:48    number of trajectories written      :       8974
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2116e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: 0.92191 
+23.03.2004 10:39:48  8 number of trajectories read         :       8974
+23.03.2004 10:39:48    number of trajectories written      :       8974
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2116e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module precessionfield 1.3
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 homogeneous field option
+23.03.2004 10:39:48 100.000000 0.000000 0.000000 Oe
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  : 424.302258
+23.03.2004 10:39:48  9 number of trajectories read         :       8974
+23.03.2004 10:39:48    number of trajectories written      :       8971
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2092e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: -0.01305 
+23.03.2004 10:39:48 10 number of trajectories read         :       8971
+23.03.2004 10:39:48    number of trajectories written      :       8971
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 7.2092e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module flipper_coil 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 Number of precessions  in flipper coil  : 0.461539
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 11 number of trajectories read         :       8971
+23.03.2004 10:39:48    number of trajectories written      :       8452
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 6.7907e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module flipper_coil 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 Number of precessions  in flipper coil  : 0.461539
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 12 number of trajectories read         :       8452
+23.03.2004 10:39:48    number of trajectories written      :       8437
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 6.7789e+008 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module sample_inelast 1.1
+23.03.2004 10:39:48 	P1			=     0.0000
+23.03.2004 10:39:48 	P2			=     0.2400
+23.03.2004 10:39:48 	P3			=     1.0000
+23.03.2004 10:39:48 	P4			=     0.0000
+23.03.2004 10:39:48 	D1			=     0.0000
+23.03.2004 10:39:48 	D2			=     0.0000
+23.03.2004 10:39:48 	D3			=     0.0000
+23.03.2004 10:39:48 	temperature		=     1.0000
+23.03.2004 10:39:48 	repetition  		=     1
+23.03.2004 10:39:48 not multiplied by Bose-factor
+23.03.2004 10:39:48 data from parameter file: 'G:/Vitess2_5alpha5/FILES/IN11_DIR/IN11samp.ine':
+23.03.2004 10:39:48 	random main w, y, z		=     5.9900,    0.0000,    0.0000
+23.03.2004 10:39:48 	range x, y, z		=     1.2600,    1.0000,    1.0000
+23.03.2004 10:39:48 	absorption constant	=     1.9700e-001
+23.03.2004 10:39:48 	cutoff probability		=     1.0e-025
+23.03.2004 10:39:48 	position x, y, z		=     1.0000,    0.0000,    0.0000
+23.03.2004 10:39:48 	thickn./radius, height, width  =     2.0000,    5.0000,    5.0000
+23.03.2004 10:39:48 	offset angle horiz		=     0.0000
+23.03.2004 10:39:48 	offset angle vert		=     0.0000
+23.03.2004 10:39:48 	reference-k x, y, z		=     1.0560,    0.0000,    0.0000
+23.03.2004 10:39:48 sample geometry:	'cuboid'
+23.03.2004 10:39:48 standard frame generation:
+23.03.2004 10:39:48 	output horizontal angle	=    0.0000
+23.03.2004 10:39:48 	output vertical angle	=    0.0000
+23.03.2004 10:39:48 	X',Y',Z'			=    1.0000,    0.0000,    0.0000
+23.03.2004 10:39:48 scattering triangle corresponding to q-transfer and reference-k:
+23.03.2004 10:39:48 	reference wavelength	=    5.9500 A
+23.03.2004 10:39:48 	scattered wavelength	=    5.9900 A
+23.03.2004 10:39:48 	scattering angle		=    0.0000 deg
+23.03.2004 10:39:48 	|q-transfer|		=    0.0071 A-1
+23.03.2004 10:39:48 	energy transfer		=   30.7579 ueV13 number of trajectories read         :       8437
+23.03.2004 10:39:48    number of trajectories written      :       2283
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 1.0645e-003 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: 0.14143 
+23.03.2004 10:39:48 14 number of trajectories read         :       2283
+23.03.2004 10:39:48    number of trajectories written      :       2283
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 1.0645e-003 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module precessionfield 1.3
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 homogeneous field option
+23.03.2004 10:39:48 100.000000 0.000000 0.000000 Oe
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  : 414.561979
+23.03.2004 10:39:48 15 number of trajectories read         :       2283
+23.03.2004 10:39:48    number of trajectories written      :       2283
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 1.0645e-003 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module flipper_coil 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 Number of precessions  in flipper coil  : 0.450944
+23.03.2004 10:39:48 Number of precessions  in guide field   : 0.000000
+23.03.2004 10:39:48 16 number of trajectories read         :       2283
+23.03.2004 10:39:48    number of trajectories written      :       2283
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 1.0645e-003 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: 0.88841 
+23.03.2004 10:39:48 17 number of trajectories read         :       2283
+23.03.2004 10:39:48    number of trajectories written      :       2283
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 1.0645e-003 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module polarizer_sm 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 data from parameter file: 'G:/Vitess2_5alpha5/FILES/IN11_DIR/polariser_SM.par':
+23.03.2004 10:39:48 	guide_fieldX			=   100.0000
+23.03.2004 10:39:48 	guide_fieldY			=     0.0000
+23.03.2004 10:39:48 	guide_fieldZ			=     0.0000
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 	cutoff probability		=     1.0e-025
+23.03.2004 10:39:48 	position x, y, z		=    16.0000,    0.0000,    0.0000
+23.03.2004 10:39:48 	length, height, width  =    30.0000,   10.0000,   10.0000
+23.03.2004 10:39:48 	offset angle horiz		=     0.0000
+23.03.2004 10:39:48 	offset angle vert		=     0.5000
+23.03.2004 10:39:48 	output horizontal angle	=    0.0000
+23.03.2004 10:39:48 	output vertical angle	=    1.0000
+23.03.2004 10:39:48 	X',Y',Z'			=   32.0000,    0.0000,    0.0000
+23.03.2004 10:39:48 18 number of trajectories read         :       2283
+23.03.2004 10:39:48    number of trajectories written      :       2187
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 9.9888e-004 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module monitorpol1 1.2
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 polarization: 0.96594 
+23.03.2004 10:39:48 19 number of trajectories read         :       2187
+23.03.2004 10:39:48    number of trajectories written      :       2187
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 9.9888e-004 n/s 
+23.03.2004 10:39:48 ------------------------------
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 
+23.03.2004 10:39:48 VITESS version 2.5 module detector 1.4
+23.03.2004 10:39:48  
+23.03.2004 10:39:48 20 number of trajectories read         :       2187
+23.03.2004 10:39:48    number of trajectories written      :       2187
+23.03.2004 10:39:48 (time averaged) neutron count rate     : 3.3603e-004 n/s 
+23.03.2004 10:39:48 ------------------------------

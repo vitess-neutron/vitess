@@ -1,0 +1,117 @@
+description O.K.
+
+Starting simulation
+C:/Programme/Vitess_2_5/MODULES/source.exe -S1 --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog1 -n5000000 -k0 -aC:/Programme/Vitess_2_5/FILES/SANS_DIR/Reactor.mod -m4.0 -M6.0 -t0.0 -T0.0 -d1 -P0 -X1 -Y0 -V0 -D600 -w3.0 -h3.0 
+| C:/Programme/Vitess_2_5/MODULES/velselect.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog2 -l25 -s420 -w72 -c48.3 -r14.5 -o11.5 -d0.04 
+| C:/Programme/Vitess_2_5/MODULES/monitor1.exe -k1 --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog3 -OC:/Programme/Vitess_2_5/FILES/SANS_DIR/sans_lambda.dat -n60 -m3.5 -M6.5 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/Vitess_2_5/MODULES/spacewindow.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog4 -l0 -R0 -r1 -y0 -z0 -h-1.5 -H1.5 -w-1.5 -W1.5 -S0 -t0.01 -c6 
+| C:/Programme/Vitess_2_5/MODULES/spacewindow.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog5 -l800 -R0 -r1 -y0 -z0 -h-0.75 -H0.75 -w-0.75 -W0.75 -S0 -t0.01 -c6 
+| C:/Programme/Vitess_2_5/MODULES/sample_sans.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog6 -D1.55 -d1.55 -P180 -p180 -A1 -SC:/Programme/Vitess_2_5/FILES/SANS_DIR/sphere.san 
+| C:/Programme/Vitess_2_5/MODULES/detector.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog7 -Gcub -h60 -w60 -t1 -e0.9 -T0 -P90 -D800 -c120 -r120 -A1 -M0 -g1 
+| C:/Programme/Vitess_2_5/MODULES/eval_elast.exe --Z1 --G1 --U1.0e-12 --B10000 --PC:/Programme/Vitess_2_5/FILES/SANS_DIR --LC:/temp/vpipelog8 -k2 -oC:/Programme/Vitess_2_5/FILES/SANS_DIR/spectsans.dat -n75 -m0 -M0.075 -p1 -d0.215 -w0 -r5.0 -C0 --Fno_file
+simulation (434 920 b04 9ac d04 ecc bb0 4c4 ) (1076 2336 2820 2476 3332 3788 2992 1220) is active
+...............................................------------------------------
+
+
+VITESS version 2.5 module Source and Window 1.9
+
+> Simulation of constant wave source  <
+
+moderator temperature        :  45.000 K
+total neutron flux (in 2*pi) : 1.0000e+013 n/(cm²s) 
+moderator size (W x H)       :   7.500 cm  x   7.500 cm 
+moderator position           :(  0.000    0.000    0.000) cm 
+divergence defined by propagation window 
+time averaged neutron current: 2.2380e+009 n/s in 0.000025 str
+wavelength band used         :   4.000 Ang -   6.000 Ang
+
+window (W x H)               :   3.000 cm  x   3.000 cm 
+  in a distance of           :   6.000 m   
+  with a declination of      :   0.000°    
+polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+
+Gravity is enabled 
+Cutoff probability for one trajectory 1.000e-012 
+Center of beam at window     :(600.000    0.000    0.001) cm 
+Average TOF                  :   7.263 ms 
+
+number of trajectories started     :        5000000
+ 1 number of trajectories read         :          0
+   number of trajectories written      :    5000000
+(time averaged) neutron count rate     : 5.8722e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module velselect 1.2
+ 2 number of trajectories read         :    5000000
+   number of trajectories written      :    1205412
+(time averaged) neutron count rate     : 1.2870e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 3 number of trajectories read         :    1205412
+   number of trajectories written      :    1205412
+(time averaged) neutron count rate     : 1.2870e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.00
+MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Gravity is enabled 
+Distance between plane x=0 and window plane  0.000000 cm 
+Center of beam: X = 0.000000 cm Y = -0.013669 cm Z = -0.000360 cm TOF = 7.939808 ms  
+ 
+ 4 number of trajectories read         :    1205412
+   number of trajectories written      :    1089432
+(time averaged) neutron count rate     : 1.1631e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.00
+MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Gravity is enabled 
+Distance between plane x=0 and window plane  800.000000 cm 
+Center of beam: X = 800.000000 cm Y = -0.105195 cm Z = -0.084155 cm TOF = 18.103316 ms  
+ 
+ 5 number of trajectories read         :    1089432
+   number of trajectories written      :      25503
+(time averaged) neutron count rate     : 2.7205e+006 n/s 
+------------------------------
+
+
+VITESS version 2.5 module sample_sans 1.7
+Cubic sample, sizes :     0.10,    1.00,    1.00   cm  (thickness, height, width)
+  direction         :(    1.000,   0.000,   0.000)   
+  position          :(   30.00,    0.00,    0.00 ) cm
+Spherical particles :   500.00 Ang radius
+scat. length density:    1.000e+010 (particle) 3.000e+010 1/cm² (solvent)
+vol.fract. of part. :    0.030
+macr. cross section :    0.00000,   0.50000;   0.05000  1/cm (incoh, total scat; absorption)
+
+ 6 number of trajectories read         :      25503
+   number of trajectories written      :      10576
+(time averaged) neutron count rate     : 2.4199e+004 n/s 
+------------------------------
+
+
+VITESS version 2.5 module detector 1.4
+ 
+ 7 number of trajectories read         :      10576
+   number of trajectories written      :       8225
+(time averaged) neutron count rate     : 2.1222e+004 n/s 
+------------------------------
+
+
+VITESS version 2.5 module eval_elast 1.6
+Option: momentum transfer Q
+total neutron count rate within binning: 8.2416e+003 n/s
+ 
+ 8 number of trajectories read         :       8225
+   number of trajectories written      :       8225
+(time averaged) neutron count rate     : 2.1222e+004 n/s 
+------------------------------
+simulation finished
+
+

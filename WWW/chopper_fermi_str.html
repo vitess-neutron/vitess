@@ -1,0 +1,101 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.73 [en] (WinNT; I) [Netscape]">
+  <title>Module Chopper</title>
+</head>
+  <body>
+    
+<h1>VITESS Module Straight Fermi Chopper</h1>
+    
+<p><br>
+ This module simulates a Fermi chopper with straight channels i.e. the very 
+fast neutrons are transmitted with only a time modulation and lower speed 
+neutrons are modulated both in time of flight and wavelength. <br>
+ The geometry of the chopper consists of a rectangular shape object with
+a wide channel system built in perpendicular direction to the beam (when
+transmitting) - this is inserted into a cylinder frame in order not to transmit
+neutrons which do not fly throught the channels (when the rectangular channel
+system is rotated by 90&deg;). The rotation axix coincides with Z. </p>
+ 
+<p><img src="chfermistr.gif" height="300" width="391">
+  <br>
+ &nbsp; <br>
+ &nbsp; <br>
+ &nbsp; </p>
+ 
+<p>Module parameters: <br>
+ &nbsp;  
+<table border="1" width="81%">
+  <tbody>
+     <tr>
+  <td><b>Parameter</b> <br>
+       <b>Unit</b></td>
+   <td><b>Description</b></td>
+   <td><b>Command option</b></td>
+  </tr>
+   <tr>
+  <td>position X, Y, Z&nbsp; <br>
+ [cm]</td>
+   <td>center position of the Fermi chopper in the input frame</td>
+   <td>X, -Y, -V</td>
+  </tr>
+   <tr>
+  <td>height, width, depth <br>
+ [cm]&nbsp;</td>
+   <td>dimensions of the Fermi chopper, depth means the length of the channels</td>
+   <td>&nbsp;-a&nbsp;&nbsp; -b&nbsp;&nbsp; -c</td>
+  </tr>
+   <tr>
+  <td>number of channels</td>
+   <td>number of straight channels</td>
+   <td>-l</td>
+  </tr>
+   <tr>
+  <td>wall thickness <br>
+ [cm]&nbsp;</td>
+   <td>thickness of the wall between channels</td>
+   <td>-m</td>
+  </tr>
+   <tr>
+  <td>diameter <br>
+ [cm]&nbsp;</td>
+   <td>diameter of the shadowing cylinder</td>
+   <td>-r</td>
+  </tr>
+   <tr>
+  <td>rotations per second&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td>frequency of rotation</td>
+   <td>-n</td>
+  </tr>
+   <tr>
+  <td>phase <br>
+ [deg]</td>
+   <td>dephasing angle at zero time&nbsp;</td>
+   <td>-q&nbsp;</td>
+  </tr>
+     
+  </tbody> 
+</table>
+   <br>
+ &nbsp; <br>
+ &nbsp; </p>
+ 
+<p> </p>
+ 
+<hr>  
+<p><a href="vitess.html">Back to VITESS overview</a> <br>
+ <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> </p>
+ 
+<p><!-- hhmts start --><font size="-1">Last modified:</font>Thu Jan 29 15:10:25
+MET 2004, G.Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  -->  </font><!-- hhmts end -->
+</p>
+ <br>
+ <br>
+</body>
+</html>

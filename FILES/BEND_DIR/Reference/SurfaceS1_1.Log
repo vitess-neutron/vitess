@@ -1,0 +1,1207 @@
+******************* UNIVERSAL BENDER module ************************ 
+********** INFORMATION FOR FABRICATE OF CONVERGING BENDER ********** 
+******************************************************************** 
+***USER*INPUT*DATA***
+Displace data: N = 1  EN = -1.400000e+000 cm  EX = -1.400000e+000 cm  RAD = 9.284000e+002 cm 
+Displace data: N = 2  EN = -1.360000e+000 cm  EX = -1.360000e+000 cm  RAD = 9.283600e+002 cm 
+Displace data: N = 3  EN = -1.320000e+000 cm  EX = -1.320000e+000 cm  RAD = 9.283200e+002 cm 
+Displace data: N = 4  EN = -1.280000e+000 cm  EX = -1.280000e+000 cm  RAD = 9.282800e+002 cm 
+Displace data: N = 5  EN = -1.240000e+000 cm  EX = -1.240000e+000 cm  RAD = 9.282400e+002 cm 
+Displace data: N = 6  EN = -1.200000e+000 cm  EX = -1.200000e+000 cm  RAD = 9.282000e+002 cm 
+Displace data: N = 7  EN = -1.160000e+000 cm  EX = -1.160000e+000 cm  RAD = 9.281600e+002 cm 
+Displace data: N = 8  EN = -1.120000e+000 cm  EX = -1.120000e+000 cm  RAD = 9.281200e+002 cm 
+Displace data: N = 9  EN = -1.080000e+000 cm  EX = -1.080000e+000 cm  RAD = 9.280800e+002 cm 
+Displace data: N = 10  EN = -1.040000e+000 cm  EX = -1.040000e+000 cm  RAD = 9.280400e+002 cm 
+Displace data: N = 11  EN = -1.000000e+000 cm  EX = -1.000000e+000 cm  RAD = 9.280000e+002 cm 
+Displace data: N = 12  EN = -9.600000e-001 cm  EX = -9.600000e-001 cm  RAD = 9.279600e+002 cm 
+Displace data: N = 13  EN = -9.200000e-001 cm  EX = -9.200000e-001 cm  RAD = 9.279200e+002 cm 
+Displace data: N = 14  EN = -8.800000e-001 cm  EX = -8.800000e-001 cm  RAD = 9.278800e+002 cm 
+Displace data: N = 15  EN = -8.400000e-001 cm  EX = -8.400000e-001 cm  RAD = 9.278400e+002 cm 
+Displace data: N = 16  EN = -8.000000e-001 cm  EX = -8.000000e-001 cm  RAD = 9.278000e+002 cm 
+Displace data: N = 17  EN = -7.600000e-001 cm  EX = -7.600000e-001 cm  RAD = 9.277600e+002 cm 
+Displace data: N = 18  EN = -7.200000e-001 cm  EX = -7.200000e-001 cm  RAD = 9.277200e+002 cm 
+Displace data: N = 19  EN = -6.800000e-001 cm  EX = -6.800000e-001 cm  RAD = 9.276800e+002 cm 
+Displace data: N = 20  EN = -6.400000e-001 cm  EX = -6.400000e-001 cm  RAD = 9.276400e+002 cm 
+Displace data: N = 21  EN = -6.000000e-001 cm  EX = -6.000000e-001 cm  RAD = 9.276000e+002 cm 
+Displace data: N = 22  EN = -5.600000e-001 cm  EX = -5.600000e-001 cm  RAD = 9.275600e+002 cm 
+Displace data: N = 23  EN = -5.200000e-001 cm  EX = -5.200000e-001 cm  RAD = 9.275200e+002 cm 
+Displace data: N = 24  EN = -4.800000e-001 cm  EX = -4.800000e-001 cm  RAD = 9.274800e+002 cm 
+Displace data: N = 25  EN = -4.400000e-001 cm  EX = -4.400000e-001 cm  RAD = 9.274400e+002 cm 
+Displace data: N = 26  EN = -4.000000e-001 cm  EX = -4.000000e-001 cm  RAD = 9.274000e+002 cm 
+Displace data: N = 27  EN = -3.600000e-001 cm  EX = -3.600000e-001 cm  RAD = 9.273600e+002 cm 
+Displace data: N = 28  EN = -3.200000e-001 cm  EX = -3.200000e-001 cm  RAD = 9.273200e+002 cm 
+Displace data: N = 29  EN = -2.800000e-001 cm  EX = -2.800000e-001 cm  RAD = 9.272800e+002 cm 
+Displace data: N = 30  EN = -2.400000e-001 cm  EX = -2.400000e-001 cm  RAD = 9.272400e+002 cm 
+Displace data: N = 31  EN = -2.000000e-001 cm  EX = -2.000000e-001 cm  RAD = 9.272000e+002 cm 
+Displace data: N = 32  EN = -1.600000e-001 cm  EX = -1.600000e-001 cm  RAD = 9.271600e+002 cm 
+Displace data: N = 33  EN = -1.200000e-001 cm  EX = -1.200000e-001 cm  RAD = 9.271200e+002 cm 
+Displace data: N = 34  EN = -8.000000e-002 cm  EX = -8.000000e-002 cm  RAD = 9.270800e+002 cm 
+Displace data: N = 35  EN = -4.000000e-002 cm  EX = -4.000000e-002 cm  RAD = 9.270400e+002 cm 
+Displace data: N = 36  EN = 0.000000e+000 cm  EX = 0.000000e+000 cm  RAD = 9.270000e+002 cm 
+Displace data: N = 37  EN = 4.000000e-002 cm  EX = 4.000000e-002 cm  RAD = 9.269600e+002 cm 
+Displace data: N = 38  EN = 8.000000e-002 cm  EX = 8.000000e-002 cm  RAD = 9.269200e+002 cm 
+Displace data: N = 39  EN = 1.200000e-001 cm  EX = 1.200000e-001 cm  RAD = 9.268800e+002 cm 
+Displace data: N = 40  EN = 1.600000e-001 cm  EX = 1.600000e-001 cm  RAD = 9.268400e+002 cm 
+Displace data: N = 41  EN = 2.000000e-001 cm  EX = 2.000000e-001 cm  RAD = 9.268000e+002 cm 
+Displace data: N = 42  EN = 2.400000e-001 cm  EX = 2.400000e-001 cm  RAD = 9.267600e+002 cm 
+Displace data: N = 43  EN = 2.800000e-001 cm  EX = 2.800000e-001 cm  RAD = 9.267200e+002 cm 
+Displace data: N = 44  EN = 3.200000e-001 cm  EX = 3.200000e-001 cm  RAD = 9.266800e+002 cm 
+Displace data: N = 45  EN = 3.600000e-001 cm  EX = 3.600000e-001 cm  RAD = 9.266400e+002 cm 
+Displace data: N = 46  EN = 4.000000e-001 cm  EX = 4.000000e-001 cm  RAD = 9.266000e+002 cm 
+Displace data: N = 47  EN = 4.400000e-001 cm  EX = 4.400000e-001 cm  RAD = 9.265600e+002 cm 
+Displace data: N = 48  EN = 4.800000e-001 cm  EX = 4.800000e-001 cm  RAD = 9.265200e+002 cm 
+Displace data: N = 49  EN = 5.200000e-001 cm  EX = 5.200000e-001 cm  RAD = 9.264800e+002 cm 
+Displace data: N = 50  EN = 5.600000e-001 cm  EX = 5.600000e-001 cm  RAD = 9.264400e+002 cm 
+Displace data: N = 51  EN = 6.000000e-001 cm  EX = 6.000000e-001 cm  RAD = 9.264000e+002 cm 
+Displace data: N = 52  EN = 6.400000e-001 cm  EX = 6.400000e-001 cm  RAD = 9.263600e+002 cm 
+Displace data: N = 53  EN = 6.800000e-001 cm  EX = 6.800000e-001 cm  RAD = 9.263200e+002 cm 
+Displace data: N = 54  EN = 7.200000e-001 cm  EX = 7.200000e-001 cm  RAD = 9.262800e+002 cm 
+Displace data: N = 55  EN = 7.600000e-001 cm  EX = 7.600000e-001 cm  RAD = 9.262400e+002 cm 
+Displace data: N = 56  EN = 8.000000e-001 cm  EX = 8.000000e-001 cm  RAD = 9.262000e+002 cm 
+Displace data: N = 57  EN = 8.400000e-001 cm  EX = 8.400000e-001 cm  RAD = 9.261600e+002 cm 
+Displace data: N = 58  EN = 8.800000e-001 cm  EX = 8.800000e-001 cm  RAD = 9.261200e+002 cm 
+Displace data: N = 59  EN = 9.200000e-001 cm  EX = 9.200000e-001 cm  RAD = 9.260800e+002 cm 
+Displace data: N = 60  EN = 9.600000e-001 cm  EX = 9.600000e-001 cm  RAD = 9.260400e+002 cm 
+Displace data: N = 61  EN = 1.000000e+000 cm  EX = 1.000000e+000 cm  RAD = 9.260000e+002 cm 
+Displace data: N = 62  EN = 1.040000e+000 cm  EX = 1.040000e+000 cm  RAD = 9.259600e+002 cm 
+Displace data: N = 63  EN = 1.080000e+000 cm  EX = 1.080000e+000 cm  RAD = 9.259200e+002 cm 
+Displace data: N = 64  EN = 1.120000e+000 cm  EX = 1.120000e+000 cm  RAD = 9.258800e+002 cm 
+Displace data: N = 65  EN = 1.160000e+000 cm  EX = 1.160000e+000 cm  RAD = 9.258400e+002 cm 
+Displace data: N = 66  EN = 1.200000e+000 cm  EX = 1.200000e+000 cm  RAD = 9.258000e+002 cm 
+Displace data: N = 67  EN = 1.240000e+000 cm  EX = 1.240000e+000 cm  RAD = 9.257600e+002 cm 
+Displace data: N = 68  EN = 1.280000e+000 cm  EX = 1.280000e+000 cm  RAD = 9.257200e+002 cm 
+Displace data: N = 69  EN = 1.320000e+000 cm  EX = 1.320000e+000 cm  RAD = 9.256800e+002 cm 
+Displace data: N = 70  EN = 1.360000e+000 cm  EX = 1.360000e+000 cm  RAD = 9.256400e+002 cm 
+Displace data: N = 71  EN = 1.400000e+000 cm  EX = 1.400000e+000 cm  RAD = 9.256000e+002 cm 
+Bender Entrance Width = 2.800000 cm ;Bender Exit Width = 2.800000 cm 
+Bender Entrance Height = 5.000000 cm ;Bender Exit Height = 5.000000 cm 
+Bender Length = 17.800000 cm; Bender surfaces thickness = 0.000100 cm 
+Base bender axis - circle
+Radius of Curvature for base bender axis = 927.000000 cm 
+ENTRANCE: Base points x = 0.000000 cm  y = 0.000000 cm 
+EXIT: Base points x = 17.798906 cm  y = 0.170890 cm 
+The coordinates of center of base circle x = 0.000000 cm  y = 927.000000 cm 
+****************************SURFACES******************************* 
+******************************************************************* 
+*****************THICKNESS*OF*SURFACES*IS*INCLUDED***************** 
+Begin Points of RIGHT surfaces 1  X, Y;
+X = 0.000000 cm  Y = -1.399950 cm  
+Begin Points of LEFT surfaces 1  X, Y;
+X = 0.000000 cm  Y = -1.360050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 1  X, Y;
+X = 17.825786 cm  Y = -1.228802 cm  
+Exit Points of LEFT surfaces 1  X, Y;
+X = 17.825020 cm  Y = -1.188909 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 2  X, Y;
+X = 0.000000 cm  Y = -1.359950 cm  
+Begin Points of LEFT surfaces 2  X, Y;
+X = 0.000000 cm  Y = -1.320050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 2  X, Y;
+X = 17.825018 cm  Y = -1.188809 cm  
+Exit Points of LEFT surfaces 2  X, Y;
+X = 17.824252 cm  Y = -1.148917 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 3  X, Y;
+X = 0.000000 cm  Y = -1.319950 cm  
+Begin Points of LEFT surfaces 3  X, Y;
+X = 0.000000 cm  Y = -1.280050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 3  X, Y;
+X = 17.824250 cm  Y = -1.148817 cm  
+Exit Points of LEFT surfaces 3  X, Y;
+X = 17.823484 cm  Y = -1.108924 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 4  X, Y;
+X = 0.000000 cm  Y = -1.279950 cm  
+Begin Points of LEFT surfaces 4  X, Y;
+X = 0.000000 cm  Y = -1.240050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 4  X, Y;
+X = 17.823482 cm  Y = -1.108824 cm  
+Exit Points of LEFT surfaces 4  X, Y;
+X = 17.822716 cm  Y = -1.068931 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 5  X, Y;
+X = 0.000000 cm  Y = -1.239950 cm  
+Begin Points of LEFT surfaces 5  X, Y;
+X = 0.000000 cm  Y = -1.200050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 5  X, Y;
+X = 17.822714 cm  Y = -1.068831 cm  
+Exit Points of LEFT surfaces 5  X, Y;
+X = 17.821948 cm  Y = -1.028939 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 6  X, Y;
+X = 0.000000 cm  Y = -1.199950 cm  
+Begin Points of LEFT surfaces 6  X, Y;
+X = 0.000000 cm  Y = -1.160050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 6  X, Y;
+X = 17.821946 cm  Y = -1.028839 cm  
+Exit Points of LEFT surfaces 6  X, Y;
+X = 17.821180 cm  Y = -0.988946 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 7  X, Y;
+X = 0.000000 cm  Y = -1.159950 cm  
+Begin Points of LEFT surfaces 7  X, Y;
+X = 0.000000 cm  Y = -1.120050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 7  X, Y;
+X = 17.821178 cm  Y = -0.988846 cm  
+Exit Points of LEFT surfaces 7  X, Y;
+X = 17.820412 cm  Y = -0.948953 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 8  X, Y;
+X = 0.000000 cm  Y = -1.119950 cm  
+Begin Points of LEFT surfaces 8  X, Y;
+X = 0.000000 cm  Y = -1.080050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 8  X, Y;
+X = 17.820410 cm  Y = -0.948853 cm  
+Exit Points of LEFT surfaces 8  X, Y;
+X = 17.819644 cm  Y = -0.908961 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 9  X, Y;
+X = 0.000000 cm  Y = -1.079950 cm  
+Begin Points of LEFT surfaces 9  X, Y;
+X = 0.000000 cm  Y = -1.040050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 9  X, Y;
+X = 17.819642 cm  Y = -0.908861 cm  
+Exit Points of LEFT surfaces 9  X, Y;
+X = 17.818876 cm  Y = -0.868968 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 10  X, Y;
+X = 0.000000 cm  Y = -1.039950 cm  
+Begin Points of LEFT surfaces 10  X, Y;
+X = 0.000000 cm  Y = -1.000050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 10  X, Y;
+X = 17.818874 cm  Y = -0.868868 cm  
+Exit Points of LEFT surfaces 10  X, Y;
+X = 17.818108 cm  Y = -0.828976 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 11  X, Y;
+X = 0.000000 cm  Y = -0.999950 cm  
+Begin Points of LEFT surfaces 11  X, Y;
+X = 0.000000 cm  Y = -0.960050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 11  X, Y;
+X = 17.818106 cm  Y = -0.828876 cm  
+Exit Points of LEFT surfaces 11  X, Y;
+X = 17.817340 cm  Y = -0.788983 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 12  X, Y;
+X = 0.000000 cm  Y = -0.959950 cm  
+Begin Points of LEFT surfaces 12  X, Y;
+X = 0.000000 cm  Y = -0.920050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 12  X, Y;
+X = 17.817338 cm  Y = -0.788883 cm  
+Exit Points of LEFT surfaces 12  X, Y;
+X = 17.816572 cm  Y = -0.748990 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 13  X, Y;
+X = 0.000000 cm  Y = -0.919950 cm  
+Begin Points of LEFT surfaces 13  X, Y;
+X = 0.000000 cm  Y = -0.880050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 13  X, Y;
+X = 17.816570 cm  Y = -0.748890 cm  
+Exit Points of LEFT surfaces 13  X, Y;
+X = 17.815804 cm  Y = -0.708998 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 14  X, Y;
+X = 0.000000 cm  Y = -0.879950 cm  
+Begin Points of LEFT surfaces 14  X, Y;
+X = 0.000000 cm  Y = -0.840050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 14  X, Y;
+X = 17.815802 cm  Y = -0.708898 cm  
+Exit Points of LEFT surfaces 14  X, Y;
+X = 17.815036 cm  Y = -0.669005 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 15  X, Y;
+X = 0.000000 cm  Y = -0.839950 cm  
+Begin Points of LEFT surfaces 15  X, Y;
+X = 0.000000 cm  Y = -0.800050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 15  X, Y;
+X = 17.815034 cm  Y = -0.668905 cm  
+Exit Points of LEFT surfaces 15  X, Y;
+X = 17.814268 cm  Y = -0.629012 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 16  X, Y;
+X = 0.000000 cm  Y = -0.799950 cm  
+Begin Points of LEFT surfaces 16  X, Y;
+X = 0.000000 cm  Y = -0.760050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 16  X, Y;
+X = 17.814266 cm  Y = -0.628912 cm  
+Exit Points of LEFT surfaces 16  X, Y;
+X = 17.813500 cm  Y = -0.589020 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 17  X, Y;
+X = 0.000000 cm  Y = -0.759950 cm  
+Begin Points of LEFT surfaces 17  X, Y;
+X = 0.000000 cm  Y = -0.720050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 17  X, Y;
+X = 17.813498 cm  Y = -0.588920 cm  
+Exit Points of LEFT surfaces 17  X, Y;
+X = 17.812732 cm  Y = -0.549027 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 18  X, Y;
+X = 0.000000 cm  Y = -0.719950 cm  
+Begin Points of LEFT surfaces 18  X, Y;
+X = 0.000000 cm  Y = -0.680050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 18  X, Y;
+X = 17.812730 cm  Y = -0.548927 cm  
+Exit Points of LEFT surfaces 18  X, Y;
+X = 17.811964 cm  Y = -0.509035 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 19  X, Y;
+X = 0.000000 cm  Y = -0.679950 cm  
+Begin Points of LEFT surfaces 19  X, Y;
+X = 0.000000 cm  Y = -0.640050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 19  X, Y;
+X = 17.811962 cm  Y = -0.508935 cm  
+Exit Points of LEFT surfaces 19  X, Y;
+X = 17.811196 cm  Y = -0.469042 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 20  X, Y;
+X = 0.000000 cm  Y = -0.639950 cm  
+Begin Points of LEFT surfaces 20  X, Y;
+X = 0.000000 cm  Y = -0.600050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 20  X, Y;
+X = 17.811194 cm  Y = -0.468942 cm  
+Exit Points of LEFT surfaces 20  X, Y;
+X = 17.810427 cm  Y = -0.429049 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 21  X, Y;
+X = 0.000000 cm  Y = -0.599950 cm  
+Begin Points of LEFT surfaces 21  X, Y;
+X = 0.000000 cm  Y = -0.560050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 21  X, Y;
+X = 17.810426 cm  Y = -0.428949 cm  
+Exit Points of LEFT surfaces 21  X, Y;
+X = 17.809659 cm  Y = -0.389057 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 22  X, Y;
+X = 0.000000 cm  Y = -0.559950 cm  
+Begin Points of LEFT surfaces 22  X, Y;
+X = 0.000000 cm  Y = -0.520050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 22  X, Y;
+X = 17.809658 cm  Y = -0.388957 cm  
+Exit Points of LEFT surfaces 22  X, Y;
+X = 17.808891 cm  Y = -0.349064 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 23  X, Y;
+X = 0.000000 cm  Y = -0.519950 cm  
+Begin Points of LEFT surfaces 23  X, Y;
+X = 0.000000 cm  Y = -0.480050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 23  X, Y;
+X = 17.808890 cm  Y = -0.348964 cm  
+Exit Points of LEFT surfaces 23  X, Y;
+X = 17.808123 cm  Y = -0.309071 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 24  X, Y;
+X = 0.000000 cm  Y = -0.479950 cm  
+Begin Points of LEFT surfaces 24  X, Y;
+X = 0.000000 cm  Y = -0.440050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 24  X, Y;
+X = 17.808121 cm  Y = -0.308971 cm  
+Exit Points of LEFT surfaces 24  X, Y;
+X = 17.807355 cm  Y = -0.269079 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 25  X, Y;
+X = 0.000000 cm  Y = -0.439950 cm  
+Begin Points of LEFT surfaces 25  X, Y;
+X = 0.000000 cm  Y = -0.400050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 25  X, Y;
+X = 17.807353 cm  Y = -0.268979 cm  
+Exit Points of LEFT surfaces 25  X, Y;
+X = 17.806587 cm  Y = -0.229086 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 26  X, Y;
+X = 0.000000 cm  Y = -0.399950 cm  
+Begin Points of LEFT surfaces 26  X, Y;
+X = 0.000000 cm  Y = -0.360050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 26  X, Y;
+X = 17.806585 cm  Y = -0.228986 cm  
+Exit Points of LEFT surfaces 26  X, Y;
+X = 17.805819 cm  Y = -0.189094 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 27  X, Y;
+X = 0.000000 cm  Y = -0.359950 cm  
+Begin Points of LEFT surfaces 27  X, Y;
+X = 0.000000 cm  Y = -0.320050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 27  X, Y;
+X = 17.805817 cm  Y = -0.188994 cm  
+Exit Points of LEFT surfaces 27  X, Y;
+X = 17.805051 cm  Y = -0.149101 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 28  X, Y;
+X = 0.000000 cm  Y = -0.319950 cm  
+Begin Points of LEFT surfaces 28  X, Y;
+X = 0.000000 cm  Y = -0.280050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 28  X, Y;
+X = 17.805049 cm  Y = -0.149001 cm  
+Exit Points of LEFT surfaces 28  X, Y;
+X = 17.804283 cm  Y = -0.109108 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 29  X, Y;
+X = 0.000000 cm  Y = -0.279950 cm  
+Begin Points of LEFT surfaces 29  X, Y;
+X = 0.000000 cm  Y = -0.240050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 29  X, Y;
+X = 17.804281 cm  Y = -0.109008 cm  
+Exit Points of LEFT surfaces 29  X, Y;
+X = 17.803515 cm  Y = -0.069116 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 30  X, Y;
+X = 0.000000 cm  Y = -0.239950 cm  
+Begin Points of LEFT surfaces 30  X, Y;
+X = 0.000000 cm  Y = -0.200050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 30  X, Y;
+X = 17.803513 cm  Y = -0.069016 cm  
+Exit Points of LEFT surfaces 30  X, Y;
+X = 17.802747 cm  Y = -0.029123 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 31  X, Y;
+X = 0.000000 cm  Y = -0.199950 cm  
+Begin Points of LEFT surfaces 31  X, Y;
+X = 0.000000 cm  Y = -0.160050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 31  X, Y;
+X = 17.802745 cm  Y = -0.029023 cm  
+Exit Points of LEFT surfaces 31  X, Y;
+X = 17.801979 cm  Y = 0.010870 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 32  X, Y;
+X = 0.000000 cm  Y = -0.159950 cm  
+Begin Points of LEFT surfaces 32  X, Y;
+X = 0.000000 cm  Y = -0.120050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 32  X, Y;
+X = 17.801977 cm  Y = 0.010970 cm  
+Exit Points of LEFT surfaces 32  X, Y;
+X = 17.801211 cm  Y = 0.050862 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 33  X, Y;
+X = 0.000000 cm  Y = -0.119950 cm  
+Begin Points of LEFT surfaces 33  X, Y;
+X = 0.000000 cm  Y = -0.080050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 33  X, Y;
+X = 17.801209 cm  Y = 0.050962 cm  
+Exit Points of LEFT surfaces 33  X, Y;
+X = 17.800443 cm  Y = 0.090855 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 34  X, Y;
+X = 0.000000 cm  Y = -0.079950 cm  
+Begin Points of LEFT surfaces 34  X, Y;
+X = 0.000000 cm  Y = -0.040050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 34  X, Y;
+X = 17.800441 cm  Y = 0.090955 cm  
+Exit Points of LEFT surfaces 34  X, Y;
+X = 17.799675 cm  Y = 0.130847 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 35  X, Y;
+X = 0.000000 cm  Y = -0.039950 cm  
+Begin Points of LEFT surfaces 35  X, Y;
+X = 0.000000 cm  Y = -0.000050 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 35  X, Y;
+X = 17.799673 cm  Y = 0.130947 cm  
+Exit Points of LEFT surfaces 35  X, Y;
+X = 17.798907 cm  Y = 0.170840 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 36  X, Y;
+X = 0.000000 cm  Y = 0.000050 cm  
+Begin Points of LEFT surfaces 36  X, Y;
+X = 0.000000 cm  Y = 0.039950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 36  X, Y;
+X = 17.798905 cm  Y = 0.170940 cm  
+Exit Points of LEFT surfaces 36  X, Y;
+X = 17.798139 cm  Y = 0.210833 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 37  X, Y;
+X = 0.000000 cm  Y = 0.040050 cm  
+Begin Points of LEFT surfaces 37  X, Y;
+X = 0.000000 cm  Y = 0.079950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 37  X, Y;
+X = 17.798137 cm  Y = 0.210933 cm  
+Exit Points of LEFT surfaces 37  X, Y;
+X = 17.797371 cm  Y = 0.250825 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 38  X, Y;
+X = 0.000000 cm  Y = 0.080050 cm  
+Begin Points of LEFT surfaces 38  X, Y;
+X = 0.000000 cm  Y = 0.119950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 38  X, Y;
+X = 17.797369 cm  Y = 0.250925 cm  
+Exit Points of LEFT surfaces 38  X, Y;
+X = 17.796603 cm  Y = 0.290818 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 39  X, Y;
+X = 0.000000 cm  Y = 0.120050 cm  
+Begin Points of LEFT surfaces 39  X, Y;
+X = 0.000000 cm  Y = 0.159950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 39  X, Y;
+X = 17.796601 cm  Y = 0.290918 cm  
+Exit Points of LEFT surfaces 39  X, Y;
+X = 17.795835 cm  Y = 0.330811 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 40  X, Y;
+X = 0.000000 cm  Y = 0.160050 cm  
+Begin Points of LEFT surfaces 40  X, Y;
+X = 0.000000 cm  Y = 0.199950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 40  X, Y;
+X = 17.795833 cm  Y = 0.330911 cm  
+Exit Points of LEFT surfaces 40  X, Y;
+X = 17.795067 cm  Y = 0.370803 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 41  X, Y;
+X = 0.000000 cm  Y = 0.200050 cm  
+Begin Points of LEFT surfaces 41  X, Y;
+X = 0.000000 cm  Y = 0.239950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 41  X, Y;
+X = 17.795065 cm  Y = 0.370903 cm  
+Exit Points of LEFT surfaces 41  X, Y;
+X = 17.794299 cm  Y = 0.410796 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 42  X, Y;
+X = 0.000000 cm  Y = 0.240050 cm  
+Begin Points of LEFT surfaces 42  X, Y;
+X = 0.000000 cm  Y = 0.279950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 42  X, Y;
+X = 17.794297 cm  Y = 0.410896 cm  
+Exit Points of LEFT surfaces 42  X, Y;
+X = 17.793531 cm  Y = 0.450789 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 43  X, Y;
+X = 0.000000 cm  Y = 0.280050 cm  
+Begin Points of LEFT surfaces 43  X, Y;
+X = 0.000000 cm  Y = 0.319950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 43  X, Y;
+X = 17.793529 cm  Y = 0.450888 cm  
+Exit Points of LEFT surfaces 43  X, Y;
+X = 17.792763 cm  Y = 0.490781 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 44  X, Y;
+X = 0.000000 cm  Y = 0.320050 cm  
+Begin Points of LEFT surfaces 44  X, Y;
+X = 0.000000 cm  Y = 0.359950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 44  X, Y;
+X = 17.792761 cm  Y = 0.490881 cm  
+Exit Points of LEFT surfaces 44  X, Y;
+X = 17.791995 cm  Y = 0.530774 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 45  X, Y;
+X = 0.000000 cm  Y = 0.360050 cm  
+Begin Points of LEFT surfaces 45  X, Y;
+X = 0.000000 cm  Y = 0.399950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 45  X, Y;
+X = 17.791993 cm  Y = 0.530874 cm  
+Exit Points of LEFT surfaces 45  X, Y;
+X = 17.791227 cm  Y = 0.570766 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 46  X, Y;
+X = 0.000000 cm  Y = 0.400050 cm  
+Begin Points of LEFT surfaces 46  X, Y;
+X = 0.000000 cm  Y = 0.439950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 46  X, Y;
+X = 17.791225 cm  Y = 0.570866 cm  
+Exit Points of LEFT surfaces 46  X, Y;
+X = 17.790459 cm  Y = 0.610759 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 47  X, Y;
+X = 0.000000 cm  Y = 0.440050 cm  
+Begin Points of LEFT surfaces 47  X, Y;
+X = 0.000000 cm  Y = 0.479950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 47  X, Y;
+X = 17.790457 cm  Y = 0.610859 cm  
+Exit Points of LEFT surfaces 47  X, Y;
+X = 17.789691 cm  Y = 0.650752 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 48  X, Y;
+X = 0.000000 cm  Y = 0.480050 cm  
+Begin Points of LEFT surfaces 48  X, Y;
+X = 0.000000 cm  Y = 0.519950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 48  X, Y;
+X = 17.789689 cm  Y = 0.650852 cm  
+Exit Points of LEFT surfaces 48  X, Y;
+X = 17.788923 cm  Y = 0.690744 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 49  X, Y;
+X = 0.000000 cm  Y = 0.520050 cm  
+Begin Points of LEFT surfaces 49  X, Y;
+X = 0.000000 cm  Y = 0.559950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 49  X, Y;
+X = 17.788921 cm  Y = 0.690844 cm  
+Exit Points of LEFT surfaces 49  X, Y;
+X = 17.788155 cm  Y = 0.730737 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 50  X, Y;
+X = 0.000000 cm  Y = 0.560050 cm  
+Begin Points of LEFT surfaces 50  X, Y;
+X = 0.000000 cm  Y = 0.599950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 50  X, Y;
+X = 17.788153 cm  Y = 0.730837 cm  
+Exit Points of LEFT surfaces 50  X, Y;
+X = 17.787387 cm  Y = 0.770730 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 51  X, Y;
+X = 0.000000 cm  Y = 0.600050 cm  
+Begin Points of LEFT surfaces 51  X, Y;
+X = 0.000000 cm  Y = 0.639950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 51  X, Y;
+X = 17.787385 cm  Y = 0.770829 cm  
+Exit Points of LEFT surfaces 51  X, Y;
+X = 17.786619 cm  Y = 0.810722 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 52  X, Y;
+X = 0.000000 cm  Y = 0.640050 cm  
+Begin Points of LEFT surfaces 52  X, Y;
+X = 0.000000 cm  Y = 0.679950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 52  X, Y;
+X = 17.786617 cm  Y = 0.810822 cm  
+Exit Points of LEFT surfaces 52  X, Y;
+X = 17.785851 cm  Y = 0.850715 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 53  X, Y;
+X = 0.000000 cm  Y = 0.680050 cm  
+Begin Points of LEFT surfaces 53  X, Y;
+X = 0.000000 cm  Y = 0.719950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 53  X, Y;
+X = 17.785849 cm  Y = 0.850815 cm  
+Exit Points of LEFT surfaces 53  X, Y;
+X = 17.785083 cm  Y = 0.890707 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 54  X, Y;
+X = 0.000000 cm  Y = 0.720050 cm  
+Begin Points of LEFT surfaces 54  X, Y;
+X = 0.000000 cm  Y = 0.759950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 54  X, Y;
+X = 17.785081 cm  Y = 0.890807 cm  
+Exit Points of LEFT surfaces 54  X, Y;
+X = 17.784315 cm  Y = 0.930700 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 55  X, Y;
+X = 0.000000 cm  Y = 0.760050 cm  
+Begin Points of LEFT surfaces 55  X, Y;
+X = 0.000000 cm  Y = 0.799950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 55  X, Y;
+X = 17.784313 cm  Y = 0.930800 cm  
+Exit Points of LEFT surfaces 55  X, Y;
+X = 17.783547 cm  Y = 0.970693 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 56  X, Y;
+X = 0.000000 cm  Y = 0.800050 cm  
+Begin Points of LEFT surfaces 56  X, Y;
+X = 0.000000 cm  Y = 0.839950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 56  X, Y;
+X = 17.783545 cm  Y = 0.970793 cm  
+Exit Points of LEFT surfaces 56  X, Y;
+X = 17.782779 cm  Y = 1.010685 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 57  X, Y;
+X = 0.000000 cm  Y = 0.840050 cm  
+Begin Points of LEFT surfaces 57  X, Y;
+X = 0.000000 cm  Y = 0.879950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 57  X, Y;
+X = 17.782777 cm  Y = 1.010785 cm  
+Exit Points of LEFT surfaces 57  X, Y;
+X = 17.782011 cm  Y = 1.050678 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 58  X, Y;
+X = 0.000000 cm  Y = 0.880050 cm  
+Begin Points of LEFT surfaces 58  X, Y;
+X = 0.000000 cm  Y = 0.919950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 58  X, Y;
+X = 17.782009 cm  Y = 1.050778 cm  
+Exit Points of LEFT surfaces 58  X, Y;
+X = 17.781243 cm  Y = 1.090671 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 59  X, Y;
+X = 0.000000 cm  Y = 0.920050 cm  
+Begin Points of LEFT surfaces 59  X, Y;
+X = 0.000000 cm  Y = 0.959950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 59  X, Y;
+X = 17.781241 cm  Y = 1.090771 cm  
+Exit Points of LEFT surfaces 59  X, Y;
+X = 17.780475 cm  Y = 1.130663 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 60  X, Y;
+X = 0.000000 cm  Y = 0.960050 cm  
+Begin Points of LEFT surfaces 60  X, Y;
+X = 0.000000 cm  Y = 0.999950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 60  X, Y;
+X = 17.780473 cm  Y = 1.130763 cm  
+Exit Points of LEFT surfaces 60  X, Y;
+X = 17.779707 cm  Y = 1.170656 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 61  X, Y;
+X = 0.000000 cm  Y = 1.000050 cm  
+Begin Points of LEFT surfaces 61  X, Y;
+X = 0.000000 cm  Y = 1.039950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 61  X, Y;
+X = 17.779705 cm  Y = 1.170756 cm  
+Exit Points of LEFT surfaces 61  X, Y;
+X = 17.778939 cm  Y = 1.210648 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 62  X, Y;
+X = 0.000000 cm  Y = 1.040050 cm  
+Begin Points of LEFT surfaces 62  X, Y;
+X = 0.000000 cm  Y = 1.079950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 62  X, Y;
+X = 17.778937 cm  Y = 1.210748 cm  
+Exit Points of LEFT surfaces 62  X, Y;
+X = 17.778171 cm  Y = 1.250641 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 63  X, Y;
+X = 0.000000 cm  Y = 1.080050 cm  
+Begin Points of LEFT surfaces 63  X, Y;
+X = 0.000000 cm  Y = 1.119950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 63  X, Y;
+X = 17.778169 cm  Y = 1.250741 cm  
+Exit Points of LEFT surfaces 63  X, Y;
+X = 17.777403 cm  Y = 1.290634 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 64  X, Y;
+X = 0.000000 cm  Y = 1.120050 cm  
+Begin Points of LEFT surfaces 64  X, Y;
+X = 0.000000 cm  Y = 1.159950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 64  X, Y;
+X = 17.777401 cm  Y = 1.290734 cm  
+Exit Points of LEFT surfaces 64  X, Y;
+X = 17.776635 cm  Y = 1.330626 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 65  X, Y;
+X = 0.000000 cm  Y = 1.160050 cm  
+Begin Points of LEFT surfaces 65  X, Y;
+X = 0.000000 cm  Y = 1.199950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 65  X, Y;
+X = 17.776633 cm  Y = 1.330726 cm  
+Exit Points of LEFT surfaces 65  X, Y;
+X = 17.775866 cm  Y = 1.370619 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 66  X, Y;
+X = 0.000000 cm  Y = 1.200050 cm  
+Begin Points of LEFT surfaces 66  X, Y;
+X = 0.000000 cm  Y = 1.239950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 66  X, Y;
+X = 17.775865 cm  Y = 1.370719 cm  
+Exit Points of LEFT surfaces 66  X, Y;
+X = 17.775098 cm  Y = 1.410612 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 67  X, Y;
+X = 0.000000 cm  Y = 1.240050 cm  
+Begin Points of LEFT surfaces 67  X, Y;
+X = 0.000000 cm  Y = 1.279950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 67  X, Y;
+X = 17.775097 cm  Y = 1.410712 cm  
+Exit Points of LEFT surfaces 67  X, Y;
+X = 17.774330 cm  Y = 1.450604 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 68  X, Y;
+X = 0.000000 cm  Y = 1.280050 cm  
+Begin Points of LEFT surfaces 68  X, Y;
+X = 0.000000 cm  Y = 1.319950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 68  X, Y;
+X = 17.774329 cm  Y = 1.450704 cm  
+Exit Points of LEFT surfaces 68  X, Y;
+X = 17.773562 cm  Y = 1.490597 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 69  X, Y;
+X = 0.000000 cm  Y = 1.320050 cm  
+Begin Points of LEFT surfaces 69  X, Y;
+X = 0.000000 cm  Y = 1.359950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 69  X, Y;
+X = 17.773561 cm  Y = 1.490697 cm  
+Exit Points of LEFT surfaces 69  X, Y;
+X = 17.772794 cm  Y = 1.530589 cm  
+------------------------------------------------------------------------------
+==============================================================================
+Begin Points of RIGHT surfaces 70  X, Y;
+X = 0.000000 cm  Y = 1.360050 cm  
+Begin Points of LEFT surfaces 70  X, Y;
+X = 0.000000 cm  Y = 1.399950 cm  
+------------------------------------------------------------------------------
+Exit Points of RIGHT surfaces 70  X, Y;
+X = 17.772792 cm  Y = 1.530689 cm  
+Exit Points of LEFT surfaces 70  X, Y;
+X = 17.772026 cm  Y = 1.570582 cm  
+------------------------------------------------------------------------------
+==============================================================================
+==============================================================================
+Center of RIGHT surface 1 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.400000 cm 
+Center of LEFT surface 1 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.360000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 2 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.360000 cm 
+Center of LEFT surface 2 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.320000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 3 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.320000 cm 
+Center of LEFT surface 3 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.280000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 4 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.280000 cm 
+Center of LEFT surface 4 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.240000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 5 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.240000 cm 
+Center of LEFT surface 5 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.200000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 6 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.200000 cm 
+Center of LEFT surface 6 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.160000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 7 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.160000 cm 
+Center of LEFT surface 7 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.120000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 8 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.120000 cm 
+Center of LEFT surface 8 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.080000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 9 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.080000 cm 
+Center of LEFT surface 9 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.040000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 10 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.040000 cm 
+Center of LEFT surface 10 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 928.000000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 11 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 928.000000 cm 
+Center of LEFT surface 11 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.960000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 12 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.960000 cm 
+Center of LEFT surface 12 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.920000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 13 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.920000 cm 
+Center of LEFT surface 13 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.880000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 14 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.880000 cm 
+Center of LEFT surface 14 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.840000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 15 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.840000 cm 
+Center of LEFT surface 15 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.800000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 16 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.800000 cm 
+Center of LEFT surface 16 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.760000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 17 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.760000 cm 
+Center of LEFT surface 17 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.720000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 18 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.720000 cm 
+Center of LEFT surface 18 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.680000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 19 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.680000 cm 
+Center of LEFT surface 19 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.640000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 20 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.640000 cm 
+Center of LEFT surface 20 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.600000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 21 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.600000 cm 
+Center of LEFT surface 21 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.560000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 22 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.560000 cm 
+Center of LEFT surface 22 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.520000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 23 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.520000 cm 
+Center of LEFT surface 23 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.480000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 24 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.480000 cm 
+Center of LEFT surface 24 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.440000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 25 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.440000 cm 
+Center of LEFT surface 25 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.400000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 26 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.400000 cm 
+Center of LEFT surface 26 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.360000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 27 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.360000 cm 
+Center of LEFT surface 27 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.320000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 28 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.320000 cm 
+Center of LEFT surface 28 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.280000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 29 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.280000 cm 
+Center of LEFT surface 29 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.240000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 30 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.240000 cm 
+Center of LEFT surface 30 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.200000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 31 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.200000 cm 
+Center of LEFT surface 31 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.160000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 32 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.160000 cm 
+Center of LEFT surface 32 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.120000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 33 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.120000 cm 
+Center of LEFT surface 33 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.080000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 34 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.080000 cm 
+Center of LEFT surface 34 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.040000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 35 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.040000 cm 
+Center of LEFT surface 35 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 927.000000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 36 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 927.000000 cm 
+Center of LEFT surface 36 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.960000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 37 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.960000 cm 
+Center of LEFT surface 37 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.920000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 38 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.920000 cm 
+Center of LEFT surface 38 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.880000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 39 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.880000 cm 
+Center of LEFT surface 39 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.840000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 40 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.840000 cm 
+Center of LEFT surface 40 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.800000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 41 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.800000 cm 
+Center of LEFT surface 41 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.760000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 42 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.760000 cm 
+Center of LEFT surface 42 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.720000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 43 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.720000 cm 
+Center of LEFT surface 43 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.680000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 44 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.680000 cm 
+Center of LEFT surface 44 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.640000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 45 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.640000 cm 
+Center of LEFT surface 45 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.600000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 46 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.600000 cm 
+Center of LEFT surface 46 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.560000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 47 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.560000 cm 
+Center of LEFT surface 47 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.520000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 48 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.520000 cm 
+Center of LEFT surface 48 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.480000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 49 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.480000 cm 
+Center of LEFT surface 49 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.440000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 50 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.440000 cm 
+Center of LEFT surface 50 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.400000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 51 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.400000 cm 
+Center of LEFT surface 51 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.360000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 52 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.360000 cm 
+Center of LEFT surface 52 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.320000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 53 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.320000 cm 
+Center of LEFT surface 53 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.280000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 54 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.280000 cm 
+Center of LEFT surface 54 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.240000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 55 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.240000 cm 
+Center of LEFT surface 55 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.200000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 56 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.200000 cm 
+Center of LEFT surface 56 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.160000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 57 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.160000 cm 
+Center of LEFT surface 57 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.120000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 58 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.120000 cm 
+Center of LEFT surface 58 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.080000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 59 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.080000 cm 
+Center of LEFT surface 59 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.040000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 60 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.040000 cm 
+Center of LEFT surface 60 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 926.000000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 61 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 926.000000 cm 
+Center of LEFT surface 61 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.960000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 62 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.960000 cm 
+Center of LEFT surface 62 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.920000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 63 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.920000 cm 
+Center of LEFT surface 63 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.880000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 64 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.880000 cm 
+Center of LEFT surface 64 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.840000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 65 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.840000 cm 
+Center of LEFT surface 65 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.800000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 66 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.800000 cm 
+Center of LEFT surface 66 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.760000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 67 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.760000 cm 
+Center of LEFT surface 67 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.720000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 68 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.720000 cm 
+Center of LEFT surface 68 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.680000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 69 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.680000 cm 
+Center of LEFT surface 69 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.640000 cm 
+------------------------------------------------------------------------------
+Center of RIGHT surface 70 X, Y; Radius
+X = -0.000000 cm  Y = 927.000050 cm  RAD = 925.640000 cm 
+Center of LEFT surface 70 X, Y; Radius
+X = 0.000000 cm  Y = 926.999950 cm  RAD = 925.600000 cm 
+------------------------------------------------------------------------------

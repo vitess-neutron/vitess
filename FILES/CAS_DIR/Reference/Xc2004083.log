@@ -1,0 +1,13 @@
+23.03.2004 10:23:40 Parameter directory is G:/Vitess2_5alpha5/FILES/CAS_DIR
+Starting tool
+G:/Vitess2_5alpha5/MODULES/cas_v40.exe --Z2 --LCAS_log60arm10.dat -PCAS_par60arm10.dat -SCAS_S60arm10.dat -TCAS_D60arm10.dat -l6.174745 -w0.03 -k0
+
+23.03.2004 10:23:40 tool (c70 ) (3184) is active
+23.03.2004 10:23:43 ------------------------------
+23.03.2004 10:23:43 
+23.03.2004 10:23:43 Output: G:/Vitess2_5alpha5/FILES/CAS_DIR/\CAS_log60arm10.dat 
+23.03.2004 10:23:43 No.Trajectories:    10000
+23.03.2004 10:23:43 No.TrajectoriesEnd: 10000
+23.03.2004 10:23:43 
+23.03.2004 10:23:43 SD_MC: 6.712094e-003   SD_1st_MC: 1.991579e-009   SD_1st_th: 1.979709e-009 
+23.03.2004 10:23:43 
