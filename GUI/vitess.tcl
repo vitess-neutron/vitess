@@ -654,7 +654,7 @@ set guideESET {
     "number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
   {rad_curve float 0 {
     "curvature\n(radius) [m]"
-    "radius of curvature [m] (0 means no curvature)" "" R} ge0 "" 1}
+    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
@@ -2002,7 +2002,7 @@ set sscESET {
   {chi float "" {"chi(X) [deg]" "rotation angle of sample i.e. the reciprocal unit vectors around the  X axis"}}
   {omega float "" {"omega(Z) [deg]" "rotation angle of sample i.e. the reciprocal unit vectors around the Z axis again"}}
   {}
-  {geom radio flat {geometry "sample geometry"}
+  {geom radio cubic {geometry "sample geometry"}
     {cubic cylindrical ball} {cub cyl bal}}
   {}
   {thick float "" {"thickness\nor diameter [cm]" "rectangular sample dimension in x direction (sample frame)"}}
