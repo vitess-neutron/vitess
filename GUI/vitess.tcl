@@ -90,7 +90,7 @@ proc makeModuleSets {} {
   }
 
   # append special user module, if any
-  catch {source [file join [pwd] usermodule.tcl]}
+  catch {source [file join [pwd] GUI usermodule.tcl]}
 
   set aglob ""
   upvar #0 neededModulesSET a
@@ -2639,6 +2639,7 @@ proc cleanupModView {} {
 ### checkModVar
 ###
 proc checkModVar {i {wishedmode ""}} {
+
   global DummyEntry Amf Mlf bgColor VisibleModule
   set VisibleModule $i
   set w $Mlf.g$i
@@ -2726,6 +2727,7 @@ proc checkModVar {i {wishedmode ""}} {
       set needMoreModules 1
     }
   }
+
   if {!$needMoreModules} return
   set nexti [expr $i + 1]
   if [winfo exists $Mlf.g$nexti.label] return
@@ -3381,6 +3383,21 @@ proc moduleMenus {{n 1}} {
     image create bitmap fcross -file [file join $fpath cross.xbm]
   }
 
+  # prepend button to digest view if a digest has been defined
+  set w $Mlf.dig.f 
+  if {"" == [globVal digestSource]} {
+    catch {destroy $w}
+  } elseif {! [winfo exists $w]} {
+    Frame $w
+    button $w.cross -image fcross -command removeDigest
+    button $w.right -image fright -command digestView
+    label $w.l -text "Instrument Digest"\
+	-font $lfn -bg $menuButtonColor  
+    pack $w.cross -side left  -anchor w
+    pack $w.right -side right -padx 1 -anchor w
+    pack $w.l -side top -fill x -anchor w
+  }
+
   for {set i 1} {$i <= $maxi} {incr i} {
     set w $Mlf.g$i
     set cm "checkModVar $i"
@@ -3426,7 +3443,7 @@ proc moduleMenus {{n 1}} {
 	}
       }
     }
-    pack $w.cross $w.down $w.label $w.opt $w.top $w.right -side left -padx 1
+    pack $w.cross $w.down $w.label $w.opt $w.top $w.right -side left -padx 1 -anchor w
   }
 }
 

@@ -151,6 +151,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
 proc checkAll {} {
   clearText
+  propagateDigestValues
   set errors [forceParamDir]
   if {$errors} {return 0}
   if [errorWithValues input] {set errors 1}
@@ -414,7 +415,7 @@ proc dialogSWindow {w {tit "Generate Series"} {where "+100+100"}} {
   $w configure  -bg $bgColor
 }
 
-proc exeSeries {pdir copy cfiles cdir c ll vl} {
+proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
   forceSmallTextWindow
   sizeTextWindow 1 1
   # iconise main vitess window
@@ -422,7 +423,7 @@ proc exeSeries {pdir copy cfiles cdir c ll vl} {
   global AbortSeries SeriesActive
   set SeriesActive 1
   set AbortSeries 0
-  set j 0
+  set j -1
   foreach v $vl {
     set com $c
     # substitute special options by list values
@@ -436,8 +437,9 @@ proc exeSeries {pdir copy cfiles cdir c ll vl} {
     catch {
       set so ""
       upvar #0 defdirectory_ P
+      set pre s[lindex $tindl [incr j]]_
       foreach fn $cfiles {
-	set fb [file join $cdir s${j}_$fn]
+	set fb [file join $cdir $pre$fn]
 	file copy -force [file join $P $fn] $fb
 	append so "\n$fb"
       }
@@ -533,6 +535,29 @@ proc selTypeConv {vv col} {
   }
 }
 
+proc importTable {w} {
+  # read a space, tab, or semicolon separated table from a text file
+  set rows [entryVal numseries]
+  set cols [llength [entryVal modseries]]
+  catch {fileDialog open} fname
+  if {$fname == ""} return
+  if {[catch {open $fname r} f] || [eof $f]} {
+    showText "! can't read $fname"
+    return
+  }
+  catch {
+    for {set i 1} {$i <= $rows} {incr i} {
+      if {[gets $f s] <= 0} break
+      set s [itemize $s "; \t"]
+      if {[set slen [llength $s]] > $cols} {set slen $cols}
+      for {set j 0} {$j < $slen} {incr j} {
+	gSet series$i.${j}_ [lindex $s $j]
+      }
+    }
+  }
+  close $f
+}
+
 proc saveSeries {w {act tofile}} {
   global PipeLogList ExeDirectory Serdefault entryColor labColor bgColor
   set pdir [entryVal defdirectory]
@@ -557,7 +582,7 @@ proc saveSeries {w {act tofile}} {
     showText "!Specify some resonable values or leave it"
     return
   }
-  set mol {} ; set pal {} ; set vl {}
+  set mol {} ; set pal {} ; set vl {} ; set tindl {}
   foreach m $modl {
     set mil [split $m ":"]
     lappend mol [lindex $mil 0]
@@ -565,7 +590,8 @@ proc saveSeries {w {act tofile}} {
   }
   set c [generateVitessCommand ser $ll $mol $pal]
   for {set i 1} {$i <= $num} {incr i} {
-    if {[lindex $ssel $i] >= 0}  {
+    if {[set tind [lindex $ssel $i]] >= 0}  {
+      lappend tindl $i
       set s {}
       for {set j 0} {$j < $ll} {incr j} {
 	set tv [entryVal series$i.$j]
@@ -584,7 +610,7 @@ proc saveSeries {w {act tofile}} {
       if {"no" == [tk_messageBox -icon question -type yesno -title "confirmed command"\
 		  -message "This simulation has been done at\n$r\nReally do it again?"]} return
     }
-    exeSeries $pdir $copy $cfiles $cdir $c $ll $vl
+    exeSeries $pdir $copy $cfiles $cdir $c $ll $vl $tindl
     storeMd5 $smd5
     return
   }
@@ -599,6 +625,8 @@ set P $pdir
 set CFILES {$cfiles}
 # copy them to this directory, give \"\" for no directory
 set CDIR \"$cdir\"
+# selected indices
+set CIND {$tindl}
 # list values for parameters
 set VL {$vl}
 #
@@ -614,9 +642,8 @@ set pname $pname
   append fc {
 lappend PipeLogList $pname
 
-set j 0
+set j -1
 foreach v $VL {
-  incr j
   set com $COM
   # substitute special options by list values
   for {set i 0} {$i < $LL} {incr i} {
@@ -634,9 +661,10 @@ foreach v $VL {
   catch {eval file delete $PipeLogList}
   # copy files
   if {$CDIR == ""} continue
+  set pre s[lindex $CIND [incr j]]_
   foreach fn $CFILES {
     catch {
-      set fc [file join $CDIR s${j}_$fn]
+      set fc [file join $CDIR $pre$fn]
       file copy -force [file join $P $fn] $fc
       puts "copied file: $fc"
     }
@@ -787,17 +815,17 @@ proc inputSeries {w} {
   bButton $w.b.b << "genSeries $w"
   bButton $w.b.s "Start Series" "saveSeries $w execute"
   bButton $w.b.n "File Series" "saveSeries $w tofile"
+  bButton $w.b.i "Import Table" "importTable $w"
   bButton $w.b.c Cancel "destroy $w"
-  pack $w.b.s $w.b.n -side right -anchor w
+  pack $w.b.s $w.b.n $w.b.i -side right -anchor w
   pack $w.b.b -side left -anchor w
   pack $w.b.c -side top -anchor w
 }
 
 proc addSeriesName {modi opt name} {
-  global modseries_
-  if [info exists modseries_] {
-    append modseries_ " $modi:$opt:$name"
-  }
+  global modseries_ moddigest_
+  if [info exists modseries_] { append modseries_ " $modi:$opt:$name" }
+  if [info exists moddigest_] { append moddigest_ " $name:$modi" }
 }
 
 proc genSeries {w} {
@@ -821,7 +849,7 @@ proc genSeries {w} {
   set EntryCharHeight [winfo reqheight $w.n.e]
   pack $w.n.e $w.n.l -side left -anchor w
 
-  label $w.h1.l -text "space separated Module:Option:Name list\nname may be ommitted\ne.g. 1:n 3:P"\
+  label $w.h1.l -text "space separated Module:Option:Name list\nname may be omitted\ne.g. 1:n 3:P"\
       -font $lfont -bg $labColor
   pack $w.h1.l -side left -anchor w
   entry $w.h2.e -width 64 -relief sunken -textvariable modseries_ -bg $entryColor\
