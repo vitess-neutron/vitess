@@ -42,6 +42,7 @@
 #define BUFFER_SIZE       10000
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
+#define CHAR_BUF_SMALL      256
 
 typedef enum 
 {	VT_CUBE   = 1,
@@ -221,6 +222,8 @@ double Min(double value1, double value2);
 double Max(double value1, double value2);
 long   mini(long value1, long value2);
 long   maxi(long value1, long value2);
+
+double SolidAngle   (const double dHorAngle, const double dVertAngle);
 
 void   CopyVector   (const VectorType Src, VectorType Dest);
 long   MAXV         (const VectorType Vector);
