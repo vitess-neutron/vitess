@@ -1,15 +1,16 @@
-/*********************************************************************************************/
-/*  VITESS module DETECTOR                                                                   */
-/* The free non-commercial use of these routines is granted providing due credit is given to */
-/* the authors.                                                                              */
-/*                                                                                           */
-/* 1.0                           initial version                                             */
-/* 1.1  Jun 2001  G. Zsigmond    SOFTABORT                                                   */
-/* 1.2  Jan 2002  K. Lieutenant  reorganisation                                              */
-/* 1.3  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                */
-/* 1.4  Feb 2004  K. Lieutenant  'message' and 'ERROR' included                              */
-/* 1.5  Apr 2004  K. Lieutenant  probability divided by repetition                           */
-/*********************************************************************************************/
+/****************************************************************************************/
+/*  VITESS module DETECTOR                                                              */
+/* The free non-commercial use of these routines is granted providing due credit        */
+/* is given to the authors.                                                             */
+/*                                                                                      */
+/* 1.0                           initial version                                        */
+/* 1.1  Jun 2001  G. Zsigmond    SOFTABORT                                              */
+/* 1.2  Jan 2002  K. Lieutenant  reorganisation                                         */
+/* 1.3  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                           */
+/* 1.4  Feb 2004  K. Lieutenant  'message' and 'ERROR' included                         */
+/* 1.5  Apr 2004  K. Lieutenant  probability divided by repetition                      */
+/* 1.5a Dec 2004  K. Lieutenant  option 'no TOF' added                                  */
+/****************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,16 +24,28 @@
 #include "message.h"
 
 
+typedef enum 
+{	VT_NO_TOF   = 0,
+	VT_TOF_CALC = 1,
+	VT_TOF_BIN  = 2
+}
+VtTofOpt;
+#define VT_NO_TOF    0
+#define VT_TOF_CALC  1
+#define VT_TOF_BIN   2
+
+
 /* global variables */
 SampleType Detector;
 int        geom=0;
-long       Columns=1, 		/* number of columns of the detector*/
-           Rows=1;    		/* number of rows of the detector*/
+long       Columns=1, 		 /* number of columns of the detector*/
+           Rows=1;    		 /* number of rows of the detector*/
 double     Thickness,
            distance;
-double     MaxEfficiency;       /* Maximal efficieny of the detector */
+double     MaxEfficiency;   /* Maximal efficieny of the detector */
 long       GenNeutrons=10;
-long       Monitor;
+short      bMonitor,        /* option: only monitoring            */
+           eTOF;            /* option: TOF in detector 0: no 1: calculated 2: binning */
 double     Theta,dTheta,
            dWidth, 
            RotMatrix[3][3];
@@ -61,10 +74,10 @@ int main(int argc, char *argv[])
 	double LambdaProb;    /* detecting probability due to the wavelength of the neutron */
 	VectorType ISP[2];    /* intersection points with the detector */
 	double NSigma;        /*neutron crossection times density of scatterers in the detector*/
-	long NeutCount;
+	long   NeutCount;
 	double TimeTillScattering, LengthTillScattering;
 	VectorType DetSpot, SP, vDir;
-	long i,j;
+	long   i,j;
 	double FullLengthInDetector;
 	double ScatteringProb,
 	       dRotY, dRotZ;
@@ -77,7 +90,7 @@ int main(int argc, char *argv[])
 	/* module specific initialization */
 	OwnInit(argc, argv);
 
-	print_module_name("detector 1.5");
+	print_module_name("detector 1.5a");
 
 	/* Rotmatrix will rotate a Vector to a frame in which the middle of the */
 	/* Detector sits on the x-axis */
@@ -91,8 +104,7 @@ int main(int argc, char *argv[])
 	while((ReadNeutrons())!= 0)
 	{
 		CHECK
-		/* here you may do anything you like to the neutrons, but, please, */
-		/* WriteNeutron for the output! Thank you			       */
+
 		for(i=0; i<NumNeutGot; i++) 
 		{
 			CHECK
@@ -105,11 +117,9 @@ int main(int argc, char *argv[])
 			{
 				/* determine the length of the path through the scintilator */
 				FullLengthInDetector = DistVector(ISP[0], ISP[1]);
-				if (FullLengthInDetector == 0.0)
-					CountMessageID(DET_TRAJ_INSIDE, InputNeutrons[i].ID);
 
 				/* intensity norm factor */
-				norm = MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
+				norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
 
 				/* now the influence of the wavelength*/
 				if(InputNeutrons[i].Wavelength < 5.0)
@@ -119,20 +129,29 @@ int main(int argc, char *argv[])
 
 				for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
 				{
-					/* deterimine the scattering point in the scintilator */
-					LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
-					ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-					if(Monitor)
+					if (eTOF==VT_TOF_CALC)
+					{	/* determine the scattering point in the scintilator */
+						LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
+						ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
+
+						for(j=0; j<3; j++)
+							SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
+
+						DetectorSpot(SP, DetSpot, &Detector);
+
+						TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
+												 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+					}
+					else
+					{
+						ScatteringProb = MaxEfficiency * LambdaProb;
+						DetectorSpot(ISP[0], DetSpot, &Detector);
+						TimeTillScattering = DistVector(ISP[0],InputNeutrons[i].Position)/
+						                     V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+					}
+					if(bMonitor)
 					{	ScatteringProb=1.0;
 					}
-
-					for(j=0; j<3; j++)
-						SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
-
-					DetectorSpot(SP, DetSpot, &Detector);
-
-					TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
-											 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
 					/* everythings done, so rot back the vectors and put all together */
 					RotBackVector(RotMatrix,DetSpot);
@@ -188,23 +207,19 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 		/* transform the ISPs to the old coordinate system*/
 		ISP[0][0] += Detector->Position[0]+Detector->SG.Cube.thickness/2.0;
 		ISP[1][0] += Detector->Position[0]+Detector->SG.Cube.thickness/2.0;
-		if(t[1]>0.0) 
-		{	if(t[0] <= 0.0) 
-			{
-				CopyVector(ISP[1], ISP[0]);
-			}
+		if(t[1]>=0.0) 
+		{	
+			return TRUE;
 		} 
 		else 
 		{
+			CountMessageID(DET_TRAJ_INSIDE, Nin->ID);
 			return FALSE;
 		}
-		return TRUE;
 	} 
 	else 
 	{	return FALSE;
 	}
-	/* should never be reached*/
-	return -3;
 }
 
 
@@ -344,8 +359,9 @@ void  OwnInit(int argc, char *argv[])
 	Columns = 1;
 	Rows = 1;
 	geom=0;
-	Monitor=FALSE;
-	NoDetGrid=FALSE;
+	bMonitor = FALSE;
+	NoDetGrid= FALSE;
+	eTOF     = VT_TOF_CALC;
 	Detector.Direction[0]=0.0;
 	Detector.Direction[1]=0.0;
 
@@ -408,8 +424,12 @@ void  OwnInit(int argc, char *argv[])
 				case 'A':
 					sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
 					break;
+				case 'o':
+					sscanf(&(argv[i][2]),"%d", &eTOF);
+					break;
+
 				case 'M':
-					if(argv[i][2]=='1') Monitor=TRUE;
+					if(argv[i][2]=='1') bMonitor=TRUE;
 					break;
 				case 'g':
 					if(argv[i][2]=='0') NoDetGrid=TRUE;
@@ -484,7 +504,7 @@ void  OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
   /* print error that might have occured many times */
-	PrintMessage(DET_TRAJ_INSIDE, "\nplease increase distance to compensate for the detector thickness", ON);
+	PrintMessage(DET_TRAJ_INSIDE, "", ON);
 
 	fprintf(LogFilePtr," \n");
 
