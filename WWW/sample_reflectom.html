@@ -1,36 +1,36 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-        
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-        
+
   <meta name="Generator" content="Microsoft Word 97">
-        
+
   <meta name="GENERATOR"
  content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
   <title>d-spacing []</title>
 </head>
   <body>
-    
+
 <h1> VITESS Module Reflectometer Sample</h1>
-  This module simulates a sample of a reflectometer.  
+  This module simulates a sample of a reflectometer.
 <p>The reflectivity data of a sample are taken from a file that contains
 the reflectivity R as a function of momentum transfer Q. To be able to get
 a simulated function R(Q), it is possible to simulate a reference measurement.
  The reference sample has a reflectivity of 1 for all Q-values. </p>
- 
+
 <p>The reflection of neutrons at several angles can be done in one simulation.
  In this case, a minimal value, a maximal value, and a step size for the
 reflection angle must be given (see chapter C). If only one angle shall be
 considered, the step size must be set to zero or minimal and maximal value
 must be identical.  <br>
  &nbsp; </p>
- 
+
 <p><u>A. Options</u> </p>
- 
+
 <p>The options are: <br>
- &nbsp;  
+ &nbsp;
 <table border="1" cellpadding="5" width="810">
   <tbody>
      <tr>
@@ -41,14 +41,14 @@ must be identical.  <br>
   <td valign="top" width="33%">2. Reference:</td>
    <td valign="top" width="67%">Reflectivity R=1 for all angles.</td>
   </tr>
-     
-  </tbody> 
+
+  </tbody>
 </table>
    <br>
  &nbsp; </p>
- 
+
 <p><u>B. Parameter and file descriptions</u> <br>
- &nbsp;  
+ &nbsp;
 <table border="1" cellpadding="5" width="809">
   <tbody>
      <tr>
@@ -69,18 +69,18 @@ must be identical.  <br>
    <td valign="top" width="54%">File that contains the reflectivity of&nbsp;
  the sample as a function of momentum transfer <br>
  1. column: momentum transfer [1/A] <br>
- 2. column: reflectivity        
+ 2. column: reflectivity
       <p>It is only needed for the option 'Sample'.</p>
        </td>
    <td valign="top" width="28%">refl_probe.dat</td>
   </tr>
-     
-  </tbody> 
+
+  </tbody>
 </table>
    </p>
- 
+
 <p><font face="Symbol">- </font>MAIN PARAMETERS <br>
- &nbsp;  
+ &nbsp;
 <table border="1" cellpadding="5" width="809">
   <tbody>
      <tr>
@@ -94,10 +94,10 @@ must be identical.  <br>
    <td valign="top" width="28%">&nbsp;'Y' or 'Z'</td>
   </tr>
    <tr>
-  <td valign="top" width="18%">reflection angle        
+  <td valign="top" width="18%">reflection angle
       <p>[deg]</p>
        </td>
-   <td valign="top" width="54%">q        
+   <td valign="top" width="54%">q
       <p>q=0 means: no reflection, sample parallel to incoming beam<br>
 positive q.value means: reflection towards the positive z- or positive y-direction
 resp.<br>
@@ -109,13 +109,13 @@ typical. +1&deg;....+4&deg;<br>
       <br>
        </td>
   </tr>
-     
-  </tbody> 
+
+  </tbody>
 </table>
    </p>
- 
+
 <p><font face="Symbol">- </font>FILE INPUT PARAMETERS <br>
- &nbsp;  
+ &nbsp;
 <table border="1" cellpadding="5" width="809">
   <tbody>
      <tr>
@@ -124,52 +124,51 @@ typical. +1&deg;....+4&deg;<br>
    <td valign="top" width="28%"><b>Range, Examples</b></td>
   </tr>
    <tr>
-  <td valign="top" width="18%">main position&nbsp;        
+  <td valign="top" width="18%">main position&nbsp;
       <p>[cm]</p>
        </td>
-   <td valign="top" width="54%"><i>x</i>, <i>y</i>, <i>z</i>        
+   <td valign="top" width="54%"><i>x</i>, <i>y</i>, <i>z</i>
       <p>Generally this position defines the reference point (origin) of the
 sample in the frame provided by the former module.</p>
        </td>
-   <td valign="top" width="28%"><i>X = distance </i>to CE        
-      <p><i>Y </i>= <i>Z </i>= 0.0 </p>
-       
+   <td valign="top" width="28%"><i>x = distance </i>to CE
+      <p><i>y </i>= <i>z </i>= 0.0 </p>
+
       <p>&nbsp;</p>
        </td>
   </tr>
    <tr>
-  <td valign="top" width="18%">thickness, width, height of CE        
+  <td valign="top" width="18%">thickness, width, height of CE
       <p>[cm]</p>
        </td>
-   <td valign="top" width="54%"><i>t</i>, <i>w</i>, <i>h</i>        
-      <p>Thickness, width and height give depth, horizontal and vertical dimensions
-of the rectangular sample.</p>
+   <td valign="top" width="54%"><i>t</i>, <i>w</i>, <i>h</i>
+      <p>Thickness, width and length give the sizes of the (rectangular) sample: for reflection angle 0, the reflecting surface of the
+	  sample is in the x-y-plane. The thickness is along the z-axis, width along the y-axis and length along the x-axis.
+Thickness is used to determine a distance from the surface (by MC choice) where the reflection is supposed to take place.</p>
        </td>
-   <td valign="top" width="28%"><i>t</i> = 0.00002 cm        
+   <td valign="top" width="28%"><i>t</i> = 0.00002 cm
       <p><i>w</i> = <i>h</i> = 2.0 cm <br>
  &nbsp;</p>
        </td>
   </tr>
    <tr>
-  <td valign="top" width="18%">cut-off probability        
+  <td valign="top" width="18%"> frame generation
       <p>[-]</p>
        </td>
-   <td valign="top" width="54%"><i>P</i><sub>cut</sub>        
-      <p>Defined to cut off extremly small probabilities. All neutrons scattered
- from M/A with a probability &gt;<i> P</i><sub>cut</sub> are written to the
- output file.</p>
+   <td valign="top" width="54%">'user defined frame' sets the following coordinate system according to the values given below. <br>
+ 'standard frame generation' leaves the coordiate system as it is, i.e. origin at sample centre, x-axis along the incoming beam. </p>
        </td>
-   <td valign="top" width="28%">0. or <i>P</i><sub>cut</sub> &gt; 1.0e<sup><font
- face="Symbol">-</font>8</sup></td>
+   <td valign="top" width="28%"> <br>
+   </td>
   </tr>
    <tr>
-  <td valign="top" width="18%">output angle horizontal, vertical        
+  <td valign="top" width="18%">output angle horizontal, vertical
       <p>[deg]</p>
        </td>
    <td valign="top" width="54%"><i><font face="Symbol">F</font></i>, <font
- face="Symbol">Q</font>        
-      <p>In case of "user defined output frame", a <font face="Symbol">F 
-     </font>rotation about the Z axis and then a <font face="Symbol">Q</font>rotation 
+ face="Symbol">Q</font>
+      <p>In case of "user defined output frame", a <font face="Symbol">F
+     </font>rotation about the Z axis and then a <font face="Symbol">Q</font>rotation
 about the (new)Y axis defines a new reference orientation. According to this
  and the output frame translation vector (see below) the neutrons are written
  to the output file. If "standard frame generation" is activated, the output
@@ -180,27 +179,27 @@ about the (new)Y axis defines a new reference orientation. According to this
  face="Symbol">q</font>&nbsp;</td>
   </tr>
    <tr>
-  <td valign="top" width="18%">output frame        
+  <td valign="top" width="18%">output frame
       <p>[cm]</p>
        </td>
-   <td valign="top" width="54%"><i>x</i>, <i>y</i>, <i>z</i>        
-      <p>The position of the output frame origin (<i>O</i>) in the original 
+   <td valign="top" width="54%"><i>x</i>, <i>y</i>, <i>z</i>
+      <p>The position of the output frame origin (<i>O</i>) in the original
 frame. (<i>x</i>, <i>y</i>, <i>z</i>) represents the translation vector applied
  to shift the origin of the original (input) frame (<i>O</i>) to the new
-(output) position. Default setting is: (<i>x</i>, <i>y</i>, <i>z</i>) = (<i>x</i>, 
+(output) position. Default setting is: (<i>x</i>, <i>y</i>, <i>z</i>) = (<i>x</i>,
       <i>y</i>, <i>z</i>) i.e. main position of the sample.</p>
        </td>
    <td valign="top" width="28%"><br>
        </td>
   </tr>
-     
-  </tbody> 
+
+  </tbody>
 </table>
    <br>
  &nbsp; </p>
- 
+
 <p><u>C. Data Evaluation</u> </p>
- 
+
 <p>If several reflection angles are considered simultaneously, one incoming
  neutron can cause up to <br>
  &nbsp;&nbsp;&nbsp; N<sub>max</sub> = (<font face="Symbol">q</font><sub>max</sub>
@@ -208,23 +207,23 @@ frame. (<i>x</i>, <i>y</i>, <i>z</i>) represents the translation vector applied
  1 <br>
  outgoing neutrons. (This number is reached, if the sample is hit by the
 neutron at all angles.) </p>
- 
-<p>So the overall neutron flux at the detector is no longer comparable to 
-the flux before the sample. Thus it is senseful to evaluate the data (using 
-the module EVAL_ELAST) to separate the neutrons reflected at the different 
+
+<p>So the overall neutron flux at the detector is no longer comparable to
+the flux before the sample. Thus it is senseful to evaluate the data (using
+the module EVAL_ELAST) to separate the neutrons reflected at the different
 angles. <br>
  An evaluation in scattering angle is possible, if the angle difference <font
- face="Symbol">Dq</font> is larger than the fluctuation in the orientation 
-of the incoming neutrons. For an evaluation in the momentum transfer Q, the 
-variation in Q of the incoming neutrons (caused by fluctuation in orientation 
-and wavelength) must be smaller than the difference in Q caused by the angle 
+ face="Symbol">Dq</font> is larger than the fluctuation in the orientation
+of the incoming neutrons. For an evaluation in the momentum transfer Q, the
+variation in Q of the incoming neutrons (caused by fluctuation in orientation
+and wavelength) must be smaller than the difference in Q caused by the angle
 difference <font face="Symbol">Dq</font>. <br>
  &nbsp; </p>
- 
+
 <p> </p>
- 
+
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
- &nbsp; <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>  
+ &nbsp; <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>
 <p><!-- hhmts start --><font size="-1">Last modified: Tue Oct 5 16:09:32
 MET DST 1999</font><!-- hhmts end --> </p>
  <br>

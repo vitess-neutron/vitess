@@ -466,7 +466,7 @@ set detectorESET {
   {phi float 0 {
     "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
   {dist float 100 {
-    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} gt0 "" 1}
+    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
   {ncol int 1 {
     "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
   {nrow int 1 {
@@ -577,6 +577,10 @@ set a {
     "max. y [cm]" "maximul y value [cm]" "" W}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
+    {no yes} {0 1}
+  }
+  {oldframe radio no {
+    "use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F}
     {no yes} {0 1}
   }
 }
@@ -897,6 +901,17 @@ set chpESET {
     "left side\ndeviation [deg]" "Angular deviation of left window side (see graph in help manual), positive value indicates that window widens"}}
   {rdeviation2 float "" {
     "right side\ndeviation [deg]" "Angular deviation of right window side (see graph in help manual), positive value indicates that window widens"}}
+  {"4th window (only if 4 windows)" header}
+  {winpos3 float "" {
+    "window\nposition [deg]" "angular position of window centre"}}
+  {winheight3 float "" {
+    "window\nheight [cm]" "window height from edge of chopper disk to bottom of window "}}
+  {width3 float "" {
+    "window\nwidth [deg]" "angular opening of chopper window"}}
+  {ldeviation3 float "" {
+    "left side\ndeviation [deg]" "Angular deviation of left window side (see graph in help manual), positive value indicates that window widens"}}
+  {rdeviation3 float "" {
+    "right side\ndeviation [deg]" "Angular deviation of right window side (see graph in help manual), positive value indicates that window widens"}}
 }
 
 proc chpCheckErr {{app _}} {
@@ -982,11 +997,11 @@ set refESET {
   {mz float 0 {"main position\nZ [cm]"
     "Generally defines the reference point (origin) of the sample in the frame provided by the former module."} 1}
   {thick float 0.00001 {"thickness\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
+    "Thickness of the rectangular sample, i.e. perpendicular to refl. surface.\n It determines the range of depth in which the reflection is supposed to take place."} ge0 "" 1}
   {wid float 1 {"width\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
-  {hei float 1 {"height\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
+    "Width of the rectangular sample (along y-axis for reflection angle 0)."} ge0 "" 1}
+  {hei float 1 {"length\nsample [cm]"
+    "Length of the rectangular sample (along x-axis for reflection angle 0)."} ge0 "" 1}
   {"Output Frame" header}
   {gen radio "standard defined frame" {"frame\ngeneration"
     "If and only if user defined frame has been selected, then horiz. and vertical angle and output frame origin x,y, and z must be specified, too."}
@@ -2124,7 +2139,7 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {axis radio Y {"axis of\nrotation" "Axis around which the sample is rotated." "" R} {Y Z}}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
-zero means: parallel to x-axis; (small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
@@ -3055,7 +3070,7 @@ proc serializeRefFile {f mode var app} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
-      if $gen {			
+      if $gen {
 	# user frame
 	set gen "user defined frame"
 	readNumItems $f $blist $app
@@ -3420,7 +3435,7 @@ proc moduleMenus {{n 1}} {
   }
 
   # prepend button to digest view if a digest has been defined
-  set w $Mlf.dig.f 
+  set w $Mlf.dig.f
   if {"" == [globVal digestSource]} {
     catch {destroy $w}
   } elseif {! [winfo exists $w]} {
@@ -3428,7 +3443,7 @@ proc moduleMenus {{n 1}} {
     button $w.cross -image fcross -command removeDigest
     button $w.right -image fright -command digestView
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $menuButtonColor  
+	-font $lfn -bg $menuButtonColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w
