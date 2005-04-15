@@ -314,7 +314,7 @@ proc inputDigest {w} {
       gSet $si v$i
     }
     label $g.l -text [padS $m $lwidth] -font $lfont -bg $labColor
-    entry $g.e -relief sunken -textvariable $si -bg $entryColor -width 8
+    entry $g.e -relief sunken -textvariable $si -bg $entryColor -width 16
     button $g.be -text edit -command [list editFormula $w $i] -background $bgColor
     button $g.bs -text "store formula" -command [list storeFormula $w $i]\
 	-background $bgColor
@@ -327,7 +327,7 @@ proc inputDigest {w} {
       -height 4 -width 64\
       -wrap none\
       -relief sunken\
-      -font [textFont]\
+      -font [monoFont]\
       -setgrid 1\
       -yscrollcommand "$ww.yscroll set" -bg $bgColor
   yscroll $ww "$ww.t yview"

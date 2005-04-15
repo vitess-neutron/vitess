@@ -1,0 +1,47 @@
+==================
+VITESS Version 2.6
+==================
+
+=======================
+Modules and Tools
+=======================
+
+chopper_fermi: odd number of slits allowed
+chopper_disc : log text improved
+init.c       : new option: frame of previous module for instrument.inf; 4 instead of 3 possible count rates; version 2.6
+init.h       : parameter 'bOldFrame' for: frame of previous module
+general.c    : new function 'LAMBDA_FROM_V'
+general.h    : new function 'LAMBDA_FROM_V'
+monitor1.c   : calculation of peak flux corrected and log text improved
+spacewindow.c: option: frame of previous module, especially for beamstop
+
+vitess.tcl   : spacewindow : option 'previous frame'
+               chopper_disc: 4th window
+               detector    : dist greater equal zero instead of greater zero
+               sample_refl : parameter name and description
+
+sample_refl.html: description improved
+spacewindow.html: option 'previous frame'
+
+================
+GUI Changes
+================
+
+A digest view supports a better overview of varied parameters in
+simulation series.
+After defining an instrument most parameters normally will be constant in
+a series of simulations, but a handfull of parameters from different modules
+are to be varied.
+
+The digest comprises parameters easily selected by clicking on parameter labels.
+Values for these parameters may be entered in the digest view, or may be computed
+from other parameters by formula.
+
+================
+Code Repository
+================
+
+The VITESS source code resides in a subversion repository.
+Registered developers my read and contribute via
+
+https://www.hmi.de/svn/vitess/trunk/

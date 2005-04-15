@@ -683,7 +683,7 @@ exit
   set lfont [labelFont]
   text $w.v.text -relief raised -bd 2 \
       -height 48 -width 80\
-      -font [textFont] -bg $bgColor\
+      -font [monoFont] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
   yscroll $w.v "$w.v.text yview"
@@ -808,7 +808,7 @@ proc inputSeries {w} {
 
   set lwid 40
   forceDef seriesselection_ all
-  forceDef seriescopytarget_ [entryVal defdirectory]
+  forceDef seriescopytarget_ [file join [entryVal defdirectory] Test]
   lPack2 $w.p "Step\nSelection" seriesselection_ $lfont $lwid
   lPack2 $w.ct "Copy Target\nDirectory" seriescopytarget_ $lfont $lwid
   lPack2 $w.c "Files to\nbe copied" seriescopyfiles_ $lfont $lwid

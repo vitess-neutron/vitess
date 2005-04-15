@@ -3270,7 +3270,7 @@ proc editFile {var param ext app} {
     global bgColor
     text $w.v.text -relief raised -bd 2 \
 	-height 32 -width 80\
-	-font [textFont] -bg $bgColor\
+	-font [monoFont] -bg $bgColor\
 	-setgrid 1\
 	-yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
