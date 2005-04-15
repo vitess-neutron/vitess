@@ -80,6 +80,7 @@ switch $tcl_platform(platform) {
   }
 }
 catch {unset ld place resname s i}
+set monospaced $serif
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]
 ###    use tk_chooseColor to find better colors

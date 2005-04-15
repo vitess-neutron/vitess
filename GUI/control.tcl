@@ -225,6 +225,7 @@ proc controlMenu {w} {
       {c Tutorial {showHelpItem tutorial.pdf}} \
       {c "User interface" {showHelpItem VITESS-GUI}} \
       {c "Generate Series" {showHelpItem sim_series.html}} \
+      {c "Instrument Digest" {showHelpItem digest.html}} \
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
       {m Tools me} s \
@@ -304,11 +305,12 @@ proc controlMenu {w} {
       {m "Copy results" copresults} \
       {m Plotmode plotmode} \
       {m Timeout timeout} s\
-      {m Menubarfont mfont}\
-      {m Headerfont hfont}\
-      {m Buttonfont bfont}\
-      {m Labelfont lfont}\
-      {m Textfont tfont} s\
+      {m "Fonts: text" tfont}\
+      {m "monospaced text" monofont}\
+      {m menubar mfont}\
+      {m header hfont}\
+      {m button bfont}\
+      {m label lfont} s\
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
       {c "external settings" editDefaults} s\
@@ -359,6 +361,7 @@ proc controlMenu {w} {
   fontMenu $wo hfont
   fontMenu $wo bfont
   fontMenu $wo lfont
+  fontMenu $wo monofont
   fontMenu $wo tfont
 
   forceDef scrollWidth 8
@@ -394,12 +397,18 @@ proc textFont {} {
   global tfontfamily tfontsize tfonttype
   return [list $tfontfamily $tfontsize $tfonttype]
 }
+proc monoFont {} {
+  global monofontfamily monofontsize monofonttype
+  return [list $monofontfamily $monofontsize $monofonttype]
+}
+
 
 proc setOptions {} {
-  global serif sserif \
+  global serif sserif monospaced \
       mfontfamily mfontsize mfonttype \
       hfontfamily hfontsize hfonttype bfontfamily bfontsize bfonttype \
-      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype
+      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype \
+      monofontfamily monofontsize monofonttype
   if [info exists hfontfamily] return
 
   set hfontfamily $sserif
@@ -418,6 +427,10 @@ proc setOptions {} {
   set tfontsize 10
   set tfonttype normal
 
+  set monofontfamily $monospaced
+  set monofontsize $tfontsize
+  set monofonttype $tfonttype
+
   if {[getSystem] == "windows"} {
     incr hfontsize -4
     incr lfontsize -3
@@ -434,6 +447,7 @@ proc setOptions {} {
   option add *Button.font [buttonFont]
   option add *Label.font  [labelFont]
   option add *font [textFont]
+  option add *monofont [monoFont]
 }
 
 proc pardirPar {} {
