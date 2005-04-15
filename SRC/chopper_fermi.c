@@ -20,6 +20,7 @@
 /* 1.12  Apr 2004  G. Zsigmond  negative time of flight - corrections, set zero time
 /* 1.13  May 2004  G. Zsigmond  circular geom option and channel length included in curved fc
 /* 1.14  JUL 2004  G. Zsigmond  small change in Init to adapt to new GUI
+/* 1.15  OCT 2004  G. Zsigmond  changed to use both even or odd number of channels
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -86,11 +87,11 @@ int main(int argc, char **argv)
 
 	  WL = InputNeutrons[i].Wavelength;
 
-	  CopyVector(InputNeutrons[i].Position, Pos); 
+	  CopyVector(InputNeutrons[i].Position, Pos);
 
-	  CopyVector(InputNeutrons[i].Vector, Dir); 
+	  CopyVector(InputNeutrons[i].Vector, Dir);
 
-	  Dir[0]	= (double)sqrt(1 - sq(Dir[1]) - sq(Dir[2])); 
+	  Dir[0]	= (double)sqrt(1 - sq(Dir[1]) - sq(Dir[2]));
 
 
 	  /* shift to center of Fermi-Chopper */
@@ -114,42 +115,42 @@ int main(int argc, char **argv)
 				  if((pos[2]>=height/2.)||(pos[2]<= - height/2.)||(pos[1]>=diameter/2.)||(pos[1]<= - diameter/2.)) goto getlost;
 			}
 		  else goto getlost;
-	
+
 
 		/* translates neutron variables for X'= - diameter/2.  */
 
 		{
 			VectorType Path;
 
-			TOF = TOF + (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
-			
+			TOF = TOF + (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
 			/*if(TOF<0) {fprintf(LogFilePtr,"\nERROR: This algorithm only works with positive time-of-flight \n"); exit(-1); }*/
-				
+
 			CopyVector(Dir, Path);
 
 			MultiplyByScalar(Path, (- diameter/2. - Pos[0])/ Dir[0] );
 
-			AddVector(Pos, Path);  
+			AddVector(Pos, Path);
 		}							/*	 Path = displacement vector */
 
-	
+
 	/* calculate time entering-edge and exiting-edge of 4 windows along the channels */
 
 	  {	long j, k, m;
 	  double sq_D_0_1, sq_term, omega_fact, dirpos, vz_pos, phase[10][2000];
- 
+
 	  sq_D_0_1 = sq(Dir[0]) + sq(Dir[1]);
 	  dirpos = Dir[0]*Pos[1] - Dir[1]*Pos[0];
 	  sq_term  = sq(dirpos) / sq_D_0_1;
 	  omega_fact = omega / (V_FROM_LAMBDA(WL) * Dir[0]);
 	  vz_pos = Pos[1] > 0.0 ? 1.0 : -1.0;
 
-	  phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI); 
-	
+	  phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI);
+
 	  TOF_zero = phase0/omega;
 
 	  for(k=0; k<4; k++) {
-  
+
 		for(j=1; j < 2*Nchannels+2; j++) {
 
       double x_ch_k_j, y_ch_k_j, sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j;
@@ -173,50 +174,50 @@ int main(int argc, char **argv)
       if (fabs(arg_k) > 1.) {
 		phase[k][j] = 777;
 		  } else {
-		pha_k_j = asin(Arg_k) - asin(arg_k); 
+		pha_k_j = asin(Arg_k) - asin(arg_k);
 
-		if(x_ch_k_j < 0.) pha_k_j = - pha_k_j; 
-							
+		if(x_ch_k_j < 0.) pha_k_j = - pha_k_j;
+
 		phase[k][j] =  pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
 		  }
 		}
 	  }
 
 
-		  m = -1; 
+		  m = -1;
 
-		  for(j=0;j<2*Nchannels+1; j++) 
+		  for(j=0;j<2*Nchannels+1; j++)
 		  {
 					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
 							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
 							   &&(phase[2][j] > phase0 )&&(phase0 > phase[2][j+1])
 							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1]))
-					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ 
+					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/
 											 goto happyend;}
 
 
-					m = m * (-1); 
+					m = m * (-1);
 		  }
-		  
-		  
+
+
 		  /* also tries one turn earlier  */
-		  
+
 		  if((phase0 > 0)&&(omega > 0)) phase0 +=  - coef_pi*M_PI;
 		  if((phase0 < 0)&&(omega < 0)) phase0 +=  coef_pi*M_PI;
 
-		  m = -1; 
+		  m = -1;
 
-		  for(j=0;j<2*Nchannels+1; j++) 
+		  for(j=0;j<2*Nchannels+1; j++)
 		  {
 					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
 							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
 							   &&(phase[2][j] > phase0 )&&(phase0 > phase[2][j+1])
 							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1]))
-					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ 
+					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/
 											 goto happyend;}
 
 
-					m = m * (-1); 
+					m = m * (-1);
 		  }
 
 					goto getlost;
@@ -227,7 +228,7 @@ int main(int argc, char **argv)
 	  /* Output matters */
 
 	/* transmit coordinates which were not changed, the rest overwrite below */
-	Neutrons = InputNeutrons[i]; 
+	Neutrons = InputNeutrons[i];
 
 
 
@@ -237,14 +238,14 @@ int main(int argc, char **argv)
 		VectorType Path;
 
 		if(zerotime==1) Neutrons.Time = TOF_zero + (diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-		else Neutrons.Time = TOF + (diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
-			
+		else Neutrons.Time = TOF + (diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
 		CopyVector(Dir, Path);
 
 		MultiplyByScalar(Path, (diameter/2. - Pos[0])/ Dir[0] );
 
-		AddVector(Pos, Path);  
-		
+		AddVector(Pos, Path);
+
 		CopyVector(Pos, Neutrons.Position);
 	}											/*	 Path = displacement vector */
 
@@ -266,7 +267,7 @@ my_exit:;
 
   fprintf(LogFilePtr," \n");
 
-  Cleanup(pos_ch[0],pos_ch[1],pos_ch[2], 0.0,0.0);	
+  Cleanup(pos_ch[0],pos_ch[1],pos_ch[2], 0.0,0.0);
 
   return 0;
 }
@@ -276,7 +277,7 @@ my_exit:;
 void OwnInit(int argc, char *argv[])
 {
   fprintf(LogFilePtr," \n");
-  print_module_name("Fermi-Chopper 1.14a");
+  print_module_name("Fermi-Chopper 1.15");
 
   /*    INPUT  */
 
@@ -293,7 +294,7 @@ void OwnInit(int argc, char *argv[])
 	case 'X':
 	  sscanf(arg, "%lf", &pos_ch[0]);
 	  break;
-	
+
 	case 'Y':
 	  sscanf(arg, "%lf", &pos_ch[1]);
 	  break;
@@ -311,7 +312,7 @@ void OwnInit(int argc, char *argv[])
 	  break;
 
 	case 'c':
-	  sscanf(arg, "%lf", &depth); 
+	  sscanf(arg, "%lf", &depth);
 	  break;
 
 	case 'L':
@@ -320,10 +321,6 @@ void OwnInit(int argc, char *argv[])
 
 	case 'l':
 	  sscanf(arg, "%ld", &Nchannels);
-	  if((Nchannels/2. - floor(Nchannels/2.)) > 0.) {
-	    Nchannels += 1;
-	    fprintf(LogFilePtr,"\nWARNING: Number of channels must be even! Set %ld. \n", Nchannels);
-	  }
 	  break;
 
 	case 'm':
@@ -333,7 +330,6 @@ void OwnInit(int argc, char *argv[])
 	case 'n':
 	  sscanf(arg, "%lf", &omega);
 	  if(omega == 0) omega = 1.E-6;
-/*	  if(omega < 0) {fprintf(LogFilePtr,"\nERROR: This algorithm only works with positive frequency \n"); exit(-1); }*/
 	  omega = omega * 2. * M_PI / 1000.;
 	  break;
 
@@ -371,9 +367,9 @@ void OwnInit(int argc, char *argv[])
 
 	if(pos_ch[0] < diameter/2.) {fprintf(LogFilePtr,"\nERROR: Minimum position is diameter/2 \n"); exit(-1); }
 
-	
-  /* calculate edge positions */ 
-  
+
+  /* calculate edge positions */
+
   if(Option==1)
     {
 
@@ -407,7 +403,7 @@ void OwnInit(int argc, char *argv[])
 
 	      if(m == 1) add = wallwidth; else add = w_ch;
 
-	      for(k=0;k<4; k++) 
+	      for(k=0;k<4; k++)
 		  {
 				x_ch[k][j] = - depth/2. * (3.- k)/3. + k/3. * depth/2.;
 
@@ -417,8 +413,8 @@ void OwnInit(int argc, char *argv[])
 	      m = m * (-1);
 	    }
 
-	  for(k=0;k<4; k++) 
-	  {		  
+	  for(k=0;k<4; k++)
+	  {
 		x_ch[k][0] = x_ch[k][1] = x_ch[k][2*Nchannels] = x_ch[k][2*Nchannels+1] = - depth/2. *(3. - k)/3. + k/3. * depth/2.;
 	  }
 	}
@@ -426,16 +422,16 @@ void OwnInit(int argc, char *argv[])
     }
 
   if(Option==2)
-    {	
+    {
 		  if(CurvGeomOption==1)
 		  {
 						  fprintf(LogFilePtr,"\nCurved Fermi chopper activated \n");
 
 						  fprintf(LogFilePtr,"\nGeometry option: ideally shaped (close to parabolic) long channels ('depth' inactive) \n");
 
-						  fprintf(LogFilePtr,"\nRadius of curvature (parabolic approximation):\n" 
-											 "	%f cm at center\n" 
-											 "	%f cm at circumference\n", 
+						  fprintf(LogFilePtr,"\nRadius of curvature (parabolic approximation):\n"
+											 "	%f cm at center\n"
+											 "	%f cm at circumference\n",
 											 V_FROM_LAMBDA(optimal_wl)/2./omega, V_FROM_LAMBDA(optimal_wl)/2./omega*pow((1 + sq(omega*diameter/V_FROM_LAMBDA(optimal_wl))), 1.5));
 
 
@@ -466,19 +462,19 @@ void OwnInit(int argc, char *argv[])
 						{
 
 							if(m == 1) add = wallwidth; else add = w_ch;
-							
+
 							y_ch[0][j] = y_ch[0][j-1] + add;
 
 							x_ch[0][j] = - sqrt(sq(diameter/2.) - sq(y_ch[0][j]));
 
-							
+
 							for(k=0; k<500; k++)
 							  {
 								tt= k /500. * 2. * fabs(x_ch[0][j])/V_FROM_LAMBDA(optimal_wl);
 								xx[k] = y_ch[0][j] * sin(omega*tt) + (V_FROM_LAMBDA(optimal_wl)*tt - fabs(x_ch[0][j])) * cos(omega*tt);
 								yy[k] = y_ch[0][j] * cos(omega*tt) - (V_FROM_LAMBDA(optimal_wl)*tt - fabs(x_ch[0][j])) * sin(omega*tt);
 
-								fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);		
+								fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);
 							  }
 
 								x_ch[1][j] = xx[167];
@@ -495,7 +491,7 @@ void OwnInit(int argc, char *argv[])
 		if(CurvGeomOption==2)
 		{
 
-		  
+
 					/* diameter matter */
 
 				  main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
@@ -503,7 +499,7 @@ void OwnInit(int argc, char *argv[])
 					fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.))); exit(-1);}
 
 
-		  
+
 				  fprintf(LogFilePtr,"\nCurved Fermi chopper activated \n");
 
 				  fprintf(LogFilePtr,"\nGeometry option: circular shaped channels with fixed length (via 'depth') \n");
@@ -512,9 +508,9 @@ void OwnInit(int argc, char *argv[])
 
 				  angle_channel = atan(depth/2./radius_of_curv);
 
-				  fprintf(LogFilePtr,"\nRadius of curvature (parabolic approximation):\n" 
-									 "optimal_velocity/2./omega = %f cm \n" 
-									 "Angle channel: %f deg \n", 
+				  fprintf(LogFilePtr,"\nRadius of curvature (parabolic approximation):\n"
+									 "optimal_velocity/2./omega = %f cm \n"
+									 "Angle channel: %f deg \n",
 									 radius_of_curv, 180./M_PI*angle_channel);
 
 
@@ -542,13 +538,13 @@ void OwnInit(int argc, char *argv[])
 
 						if(m == 1) add = wallwidth; else add = w_ch;
 
-								
+
 						for(k=0; k<500; k++)
 						  {
 							xx[k]= (2.*k /499.  - 1.) * depth/2.;
 							yy[k] = - width/2. - sqrt(sq(radius_of_curv) - sq(depth/2.)) + sqrt(sq(radius_of_curv) - sq(xx[k])) + shift_y;
 
-							fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);		
+							fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);
 						  }
 
 							x_ch[0][j] = xx[0];
@@ -567,8 +563,8 @@ void OwnInit(int argc, char *argv[])
 			  }
 		}
     }
-		
-  if(Option==1) coef_pi=1.; else coef_pi=2.;  fprintf(LogFilePtr,"Phase set is %f°.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI));   
+
+  if(Option==1) coef_pi=1.; else coef_pi=2.;  fprintf(LogFilePtr,"Phase set is %f°.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI));
 
 
 

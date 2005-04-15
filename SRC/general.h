@@ -11,12 +11,12 @@
 /******************************/
 
 #ifdef _MSC_VER
-#define M_PI            3.14159265358979323846  /* pi */ 
+#define M_PI            3.14159265358979323846  /* pi */
 #define M_PI_2          1.57079632679489661923  /* pi/2 */
 #endif
 
 #define MN          1.6749284E-27
-#define G           9.80665 
+#define G           9.80665
 #define K           1.380662E-23
 #define NA          6.022137E23
 #define H           6.626076E-34
@@ -44,7 +44,7 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
-typedef enum 
+typedef enum
 {	VT_CUBE   = 1,
 	VT_CYL    = 2,
 	VT_SPHERE = 3
@@ -134,7 +134,7 @@ typedef struct
 TotalID;
 
 
-typedef struct 
+typedef struct
 {
 	TotalID        ID;
 	char           Debug;
@@ -149,43 +149,43 @@ typedef struct
 Neutron;
 
 
-typedef struct 
+typedef struct
 {
       double height, r;
-} 
+}
 CylinderType;
 
 
-typedef struct 
+typedef struct
 {
       double height, width, thickness;
-} 
+}
 CubeType;
 
 
-typedef struct 
+typedef struct
 {
       double r;
-} 
+}
 BallType;
 
 
-typedef union 
+typedef union
 {
     CylinderType Cyl;
     CubeType     Cube;
     BallType     Ball;
-} 
+}
 SampleGeomType;
 
 
-typedef struct 
+typedef struct
 {
   SampleGeom Type;
   VectorType Position;
   VectorType Direction;
   SampleGeomType SG;
-} 
+}
 SampleType;
 
 typedef struct
@@ -208,8 +208,9 @@ ModProp;
 
 double ENERGY_FROM_LAMBDA(double x);
 double LAMBDA_FROM_ENERGY(double x);
-double ENERGY_FROM_V   (double x);    
+double ENERGY_FROM_V   (double x);
 double V_FROM_LAMBDA   (double x);
+double LAMBDA_FROM_V(double x);
 
 double ran3       (long * i);
 double MonteCarlo (double x, double y);
