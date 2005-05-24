@@ -952,7 +952,7 @@ set chop1Add {
   {z float 0 {"position\nZ [cm]" "center position z of the Fermi chopper" "" V}}
   {a float 5 {"height [cm]" "height of the Fermi chopper" "" a} gt0}
   {b float 4 {"width [cm]" "width of the Fermi chopper" "" b} gt0}
-  {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper" "" c} gt0}
+  {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper (not active for channel shape option 'ideal')" "" c} gt0}
   {chans int 20 {"number of\nchannels" "number of straight channels" "" l} ge1}
   {wall float 0.02 {"wall\nthickness [cm]" "thickness of the wall between channels" "" m} ge0}
   {dia float 7.1 {"diameter [cm]" "diameter of the shadowing cylinder" "" r} gt0}
@@ -967,23 +967,30 @@ set chop2Add {
     {yes no} {1 0}}
 }
 
+set chop3Add {
+  {number_of_gates radio 4 {
+    "number of gates"
+    "4: number of gates representing the channels ideal for thermal and best for cold neutrons\n6: more accurate but slower\n8: most accurate but slowest" "" p}
+    {4 6 8} {4 6 8}}
+}
+
 ### chopper fermi_str
 ###
 set chopper_fermi_strESET [concat $chop1Add {
-} $chop2Add ]
+} $chop2Add $chop3Add ]
 
 
 ### chopper fermi_cur
 ###
 set chopper_fermi_curESET [concat $chop1Add {
-  {cfL float 5 {"optimal\nwavelength [A]" "optimal wavelength to be transmitted at highest intensity" "" L} gt0}
+  {cfL float 5 {"optimal\nwavelength [A]" "optimal wavelength to be transmitted at highest intensity.\nIf radius of curvature is fixed:\nlambda[A] = 314.8/radius_of_curvature[m]/frequency[Hz]" "" L} gt0}
 } $chop2Add {
   {chan_shape radio circular {
     "channel shape"
     "circular: channels have circular shape\nideal: channels close to parabolic shape" "" g}
-    {"ideal (~parabolic)" "circular"} {1 2}}
+    {"ideal" "circular"} {1 2}}
   {geomfile pareditablefile ch_fermi_geom.dat {"geometry\nfile" "output file of the curved channel geometry (for scatter plot of the last two columns, first column: channel index, O = envelope) " "" G}}
-  } ]
+  } $chop3Add ]
 
 
 ### ref file description
