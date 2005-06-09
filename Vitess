@@ -70,7 +70,12 @@ switch $tcl_platform(platform) {
     set TextPos +620+0
     set MaxOutstringLength 80
     set Browser [file join $ExeDirectory shelexec.exe]
-    set serif "Lucida Console"
+    set s "Lucida Console"
+    if {[lsearch [font families] $s] >= 0} {
+      set serif $s
+    } else {
+      set serif Courier
+    }
     set sserif Arial
     catch {exec $KillProg C} res
   }
