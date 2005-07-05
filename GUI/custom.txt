@@ -16,9 +16,9 @@ indicated by special comments in other files like control.tcl):
 Steps needed to insert a new simulation module quark:
 
 1. edit vitess.tcl
-- add a line behind 
+- add a line behind
 	set AvailableSET {
-  like 
+  like
 	{quark {}}
   (filling the inner {} with submodule names goes beyond this read-me.)
 - input the quarkESET structure, which defines all entries like
@@ -31,7 +31,7 @@ Steps needed to insert a new simulation module quark:
   the entry. The first list element is a lowercase letter name, second
   comes the type of the entry, third the entry default. All list items
   are specified in comments in vitess.tcl.
-- input a procedure to check interdependencies of variables, if 
+- input a procedure to check interdependencies of variables, if
   range/type checking of values is not sufficient like
 	proc quarkCheckErr {{app _}} {
    	...
@@ -64,7 +64,7 @@ Steps needed to insert a new simulation module quark:
   comparable to serializeChpFile.
   The special file entries will need a quaESET, which may be checked by
   a proc qauCheckErr {{app _}} {}. To read/save .qua files, you'll need
-  to augment proc editSave {var ext app {saveAs 0}} {} for the 
+  to augment proc editSave {var ext app {saveAs 0}} {} for the
   qua file type.
 
 2. Produce the executable image for that module, and put it to the
@@ -72,10 +72,10 @@ Steps needed to insert a new simulation module quark:
   If under Windows, this is MODULES/quark.exe, under Unix it is
   MODULES/quark_<xxx>, where <xxx> is $tcl_platform(os).
   If the executable cremor belongs to module quark, you have to enter a line
-  in proc generateVitessCommand after 
+  in proc generateVitessCommand after
     if {[info exists var] && $var != $DummyEntry} {
       switch $var {
-  like 
+  like
 	quark {set com cremor$sys}
 
 ----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ Variable names in ESET lists should start with lower case letters,
 and end with letters or digits. Only letters, digits, and the underscore
 character should make up the rest characters between.
 This is important to avoid name conflicts, and make entry values
-storable. The exact storage exclude pattern is 
+storable. The exact storage exclude pattern is
 	{^([A-Z_.]|error|auto_|arg|tk|tcl)|env|SET$|Add$}
 
 

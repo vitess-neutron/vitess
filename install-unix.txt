@@ -4,8 +4,8 @@
 
 Hahn-Meitner-Institut Berlin
 Modules:
-	Géza Zsigmond (zsigmond@hmi.de)
-	Klaus Lieutenant (lieutenant@hmi.de)
+	Géza Zsigmond      (geza.zsigmond@psi.ch)
+	Klaus Lieutenant   (lieutena@ill.fr)
 	Sergey Manoshin
 	Dietmar Wechsler
 	Friedrich Streffer

@@ -32,6 +32,7 @@
 /* 2.9   Feb 2004  K. Lieutenant  'FullParName'; 'message' included                         */
 /* 2.10  Mar 2004  K. Lieutenant  parabolic and elliptic shape                              */
 /* 2.11  Oct 2004  K. Lieutenant  curvature to the right by negative radius                 */
+/* 2.12  May 2004  K. Lieutenant  elliptic shape by focus point                             */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -89,27 +90,27 @@ double GuideEntranceHeight=0.0,
        GuideEntranceWidth=0.0,
        GuideExitHeight=0.0,
        GuideExitWidth=0.0,
-       GuideMaxHeight=0.0,     /* max. height and width of guide for elliptic shape */
+       GuideMaxHeight=0.0,   /* max. height and width of guide for elliptic shape */
        GuideMaxWidth=0.0,
-       FocusY  = 0.0,          /* position of focus point for parabolic or elliptic shape */
-       FocusZ  = 0.0,
-		 PhiAnfY =90.0,          /* phases for elliptic shape */
-		 PhiAnfZ =90.0,
-		 LcntrY  = 0.0,          /* centre positions of ellipse */
-		 LcntrZ  = 0.0,
-       AxisY   = 0.0,          /* long axes of ellipse */
+       FocusY=0.0,D_Foc1Y=0.0, /* pos. of focus points for elliptic shape in horizontal dir. */
+       FocusZ=0.0,D_Foc1Z=0.0, /* pos. of focus points for elliptic shape in vertical dir.   */
+       PhiAnfY =90.0,        /* phases for elliptic shape */
+       PhiAnfZ =90.0,
+       LcntrY  = 0.0,        /* centre positions of ellipse */
+       LcntrZ  = 0.0,
+       AxisY   = 0.0,        /* long axes of ellipse */
        AxisZ   = 0.0,
        Radius  = 0.0,
-       piecelength=0.0,        /* length of 1 piece of the guide */
-       dTotalLength,           /* total length of the guide  */
-       dDeltaX, dDeltaY,       /* length in x- and y-direction of the total guide  */
-       beta, beta_ges,         /* angle of declination between 2 pieces  and of the total guide */
+       piecelength=0.0,      /* length of 1 piece of the guide */
+       dTotalLength,         /* total length of the guide  */
+       dDeltaX, dDeltaY,     /* length in x- and y-direction of the total guide  */
+       beta, beta_ges,       /* angle of declination between 2 pieces  and of the total guide */
        spacer=0.0,
-       surfacerough=0.0;       /* parameter which characterizes the waviness of the guide surface */
-double *Ypce, *Zpce,           /* list of widths and heights at beginning and end of pieces       */
-	    *Wchan;                 /* list of widths of channel at beginning and end of each piece */
+       surfacerough=0.0;     /* parameter which characterizes the waviness of the guide surface */
+double *Ypce, *Zpce,         /* list of widths and heights at beginning and end of pieces       */
+       *Wchan;               /* list of widths of channel at beginning and end of each piece */
 
-VtShape eGuideShapeY=1,        /* shape of guide in y- and z-direction */
+VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
         eGuideShapeZ=1;
 
 double *RDataL=NULL,         /* Table of reflectivity for guide surface on left side        */
@@ -168,21 +169,28 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.11a");
+	print_module_name("guide 2.12c");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
-	fprintf(LogFilePtr, "Horizontal: \n");
+	fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
+	if (nChannels > 1)
+		fprintf(LogFilePtr, " with %d channels", nChannels);
+	fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+	if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
+		fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+	fprintf(LogFilePtr, "\n\nHorizontal: ");
 	switch (eGuideShapeY)
 	{	case VT_ELLIPTIC:
-			fprintf(LogFilePtr, "elliptic shape, max. width :%7.3f cm  at %8.2f cm\n", GuideMaxWidth, LcntrY);
-			fprintf(LogFilePtr, "long half axis, focus point:%7.2f cm     %8.2f cm\n", AxisY, FocusY);
+			fprintf(LogFilePtr, "elliptic shape\n");
+			fprintf(LogFilePtr, " maximal width  :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
+			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisY/100.);
+			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Y/100., FocusY/100.);
 			break;
 		case VT_PARABOLIC:
 			fprintf(LogFilePtr, "parabolic shape\n");
 			break;
 		case VT_CURVED  :
-			fprintf(LogFilePtr, "curved, radius: %8.3f m\n", Radius/100.);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -191,11 +199,13 @@ int main(int argc, char *argv[])
 			else    fprintf(LogFilePtr, "constant width\n");
 			break;
 	}
-	fprintf(LogFilePtr, "Vertical  : \n");
+	fprintf(LogFilePtr, "Vertical  : ");
 	switch (eGuideShapeZ)
 	{	case VT_ELLIPTIC:
-			fprintf(LogFilePtr, "elliptic shape, max. height:%7.3f cm  at %8.2f cm\n", GuideMaxHeight, LcntrZ);
-			fprintf(LogFilePtr, "long half axis, focus point:%7.2f cm     %8.2f cm\n", AxisZ, FocusZ);
+			fprintf(LogFilePtr, "elliptic shape\n");
+			fprintf(LogFilePtr, " max. height    :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
+			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisZ/100.);
+			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Z/100., FocusZ/100.);
 			break;
 		case VT_PARABOLIC:
 			fprintf(LogFilePtr, "parabolic shape\n");
@@ -208,10 +218,6 @@ int main(int argc, char *argv[])
 			break;
 	}
 
-	fprintf(LogFilePtr, "Guide consists of %d piece(s)", nPieces);
-	if (nChannels > 1)
-		fprintf(LogFilePtr, " with %d channels", nChannels);
-
 	if (Radius != 0.0)  /* curved guide */
 	{	beta = 2.0*asin(piecelength/(2.0*Radius));
 		dCosBetH = cos(beta/2.0);
@@ -222,10 +228,6 @@ int main(int argc, char *argv[])
 	else
 	{	beta = 0.0;
 	}
-	fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
-	fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
-	if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-		fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
 
 	if (keyabut == 1)
 		fprintf(LogFilePtr,"\nInside guide abutment loss is enabled \n");
@@ -597,6 +599,12 @@ void OwnInit   (int argc, char *argv[])
 				  GuideExitWidth = atof(arg);
 				  break;
 
+				case 'f':
+				  FocusY = atof(arg);      /* distance of focus point behind guide exit */
+				  break;
+				case 'F':
+				  FocusZ = atof(arg);      /* distance of focus point behind guide exit */
+				  break;
 				case 'z':
 				  PhiAnfZ = atof(arg);    /* Phase of ellipse for height at guide entrance (in deg) */
 				  PhiAnfZ *= M_PI/180.0;  /* 90 deg means: max. width of ellipse       */
@@ -714,9 +722,14 @@ void OwnInit   (int argc, char *argv[])
 		Zpce [j] = Height(j*piecelength)/2.0;
 		Wchan[j] = (2*Ypce[j]- nSpacers*spacer)/(double)nChannels;
 		if (Wchan[j] <= 0.0)
-			Error("channel width gets zero (or less)");
+			Error("Geometry impossible. Channel width gets zero (or less)");
 		if (pFile != NULL)
-			fprintf(pFile, "%10.3f %10.3f\n", 2*Ypce[j], 2*Zpce[j]);
+		{	if (j==0)
+			{	fprintf(pFile, "# length [m]  width [cm]  height [cm]\n");
+				fprintf(pFile, "#-------------------------------------\n");
+			}
+			fprintf(pFile, "%10.2f  %10.3f  %10.3f\n", j*piecelength/100.0, 2*Ypce[j], 2*Zpce[j]);
+		}
 	}
 	if (pFile != NULL)
 		fclose(pFile);
@@ -747,6 +760,7 @@ void OwnCleanup()
 {
 	/* print error that might have occured many times */
 	PrintMessage(GUID_OUT_OF_EXIT, "", ON);
+	PrintMessage(GUID_NO_PLANE, "", ON);
 
 	fprintf(LogFilePtr," \n");
 
@@ -784,10 +798,11 @@ void OwnCleanup()
 double Height(double dLength)
 {
 	double dHeight=0.0,
-	       L_end,         /* end of parabel or center of ellipse   */
-	       A,             /* factor of quadratic term in parabola  */
-	       V_anf, V_end,  /* intermediate values                   */
-	       Phi, Phi_end;  /* phases in ellipse                     */
+	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
+	       A,               /* factor of quadratic term in parabola  */
+	       eps,             /* correction value =(b*b)/(2a*a)        */
+	       Phi,
+	       Phi_anf,Phi_end; /* phases in ellipse                     */
 
 	switch (eGuideShapeZ)
 	{
@@ -804,13 +819,25 @@ double Height(double dLength)
 			dHeight = sqrt((L_end-dLength)/A);
 			break;
 		case VT_ELLIPTIC:
-			GuideMaxHeight = GuideEntranceHeight/sin(PhiAnfZ);
-			Phi_end = asin(GuideExitHeight/GuideMaxHeight);
-			V_anf   =-cos(PhiAnfZ);
-			V_end   = cos(Phi_end);
-			LcntrZ  = dTotalLength * V_anf / (V_anf+V_end);
-			AxisZ   = LcntrZ / V_anf;
-			FocusZ  = LcntrZ + sqrt(sq(AxisZ) - sq(GuideMaxHeight));
+			/* first approximation */
+			AxisZ   = 0.5*fabs((sq(dTotalLength+FocusZ)*sq(GuideExitHeight) - sq(FocusZ*GuideEntranceHeight))
+			                   /(FocusZ*sq(GuideEntranceHeight) - (dTotalLength+FocusZ)*sq(GuideExitHeight)));
+			L_end   = AxisZ - FocusZ;
+			LcntrZ  = dTotalLength - L_end;
+			Phi_anf = acos(-LcntrZ/AxisZ);
+			Phi_end = acos(L_end/AxisZ);
+			GuideMaxHeight = GuideEntranceHeight/sin(Phi_anf);
+			/* second approximation */
+			eps     = 0.5 * sq(GuideMaxHeight/AxisZ);
+			AxisZ   = 0.5*fabs((1.0+eps)*(sq(dTotalLength+FocusZ)*sq(GuideExitHeight) - sq(FocusZ*GuideEntranceHeight))
+			                   /(FocusZ*sq(GuideEntranceHeight) - (dTotalLength+FocusZ)*sq(GuideExitHeight) + eps*AxisZ*(sq(GuideEntranceHeight)-sq(GuideExitHeight)) ));
+			L_end   = AxisZ/(1.0+eps) - FocusZ;
+			LcntrZ  = dTotalLength - L_end;
+			Phi_anf = acos(-LcntrZ/AxisZ);
+			Phi_end = acos(L_end/AxisZ);
+			GuideMaxHeight = GuideEntranceHeight/sin(Phi_anf);
+			D_Foc1Z = LcntrZ - AxisZ/(1.0+eps);
+
 			Phi     = acos((dLength - LcntrZ)/AxisZ);
 			dHeight = GuideMaxHeight*sin(Phi);
 			break;
@@ -824,10 +851,11 @@ double Height(double dLength)
 double Width(double dLength)
 {
 	double dWidth=0.0,
-	       L_end,          /* end of parabel and center of ellipse      */
-	       A,              /* factor of quadratic term in parabola or long axis in ellipse */
-	       V_anf, V_end,   /* intermediate values                       */
-	       Phi, Phi_end;   /* phases in ellipse                         */
+	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
+	       A,               /* factor of quadratic term in parabola  */
+	       eps,             /* correction value =(b*b)/(2a*a)        */
+	       Phi,
+	       Phi_anf,Phi_end; /* phases in ellipse                     */
 
 	switch (eGuideShapeY)
 	{
@@ -844,15 +872,26 @@ double Width(double dLength)
 			dWidth = sqrt((L_end-dLength)/A);
 			break;
 		case VT_ELLIPTIC:
-			GuideMaxWidth = GuideEntranceWidth/sin(PhiAnfY);
-			Phi_end = asin(GuideExitWidth/GuideMaxWidth);
-			V_anf   =-cos(PhiAnfY);
-			V_end   = cos(Phi_end);
-			LcntrY  = dTotalLength * V_anf / (V_anf+V_end);
-			AxisY   = LcntrY / V_anf;
-			FocusY  = LcntrY + sqrt(sq(AxisY) - sq(GuideMaxWidth));
+			AxisY   = 0.5*fabs((sq(dTotalLength+FocusY)*sq(GuideExitWidth) - sq(FocusY*GuideEntranceWidth))
+			                   /(FocusY*sq(GuideEntranceWidth) - (dTotalLength+FocusY)*sq(GuideExitWidth)));
+			L_end   = AxisY - FocusY;
+			LcntrY  = dTotalLength - L_end;
+			Phi_anf = acos(-LcntrY/AxisY);
+			Phi_end = acos(L_end/AxisY);
+			GuideMaxWidth = GuideEntranceWidth/sin(Phi_anf);
+			/* second approximation */
+			eps     = 0.5 * sq(GuideMaxWidth/AxisY);
+			AxisY   = 0.5*fabs((1.0+eps)*(sq(dTotalLength+FocusY)*sq(GuideExitWidth) - sq(FocusY*GuideEntranceWidth))
+			                   /(FocusY*sq(GuideEntranceWidth) - (dTotalLength+FocusY)*sq(GuideExitWidth) + eps*AxisY*(sq(GuideEntranceWidth)-sq(GuideExitWidth)) ));
+			L_end   = AxisY/(1.0+eps) - FocusY;
+			LcntrY  = dTotalLength - L_end;
+			Phi_anf = acos(-LcntrY/AxisY);
+			Phi_end = acos(L_end/AxisY);
+			GuideMaxWidth = GuideEntranceWidth/sin(Phi_anf);
+			D_Foc1Y = LcntrY - AxisY/(1.0+eps);
+
 			Phi     = acos((dLength - LcntrY)/AxisY);
-			dWidth  = GuideMaxWidth*sin(Phi);
+			dWidth = GuideMaxWidth*sin(Phi);
 			break;
 		default:
 			Error("Shape unknown");
@@ -1038,7 +1077,9 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 			case 2: NearestNeutron.Probability *= reflectivityl[datanumber]; break; /* left plane */
 			case 3: NearestNeutron.Probability *= reflectivityr[datanumber]; break; /* right plane */
 			default:
-				Error("No such plane!\n");
+			{	CountMessageID(GUID_NO_PLANE, NearestNeutron.ID);
+				return(-1.0);
+			}
 		}
 
 		if (NearestNeutron.Probability < wei_min)

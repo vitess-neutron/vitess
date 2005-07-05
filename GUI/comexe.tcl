@@ -399,7 +399,7 @@ proc stopAction {{verbose 1} {kill 0}} {
 	catch {eval exec $KillProg $args}
 	if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
       }
-      default {	
+      default {
 	if {$verbose} {showText "!don´t know how to stop processes"}
       }
     }

@@ -1,5 +1,5 @@
 # Example of a user module named "special"
-# 
+#
 # If a file usermodule.tcl exist in the VITESS source directory
 # it is executed as part of the VITESS GUI.
 

@@ -9,7 +9,7 @@
 # These principal parameters, also noted as independent variables,
 # may be free input parameters, or parameters chosen from modules of the instrument.
 # Changing a principal parameter like the wavelength then
-# directly modifies the according module parameter. 
+# directly modifies the according module parameter.
 # Other module parameters may be defined as dependent parameters,
 # whose values are computed from independent parameters by arbitrary functions.
 
@@ -28,7 +28,7 @@ proc storeFormula {w i} {
   if {$s == ""} return
   gSet digestFormula${i} $s
   regsub -all \n $s " " s
-  regsub -all "  " $s " " s 
+  regsub -all "  " $s " " s
   gSet digestDef${i}_ [string trim $s]
 }
 
@@ -79,7 +79,7 @@ proc propagateDigestValues {} {
 proc definitionList {modnum name dform newname} {
 
   # obtain definition line for a variable and modify it for digest use.
-  
+
   # we are sure that $name is part of module $modnum
   upvar #0 [globVal mod$modnum]ESET mod
   foreach line $mod {
@@ -93,9 +93,9 @@ proc definitionList {modnum name dform newname} {
   if {$dform != ""} {append ins "\ncomputed as $dform"}
 
   #            0:new name 1:old type     2: actual value
-  #            3:new ins 
+  #            3:new ins
   #            rest: as before
-  
+
   return [list $newname [lindex $line 1] [globVal ${name}_$modnum] \
 	      [list [lindex $comment 0] $ins]\
 	      [lrange $line 4 end]]
@@ -220,7 +220,7 @@ proc finalizeDigest {w} {
     lappend nforms $item
   }
   set formulas $nforms
-      
+
   foreach t $testa {
     if [checkFormula $testcom $t] continue
     showText "!suspicious formula\n$t"
@@ -259,7 +259,7 @@ proc finalizeDigest {w} {
     lappend digestFormula $dform
     lappend digestIndepVarname $indepvname
     lappend digestDefList $dlist
-    
+
     incr i
   }
   #debug puts "digestDefList $digestDefList"
@@ -273,7 +273,7 @@ proc finalizeDigest {w} {
 }
 
 proc inputDigest {w} {
-  
+
   set modl [itemize [entryVal moddigest]]
   set ll [llength $modl]
   if {$ll <= 0} {
@@ -332,7 +332,7 @@ proc inputDigest {w} {
       -yscrollcommand "$ww.yscroll set" -bg $bgColor
   yscroll $ww "$ww.t yview"
   pack $ww.t -side left -expand yes -fill both
-  
+
   set ww $w.b
   bButton $ww.b << genDigest
   bButton $ww.s >> "finalizeDigest $w"

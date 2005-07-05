@@ -228,7 +228,7 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	if {$vser != ""} {
 	  set SerRadio($sercol) [join $rlist ":"]
 	  set SerRadioV($sercol) [join $vlist ":"]
-	}	
+	}
 	foreach it $rlist vrep $vlist {
 	  if {$v == $it} {
 	    set v $vrep
