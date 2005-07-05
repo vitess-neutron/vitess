@@ -7,7 +7,7 @@
 # RFC 1321 and upon the tcllib MD4 implementation and taking some ideas
 # from the earlier tcllib md5 version by Don Libes.
 #
-# This implementation permits incremental updating of the hash and 
+# This implementation permits incremental updating of the hash and
 # provides support for external compiled implementations either using
 # critcl (md5c) or Trf.
 #
@@ -69,7 +69,7 @@ proc ::md5::MD5Init {} {
 #
 #   This is called to add more data into the hash. You may call this
 #   as many times as you require. Note that passing in "ABC" is equivalent
-#   to passing these letters in as separate calls -- hence this proc 
+#   to passing these letters in as separate calls -- hence this proc
 #   permits hashing of chunked data
 #
 #   If we have a C-based implementation available, then we will use
@@ -206,7 +206,7 @@ proc ::md5::HMACInit {K} {
 
     set tok [MD5Init]
     MD5Update $tok $Ki;                 # initialize with the inner pad
-    
+
     # preserve the Ko value for the final stage.
     set [subst $tok](Ko) $Ko
 
@@ -241,9 +241,9 @@ proc ::md5::HMACFinal {token} {
 # Description:
 #  This is the core MD5 algorithm. It is a lot like the MD4 algorithm but
 #  includes an extra round and a set of constant modifiers throughout.
-# 
+#
 # Note:
-#  This function body is substituted later on to inline some of the 
+#  This function body is substituted later on to inline some of the
 #  procedures and to make is a bit more comprehensible.
 #
 set ::md5::MD5Hash_body {
@@ -307,7 +307,7 @@ set ::md5::MD5Hash_body {
         set D [expr {$A + (($D + [G $A $B $C] + $X2  + $T30) <<<  9)}]
         set C [expr {$D + (($C + [G $D $A $B] + $X7  + $T31) <<< 14)}]
         set B [expr {$C + (($B + [G $C $D $A] + $X12 + $T32) <<< 20)}]
-        
+
         # Round 3.
         # Let [abcd k s i] denote the operation
         #   a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s)
@@ -371,7 +371,7 @@ set ::md5::MD5Hash_body {
 }
 
 proc ::md5::byte {n v} {expr {((0xFF << (8 * $n)) & $v) >> (8 * $n)}}
-proc ::md5::bytes {v} { 
+proc ::md5::bytes {v} {
     #format %c%c%c%c [byte 0 $v] [byte 1 $v] [byte 2 $v] [byte 3 $v]
     format %c%c%c%c \
         [expr {0xFF & $v}] \
@@ -404,7 +404,7 @@ regsub -all -line \
     $::md5::MD5Hash_bodyX \
     {( (\1 \& \2) | ((~\1) \& \3) )} \
     ::md5::MD5Hash_bodyX
-    
+
 # RFC1321:3.4 - function G
 proc ::md5::G {X Y Z} {
     return [expr {(($X & $Z) | ($Y & (~$Z)))}]
@@ -445,29 +445,29 @@ regsub -all -line \
 # RFC 1321:3.4 step 4: inline the set of constant modifiers.
 namespace eval md5 {
     foreach tName {
-        T01 T02 T03 T04 T05 T06 T07 T08 T09 T10 
-        T11 T12 T13 T14 T15 T16 T17 T18 T19 T20 
-        T21 T22 T23 T24 T25 T26 T27 T28 T29 T30 
-        T31 T32 T33 T34 T35 T36 T37 T38 T39 T40 
-        T41 T42 T43 T44 T45 T46 T47 T48 T49 T50 
-        T51 T52 T53 T54 T55 T56 T57 T58 T59 T60 
-        T61 T62 T63 T64 
+        T01 T02 T03 T04 T05 T06 T07 T08 T09 T10
+        T11 T12 T13 T14 T15 T16 T17 T18 T19 T20
+        T21 T22 T23 T24 T25 T26 T27 T28 T29 T30
+        T31 T32 T33 T34 T35 T36 T37 T38 T39 T40
+        T41 T42 T43 T44 T45 T46 T47 T48 T49 T50
+        T51 T52 T53 T54 T55 T56 T57 T58 T59 T60
+        T61 T62 T63 T64
     }  tVal {
         0xd76aa478 0xe8c7b756 0x242070db 0xc1bdceee
         0xf57c0faf 0x4787c62a 0xa8304613 0xfd469501
         0x698098d8 0x8b44f7af 0xffff5bb1 0x895cd7be
         0x6b901122 0xfd987193 0xa679438e 0x49b40821
-        
+
         0xf61e2562 0xc040b340 0x265e5a51 0xe9b6c7aa
         0xd62f105d 0x2441453  0xd8a1e681 0xe7d3fbc8
         0x21e1cde6 0xc33707d6 0xf4d50d87 0x455a14ed
         0xa9e3e905 0xfcefa3f8 0x676f02d9 0x8d2a4c8a
-        
+
         0xfffa3942 0x8771f681 0x6d9d6122 0xfde5380c
         0xa4beea44 0x4bdecfa9 0xf6bb4b60 0xbebfbc70
         0x289b7ec6 0xeaa127fa 0xd4ef3085 0x4881d05
         0xd9d4d039 0xe6db99e5 0x1fa27cf8 0xc4ac5665
-        
+
         0xf4292244 0x432aff97 0xab9423a7 0xfc93a039
         0x655b59c3 0x8f0ccc92 0xffeff47d 0x85845dd1
         0x6fa87e4f 0xfe2ce6e0 0xa3014314 0x4e0811a1
@@ -516,12 +516,12 @@ proc ::md5::Pop {varname {nth 0}} {
 proc ::md5::Chunk {token channel {chunksize 4096}} {
     variable $token
     upvar 0 $token state
-    
+
     if {[eof $channel]} {
         fileevent $channel readable {}
         set state(reading) 0
     }
-        
+
     MD5Update $token [read $channel $chunksize]
 }
 
@@ -575,7 +575,7 @@ proc ::md5::md5 {args} {
             close $opts(-channel)
         }
     }
-    
+
     if {$opts(-hex)} {
         set r [Hex $r]
     }
@@ -638,7 +638,7 @@ proc ::md5::hmac {args} {
             close $opts(-channel)
         }
     }
-    
+
     if {$opts(-hex)} {
         set r [Hex $r]
     }

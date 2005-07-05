@@ -683,10 +683,10 @@ set specoptAdd {
   {"Special options" header}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r}}
-  {max_ang_y float 90 {
-    "angle shape\ny-ellipse [deg]"  "only needed for elliptic shape: This angle describes the position of the ellipse. 90 deg means that the guide entrance is the position of max. width/height of the ellipse, i.e. its center. An angle > 90 deg shifts the center towards the guide exit"  "" y} ge0}
-  {max_ang_z float 90 {
-    "angle shape\nz-ellipse [deg]" "only needed for elliptic shape: This angle describes the position of the ellipse. 90 deg means that the guide entrance is the position of max. width/height of the ellipse, i.e. its center. An angle > 90 deg shifts the center towards the guide exit" "" z} ge0}
+  {h_focus_pnt float 0 {
+    "hor. focus dist.\nof ellipse [cm]"  "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
+  {v_focus_pnt float 0 {
+    "vert. focus dist.\nof ellipse [cm]" "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
@@ -1515,7 +1515,7 @@ set dA {
 set nA {
   {number_bins int 10 {
     "number\nof bins"
-    "number of bins determines the segmentation of the interval" "" n} 1 10000 1}
+    "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
   {mtrl_colour int 0 {
     "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
 }

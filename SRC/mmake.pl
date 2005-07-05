@@ -1,4 +1,4 @@
-#!/net/bin/perl
+#!/usr/bin/perl
 # Generate Vitess Makefile for both Unix gmake and Windows nmake
 #
 # Change $mscdir and $sroot to your needs.
@@ -23,7 +23,7 @@ my $svnroot = 'h:|control|vitess|trunk';
 my $unixcomment =<<'EOS';
 #
 # compile hosts to use
-# Linux : dixi2
+# Linux : dixi3
 # SunOS : dsapp3
 # OSF1  : darling
 
@@ -41,7 +41,7 @@ my @Obj = qw(init general intersection matrix sample);
 my @C = qw(ascii2bin eval_elast monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file);
+	   mirror_coating surface_file guide_shape);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller
@@ -52,6 +52,7 @@ my @CM = qw(detector eval_inelast frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_he3 flipper_coil
+	    pol_mirror
 	    precessionfield
 	    rotating_field flipper_gradient resonator_drabkin
 	    sample_elasticisotr sample_inelast
@@ -139,20 +140,21 @@ STOOL = sample.o $(MTOOL)
 SYS = $(shell uname)
 CFLAGS = -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
-CCOMP = /net/bin/gcc
-
 GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
 ifeq ($(SYS),SunOS)
+CCOMP = /net/bin/gcc
 CC = $(CCOMP) $(CFLAGS)
 GRALIB = $(GRAOPT) -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
+CCOMP = /net/bin/gcc
 CC = $(CCOMP) -DOSF $(CFLAGS)
 GRALIB = $(GRAOPT) -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
 ifeq ($(SYS),Linux)
+CCOMP = gcc
 CC = $(CCOMP) $(CFLAGS)
 GRALIB = $(GRAOPT) -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif

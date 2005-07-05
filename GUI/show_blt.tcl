@@ -48,7 +48,7 @@ proc showXYfile {fname} {
 
   set i [getFreePlot]
   set w .plot$i
-  
+
   upvar #0 VX$i GX
   upvar #0 VY$i GY
   set postextname GP$i

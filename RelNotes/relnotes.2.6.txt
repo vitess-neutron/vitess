@@ -14,6 +14,7 @@ general.c    : new function 'LAMBDA_FROM_V'
 general.h    : new function 'LAMBDA_FROM_V'
 monitor1.c   : calculation of peak flux corrected and log text improved
 spacewindow.c: option: frame of previous module, especially for beamstop
+guide_shape.c  new tool
 
 vitess.tcl   : spacewindow : option 'previous frame'
                chopper_disc: 4th window
