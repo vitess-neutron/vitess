@@ -480,7 +480,7 @@ set detectorESET {
     "detector grid" "If the detector grid is switched off, the exact neutron position is written to the output file." "" g}
     {on off} {1 0}}
   {det_tof radio calc {
-    "TOF option" "calc: TOF inside detector is calculated (incl. probability distr.) no: no TOF treatment" "" o}
+    "TOF option" "calc: TOF inside detector is calculated (incl. probability distr.)\nno: no TOF treatment" "" o}
     {no calc} {0 1}}
 }
 
