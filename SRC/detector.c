@@ -24,12 +24,6 @@
 #include "message.h"
 
 
-typedef enum 
-{	VT_NO_TOF   = 0,
-	VT_TOF_CALC = 1,
-	VT_TOF_BIN  = 2
-}
-VtTofOpt;
 #define VT_NO_TOF    0
 #define VT_TOF_CALC  1
 #define VT_TOF_BIN   2
@@ -133,25 +127,22 @@ int main(int argc, char *argv[])
 					{	/* determine the scattering point in the scintilator */
 						LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
 						ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-
-						for(j=0; j<3; j++)
-							SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
-
-						DetectorSpot(SP, DetSpot, &Detector);
-
-						TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
-												 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 					}
 					else
 					{
+						LengthTillScattering = 0.0;
 						ScatteringProb = MaxEfficiency * LambdaProb;
-						DetectorSpot(ISP[0], DetSpot, &Detector);
-						TimeTillScattering = DistVector(ISP[0],InputNeutrons[i].Position)/
-						                     V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 					}
 					if(bMonitor)
-					{	ScatteringProb=1.0;
-					}
+						ScatteringProb=1.0;
+
+					for(j=0; j<3; j++)
+						SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
+
+					DetectorSpot(SP, DetSpot, &Detector);
+
+					TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
+											 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
 					/* everythings done, so rot back the vectors and put all together */
 					RotBackVector(RotMatrix,DetSpot);

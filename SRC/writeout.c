@@ -8,6 +8,7 @@
 /* 1.2  Jan  2004  K. Lieutenant   changes for 'instrument.dat' and changed headline         */
 /* 1.3  Feb  2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
 /* 1.4  Mar  2004  K. Lieutenant   F-Format Option                                           */
+/* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -27,10 +28,11 @@ void OwnCleanup();
 int main(int argc, char **argv)
 {
   int i;
+  char *form;
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.4d");
+  print_module_name("writeout 1.4e");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -38,12 +40,15 @@ int main(int argc, char **argv)
   /* Get the neutrons from the file */
   DECLARE_ABORT;
   
-  if (bF_format)
-    fprintf(AsciiFile,"#___ID___  Trc color   TOF    lambda   count_rate    pos_x    pos_y    pos_z  "
-                      "   dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
-  else
-    fprintf(AsciiFile,"#___ID___  Trc color      TOF        lambda     count_rate       pos_x         pos_y         pos_z   "
-                      "    direction_x   direction_y   direction_z       spin_x        spin_y        spin_z\n");
+  if (bF_format) {
+    fprintf(AsciiFile,"#___ID___  Trc color     TOF   lambda  count_rate     pos_x    pos_y    pos_z  "
+                      "    dir_x     dir_y     dir_z   sp_x sp_y sp_z\n");
+    form = "%c%c%09lu %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
+  } else {
+    fprintf(AsciiFile,"#___ID___  Trc color      TOF        lambda  count_rate          pos_x        pos_y        pos_z"
+                      "   direction_x  direction_y  direction_z        spin_x       spin_y       spin_z\n");
+    form = "%c%c%09lu %c %5d  %.5e %.5e %.5e  % .5e % .5e % .5e  % .5e % .5e % .5e  % .5e % .5e % .5e\n";
+  }
 
   while((ReadNeutrons())!= 0)
   {
@@ -51,22 +56,13 @@ int main(int argc, char **argv)
     for(i=0; i<NumNeutGot; i++) 
     {
       CHECK;
-      if (bF_format)
-        fprintf(AsciiFile,"%c%c%09lu %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
-                InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
-                InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
-                InputNeutrons[i].Time,        InputNeutrons[i].Wavelength,  InputNeutrons[i].Probability,
-                InputNeutrons[i].Position[0], InputNeutrons[i].Position[1], InputNeutrons[i].Position[2], 
-                InputNeutrons[i].Vector[0],   InputNeutrons[i].Vector[1],   InputNeutrons[i].Vector[2], 
-                InputNeutrons[i].Spin[0],     InputNeutrons[i].Spin[1],     InputNeutrons[i].Spin[2]);
-      else
-        fprintf(AsciiFile,"%c%c%09lu %c %5d  %.5e %.5e %.5e  % .5e % .5e % .5e  % .5e % .5e % .5e  % .5e % .5e % .5e\n",
-                InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
-                InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
-                InputNeutrons[i].Time,        InputNeutrons[i].Wavelength,  InputNeutrons[i].Probability,
-                InputNeutrons[i].Position[0], InputNeutrons[i].Position[1], InputNeutrons[i].Position[2], 
-                InputNeutrons[i].Vector[0],   InputNeutrons[i].Vector[1],   InputNeutrons[i].Vector[2], 
-                InputNeutrons[i].Spin[0],     InputNeutrons[i].Spin[1],     InputNeutrons[i].Spin[2]);
+      fprintf(AsciiFile, form,
+	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
+	      InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
+	      InputNeutrons[i].Time,        InputNeutrons[i].Wavelength,  InputNeutrons[i].Probability,
+	      InputNeutrons[i].Position[0], InputNeutrons[i].Position[1], InputNeutrons[i].Position[2], 
+	      InputNeutrons[i].Vector[0],   InputNeutrons[i].Vector[1],   InputNeutrons[i].Vector[2], 
+	      InputNeutrons[i].Spin[0],     InputNeutrons[i].Spin[1],     InputNeutrons[i].Spin[2]);
              
       WriteNeutron(&(InputNeutrons[i]));
     }
