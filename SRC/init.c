@@ -336,7 +336,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 	      dCntRateErr;
   long   nModuleNo;
   int    k,l;
-  VectorType Shift,  /* Shift of end position       [cm] */
+  VectorType Shift,  /* Shift of end position        [m] */
              EndPos; /* end position of prev. module [m] */
 
   /* update 'instrument.inf' */
