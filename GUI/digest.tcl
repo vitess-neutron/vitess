@@ -115,6 +115,7 @@ proc digestFrame {w {app ""}} {
   global digestFormula digestDefList bgColor
 
   set hfont [headerFont]
+  set lfont [labelFont]
   fGroup $w.h $w.digest
   label $w.h.head -text "Instrument Digest" -font $hfont -fg steelblue -bg $bgColor
   pack $w.h.head
@@ -123,25 +124,36 @@ proc digestFrame {w {app ""}} {
   set num [llength $modl]
 
   # sort independent and dependent parameters
-  set indep 0
-  set lindeps {} ; set ldeps {}
+  set indep 0; set selected 0
+  set lindeps {} ; set ldeps {} ; set lselected {}
   foreach dl $digestDefList form $digestFormula {
     if {$form == ""} {
-      incr indep
-      lappend lindeps $dl
+      if {[lindex [lindex $dl 3] 1] == "independent digest variable"} {
+	incr indep
+	lappend lindeps $dl
+      } else { 
+	incr selected
+	lappend lselected $dl
+      }
     } else {
       lappend ldeps $dl
     }
   }
 
-  # frames for 2 header rows + indep. and dependent parameters
-  set dep [expr $num - $indep]
-  set indeprows [expr ($indep + 2) / 3]
-  set deprows [expr ($dep + 2) / 3]
+  # frames for independent, selected and computed parameters
+  set dep [expr $num - $indep - $selected]
 
   set ww $w.digest
-  set ffs [expr 1 + $indeprows]
-  if {$deprows > 0} {set ffs [expr $ffs + 1 + $deprows]}
+  set ffs 1
+  if {[set indeprows [expr ($indep + 2) / 3]] > 0} {
+    set ffs [expr $ffs + 1 + $indeprows]
+  }
+  if {[set selectedrows [expr ($selected + 2) / 3]] > 0} {
+    set ffs [expr $ffs + 1 + $selectedrows]
+  }
+  if {[set deprows [expr ($dep + 2) / 3]] > 0} {
+    set ffs [expr $ffs + 1 + $deprows]
+  }
 
   for {set j 1} {$j <= $ffs} {incr j} {
     tFrame $ww.$j
@@ -149,11 +161,20 @@ proc digestFrame {w {app ""}} {
 
   set i 1
   if {$indeprows > 0} {
+    label $ww.$i.l -text "Independent Parameters" -font $lfont -bg $bgColor
+    pack $ww.$i.l
+    incr i
     itemGroup $ww i 1 $indep 3 $lindeps 8 $app
   }
 
+  if {$selectedrows > 0} {
+    label $ww.$i.l -text "Selected Parameters" -font $lfont -bg $bgColor
+    pack $ww.$i.l
+    incr i
+    itemGroup $ww i 1 $selected 3 $lselected 8 $app
+  }
   if {$deprows > 0} {
-    label $ww.$i.l -text "Computed Parameters" -font $hfont -fg steelblue -bg $bgColor
+    label $ww.$i.l -text "Computed Parameters" -font $lfont -bg $bgColor
     pack $ww.$i.l
     incr i
     itemGroup $ww i 1 $dep 3 $ldeps 8 $app
@@ -172,9 +193,13 @@ proc showDigest {{w ""}} {
   if {$w == ""} {set w $Amf}
 
   upvar #0 VisibleModule vi
-  upvar #0 visM$vi visible
-  # delete whatever has been in this frame
-  if {$visible == $DummyEntry} {set n $w.label} else {set n $w.$visible}
+  set novis 1
+  catch {
+    upvar #0 visM$vi visible
+    # delete whatever has been in this frame
+    if {$visible != $DummyEntry} {set novis 0}
+  }
+  if {$novis} {set n $w.label} else {set n $w.$visible}
   catch {destroy $n}
   foreach i {h digest} {catch {destroy $w.$i}}
   set visible digest
@@ -355,7 +380,7 @@ proc genDigest {{w .gdig}} {
   set lfont [labelFont]
 
   label $w.h1.l  -font $lfont -bg $labColor -text \
-"space separated list of Name:Moduleand free variable items e.g.
+"space separated list of Name:Module and free variable items e.g.
   wavelength min_width:1 max_width:1
 where wavelength is a free variable, and the next two belong to module 1
 "

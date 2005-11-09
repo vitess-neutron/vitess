@@ -25,7 +25,7 @@ set fileDialogSET {
   {"chopper files" {.chp .par .dat}}
   {"crystal" {.crs .par .dat}}
   {"moderator (cws source)"  {.mod .cmo .src}}
-  {"moderator (spss source)" {.mod .smo .src}}
+  {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
   {"powder sample" {.pow .par .dat}}
   {"sample s(q)" {.psq .par .dat}}
@@ -57,7 +57,7 @@ proc makeModuleSets {} {
   # 2 help item; may be a list if different submodules have different help
   set AvailableSET {
     {source {source_const_wave source_HMI source_ILL
-      source_short_pulsed source_ESS source_IPNS source_ISIS-1 source_ISIS-2 source_SNS
+      source_short_pulsed source_ESS source_IPNS source_ISIS source_SNS
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
@@ -277,6 +277,24 @@ set cmoESET [concat {
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
 } $Mod2 ]
 
+### ISIS variant
+
+set imoESET {
+  {Moderator header}
+  {width float 0 {"moderator\ndiameter or\nwidth [cm]" "moderator width or diameter in cm"} ge0 "" 1}
+  {height float 0 {"moderator\nheight [cm]" "moderator height in cm"} ge0 "" 1}
+  {}
+  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0).
+In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected).
+Deviations of the moderator center from this position must be given here."}}
+  {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
+  {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
+  {}
+  {tstat radio TS1 {"target\nstation"} {TS1 TS2} {1 2}}
+  {}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+}
+
 ### pulsed sources
 
 set Mod1 {}
@@ -333,6 +351,16 @@ set smASET {
   {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').\nAlternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. In this case the given values in 'max. divergence ...' are ignored." "" d}
     {"by divergence" "by window"} {0 1}}
   {}
+}
+
+set smisisASET {
+  {"Restriction of sampling trajectories" header}
+  {number_of_neutrons float 1000000 {
+    "number of\ntrajectories" "" "" n} ge0 "" 1}
+  {}
+  {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
+  {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
+  {" " header}
 }
 
 set traceASET {
@@ -409,15 +437,25 @@ proc sore {f s} {
   return [concat $f $s]
 }
 
-foreach s {short_pulsed ESS IPNS ISIS-1 ISIS-2 SNS} \
-        m {SPTScold EssSPThermDec IpnsSPThermPois IsisTS1hydrogen IsisTS2hydrogen SnsColdCpld} \
-        fr {50 50 50 50 10 60} \
-        sps {- ESS - - - SNS} {
+foreach s {short_pulsed ESS IPNS SNS} \
+        m {SPTScold EssSPThermDec IpnsSPThermPois SnsColdCpld} \
+        fr {50 50 50 60} \
+        sps {- ESS - SNS} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
   proc ${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
+
+proc sore {f} {
+  return [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
+}
+
+set al [list modfile pareditablefile IsisTS1hydrogen.mod $li w imo 1]
+set fl [sore 50]
+set source_ISISESET [concat $fl [list $al] $smisisASET $traceASET $cwsASET]
+proc ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
+
 
 ### source
 ###   LPSS long pulsed spallation sources
@@ -3152,6 +3190,12 @@ proc convert2Code {ll app} {
 	multi-spectral {set v 4}
 	default {set v 0}
       }
+    } elseif {$i == 17} {
+      switch -- $v {
+	TS1 {set v 1}
+	TS2 {set v 2}
+	default {set v 0}
+      }
     } elseif {$v == ""} {
       set v 0
     }
@@ -3220,6 +3264,49 @@ proc serializeLmoFile {f mode var app} {
 proc serializeSmoFile {f mode var app} {
   serializeModFile $f $mode $var $app
 }
+
+proc serializeImoFile {f mode var app} {
+  set il {cx cy cz width wtfile tstat}
+  set al {temp color shape cx cy cz width height spaord scale current
+    wfile tfile wtfile modtype tau1 tau2 tstat}
+
+  if {$mode == "r"} {
+    foreach l $il {
+      upvar #0 $l$app $l
+      catch {unset $l}
+    }
+
+    if {$f == "0"} return
+    set imode -1
+    while {[gets $f line] >= 0} {
+      set ll [itemize $line]
+      set fi [lindex $ll 0]
+      if {$fi == ""} continue
+      if {[string index $fi 0] == "#"} continue
+      set ll [convert2String $ll]
+      set cx [lindex $ll 3]
+      set cy [lindex $ll 4]
+      set cz [lindex $ll 5]
+      set width [lindex $ll 6]
+      set wtfile [lindex $ll 13]
+      switch [lindex $ll 17] {
+	2 {set tstat TS2}
+	default {set tstat TS1}
+      }
+    }
+  } else {
+    foreach l $al {
+      # supply dummy values for items without meaning for cws/lpss sources
+      upvar #0 $l$app $l
+      if {[info exist $l] == 0} {set $l 0}
+    }
+    puts $f "# Source
+# Moderators:  center size  distribution files  time
+# Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d ISIS"
+    puts $f [convert2Code $al $app]
+  }
+}
+
 
 proc editSave {var param ext app {saveAs 0}} {
 # param = 1 forces that a file with new filename is within

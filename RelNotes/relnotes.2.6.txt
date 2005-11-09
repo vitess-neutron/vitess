@@ -2,9 +2,9 @@
 VITESS Version 2.6
 ==================
 
-=======================
+==================
 Modules and Tools
-=======================
+==================
 
 chopper_fermi: odd number of slits allowed
 chopper_disc : log text improved
@@ -24,9 +24,9 @@ vitess.tcl   : spacewindow : option 'previous frame'
 sample_refl.html: description improved
 spacewindow.html: option 'previous frame'
 
-================
+==================
 GUI Changes
-================
+==================
 
 A digest view supports a better overview of varied parameters in
 simulation series.
@@ -38,9 +38,9 @@ The digest comprises parameters easily selected by clicking on parameter labels.
 Values for these parameters may be entered in the digest view, or may be computed
 from other parameters by formula.
 
-================
+==================
 Code Repository
-================
+==================
 
 The VITESS source code resides in a subversion repository.
 Registered developers my read and contribute via
