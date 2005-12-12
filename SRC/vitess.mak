@@ -1,7 +1,7 @@
 # Vitess NMAKE File
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
 SROOT=h:\control
-SVNROOT=h:\control\vitess\trunk
+SVNROOT=h:\V
 CPATH2=$(CPATH)\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
@@ -10,6 +10,7 @@ LPATH2=$(CPATH2)\lib
 
 SPATH=$(SVNROOT)\SRC
 GPATH=$(SROOT)\g2_win
+GSLPATH=$(SPATH)\rng
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
@@ -22,22 +23,25 @@ IDIR=.\Release
 
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
-INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
+INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
+#CPP_OPT=/nologo /ML /W3 /Ox $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
+CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
+LIBGSL=libgsl.lib
 
 LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib \
  shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
- /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)"
+ /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
 TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
+MGTOOL="$(IDIR)\distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
  $(CPP) @<<
@@ -82,15 +86,15 @@ ALL : \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
 	"$(OD)\precessionfield.exe" \
-	"$(OD)\rotating_field.exe" \
-	"$(OD)\flipper_gradient.exe" \
-	"$(OD)\resonator_drabkin.exe" \
 	"$(OD)\sample_elasticisotr.exe" \
 	"$(OD)\sample_inelast.exe" \
 	"$(OD)\sample_reflectom.exe" \
 	"$(OD)\define_direction.exe" \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
+	"$(OD)\rotating_field.exe" \
+	"$(OD)\flipper_gradient.exe" \
+	"$(OD)\resonator_drabkin.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
@@ -388,27 +392,6 @@ SOURCE=$(SPATH)\precessionfield.c
 "$(OD)\precessionfield.exe" : "$(OD)" $(MTOOL) "$(OD)\precessionfield.obj" "$(OD)\magneticmap.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\precessionfield.pdb" /out:"$(OD)\precessionfield.exe" "$(IDIR)\precessionfield.obj" $(MTOOL) "$(OD)\magneticmap.obj" 
 
-SOURCE=$(SPATH)\rotating_field.c
-"$(IDIR)\rotating_field.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\rotating_field.exe" : "$(OD)" $(MTOOL) "$(OD)\rotating_field.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\flipper_gradient.c
-"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\flipper_gradient.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_gradient.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\resonator_drabkin.c
-"$(IDIR)\resonator_drabkin.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MTOOL) "$(OD)\resonator_drabkin.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MTOOL) 
-
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -450,6 +433,27 @@ SOURCE=$(SPATH)\cas_v40.c
 
 "$(OD)\cas_v40.exe" : "$(OD)" $(MTOOL) "$(OD)\cas_v40.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\cas_v40.pdb" /out:"$(OD)\cas_v40.exe" "$(IDIR)\cas_v40.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\rotating_field.c
+"$(IDIR)\rotating_field.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\rotating_field.exe" : "$(OD)" $(MGTOOL) "$(OD)\rotating_field.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MGTOOL) 
+
+SOURCE=$(SPATH)\flipper_gradient.c
+"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\flipper_gradient.exe" : "$(OD)" $(MGTOOL) "$(OD)\flipper_gradient.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MGTOOL) 
+
+SOURCE=$(SPATH)\resonator_drabkin.c
+"$(IDIR)\resonator_drabkin.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MGTOOL) "$(OD)\resonator_drabkin.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MGTOOL) 
 
 SOURCE=$(SPATH)\sample_powder.c
 "$(IDIR)\sample_powder.obj" : $(SOURCE)

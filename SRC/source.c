@@ -32,6 +32,7 @@
 /* 1.11b Dec  2004  K. Lieutenant  solid angle calculation to general.c, (count rate errors) */
 /*********************************************************************************************/
 
+#include <ctype.h>
 #include <string.h>
 
 #include "init.h"
@@ -108,7 +109,7 @@ int cmdnumberD(char *,double*);
 int cmdnumberI(char *,int*,const int);
 double polInterp(double*,double*,int,double);
 FILE* openFile(char*);
-int LoadIsisDistrib(FILE*,const double,const double);
+void LoadIsisDistrib(FILE*,const double,const double);
 int timeStart(char*);
 int timeEnd(char*);
 int energyBin(char*,double,double,double*,double*);
@@ -148,8 +149,6 @@ int main(int argc, char *argv[])
     dFact   =    1.0,  /* for 'direction by window' */
     PolNorm =    0.0;
   // local ISIS variables
-
-  double yW,zW; /* pseudo window width and height with manual divergence */
 
   VectorType NullPos={0.0,0.0,0.0};
   Neutron Input;
@@ -444,14 +443,14 @@ int main(int argc, char *argv[])
 	/* MC choice of starting position */
 	if (stMod[imod].bCircle)
 	  {	do
-	      {	Y0                = stMod[imod].dCntrY + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*ran3(&idum);
-		Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*ran3(&idum);
+	      {	Y0                = stMod[imod].dCntrY + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*Vran();
+		Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*Vran();
 	      }	/* repeat if starting point is out of circle */
 	    while (sq(Y0-stMod[imod].dCntrY) + sq(Input.Position[2]-stMod[imod].dCntrZ) > sq(stMod[imod].dDiameter/2.0)) ; 
 	  }
 	else
-	  {	Y0                = stMod[imod].dCntrY + stMod[imod].dWidth /2.0 - stMod[imod].dWidth *ran3(&idum);
-	    Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dHeight/2.0 - stMod[imod].dHeight*ran3(&idum);
+	  {	Y0                = stMod[imod].dCntrY + stMod[imod].dWidth /2.0 - stMod[imod].dWidth * Vran();
+	    Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dHeight/2.0 - stMod[imod].dHeight * Vran();
 	  }
 
 	/* check if another moderator is in front of the actual one */
@@ -477,8 +476,8 @@ int main(int argc, char *argv[])
 	  }
 	else
 	  {
-	    Input.Wavelength = (double)(stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)  *ran3(&idum));
-	    Input.Time       = (double)(stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax-stTraj[imod].dTimeFrmMin)*ran3(&idum));
+	    Input.Wavelength = (double)(stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)  *Vran());
+	    Input.Time       = (double)(stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax-stTraj[imod].dTimeFrmMin)*Vran());
 	  }
 		
 	/*Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
@@ -562,8 +561,8 @@ int main(int argc, char *argv[])
 	  }
 	/* defined by divergence */
 	else
-	  {	Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*ran3(&idum));
-	    Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*ran3(&idum));
+	  {	Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
+	    Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
 	    Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
 	    Input.Vector[1] = Input.Vector[0] * tan(Phi);
 	    Input.Vector[2] = Input.Vector[0] * tan(Theta);
@@ -572,7 +571,7 @@ int main(int argc, char *argv[])
 
 	/* Polarization - spin vectors selected for each trajectory 
 	   from one of the eigenvectors  in the polarisation direction */
-	helpvalue=ran3(&idum);
+	helpvalue=Vran();
 	if (helpvalue <= FracPolDir) 
 	  {	/* spin eigenvector No 1 */
 	    Input.Spin[0]= PolVecX; 
@@ -1377,11 +1376,17 @@ polInterp(double* X,double* Y,int Psize,double Aim)
 */
 {
   double out,errOut;         /* out put variables */
-  double C[Psize],D[Psize];
   double testDiff,diff;
   
   double w,den,ho,hp;           /* intermediate variables */
   int i,m,ns;
+#ifdef _MSC_VER
+  double *C, *D;
+  C = malloc(Psize*sizeof(double));
+  D = malloc(Psize*sizeof(double));
+#else
+  double C[Psize], D[Psize];
+#endif
 
 
   ns=0;
@@ -1419,6 +1424,12 @@ polInterp(double* X,double* Y,int Psize,double Aim)
       errOut= (2*(ns+1)<(Psize-m)) ? C[ns+1] : D[ns--];
       out+=errOut;
     }
+
+#ifdef _MSC_VER
+  free(C);
+  free(D);
+#endif
+
   return out;
 }
 
@@ -1622,8 +1633,7 @@ calcFraction(double EI,double EE,double Ea,double Eb)
   return frac;
 }
 
-int
-LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
+void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
 /*!
   Process a general h.o file to create an integrated
   table of results from Einit -> Eend
@@ -1634,7 +1644,6 @@ LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
   char ss[255];          /* BIG space for line */
   double Ea,Eb;
   double T,D,tmp;
-  double Efrac;          // Fraction of an Energy Bin
   int Ftime;             // time Flag
   int eIndex;             // energy Index
   int tIndex;             // time Index
@@ -1644,13 +1653,10 @@ LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
   extern ISource TS;
   
   int DebugCnt;
-  int i;
   /*!
     Status Flag::
     Ftime=1 :: [time ] Reading Time : Data : Err [Exit on Total]
   
-
-    /*
     Double Read File to determine how many bins and 
     memery size
   */
@@ -1792,8 +1798,6 @@ LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
   //  printf("tIndex %d %d %d \n",tIndex,eIndex,TS.nTime);
   //printf("Tsum %g \n",Tsum);
   //fprintf(stderr,"ebin1 ebinN %g %g\n",TS.EnergyBin[0],TS.EnergyBin[TS.nEnergy-1]);
-  
-  return;
 }
 
 void
@@ -1808,8 +1812,6 @@ ISISgetpoint(double* TV,double* EV)
   \param lim2 ::  
 */
 {
-  int i;
-
   extern ISource TS;
   double R0,R1,R,Rend;
   int Epnt;       ///< Points to the next higher index of the neutron integral
@@ -1817,7 +1819,6 @@ ISISgetpoint(double* TV,double* EV)
   int iStart,iEnd;
   double TRange,Tspread;
   double Espread,Estart;
-  double *EX;
 
   // So that lowPoly+highPoly==maxPoly
   const int maxPoly=6; 
@@ -1979,11 +1980,6 @@ cmdnumberI(char *mc,int* num,const int len)
 FILE* openFile(char* FileName)
 { 
   FILE* efile=0;
-  char ss[256];
-  char mct[256];
-  char mcdir[256];
-
-
 
   /* Is the file located in working dir? */
   efile=fopen(FileName,"r");

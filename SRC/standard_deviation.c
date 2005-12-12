@@ -92,11 +92,11 @@ stop_it1: ; printf(" \n");
 
 		printf("\nNew calculation? [y/n]  \n"); scanf("%s", yesno ) ; 
 		if(*yesno == 'y') goto newcal ;
-
+		return 0;
 }
 
 /***********************************************************************/
-/* some general procedures::
+/* some general procedures:: */
 
 
 /*  ReadString(FILE *fpt) reads one string value from parameter file */

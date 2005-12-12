@@ -68,46 +68,48 @@ direct_view
 TOOL = init.o general.o message.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
+MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) -DOSF $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
+GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
 ifeq ($(SYS),Linux)
 CCOMP = gcc
 CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+GRASLIB = -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
 
-LIBS = -lm
+GRALIB = $(GRAOPT) -Lrng -lgslran_$(SYS) $(GRASLIB)
+LIBS = -Lrng -lgslran_$(SYS) -lm
 
 .KEEP_STATE :
 
 all: $(ALL)
 	strip $^
-spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
+spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL) 
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_reflectom : sample_reflectom.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-rotating_field : rotating_field.c $(MTOOL)
+rotating_field : rotating_field.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-resonator_drabkin : resonator_drabkin.c $(MTOOL)
+resonator_drabkin : resonator_drabkin.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 chop_phases : chop_phases.c 
@@ -209,7 +211,7 @@ monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
 mon2_div : mon2_div.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-flipper_gradient : flipper_gradient.c $(MTOOL)
+flipper_gradient : flipper_gradient.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 pol_mirror : pol_mirror.c $(MTOOL)

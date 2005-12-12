@@ -408,7 +408,32 @@ proc generateEntries {w globalset {delist {}} {app _}} {
   set gs [string trim $globalset]
   upvar #0 $gs.active gact
   set gact $w
+
+  global fileentrywidth itemlabwidth
+
   set all [globVal $gs]
+
+  if {$globalset == "inputESET"} {
+    # special layout with different entries in a row
+    foreach i {0 1 2} {tFrame $w.$i}
+    frame $w.3 -bg $bgColor
+    pack $w.3 -side left -padx 1.4c
+    frame $w.4 -bg $bgColor
+    pack $w.4 -side left
+
+    for {set i 0} {$i < 3} {incr i} {
+      fileEntry $w.$i.e [lindex $all $i] $itemlabwidth $fileentrywidth $app
+    }
+
+    foreach i {3 4} o {"" opt} {
+      nvalEntryLabel $w.3.e$o [list [lindex $all $i]] 1 8 $app $o
+    }
+    foreach i {5 6} o {"" opt} {
+      nvalEntryLabel $w.4.e$o [list [lindex $all $i]] 1 8 $app $o
+    }
+    return
+  }
+
   set allitems [llength $all]
   for {set item 0} {$item < $allitems} {set item [incr k]} {
     set lintfloat {};    set leditfile {}
@@ -443,16 +468,14 @@ proc generateEntries {w globalset {delist {}} {app _}} {
       tFrame $w.$j
     }
 
-    global fileentrywidth itemlabwidth
     foreach l $leditfile {
       fileEntry $w.$i.e $l $itemlabwidth $fileentrywidth $app
       incr i
     }
 
     itemGroup $w i 1 $filestring 2 $lfilestring 21 $app
-    # next comes hack to shorten input parameter field
-    if {$globalset == "inputESET"} {set incr 0} else {set incr 1}
-    itemGroup $w i $incr $intfloat 3 $lintfloat 8 $app
+
+    itemGroup $w i 1 $intfloat 3 $lintfloat 8 $app
 
     foreach l $llongstring {
       nvalEntryLabel $w.$i.el [list $l] $itemlabwidth $fileentrywidth $app

@@ -25,6 +25,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gsl/gsl_rng.h>
 
 #include "general.h"
 
@@ -32,7 +33,6 @@
                        0 means no separate rates writable */
 #define NUM_EOP 3   /* number of end-of-part lines that can be treated in 'instrument.inf' */
 
-extern long  idum;         /* parameter for the random number generation  */
 extern FILE* LogFilePtr;   /* pointer to the log file stream              */
 
 /**************************************************************/
@@ -65,6 +65,7 @@ short    bTrace=TRUE,     /* criterion: write trace files */
          bOldFrame=FALSE, /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate=TRUE;   /* criterion: write separate count rates */
 
+gsl_rng * vit_gsl_rng;
 
 /**************************************************************/
 /* static variables                                           */
@@ -203,6 +204,7 @@ void Init(int argc, char **argv, VtModID eModule)
   char *a, *arg;
   short l;
   static char * marg[3];
+  const gsl_rng_type * T;
 
   /* Set some default values */
   InputFilePtr   = stdin;
@@ -212,7 +214,6 @@ void Init(int argc, char **argv, VtModID eModule)
   OutputFileName = NULL;
   LogFileName    = NULL;
   ParDirectory   = "";
-  idum           = -1;
   BufferSize     = BUFFER_SIZE;
   OutNeutPtr     = 0;
   TracePoints    = FALSE;
@@ -249,8 +250,18 @@ void Init(int argc, char **argv, VtModID eModule)
       break;
 
     case 'Z':                   /* init number for the random number generator */
-      sscanf(arg,"%ld",&idum);
-      idum = -idum;
+#ifdef _MSC_VER
+      {
+	int i;
+        if (sscanf(arg, "%i", &i)) {
+	  char buf[24];	  
+	  sprintf(buf, "GSL_RNG_SEED=%d", i);
+	  _putenv(buf);
+	}
+      }
+#else
+      setenv("GSL_RNG_SEED", arg, 1);
+#endif
       break;
 
     case 'B':                   /* determine the buffer size */
@@ -318,8 +329,11 @@ void Init(int argc, char **argv, VtModID eModule)
     exit(-1);
   }
 
-  /* initalize the random number generator */
-  ran3(&idum);
+  /* Initialize the GNU random number generator */
+  gsl_rng_env_setup();
+  T = gsl_rng_default;
+  vit_gsl_rng = gsl_rng_alloc (T);
+
 }
 
 
@@ -365,6 +379,9 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   /* release the buffer memory */
   free(InputNeutrons);
   free(OutputNeutrons);
+
+  /* free GNU gsl rng state var */
+  gsl_rng_free (vit_gsl_rng);
 
   /* error for the given count rate calculated through adding squared errors
      - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
@@ -578,7 +595,7 @@ void ReadInstrData(long* pModuleNo, VectorType Pos, double* pLength, double* pRo
 
 void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq)
 {
-  FILE*  pFile=NULL;
+  FILE*  pFile;
 
   pFile = fopen(FullParName("simulation.inf"), "w");
   if (pFile)
@@ -651,30 +668,53 @@ long LinesInFile(FILE *pIn)
 /***********************************************************/
 long ColumnsInFile(FILE* pFile)
 {
-	char  Buffer[CHAR_BUF_LARGE]="";
-	char* pPos=NULL;
-	int   iPos=0;
-	long  nLns=0;
+#ifdef VERS26
 
-	if (pFile != NULL)
-	{	ReadLine(pFile, Buffer, sizeof(Buffer)-1);
+  char  Buffer[CHAR_BUF_LARGE]="";
+  char* pPos=NULL;
+  int   iPos=0;
+  long  nLns=0;
 
-		pPos = strchr(Buffer, ' ');
-		while (pPos != NULL)
-		{
-			iPos = pPos - Buffer + 1;
-			if (iPos > 1)
-				nLns++;
-			StrgLShift(Buffer, iPos);
-			pPos = strchr(Buffer, ' ');
-		}
-
-		if (strlen(Buffer) > 1)
-			nLns++;
-
-		rewind(pFile);
+  if (pFile != NULL)
+    {	ReadLine(pFile, Buffer, sizeof(Buffer)-1);
+      
+      pPos = strchr(Buffer, ' ');
+      while (pPos != NULL)
+	{
+	  iPos = pPos - Buffer + 1;
+	  if (iPos > 1)
+	    nLns++;
+	  StrgLShift(Buffer, iPos);
+	  pPos = strchr(Buffer, ' ');
 	}
-	return nLns;
+      
+      if (strlen(Buffer) > 1)
+	nLns++;
+      
+      rewind(pFile);
+    }
+
+#else
+
+  int i,v, nLns, isin;
+  char buf[CHAR_BUF_LARGE];
+  if (pFile == NULL)
+    return 0;
+  ReadLine(pFile, buf, CHAR_BUF_LARGE-1);
+  rewind(pFile);
+  for (nLns=isin=i=0; (v = buf[i]); i++)
+    if (v != ' ')
+      isin = 1;
+    else if (isin) {
+      nLns++;
+      isin = 0;
+    }
+  if (isin)
+    nLns++;
+
+#endif
+
+  return nLns;
 }
 
 

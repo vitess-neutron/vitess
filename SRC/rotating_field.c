@@ -9,6 +9,8 @@
 #include "intersection.h"
 #include "rotating_field.h"
 
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
+
 /* Summer 2001: Initial and original version precession_field by Geza Zsigmond, HMI, Berlin */
 /* July 02: BETA version: Add possibility for simulating rotating magnetic field 
 	    and correct some mistakes by Manoshin Sergey, HMI, Berlin
@@ -48,7 +50,7 @@ int main(int argc, char **argv)
 /* Local variable for rotation and saturation */
 double TimeR, Rroty, Rrotz;
 VectorType RR, RR1, RRS;
-double VX, VY, VZ, VLL;
+double VX, VY, VZ;
 double F_MODULE, FieldCorr=1.0;
 
 
@@ -348,16 +350,15 @@ while (ind_x != (ind_x_max +1))
 	FieldValue0[1] = FieldValue0Init[1] ;
 	FieldValue0[2] = FieldValue0Init[2] ;	
 
-
 	/* Perform random of the  permanent magentic field */
 	
-
 	 if (FieldValue0Dev > 0.0)
 	 {
-	 	VLL = vector3rand(&VX, &VY, &VZ);
-		FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
-		FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
-		FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
+	   // VLL = vector3rand(&VX, &VY, &VZ);
+	   gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+	   FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
+	   FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
+	   FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
 	 }	
 	 
 //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
@@ -1793,29 +1794,3 @@ n[2] = 1. ; n[0] = n[1] = 0. ;
 	return 1 ;
 
 }/* End IntersectionWithRectangularWallNumber() */
-	
-	    
- 	
-double DistrGauss(double Module, double Sigma)
-{
-    double Res, Norm;
-    long i;
-    
-    Norm = 0.0;
-    for(i = 1; i <= 12; i++)
-    {
-	Norm = Norm + ran3(&idum);
-    }
-    Norm = (fabs(Sigma))*(Norm - 6.0);
-    Res = Module + Norm;
-    return Res;
-}
-
-
-
-
-
-
-
-  
- 

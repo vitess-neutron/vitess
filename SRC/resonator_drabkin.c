@@ -9,6 +9,8 @@
 #include "intersection.h"
 #include "resonator_drabkin.h"
 
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
+
 /* This module was born from module rotating_field, started in July 2003 
 
     The main goal of this module to simulate a Drabkin spin-flip resonator
@@ -30,7 +32,7 @@ int main(int argc, char **argv)
 /* Variable for rotation */
 double Rroty, Rrotz, RRSM;
 VectorType RR, RR1, RR2, RRS;
-double VX, VY, VZ, VLL;
+double VX, VY, VZ;
 
 Neutron NeutronAdd1, NeutronAdd2;
 Plane EndPoint1, EndPoint2;
@@ -259,10 +261,11 @@ field amplitude and frequency */
 
 	 if (FieldValue0Dev > 0.0)
 	 {
-	 	VLL = vector3rand(&VX, &VY, &VZ);
-		FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
-		FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
-		FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
+	   // VLL = vector3rand(&VX, &VY, &VZ);
+	   gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+	   FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
+	   FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
+	   FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
 	 }	
 	 
 //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
@@ -1252,27 +1255,6 @@ n[2] = 1. ; n[0] = n[1] = 0. ;
 	return 1 ;
 
 }/* End IntersectionWithRectangularWallNumber() */
-	
-	    
-
- 	
-double DistrGauss(double Module, double Sigma)
-{
-    double Res, Norm;
-    long i;
-    
-    Norm = 0.0;
-    for(i = 1; i <= 12; i++)
-    {
-	Norm = Norm + ran3(&idum);
-    }
-    Norm = (fabs(Sigma))*(Norm - 6.0);
-    Res = Module + Norm;
-    return Res;
-}
-
-
-
 
 
 
