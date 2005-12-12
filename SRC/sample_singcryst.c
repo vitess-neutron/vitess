@@ -307,9 +307,10 @@ void OutputTransformations(double *tof, double *wl, double *prob, VectorType Pos
 
 	AddVector(Pos, Path);  
 	
-	}			/* Path = displacement vector */
+	}			Path = displacement vector 
+	*/
 
-}/* End OutputTransformations()*/
+} /* End OutputTransformations()*/
 
 
 /* own initialization of the monochromator/analyser module */

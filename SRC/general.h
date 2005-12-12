@@ -212,9 +212,9 @@ double ENERGY_FROM_V   (double x);
 double V_FROM_LAMBDA   (double x);
 double LAMBDA_FROM_V(double x);
 
-double ran3       (long * i);
+#define Vran() gsl_rng_uniform (vit_gsl_rng)
 double MonteCarlo (double x, double y);
-double vector3rand(double *, double *, double *);
+double DistrGauss(double Module, double Sigma);
 
 double sq   (double Value);                        /* = Value*Value*/
 double atan0(double a, double b);
@@ -253,7 +253,9 @@ int    ReadParI(FILE *fpt);
 void   ReadParComment(FILE *fpt);
 
 void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
+#ifdef VERS26
 void   StrgLShift(char* sStr, int kWidth);
+#endif
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
 #endif

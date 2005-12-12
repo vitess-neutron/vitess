@@ -166,6 +166,7 @@ newrot:;
 	if(cMode == 'r') goto newrot; 
 
 fin:;
+	return 0;
 }
 
 static

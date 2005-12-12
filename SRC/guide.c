@@ -41,6 +41,7 @@
 #include "matrix.h"
 #include "message.h"
 
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
 /******************************/
 /** Structures and Enums     **/
@@ -353,7 +354,7 @@ int main(int argc, char *argv[])
 			TimeOF1 = 0.0;
 			TimeOF2 = 0.0;
 
-			/*	InputNeutrons[i].Position.X = 0.0;   /* !!!!!!!! */
+			/*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
 			/****************************************************************************************/
 			/* Check to see if the neutron is initially in the entrance to the guide...             */
 			/****************************************************************************************/
@@ -694,8 +695,8 @@ void OwnInit   (int argc, char *argv[])
 			Error("You must enter the width of the guide exit");
 	}
 
-	if (eGuideShapeY==VT_ELLIPTIC && PhiAnfY < 0.5*M_PI && GuideExitWidth  > GuideEntranceWidth ||
-	    eGuideShapeZ==VT_ELLIPTIC && PhiAnfZ < 0.5*M_PI && GuideExitHeight > GuideEntranceHeight   )
+	if ((eGuideShapeY==VT_ELLIPTIC && PhiAnfY < 0.5*M_PI && GuideExitWidth  > GuideEntranceWidth) ||
+	    (eGuideShapeZ==VT_ELLIPTIC && PhiAnfZ < 0.5*M_PI && GuideExitHeight > GuideEntranceHeight)   )
 	{
 		Error("The ellipse must widen at the guide entrance (angle > 90 deg) to achieve a exit width larger than the entrance width");
 	}
@@ -924,7 +925,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 	double  TimeOF, TimeOFmin;
 	double  TimeOFTotal=0.0;
 	double  VelocityReal, DOTP;
-	double  VX, VY, VZ, len;
+	double  VX, VY, VZ;
 	VectorType vWallN,  /* normal to the plane wall             */
 	           vWaviN;  /* normal to the wall with its waviness */
 	Neutron TempNeutron, NearestNeutron; /* Local copies of actual trajectory for loops */
@@ -1044,17 +1045,18 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		{
 			/* rough surface must not alter the side from which the neutron comes */
 			do
-			{	len = vector3rand(&VX, &VY, &VZ);
-				vWaviN[0] = vWallN[0] + surfacerough*VX;
-				vWaviN[1] = vWallN[1] + surfacerough*VY;
-				vWaviN[2] = vWallN[2] + surfacerough*VZ;
+			  {	// len = vector3rand(&VX, &VY, &VZ);
+			    gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+			    vWaviN[0] = vWallN[0] + surfacerough*VX;
+			    vWaviN[1] = vWallN[1] + surfacerough*VY;
+			    vWaviN[2] = vWallN[2] + surfacerough*VZ;
 
-				/* Renormalize normal vector */
-				if (LengthVector(vWaviN) == 0.0)
-					return(-1.0);
-				else
-					NormVector(vWaviN);
-			}
+			    /* Renormalize normal vector */
+			    if (LengthVector(vWaviN) == 0.0)
+			      return(-1.0);
+			    else
+			      NormVector(vWaviN);
+			  }
 			while (  ScalarProduct(NearestNeutron.Vector, vWallN)
 		          * ScalarProduct(NearestNeutron.Vector, vWaviN) < 0.0);
 		}

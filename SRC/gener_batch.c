@@ -42,10 +42,6 @@ short    nModNo    [MAX_PAR],        /* MAX_PAR integers, each contains the modu
 VtModus  eModus  = VT_SER_1F;
 VtSystem eSystem = VT_SYS_NN;
 
-static	 
-char     sBuffer  [BUFLEN]="";
-
-
 // main program
 int main(int argc, char* argv[])
 {

@@ -56,7 +56,14 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   # restart construction of fc, after general options have been saved to insert
   switch $Comode {
     bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
-    tcl {set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\nexec "}
+    tcl {
+      set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "set env(GSL_RNG_$vv) $t\n"
+      }
+      append fc "exec "
+    }
     default {set fc ""}
   }
   set first 1
@@ -305,6 +312,11 @@ proc startAction {{sercom ""} {simu simulation}} {
 
   update
   stopAction 0
+  global env
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    set env(GSL_RNG_$vv) $t
+  }
   if $tool {
     regsub -all \n $c "" c
     set p [pardirPar]
@@ -638,6 +650,11 @@ set COM {$c}
 set PipeLogList {$PipeLogList}
 set pname $pname
 "
+  
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    append fc "set env(GSL_RNG_$vv) $t\n"
+  }
 
   # no variable substitution here, will be done in script!
   append fc {

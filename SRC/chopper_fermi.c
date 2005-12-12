@@ -1,32 +1,33 @@
-/********************************************************************************************************************************************************/
-/*  VITESS module 'chopper_fermi'                                                            
-/*                                                                                           
-/* The free non-commercial use of these routines is granted providing due credit is given to 
-/* the authors.                                                                              
-/*                                                                                           
-/* 1.00  Jul 2002  G. Zsigmond	initial version                                             
-/* 1.01  Aug 2002  G. Zsigmond	forward all coordinates                                     
-/* 1.02  Sep 2002  G. Zsigmond	included more channel windows                               
-/* 1.03  Apr 2003  G. Zsigmond	sign correction                                             
-/* 1.04  May 2003  G. Zsigmond	info changed                                                
-/* 1.05  Jun 2003  G. Zsigmond	modulo function included for safety                         
-/* 1.06  Jul 2003  G. Zsigmond	generalised for optional number of pulses; warnings included
-/* 1.07  Oct 2003  G. Zsigmond	superfluous modulo function cancelled                       
-/* 1.08  Nov 2003  G. Zsigmond	put 2 more windows representing channels, now 6 windows    
-/*                               in the big IF loop ">=" changed to ">"                      
-/* 1.09  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                
-/* 1.10  Jan 2004  G. Zsigmond  back to 4 windows representing channels
-/* 1.11  Apr 2004  G. Zsigmond  negative time of flight defined
-/* 1.12  Apr 2004  G. Zsigmond  negative time of flight - corrections, set zero time
-/* 1.13  May 2004  G. Zsigmond  circular geom option and channel length included in curved fc
-/* 1.14  JUL 2004  G. Zsigmond  small change in Init to adapt to new GUI
-/* 1.15  OCT 2004  G. Zsigmond  changed to use both even or odd number of channels
-/* 1.16  MAY 2005  G. Zsigmond  output changed to give trajectory coordinates at a plane crossing the center of the chopper (to be compatible with zero time option)
-/*								zero time option fixed to get one peak 
-/*                              shadowing cylinder opening activated 
-/* 1.17  MAY 2005  G. Zsigmond  new option choice of 4, 6(better,slower) or 8(much better, very slow) gates, 4 gates option adjusted
-/* 1.18  SEP 2005  G. Zsigmond  optimisations to speed up the algorithm
-/********************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+  VITESS module 'chopper_fermi'                                                            
+                                                                                           
+ The free non-commercial use of these routines is granted providing due credit is given to 
+ the authors.                                                                              
+                                                                                           
+ 1.00  Jul 2002  G. Zsigmond	initial version                                             
+ 1.01  Aug 2002  G. Zsigmond	forward all coordinates                                     
+ 1.02  Sep 2002  G. Zsigmond	included more channel windows                               
+ 1.03  Apr 2003  G. Zsigmond	sign correction                                             
+ 1.04  May 2003  G. Zsigmond	info changed                                                
+ 1.05  Jun 2003  G. Zsigmond	modulo function included for safety                         
+ 1.06  Jul 2003  G. Zsigmond	generalised for optional number of pulses; warnings included
+ 1.07  Oct 2003  G. Zsigmond	superfluous modulo function cancelled                       
+ 1.08  Nov 2003  G. Zsigmond	put 2 more windows representing channels, now 6 windows    
+                               in the big IF loop ">=" changed to ">"                      
+ 1.09  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                
+ 1.10  Jan 2004  G. Zsigmond  back to 4 windows representing channels
+ 1.11  Apr 2004  G. Zsigmond  negative time of flight defined
+ 1.12  Apr 2004  G. Zsigmond  negative time of flight - corrections, set zero time
+ 1.13  May 2004  G. Zsigmond  circular geom option and channel length included in curved fc
+ 1.14  JUL 2004  G. Zsigmond  small change in Init to adapt to new GUI
+ 1.15  OCT 2004  G. Zsigmond  changed to use both even or odd number of channels
+ 1.16  MAY 2005  G. Zsigmond  output changed to give trajectory coordinates at a plane crossing the center of the chopper
+			      (to be compatible with zero time option	
+                               zero time option fixed to get one peak 
+                              shadowing cylinder opening activated 
+ 1.17  MAY 2005  G. Zsigmond  new option choice of 4, 6(better,slower) or 8(much better, very slow) gates, 4 gates option adjusted
+ 1.18  SEP 2005  G. Zsigmond  optimisations to speed up the algorithm
+*******************************************************************************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>

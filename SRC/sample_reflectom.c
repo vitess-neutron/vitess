@@ -7,7 +7,7 @@
 /*                                                                                          */
 /* 1.0  Dec  2001  K. Lieutenant  initial version                                           */
 /* 1.1  Feb? 2002  K. Lieutenant  average of reflectivity value built in logarithmic scale  */
-/* 1.2  Jul? 2002  K. Lieutenant  storing of reflectivity data                              *
+/* 1.2  Jul? 2002  K. Lieutenant  storing of reflectivity data                              */
 /* 2.0  Jan  2002  K. Lieutenant  reorganisation                                            */
 /* 2.1  Jul  2003  K. Lieutenant  correction time-of-flight calculation                     */
 /* 2.2  Jan  2004  K. Lieutenant  changes for 'instrument.dat'                              */

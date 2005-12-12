@@ -104,6 +104,7 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 			                              eErrID, stMessage[n].nNumber); break;
 			default : sprintf(sMsgText, "\n%s.\n", sText);
 		}
+#ifdef VERS26
 		if (strlen(pText) > 0)
 		{	if (stMessage[n].nNumber > 1)
 				fprintf(LogFilePtr, sMsgText, stMessage[n].nNumber, "ies",pText);
@@ -124,6 +125,15 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 				fprintf(LogFilePtr, "Trajectory has ID %c%c%09lu.\n", 
 						  stMessage[n].TrajID.IDGrp[0], stMessage[n].TrajID.IDGrp[1], stMessage[n].TrajID.IDNo);
 		}
+#else
+		{
+		  int nid = stMessage[n].TrajID.IDNo, nno = stMessage[n].nNumber;
+		  fprintf(LogFilePtr, sMsgText, nno, nno > 1 ? "ies" : "y", pText);
+		  if (bID==ON && nid > 0)
+		    fprintf(LogFilePtr, nno > 1 ? "First trajectory has ID %c%c%09lu.\n" : "Trajectory has ID %c%c%09lu.\n",
+			    stMessage[n].TrajID.IDGrp[0], stMessage[n].TrajID.IDGrp[1], nid);
+		}
+#endif
 	}
 }
 
@@ -165,8 +175,12 @@ static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
 		while (eID != eTabID  && trc==TRUE);
 		if (eID==eTabID)
 		{	rc=TRUE;
+#ifdef VERS26
 			StrgLShift(sLine, 6);
 			strcpy(pText, sLine);
+#else
+			strcpy(pText, sLine+6);
+#endif
 		}
 		else
 		{	*pType='-'; 

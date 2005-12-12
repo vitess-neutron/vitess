@@ -25,7 +25,6 @@ void scalp(long nin, double q, double sig);
 
 double pyshm(long nin, double q, double sig, double ro)
 {
-	char   TEXT[81]="";
 	double S, sig3, capis, pf, den, usden, ho, hop, sz;
 
 	sig3 = pow(sig,3);
@@ -53,7 +52,6 @@ double pyshm(long nin, double q, double sig, double ro)
 void pyshmFileGen(char* text, long n, long nin, double q0, double dq, double sig, double ro, 
 		       FILE* pOut)
 {
-	char   TEXT[81]="";
 	double S[800], a[800],
 	       q, sig3, capis, pf, den, usden, ho, hop, sz;
 	long   i,ij;
