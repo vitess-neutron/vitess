@@ -6,6 +6,7 @@
 /* 1.0            Géza Zsigmond                                                             */
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.3  NOV 2005  K. Lieutenant  transformation scattering angles -> direction removed      */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -77,7 +78,7 @@ CHECK;
 	{
 		double rotz, roty ; VectorType Vector ;
 
-		SphericalToCartesian(Vector, &InputNeutrons[i].Vector[0], &InputNeutrons[i].Vector[1]) ;
+		// SphericalToCartesian(Vector, &InputNeutrons[i].Vector[0], &InputNeutrons[i].Vector[1]) ;
 
 		CartesianToEulerZY(Vector, &roty, &rotz);
 
@@ -187,7 +188,7 @@ void OwnInit(int argc, char *argv[])
 {
 	fprintf(LogFilePtr," \n") ;
 
-	print_module_name("eval_inelast 1.2") ;
+	print_module_name("eval_inelast 1.3") ;
 
 
 /*    INPUT  */

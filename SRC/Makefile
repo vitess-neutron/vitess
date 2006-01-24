@@ -45,15 +45,15 @@ polariser_he3 \
 flipper_coil \
 pol_mirror \
 precessionfield \
-rotating_field \
-flipper_gradient \
-resonator_drabkin \
 sample_elasticisotr \
 sample_inelast \
 sample_reflectom \
 define_direction \
 sample_singcryst \
 cas_v40 \
+rotating_field \
+flipper_gradient \
+resonator_drabkin \
 sample_powder \
 sample_s_q \
 sample_sans \
@@ -72,7 +72,7 @@ MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
 ifeq ($(SYS),SunOS)
@@ -99,8 +99,8 @@ LIBS = -Lrng -lgslran_$(SYS) -lm
 .KEEP_STATE :
 
 all: $(ALL)
-	strip $^
-spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL) 
+
+spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_reflectom : sample_reflectom.c $(MTOOL)
@@ -136,7 +136,7 @@ mon2_tofwl : mon2_tofwl.c $(TOOL)
 monitorpol_pos : monitorpol_pos.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-eval_elast : eval_elast.c $(TOOL)
+eval_elast : eval_elast.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 velselect : velselect.c $(TOOL)
@@ -259,11 +259,14 @@ mon2_posdiv : mon2_posdiv.c $(TOOL)
 chopper_fermi : chopper_fermi.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+.c.o:
+	$(CC) -c $<
+
 Move:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
-	rm *.o
+	-rm -f *.o
 Copy:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
-	rm *.o $(ALL)
+	-rm -f *.o $(ALL)

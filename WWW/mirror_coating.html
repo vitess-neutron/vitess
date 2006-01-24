@@ -10,46 +10,69 @@
   
 <h1>VITESS Tool Generate Mirror Files</h1>
  This tool generates reflectivity files that are used in the modules 'guide' 
-and 'bender'. The parameters m, R_0, R_m, Q_c (cf. Figure) and the file name
-have to be given. If no path is given, the file will be written to the directory
-.../Vitess/Modules. 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ^ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br>
-&nbsp;R_0&nbsp; |_____________ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-. \ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp; \ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp; \ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \ <br>
-&nbsp;R_m ....................................\ <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +----------------+------+-----&gt; 
-Q, theta <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-Q_c&nbsp;&nbsp;&nbsp;&nbsp; m*Q_c(Ni) <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-theta_c&nbsp;&nbsp; m*theta_c(Ni) </p>
-<p>m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :&nbsp; factor 
-of supermirror <br>
-Q_c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :&nbsp; crit. momentum transfer&nbsp; (see
-figure) <br>
-theta_c :&nbsp; crit. angle for lambda = 1 Angstroem <br>
-R_0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :&nbsp; reflectivity for 0 &lt;= Q &lt;=
-Q_c <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-(or 0 &lt;= theta &lt;= theta_c) <br>
-R_m&nbsp;&nbsp;&nbsp;&nbsp; :&nbsp; reflectivity for Q = m * Q_c(Ni) </p>
-<p> </p>
+and 'bender'. The parameters m, R<sub>0</sub>, R<sub>m</sub>, Q<sub>c</sub>, W (s. Table)
+and the file name have to be given. 
+If no path is given, the file will be written to the directory .../Vitess/Modules.
+<br> <br> <br>
+
+<table border="1" width="90%">
+ <tbody>
+    <tr>
+ <td><b>Parameter</b> <br>
+      <b>Unit</b></td>
+  <td><b>Description</b></td>
+  <td><b>typical values</b></td>
+ </tr>
+  <tr>
+ <td>R<sub>0</sub></td>  <td>reflectivity for 0 &lt;= Q &lt;=Q<sub>c</sub></td>  <td>0.99</td>
+ </tr>
+  <tr>
+ <td>m</td>  <td>factor of supermirror</td>  <td>1 ... 4</td>
+ </tr>
+  <tr>
+ <td>Q<sub>c</sub><br>[Ang<sup>-1</sup>]</td>  <td>crit. momentum transfer</td> 
+  <td>0.02174 </td>
+ </tr>
+  <tr>
+ <td>R<sub>m</sub></td>  <td>reflectivity for Q = m Q<sub>c</sub>(Ni)</td>  <td>0.6 .... 0.92</td>
+ </tr>
+  <tr>
+ <td>W<br>[Ang<sup>-1</sup>]</td>  <td>width of the cut-off tange<br>W=0 causes a sharp cut-off</td>  
+ <td>0 ... 0.004</td>
+ </tr>
+  <tr>
+ <td>mirror file</td>  <td>name of the file into which the reflectivity curve is written</td>  <td>-</td>
+ </tr>
+  </tbody>
+</table>
+<br>
+<br>
+For W=0 the reflectivity curve consists of linear functions and a sharp cut-off at Q = m Q<sub>c,Ni</sub>.
+<br> 
+<br>
+For Q > Q<sub>c</sub> and W > 0, the reflectivity R is calculated as
+<br> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub>(1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
+  (1 - <font face="Symbol">a</font>(Q - Q<sub>c</sub>))
+<br>
+<br>
+using 
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Symbol">a</font> = (R<sub>m</sub> - R<sub>0</sub>) / 
+(m Q<sub>c,Ni</sub> - Q<sub>c</sub>)
+<br> 
+<br>
+The product m Q<sub>c,Ni</sub> must be greater or equal Q<sub>c</sub>, because m is meant to extent the Q range 
+to values greater than Q<sub>c</sub>. 
+<br> 
+<br>
+<br> 
+The figure shows the reflecitvity curve for m=2, R<sub>0</sub>=0.98, R<sub>m</sub>=0.85,
+Q<sub>c</sub>=0.021743 Ang<sup>-1</sup>, W=0.025 Ang<sup>-1</sup>
+<p><img src="ReflMirr.png" height="400" width="600">
+</p>
+
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
 <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
 <p><!-- hhmts start --><font size="-1">Last modified:&nbsp;</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> 

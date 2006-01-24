@@ -49,5 +49,3 @@ char* FullInstallName (char* filename, char* sRelPath);
 extern gsl_rng * vit_gsl_rng;
 
 #endif
-
-
