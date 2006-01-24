@@ -39,7 +39,7 @@ EOS
 my @Obj = qw(init general intersection matrix sample);
 
 # modules which need TOOL (init general)
-my @C = qw(ascii2bin eval_elast monitor1
+my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape);
@@ -49,7 +49,7 @@ my @CI = qw(chopper_disc chopper_fermi collimator_soller
 	    source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_inelast frame guide
+my @CM = qw(detector eval_elast eval_inelast frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_he3 flipper_coil
@@ -143,7 +143,7 @@ MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
 ifeq ($(SYS),SunOS)
@@ -170,7 +170,7 @@ LIBS = -Lrng -lgslran_$(SYS) -lm
 .KEEP_STATE :
 
 all: $(ALL)
-	strip $^
+
 EOS
 
   $dep{$_} = "$_ $dep{$_}" foreach @All;	
@@ -182,14 +182,17 @@ EOS
   }
 	
   print <<'EOS';
+.c.o:
+	$(CC) -c $<
+
 Move:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
-	rm *.o
+	-rm -f *.o
 Copy:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
-	rm *.o $(ALL)
+	-rm -f *.o $(ALL)
 EOS
 
   exit;

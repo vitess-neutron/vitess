@@ -165,8 +165,8 @@ SOURCE=$(SPATH)\eval_elast.c
 "$(IDIR)\eval_elast.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\eval_elast.exe" : "$(OD)" $(TOOL) "$(OD)\eval_elast.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(TOOL) 
+"$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\monitor1.c
 "$(IDIR)\monitor1.obj" : $(SOURCE)
