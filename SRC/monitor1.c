@@ -14,6 +14,7 @@
 /*                             rate within binning; protocol; no limit in number of binnings */
 /* 1.5a K. Lieutenant DEC 2004 total no of trajectories within ...                           */
 /* 1.5b K. Lieutenant MAR 2005 correction peak flux                                          */
+/* 1.6  K. Lieutenant FEB 2005 intensity as a function of energy                             */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -25,7 +26,7 @@
 #include "softabort.h"
 #include "general.h"
 
-#define MAX_KIND 6
+#define MAX_KIND 7
 
 
 int main(int argc, char *argv[])
@@ -36,10 +37,10 @@ int main(int argc, char *argv[])
          *RefFileName=NULL,
          sNewName[99]="", sModuleName[41],
          sBuffer[512];
-  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm"},
+  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV"},
          sParN[MAX_KIND+1][22]={"", "wavelength", "time",
                                 "horizontal divergence", "vertical divergence",
-                                "horizontal position",   "vertical position"};
+                                "horizontal position",   "vertical position", "energy"};
 
   short  bProbWeight=0;        /* Probability weight yes or no */
   long   iBin,                 /* bin number */
@@ -109,7 +110,8 @@ int main(int argc, char *argv[])
         break;
 
       case 'k':
-        kind = atol(&argv[i][2]); /* 1= monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 5=monitory, 6=monitorz */
+        kind = atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 
+                                     5=monitory,      6=monitorz     7=energy */
         break;
 
       case 'n':
@@ -168,7 +170,7 @@ int main(int argc, char *argv[])
   if (MonitorFileName==NULL)
     {fprintf(LogFilePtr,"\n you must define a MonitorOutputFile"); exit(99);}
 
-  sprintf(sModuleName, "monitor1_%s 1.5b", sParN[kind] );
+  sprintf(sModuleName, "monitor1_%s 1.6", sParN[kind] );
   print_module_name(sModuleName);
 
   if (pFileRef!=NULL)
@@ -302,6 +304,19 @@ int main(int argc, char *argv[])
 
       case 6:
         iBin = (int)floor(nBiny*(InputNeutrons[i].Position[2] - Miny)/(Maxy-Miny));
+        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
+        {
+           pInt [iBin] += p;
+           pBinN[iBin] += 1;
+           dIntTot   += p;
+           nTrjTot   += 1;
+           registered=1;
+        }
+        break;
+
+      case 7:
+        iBin=(int)floor((double)nBiny*(0.001*ENERGY_FROM_LAMBDA(InputNeutrons[i].Wavelength) - Miny)/(Maxy-Miny));
+
         if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
         {
            pInt [iBin] += p;
