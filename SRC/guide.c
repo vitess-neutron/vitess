@@ -101,6 +101,8 @@ double GuideEntranceHeight=0.0,
        LcntrZ  = 0.0,
        AxisY   = 0.0,        /* long axes of ellipse */
        AxisZ   = 0.0,
+       AparY   = 0.0,        /* factor of quadratic term in parabola  */
+       AparZ   = 0.0,
        Radius  = 0.0,
        piecelength=0.0,      /* length of 1 piece of the guide */
        dTotalLength,         /* total length of the guide  */
@@ -186,10 +188,11 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "elliptic shape\n");
 			fprintf(LogFilePtr, " maximal width  :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
 			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisY/100.);
-			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Y/100., FocusY/100.);
+			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Y/100., FocusY/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape\n");
+			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			                    (sq(GuideEntranceWidth)*AparY-dTotalLength-1.0/AparY/16.0)/100.);
 			break;
 		case VT_CURVED  :
 			break;
@@ -206,10 +209,11 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "elliptic shape\n");
 			fprintf(LogFilePtr, " max. height    :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
 			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisZ/100.);
-			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Z/100., FocusZ/100.);
+			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Z/100., FocusZ/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape\n");
+			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			                    (sq(GuideEntranceHeight)*AparZ-dTotalLength-1.0/AparZ/16.0)/100.);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -800,7 +804,6 @@ double Height(double dLength)
 {
 	double dHeight=0.0,
 	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
-	       A,               /* factor of quadratic term in parabola  */
 	       eps,             /* correction value =(b*b)/(2a*a)        */
 	       Phi,
 	       Phi_anf,Phi_end; /* phases in ellipse                     */
@@ -815,9 +818,9 @@ double Height(double dLength)
 			dHeight = GuideEntranceHeight + (GuideExitHeight-GuideEntranceHeight)/dTotalLength * dLength;
 			break;
 		case VT_PARABOLIC:
-			A      = dTotalLength/(sq(GuideEntranceHeight) - sq(GuideExitHeight));
-			L_end  = A * sq(GuideEntranceHeight);
-			dHeight = sqrt((L_end-dLength)/A);
+			AparZ   = dTotalLength/(sq(GuideEntranceHeight) - sq(GuideExitHeight));
+			L_end   = AparZ * sq(GuideEntranceHeight);
+			dHeight = sqrt((L_end-dLength)/AparZ);
 			break;
 		case VT_ELLIPTIC:
 			/* first approximation */
@@ -853,7 +856,6 @@ double Width(double dLength)
 {
 	double dWidth=0.0,
 	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
-	       A,               /* factor of quadratic term in parabola  */
 	       eps,             /* correction value =(b*b)/(2a*a)        */
 	       Phi,
 	       Phi_anf,Phi_end; /* phases in ellipse                     */
@@ -868,9 +870,9 @@ double Width(double dLength)
 			dWidth = GuideEntranceWidth + (GuideExitWidth-GuideEntranceWidth)/dTotalLength * dLength;
 			break;
 		case VT_PARABOLIC:
-			A      = dTotalLength/(sq(GuideEntranceWidth) - sq(GuideExitWidth));
-			L_end  = A * sq(GuideEntranceWidth);
-			dWidth = sqrt((L_end-dLength)/A);
+			AparY  = dTotalLength/(sq(GuideEntranceWidth) - sq(GuideExitWidth));
+			L_end  = AparY * sq(GuideEntranceWidth);
+			dWidth = sqrt((L_end-dLength)/AparY);
 			break;
 		case VT_ELLIPTIC:
 			AxisY   = 0.5*fabs((sq(dTotalLength+FocusY)*sq(GuideExitWidth) - sq(FocusY*GuideEntranceWidth))
