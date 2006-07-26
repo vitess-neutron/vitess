@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
 	                      //                 (or 0 <= theta <= theta_c)
 	        dRm,          // R_m    : reflectivity for Q = m * Q_c(Ni)
 	        dR,           // R      : reflectivity for Q or theta, 
-	        dAlpha,       // slope Delta_R / Delta_theta
-	        dAlphaQ;      // slope Delta_R / Delta_Q
+	        dAlpha =0.0,  // slope Delta_R / Delta_theta
+	        dAlphaQ=0.0;  // slope Delta_R / Delta_Q
 	long    i, nLen;
 	FILE*   pFile;
 	char    sFileName[50], 
@@ -68,6 +68,10 @@ int main(int argc, char* argv[])
 //	printf("               theta_c   m*theta_c(Ni)        ");
 //	printf("                                              ");
 
+// WARNING:
+//  McStas function has its cut-off at m*theta_c, 
+//                              not at m*theta_c(Ni) !!
+
 read:
 	dR0      = GetDouble("reflectivity(Q=0)                      ");
 	dM       = GetDouble("m   = Qmax / Qmax(Ni)                  ");
@@ -76,10 +80,10 @@ read:
 	dW       = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	GetString(sFileName, "Name of the mirror file                ");
 
-	dQcNi    = Round(4*sq(PI)*THETA_NI/180.0, 6);
+	dQcNi    = Round(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
 
-	if (dM*dQcNi < dQc)
-	{	printf("\nERROR: m*Q_c(Ni) must not be less than Q_c \nm is meant to extent the Q range to values greater than Q_c \n"); 
+	if (dM*dQc < dQc)
+	{	printf("\nERROR: m*Q_c must not be less than Q_c \nm is meant to extent the Q range to values greater than Q_c \n"); 
 		printf("Please repeat the input\n\n");
 		goto read; 
 	}
@@ -95,10 +99,16 @@ read:
 		dThetaC = 180.0/PI*asin(dQc/(4*PI));
 		dThetaW = 180.0/PI*asin(dW/(4*PI));
 		dThetaM = dM * THETA_NI;
-		nLen    = (long) ((dThetaM+6.0*dThetaW)*1000+4);
-		dAlpha  = (dRm - dR0) / (dThetaM - dThetaC);
-		dAlphaQ = (dRm - dR0) / (4*PI*sin(PI/180.0*dThetaM)/1.0 - dQc);
+		nLen    = (long) ((Max(dThetaM,dThetaC) + 6.0*dThetaW)*1000 + 4);
 
+		/* slopes in theta and Q */
+		if (dThetaM > dThetaC)
+		{	dAlpha  = (dRm - dR0) / (dThetaM  - dThetaC);
+			dAlphaQ = (dRm - dR0) / (dM*dQcNi - dQc);
+		}
+
+		/* calculate reflectivity for 1 Ang in steps of 0.001 deg
+		   and write 10 values into each line                     */
 		i=0;
 		for (dTheta=0.0; i < nLen; dTheta+=0.001)
 		{
@@ -107,15 +117,17 @@ read:
 			{	dR = dR0;
 			}
 			else	
-			{	if (dW==0.0)
+			{	/* sharp cut-off at m*theta_c(Ni) */
+				if (dW==0.0)
 				{	if (dTheta > dThetaM)
 						dR = 0.0;
 					else
 						dR = dR0 + dAlpha*(dTheta-dThetaC);
 				}
+				/* McStas function: smooth cut-off at m*theta_c */
 				else
 				{	dQ = 4*PI*sin(PI/180.0*dTheta)/1.0;
-					dR = dR0 * 0.5*(1.0-tanh((dQ-dM*dQcNi)/dW)) * (1.0 + dAlphaQ*(dQ-dQc));
+					dR = dR0 * 0.5*(1.0-tanh((dQ-dM*dQc)/dW)) * (1.0 + dAlphaQ*(dQ-dQc));
 				}
 			}
 			if (10*(i/10) == i)
