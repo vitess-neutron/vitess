@@ -138,15 +138,17 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 {
 	double dSolAngle=0.0;
 
-	if (dHorAngle < 0.55 && dVertAngle < 0.55)
-	{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2(tan(theta)-tan³(theta)/3) */
-		dSolAngle = 4 * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0)
-				        * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	if (dVertAngle < 0.55)
+	{	/* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
+		dSolAngle = 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	}
+	else if (dHorAngle < 0.55)
+	{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2 theta */
+		dSolAngle = 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
 	}
 	else
 	{	/* empirical approximation for large angles */
-		dSolAngle = 4 * sqrt(dHorAngle  * sin(dHorAngle)
-				             * dVertAngle * sin(dVertAngle));
+		dSolAngle = 4 * sqrt(dHorAngle * sin(dHorAngle) * dVertAngle * sin(dVertAngle));
 	}
 
 	return dSolAngle;
