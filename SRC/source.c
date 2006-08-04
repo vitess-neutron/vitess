@@ -30,6 +30,8 @@
 /*                                 new way of integration in 'LoadWavelengthDistribution'    */
 /* 1.11a Nov  2004  K. Lieutenant  'WriteSimData' extended, 'PolDegree'+'FracPolDir' introdu.*/
 /* 1.11b Dec  2004  K. Lieutenant  solid angle calculation to general.c, (count rate errors) */
+/* 1.12  Aug  2005  D. Champion    special code to describe ISIS source                      */
+/* 1.13  Jul  2006  K. Lieutenant  virtual window                                            */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -55,42 +57,48 @@ typedef struct
 
 } ISource;
 
+typedef enum
+{	VT_DIVERGENCE = 0,
+	VT_REAL_WND   = 1,
+	VT_VIRT_WND   = 2,
+}
+VtDirect;
+
 /* global variables */
 TotalID*  g_pTrace=NULL;       /* table of trajectory IDs for tracing             */
 long      g_nLinesTr=0;        /* Number of lines in the trace file               */
 char*     pTraceFileName=NULL;
-short     eTraceMode=0,        /* mode 0: no tracing 
+short     eTraceMode=0;        /* mode 0: no tracing 
                                   mode 1: write trace files for traj. of interest
                                   mode 2: simulation only with traj. of interest  */
-  bChoWndPoint=FALSE;  /* criterion 'choose only trajectories that pass window' */
 char*     pModFileName=NULL;
 
 short     nNumMod=0,           /* number of moderators in moderator system        */
-  imod=0;              /* index of moderators in moderator system         */
+          imod=0;              /* index of moderators in moderator system         */
 double    NumberOfNeutrons=0,
-  dTimeMeas   =  0.0,  /* time of measurement in seconds                  */
-  dLmbdWant   =  0.0,  /* desired wavelength                              */
+          dTimeMeas   =  0.0,  /* time of measurement in seconds                  */
+          dLmbdWant   =  0.0,  /* desired wavelength                              */
 
-  PolVecX     =  0.0,  /* polarisation            */
-  PolVecY     =  0.0, 
-  PolVecZ     =  0.0, 
-  PolDegree   =  0.0,  /* degree of polarization [%] */
-  FracPolDir  =  0.0,  /* fraction of neutrons in polarization direction */
+          PolVecX     =  0.0,  /* polarisation            */
+          PolVecY     =  0.0, 
+          PolVecZ     =  0.0, 
+          PolDegree   =  0.0,  /* degree of polarization [%] */
+          FracPolDir  =  0.0,  /* fraction of neutrons in polarization direction */
 
-  Declination =  0.0,  /* declination between mod. surface normal and propagation window */
-  dDistWnd    =  0.0,  /* distance moderator - window                                    */
-  WindowHeight= 10.0, 
-  WindowWidth = 10.0;
-Plane	    Endpoint;
+          Declination =  0.0,  /* declination between mod. surface normal and propagation window */
+          WindowDist  =  0.0,  /* distance moderator - (virtual) window                          */
+          WindowHeight= 10.0, 
+          WindowWidth = 10.0;
+Plane     Endpoint;
+VtDirect  eDirDet=VT_DIVERGENCE; /* enum 'modus to determine neutron flight direction' */
 
 Source    stSrc;             /* source data               */
 Moderator stMod   [NUM_MOD]; /* moderator data            */
 TrajParam stTraj  [NUM_MOD]; /* trajectory data           */
 FctTable  stFluxT [NUM_MOD], /* data of time distr.       */
-  stFluxL [NUM_MOD], /* data of wavelength distr. */
-  stFluxLT[NUM_MOD]; /* data of wavelength & time distr. */
-// FctTable  stTrace;
-ISource TS;
+          stFluxL [NUM_MOD], /* data of wavelength distr. */
+          stFluxLT[NUM_MOD]; /* data of wavelength & time distr. */
+ISource   TS;
 
 /* local functions */
 void  OwnCleanup();
@@ -135,7 +143,7 @@ int main(int argc, char *argv[])
     dDecSin,           /* to the instrument direction                                   */
     Phi, Theta,        /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
     dWndY, dWndZ,      /* position where trajectory passes window 
-			  (MC choice for option bChoWndPoint = TRUE)                    */
+			  (MC choice for option eDirDet = VT_REAL_WND or VT_VIRT_WND)   */
     Y0,                /* y-position of the starting point of the neutron in the frame 
 			  of the moderator                                             */
     dFP,               /* flight path between moderator and window                      */
@@ -156,14 +164,13 @@ int main(int argc, char *argv[])
 
   /* Initialize */
   Init             (argc, argv, VT_SOURCE);
-  print_module_name("Source and Window 1.11b");
+  print_module_name("Source and Window 1.13");
   OwnInit          (argc, argv);
   CenterX   = 0.0; 
   CenterY   = 0.0;
   CenterZ   = 0.0; 
   SumProb   = 0.0;
-  AveTimeOF = 0.0;        
-  dDistWnd  = -Endpoint.D; 
+  AveTimeOF = 0.0;
   nNumMod   = ReadModData(pModFileName);
 
   /* load trace file */
@@ -223,7 +230,7 @@ int main(int argc, char *argv[])
 	}
 
       /* solid angle [sterad], under which the neutrons leave the moderator */
-      if (bChoWndPoint && stMod[imod].dDistModWnd > 0.0)
+      if ((eDirDet==VT_REAL_WND || eDirDet==VT_VIRT_WND) && stMod[imod].dDistModWnd > 0.0)
 	{	if (stMod[imod].bCircle)
 	    {	dSolAngle = AveSolidAngleC(stMod[imod].dDiameter, WindowWidth, WindowHeight, stMod[imod].dDistModWnd);
 	      stMod[imod].dWndFact = AveWeightC(stMod[imod].dCntrY, stMod[imod].dCntrZ, stMod[imod].dDiameter,
@@ -367,8 +374,10 @@ int main(int argc, char *argv[])
 	  Ymin = Min(Ymin, stMod[imod].dCntrY - 0.5*stMod[imod].dWidth);
 	  Ymax = Max(Ymax, stMod[imod].dCntrY + 0.5*stMod[imod].dWidth);
 	}
-      if (bChoWndPoint)
+      if (eDirDet==VT_REAL_WND)
 	fprintf(LogFilePtr, "divergence defined by propagation window \n");
+      else if (eDirDet==VT_VIRT_WND)
+	fprintf(LogFilePtr, "divergence defined by virtual propagation window \n");
       else
 	fprintf(LogFilePtr, "angle of opening used        : %7.3f°    x %7.3f°   \n", 2*180*stTraj[imod].dMaxDivY/M_PI, 2*180*stTraj[imod].dMaxDivZ/M_PI);
       fprintf(LogFilePtr, "time averaged neutron current: %11.4e n/s in%9.6f str\n", stMod[imod].dCurrent, dSolAngle);
@@ -390,8 +399,12 @@ int main(int argc, char *argv[])
   WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
   /* Propagation, Polarisation */
-  fprintf(LogFilePtr, "window (W x H)               : %7.3f cm  x %7.3f cm \n", WindowWidth, WindowHeight);
-  fprintf(LogFilePtr, "  in a distance of           : %7.3f m   \n",            dDistWnd/100.);
+  if (eDirDet==VT_VIRT_WND)
+    fprintf(LogFilePtr, "virtual window", WindowWidth, WindowHeight);
+  else
+    fprintf(LogFilePtr, "real window   ", WindowWidth, WindowHeight);
+  fprintf(LogFilePtr, " (W x H)       : %7.3f cm  x %7.3f cm \n", WindowWidth, WindowHeight);
+  fprintf(LogFilePtr, "  in a distance of           : %7.3f m   \n",            WindowDist/100.);
   fprintf(LogFilePtr, "  with a declination of      : %7.3f°    \n",            Declination);
   fprintf(LogFilePtr, "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n", PolDegree, PolVecX, PolVecY, PolVecZ);
   if (pTraceFileName!=NULL)
@@ -531,7 +544,7 @@ int main(int argc, char *argv[])
 
 	/* direction of flight */
 	/* defined by starting position on moderator and position on propagation window */
-	if (bChoWndPoint && stMod[imod].dDistModWnd > 0.0)
+	if (eDirDet!=VT_DIVERGENCE && stMod[imod].dDistModWnd > 0.0)
 	  {	
 	    /* choosing point on propagtion window and calculating distance between points */
 	    dWndY = MonteCarlo(-0.5*WindowWidth,  0.5*WindowWidth);
@@ -601,10 +614,10 @@ int main(int argc, char *argv[])
 	AveTimeOF += Input.Probability*Input.Time;
 	SumProb   += Input.Probability;
 
-
-	if (fabs(Input.Position[1]) > WindowWidth/2.0)  continue;
-	if (fabs(Input.Position[2]) > WindowHeight/2.0) continue;
-
+	if (eDirDet!=VT_VIRT_WND)
+	{ if (fabs(Input.Position[1]) > WindowWidth/2.0)  continue;
+	  if (fabs(Input.Position[2]) > WindowHeight/2.0) continue;
+	}
 	Input.Position[0]=0.0;
 
 	if (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T')
@@ -641,7 +654,7 @@ int main(int argc, char *argv[])
 
   /* Do the general cleanup */
   OwnCleanup();
-  Cleanup(dDistWnd,-0.5*(Ymax+Ymin),0.0, 0.0,0.0);
+  Cleanup(-Endpoint.D,-0.5*(Ymax+Ymin),0.0, 0.0,0.0);
 
   return(0);
 }
@@ -651,11 +664,10 @@ int main(int argc, char *argv[])
 /* ----------------------------- */
 void OwnInit(int argc, char **argv)
 {
-  short i;
+  short  i;
   char  *arg=NULL;
 
   /* Initialize */
-  Endpoint.D = 0.0;
   stSrc.dPulseLength = 0.002;                /* LPSS pulse length 2 ms            */ 
   stSrc.pSrcName="";
 
@@ -680,8 +692,8 @@ void OwnInit(int argc, char **argv)
 	      break;
 
 	    case 'd':
-	      bChoWndPoint = (short) atol(arg); 
-	      if (bChoWndPoint < 0 || bChoWndPoint > 1)
+	      eDirDet = (short) atol(arg); 
+	      if (eDirDet < 0 || eDirDet > 2)
 		Error("Wrong parameter for 'direction determination'");
 	      break;
 
@@ -767,11 +779,8 @@ void OwnInit(int argc, char **argv)
 
 	      /* propagation */
 	    case 'D':									/*  distance moderator propagation window [cm]*/
-	      Endpoint.A = 1.0;
-	      Endpoint.B = 0.0;
-	      Endpoint.C = 0.0;
-	      Endpoint.D = -atof(arg);
-	      if (Endpoint.D > 0.0)
+	      WindowDist = (double) atof(arg);
+	      if (WindowDist < 0.0)
 		Error("Distance moderator to window must have be greater equal zero");
 	      break;
 	    case 'i':
@@ -795,8 +804,15 @@ void OwnInit(int argc, char **argv)
   if (PolVecX==0.0 && PolVecY==0.0 && PolVecZ==0.0)
     PolVecX=1.0;
 
-  if (Endpoint.D == 0.0 && bChoWndPoint==1)
-    Error("Direction can only be defined by window, if distance moderator to window greater zero ");
+  if (WindowDist == 0.0 && eDirDet!=VT_DIVERGENCE)
+    Error("Direction can only be defined by window, if distance from moderator to window is greater zero ");
+  Endpoint.A = 1.0;
+  Endpoint.B = 0.0;
+  Endpoint.C = 0.0;
+  if (eDirDet == VT_VIRT_WND)
+    Endpoint.D = 0.0;
+  else
+    Endpoint.D = -WindowDist;
 }
 /* End OwnInit */
  
@@ -1293,14 +1309,14 @@ short ReadModData(char* sFileName)
 	  stMod[imod].dWidth  = 0.0;
 	  stMod[imod].dHeight = 0.0;
 	  stMod[imod].dArea   = M_PI * sq(stMod[imod].dDiameter) / 4.0;
-	  stMod[imod].bCircle    = TRUE;
+	  stMod[imod].bCircle = TRUE;
 	}
       else
-	{	stMod[imod].dDiameter   = 0.0;
-	  stMod[imod].dArea   = stMod[imod].dHeight * stMod[imod].dWidth;        
-	  stMod[imod].bCircle    = FALSE;
+	{ stMod[imod].dDiameter = 0.0;
+	  stMod[imod].dArea     = stMod[imod].dHeight * stMod[imod].dWidth;        
+	  stMod[imod].bCircle   = FALSE;
 	}
-      stMod[imod].dDistModWnd = dDistWnd-stMod[imod].dCntrX;
+      stMod[imod].dDistModWnd = WindowDist-stMod[imod].dCntrX;
       stMod[imod].dWndFact    = 0.0;
       imod++;
     }

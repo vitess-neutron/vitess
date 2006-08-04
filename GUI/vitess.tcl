@@ -353,8 +353,10 @@ set smASET {
     "max. divergence\nx <-> z [deg]"
     "maximal divergence theta [deg] (half of angular spread x-z-plane)"
     "" z} le90}
-  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').\nAlternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. In this case the given values in 'max. divergence ...' are ignored." "" d}
-    {"by divergence" "by window"} {0 1}}
+  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
+  Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. 
+  In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
+    {"by divergence" "by window" "by virtual window"} {0 1 2}}
   {}
 }
 
@@ -387,7 +389,8 @@ set cwsASET {
   {Propagation header}
   {dist_mod_prop float 200 {
     "distance to\nwindow [cm]"
-    "distance between moderator and propagation window in cm" "" D} ge0 "" 1}
+    "distance between moderator and propagation window in cm.
+    If the moderator is not positioned at the origin (0.0,0.0,0.0), it is the distance from the origin." "" D} ge0 "" 1}
   {prop_width float 10 {
     "window\nwidth [cm]"
     "width of propagation window in cm" "" w} gt0 "" 1}
