@@ -395,7 +395,7 @@ double thrmax, phrmax ;
 void OwnInit(int argc, char *argv[])
 {
 	fprintf(LogFilePtr," \n") ;
-	print_module_name("monochr_analyser 1.5a") ;
+	print_module_name("monochr_analyser 1.6") ;
 
 	d_spr_option = 1;
 	geom_option = 1;
@@ -456,10 +456,10 @@ void OwnInit(int argc, char *argv[])
 			sscanf(&argv[1][2], "%ld", &geom_option) ;
 			break;
 
+
 		case 'H':
 			sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
 			break;
-
 
 		case 'V':
 			sscanf(&argv[1][2], "%d", &NumberCE[1]) ;
@@ -470,12 +470,13 @@ void OwnInit(int argc, char *argv[])
 			sscanf(&argv[1][2], "%lf", &ParGeom[0]) ;
 			break;
 
-
 		case 'a':
 			sscanf(&argv[1][2], "%lf", &ParGeom[1]) ;
 			break;
 
-
+		case 's':
+			sscanf(&argv[1][2], "%lf", &ParGeom[2]) ;
+			break;
 
 		}
 		argc--;
@@ -578,6 +579,7 @@ void OwnInit(int argc, char *argv[])
 		if(geom_option ==1) crys_geomLambda() ;
 		if(geom_option ==2) crys_geomSphere() ;
 		if(geom_option ==3) crys_geomVertCyl() ;
+		if(geom_option ==4) crys_geomDoubleCyl() ;
 
 		if((Foc_Crys = fopen(GeomFileName, "r"))==NULL)
 		{
