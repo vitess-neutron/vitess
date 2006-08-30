@@ -1105,6 +1105,7 @@ set ma_flatESET {
   {dspread float 0.00005 {"d spread"
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
+  {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d}
     {Lorentzian Gaussian} {1 2}}
 }
@@ -1113,14 +1114,16 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
   {cradius float 200 {"radius\n[cm]"
     "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {cangle float 0 {"angle vertical\n[deg]"
+  {cangle float 0 {"angle\nvert. [deg]"
     "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
+  {chradius float 200 {"radius\nhoriz. [cm]"
+    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
   {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder"} {1 2 3}}
+    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
 }]
 
 ### Monochromator analyser

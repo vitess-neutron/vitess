@@ -411,3 +411,107 @@ VectorType	r ;
 	return ;
 
 }/* End Crys_GeomVertCyl */
+
+
+/*******************************************************/
+/* 'double cylinder-focussing'  option               */
+/*******************************************************/
+void	crys_geomDoubleCyl()
+{
+	int			m, j, k, q ;
+	double		SlabWidth,   /* width and height of one monochromatro element */
+	            SlabHeight,
+	            Zeta,        /* vertical angle to monochromator slab under consideration */
+	            Phi,         /* horizontal angle to monochromator slab under consideration */
+	            RadV,        /* radius of vertically focussing cylinder  */
+					RadH,        /* radius of horizontally focussing cylinder */
+					ZetaMax,     /* angle to bottom slab of vertically focussing cylinder, usually > 0.0       [rad] */
+					PhiMax,      /* angle to rightmost slab of horinzontally focussing cylinder, usually > 0.0 [rad] */
+	            DelZeta=0.0, /* difference in vert. orientation between neighbouring rows                        */
+	            DelPhi=0.0;  /* difference in hor. orientation between neighbouring columns                      */
+	VectorType	r ;
+
+	fprintf(LogFilePtr,"\ngeometry: cylinder focussing vertically and horizontally\n\n") ;
+
+	FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
+
+	ParGeomN   =  2;
+	SlabWidth  =  DimCE[1];
+	SlabHeight =  DimCE[2];
+	RadV       =  ParGeom[0];
+	RadH       =  ParGeom[2];
+	ZetaMax    = -ParGeom[1] * M_PI / 180.;
+	PhiMax     = -ParGeom[3] * M_PI / 180.;
+	if (RadV > 0.0)
+		DelZeta =  2.0 * asin(0.5*SlabHeight / RadV);
+	if (RadH > 0.0)
+		DelPhi  =  2.0 * asin(0.5*SlabWidth  / RadH); 
+
+	if(RadV == 0.0 && RadH==0.0)
+		Warning("both radii are zero");
+
+
+	/*computes CE parameters */
+	for(m = 0;m<NumberCE[0];m++)	   /* step horizontal, loop over columns */
+	{
+		r[0] =  0.0 ;
+		r[1] = (NumberCE[0] - 1 - 2*m)/2.0 * SlabWidth;
+		// Phi = PhiMax - m * DelPhi;
+		if (RadH > 0.0)
+			Phi = atan(r[1] / RadH);
+		else
+			Phi = 0.0;
+
+		for(j = 0;j<NumberCE[1];j++)	/* step vertical,   loop over rows */
+		{
+			/* output focussing geometry parameters */
+			r[2] = (NumberCE[1] - 1 - 2*j)/2.0 * SlabHeight;
+			// Zeta = ZetaMax - j * DelZeta ;
+			if (RadV > 0.0)
+				Zeta = atan(r[2] / RadV);
+			else
+				Zeta = 0.0;
+
+			for(q=0;q<3;q++) PosCE_F[q][m][j] = r[q] ;
+			for(k=0;k<3;k++) DimCE_F[k][m][j] = 0.0 ;	
+
+			RotHoriz_F[m][j] =  Phi * 180. / M_PI ;
+			RotVert_F [m][j] = Zeta * 180. / M_PI ;
+		}
+	}
+
+
+	/* print to file */
+
+	Foc_Crys = fopen(GeomFileName, "w") ;
+
+	fprintf(Foc_Crys,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
+
+	for(m = 0;m<NumberCE[0];m++)		/* step horizontal */
+	{
+
+		for(j = 0;j<NumberCE[1];j++)	/* step vertical */
+		{
+
+		/*PosCE_F[0][m][j] += R ;*/
+
+		/* rotate */
+
+		CopyVectorsToVector(m, j, PosCE_F, r) ;
+
+		RotVector(RotMatrixCE, r) ;
+
+		CopyVectorToVectors(m, j, r, PosCE_F) ;
+
+		fprintf(Foc_Crys,"%8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f\n",
+
+				PosCE_F[0][m][j], PosCE_F[1][m][j], PosCE_F[2][m][j], DimCE_F[0][m][j], DimCE_F[1][m][j], DimCE_F[2][m][j], RotHoriz_F[m][j], RotVert_F[m][j] ) ;
+		}
+	}
+
+	if(Foc_Crys != NULL)fclose(Foc_Crys) ;
+
+
+	return ;
+
+}/* End crys_geomDoubleCyl */
