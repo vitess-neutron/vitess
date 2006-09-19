@@ -84,8 +84,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_short_pulsed {set com "source$sys -S2"}
       source_ESS {set com "source$sys -S2"}
       source_IPNS {set com "source$sys -S2"}
-      source_ISIS-1 {set com "source$sys -S2"}
-      source_ISIS-2 {set com "source$sys -S2"}
+      source_ISIS {set com "source$sys -S2"}
       source_SNS {set com "source$sys -S2"}
       source_ESS_LPTS {set com "source$sys -S3"}
       chopper_fermi_str {set com "chopper_fermi$sys -O1"}
@@ -234,6 +233,7 @@ proc cleanupPipes {} {
   global PipeLogList
   conditionalOpenProtfile
   set errfound 0
+  set firstgsl 1
   foreach fname $PipeLogList {
     if {"0" != [catch {open $fname r} f]} continue
     outProtocol "------------------------------"
@@ -241,6 +241,13 @@ proc cleanupPipes {} {
       if [regexp ERROR: $line] {
 	outProtocol RRR$line
 	set errfound 1
+      } elseif [regexp GSL_RNG_ $line] {
+	if {$firstgsl} {
+	  outProtocol $line
+	}
+	if [regexp GSL_RNG_SEED $line] {
+	  set firstgsl 0
+	}
       } else {
 	outProtocol $line
       }
