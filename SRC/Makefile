@@ -172,8 +172,8 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c src_modchar.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
+source : source.c source_isis.c src_modchar.c $(ITOOL)
+	$(CC) -o $@ source.c src_modchar.c $(ITOOL) $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
