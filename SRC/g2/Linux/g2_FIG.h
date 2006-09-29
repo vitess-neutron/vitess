@@ -1,5 +1,5 @@
 /*****************************************************************************
-**  Copyright (C) 1998-2001  Ljubomir Milanovic & Horst Wagner
+**  Copyright (C) 1998-2004  Ljubomir Milanovic & Horst Wagner
 **  This file is part of the g2 library
 **
 **  This library is free software; you can redistribute it and/or
@@ -16,8 +16,8 @@
 **  License along with this library; if not, write to the Free Software
 **  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ******************************************************************************/
-#ifndef _G2_X11_H
-#define _G2_X11_H
+#ifndef _G2_FIG_H
+#define _G2_FIG_H
 
 #if defined(__cplusplus)
 extern "C"
@@ -25,21 +25,30 @@ extern "C"
 #endif
 
 
-int g2_open_X11(int width, int height);
+/* Common Library header for DLL and application */
+#ifdef WIN32
+#ifdef G2DLL
+#ifdef MAKEDLL
+/* Create DLL */
+#define G2L __declspec( dllexport)
+#else
+/* Use DLL */
+#define G2L __declspec( dllimport)
+#endif
+#else 
+/* Use static win32 */
+#define G2L
+#endif
+#else
+/* Use non-win32 */
+#define G2L
+#endif
 
-int g2_open_X11X(int width, int height,
-		 int x, int y,
-		 char *window_name, char *icon_name,
-		 char *icon_data,
-		 int icon_width, int icon_height);
+G2L int g2_open_FIG(const char *file_name);
+
 
 #if defined(__cplusplus)
 } /* end extern "C" */
 #endif
 
-#endif /* _G2_X11_H */
-
-
-
-
-
+#endif /* _G2_FIG_H */

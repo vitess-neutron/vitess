@@ -39,7 +39,7 @@ libgslran: $(SUBSYS)/libgslran.a
 $(SUBSYS)/libgslran.a : $(AUXI.c) $(RNG_O.c)
 	$(MAKE) clean
 	$(MAKE) libgslran.a
-	mkdir $(SUBSYS)/
+	-mkdir $(SUBSYS)/
 	mv libgslran.a $(SUBSYS)/
 	-rm *.o
 
