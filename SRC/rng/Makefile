@@ -12,6 +12,7 @@ COPTFLAGS = $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_
 CDEBFLAGS = $(INCL) -Wall
 
 SYS = $(shell uname)
+SUBSYS = $(SYS)
 
 ifeq ($(SYS),SunOS)
 CC = /net/bin/gcc
@@ -23,19 +24,24 @@ endif
 
 ifeq ($(SYS),Linux)
 CC = gcc
+ARCH = (shell uname -i)
+ifeq ($(ARCH),x86_64)
+SUBSYS = $(SYS)_$(ARCH)
+endif
 endif
 
 CC = gcc
 AR           = ar
 ARFLAGS      = -rs
 
-libgslran: libgslran_$(SYS).a
+libgslran: $(SUBSYS)/libgslran.a
 
-libgslran_$(SYS).a :
+$(SUBSYS)/libgslran.a : $(AUXI.c) $(RNG_O.c)
 	$(MAKE) clean
-	-rm libgslran.a
 	$(MAKE) libgslran.a
-	cp libgslran.a libgslran_$(SYS).a
+	mkdir $(SUBSYS)/
+	mv libgslran.a $(SUBSYS)/
+	-rm *.o
 
 gsltest : gsltest.c $(AUXI.c) $(RNG_O.c)
 	$(CC) $(COPTFLAGS) $(INCL) -o $@ $^
@@ -58,4 +64,5 @@ all: gsltestlib gsltest
 
 clean :
 	-rm *.o
+	-rm *.a
 
