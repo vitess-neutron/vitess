@@ -4,7 +4,8 @@
 #
 #
 # compile hosts to use
-# Linux : dixi3
+# Linux   : dixi3   SuSE 9.3
+# Linux64 : fix1    SuSE 10.1
 # SunOS : dsapp3
 # OSF1  : darling
 
@@ -72,9 +73,12 @@ MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+ARCH = $(shell uname -i)
 
-GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
+GDOPEN = g2_open_gd
+
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) $(CFLAGS)
@@ -87,14 +91,22 @@ CC = $(CCOMP) -DOSF $(CFLAGS)
 GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
+SUBDIR = $(SYS)
+XLIBL = lib
 ifeq ($(SYS),Linux)
-CCOMP = gcc
-CC = $(CCOMP) $(CFLAGS)
-GRASLIB = -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+ CCOMP = gcc
+ CC = $(CCOMP) $(CFLAGS)
+ ifeq ($(ARCH),x86_64)
+  GRAOPT2 = -DDO_PNG
+  SUBDIR = $(SYS)_$(ARCH)
+  SUBDIR = Linux_x86_64
+  XLIBL = lib64
+ endif
 endif
 
-GRALIB = $(GRAOPT) -Lrng -lgslran_$(SYS) $(GRASLIB)
-LIBS = -Lrng -lgslran_$(SYS) -lm
+GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
+LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
 .KEEP_STATE :
 
@@ -263,10 +275,10 @@ chopper_fermi : chopper_fermi.c $(ITOOL)
 	$(CC) -c $<
 
 Move:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
 	-rm -f *.o
 Copy:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
 	-rm -f *.o $(ALL)
