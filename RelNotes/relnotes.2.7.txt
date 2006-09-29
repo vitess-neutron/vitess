@@ -1,0 +1,25 @@
+==================
+VITESS Version 2.7
+==================
+
+===============
+GNU GPL license
+===============
+
+By 23 September 2005 the developers of VITESS decided to distribute
+further versions under the GNU GPL license.
+
+======================
+Libraries and Binaries
+======================
+
+A selectable suite of GNU random number generators from GNU GSL
+replaces the ran3 algorithm used before.
+
+Sources have been compiled for Linux_x86_64 64 bit CPUs.
+Linux graphic uses the g2-0.70 library now.
+
+Windows releases now contain windows binaries only,
+Unix releases binaries for SunOS, OSF1, Linux 32 Bit, and 
+Linux_x86_64.
+

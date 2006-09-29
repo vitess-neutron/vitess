@@ -96,8 +96,8 @@ XLIBL = lib
 ifeq ($(SYS),Linux)
  CCOMP = gcc
  CC = $(CCOMP) $(CFLAGS)
+ GRAOPT2 = -DDO_PNG
  ifeq ($(ARCH),x86_64)
-  GRAOPT2 = -DDO_PNG
   SUBDIR = $(SYS)_$(ARCH)
   SUBDIR = Linux_x86_64
   XLIBL = lib64
@@ -274,6 +274,10 @@ chopper_fermi : chopper_fermi.c $(ITOOL)
 .c.o:
 	$(CC) -c $<
 
+Unix:
+	-mkdir Unix
+	a=_$(SUBDIR) ; h='Unix/' ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	-rm -f *.o
 Move:
 	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
 	-rm -f *.o

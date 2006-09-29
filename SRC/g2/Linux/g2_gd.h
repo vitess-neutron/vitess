@@ -16,30 +16,52 @@
 **  License along with this library; if not, write to the Free Software
 **  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ******************************************************************************/
-#ifndef _G2_X11_H
-#define _G2_X11_H
+/* This is g2_GIF.h */
+#ifndef _G2_GD_H
+#define _G2_GD_H
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
 
+#include <stdio.h>
 
-int g2_open_X11(int width, int height);
+/* Common Library header for DLL and application */
+#ifdef WIN32
+#ifdef G2DLL
+#ifdef MAKEDLL
+/* Create DLL */
+#define G2L __declspec( dllexport)
+#else
+/* Use DLL */
+#define G2L __declspec( dllimport)
+#endif
+#else 
+/* Use static win32 */
+#define G2L
+#endif
+#else
+/* Use non-win32 */
+#define G2L
+#endif
 
-int g2_open_X11X(int width, int height,
-		 int x, int y,
-		 char *window_name, char *icon_name,
-		 char *icon_data,
-		 int icon_width, int icon_height);
+/**
+ *  g2 gd bitmap types
+ *
+ * \ingroup GD
+ */
+enum g2_gd_type {
+    g2_gd_jpeg = 0,	/**< jpeg */
+    g2_gd_png  = 1	/**< png */
+};
+
+
+G2L int  g2_open_gd(const char *filename, int width, int height,enum g2_gd_type gd_type);
 
 #if defined(__cplusplus)
 } /* end extern "C" */
 #endif
 
-#endif /* _G2_X11_H */
 
-
-
-
-
+#endif /* _G2_GD_H */

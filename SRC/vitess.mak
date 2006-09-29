@@ -1,7 +1,8 @@
 # Vitess NMAKE File
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
 SROOT=h:\control
-SVNROOT=h:\V
+#SVNROOT=h:\V
+SVNROOT=h:\control\vitess\trunk
 CPATH2=$(CPATH)\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
