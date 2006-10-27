@@ -43,19 +43,6 @@
 #include "src_modchar.h"
 #include "message.h"
 
-typedef struct 
-{
-  int nEnergy;        ///< Number of energy bins
-  int nTime;          ///< number of time bins
-
-  double* TimeBin;    ///< Time bins
-  double* EnergyBin;  ///< Energy bins
-
-  double** Flux;       ///< Flux per bin (integrated)
-  double* EInt;        ///< Integrated Energy point
-  double Total;        ///< Integrated Total
-
-} ISource;
 
 typedef enum
 {	VT_DIVERGENCE = 0,
@@ -98,7 +85,7 @@ TrajParam stTraj  [NUM_MOD]; /* trajectory data           */
 FctTable  stFluxT [NUM_MOD], /* data of time distr.       */
           stFluxL [NUM_MOD], /* data of wavelength distr. */
           stFluxLT[NUM_MOD]; /* data of wavelength & time distr. */
-ISource   TS;
+//ISource   TS;
 
 /* local functions */
 void  OwnCleanup();
@@ -147,6 +134,9 @@ int main(int argc, char *argv[])
     Ymax    =-1000.0,  /* minimal and maximal y-position of moderator system            */
     dFact   =    1.0,  /* for 'direction by window' */
     PolNorm =    0.0;
+    
+  // ISIS specific parameter
+  double ISISflux=0.0;
 
   VectorType NullPos={0.0,0.0,0.0};
   Neutron Input;
@@ -201,11 +191,14 @@ int main(int argc, char *argv[])
       if(strlen(stMod[imod].sLTFileName) > 0)
 	{ 
 	  if (stMod[imod].eIsisTS > 0) {
-
+	    // set up ISIS specific parameters and values
 	    FILE* IFptr;
 	    IFptr = openFile(stMod[imod].sLTFileName);
-	    LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
+	    ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
 	    fclose(IFptr);
+	    // set to be propagation window instead of divergence which is default
+	    eDirDet=VT_REAL_WND;
+	    fprintf(LogFilePtr,"Isis moderator - target station %d \n",stMod[imod].eIsisTS);
 
 	  } else {
 	    LoadWavelengthTimeDistrib(&stMod[imod], &stTraj[imod], &stFluxLT[imod]);
@@ -232,7 +225,8 @@ int main(int argc, char *argv[])
 		{
 		  dSolAngle=strArea(stMod[imod].dWidth/100.0, stMod[imod].dHeight/100.0,
 				    stMod[imod].dDistModWnd/100.0, WindowWidth/100.0, WindowHeight/100.0);
-		  stMod[imod].dWndFact=1.0;
+		  stMod[imod].dWndFact=1.0; 
+		  //fprintf(stderr,"ISIS solid angle %g \n",dSolAngle);
 		}
 	      else
 		{
@@ -247,13 +241,13 @@ int main(int argc, char *argv[])
       else
 	{
 	  if (stMod[imod].eIsisTS > 0) {
-	    fprintf(LogFilePtr, "ERROR: ISIS moderator can only to be used with direction defined by propagation window.\n");
-	    exit(-1);
+	    fprintf(LogFilePtr, "ERROR: ISIS moderator can only be used with direction defined by propagation window.\n");
+	    //	    exit(-1);
 	  } else {
 	    dSolAngle = SolidAngle(stTraj[imod].dMaxDivY, stTraj[imod].dMaxDivZ);
 	  }
 	}
-      
+ 
       /* calculate flux and mean current of the neutron beam */
       if (stSrc.eSrcType == CWS)
 	{  
@@ -262,13 +256,13 @@ int main(int argc, char *argv[])
 	}
       else
 	{	
-	  /* case: flux(lambda,t) was given in a file */
+ 	  /* case: flux(lambda,t) was given in a file */
 	  if(strlen(stMod[imod].sLTFileName) > 0)
 	    {
 	      if (stMod[imod].eIsisTS > 0)
 		{
 		  // try and give flux in n/s/cm2
-		  stMod[imod].dTotalFlux = TS.Total*3.744905847e14*1.1879451;
+		  stMod[imod].dTotalFlux = ISISflux*3.744905847e14*1.1879451;
 		  stMod[imod].dFUAmpl    = stMod[imod].dTotalFlux / (2*M_PI * stSrc.dPulseFreq);
 		}
 	      else
