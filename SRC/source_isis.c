@@ -1,14 +1,31 @@
+
+typedef struct 
+{
+  int nEnergy;        ///< Number of energy bins
+  int nTime;          ///< number of time bins
+
+  double* TimeBin;    ///< Time bins
+  double* EnergyBin;  ///< Energy bins
+
+  double** Flux;       ///< Flux per bin (integrated)
+  double* EInt;        ///< Integrated Energy point
+  double Total;        ///< Integrated Total
+
+} ISource;
+
 int cmdnumberD(char *,double*);
 int cmdnumberI(char *,int*,const int);
 double polInterp(double*,double*,int,double);
 FILE* openFile(char*);
-void LoadIsisDistrib(FILE*,const double,const double);
+double LoadIsisDistrib(FILE*,const double,const double);
 int timeStart(char*);
 int timeEnd(char*);
 int energyBin(char*,double,double,double*,double*);
 int notComment(char*);
 void ISISgetpoint(double*, double*);
 double strArea(double,double,double,double,double);
+
+static ISource TS;
 
 int
 cmdnumberD(char *mc,double* num)
@@ -214,7 +231,7 @@ FILE* openFile(char* FileName)
   return efile;
 }
 
-void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
+double LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
 /*!
   Process a general h.o file to create an integrated
   table of results from Einit -> Eend
@@ -231,7 +248,7 @@ void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
   double Tsum;           // Running integration 
   double Efraction=0;    // Amount to use for an energy/time bin
 
-  extern ISource TS;
+  //  ISource TS;
   
   int DebugCnt;
   /*!
@@ -239,10 +256,10 @@ void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
     Ftime=1 :: [time ] Reading Time : Data : Err [Exit on Total]
   
     Double Read File to determine how many bins and 
-    memery size
+    memory size
   */
 
-
+ 
   //convert Einit and Eend to MeV and reorder
 
   Einit=81.793936/(Einit*Einit);
@@ -256,6 +273,7 @@ void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
     }
   /////////////////////////
 
+    //fprintf(stderr,"Einit %g :End : %g \n",Einit,Eend);
 
   Ea=0.0;
   Eb=0.0;
@@ -377,8 +395,10 @@ void LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
   TS.Total=Tsum;
 
   //  printf("tIndex %d %d %d \n",tIndex,eIndex,TS.nTime);
-  //printf("Tsum %g \n",Tsum);
+  //fprintf(stderr,"Tsum %g \n",Tsum);
   //fprintf(stderr,"ebin1 ebinN %g %g\n",TS.EnergyBin[0],TS.EnergyBin[TS.nEnergy-1]);
+  
+  return TS.Total;
 }
 
 int 
@@ -410,7 +430,7 @@ ISISgetpoint(double* TV,double* EV)
   \param lim2 ::  
 */
 {
-  extern ISource TS;
+  //  ISource TS;
   double R0,R1,R,Rend;
   int Epnt;       ///< Points to the next higher index of the neutron integral
   int Tpnt;
