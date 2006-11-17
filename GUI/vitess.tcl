@@ -611,15 +611,15 @@ set a {
   {centy float 0 {"center y" "" "" y} }
   {centz float 0 {"center z" "" "" z} }
   {"rectangular window coordinates" header}
-  {min_z float "" {
-    "min. z [cm]" "minimal z value [cm]" "" h}}
-  {max_z float "" {
-    "max. z [cm]" "maximal z value [cm]" "" H}}
-  {}
   {min_y float "" {
     "min. y [cm]" "minimal y value [cm]" "" w}}
   {max_y float "" {
     "max. y [cm]" "maximul y value [cm]" "" W}}
+  {}
+  {min_z float "" {
+    "min. z [cm]" "minimal z value [cm]" "" h}}
+  {max_z float "" {
+    "max. z [cm]" "maximal z value [cm]" "" H}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
     {no yes} {0 1}
@@ -2305,7 +2305,7 @@ set eval_elastESET {
     "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"d-spacing [A]" "momentum transfer Q [1/A]" "scattering angle [deg]" "wavelength difference [A]"} {1 2 3 4}}
   {}
   {sfile moneditablefile elast.eva {
-    "spectra\nfile" "the spectra file: it contains the scattering results" "" o} "" "" 1}
+    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
   {ifile pareditablefile "" {
     "intensity\nfile" "intensity file (optional, see help manual) it contains the integrated intensities with respect to certain ranges of the scattering results (e.g. one is interested in the total intensity within each peak of a powder spectrum ). The ranges of integration have to be defined in the info file" "" O}}
   {infofile pareditablefile "" {
@@ -2322,9 +2322,10 @@ set eval_elastESET {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {}
   {tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {eval_excl radio no {
+    "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
