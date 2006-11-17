@@ -75,7 +75,7 @@ static long       TracePoints=FALSE;     /* creates dot for every written output
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static const char VITESS_VERSION[] = "2.6";
+static const char VITESS_VERSION[] = "2.7";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;
