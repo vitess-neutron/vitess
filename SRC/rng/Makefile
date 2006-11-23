@@ -65,4 +65,3 @@ all: gsltestlib gsltest
 clean :
 	-rm *.o
 	-rm *.a
-

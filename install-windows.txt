@@ -3,9 +3,10 @@
 
 
 Hahn-Meitner-Institut Berlin
+
 Modules:
+	Klaus Lieutenant (klaus.lieutena@ife.no)
 	Géza Zsigmond    (geza.zsigmond@psi.ch)
-	Klaus Lieutenant (lieutena@ill.fr)
 	Sergey Manoshin
 	Dietmar Wechsler
 	Friedrich Streffer

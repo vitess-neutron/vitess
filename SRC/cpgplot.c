@@ -10,7 +10,11 @@
 # include <unistd.h>
 #endif
 #ifdef DO_GD
-# include <g2_gd.h>
+# ifdef PENV
+#  include <g2_GIF.h>
+# else
+#  include <g2_gd.h>
+# endif
 #endif
 #ifdef DO_PS
 # include <g2_PS.h>
