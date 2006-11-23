@@ -75,19 +75,19 @@ STOOL = sample.o $(MTOOL)
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
 
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
-CC = $(CCOMP) $(CFLAGS)
-GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+CC = $(CCOMP) -DPENV $(CFLAGS)
+GRASLIB = -Ig2/SunOS -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
-CC = $(CCOMP) -DOSF $(CFLAGS)
+CC = $(CCOMP) -DOSF -DPENV $(CFLAGS)
 GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
@@ -102,9 +102,9 @@ ifeq ($(SYS),Linux)
   SUBDIR = Linux_x86_64
   XLIBL = lib64
  endif
+ GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
 
-GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
 LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
