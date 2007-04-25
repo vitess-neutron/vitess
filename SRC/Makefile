@@ -4,11 +4,10 @@
 #
 #
 # compile hosts to use
-# Linux   : dixi3   SuSE 9.3
-# Linux64 : fix1    SuSE 10.1
+# Linux   : dixi3   SuSE 9.2
+# Linux64 : dirac oder fix1    SuSE 10.1
 # SunOS : dsapp3
 # OSF1  : darling
-
 
 INSTDIR = ../MODULES/
 
