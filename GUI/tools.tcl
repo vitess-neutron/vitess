@@ -477,6 +477,7 @@ proc openProtfile {{mode a+}} {
     append fn $dayname
     if [catch {open $fn $mode} Protfile] {
       showText "!unable to open protocol file"
+      set Protfile ""
       return
     }
   }
@@ -507,7 +508,9 @@ proc outProtocol {text {simu 0}} {
     return
   }
   set text [showText $text]
-  puts $Protfile "[clock format [clock seconds] -format "%d.%m.%Y %H:%M:%S"] $text"
+  catch {
+    puts $Protfile "[clock format [clock seconds] -format "%d.%m.%Y %H:%M:%S"] $text"
+  }
 }
 
 proc conditionalOpenProtfile {} {
