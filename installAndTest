@@ -5,6 +5,23 @@
 # + install Vitess binaries
 use strict;
 
+sub usage {
+  print <<EOS;
+usage:
+configure [-v] [-w wish] [-i installdir] [-p patchfile] [tarball]
+  -v                verbose
+  -w wish           absolute wish path, default is to search bltwish
+  -w installdir     installation directory, must exsist, default ./
+                    give the parent directory if a tarball is to be installed,
+                    or the full path to an existing directory to be tested
+  -p patchfile      generates a replacement file for tkfbox.tcl to be used
+                    when Tcl/Tk fails on browsing + storing files
+  tarball           tarball to be installed in installdir, if given
+EOS
+  exit 0;
+}
+
+
 my ($wish, $tarfile, $isLinux, $anyErr, $gtar, $tar, $gunzip, $ldd, $verbose, $patchfile);
 my $installdir = './';
 
@@ -53,9 +70,6 @@ if (/couldn't connect to display/) {
 }
 myexit("unable to read tar ball $tarfile !") if $tarfile && ! -s $tarfile;
 
-#print "sysapp $sysapp  wish :$wish:  installdir :$installdir:  tarfile :$tarfile:\n";
-#exit;
-
 # de-tar ball if given
 if (-s $tarfile) {
   myexit("installdir must exist as parent directory!") unless -d $installdir;
@@ -72,12 +86,15 @@ if (-s $tarfile) {
       myexit("missing extraction utilities like gunzip, tar!");
     }
   }
+}
 
+$_ = `find $installdir -name Vitess`;
+chomp;
+myexit("unable to read file Vitess under $installdir !") unless -s $_;
+my $ofile = $_;
+
+if (-s $tarfile) {
   # prepend the correct #! line to file Vitess
-  $_  = `find $installdir -name Vitess`;
-  chomp;
-  myexit("unable to read file Vitess after installation!") unless -s $_;
-  my $ofile = $_;
   my $nfile = $_ . $$;
   open F, $_;
   open OF, ">$nfile";
@@ -154,7 +171,7 @@ if (/couldn't connect to display/) {
   }
   close F;
   if ($version ne '') {
-    print "$tkfbox\n\t found version $version\n";
+    print "$tkfbox\n\t found version $version\n" if $verbose || $patchfile;
   } else {
     print "can't extract version of $tkfbox\n";
   }
@@ -164,25 +181,9 @@ if (/couldn't connect to display/) {
   }
 }
 
-
-print $anyErr ne '' ? $anyErr : "\no.k.\n\n";
-
-
-sub usage {
-  print <<EOS;
-usage:
-configure [-v] [-w wish] [-i installdir] [-p patchfile] [tarfile]
-  -v                verbose
-  -w wish           absolute wish path, default is to search bltwish
-  -w installdir     installation directory, must exsist, default ./
-                    give the parent directory if a tarball is to be installed,
-                    or the full path to an existing directory to be tested
-  -p patchfile      generates a replacement file for tkfbox.tcl to be used
-                    when Tcl/Tk fails on browsing + storing files
-  tarfile           tarfile to be installed in installdir, if given
-EOS
-  exit 0;
-}
+$_ = $ENV{PWD};
+$ofile = "$_/$1" if $_ && $ofile =~ /^\.\/(.+)/;
+print $anyErr ne '' ? $anyErr : "\nVitess start command\n$ofile\n\no.k.\n\n";
 
 sub myexit {
   print "Error: $_[0]\n";
