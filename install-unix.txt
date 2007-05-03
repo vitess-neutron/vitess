@@ -28,7 +28,7 @@ Your operating system should be Linux (versions from 2.0.35),
 SunOS (versions from 5.6), or OSF1(V4.0). Vitess may be compiled
 from sources for other versions of Unix. 
 
-We assume Tcl/Tk software with a version 8 or higher
+We assume Tcl/Tk software with a version 8.2 or higher
 is installed separately. If you miss information, try
 http://www.scriptics.com/software/
 
@@ -46,6 +46,21 @@ https://www.hmi.de/projects/ess/vitess/checksums.txt
 The file vitess.tar.gz might be de-tared in whatever
 <vitess parent directory> you want, like /usr/bin for root installation
 or $HOME for personal installation.
+
+Silver Bullet
+-------------
+If you have perl installed on your system, fetch and store locally
+https://www.hmi.de/projects/ess/vitess/installAndTest
+
+	cd <vitess parent directory>
+        installAndTest -v vitess.tar.gz
+
+This will check your Tcl/Tk installation, extract the tarball,
+check for shared libraries, ...
+        installAndTest -h
+to see what is possible.
+
+Or:
 
 2. do
 -----
@@ -69,11 +84,20 @@ We used vitess with different versions of wish and bltwish, but
 recommend the latest versions 8.4 / 2.4.
 
 (Due to a bug in /usr/local/lib/tk8.4/tkfbox.tcl browsing
-directories and files fails. We send you a patch on request.)
+directories and files fails with some distributions. 
+We send you a patch on request, or you may produce the patched file by 
+       installAndTest -p tkfbox.tcl
+)
 
 4. try it
 ---------
 	<vitess parent directory>/vitess/Vitess
+
+Missing shared libraries?
+-------------------------
+installAndTest may find shared libraries needed e.g. for the
+bender executable. Those libraries may be missing on minimal 
+systems, but are easily installed from RPMs by your local Unix guru.
 
 Compilation from sources
 ------------------------
