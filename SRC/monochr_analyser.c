@@ -395,14 +395,15 @@ double thrmax, phrmax ;
 void OwnInit(int argc, char *argv[])
 {
 	fprintf(LogFilePtr," \n") ;
-	print_module_name("monochr_analyser 1.6") ;
+	print_module_name("monochr_analyser 1.7") ;
 
 	d_spr_option = 1;
-	geom_option = 1;
+	geom_option  = 1;
+	DevH         = 0.0;
+	DevV         = 0.0;
 
-/*    INPUT  */
 
-
+	/*  INPUT  */
 
 	while(argc>1)
 	{
@@ -433,9 +434,16 @@ void OwnInit(int argc, char *argv[])
 			sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
 			break;
 
-
 		case 'M':
 			sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
+			break;
+
+		case 't':
+			sscanf(&argv[1][2], "%lf", &DevH) ;
+			break;
+
+		case 'T':
+			sscanf(&argv[1][2], "%lf", &DevV) ;
 			break;
 
 
