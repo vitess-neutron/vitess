@@ -143,8 +143,8 @@ VectorType	r, Step_H, Step_V ;
 		}
 
 
-		RotHoriz_F[m][j] = (Phi) * 180. / M_PI ;
-		RotVert_F[m][j]	 = (M_PI_2 - Theta) * 180. / M_PI;
+		RotHoriz_F[m][j] = (Phi) * 180. / M_PI            + MonteCarlo(-0.5*DevH, 0.5*DevH);
+		RotVert_F [m][j] = (M_PI_2 - Theta) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV);
 
 
 		}
@@ -268,8 +268,8 @@ VectorType	r, Step_H, Step_V ;
 		}
 
 
-		RotHoriz_F[m][j] = (Phi) * 180. / M_PI ;
-		RotVert_F[m][j]	 = (M_PI_2 - Theta) * 180. / M_PI ;
+		RotHoriz_F[m][j] = (Phi) * 180. / M_PI            + MonteCarlo(-0.5*DevH, 0.5*DevH);
+		RotVert_F [m][j] = (M_PI_2 - Theta) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV);
 
 
 
@@ -374,9 +374,9 @@ VectorType	r ;
 
 		for(k=0;k<3;k++) DimCE_F[k][m][j] = 0. ;	
 
-		RotHoriz_F[m][j] = 0. ;
+		RotHoriz_F[m][j] = MonteCarlo(-0.5*DevH, 0.5*DevH) ;
 
-		RotVert_F[m][j]	 = (M_PI_2 - Theta) * 180. / M_PI ;
+		RotVert_F [m][j] = MonteCarlo(-0.5*DevV, 0.5*DevV) + (M_PI_2 - Theta) * 180. / M_PI ;
 
 	}
 
@@ -414,7 +414,7 @@ VectorType	r ;
 
 
 /*******************************************************/
-/* 'double cylinder-focussing'  option               */
+/* 'double focussing cylinder'  option               */
 /*******************************************************/
 void	crys_geomDoubleCyl()
 {
@@ -475,8 +475,8 @@ void	crys_geomDoubleCyl()
 			for(q=0;q<3;q++) PosCE_F[q][m][j] = r[q] ;
 			for(k=0;k<3;k++) DimCE_F[k][m][j] = 0.0 ;	
 
-			RotHoriz_F[m][j] =  Phi * 180. / M_PI ;
-			RotVert_F [m][j] = Zeta * 180. / M_PI ;
+			RotHoriz_F[m][j] =  Phi * 180./M_PI + MonteCarlo(-0.5*DevH, 0.5*DevH);
+			RotVert_F [m][j] = Zeta * 180./M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV);
 		}
 	}
 
