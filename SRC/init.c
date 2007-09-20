@@ -25,9 +25,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gsl/gsl_rng.h>
 
-#include "general.h"
+#include "init.h"
 
 #define MAX_COL 4   /* max. number of count rates written separately for different colours
                        0 means no separate rates writable */
@@ -65,7 +64,6 @@ short    bTrace=TRUE,     /* criterion: write trace files */
          bOldFrame=FALSE, /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate=TRUE;   /* criterion: write separate count rates */
 
-gsl_rng * vit_gsl_rng;
 
 /**************************************************************/
 /* static variables                                           */
@@ -512,21 +510,25 @@ void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ
   /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
   else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
   { i=-1;
-    pFile = fopen(FullParName("instrument.inf"), "r");
     pBuffer=malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
-    for (m=-2; m<nModuleNo; m++)
-    { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
-      strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
-      if (memcmp(sBuffer, "EOP", 3)==0)
+    pFile = fopen(FullParName("instrument.inf"), "r");
+    if (pFile)
+    { for (m=-2; m<nModuleNo; m++)
       { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
         strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+        if (memcmp(sBuffer, "EOP", 3)==0)
+        { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
+          strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+        }
       }
+      fclose(pFile);
     }
-    fclose(pFile);
     pFile = fopen( FullParName("instrument.inf"), "w");
-    for (m=0; m<=i; m++)
-      fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
-    fprintf(pFile, "EOP\n");
+    if (pFile)
+    { for (m=0; m<=i; m++)
+        fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
+      fprintf(pFile, "EOP\n");
+    }
     free(pBuffer);
   }
   /* each other module appends a line */

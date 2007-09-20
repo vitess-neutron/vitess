@@ -15,8 +15,12 @@
 /* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
 
 #include "general.h"
-#include "init.h"
 #include "ctype.h"
+
+#ifndef RND_SIMPLE
+  #include <gsl/gsl_rng.h>
+  gsl_rng * vit_gsl_rng;
+#endif
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
 
