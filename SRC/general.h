@@ -44,6 +44,16 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
+#ifdef RND_SIMPLE
+  #ifdef WINDOWS
+    #define Vran() rand()
+  #else
+    #define Vran() random()
+  #endif
+#else  
+  #define Vran() gsl_rng_uniform (vit_gsl_rng)
+#endif
+
 typedef enum
 {	VT_CUBE   = 1,
 	VT_CYL    = 2,
@@ -63,6 +73,7 @@ typedef enum
 	VT_WINDOW      =  21,
 	VT_WND_MULT    =  22,
 	VT_GRID        =  23,
+	VT_SLIT        =  24,
 	VT_CHOP_DISC   =  31,
 	VT_CHOP_FERMI  =  32,
 	VT_VEL_SELECT  =  41,
@@ -212,7 +223,6 @@ double ENERGY_FROM_V   (double x);
 double V_FROM_LAMBDA   (double x);
 double LAMBDA_FROM_V(double x);
 
-#define Vran() gsl_rng_uniform (vit_gsl_rng)
 double MonteCarlo (double x, double y);
 double DistrGauss(double Module, double Sigma);
 
