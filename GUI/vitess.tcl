@@ -20,6 +20,7 @@ set fileDialogSET {
   {"Batch command files" {.bat}}
   {"Tcl files" {.tcl}}
   {"Series information files" {.inf}}
+  {"Grid Command files" {.grd}}
   {"X,Y ASCII files" {.dat}}
   {"2 D Intensity files" {.out}}
   {"chopper files" {.chp .par .dat}}
@@ -2661,6 +2662,7 @@ If you save all GUI settings with the 'Save Instrument' button of the
 'File' title menu to a file, you may re-use these parameters later with
 the 'Load Instrument' action.
 'Save as Command' stores the pipe command to a text file.
+'Save as Grid-Command' is meant to generate a Grid Engine command file.
 
 1d or 2d plots of simulation results come with the 'Plot file'
 and '2d Plot file' buttons of the 'File' title menu.

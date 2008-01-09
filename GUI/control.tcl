@@ -168,6 +168,7 @@ proc controlMenu {w} {
       {c "SAVE As" {storeAll gui newfile.gui}} s\
       {c "SAVE to Directory" saveDirectory} s\
       {c "SAVE as Command" {storeAll bat}}\
+      {c "SAVE as Grid Command" {storeAll grd}}\
       {c "SAVE tcl" {storeAll tcl}} s\
       {c "Generate Series" {genSeries .gser}} s\
       {c "New *.inf File" editInfFile} \
