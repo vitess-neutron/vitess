@@ -164,7 +164,7 @@ if (/couldn't connect to display/) {
     $patchfile = '' unless open OF, ">$patchfile";
   }
   while (<F>) {
-    if (/^([\s]+)(\$data\(typeMenuLab\) config -state normal)/) {
+    if (/^([\s]+)(\$data\(.+\)\s+config[a-z]*\s+-state\s+.+)/) {
       print OF "$1catch \{ $2 \}\n" if $patchfile;
     } else {
       $version = $1 if /\$Id:[\s]+tkfbox\.tcl.+v[\s]+([0-9.]+)/;

@@ -72,7 +72,7 @@ if ($patchfile) {
   $patchfile = '' unless open OF, ">$patchfile";
 }
 while (<F>) {
-  if (/^([\s]+)(\$data\(typeMenuLab\) config -state normal)/) {
+  if (/^([\s]+)(\$data\(.+\)\s+config[a-z]*\s+-state\s+.+)/) {
     $patched = 1;
     print OF "$1catch \{ $2 \}\n" if $patchfile;
   } else {
