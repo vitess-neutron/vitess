@@ -13,7 +13,7 @@ usage:
 configure [-v] [-w wish] [-i installdir] [-p patchfile] [tarball]
   -v                verbose
   -w wish           absolute wish path, default is to search bltwish
-  -w installdir     installation directory, must exist, default ./
+  -i installdir     installation directory, must exist, default ./
                     give the parent directory if a tarball is to be installed,
                     or the full path to an existing directory to be tested
   -p patchfile      generates a replacement file for tkfbox.tcl to be used

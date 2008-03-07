@@ -2828,8 +2828,7 @@ proc editDefaults {} {
   generateToplevel $w "VITESS Defaults"
   fGroup $w.defaults $w.b
   generateEntries $w.defaults xcontrolDefaultsESET
-  bButton $w.b.done Done "destroy $w"    puts "calling convert2Code $il1"
-
+  bButton $w.b.done Done "destroy $w"
   pack $w.b.done
 }
 

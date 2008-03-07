@@ -431,83 +431,79 @@ double ModPhase(double phase, int nSect)
 
 /* Read chopper file */
 /* ----------------- */
-void ReadChopperData()
-{
-	short  k;
-	char	 Buffer[CHAR_BUF_LENGTH];
-	double A, dY, dZ, Offset=0.0, WindowOpening, WindowHeight;
+void ReadChopperData() {
+  short  k;
+  int    iv;
+  char   Buffer[CHAR_BUF_LENGTH];
+  double A, dY, dZ, Offset=0.0, WindowOpening, WindowHeight;
 
-	fgets(Buffer,100,ChopperFile);
-	sscanf(Buffer,"%d",&ThisChopper.NumberOfWindows);
+  fgets(Buffer,100,ChopperFile);
+  sscanf(Buffer,"%d", &iv);
+  ThisChopper.NumberOfWindows = (short) iv;
 
-	if((ThisChopper.Window=(ChopperWindow *)malloc(ThisChopper.NumberOfWindows*sizeof(ChopperWindow)))==NULL)
-	{
-		Error("Out of memory whilst reading chopper data");
-	}
+  if((ThisChopper.Window=(ChopperWindow *)malloc(ThisChopper.NumberOfWindows*sizeof(ChopperWindow)))==NULL)
+    Error("Out of memory whilst reading chopper data");
 
-	fgets(Buffer,100,ChopperFile);
-	sscanf(Buffer,"%lf",&ThisChopper.Radius);
-	ThisChopper.Radius = fabs(ThisChopper.Radius);
+  fgets(Buffer,100,ChopperFile);
+  sscanf(Buffer,"%lf",&ThisChopper.Radius);
+  ThisChopper.Radius = fabs(ThisChopper.Radius);
 
-	fgets(Buffer,100,ChopperFile);
-	sscanf(Buffer,"%lf %lf", &ThisChopper.Centre.Z, &ThisChopper.Centre.Y);
+  fgets(Buffer,100,ChopperFile);
+  sscanf(Buffer,"%lf %lf", &ThisChopper.Centre.Z, &ThisChopper.Centre.Y);
 
-	// ThisChopper.Centre.Z = -fabs(ThisChopper.Centre.Z);
-	ThisChopper.Angle = atan2(-ThisChopper.Centre.Y, -ThisChopper.Centre.Z);
-	fprintf(LogFilePtr, "Radius of chopper           :  %6.2f         cm\n", ThisChopper.Radius);
-	fprintf(LogFilePtr, "Center of chopper axle (Z,Y): (%+6.2f,%+6.2f) cm\n", ThisChopper.Centre.Z, ThisChopper.Centre.Y);
-	fprintf(LogFilePtr, "Chopper open at t=0 (without offset) for a window at %-5.1f deg\n", ThisChopper.Angle*180/M_PI);
-	/* fprintf(LogFilePtr, "\n%d windows\n", ThisChopper.NumberOfWindows); */
+  // ThisChopper.Centre.Z = -fabs(ThisChopper.Centre.Z);
+  ThisChopper.Angle = atan2(-ThisChopper.Centre.Y, -ThisChopper.Centre.Z);
+  fprintf(LogFilePtr, "Radius of chopper           :  %6.2f         cm\n", ThisChopper.Radius);
+  fprintf(LogFilePtr, "Center of chopper axle (Z,Y): (%+6.2f,%+6.2f) cm\n", ThisChopper.Centre.Z, ThisChopper.Centre.Y);
+  fprintf(LogFilePtr, "Chopper open at t=0 (without offset) for a window at %-5.1f deg\n", ThisChopper.Angle*180/M_PI);
+  /* fprintf(LogFilePtr, "\n%d windows\n", ThisChopper.NumberOfWindows); */
 
-	/* data of windows */
-	for(k=0;k<(int)ThisChopper.NumberOfWindows;k++)
-	{
-		if(fgets(Buffer,100,ChopperFile)==NULL)
-		{
-			fprintf(LogFilePtr,"ERROR: File %s does not contain %d window definitions\n",ChopperFileName,ThisChopper.NumberOfWindows);
-			fclose(ChopperFile);
-			exit(-1);
-		}
-		sscanf(Buffer,"%lf %lf %lf %lf %lf",&Offset,&WindowHeight,&WindowOpening,&ThisChopper.Window[k].Left,&ThisChopper.Window[k].Right);
+  /* data of windows */
+  for(k=0;k<(int)ThisChopper.NumberOfWindows;k++) {
+    if(fgets(Buffer,100,ChopperFile)==NULL) {
+      fprintf(LogFilePtr,"ERROR: File %s does not contain %d window definitions\n",ChopperFileName,ThisChopper.NumberOfWindows);
+      fclose(ChopperFile);
+      exit(-1);
+    }
+    sscanf(Buffer,"%lf %lf %lf %lf %lf",&Offset,&WindowHeight,&WindowOpening,
+	   &ThisChopper.Window[k].Left,&ThisChopper.Window[k].Right);
 
-		fprintf(LogFilePtr, "Window %d: Position: %7.2f deg   Aperture: %6.2f deg   Height: %6.2f cm\n",
-		                    k+1, Offset, WindowOpening, WindowHeight);
-		if (ThisChopper.Window[k].Left > 0.0 || ThisChopper.Window[k].Right > 0.0)
-			fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n",
-			                    ThisChopper.Window[k].Left, ThisChopper.Window[k].Right);
+    fprintf(LogFilePtr, "Window %d: Position: %7.2f deg   Aperture: %6.2f deg   Height: %6.2f cm\n",
+	    k+1, Offset, WindowOpening, WindowHeight);
+    if (ThisChopper.Window[k].Left > 0.0 || ThisChopper.Window[k].Right > 0.0)
+      fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n",
+	      ThisChopper.Window[k].Left, ThisChopper.Window[k].Right);
 
-		Offset        = 2.0*M_PI*Offset/360.0;
-		WindowOpening = 2.0*M_PI*WindowOpening/360.0;
+    Offset        = 2.0*M_PI*Offset/360.0;
+    WindowOpening = 2.0*M_PI*WindowOpening/360.0;
 
-		ThisChopper.Window[k].Bottom = ThisChopper.Radius -WindowHeight;
+    ThisChopper.Window[k].Bottom = ThisChopper.Radius -WindowHeight;
 
-		if((ThisChopper.Window[k].Left!=0.0)||(ThisChopper.Window[k].Right!=0.0))
-		{
-			ThisChopper.Window[k].Left =  2.0*M_PI*ThisChopper.Window[k].Left/360.0 +(WindowOpening/2.0);
-			ThisChopper.Window[k].Right = 2.0*M_PI*ThisChopper.Window[k].Right/360.0+(WindowOpening/2.0);
+    if((ThisChopper.Window[k].Left!=0.0)||(ThisChopper.Window[k].Right!=0.0)) {
+      ThisChopper.Window[k].Left =  2.0*M_PI*ThisChopper.Window[k].Left/360.0 +(WindowOpening/2.0);
+      ThisChopper.Window[k].Right = 2.0*M_PI*ThisChopper.Window[k].Right/360.0+(WindowOpening/2.0);
 
-			A = 2.0*ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0)*cos(ThisChopper.Window[k].Left)
-				/
-				sin(ThisChopper.Window[k].Right+ThisChopper.Window[k].Left);
+      A = 2.0*ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0)*cos(ThisChopper.Window[k].Left)
+	/
+	sin(ThisChopper.Window[k].Right+ThisChopper.Window[k].Left);
 
-			dZ=ThisChopper.Window[k].Bottom*cos(WindowOpening/2.0)-A*cos(ThisChopper.Window[k].Right);
-			dY=A*sin(ThisChopper.Window[k].Right)-ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0);
+      dZ=ThisChopper.Window[k].Bottom*cos(WindowOpening/2.0)-A*cos(ThisChopper.Window[k].Right);
+      dY=A*sin(ThisChopper.Window[k].Right)-ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0);
 
-			ThisChopper.Window[k].Distance = sqrt(dY*dY+dZ*dZ);
-			ThisChopper.Window[k].Angle = atan2(dY,dZ)+Offset;
-		}
-		else
-		{
-			ThisChopper.Window[k].Left  = WindowOpening/2.0;
-			ThisChopper.Window[k].Right = WindowOpening/2.0;
-			ThisChopper.Window[k].Distance = 0.0;
-			ThisChopper.Window[k].Angle = Offset;
-		}
-		ThisChopper.Window[k].Left = -ThisChopper.Window[k].Left +Offset;
-		ThisChopper.Window[k].Right = ThisChopper.Window[k].Right+Offset;
-	}
+      ThisChopper.Window[k].Distance = sqrt(dY*dY+dZ*dZ);
+      ThisChopper.Window[k].Angle = atan2(dY,dZ)+Offset;
 
-	fclose(ChopperFile);
+    } else {
+      ThisChopper.Window[k].Left  = WindowOpening/2.0;
+      ThisChopper.Window[k].Right = WindowOpening/2.0;
+      ThisChopper.Window[k].Distance = 0.0;
+      ThisChopper.Window[k].Angle = Offset;
+    }
+    ThisChopper.Window[k].Left = -ThisChopper.Window[k].Left +Offset;
+    ThisChopper.Window[k].Right = ThisChopper.Window[k].Right+Offset;
+  }
+
+  fclose(ChopperFile);
 }
 /* chopper file read */
 
@@ -661,5 +657,4 @@ passed:
 	}
 	return FALSE;
 }
-
 

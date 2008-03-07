@@ -559,11 +559,11 @@ ProbCutoff=wei_min ;
 			break;
 		
 			case 'A':
-			sscanf(&argv[1][2], "%d", &Repetition) ;
+			sscanf(&argv[1][2], "%ld", &Repetition) ;
 			break;
 
 			case 'D':
-			sscanf(&argv[1][2], "%d", &BoseF) ;
+			sscanf(&argv[1][2], "%ld", &BoseF) ;
 			break;
 
 			case 'a':

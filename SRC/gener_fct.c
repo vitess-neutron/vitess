@@ -110,108 +110,103 @@ short ReadBatchFile()
 /****************************************/
 short ReadInfoFile(short* pFileNo, char* sSeriesname)
 {
-	short i=0,        /* counts simulations        */
-	      nNoFiles=0; /* number of batch files to be generated (1 or 2) */
-	char  sFileName        [60]="";
-	FILE* pFileR=NULL;
+  short i=0;        /* counts simulations        */
+  int	nNoFiles=0; /* number of batch files to be generated (1 or 2) */
+  char  sFileName[60]="";
+  FILE* pFileR=NULL;
 
-	sprintf(sFileName, "%s.inf", sCommName);
-	pFileR = fopen(sFileName, "r");
-	if (pFileR==NULL)
-	{	printf("\nFile '%s' does not exist\n", sFileName);
-		return(-1);
-	}
+  sprintf(sFileName, "%s.inf", sCommName);
+  pFileR = fopen(sFileName, "r");
+  if (pFileR==NULL) {
+    printf("\nFile '%s' does not exist\n", sFileName);
+    return(-1);
+  }
  
-	// Operating System
-	GetLine(pFileR, sBuffer);
-	sscanf(sBuffer, "%s %d", sOsName, &nNoFiles);
-	if (strcmp("Unix", sOsName)==0 || strcmp("UNIX", sOsName)==0)
-	{	eSystem = VT_UNIX;
-	}
-	else if (strcmp("Linux", sOsName)==0)
-	{	eSystem = VT_LINUX;
-	}
-	else if (strcmp(sOsName, "NT")==0 || strcmp(sOsName, "WinNT")==0)
-	{	eSystem = VT_WIN_NT;
-	}
-	else if (strcmp(sOsName, "Win98")==0)
-	{	eSystem = VT_WIN_98;
-	}
-	if (eSystem == VT_UNIX || eSystem == VT_LINUX)
-	{	strcpy(sType ,"cat");
-		strcpy(sCopy ,"cp");
-		strcpy(sDel  ,"rm");
-		strcpy(sCall ,"time");
-		cSlash = '/';
-		cNL    = '\n';
-		cQuot  = '\"';
-	}
-	else
-	{	strcpy(sType ,"type");
-		strcpy(sCopy ,"copy");
-		strcpy(sDel  ,"erase");
-		strcpy(sCall ,"call");
-		cSlash = '\\';
-		cNL    = '\n';
-		cQuot  = ' ';
-		if (nNoFiles==2 && eModus == VT_SER_1F) 
-			eModus = VT_SER_2F;
-	}
+  // Operating System
+  GetLine(pFileR, sBuffer);
+  sscanf(sBuffer, "%s %d", sOsName, &nNoFiles);
+  if (strcmp("Unix", sOsName)==0 || strcmp("UNIX", sOsName)==0) {
+    eSystem = VT_UNIX;
+  } else if (strcmp("Linux", sOsName)==0) {
+    eSystem = VT_LINUX;
+  } else if (strcmp(sOsName, "NT")==0 || strcmp(sOsName, "WinNT")==0) {
+    eSystem = VT_WIN_NT;
+  } else if (strcmp(sOsName, "Win98")==0) {
+    eSystem = VT_WIN_98;
+  }
+  if (eSystem == VT_UNIX || eSystem == VT_LINUX) {
+    strcpy(sType ,"cat");
+    strcpy(sCopy ,"cp");
+    strcpy(sDel  ,"rm");
+    strcpy(sCall ,"time");
+    cSlash = '/';
+    cNL    = '\n';
+    cQuot  = '\"';
+  } else {
+    strcpy(sType ,"type");
+    strcpy(sCopy ,"copy");
+    strcpy(sDel  ,"erase");
+    strcpy(sCall ,"call");
+    cSlash = '\\';
+    cNL    = '\n';
+    cQuot  = ' ';
+    if (nNoFiles==2 && eModus == VT_SER_1F) 
+      eModus = VT_SER_2F;
+  }
 
-	GetLine(pFileR, sBuffer);
-	sscanf(sBuffer, "%c", &cShort);
-	if (eSystem == VT_UNIX || eSystem == VT_LINUX)
-	{	if (cShort=='V')
-			strcpy(sLogFile, "/tmp/L");
-		else if (cShort=='S')
-			strcpy(sLogFile, "/tmp/log");
-		else
-			strcpy(sLogFile, "/tmp/vpipelog");
-	}
-	else
-	{	if (cShort=='V')
-			strcpy(sLogFile, "C:\\L");
-		else if (cShort=='S')
-			strcpy(sLogFile, "C:\\temp\\log");
-		else
-			strcpy(sLogFile, "C:\\temp\\vpipelog");
-	}
-	GetLine(pFileR, sDirSl);
-	ChangeSlash  (sDirSl);
-	EraseEndSlash(sDir, sDirSl);
-	GetLine(pFileR, sSeriesname);
+  GetLine(pFileR, sBuffer);
+  sscanf(sBuffer, "%c", &cShort);
+  if (eSystem == VT_UNIX || eSystem == VT_LINUX) {
+    if (cShort=='V')
+      strcpy(sLogFile, "/tmp/L");
+    else if (cShort=='S')
+      strcpy(sLogFile, "/tmp/log");
+    else
+      strcpy(sLogFile, "/tmp/vpipelog");
+  } else {
+    if (cShort=='V')
+      strcpy(sLogFile, "C:\\L");
+    else if (cShort=='S')
+      strcpy(sLogFile, "C:\\temp\\log");
+    else
+      strcpy(sLogFile, "C:\\temp\\vpipelog");
+  }
+  GetLine(pFileR, sDirSl);
+  ChangeSlash  (sDirSl);
+  EraseEndSlash(sDir, sDirSl);
+  GetLine(pFileR, sSeriesname);
 
-	// Files to be copied
-	GetLine(pFileR, sBuffer);
-	*pFileNo = (short) StrgScanS(sBuffer, &sFile[0][0], MAX_FIL, 50);
+  // Files to be copied
+  GetLine(pFileR, sBuffer);
+  *pFileNo = (short) StrgScanS(sBuffer, &sFile[0][0], MAX_FIL, 50);
 
-	// variable parameters
-	GetLine(pFileR, sBuffer);
-	StrgScanHD(sBuffer, nModNo, MAX_PAR);
-	GetLine(pFileR, sBuffer);
-	StrgScanS (sBuffer, &sParId[0][0], MAX_PAR, 4);
+  // variable parameters
+  GetLine(pFileR, sBuffer);
+  StrgScanHD(sBuffer, nModNo, MAX_PAR);
+  GetLine(pFileR, sBuffer);
+  StrgScanS (sBuffer, &sParId[0][0], MAX_PAR, 4);
 
-	// Extract parameter list (without leading blanks) for each simulation
-	while(GetLine(pFileR, sBuffer) && i < MAX_SIM)
-	{
+  // Extract parameter list (without leading blanks) for each simulation
+  while(GetLine(pFileR, sBuffer) && i < MAX_SIM)
+    {
 #ifdef VERS26
-	  sscanf(sBuffer, "%s", sSimName[i]);
-	  strcpy(sParList[i], sBuffer+strlen(sSimName[i]));
-	  while (sParList[i][0]==' ')
-	    {	StrgLShift(sParList[i], 1);
-	    }
-#else
-	  int n;
-	  sscanf(sBuffer, "%s%n", sSimName[i], &n);
-	  while (sBuffer[n] == ' ')
-	    n++;
-	  strcpy(sParList[i], sBuffer+n);
-#endif
-	  i++;
+      sscanf(sBuffer, "%s", sSimName[i]);
+      strcpy(sParList[i], sBuffer+strlen(sSimName[i]));
+      while (sParList[i][0]==' ')
+	{	StrgLShift(sParList[i], 1);
 	}
-	fclose(pFileR);
+#else
+      int n;
+      sscanf(sBuffer, "%s%n", sSimName[i], &n);
+      while (sBuffer[n] == ' ')
+	n++;
+      strcpy(sParList[i], sBuffer+n);
+#endif
+      i++;
+    }
+  fclose(pFileR);
 
-	return i;
+  return i;
 }
 
 

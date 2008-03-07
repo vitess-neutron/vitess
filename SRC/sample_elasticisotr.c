@@ -409,7 +409,7 @@ void OwnInit(int argc, char *argv[])
 	  break;
 		
 	case 'A':
-	  sscanf(&argv[1][2], "%d", &Repetition) ;
+	  sscanf(&argv[1][2], "%ld", &Repetition) ;
 	  break;
 
 	}
