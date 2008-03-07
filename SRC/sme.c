@@ -1,20 +1,20 @@
 /*********************************************************************************************/
-/*  VITESS module 'chopper_fermi'                                                            */
+/*  VITESS module 'sm_ensemble'                                                              */
 /*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 0.1  Jul 2002  G. Zsigmond	  initial version                                            */
-/* 1.0  Sep 2002  G. Zsigmond	  active on both sides                                       */
-/* 1.1  Apr 2003  S. Manoshin	  visualisation included                                     */
-/*              + G. Zsigmond	   and position filter                                       */
-/* 1.2  May 2003  G. Zsigmond	  collision file name as input parameter,                    */
-/*                               coll. output changed, quantisation direction incl.          */
-/* 1.3  Jun 2003  G. Zsigmond	  included if when closing coll file; softabort included     */
+/* 0.1  Jul 2002  G. Zsigmond	initial version                                              */
+/* 1.0  Sep 2002  G. Zsigmond	active on both sides                                         */
+/* 1.1  Apr 2003  S. Manoshin	visualisation included                                       */
+/*              + G. Zsigmond	and position filter                                          */
+/* 1.2  May 2003  G. Zsigmond	collision file name as input parameter,                      */
+/*                              coll. output changed, quantisation direction incl.           */
+/* 1.3  Jun 2003  G. Zsigmond	included if when closing coll file; softabort included       */
 /* 1.4  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                 */
-/* 1.5	Feb 2004  S. Manoshin      Visualise only first 10000 neutrons			     */
-/*				   Choose the output device : screen, file or both	     */
-/*				   New external variable gselec 			     */
+/* 1.5	Feb 2004  S. Manoshin   Visualise only first 10000 neutrons			     */
+/*				Choose the output device : screen, file or both	             */
+/*				New external variable gselec 			             */
 /* 1.6  Apr 2004  G. Zsigmond	Visualise only first 1000 neutrons, write sm_ensemble.ps     */
 /* 1.7  Mar 2008  M. Fromme     deflate, constant nWallsMax = max. number of planes          */
 /*********************************************************************************************/
@@ -451,7 +451,8 @@ static void ReadParameterFile()
 
     if (feof(Par_Field)) break;
     r1__[i][0] = r2__[i][0] = r3__[i][0] = r4__[i][0] = 0;
-    Wallonoff__[i] = ReadParI(Par_Field);
+    if (! ReadParI(Par_Field)) break;  // no wall no fun
+    Wallonoff__[i] = 1;
     r1__[i][1] = ReadParF(Par_Field);
     r1__[i][2] = ReadParF(Par_Field);
     r2__[i][1] = ReadParF(Par_Field);
