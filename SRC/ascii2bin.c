@@ -10,7 +10,7 @@
 
 /* Here, any include file may follow you like */
 
-extern bTrace;
+extern short bTrace;
 
 FILE *AsciiFile;
 

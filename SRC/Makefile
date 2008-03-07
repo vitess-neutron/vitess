@@ -12,7 +12,6 @@
 INSTDIR = ../MODULES/
 
 ALL = ascii2bin \
-eval_elast \
 monitor1 \
 mon2_div \
 mon2_pos \
@@ -21,6 +20,7 @@ mon2_tofwl \
 mon2_wldiv \
 velselect \
 writeout \
+slit \
 gener_batch \
 lattice_dist \
 mirror_coating \
@@ -34,6 +34,7 @@ spacewindow \
 spacewindow_multiple \
 space \
 detector \
+eval_elast \
 eval_inelast \
 frame \
 guide \
@@ -171,6 +172,9 @@ bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
+sme : sme.c cpgplot.c $(MTOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
 sample_sans : sample_sans.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -259,6 +263,9 @@ guide_shape : guide_shape.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 define_direction : define_direction.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+slit : slit.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 monitor1 : monitor1.c $(TOOL)

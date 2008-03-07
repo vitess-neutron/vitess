@@ -215,7 +215,7 @@ CHECK;
 	RotVector(RotMatrixFoc, Dir) ;
 
 
-	/* translates neutron variables for output - X'=0.
+	/* translates neutron variables for output - X */
 
 	TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
 
@@ -223,7 +223,7 @@ CHECK;
 
 	MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
 
-	AddVector(Pos, Path) ; /* Path = displacement vector */
+	AddVector(Pos, Path) ; // Path = displacement vector
 
 
 	/* transmit coordinates which were not changed, the rest overwrite below */
@@ -240,7 +240,7 @@ CHECK;
 
 
 
-/*	 writes output binary file */
+	/* writes output binary file */
 
 	NumOut++ ;
 
@@ -448,7 +448,7 @@ void OwnInit(int argc, char *argv[])
 
 
 		case 'd':
-			sscanf(&argv[1][2], "%ld", &d_spr_option) ;
+			sscanf(&argv[1][2], "%d", &d_spr_option) ;
 			break;
 
 		case 'D':
@@ -461,7 +461,7 @@ void OwnInit(int argc, char *argv[])
 
 
 		case 'g':
-			sscanf(&argv[1][2], "%ld", &geom_option) ;
+			sscanf(&argv[1][2], "%d", &geom_option) ;
 			break;
 
 
@@ -505,7 +505,7 @@ void OwnInit(int argc, char *argv[])
 
 						mosaic_fwhm[0], mosaic_fwhm[1], d_fwhm, Reflectivity) ;
 
-	fprintf(LogFilePtr,"\n	repetition rate		=   %d", Repetition) ;
+	fprintf(LogFilePtr,"\n	repetition rate		=   %ld", Repetition) ;
 
 
 	/* prints to log file */

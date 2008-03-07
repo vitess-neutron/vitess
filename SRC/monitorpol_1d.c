@@ -248,7 +248,7 @@ CHECK;	  registered=0;
 my_exit:
   for (dy = 0; dy<(nbiny); dy++)
     {
-      if(bintch[dy]!=0.)fprintf(fmonitor,"%  7.7f\t% 11.7E \n",(bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]));
+      if(bintch[dy]!=0.)fprintf(fmonitor,"% 7.7f\t% 11.7E \n",(bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]));
     }
 
   fclose(fmonitor);
