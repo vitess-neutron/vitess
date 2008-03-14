@@ -98,11 +98,13 @@ typedef enum
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
+	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_INELAST= 112,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
 	VT_WRITEOUT    = 141,
+	VT_RESET       = 142,
 	VT_TOOL        = 999
 }
 VtModID;

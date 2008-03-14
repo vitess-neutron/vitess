@@ -31,7 +31,8 @@ void	crys_geomLambda()
 {
 int			m, j, k ;
 double		b, c, R1, R11, R2, R20, RotView[3][3] ;
-double		Theta, Theta0, Phi, DeltaPhi ;
+double		Theta, Theta0, Phi, DeltaPhi,
+            DistRows;         // distance between 2 rows (= slab height + gap)  ;
 VectorType	r, Step_H, Step_V ;
 
 
@@ -195,14 +196,15 @@ VectorType	r, Step_H, Step_V ;
 void	crys_geomSphere()
 {
 int			m, j, k, q ;
-double		R, Theta, Phi, DeltaPhi, RotView[3][3] ;
+double		R, Theta, Phi, DeltaPhi, RotView[3][3],
+            DistRows;         // distance between 2 rows (= slab height + gap)  ;
 VectorType	r, Step_H, Step_V ;
 
 		fprintf(LogFilePtr,"\ngeometry: focussing sphere\n\n") ;
 
 
 	ParGeomN = 2 ;
-
+	DistRows = DimCE[2] + GapV;
 
 	FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
 
@@ -219,7 +221,7 @@ VectorType	r, Step_H, Step_V ;
 	ParGeom[1]		= ParGeom[1] * M_PI / 180. ;
 
 
-	R = (double) sqrt(sq(ParGeom[0]) - sq(DimCE[2] / 2.)) ; 
+	R = (double) sqrt(sq(ParGeom[0]) - sq(DistRows / 2.)) ; 
 
 	 /*computes CE parameters */
 
@@ -227,7 +229,7 @@ VectorType	r, Step_H, Step_V ;
 	for(m = 0;m<NumberCE[0];m++)		/* step horizontal */
 	{
 
-	Theta = M_PI_2 - ParGeom[1] + 2 * (double) asin (DimCE[2] / 2. / R);
+	Theta = M_PI_2 - ParGeom[1] + 2 * (double) asin (DistRows / 2. / R);
 
 	DeltaPhi = 2. * (double) atan(DimCE[1] / 2. / R) ;
 
@@ -237,7 +239,7 @@ VectorType	r, Step_H, Step_V ;
 		for(j = 0;j<NumberCE[1];j++)	/* step vertical */
 		{
 
-		Theta = Theta - 2 * (double) asin (DimCE[2] / 2. / R) ;
+		Theta = Theta - 2 * (double) asin (DistRows / 2. / R) ;
 
 		/* output focussing geometry parameters */
 
@@ -322,7 +324,8 @@ VectorType	r, Step_H, Step_V ;
 void	crys_geomVertCyl()
 {
 int			m, j, k, q ;
-double		R, Theta, RotView[3][3] ;
+double		R, Theta, RotView[3][3],
+            DistRows;         // distance between 2 rows (= slab height + gap)  ;
 VectorType	r ;
 
 
@@ -330,7 +333,7 @@ VectorType	r ;
 
 
 	ParGeomN = 2 ;
-
+	DistRows = DimCE[2] + GapV;
 
 	FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
 
@@ -347,7 +350,7 @@ VectorType	r ;
 	ParGeom[1]		= ParGeom[1] * M_PI / 180. ;
 
 
-	R = (double) sqrt(sq(ParGeom[0]) - sq(DimCE[2] / 2.)) ; 
+	R = (double) sqrt(sq(ParGeom[0]) - sq(DistRows / 2.)) ; 
 
 
 	 /*computes CE parameters */
@@ -355,13 +358,13 @@ VectorType	r ;
 
 	m = 0;		/* step horizontal */
 
-	Theta = M_PI_2 - ParGeom[1] + 2 * (double) asin (DimCE[2] / 2. / R);
+	Theta = M_PI_2 - ParGeom[1] + 2 * (double) asin (DistRows / 2. / R);
 
 
 		for(j = 0;j<NumberCE[1];j++)	/* step vertical */
 		{
 
-		Theta = Theta - 2 * (double) asin (DimCE[2] / 2. / R) ;
+		Theta = Theta - 2 * (double) asin (DistRows / 2. / R) ;
 
 		/* output focussing geometry parameters */
 
@@ -423,10 +426,10 @@ void	crys_geomDoubleCyl()
 	            SlabHeight,
 	            Zeta,        /* vertical angle to monochromator slab under consideration */
 	            Phi,         /* horizontal angle to monochromator slab under consideration */
-	            RadV,        /* radius of vertically focussing cylinder  */
+	            RadV,        /* radius of vertically focussing cylinder   */
 					RadH,        /* radius of horizontally focussing cylinder */
-					ZetaMax,     /* angle to bottom slab of vertically focussing cylinder, usually > 0.0       [rad] */
-					PhiMax,      /* angle to rightmost slab of horinzontally focussing cylinder, usually > 0.0 [rad] */
+					// ZetaMax,     /* angle to bottom slab of vertically focussing cylinder, usually > 0.0       [rad] */
+					// PhiMax,      /* angle to rightmost slab of horinzontally focussing cylinder, usually > 0.0 [rad] */
 	            DelZeta=0.0, /* difference in vert. orientation between neighbouring rows                        */
 	            DelPhi=0.0;  /* difference in hor. orientation between neighbouring columns                      */
 	VectorType	r ;
@@ -440,12 +443,12 @@ void	crys_geomDoubleCyl()
 	SlabHeight =  DimCE[2];
 	RadV       =  ParGeom[0];
 	RadH       =  ParGeom[2];
-	ZetaMax    = -ParGeom[1] * M_PI / 180.;
-	PhiMax     = -ParGeom[3] * M_PI / 180.;
+	// ZetaMax    = -ParGeom[1] * M_PI / 180.;
+	// PhiMax     = -ParGeom[3] * M_PI / 180.;
 	if (RadV > 0.0)
-		DelZeta =  2.0 * asin(0.5*SlabHeight / RadV);
+		DelZeta =  2.0 * asin(0.5*(SlabHeight+GapV) / RadV);
 	if (RadH > 0.0)
-		DelPhi  =  2.0 * asin(0.5*SlabWidth  / RadH); 
+		DelPhi  =  2.0 * asin(0.5*(SlabWidth +GapH) / RadH); 
 
 	if(RadV == 0.0 && RadH==0.0)
 		Warning("both radii are zero");
@@ -455,7 +458,7 @@ void	crys_geomDoubleCyl()
 	for(m = 0;m<NumberCE[0];m++)	   /* step horizontal, loop over columns */
 	{
 		r[0] =  0.0 ;
-		r[1] = (NumberCE[0] - 1 - 2*m)/2.0 * SlabWidth;
+		r[1] = (NumberCE[0] - 1 - 2*m)/2.0 * (SlabWidth+GapH);
 		// Phi = PhiMax - m * DelPhi;
 		if (RadH > 0.0)
 			Phi = atan(r[1] / RadH);
@@ -465,7 +468,7 @@ void	crys_geomDoubleCyl()
 		for(j = 0;j<NumberCE[1];j++)	/* step vertical,   loop over rows */
 		{
 			/* output focussing geometry parameters */
-			r[2] = (NumberCE[1] - 1 - 2*j)/2.0 * SlabHeight;
+			r[2] = (NumberCE[1] - 1 - 2*j)/2.0 * (SlabHeight+GapV);
 			// Zeta = ZetaMax - j * DelZeta ;
 			if (RadV > 0.0)
 				Zeta = atan(r[2] / RadV);
