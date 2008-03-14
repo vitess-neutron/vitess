@@ -11,11 +11,11 @@
 /* 1.01  June 2001  K. Lieutenant   SOFTABORT                                                */
 /* 1.02  Jan  2002  K. Lieutenant   reorganisation, center of beam                           */
 /* 2.00  Jun  2003  S. Manoshin     Add possibility for simulations of material of           */      
-/*				    collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, 
- */
-/*	      			    3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber        */
+/*	                                  collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, */
+/*                                   3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber       */
 /* 2.10  Mar  2004  S. Manoshin     Add "choosing" of material for inner part of collimator  */
-/* 2.21  Jul  2004  S. Manoshin	    Corrected some bugs for thick collimator 		     */
+/* 2.21  Jul  2004  S. Manoshin	   Corrected some bugs for thick collimator                 */
+/* 2.22  Dec  2007  K. Lieutenant   Option to use rectangular windows added                  */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -24,130 +24,89 @@
 #include "bender_inter_data.h"
 
 
+/******************************/
+/** Definitions              **/
+/******************************/
+
+typedef enum
+{	
+	VT_AUTO_SHAPE = 0,
+	VT_CIRCLE     = 1,
+	VT_RECTANGLE  = 2
+}
+VtWndGeom;
+
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+
+void  OwnInit    (int argc, char *argv[]);
+short ReadWndFile();
+
+
+/******************************/
+/** Global Variables         **/
+/******************************/
+
+VtWndGeom eShape=VT_AUTO_SHAPE,  /* kind of window: defined by input file, circular or rectangular   */
+          eWinShape[101];  
+char*     CollFileName=NULL;
+double    Distance=0.0,
+          OuterRadius=200.0; 
+double    winradius[101], ywincenter[101], zwincenter[101], winwidth[101], winheight[101];
+double    Thicknesscoll=0.0;
+double    Thicknesscolli=0.0;
+char	   *TransFileName0=NULL;
+char	   *TransFileName1=NULL;
+long      keymaterial0=6; 	  // Material of collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, 
+long      keymaterial1=1;    //                         3 - Bor10,     4 - Eu, 5 - Silicon, 6 - ideal absorber 
+
+
+
 int main(int argc, char *argv[])
 {
-	char	*CollFileName=NULL;
-	FILE	*coll_file=NULL;
-
-	long	i, j, k, counter;
+	long	i, j, k;
 	long	BufferIndex;
 	long 	NumberOfHoles;
-/* key absorb: 1 - yes absorb, 0 - transmission  */	
-	long	key_abs;
+	long	key_abs;        /* key absorb: 1 - yes absorb, 0 - transmission  */	
 
-	double	Distance=0.0, rdate[301];
-	double  winradius[101], ywincenter[101], zwincenter[101];
-	double  OuterRadius=200.0; 
 	double  tempdistsquared;
 	double  TimeOF;
 
 	Plane	Endpoint;
-	
 	Plane	EndPoint1, EndPoint2 ;
 
 	double	NewPositionY, NewPositionZ;
 	double  CenterX, CenterY, CenterZ, SumProb;
 	
-
 	Neutron  Output;
-
- 	long  keymaterial0=6; 	  /* Material of collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, 
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-	      
- 	long  keymaterial1=1; 
 
 	long ntfs=0, count;    	      
 	long ntfss=0, ntfs1=0; /* internal */
 	double WAVS[500], MUS[500], transm0[1001];
-	char	*TransFileName0=NULL;
 	FILE	*trans_file0=NULL; /* file for describing of transmission of outer material of collimator  */
 	
 	double WAV1[500], MU1[500], transm1[1001];
-	char	*TransFileName1=NULL;
 	FILE	*trans_file1=NULL; /* file for describing of transmission of inner material of collimator  */
-	
        
 	double VelocityReal, N_Wavelength , mu, prob=0.0, TOF3 ;
-	double Thicknesscoll=0.0;
-	double Thicknesscolli=0.0;
  	
  	
  	 BufferIndex=0;
 
 	/***************************************************************************/
 	/* Endpoint.D                distance to window along x-direction   [cm]   */
-        /***************************************************************************/
+	/***************************************************************************/
 
-  /*input*/
-  Init(argc, argv, VT_WND_MULT);
+	/*input*/
+	Init(argc, argv, VT_WND_MULT);
+
+	print_module_name("Space and Multiple Windows 2.22");
+
+	OwnInit(argc, argv);
 
 
-  for(i=1; i<argc; i++)
-    {
-      if(argv[i][0]!='+') {
-
-	switch(argv[i][1])
-	  {
-	  case 'I':
-	    if( (coll_file = fopen(&argv[i][2],"r"))==NULL)
-	      {
-		fprintf(LogFilePtr,"ERROR: File %s could not be opened for InputNeutrons\n",&argv[i][2]);
-		exit(-1);}
-
-	    CollFileName=&argv[i][2];
-	    break;
-
-	  case 'D':
-	    Distance =  atof(&argv[i][2]);
-	    break;
-	    
-	  case 'r':
-	    OuterRadius = atof(&argv[i][2]);
-	    break;
-	    
-	  case 'c':
-	    keymaterial0 = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-      	    break;
-      
-      				
-      	  case 'C':
-	    TransFileName0=&argv[i][2]; 
-	    break;
-
-	    
-      	  case 'm':
-	    TransFileName1=&argv[i][2]; 
-	    break;	    
-      				
-      			
-      	  case 't':
-	    Thicknesscoll = atof(&argv[i][2]);
-	    break;
-
-	    
-      	  case 'T':
-	    Thicknesscolli = atof(&argv[i][2]);
-	    break;	    
-		    
-	    
-	    
-/*	  case 'N':
-	    NumberOfHoles = atol(&argv[i][2]);
-	    break;    */
-	    
-	  default:
-	    fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
-	    exit(-1);
-	    break;
-	  }
-      }
-    }
-    
-    print_module_name("Space and Multiple Windows 2.21");
-    
-    
-    
-	
 	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
 	
 	if (TransFileName1 != NULL) 
@@ -175,7 +134,8 @@ int main(int argc, char *argv[])
 	{
 		fprintf(LogFilePtr,"ERROR: Thickness of open part of the collimator < 0.0 !!!");
 		exit(-1);
-	}	
+	}
+	
 	
 	
 	
@@ -245,12 +205,12 @@ int main(int argc, char *argv[])
 
 
   
-	  for(i=0; i<500; i++)
+	  for(j=0; j<500; j++)
 	  {	
-		WAVS[i] = 0.0;
-		MUS[i] = 0.0;
-		WAV1[i] = 0.0;
-		MU1[i] = 0.0;
+		WAVS[j] = 0.0;
+		MUS[j] = 0.0;
+		WAV1[j] = 0.0;
+		MU1[j] = 0.0;
 	  }
 	  
 	  for(i=0; i<=1000; i++)
@@ -368,15 +328,15 @@ int main(int argc, char *argv[])
 
  	
   
-	for(i=1; i<=100; i++)
+	for(j=1; j<=100; j++)
 	{
-		winradius[i] = 0.0; 
-		ywincenter[i] = 0.0; 
-		zwincenter[i] = 0.0;
+		ywincenter[j] = 0.0; 
+		zwincenter[j] = 0.0;
+		winradius [j] = 0.0; 
+		winwidth  [j] = 0.0; 
+		winheight [j] = 0.0; 
+		eWinShape [j] = VT_AUTO_SHAPE;
 	}	
-	
-	for(i=1; i<=300; i++) 
-	rdate[i] = 0.0;
 
 	CenterX   = 0.0; 
 	CenterY   = 0.0; 
@@ -400,55 +360,7 @@ int main(int argc, char *argv[])
 
 	
 	/* Input data from collimator file */
-	
-	
-	
-
-  if (CollFileName !=NULL)
-    {
-      for(counter = 1; counter <= 300; counter++)
-	{
-	  if (fscanf(coll_file,"%lf",&rdate[counter])==EOF)
-	    break;
-	}
-
-      fclose(coll_file);
-    }
-  else
-    {
-    fprintf(LogFilePtr,"\n ERROR: No collimator data. Check the input file. \n");
-    exit(-1);
-    }
-    
-/*    for(i = 1; i <= counter; i++)
-    {
-    fprintf(LogFilePtr," %d   %f \n", i, rdate[i]);
-    }   */
-
-    NumberOfHoles = (long)((counter-1)/3);
-
-/*	fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
-	fprintf(LogFilePtr,"\n Number of holes: %ld", NumberOfHoles);
-	fprintf(LogFilePtr,"\n Outer radius of the collimator: %f cm", OuterRadius);
-	
-	k = 1;
-	for(i = 1; i <= NumberOfHoles; i++) 
-	{
-	    ywincenter[i] = rdate[k]; 
-	    zwincenter[i] = rdate[k+1];
-	    winradius[i] = rdate[k+2];
-	    k = k + 3;
-	}
-	
-	
-	for(i = 1; i <= NumberOfHoles; i++)
-	{
-		fprintf(LogFilePtr,"\n Collimator data: center Y = %f cm  Z = %f cm radius = %f cm", ywincenter[i], 
-		zwincenter[i], winradius[i]);
-	} 
-	
-	fprintf(LogFilePtr,"\n") ;
-	
+	NumberOfHoles = ReadWndFile();
 
 	DECLARE_ABORT
 
@@ -505,13 +417,23 @@ int main(int argc, char *argv[])
 		
 			for(j=1; j<=NumberOfHoles; j++) 
 			{
-				tempdistsquared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-				if (tempdistsquared <= winradius[j]*winradius[j]) key_abs = 0;
+				if (eWinShape[j]==VT_CIRCLE)
+				{	tempdistsquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) 
+					                 + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
+					if (tempdistsquared <= winradius[j]*winradius[j]) 
+						key_abs = 0;
+				}
+				else
+				{	if (fabs(NewPositionY - ywincenter[j]) < 0.5*winwidth [j]  && 
+					    fabs(NewPositionZ - zwincenter[j]) < 0.5*winheight[j]    ) 
+						key_abs = 0;
+				}
 			}
 		
 			if (key_abs == 1) 
 			{
-				if (keymaterial0 == 6)   continue;
+				if (keymaterial0 == 6)
+   continue;
 				
 				
 					if (keygrav == 1)
@@ -541,10 +463,12 @@ int main(int argc, char *argv[])
 			}
 		
 		}
-				if (key_abs == 0)
+		
+		if (key_abs == 0)
 				{
 					
-				    /* case of transmission neutron */				
+				    /* case of transmission neutron */
+				
 				    
 					if (keygrav == 1)
 					{
@@ -574,7 +498,8 @@ int main(int argc, char *argv[])
 	 				    InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
 	 				    InputNeutrons[i].Time += (double)TOF3;	
 				    }
-				}    	 					
+				}    	 
+					
 
 
 				InputNeutrons[i].Time += (double)TOF3;							
@@ -620,6 +545,131 @@ int main(int argc, char *argv[])
 }
 
 
+
+void   OwnInit   (int argc, char *argv[])
+{
+	int i;
+
+	for(i=1; i<argc; i++)
+	{
+		if(argv[i][0]!='+') 
+		{
+			switch(argv[i][1])
+			{
+				case 'I':
+					CollFileName=&argv[i][2];
+					break;
+
+				case 'D':
+					Distance =  atof(&argv[i][2]);
+					break;
+
+				case 'r':
+					OuterRadius = atof(&argv[i][2]);
+					break;
+
+				case 'S':
+					eShape = (short) atol(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
+					break;
+
+
+				case 'c':
+					keymaterial0 = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
+					break;
+
+								
+				case 'C':
+					TransFileName0=&argv[i][2]; 
+					break;
+
+				case 'm':
+					TransFileName1=&argv[i][2]; 
+					break;
+
+							
+				case 't':
+					Thicknesscoll = atof(&argv[i][2]);
+					break;
+
+				case 'T':
+					Thicknesscolli = atof(&argv[i][2]);
+					break;
+
+
+				default:
+					fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
+					exit(-1);
+					break;
+			}
+		}
+	}
+}
 				
 
 					
+short ReadWndFile()
+{
+	char  sLine[256];
+	short j, Nholes;            // index over holes and number of holes
+	FILE  *coll_file;
+
+	if (CollFileName !=NULL)
+	{	if( (coll_file = fopen(CollFileName,"r"))==NULL)
+		{
+			fprintf(LogFilePtr, "ERROR: File %s could not be opened to read collimator data \n", CollFileName);
+			exit(-1);
+		}
+		else
+		{
+			j=0;
+			while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
+			{	
+				j++;
+				if (eShape==VT_CIRCLE)
+				{	sscanf(sLine, "%lf %lf %lf",     &ywincenter[j], &zwincenter[j], &winradius[j]);
+					eWinShape[j] = VT_CIRCLE;
+				}
+				else if (eShape==VT_RECTANGLE)
+				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+					eWinShape[j] = VT_RECTANGLE;
+				}
+				else
+				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+					if (winheight[j] > 0.0)
+					{	eWinShape[j] = VT_RECTANGLE;
+					}
+					else
+					{	winradius[j] = winwidth[j];
+						eWinShape[j] = VT_CIRCLE;
+					}
+				}
+			}
+		}
+		fclose(coll_file);
+	}
+	else
+	{
+		fprintf(LogFilePtr,"\n ERROR: No collimator file name given \n");
+		exit(-1);
+	}
+
+	Nholes = j;
+
+	fprintf(LogFilePtr,"\n Number of holes: %ld", Nholes);
+	fprintf(LogFilePtr,"\n Outer radius of the collimator: %7.2lf cm", OuterRadius);
+
+
+	for(j = 1; j <= Nholes; j++)
+	{
+		if (eWinShape[j]==VT_CIRCLE)
+			fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
+									 ywincenter[j], zwincenter[j], winradius[j]);
+		else 
+			fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
+									 ywincenter[j], zwincenter[j], winwidth[j], winheight[j]);
+	} 
+	fprintf(LogFilePtr,"\n") ;
+
+	return Nholes;
+}
+	

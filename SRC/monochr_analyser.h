@@ -24,6 +24,7 @@ double		RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3] ;
 double		RotHoriz_F[CRYS_SIZE][CRYS_SIZE], RotVert_F[CRYS_SIZE][CRYS_SIZE], PosCE_F[3][CRYS_SIZE][CRYS_SIZE], DimCE_F[3][CRYS_SIZE][CRYS_SIZE] ;
 double		RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE] ;
 double      DevH, DevV;              /* horizontal and vertical deviation from correct crystal orientation */
+double      GapH, GapV;              /* horizontal and vertical distance between crystal elements */
 VectorType	Pos, Dir, Mosaic, Path ;
 Neutron		Neutrons ;
 

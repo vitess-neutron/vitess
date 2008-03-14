@@ -395,12 +395,14 @@ double thrmax, phrmax ;
 void OwnInit(int argc, char *argv[])
 {
 	fprintf(LogFilePtr," \n") ;
-	print_module_name("monochr_analyser 1.7") ;
+	print_module_name("monochr_analyser 1.8") ;
 
 	d_spr_option = 1;
 	geom_option  = 1;
 	DevH         = 0.0;
 	DevV         = 0.0;
+	GapH         = 0.0;
+	GapV         = 0.0;
 
 
 	/*  INPUT  */
@@ -465,6 +467,15 @@ void OwnInit(int argc, char *argv[])
 			break;
 
 
+		case 'h':
+			sscanf(&argv[1][2], "%lf", &GapH) ;
+			break;
+
+		case 'v':
+			sscanf(&argv[1][2], "%lf", &GapV) ;
+			break;
+
+
 		case 'H':
 			sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
 			break;
@@ -518,9 +529,11 @@ void OwnInit(int argc, char *argv[])
 	{
 		fprintf(LogFilePtr,"	'crystal_focus'") ;
 
-		fprintf(LogFilePtr,"\n	number of CE		=   %d, %d (h.,v.)\n	radius			=   %lf\n	angle vertical		=   %lf",
+		fprintf(LogFilePtr,"\n	vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg",
+		                   NumberCE[1], ParGeom[0], GapV, DevV, ParGeom[1]) ;
 
-							NumberCE[0], NumberCE[1], ParGeom[0], ParGeom[1]) ;
+		fprintf(LogFilePtr,"\n	horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg",
+		                   NumberCE[0], ParGeom[2], GapH, DevH) ;
 
 		fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName) ;
 	}
