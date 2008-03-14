@@ -77,10 +77,10 @@ proc makeModuleSets {} {
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {detector {} detector}
-    {evaluation {eval_elast eval_inelast} {eval_elast eval_inelast}}
+    {evaluation {capture_flux eval_elast eval_inelast} {capture_flux eval_elast eval_inelast}}
     {frame {} frame}
     {external_command}
-    {writeout {} writeout}
+    {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz 
@@ -375,11 +375,11 @@ set traceASET {
   {poldeg float 0
     {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
   {}
-  {polx float 1
+  {polx float 0
     {"polarisation X\ndirection" "X-component of the polarisation direction" "" X}}
   {poly float 0
     {Y "Y-component of the polarisation direction" "" Y}}
-  {polz float 0
+  {polz float 1
     {Z "Z-component of the polarisation direction" "" V}}
   {}
 }
@@ -567,6 +567,20 @@ set writeoutESET {
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
 }
 
+### spin_reset
+###
+set spin_converterESET {
+  {scpoldeg float 0
+    {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
+  {}
+  {scpolx float 0
+    {"polarisation X\ndirection" "X-component of the polarisation direction" "" X}}
+  {scpoly float 0
+    {Y "Y-component of the polarisation direction" "" Y}}
+  {scpolz float 1
+    {Z "Z-component of the polarisation direction" "" Z}}
+}
+
 ### Frame
 ###
 set frameESET {
@@ -668,6 +682,8 @@ set a {
     "distance orig\n<->win [cm]" "Distance to window along x-direction  [cm]" "" D} ge0}
   {rad float 100 {
     "Outer\nradius [cm]" "Outer radius of the circular plate (multiaperture collimators) [cm]" "" r} gt0}
+  {wndshape radio automatic {shape "shape of the individual windows\nautomatic means: 3 columns gives circular, 4 columns rectangular shape" "" S}
+    {automatic spherical rectangular} {0 1 2}}
 }
 
 set spacewindow_multipleESET [concat $a $winAdd]
@@ -681,8 +697,8 @@ set spaceESET {
 ### Slit
 set slitESET {
   {dist_slit float "" {"distance\n to slit [cm]" "" "" d} ge0}
-  {width_slit float "" {"width [cm]" "width of rectangular slit [cm]" "" W}}
-  {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H}}
+  {width_slit float "" {"width [cm]" "width of rectangular slit [cm]" "" W} ge0}
+  {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H} ge0}
 }
 
 ### Grid
@@ -776,7 +792,7 @@ set guideESET {
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
-    "substrate\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
+    "blade\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
 }
 
 
@@ -822,7 +838,7 @@ set benderESET {
   {exit_height float 10 {
     "exit\nheight [cm]"
     "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
-  {swidth float 0 {"substrate\nwidth [cm]"
+  {swidth float 0 {"blade\nwidth [cm]"
     "thickness of material dividing the guide/bender into channels" "" s} ge0 "" 1}
   {len_guide float 100 {
     "length [cm]" "length of a guide [cm]. Specify either length or filename." "" l} gt0 "" 1}
@@ -1170,20 +1186,28 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
-  {chradius float 200 {"radius\nhoriz. [cm]"
-    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {devhor float 0.0 {"orient. dev. \nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
-  {cradius float 200 {"radius\n vert. [cm]"
-    "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev. \nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" T} ge0 "" 1}
-  {cangle float 0 {"angle\nvert. [deg]"
-    "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
   {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
     {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
+  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
+  {}
+  {chradius float 200 {"radius\nhoriz. [cm]"
+    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
+  {cradius float 200 {"radius\n vert. [cm]"
+    "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
+  {cangle float 0 {"angle\nvert. [deg]"
+    "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+  {}
+  {gaphor float 0.0 {"gap between\ncolumns  [cm]"
+    "Horizontal distance between columns of crystal elements\n (in the equatorial plane" "" h} ge0 "" 1}
+  {gapvert float 0.0 {"gap between\nrows  [cm]"
+    "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
+  {}
+  {devhor float 0.0 {"orient. dev. \nhor. [deg]"
+    "Horizontal deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev. \nvert. [deg]"
+    "Vertical deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### Monochromator analyser
@@ -2358,6 +2382,14 @@ set isoESET {
   {va float 0 {"vert.\nangle [deg]"}}
 }
 
+
+### capture_flux
+###
+set capture_fluxESET {
+  {foilarea float 1
+    {"gold foil area [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
+}
+
 ### eval
 ###   elast
 set eval_elastESET {
@@ -2506,7 +2538,7 @@ set sm_ensembleESET {
   {Visualisation header}
   {visu radio "no output" {visualisation "type of visualisation" "" T}
     {"no output" "output in collision file"
-     "plane XOY" "plane XOZ" "plane YOZ"} {0 1 2 3 4 5}}
+     "plane XOY" "plane XOZ" "plane YOZ"} {0 1 2 3 4}}
   {visdev radio display {device "visual device" "" o} {display file display+file} {1 2 3}}
   {vt radio lines {type "type of visualisation" "" c} {lines points} {0 1}}
   {h1 float "" {hmin "minimal horizontal coordinate of visualisation window" "" w}}
