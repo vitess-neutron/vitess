@@ -265,7 +265,7 @@ guide_shape : guide_shape.c $(TOOL)
 define_direction : define_direction.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-slit : slit.c $(TOOL)
+slit : slit.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 monitor1 : monitor1.c $(TOOL)

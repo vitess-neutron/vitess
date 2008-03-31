@@ -524,15 +524,10 @@ static double CartesianToPhi(VectorType Vector) {
   return v;
 }
 
-
-static int hittriangle(VectorType r1, VectorType r2, VectorType rt)
+static int hittriangle(VectorType r1, double phi1,
+		       VectorType r2, double phi2,
+		       VectorType rt, double phit)
 {
-  double phi1, phi2, phit;
-
-  phi1 = CartesianToPhi(r1);
-  phi2 = CartesianToPhi(r2);
-  phit = CartesianToPhi(rt);
-
   if(phi1 < phi2) {
     if ((phi1 < phit) && (phit < phi2)
 	&& (Area(r1,r2) > (Area(r1,rt) + Area(r2, rt))))
@@ -552,9 +547,21 @@ static int hittriangle(VectorType r1, VectorType r2, VectorType rt)
 
 static int hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorType rt)
 {
-  if (hittriangle(r1, r2, rt) || hittriangle(r2, r3, rt) ||
-      hittriangle(r3, r4, rt) || hittriangle(r4, r1, rt))
-    return 1;
+  double phi1, phi2, phi3, phi4, phit;
+  phi1 = CartesianToPhi(r1);
+  phi2 = CartesianToPhi(r2);
+  phit = CartesianToPhi(rt);
+  if (hittriangle(r1, phi1, r2, phi2, rt, phit)
+      return 1;
+  phi3 = CartesianToPhi(r3);
+  if (hittriangle(r2, phi2, r3, phi3, rt, phit)
+      return 1;
+  phi4 = CartesianToPhi(r4);
+  if (hittriangle(r3, phi3, r4, phi4, rt, phit)
+      return 1;
+  if (hittriangle(r4, phi1, r1, phi1, rt, phit)
+      return 1;
+
   return 0;
 }
 
