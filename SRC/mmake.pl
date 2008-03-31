@@ -41,12 +41,12 @@ my @Obj = qw(init general intersection matrix sample);
 # modules which need TOOL (init general)
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
-	   velselect writeout slit gener_batch lattice_dist
+	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller
-	    source spacewindow spacewindow_multiple space);
+	    slit source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_inelast frame guide

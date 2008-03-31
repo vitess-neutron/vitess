@@ -778,12 +778,14 @@ static void writeCompressed() {
   int wlen = 0;
 
   for (ineut = OutNeutPtr; ineut > 0; ineut--) {
+    double factor;
+    int *iop;
     // copy data to prevent unwanted overwriting
     memcpy((char*) tarr, (char*) &pn->Time, 8*sizeof(double));
 
     // normalize direction
     dx = tarr[6]; dy = tarr[7]; dz = pn->Vector[2];
-    double factor = 1.0 / sqrt(dx*dx + dy*dy + dz*dz);
+    factor = 1.0 / sqrt(dx*dx + dy*dy + dz*dz);
     tarr[6] = dx * factor;
     tarr[7] = dy * factor;
 
@@ -805,7 +807,7 @@ static void writeCompressed() {
       }
       memcpy(newspin, (char*) &pn->Spin, sizeof(VectorType));
     }
-    int *iop = (int *) op;
+    iop = (int *) op;
     *iop++ = pn->Color | ((dirbit | (spincode << 1)) << 16);  /* coded color + dirbit + spincode */
     op = (char*) iop;
     wlen += sizeof(int);

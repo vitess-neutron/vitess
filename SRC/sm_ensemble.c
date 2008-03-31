@@ -47,16 +47,15 @@
 
 /* START HEADER STORY */
 
-#define MAX_MIRR 13     /* lines 169: if((PathA[1] == 99999.0)....
-                           and   175: if((m!=l)&&(PathA[l]<=.....  must be adapted to the choice of MAX_MIRR */
+#define MAX_MIRR 13
 
 #define	STRING_BUFFER 1000
 
 	FILE		*Par_Field, *COLLFILE;
 	char		Option[STRING_BUFFER], *ParameterFileName, *ReflUpFileName, *ReflDownFileName, *COLLFILEName="collision.dat";
 	int			j, p=0, datanumber, vistype=0, quant_dir=2;
-	long		User, NumWrong, Repetition, repet,  i, 
-            l, m,      // indices of mirror 
+int             max_mirr; // highest number of used mirror
+ 	long		User, NumWrong, Repetition, repet,
             nocol, nocolM = 10000, 
             Wallonoff, NoCh, ok;
 	long		number_vis_tr=0; /* current number of visualised trajectories, add SM */
@@ -72,7 +71,6 @@
 
 	VectorType	WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1], r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
 	double		RotMatrixWall[MAX_MIRR+1][3][3], WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1], PathA[MAX_MIRR+1], thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4], mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1]; 
-	int         WallonoffA[MAX_MIRR+1];
 
 	int		hittriangle(VectorType r1, VectorType r2, VectorType rt);
 	int		hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorType rt);
@@ -105,11 +103,13 @@ int main(int argc, char **argv)
 
   while((ReadNeutrons())!= 0)
   {
+    int i;
     CHECK;	/* here is what happens to the neutron */
 
     for(i=0;i<NumNeutGot;i++)
 
     { 
+      int m;
       CHECK;
       
       if (number_vis_tr == 1000) 
@@ -129,11 +129,13 @@ int main(int argc, char **argv)
 
       /*  computes hitting positions on the walls */
 
-      Path0 = 0.; m=0; nocol =0;
+      Path0 = 0.; m = nocol =0;
       { VectorType pos[MAX_MIRR+1],	dir[MAX_MIRR+1], spin[MAX_MIRR+1]; 
  
-        if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10ld  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n", InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
-                         InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]), Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+        if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n",
+			  InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
+			  InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+			  Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
 
 #ifdef VT_GRAPH
         if ((p==2)||(p==3)||(p==4)) cpgsci((int)(InputNeutrons[i].Color));
@@ -160,51 +162,66 @@ int main(int argc, char **argv)
 
         for (j=0;j<1000;j++)
         {
-          for (l=1;l<=MAX_MIRR;l++)
+	  int i, l;
+          for (l=1; l<=max_mirr; l++)
           {
             CopyVector(Pos, pos[l]); CopyVector(Dir, dir[l]); CopyVector(SpinVector, spin[l]); prob[l]= Prob; 
-            if((m!= l)&&(WallonoffA[l]==1))PathA[l] = CollideWall(&prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l], RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], thetaC[l], thetaCSM[l], RthetaCSM[l], mued[l], mrangh[l] , mrangv[l]); else PathA[l] = 99999;
+            if (m!= l)
+	      PathA[l] = CollideWall(&prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l],
+				     RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], thetaC[l], thetaCSM[l],
+				     RthetaCSM[l], mued[l], mrangh[l] , mrangv[l]);
+	    else
+	      PathA[l] = 99999;
           }
 
-          if((PathA[1] == 99999.0)&&(PathA[2] == 99999.0)&&(PathA[3] == 99999.0)&&(PathA[4] == 99999.0)&&(PathA[5] == 99999.0)&&(PathA[6] == 99999.0)&&(PathA[7] == 99999.0)&&(PathA[8] == 99999.0)&&(PathA[9] == 99999.0)&&(PathA[10]== 99999.0)&&(PathA[11]== 99999.0)&&(PathA[12]== 99999.0)&&(PathA[13]== 99999.0))
-          { Path = 99999.0; goto conti;
+	  for (i=1; i <= max_mirr; i++) 
+	    if (PathA[i] !=  99999.0)
+	      break;
+	  if (i > max_mirr) {
+	    // all PathA are 99999
+	    Path = 99999.0; goto conti;
           }
 
-          for (l=1;l<=MAX_MIRR;l++)
+          for (l=1; l<=max_mirr; l++)
           {
-            if((m!=l)&&(PathA[l]<=PathA[1])&&(PathA[l]<=PathA[2])&&(PathA[l]<=PathA[3])&&(PathA[l]<=PathA[4])&&(PathA[l]<=PathA[5])&&(PathA[l]<=PathA[6])&&(PathA[l]<=PathA[7])&&(PathA[l]<=PathA[8])&&(PathA[l]<=PathA[9])&&(PathA[l]<=PathA[10])&&(PathA[l]<=PathA[11])&&(PathA[l]<=PathA[12])&&(PathA[l]<=PathA[13])) 
-            { CopyVector(pos[l], Pos); CopyVector(dir[l], Dir); Path = PathA[l]; Prob = prob[l]; 
-              m=l; nocol +=1; 
-              if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10ld  %2d  %ld     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n", 
-                                InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug,  InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]), 
-                                m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+	    if (m == l) continue;
+	    for (i=1; i <= max_mirr; i++) 
+	      if (i != l && PathA[l] > PathA[i])
+		break;
+	    if (i <= max_mirr) continue; // because PathA[l] > PathA[i]
 
+	    CopyVector(pos[l], Pos); CopyVector(dir[l], Dir); Path = PathA[l]; Prob = prob[l]; 
+	    m=l; nocol +=1; 
+	    if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n", 
+			      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
+			      InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug,  InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]), 
+			      m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+	    
 #ifdef VT_GRAPH
-              if(Prob > wei_min1)
+	    if(Prob > wei_min1)
               {
                 if (p == 2)  
-                {
-                  if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[1]); 
-                  if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[1], -2);
-                }	
-                 
+		  {
+		    if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[1]); 
+		    if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[1], -2);
+		  }	
+		
                 if (p == 3)  
-                {
-                  if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[2]); 
-                  if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[2], -2);
-                }	
-                 
+		  {
+		    if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[2]); 
+		    if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[2], -2);
+		  }	
+		
                 if (p == 4)  
-                {
-                  if (vistype == 0) cpgdraw((float) Pos[1], (float) Pos[2]);
-                  if (vistype == 1) cpgpt1((float) Pos[1], (float) Pos[2], -2);
-                }	
+		  {
+		    if (vistype == 0) cpgdraw((float) Pos[1], (float) Pos[2]);
+		    if (vistype == 1) cpgpt1((float) Pos[1], (float) Pos[2], -2);
+		  }	
               }
 #endif
-
-            }
+	    
           }  // loop over mirrors
-
+	  
           if(nocol == nocolM) goto conti; 
 	
           if(Prob < wei_min) goto getlost; 
@@ -255,8 +272,10 @@ conti:;
 
         switch (p)
         { case 1: 
-            fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10ld  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n", InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
-                        InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]), posex[0], posex[1], posex[2], 180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
+            fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n",
+		    InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
+		    InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+		    posex[0], posex[1], posex[2], 180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
             break;
 #ifdef VT_GRAPH
           case 2:
@@ -337,9 +356,6 @@ void OwnInit(int argc, char *argv[])
 /*    INPUT  */
 	
 	for(j=0;j<3;j++) TranslOutput[j]=0.;OutputAngleHoriz=OutputAngleVert=0.;
-
-	for (j=0; j<=MAX_MIRR; j++)
-		WallonoffA[j]=0;
 
 	gselec = 1 ; /* Activate visualisation device -screen */
 
@@ -429,7 +445,7 @@ void OwnInit(int argc, char *argv[])
 					
 					
 			    case 'o':
-				  	gselec = atol(&argv[i][2]);
+				  	gselec = atol(&argv[1][2]);
 				  	break;
 	  					
 												
@@ -552,43 +568,45 @@ void OwnCleanup()
 
 void ReadParameterFile()
 {
-	/*ReadParComment(Par_Field);  parameter names*/
-	for (l=1; l<=MAX_MIRR; l++)
-	{	r1[l][0] = r2[l][0] = r3[l][0] = r4[l][0] = 0;
-		WallonoffA[l]=ReadParI(Par_Field);/* */
-		r1[l][1]=ReadParF(Par_Field); r1[l][2]=ReadParF(Par_Field);
-		r2[l][1]=ReadParF(Par_Field); r2[l][2]=ReadParF(Par_Field);
-		r3[l][1]=ReadParF(Par_Field); r3[l][2]=ReadParF(Par_Field);
-		r4[l][1]=ReadParF(Par_Field); r4[l][2]=ReadParF(Par_Field); 
-		WallOffset[l][0]=ReadParF(Par_Field); WallOffset[l][1]=ReadParF(Par_Field); WallOffset[l][2]=ReadParF(Par_Field); 
-		WallHoriz[l]=ReadParF(Par_Field); WallVert[l]=ReadParF(Par_Field); 
-		mrangh[l]=ReadParF(Par_Field); mrangv[l]=ReadParF(Par_Field); 
-		thetaC[l][0]=ReadParF(Par_Field); thetaCSM[l][0]=ReadParF(Par_Field); RthetaCSM[l][0]=ReadParF(Par_Field); mued[l][0]=ReadParF(Par_Field); mued[l][1]=ReadParF(Par_Field); 
-		thetaC[l][1]=ReadParF(Par_Field); thetaCSM[l][1]=ReadParF(Par_Field); RthetaCSM[l][1]=ReadParF(Par_Field); mued[l][2]=ReadParF(Par_Field); mued[l][3]=ReadParF(Par_Field);  
-		if(WallonoffA[l] == 1)
-		{
-			fprintf(LogFilePtr,"\n%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f%10.5f \n", 
-                            'A'+l-1,r1[l][1],r1[l][2],r2[l][1],r2[l][2],r3[l][1],r3[l][2],r4[l][1],r4[l][2],WallOffset[l][0],WallOffset[l][1],WallOffset[l][2], WallHoriz[l],WallVert[l], mrangh[l], mrangv[l], thetaC[l][0], thetaCSM[l][0], RthetaCSM[l][0], mued[l][0], mued[l][1], thetaC[l][1], thetaCSM[l][1], RthetaCSM[l][1], mued[l][2], mued[l][3]);
-		}
-		ReadParComment(Par_Field); 
-		WallHoriz[l] *= M_PI/180.;
-		WallVert[l]	 *= M_PI/180.;
-		mrangh[l]	 *= M_PI/180.;
-		mrangv[l]	 *= M_PI/180.;
-		FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
-		EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]); 
-	}
+  /*ReadParComment(Par_Field);  parameter names*/
+  int l = 1;
+  max_mirr = 0;
+  while (l <= MAX_MIRR) {
+    int use_this_mirror;
+    r1[l][0] = r2[l][0] = r3[l][0] = r4[l][0] = 0;
+    use_this_mirror = ReadParI(Par_Field);
+    r1[l][1]=ReadParF(Par_Field); r1[l][2]=ReadParF(Par_Field);
+    r2[l][1]=ReadParF(Par_Field); r2[l][2]=ReadParF(Par_Field);
+    r3[l][1]=ReadParF(Par_Field); r3[l][2]=ReadParF(Par_Field);
+    r4[l][1]=ReadParF(Par_Field); r4[l][2]=ReadParF(Par_Field); 
+    WallOffset[l][0]=ReadParF(Par_Field); WallOffset[l][1]=ReadParF(Par_Field); WallOffset[l][2]=ReadParF(Par_Field); 
+    WallHoriz[l]=ReadParF(Par_Field); WallVert[l]=ReadParF(Par_Field); 
+    mrangh[l]=ReadParF(Par_Field); mrangv[l]=ReadParF(Par_Field); 
+    thetaC[l][0]=ReadParF(Par_Field); thetaCSM[l][0]=ReadParF(Par_Field); RthetaCSM[l][0]=ReadParF(Par_Field); mued[l][0]=ReadParF(Par_Field); mued[l][1]=ReadParF(Par_Field); 
+    thetaC[l][1]=ReadParF(Par_Field); thetaCSM[l][1]=ReadParF(Par_Field); RthetaCSM[l][1]=ReadParF(Par_Field); mued[l][2]=ReadParF(Par_Field); mued[l][3]=ReadParF(Par_Field);  
+    ReadParComment(Par_Field); 
 
-	fprintf(LogFilePtr,"\n");   
-	for (l=1; l<=MAX_MIRR; l++)
-	{	fprintf(LogFilePtr,"%c", 'A'+l-1);   
-	}
-	fprintf(LogFilePtr,":");   
-	for (l=1; l<=MAX_MIRR; l++)
-	{	fprintf(LogFilePtr," %d", WallonoffA[l]);   
-	}
-	fprintf(LogFilePtr,"\n");   
+    if(use_this_mirror) {
+      fprintf(LogFilePtr,"\n%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f%10.5f \n", 
+	      'A'+l-1,r1[l][1],r1[l][2],r2[l][1],r2[l][2],r3[l][1],r3[l][2],r4[l][1],r4[l][2],WallOffset[l][0],WallOffset[l][1],WallOffset[l][2], WallHoriz[l],WallVert[l], mrangh[l], mrangv[l], thetaC[l][0], thetaCSM[l][0], RthetaCSM[l][0], mued[l][0], mued[l][1], thetaC[l][1], thetaCSM[l][1], RthetaCSM[l][1], mued[l][2], mued[l][3]);
+      WallHoriz[l] *= M_PI/180.;
+      WallVert[l]  *= M_PI/180.;
+      mrangh[l]	 *= M_PI/180.;
+      mrangv[l]	 *= M_PI/180.;
+      FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
+      EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
+      max_mirr++;
+      l++;
+    }
+    // else this mirror is to be skipped
+  }
+  
+  fprintf(LogFilePtr,"\n");   
+  for (l=1; l<=max_mirr; l++)
+    fprintf(LogFilePtr,"%c", 'A'+l-1);   
 
+  fprintf(LogFilePtr,"\n");   
+  
 }/* End ReadParameterFile  */
 
 
