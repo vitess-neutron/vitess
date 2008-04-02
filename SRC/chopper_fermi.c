@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 
 void OwnInit(int argc, char *argv[])
 {
-  const char intForm = "%d";
+  const char *intForm = "%d";
 
   fprintf(LogFilePtr," \n");
   print_module_name("Fermi-Chopper 1.18");

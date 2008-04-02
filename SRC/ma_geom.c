@@ -29,10 +29,10 @@
 
 void	crys_geomLambda()
 {
-int			m, j, k ;
-double		b, c, R1, R11, R2, R20, RotView[3][3] ;
-double		Theta, Theta0, Phi, DeltaPhi,
-            DistRows;         // distance between 2 rows (= slab height + gap)  ;
+  int			m, j, k ;
+  double		b, c, R1, R11, R2, R20, RotView[3][3] ;
+  double		Theta, Theta0, Phi, DeltaPhi;
+
 VectorType	r, Step_H, Step_V ;
 
 

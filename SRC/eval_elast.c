@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 			leftedge =  (long)floor( (center[j] - (range[j]/2.0) -m)/binterval );
 			rightedge = (long)floor( (center[j] + (range[j]/2.0) -m)/binterval);
 	  				  
-			fprintf(LogFilePtr,"\n [%d, %d]",leftedge, rightedge);
+			fprintf(LogFilePtr,"\n [%ld, %ld]",leftedge, rightedge);
 				  
 			for (k=leftedge; k<=rightedge; k++)
 			totcenter[j] += bint[k];

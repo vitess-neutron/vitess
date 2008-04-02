@@ -30,7 +30,7 @@ void   OwnCleanup() ;
 /* ---------------- */
 FILE       *pReflUpFile, *pReflDownFile;
 char       *ReflUpFileName, *ReflDownFileName;
-short      bTransm=TRUE,
+int        bTransm=TRUE,
            nD;                       /* no of co-ordinate to which mirror extends 
                                         (1 for horizontal mirror, 2 for vertical mirror) */             
 double     /* RotMatrixField[3][3], LarmorMatrix[3][3] */
@@ -201,7 +201,7 @@ void OwnInit(int argc, char *argv[])
 	double roty, rotz,
 	       size=0.0, angle=0.0;
 	long   count, nLinesUp=0, nLinesDn=0;
-	short  bVertPlane=FALSE;
+	int    bVertPlane=FALSE;
 	char   sBuffer[CHAR_BUF_LENGTH];
 
 	// guide_field[0] = guide_field[1] = guide_field[2] = 0.0;

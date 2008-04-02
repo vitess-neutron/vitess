@@ -1,0 +1,52 @@
+==================
+VITESS Version 2.8
+==================
+
+===========
+New Modules
+===========
+New modules
+    grid           for a series of apertures
+    slit           for a simple rectangular aperture
+    capture_flux
+    spin_reset
+have been added.
+
+sm_ensemble got a major overhaul: use 1 to 13 (program constant) mirrors.
+monochr_analyser: optional deviations from the ideal monochromator
+   element orientations, gaps between monochr. elements
+spacewindow_multiple: rectangular windows
+
+========================
+Compressed Neutron Files
+========================
+
+The output of the last pipe command may be written as a
+compressed file. This is of interest especially if you work
+with large intermediate files.
+If the filename contains ".nodebug." all debug information is stripped
+but the rest remains without loss, reducing the file size to 63%.
+If the name contains ".float." additionally the neutron position is
+restricted to float values (reduction to 41%).
+Compressed files may be read with Vitess 2.8, compress mode is coded
+in the first 4 bytes.
+
+=================================
+Parallel Pipes and Grid Computing
+=================================
+Multiple parallel pipes help to exploit the compute power
+of quadcore CPUs, multi CPU nodes and computer grids.
+With some care you may set up your simulation, store it
+with the GUI "Save Grid Command" to a file, and execute
+it with the help of the new TOOLS/grid_command.pl.
+(WWW/vitess-technique.pdf)
+
+=================
+Unix Installation
+=================
+
+Unix installation is made easier with the installAndTest
+script. It helps to adjust absolute path names and to apply
+a special patch to a Tk source file.
+
+

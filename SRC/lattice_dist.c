@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	       dQ;             // momentum transfer
 	short  h=0, k=0, l=0, nHaeuf, rc;
 	long   nSumMax;
-	char   cGitter='A', cWeiter='j',
+	char   cGitter='A',
 	       sFileName[50], 
 	      *pFullName;
 	FILE*  pFile=NULL;

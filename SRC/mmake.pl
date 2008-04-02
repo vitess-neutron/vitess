@@ -24,9 +24,8 @@ my $svnroot = 'h:|V';
 my $unixcomment =<<'EOS';
 #
 # compile hosts to use
-# Linux : dixi3
-# SunOS : dsapp3
-# OSF1  : darling
+# Linux   : dixi3  openSUSE 10.2 (i586)
+# Linux64 : dinux4 openSUSE 10.2 (X86-64)
 
 EOS
 
@@ -42,11 +41,11 @@ my @Obj = qw(init general intersection matrix sample);
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file guide_shape);
+	   mirror_coating surface_file guide_shape spin_reset capture_flux);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller
-	    slit source spacewindow spacewindow_multiple space);
+	    slit grid source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_inelast frame guide
@@ -81,11 +80,12 @@ $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
-	   source => 'source_isis src_modchar',
+	   source => 'src_modchar',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
 	   precessionfield => 'magneticmap',
 	   gener_batch => 'gener_fct',
+	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
 	   chopper_disc => 'bender_inter_data');
@@ -153,12 +153,12 @@ GDOPEN = g2_open_gd
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) -DPENV $(CFLAGS)
-GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+GRASLIB = -Ig2/SunOS -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
-CC = $(CCOMP) -DOSF  -DPENV $(CFLAGS)
+CC = $(CCOMP) -DOSF -DPENV $(CFLAGS)
 GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
@@ -177,7 +177,7 @@ ifeq ($(SYS),Linux)
 endif
 
 
-GRALIB =  $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
+GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
 LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
 .KEEP_STATE :

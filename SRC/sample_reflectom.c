@@ -17,6 +17,7 @@
 /********************************************************************************************/
 
 #include <string.h>
+#include <stdio.h>
 
 #include "init.h"
 #include "softabort.h"

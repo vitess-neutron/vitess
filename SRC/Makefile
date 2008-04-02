@@ -4,10 +4,9 @@
 #
 #
 # compile hosts to use
-# Linux   : dixi3   SuSE 9.2
-# Linux64 : dirac oder fix1    SuSE 10.1
-# SunOS : dsapp3
-# OSF1  : darling
+# Linux   : dixi3  openSUSE 10.2 (i586)
+# Linux64 : dinux4 openSUSE 10.2 (X86-64)
+
 
 INSTDIR = ../MODULES/
 
@@ -20,15 +19,18 @@ mon2_tofwl \
 mon2_wldiv \
 velselect \
 writeout \
-slit \
 gener_batch \
 lattice_dist \
 mirror_coating \
 surface_file \
 guide_shape \
+grid \
+spin_reset \
+capture_flux \
 chopper_disc \
 chopper_fermi \
 collimator_soller \
+slit \
 source \
 spacewindow \
 spacewindow_multiple \
@@ -76,6 +78,7 @@ SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
 CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
 
@@ -104,6 +107,7 @@ ifeq ($(SYS),Linux)
  endif
  GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
+
 
 GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
 LIBS = -Lrng/$(SUBDIR) -lgslran -lm
@@ -145,6 +149,9 @@ lattice_dist : lattice_dist.c $(TOOL)
 mon2_tofwl : mon2_tofwl.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+spin_reset : spin_reset.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 monitorpol_pos : monitorpol_pos.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -172,9 +179,6 @@ bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
-sme : sme.c cpgplot.c $(MTOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
 sample_sans : sample_sans.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -187,10 +191,13 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c source_isis.c src_modchar.c $(ITOOL)
-	$(CC) -o $@ source.c src_modchar.c $(ITOOL) $(LIBS)
+source : source.c src_modchar.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+capture_flux : capture_flux.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 collimator_soller : collimator_soller.c $(ITOOL)
@@ -239,6 +246,9 @@ direct_view : direct_view.c
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_powder : sample_powder.c $(STOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+grid : grid.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_wldiv : mon2_wldiv.c $(TOOL)

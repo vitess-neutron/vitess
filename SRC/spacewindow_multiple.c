@@ -655,18 +655,17 @@ short ReadWndFile()
 
 	Nholes = j;
 
-	fprintf(LogFilePtr,"\n Number of holes: %ld", Nholes);
+	fprintf(LogFilePtr,"\n Number of holes: %d", Nholes);
 	fprintf(LogFilePtr,"\n Outer radius of the collimator: %7.2lf cm", OuterRadius);
 
 
-	for(j = 1; j <= Nholes; j++)
-	{
-		if (eWinShape[j]==VT_CIRCLE)
-			fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
-									 ywincenter[j], zwincenter[j], winradius[j]);
-		else 
-			fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
-									 ywincenter[j], zwincenter[j], winwidth[j], winheight[j]);
+	for(j = 1; j <= Nholes; j++) {
+	  if (eWinShape[j]==VT_CIRCLE)
+	    fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
+		    ywincenter[j], zwincenter[j], winradius[j]);
+	  else 
+	    fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm  winwidth = %6.2lf cm  winheight= %6.2lf cm", 
+		    ywincenter[j], zwincenter[j], winwidth[j], winheight[j]);
 	} 
 	fprintf(LogFilePtr,"\n") ;
 
