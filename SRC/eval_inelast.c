@@ -317,7 +317,7 @@ void OwnInit(int argc, char *argv[])
 
 	if(FilePtrEnergy != NULL) fprintf(LogFilePtr,"\n	energy spectrum file: '%s'", FileNameEnergy) ;
 
-	fprintf(LogFilePtr,"\n	number of bins		=  %d\n	primary flight path		=  %9.4f\n	secondary flight path	=  %9.4f\n	reference wavelength	=  %9.4f\n	time offset		=  %9.4f\n	minimal time		=  %9.4f\n	maximal time		=  %9.4f\n	gradient of timebins	=  %9.4f\n	temperature		=  %9.4f\n	angle			=  %9.4f\n	angle range		=  %9.4f",
+	fprintf(LogFilePtr,"\n	number of bins		=  %ld\n	primary flight path		=  %9.4f\n	secondary flight path	=  %9.4f\n	reference wavelength	=  %9.4f\n	time offset		=  %9.4f\n	minimal time		=  %9.4f\n	maximal time		=  %9.4f\n	gradient of timebins	=  %9.4f\n	temperature		=  %9.4f\n	angle			=  %9.4f\n	angle range		=  %9.4f",
 		NoBins, PrimaryFlightPath, SecondaryFlightPath, ReferenceWavelength, TimeOffset, MinTOF, MaxTOF, SlopeBins, Temperature, Angle, AngleRange) ;
 
 	if(GeomOption == 0) 	fprintf(LogFilePtr,"\noption 'direct geometry'") ;

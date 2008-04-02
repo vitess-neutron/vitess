@@ -569,7 +569,7 @@ set writeoutESET {
 
 ### spin_reset
 ###
-set spin_converterESET {
+set spin_resetESET {
   {scpoldeg float 0
     {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
   {}

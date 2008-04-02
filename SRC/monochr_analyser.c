@@ -215,17 +215,6 @@ CHECK;
 	RotVector(RotMatrixFoc, Dir) ;
 
 
-	/* translates neutron variables for output - X */
-
-	TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
-
-	CopyVector(Dir, Path) ;
-
-	MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-
-	AddVector(Pos, Path) ; // Path = displacement vector
-
-
 	/* transmit coordinates which were not changed, the rest overwrite below */
 
 	Neutrons = InputNeutrons[i]; 

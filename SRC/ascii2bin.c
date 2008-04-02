@@ -90,8 +90,8 @@ int main(int argc, char **argv)
     {
       for(i=0; i<BufferSize; i++) 
       {
-        if (fscanf(AsciiFile,"%2s", &InputNeutrons[i].ID.IDGrp )==EOF) goto finish;
-        fscanf(AsciiFile,"%u", &InputNeutrons[i].ID.IDNo ) ;
+        if (fscanf(AsciiFile,"%2s", (char *) &InputNeutrons[i].ID.IDGrp )==EOF) goto finish;
+        fscanf(AsciiFile,"%lu", &InputNeutrons[i].ID.IDNo ) ;
         fscanf(AsciiFile,"%c%c", &cBlank,  &InputNeutrons[i].Debug ) ;
         fscanf(AsciiFile,"%hd", &InputNeutrons[i].Color ) ;
         fscanf(AsciiFile,"%lf", &InputNeutrons[i].Time ) ;

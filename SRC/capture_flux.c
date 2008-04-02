@@ -1,5 +1,5 @@
 /*********************************************************************************************/
-/*  VITESS module  WRITEOUT                                                                  */
+/* VITESS module caputure_flux                                                               */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */

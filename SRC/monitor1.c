@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     { pNorm[iBin] =(Maxy-Miny)/(double)nBiny;
     }
     else if (normalise==2 && ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1))
-    { sscanf(sBuffer, "%lf", pNorm[iBin]);
+      { sscanf(sBuffer, "%lf", &(pNorm[iBin]));
     }
     else
     { pNorm[iBin] = 1.0;
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     case 1: fprintf(LogFilePtr, "Norm     : %f\n", pNorm[0]); break;
     case 2: fprintf(LogFilePtr, "normalized by %s", RefFileName); break;
   }
-  fprintf(LogFilePtr, "Binning  : %d bins from %10.5f to %10.5f %s\n", nBiny, Miny, Maxy, sUnit[kind]);
+  fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nBiny, Miny, Maxy, sUnit[kind]);
   fprintf(LogFilePtr, "File     : %s\n", MonitorFileName);
 
 

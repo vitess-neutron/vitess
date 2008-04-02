@@ -18,7 +18,7 @@
 #define THETA_NI 0.099138
 #define PI       3.1415926535898 
 
-static char sBuffer[128];
+// static char sBuffer[128];
 
 double GetDouble(char* pText);
 void   GetString(char* pString, char* pText);

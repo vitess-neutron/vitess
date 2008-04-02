@@ -1,14 +1,9 @@
 /*********************************************************************************************/
-/*  VITESS module  WRITEOUT                                                                  */
+/* VITESS module spin_reset                                                                  */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  June 1999  ???             initial version                                           */
-/* 1.1  Mar  2001  K. Lieutenant   headline                                                  */	
-/* 1.2  Jan  2004  K. Lieutenant   changes for 'instrument.dat' and changed headline         */
-/* 1.3  Feb  2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
-/* 1.4  Mar  2004  K. Lieutenant   F-Format Option                                           */
-/* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
+
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -34,7 +29,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("spin_converter 0.1");
+  print_module_name("spin_reset 0.1");
 
   /* module specific initialization */
   OwnInit(argc, argv);

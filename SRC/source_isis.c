@@ -1,22 +1,22 @@
 
 typedef struct 
 {
-  int nEnergy;        ///< Number of energy bins
-  int nTime;          ///< number of time bins
+  int nEnergy;        // Number of energy bins
+  int nTime;          // number of time bins
 
-  double* TimeBin;    ///< Time bins
-  double* EnergyBin;  ///< Energy bins
+  double* TimeBin;    // Time bins
+  double* EnergyBin;  // Energy bins
 
-  double** Flux;       ///< Flux per bin (integrated)
-  double* EInt;        ///< Integrated Energy point
-  double Total;        ///< Integrated Total
+  double** Flux;      // Flux per bin (integrated)
+  double* EInt;       // Integrated Energy point
+  double Total;       // Integrated Total
 
 } ISource;
 
 int cmdnumberD(char *,double*);
 int cmdnumberI(char *,int*,const int);
 double polInterp(double*,double*,int,double);
-FILE* openFile(char*);
+FILE *openFile(char*);
 double LoadIsisDistrib(FILE*,const double,const double);
 int timeStart(char*);
 int timeEnd(char*);
