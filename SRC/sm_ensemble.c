@@ -51,36 +51,39 @@
 
 #define	STRING_BUFFER 1000
 
-	FILE		*Par_Field, *COLLFILE;
-	char		Option[STRING_BUFFER], *ParameterFileName, *ReflUpFileName, *ReflDownFileName, *COLLFILEName="collision.dat";
-	int			j, p=0, datanumber, vistype=0, quant_dir=2;
+FILE		*Par_Field, *COLLFILE;
+char		Option[STRING_BUFFER], *ParameterFileName, *ReflUpFileName, *ReflDownFileName, *COLLFILEName="collision.dat";
+int		p=0, datanumber, vistype=0, quant_dir=2;
 int             max_mirr; // highest number of used mirror
- 	long		User, NumWrong, Repetition, repet,
-            nocol, nocolM = 10000, 
-            Wallonoff, NoCh, ok;
-	long		number_vis_tr=0; /* current number of visualised trajectories, add SM */
-	double		TOF, WL, Prob, phi, the;
-	double		rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
-	double		IntegralIntensity, Path, Path0;
-	double      prob[MAX_MIRR+1];
+long		User, NumWrong, Repetition, repet, nocol, nocolM = 10000, 
+                Wallonoff, NoCh, ok;
+long		number_vis_tr=0; /* current number of visualised trajectories, add SM */
+double		TOF, WL, Prob, phi, the;
+double		rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
+double		IntegralIntensity, Path, Path0;
+double          prob[MAX_MIRR+1];
 	
-	double		Windw=-10.0, WindW=200.0, Windh=-10.0, WindH=10.0, wei_min1=0.0; /* Variables for visualisation */
+double		Windw=-10.0, WindW=200.0, Windh=-10.0, WindH=10.0, wei_min1=0.0; /* Variables for visualisation */
 	
-	VectorType	Pos, Dir, SpinVector, n, TranslOutput;
-	Neutron		Neutrons;
+VectorType	Pos, Dir, SpinVector, n, TranslOutput;
+Neutron		Neutrons;
 
-	VectorType	WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1], r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
-	double		RotMatrixWall[MAX_MIRR+1][3][3], WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1], PathA[MAX_MIRR+1], thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4], mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1]; 
+VectorType	WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1], r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
+double		RotMatrixWall[MAX_MIRR+1][3][3], WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1], PathA[MAX_MIRR+1],
+                thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
+                mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1]; 
 
-	int		hittriangle(VectorType r1, VectorType r2, VectorType rt);
-	int		hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorType rt);
-	double	CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,VectorType WallOffset,VectorType WallNormal, double  RotMatrixWall[3][3],VectorType r1,VectorType r2,VectorType r3,VectorType r4, double thetaC[2], double thetaCSM[2], double RthetaCSM[2], double mued[4], double mrangh, double mrangv);
-	double	reflectivity(double angle, double CritUp, double WL, double smearf, double ReflUp);
-	void		OutputTransformations(double *tof, double *wl, double *prob, VectorType Pos, VectorType Dir, VectorType SpinVector);
-	void		ReadParameterFile();
-	void		OwnInit(int argc, char *argv[]);
-	void		OwnCleanup();
-	void	   CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi);
+int	hittriangle(VectorType r1, VectorType r2, VectorType rt);
+int	hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorType rt);
+double	CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,VectorType WallOffset,VectorType WallNormal,
+		    double  RotMatrixWall[3][3],VectorType r1,VectorType r2,VectorType r3,VectorType r4, double thetaC[2],
+		    double thetaCSM[2], double RthetaCSM[2], double mued[4], double mrangh, double mrangv);
+double	reflectivity(double angle, double CritUp, double WL, double smearf, double ReflUp);
+void	OutputTransformations(double *tof, double *wl, double *prob, VectorType Pos, VectorType Dir, VectorType SpinVector);
+void	ReadParameterFile();
+void	OwnInit(int argc, char *argv[]);
+void	OwnCleanup();
+void	CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi);
 
 
 /* FINISH HEADER STORY */
@@ -91,46 +94,44 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given  */ 
 
-	Init(argc, argv, VT_SM_ENSEMBLE);  
-	OwnInit(argc, argv); 
+  Init(argc, argv, VT_SM_ENSEMBLE);  
+  OwnInit(argc, argv); 
 
-	if(p==1)	{COLLFILE=fopen(COLLFILEName, "w");
-	fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/° \n\n");}
-
+  if (p==1) {
+    COLLFILE = fopen(COLLFILEName, "w");
+    fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/° \n\n");
+  }
 
   /* Get the neutrons from the file */
   DECLARE_ABORT;
 
-  while((ReadNeutrons())!= 0)
-  {
+  while ((ReadNeutrons())!= 0) {
     int i;
     CHECK;	/* here is what happens to the neutron */
 
-    for(i=0;i<NumNeutGot;i++)
-
-    { 
-      int m;
+    for (i=0; i < NumNeutGot; i++) { 
+      int j,m;
       CHECK;
       
-      if (number_vis_tr == 1000) 
-      {
+      if (number_vis_tr == 1000) {
       	p = 100;
       }
 
-      InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+      InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
-	   TOF  = InputNeutrons[i].Time;
-	   WL   = InputNeutrons[i].Wavelength;
-	   Prob = InputNeutrons[i].Probability; /*Prob = 1.;*/
+      TOF  = InputNeutrons[i].Time;
+      WL   = InputNeutrons[i].Wavelength;
+      Prob = InputNeutrons[i].Probability;
 
-	   CopyVector(InputNeutrons[i].Position, Pos);
-	   CopyVector(InputNeutrons[i].Vector, Dir);
-	   CopyVector(InputNeutrons[i].Spin, SpinVector); 
+      CopyVector(InputNeutrons[i].Position, Pos);
+      CopyVector(InputNeutrons[i].Vector, Dir);
+      CopyVector(InputNeutrons[i].Spin, SpinVector); 
 
       /*  computes hitting positions on the walls */
 
       Path0 = 0.; m = nocol =0;
-      { VectorType pos[MAX_MIRR+1],	dir[MAX_MIRR+1], spin[MAX_MIRR+1]; 
+      {
+	VectorType pos[MAX_MIRR+1], dir[MAX_MIRR+1], spin[MAX_MIRR+1]; 
  
         if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n",
 			  InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
@@ -138,89 +139,76 @@ int main(int argc, char **argv)
 			  Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
 
 #ifdef VT_GRAPH
-        if ((p==2)||(p==3)||(p==4)) cpgsci((int)(InputNeutrons[i].Color));
+        else if (p>=2 && p<=4) {
+	  cpgsci((int)(InputNeutrons[i].Color));
 
-	     if(Prob > wei_min1)	
-	     {
-          if (p == 2)  
-          {
-            cpgmove((float) Pos[0], (float) Pos[1]);
-            cpgpt1((float) Pos[0], (float) Pos[1], -2);
-          }
-          if (p == 3)  
-          {
-            cpgmove((float) Pos[0], (float) Pos[2]);
-            cpgpt1((float) Pos[0], (float) Pos[2], -2);
-          }    
-          if (p == 4)  
-          {
-            cpgmove((float) Pos[1], (float) Pos[2]);
-            cpgpt1((float) Pos[1], (float) Pos[2], -2);
-          }    
-        }
+	  if(Prob > wei_min1) {
+	    if (p == 2) {
+	      cpgmove((float) Pos[0], (float) Pos[1]);
+	      cpgpt1((float) Pos[0], (float) Pos[1], -2);
+	    } else if (p == 3) {
+	      cpgmove((float) Pos[0], (float) Pos[2]);
+	      cpgpt1((float) Pos[0], (float) Pos[2], -2);
+	    } else if (p == 4) {
+	      cpgmove((float) Pos[1], (float) Pos[2]);
+	      cpgpt1((float) Pos[1], (float) Pos[2], -2);
+	    }    
+	  }
+	}
 #endif
 
-        for (j=0;j<1000;j++)
-        {
-	  int i, l;
-          for (l=1; l<=max_mirr; l++)
-          {
+        for (j=0; j<1000; j++) { // loop over at most 1000 collisions
+	  int im, l;
+          for (l=1; l<=max_mirr; l++) {
             CopyVector(Pos, pos[l]); CopyVector(Dir, dir[l]); CopyVector(SpinVector, spin[l]); prob[l]= Prob; 
-            if (m!= l)
+            if (m != l)
 	      PathA[l] = CollideWall(&prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l],
 				     RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], thetaC[l], thetaCSM[l],
-				     RthetaCSM[l], mued[l], mrangh[l] , mrangv[l]);
+				     RthetaCSM[l], mued[l], mrangh[l], mrangv[l]);
 	    else
 	      PathA[l] = 99999;
           }
 
-	  for (i=1; i <= max_mirr; i++) 
-	    if (PathA[i] !=  99999.0)
+	  for (im=1; im <= max_mirr; im++) 
+	    if (PathA[im] != 99999.0)
 	      break;
-	  if (i > max_mirr) {
+	  if (im > max_mirr) {
 	    // all PathA are 99999
-	    Path = 99999.0; goto conti;
+	    Path = 99999.0;
+	    goto conti;
           }
 
-          for (l=1; l<=max_mirr; l++)
-          {
+          for (l=1; l<=max_mirr; l++) { // loop over mirrors
 	    if (m == l) continue;
-	    for (i=1; i <= max_mirr; i++) 
-	      if (i != l && PathA[l] > PathA[i])
+	    for (im=1; im<=max_mirr; im++) 
+	      if (im != l && PathA[l] > PathA[im])
 		break;
-	    if (i <= max_mirr) continue; // because PathA[l] > PathA[i]
+	    if (im <= max_mirr) continue; // because PathA[l] > PathA[im]
 
 	    CopyVector(pos[l], Pos); CopyVector(dir[l], Dir); Path = PathA[l]; Prob = prob[l]; 
 	    m=l; nocol +=1; 
 	    if (p==1) fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n", 
 			      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
-			      InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug,  InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]), 
+			      InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug,  InputNeutrons[i].Color, i,
+			      ((int) SpinVector[quant_dir]), 
 			      m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
 	    
 #ifdef VT_GRAPH
-	    if(Prob > wei_min1)
-              {
-                if (p == 2)  
-		  {
-		    if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[1]); 
-		    if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[1], -2);
-		  }	
-		
-                if (p == 3)  
-		  {
-		    if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[2]); 
-		    if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[2], -2);
-		  }	
-		
-                if (p == 4)  
-		  {
-		    if (vistype == 0) cpgdraw((float) Pos[1], (float) Pos[2]);
-		    if (vistype == 1) cpgpt1((float) Pos[1], (float) Pos[2], -2);
-		  }	
-              }
+	    else if(Prob > wei_min1) {
+	      if (p == 2) {
+		if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[1]); 
+		if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[1], -2);
+	      } else if (p == 3) {
+		if (vistype == 0) cpgdraw((float) Pos[0], (float) Pos[2]); 
+		if (vistype == 1) cpgpt1((float) Pos[0], (float) Pos[2], -2);
+	      }	else if (p == 4) {
+		if (vistype == 0) cpgdraw((float) Pos[1], (float) Pos[2]);
+		if (vistype == 1) cpgpt1((float) Pos[1], (float) Pos[2], -2);
+	      }	
+	    }
 #endif
 	    
-          }  // loop over mirrors
+          }  // end loop over mirrors
 	  
           if(nocol == nocolM) goto conti; 
 	
@@ -228,21 +216,21 @@ int main(int argc, char **argv)
 
           Path0 += Path;
 
-        }  // loop over collisions
+        }  // end loop over collisions
 conti:;
 
       }    // end of range for local definitions
       if(Prob < wei_min) goto getlost; 
 
 
-/* transforms into output frame  */
+      /* transform into output frame  */
 	
       SubVector(Pos, TranslOutput);
       RotVector(RotMatrixOut, Pos);
       RotVector(RotMatrixOut, Dir);
 
 
-    /* translates neutron variables for output - X'=0. */
+      /* translate neutron variables for output - X'=0. */
 
       {
         VectorType Path ;
@@ -261,46 +249,36 @@ conti:;
 
       /* transforms into input frame to give here the exit positions */
 
-      if(p>0)
-      {
+      if (p>0) {
         VectorType posex, direx ;
         CopyVector(Pos, posex) ;
         CopyVector(Dir, direx) ;
-        RotBackVector(RotMatrixOut, direx);	/**/
+        RotBackVector(RotMatrixOut, direx);
         RotBackVector(RotMatrixOut, posex);
         AddVector(posex, TranslOutput);
 
-        switch (p)
-        { case 1: 
-            fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n",
-		    InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
-		    InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
-		    posex[0], posex[1], posex[2], 180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
-            break;
+	if (p == 1) 
+	  fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f \n",
+		  InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
+		  InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+		  posex[0], posex[1], posex[2], 180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
 #ifdef VT_GRAPH
+        else if (Prob > wei_min1)
+	  switch (p) {
           case 2:
-            if(Prob > wei_min1)
-            {
-              if (vistype == 0) cpgdraw((float) posex[0], (float) posex[1]); 
-              if (vistype == 1) cpgpt1((float) posex[0], (float) posex[1], -2);
-            }	
+	    if (vistype == 0) cpgdraw((float) posex[0], (float) posex[1]); 
+	    if (vistype == 1) cpgpt1((float) posex[0], (float) posex[1], -2);
             break;
           case 3:
-            if(Prob > wei_min1)
-            {
-              if (vistype == 0) cpgdraw((float) posex[0], (float) posex[2]); 
-              if (vistype == 1) cpgpt1((float) posex[0], (float) posex[2], -2);
-            }	
+	    if (vistype == 0) cpgdraw((float) posex[0], (float) posex[2]); 
+	    if (vistype == 1) cpgpt1((float) posex[0], (float) posex[2], -2);
             break;
           case 4:
-            if(Prob > wei_min1)
-            {
-              if (vistype == 0) cpgdraw((float) posex[1], (float) posex[2]);	
-              if (vistype == 1) cpgpt1((float) posex[1], (float) posex[2], -2);
-            }	
+	    if (vistype == 0) cpgdraw((float) posex[1], (float) posex[2]);	
+	    if (vistype == 1) cpgpt1((float) posex[1], (float) posex[2], -2);
             break;
+	  }
 #endif
-        }
       }
 	
       /* transmit coordinates which were not changed, the rest overwrite below */
@@ -324,15 +302,15 @@ conti:;
 getlost:;
       if(p==1) fprintf(COLLFILE, " \n");
 
-    }  // loops over trajectories
+    }  // end loop over trajectories
   }
    
-  /* Do the general cleanup */
+my_exit:;
+
+  /* Do the cleanup */
 
   if(p==1) fclose(COLLFILE);	
 	
-my_exit:;
-
   OwnCleanup(); 
 
   Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);	
@@ -350,207 +328,162 @@ my_exit:;
 
 void OwnInit(int argc, char *argv[])
 {
-	fprintf(LogFilePtr," \n");
-	print_module_name("supermirror_ensemble 1.7");
+  int j;
+  fprintf(LogFilePtr," \n");
+  print_module_name("supermirror_ensemble 1.7");
 
-/*    INPUT  */
-	
-	for(j=0;j<3;j++) TranslOutput[j]=0.;OutputAngleHoriz=OutputAngleVert=0.;
+  for(j=0;j<3;j++) TranslOutput[j]=0.;
+  OutputAngleHoriz=OutputAngleVert=0.;
 
-	gselec = 1 ; /* Activate visualisation device -screen */
+  gselec = 1 ; /* Activate visualisation device -screen */
 
-	while(argc>1)
-	{
-		switch(argv[1][1])
-		{
+  while(argc>1) {
+    switch(argv[1][1]) {
 				
-			  case 'P':
-					if((Par_Field = fopen(&argv[1][2],"r"))==NULL)
-					{
-						fprintf(LogFilePtr,"\nERROR: Parameter file '%s' not found.\n",&argv[1][2]);
-						exit(0);
-					}
-					ParameterFileName=&argv[1][2];
-					break;
+    case 'P':
+      if((Par_Field = fopen(&argv[1][2],"r"))==NULL) {
+	fprintf(LogFilePtr,"\nERROR: Parameter file '%s' not found.\n",&argv[1][2]);
+	exit(0);
+      }
+      ParameterFileName=&argv[1][2];
+      break;
 		
-			  case 'C':
-					COLLFILEName=&argv[1][2];
-					break;
+    case 'C':
+      COLLFILEName=&argv[1][2];
+      break;
 		
-			  case 'M':
-					sscanf(&argv[1][2], "%ld", &nocolM); fprintf(LogFilePtr,"Stops at %ld collisions.\n", nocolM);
-					break;
+    case 'M':
+      sscanf(&argv[1][2], "%ld", &nocolM); fprintf(LogFilePtr,"Stops at %ld collisions.\n", nocolM);
+      break;
 
-			  case 'T':
-					sscanf(&argv[1][2], "%d", &p); 
+    case 'T':
+      sscanf(&argv[1][2], "%d", &p); 
+      break;
 
-					break;
+    case 'Q':
+      sscanf(&argv[1][2], "%d", &quant_dir); 
+      if ((quant_dir !=0)&&(quant_dir !=1)&&(quant_dir !=2)) {
+	fprintf(LogFilePtr,"\nERROR:  wrong quantization direction definition. \n\n");
+	exit(0);
+      }
+      break;
 
-			  case 'Q':
-					sscanf(&argv[1][2], "%d", &quant_dir); 
-					if((quant_dir !=0)&&(quant_dir !=1)&&(quant_dir !=2)) {fprintf(LogFilePtr,"\nERROR:  wrong quantization direction definition. \n\n"); exit(0);}
+    case 'r':
+      sscanf(&argv[1][2], "%lf", &TranslOutput[0]); 
+      break;
 
-					break;
+    case 's':
+      sscanf(&argv[1][2], "%lf", &TranslOutput[1]); 
+      break;
 
-			  case 'r':
-					sscanf(&argv[1][2], "%lf", &TranslOutput[0]); 
-					break;
+    case 't':
+      sscanf(&argv[1][2], "%lf", &TranslOutput[2]); 
+      break;
 
-			  case 's':
-					sscanf(&argv[1][2], "%lf", &TranslOutput[1]); 
-					break;
+    case 'h':
+      sscanf(&argv[1][2], "%lf", &OutputAngleHoriz); 
+      break;
 
-			  case 't':
-					sscanf(&argv[1][2], "%lf", &TranslOutput[2]); 
-					break;
+    case 'v':
+      sscanf(&argv[1][2], "%lf", &OutputAngleVert); 
+      break;
 
-			  case 'h':
-					sscanf(&argv[1][2], "%lf", &OutputAngleHoriz); 
-					break;
-
-			  case 'v':
-					sscanf(&argv[1][2], "%lf", &OutputAngleVert); 
-					break;
-
-			/* Visual data */					
+    /* Visual data */					
 	
-			   case 'w':
-					sscanf(&argv[1][2], "%lf", &Windw); 
-					break;
+    case 'w':
+      sscanf(&argv[1][2], "%lf", &Windw); 
+      break;
 					
-			   case 'W':
-					sscanf(&argv[1][2], "%lf", &WindW); 
-					break;
+    case 'W':
+      sscanf(&argv[1][2], "%lf", &WindW); 
+      break;
+										
+    case 'a':
+      sscanf(&argv[1][2], "%lf", &Windh); 
+      break;
 					
+    case 'A':
+      sscanf(&argv[1][2], "%lf", &WindH); 
+      break;
 					
-			   case 'a':
-					sscanf(&argv[1][2], "%lf", &Windh); 
-					break;
-					
-					
-			   case 'A':
-					sscanf(&argv[1][2], "%lf", &WindH); 
-					break;
-	
-					
-			   case 'b':
-					sscanf(&argv[1][2], "%lf", &wei_min1); 
-					break;
-	
-						
+    case 'b':
+      sscanf(&argv[1][2], "%lf", &wei_min1); 
+      break;
 			
-			    case 'c':
-					sscanf(&argv[1][2], "%d", &vistype); 
-					break;
-					
-					
-			    case 'o':
-				  	gselec = atol(&argv[1][2]);
-				  	break;
-	  					
-												
+    case 'c':
+      sscanf(&argv[1][2], "%d", &vistype); 
+      break;
 
-				}
-				argc--;
-				argv++;
-	}
+    case 'o':
+      gselec = atol(&argv[1][2]);
+      break;
+    }
+    argc--;
+    argv++;
+  }
 	
 
-	if (p==1)  
-	fprintf(LogFilePtr,"Prints the coordinates of collisions to '%s'. \n", COLLFILEName);
+  if (p==1)  
+    fprintf(LogFilePtr,"Prints the coordinates of collisions to '%s'. \n", COLLFILEName);
 	
 #ifdef VT_GRAPH
-	if ((p == 2)||(p == 3)||(p == 4))
-	{
+  else if (p >= 2 && p <= 4) {
 	
-	  /* initialize pgplot with device GraphDev */
-	    if (!((gselec == 1)||(gselec == 2)||(gselec == 3)))
-	    {
-		fprintf(LogFilePtr,"ERROR: Incorrect output device, correct option -o, value 1,2 or 3 \n");
-		exit(-1);
-	    }
+    /* initialize pgplot with device GraphDev */
     
-    
-	    if (gselec == 1)
-	    {
-		fprintf(LogFilePtr,"Open visual output device - display\n");
-	    }
-    
-	    if (gselec == 2)
-	    {
-		fprintf(LogFilePtr,"Open visual output device - file \n");
-	    }
-    
-	    if (gselec == 3)
-	    {
-		fprintf(LogFilePtr,"Open visual output device - display+file \n");
-	    }
+    if (gselec == 1)
+      fprintf(LogFilePtr,"Open visual output device - display\n");
+    else if (gselec == 2)
+      fprintf(LogFilePtr,"Open visual output device - file \n");
+    else if (gselec == 3)
+      fprintf(LogFilePtr,"Open visual output device - display+file \n");
+    else {
+      fprintf(LogFilePtr,"ERROR: Incorrect output device, correct option -o, value 1,2 or 3 \n");
+      exit(-1);
+    }
 
-	    fprintf(LogFilePtr,"Visual activation for the first  %ld  trajectories. \n", BufferSize);
-/*	    initialize pgplot with device GraphDev  */
-	    if (cpgopen(GDEV) < 1) 
-	    {
-		fprintf(LogFilePtr,"ERROR: I cannot open graphical output device. \n");    
-		exit(-1);
-	    }
-	    fprintf(LogFilePtr,"Minimum neutron weigth for visualisation: %f. \n", wei_min1);
-	    
-	}
+    fprintf(LogFilePtr,"Visual activation for the first  %ld  trajectories. \n", BufferSize);
+    /*	    initialize pgplot with device GraphDev  */
+    if (cpgopen(GDEV) < 1) {
+      fprintf(LogFilePtr,"ERROR: I cannot open graphical output device. \n");    
+      exit(-1);
+    }
+    fprintf(LogFilePtr,"Minimum neutron weigth for visualisation: %f. \n", wei_min1);
 
-	if (p == 2)  
-	{
-	    cpgenv((float) Windw, (float) WindW, (float) Windh, (float) WindH, 0, 0);
-	    cpgsfs((int) 2);
-	    cpgsch((float) 1.2);
-	    cpglab("X, cm","Y, cm","NEUTRON VISUALISATION - PLANE X0Y");
-	}
-	
-	if (p == 3)  
-	{
-	    cpgenv((float) Windw, (float) WindW, (float) Windh, (float) WindH, 0, 0);	
-	    cpgsfs((int) 2);
-	    cpgsch((float) 1.2);
-	    cpglab("X, cm","Z, cm","NEUTRON VISUALISATION - PLANE X0Z");
-	
-	}
-	
-	if (p == 4)  
-	{
-	    cpgenv((float) (float) Windw, (float) (float) WindW, (float) (float) Windh, (float) (float) WindH, 0, 0);	
-	    cpgsfs((int) 2);
-	    cpgsch((float) 1.2);
-	    cpglab("Y, cm","Z, cm","NEUTRON VISUALISATION - PLANE Y0Z");
-	}
+    if (p == 2) {
+      cpgenv((float) Windw, (float) WindW, (float) Windh, (float) WindH, 0, 0);
+      cpgsfs((int) 2);
+      cpgsch((float) 1.2);
+      cpglab("X, cm","Y, cm","NEUTRON VISUALISATION - PLANE X0Y");
+    } else if (p == 3) {
+      cpgenv((float) Windw, (float) WindW, (float) Windh, (float) WindH, 0, 0);	
+      cpgsfs((int) 2);
+      cpgsch((float) 1.2);
+      cpglab("X, cm","Z, cm","NEUTRON VISUALISATION - PLANE X0Z");
+    } else if (p == 4) {
+      cpgenv((float) (float) Windw, (float) (float) WindW, (float) (float) Windh, (float) (float) WindH, 0, 0);	
+      cpgsfs((int) 2);
+      cpgsch((float) 1.2);
+      cpglab("Y, cm","Z, cm","NEUTRON VISUALISATION - PLANE Y0Z");
+    }
+  }
 #endif	
 
-/*	 init for ASCII output */
+  /* init for ASCII output */
 
+  NumWrong=0;
 
-	NumWrong=0;
+  IntegralIntensity = 0.; Path = 0.; 
 
-	IntegralIntensity = 0.; Path = 0.; 
-
-	OutputAngleHoriz	*= M_PI/180.;
-	OutputAngleVert	*= M_PI/180.;
-	FillRotMatrixZY(RotMatrixOut, OutputAngleVert, OutputAngleHoriz);
-
+  OutputAngleHoriz	*= M_PI/180.;
+  OutputAngleVert	*= M_PI/180.;
+  FillRotMatrixZY(RotMatrixOut, OutputAngleVert, OutputAngleHoriz);
 	
+  ReadParameterFile(); 
 
-	/* reads parameter file */
+  if (Par_Field != NULL) fclose(Par_Field);
 
-	ReadParameterFile(); 
-
-
-/**/
-
-	if(Par_Field != NULL)fclose(Par_Field);
-
-/*	 checks some values */
-
-
-
-
-}/* End OwnInit */
+} /* End OwnInit */
 
 
 /* own cleanup of the monochromator/analyser module */
@@ -656,9 +589,12 @@ int hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorTy
 	else return 0;
 }
 
-/* rutine which computes the collision with a wall */
+/* routine which computes the collision with a wall */
 
-double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,VectorType WallOffset,VectorType WallNormal, double  RotMatrixWall[3][3],VectorType r1,VectorType r2,VectorType r3,VectorType r4, double thetaC[2], double thetaCSM[2], double RthetaCSM[2], double mued[4], double mrangh, double mrangv)
+double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,
+		   VectorType WallOffset,VectorType WallNormal, double  RotMatrixWall[3][3],
+		   VectorType r1,VectorType r2,VectorType r3,VectorType r4,
+		   double thetaC[2], double thetaCSM[2], double RthetaCSM[2], double mued[4], double mrangh, double mrangv)
 {
 	VectorType rt; double path;  double rangh=0., rangv=0., RotMatrixRang[3][3];	
 
