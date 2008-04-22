@@ -473,9 +473,7 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen) {
 
 void ReadParString(FILE *fpt, char *stringvar)
 {
-	fscanf(fpt,"%s", stringvar ) ;
-
-	return ;
+  fscanf(fpt,"%s", stringvar) ;
 }
 
 
@@ -483,10 +481,8 @@ void ReadParString(FILE *fpt, char *stringvar)
 
 double ReadParF(FILE *fpt)
 {
-	double value ;
-	value=0. ;
-	fscanf(fpt,"%lf", &value ) ;
-	return value;
+  double value;
+  return 1 == fscanf (fpt, "%lf", &value) ? value : 0.;
 }
 
 
@@ -494,10 +490,8 @@ double ReadParF(FILE *fpt)
 
 int ReadParI(FILE *fpt)
 {
-	int value ;
-	value=0 ;
-	fscanf(fpt,"%d", &value ) ;
-	return value;
+  int value;
+  return fscanf(fpt,"%d", &value) == 1 ? value : 0;
 }
 
 
@@ -505,8 +499,8 @@ int ReadParI(FILE *fpt)
 
 void ReadParComment(FILE *fpt)
 {
-	char comment[100], *c ;
-	c=fgets(comment, 100, fpt) ;
+  char comment[100], *c;
+  c = fgets(comment, 100, fpt);
 }
 
 
