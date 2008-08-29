@@ -68,6 +68,7 @@ typedef enum
 	VT_GUIDE       =  11,
 	VT_BENDER      =  12,
 	VT_COLLIMATOR  =  13,
+	VT_RAD_COLLIM  =  14,
 	VT_SM_ENSEMBLE =  15,
 	VT_SPACE       =  20,
 	VT_WINDOW      =  21,
@@ -86,6 +87,7 @@ typedef enum
 	VT_RES_DRABKIN =  59,
 	VT_PREC_FIELD  =  60,
 	VT_ROT_FIELD   =  61,
+	VT_SESANS_FIELD=  62,
 	VT_DETECTOR    =  71,
 	VT_SMPL_EL_ISO =  81,
 	VT_SMPL_INELAST=  83,
@@ -230,6 +232,7 @@ double DistrGauss(double Module, double Sigma);
 
 double sq   (double Value);                        /* = Value*Value*/
 double atan0(double a, double b);
+double Round(double value);
 void   Exchange(double* pValue1, double* pValue2);
 double Min(double value1, double value2);
 double Max(double value1, double value2);
