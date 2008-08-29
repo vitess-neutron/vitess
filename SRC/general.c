@@ -92,6 +92,14 @@ double atan0(double a, double b)
 }
 
 
+/* rounds a value mathematically  */
+
+double Round(double value)
+{
+	return floor(value + 0.5);
+}
+
+
 
 /* minimum and maximum of two double or long values */
 

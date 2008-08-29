@@ -32,7 +32,8 @@
 /* 2.9   Feb 2004  K. Lieutenant  'FullParName'; 'message' included                         */
 /* 2.10  Mar 2004  K. Lieutenant  parabolic and elliptic shape                              */
 /* 2.11  Oct 2004  K. Lieutenant  curvature to the right by negative radius                 */
-/* 2.12  May 2004  K. Lieutenant  elliptic shape by focus point                             */
+/* 2.12  May 2005  K. Lieutenant  elliptic shape by focus point                             */
+/* 2.13  May 2008  K. Lieutenant  shape defined in file                                     */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -61,6 +62,7 @@ typedef enum
 	VT_CURVED   = 2,
 	VT_PARABOLIC= 3,
 	VT_ELLIPTIC = 4,
+	VT_FROM_FILE= 5,
 }
 VtShape;
 
@@ -110,7 +112,7 @@ double GuideEntranceHeight=0.0,
        beta, beta_ges,       /* angle of declination between 2 pieces  and of the total guide */
        spacer=0.0,
        surfacerough=0.0;     /* parameter which characterizes the waviness of the guide surface */
-double *Ypce, *Zpce,         /* list of widths and heights at beginning and end of pieces       */
+double *Xpce, *Ypce, *Zpce,  /* list of x-pos., width and height at beginning and end of pieces */
        *Wchan;               /* list of widths of channel at beginning and end of each piece */
 
 VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
@@ -121,6 +123,7 @@ double *RDataL=NULL,         /* Table of reflectivity for guide surface on left 
        *RDataT=NULL,         /* Table of reflectivity for guide surface on right side       */
        *RDataB=NULL;         /* Table of reflectivity for top and bottom plane of the guide */
 
+char  *ShapeFileName="guide_shape.dat";
 char  *ReflFileNameL=NULL;
 char  *ReflFileNameR=NULL;
 char  *ReflFileNameT=NULL;
@@ -172,7 +175,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.12c");
+	print_module_name("guide 2.13");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -195,6 +198,10 @@ int main(int argc, char *argv[])
 			                    (sq(GuideEntranceWidth)*AparY-dTotalLength-1.0/AparY/16.0)/100.);
 			break;
 		case VT_CURVED  :
+			fprintf(LogFilePtr, "curved guide\n");
+			break;
+		case VT_FROM_FILE:
+			fprintf(LogFilePtr, "guide shape from file %s\n", ShapeFileName);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -214,6 +221,12 @@ int main(int argc, char *argv[])
 		case VT_PARABOLIC:
 			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
 			                    (sq(GuideEntranceHeight)*AparZ-dTotalLength-1.0/AparZ/16.0)/100.);
+			break;
+		case VT_CURVED  :
+			fprintf(LogFilePtr, "WARNING: vertically curved guide not supported\n"); 
+			break;
+		case VT_FROM_FILE:
+			fprintf(LogFilePtr, "guide shape from file %s\n", ShapeFileName);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -344,7 +357,7 @@ int main(int argc, char *argv[])
 	Guide.Wall[4].A =  1.0;
 	Guide.Wall[4].B =  0.0;
 	Guide.Wall[4].C =  0.0;
-	Guide.Wall[4].D = -piecelength;
+	Guide.Wall[4].D = -dXpce;
 
 	/*****************************************************/
 
@@ -366,7 +379,7 @@ int main(int argc, char *argv[])
 			if (fabs(InputNeutrons[i].Position[1]) > GuideEntranceWidth/2.0)  continue;
 			if (fabs(InputNeutrons[i].Position[2]) > GuideEntranceHeight/2.0) continue;
 
-			if (piecelength ==0.0) goto zerolength;
+			if (dTotalLength == 0.0) goto zerolength;
 
 			/************** start bender option *********************/
 			if (nChannels > 1)
@@ -380,10 +393,10 @@ int main(int argc, char *argv[])
 					   && (left_beg  > InputNeutrons[i].Position[1]))
 					{
 						kChan = k;
-						InputNeutrons[i].Color = k+1;
+						InputNeutrons[i].Color = (short)(k+1);
 						/* left and right walls of guide exchanged by the channel walls             */
 						/* for elliptical parabolic shape, this has to be calculated for each piece */
-						if (eGuideShapeY!=VT_PARABOLIC && eGuideShapeY!=VT_ELLIPTIC)
+						if (eGuideShapeY!=VT_PARABOLIC && eGuideShapeY!=VT_ELLIPTIC && eGuideShapeY!=VT_FROM_FILE)
 						{	right_end = -GuideExitWidth/2.0 + kChan*(Wchan[nPieces] + spacer);
 							left_end  =  right_end + Wchan[nPieces];
 							dDelYr    =  right_end - right_beg;
@@ -418,18 +431,20 @@ int main(int argc, char *argv[])
 				   planes must be adjusted for each piece (depending on the guide shape) */
 				if (nPieces > 1)
 				{
+					dXpce = Xpce[j+1] - Xpce[j];
+
 					switch (eGuideShapeY)
 					{	case VT_CURVED:
 							/* last piece has an output plane normal to the guide direction, the others are tilted  */
 							if (j == nPieces-1)
 							{	Guide.Wall[4].A =  1.0;
 								Guide.Wall[4].B =  0.0;
-								Guide.Wall[4].D = -piecelength;
+								Guide.Wall[4].D = -dXpce;
 							}
 							else
 							{	Guide.Wall[4].A =  dCosBetH;
 								Guide.Wall[4].B =  dSinBetH;
-								Guide.Wall[4].D = -Guide.Wall[4].A * piecelength;
+								Guide.Wall[4].D = -Guide.Wall[4].A * dXpce;
 							}
 							break;
 
@@ -441,6 +456,7 @@ int main(int argc, char *argv[])
 
 						case VT_PARABOLIC:
 						case VT_ELLIPTIC:
+						case VT_FROM_FILE:
 							/* left and right walls are moved  */
 							if (nChannels > 1)
 							{	right_beg = -Ypce[j]   + kChan*(Wchan[j] + spacer);
@@ -467,13 +483,16 @@ int main(int argc, char *argv[])
 							Guide.Wall[2].D = -Guide.Wall[2].B *   left_beg;
 							Guide.Wall[3].D =  Guide.Wall[3].B *(-right_beg);
 							break;
-					        default: ;
+						default:
+							;
+
 					}
 
 					switch (eGuideShapeZ)
 					{
 						case VT_PARABOLIC:
 						case VT_ELLIPTIC:
+						case VT_FROM_FILE:
 							/* new shift is calculated to move walls */
 							dDelZ   = Zpce[j+1]-Zpce[j];
 							Length1 = sqrt(dXpce*dXpce+dDelZ*dDelZ);
@@ -486,8 +505,9 @@ int main(int argc, char *argv[])
 							/* top and bottom walls are moved */
 							Guide.Wall[0].D = -Guide.Wall[0].C * Zpce[j];
 							Guide.Wall[1].D =  Guide.Wall[1].C * Zpce[j];
-					        break;
-					default: ;
+							break;
+						default:
+							;
 					}
 				}
 
@@ -505,7 +525,7 @@ int main(int argc, char *argv[])
 				/* Update the coordinates.                                                              */
 				/****************************************************************************************/
 
-				InputNeutrons[i].Position[0] -= piecelength;
+				InputNeutrons[i].Position[0] -= dXpce;
 
 				/* For curved guide: frame rotated for next piece, but not after last piece */
 				if (Radius != 0.0 && j < nPieces-1)
@@ -555,7 +575,7 @@ int main(int argc, char *argv[])
 void OwnInit   (int argc, char *argv[])
 {
 	long  i,j ;
-	char  *arg=NULL;
+	char  *arg=NULL, sLine[512];
 	FILE* pFile=NULL;
 
 	for(i=1; i<argc; i++)
@@ -594,7 +614,11 @@ void OwnInit   (int argc, char *argv[])
 						exit(-1);
 					}
 					ReflFileNameB=arg;
-				break;
+					break;
+
+				case 'S':    /* shape file */
+					ShapeFileName=arg;
+					break;
 
 				case 'h':
 				  GuideEntranceHeight =  atof(arg);
@@ -667,6 +691,7 @@ void OwnInit   (int argc, char *argv[])
 	}
 
 	/* Input checks */
+	/* ------------ */
 	/* combination: orientation - shape */
 	if (eGuideShapeZ==VT_CURVED)
 		Error("Vertical curving of the guide not supported");
@@ -711,38 +736,77 @@ void OwnInit   (int argc, char *argv[])
 	}
 
 	/* number of pieces */
+	/* ---------------- */
 	if (   eGuideShapeZ==VT_PARABOLIC || eGuideShapeZ==VT_ELLIPTIC
 	    || eGuideShapeY==VT_PARABOLIC || eGuideShapeY==VT_ELLIPTIC || eGuideShapeY==VT_CURVED)
 	{	if (nPieces <= 1)
 			Error("More than 1 piece is necessary for this shape");
 	}
 
-	/* Calculation of height, width and channel-width of beginning and end of pieces */
-	dTotalLength = nPieces*piecelength;
+	if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
+	{	
+		pFile = fopen(FullParName(ShapeFileName), "r");
+		if (pFile != NULL)
+		{	nPieces = LinesInFile(pFile) - 1;
+		}
+		else
+		{	fprintf(LogFilePtr,"ERROR: Input file %s could not be read !\n", ShapeFileName);
+			exit(-1);
+		}
+	}
 
+	/* Calculation of height, width and channel-width of beginning and end of pieces */
+	/* ----------------------------------------------------------------------------- */
+	Xpce  = calloc(nPieces+1, sizeof(double));
 	Ypce  = calloc(nPieces+1, sizeof(double));
 	Zpce  = calloc(nPieces+1, sizeof(double));
 	Wchan = calloc(nPieces+1, sizeof(double));
 
-	if (eGuideShapeY==VT_ELLIPTIC || eGuideShapeY==VT_PARABOLIC ||
-	    eGuideShapeZ==VT_ELLIPTIC || eGuideShapeZ==VT_PARABOLIC   )
-		pFile = fopen(FullParName("guide_shape.dat"), "w+");
-	for(j=0; j <= nPieces; j++)
-	{	Ypce [j] = Width (j*piecelength)/2.0;
-		Zpce [j] = Height(j*piecelength)/2.0;
-		Wchan[j] = (2*Ypce[j]- nSpacers*spacer)/(double)nChannels;
-		if (Wchan[j] <= 0.0)
-			Error("Geometry impossible. Channel width gets zero (or less)");
-		if (pFile != NULL)
-		{	if (j==0)
-			{	fprintf(pFile, "# length [m]  width [cm]  height [cm]\n");
-				fprintf(pFile, "#-------------------------------------\n");
+	if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
+	{	
+		for(j=0; j <= nPieces; j++)
+		{	
+			ReadLine(pFile, sLine, sizeof(sLine)-1);
+
+			sscanf(sLine, "%lf %lf %lf", &Xpce[j], &Ypce[j], &Zpce[j]);
+			Xpce [j] *= 100.0;
+			Ypce [j] *=   0.5;
+			Zpce [j] *=   0.5;
+			Wchan[j]  =  (2.0*Ypce[j] - nSpacers*spacer)/(double)nChannels;
+			if (Wchan[j] <= 0.0)
+				Error("Geometry impossible. Channel width gets zero (or less)");
+		}
+		dTotalLength = Xpce[nPieces] - Xpce[0];
+		piecelength  = dTotalLength / (double)nPieces;
+	}
+	else
+	{
+		/* if (eGuideShapeY==VT_ELLIPTIC || eGuideShapeY==VT_PARABOLIC ||
+			 eGuideShapeZ==VT_ELLIPTIC || eGuideShapeZ==VT_PARABOLIC   ) */
+		pFile = fopen(FullParName(ShapeFileName), "w+");
+
+		dTotalLength = nPieces*piecelength;
+
+		for(j=0; j <= nPieces; j++)
+		{	
+			Xpce [j] = j*piecelength;
+			Ypce [j] = Width (Xpce [j])/2.0;
+			Zpce [j] = Height(Xpce [j])/2.0;
+			Wchan[j] = (2.0*Ypce[j]- nSpacers*spacer)/(double)nChannels;
+			if (Wchan[j] <= 0.0)
+				Error("Geometry impossible. Channel width gets zero (or less)");
+			if (pFile != NULL)
+			{	if (j==0)
+				{	fprintf(pFile, "# length [m]  width [cm]  height [cm]\n");
+					fprintf(pFile, "#-------------------------------------\n");
+				}
+				fprintf(pFile, "%10.3f  %10.4f  %10.4f\n", Xpce[j]/100.0, 2.0*Ypce[j], 2.0*Zpce[j]);
 			}
-			fprintf(pFile, "%10.2f  %10.3f  %10.3f\n", j*piecelength/100.0, 2*Ypce[j], 2*Zpce[j]);
 		}
 	}
 	if (pFile != NULL)
 		fclose(pFile);
+
 
 	/* left plane */
 	if (pReflL == NULL)
@@ -783,6 +847,7 @@ void OwnCleanup()
 		stPicture.nNumber = - nChannels;
 	else
 		stPicture.nNumber = nPieces;
+
 	beta_ges = (nPieces-1)*beta;
 	if (Radius != 0.0)
 	{	dDeltaX = Radius*sin(beta_ges)       + 0.5*piecelength*(cos(beta_ges)+1.0);
@@ -799,6 +864,7 @@ void OwnCleanup()
 	if (RDataT!=NULL) free(RDataT);
 	if (RDataB!=NULL) free(RDataB);
 
+	if (Xpce !=NULL) free(Xpce );
 	if (Ypce !=NULL) free(Ypce );
 	if (Zpce !=NULL) free(Zpce );
 	if (Wchan!=NULL) free(Wchan);

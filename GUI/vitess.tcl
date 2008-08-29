@@ -66,12 +66,12 @@ proc makeModuleSets {} {
       {space slit spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {velselect {} velselect}
-    {collimator_soller {} collimator}
+    {collimator {collimator collimator_radial collimator_soller} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
-    {magnetic_field {precessionfield rotating_field} {precessionfield rotating_field}}
+    {magnetic_field {precessionfield rotating_field sesans_field} {precessionfield rotating_field sesans_field}}
     {sample {sample_elasticisotr sample_inelast sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
@@ -691,7 +691,7 @@ set spacewindow_multipleESET [concat $a $winAdd]
 
 ### Space
 set spaceESET {
-  {dist float "" {"distance [cm]" "" "" d} gt0}
+  {dist float "" {"distance [cm]" "" "" d} ge0}
 }
 
 ### Slit
@@ -754,18 +754,20 @@ set gridESET {
 set guideESET {
   {"Shape and size of guide" header}
   {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane" "" Y}
-    {constant linear curved parabolic elliptic} {0 1 2 3 4}}
+    {constant linear curved parabolic elliptic "from file"} {0 1 2 3 4 5}}
   {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane" "" Z}
-    {constant linear parabolic elliptic} {0 1 3 4}}
+    {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
+  {shape_file moneditablefile guide_shape.dat
+    {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
   {}
-  {enter_width float 10 {
+  {enter_width float 6 {
     "entrance\nwidth [cm]"
     "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
   {enter_height float 10 {
     "entrance\nheight [cm]"
     "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
   {}
-  {exit_width float 10 {
+  {exit_width float 6 {
     "exit\nwidth [cm]"
     "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
   {exit_height float 10 {
@@ -1596,6 +1598,22 @@ set rotating_fieldESET {
   {btrap radio no {bootstrap "Use or do not use a bootstrap configuration" "" T} {yes no} {1 0}}
 }
 
+### sesans_field
+###
+set sesans_fieldESET {
+  {"Field range and strength" header}
+  {sf_bf pareditablefile field.dat {"field range file" "data file (which is read) giving the range of the magnetic field" "" P}}
+  {}
+  {sf_mx float 0 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" F}}
+  {sf_my float 0 {"magnetic\nfield Y [Oe]" "y component of the magnetic field in Oe" "" G}}
+  {sf_mz float 100 {"magnetic\nfield Z [Oe]" "z component of the magnetic field in Oe" "" H}}
+  {"Output frame" header}
+  {sf_ox float 50 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" q}}
+  {sf_oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
+  {sf_oz float 0  {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
+}
+
+
 ### visual
 ###
 set visualESET {
@@ -1829,18 +1847,18 @@ proc monpol_zCheckErr {{app _}} {
 ###   position
 
 set nA {
-  {number_ybins int 10 {
+  {number_ybins int 100 {
     "number\nof y-bins" "number of bins within the y-axis interval" "" y} 1 200}
-  {number_zbins int 10 {
+  {number_zbins int 100 {
     "number\nof z-bins" "number of bins within the z-axis interval" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\ny-value [cm]" "" "" w} -10000 10000 1}
-  {max_y float 1000 {"maximal\ny-value [cm]" "" "" W} -10000 10000 1}
+  {min_y float -6 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 6 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -1000 {"minimal\nz-value [cm]" "" "" h} -10000 10000 1}
-  {max_z float 1000 {"maximal\nz-value [cm]" "" "" H} -10000 10000 1}
+  {min_z float -6 {"minimal\nz-value [cm]" "" "" h} -1000 1000 1}
+  {max_z float 6 {"maximal\nz-value [cm]" "" "" H} -1000 1000 1}
 }
 
 set mon2_posESET [concat [genFE2 pos] $nA $mA $pA]
@@ -1859,16 +1877,16 @@ proc monitorpol_posCheckErr {{app _}} {
 ###   div
 
 set nA {
-  {number_ybins int 10 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof z-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof z-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -90 {"minimal\ny-value [deg]" "" "" w} -180 180 1}
-  {max_y float 90 {"maximal\ny-value [deg]" "" "" W} -180 180 1}
+  {min_y float -3 {"minimal\ny-value [deg]" "" "" w} -180 180 1}
+  {max_y float 3 {"maximal\ny-value [deg]" "" "" W} -180 180 1}
   {}
-  {min_z float -90 {"minimal\nz-value [deg]" "" "" h} -180 180 1}
-  {max_z float 90 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
+  {min_z float -3 {"minimal\nz-value [deg]" "" "" h} -180 180 1}
+  {max_z float 3 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
 }
 
 set mon2_divESET [concat [genFE2 div] $nA $mA $pA]
@@ -1899,16 +1917,16 @@ proc mon2_kdivCheckErr {{app _}} {
 ###   y_divy
 
 set nA {
-  {number_ybins int 10 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof divy-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof divy-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
-  {max_y float 1000 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
+  {min_y float -10 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 10 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -10 {"minimal\ndivy-value [deg]" "" "" h} -90 90 1}
-  {max_z float 10 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
+  {min_z float -3 {"minimal\ndivy-value [deg]" "" "" h} -90 90 1}
+  {max_z float 3 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
 }
 
 set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA]
@@ -1921,16 +1939,16 @@ proc mon2_y_divyCheckErr {{app _}} {
 ###   z_divz
 
 set nA {
-  {number_ybins int 10 {"number\nof z-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof divz-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof z-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof divz-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\nz-value [cm]" "" "" w} -1000 1000 1}
-  {max_y float 1000 {"maximal\nz-value [cm]" "" "" W} -1000 1000 1}
+  {min_y float -10 {"minimal\nz-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 10 {"maximal\nz-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -10 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
-  {max_z float 10 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
+  {min_z float -3 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
+  {max_z float 3 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
 }
 set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA]
 proc mon2_z_divzCheckErr {{app _}} {
@@ -1942,13 +1960,13 @@ proc mon2_z_divzCheckErr {{app _}} {
 ###   tof
 
 set nA {
-  {number_ybins int 10 {"number of\nTOF-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number of\nwavelength-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number of\nTOF-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number of\nwavelength-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_tof float -1000 {"minimal\ntof-value [ms]" "" "" w} -10000 10000 1}
-  {max_tof float 1000 {"maximal\ntof-value [ms]" "" "" W} -10000 10000 1}
+  {min_tof float 0 {"minimal\ntof-value [ms]" "" "" w} -10000 10000 1}
+  {max_tof float 20 {"maximal\ntof-value [ms]" "" "" W} -10000 10000 1}
   {}
   {min_wl float 0.1 {
     "minimal\nwavelength [A]" "lower bound of the monitored interval" "" m} ge0 "" 1}
@@ -1974,8 +1992,8 @@ set mA {
   {min_wl float 0.1 {"minimal\nwavelength [A]" "" "" w} -10000 10000 1}
   {max_wl float 20 {"maximal\nwavelength [A]" "" "" W} -10000 10000 1}
   {}
-  {min_div float -10 {"minimal\ndivergence [deg]" "lower bound of the monitored interval" "" h}}
-  {max_div float 10 {"maximal\ndivergence [deg]" "upper bound of the monitored interval" "" H}}
+  {min_div float -3 {"minimal\ndivergence [deg]" "lower bound of the monitored interval" "" h}}
+  {max_div float 3 {"maximal\ndivergence [deg]" "upper bound of the monitored interval" "" H}}
   {}
   {conmin float -90 {"constrain\nmin [deg]"
     "this defines a constraint in the divergence perpendicular to the selected one" "" c}}
@@ -2486,7 +2504,7 @@ proc eval_inelastCheckErr {{app _}} {
   return [checkMiMaErr mint maxt "" $app]
 }
 
-### collimator
+### collimator_soller
 ###
 set collimator_sollerESET {
   {"averaged soller collimation" header}
@@ -2517,6 +2535,61 @@ proc collimator_sollerCheckErr {{app _}} {
     return 1
   }
   return 0
+}
+
+### collimator
+###
+set collimatorESET {
+  {sc_en_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of the soller collimator: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
+  {sc_en_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {}
+  {sc_ex_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of the soller collimator:: width in cm"  "" W} gt0 "" 1}
+  {sc_ex_height float 10 {
+    "exit\nheight [cm]"
+    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+  {sc_len float "" {
+    "length [cm]" "length of the collimator in cm" "" l} ge0 "" 1}
+  {sc_channels int "" {
+    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge0}
+  {sc_sp_width float "" {
+    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
+}
+
+### collimator_radial
+###
+set collimator_radialESET {
+  {rc_angle float 90 {
+    "theta [deg]"
+    "hor. direction to the centre of the collimator in deg range: [-180,180]\n 0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
+  {rc_en_width float 120 {
+    "width [deg]"
+    "width of the radial collimator in deg\nedges are supposed to point to the origin, i.e. the centre of the sample"  "" w} gt0 "" 1}
+  {rc_osc_width float 9 {
+    "oscillation\nwidth [deg]"
+    "full width amplitude of oscillation of the radial collimator in deg\nactual angle is randomly chosen\nosc.width = 0 means: no oscillation regarded"  "" o} ge0 "" 1}
+  {}
+  {rc_en_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {rc_ex_height float 10 {
+    "exit\nheight [cm]"
+    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+  {}
+  {rc_dist float 20 {
+    "distance [cm]" "distance of the collimator entrance from the origin (i.e. the centre of the sample) in cm" "" d} ge0 "" 1}
+  {rc_len float 10 {
+    "length [cm]" "length of the collimator in cm, i.e. distance between entrance and exit of a channel" "" l} gt0 "" 1}
+  {}
+  {rc_channels int "" {
+    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge1}
+  {rc_sp_width float "" {
+    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
 }
 
 
