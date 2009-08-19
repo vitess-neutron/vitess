@@ -37,6 +37,7 @@ spacewindow_multiple \
 space \
 detector \
 eval_elast \
+eval_elast2 \
 eval_inelast \
 frame \
 guide \
@@ -156,6 +157,9 @@ monitorpol_pos : monitorpol_pos.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 eval_elast : eval_elast.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+eval_elast2 : eval_elast2.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 velselect : velselect.c $(TOOL)
@@ -302,3 +306,4 @@ Copy:
 
 clean :
 	-rm -f *.o $(ALL)
+

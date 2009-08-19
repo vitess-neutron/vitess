@@ -37,23 +37,24 @@ EOS
 # tool objects
 my @Obj = qw(init general intersection matrix sample);
 
-# modules which need TOOL (init general)
+# modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape spin_reset capture_flux);
 
 # modules which need ITOOL (=TOOL + intersection)
-my @CI = qw(chopper_disc chopper_fermi collimator_soller
+my @CI = qw(chopper_disc chopper_fermi collimator_soller collimator
 	    slit grid source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_inelast frame guide
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_he3 flipper_coil
 	    pol_mirror
-	    precessionfield
+	    collimator_radial
+	    precessionfield sesans_field
 	    sample_elasticisotr sample_inelast
 	    sample_reflectom
 	    define_direction
@@ -65,7 +66,7 @@ my @CM = qw(detector eval_elast eval_inelast frame guide
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
 # modules which need STOOL (=MTOOL + sample)
-my @CS = qw(sample_powder sample_s_q sample_sans);
+my @CS = qw(sample_powder sample_s_q sample_sans sample_environment);
 
 my @Gexe = qw(bender visual sm_ensemble dist_time);
 
@@ -343,7 +344,8 @@ foreach (split "\n", $s) {
   s/ +/ /;
   s/ $//;
   tr/|/\\/;
-  print "$_\n";
+  print "$_
+\n";
 }
 
 
@@ -373,3 +375,4 @@ sub subRule {
     $s .= $_;
   }
 }
+

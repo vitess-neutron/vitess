@@ -11,6 +11,7 @@
 /* 1.5  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                */
 /* 1.6  Feb 2004  K. Lieutenant  'FullParName' + ERROR included; check of 'kind' out of loop */
 /* 1.7  Nov 2005  K. Lieutenant  transformation direction -> scattering angles added         */
+/* 1.7a Jun 2009  A. Houben      increased NCENTER from 100 to 200                           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -24,7 +25,7 @@
 #include "softabort.h"
 
 #define BINS   5000
-#define NCENTER 100
+#define NCENTER 200
 
 
 /* globale variable */
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast 1.7");
+	print_module_name("eval_elast 1.7a");
 	OwnInit(argc, argv);
 
 	switch (kind) 
@@ -403,3 +404,4 @@ void OwnInit(int argc, char *argv[])
 	if (bLogBinning && m==0.0)
 		Error("lower bound value must not be zero for logarithmic binning"); 
 }
+

@@ -55,10 +55,9 @@
 #endif
 
 typedef enum
-{	VT_CUBE    = 1,
-	VT_CYL     = 2,
-	VT_SPHERE  = 3,
-	VT_HOL_CYL = 4
+{	VT_CUBE   = 1,
+	VT_CYL    = 2,
+	VT_SPHERE = 3
 }
 SampleGeom;
 
@@ -69,7 +68,6 @@ typedef enum
 	VT_GUIDE       =  11,
 	VT_BENDER      =  12,
 	VT_COLLIMATOR  =  13,
-	VT_RAD_COLLIM  =  14,
 	VT_SM_ENSEMBLE =  15,
 	VT_SPACE       =  20,
 	VT_WINDOW      =  21,
@@ -88,7 +86,6 @@ typedef enum
 	VT_RES_DRABKIN =  59,
 	VT_PREC_FIELD  =  60,
 	VT_ROT_FIELD   =  61,
-	VT_SESANS_FIELD=  62,
 	VT_DETECTOR    =  71,
 	VT_SMPL_EL_ISO =  81,
 	VT_SMPL_INELAST=  83,
@@ -97,13 +94,13 @@ typedef enum
 	VT_SMPL_S_Q    =  86,
 	VT_SMPL_SANS   =  87,
 	VT_SMPL_REFL   =  89,
-	VT_SMPL_ENVIRON=  90,
 	VT_MONITOR_1   = 101,
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
 	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
+	VT_EVAL_ELAST2 = 222,
 	VT_EVAL_INELAST= 112,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
@@ -168,15 +165,17 @@ Neutron;
 
 typedef struct
 {
+      double height, r;
+}
+CylinderType;
+
+
+typedef struct
+{
       double height, width, thickness;
 }
 CubeType;
 
-typedef struct
-{
-      double height, r;
-}
-CylinderType;
 
 typedef struct
 {
@@ -184,19 +183,12 @@ typedef struct
 }
 BallType;
 
-typedef struct
-{
-      double h_out, h_in, r_out, r_in;
-}
-HolCylType;
-
 
 typedef union
 {
-    CubeType     Cube;
     CylinderType Cyl;
+    CubeType     Cube;
     BallType     Ball;
-    HolCylType   HCyl;
 }
 SampleGeomType;
 
@@ -209,7 +201,6 @@ typedef struct
   SampleGeomType SG;
 }
 SampleType;
-
 
 typedef struct
 {
@@ -240,7 +231,6 @@ double DistrGauss(double Module, double Sigma);
 
 double sq   (double Value);                        /* = Value*Value*/
 double atan0(double a, double b);
-double Round(double value);
 void   Exchange(double* pValue1, double* pValue2);
 double Min(double value1, double value2);
 double Max(double value1, double value2);
@@ -282,4 +272,5 @@ void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
 #endif
+
 
