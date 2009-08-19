@@ -29,7 +29,7 @@
 
 #include "init.h"
 
-#define MAX_COL 4   /* max. number of count rates written separately for different colours
+#define MAX_COL 6   /* max. number of count rates written separately for different colours
                        0 means no separate rates writable */
 #define NUM_EOP 3   /* number of end-of-part lines that can be treated in 'instrument.inf' */
 
@@ -74,7 +74,7 @@ static long       TracePoints=FALSE;     /* creates dot for every written output
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static const char VITESS_VERSION[] = "2.8";
+static const char VITESS_VERSION[] = "2.9";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;

@@ -1,6 +1,8 @@
 #ifndef SAMPLE_H
 #define SAMPLE_H
 
+#include "intersection.h"
+
 void InitSample  (SampleType *Sample);
 void ReadCube    (FILE *SampleFile, SampleType *Sample);
 void ReadCylinder(FILE *SampleFile, SampleType *Sample);
@@ -16,6 +18,6 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double l1,
 
 long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
-                             long* pNisp);
+                             long* pNisp, VtDir eDir);
 
 #endif

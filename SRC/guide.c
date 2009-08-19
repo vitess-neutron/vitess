@@ -34,6 +34,7 @@
 /* 2.11  Oct 2004  K. Lieutenant  curvature to the right by negative radius                 */
 /* 2.12  May 2005  K. Lieutenant  elliptic shape by focus point                             */
 /* 2.13  May 2008  K. Lieutenant  shape defined in file                                     */
+/* 2.14  Oct 2008  K. Lieutenant  attenuation included                                      */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -111,7 +112,9 @@ double GuideEntranceHeight=0.0,
        dDeltaX, dDeltaY,     /* length in x- and y-direction of the total guide  */
        beta, beta_ges,       /* angle of declination between 2 pieces  and of the total guide */
        spacer=0.0,
-       surfacerough=0.0;     /* parameter which characterizes the waviness of the guide surface */
+       surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
+       MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
+       MuAbs =0.0;           /* macroscopic absorption coeff. in 1/cm */
 double *Xpce, *Ypce, *Zpce,  /* list of x-pos., width and height at beginning and end of pieces */
        *Wchan;               /* list of widths of channel at beginning and end of each piece */
 
@@ -154,8 +157,9 @@ int main(int argc, char *argv[])
 	       nDataMax;
 	short  test;
 
-	double dXpce,              /* length of a piece incl. diff. in y- or z- position */
-	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece         */
+	double pathlen,            /* total neutron pathlength in the guide              */
+	       dXpce,              /* length of a piece incl. diff. in y- or z- position */
+	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece          */
 	       dDelYr, dDelYl,     /* difference in y-position of the left and right side of a piece resp. */
 	       Length1, Length2,   /* length of a piece incl. diff. in z- or y-position resp. */
 	       Length2r,Length2l,  /* length of a piece incl. diff. in y-position.
@@ -175,7 +179,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.13");
+	print_module_name("guide 2.14");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -553,8 +557,11 @@ int main(int argc, char *argv[])
 			/****************************************************************************************/
 			Output = InputNeutrons[i];
 
+			pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
+
 			Output.Position[0]=0.0;
 			Output.Time += TimeOF2;
+			Output.Probability*=exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
 
 			WriteNeutron(&Output);
 		}
@@ -663,6 +670,13 @@ void OwnInit   (int argc, char *argv[])
 				  break;                    /*                 2: curved (circular)                  */
 				case 'Z':                   /*                 3: parabolic                          */
 				  eGuideShapeZ = atol(arg); /*                 4: elliptic                           */
+				  break;
+
+				case 'M':
+				  MuScat =  atof(arg); /* macroscopic scattering coeff. in 1/cm */
+				  break;
+				case 'm':
+				  MuAbs  =  atof(arg); /* macroscopic absorption coeff. in 1/cm */
 				  break;
 
 				case 'b':

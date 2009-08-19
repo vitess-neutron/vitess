@@ -13,6 +13,7 @@
 #include "intersection.h"
 #include "sample.h"
 #include "matrix.h"
+#include "message.h"
 
 
 /******************************/
@@ -225,11 +226,11 @@ int ReadTilComment(char* pBuffer, FILE* pSampleFile)
 /*                in its position (from the (1,0,0) direction      */
 /*                                                                 */
 void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
-                        double DetFac, double ScProb, double OutTheta,
-                        double OutPhi, SampleType *Sample,
+                        double DetFac, double ScProb, double ScTheta,
+                        double ScPhi, SampleType *Sample,
                         double RotMatrixNeut[3][3], double RotMatrixSmpl[3][3])
 {
-	Neutron    OutNeutron;
+	Neutron    OutNeut;
 	double     Las, t, Atten, Lbs;
 	VectorType OutISP[2];
 	long       nisp;
@@ -238,48 +239,49 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
 	Lbs = DistVector(Neut->Position, SP); /*including the distance to the sample*/
 
 	/* initialize output data of the neutron */
-	memcpy(&OutNeutron, Neut, sizeof(Neutron));
-
-	/* set new direction of the neutron */
-	OutNeutron.Vector[0]= cos(OutTheta);
-	OutNeutron.Vector[1]= sin(OutTheta)*cos(OutPhi);
-	OutNeutron.Vector[2]= sin(OutTheta)*sin(OutPhi);
-
-	/* Bring the direction back to the original coordinte system */
-	RotBackVector(RotMatrixNeut, OutNeutron.Vector);
+	memcpy(&OutNeut, Neut, sizeof(Neutron));
 
 	/* put the neutron to the scattering point */
-	CopyVector(SP,OutNeutron.Position);
+	CopyVector(SP,OutNeut.Position);
+
+	/* calculate the new direction in the neutron frame */
+	OutNeut.Vector[0]= cos(ScTheta);
+	OutNeut.Vector[1]= sin(ScTheta)*cos(ScPhi);
+	OutNeut.Vector[2]= sin(ScTheta)*sin(ScPhi);
+
+	/* bring the direction to the original co-ordinate system */
+	RotBackVector(RotMatrixNeut, OutNeut.Vector);
 
 	/* ok the neutron is at SP and has its new Direction */
 	/* find the intersections with the sample walls      */
-	if(NeutronIntersectsSample(&OutNeutron, Sample, RotMatrixSmpl, OutISP, &nisp)) 
+	if(NeutronIntersectsSample(&OutNeut, Sample, RotMatrixSmpl, OutISP, &nisp, VT_INSIDE)) 
 	{
 		/* Distance between SP and OutISP, Length atfter scattering */
 		Las = DistVector(SP, OutISP[1]);
 
 		/* ok, neutron leaves the sample at OutISP[1] */
-		CopyVector(OutISP[1],OutNeutron.Position);
+		CopyVector(OutISP[1],OutNeut.Position);
 
 		/* it takes t sec to travel through the sample */
-		t = (Las+Lbs)/V_FROM_LAMBDA(OutNeutron.Wavelength);
+		t = (Las+Lbs)/V_FROM_LAMBDA(OutNeut.Wavelength);
 
 		/* and the neutron may be attenuated                               */
 		/* also scale MuAbs for the neutrons velocity                        */
 		/* MuAbs is proportional to 1/v, i.e. proportional to the wavelength */
 		/* reference wavelength is usually 1.798 Ang                       */
-		Atten = exp(-(Las+Ls)*(g_fMuTot + g_fMuAbs*OutNeutron.Wavelength/1.798));
+		Atten = exp(-(Las+Ls)*(g_fMuTot + g_fMuAbs*OutNeut.Wavelength/1.798));
 
 		/* now put all together  */
-		OutNeutron.Time        = Neut->Time+t;
-		OutNeutron.Probability = Neut->Probability*DetFac*Atten*ScProb;
+		OutNeut.Time        = Neut->Time+t;
+		OutNeut.Probability = Neut->Probability*DetFac*Atten*ScProb;
 
 		/* write the Neutron to the output file   */
-		WriteNeutron(&OutNeutron);
+		WriteNeutron(&OutNeut);
 	} 
 	else 
 	{ /* Uhh, here is something terribly wrong */
-		Error("(internal): neutron leaves the sample without intersecting its wall");
+		// Error("(internal): neutron leaves the sample without intersecting its wall");
+		CountMessageID(ENV_TRAJ_OUTSIDE, OutNeut.ID);
 	}
 }
 
@@ -302,7 +304,7 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
 /****************************************************************/
 long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
-                             long* pNisp) 
+                             long* pNisp, VtDir eDir) 
 {
 	double t[2];
 	VectorType Position, Direction;
@@ -319,9 +321,10 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 
 	/* Searching the distances t0 and t1 to the intersection points with the sample */
 	switch (pSample->Type)
-	{	case VT_CUBE  : rc=LineIntersectsCube    (Position, Direction, &(pSample->SG.Cube), t); break;
-		case VT_CYL   : rc=LineIntersectsCylinder(Position, Direction, &(pSample->SG.Cyl),  t); break;
-		case VT_SPHERE: rc=LineIntersectsSphere  (Position, Direction, &(pSample->SG.Ball), t); break;
+	{	case VT_CUBE   : rc=LineIntersectsCube     (Position, Direction, &(pSample->SG.Cube), t); break;
+		case VT_CYL    : rc=LineIntersectsCylinder (Position, Direction, &(pSample->SG.Cyl ), t); break;
+		case VT_SPHERE : rc=LineIntersectsSphere   (Position, Direction, &(pSample->SG.Ball), t); break;
+		case VT_HOL_CYL: rc=LineIntersectsHollowCyl(Position, Direction, &(pSample->SG.HCyl), t, eDir); break;
 		default:      Error("Sample type unknown");
 	}
 

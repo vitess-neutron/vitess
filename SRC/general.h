@@ -55,9 +55,10 @@
 #endif
 
 typedef enum
-{	VT_CUBE   = 1,
-	VT_CYL    = 2,
-	VT_SPHERE = 3
+{	VT_CUBE    = 1,
+	VT_CYL     = 2,
+	VT_SPHERE  = 3,
+	VT_HOL_CYL = 4
 }
 SampleGeom;
 
@@ -96,6 +97,7 @@ typedef enum
 	VT_SMPL_S_Q    =  86,
 	VT_SMPL_SANS   =  87,
 	VT_SMPL_REFL   =  89,
+	VT_SMPL_ENVIRON=  90,
 	VT_MONITOR_1   = 101,
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
@@ -166,17 +168,15 @@ Neutron;
 
 typedef struct
 {
-      double height, r;
-}
-CylinderType;
-
-
-typedef struct
-{
       double height, width, thickness;
 }
 CubeType;
 
+typedef struct
+{
+      double height, r;
+}
+CylinderType;
 
 typedef struct
 {
@@ -184,12 +184,19 @@ typedef struct
 }
 BallType;
 
+typedef struct
+{
+      double h_out, h_in, r_out, r_in;
+}
+HolCylType;
+
 
 typedef union
 {
-    CylinderType Cyl;
     CubeType     Cube;
+    CylinderType Cyl;
     BallType     Ball;
+    HolCylType   HCyl;
 }
 SampleGeomType;
 
@@ -202,6 +209,7 @@ typedef struct
   SampleGeomType SG;
 }
 SampleType;
+
 
 typedef struct
 {
