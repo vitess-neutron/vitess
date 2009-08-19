@@ -165,8 +165,9 @@ int main(int argc, char *argv[])
 	       nDataMax;
 	short  test;
 
-	double dXpce,              /* length of a piece incl. diff. in y- or z- position */
-	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece         */
+	double pathlen,            /* total neutron pathlength in the guide              */
+	       dXpce,              /* length of a piece incl. diff. in y- or z- position */
+	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece          */
 	       dDelYr, dDelYl,     /* difference in y-position of the left and right side of a piece resp. */
 	       Length1, Length2,   /* length of a piece incl. diff. in z- or y-position resp. */
 	       Length2r,Length2l,  /* length of a piece incl. diff. in y-position.
@@ -567,8 +568,11 @@ int main(int argc, char *argv[])
 			/****************************************************************************************/
 			Output = InputNeutrons[i];
 
+			pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
+
 			Output.Position[0]=0.0;
 			Output.Time += TimeOF2;
+			Output.Probability*=exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
 
 			WriteNeutron(&Output);
 		}
@@ -688,6 +692,13 @@ void OwnInit   (int argc, char *argv[])
 				  break;                    /*                 2: curved (circular)                  */
 				case 'Z':                   /*                 3: parabolic                          */
 				  eGuideShapeZ = atol(arg); /*                 4: elliptic                           */
+				  break;
+
+				case 'M':
+				  MuScat =  atof(arg); /* macroscopic scattering coeff. in 1/cm */
+				  break;
+				case 'm':
+				  MuAbs  =  atof(arg); /* macroscopic absorption coeff. in 1/cm */
 				  break;
 
 				case 'b':
@@ -975,6 +986,7 @@ double Width(double dLength)
 			dWidth = sqrt((L_end-dLength)/AparY);
 			break;
 		case VT_ELLIPTIC:
+			/* first approximation */
 			AxisY   = 0.5*fabs((sq(dTotalLength+FocusY)*sq(GuideExitWidth) - sq(FocusY*GuideEntranceWidth))
 			                   /(FocusY*sq(GuideEntranceWidth) - (dTotalLength+FocusY)*sq(GuideExitWidth)));
 			L_end   = AxisY - FocusY;
