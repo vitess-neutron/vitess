@@ -70,6 +70,8 @@ ALL : \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\collimator_soller.exe" \
+	"$(OD)\collimator.exe" \
+	"$(OD)\collimator_radial.exe" \
 	"$(OD)\slit.exe" \
 	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
@@ -78,6 +80,7 @@ ALL : \
 	"$(OD)\space.exe" \
 	"$(OD)\detector.exe" \
 	"$(OD)\eval_elast.exe" \
+	"$(OD)\eval_elast2.exe" \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
@@ -89,6 +92,7 @@ ALL : \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
 	"$(OD)\precessionfield.exe" \
+	"$(OD)\sesans_field.exe" \
 	"$(OD)\sample_elasticisotr.exe" \
 	"$(OD)\sample_inelast.exe" \
 	"$(OD)\sample_reflectom.exe" \
@@ -101,6 +105,7 @@ ALL : \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
+	"$(OD)\sample_environment.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble.exe" \
@@ -290,6 +295,13 @@ SOURCE=$(SPATH)\collimator_soller.c
 "$(OD)\collimator_soller.exe" : "$(OD)" $(ITOOL) "$(OD)\collimator_soller.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\collimator_soller.pdb" /out:"$(OD)\collimator_soller.exe" "$(IDIR)\collimator_soller.obj" $(ITOOL) 
 
+SOURCE=$(SPATH)\collimator.c
+"$(IDIR)\collimator.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\collimator.exe" : "$(OD)" $(ITOOL) "$(OD)\collimator.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\collimator.pdb" /out:"$(OD)\collimator.exe" "$(IDIR)\collimator.obj" $(ITOOL) 
+
 SOURCE=$(SPATH)\slit.c
 "$(IDIR)\slit.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -332,6 +344,13 @@ SOURCE=$(SPATH)\space.c
 "$(OD)\space.exe" : "$(OD)" $(ITOOL) "$(OD)\space.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\space.pdb" /out:"$(OD)\space.exe" "$(IDIR)\space.obj" $(ITOOL) 
 
+SOURCE=$(SPATH)\collimator_radial.c
+"$(IDIR)\collimator_radial.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\collimator_radial.exe" : "$(OD)" $(MTOOL) "$(OD)\collimator_radial.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\collimator_radial.pdb" /out:"$(OD)\collimator_radial.exe" "$(IDIR)\collimator_radial.obj" $(MTOOL) 
+
 SOURCE=$(SPATH)\detector.c
 "$(IDIR)\detector.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -345,6 +364,13 @@ SOURCE=$(SPATH)\eval_elast.c
 
 "$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\eval_elast2.c
+"$(IDIR)\eval_elast2.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\eval_elast2.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast2.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast2.pdb" /out:"$(OD)\eval_elast2.exe" "$(IDIR)\eval_elast2.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\eval_inelast.c
 "$(IDIR)\eval_inelast.obj" : $(SOURCE)
@@ -422,6 +448,13 @@ SOURCE=$(SPATH)\precessionfield.c
 
 "$(OD)\precessionfield.exe" : "$(OD)" $(MTOOL) "$(OD)\precessionfield.obj" "$(OD)\magneticmap.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\precessionfield.pdb" /out:"$(OD)\precessionfield.exe" "$(IDIR)\precessionfield.obj" $(MTOOL) "$(OD)\magneticmap.obj" 
+
+SOURCE=$(SPATH)\sesans_field.c
+"$(IDIR)\sesans_field.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sesans_field.exe" : "$(OD)" $(MTOOL) "$(OD)\sesans_field.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sesans_field.pdb" /out:"$(OD)\sesans_field.exe" "$(IDIR)\sesans_field.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
@@ -507,6 +540,13 @@ SOURCE=$(SPATH)\sample_sans.c
 "$(OD)\sample_sans.exe" : "$(OD)" $(STOOL) "$(OD)\sample_sans.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sample_sans.pdb" /out:"$(OD)\sample_sans.exe" "$(IDIR)\sample_sans.obj" $(STOOL) 
 
+SOURCE=$(SPATH)\sample_environment.c
+"$(IDIR)\sample_environment.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_environment.exe" : "$(OD)" $(STOOL) "$(OD)\sample_environment.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_environment.pdb" /out:"$(OD)\sample_environment.exe" "$(IDIR)\sample_environment.obj" $(STOOL) 
+
 SOURCE=$(SPATH)\chop_phases.c
 "$(IDIR)\chop_phases.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -571,3 +611,4 @@ SOURCE=$(SPATH)\dist_time.c
 
 "$(OD)\dist_time.exe" : "$(OD)" "$(OD)\dist_time.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\dist_time.pdb" /out:"$(OD)\dist_time.exe" "$(IDIR)\dist_time.obj" "$(OD)\cpgplot.obj"
+

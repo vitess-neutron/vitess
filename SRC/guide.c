@@ -35,6 +35,9 @@
 /* 2.12  May 2005  K. Lieutenant  elliptic shape by focus point                             */
 /* 2.13  May 2008  K. Lieutenant  shape defined in file                                     */
 /* 2.14  Oct 2008  K. Lieutenant  attenuation included                                      */
+/* 2.15  Aug 2009  A. Houben      Simple calculation of the guide area                      */
+/* 2.16  Aug 2009  A. Houben      Write out reflection parameters of each trajectory        */
+/*                                (data is complementary to traceing and writeout)          */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -78,7 +81,8 @@ double Height    (double length);
 double Width     (double length);
 double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double wei_min ,
                                   double *reflectivityl, double* reflectivityr, double* reflectivityt, double* reflectivityb,
-                                  long nDataMax,         double surfacerough,   long keygrav,          long keyabut);
+                                  long nDataMax,         double surfacerough,   long keygrav,          long keyabut, double XpcePos);
+void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity);
 
 
 /******************************/
@@ -89,6 +93,7 @@ long   keyabut  =0,
        nPieces  =1,
        nChannels=1,
        nSpacers =0;
+int    keyReflParam = 2;      /* 0 = only scattered neutrons; 1 = all neutrons; 2 = all neutrons with line feed */
 
 double GuideEntranceHeight=0.0,
        GuideEntranceWidth=0.0,
@@ -115,6 +120,7 @@ double GuideEntranceHeight=0.0,
        surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
        MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
        MuAbs =0.0;           /* macroscopic absorption coeff. in 1/cm */
+double AreaY=0., AreaZ=0.;   /* Approximate area of guide planes in cm**2 */
 double *Xpce, *Ypce, *Zpce,  /* list of x-pos., width and height at beginning and end of pieces */
        *Wchan;               /* list of widths of channel at beginning and end of each piece */
 
@@ -127,11 +133,13 @@ double *RDataL=NULL,         /* Table of reflectivity for guide surface on left 
        *RDataB=NULL;         /* Table of reflectivity for top and bottom plane of the guide */
 
 char  *ShapeFileName="guide_shape.dat";
+char  *ReflParamFileName=NULL;
 char  *ReflFileNameL=NULL;
 char  *ReflFileNameR=NULL;
 char  *ReflFileNameT=NULL;
 char  *ReflFileNameB=NULL;
 
+FILE  *pReflParam=NULL; /* file for writing each reflection */
 FILE  *pReflL=NULL; /* file for describing left plane of guide */
 FILE  *pReflR=NULL; /* file for describing right plane of guide */
 FILE  *pReflT=NULL; /* file for describing top plane of guide */
@@ -157,9 +165,8 @@ int main(int argc, char *argv[])
 	       nDataMax;
 	short  test;
 
-	double pathlen,            /* total neutron pathlength in the guide              */
-	       dXpce,              /* length of a piece incl. diff. in y- or z- position */
-	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece          */
+	double dXpce,              /* length of a piece incl. diff. in y- or z- position */
+	       dDelY,  dDelZ,      /* difference in y- or z-position of a piece         */
 	       dDelYr, dDelYl,     /* difference in y-position of the left and right side of a piece resp. */
 	       Length1, Length2,   /* length of a piece incl. diff. in z- or y-position resp. */
 	       Length2r,Length2l,  /* length of a piece incl. diff. in y-position.
@@ -179,7 +186,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.14");
+	print_module_name("guide 2.16");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -193,12 +200,12 @@ int main(int argc, char *argv[])
 	switch (eGuideShapeY)
 	{	case VT_ELLIPTIC:
 			fprintf(LogFilePtr, "elliptic shape\n");
-			fprintf(LogFilePtr, " maximal width  :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
-			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisY/100.);
-			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Y/100., FocusY/100.);
+			fprintf(LogFilePtr, " maximal width     :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
+			fprintf(LogFilePtr, " long half axis    :%8.3f m\n", AxisY/100.);
+			fprintf(LogFilePtr, " focal points      :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Y/100., FocusY/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			fprintf(LogFilePtr, "parabolic shape    : focal point:%8.3f m after exit\n", 
 			                    (sq(GuideEntranceWidth)*AparY-dTotalLength-1.0/AparY/16.0)/100.);
 			break;
 		case VT_CURVED  :
@@ -214,16 +221,17 @@ int main(int argc, char *argv[])
 			else    fprintf(LogFilePtr, "constant width\n");
 			break;
 	}
+	fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
 	fprintf(LogFilePtr, "Vertical  : ");
 	switch (eGuideShapeZ)
 	{	case VT_ELLIPTIC:
 			fprintf(LogFilePtr, "elliptic shape\n");
-			fprintf(LogFilePtr, " max. height    :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
-			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisZ/100.);
-			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Z/100., FocusZ/100.);
+			fprintf(LogFilePtr, " max. height       :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
+			fprintf(LogFilePtr, " long half axis    :%8.3f m\n", AxisZ/100.);
+			fprintf(LogFilePtr, " focal points      :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Z/100., FocusZ/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			fprintf(LogFilePtr, "parabolic shape    : focal point:%8.3f m after exit\n", 
 			                    (sq(GuideEntranceHeight)*AparZ-dTotalLength-1.0/AparZ/16.0)/100.);
 			break;
 		case VT_CURVED  :
@@ -240,6 +248,7 @@ int main(int argc, char *argv[])
 			break;
 	default: ;
 	}
+	fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
 
 	if (Radius != 0.0)  /* curved guide */
 	{	beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -515,9 +524,9 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				TimeOF1 = PathThroughGuideGravOrder1(&InputNeutrons[i], Guide, wei_min,
+				TimeOF1 = PathThroughGuideGravOrder1(&(InputNeutrons[i]), Guide, wei_min,
 				                                     RDataL, RDataR, RDataT, RDataB, nDataMax,
-				                                     surfacerough, keygrav, keyabut);
+				                                     surfacerough, keygrav, keyabut, Xpce[j]);
 
 				if (TimeOF1 == -1.0) /* trajectory is lost */
 				{	test=FALSE;
@@ -541,7 +550,8 @@ int main(int argc, char *argv[])
 				}
 				TimeOF2 += TimeOF1;
 			}
-
+			
+			if (pReflParam!=NULL && keyReflParam == 2) fprintf(pReflParam, "\n");
 			if (test==FALSE) continue;
 
 			if (fabs(InputNeutrons[i].Position[1]) > 0.5*GuideExitWidth ||
@@ -557,11 +567,8 @@ int main(int argc, char *argv[])
 			/****************************************************************************************/
 			Output = InputNeutrons[i];
 
-			pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
-
 			Output.Position[0]=0.0;
 			Output.Time += TimeOF2;
-			Output.Probability*=exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
 
 			WriteNeutron(&Output);
 		}
@@ -622,6 +629,17 @@ void OwnInit   (int argc, char *argv[])
 					}
 					ReflFileNameB=arg;
 					break;
+				case 'o':  /* Reflection parameter writeout */
+					if( (pReflParam = fopen(FullParName(arg),"w"))!=NULL)
+					{	/*fprintf(LogFilePtr,"ERROR: File %s for creating reflection parameter output could not be created\n",arg);
+						exit(-1);*/
+						fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
+						ReflParamFileName=arg;
+					}
+					break;
+				case 'O':
+				  keyReflParam = atoi(arg); /* 0 = only scattered neutrons; 1 = all neutrons; 2 = all neutrons with line feed */
+				  break;
 
 				case 'S':    /* shape file */
 					ShapeFileName=arg;
@@ -670,13 +688,6 @@ void OwnInit   (int argc, char *argv[])
 				  break;                    /*                 2: curved (circular)                  */
 				case 'Z':                   /*                 3: parabolic                          */
 				  eGuideShapeZ = atol(arg); /*                 4: elliptic                           */
-				  break;
-
-				case 'M':
-				  MuScat =  atof(arg); /* macroscopic scattering coeff. in 1/cm */
-				  break;
-				case 'm':
-				  MuAbs  =  atof(arg); /* macroscopic absorption coeff. in 1/cm */
 				  break;
 
 				case 'b':
@@ -813,6 +824,9 @@ void OwnInit   (int argc, char *argv[])
 			{	if (j==0)
 				{	fprintf(pFile, "# length [m]  width [cm]  height [cm]\n");
 					fprintf(pFile, "#-------------------------------------\n");
+				} else {
+					AreaY += (Ypce[j-1]+Ypce[j])*(Xpce[j]-Xpce[j-1]);
+					AreaZ += (Zpce[j-1]+Zpce[j])*(Xpce[j]-Xpce[j-1]);
 				}
 				fprintf(pFile, "%10.3f  %10.4f  %10.4f\n", Xpce[j]/100.0, 2.0*Ypce[j], 2.0*Zpce[j]);
 			}
@@ -882,6 +896,7 @@ void OwnCleanup()
 	if (Ypce !=NULL) free(Ypce );
 	if (Zpce !=NULL) free(Zpce );
 	if (Wchan!=NULL) free(Wchan);
+	if (pReflParam!=NULL) fclose(pReflParam);
 }/* End OwnCleanup */
 
 
@@ -992,7 +1007,7 @@ double Width(double dLength)
 double
 PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double  wei_min ,
 									double *reflectivityl, double* reflectivityr, double* reflectivityt, double* reflectivityb,
-                           long nDataMax,         double surfacerough,   long    keygrav,       long    keyabut)
+                           long nDataMax,         double surfacerough,   long    keygrav,       long    keyabut, double XpcePos)
 {
 	/***********************************************************************************/
 	/* This routine calculates the trajectory a neutron follows through a simple       */
@@ -1008,7 +1023,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 	/***********************************************************************************/
 
 	int     k, ThisCollision=5, datanumber;
-	double  degangular;
+	double  degangular, ThisReflectivity=0.;
 	double  TimeOF, TimeOFmin;
 	double  TimeOFTotal=0.0;
 	double  VelocityReal, DOTP;
@@ -1156,23 +1171,30 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 
 		/* Determine number of reflectivity value in reflectivty file */
 		datanumber =  (int)(degangular*1000.0/(NearestNeutron.Wavelength));
-		if (datanumber >= nDataMax) return(-1.0);
+		if (datanumber >= nDataMax) {
+			WriteReflParam(10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, 0.);
+			return(-1.0);
+		}
 
 		/*Choose the reflectivity file and multiply probability by  reflectivity value */
 		switch(ThisCollision)
 		{
-			case 0: NearestNeutron.Probability *= reflectivityt[datanumber]; break; /* top plane */
-			case 1: NearestNeutron.Probability *= reflectivityb[datanumber]; break; /* bottom plane */
-			case 2: NearestNeutron.Probability *= reflectivityl[datanumber]; break; /* left plane */
-			case 3: NearestNeutron.Probability *= reflectivityr[datanumber]; break; /* right plane */
+			case 0: ThisReflectivity = reflectivityt[datanumber]; break; /* top plane */
+			case 1: ThisReflectivity = reflectivityb[datanumber]; break; /* bottom plane */
+			case 2: ThisReflectivity = reflectivityl[datanumber]; break; /* left plane */
+			case 3: ThisReflectivity = reflectivityr[datanumber]; break; /* right plane */
 			default:
 			{	CountMessageID(GUID_NO_PLANE, NearestNeutron.ID);
 				return(-1.0);
 			}
 		}
+		NearestNeutron.Probability *= ThisReflectivity;
 
-		if (NearestNeutron.Probability < wei_min)
+		if (NearestNeutron.Probability < wei_min){
+			NearestNeutron.Probability = 0.;
+			WriteReflParam(10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
 			return(-1.0);
+		}
 
 
 		/***********************************************************************************/
@@ -1207,5 +1229,69 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		ThisNeutron->Probability = NearestNeutron.Probability;
 
 		TimeOFTotal =  TimeOFTotal + TimeOFmin;
+		WriteReflParam(0, ThisNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
 	}
 }
+
+void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity)
+{
+	if (pReflParam!=NULL)
+	{
+//fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
+		char   *fstr="%c%c%09lu     %c     %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5d  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
+		double DivY, DivZ, mVal, Qz;
+		
+		/*double l = 0.;
+		int ii = 0;
+		VectorType p;
+
+		l = (-ThisGuide->Wall[ThisCollision].D-ThisGuide->Wall[ThisCollision].A*pNeutron->Position[0]-
+			ThisGuide->Wall[ThisCollision].B*pNeutron->Position[1]-ThisGuide->Wall[ThisCollision].C*pNeutron->Position[2])/
+			(ThisGuide->Wall[ThisCollision].A*pNeutron->Vector[0]+ThisGuide->Wall[ThisCollision].B*pNeutron->Vector[1]+
+			ThisGuide->Wall[ThisCollision].C*pNeutron->Vector[2]);
+		for (ii = 0; ii<3; ii++){
+			p[ii] = pNeutron->Position[ii]+l*pNeutron->Vector[ii];
+		}*/
+
+		DivY = (double)atan2(pNeutron->Vector[1], pNeutron->Vector[0]);
+	    DivY *= 180.0/M_PI;
+	    if ((pNeutron->Vector[1]==0.0) && (pNeutron->Vector[0]==0.0))
+	      DivY = 0.0;
+
+	    DivZ = (double)atan2(pNeutron->Vector[2], pNeutron->Vector[0]);
+	    DivZ *= 180.0/M_PI;
+	    if ((pNeutron->Vector[2]==0.0) && (pNeutron->Vector[0]==0.0))
+	      DivZ = 0.0;
+
+		Qz = 4.*M_PI/pNeutron->Wavelength*sin(degangular*M_PI/180.);
+		mVal = Qz/0.02174;
+		
+		if (Mode == 10 && keyReflParam > 0)
+		{
+			fprintf(pReflParam, fstr,
+				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+				'F', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+				pNeutron->Debug,       pNeutron->Color,
+				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+				pNeutron->Position[0]+XpcePos, pNeutron->Position[1], pNeutron->Position[2],
+				//p[0], p[1], p[2],
+				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+				);
+		}
+		if (Mode == 0)
+		{
+			fprintf(pReflParam, fstr,
+				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+				'T', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+				pNeutron->Debug,       pNeutron->Color,
+				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+				pNeutron->Position[0]+XpcePos, pNeutron->Position[1], pNeutron->Position[2],
+				//p[0], p[1], p[2],
+				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+				);
+		}
+	}
+}
+

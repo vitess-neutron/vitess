@@ -79,7 +79,7 @@ proc makeModuleSets {} {
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_inelast} {capture_flux eval_elast eval_inelast}}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast} {capture_flux eval_elast eval_elast2 eval_inelast}}
     {frame {} frame}
     {external_command}
     {trajectories {writeout spin_reset} {writeout spin_reset}}
@@ -817,6 +817,12 @@ set specoptAdd {
   {keyabut radio no {"abutment\nloss"
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
     {yes no} {1 0}}
+  {}
+  {reflparam_filename pareditablefile ""
+    {"reflection list\nfilename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
+  {keyreflparam radio "All neutrons (with linefeed)" {"reflection list\nformat"
+    "Choose if only the scattered neutrons or all neutrons are printed." "" O}
+    {"Scattered neutrons" "All neutrons" "All neutrons (with linefeed)"} {0 1 2}}
 }
 
 set guideESET [concat $guideESET $specoptAdd]
