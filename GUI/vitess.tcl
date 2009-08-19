@@ -28,6 +28,7 @@ set fileDialogSET {
   {"moderator (cws source)"  {.mod .cmo .src}}
   {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
+  {"sample environment" {.env .par .dat}}
   {"powder sample" {.pow .par .dat}}
   {"sample s(q)" {.psq .par .dat}}
   {"sans sample" {.san .par .dat}}
@@ -76,6 +77,7 @@ proc makeModuleSets {} {
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
+    {sample_environment {} sample_environment}
     {detector {} detector}
     {evaluation {capture_flux eval_elast eval_inelast} {capture_flux eval_elast eval_inelast}}
     {frame {} frame}
@@ -778,9 +780,11 @@ set guideESET {
     "piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
   {number_pieces int 1 {
     "number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
-  {rad_curve float 0 {
-    "curvature\n(radius) [m]"
-    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
+  {}
+  {gd_scat float 0 {
+    "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
+  {gd_abs float 0 {
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
@@ -795,6 +799,9 @@ set guideESET {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
     "blade\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
+  {rad_curve float 0 {
+    "curvature\n(radius) [m]"
+    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
 }
 
 
@@ -2021,14 +2028,29 @@ set sampleASET [list \
   [list bphi float ""    [list "Phi \[deg]"    $Refa "" P] 0 360] \
   [list bdphi float ""   [list "dPhi \[deg]"   $Refa "" p] 0 180] \
   [list reprate int 1 [list repetitions $Refb "" A] 0 1000000 1] \
-  {incoscat radio no {
-    "incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I}
+  {incoscat radio no {"incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I}
     {yes no} {1 0}} \
 ]
 
 
 ### sample
-###   file description for different sample types
+###   file description for sample environment and different sample types
+
+### sample environment
+###   env file description
+
+set envESET {
+  {env_thick float "" {"thickness [cm]" "thickness of the hollow cylinder surrounding the sample"} gt0}
+  {env_wid float "" {"diameter [cm]" "outer width of the hollow cylinder"} gt0}
+  {env_hei float "" {"height [cm]" "outer height of the cylinder"} gt0}
+  {env_sffile pareditablefile "" {"structure\nfactor file"} r}
+  {Scattering header}
+  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
+  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
+  {env_abs float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
+  {env_ucv float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 50}
+}
+
 
 set Refa "Position of the sample centre relative to the coordinate system defined by the preceding module."
 set Refb "Component of the vector describing the orientation of the sample.
@@ -2173,11 +2195,32 @@ proc sampleCheckErr {{app _}} {
   return 0
 }
 
+
+### sample
+###   environment
+
+set sample_environmentESET {
+  {ev_x float "" {"x [cm]" "x-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" x}}
+  {ev_y float 0.0 {"y [cm]" "y-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" y}}
+  {ev_z float 0.0 {"z [cm]" "z-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" z}}
+  {ev_file pareditablefile environ.env {"parameter file" 
+    "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
+  {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment before sample" "" r} {in out} {1 2}}
+}
+
+### proc sample_environmentCheckErr {{app _}} {
+###   return [sampleCheckErr $app]
+### }
+
 ### sample
 ###   powder
 set sample_powderESET [concat $sampleASET {
   {samplefile pareditablefile psample.par {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r pow 1}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
+    {yes no} {1 0}}
 }]
 
 proc sample_powderCheckErr {{app _}} {
@@ -3202,6 +3245,25 @@ proc serializePowFile {f mode var app} {
 
 proc serializePsqFile {f mode var app} {
   serializeSampleFile $f $mode $var $app psq
+}
+
+proc serializeEnvFile {f mode var app} {
+  set nlist {env_thick env_wid env_hei env_sffile env_inc env_sca env_abs env_ucv}
+  foreach l $nlist {
+    upvar #0 $l$app $l
+  }
+  if {$mode == "r"} {
+    foreach l $nlist {catch {unset $l}}
+    if {$f == "0"} return
+    if {[gets $f l0] < 0 || [gets $f l1] < 0 || \
+	    [gets $f l2] < 0 || [gets $f l3] < 0 } return
+    scan $l0 "%g%g%g" env_thick env_wid env_hei
+    set env_sffile $l1
+    scan $l2 "%g%g%g" env_inc env_sca env_abs
+    scan $l3 "%g" env_ucv
+  } else {
+    puts $f "$env_thick $env_wid $env_hei\n$env_sffile\n$env_inc $env_sca $env_abs\n$env_ucv"
+  }
 }
 
 proc serializePolFile {f mode var app} {

@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
 	/* initialisation */
 	Init(argc, argv, VT_RAD_COLLIM);
-	print_module_name("radial collimator 1.0");
+	print_module_name("collimator_radial 1.0");
 	OwnInit(argc, argv);
 
 	AngCntrAct  = AngCentre;
