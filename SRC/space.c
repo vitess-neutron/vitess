@@ -24,7 +24,7 @@ void  OwnInit(int argc, char *argv[]);
 /******************************/
 
 long   ntfs=0, count, k;    	      
-double VelocityReal, N_Wavelength , mu, prob=0.0
+double VelocityReal, N_Wavelength, mu, prob=0.0,
        Length=0.0;          /* distance to end of free flight path along x-axis [cm]    */
 Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */
   
