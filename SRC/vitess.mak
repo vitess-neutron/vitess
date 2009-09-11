@@ -71,7 +71,6 @@ ALL : \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\collimator_soller.exe" \
 	"$(OD)\collimator.exe" \
-	"$(OD)\collimator_radial.exe" \
 	"$(OD)\slit.exe" \
 	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
@@ -91,6 +90,7 @@ ALL : \
 	"$(OD)\polariser_he3.exe" \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
+	"$(OD)\collimator_radial.exe" \
 	"$(OD)\precessionfield.exe" \
 	"$(OD)\sesans_field.exe" \
 	"$(OD)\sample_elasticisotr.exe" \
@@ -344,13 +344,6 @@ SOURCE=$(SPATH)\space.c
 "$(OD)\space.exe" : "$(OD)" $(ITOOL) "$(OD)\space.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\space.pdb" /out:"$(OD)\space.exe" "$(IDIR)\space.obj" $(ITOOL) 
 
-SOURCE=$(SPATH)\collimator_radial.c
-"$(IDIR)\collimator_radial.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\collimator_radial.exe" : "$(OD)" $(MTOOL) "$(OD)\collimator_radial.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\collimator_radial.pdb" /out:"$(OD)\collimator_radial.exe" "$(IDIR)\collimator_radial.obj" $(MTOOL) 
-
 SOURCE=$(SPATH)\detector.c
 "$(IDIR)\detector.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -441,6 +434,13 @@ SOURCE=$(SPATH)\pol_mirror.c
 
 "$(OD)\pol_mirror.exe" : "$(OD)" $(MTOOL) "$(OD)\pol_mirror.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\pol_mirror.pdb" /out:"$(OD)\pol_mirror.exe" "$(IDIR)\pol_mirror.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\collimator_radial.c
+"$(IDIR)\collimator_radial.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\collimator_radial.exe" : "$(OD)" $(MTOOL) "$(OD)\collimator_radial.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\collimator_radial.pdb" /out:"$(OD)\collimator_radial.exe" "$(IDIR)\collimator_radial.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\precessionfield.c
 "$(IDIR)\precessionfield.obj" : $(SOURCE)
@@ -611,4 +611,3 @@ SOURCE=$(SPATH)\dist_time.c
 
 "$(OD)\dist_time.exe" : "$(OD)" "$(OD)\dist_time.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\dist_time.pdb" /out:"$(OD)\dist_time.exe" "$(IDIR)\dist_time.obj" "$(OD)\cpgplot.obj"
-

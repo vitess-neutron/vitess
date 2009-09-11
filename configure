@@ -1,0 +1,207 @@
+#!/usr/bin/perl
+
+# Script to
+# + test a Tcl/Tk unix installation
+# + install Vitess binaries
+use strict;
+
+my ($wish, $tarfile, $isLinux, $anyErr, $gtar, $tar, $gunzip, $ldd, $verbose, $patchfile);
+my $installdir = './';
+
+while ($_ = shift) {
+  if (/^-(.)/) {
+    if ($1 eq 'v') {
+      $verbose = 1;
+    } elsif ($1 eq 'w') {
+      $wish = shift;
+    } elsif ($1 eq 'i') {
+      $installdir = shift;
+    } elsif ($1 eq 'p') {
+      $patchfile = shift;
+    } else {
+      usage();
+    }
+  } else {
+    $tarfile = $_;
+  }
+}
+
+myexit('please specify a valid installation directory!')
+  unless $installdir && -d $installdir;
+
+my $sysapp = mySystem();
+
+if ($wish eq '') {
+  $wish = findImage('bltwish');
+  $wish = findImage('wish') unless -x $wish;
+}
+
+myexit ('Cannot find a Tcl/Tk wish executable. Please install Tcl/Tk first!')
+  unless $wish ne '' && -x $wish;
+
+#check version of wish
+$_ = `echo 'puts \$tk_version; exit' | $wish 2>&1`;
+if (/couldn't connect to display/) {
+  myexit("Please set a valid display environment variable to test and install!\n")
+    if $verbose;
+} else {
+  chomp;
+  if ($_ ne '' && $_ < 8.2) {
+    print "Version $_ of $wish too old (elder than 8.2)!\n";
+    usage();
+  }
+}
+#print "sysapp $sysapp  wish :$wish:  installdir :$installdir:  tarfile :$tarfile:\n";
+
+# de-tar ball if given
+if (-s $tarfile) {
+  myexit("installdir must exist as parent directory!") unless -d $installdir;
+  $gtar = findImage('gtar');
+  my $opt = $verbose ? 'xvf' : 'xf';
+  if (-x $gtar) {
+    system "cd $installdir; $gtar -z$opt $tarfile";
+  } else {
+    $tar    = findImage('tar');
+    $gunzip = findImage('gunzip');
+    if (-x $tar && -x $gunzip) {
+      system "cd $installdir; $gunzip $tarfile -c | $tar -$opt -";
+    } else {
+      myexit("missing extraction utilities like gunzip, tar!");
+    }
+  }
+
+  # prepend the correct #! line to file Vitess
+  $_  = `find $installdir -name Vitess`;
+  chomp;
+  myexit("unable to read file Vitess after installation!") unless -s $_;
+  my $ofile = $_;
+  my $nfile = $_ . $$;
+  open F, $_;
+  open OF, ">$nfile";
+  print OF '#!', $wish, "\n";
+  print OF $_ while <F>;
+  close F;
+  close OF;
+  rename $nfile, $ofile;
+  chmod 0755, $ofile;
+}
+
+# check sanity of installed vitess files
+$_  = `find $installdir -name source$sysapp`;
+chomp;
+myexit ("dubious installation, source$sysapp missing!")
+  unless $_ ne '' && -s $_ && -x $_;
+
+/^(.+)\/[^\/]+$/;
+my $tdir = $1;
+
+if (($ldd = findImage('ldd'))) {
+  # test for missing shared libraries
+  foreach my $source (qw(bender)) {
+    my $exe = "$source$sysapp";
+    my $any;
+    open F, "$ldd $tdir/$exe|";
+    while (<F>) {
+      next unless /([^ ]+)[\s]+=>[\s]+(.+)$/;
+      $any = 1;
+      my $lib = $1;
+      my $rest = $2;
+      next unless $lib =~ /^lib/;
+      if ($isLinux) {
+	$rest =~ /\((0x[0-9a-fA-F]+)\)/;
+        $rest = $1;
+	my $ok = $rest ne '';
+	eval '$ok = 0 + ' . $ok if $ok;
+	$anyErr .= "problems with library $lib needed for $exe!\n"
+	  unless $ok;
+      } else {
+	$rest =~ /^(\/[^\s]+)/;
+        $rest = $1;
+	$anyErr .=  "problems with library $lib needed for $exe!\n"
+	  unless $rest &&  -r $rest;
+      }
+    }
+    close F;
+    print "wrong architecture of $exe?\n" unless $any;
+  }
+}
+
+# search for tk library and check version
+
+$_ = `echo 'puts \$tk_library; exit' | $wish 2>&1`;
+if (/couldn't connect to display/) {
+  print "set a valid display environment variable to test tkfbox.tcl!\n"
+    if $verbose;
+} else {
+  chomp;
+  my $tkfbox = "$_/tkfbox.tcl";
+  $anyErr .= "can't read and test $tkfbox\n" unless -s $tkfbox;
+  my $version;
+  open F, $tkfbox;
+  if ($patchfile) {
+    $patchfile = '' unless open OF, ">$patchfile";
+  }
+  while (<F>) {
+    if (/^([\s]+)(\$data\(typeMenuLab\) config -state normal)/) {
+      print OF "$1catch \{ $2 \}\n" if $patchfile;
+    } else {
+      $version = $1 if /\$Id:[\s]+tkfbox\.tcl.+v[\s]+([0-9.]+)/;
+      print OF $_ if $patchfile;
+    }
+  }
+  close F;
+  if ($version ne '') {
+    print "$tkfbox\n\t found version $version\n";
+  } else {
+    print "can't extract version of $tkfbox\n";
+  }
+  if ($patchfile) {
+    close OF;
+    print "Replacement patch file written to $patchfile\n";
+  }
+}
+
+
+print $anyErr ne '' ? $anyErr : "\no.k.\n\n";
+
+
+sub usage {
+  print <<EOS;
+usage:
+configure [-v] [-w wish] [-i installdir] [-p patchfile] [tarfile]
+  -v                verbose
+  -w wish           absolute wish path, default is to search bltwish
+  -w installdir     installation directory, must exsist, default ./
+                    give the parent directory if a tarball is to be installed,
+                    or the full path to an existing directory to be tested
+  -p patchfile      generates a replacement file for tkfbox.tcl to be used
+                    when Tcl/Tk fails on browsing + storing files
+  tarfile           tarfile to be installed in installdir, if given
+EOS
+  exit 0;
+}
+
+sub myexit {
+  print "Error: $_[0]\n";
+  exit(2);
+}
+
+sub findImage {
+  my $p = $_[0];
+  foreach (split ':',$ENV{PATH}) {
+    foreach (<$_/$p>) {
+      return $_ if -x $_;
+    }
+  }
+  '';
+}
+
+sub mySystem {
+  $_ = `uname`;
+  chomp;
+  return "_$_" if $_ ne 'Linux';
+  $isLinux = 1;
+  $_ = `uname -i`;
+  return '_Linux_x86_64' if /x86_64/;
+  '_Linux';
+}

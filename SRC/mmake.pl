@@ -19,7 +19,7 @@ my $mscdir = 'c:|programme|microsoft visual studio .net 2003|vc7';
 #my $spath = 'e:|control|vitess|SRC';
 my $sroot = 'h:|control';
 #my $svnroot = 'h:|control|vitess|trunk';
-my $svnroot = 'h:|V';
+my $svnroot = 'd:|vitcsrc';
 
 my $unixcomment =<<'EOS';
 #
@@ -216,6 +216,8 @@ EOS
   exit;
 }
 
+# Generate a Windows NMAKE file
+# Separate pathes with | here, will be substituted for Windows later
 
 my $s = <<EOS;
 # Vitess NMAKE File
@@ -339,13 +341,12 @@ $rule .= <<'EOS';
 EOS
 subRule($rule, @Gexe);
 
-
+# change to Windows text conventions: use backslash as path separator, reduce blanks
 foreach (split "\n", $s) {
   s/ +/ /;
   s/ $//;
   tr/|/\\/;
-  print "$_
-\n";
+  print "$_\n";
 }
 
 
