@@ -2525,6 +2525,84 @@ proc eval_elastCheckErr {{app _}} {
 }
 
 ### eval
+###   elast2
+set eval_elast2ESET {
+  {psel radio "Scattering angle [deg] and wavelength [A]" {
+    "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+  {psort radio "Intensity" {
+    "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
+  {}
+  {sfile mon2editablefile elast2.eva {
+    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
+  {nbins int 100 {
+    "number\nof bins in X" "number of bins determines the segmentation of the scatt. angle interval and therewith the number of values written to the spectra file" "" n} 1 10000}
+  {minaX float 0 {
+    "minimum X\n[deg]" "lower bound of the evaluation interval" "" x} 1}
+  {maxaX float 0 {
+    "maximum X\n[deg]" "upper bound of the evaluation interval" "" X} 1}
+  {bin_przX float "" {
+    "increase to\n next bin X[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+  {}
+  {mbins int 100 {
+    "number\nof bins in Y" "number of bins determines the segmentation of the wavelength/TOF interval and therewith the number of values written to the spectra file" "" m} 1 10000}
+  {minaY float 0 {
+    "minimum Y\n[A, ms]" "lower bound of the evaluation interval" "" y} 1}
+  {maxaY float 0 {
+    "maximum Y\n[A, ms]" "upper bound of the evaluation interval" "" Y} 1}
+  {bin_przY float "" {
+    "increase to\n next bin Y[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" S} gt0}
+  {}
+  {prob_w radio yes {
+    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
+  {dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {eval_excl radio no {
+    "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {}
+  {fpath float "" {
+    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {}
+  {timevalbegin float -1.e10 {
+    "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
+  {timevalend float 1.e10 {
+    "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {eval_colour int 0 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+}
+
+proc eval_elast2CheckErr {{app _}} {
+  foreach l {tof fpath toff refwave bin_prz nbins mbins}  {
+    upvar #0 $l$app $l
+  }
+  set rc 0
+  if {$nbins == "" && $bin_przX == ""} {
+    showText "!Please specify either the number of bins in X, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$mbins == "" && $bin_przY == ""} {
+    showText "!Please specify either the number of bins in Y, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$tof == "yes"} {
+    if {$fpath == "" || $toff == ""} {
+      showText "!Please specify flight path and time offset"
+      set rc 1
+    }
+  }
+  if [checkMiMaErr minaX maxaX "" $app] {
+    set rc 1
+  }
+  if [checkMiMaErr minaY maxaY "" $app] {
+    set rc 1
+  }
+  return $rc
+}
+
+### eval
 ###   inelast
 
 set eval_inelastESET {
