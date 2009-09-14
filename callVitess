@@ -74,7 +74,7 @@ if (/couldn't connect to display/) {
     if $_ ne '' && $_ < 8.2;
 }
 
-$_ = `find $installdir -name Vitess`;
+$_ = `find -L $installdir -name Vitess`;
 chomp;
 myexit("unable to read file Vitess under $installdir !") unless -s $_;
 my $ofile = $_;
