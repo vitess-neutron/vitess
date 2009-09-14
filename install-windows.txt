@@ -2,7 +2,8 @@
 	for pulsed and continuous sources
 
 
-Hahn-Meitner-Institut Berlin
+Hahn-Meitner-Institut Berlin, now
+Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
 
 Modules:
 	Klaus Lieutenant (klaus.lieutena@ife.no)
@@ -12,24 +13,23 @@ Modules:
 	Friedrich Streffer
 
 GUI Software:
-	Michael Fromme   (fromme@hmi.de)
+	Michael Fromme   (fromme@helmholtz-berlin.de)
 
 
 README
 
-This program is a Tcl/Tk application. It has
-been developed on Unix systems, but runs on windows
-systems, too.
+This program is a Tcl/Tk application. It has been developed on Unix and Windows, 
+and runs fine on both operating systems.
 
-Installation under Windows 95/98/NT/2000/XP
+Installation under Windows
 
 This version came to you as a selfextracting file,
 which has been produced with Inno Setup (by Jordan Russell
 http://www.jrsoftware.org/isinfo.htm).
 
 You may compare the CRC32 or MD5 checksums of the downloaded
-vitess.exe install program with those stated at
-https://www.hmi.de/projects/ess/vitess/checksums.txt
+vitess.exe install program with those stated at the web site
+https://www.helmholtz-berlin.de/vitess
 
 
 If you install the full version with Tcl/Tk + BLT
@@ -56,11 +56,11 @@ CAVEAT:
 
 To uninstall VITESS you might use the uninstall item
 in the command (sub-) menu (like START/VITESS/uninstall)
-or the windows 9x uninstall procedure for software
+or the windows uninstall procedure for software
 (START/settings/system/software or German 
  START/Einstellungen../Systemsteuerung/Software). 
 
-Pipe Command Execution under Windows 9x
+Pipe Command Execution under Windows
 
 If you save a pipe command and execute it as a batch file
 in a MS-DOS shell window, you might observe problems with
