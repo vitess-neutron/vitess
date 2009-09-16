@@ -759,6 +759,7 @@ set guideESET {
     {constant linear curved parabolic elliptic "from file"} {0 1 2 3 4 5}}
   {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane" "" Z}
     {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
+  {}
   {shape_file moneditablefile guide_shape.dat
     {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
   {}
@@ -818,11 +819,30 @@ set specoptAdd {
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
     {yes no} {1 0}}
   {}
+  {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
-    {"reflection list\nfilename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
-  {keyreflparam radio "All neutrons (with linefeed)" {"reflection list\nformat"
-    "Choose if only the scattered neutrons or all neutrons are printed." "" O}
-    {"Scattered neutrons" "All neutrons" "All neutrons (with linefeed)"} {0 1 2}}
+    {"filename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
+  {keyreflparam radio "Trajectories passing the guide end (with linefeed)" {"format"
+    "Choose which trajectories will be printed.\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
+    {"Trajectories passing the guide end" "Trajectories passing the guide end (with linefeed)" "Only successful reflections" "Only successful reflections (with linefeed)" "Trajectories with at least one successful reflection" "Trajectories with at least one successful reflection (with linefeed)" "All trajectories" "All trajectories (with linefeed)"} {1 -1 2 -2 3 -3 4 -4}}
+  {keyreflverbose radio no {"verbose\nlist"
+    "Trajectories are written for each reflection and at the end of each guide piece." "" v}
+    {yes no} {1 0}}
+  {}
+  {keyreflmin int 0 {
+    "minimum number\nof reflections" "Minimum number of reflections." "" e} ge0 "" 0}
+  {keyreflmax int 0 {
+    "maximum number\nof reflections" "Maximum number of reflections. Use 0 for infinity." "" E} ge0 "" 0}
+  {}
+  {keyreflminY int 0 {
+    "minimum number\nof horiz. refl." "Minimum number of reflections on the horizontal guides." "" c} ge0 "" 0}
+  {keyreflmaxY int 0 {
+    "maximum number\nof horiz. refl." "Maximum number of reflections on the horizontal guides. Use 0 for infinity." "" C} ge0 "" 0}
+  {}
+  {keyreflminZ int 0 {
+    "minimum number\nof vert. refl." "Minimum number of reflections on the vertical guides." "" d} ge0 "" 0}
+  {keyreflmaxZ int 0 {
+    "maximum number\nof vert. refl." "Maximum number of reflections on the vertical guides. Use 0 for infinity." "" D} ge0 "" 0}
 }
 
 set guideESET [concat $guideESET $specoptAdd]
