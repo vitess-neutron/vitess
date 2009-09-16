@@ -38,6 +38,8 @@
 /* 2.15  Aug 2009  A. Houben      Simple calculation of the guide area                      */
 /* 2.16  Aug 2009  A. Houben      Write out reflection parameters of each trajectory        */
 /*                                (data is complementary to traceing and writeout)          */
+/* 2.17  Sep 2009  A. Houben      Extended writeout of reflection parameters                */
+/* 2.18  Sep 2009  A. Houben      Changes to shape defined by file & some minor things      */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -70,6 +72,17 @@ typedef enum
 }
 VtShape;
 
+typedef struct
+{
+	int     RefCount;   /* Counts the number of reflections. 
+						   If the last reflection did not occure for any reason, 
+						   RefCount is increased by one, and multiplied by -1 */
+	int     RefCountY;  /* Number of reflection on horizontal guide planes */
+	int     RefCountZ;  /* Number of reflection on vertical guide planes */
+	char    *Output;    /* One line of text for each reflection */
+}
+ReflCond;
+
 
 /******************************/
 /** Prototypes               **/
@@ -81,8 +94,9 @@ double Height    (double length);
 double Width     (double length);
 double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double wei_min ,
                                   double *reflectivityl, double* reflectivityr, double* reflectivityt, double* reflectivityb,
-                                  long nDataMax,         double surfacerough,   long keygrav,          long keyabut, double XpcePos);
-void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity);
+                                  long nDataMax,         double surfacerough,   long keygrav,          long keyabut, double XpcePos, ReflCond *RefOut);
+void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity);
+void   PrintMaximalM(double *RData, long i);
 
 
 /******************************/
@@ -93,7 +107,19 @@ long   keyabut  =0,
        nPieces  =1,
        nChannels=1,
        nSpacers =0;
-int    keyReflParam = 2;      /* 0 = only scattered neutrons; 1 = all neutrons; 2 = all neutrons with line feed */
+int    keyReflParam = -1;     /* Trajectories to be written out:
+								 1 = only those leaving the guide;
+								 2 = all successfull reflections; no matter if the trajectory reaches the guide end
+								 3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)
+								 4 = all
+								 a negative number adds a line feed between each trajectory */
+int    keyReflMinCnt = 0;     /* Minimum number of reflections within the guide for reflection list output */
+int    keyReflMaxCnt = 0;     /* Maximum number of reflections within the guide for reflection list output */
+int    keyReflMinCntY = 0;    /* Minimum number of reflections on the horizontal guide for reflection list output */
+int    keyReflMaxCntY = 0;    /* Maximum number of reflections on the horizontal guide for reflection list output */
+int    keyReflMinCntZ = 0;    /* Minimum number of reflections on the vertical guide for reflection list output */
+int    keyReflMaxCntZ = 0;    /* Maximum number of reflections on the vertical guide for reflection list output */
+int    keyReflVerbose = 0;    /* Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. */
 
 double GuideEntranceHeight=0.0,
        GuideEntranceWidth=0.0,
@@ -183,11 +209,12 @@ int main(int argc, char *argv[])
 
 	NeutronGuide Guide;
 	Neutron      Output;
+	ReflCond     RefOut = {0};
 
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.16");
+	print_module_name("guide 2.18");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -214,6 +241,7 @@ int main(int argc, char *argv[])
 			break;
 		case VT_FROM_FILE:
 			fprintf(LogFilePtr, "guide shape from file %s\n", ShapeFileName);
+			fprintf(LogFilePtr, " number of pieces  :%8d \n", nPieces);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -240,6 +268,7 @@ int main(int argc, char *argv[])
 			break;
 		case VT_FROM_FILE:
 			fprintf(LogFilePtr, "guide shape from file %s\n", ShapeFileName);
+			fprintf(LogFilePtr, " number of pieces  :%8d \n", nPieces);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -256,7 +285,7 @@ int main(int argc, char *argv[])
 		dCosBetH = cos(beta/2.0);
 		dSinBetH = sin(beta/2.0);
 		FillRotMatrixZ(RotMatrix, beta);
-		fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each", nPieces-1, 180/M_PI*beta);
+		fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each", nPieces-1, 180.0/M_PI*beta);
 	}
 	else
 	{	beta = 0.0;
@@ -287,49 +316,63 @@ int main(int argc, char *argv[])
 	RDataR = calloc(nDataMax, sizeof(double));
 	RDataT = calloc(nDataMax, sizeof(double));
 	RDataB = calloc(nDataMax, sizeof(double));
+	
+	/* not necessary with calloc. Alternatively use malloc and memset.
 	for (count=0; count < nDataMax; count++)
 	{	RDataL[count] = 0.0;
 		RDataR[count] = 0.0;
 		RDataT[count] = 0.0;
 		RDataB[count] = 0.0;
-	}
+	} */
 
 	/****************************************************************************************/
 	/* read reflectivity files for left plane, right plane and top and bottom planes        */
 	/****************************************************************************************/
 	/* left plane */
 	if (pReflL != NULL)
-	{	for(count=0; count < nLinesL; count++)
+	{	i = 0;
+		for(count=0; count < nLinesL; count++)
 		{	ReadLine  (pReflL, sBuffer, sizeof(sBuffer)-1);
-			StrgScanLF(sBuffer, &RDataL[10*count], nDataMax-10*count, 0);
+			i += StrgScanLF(sBuffer, &RDataL[10*count], nDataMax-10*count, 0);
 		}
 		fclose(pReflL);
+		fprintf(LogFilePtr,"\nLeft   plane file  : %s\n", ReflFileNameL);
+		PrintMaximalM(RDataL, i);
 	}
 	/* right plane */
 	if (pReflR != NULL)
-	{	for(count=0; count < nLinesR; count++)
+	{	i = 0;
+		for(count=0; count < nLinesR; count++)
 		{	ReadLine  (pReflR, sBuffer, sizeof(sBuffer)-1);
-			StrgScanLF(sBuffer, &RDataR[10*count], nDataMax-10*count, 0);
+			i += StrgScanLF(sBuffer, &RDataR[10*count], nDataMax-10*count, 0);
 		}
 		fclose(pReflR);
+		fprintf(LogFilePtr,"\nRight  plane file  : %s\n", ReflFileNameR);
+		PrintMaximalM(RDataR, i);
 	}
 	/* top plane */
 	if (pReflT != NULL)
-	{	for(count=0; count < nLinesT; count++)
+	{	i = 0;
+		for(count=0; count < nLinesT; count++)
 		{	ReadLine  (pReflT, sBuffer, sizeof(sBuffer)-1);
-			StrgScanLF(sBuffer, &RDataT[10*count], nDataMax-10*count, 0);
+			i += StrgScanLF(sBuffer, &RDataT[10*count], nDataMax-10*count, 0);
 		}
 		if (pReflT != pReflB)  /* file pointer pReflB and pReflT might be identical,                     */
 			fclose(pReflT);     /* in this case, the file must not be closed before bottom data are read  */
+		fprintf(LogFilePtr,"\nTop    plane file  : %s\n", ReflFileNameT);
+		PrintMaximalM(RDataT, i);
 	}
 	/* bottom plane */
 	if (pReflB != NULL)
-	{	rewind(pReflB);
+	{	i = 0;
+		rewind(pReflB);
 		for(count=0; count < nLinesB; count++)
 		{	ReadLine  (pReflB, sBuffer, sizeof(sBuffer)-1);
-			StrgScanLF(sBuffer, &RDataB[10*count], nDataMax-10*count, 0);
+			i += StrgScanLF(sBuffer, &RDataB[10*count], nDataMax-10*count, 0);
 		}
 		fclose(pReflB);
+		fprintf(LogFilePtr,"\nBottom plane file  : %s\n", ReflFileNameB);
+		PrintMaximalM(RDataB, i);
 	}
 
 
@@ -437,6 +480,11 @@ int main(int argc, char *argv[])
 			/* the donkey work. The return value is the total length of the flight path through the */
 			/* guide, or -1.0 if it missed all plates and the exit (should be impossible).          */
 			/****************************************************************************************/
+			RefOut.RefCount = 0;
+			RefOut.RefCountY = 0;
+			RefOut.RefCountZ = 0;
+			if (RefOut.Output != NULL) free(RefOut.Output);
+			RefOut.Output = NULL;
 			for(j=0; j < nPieces; j++)
 			{
 				CHECK
@@ -527,7 +575,7 @@ int main(int argc, char *argv[])
 
 				TimeOF1 = PathThroughGuideGravOrder1(&(InputNeutrons[i]), Guide, wei_min,
 				                                     RDataL, RDataR, RDataT, RDataB, nDataMax,
-				                                     surfacerough, keygrav, keyabut, Xpce[j]);
+				                                     surfacerough, keygrav, keyabut, Xpce[j], &RefOut);
 
 				if (TimeOF1 == -1.0) /* trajectory is lost */
 				{	test=FALSE;
@@ -552,7 +600,39 @@ int main(int argc, char *argv[])
 				TimeOF2 += TimeOF1;
 			}
 			
-			if (pReflParam!=NULL && keyReflParam == 2) fprintf(pReflParam, "\n");
+			if (pReflParam != NULL)
+			{
+				if ((abs(RefOut.RefCount) >= keyReflMinCnt && (abs(RefOut.RefCount) <= keyReflMaxCnt || keyReflMaxCnt == 0)) &&
+					(RefOut.RefCountY >= keyReflMinCntY && (RefOut.RefCountY <= keyReflMaxCntY || keyReflMaxCntY == 0)) &&
+					(RefOut.RefCountZ >= keyReflMinCntZ && (RefOut.RefCountZ <= keyReflMaxCntZ || keyReflMaxCntZ == 0)))
+				{
+					switch (abs(keyReflParam))
+					{
+					case 1:
+						if (RefOut.RefCount > 0) {
+							fprintf(pReflParam, "%s", RefOut.Output);
+							if (keyReflParam < 0) fprintf(pReflParam, "\n");
+						}
+						break;
+					case 2:
+						if (RefOut.RefCount != -1 && RefOut.RefCount != 0) {
+							fprintf(pReflParam, "%s", RefOut.Output);
+							if (keyReflParam < 0) fprintf(pReflParam, "\n");
+						}
+						break;
+					case 3:
+						if (RefOut.RefCount != -1 && RefOut.RefCount != 0) {
+							fprintf(pReflParam, "%s", RefOut.Output);
+							if (keyReflParam < 0) fprintf(pReflParam, "\n");
+						}
+						break;
+					case 4:
+						fprintf(pReflParam, "%s", RefOut.Output);
+						if (keyReflParam < 0) fprintf(pReflParam, "\n");
+						break;
+					}
+				}
+			}
 			if (test==FALSE) continue;
 
 			if (fabs(InputNeutrons[i].Position[1]) > 0.5*GuideExitWidth ||
@@ -579,6 +659,7 @@ int main(int argc, char *argv[])
 	}
 
  my_exit:
+	if (RefOut.Output != NULL) free(RefOut.Output);
 	OwnCleanup();
 	Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
 
@@ -637,13 +718,40 @@ void OwnInit   (int argc, char *argv[])
 					if( (pReflParam = fopen(FullParName(arg),"w"))!=NULL)
 					{	/*fprintf(LogFilePtr,"ERROR: File %s for creating reflection parameter output could not be created\n",arg);
 						exit(-1);*/
-						fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
+						fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
+						                    "#    1           2      3       4      5          6          7        8     9    10     11      12         13           14         15         16         17        18        19       20   21   23 \n");
 						ReflParamFileName=arg;
 					}
 					break;
 				case 'O':
-				  keyReflParam = atoi(arg); /* 0 = only scattered neutrons; 1 = all neutrons; 2 = all neutrons with line feed */
-				  break;
+					keyReflParam = atoi(arg); /* Trajectories to be written out:
+								 1 = only those leaving the guide;
+								 2 = all successfull reflections; no matter if the trajectory reaches the guide end
+								 3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)
+								 4 = all
+								 a negative number adds a line feed between each trajectory */
+					break;
+				case 'v':    /* Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. */
+					keyReflVerbose = atoi(arg); 
+					break;
+				case 'e':    /* Minimum number of reflections within the guide for reflection list output */
+					keyReflMinCnt = atoi(arg); 
+					break;
+				case 'E':    /* Maximum number of reflections within the guide for reflection list output */
+					keyReflMaxCnt = atoi(arg); 
+					break;
+				case 'c':    /* Minimum number of reflections on the horizontal guide for reflection list output */
+					keyReflMinCntY = atoi(arg); 
+					break;
+				case 'C':    /* Maximum number of reflections on the horizontal guide for reflection list output */
+					keyReflMaxCntY = atoi(arg); 
+					break;
+				case 'd':    /* Minimum number of reflections on the vertical guide for reflection list output */
+					keyReflMinCntZ = atoi(arg); 
+					break;
+				case 'D':    /* Maximum number of reflections on the vertical guide for reflection list output */
+					keyReflMaxCntZ = atoi(arg); 
+					break;
 
 				case 'S':    /* shape file */
 					ShapeFileName=arg;
@@ -800,19 +908,30 @@ void OwnInit   (int argc, char *argv[])
 
 	if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
 	{	
+		double XpceZero = 0.;
 		for(j=0; j <= nPieces; j++)
 		{	
 			ReadLine(pFile, sLine, sizeof(sLine)-1);
 
 			sscanf(sLine, "%lf %lf %lf", &Xpce[j], &Ypce[j], &Zpce[j]);
 			Xpce [j] *= 100.0;
+			if (j==0) XpceZero = Xpce[0];
+			Xpce [j] -= XpceZero;
 			Ypce [j] *=   0.5;
 			Zpce [j] *=   0.5;
 			Wchan[j]  =  (2.0*Ypce[j] - nSpacers*spacer)/(double)nChannels;
 			if (Wchan[j] <= 0.0)
 				Error("Geometry impossible. Channel width gets zero (or less)");
+			if (j>0) {
+				AreaY += (Ypce[j-1]+Ypce[j])*(Xpce[j]-Xpce[j-1]);
+				AreaZ += (Zpce[j-1]+Zpce[j])*(Xpce[j]-Xpce[j-1]);
+			}
 		}
 		dTotalLength = Xpce[nPieces] - Xpce[0];
+		GuideEntranceWidth = Ypce[0]*2.;
+		GuideEntranceHeight = Zpce[0]*2.;
+		GuideExitWidth = Ypce[nPieces]*2.;
+		GuideExitHeight = Zpce[nPieces]*2.;
 		piecelength  = dTotalLength / (double)nPieces;
 	}
 	else
@@ -862,6 +981,7 @@ void OwnInit   (int argc, char *argv[])
 	/* bottom plane */
 	if (pReflB == NULL)
 	{	pReflB = pReflT;
+		ReflFileNameB = ReflFileNameT;
 		fprintf(LogFilePtr,"\nNOTE: coating of top wall also used for bottom wall \n");
 	}
 }
@@ -1019,7 +1139,7 @@ double Width(double dLength)
 double
 PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double  wei_min ,
 									double *reflectivityl, double* reflectivityr, double* reflectivityt, double* reflectivityb,
-                           long nDataMax,         double surfacerough,   long    keygrav,       long    keyabut, double XpcePos)
+                           long nDataMax,         double surfacerough,   long    keygrav,       long    keyabut, double XpcePos, ReflCond *RefOut)
 {
 	/***********************************************************************************/
 	/* This routine calculates the trajectory a neutron follows through a simple       */
@@ -1133,6 +1253,8 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 			ThisNeutron->Probability = NearestNeutron.Probability;
 
 			TimeOFTotal =  TimeOFTotal + TimeOFmin;
+			if (keyReflVerbose != 0)
+				WriteReflParam(RefOut, 5, ThisNeutron, &ThisGuide, XpcePos, ThisCollision, 0., 0.);
 
 			return TimeOFTotal;
 		}
@@ -1184,7 +1306,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		/* Determine number of reflectivity value in reflectivty file */
 		datanumber =  (int)(degangular*1000.0/(NearestNeutron.Wavelength));
 		if (datanumber >= nDataMax) {
-			WriteReflParam(10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, 0.);
+			WriteReflParam(RefOut, 10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, 0.);
 			return(-1.0);
 		}
 
@@ -1204,7 +1326,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 
 		if (NearestNeutron.Probability < wei_min){
 			NearestNeutron.Probability = 0.;
-			WriteReflParam(10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
+			WriteReflParam(RefOut, 10, &NearestNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
 			return(-1.0);
 		}
 
@@ -1241,17 +1363,18 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		ThisNeutron->Probability = NearestNeutron.Probability;
 
 		TimeOFTotal =  TimeOFTotal + TimeOFmin;
-		WriteReflParam(0, ThisNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
+		WriteReflParam(RefOut, 0, ThisNeutron, &ThisGuide, XpcePos, ThisCollision, degangular, ThisReflectivity);
 	}
 }
 
-void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity)
+void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity)
 {
 	if (pReflParam!=NULL)
 	{
-//fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
-		char   *fstr="%c%c%09lu     %c     %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5d  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
-		double DivY, DivZ, mVal, Qz;
+  //fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
+		char       *fstr="%c%c%09lu     %c     %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5d  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
+		double     DivY, DivZ, mVal, Qz;
+		char       buffer[256] = "";
 		
 		/*double l = 0.;
 		int ii = 0;
@@ -1278,9 +1401,9 @@ void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, doub
 		Qz = 4.*M_PI/pNeutron->Wavelength*sin(degangular*M_PI/180.);
 		mVal = Qz/0.02174;
 		
-		if (Mode == 10 && keyReflParam > 0)
+		if (Mode == 10)
 		{
-			fprintf(pReflParam, fstr,
+			sprintf(buffer, fstr,
 				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
 				'F', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
 				pNeutron->Debug,       pNeutron->Color,
@@ -1291,9 +1414,22 @@ void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, doub
 				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
 				);
 		}
+		if (Mode == 5)
+		{
+			sprintf(buffer, fstr,
+				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+				'-', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+				pNeutron->Debug,       pNeutron->Color,
+				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+				pNeutron->Position[0]+XpcePos, pNeutron->Position[1], pNeutron->Position[2],
+				//p[0], p[1], p[2],
+				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+				);
+		}
 		if (Mode == 0)
 		{
-			fprintf(pReflParam, fstr,
+			sprintf(buffer, fstr,
 				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
 				'T', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
 				pNeutron->Debug,       pNeutron->Color,
@@ -1304,6 +1440,46 @@ void   WriteReflParam(int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, doub
 				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
 				);
 		}
+
+		if (RefOut != NULL)
+		{
+			if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(keyReflParam) > 2))
+			{
+				char   *tmp = NULL;
+				size_t curlen = (RefOut->Output)?strlen((RefOut->Output)):0;
+
+				if((tmp = realloc(RefOut->Output,curlen+strlen(buffer)+1)) != NULL)
+				{
+					if (curlen == 0) *tmp = '\0';
+					RefOut->Output = tmp;
+					strcat(RefOut->Output, buffer);
+				}
+			}
+
+			/*if (RefOut->RefCount < 0)
+				return;*/
+			if (Mode != 5)
+			{
+				RefOut->RefCount++;
+				if (ThisCollision <= 1) 
+					RefOut->RefCountZ++;
+				else 
+					if (ThisCollision <= 3) RefOut->RefCountY++;
+				if (Mode != 0) RefOut->RefCount *= -1;
+			}
+		}
 	}
+}
+
+void   PrintMaximalM(double *RData, long i)
+{
+	long count;
+	for(count=i-1; count >= 0; count--)
+		if (RData[count] != 0.)
+			break;
+	if (count >= 0)
+		fprintf(LogFilePtr," maximal defined m : %8.2f\n", sin(count/180000.*M_PI)*4*M_PI/0.02174);
+	else
+		fprintf(LogFilePtr," maximal defined m : absorber\n");
 }
 
