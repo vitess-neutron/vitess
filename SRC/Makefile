@@ -30,7 +30,6 @@ chopper_disc \
 chopper_fermi \
 collimator_soller \
 collimator \
-collimator_radial \
 slit \
 grid \
 source \
@@ -179,7 +178,7 @@ standard_deviation : standard_deviation.c
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-collimator_radial : collimator_radial.c collimator_radial.c $(MTOOL)
+collimator_radial : collimator_radial.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c $(ITOOL)
