@@ -77,6 +77,7 @@ ALL : \
 	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
+	"$(OD)\lenses.exe" \
 	"$(OD)\detector.exe" \
 	"$(OD)\eval_elast.exe" \
 	"$(OD)\eval_elast2.exe" \
@@ -99,6 +100,7 @@ ALL : \
 	"$(OD)\define_direction.exe" \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
+	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
 	"$(OD)\resonator_drabkin.exe" \
@@ -138,20 +140,16 @@ SOURCE=$(SPATH)\bender_inter_data.c
 "$(IDIR)\bender_inter_data.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\sq_calc.c
-"$(IDIR)\sq_calc.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\ma_functions.c
-"$(IDIR)\ma_functions.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\gener_fct.c
 "$(IDIR)\gener_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\ma_geom.c
-"$(IDIR)\ma_geom.obj" : $(SOURCE)
+SOURCE=$(SPATH)\mirrrefl.c
+"$(IDIR)\mirrrefl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\lensetr.c
+"$(IDIR)\lensetr.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\src_modchar.c
@@ -160,6 +158,22 @@ SOURCE=$(SPATH)\src_modchar.c
 
 SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sq_calc.c
+"$(IDIR)\sq_calc.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\ma_functions.c
+"$(IDIR)\ma_functions.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\ma_geom.c
+"$(IDIR)\ma_geom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\cpgplot.c
+"$(IDIR)\cpgplot.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ascii2bin.c
@@ -344,6 +358,13 @@ SOURCE=$(SPATH)\space.c
 "$(OD)\space.exe" : "$(OD)" $(ITOOL) "$(OD)\space.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\space.pdb" /out:"$(OD)\space.exe" "$(IDIR)\space.obj" $(ITOOL) 
 
+SOURCE=$(SPATH)\lenses.c
+"$(IDIR)\lenses.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\lenses.exe" : "$(OD)" $(ITOOL) "$(OD)\lenses.obj" "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\lenses.pdb" /out:"$(OD)\lenses.exe" "$(IDIR)\lenses.obj" $(ITOOL) "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"  $(GRALIB)
+
 SOURCE=$(SPATH)\detector.c
 "$(IDIR)\detector.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -498,6 +519,13 @@ SOURCE=$(SPATH)\cas_v40.c
 "$(OD)\cas_v40.exe" : "$(OD)" $(MTOOL) "$(OD)\cas_v40.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\cas_v40.pdb" /out:"$(OD)\cas_v40.exe" "$(IDIR)\cas_v40.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\mirror_elliptical.c
+"$(IDIR)\mirror_elliptical.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mirror_elliptical.exe" : "$(OD)" $(MTOOL) "$(OD)\mirror_elliptical.obj" "$(OD)\mirrrefl.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mirror_elliptical.pdb" /out:"$(OD)\mirror_elliptical.exe" "$(IDIR)\mirror_elliptical.obj" $(MTOOL) "$(OD)\mirrrefl.obj" 
+
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -578,10 +606,6 @@ SOURCE=$(SPATH)\bendchtr.c
 
 SOURCE=$(SPATH)\bendertr.c
 "$(IDIR)\bendertr.obj" : $(SOURCE)
-	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\cpgplot.c
-"$(IDIR)\cpgplot.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\bender.c

@@ -45,7 +45,7 @@ my @C = qw(ascii2bin monitor1
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller collimator
-	    slit grid source spacewindow spacewindow_multiple space);
+	    slit grid source spacewindow spacewindow_multiple space lenses);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
@@ -60,6 +60,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
 	    define_direction
 	    sample_singcryst
 	    cas_v40
+	    mirror_elliptical
 	   );
 
 # modules which need MGTOOL (=MTOOL + distrgauss)
@@ -89,7 +90,10 @@ my %dep = (			# needed objects for a module
 	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
-	   chopper_disc => 'bender_inter_data');
+	   chopper_disc => 'bender_inter_data',
+	   lenses => 'lensetr cpgplot',
+	   mirror_elliptical => 'mirrrefl'
+	  );
 
 # objects necessary for some modules, to be compiled separately
 my %K;
@@ -110,7 +114,7 @@ foreach (split) {
 $dep{$_} = 'cpgplot' foreach qw(visual dist_time sm_ensemble);
 
 my (%sopt, %lib);
-foreach (qw(visual bender dist_time sm_ensemble)) {
+foreach (qw(visual bender dist_time sm_ensemble lenses)) {
   $sopt{$_} = '$(GRAOPT)';		# special compile options for a module
   $lib{$_} = '$(GRALIB)';		# needed libs for a module
 }

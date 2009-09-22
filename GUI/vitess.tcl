@@ -63,6 +63,7 @@ proc makeModuleSets {} {
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
+    {lenses}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {space slit spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
@@ -70,6 +71,7 @@ proc makeModuleSets {} {
     {collimator {collimator collimator_radial collimator_soller} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
+    {mirror_elliptical {mirror_elliptical} mirror_elliptical}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
     {magnetic_field {precessionfield rotating_field sesans_field} {precessionfield rotating_field sesans_field}}
@@ -85,7 +87,7 @@ proc makeModuleSets {} {
     {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
-      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz 
+      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz
       mon2_pos mon2_div mon2_kdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
       monpol_divy monpol_divz monitorpol_pos
@@ -357,7 +359,7 @@ set smASET {
     "maximal divergence theta [deg] (half of angular spread x-z-plane)"
     "" z} le90}
   {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
-  Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. 
+  Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
   In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
     {"by divergence" "by window" "by virtual window"} {0 1 2}}
   {}
@@ -706,47 +708,47 @@ set slitESET {
 ### Grid
 ###
 set gridESET {
-  {"Geometry description" header}    
+  {"Geometry description" header}
   {dist float 0 {
     "distance orig\n<->grid [cm]" "Distance to grid along x-direction  [cm]" "" D} ge0}
-  {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}    
+  {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}
   {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for the grid." "" t} ge0}
   {outera float 5.0 {
-    "Outer hor size \n or radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}        
+    "Outer hor size \n or radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}
   {outerb float 5.0 {
-    "Outer vert size  \n [cm]" "Outer vertical size of the grid" "" b} gt0}          
+    "Outer vert size  \n [cm]" "Outer vertical size of the grid" "" b} gt0}
   {shiftver float 0.0 {
-    "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}      
+    "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}
   {shifthor float 0.0 {
-    "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}            
-  {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}  
-  {keycolor radio no {"Crosstalk between \n channels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}  
+    "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}
+  {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}
+  {keycolor radio no {"Crosstalk between \n channels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
 
-  {"Material of a grid" header}        
+  {"Material of a grid" header}
   {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
   {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}
   {0 1 2 3 4 5 6}}
-  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of a grid." "" C}}  
-    
-  {"Deviation of parameters" header}    
+  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of a grid." "" C}}
+
+  {"Deviation of parameters" header}
   {shiftverdev float 0.0 {
-    "vertical shift +-[cm]" "Deviation of vertical shift of the grid, +-[cm]" "" q} ge0}      
+    "vertical shift +-[cm]" "Deviation of vertical shift of the grid, +-[cm]" "" q} ge0}
   {shifthordev float 0.0 {
-    "horizontal shift +-[cm]" "Deviation of horizontal shift of the grid, +-[cm]" "" y} ge0}        
+    "horizontal shift +-[cm]" "Deviation of horizontal shift of the grid, +-[cm]" "" y} ge0}
   {winraddev float 0.0 {
-    "radius of window +-[cm]" "Deviation of the radius of window, +-[cm]" "" h} ge0}        
+    "radius of window +-[cm]" "Deviation of the radius of window, +-[cm]" "" h} ge0}
   {wincenterdev float 0.0 {
-    "center of window +-[cm]" "Deviation of the center position of window, +-[cm]" "" H} ge0}        
+    "center of window +-[cm]" "Deviation of the center position of window, +-[cm]" "" H} ge0}
   {distancedev float 0.0 {
-    "distance orig\n<->grid +-[cm]" "Deviation of the distance orig-grid,  +-[cm]" "" X} ge0}            
-      
-  {"Options Gravity Monochromator" header}    
+    "distance orig\n<->grid +-[cm]" "Deviation of the distance orig-grid,  +-[cm]" "" X} ge0}
+
+  {"Options Gravity Monochromator" header}
   {distabs float 0.0 {
     "calc dist orig\n<->grid [cm]" "Distance for calculation to grid along x-direction  [cm]" "" M} ge0}
   {disttotal float 0.0 {
-    "calc total dist [cm]" "Total distance for calculation of grid system along x-direction  [cm]" "" m} ge0}    
+    "calc total dist [cm]" "Total distance for calculation of grid system along x-direction  [cm]" "" m} ge0}
   {wavemon float 0.0 {
-    "Monoch Wavelength [A]" "Wavelength of monochromatisation [Ang]" "" n} ge0}    
+    "Monoch Wavelength [A]" "Wavelength of monochromatisation [Ang]" "" n} ge0}
 
 }
 
@@ -2229,7 +2231,7 @@ set sample_environmentESET {
   {ev_x float "" {"x [cm]" "x-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" x}}
   {ev_y float 0.0 {"y [cm]" "y-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" y}}
   {ev_z float 0.0 {"z [cm]" "z-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" z}}
-  {ev_file pareditablefile environ.env {"parameter file" 
+  {ev_file pareditablefile environ.env {"parameter file"
     "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
   {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
   {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment before sample" "" r} {in out} {1 2}}
@@ -2769,6 +2771,109 @@ set sm_ensembleESET {
   {}
   {cfile pareditablefile collision.dat {"collision\nfile" "name of file for collisions output if 'output in collision file' option chosen in 'visualisation'" "" C}}
 }
+
+
+# new manoshine
+### lenses
+###
+set lensesESET {
+  {"Geometry description of a lense" header}
+  {fxxa radio spherical {"Lense surface geometry" "Choose the lense geometry: surfaces" "" K} {spherical parabolic} {0 1}}
+  {fx float 10 {"Cur_Radius1 [cm]" "Spherical lense: Curvature radius of the first surface of a lense" "" a} }
+  {fy float 10 {"Cur_Radius2 [cm]" "Spherical lense: Curvature radius of the second surface of a lense" "" b} }
+  {fz float 10 {"RadiusMain [cm]" "Spherical and parabolic lenses: Radius of the lense: cylindrical surface" "" c} gt0}
+  {tz float 1 {"Thickness [cm]" "Thickness of a lense (both) along center axis" "" A} gt0}
+
+  {"Position Main" header}
+  {px float 5 {"position\ncenter X [cm]" "Center position of a lense" "" d}}
+  {py float 0 {"position\ncenter Y [cm]" "Center position of a lense" "" e}}
+  {pz float 0 {"position\ncenter Z [cm]" "Center position of a lense" "" k}}
+
+  {"Output Frame" header}
+  {ox float 10 {"output\nframe X [cm]" "Position of the output frame (in the input frame)" "" s}}
+  {oy float  0 {"output\nframe Y [cm]" "Position of the output frame (in the input frame)" "" t}}
+  {oz float  0 {"output\nframe Z [cm]" "Position of the output frame (in the input frame)" "" w}}
+
+  {"Material" header}
+  {rax radio SiO2 {"Material of a lense" "Material of a lense" "" i} {O CO2 C Be F Bi MgO Pb MgF SiO2 ZrO2 Mg Si Zr Al input} {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 99}}
+  {raxa radio no {"Attenuation activation" "Activate or not the attenuation inside a lense" "" H} {no yes} {0 1}}
+  {mf float 1.05e-6 {"Refract input" "Refractive index given by a user" "" R} gt0}
+  {nf float 1.8 {"Refract wave" "Wavelength for the refractive index given by a user" "" C} gt0}
+  {afc float 0.441 {"Absorption part [1/cm]" "Attenuation - absorption part coefficient (linear absorption coeff - depends from the wavelength) given by a user, 1/cm" "" D} ge0}
+  {spp float 0.0 {"Scattering part [1/cm]" "Attenuation - scattering part coefficient (linear scattering coeff - NOT depends from the wavelength) given by a user, 1/cm" "" Q} ge0}
+  {surwav float 0 {"surface\nroughness [deg]"
+    "This parameter controls the simulation of surface rougness.
+     This value is the maximal angle of deviation of the surface
+     normal from the ideal normal." "" q} ge0}
+  {"Number of lenses" header}
+  {nx int 1 {"Number of lenses" "Number of lenses in the X direction" "" I} gt0}
+  {"Visulalisation" header}
+  {visu radio no {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
+  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
+  {"Ray-tracing after lenses" header}
+  {visurtal radio no {"Visual ray-tracing \n after lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
+  {vrtnum  int 10000 {"Number of trajectories" "Number of trajectories for visualisation after lense" "" x} gt0}
+  {vrtalmaxx float 0.0 {"Max X" "Max X value at the ray-tracing picture, 0.0 means autocalculation" "" S} ge0}
+  {"Diaphragm after lenses" header}
+  {diafrad1 float 0.0 {"Inner radius" "Inner radius of diaphragm at the lenses exit" "" m} ge0}
+  {diafrad2 float 0.0 {"Outer radius" "Outer radius of diaphragm at the lenses exit" "" M} ge0}
+  {"Output in the file" header}
+  {outt radio no {"Activate output" "activate output the coordinates in the file for the lense" "" z} {yes no} {1 0}}
+  {nxo  int 0 {"Lense number " "Lense number for output (0 - means all lenses)" "" v} ge0}
+  {dout_filename pareditablefile lensestrj.dat {"File Name" "Name for output file" "" p}}
+  {"Focal distance calculation and flight" header}
+  {wavefc float 20.0 {"Wavelength" "Wavelength for focal distance calculation" "" r} gt0}
+  {fligthfcth radio thin {"Choose formula" "Choose analytical formula for focal distance calculations: thin or thick" "" V} {thick thin} {1 0}}
+  {fligthfc radio no {"Activate flight" "activate flight at the focal distance immediately after lenses" "" Y} {yes no} {1 0}}
+}
+
+### mirror_elliptical
+###
+set mirror_ellipticalESET {
+  {"Geometry description of the elliptic mirror" header}
+  {fx float 500 {"Semi axis X [cm]" "Semi axis X for elliptic mirror" "" a} ge0}
+  {fy float 50 {"Semi axis Y [cm]" "Semi axis Y for elliptic mirror" "" b} gt0}
+  {fz float 55 {"Semi axis Z [cm]" "Semi axis Z for elliptic mirror" "" c} gt0}
+  {px float 250 {"Center position\nmain X [cm]" "Center position of the elliptic mirror" "" d}}
+  {py float 0 {"Center position\nmain Y [cm]" "Center position of the elliptic mirror" "" e}}
+  {pz float 0 {"Center position\nmain Z [cm]" "Center position of the elliptic mirror" "" k}}
+  {ang float 0.0 {"Rotation angle [deg]" "Rotate mirror (ONLY) around the center of the ellipsoide" "" Q}}
+  {ake radio OX {"Rotate around\n the axis" "Choose the axis of the coordinate system (at the center of the ellisoide) and rotate around this axis" "" g} {OX OY OZ} {0 1 2}}
+  {"X, Y and Z Limits for the elliptic mirror" header}
+  {pmx float 0 {"X_MIN [cm]" "X minimum limitation for the elliptic mirror" "" A}}
+  {pmy float 300 {"X_MAX [cm]" "X maximum limitation for the elliptic mirror" "" C}}
+  {pmz float -20 {"Y_MIN [cm]" "Y minimum limitation for the elliptic mirror" "" D}}
+  {pmw float 20 {"Y_MAX [cm]" "Y maximum limitation for the elliptic mirror" "" E}}
+  {pmt float  0 {"Z_MIN [cm]" "Z minimum limitation for the elliptic mirror" "" H}}
+  {pmk float 200 {"Z_MAX [cm]" "Z maximum limitation for the elliptic mirror" "" K}}
+  {"Output Plane" header}
+  {ox float 510 {"output\nX [cm]" "position of the output frame (in the input frame)" "" s}}
+  {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" t}}
+  {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" w}}
+  {"Visulalisation" header}
+  {visu radio yes {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
+  {visuty radio XZ {"Type of visualisation" "choose plane for visualisation" "" Y} {XZ XY YZ} {0 1 2}}
+  {visual radio no {"Full visualisation" "Visalisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}
+  {visualty radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {"Reflectivity for the elliptic mirror" header}
+  {reflne radio no {"Reflected neutrons" "If yes is chosen, only reflected neutrons are going later, if no all neutrons are going later" "" u} {yes no} {1 0}}
+  {outkey radio yes {"Ideal reflection" "Choose ideal reflection or from reflectivities files" "" R}
+    {yes no} {1 0}}
+  {bfp pareditablefile mirr3+.dat {"Spin_up reflectivity file" "Spin_up file reflectivity" "" i}}
+  {bff pareditablefile mirr3+.dat {"Spin_down reflectivity file" "Spin_down file reflectivity" "" I}}
+  {surwav float 0 {"surface\nwaviness [deg]"
+    "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" q} ge0 "" 1}
+  {pola radio yes {polarisation
+    "yes: split into spin-down and spin-up reflectivity\nno: spin-up reflectivity for all neutrons" "" p}
+    {yes no} {1 0}}
+  {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation" "" V} {OX OY OZ} {0 1 2}}
+
+  {"Air Attenuation Tair=293K" header}
+  {airact radio "no" {"Air Attenuation" "Activate or not the air attenuation of neutron beam, T=293K" "" z} {no yes} {0 1}}
+  {himidi float 55.0 {"Air Himidity [%]" "Choose himidity of air" "" r} gt0}
+}
+# end new manoshine
 
 ### Tool
 ### Compute Chopper Phases
