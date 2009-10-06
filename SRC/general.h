@@ -245,6 +245,7 @@ double DistrGauss(double Module, double Sigma);
 double sq   (double Value);                        /* = Value*Value*/
 double atan0(double a, double b);
 double Round(double value);
+double RoundP(double value, int decimal);
 void   Exchange(double* pValue1, double* pValue2);
 double Min(double value1, double value2);
 double Max(double value1, double value2);
