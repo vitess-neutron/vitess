@@ -40,6 +40,8 @@
 /*                                (data is complementary to traceing and writeout)          */
 /* 2.17  Sep 2009  A. Houben      Extended writeout of reflection parameters                */
 /* 2.18  Sep 2009  A. Houben      Changes to shape defined by file & some minor things      */
+/* 2.19  Oct 2009  A. Houben      Shape by file for nonäquidistant planes & minor things    */
+/*                                (introduced rounding of XYZ positions but left commented) */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -61,6 +63,16 @@ typedef struct
 	Plane	Wall[5];
 }
 NeutronGuide;
+
+typedef enum
+{	GW_TOP      = 0,
+	GW_BOTTOM   = 1,
+	GW_LEFT     = 2,
+	GW_RIGHT    = 3,
+	GW_EXIT     = 4,
+	GW_INIT     = 5,
+}
+eGuideWall;
 
 typedef enum
 {	VT_CONSTANT = 0,
@@ -95,7 +107,7 @@ double Width     (double length);
 double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double wei_min ,
                                   double *reflectivityl, double* reflectivityr, double* reflectivityt, double* reflectivityb,
                                   long nDataMax,         double surfacerough,   long keygrav,          long keyabut, double XpcePos, ReflCond *RefOut);
-void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity);
+void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
 
 
@@ -214,7 +226,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.18");
+	print_module_name("guide 2.19");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -387,34 +399,34 @@ int main(int argc, char *argv[])
 	Length2 = sqrt(dXpce*dXpce+dDelY*dDelY);
 
 	/* top plane */
-	Guide.Wall[0].A =  dDelZ/Length1;
-	Guide.Wall[0].B =  0.0;
-	Guide.Wall[0].C = -dXpce/Length1;
-	Guide.Wall[0].D = -Guide.Wall[0].C * (GuideEntranceHeight/2.0);
+	Guide.Wall[GW_TOP].A =  dDelZ/Length1;
+	Guide.Wall[GW_TOP].B =  0.0;
+	Guide.Wall[GW_TOP].C = -dXpce/Length1;
+	Guide.Wall[GW_TOP].D = -Guide.Wall[GW_TOP].C * (GuideEntranceHeight/2.0);
 
 	/* bottom plane */
-	Guide.Wall[1].A = -dDelZ/Length1;
-	Guide.Wall[1].B =  0.0;
-	Guide.Wall[1].C = -dXpce/Length1;
-	Guide.Wall[1].D =  Guide.Wall[1].C * (GuideEntranceHeight/2.0);
+	Guide.Wall[GW_BOTTOM].A = -dDelZ/Length1;
+	Guide.Wall[GW_BOTTOM].B =  0.0;
+	Guide.Wall[GW_BOTTOM].C = -dXpce/Length1;
+	Guide.Wall[GW_BOTTOM].D =  Guide.Wall[GW_BOTTOM].C * (GuideEntranceHeight/2.0);
 
 	/* left plane */
-	Guide.Wall[2].A = -dDelY/Length2;
-	Guide.Wall[2].B =  dXpce/Length2;
-	Guide.Wall[2].C =  0.0;
-	Guide.Wall[2].D = -Guide.Wall[2].B * (GuideEntranceWidth/2.0);
+	Guide.Wall[GW_LEFT].A = -dDelY/Length2;
+	Guide.Wall[GW_LEFT].B =  dXpce/Length2;
+	Guide.Wall[GW_LEFT].C =  0.0;
+	Guide.Wall[GW_LEFT].D = -Guide.Wall[GW_LEFT].B * (GuideEntranceWidth/2.0);
 
 	/* right plane */
-	Guide.Wall[3].A =  dDelY/Length2;
-	Guide.Wall[3].B =  dXpce/Length2;
-	Guide.Wall[3].C =  0.0;
-	Guide.Wall[3].D =  Guide.Wall[3].B * (GuideEntranceWidth/2.0);
+	Guide.Wall[GW_RIGHT].A =  dDelY/Length2;
+	Guide.Wall[GW_RIGHT].B =  dXpce/Length2;
+	Guide.Wall[GW_RIGHT].C =  0.0;
+	Guide.Wall[GW_RIGHT].D =  Guide.Wall[GW_RIGHT].B * (GuideEntranceWidth/2.0);
 
 	/* exit plane */
-	Guide.Wall[4].A =  1.0;
-	Guide.Wall[4].B =  0.0;
-	Guide.Wall[4].C =  0.0;
-	Guide.Wall[4].D = -dXpce;
+	Guide.Wall[GW_EXIT].A =  1.0;
+	Guide.Wall[GW_EXIT].B =  0.0;
+	Guide.Wall[GW_EXIT].C =  0.0;
+	Guide.Wall[GW_EXIT].D = -dXpce;
 
 	/*****************************************************/
 
@@ -460,12 +472,12 @@ int main(int argc, char *argv[])
 							dDelYl    =  left_end  - left_beg;
 							Length2r  =  sqrt(dXpce*dXpce+dDelYr*dDelYr);
 							Length2l  =  sqrt(dXpce*dXpce+dDelYl*dDelYl);
-							Guide.Wall[2].A = -dDelYl/Length2l;
-							Guide.Wall[2].B =  dXpce /Length2l;
-							Guide.Wall[2].D =  Guide.Wall[2].B*(-left_beg);
-							Guide.Wall[3].A = -dDelYr/Length2r;
-							Guide.Wall[3].B =  dXpce /Length2r;
-							Guide.Wall[3].D =  Guide.Wall[3].B*(-right_beg);
+							Guide.Wall[GW_LEFT].A = -dDelYl/Length2l;
+							Guide.Wall[GW_LEFT].B =  dXpce /Length2l;
+							Guide.Wall[GW_LEFT].D =  Guide.Wall[GW_LEFT].B*(-left_beg);
+							Guide.Wall[GW_RIGHT].A = -dDelYr/Length2r;
+							Guide.Wall[GW_RIGHT].B =  dXpce /Length2r;
+							Guide.Wall[GW_RIGHT].D =  Guide.Wall[GW_RIGHT].B*(-right_beg);
 						}
 						break;
 					}
@@ -499,21 +511,21 @@ int main(int argc, char *argv[])
 					{	case VT_CURVED:
 							/* last piece has an output plane normal to the guide direction, the others are tilted  */
 							if (j == nPieces-1)
-							{	Guide.Wall[4].A =  1.0;
-								Guide.Wall[4].B =  0.0;
-								Guide.Wall[4].D = -dXpce;
+							{	Guide.Wall[GW_EXIT].A =  1.0;
+								Guide.Wall[GW_EXIT].B =  0.0;
+								Guide.Wall[GW_EXIT].D = -dXpce;
 							}
 							else
-							{	Guide.Wall[4].A =  dCosBetH;
-								Guide.Wall[4].B =  dSinBetH;
-								Guide.Wall[4].D = -Guide.Wall[4].A * dXpce;
+							{	Guide.Wall[GW_EXIT].A =  dCosBetH;
+								Guide.Wall[GW_EXIT].B =  dSinBetH;
+								Guide.Wall[GW_EXIT].D = -Guide.Wall[GW_EXIT].A * dXpce;
 							}
 							break;
 
 						case VT_LINEAR:
 							/* left and right walls are moved  */
-							Guide.Wall[2].D = -Guide.Wall[2].B * Ypce[j];
-							Guide.Wall[3].D =  Guide.Wall[3].B * Ypce[j];
+							Guide.Wall[GW_LEFT].D = -Guide.Wall[GW_LEFT].B * Ypce[j];
+							Guide.Wall[GW_RIGHT].D =  Guide.Wall[GW_RIGHT].B * Ypce[j];
 							break;
 
 						case VT_PARABOLIC:
@@ -537,17 +549,18 @@ int main(int argc, char *argv[])
 								dDelYr    = -dDelYl;
 								Length2l  = Length2r = sqrt(dXpce*dXpce+dDelYr*dDelYr);
 							}
-							Guide.Wall[2].A = -dDelYl/Length2l;
-							Guide.Wall[2].B =  dXpce /Length2l;
-							Guide.Wall[3].A = -dDelYr/Length2r;
-							Guide.Wall[3].B =  dXpce /Length2r;
+							Guide.Wall[GW_LEFT].A = -dDelYl/Length2l;
+							Guide.Wall[GW_LEFT].B =  dXpce /Length2l;
+							Guide.Wall[GW_RIGHT].A = -dDelYr/Length2r;
+							Guide.Wall[GW_RIGHT].B =  dXpce /Length2r;
 
-							Guide.Wall[2].D = -Guide.Wall[2].B *   left_beg;
-							Guide.Wall[3].D =  Guide.Wall[3].B *(-right_beg);
+							Guide.Wall[GW_LEFT].D = -Guide.Wall[GW_LEFT].B *   left_beg;
+							Guide.Wall[GW_RIGHT].D =  Guide.Wall[GW_RIGHT].B *(-right_beg);
+
+							Guide.Wall[GW_EXIT].D = -dXpce;
 							break;
 						default:
 							;
-
 					}
 
 					switch (eGuideShapeZ)
@@ -558,15 +571,15 @@ int main(int argc, char *argv[])
 							/* new shift is calculated to move walls */
 							dDelZ   = Zpce[j+1]-Zpce[j];
 							Length1 = sqrt(dXpce*dXpce+dDelZ*dDelZ);
-							Guide.Wall[0].A =  dDelZ/Length1;
-							Guide.Wall[0].C = -dXpce/Length1;
-							Guide.Wall[1].A = -dDelZ/Length1;
-							Guide.Wall[1].C = -dXpce/Length1;
+							Guide.Wall[GW_TOP].A =  dDelZ/Length1;
+							Guide.Wall[GW_TOP].C = -dXpce/Length1;
+							Guide.Wall[GW_BOTTOM].A = -dDelZ/Length1;
+							Guide.Wall[GW_BOTTOM].C = -dXpce/Length1;
 							/* no break at this point !!! */
 						case VT_LINEAR:
 							/* top and bottom walls are moved */
-							Guide.Wall[0].D = -Guide.Wall[0].C * Zpce[j];
-							Guide.Wall[1].D =  Guide.Wall[1].C * Zpce[j];
+							Guide.Wall[GW_TOP].D = -Guide.Wall[GW_TOP].C * Zpce[j];
+							Guide.Wall[GW_BOTTOM].D =  Guide.Wall[GW_BOTTOM].C * Zpce[j];
 							break;
 						default:
 							;
@@ -919,6 +932,9 @@ void OwnInit   (int argc, char *argv[])
 			Xpce [j] -= XpceZero;
 			Ypce [j] *=   0.5;
 			Zpce [j] *=   0.5;
+			/*Xpce [j] = RoundP(Xpce[j], 7);
+			Ypce [j] = RoundP(Ypce[j], 7);
+			Zpce [j] = RoundP(Zpce[j], 7);*/
 			Wchan[j]  =  (2.0*Ypce[j] - nSpacers*spacer)/(double)nChannels;
 			if (Wchan[j] <= 0.0)
 				Error("Geometry impossible. Channel width gets zero (or less)");
@@ -927,12 +943,12 @@ void OwnInit   (int argc, char *argv[])
 				AreaZ += (Zpce[j-1]+Zpce[j])*(Xpce[j]-Xpce[j-1]);
 			}
 		}
-		dTotalLength = Xpce[nPieces] - Xpce[0];
+		dTotalLength = RoundP(Xpce[nPieces] - Xpce[0], 7);
 		GuideEntranceWidth = Ypce[0]*2.;
 		GuideEntranceHeight = Zpce[0]*2.;
 		GuideExitWidth = Ypce[nPieces]*2.;
 		GuideExitHeight = Zpce[nPieces]*2.;
-		piecelength  = dTotalLength / (double)nPieces;
+		piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonäquidistant planes */
 	}
 	else
 	{
@@ -1154,7 +1170,8 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 	/* Note! The function is return Time Of Flight					   */
 	/***********************************************************************************/
 
-	int     k, ThisCollision=5, datanumber;
+	int     datanumber;
+	eGuideWall k = GW_INIT, ThisCollision = GW_INIT;
 	double  degangular, ThisReflectivity=0.;
 	double  TimeOF, TimeOFmin;
 	double  TimeOFTotal=0.0;
@@ -1177,7 +1194,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		/***********************************************************************************/
 		/* Loop through all five planes....                                                */
 		/***********************************************************************************/
-		for(k=0;k<5;k++)
+		for(k=GW_TOP;k<GW_INIT;k++) /* GW_TOP = 0, GW_INIT = 5 */
 		{
 			/***********************************************************************************/
 			/* Find the point where this neutron trajectory intercepts the current plane       */
@@ -1224,7 +1241,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		/* length to this point to the running total and return that total.                */
 		/***********************************************************************************/
 
-		if(ThisCollision == 4)
+		if(ThisCollision == GW_EXIT)
 		{
 			if(NearestNeutron.Vector[0] < 0.0)
 				return(-1.0);
@@ -1367,7 +1384,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 	}
 }
 
-void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, int ThisCollision, double degangular, double reflectivity)
+void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, double XpcePos, eGuideWall ThisCollision, double degangular, double reflectivity)
 {
 	if (pReflParam!=NULL)
 	{
@@ -1461,10 +1478,10 @@ void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuid
 			if (Mode != 5)
 			{
 				RefOut->RefCount++;
-				if (ThisCollision <= 1) 
+				if (ThisCollision <= GW_BOTTOM) /* GW_TOP || GW_BOTTOM */
 					RefOut->RefCountZ++;
 				else 
-					if (ThisCollision <= 3) RefOut->RefCountY++;
+					if (ThisCollision <= GW_RIGHT) RefOut->RefCountY++; /* GW_LEFT || GW_RIGHT */
 				if (Mode != 0) RefOut->RefCount *= -1;
 			}
 		}

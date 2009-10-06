@@ -141,7 +141,7 @@ read:
 		fclose(pFile);
 	}
 	else
-	{	printf("\nERROR: Output file could not be generated\n");
+	{	printf("\nERROR: Output file could not be generated\n(%s)", pFullName);
 	}
 
 	printf("\n Hit any key to terminate ! \n");

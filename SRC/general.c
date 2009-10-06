@@ -13,6 +13,7 @@
 /* Change: K.L.  2003 FEB, definitions of 'idum' and 'LogFilePtr' from init to general      */
 /* Change: K.L.  2003 MAR, new function 'StrgScanLF', additional parameter in 'ReadLine'    */
 /* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
+/* Chnage: A.H.  2009 OCT, new routine: RoundP for rounding after given decimal position    */
 
 #include "general.h"
 #include "ctype.h"
@@ -99,6 +100,12 @@ double Round(double value)
 	return floor(value + 0.5);
 }
 
+
+double RoundP(double value, int decimal)
+{
+	double f = pow(10, decimal);
+	return Round(value * f) / f;
+}
 
 
 /* minimum and maximum of two double or long values */
