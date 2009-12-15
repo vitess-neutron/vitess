@@ -41,7 +41,7 @@ my @Obj = qw(init general intersection matrix sample);
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file guide_shape spin_reset capture_flux);
+	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller collimator

@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	FILE*   pFile;
 	char    sFileName[50]="", 
 	       *pFullName;
+	//double x2=-0.0056, x1=-0.0357, x0=1.0359; // sq. polynomial fit constants for dRm(x=m)
 
 	Init(argc, argv, VT_TOOL);
 
@@ -79,6 +80,13 @@ read:
 	dRm      = GetDouble("reflectivity(Q=m*Q_c(Ni))              ");
 	dW       = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	GetString(sFileName, "Name of the mirror file                ");
+	/*dR0      = 0.99;
+	dM       = 6.75;
+	dQc      = 0.021743;
+	dRm      = (x2)*((dM)*(dM))+(x1)*(dM)+x0;
+	dW       = 0.001;
+	//strcpy(&sFileName[0], "mirr2.25.dat\0");
+    sprintf(&sFileName[0], "mirr%.2f.dat\0", dM);*/
 
 	dQcNi    = RoundD(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
 
