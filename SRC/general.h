@@ -109,6 +109,7 @@ typedef enum
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_ELAST2 = 222,
 	VT_EVAL_INELAST= 112,
+	VT_RUNTIME     = 113,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
 	VT_WRITEOUT    = 141,

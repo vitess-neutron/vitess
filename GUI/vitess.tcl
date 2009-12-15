@@ -81,7 +81,7 @@ proc makeModuleSets {} {
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast} {capture_flux eval_elast eval_elast2 eval_inelast}}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_inelast runtime}}
     {frame {} frame}
     {external_command}
     {trajectories {writeout spin_reset} {writeout spin_reset}}
@@ -2475,8 +2475,34 @@ set isoESET {
 ### capture_flux
 ###
 set capture_fluxESET {
+  {"General parameters" header}
   {foilarea float 1
-    {"gold foil area [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
+    {"gold foil\narea [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
+  {}
+  {refwave float 1.798 {
+    "reference\nwavelength [A]" "default value is 1.798 A. Use 0.0 to avoid the use of a reference wavelength." "" R} ge0}
+  {}
+  {}
+  {circ radio "no window" {"window type" "defines the area which is taken into account" "" t} {"no window" circular rectangular} {0 1 2}}
+  {"circular window coordinates" header}
+  {radi float 0.5 {"radius [cm]" "radius of circular window in cm" "" r} gt0}
+  {centy float 0 {"center y [cm]" "" "" y} }
+  {centz float 0 {"center z [cm]" "" "" z} }
+  {"rectangular window coordinates" header}
+  {min_y float -0.5 {
+    "min. y [cm]" "minimal y value [cm]" "" w}}
+  {max_y float 0.5 {
+    "max. y [cm]" "maximul y value [cm]" "" W}}
+  {}
+  {min_z float -0.5 {
+    "min. z [cm]" "minimal z value [cm]" "" h}}
+  {max_z float 0.5 {
+    "max. z [cm]" "maximal z value [cm]" "" H}}
+  {"lambda window" header}
+  {min_lambda float 0.0 {
+    "min. lambda [A]" "minimal lambda value [A]. If min and max lambda is zero this option is ignored." "" l}}
+  {max_lambda float 0.0 {
+    "max. lambda [A]" "maximal lambda value [A]. If min and max lambda is zero this option is ignored." "" L}}
 }
 
 ### eval

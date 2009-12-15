@@ -26,6 +26,7 @@ surface_file \
 guide_shape \
 spin_reset \
 capture_flux \
+runtime \
 chopper_disc \
 chopper_fermi \
 collimator_soller \
@@ -160,6 +161,9 @@ source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 capture_flux : capture_flux.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+runtime : runtime.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 collimator : collimator.c $(ITOOL)
