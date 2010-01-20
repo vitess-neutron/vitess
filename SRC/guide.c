@@ -658,6 +658,7 @@ void OwnInit   (int argc, char *argv[])
 	char  *arg=NULL, sLine[512];
 	FILE* pFile=NULL;
 	char sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
+	ReflFile *pRefFileLast;
 
 	for(i=1; i<argc; i++)
 	{
@@ -915,6 +916,7 @@ void OwnInit   (int argc, char *argv[])
 	Zpce  = calloc(nPieces+1, sizeof(double));
 	Wchan = calloc(nPieces+1, sizeof(double));*/
 	pPieces = calloc(nPieces+1, sizeof(GuidePiece));
+	pRefFileLast = GetReflFile(ReflFileNameL, pReflL);
 
 	if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
 	{	
@@ -941,39 +943,54 @@ void OwnInit   (int argc, char *argv[])
 				AreaZ += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
 			}
 			
+
 			/* Calculate Area for this reflectivity file */
-			if (j>0 && pPieces[j-1].RData[GW_TOP]!=NULL) 
-				pPieces[j-1].RData[GW_TOP]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+			if (j > 0) {
+				if (pPieces[j-1].RData[GW_LEFT]!=NULL)
+					pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_RIGHT]!=NULL) 
+					pPieces[j-1].RData[GW_RIGHT]->area  += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_TOP]!=NULL) 
+					pPieces[j-1].RData[GW_TOP]->area    += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_BOTTOM]!=NULL)
+					pPieces[j-1].RData[GW_BOTTOM]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+			}
 			
 			/* Either load standard reflectivity file or use userdefined one */
-			if (sRefFileT[0] == '\0')
-				pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT);
-			else
-				pPieces[j].RData[GW_TOP]    = GetReflFile(FullParName((char *)&sRefFileT), NULL);
+			switch (sRefFileL[0]) {
+				case ':':  pPieces[j].RData[GW_LEFT]   = pRefFileLast;break;
+				case '\0': pPieces[j].RData[GW_LEFT]   = GetReflFile(ReflFileNameL, pReflL);break;
+				default:   pPieces[j].RData[GW_LEFT]   = GetReflFile(FullParName((char *)&sRefFileL), NULL);
+					pRefFileLast = pPieces[j].RData[GW_LEFT];
+					break;
+			}
 			
 
-			if (j>0 && pPieces[j-1].RData[GW_BOTTOM]!=NULL)
-				pPieces[j-1].RData[GW_BOTTOM]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
-			if (sRefFileB[0] == '\0')
-				pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB);
-			else
-				pPieces[j].RData[GW_BOTTOM] = GetReflFile(FullParName((char *)&sRefFileB), NULL);
+			switch (sRefFileR[0]) {
+				case ':':  pPieces[j].RData[GW_RIGHT]  = pRefFileLast;break;
+				case '\0': pPieces[j].RData[GW_RIGHT]  = GetReflFile(ReflFileNameR, pReflR);break;
+				default:   pPieces[j].RData[GW_RIGHT]  = GetReflFile(FullParName((char *)&sRefFileR), NULL);
+					pRefFileLast = pPieces[j].RData[GW_RIGHT];
+					break;
+			}
 			
 
-			if (j>0 && pPieces[j-1].RData[GW_LEFT]!=NULL)
-				pPieces[j-1].RData[GW_LEFT]->area += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
-			if (sRefFileL[0] == '\0')
-				pPieces[j].RData[GW_LEFT]   = GetReflFile(ReflFileNameL, pReflL);
-			else
-				pPieces[j].RData[GW_LEFT]   = GetReflFile(FullParName((char *)&sRefFileL), NULL);
+			switch (sRefFileT[0]) {
+				case ':':  pPieces[j].RData[GW_TOP]    = pRefFileLast;break;
+				case '\0': pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT);break;
+				default:   pPieces[j].RData[GW_TOP]    = GetReflFile(FullParName((char *)&sRefFileT), NULL);
+					pRefFileLast = pPieces[j].RData[GW_TOP];
+					break;
+			}
 			
 
-			if (j>0 && pPieces[j-1].RData[GW_RIGHT]!=NULL) 
-				pPieces[j-1].RData[GW_RIGHT]->area += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
-			if (sRefFileR[0] == '\0')
-				pPieces[j].RData[GW_RIGHT]  = GetReflFile(ReflFileNameR, pReflR);
-			else
-				pPieces[j].RData[GW_RIGHT]  = GetReflFile(FullParName((char *)&sRefFileR), NULL);
+			switch (sRefFileB[0]) {
+				case ':':  pPieces[j].RData[GW_BOTTOM] = pRefFileLast;break;
+				case '\0': pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB);break;
+				default:   pPieces[j].RData[GW_BOTTOM] = GetReflFile(FullParName((char *)&sRefFileB), NULL);
+					pRefFileLast = pPieces[j].RData[GW_BOTTOM];
+					break;
+			}
 		}
 		dTotalLength = RoundP(pPieces[nPieces].Xpce - pPieces[0].Xpce, 7);
 		GuideEntranceWidth = pPieces[0].Ypce*2.;
@@ -1010,23 +1027,22 @@ void OwnInit   (int argc, char *argv[])
 			}
 
 			/* Calculate Area for this reflectivity file */
-			if (j>0 && pPieces[j-1].RData[GW_TOP]!=NULL) 
-				pPieces[j-1].RData[GW_TOP]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+			if (j > 0) {
+				if (pPieces[j-1].RData[GW_LEFT]!=NULL)
+					pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_RIGHT]!=NULL) 
+					pPieces[j-1].RData[GW_RIGHT]->area  += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_TOP]!=NULL) 
+					pPieces[j-1].RData[GW_TOP]->area    += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+				if (pPieces[j-1].RData[GW_BOTTOM]!=NULL)
+					pPieces[j-1].RData[GW_BOTTOM]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
+			}
 
 			/* Load reflectivity file or reuse already loaded file */
-			pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT);
-
-			if (j>0 && pPieces[j-1].RData[GW_BOTTOM]!=NULL)
-				pPieces[j-1].RData[GW_BOTTOM]->area += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
-			pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB);
-
-			if (j>0 && pPieces[j-1].RData[GW_LEFT]!=NULL)
-				pPieces[j-1].RData[GW_LEFT]->area += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
 			pPieces[j].RData[GW_LEFT]   = GetReflFile(ReflFileNameL, pReflL);
-
-			if (j>0 && pPieces[j-1].RData[GW_RIGHT]!=NULL) 
-				pPieces[j-1].RData[GW_RIGHT]->area += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
 			pPieces[j].RData[GW_RIGHT]  = GetReflFile(ReflFileNameR, pReflR);
+			pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT);
+			pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB);
 		}
 	}
 	if (pFile != NULL)

@@ -533,6 +533,12 @@ set detectorESET {
   {det_tof radio calc {
     "TOF option" "no: flight path inside detector is set to zero\ncalc: length and TOF calculated from thickness" "" o}
     {no calc} {0 1}}
+  {detectcolor int -1 {
+    "detect color" "Detect only events with given color. A negative number means any color." "" C}
+    }
+  {addcolor int -1 {
+    "add color" "Add value to color property after detection. A negative number means no change." "" S}
+    }
 }
 
 proc detectorCheckErr {{app _}} {
@@ -569,6 +575,9 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
+  {detectcolor int -1 {
+    "writeout color" "Write only events with given color. A negative number means any color." "" C}
+    }
 }
 
 ### spin_reset
@@ -2618,8 +2627,13 @@ set eval_elast2ESET {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {"color selection" header}
   {eval_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+    "color" "color necessary for the trajectory to be evaluated\ncolor 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {minColor int -1 {
+    "minColor" "color necessary for the trajectory to be evaluated\nminColor -1 means: all trajectories are evaluated\notherwise neutron color must be >= minColor" "" a} -1 32768}
+  {maxColor int -1 {
+    "maxColor" "color necessary for the trajectory to be evaluated\nmaxColor -1 means: all trajectories are evaluated\notherwise neutron color must be <= maxColor" "" A} -1 32768}
 }
 
 proc eval_elast2CheckErr {{app _}} {
