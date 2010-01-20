@@ -46,6 +46,12 @@ long  nbinsX,                 /* number of bins in X */
       nbinsY,                 /* number of bins in Y */
       nColour,               /* colour necessary for the trajectory to be regarded
                                 colour 0 means: all trajectories are regarded  */
+      minColor = -1,         /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  
+								use neutrons with color >= minColour */
+      maxColor = -1,         /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  
+								use neutrons with color <= maxColour */
       kind;                  /* 1=scattering angle and wavelength; 2=scattering angle and TOF */
 
 double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
@@ -197,6 +203,8 @@ int main(int argc, char *argv[])
 
 			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
 			if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+			if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
+			if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
 
 			/* Writing out the neutrons that comply with the requirements, 
 			   if 'exclusive counts = yes' is set */
@@ -446,6 +454,12 @@ void OwnInit(int argc, char *argv[])
 
 				case 'C':
 					nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour > 0 */
+					break;
+				case 'a':
+					minColor = atol(arg);       /*  use neutrons with color >= minColour */
+					break;
+				case 'A':
+					maxColor = atol(arg);       /*  use neutrons with color <= maxColour */
 					break;
 
 				case 'd':

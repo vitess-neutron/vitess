@@ -9,6 +9,7 @@
 /* 1.3  Feb  2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
 /* 1.4  Mar  2004  K. Lieutenant   F-Format Option                                           */
 /* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
+/* 1.4f Jan  2010  A. Houben       WriteOut only if given color matches Neutron color        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -20,6 +21,7 @@
 
 FILE *AsciiFile;
 short bF_format=FALSE;
+short DetectColor = -1; // WriteOut only neutrons with a given color, -1 means any
 
 void OwnInit(int argc, char *argv[]);
 void OwnCleanup();
@@ -56,6 +58,7 @@ int main(int argc, char **argv)
     for(i=0; i<NumNeutGot; i++) 
     {
       CHECK;
+	  if (DetectColor < 0 || InputNeutrons[i].Color == DetectColor)
       fprintf(AsciiFile, form,
 	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
 	      InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
@@ -92,6 +95,9 @@ void  OwnInit(int argc, char *argv[])
           break;
         case 'F':
           bF_format = (short) atoi(&argv[i][2]);
+          break;
+	    case 'C':
+          DetectColor = (short) atoi(&argv[i][2]);
           break;
         default:
           fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
