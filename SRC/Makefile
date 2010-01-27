@@ -17,6 +17,8 @@ mon2_pos \
 mon2_posdiv \
 mon2_tofwl \
 mon2_wldiv \
+mon2_kdiv \
+mon2_rdiv \
 velselect \
 writeout \
 gener_batch \
@@ -136,6 +138,12 @@ flipper_coil : flipper_coil.c $(MTOOL)
 mon2_tofwl : mon2_tofwl.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+mon2_kdiv : mon2_kdiv.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mon2_rdiv : mon2_rdiv.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 spin_reset : spin_reset.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -157,16 +165,13 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+collimator : collimator.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 capture_flux : capture_flux.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-runtime : runtime.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-collimator : collimator.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 frame : frame.c $(MTOOL)
@@ -260,6 +265,9 @@ sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
 writeout : writeout.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+runtime : runtime.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)

@@ -6,6 +6,7 @@
 /* 1.0  Sep 1999  D. Wechsler                                                               */
 /* 1.1  JUL 2002  G. Zsigmond    reorganized                                                */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2a JAN 2010  A. Houben      Added wavelength filter                                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,7 +29,8 @@ int main(int argc, char *argv[])
   int	dy,dz;
   long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
-
+  double filtLambdaMin=-1.0,          /* filter      */
+		 filtLambdaMax=-1.0;
 
   BufferIndex = 0;
   p=0.0;
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_pos 1.2");
+  print_module_name("mon2_pos 1.2a");
 
 
   for(i=1; i<argc; i++)
@@ -90,7 +92,14 @@ int main(int argc, char *argv[])
 	    if(argv[i][2]=='1')
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
+	  
+	  case 'l':
+        filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
 
+      case 'L':
+        filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
 	  }
       }
     }
@@ -119,11 +128,20 @@ int main(int argc, char *argv[])
   /*************************************************************/
 DECLARE_ABORT;
   while(ReadNeutrons()!= 0)
-    {
-CHECK;      for(i=0; i<NumNeutGot; i++)
+  {
+	CHECK;      
+	for(i=0; i<NumNeutGot; i++)
 	{
+	  CHECK;
 	  registered=0;
-CHECK;
+
+	  if(exclusivecount==0) {
+		  WriteNeutron(&(InputNeutrons[i]));
+	  }
+
+	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
@@ -131,18 +149,17 @@ CHECK;
 	  dz = (int)floor(nbinz*(InputNeutrons[i].Position[2]-heightmin)/(heightmax-heightmin));
 			
 	  if(((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
-	    {	
+	  {	
 	      binyz[dy][dz] = binyz[dy][dz] +  p ;
 	      bintc = bintc + p;
 	      registered=1;
-	    }
+	  }
 	  
-	  if((exclusivecount==0)||(registered==1))
-	    {
+	  if((exclusivecount==1) && (registered==1)) {
 	      WriteNeutron(&(InputNeutrons[i]));
-	    }
+	  }
 	}
-    }
+  }
 
 my_exit:
   for(dy = 0; dy<nbiny; dy++)

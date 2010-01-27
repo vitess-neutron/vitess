@@ -39,7 +39,7 @@ my @Obj = qw(init general intersection matrix sample);
 
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
-	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
+	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv
 	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 

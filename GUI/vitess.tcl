@@ -88,7 +88,7 @@ proc makeModuleSets {} {
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz
-      mon2_pos mon2_div mon2_kdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
+      mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
       monpol_divy monpol_divz monitorpol_pos
       } {visual monitor}}
@@ -1752,11 +1752,48 @@ set tA {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" T}}
 }
 
+set fA {
+  {"filter selection" header}
+}
+
+set fLA {
+  {}
+  {filtLambdaMin float "-1.0" {
+    "filter lambda\nmin [A]" "begin of lambda interval to be filtered, -1.0 means any" "" l}}
+  {filtLambdaMax float "-1.0" {
+    "filter lambda\nmax [A]" "end of lambda interval to be filtered, -1.0 means any" "" L}}
+}
+
+set fPA {
+  {}
+  {filtYMin float "" {
+    "filter Y pos.\nmin [cm]" "begin of Y position interval to be filtered" "" y}}
+  {filtYMax float "" {
+    "filter Y pos.\nmax [cm]" "end of Y position interval to be filtered" "" Y}}
+  {}
+  {filtZMin float "" {
+    "filter Z pos.\nmin [cm]" "begin of Z position interval to be filtered" "" z}}
+  {filtZMax float "" {
+    "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
+}
+set fPAuv {
+  {}
+  {filtYMin float "" {
+    "filter Y pos.\nmin [cm]" "begin of Y position interval to be filtered" "" u}}
+  {filtYMax float "" {
+    "filter Y pos.\nmax [cm]" "end of Y position interval to be filtered" "" U}}
+  {}
+  {filtZMin float "" {
+    "filter Z pos.\nmin [cm]" "begin of Z position interval to be filtered" "" v}}
+  {filtZMax float "" {
+    "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" V}}
+}
+
 
 ### monitor
 ###   wavelength
 
-set mon1_lambdaESET [concat [genFE lambda] $nA $nnA $mA $pA $tA]
+set mon1_lambdaESET [concat [genFE lambda] $nA $nnA $mA $pA $tA $fA $fPA]
 proc mon1_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
 }
@@ -1777,7 +1814,7 @@ proc monpol_lambdaCheckErr {{app _}} {
 ### monitor
 ###   energy
 
-set mon1_energyESET [concat [genFE energy] $nA $nnA $eA $pA $tA]
+set mon1_energyESET [concat [genFE energy] $nA $nnA $eA $pA $tA $fA $fLA $fPA]
 proc mon1_energyCheckErr {{app _}} {
   return [checkMiMaErr min_e max_e "" $app]
 }
@@ -1793,7 +1830,7 @@ set mA {
     "maximal\ntime [ms]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_timeESET [concat [genFE time] $nA $nnA $mA $pA]
+set mon1_timeESET [concat [genFE time] $nA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_timeCheckErr {{app _}} {
   return [checkMiMaErr min_time max_time "" $app]
 }
@@ -1814,7 +1851,7 @@ set mA {
     "max. div.\nx <-> y [deg]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_divyESET [concat [genFE divy] $nA $nnA $mA $pA]
+set mon1_divyESET [concat [genFE divy] $nA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_divyCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -1834,7 +1871,7 @@ set mA {
     "max. div.\nx <-> z [deg]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_divzESET [concat [genFE divz] $nA $nnA $mA $pA]
+set mon1_divzESET [concat [genFE divz] $nA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -1856,7 +1893,7 @@ set mA {
     "max. y [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_yESET [concat [genFE pos_y] $nA $nnA $mA $pA]
+set mon1_yESET [concat [genFE pos_y] $nA $nnA $mA $pA $fA $fLA]
 proc mon1_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -1877,7 +1914,7 @@ set mA {
     "max. z [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_zESET [concat [genFE pos_z] $nA $nnA $mA $pA]
+set mon1_zESET [concat [genFE pos_z] $nA $nnA $mA $pA $fA $fLA]
 proc mon1_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -1905,7 +1942,7 @@ set mA {
   {max_z float 6 {"maximal\nz-value [cm]" "" "" H} -1000 1000 1}
 }
 
-set mon2_posESET [concat [genFE2 pos] $nA $mA $pA]
+set mon2_posESET [concat [genFE2 pos] $nA $mA $pA $fA $fLA]
 proc mon2_posCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -1933,7 +1970,7 @@ set mA {
   {max_z float 3 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
 }
 
-set mon2_divESET [concat [genFE2 div] $nA $mA $pA]
+set mon2_divESET [concat [genFE2 div] $nA $mA $pA $fA $fLA $fPAuv]
 proc mon2_divCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -1973,7 +2010,7 @@ set mA {
   {max_z float 3 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
 }
 
-set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA]
+set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA $fA $fLA $fPAuv]
 proc mon2_y_divyCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -1994,7 +2031,7 @@ set mA {
   {min_z float -3 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
   {max_z float 3 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
 }
-set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA]
+set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA $fA $fLA $fPAuv]
 proc mon2_z_divzCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -2047,10 +2084,32 @@ set mA {
     {horizontal vertical} {1 2}}
 }
 
-set mon2_wldivESET [concat [genFE2 wl_div] $nA $mA $pA]
+set mon2_wldivESET [concat [genFE2 wl_div] $nA $mA $pA $fA $fPAuv]
 proc mon2_tofwlCheckErr {{app _}} {
   if [checkMiMaErr min_wl max_wl "" $app] {return 1}
   return [checkMiMaErr min_div max_div "" $app]
+}
+
+### mon2
+###   rdiv
+
+set nA {
+  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof z-bins" "" "" z} 1 200 1}
+}
+set mA {
+  {}
+  {min_y float 0.0 {"minimal\ny-value [cm]" "" "" w} ge0}
+  {max_y float 2.0 {"maximal\ny-value [cm]" "" "" W} ge0}
+  {}
+  {min_z float 0.0 {"minimal\nz-value [deg]" "" "" h} 0 180 1}
+  {max_z float 1.0 {"maximal\nz-value [deg]" "" "" H} 0 180 1}
+}
+
+set mon2_rdivESET [concat [genFE2 rdiv] $nA $mA $pA $fA $fLA $fPAuv]
+proc mon2_rdivCheckErr {{app _}} {
+  if [checkMiMaErr min_y max_y "" $app] {return 1}
+  return [checkMiMaErr min_z max_z "" $app]
 }
 
 ### sample
