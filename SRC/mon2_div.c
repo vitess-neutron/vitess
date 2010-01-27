@@ -6,6 +6,7 @@
 /* 1.0            Géza Zsigmond                                                             */
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2a JAN 2010  A. Houben      Added wavelength and yz position filter                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -29,6 +30,12 @@ int main(int argc, char *argv[])
   int	dy,dz;
   long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
   double Divy, Divz, DivYmin, DivYmax, DivZmin, DivZmax,p, probactiv, bintc;
+  double filtLambdaMin=-1.0,          /* filter      */
+		 filtLambdaMax=-1.0,
+		 filtYMin=-1.0e10,
+         filtYMax=1.0e10,
+		 filtZMin=-1.0e10,
+		 filtZMax=1.0e10;
 
 
   BufferIndex = 0;
@@ -39,7 +46,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_div 1.2");
+  print_module_name("mon2_div 1.2a");
 
 
   for(i=1; i<argc; i++)
@@ -91,6 +98,30 @@ int main(int argc, char *argv[])
 	    if(argv[i][2]=='1')
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
+	  
+	  case 'l':
+        filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
+
+      case 'L':
+        filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
+
+      case 'u':
+        filtYMin = atof(&argv[i][2]);   /* filter Y */
+        break;
+
+      case 'U':
+        filtYMax = atof(&argv[i][2]);   /* filter Y */
+        break;
+
+      case 'v':
+        filtZMin = atof(&argv[i][2]);   /* filter Z */
+        break;
+
+      case 'V':
+        filtZMax = atof(&argv[i][2]);   /* filter Z */
+        break;
 
 	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
@@ -124,41 +155,51 @@ int main(int argc, char *argv[])
   /*************************************************************/
 DECLARE_ABORT;
   while(ReadNeutrons()!= 0)
-    {
-CHECK;      for(i=0; i<NumNeutGot; i++)
+  {
+  CHECK;
+  for(i=0; i<NumNeutGot; i++)
 	{
-CHECK;	  registered=0;
+      CHECK;
+	  registered=0;
+
+	  if(exclusivecount==0) {
+		  WriteNeutron(&(InputNeutrons[i]));
+	  }
+
+	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+	  if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
 
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
-	    Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
-	    Divy*=180.0/M_PI;
-	    if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	      {Divy=0.0;}
+	  Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+	  Divy*=180.0/M_PI;
+	  if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+	    {Divy=0.0;}
 
-	    Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
-	    Divz*=180.0/M_PI;
-	    if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	      {Divz=0.0;}
-
+	  Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+	  Divz*=180.0/M_PI;
+	  if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+	    {Divz=0.0;}
 
 	  dy = (int)floor(nbiny*(Divy-DivYmin)/(DivYmax-DivYmin));
 	  dz = (int)floor(nbinz*(Divz-DivZmin)/(DivZmax-DivZmin));
 			
-	  if(((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
-	    {	
+	  if(((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz))) {	
 	      binyz[dy][dz] = binyz[dy][dz] +  p ;
 	      bintc = bintc + p;
 	      registered=1;
-	    }
+	  }
 	  
-	  if((exclusivecount==0)||(registered==1))
-	    {
+	  if((exclusivecount==1) && (registered==1)) {
 	      WriteNeutron(&(InputNeutrons[i]));
-	    }
-	}
+	  }
     }
+  }
 my_exit:
 
   for(dy = 0; dy<nbiny; dy++)

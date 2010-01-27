@@ -1,34 +1,34 @@
 /********************************************************************************************/
-/*  VITESS module 'mon2_posdiv.c'                                                           */
+/*  VITESS module 'mon2_rdiv.c'                                                             */
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
-/* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
-/* 1.2a JAN 2010  A. Houben      Added wavelength and yz position filter                    */
+/* 1.0  JAN 2010  A. Houben (idea by W. Schweika)                                           */
 /********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
 #include "init.h"
 #include "softabort.h"
 #include "general.h"
 
 #define BINSIZE 201
 
-  static double bdiv_[BINSIZE],bpos_[BINSIZE];
-  static double bin_posdiv[BINSIZE][BINSIZE];
+  static double bphi[BINSIZE],bradius[BINSIZE];
+  static double binyz[BINSIZE][BINSIZE];
 
 int main(int argc, char *argv[])
 {
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
-  int		index_yz , dpos,ddiv;
-  long	i, exclusivecount, registered, BufferIndex, nbin_pos, nbin_div ;
-  double pos_, div_, pos_min, pos_max, div_min, div_max,p, probactiv, bintc;
+  int	dy,dz;
+  long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
+  double radius, phi;
+  VectorType xvec = {1, 0, 0}, kvec;
+  double rmin, rmax, phimin, phimax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
 		 filtYMin=-1.0e10,
@@ -42,11 +42,10 @@ int main(int argc, char *argv[])
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
-  index_yz=1;
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_posdiv 1.2a");
+  print_module_name("mon2_rdiv 1.0");
 
 
   for(i=1; i<argc; i++)
@@ -54,12 +53,7 @@ int main(int argc, char *argv[])
       if(argv[i][0]!='+') {
 	switch(argv[i][1])
 	  {
-
-	  case 'q':
-	    index_yz = atol(&argv[i][2]); /*  y or z direction */
-	    break;
-
-	case 'O':
+	  case 'O':
 	    if((fmonitor = fopen(&argv[i][2],"w"))==NULL)
 	      {
 		fprintf(LogFilePtr,"\nFile %s could not be opened for monitoroutput\n",&argv[i][2]);
@@ -69,29 +63,29 @@ int main(int argc, char *argv[])
 	    break;
 
 	  case 'y':
-	    nbin_pos = atol(&argv[i][2]); /* number of bins horizontal axis*/
-	    if(nbin_pos>BINSIZE)
+	    nbiny = atol(&argv[i][2]); /* number of bins horizontal axis */
+	    if(nbiny>BINSIZE)
 	      {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
 	    break;
 
 	  case 'z':
-	    nbin_div = atol(&argv[i][2]); /* number of bins vertical axis*/
-	    if(nbin_div>BINSIZE)
+	    nbinz = atol(&argv[i][2]); /* number of bins vertical axis */
+	    if(nbinz>BINSIZE)
 	      {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
 	    break;
 
 	  case 'h':
-	    div_min =  atof(&argv[i][2]);   /* bottom position window */
+	    phimin =  atof(&argv[i][2]);   /* bottom position window */
 	    break;
 	  case 'w':
-	    pos_min = atof(&argv[i][2]);		/* left edge position window */
+	    rmin = atof(&argv[i][2]);		/* left edge position window */
 	    break;
 
 	  case 'H':
-	    div_max =  atof(&argv[i][2]);   /* top position window  */
+	    phimax =  atof(&argv[i][2]);   /* top position window */
 	    break;
 	  case 'W':
-	    pos_max = atof(&argv[i][2]);		/* right edge position window  */
+	    rmax = atof(&argv[i][2]);		/* right edge position window */
 	    break;
 
 	  case 'p':
@@ -103,7 +97,7 @@ int main(int argc, char *argv[])
 	    if(argv[i][2]=='1')
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
-
+	  
 	  case 'l':
         filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
         break;
@@ -128,10 +122,10 @@ int main(int argc, char *argv[])
         filtZMax = atof(&argv[i][2]);   /* filter Z */
         break;
 
-/*	  default:
+	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
 	    exit(-1);
-	    break;*/
+	    break;
 	  }
       }
     }
@@ -146,32 +140,29 @@ int main(int argc, char *argv[])
   /*initialisation */
 
   bintc = 0;
-  for(dpos = 0; dpos<nbin_pos+1; dpos++)
+  for(dy = 0; dy<nbiny+1; dy++)
     {
-      bpos_[dpos] = pos_min + (pos_max-pos_min) * dpos / (double)nbin_pos;
+      bradius[dy] = rmin + (rmax-rmin) * dy / (double)nbiny;
 
-      for(ddiv = 0;ddiv<(nbin_div+1); ddiv++)
+      for(dz = 0;dz<(nbinz+1); dz++)
 	{
-	  bdiv_[ddiv] = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
-	  bin_posdiv[dpos][ddiv] = 0.0;
+	  bphi[dz] = phimin + (phimax-phimin)  * dz / (double) nbinz;
+	  binyz[dy][dz] = 0.0;
 	}
     }
 
   /*************************************************************/
-
 DECLARE_ABORT;
-  
   while(ReadNeutrons()!= 0)
   {
-    CHECK;
-      
-	for(i=0; i<NumNeutGot; i++)
+  CHECK;
+  for(i=0; i<NumNeutGot; i++)
 	{
       CHECK;
 	  registered=0;
 
 	  if(exclusivecount==0) {
-	    WriteNeutron(&(InputNeutrons[i]));
+		  WriteNeutron(&(InputNeutrons[i]));
 	  }
 
 	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
@@ -184,39 +175,37 @@ DECLARE_ABORT;
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
-	  pos_ = InputNeutrons[i].Position[index_yz];
+	  radius = sqrt(sq(InputNeutrons[i].Position[1])+sq(InputNeutrons[i].Position[2]));
+	  CopyVector(InputNeutrons[i].Vector, kvec);
+	  NormVector(kvec);
+	  phi = acos(ScalarProduct(xvec, kvec))/M_PI*180.;
 
-	  div_ = (double)atan2(InputNeutrons[i].Vector[index_yz],InputNeutrons[i].Vector[0]);
-	  div_*=180.0/M_PI;
-	  if ((InputNeutrons[i].Vector[index_yz]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	    {div_=0.0;}
-
-	  dpos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
-	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
+	  dy = (int)floor(nbiny*(radius-rmin)/(rmax-rmin));
+	  dz = (int)floor(nbinz*(phi-phimin)/(phimax-phimin));
 			
-	  if(((dpos>=0)&&(dpos<nbin_pos))&&((ddiv>=0)&&(ddiv<nbin_div))) {	
-	    bin_posdiv[dpos][ddiv] = bin_posdiv[dpos][ddiv] +  p ;
-	    bintc = bintc + p;
-	    registered=1;
+	  if(((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz))) {	
+	      binyz[dy][dz] = binyz[dy][dz] +  p ;
+	      bintc = bintc + p;
+	      registered=1;
 	  }
 	  
 	  if((exclusivecount==1) && (registered==1)) {
-	    WriteNeutron(&(InputNeutrons[i]));
+	      WriteNeutron(&(InputNeutrons[i]));
 	  }
-	}
+    }
   }
 my_exit:
 
-  for(dpos = 0; dpos<nbin_pos; dpos++)
+  for(dy = 0; dy<nbiny; dy++)
     {
-      fprintf(fmonitor,"%10.7f\t",(bpos_[dpos]+bpos_[dpos+1])/2.0);
+      fprintf(fmonitor,"%10.7f\t",(bradius[dy]+bradius[dy+1])/2.0);
     }
-  for(ddiv = 0; ddiv<nbin_div; ddiv++)
+  for(dz = 0; dz<nbinz; dz++)
     {
-      fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-      for(dpos = 0; dpos<nbin_pos; dpos++)
+      fprintf(fmonitor,"\n %5.3f\t",(bphi[dz]+bphi[dz+1])/2.0);
+      for(dy = 0; dy<nbiny; dy++)
 	{
-	  fprintf(fmonitor,"%5.3E\t",bin_posdiv[dpos][ddiv]);
+	  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
 	}
     }
   fclose(fmonitor);
