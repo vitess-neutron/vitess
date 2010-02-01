@@ -1745,6 +1745,12 @@ set pA {
     {yes no} {1 0}}
 }
 
+set FA {
+  {fileformat radio matrix {
+    "file\nformat" "file format for output. matrix is the established format. The xyz column format is new." "" F}
+    {matrix xyz} {0 1}}
+}
+
 set tA {
   {timevalbegin float "" {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" t}}
@@ -1942,7 +1948,7 @@ set mA {
   {max_z float 6 {"maximal\nz-value [cm]" "" "" H} -1000 1000 1}
 }
 
-set mon2_posESET [concat [genFE2 pos] $nA $mA $pA $fA $fLA]
+set mon2_posESET [concat [genFE2 pos] $nA $mA $pA $FA $fA $fLA]
 proc mon2_posCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -1970,7 +1976,7 @@ set mA {
   {max_z float 3 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
 }
 
-set mon2_divESET [concat [genFE2 div] $nA $mA $pA $fA $fLA $fPAuv]
+set mon2_divESET [concat [genFE2 div] $nA $mA $pA $FA $fA $fLA $fPAuv]
 proc mon2_divCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -1988,7 +1994,7 @@ set mA {
   {max_kz float 0.1 {"maximal\nkz-value [1/Ang]" "" "" H} -100 100 1}
 }
 
-set mon2_kdivESET [concat [genFE2 kdiv] $nA $mA $pA]
+set mon2_kdivESET [concat [genFE2 kdiv] $nA $mA $pA $FA]
 proc mon2_kdivCheckErr {{app _}} {
   if [checkMiMaErr min_ky max_ky "" $app] {return 1}
   return [checkMiMaErr min_kz max_kz "" $app]
@@ -2010,7 +2016,7 @@ set mA {
   {max_z float 3 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
 }
 
-set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA $fA $fLA $fPAuv]
+set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA $FA $fA $fLA $fPAuv]
 proc mon2_y_divyCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -2031,7 +2037,7 @@ set mA {
   {min_z float -3 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
   {max_z float 3 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
 }
-set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA $fA $fLA $fPAuv]
+set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA $FA $fA $fLA $fPAuv]
 proc mon2_z_divzCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
@@ -2055,7 +2061,7 @@ set mA {
     "maximal\nwavelength [A]" "upper bound of the monitored interval" "" M} gt0  "" 1}
 }
 
-set mon2_tofwlESET [concat [genFE2 tof_wl] $nA $mA $pA]
+set mon2_tofwlESET [concat [genFE2 tof_wl] $nA $mA $pA $FA]
 proc mon2_tofwlCheckErr {{app _}} {
   if [checkMiMaErr min_tof max_tof "" $app] {return 1}
   return [checkMiMaErr min_wl max_wl "" $app]
@@ -2084,7 +2090,7 @@ set mA {
     {horizontal vertical} {1 2}}
 }
 
-set mon2_wldivESET [concat [genFE2 wl_div] $nA $mA $pA $fA $fPAuv]
+set mon2_wldivESET [concat [genFE2 wl_div] $nA $mA $pA $FA $fA $fPAuv]
 proc mon2_tofwlCheckErr {{app _}} {
   if [checkMiMaErr min_wl max_wl "" $app] {return 1}
   return [checkMiMaErr min_div max_div "" $app]
@@ -2106,7 +2112,7 @@ set mA {
   {max_z float 1.0 {"maximal\nz-value [deg]" "" "" H} 0 180 1}
 }
 
-set mon2_rdivESET [concat [genFE2 rdiv] $nA $mA $pA $fA $fLA $fPAuv]
+set mon2_rdivESET [concat [genFE2 rdiv] $nA $mA $pA $FA $fA $fLA $fPAuv]
 proc mon2_rdivCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]

@@ -7,6 +7,7 @@
 /* 1.1  JUL 2002  G. Zsigmond    reorganized                                                */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      Added wavelength filter                                    */
+/* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0;
+  long format = 0;
 
   BufferIndex = 0;
   p=0.0;
@@ -40,7 +42,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_pos 1.2a");
+  print_module_name("mon2_pos 1.2b");
 
 
   for(i=1; i<argc; i++)
@@ -99,6 +101,10 @@ int main(int argc, char *argv[])
 
       case 'L':
         filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
+
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
         break;
 	  }
       }
@@ -162,6 +168,8 @@ DECLARE_ABORT;
   }
 
 my_exit:
+  switch (format) {
+	  case 0:
   for(dy = 0; dy<nbiny; dy++)
     {
       fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);
@@ -174,6 +182,17 @@ my_exit:
 	  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
 	}
     }
+  break;
+  case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(dz = 0; dz<nbinz; dz++) {
+		  for(dy = 0; dy<nbiny; dy++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bposy[dy]+bposy[dy+1])/2.0, (bposz[dz]+bposz[dz+1])/2.0, binyz[dy][dz]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 

@@ -7,6 +7,7 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      Added yz position filter                                   */
+/* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
 		 filtZMin=-1.0e10,
 		 filtZMax=1.0e10;
   double div_other_direction;
+  long format = 0;
 
 
   BufferIndex = 0;
@@ -45,7 +47,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_wldiv 1.2a");
+  print_module_name("mon2_wldiv 1.2b");
 
 
   for(i=1; i<argc; i++)
@@ -129,6 +131,10 @@ int main(int argc, char *argv[])
 
       case 'V':
         filtZMax = atof(&argv[i][2]);   /* filter Z */
+        break;
+
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
         break;
 
 /*	  default:
@@ -215,19 +221,31 @@ DECLARE_ABORT;
 	}
   }
 my_exit:
-
-  for(dwl = 0; dwl<nbin_wl; dwl++)
-    {
-      fprintf(fmonitor,"%10.7f\t",(bwl_[dwl]+bwl_[dwl+1])/2.0);
-    }
-  for(ddiv = 0; ddiv<nbin_div; ddiv++)
-    {
-      fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-      for(dwl = 0; dwl<nbin_wl; dwl++)
-	{
-	  fprintf(fmonitor,"%5.3E\t",bin_wldiv[dwl][ddiv]);
-	}
-    }
+  switch (format) {
+	case 0:
+	  for(dwl = 0; dwl<nbin_wl; dwl++)
+		{
+		  fprintf(fmonitor,"%10.7f\t",(bwl_[dwl]+bwl_[dwl+1])/2.0);
+		}
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++)
+		{
+		  fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
+		  for(dwl = 0; dwl<nbin_wl; dwl++)
+		{
+		  fprintf(fmonitor,"%5.3E\t",bin_wldiv[dwl][ddiv]);
+		}
+		}
+	  break;
+    case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++) {
+		   for(dwl = 0; dwl<nbin_wl; dwl++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bwl_[dwl]+bwl_[dwl+1])/2.0, (bdiv_[ddiv]+bdiv_[ddiv+1])/2.0, bin_wldiv[dwl][ddiv]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 

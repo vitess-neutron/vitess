@@ -6,6 +6,43 @@ proc getFreePlot {} {
   return $Plotindex
 }
 
+
+proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
+  upvar $f_i f
+  upvar $xl_i xl
+  upvar $yl_i yl
+  upvar $rows_i rows
+  upvar $cols_i cols
+  upvar $a_i a
+  catch {unset arr}
+  while { ! [eof $f] } {
+    if {[gets $f ins] <= 0} continue
+    set ll [eval list $ins]
+    set x [expr 0 + [lindex $ll 0]]
+    if {$x == ""} continue
+    set y [expr 0 + [lindex $ll 1]]
+    set arr($x,$y) [expr 0 + [lindex $ll 2]]
+    lappend xl $x
+    lappend yl $y
+  }
+  set xl [lsort -real -unique $xl]
+  set cols [llength $xl]
+#  set yl [lsort -real -unique -decreasing $yl]
+  set yl [lsort -real -unique $yl]
+
+  set rows [llength $yl]
+  # prepare value rows, from top to bottom
+  foreach y $yl {
+    set xa {}
+    foreach x $xl {
+      if [catch {set v $arr($x,$y)}] {set v 0}
+      lappend xa $v
+    }
+    lappend a $xa
+  }
+  catch {unset arr}
+}
+
 # show 2d array coded with colors
 proc show2Dfile {fname} {
   if [catch {open $fname r} f] {
@@ -21,34 +58,40 @@ proc show2Dfile {fname} {
   set i [getFreePlot]
   set w .plot$i
 
-  set rows 0
-  set a {}
-  set xl {};				# x tic values
-  set yl {};				# y tic values
+  set rows 1
+  set a {};      # list of row lists, top to bottom
+  set xl {};     # x tic values
+  set yl {};     # y tic values
 
-  while {[gets $f ins] > 0} {
-    incr rows
-    set ll [eval list $ins]
-    if {$rows == 1} {
-      set xl $ll
-      continue;				# first line and first column are tic values
-    }
-    lappend yl [lindex $ll 0]
-    set inp [lrange $ll 1 end]
-    if {$rows == 2} {
-      set cols [llength $inp]
-      set max [set min [lindex $inp 0]]
-    }
-    lappend a $inp
-    foreach v $inp {
-      if {$v > $max} {set max $v} elseif {$v < $min} {set min $v}
-    }
-  }
-  close $f
-  if {$rows == 0} {
+  if {[gets $f ins] <= 0} {
+    close $f
     showText "! empty file $fname"
     return
   }
+
+  set ll [eval list $ins]
+  if [string compare "#x y z" "$ll"] {
+    set xl $ll;	# first line and first column are tic values
+    while {[gets $f ins] > 0} {
+      incr rows
+      set ll [eval list $ins]
+      lappend yl [lindex $ll 0]
+      lappend a [set inp [lrange $ll 1 end]]
+      if {$rows == 2} {set cols [llength $inp]}
+    }
+  } else {
+    readXYZFile f rows cols xl yl a
+  }
+  close $f
+
+  # find min, max
+  set min [set max [lindex [lindex $a 0] 0]]
+  foreach row $a {
+    foreach v $row {
+      if {$v > $max} {set max $v} elseif {$v < $min} {set min $v}
+    }
+  }
+
   if {$max == $min} {set factor 1} else {
     set factor [expr 255 / ($max - $min)]
   }
