@@ -7,6 +7,7 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      Added wavelength and yz position filter                    */
+/* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -35,6 +36,7 @@ int main(int argc, char *argv[])
          filtYMax=1.0e10,
 		 filtZMin=-1.0e10,
 		 filtZMax=1.0e10;
+  long format = 0;
 
 
   BufferIndex = 0;
@@ -128,6 +130,10 @@ int main(int argc, char *argv[])
         filtZMax = atof(&argv[i][2]);   /* filter Z */
         break;
 
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
+        break;
+
 /*	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
 	    exit(-1);
@@ -206,19 +212,31 @@ DECLARE_ABORT;
 	}
   }
 my_exit:
-
-  for(dpos = 0; dpos<nbin_pos; dpos++)
-    {
-      fprintf(fmonitor,"%10.7f\t",(bpos_[dpos]+bpos_[dpos+1])/2.0);
-    }
-  for(ddiv = 0; ddiv<nbin_div; ddiv++)
-    {
-      fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-      for(dpos = 0; dpos<nbin_pos; dpos++)
-	{
-	  fprintf(fmonitor,"%5.3E\t",bin_posdiv[dpos][ddiv]);
-	}
-    }
+  switch (format) {
+	case 0:
+	  for(dpos = 0; dpos<nbin_pos; dpos++)
+		{
+		  fprintf(fmonitor,"%10.7f\t",(bpos_[dpos]+bpos_[dpos+1])/2.0);
+		}
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++)
+		{
+		  fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
+		  for(dpos = 0; dpos<nbin_pos; dpos++)
+		{
+		  fprintf(fmonitor,"%5.3E\t",bin_posdiv[dpos][ddiv]);
+		}
+		}
+	  break;
+    case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++) {
+		  for(dpos = 0; dpos<nbin_pos; dpos++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bpos_[dpos]+bpos_[dpos+1])/2.0, (bdiv_[ddiv]+bdiv_[ddiv+1])/2.0, bin_posdiv[dpos][ddiv]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 
