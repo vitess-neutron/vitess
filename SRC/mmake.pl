@@ -44,7 +44,7 @@ my @C = qw(ascii2bin monitor1
 	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 
 # modules which need ITOOL (=TOOL + intersection)
-my @CI = qw(chopper_disc chopper_fermi collimator_soller collimator
+my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
 	    slit grid source spacewindow spacewindow_multiple space lenses);
 
 # modules which need MTOOL (=ITOOL + matrix)
@@ -92,7 +92,8 @@ my %dep = (			# needed objects for a module
 	   spacewindow_multiple => 'bender_inter_data',
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
-	   mirror_elliptical => 'mirrrefl'
+	   mirror_elliptical => 'mirrrefl',
+	   chopper_fermi_parallel => 'threadHelper'
 	  );
 
 # objects necessary for some modules, to be compiled separately
@@ -118,6 +119,11 @@ foreach (qw(visual bender dist_time sm_ensemble lenses)) {
   $sopt{$_} = '$(GRAOPT)';		# special compile options for a module
   $lib{$_} = '$(GRALIB)';		# needed libs for a module
 }
+
+# Modules needing thread support:
+my %Thread;
+$Thread{$_} = 1 foreach qw(chopper_fermi_parallel);
+
 
 my @All = (@C, @CI, @CM, @CMG, @CS, @Gexe, @PTool);
 
@@ -195,8 +201,9 @@ EOS
 
   foreach my $d (keys %dep) {
     my $l = $lib{$d} || '$(LIBS)';
-    print $d . ' : ' .  join('.c ', split(' ', $dep{$d})) . '.c ' . $Macro{$d} .
-      "\n\t" . '$(CC) -o $@ $^ ' . "$l\n\n";
+    print $d, ' : ',  join('.c ', split(' ', $dep{$d})), '.c ', $Macro{$d},
+      "\n\t", '$(CC)', ($Thread{$d} ? ' -pthread' : ''),
+	' -o $@ $^ ', "$l\n\n";
   }
 	
   print <<'EOS';
@@ -253,14 +260,13 @@ IDIR=.|Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
 
 LINK32=link.exe
-WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib |
- shell32.lib
+WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 |
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
 TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj"
@@ -270,6 +276,7 @@ MGTOOL="$(IDIR)|distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
 ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
    $(CPP) @<<
@@ -377,6 +384,7 @@ sub subRule {
     }
     s/zzz/$lib{$c}/;
     s/ooo/$sopt{$c}/;
+    s/(ML)/(ML_T)/g if $Thread{$c};
     $s .= $_;
   }
 }

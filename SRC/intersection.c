@@ -386,7 +386,7 @@ long IntersectionWithRectangular(VectorType DimSample, VectorType Pos, VectorTyp
 
 	/*ordering intersection positions */
 	
-	if(OrderPositions(Dir, Pos1, Pos2)==1);
+	OrderPositions(Dir, Pos1, Pos2);
 
 	return 1 ;
 
@@ -640,7 +640,7 @@ long IntersectionWithCylinder(VectorType DimSample, VectorType Pos, VectorType D
 
 	/* ordering intersection positions */
 	
-		if(OrderPositions(Dir, Pos1, Pos2)==1);	
+		OrderPositions(Dir, Pos1, Pos2);	
 
 	    if((Pos1[2] > DimSample[2]/2.) && (Pos2[2] > DimSample[2]/2.)) return 0 ;
         if((Pos1[2] < - DimSample[2]/2.) && (Pos2[2] < - DimSample[2]/2.)) return 0 ;
@@ -753,7 +753,7 @@ double b, c, delta, khi1, khi2 ;
 
 		/*ordering intersection positions */
 	
-		if(OrderPositions(Dir, Pos1, Pos2)==1);	
+		OrderPositions(Dir, Pos1, Pos2);	
 
 		return 1 ;
 	}

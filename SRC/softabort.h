@@ -1,6 +1,9 @@
 #ifndef SOFTABORT_H
 #define SOFTABORT_H
 
+
+static int finishSoftabort = 0;
+
 #ifdef _MSC_VER
 
 # include <windows.h>
@@ -18,7 +21,9 @@
     ResetEvent( hS);
   }
   int stopEvent () {
-    int rc = WaitForSingleObject(hS, 0);
+    int rc;
+    finishSoftabort = 1;
+    rc = WaitForSingleObject(hS, 0);
     if (rc == WAIT_FAILED) {
       fprintf(LogFilePtr,"WaitForSingleObject failed %d\n", rc);
       return 1;
@@ -28,14 +33,13 @@
 
 #else
 
-  static int finish = 0;
 # include <signal.h>
-  void my_handler(int sig) {finish = 1;}
+  void my_handler(int sig) {finishSoftabort = 1;}
 # ifdef OSF
 #   define CHECK if (docheck()) {goto my_exit;}
-    int docheck() {if (finish) return 1;  return 0;}
+    int docheck() {if (finishSoftabort) return 1;  return 0;}
 # else
-#   define CHECK if (finish) {goto my_exit;}
+#   define CHECK if (finishSoftabort) {goto my_exit;}
 # endif
 # define DECLARE_ABORT signal(SIGTERM, my_handler);
 #endif

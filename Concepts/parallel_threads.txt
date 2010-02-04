@@ -1,0 +1,261 @@
+Thread-parallel Vitess Modules
+==============================
+
+PCs nowadays have multi core CPUs, which we would like to use to full extent for simulations.
+A Vitess pipe is a parallel construct and uses CPU resources to the limit, if all
+modules really demand CPU power. 
+But most Vitess pipes are dominated by a CPU intensive module which uses only one of
+many cores. It would be nice to put the work load of that module to 2 or more threads in this case.
+
+This text is a concept of how to enable thread parallelisation with non-invasive code changes.
+
+Vitess modules (except pure source modules) work by definition with a loop
+
+while (we have more neutrons)  {
+  read a block of neutrons
+  work on these input neutrons
+  write neutrons / trajectories which survive or are generated here
+}
+
+A closer look to the code
+
+  while (ReadNeutrons()) {
+    int i;
+    for(i=0; i<NumNeutGot; i++)
+      processNeutron(i);    
+  }
+
+where processNeutron calls WriteNeutron, if a neutron should be written to output.
+
+This will be parallelised with the replacement method
+
+  processNeutrons(NHelperThreads, processNeutron, maxNPerNeutron, maxMCPerNeutron);
+
+  NHelperThreads may be 0,1,2,.. 
+         0 to specify serial execution (0, no helper thread)
+         1 one helper thread ...
+  processNeutron(i, thread_i) will be called with the additional parameter thread_i to
+         indicate for which thread it is called; 0: main thread, 1: first helper thread,...
+  
+  maxNPerNeutron is the maximal ratio of output neutron per input neutron
+         this will be 1 for many modules
+  maxMCPerNeutron is the maximal number of PRNG calls per neutron, see more below.
+
+
+Preliminaries:
+Working on neutron i is encapsulated in the routine processNeutron.
+Variables of processNeutron should be declared locally mostly, ie only global settings
+should be kept in global variables, and those which are processed serially.
+This rule has been violated in some Vitess modules for conveniance reasons.
+A global variable, or to be more precise, any given global address, must not
+be written by different threads A and B both.
+This demand on one hand is easily fulfilled, because neutron
+trajectories are independent, and the output for neutron i does not depend, in the sense
+of the physical model, on the output for neutron j.
+
+One obvious problem remains: If we write neutrons with WriteNeutron, we cause a race condition,
+when the global output buffer, or to be more precise the last element of that buffer,
+and the global counter of output neutrons, are written by different threads.
+We could synchronize variable access by a mutex, but the ratio
+CPU-time-per-neutron / mutex-sync-time
+is small, and we would pay a big penalty to access that mutex for each output neutron.
+My solution is to use temporary buffers per thread of a given maximal size,
+and to flush these buffers after parallel execution.
+To faciliate this, we have to replace WriteNeutron(neutron) calls by
+WriteNeutronParallel(neutron, thread_i) in processNeutron.
+By using temporary buffers we even keep the output order of neutrons for model
+simulations with different NThreads.
+
+A more hideous problem are pseudo random numbers, which in a way are the heart of the
+simulation busines :-) If the module uses MonteCarlo(x,y) or Vran()
+the outcome of processNeutron(i) _is_ dependant on the execution order, when threads
+start parallel execution, and the PRNG would process Vran() calls in a synchronized
+"first come, first served" fashion. That fashion would have another disadvantage:
+Two different Vitess simulations would _not_ produce the same output, because
+the time when Vran() is called here is really random. 
+To keep the "same binary output" requirement we could start different threads with
+different seeds  (not easy with GSL PRNGs, these work with one global state variable)
+but would need user input of these seeds for different NThreads.
+
+So we pre-generate random numbers serially before thread work begins. This has no
+performance impact for those compute intensive modules which do not need MC at all.
+For other modules the module maintainer must provide a maximum number of MC calls per input neutron.
+This number may be chosen arbitrarily, and a number chosen too high has no other disadvantage
+than a constant execution time offset.
+With that we guarantee "same binaray output" for runs with a given NThreads.
+Within processNeutron (and routines called within) we replace Vran() calls by
+VranParallel(thread_i) then, and MonteCarloParallel(x,y,thread_i) has to
+replace MonteCarlo(x,y).
+
+Code Modifications:
+
+init.c
+  global variable
+  int NThreads                     is > 1 for parallel execution and set with the --T option
+
+ 
+New source files:
+threadHelper.h
+threadHelper.c
+  Use POSIX threads for Linux, and for Windows the thread API in kernel32.dll (Windows 2000, XP, ...).
+
+If CPU time per Neutron would be high, synchronisation time between threads would not count much.
+In reality with dual or quadcore CPUs, and many trajectories which are computed quickly,
+it is better to create NThreads = 1,2, or 3 threads, and to divide the work for neutron
+0,1,...NumNeutGot-1 to 2,3, or 4 ranges. The main task always performs the first range
+concurrently with it's helper threads.
+
+
+global variables for threadHelper
+
+int maxNPerNeutron, maxMCPerNeutron, ChunkSize;
+  (void *) processNeutron(void); // address of provided callback routine
+  Neutron* OutNeutronsParallel;  // to be used by threads
+  int outNbufSize, *outNcount;
+  int MCbufSize, *MCcount;
+  double *MCBuffer;
+
+int initParallel(int nthreads)
+  creates nthread helper threads 1,2,..,nthreads waiting for work
+
+startHelpers() lets helper threads begin work:
+  tread 1 will call parLoop(1), thread 2 calls parLoop(2)
+  When thread i has done it's part, it increments a mutex'ed variable doneCount; 
+  if doneCount becomes NThreads, this is signalled to the main working thread
+  waiting at flushOutput(), which proceeds with the next statement then.
+
+void createThreadBuffers
+  allocates buffers for output storage and random numbers 
+
+void fillMCbuffers()
+  fills buffers to contain MMCbuffersize random numbers
+  MCcount[1] shows what is left for thread 1, which may use entries 0,1,...,MCcount[1]-1
+
+void waitAndFlushOutput()
+  waits until the last helper thread is done, then flushes the output buffers.
+
+void parLoop(int thread_i) {
+  int i,mini,maxi;
+  mini = thread_i*ChunkSize;
+  maxi = mini + ChunkSize - 1;
+  if (maxi >= NumNeutGot) maxi = NumNeutGot-1;
+  for (i=mini; i<=maxi; i++) {
+    CHECK
+    processNeutron(i, thread_i);
+  }
+  my_exit:;
+}
+
+void processPipedNeutrons(int nthreads, void *p(int, int),
+                          int maxnratio, int maxmc) {
+  if (nthreads <= 0) {
+    // serial execution
+    while (ReadNeutrons()) {
+      CHECK
+      int i;
+      for(i=0; i<NumNeutGot; i++)
+        p(i, 0);    
+    }
+    return;
+  } 
+
+  NThreads = initParallel(nthreads);
+  maxNPerNeutron = maxnratio;
+  maxMCPerNeutron = maxmc;
+  processNeutron = p;
+  createThreadBuffers();
+  while (ReadNeutrons()) {
+    CHECK;
+    ChunkSize = 1 + NumNeutGot/NThreads;
+    fillMCbuffers();
+    startHelpers();
+    parLoop(0);
+    waitAndFlushOutput();
+  }
+  my_exit: ;
+}
+  
+
+Examples
+--------
+NumNeutGot 1000
+
+processPipedNeutrons(0,processNeutron, 1,0)
+NThreads  0
+main thread                  for (i=0; i<1000; i++)  processNeutron(i,0);
+
+
+processPipedNeutrons(1,processNeutron, 1,0)
+NThreads  1
+computed ChunkSize 501
+main thread      parLoop(0) : for (i=0; i<=500; i++)  processNeutron(i,0);
+helper thread 1  parLoop(1) : for (i=501; i<=999; i++)  processNeutron(i,1);
+
+processPipedNeutrons(2,processNeutron, 1,0)
+NThreads  2
+computed ChunkSize 334
+main thread      parLoop(0) : for (i=0; i<=333; i++)  processNeutron(i,0);
+helper thread 1  parLoop(1) : for (i=334; i<=667; i++)  processNeutron(i,1);
+helper thread 2  parLoop(2) : for (i=668; i<=999; i++)  processNeutron(i,2);
+
+GUI
+===
+
+A new GUI entry for "helper threads" with default 0 is the only visible change
+for the user. If he uses 1 or more helper threads, the general command option --T
+is inserted to the pipe command(s).
+If the module maintainer provides a parallel version of the module, the
+corresponding binary is called automatically if specified in comexe.tcl like
+     chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
+The variable $par is "_parallel" then, and else "". 
+
+tcl files changed:
+entries.tcl
+comexe.tcl
+vitess.tcl    
+
+Remarks
+=======
+
+The CHECK macro for controlled abort still works for threads; an abort signal
+sets a global variable which is read by threads, too, and brings loop exection
+to an end by goto my_exit both in processPipedNeutrons and parLoop. You need
+to insert CHECK to processNeutron only if the processing of a single Neutron
+may last very long.
+
+Binary output will differ, if a module uses random numbers, and is called with
+different NThreads values.
+
+Setting --T <nthreads> gives the same result on different PCs of the same kind (Linux/Windows,
+CPU architechture) no matter if these PCs have single or multi core CPUs. 
+
+Conclusion:
+===========
+
+Thread-parallelisation only makes sense for CPU intensive modules.
+
+If a module uses Monte Carlo methods, we need to know how many random numbers at maximum
+are comsumed for an input neutron.
+
+The code changes affecting all modules are within init.c, they are small and do not induce 
+a time or storage penalty for modules which are not parallelised.
+The overhead for --T 0 is very small, just the intermediate functions VranParallel,
+and else small, just copy operations for neutrons and random numbers.
+
+To transform a module
+
+- encapsulate a processNeutron routine
+- replace calls to MonteCarlo by MonteCarloParallel, and Vran by VranParallel
+
+This may be read with more details in the comments on the chopper_fermi ->
+chopper_fermi_parallel transition.
+
+The number of threads may be specified by a general execution parameter --T overriding the default 0.
+
+(A default >= 1, and restricting this to what the system tells about
+available cores, would decrease performance for PCs with Hyperthreading CPUs
+with no real multi-core architecture.)
+
+The Vitess GUI supports --T setting to reasonable values.
+A module should not limit the number of threads, eg to verify multi thread simulations
+on PCs with a single core.

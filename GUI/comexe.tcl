@@ -49,6 +49,16 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
+
+  # add --T option if helper threads are selected, then set name part variable $par, too
+  set par ""
+  catch {
+    if {[entryVal helpthreads] > 0} {
+      set par _parallel
+      writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
+    }
+  }
+
   set pdir [entryVal defdirectory]
   set insert "$fc --B$buffersize --P";	# general command options  
   if {$Comode == "grd"} {append insert \$P} else {append insert $pdir}
@@ -88,8 +98,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_ISIS {set com "source$sys -S2"}
       source_SNS {set com "source$sys -S2"}
       source_ESS_LPTS {set com "source$sys -S3"}
-      chopper_fermi_str {set com "chopper_fermi$sys -O1"}
-      chopper_fermi_cur {set com "chopper_fermi$sys -O2"}
+      chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
+      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}

@@ -13,7 +13,7 @@
 /* Change: K.L.  2003 FEB, definitions of 'idum' and 'LogFilePtr' from init to general      */
 /* Change: K.L.  2003 MAR, new function 'StrgScanLF', additional parameter in 'ReadLine'    */
 /* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
-/* Chnage: A.H.  2009 OCT, new routine: RoundP for rounding after given decimal position    */
+/* Change: A.H.  2009 OCT, new routine: RoundP for rounding after given decimal position    */
 
 #include "general.h"
 #include "ctype.h"
@@ -91,7 +91,6 @@ double atan0(double a, double b)
 
 	return (double) atan(a / b) + M_PI ;
 }
-
 
 /* rounds a value mathematically  */
 

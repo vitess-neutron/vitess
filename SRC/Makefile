@@ -31,6 +31,7 @@ capture_flux \
 runtime \
 chopper_disc \
 chopper_fermi \
+chopper_fermi_parallel \
 collimator_soller \
 collimator \
 slit \
@@ -231,6 +232,9 @@ resonator_drabkin : resonator_drabkin.c $(MGTOOL)
 spacewindow : spacewindow.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+chopper_fermi_parallel : chopper_fermi_parallel.c threadHelper.c $(ITOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
+
 sample_inelast : sample_inelast.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -255,10 +259,10 @@ lenses : lenses.c lensetr.c cpgplot.c $(ITOOL)
 eval_inelast : eval_inelast.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-guide : guide.c $(MTOOL)
+standard_deviation : standard_deviation.c 
 	$(CC) -o $@ $^ $(LIBS)
 
-standard_deviation : standard_deviation.c 
+guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)

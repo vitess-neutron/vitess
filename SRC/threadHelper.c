@@ -1,0 +1,349 @@
+/* M. Fromme HZB 2010
+   parallel execution of a helper threads
+*/
+
+#include "init.h"
+#include "softabort.h"
+#include <stdlib.h>
+#include <string.h>
+
+static Neutron* OutNeutronsParallel;
+//extern int      NThreads; // declared in init.h
+static int      ChunkSize;
+
+static void (*doProc)(int, int);  // task routine to be done in parallel
+
+static int      outNbufSize, *outNcount;
+static int      MCbufSize, *MCcount;
+static double   *MCbuffer;
+
+static int     doParBarrier;	// 0 (back) or 1 (start)
+static int     outstanding;     // number of threads not ready yet
+
+static void doChunk(int thread_i);
+
+#ifdef WIN32
+
+# include <windows.h>
+# include <process.h>
+static HANDLE  hEvent1;
+static HANDLE  hEvent2;
+static HANDLE  hDone;
+static HANDLE  hWorkMutex;      // to guard commonly written variables
+static HANDLE  hDoneMutex;      // to indicate "work is done"
+
+static int setDone () {
+  int i, all_done;
+  all_done = 0;
+
+  WaitForSingleObject( hWorkMutex, INFINITE );
+  if (outstanding) {
+    outstanding--;
+    if (outstanding == 0) all_done = 1;
+    }
+  ReleaseMutex(hWorkMutex);
+
+  if (all_done) {
+    // signal work is done to master
+    WaitForSingleObject( hDoneMutex, INFINITE );
+    SetEvent(hDone); 
+    ReleaseMutex(hDoneMutex);
+  }
+  return i;
+}
+
+static void threadLoop (void *arg) {
+
+  int toggle_barrier, my_thread_i;
+  toggle_barrier = 0;
+  my_thread_i = (int) arg;
+
+  while(!finishSoftabort) { // finish from softabort.h
+
+    // first wait at a barrier until work is available
+    if ((toggle_barrier = !toggle_barrier)) {
+      WaitForSingleObject( hEvent1, INFINITE ); // front barrier
+    } else {
+      WaitForSingleObject( hEvent2, INFINITE ); // back barrier
+    }
+
+    doChunk(my_thread_i);
+
+    setDone();
+  }
+}
+
+static int initParallel (int nworkers) {
+  long i;
+  if (nworkers <= 0) return 0;
+
+  // these events must be reset (TRUE), and are unset initially (FALSE)
+  hDone   = CreateEvent(NULL, TRUE, FALSE, NULL);
+  hEvent1 = CreateEvent(NULL, TRUE, FALSE, NULL);
+  hEvent2 = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+  hWorkMutex = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not 
+  hDoneMutex = CreateMutex( NULL, FALSE, NULL );  // request these mutexes here
+
+  for (i=1; i<=nworkers; i++)
+    _beginthread( threadLoop, 0, &i);
+
+  return nworkers;
+}
+
+static void startHelpers () {
+
+  // prepare the release at the right barrier
+  WaitForSingleObject( hWorkMutex, INFINITE );
+  
+  // Toggle Barriers
+  doParBarrier = !doParBarrier;
+
+  outstanding = NThreads;
+  ResetEvent(hDone);
+  ReleaseMutex(hWorkMutex);
+  
+  if (doParBarrier) {
+    ResetEvent(hEvent2);
+    SetEvent(hEvent1);
+  } else {
+    ResetEvent(hEvent1);
+    SetEvent(hEvent2);
+  }
+}
+
+static void waitForHelpers() {
+  WaitForSingleObject( hDone, INFINITE );
+}
+
+// end Windows
+#else
+// Linux
+
+# include <sys/types.h>
+# include <pthread.h>
+#define LOCK(a) pthread_mutex_lock (&a)
+#define UNLOCK(a) pthread_mutex_unlock (&a)
+#define WAIT(a,b) pthread_cond_wait (&a, &b)
+#define SIGNAL(a) pthread_cond_signal (&a)
+#define BROADCAST(a) pthread_cond_broadcast (&a)
+#define CANCEL(a) pthread_cancel(a)
+
+#define WAITLOOP(a) LOCK(a##_m); \
+ pthread_cleanup_push(unlock_##a##_m, NULL);\
+ while(a##_hold) WAIT(a##_var,a##_m);\
+ pthread_cleanup_pop(1);
+
+#define DEFLOCK(a)\
+ static pthread_mutex_t  a##_m  = PTHREAD_MUTEX_INITIALIZER;\
+ static pthread_cond_t  a##_var = PTHREAD_COND_INITIALIZER;\
+ static int a##_hold = 1;\
+ static void unlock_##a##_m (void* arg) {UNLOCK(a##_m);}
+
+DEFLOCK(start);
+DEFLOCK(back);
+DEFLOCK(done);
+
+#undef DEFLOCK
+
+static pthread_mutex_t work_m;  // mutex to guard more_to_do and outstanding
+
+static void setDone () {
+  int all_done = 0;
+  pthread_mutex_lock(&work_m);
+  if (outstanding) {
+    outstanding--;
+    if (outstanding == 0) all_done = 1;
+    }
+  pthread_mutex_unlock(&work_m);
+  if (all_done) {
+    // signal work is done to master
+    LOCK(done_m);
+    done_hold = 0;
+    SIGNAL(done_var);
+    UNLOCK(done_m);
+  }
+}
+
+
+static void *threadLoop (void *arg) {
+
+  int toggle_barrier;
+  long my_thread_i;
+  toggle_barrier = 0;
+  my_thread_i = (long) arg;
+
+  while(!finishSoftabort) { // finish from softabort.h
+
+    // first wait at a barrier until work is available
+    if ((toggle_barrier = !toggle_barrier)) {
+      WAITLOOP(start); // front barrier
+    } else {
+      WAITLOOP(back); // back barrier
+    }
+    doChunk(my_thread_i);
+
+    setDone();
+  }
+  return arg;
+}
+
+#define MAXWORKER 32
+
+static int initParallel (int nworkers) {
+  long i;
+  static pthread_t threads[MAXWORKER+1];
+
+  if (nworkers <= 0 || nworkers > MAXWORKER) return 0;
+  pthread_mutex_init(&work_m, 0);
+
+  for (i=1; i<=nworkers; i++)
+    if (pthread_create(threads + i, NULL, threadLoop, (void *) i))
+      return 0;
+
+  return nworkers;
+}
+
+static void startHelpers () {
+  // prepare the release at the right barrier
+  if ((doParBarrier = !doParBarrier)) {
+    LOCK(start_m);
+    start_hold = 0;
+    back_hold = 1;
+  } else {
+    LOCK(back_m);
+    start_hold = 1;
+    back_hold = 0;
+  }
+  outstanding = NThreads;
+  done_hold = 1;  // so that we may wait at WAITLOOP(done)
+  if (doParBarrier) {
+    BROADCAST(start_var);
+    UNLOCK(start_m);
+  } else {
+    BROADCAST(back_var);
+    UNLOCK(back_m);
+  }
+}
+
+static void waitForHelpers() {
+  WAITLOOP(done);
+}
+
+#endif  // Linux
+
+
+double VranPar(int thread_i) {
+  int n,c;
+  if ((n = thread_i - 1) < 0 ||
+      (c = MCcount[n] - 1) < 0) myExit("insufficient random number storage for threads \n");
+  MCcount[n] = c;
+  return MCbuffer[n*MCbufSize + c];
+}
+
+double MonteCarloPar(double x, double y, int thread_i) {
+  return x + (y - x) * (thread_i <= 0 ? Vran() : VranPar(thread_i));
+}
+
+static int createThreadBuffers() {
+  if (outNbufSize*NThreads == 0) return 0;
+  if ( ! (OutNeutronsParallel = (Neutron *) malloc(NThreads*outNbufSize*sizeof(Neutron))) ||
+       ! (outNcount           = (int *)     calloc(NThreads, sizeof(int))))
+    return 0;
+  if (MCbufSize <= 0) return 1;
+  return
+    (MCbuffer = (double *) malloc(NThreads*MCbufSize*sizeof(double))) &&
+    (MCcount  = (int *)    calloc(NThreads, sizeof(int)));
+}
+
+static void fillMCbuffers() {
+  // fills buffers to contain MCbufSize random numbers
+  // MCcount[0] shows what is left for thread 1, which may use entries 0,1,...,MCcount[1]-1
+  int c,i,n;
+  if (MCbufSize <= 0) return;
+  for (n=0; n<NThreads; n++)
+    if ((c = MCcount[n]) < MCbufSize) {
+      double *v = MCbuffer + n*MCbufSize + c;
+      for (i=c; i<MCbufSize; i++)
+	*v++ = Vran();
+      MCcount[n] = MCbufSize;
+    }
+}
+
+
+void WriteNeutronParallel(Neutron *OutNeutron, int thread_i) {
+  if (NThreads <= 0 || thread_i <= 0)
+    WriteNeutron(OutNeutron);
+  else {
+    int i,c;
+    i = thread_i - 1;
+    if ((c = outNcount[i]) >= outNbufSize) myExit2("temp buffer size %d for threads too small for %d\n", outNbufSize, c);
+    outNcount[i] = c+1;
+    CopyNeutron(OutNeutron, OutNeutronsParallel + i*outNbufSize + c);
+  }
+}
+
+static void flushParallelOutput() {
+  int c,i,n;
+  for (n=0; n<NThreads; n++)
+    if ((c = outNcount[n])) {
+      Neutron *neut = OutNeutronsParallel + n*outNbufSize;
+      for (i=0; i<c; i++)
+	WriteNeutron(neut++);
+      outNcount[n] = 0;
+    }
+}	
+
+	
+static void doChunk(int thread_i) {
+  int i,min_i,max_i;
+  min_i = thread_i*ChunkSize;
+  max_i = min_i + ChunkSize - 1;
+  if (max_i >= NumNeutGot) max_i = NumNeutGot-1;
+  for (i=min_i; i<=max_i; i++) {
+    CHECK;
+    doProc(i, thread_i);
+  }
+ my_exit:;
+}
+
+void processPipedNeutrons(int nthreads, void (*p)(int, int),
+			  int maxnratio, int maxmc) {
+  int maxchunksize;
+  DECLARE_ABORT;
+
+  if (nthreads <= 0) {
+    // serial execution
+    while (ReadNeutrons()) {
+      int i;
+      CHECK;
+      for(i=0; i<NumNeutGot; i++)
+        p(i, 0);    
+    }
+    return;
+ } 
+
+  NThreads = initParallel(nthreads);
+  if (nthreads != NThreads) myExit("could not create threads\n");
+
+  doProc = p;    // remember what to do in threads
+
+  if (maxnratio <= 0) maxnratio = 0;
+  maxchunksize = 1 + BufferSize/NThreads;
+  outNbufSize = maxnratio * maxchunksize;
+  MCbufSize = maxmc * maxchunksize;
+
+  if (! createThreadBuffers()) myExit("Couldn't allocate memory for temporary thread buffers\n");
+
+  while (ReadNeutrons()) {
+    CHECK;
+    ChunkSize = 1 + NumNeutGot/NThreads;
+    fillMCbuffers();
+    startHelpers();
+    doChunk(0);  // the main thread does it's share parallel to helper threads
+    waitForHelpers();
+    flushParallelOutput();
+  }
+  my_exit: ;
+}
+ 

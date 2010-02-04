@@ -203,6 +203,10 @@ set inputESET {
   {gravity radio on
     {gravity "simulation includes gravity influence on neutrons or not" "" -G}
     {on off} {1 0}}
+
+  {helpthreads radio 0 {
+    "helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}
+    {0 1 2 3 4} {0 1 2 3 4}}
 }
 
 ### Xcontrol defaults
@@ -3195,6 +3199,7 @@ package VITESS, i.e they have a common meaning. These options are
 7. gravity 			--G		1
 8. min. neutron weight	--U		1.0e-6
 9. parameter directory	--P
+10.helper threads       --T
 
 1. neutron input filename (--f<filename>)
   This option is necessary for the first VITESS module of a pipe,
@@ -3243,6 +3248,14 @@ package VITESS, i.e they have a common meaning. These options are
 9. parameter directory (--P)
   Some modules need to know where they may read and store files not stated with
   parameters. The natural place for these files is the parameter directory.
+
+10. helper threads (--T)
+  Some modules are capable to exploit multi core CPUs by delegating work load
+  to helper threads. If you specify a number > 0, this may speed up simulations.
+  The outcome of simulations may vary with helper threads, because
+  the random numbers generated are used in a pertubated order, but the outcome
+  is the same for two runs with the same number of helper threads, no matter
+  how many CPU cores a system may have.
 
 The specific input parameters for each module must not be controlled
 by the general command options.

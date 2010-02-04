@@ -428,7 +428,8 @@ proc generateEntries {w globalset {delist {}} {app _}} {
     foreach i {3 4} o {"" opt} {
       nvalEntryLabel $w.3.e$o [list [lindex $all $i]] 1 8 $app $o
     }
-    foreach i {5 6} o {"" opt} {
+
+    foreach i {5 6 7} o {"" opt t} {
       nvalEntryLabel $w.4.e$o [list [lindex $all $i]] 1 8 $app $o
     }
     return

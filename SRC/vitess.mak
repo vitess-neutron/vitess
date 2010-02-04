@@ -24,14 +24,13 @@ IDIR=.\Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
 
 LINK32=link.exe
-WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib \
- shell32.lib
+WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
 TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj"
@@ -41,6 +40,7 @@ MGTOOL="$(IDIR)\distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
 ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
  $(CPP) @<<
@@ -67,8 +67,10 @@ ALL : \
 	"$(OD)\guide_shape.exe" \
 	"$(OD)\spin_reset.exe" \
 	"$(OD)\capture_flux.exe" \
+	"$(OD)\runtime.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
+	"$(OD)\chopper_fermi_parallel.exe" \
 	"$(OD)\collimator_soller.exe" \
 	"$(OD)\collimator.exe" \
 	"$(OD)\slit.exe" \
@@ -146,6 +148,10 @@ SOURCE=$(SPATH)\gener_fct.c
 
 SOURCE=$(SPATH)\mirrrefl.c
 "$(IDIR)\mirrrefl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\threadHelper.c
+"$(IDIR)\threadHelper.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\lensetr.c
@@ -288,6 +294,13 @@ SOURCE=$(SPATH)\capture_flux.c
 "$(OD)\capture_flux.exe" : "$(OD)" $(TOOL) "$(OD)\capture_flux.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\capture_flux.pdb" /out:"$(OD)\capture_flux.exe" "$(IDIR)\capture_flux.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\runtime.c
+"$(IDIR)\runtime.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\runtime.exe" : "$(OD)" $(TOOL) "$(OD)\runtime.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\runtime.pdb" /out:"$(OD)\runtime.exe" "$(IDIR)\runtime.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -301,6 +314,13 @@ SOURCE=$(SPATH)\chopper_fermi.c
 
 "$(OD)\chopper_fermi.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\chopper_fermi.pdb" /out:"$(OD)\chopper_fermi.exe" "$(IDIR)\chopper_fermi.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\chopper_fermi_parallel.c
+"$(IDIR)\chopper_fermi_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\chopper_fermi_parallel.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $((ML_T)) /pdb:"$(OD)\chopper_fermi_parallel.pdb" /out:"$(OD)\chopper_fermi_parallel.exe" "$(IDIR)\chopper_fermi_parallel.obj" $(ITOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\collimator_soller.c
 "$(IDIR)\collimator_soller.obj" : $(SOURCE)
