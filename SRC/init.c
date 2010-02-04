@@ -14,6 +14,7 @@
 /* Feb 2004  M. Fromme      functions FullParName and FullInstallName                       */
 /* Feb 2004  K. Lieutenant  use of Full...Name, 'instrument.inf' and 'simulation.inf'       */
 /* Mar 2008  M. Fromme      compressed neutron data                                         */
+/* Jan 2010  M. Fromme      support for parallel thread execution                           */
 /********************************************************************************************/
 
 #ifdef _MSC_VER
@@ -84,7 +85,7 @@ static int compressModeR, compressModeW, compressedRestlen, spinVector;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
 static char *compressBuf;
 
-
+int      NThreads;      /* number of helper threads for execution, set by --T */
 
 /**************************************************************/
 /* local functions                                            */
@@ -195,15 +196,16 @@ char* FullInstallName(char* fileName, char* sRelPath)
 /* for all modules of the VITESS program package.             */
 /* a processed option is marked by setting the leading - to + */
 /* Option processed here:                                     */
+/*  --B  number of buffer entries                             */
 /*  --f  input file name                                      */
 /*  --F  output file name                                     */
-/*  --Z  random number generator initialization               */
-/*  --B  number of buffer entries                             */
-/*  --L  logfile                                              */
-/*  --J  active trace points                                  */
 /*  --G  gravitation                                          */
-/*  --U  minimal neutron weight                               */
+/*  --J  active trace points                                  */
+/*  --L  logfile                                              */
 /*  --P  parameter directory                                  */
+/*  --T  number of threads for execution                      */
+/*  --U  minimal neutron weight                               */
+/*  --Z  random number generator initialization               */
 /**************************************************************/
 
 void Init(int argc, char **argv, VtModID eModule)
@@ -291,6 +293,10 @@ void Init(int argc, char **argv, VtModID eModule)
       TracePoints=TRUE;
       break;
 
+    case 'T' :
+      NThreads = atol(arg);    /* requested number of threads for execution */
+      break;
+
     default :
       continue;
     }
@@ -341,29 +347,17 @@ void Init(int argc, char **argv, VtModID eModule)
     LogFilePtr = fileOpen((LogFileName = FullParName(arg)), "wt");
 
 #ifdef _MSC_VER
-  if(InputFilePtr==stdin) {
-    if( _setmode(_fileno( stdin ), _O_BINARY ) == -1) {
-      fprintf(LogFilePtr,"Can't set stdin to binary mode\n");
-      exit(-1);
-    }
-  }
-  if(OutputFilePtr==stdout) {
-    if(_setmode(_fileno( stdout ), _O_BINARY ) == -1) {
-      fprintf(LogFilePtr,"Can't set stdout to binary mode\n");
-      exit(-1);
-    }
-  }
+  if (InputFilePtr==stdin && _setmode(_fileno( stdin ), _O_BINARY ) == -1)
+    myExit("Can't set stdin to binary mode\n");
+
+  if (OutputFilePtr==stdout && _setmode(_fileno( stdout ), _O_BINARY ) == -1)
+    myExit("Can't set stdout to binary mode\n");
 #endif
 
-  /* allocte memory for the neutron buffers */
-  if((InputNeutrons=(Neutron *)calloc(BufferSize, sizeof(Neutron)))==NULL) {
-    fprintf(LogFilePtr, "Couldn't allocate memory for input buffer\n");
-    exit(-1);
-  }
-  if((OutputNeutrons=(Neutron *)calloc(BufferSize, sizeof(Neutron)))==NULL) {
-    fprintf(LogFilePtr, "Couldn't allocate memory for output buffer\n");
-    exit(-1);
-  }
+  /* allocate memory for the neutron buffers */
+  if ( (InputNeutrons  = (Neutron *)calloc(BufferSize, sizeof(Neutron))) == NULL ||
+       (OutputNeutrons = (Neutron *)calloc(BufferSize, sizeof(Neutron))) == NULL)
+    myExit("Couldn't allocate memory for I/O buffer\n");
 
   /* Initialize the GNU random number generator */
   gsl_rng_env_setup();
@@ -500,11 +494,11 @@ int ReadNeutrons()
 }
 
 
-/*****************************************************************/
-/* WriteNeutron writes a neutron to the neutron ouput buffer     */
-/* OuputNeutrons and flushes the buffer to the ouput file if the */
-/* buffer is full. Optput Neutrons contains BufferSize entries.  */
-/*****************************************************************/
+/*******************************************************************/
+/* WriteNeutron writes a neutron to the neutron ouput buffer       */
+/* OuputNeutrons and flushes the buffer to the output file if the  */
+/* buffer is full. Output Neutrons contains BufferSize entries.    */
+/*******************************************************************/
 
 void WriteNeutron(Neutron *OutNeutron)
 {
@@ -522,7 +516,6 @@ void WriteNeutron(Neutron *OutNeutron)
 
   WriteTraceLine(OutNeutron);
 }
-
 
 
 /***********************************************************************/
@@ -612,7 +605,7 @@ void ReadInstrData(long* pModuleNo, VectorType Pos, double* pLength, double* pRo
       { sscanf(sBuffer, "%ld", pModuleNo);
 		  // ndig = short(floor(lg10(*pModuleNo));
         if (sBuffer[116]!='F' && sBuffer[117]!='F' && sBuffer[118]!='F') strcpy(sLine, sBuffer);
-		}
+      }
     }
     else
     {  /* read until end of previous part, if input file is used */
@@ -624,7 +617,7 @@ void ReadInstrData(long* pModuleNo, VectorType Pos, double* pLength, double* pRo
         else
         { sscanf(sBuffer, "%ld", &No);
           if (sBuffer[116]!='F' && sBuffer[117]!='F' && sBuffer[118]!='F') strcpy(sLineH, sBuffer);
-		  }
+	}
       }
       if (strlen(sLine)==0) {*pModuleNo = No; strcpy(sLine, sLineH);}
     }
@@ -687,7 +680,7 @@ void CopyNeutron(Neutron *source, Neutron *dest)
 
 
 /********************************************************************/
-/* counts the number of lines in a text file and rewindes it        */
+/* counts the number of lines in a text file and rewinds it         */
 /********************************************************************/
 
 long LinesInFile(FILE *pIn)

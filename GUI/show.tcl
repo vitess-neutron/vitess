@@ -14,7 +14,6 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   upvar $rows_i rows
   upvar $cols_i cols
   upvar $a_i a
-  catch {unset arr}
   while { ! [eof $f] } {
     if {[gets $f ins] <= 0} continue
     set ll [eval list $ins]
@@ -27,9 +26,7 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   }
   set xl [lsort -real -unique $xl]
   set cols [llength $xl]
-#  set yl [lsort -real -unique -decreasing $yl]
-  set yl [lsort -real -unique $yl]
-
+  set yl [lsort -real -unique -decreasing $yl]
   set rows [llength $yl]
   # prepare value rows, from top to bottom
   foreach y $yl {
@@ -40,7 +37,6 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
     }
     lappend a $xa
   }
-  catch {unset arr}
 }
 
 # show 2d array coded with colors
@@ -60,7 +56,7 @@ proc show2Dfile {fname} {
 
   set rows 1
   set a {};      # list of row lists, top to bottom
-  set xl {};     # x tic values
+  set xl {};	 # x tic values
   set yl {};     # y tic values
 
   if {[gets $f ins] <= 0} {
@@ -198,3 +194,4 @@ proc plotFile {{twod 0}} {
     }
   }
 }
+

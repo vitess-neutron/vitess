@@ -28,6 +28,7 @@ extern long     keygrav;
 extern long     idum;           /* random number specific */
 extern short    bOldFrame;      /* criterion: new co-ordinate system set for current module */
 
+extern int      NThreads;      /* number of helper threads for execution, set by --T */
 
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
@@ -47,5 +48,9 @@ char* FullInstallName (char* filename, char* sRelPath);
 
 #include <gsl/gsl_rng.h>
 extern gsl_rng * vit_gsl_rng;
+
+#define myExit(s) {fprintf (LogFilePtr,s); exit(-1);}
+#define myExit1(s,a) {fprintf (LogFilePtr,s,a); exit(-1);}
+#define myExit2(s,a,b) {fprintf (LogFilePtr,s,a,b); exit(-1);}
 
 #endif
