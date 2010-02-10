@@ -582,6 +582,27 @@ set writeoutESET {
   {detectcolor int -1 {
     "writeout color" "Write only events with given color. A negative number means any color." "" C}
     }
+  {"filter selection" header}
+  {}
+  {filtLambdaMin float "-1.0" {
+    "filter lambda\nmin [A]" "begin of lambda interval to be filtered, -1.0 means any" "" l}}
+  {filtLambdaMax float "-1.0" {
+    "filter lambda\nmax [A]" "end of lambda interval to be filtered, -1.0 means any" "" L}}
+  {}
+  {filtYMin float "" {
+    "filter Y pos.\nmin [cm]" "begin of Y position interval to be filtered" "" y}}
+  {filtYMax float "" {
+    "filter Y pos.\nmax [cm]" "end of Y position interval to be filtered" "" Y}}
+  {}
+  {filtZMin float "" {
+    "filter Z pos.\nmin [cm]" "begin of Z position interval to be filtered" "" z}}
+  {filtZMax float "" {
+    "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
+  {}
+  {filtYDiv float "-1.0" {
+    "filter horz. div.\nmax [deg]" "max horz. divergency, -1.0 means any" "" d}}
+  {filtZDiv float "-1.0" {
+    "filter vert. div.\nmax [deg]" "max vert. divergency, -1.0 means any" "" D}}
 }
 
 ### spin_reset
@@ -858,6 +879,34 @@ set specoptAdd {
     "minimum number\nof vert. refl." "Minimum number of reflections on the vertical guides." "" d} ge0 "" 0}
   {keyreflmaxZ int 0 {
     "maximum number\nof vert. refl." "Maximum number of reflections on the vertical guides. Use 0 for infinity." "" D} ge0 "" 0}
+  {}
+  {"Reflection plot options" header}
+  {reflplot_filename pareditablefile ""
+    {"filename" "Filename for saving all reflections for plotting x, m, intensity, wavelength along the guide." "" P}}
+  {}
+  {keyX radio "Position X" {"X values"
+    "Choose the property for the x bin." "" t}
+    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+  {keyY radio "m" {"Y values"
+    "Choose the property for the y bin." "" T}
+    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+  {keyProb radio "Probability" {"Weight"
+    "Choose the property for the weighting." "" V}
+    {"None" "Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {0 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+  {}
+  {nbins int 1000 {
+    "number\nof bins in X" "number of bins determines the segmentation of the X interval" "" k} 1 10000}
+  {minaX float 0 {
+    "minimum X" "lower bound of the evaluation interval" "" x} 1}
+  {maxaX float 10000 {
+    "maximum X" "upper bound of the evaluation interval" "" X} 1}
+  {}
+  {mbins int 100 {
+    "number\nof bins in Y" "number of bins determines the segmentation of the Y interval" "" K} 1 10000}
+  {minaY float 0 {
+    "minimum Y" "lower bound of the evaluation interval" "" u} 1}
+  {maxaY float 10 {
+    "maximum Y" "upper bound of the evaluation interval" "" U} 1}
 }
 
 set guideESET [concat $guideESET $specoptAdd]

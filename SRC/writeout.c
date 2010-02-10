@@ -10,6 +10,7 @@
 /* 1.4  Mar  2004  K. Lieutenant   F-Format Option                                           */
 /* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
 /* 1.4f Jan  2010  A. Houben       WriteOut only if given color matches Neutron color        */
+/* 1.4g Feb  2010  A. Houben       Added wavelength, Div and yz position filter              */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -22,6 +23,14 @@
 FILE *AsciiFile;
 short bF_format=FALSE;
 short DetectColor = -1; // WriteOut only neutrons with a given color, -1 means any
+double filtLambdaMin=-1.0,          /* filter      */
+	   filtLambdaMax=-1.0,
+ 	   filtYMin=-1.0e10,
+       filtYMax=1.0e10,
+	   filtZMin=-1.0e10,
+	   filtZMax=1.0e10,
+	   filtYDiv=0.5,
+	   filtZDiv=0.5;
 
 void OwnInit(int argc, char *argv[]);
 void OwnCleanup();
@@ -31,10 +40,11 @@ int main(int argc, char **argv)
 {
   int i;
   char *form;
+  double Divy, Divz;
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.4e");
+  print_module_name("writeout 1.4g");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -58,6 +68,32 @@ int main(int argc, char **argv)
     for(i=0; i<NumNeutGot; i++) 
     {
       CHECK;
+
+	  WriteNeutron(&(InputNeutrons[i]));
+
+	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+	  if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
+	
+	  if (filtYDiv >= 0.) {
+		  Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+		  Divy*=180.0/M_PI;
+		  if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+			{Divy=0.0;}
+		  if (fabs(Divy) > filtYDiv) continue;
+	  }
+
+	  if (filtZDiv >= 0.) {
+		  Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+		  Divz*=180.0/M_PI;
+		  if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+			{Divz=0.0;}
+		  if (fabs(Divz) > filtZDiv) continue;
+	  }
+
 	  if (DetectColor < 0 || InputNeutrons[i].Color == DetectColor)
       fprintf(AsciiFile, form,
 	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
@@ -66,8 +102,6 @@ int main(int argc, char **argv)
 	      InputNeutrons[i].Position[0], InputNeutrons[i].Position[1], InputNeutrons[i].Position[2], 
 	      InputNeutrons[i].Vector[0],   InputNeutrons[i].Vector[1],   InputNeutrons[i].Vector[2], 
 	      InputNeutrons[i].Spin[0],     InputNeutrons[i].Spin[1],     InputNeutrons[i].Spin[2]);
-             
-      WriteNeutron(&(InputNeutrons[i]));
     }
   }
   
@@ -99,6 +133,39 @@ void  OwnInit(int argc, char *argv[])
 	    case 'C':
           DetectColor = (short) atoi(&argv[i][2]);
           break;
+		
+		case 'l':
+		  filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+          break;
+
+	    case 'L':
+		  filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+		  break;
+
+        case 'y':
+          filtYMin = atof(&argv[i][2]);   /* filter Y */
+          break;
+
+        case 'Y':
+          filtYMax = atof(&argv[i][2]);   /* filter Y */
+          break;
+
+        case 'z':
+          filtZMin = atof(&argv[i][2]);   /* filter Z */
+          break;
+
+        case 'Z':
+          filtZMax = atof(&argv[i][2]);   /* filter Z */
+          break;
+	    
+	    case 'd':
+          filtYDiv = atof(&argv[i][2]);   /* filter DivY, -1 means any */
+          break;
+
+        case 'D':
+          filtZDiv = atof(&argv[i][2]);   /* filter DivZ, -1 means any */
+          break;
+
         default:
           fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
           exit(-1);
