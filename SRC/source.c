@@ -32,7 +32,8 @@
 /* 1.11b Dec  2004  K. Lieutenant  solid angle calculation to general.c, (count rate errors) */
 /* 1.12  Aug  2005  D. Champion    special code to describe ISIS source                      */
 /* 1.13  Jul  2006  K. Lieutenant  virtual window                                            */
-/* 1.14  Apr  2007  D.Champion     fix parameter directory bug in isis moderator file reading*/
+/* 1.14  Apr  2007  D. Champion    fix parameter directory bug in isis moderator file reading*/
+/* 1.14a Feb  2010  A. Houben      Bug fix in GetTraceState: index out of array dimension    */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -144,7 +145,7 @@ int main(int argc, char *argv[])
 
   /* Initialize */
   Init             (argc, argv, VT_SOURCE);
-  print_module_name("Source and Window 1.13");
+  print_module_name("Source and Window 1.14a");
   OwnInit          (argc, argv);
   CenterX   = 0.0; 
   CenterY   = 0.0;
@@ -1208,19 +1209,25 @@ char GetTraceState(TotalID stID)
     {	
       long   i, il=g_nLinesTr-1;  /* lines in Table */
       double nS, nL;              /* numbers got by conversion from IDs */
+	  double gS, gL;
 
-      nS =  (stID.IDGrp[0]-'A')*1.117e11 
-	+ (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
-      nL =  (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + 
-	+ (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[il].IDNo;
+	  gS = (g_pTrace[il].IDGrp[0]-'A')*1.117e11;
+	  gL = (g_pTrace[il].IDGrp[1]-'A')*4.295e09;
+      nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
+    //nL = (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[il].IDNo;
+	  nL = gS                                   + gL                                   + g_pTrace[il].IDNo;
       i = (long) (il * nS / nL + 0.5);
+	  if (i > il) i = il;
 
-      while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + 
-	      + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo < nS  &&  i < il ) 
-	i++;
-      while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + 
-	      + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo > nS  &&  i > 0 ) 
-	i--;
+      /*while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo < nS  &&  i < il ) 
+		i++;
+      while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo > nS  &&  i > 0 ) 
+		i--;*/
+
+	  while ( (i < il) && (gS + gL + g_pTrace[i].IDNo < nS) ) 
+		i++;
+      while ( (i > 0) && (i <= il) && (gS + gL + g_pTrace[i].IDNo > nS) ) 
+		i--;
 
       // set 'tracing', if IDs are identical
       if (memcmp(stID.IDGrp, g_pTrace[i].IDGrp, 2)==0 && stID.IDNo==g_pTrace[i].IDNo)

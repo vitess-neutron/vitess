@@ -26,7 +26,7 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   }
   set xl [lsort -real -unique $xl]
   set cols [llength $xl]
-  set yl [lsort -real -unique -decreasing $yl]
+  set yl [lsort -real -unique $yl]
   set rows [llength $yl]
   # prepare value rows, from top to bottom
   foreach y $yl {

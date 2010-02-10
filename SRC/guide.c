@@ -46,6 +46,7 @@
 /*                                -GuidePieces are managed by array of struct GuidePiece    */
 /*                                -Mirror files are requested/loaded by GetReflFile and     */
 /*                                 stored in array of structs. Filename is key for reuse.   */
+/* 2.21  Jan 2010  A. Houben      Bin data with arbitrary parameters like x pos, m, ...     */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -57,17 +58,13 @@
 
 void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
+//#define INDEX(x,y) (x*(nbinsX)+y)
+#define INDEX(x,y) (x*(nbinsY)+y)
+
+
 /******************************/
 /** Structures and Enums     **/
 /******************************/
-
-typedef struct
-{
-	double  CriticalAngle;
-	double  CutoffAngle;
-	Plane	Wall[5];
-}
-NeutronGuide;
 
 /* GW_TOP, GW_BOTTOM, GW_LEFT, GW_RIGHT must be 0 to 3 */
 typedef enum
@@ -80,6 +77,57 @@ typedef enum
 }
 eGuideWall;
 
+typedef struct
+{
+	Neutron    neutron;
+	eGuideWall ThisCollision;
+	double     degangular;
+	double     m;
+	double     reflectivity;
+	double     DivY;
+	double     DivZ;
+	int        Mode;
+}
+NeutronEx;
+
+typedef struct
+{
+	double    X;
+	double    Y;
+	NeutronEx ndata;
+	long      Counts;
+	double    RefCount;   /* Counts the number of reflections. 
+						   If the last reflection did not occure for any reason, 
+						   RefCount is increased by one, and multiplied by -1 */
+	double    RefCountY;  /* Number of reflection on horizontal guide planes */
+	double    RefCountZ;  /* Number of reflection on vertical guide planes */
+	int       Mode10;
+	int       Mode5;
+	int       Mode0;
+	double    ProbSum;
+} BINDATA;
+
+typedef struct
+{
+	int       RefCount;   /* Counts the number of reflections. 
+						   If the last reflection did not occure for any reason, 
+						   RefCount is increased by one, and multiplied by -1 */
+	int       RefCountY;  /* Number of reflection on horizontal guide planes */
+	int       RefCountZ;  /* Number of reflection on vertical guide planes */
+	char      *Output;    /* One line of text for each reflection */
+	NeutronEx *neutrons; /* List of neutron trajectory states */
+	int       cneutrons;
+}
+ReflCond;
+
+typedef struct
+{
+	double  CriticalAngle;
+	double  CutoffAngle;
+	Plane	Wall[5];
+}
+NeutronGuide;
+
 typedef enum
 {	VT_CONSTANT = 0,
 	VT_LINEAR   = 1,
@@ -89,17 +137,6 @@ typedef enum
 	VT_FROM_FILE= 5,
 }
 VtShape;
-
-typedef struct
-{
-	int     RefCount;   /* Counts the number of reflections. 
-						   If the last reflection did not occure for any reason, 
-						   RefCount is increased by one, and multiplied by -1 */
-	int     RefCountY;  /* Number of reflection on horizontal guide planes */
-	int     RefCountZ;  /* Number of reflection on vertical guide planes */
-	char    *Output;    /* One line of text for each reflection */
-}
-ReflCond;
 
 typedef struct
 {
@@ -137,6 +174,15 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
                            GuidePiece *Pce, double surfacerough, long keygrav, long keyabut, ReflCond *RefOut);
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, GuidePiece *Pce, eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
+int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
+void   DoBin(ReflCond *RefOut);
+
+typedef double(*GetVal)(ReflCond *RefOut, int cNeut);
+GetVal SetValueFunction(int key);
+
+double (*GetValueX)(ReflCond *RefOut, int cNeut) = NULL;
+double (*GetValueY)(ReflCond *RefOut, int cNeut) = NULL;
+double (*GetProb  )(ReflCond *RefOut, int cNeut) = NULL;
 
 
 /******************************/
@@ -196,12 +242,14 @@ VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
 
 char  *ShapeFileName="guide_shape.dat";
 char  *ReflParamFileName=NULL;
+char  *ReflPlotFileName=NULL;
 char  *ReflFileNameL=NULL;
 char  *ReflFileNameR=NULL;
 char  *ReflFileNameT=NULL;
 char  *ReflFileNameB=NULL;
 
 FILE  *pReflParam=NULL; /* file for writing each reflection */
+FILE  *pReflPlot=NULL;  /* file for writing each reflection as plot */
 FILE  *pReflL=NULL; /* file for describing left plane of guide */
 FILE  *pReflR=NULL; /* file for describing right plane of guide */
 FILE  *pReflT=NULL; /* file for describing top plane of guide */
@@ -215,6 +263,46 @@ FILE  *pReflB=NULL; /* file for describing bottom plane of guide */
 /* Extended FROM FILE */
 ReflFile *pReflFiles = {NULL};
 long     cReflFiles  = 0;
+
+/* bining keys */
+#define KeyNone            0
+#define iKeyMode           1
+#define iKeyMode0          2
+#define iKeyMode5          3
+#define iKeyMode10         4
+#define dKeyRefCount       5
+#define dKeyRefCountY      6
+#define dKeyRefCountZ      7
+#define iKeyThisCollision  8
+#define dKeydegangular     9
+#define dKeym             10
+#define dKeyreflectivity  11
+#define dKeyDivY          12
+#define dKeyDivZ          13
+#define iKeyColor         14
+#define dKeyTime          15
+#define dKeyWavelength    16
+#define dKeyProbability   17
+#define dKeyPositionX     18
+#define dKeyPositionY     19
+#define dKeyPositionZ     20
+#define dKeyVectorX       21
+#define dKeyVectorY       22
+#define dKeyVectorZ       23
+#define dKeySpinX         24
+#define dKeySpinY         25
+#define dKeySpinZ         26
+
+/* Reflection Plot */
+long   nbinsX=1000, nbinsY=100;
+double MinX=0., MaxX=10000., MinY=0., MaxY=10.;
+double *bpostX = {NULL};                 /* limits of the bins                                           */
+double *bpostY = {NULL};                 /* limits of the bins                                           */
+BINDATA **bin = {NULL};
+int    KeyX = dKeyPositionX;
+int    KeyY = dKeym;
+int    KeyProb = dKeyProbability;
+double XpceZero = 0.;
 /**********************/
 
 /******************************/
@@ -254,8 +342,9 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.20");
+	print_module_name("guide 2.21");
 	OwnInit(argc, argv);
+
 
 	/* Writing to log file */
 	fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
@@ -467,6 +556,9 @@ int main(int argc, char *argv[])
 			RefOut.RefCountZ = 0;
 			if (RefOut.Output != NULL) free(RefOut.Output);
 			RefOut.Output = NULL;
+			if (RefOut.neutrons != NULL) free(RefOut.neutrons);
+			RefOut.cneutrons = 0;
+			RefOut.neutrons = NULL;
 			for(j=0; j < nPieces; j++)
 			{
 				CHECK
@@ -614,6 +706,34 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
+			if (pReflPlot != NULL && RefOut.neutrons != NULL) {
+				if ((abs(RefOut.RefCount) >= keyReflMinCnt && (abs(RefOut.RefCount) <= keyReflMaxCnt || keyReflMaxCnt == 0)) &&
+					(RefOut.RefCountY >= keyReflMinCntY && (RefOut.RefCountY <= keyReflMaxCntY || keyReflMaxCntY == 0)) &&
+					(RefOut.RefCountZ >= keyReflMinCntZ && (RefOut.RefCountZ <= keyReflMaxCntZ || keyReflMaxCntZ == 0)))
+				{
+					switch (abs(keyReflParam))
+					{
+					case 1:
+						if (RefOut.RefCount > 0) {
+							DoBin(&RefOut);
+						}
+						break;
+					case 2:
+						if (RefOut.RefCount != -1 && RefOut.RefCount != 0) {
+							DoBin(&RefOut);
+						}
+						break;
+					case 3:
+						if (RefOut.RefCount != -1 && RefOut.RefCount != 0) {
+							DoBin(&RefOut);
+						}
+						break;
+					case 4:
+						DoBin(&RefOut);
+						break;
+					}
+				}
+			}
 			if (test==FALSE) continue;
 
 			if (fabs(InputNeutrons[i].Position[1]) > 0.5*GuideExitWidth ||
@@ -637,14 +757,165 @@ int main(int argc, char *argv[])
 
 			WriteNeutron(&Output);
 		}
-	}
+	} //ReadNeutrons
 
  my_exit:
+	// Output of Results
+	fflush(LogFilePtr);
+	
+	// bin data 
+	if (pReflPlot != NULL)
+	{
+		int ibinXY, ibinX, ibinY, cout;
+    //fprintf(pReflPlot, "#   X          Y        counts   Mode  0   5   10  RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
+			//           "#   1          2          3      4=A  4:A      5=A 6=A  6:1N       7:1N  8:A       9:A   10:A           11:A     12:A  13:1N  14:A   15:A   16:A     17:S           18:A       19:A       20:A       21:A      22:A      23:A      24:A 25:A 26:A\n"
+		char       *fstr="%10.4f %10.4f %10d %5.1f %3d %3d %3d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
+		
+		//for (ibinXY = 0; ibinXY < INDEX(nbinsX, nbinsY); ibinXY++)
+		for (ibinX = 0; ibinX < nbinsX; ibinX++)
+		{
+			cout = 0;
+			for (ibinY = 0; ibinY < nbinsY; ibinY++)
+			{
+				ibinXY = INDEX(ibinX, ibinY);
+				if (bin[ibinXY] != NULL)
+				{// Generate averages
+					bin[ibinXY]->ndata.degangular          /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.m                   /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.reflectivity        /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.DivY                /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.DivZ                /= bin[ibinXY]->ProbSum;
+					//bin[ibinXY]->ndata.Mode                /= bin[ibinXY]->ProbSum; //see below
+					//bin[ibinXY]->ndata.neutron.Color       /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Time        /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Wavelength  /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Position[0] /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Position[1] /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Position[2] /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Vector[0]   /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Vector[1]   /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Vector[2]   /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Spin[0]     /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Spin[1]     /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->ndata.neutron.Spin[2]     /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->RefCount                  /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->RefCountY                 /= bin[ibinXY]->ProbSum;
+					bin[ibinXY]->RefCountZ                 /= bin[ibinXY]->ProbSum;
+
+					cout++;
+					fprintf(pReflPlot, fstr, 
+						bin[ibinXY]->X                        , bin[ibinXY]->Y                        , bin[ibinXY]->Counts, 
+						((double)(bin[ibinXY]->ndata.Mode)/bin[ibinXY]->ProbSum), 
+						bin[ibinXY]->Mode0                    , bin[ibinXY]->Mode5                    , bin[ibinXY]->Mode10                   ,
+						bin[ibinXY]->RefCount                 , bin[ibinXY]->RefCountY                , bin[ibinXY]->RefCountZ,
+						bin[ibinXY]->ndata.neutron.ID.IDGrp[0], bin[ibinXY]->ndata.neutron.ID.IDGrp[1], bin[ibinXY]->ndata.neutron.ID.IDNo,
+						bin[ibinXY]->ndata.ThisCollision      , bin[ibinXY]->ndata.degangular         , bin[ibinXY]->ndata.m, 
+						bin[ibinXY]->ndata.reflectivity       , bin[ibinXY]->ndata.DivY               , bin[ibinXY]->ndata.DivZ,
+						bin[ibinXY]->ndata.neutron.Debug      , 
+						((double)bin[ibinXY]->ndata.neutron.Color)/bin[ibinXY]->ProbSum,
+						bin[ibinXY]->ndata.neutron.Time       , bin[ibinXY]->ndata.neutron.Wavelength , bin[ibinXY]->ndata.neutron.Probability,
+						bin[ibinXY]->ndata.neutron.Position[0], bin[ibinXY]->ndata.neutron.Position[1], bin[ibinXY]->ndata.neutron.Position[2],
+						bin[ibinXY]->ndata.neutron.Vector[0]  , bin[ibinXY]->ndata.neutron.Vector[1]  , bin[ibinXY]->ndata.neutron.Vector[2],
+						bin[ibinXY]->ndata.neutron.Spin[0]    , bin[ibinXY]->ndata.neutron.Spin[1]    , bin[ibinXY]->ndata.neutron.Spin[2]
+						);
+					free(bin[ibinXY]);
+					bin[ibinXY] = NULL;
+				}
+			}
+			if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+		}
+
+		if (bin != NULL) {
+			free(bin);
+			bin = NULL;
+		}
+	}
+
 	if (RefOut.Output != NULL) free(RefOut.Output);
+	if (RefOut.neutrons != NULL) free(RefOut.neutrons);
 	OwnCleanup();
 	Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
 
 	return(0);
+}
+
+void   DoBin(ReflCond *RefOut)
+{
+	int ibinX, ibinY, ibinXY, cNeut;
+	double ValX, ValY, ValProb;
+	
+	for (cNeut = 0; cNeut < RefOut->cneutrons; cNeut++) {
+		//ibinXY = FindIndexXY(&RefOut->neutrons[cNeut].neutron.Position[0], &RefOut->neutrons[cNeut].m, &ibinX, &ibinY);
+		ValX = GetValueX(RefOut, cNeut);
+		ValY = GetValueY(RefOut, cNeut);
+		ValProb = GetProb(RefOut, cNeut);
+		ibinXY = FindIndexXY(&ValX, &ValY, &ibinX, &ibinY);
+		if (RefOut->neutrons[cNeut].Mode == 5)
+		{
+			ibinXY = ibinXY;
+		}
+		if (ibinXY >= 0)
+		{
+			if (bin[ibinXY] == NULL)
+			{
+				bin[ibinXY] = (BINDATA *)malloc(sizeof(BINDATA));
+				memset(bin[ibinXY], 0, sizeof(BINDATA));
+				/*if (bLogBinningX)
+					bin[ibinXY]->X = sqrt((bpostX[ibinX])*(bpostX[ibinX+1]));
+				else*/
+					bin[ibinXY]->X = ((bpostX[ibinX])+(bpostX[ibinX+1]))/2.0;
+				/*if (bLogBinningY)
+					bin[ibinXY]->Y = sqrt((bpostY[ibinY])*(bpostY[ibinY+1]));
+				else*/
+					bin[ibinXY]->Y = ((bpostY[ibinY])+(bpostY[ibinY+1]))/2.0;
+				
+				//memcpy(&bin[ibinXY]->ndata, &RefOut->neutrons[cNeut], sizeof(NeutronEx));
+				memcpy(&bin[ibinXY]->ndata.neutron.ID, &RefOut->neutrons[cNeut].neutron.ID, sizeof(TotalID));
+				bin[ibinXY]->ndata.neutron.Debug = RefOut->neutrons[cNeut].neutron.Debug;
+				bin[ibinXY]->ndata.ThisCollision = RefOut->neutrons[cNeut].ThisCollision;
+			} //else { //sum up, avarage will be generated by division through counts
+				bin[ibinXY]->ndata.degangular          += ValProb * RefOut->neutrons[cNeut].degangular;
+				bin[ibinXY]->ndata.m                   += ValProb * RefOut->neutrons[cNeut].m;
+				bin[ibinXY]->ndata.reflectivity        += ValProb * RefOut->neutrons[cNeut].reflectivity;
+				bin[ibinXY]->ndata.DivY                += ValProb * RefOut->neutrons[cNeut].DivY;
+				bin[ibinXY]->ndata.DivZ                += ValProb * RefOut->neutrons[cNeut].DivZ;
+				bin[ibinXY]->ndata.Mode                += (int)(ValProb * RefOut->neutrons[cNeut].Mode);
+				bin[ibinXY]->ndata.neutron.Color       += (short)ValProb * RefOut->neutrons[cNeut].neutron.Color;
+				bin[ibinXY]->ndata.neutron.Time        += ValProb * RefOut->neutrons[cNeut].neutron.Time;
+				bin[ibinXY]->ndata.neutron.Wavelength  += ValProb * RefOut->neutrons[cNeut].neutron.Wavelength;
+				bin[ibinXY]->ndata.neutron.Probability += ValProb * RefOut->neutrons[cNeut].neutron.Probability;
+				bin[ibinXY]->ndata.neutron.Position[0] += ValProb * RefOut->neutrons[cNeut].neutron.Position[0];
+				bin[ibinXY]->ndata.neutron.Position[1] += ValProb * RefOut->neutrons[cNeut].neutron.Position[1];
+				bin[ibinXY]->ndata.neutron.Position[2] += ValProb * RefOut->neutrons[cNeut].neutron.Position[2];
+				bin[ibinXY]->ndata.neutron.Vector[0]   += ValProb * RefOut->neutrons[cNeut].neutron.Vector[0];
+				bin[ibinXY]->ndata.neutron.Vector[1]   += ValProb * RefOut->neutrons[cNeut].neutron.Vector[1];
+				bin[ibinXY]->ndata.neutron.Vector[2]   += ValProb * RefOut->neutrons[cNeut].neutron.Vector[2];
+				bin[ibinXY]->ndata.neutron.Spin[0]     += ValProb * RefOut->neutrons[cNeut].neutron.Spin[0];
+				bin[ibinXY]->ndata.neutron.Spin[1]     += ValProb * RefOut->neutrons[cNeut].neutron.Spin[1];
+				bin[ibinXY]->ndata.neutron.Spin[2]     += ValProb * RefOut->neutrons[cNeut].neutron.Spin[2];
+			//}
+			bin[ibinXY]->ProbSum   += ValProb;
+			bin[ibinXY]->RefCount  += ValProb * abs(RefOut->RefCount);
+			bin[ibinXY]->RefCountY += ValProb * RefOut->RefCountY;
+			bin[ibinXY]->RefCountZ += ValProb * RefOut->RefCountZ;
+			switch (RefOut->neutrons[cNeut].Mode) {
+				case 0:
+					bin[ibinXY]->Mode0++;
+					break;
+				case 5:
+					bin[ibinXY]->Mode5++;
+					break;
+				case 10:
+					bin[ibinXY]->Mode10++;
+					break;
+			}
+
+			bin[ibinXY]->Counts++;
+			//bin[ibinXY]->Int += prob;
+
+			//bintc += prob;
+		}
+	}
 }
 
 
@@ -659,13 +930,15 @@ void OwnInit   (int argc, char *argv[])
 	FILE* pFile=NULL;
 	char sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
 	ReflFile *pRefFileLast;
+	double bintervalX=1.0, bintervalY=1.0;
+	int ibinX, ibinY;
 
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]!='+')
 		{
-			arg=&argv[i][2];
-			switch(argv[i][1])
+			arg=&argv[i][2];   //free   A   B                                 k K l L     n           q Q                        
+			switch(argv[i][1]) //used a   b   c C d D e E f F g G h H i I j J         m M   N o O p P     r R s S t T u U v V w W x X y Y z Z
 			{
 				case 'i':  /* left plane */
 					if( (pReflL = fopen(FullParName(arg),"r"))==NULL)
@@ -713,6 +986,17 @@ void OwnInit   (int argc, char *argv[])
 								 3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)
 								 4 = all
 								 a negative number adds a line feed between each trajectory */
+					break;
+				case 'P':  /* Reflection parameter plot */
+					if( (pReflPlot = fopen(FullParName(arg),"w"))!=NULL)
+					{	/*fprintf(LogFilePtr,"ERROR: File %s for creating reflection parameter output could not be created\n",arg);
+						exit(-1);*/
+						fprintf(pReflPlot, "#   X          Y        counts   Mode  0   5   10  RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
+							               "#   1          2          3      4=S  5=S 6=S 7=S  8=A      9=A 10=A  11=1N     12=1N 13=A      14=A  15=A           16=A     17=A  18=1N  19=A   20=A   21=A     22=S           23=A       24=A       25=A       26=A      27=A      28=A      29=A 30=A 31=A\n"
+										   "#1N = defined by first neutron in bin; A = avaraged; S = summed up\n");
+
+						ReflPlotFileName=arg;
+					}
 					break;
 				case 'v':    /* Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. */
 					keyReflVerbose = atoi(arg); 
@@ -808,6 +1092,42 @@ void OwnInit   (int argc, char *argv[])
 				  surfacerough  =  surfacerough*M_PI/180.0; /*Convert from degree to radian */
 				  surfacerough  =  tan(surfacerough);
 				  break;
+
+				case 'k':
+					nbinsX = atol(arg); /* number of bins */
+					break;
+
+				case 'K':
+					nbinsY = atol(arg); /* number of bins */
+					break;
+
+				case 'x':
+					MinX = atof(arg);   /* lower bound of X bin */
+					break;
+
+				case 'X':
+					MaxX = atof(arg);   /* upper bound of X bin */
+					break;
+
+				case 'u':
+					MinY = atof(arg);   /* lower bound of Y bin */
+					break;
+
+				case 'U':
+					MaxY = atof(arg);   /* upper bound of Y bin */
+					break;
+
+				case 't':    /* Key for x bin */
+					KeyX = atoi(arg);
+					break;
+
+				case 'T':    /* Key for y bin */
+					KeyY = atoi(arg); 
+					break;
+
+				case 'V':    /* Probability weighting key */
+					KeyProb = atoi(arg); 
+					break;
 
 				default:
 				  fprintf(LogFilePtr,"ERROR: Unknown command option: %s\n",argv[i]);
@@ -909,6 +1229,29 @@ void OwnInit   (int argc, char *argv[])
 		fprintf(LogFilePtr,"\nNOTE: coating of top wall also used for bottom wall \n");
 	}
 
+	/* Init bin arrays */
+	GetValueX = SetValueFunction(KeyX);
+	GetValueY = SetValueFunction(KeyY);
+	GetProb   = SetValueFunction(KeyProb);
+	
+	if (pReflPlot != NULL)
+	{
+		bpostX = malloc(sizeof(double)*nbinsX+1);
+		memset(bpostX, 0, sizeof(double)*nbinsX+1);
+		bpostY = malloc(sizeof(double)*nbinsY+1);
+		memset(bpostY, 0, sizeof(double)*nbinsY+1);
+		bin = malloc(sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
+		memset(bin, 0, sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
+
+		bintervalX = (MaxX - MinX) / (double)nbinsX;
+		bintervalY = (MaxY - MinY) / (double)nbinsY;
+
+		for(ibinX = 0; ibinX<=nbinsX; ibinX++)
+			bpostX[ibinX] = MinX + bintervalX*ibinX;
+		for(ibinY = 0; ibinY<=nbinsY; ibinY++)
+			bpostY[ibinY] = MinY + bintervalY*ibinY;
+	}
+
 	/* Calculation of height, width and channel-width of beginning and end of pieces */
 	/* ----------------------------------------------------------------------------- */
 	/*Xpce  = calloc(nPieces+1, sizeof(double));
@@ -920,7 +1263,6 @@ void OwnInit   (int argc, char *argv[])
 
 	if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
 	{	
-		double XpceZero = 0.;
 		for(j=0; j <= nPieces; j++)
 		{	
 			ReadLine(pFile, sLine, sizeof(sLine)-1);
@@ -1146,6 +1488,7 @@ void OwnCleanup()
 		free(pReflFiles);
 	}
 	if (pReflParam!=NULL) fclose(pReflParam);
+	if (pReflPlot!=NULL) fclose(pReflPlot);
 }/* End OwnCleanup */
 
 
@@ -1482,7 +1825,7 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
 
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, GuidePiece *Pce, eGuideWall ThisCollision, double degangular, double reflectivity)
 {
-	if (pReflParam!=NULL)
+	if (pReflParam!=NULL || pReflPlot!=NULL)
 	{
   //fprintf(pReflParam, "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
 		char       *fstr="%c%c%09lu     %c     %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5d  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
@@ -1514,51 +1857,55 @@ void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuid
 		Qz = 4.*M_PI/pNeutron->Wavelength*sin(degangular*M_PI/180.);
 		mVal = Qz/0.02174;
 		
-		if (Mode == 10)
+		if (pReflParam!=NULL)
 		{
-			sprintf(buffer, fstr,
-				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
-				'F', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
-				pNeutron->Debug,       pNeutron->Color,
-				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
-				pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
-				//p[0], p[1], p[2],
-				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
-				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
-				);
+			if (Mode == 10) //Neutron died
+			{
+				sprintf(buffer, fstr,
+					pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+					'F', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+					pNeutron->Debug,       pNeutron->Color,
+					pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+					pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
+					//p[0], p[1], p[2],
+					pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+					pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+					);
+			}
+			if (Mode == 5) //GW_EXIT
+			{
+				sprintf(buffer, fstr,
+					pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+					'-', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+					pNeutron->Debug,       pNeutron->Color,
+					pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+					pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
+					//p[0], p[1], p[2],
+					pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+					pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+					);
+			}
+			if (Mode == 0) //Scattered
+			{
+				sprintf(buffer, fstr,
+					pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
+					'T', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
+					pNeutron->Debug,       pNeutron->Color,
+					pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+					pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
+					//p[0], p[1], p[2],
+					pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+					pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
+					);
+			}
 		}
-		if (Mode == 5)
-		{
-			sprintf(buffer, fstr,
-				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
-				'-', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
-				pNeutron->Debug,       pNeutron->Color,
-				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
-				pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
-				//p[0], p[1], p[2],
-				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
-				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
-				);
-		}
-		if (Mode == 0)
-		{
-			sprintf(buffer, fstr,
-				pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo,
-				'T', ThisCollision, degangular, mVal, reflectivity, DivY, DivZ,
-				pNeutron->Debug,       pNeutron->Color,
-				pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
-				pNeutron->Position[0]+Pce->Xpce, pNeutron->Position[1], pNeutron->Position[2],
-				//p[0], p[1], p[2],
-				pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
-				pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]
-				);
-		}
-
+	
 		if (RefOut != NULL)
 		{
 			if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(keyReflParam) > 2))
 			{
-				char   *tmp = NULL;
+				char    *tmp = NULL;
+				NeutronEx *tmpneutrons = NULL;
 				size_t curlen = (RefOut->Output)?strlen((RefOut->Output)):0;
 
 				if((tmp = realloc(RefOut->Output,curlen+strlen(buffer)+1)) != NULL)
@@ -1567,6 +1914,29 @@ void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuid
 					RefOut->Output = tmp;
 					strcat(RefOut->Output, buffer);
 				}
+				
+				/* neutrons */
+				if (RefOut->cneutrons == 0)
+				{
+					RefOut->neutrons = malloc(sizeof(NeutronEx));
+					//CopyNeutron(pNeutron, &RefOut->neutrons[0].neutron);
+				} else {
+					if((tmpneutrons = realloc(RefOut->neutrons, sizeof(NeutronEx)*(RefOut->cneutrons+1))) != NULL)
+					{
+						RefOut->neutrons = tmpneutrons;
+						//CopyNeutron(pNeutron, &RefOut->neutrons[RefOut->cneutrons].neutron);
+					}
+				}
+				CopyNeutron(pNeutron, &RefOut->neutrons[RefOut->cneutrons].neutron);
+				RefOut->neutrons[RefOut->cneutrons].neutron.Position[0] += Pce->Xpce + XpceZero;
+				RefOut->neutrons[RefOut->cneutrons].ThisCollision = ThisCollision;
+				RefOut->neutrons[RefOut->cneutrons].degangular = degangular;
+				RefOut->neutrons[RefOut->cneutrons].m = mVal;
+				RefOut->neutrons[RefOut->cneutrons].reflectivity = reflectivity;
+				RefOut->neutrons[RefOut->cneutrons].DivY = DivY;
+				RefOut->neutrons[RefOut->cneutrons].DivZ = DivZ;
+				RefOut->neutrons[RefOut->cneutrons].Mode = Mode;
+				RefOut->cneutrons++;
 			}
 
 			/*if (RefOut->RefCount < 0)
@@ -1594,5 +1964,175 @@ void   PrintMaximalM(double *RData, long i)
 		fprintf(LogFilePtr," maximal defined m : %8.2f\n", sin(count/180000.*M_PI)*4*M_PI/0.02174);
 	else
 		fprintf(LogFilePtr," maximal defined m : absorber\n");
+}
+
+int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
+{
+	//int ibinX = -1, ibinY = -1;
+	//int bin = (((X - x) / (double)nbinsX)*146+1e-4) / ((X - x) / (double)nbinsX);
+	*ibinX = -1;
+	*ibinY = -1;
+	/*if (bLogBinningX){
+		for(*ibinX = 0; *ibinX<nbinsX; (*ibinX)++){
+			if (bpostX[*ibinX] <= *Xval && *Xval < bpostX[(*ibinX)+1])
+				break;
+		}
+	} else*/
+		*ibinX = (int)((*Xval - MinX) / ((MaxX - MinX) / (double)nbinsX));
+	
+	/*if (bLogBinningY){
+		for(*ibinY = 0; *ibinY<nbinsY; (*ibinY)++){	
+			if (bpostY[*ibinY] <= *Yval && *Yval < bpostY[(*ibinY)+1])
+				break;
+		}
+	} else*/
+		*ibinY = (int)((*Yval - MinY) / ((MaxY - MinY) / (double)nbinsY));
+	
+	if ((*ibinX < nbinsX) && (*ibinY < nbinsY))
+		return INDEX(*ibinX, *ibinY);
+	else
+		return -1;
+}
+
+double GetValueNone            (ReflCond *RefOut, int cNeut) { return (double)1.0; }
+double GetValueKeyMode         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].Mode; }
+double GetValueKeyRefCount     (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCount; }
+double GetValueKeyRefCountY    (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCountY; }
+double GetValueKeyRefCountZ    (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCountZ; }
+double GetValueKeyThisCollision(ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].ThisCollision; }
+double GetValueKeydegangular   (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].degangular; }
+double GetValueKeym            (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].m; }
+double GetValueKeyreflectivity (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].reflectivity; }
+double GetValueKeyDivY         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].DivY; }
+double GetValueKeyDivZ         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].DivZ; }
+double GetValueKeyColor        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Color; }
+double GetValueKeyTime         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Time; }
+double GetValueKeyWavelength   (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Wavelength; }
+double GetValueKeyProbability  (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Probability; }
+double GetValueKeyPositionX    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[0]; }
+double GetValueKeyPositionY    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[1]; }
+double GetValueKeyPositionZ    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[2]; }
+double GetValueKeyVectorX      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[0]; }
+double GetValueKeyVectorY      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[1]; }
+double GetValueKeyVectorZ      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[2]; }
+double GetValueKeySpinX        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[0]; }
+double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[1]; }
+double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[2]; }
+
+
+
+GetVal SetValueFunction(int key)
+{
+/*
+#define iKeyMode           1
+#define iKeyMode0          2
+#define iKeyMode5          3
+#define iKeyMode10         4
+#define dKeyRefCount       5
+#define dKeyRefCountY      6
+#define dKeyRefCountZ      7
+#define iKeyThisCollision  8
+#define dKeydegangular     9
+#define dKeym             10
+#define dKeyreflectivity  11
+#define dKeyDivY          12
+#define dKeyDivZ          13
+#define iKeyColor         14
+#define dKeyTime          15
+#define dKeyWavelength    16
+#define dKeyProbability   17
+#define dKeyPositionX     18
+#define dKeyPositionY     19
+#define dKeyPositionZ     20
+#define dKeyVectorX       21
+#define dKeyVectorY       22
+#define dKeyVectorZ       23
+#define dKeySpinX         24
+#define dKeySpinY         25
+#define dKeySpinZ         26*/
+
+	switch (key) {
+		case iKeyMode:
+			return &GetValueKeyMode;
+			break;
+		case iKeyMode0:
+			return &GetValueNone;
+			break;
+		case iKeyMode5:
+			return &GetValueNone;
+			break;
+		case iKeyMode10:
+			return &GetValueNone;
+			break;
+		case dKeyRefCount:
+			return &GetValueKeyRefCount;
+			break;
+		case dKeyRefCountY:
+			return &GetValueKeyRefCountY;
+			break;
+		case dKeyRefCountZ:
+			return &GetValueKeyRefCountZ;
+			break;
+		case iKeyThisCollision:
+			return &GetValueKeyThisCollision;
+			break;
+		case dKeydegangular:
+			return &GetValueKeydegangular;
+			break;
+		case dKeym:
+			return &GetValueKeym;
+			break;
+		case dKeyreflectivity:
+			return &GetValueKeyreflectivity;
+			break;
+		case dKeyDivY:
+			return &GetValueKeyDivY;
+			break;
+		case dKeyDivZ:
+			return &GetValueKeyDivZ;
+			break;
+		case iKeyColor:
+			return &GetValueKeyColor;
+			break;
+		case dKeyTime:
+			return &GetValueKeyTime;
+			break;
+		case dKeyWavelength:
+			return &GetValueKeyWavelength;
+			break;
+		case dKeyProbability:
+			return &GetValueKeyProbability;
+			break;
+		case dKeyPositionX:
+			return &GetValueKeyPositionX;
+			break;
+		case dKeyPositionY:
+			return &GetValueKeyPositionY;
+			break;
+		case dKeyPositionZ:
+			return &GetValueKeyPositionZ;
+			break;
+		case dKeyVectorX:
+			return &GetValueKeyVectorX;
+			break;
+		case dKeyVectorY:
+			return &GetValueKeyVectorY;
+			break;
+		case dKeyVectorZ:
+			return &GetValueKeyVectorZ;
+			break;
+		case dKeySpinX:
+			return &GetValueKeySpinX;
+			break;
+		case dKeySpinY:
+			return &GetValueKeySpinY;
+			break;
+		case dKeySpinZ:
+			return &GetValueKeySpinZ;
+			break;
+		default:
+			return &GetValueNone;
+			break;
+	}
 }
 
