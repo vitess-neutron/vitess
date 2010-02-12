@@ -2928,6 +2928,8 @@ set sm_ensembleESET {
   {cutoff float "" {"cutoff\nprobability" "" "" b}}
   {}
   {cfile pareditablefile collision.dat {"collision\nfile" "name of file for collisions output if 'output in collision file' option chosen in 'visualisation'" "" C}}
+  {}
+  {mcperneut int 500 {"max PRNG calls\nper neutron" "Estimated maximum count of pseudo random number generator (PRNG) calls per input neutron.\nOf interest only if helper threads are used, and if the default is too small for a given ensemble" "" m} ge500}
 }
 
 

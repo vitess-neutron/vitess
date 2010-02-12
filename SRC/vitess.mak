@@ -58,6 +58,7 @@ ALL : \
 	"$(OD)\mon2_posdiv.exe" \
 	"$(OD)\mon2_tofwl.exe" \
 	"$(OD)\mon2_wldiv.exe" \
+	"$(OD)\mon2_kdiv.exe" \
 	"$(OD)\velselect.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
@@ -90,6 +91,7 @@ ALL : \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
 	"$(OD)\polariser_sm.exe" \
+	"$(OD)\polariser_sm_parallel.exe" \
 	"$(OD)\polariser_he3.exe" \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
@@ -113,6 +115,7 @@ ALL : \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble.exe" \
+	"$(OD)\sm_ensemble_parallel.exe" \
 	"$(OD)\dist_time.exe" \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
@@ -136,6 +139,10 @@ SOURCE=$(SPATH)\matrix.c
 
 SOURCE=$(SPATH)\sample.c
 "$(IDIR)\sample.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\softabort.c
+"$(IDIR)\softabort.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\bender_inter_data.c
@@ -230,6 +237,13 @@ SOURCE=$(SPATH)\mon2_wldiv.c
 
 "$(OD)\mon2_wldiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_wldiv.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mon2_wldiv.pdb" /out:"$(OD)\mon2_wldiv.exe" "$(IDIR)\mon2_wldiv.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\mon2_kdiv.c
+"$(IDIR)\mon2_kdiv.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon2_kdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_kdiv.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon2_kdiv.pdb" /out:"$(OD)\mon2_kdiv.exe" "$(IDIR)\mon2_kdiv.obj" $(TOOL) 
 
 SOURCE=$(SPATH)\velselect.c
 "$(IDIR)\velselect.obj" : $(SOURCE)
@@ -455,6 +469,13 @@ SOURCE=$(SPATH)\polariser_sm.c
 "$(OD)\polariser_sm.exe" : "$(OD)" $(MTOOL) "$(OD)\polariser_sm.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\polariser_sm.pdb" /out:"$(OD)\polariser_sm.exe" "$(IDIR)\polariser_sm.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\polariser_sm_parallel.c
+"$(IDIR)\polariser_sm_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\polariser_sm_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\polariser_sm_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $((ML_T)) /pdb:"$(OD)\polariser_sm_parallel.pdb" /out:"$(OD)\polariser_sm_parallel.exe" "$(IDIR)\polariser_sm_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
+
 SOURCE=$(SPATH)\polariser_he3.c
 "$(IDIR)\polariser_he3.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -648,6 +669,13 @@ SOURCE=$(SPATH)\sm_ensemble.c
 
 "$(OD)\sm_ensemble.exe" : "$(OD)" "$(OD)\sm_ensemble.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble.pdb" /out:"$(OD)\sm_ensemble.exe" "$(IDIR)\sm_ensemble.obj" "$(OD)\cpgplot.obj"
+
+SOURCE=$(SPATH)\sm_ensemble_parallel.c
+"$(IDIR)\sm_ensemble_parallel.obj" : $(SOURCE)
+	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sm_ensemble_parallel.exe" : "$(OD)" "$(OD)\sm_ensemble_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
+	$(LINK32) $((ML_T)) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
 
 SOURCE=$(SPATH)\dist_time.c
 "$(IDIR)\dist_time.obj" : $(SOURCE)

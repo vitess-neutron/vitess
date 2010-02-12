@@ -16,9 +16,9 @@ static void (*doProc)(int, int);  // task routine to be done in parallel
 static int      outNbufSize, *outNcount;
 static int      MCbufSize, *MCcount;
 static double   *MCbuffer;
-
-static int     doParBarrier;	// 0 (back) or 1 (start)
-static int     outstanding;     // number of threads not ready yet
+static float    maxmcusage;      // to report max. fill ratio of mc buffers
+static int      doParBarrier;	 // 0 (back) or 1 (start)
+static int      outstanding;     // number of threads not ready yet
 
 static void doChunk(int thread_i);
 
@@ -165,7 +165,6 @@ static void setDone () {
   }
 }
 
-
 static void *threadLoop (void *arg) {
 
   int toggle_barrier;
@@ -188,7 +187,6 @@ static void *threadLoop (void *arg) {
   return arg;
 }
 
-#define MAXWORKER 32
 
 static int initParallel (int nworkers) {
   long i;
@@ -232,17 +230,22 @@ static void waitForHelpers() {
 
 #endif  // Linux
 
-
-double VranPar(int thread_i) {
-  int n,c;
-  if ((n = thread_i - 1) < 0 ||
-      (c = MCcount[n] - 1) < 0) myExit("insufficient random number storage for threads \n");
+static double myVran(int n) {
+  // use precomputed random number
+  int c = MCcount[n] - 1;
+  if (c < 0) myExit2("insufficient random number storage (%d,%d) for threads, increase prefetch buffer size\n", n,MCbufSize);
   MCcount[n] = c;
   return MCbuffer[n*MCbufSize + c];
 }
 
+double VranPar(int thread_i) {
+  thread_i--;
+  if (thread_i < 0) return Vran(); // called from main thread
+  return myVran(thread_i);
+}
+
 double MonteCarloPar(double x, double y, int thread_i) {
-  return x + (y - x) * (thread_i <= 0 ? Vran() : VranPar(thread_i));
+  return x + (y - x) * (thread_i <= 0 ? Vran() : myVran(thread_i-1));
 }
 
 static int createThreadBuffers() {
@@ -256,6 +259,8 @@ static int createThreadBuffers() {
     (MCcount  = (int *)    calloc(NThreads, sizeof(int)));
 }
 
+static int morefill;
+
 static void fillMCbuffers() {
   // fills buffers to contain MCbufSize random numbers
   // MCcount[0] shows what is left for thread 1, which may use entries 0,1,...,MCcount[1]-1
@@ -263,11 +268,22 @@ static void fillMCbuffers() {
   if (MCbufSize <= 0) return;
   for (n=0; n<NThreads; n++)
     if ((c = MCcount[n]) < MCbufSize) {
+      float ratio;
       double *v = MCbuffer + n*MCbufSize + c;
       for (i=c; i<MCbufSize; i++)
 	*v++ = Vran();
       MCcount[n] = MCbufSize;
+      if (morefill) {
+	// do statistics on buffer usage, but not at the first call of fillMCbuffers
+	ratio = (float)(MCbufSize - c) / MCbufSize;
+	if (ratio > maxmcusage) maxmcusage = ratio;   
+      }
     }
+  morefill = 1;
+}
+
+void printMCStatistic(FILE *f) {
+  fprintf(f, "maximum usage of mc prefetch buffers %8.1f %%, buffer sizes %d\n", 100*maxmcusage, MCbufSize);
 }
 
 
@@ -276,8 +292,8 @@ void WriteNeutronParallel(Neutron *OutNeutron, int thread_i) {
     WriteNeutron(OutNeutron);
   else {
     int i,c;
-    i = thread_i - 1;
-    if ((c = outNcount[i]) >= outNbufSize) myExit2("temp buffer size %d for threads too small for %d\n", outNbufSize, c);
+    i = thread_i - 1;  // i will be 0 for thread 1
+    if ((c = outNcount[i]) >= outNbufSize) myExit2("!!! temp buffer size %d too small for thread %d !!!\n", outNbufSize, thread_i);
     outNcount[i] = c+1;
     CopyNeutron(OutNeutron, OutNeutronsParallel + i*outNbufSize + c);
   }
@@ -294,7 +310,7 @@ static void flushParallelOutput() {
     }
 }	
 
-	
+
 static void doChunk(int thread_i) {
   int i,min_i,max_i;
   min_i = thread_i*ChunkSize;
@@ -329,7 +345,7 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
   doProc = p;    // remember what to do in threads
 
   if (maxnratio <= 0) maxnratio = 0;
-  maxchunksize = 1 + BufferSize/NThreads;
+  maxchunksize = 1 + BufferSize/(NThreads + 1);
   outNbufSize = maxnratio * maxchunksize;
   MCbufSize = maxmc * maxchunksize;
 
@@ -337,7 +353,7 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
 
   while (ReadNeutrons()) {
     CHECK;
-    ChunkSize = 1 + NumNeutGot/NThreads;
+    ChunkSize = 1 + NumNeutGot/(NThreads + 1);
     fillMCbuffers();
     startHelpers();
     doChunk(0);  // the main thread does it's share parallel to helper threads
