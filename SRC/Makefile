@@ -51,6 +51,7 @@ monitorpol_1d \
 monitorpol_pos \
 monochr_analyser \
 polariser_sm \
+polariser_sm_parallel \
 polariser_he3 \
 flipper_coil \
 pol_mirror \
@@ -74,12 +75,13 @@ sample_environment \
 bender \
 visual \
 sm_ensemble \
+sm_ensemble_parallel \
 dist_time \
 chop_phases \
 standard_deviation \
 direct_view
 
-TOOL = init.o general.o message.o
+TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = $(MTOOL) distrgauss.o
@@ -88,7 +90,9 @@ STOOL = sample.o $(MTOOL)
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+#CFLAGS = -s -O3 -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+#CFLAGS = -s -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -g -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -202,6 +206,9 @@ direct_view : direct_view.c
 polariser_sm : polariser_sm.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+polariser_sm_parallel : polariser_sm_parallel.c threadHelper.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
+
 monitorpol_1d : monitorpol_1d.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -266,6 +273,9 @@ guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
+sm_ensemble_parallel : sm_ensemble_parallel.c threadHelper.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
 writeout : writeout.c $(TOOL)

@@ -7,3 +7,4 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
 void WriteNeutronParallel(Neutron *n, int thread_i);
 double MonteCarloPar(double x, double y, int thread_i);
 double VranPar(int thread_i);
+void printMCStatistic(FILE *f);

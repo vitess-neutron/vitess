@@ -35,7 +35,7 @@ EOS
 ### define targets #####################################################
 ###
 # tool objects
-my @Obj = qw(init general intersection matrix sample);
+my @Obj = qw(init general intersection matrix sample softabort);
 
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
@@ -51,7 +51,8 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
-	    polariser_sm polariser_he3 flipper_coil
+	    polariser_sm polariser_sm_parallel
+	    polariser_he3 flipper_coil
 	    pol_mirror
 	    collimator_radial
 	    precessionfield sesans_field
@@ -69,15 +70,18 @@ my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment);
 
-my @Gexe = qw(bender visual sm_ensemble dist_time);
+my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
 
 # auxillary programs without further libs
 my @PTool = qw(chop_phases standard_deviation direct_view);
 
+# modules with helper thread support
+my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel);
+
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
-$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', @CM);
+$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
@@ -92,9 +96,9 @@ my %dep = (			# needed objects for a module
 	   spacewindow_multiple => 'bender_inter_data',
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
-	   mirror_elliptical => 'mirrrefl',
-	   chopper_fermi_parallel => 'threadHelper'
+	   mirror_elliptical => 'mirrrefl'
 	  );
+$dep{$_} = 'threadHelper' foreach qw(sm_ensemble_parallel chopper_fermi_parallel polariser_sm_parallel);
 
 # objects necessary for some modules, to be compiled separately
 my %K;
@@ -112,17 +116,17 @@ foreach (split) {
   push @Gobj, $_ unless $K{$_};
 }
 
-$dep{$_} = 'cpgplot' foreach qw(visual dist_time sm_ensemble);
+$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble sm_ensemble_parallel);
 
 my (%sopt, %lib);
-foreach (qw(visual bender dist_time sm_ensemble lenses)) {
+foreach (qw(visual bender dist_time sm_ensemble sm_ensemble_parallel lenses)) {
   $sopt{$_} = '$(GRAOPT)';		# special compile options for a module
   $lib{$_} = '$(GRALIB)';		# needed libs for a module
 }
 
 # Modules needing thread support:
 my %Thread;
-$Thread{$_} = 1 foreach qw(chopper_fermi_parallel);
+$Thread{$_} = 1 foreach @ParMod;
 
 
 my @All = (@C, @CI, @CM, @CMG, @CS, @Gexe, @PTool);

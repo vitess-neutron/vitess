@@ -164,10 +164,10 @@ static char *conCat (char *b, char* c, int sel) {
   blen = strlen(b);
   clen = strlen(c);
   if ((res = (char *) malloc(alen+blen+clen+1)))
-/*{ if (alen)
+    /*{ if (alen)
       memcpy(res, a, alen);
-    strcpy(res+alen, c);
-    strcpy(res+alen+clen, b);  */
+      strcpy(res+alen, c);
+      strcpy(res+alen+clen, b);  */
   { if (alen)
       strcpy(res, a);
     else
@@ -406,12 +406,14 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   if(OutputFilePtr && OutputFilePtr!=stdout)
     fclose(OutputFilePtr);
 
+#ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
   /* release the buffer memory */
   free(InputNeutrons);
   free(OutputNeutrons);
 
   /* free GNU gsl rng state var */
   gsl_rng_free (vit_gsl_rng);
+#endif
 
   /* error for the given count rate calculated through adding squared errors
      - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
@@ -448,7 +450,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 /*                     the LogFile                                     */
 /***********************************************************************/
 
-void print_module_name(char name[])
+void print_module_name(const char *name)
 {
   char sNameHlp[41], *pBlank;
 
@@ -541,7 +543,7 @@ void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ
   /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
   else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
   { i=-1;
-    pBuffer=malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
+    pBuffer = malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
     pFile = fopen(FullParName("instrument.inf"), "r");
     if (pFile)
     { for (m=-2; m<nModuleNo; m++)
@@ -561,6 +563,7 @@ void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ
       fprintf(pFile, "EOP\n");
     }
     free(pBuffer);
+    pBuffer=0;
   }
   /* each other module appends a line */
   else

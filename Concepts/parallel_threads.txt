@@ -259,3 +259,61 @@ with no real multi-core architecture.)
 The Vitess GUI supports --T setting to reasonable values.
 A module should not limit the number of threads, eg to verify multi thread simulations
 on PCs with a single core.
+
+Modules feasable for thread parallelisation
+===========================================
+
+guide
+monochr_analyser		maxMCPerNeutron=2*Repetition
+polariser_sm
+resonator_drabkin		maxMCPerNeutron=2 ? excapsulate gsl_ran_dir_3d for thread_i
+rotating_field			maxMCPerNeutron=1 ? 
+sample_elasticisotr		maxMCPerNeutron=Repetition*3 ?
+sample_environment 		maxMCPerNeutron=3*guess ??
+sample_inelast			maxMCPerNeutron=Repetition ?
+sample_powder			maxMCPerNeutron=3*guess ??
+sesans_field
+
+Some modules do graphical or debug/trace output per neutron. This would hinder helper threads
+unless output becomes synchronised or is buffered. A solution to enable speedup would be
+to restrict this extra output to calls when NThreads < 1, or to force NThreads=0 if 
+the user wishes graphical output.
+Modules of this category are
+
+bender
+grid
+lenses
+sm_ensemble
+
+Other modules seem to be I/O bound, but are feasable:
+chopper_disc
+flipper_coil
+flipper_gradient
+mirror_elliptical
+polariser_he3
+pol_mirror
+precessionfield
+velselect
+visual
+writeout
+
+These module will not benefit from helper threads, because their main purpose
+is to exctract features of neutron trajectories only, or they surely are I/O bound:
+
+capture_flux
+collimatorxxx
+detector
+evalxxx
+frame
+monXXX
+sample_powder
+sample_sans
+sample_singcryst
+sample_s_q
+slit
+space
+spacewindowXXX
+spin_reset
+spwindow
+
+

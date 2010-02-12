@@ -5,6 +5,9 @@
 
 #include "general.h"
 
+// maximum number of helper threads
+#define MAXWORKER 32
+
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
@@ -33,7 +36,7 @@ extern int      NThreads;      /* number of helper threads for execution, set by
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
                        double dHorizAngle, double dVertAngle);
-void print_module_name(char name[]);
+void print_module_name(const char *name);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
 void WriteInstrData   (long    nModuleNo, VectorType EndPos, double  dLength, double  dRotZ, double  dRotY);

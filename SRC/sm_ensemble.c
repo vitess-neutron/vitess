@@ -326,8 +326,6 @@ my_exit:;
 
   Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);	
 
-  fprintf(LogFilePtr," \n");
-
   return 0;
 }
 

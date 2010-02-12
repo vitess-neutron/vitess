@@ -319,10 +319,7 @@ if((PlaneLineIntersect(Pos, Dir, n, + DimSM[0]/2., posbot) == TRUE)) CopyVector(
 my_exit:
 
 	OwnCleanup(); 
-	Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHoriz, AnglOutVert);	
-
-	fprintf(LogFilePtr," \n") ;
-
+	Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHoriz, AnglOutVert);
 
   return 0;
 }
