@@ -7,6 +7,15 @@
 # try to use BLT
 set NoBLT [catch {package require BLT}]
 
+proc VScroll {w {u 5}} {
+  # scroll module windows
+  if {[string range $w 0 4] != ".x.m."} return
+  switch [string range $w 5 6] {
+    "r." { .x.m.r.modf.c yview scroll $u units }
+    "l." { .x.m.l.c yview scroll $u units }
+  }
+}
+
 switch $tcl_platform(platform) {
   unix {
     switch $tcl_platform(os) {
@@ -60,6 +69,8 @@ switch $tcl_platform(platform) {
     set WinPos +50+0
     set TextPos +620+0
     set MaxOutstringLength 90
+    bind all <Button-4>  {VScroll %W -5}
+    bind all <Button-5>  {VScroll %W 5}
   }
   windows {
     set SourceDirectory [pwd]
@@ -80,6 +91,7 @@ switch $tcl_platform(platform) {
     }
     set sserif Arial
     catch {exec $KillProg C} res
+    bind all <MouseWheel> {VScroll %W [expr {-%D/120}]}   
   }
   default {
     puts "System not supported.\n"
@@ -123,6 +135,53 @@ foreach f $modl {
   source [file join $GUIDir $f.tcl]
 }
 unset modl
+
+#bind Text <MouseWheel> {}
+#ind all <MouseWheel> [list mouseWheel %W %D]
+#proc mouseWheel {widget delta} {
+#  puts "mouseWheel $widget $delta\n\n"
+#  if { $delta >= 0 } {
+#    set cmd [list yview scroll [expr {-$delta/3}] pixels]
+#  } else {
+#    set cmd [list yview scroll [expr {(2-$delta)/3}] pixels]
+#  }
+#  set over [winfo containing -displayof $widget {*}[winfo pointerxy $widget]]
+#  if { $over == "" || [catch {$over {*}$cmd}] } {
+#    catch {$widget {*}$cmd}
+#  }
+#}
+proc wheelEvent { x y delta } {
+
+    # Find out what's the widget we're on
+    set act 0
+    set widget [winfo containing $x $y]
+
+    if {$widget != ""} {
+        # Make sure we've got a vertical scrollbar for this widget
+        if {[catch "$widget cget -yscrollcommand" cmd]} return
+
+        if {$cmd != ""} {
+            # Find out the scrollbar widget we're using
+            set scroller [lindex $cmd 0]
+
+            # Make sure we act
+            set act 1
+        }
+    }
+
+    if {$act == 1} {
+        # Now we know we have to process the wheel mouse event
+        set xy [$widget yview]
+        set factor [expr [lindex $xy 1]-[lindex $xy 0]]
+
+        # Make sure we activate the scrollbar's command
+        set cmd "[$scroller cget -command] scroll [expr -int($delta/(120*$factor))] units"
+        eval $cmd
+    }
+}
+
+bind all <MouseWheel> "+wheelEvent %X %Y %D"
+
 
 ### start main widget of Xcontrol, reading experiment environment
 controlGUI $SourceDirectory vitess.tcl .x $WinPos

@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n", 
                           Sample.SG.Ball.r);
       break;
+    default :;
   }
   fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
                       "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"

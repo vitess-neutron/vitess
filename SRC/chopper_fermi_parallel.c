@@ -48,7 +48,8 @@ double          omega, y_ch[10][2000], x_ch[10][2000],
                 coef_pi, wallwidth, expon, height, width, depth, optimal_wl, radius_of_curv, main_depth, diameter, Phase,
                 shift_y=0., angle_channel, pos_ch[3];
 long		Nchannels;
-char		*GeomFileName, XFILEName[STRING_BUFFER];
+const char	*GeomFileName;
+char            XFILEName[STRING_BUFFER];
 FILE		*GeomFilePtr, *GatesFilePtr;
 
 void		OutputTransformations(double *tof, double *wl, double *prob, VectorType Pos, VectorType Dir, VectorType SpinVector);

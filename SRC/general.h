@@ -39,7 +39,7 @@
 #define LAMBDA_MIN            0.001
 #define LAMBDA_MAX          100.0
 
-#define BUFFER_SIZE       10000
+#define BUFFER_SIZE       50000
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
@@ -270,7 +270,7 @@ void   RotVector       (double RotMatrix[3][3], VectorType Vector);
 void   RotBackVector   (double RotMatrix[3][3], VectorType Vector);
 void   FillRMatrixZY   (double RotMatrix[3][3], double roty, double rotz);
 
-FILE * fileOpen(const char *name, char *mode);
+FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);
 void   Warning(const char *text);
 void   Abort();

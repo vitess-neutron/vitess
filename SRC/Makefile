@@ -47,6 +47,7 @@ eval_elast2 \
 eval_inelast \
 frame \
 guide \
+guide_parallel \
 monitorpol_1d \
 monitorpol_pos \
 monochr_analyser \
@@ -91,8 +92,8 @@ SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
 #CFLAGS = -s -O3 -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-#CFLAGS = -s -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-CFLAGS = -g -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+#CFLAGS = -g -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -271,6 +272,9 @@ standard_deviation : standard_deviation.c
 
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
+
+guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
 
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)

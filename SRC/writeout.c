@@ -39,7 +39,7 @@ void OwnCleanup();
 int main(int argc, char **argv)
 {
   int i;
-  char *form;
+  const char *form;
   double Divy, Divz;
 
   /* Initialize the program according to the parameters given   */

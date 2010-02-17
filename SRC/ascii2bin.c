@@ -14,7 +14,7 @@ extern short bTrace;
 
 FILE *AsciiFile;
 
-char *c, comment[100];
+char skipcomment[1000];
 
 
 short OwnInit() 
@@ -81,10 +81,7 @@ int main(int argc, char **argv)
   if (bFiles)
   { 
     /* header line */
-    {
-      char comment[1000], *c ;
-      c=fgets(comment, 1000, AsciiFile) ;
-    }
+    fgets(skipcomment, 1000, AsciiFile);
 
     for(j=0; j<1e10; j++)
     {
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
         fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[0] ) ;
         fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[1] ) ;
         fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[2] ) ;
-        c=fgets(comment, 100, AsciiFile) ;
+        fgets(skipcomment, 1000, AsciiFile) ;
 
         NumNeutRead += 1;
                

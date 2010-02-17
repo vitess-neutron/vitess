@@ -341,7 +341,6 @@ void CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi)
     *Phi = atan2(Vector[2], Vector[1]);
   else
     *Phi = 2. * M_PI + atan2(Vector[2], Vector[1]);
-
 }
 
 

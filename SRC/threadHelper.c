@@ -31,6 +31,15 @@ static HANDLE  hEvent2;
 static HANDLE  hDone;
 static HANDLE  hWorkMutex;      // to guard commonly written variables
 static HANDLE  hDoneMutex;      // to indicate "work is done"
+static HANDLE  hDebugMutex;     // to guard debug output of threads
+
+void debugLock() {
+  WaitForSingleObject( hDebugMutex, INFINITE);
+}
+
+void debugUnlock() {
+  ReleaseMutex(hDebugMutex);
+}
 
 static int setDone () {
   int i, all_done;
@@ -84,6 +93,8 @@ static int initParallel (int nworkers) {
 
   hWorkMutex = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not 
   hDoneMutex = CreateMutex( NULL, FALSE, NULL );  // request these mutexes here
+
+  hDebugMutex = CreateMutex( NULL, FALSE, NULL ); // request these mutexes here
 
   for (i=1; i<=nworkers; i++)
     _beginthread( threadLoop, 0, &i);
@@ -147,6 +158,15 @@ DEFLOCK(done);
 #undef DEFLOCK
 
 static pthread_mutex_t work_m;  // mutex to guard more_to_do and outstanding
+static pthread_mutex_t debug_m; // mutex to guard debug output
+
+void debugLock() {
+  pthread_mutex_lock(&debug_m);
+}
+
+void debugUnlock() {
+  pthread_mutex_unlock(&debug_m);
+}
 
 static void setDone () {
   int all_done = 0;
@@ -231,7 +251,7 @@ static void waitForHelpers() {
 #endif  // Linux
 
 static double myVran(int n) {
-  // use precomputed random number
+  // use a precomputed random number
   int c = MCcount[n] - 1;
   if (c < 0) myExit2("insufficient random number storage (%d,%d) for threads, increase prefetch buffer size\n", n,MCbufSize);
   MCcount[n] = c;
@@ -246,6 +266,26 @@ double VranPar(int thread_i) {
 
 double MonteCarloPar(double x, double y, int thread_i) {
   return x + (y - x) * (thread_i <= 0 ? Vran() : myVran(thread_i-1));
+}
+
+void ran_dir_3d_par (double *p, int thread_i) {
+
+  double s, a, x,y;
+
+  // Copy of the routine gsl_ran_dir_3d in rng/sphere.c which uses preallocated random numbers.
+  do
+    {
+      x = -1 + 2 * VranPar(thread_i);
+      y = -1 + 2 * VranPar(thread_i);
+      s = x*x + y*y;
+    }
+  while (s > 1.0);
+
+  p[2] = -1 + 2 * s;   // z
+  a = 2 * sqrt (1 - s);
+
+  p[0] = x * a;
+  p[1] = y * a;
 }
 
 static int createThreadBuffers() {
@@ -283,7 +323,9 @@ static void fillMCbuffers() {
 }
 
 void printMCStatistic(FILE *f) {
-  fprintf(f, "maximum usage of mc prefetch buffers %8.1f %%, buffer sizes %d\n", 100*maxmcusage, MCbufSize);
+  if (NThreads > 0) 
+    fprintf(f, "maximum usage of mc prefetch buffers %8.1f %%, buffer sizes %d, %d helper thread(s)\n",
+	    100*maxmcusage, MCbufSize, NThreads);
 }
 
 

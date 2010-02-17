@@ -110,7 +110,7 @@ proc mGroup {dy args} {
     frame $g -bg $bgColor
     pack  $g -side top -fill both -pady $dy
   }
-}
+} 
 
 proc scrollFrame {w side cw ch sh {sw ""}} {
   global bgColor

@@ -17,8 +17,8 @@
 
 char sBuffer   [256];
 
-double GetDouble(char* pText);
-void GetString(char* pText, char* pString);
+double GetDouble(const char* pText);
+void GetString(const char* pText, char* pString);
 
 
 int main(int argc, char* argv[])
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 }
 
 
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -115,7 +115,7 @@ double GetDouble(char* pText)
 }
 
 
-void GetString(char* pText, char* pString)
+void GetString(const char* pText, char* pString)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

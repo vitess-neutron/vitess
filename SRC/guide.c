@@ -240,7 +240,7 @@ GuidePiece *pPieces;         /* Holds piece Informations. Replaces Xpce, Ypce, Z
 VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
         eGuideShapeZ=1;
 
-char  *ShapeFileName="guide_shape.dat";
+const char  *ShapeFileName="guide_shape.dat";
 char  *ReflParamFileName=NULL;
 char  *ReflPlotFileName=NULL;
 char  *ReflFileNameL=NULL;
@@ -769,7 +769,7 @@ int main(int argc, char *argv[])
 		int ibinXY, ibinX, ibinY, cout;
     //fprintf(pReflPlot, "#   X          Y        counts   Mode  0   5   10  RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
 			//           "#   1          2          3      4=A  4:A      5=A 6=A  6:1N       7:1N  8:A       9:A   10:A           11:A     12:A  13:1N  14:A   15:A   16:A     17:S           18:A       19:A       20:A       21:A      22:A      23:A      24:A 25:A 26:A\n"
-		char       *fstr="%10.4f %10.4f %10d %5.1f %3d %3d %3d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
+		const char *fstr="%10.4f %10.4f %10d %5.1f %3d %3d %3d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
 		
 		//for (ibinXY = 0; ibinXY < INDEX(nbinsX, nbinsY); ibinXY++)
 		for (ibinX = 0; ibinX < nbinsX; ibinX++)

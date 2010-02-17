@@ -46,8 +46,8 @@ void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);
 long ColumnsInFile    (FILE* pFile);
-char* FullParName     (char* filename);
-char* FullInstallName (char* filename, char* sRelPath);
+char* FullParName     (const char* filename);
+char* FullInstallName (const char* filename, const char* sRelPath);
 
 #include <gsl/gsl_rng.h>
 extern gsl_rng * vit_gsl_rng;
