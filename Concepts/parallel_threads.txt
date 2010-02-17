@@ -297,8 +297,8 @@ velselect
 visual
 writeout
 
-These module will not benefit from helper threads, because their main purpose
-is to exctract features of neutron trajectories only, or they surely are I/O bound:
+These modules will not benefit from helper threads, because their main purpose
+is to exctract features of neutron trajectories, or they surely are I/O bound:
 
 capture_flux
 collimatorxxx
@@ -316,4 +316,24 @@ spacewindowXXX
 spin_reset
 spwindow
 
+Experimental timing
+===================
 
+#define BUFFER_SIZE       10000
+
+on dinux5, 4 Dual Core AMD Opteron(tm) Processor 865
+stepping        : 2
+cpu MHz         : 1809.277
+cache size      : 1024 KB
+
+
+FILES/ParTest/PolCav2.gui
+source:  10000000 trajectories
+serial		  1 helper	2 helper	3 helper	4 helper  
+39 s		  32 s		29 s		28 s		27 s
+
+#define BUFFER_SIZE       50000
+40 s	          33 s		29 s		27 s		26 s
+
+now we used the source output test2.bin as input:
+23 s		  16 s          12 s		11 s		10 s

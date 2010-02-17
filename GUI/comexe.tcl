@@ -101,6 +101,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
       chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       sm_ensemble {set com "sm_ensemble$par$sys"}
+      guide       {set com "guide$par$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
@@ -360,6 +361,7 @@ proc startAction {{sercom ""} {simu simulation}} {
     conditionalCloseProtfile
     return
   }
+  set startTime [clock seconds]
   set PipeActive 1
   set PipeIdList [split $PipeIds]
   set PipeIds ""
@@ -397,7 +399,8 @@ proc startAction {{sercom ""} {simu simulation}} {
 	showText "doing cleanup"
       }
       cleanupPipes
-      outProtocol "!$simu finished"
+      set dtime [expr [clock seconds] - $startTime]
+      outProtocol "!$simu finished after $dtime s"
 
       set PipeActive 0
       if {$sercom == ""} {

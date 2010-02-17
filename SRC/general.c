@@ -367,7 +367,7 @@ void FillRMatrixZY(double RotMatrix[3][3], double roty, double rotz)
 /* fileOpen open file 'name' and gives pointer back
    in case of an opening error, a message is written to the LogFile */
 
-FILE * fileOpen(const char *name, char *mode)
+FILE * fileOpen(const char *name, const char *mode)
 {
 	FILE *f=NULL;
 

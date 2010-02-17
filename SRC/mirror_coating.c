@@ -20,8 +20,8 @@
 
 // static char sBuffer[128];
 
-double GetDouble(char* pText);
-void   GetString(char* pString, char* pText);
+double GetDouble(const char* pText);
+void   GetString(char* pString, const char* pText);
 double RoundD   (const double in, const int nDigits);
 
 int main(int argc, char* argv[])
@@ -165,7 +165,7 @@ read:
 }
 
 
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -175,7 +175,7 @@ double GetDouble(char* pText)
 	return dValue;
 }
 
-void GetString(char* pString, char* pText)
+void GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

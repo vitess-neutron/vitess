@@ -136,11 +136,11 @@ int main(int argc, char *argv[])
   Neutron  Output, OutputRTAL;
 
   double ytemp, tmptmp;
-  char *GraphDev;
+  const char *GraphDev;
   static long  idwin1, idwin2;
   Plane EndpointRTAL;
 
-  char	*COLLFILEName="lensestrj.dat";
+  const char *COLLFILEName="lensestrj.dat";
   FILE	*COLLFILE=0;
 
   /*set by default */

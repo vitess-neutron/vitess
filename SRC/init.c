@@ -106,8 +106,8 @@ void  WriteInstrData (long   nModuleNo,  VectorType Pos, double  dLength, double
 void  ReadInstrData  (long*  pModuleNo,  VectorType Pos, double* pLength, double* pRotZ, double* pRotY);
 void  ReadSimData    (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 long  LinesInFile    (FILE* In);
-char* FullParName    (char* filename);
-char* FullInstallName(char* fileName, char* sRelPath);
+char* FullParName    (const char* filename);
+char* FullInstallName(const char* fileName, const char* sRelPath);
 
 
 static void setInstallDirectory (char *arg) {
@@ -140,7 +140,7 @@ static void setParDirectory (char *a) {
   }
 }
 
-static char *conCat (char *b, char* c, int sel) {
+static char *conCat (const char *b, const char* c, int sel) {
   char *res, *a=NULL;
   int alen, blen, clen;
   if (b == 0)
@@ -179,13 +179,13 @@ static char *conCat (char *b, char* c, int sel) {
 }
 
 /* Adding path of parameter directory to file name */
-char* FullParName(char* fileName)
+char* FullParName(const char* fileName)
 {
   return conCat(fileName, "", 0);
 }
 
 /* Adding path of installation directory to file name */
-char* FullInstallName(char* fileName, char* sRelPath)
+char* FullInstallName(const char* fileName, const char* sRelPath)
 {
   return conCat(fileName, sRelPath, 1);
 }
@@ -222,7 +222,7 @@ void Init(int argc, char **argv, VtModID eModule)
   InputFileName  = NULL;
   OutputFileName = NULL;
   LogFileName    = NULL;
-  ParDirectory   = "";
+  ParDirectory   = NULL;
   BufferSize     = BUFFER_SIZE;
   OutNeutPtr     = 0;
   TracePoints    = FALSE;
