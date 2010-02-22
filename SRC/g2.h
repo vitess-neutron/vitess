@@ -88,7 +88,7 @@ void g2_arc(int dev,
 void g2_filled_arc(int dev, double x, double y,
 		   double r1, double r2,
 		   double a1, double a2);
-void g2_string(int dev, double x, double y, char *text);
+void g2_string(int dev, double x, double y, const char *text);
 void g2_image(int dev, double x, double y, int x_size, int y_size, int *pens);
 
 void g2_set_QP(int dev, double d, enum QPshape shape);

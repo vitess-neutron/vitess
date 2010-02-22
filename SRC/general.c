@@ -30,27 +30,27 @@ FILE* LogFilePtr;        /* pointer to the log file stream              */
 /*  Conversion between physical properties                                              */
 /****************************************************************************************/
 
-double ENERGY_FROM_LAMBDA(double x)
+double ENERGY_FROM_LAMBDA(const double x)
 {
 	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
-double LAMBDA_FROM_ENERGY(double x)
+double LAMBDA_FROM_ENERGY(const double x)
 {
 	return(sqrt(81805.048 / x)); /* [ueV]   -> [Ang] */
 }
 
-double ENERGY_FROM_V(double x)
+double ENERGY_FROM_V(const double x)
 {
 	return(0.5227033 * x * x);   /* [cm/ms] -> [ueV] */
 }
 
-double V_FROM_LAMBDA(double x)
+double V_FROM_LAMBDA(const double x)
 {
 	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
-double LAMBDA_FROM_V(double x)
+double LAMBDA_FROM_V(const double x)
 {
 	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
 }
@@ -60,7 +60,7 @@ double LAMBDA_FROM_V(double x)
 /****************************************************************************************/
 
 
-double MonteCarlo(double x, double y)
+double MonteCarlo(const double x, const double y)
 {
    return (y - x)*Vran() + x;
 }
@@ -72,16 +72,15 @@ double MonteCarlo(double x, double y)
 
 /* computes square of a real value */
 
-double sq(double Value)
+double sq(const double Value)
 {
 	return Value * Value ;
 }
 
 
-
 /* calculates atan2 in the range (0, 2*M_PI) */
 
-double atan0(double a, double b)
+double atan0(const double a, const double b)
 {
 	if (b > 0.)
 	  return (double) atan(a / b) ;
@@ -94,13 +93,13 @@ double atan0(double a, double b)
 
 /* rounds a value mathematically  */
 
-double Round(double value)
+double Round(const double value)
 {
 	return floor(value + 0.5);
 }
 
 
-double RoundP(double value, int decimal)
+double RoundP(const double value, const int decimal)
 {
 	double f = pow(10, decimal);
 	return Round(value * f) / f;
@@ -109,42 +108,36 @@ double RoundP(double value, int decimal)
 
 /* minimum and maximum of two double or long values */
 
-long mini(long value1, long value2)
+long mini(const long value1, const long value2)
 {
-	if(value1 < value2) return value1 ;
-	else                return value2 ;
+  return value1 < value2 ? value1 : value2;
 }
 
-long maxi(long value1, long value2)
+long maxi(const long value1, const long value2)
 {
-	if(value1 > value2) return value1 ;
-	else                return value2 ;
+  return value1 > value2 ? value1 : value2;
 }
 
-double Min(double value1, double value2)
+double Min(const double value1, const double value2)
 {
-	if(value1 < value2) return value1 ;
-	else                return value2 ;
+  return value1 < value2 ? value1 : value2;
 }
 
-double Max(double value1, double value2)
+double Max(const double value1, const double value2)
 {
-	if(value1 > value2) return value1 ;
-	else                return value2 ;
+  return value1 > value2 ? value1 : value2;
 }
-
 
 
 /* swap two values */
 
 void Exchange(double* pValue1, double* pValue2)
 {
-	double dHelp;
+  double dHelp;
 
-	dHelp    = *pValue1 ;
-	*pValue1 = *pValue2;
-	*pValue2 = dHelp;
-
+  dHelp    = *pValue1;
+  *pValue1 = *pValue2;
+  *pValue2 = dHelp;
 }
 
 
@@ -276,18 +269,18 @@ double ScalarProduct(const VectorType v1, const VectorType v2)
 
 /* angle between two vectors in degs */
 
-double AngleVectors(VectorType v1, VectorType v2)
+double AngleVectors(const VectorType v1,  const VectorType v2)
 {
-  double theta ;
+  double theta;
 
-  theta = ScalarProduct(v1, v2) / (double)sqrt(ScalarProduct(v1, v1)) / (double)sqrt(ScalarProduct(v2, v2)) ;
-  return 180./M_PI * (double) acos(theta) ;
+  theta = ScalarProduct(v1, v2) / sqrt(ScalarProduct(v1, v1) * ScalarProduct(v2, v2)) ;
+  return 180./M_PI * acos(theta) ;
 }
 
 /* area of triangle from two vectors, G.Zs */
 
 
-double Area(VectorType v1, VectorType v2)
+double Area(const VectorType v1, const VectorType v2)
 {
   double lv = LengthVector(v1) * LengthVector(v2);
   return lv * fabs(sin(acos( ScalarProduct(v1, v2) / lv)) /2.);
@@ -304,12 +297,12 @@ double Area(VectorType v1, VectorType v2)
 /* Author: F. Streffer.                                                */
 void RotVector(double RotMatrix[3][3], VectorType Vector)
 {
-	VectorType TempVec;
-	int        i;
-
-	for(i=0;i<3;i++)
-		TempVec[i]=ScalarProduct(RotMatrix[i],Vector);
-	CopyVector(TempVec, Vector);
+  VectorType TempVec;
+  int        i;
+  
+  for(i=0;i<3;i++)
+    TempVec[i] = ScalarProduct(RotMatrix[i],Vector);
+  CopyVector(TempVec, Vector);
 }
 
 /* 'RotBackVector' rotates a vector, by multiplication of the Vector  */
@@ -319,12 +312,12 @@ void RotVector(double RotMatrix[3][3], VectorType Vector)
 /* Author: F. Streffer.                                               */
 void RotBackVector(double RotMatrix[3][3], VectorType Vector)
 {
-	VectorType TempVec;
-	int        i;
+  VectorType TempVec;
+  int        i;
 
-	for(i=0;i<3;i++)
-		TempVec[i]=RotMatrix[0][i]*Vector[0]+RotMatrix[1][i]*Vector[1]+RotMatrix[2][i]*Vector[2];
-	CopyVector(TempVec, Vector);
+  for(i=0;i<3;i++)
+    TempVec[i]=RotMatrix[0][i]*Vector[0]+RotMatrix[1][i]*Vector[1]+RotMatrix[2][i]*Vector[2];
+  CopyVector(TempVec, Vector);
 }
 
 
@@ -332,7 +325,7 @@ void RotBackVector(double RotMatrix[3][3], VectorType Vector)
 /* at first about the z-axis by 'rotz' and then about the y-axis by 'roty' */
 /*  Author: F. Streffer.                                                   */
 /*  Change: G. Zs. 16 JUL 2002  rotation convention                        */
-void FillRMatrixZY(double RotMatrix[3][3], double roty, double rotz)
+void FillRMatrixZY(double RotMatrix[3][3], const double roty, const double rotz)
 {
   double sz, cz, sy, cy;
   long   i,j;
@@ -550,10 +543,11 @@ StrgLShift(char* sStr, int kWidth)
 long
 StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 {
-	int    k, n=0;
-	char   *pStr, sNumber[31];
+	int k, n=0;
+	const char *pStr;
+	char sNumber[31];
 
-	pStr = (char*) sStr;
+	pStr = sStr;
 	n   -= nStart;
 	do
 	{	/* search of beginning and end of 1st number of (remaining) string */

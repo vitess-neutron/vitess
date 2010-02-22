@@ -41,7 +41,7 @@
 /***********************************************/
 typedef struct
 {	short  eSrcType;       /* source type: CWS SPSS LPSS */
-	char*  pSrcName;
+	const char *pSrcName;
 	short  nSource;
 	double dPulseFreq;     /* repetition rate of the pulses in Hz */
 	double dPulsePeriod;   /* period of pulse cycle         in ms */

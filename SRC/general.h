@@ -10,7 +10,14 @@
 /** Definitions              **/
 /******************************/
 
+#ifdef WIN32
+# define VINLINE __inline
+#else
+# define VINLINE inline
+#endif
+
 #ifdef _MSC_VER
+
 #define M_PI            3.14159265358979323846  /* pi */
 #define M_PI_2          1.57079632679489661923  /* pi/2 */
 #endif
@@ -218,13 +225,13 @@ SampleType;
 
 typedef struct
 {
-	VtModID  eModule;
-	double   dWPar;    /* width, ...             */
-	double   dHPar;    /* height, end width, ... */
-	double   dRPar;    /* radius, ...            */
-	long     nNumber;  /* number of ....         */
-	short    eType;    /* shape, mon. par., ...  */
-	char*    pDescr;   /* material, ...          */
+  VtModID  eModule;
+  double   dWPar;    /* width, ...             */
+  double   dHPar;    /* height, end width, ... */
+  double   dRPar;    /* radius, ...            */
+  long     nNumber;  /* number of ....         */
+  short    eType;    /* shape, mon. par., ...  */
+  const char* pDescr;   /* material, ...          */
 }
 ModProp;
 
@@ -234,24 +241,24 @@ ModProp;
 /** Prototypes               **/
 /******************************/
 
-double ENERGY_FROM_LAMBDA(double x);
-double LAMBDA_FROM_ENERGY(double x);
-double ENERGY_FROM_V   (double x);
-double V_FROM_LAMBDA   (double x);
-double LAMBDA_FROM_V(double x);
+double ENERGY_FROM_LAMBDA(const double x);
+double LAMBDA_FROM_ENERGY(const double x);
+double ENERGY_FROM_V   (const double x);
+double V_FROM_LAMBDA   (const double x);
+double LAMBDA_FROM_V(const double x);
 
-double MonteCarlo (double x, double y);
+double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
 
-double sq   (double Value);                        /* = Value*Value*/
-double atan0(double a, double b);
-double Round(double value);
-double RoundP(double value, int decimal);
+double sq   (const double Value);                        /* = Value*Value*/
+double atan0(const double a, const double b);
+double Round(const double value);
+double RoundP(const double value, const int decimal);
 void   Exchange(double* pValue1, double* pValue2);
-double Min(double value1, double value2);
-double Max(double value1, double value2);
-long   mini(long value1, long value2);
-long   maxi(long value1, long value2);
+double Min(const double value1, const double value2);
+double Max(const double value1, const double value2);
+long   mini(const long value1, const long value2);
+long   maxi(const long value1, const long value2);
 
 double SolidAngle   (const double dHorAngle, const double dVertAngle);
 
@@ -260,15 +267,15 @@ long   MAXV         (const VectorType Vector);
 double LengthVector (const VectorType Vector);
 double DistVector   (const VectorType Vec1, const VectorType Vec2);
 double ScalarProduct(const VectorType Vec1, const VectorType Vec2);
-double AngleVectors (VectorType v1, VectorType v2);
-double Area(VectorType v1, VectorType v2);
+double AngleVectors (const VectorType v1, const VectorType v2);
+double Area(const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
 void   RotVector       (double RotMatrix[3][3], VectorType Vector);
 void   RotBackVector   (double RotMatrix[3][3], VectorType Vector);
-void   FillRMatrixZY   (double RotMatrix[3][3], double roty, double rotz);
+void   FillRMatrixZY   (double RotMatrix[3][3], const double roty, const double rotz);
 
 FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);

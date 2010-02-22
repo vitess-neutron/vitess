@@ -98,7 +98,7 @@ void  LoadWavelengthTimeDistrib (Moderator* pMod, TrajParam* pTraj, FctTable* pF
 void  LoadTraceFile();
 char  GetTraceState(TotalID stID);
 short ReadModData(char* sFileName);
-short PosBehindMod(short i, double Y, double Z);
+int PosBehindMod(const int i, const double Y, const double Z);
 int binSearch(int, double*, double);
 double**matrix(const int,const int);
 double calcFraction(double, double, double, double);
@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
 			  of the moderator                                             */
     dFP,               /* flight path between moderator and window                      */
     TimeOF,            /* time of flight from moderator to window                       */
-    helpvalue,         /* random number to define the spin state                        */ 
     CenterX, CenterY,  /* averaged values                                               */
     CenterZ, AveTimeOF,/*     at window                                                 */
     SumProb,           /* sum of probabilities (counts) used to calculate average values*/
@@ -401,203 +400,201 @@ int main(int argc, char *argv[])
   dDecCos =  cos(Declination*M_PI/180.0);
   dDecSin = -sin(Declination*M_PI/180.0);
 
+  if (NThreads > 0)
+    setDetachedWrite();
+
   /****************************************************************************************/
   /*   Generate neutron trajectories                                                      */
   /****************************************************************************************/
 
-  DECLARE_ABORT
+  DECLARE_ABORT;
 
-    for(No=0, BufferIndex=0, TransmittedNeutrons=0;No<NumberOfNeutrons;No++)
-      {
-	CHECK
+  for (No=BufferIndex=TransmittedNeutrons=0; No<NumberOfNeutrons; No++) {
 
-	  /* ID of the trajectory */
-	  if (i==4294967295U)
-	    {	i=0; 
-	      if (ig2=='Z')
-		{	ig2='A'; ig1++;}
-	      else
-		{	ig2++;}
-	    }
-	  else
-	    {	i++;
-	    }
-	Input.ID.IDGrp[0] = ig1;
-	Input.ID.IDGrp[1] = ig2;
-	Input.ID.IDNo     = i;
-	if (eTraceMode==WRITE_TRC_FILES)
-	  Input.Debug = GetTraceState(Input.ID);
-	else
-	  Input.Debug = 'N';
+    double prob;
+    Moderator *sM;
 
-	/* choose moderator, if there are more than 1 */
-	if (nNumMod > 1)
-	  imod = (short) (i % nNumMod); // i - nNumMod*(i/nNumMod); 
-	else
-	  imod = 0;
+    CHECK;
 
-	Input.Color = stMod[imod].nColour;
+    /* ID of the trajectory */
+    if (i==4294967295U) {
+      i=0; 
+      if (ig2=='Z') {
+	ig2='A';
+	ig1++;
+      } else
+	ig2++;
+    } else
+      i++;
 
-	/* MC choice of starting position */
-	if (stMod[imod].bCircle)
-	  {	do
-	      {	Y0                = stMod[imod].dCntrY + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*Vran();
-		Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dDiameter/2.0 - stMod[imod].dDiameter*Vran();
-	      }	/* repeat if starting point is out of circle */
-	    while (sq(Y0-stMod[imod].dCntrY) + sq(Input.Position[2]-stMod[imod].dCntrZ) > sq(stMod[imod].dDiameter/2.0)) ; 
-	  }
-	else
-	  {	Y0                = stMod[imod].dCntrY + stMod[imod].dWidth /2.0 - stMod[imod].dWidth * Vran();
-	    Input.Position[2] = stMod[imod].dCntrZ + stMod[imod].dHeight/2.0 - stMod[imod].dHeight * Vran();
-	  }
+    Input.ID.IDGrp[0] = ig1;
+    Input.ID.IDGrp[1] = ig2;
+    Input.ID.IDNo     = i;
+    Input.Debug       = eTraceMode==WRITE_TRC_FILES ? GetTraceState(Input.ID) : 'N';
 
-	/* check if another moderator is in front of the actual one */
-	if (nNumMod > 1)
-	  {	short im, bBehind=FALSE;
-	    for (im=0; im<nNumMod; im++)
-	      {	if (im!=imod && PosBehindMod(im, Y0, Input.Position[2])) bBehind=TRUE;
-	      }
-	    if (bBehind) continue; 
-	  }
+    /* choose moderator, if there are more than 1 */
+    if (nNumMod > 1)
+      imod = (short) (i % nNumMod); // i - nNumMod*(i/nNumMod); 
+    else
+      imod = 0;
+    sM = &(stMod[imod]);
 
-	/* Declination */
-	Input.Position[1] = Y0 * dDecCos;
-	Input.Position[0] = Y0 * dDecSin + stMod[imod].dCntrX;
+    Input.Color = sM->nColour;
 
-	/* MC choice of wavelength and starting time */
+    /* MC choice of starting position */
+    if (sM->bCircle) {
+      double diam, halfdiam;
+      diam = sM->dDiameter;
+      halfdiam = diam / 2.0;
+      do {
+	Y0                = sM->dCntrY + halfdiam - diam*Vran();
+	Input.Position[2] = sM->dCntrZ + halfdiam - diam*Vran();
+      }	/* repeat if starting point is out of circle */
+      while (sq(Y0 - sM->dCntrY) + sq(Input.Position[2] - sM->dCntrZ) > sq(halfdiam)) ; 
+	
+    } else {
 
-	if (stMod[imod].eIsisTS > 0)
-	  ISISgetpoint(&Input.Time, &Input.Wavelength);
-	else {
-	  Input.Wavelength = (double)(stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)  *Vran());
-	  Input.Time       = (double)(stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax-stTraj[imod].dTimeFrmMin)*Vran());
+      Y0                = sM->dCntrY + sM->dWidth /2.0 - sM->dWidth  * Vran();
+      Input.Position[2] = sM->dCntrZ + sM->dHeight/2.0 - sM->dHeight * Vran();
+    }
+
+    /* check if another moderator is in front of the actual one */
+    if (nNumMod > 1) {
+      int im;
+      for (im=0; im<nNumMod; im++)
+	if (im!=imod && PosBehindMod(im, Y0, Input.Position[2])) {
+	  im = -1;
+	  break;
 	}
+      if (im < 0) continue; 
+    }
+      
+    /* Declination */
+    Input.Position[1] = Y0 * dDecCos;
+    Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+
+    /* MC choice of wavelength and starting time */
+
+    if (sM->eIsisTS > 0)
+      ISISgetpoint(&Input.Time, &Input.Wavelength);
+    else {
+      Input.Wavelength = stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax  - stTraj[imod].dLambdaMin)  * Vran();
+      Input.Time       = stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax - stTraj[imod].dTimeFrmMin) * Vran();
+    }
 		
-	/*Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
-	if (stSrc.eSrcType == CWS)
-	  {  
-	    Input.Probability =  stFluxL[imod].pDisFct(Input.Wavelength, stMod[imod].dModTemp)
-	      / stFluxL[imod].dInt * stMod[imod].dNorm;
-	  }
-	else
-	  {  
-	    TimeAtModerator = Input.Time;
-	    if  (stSrc.dPulsePeriod > 0.0)
-	      {	while(TimeAtModerator < 0.0)                {TimeAtModerator+=stSrc.dPulsePeriod;}
-		while(TimeAtModerator > stSrc.dPulsePeriod) {TimeAtModerator-=stSrc.dPulsePeriod;}
-	      }
-	    TimeAtModerator *= 0.001;   /*  time in seconds  */
-	    
-	    /* case: flux(lambda,t) was given in a file */
-	    if(strlen(stMod[imod].sLTFileName) > 0)
-	      {
-		// change for 180 uAmp or 60 uAmp..... frequency of source....
-		if (stMod[imod].eIsisTS > 0) {
-		  double p = TS.Total*3.744905847e14*1.1879451*dSolAngle*WindowWidth*WindowHeight*
-		                stSrc.dPulseFreq/NumberOfNeutrons;
-		  Input.Probability = stMod[imod].eIsisTS == 1 ? p*3.0/50 : p/10;
-		} else {
-		  Input.Probability = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator)
-		                         / stFluxLT[imod].dInt * stMod[imod].dNorm;
-		}
-	      }
-	    /* case ESS, SNS */
-	    else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
-	      {	Input.Probability =  EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength)
-		  / stMod[imod].dFUAmpl * stMod[imod].dNorm ;
-	      }
-	    else
-	      {	Input.Probability =  stFluxL[imod].pDisFct(Input.Wavelength, stMod[imod].dModTemp)
-		  / stFluxL[imod].dInt  
-		  * stFluxT[imod].pDisFct(TimeAtModerator, stMod[imod].dTauDecay, stMod[imod].dTauAscent, stSrc.dPulseLength) 
-		  / stFluxT[imod].dInt * stMod[imod].dNorm;
-	      }
-	  }
-
-	if(Input.Probability <= 0.0) continue; 
-
-	/* direction of flight */
-	/* defined by starting position on moderator and position on propagation window */
-	if (eDirDet!=VT_DIVERGENCE && stMod[imod].dDistModWnd > 0.0)
-	  {	
-	    /* choosing point on propagtion window and calculating distance between points */
-	    dWndY = MonteCarlo(-0.5*WindowWidth,  0.5*WindowWidth);
-	    dWndZ = MonteCarlo(-0.5*WindowHeight, 0.5*WindowHeight);
-	    dFP = sqrt(  sq(stMod[imod].dDistModWnd - Input.Position[0]) 
-			 + sq(dWndY    - Input.Position[1])
-			 + sq(dWndZ    - Input.Position[2]) );
-	    /* correction for gravity effect */
-	    if (keygrav==ON)
-	      dWndZ += 0.5*G*sq(dFP/V_FROM_LAMBDA(Input.Wavelength))/10000.;
-
-	    Input.Vector[1] = (dWndY - Input.Position[1])/dFP;
-	    Input.Vector[2] = (dWndZ - Input.Position[2])/dFP;
-	    Input.Vector[0] = sqrt(1.0 - sq(Input.Vector[1]) - sq(Input.Vector[2]));
-
-	    /* correcting count rate for an equal distribution in solid angle 
-	       factor: tan'(theta)*tan'(phi) = cos²(theta)*cos²(phi)          */
-	    Phi   = atan(Input.Vector[1]/Input.Vector[0]);
-	    Theta = atan(Input.Vector[2]/Input.Vector[0]);
-
-
-
-	    dFact = sq(cos(Theta)*cos(Phi)) / stMod[imod].dWndFact;
-	    Input.Probability *= dFact; 
-
-
-	  }
-	/* defined by divergence */
-	else
-	  {	Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
-	    Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
-	    Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
-	    Input.Vector[1] = Input.Vector[0] * tan(Phi);
-	    Input.Vector[2] = Input.Vector[0] * tan(Theta);
-	  }
-
-
-	/* Polarization - spin vectors selected for each trajectory 
-	   from one of the eigenvectors  in the polarisation direction */
-	helpvalue=Vran();
-	if (helpvalue <= FracPolDir) 
-	  {	/* spin eigenvector No 1 */
-	    Input.Spin[0]= PolVecX; 
-	    Input.Spin[1]= PolVecY; 
-	    Input.Spin[2]= PolVecZ; 
-	  } 
-	else
-	  {	/* spin eigenvector No 2 */
-	    Input.Spin[0]= -PolVecX; 
-	    Input.Spin[1]= -PolVecY; 
-	    Input.Spin[2]= -PolVecZ; 
-	  } 
-		
-
-	/* propagation between Moderator and window */
-	if (keygrav==ON)
-	  TimeOF = NeutronPlaneIntersectionGrav(&Input,Endpoint);
-	else
-	  TimeOF = NeutronPlaneIntersection1(&Input,Endpoint);
-
-	/* add time of flight (from mod. to window) and calculate average values at window */
-	Input.Time += TimeOF;
-
-	CenterX   += Input.Probability*Input.Position[0];
-	CenterY   += Input.Probability*Input.Position[1];
-	CenterZ   += Input.Probability*Input.Position[2]; 
-	AveTimeOF += Input.Probability*Input.Time;
-	SumProb   += Input.Probability;
-
-	if (eDirDet!=VT_VIRT_WND)
-	{ if (fabs(Input.Position[1]) > WindowWidth/2.0)  continue;
-	  if (fabs(Input.Position[2]) > WindowHeight/2.0) continue;
-	}
-	Input.Position[0]=0.0;
-
-	if (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T')
-	  WriteNeutron(&Input);
+    /*Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
+    if (stSrc.eSrcType == CWS)
+      prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp)
+	/ stFluxL[imod].dInt * sM->dNorm;
+    else {  
+      TimeAtModerator = Input.Time;
+      if (stSrc.dPulsePeriod > 0.0) {
+	while(TimeAtModerator < 0.0)                {TimeAtModerator += stSrc.dPulsePeriod;}
+	while(TimeAtModerator > stSrc.dPulsePeriod) {TimeAtModerator -= stSrc.dPulsePeriod;}
       }
+      TimeAtModerator *= 0.001;   /*  time in seconds  */
+	
+      if(strlen(sM->sLTFileName) > 0) {
+	// case: flux(lambda,t) was given in a file
+	// change for 180 uAmp or 60 uAmp..... frequency of source....
+	if (sM->eIsisTS > 0) {
+	  prob = TS.Total*3.744905847e14*1.1879451*dSolAngle*WindowWidth*WindowHeight*
+	    stSrc.dPulseFreq/NumberOfNeutrons;
+	  prob *= sM->eIsisTS == 1 ? 3.0/50 : 0.1;
+	} else {
+	  prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator)
+	    / stFluxLT[imod].dInt * sM->dNorm;
+	}
+      }
+      else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
+	// case ESS, SNS
+	prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength)
+	  / sM->dFUAmpl * sM->dNorm;
+	
+      else
+	prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp)
+	  / stFluxL[imod].dInt  
+	  * stFluxT[imod].pDisFct(TimeAtModerator, sM->dTauDecay, sM->dTauAscent, stSrc.dPulseLength) 
+	  / stFluxT[imod].dInt * sM->dNorm;
+    }
 
+    if(prob <= 0.0) continue; 
+
+    /* direction of flight */
+    /* defined by starting position on moderator and position on propagation window */
+    if (eDirDet!=VT_DIVERGENCE && sM->dDistModWnd > 0.0)  {	
+      /* choosing point on propagtion window and calculating distance between points */
+      dWndY = MonteCarlo(-0.5*WindowWidth,  0.5*WindowWidth);
+      dWndZ = MonteCarlo(-0.5*WindowHeight, 0.5*WindowHeight);
+      dFP = sqrt(  sq(sM->dDistModWnd - Input.Position[0]) 
+		   + sq(dWndY - Input.Position[1])
+		   + sq(dWndZ - Input.Position[2]) );
+      /* correction for gravity effect */
+      if (keygrav==ON)
+	dWndZ += 0.5*G*sq(dFP/V_FROM_LAMBDA(Input.Wavelength))/10000.;
+	
+      Input.Vector[1] = (dWndY - Input.Position[1])/dFP;
+      Input.Vector[2] = (dWndZ - Input.Position[2])/dFP;
+      Input.Vector[0] = sqrt(1.0 - sq(Input.Vector[1]) - sq(Input.Vector[2]));
+	
+      /* correcting count rate for an equal distribution in solid angle 
+	 factor: tan'(theta)*tan'(phi) = cos²(theta)*cos²(phi)          */
+      Phi   = atan(Input.Vector[1]/Input.Vector[0]);
+      Theta = atan(Input.Vector[2]/Input.Vector[0]);
+	
+      dFact = sq(cos(Theta)*cos(Phi)) / sM->dWndFact;
+      prob *= dFact; 
+	
+    } else  {
+	
+      /* defined by divergence */
+      Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
+      Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
+      Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
+      Input.Vector[1] = Input.Vector[0] * tan(Phi);
+      Input.Vector[2] = Input.Vector[0] * tan(Theta);
+    }
+          
+    /* Polarization - spin vectors selected for each trajectory 
+       from one of the eigenvectors  in the polarisation direction */
+      
+    if (Vran() <= FracPolDir) {
+      // spin eigenvector No 1
+      Input.Spin[0]= PolVecX; 
+      Input.Spin[1]= PolVecY; 
+      Input.Spin[2]= PolVecZ; 
+    } else  {
+      // spin eigenvector No 2
+      Input.Spin[0]= -PolVecX; 
+      Input.Spin[1]= -PolVecY; 
+      Input.Spin[2]= -PolVecZ; 
+    } 
+		
+    /* propagation between Moderator and window */
+    if (keygrav==ON)
+      TimeOF = NeutronPlaneIntersectionGrav(&Input,Endpoint);
+    else
+      TimeOF = NeutronPlaneIntersection1(&Input,Endpoint);
+
+    /* add time of flight (from mod. to window) and calculate average values at window */
+    Input.Time += TimeOF;
+
+    CenterX   += prob*Input.Position[0];
+    CenterY   += prob*Input.Position[1];
+    CenterZ   += prob*Input.Position[2]; 
+    AveTimeOF += prob*Input.Time;
+    SumProb   += prob;
+    Input.Probability = prob;
+
+    if (eDirDet!=VT_VIRT_WND)
+      { if (fabs(Input.Position[1]) > WindowWidth/2.0)  continue;
+	if (fabs(Input.Position[2]) > WindowHeight/2.0) continue;
+      }
+    Input.Position[0]=0.0;
+
+    if (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T')
+      WriteNeutron(&Input);
+  }
 
  my_exit:
 
@@ -643,7 +640,7 @@ void OwnInit(int argc, char **argv)
 
   /* Initialize */
   stSrc.dPulseLength = 0.002;                /* LPSS pulse length 2 ms            */ 
-  stSrc.pSrcName="";
+  stSrc.pSrcName = "";
 
   /*  */
   for(i=1; i<argc; i++)
@@ -1006,12 +1003,12 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     }
   else
     {
-      switch (stSrc.eSrcType)
-	{	case SPSS: pFluxT->pDisFct = PulseShape; break;
-	case LPSS: pFluxT->pDisFct = PulseInt;   break;
-	default  : Error("Wrong value for variable 'source type'\n");
-	  exit(-1);
-	}
+      switch (stSrc.eSrcType) {
+      case SPSS: pFluxT->pDisFct = PulseShape; break;
+      case LPSS: pFluxT->pDisFct = PulseInt;   break;
+      default  : Error("Wrong value for variable 'source type'\n");
+	exit(-1);
+      }
       pFluxT->dInt = 1.0 ;
     }
 }
@@ -1205,35 +1202,35 @@ char GetTraceState(TotalID stID)
 {
   char cRet = 'N'; 
 
-  if (g_nLinesTr > 0)
-    {	
-      long   i, il=g_nLinesTr-1;  /* lines in Table */
-      double nS, nL;              /* numbers got by conversion from IDs */
-	  double gS, gL;
+  if (g_nLinesTr > 0) {	
+    long   i, il=g_nLinesTr-1;  /* lines in Table */
+    double nS, nL;              /* numbers got by conversion from IDs */
+    double gS, gL;
 
-	  gS = (g_pTrace[il].IDGrp[0]-'A')*1.117e11;
-	  gL = (g_pTrace[il].IDGrp[1]-'A')*4.295e09;
-      nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
+    gS = (g_pTrace[il].IDGrp[0]-'A')*1.117e11;
+    gL = (g_pTrace[il].IDGrp[1]-'A')*4.295e09;
+    nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
     //nL = (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[il].IDNo;
-	  nL = gS                                   + gL                                   + g_pTrace[il].IDNo;
-      i = (long) (il * nS / nL + 0.5);
-	  if (i > il) i = il;
+    nL = gS                                   + gL                                   + g_pTrace[il].IDNo;
+    i = (long) (il * nS / nL + 0.5);
+    if (i > il) i = il;
 
-      /*while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo < nS  &&  i < il ) 
-		i++;
+    /*while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo < nS  &&  i < il ) 
+      i++;
       while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo > nS  &&  i > 0 ) 
-		i--;*/
+      i--;
+    */
 
-	  while ( (i < il) && (gS + gL + g_pTrace[i].IDNo < nS) ) 
-		i++;
-      while ( (i > 0) && (i <= il) && (gS + gL + g_pTrace[i].IDNo > nS) ) 
-		i--;
+    while ( (i < il) && (gS + gL + g_pTrace[i].IDNo < nS) ) 
+      i++;
+    while ( (i > 0) && (i <= il) && (gS + gL + g_pTrace[i].IDNo > nS) ) 
+      i--;
 
-      // set 'tracing', if IDs are identical
-      if (memcmp(stID.IDGrp, g_pTrace[i].IDGrp, 2)==0 && stID.IDNo==g_pTrace[i].IDNo)
-	cRet='T'; 
-    }
-
+    // set 'tracing', if IDs are identical
+    if (memcmp(stID.IDGrp, g_pTrace[i].IDGrp, 2)==0 && stID.IDNo==g_pTrace[i].IDNo)
+      cRet='T'; 
+  }
+  
   return cRet;
 }
 
@@ -1310,19 +1307,14 @@ short ReadModData(char* sFileName)
 }
 
 /* Check whether position (X,Y) of actual moderator 'imod' is behind moderator i */
-short
-PosBehindMod(short i, double Y, double Z)
+int
+PosBehindMod(const int i, const double Y, const double Z)
 {
-  if (   stMod[i].nBackground < stMod[imod].nBackground
-	 && (  ( stMod[i].bCircle &&  sq(Y-stMod[i].dCntrY) + sq(Z-stMod[i].dCntrZ) 
-		 <= sq(stMod[i].dDiameter/2.0) ) 
-	       ||(!stMod[i].bCircle &&  fabs(Y-stMod[i].dCntrY) <= 0.5*stMod[i].dWidth 
-		  &&  fabs(Z-stMod[i].dCntrZ) <= 0.5*stMod[i].dHeight ) )  )
-    return TRUE;
-  else
-    return FALSE;
+  return stMod[i].nBackground < stMod[imod].nBackground &&
+    (  ( stMod[i].bCircle &&  sq(Y-stMod[i].dCntrY) + sq(Z-stMod[i].dCntrZ) <= sq(stMod[i].dDiameter/2.0) ) ||
+       (!stMod[i].bCircle &&  fabs(Y-stMod[i].dCntrY) <= 0.5*stMod[i].dWidth 
+	  &&  fabs(Z-stMod[i].dCntrZ) <= 0.5*stMod[i].dHeight ) );
 }
-
 
 
 // ISIS SPECIFIC FUNCTIONS

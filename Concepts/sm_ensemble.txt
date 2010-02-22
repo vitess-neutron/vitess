@@ -57,6 +57,11 @@ For that reason we introduce a special option -m for sm_ensemble_parallel,
 so that the user may specify a bigger number than the default MAX_MIRR*30.
 A value of 500 was used for tests with the PolariserCavity.gui example.
 
+With the experience of PolCav2:
+99% of the MonteCarloPar calls in the PolCav2 example were superfluous,
+because the random number has not been used (MonteCarlo(0,0) == 0 forever).
+With this information we may reduce mcperneutron to 3*MAX_MIRR.
+
 softabort.h + softabort.c
 -------------------------
 

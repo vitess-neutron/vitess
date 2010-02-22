@@ -307,9 +307,9 @@ void cpgdraw(float x, float y)
 void cpglab(const char *xlbl, const char *ylbl, const char *toplbl)
 {
   // 3 labels x label, y label, top label
-  G3(g2_string, tpos[0][0]-4*strlen(xlbl), tpos[0][1], ((char*) xlbl));
-  G3(g2_string, tpos[1][0], tpos[1][1], ((char*) ylbl));
-  G3(g2_string, tpos[2][0]-4*strlen(toplbl), tpos[2][1], ((char*) toplbl));
+  G3(g2_string, tpos[0][0]-4*strlen(xlbl), tpos[0][1], xlbl);
+  G3(g2_string, tpos[1][0], tpos[1][1], ylbl);
+  G3(g2_string, tpos[2][0]-4*strlen(toplbl), tpos[2][1], toplbl);
 }
 
 void cpgmove(float x, float y)

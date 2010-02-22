@@ -44,7 +44,8 @@ extern FILE* LogFilePtr;   /* pointer to the log file stream              */
 long     BufferSize;      /* size of the neutron input and output buffer */
 Neutron* InputNeutrons;   /* input neutron Buffer */
 Neutron* OutputNeutrons;  /* output neutron buffer */
-long     OutNeutPtr;      /* points to the next free position in OutputNeutrons */
+Neutron *OutNeutronsCopy; // if this has been allocated in source.c, it may be used for double buffering
+long     OutNeutNum;      /* number of the next free position in OutputNeutrons */
 ModProp  stPicture;       /* data needed to draw a picture of the component represented by the module */
 
 long     NumNeutGot;      /* number of trajectories read in the current batch */
@@ -91,7 +92,7 @@ int      NThreads;      /* number of helper threads for execution, set by --T */
 /* local functions                                            */
 /**************************************************************/
 
-static void   OutputBufferFlush();
+static void   OutputBufferFlush(int final);
 static void   WriteTraceLine(Neutron* Neut);
 static int    readCompressedNeutrons();
 static void   writeCompressed();
@@ -191,6 +192,99 @@ char* FullInstallName(const char* fileName, const char* sRelPath)
 }
 
 
+// tools for detached fwrite
+
+static FILE *TWfile;
+static size_t TWsize;
+static int TWn;
+static void *TWdata;
+
+#ifdef WIN32
+
+#ifndef WIN32KNOWN
+# include <windows.h>
+# include <process.h>
+#define WIN32KNOWN 1
+#endif
+
+static HANDLE  hWriteMutex;
+
+void initParWrite(size_t s, int n) {
+  if (TWdata) return;
+  hWriteMutex = CreateMutex( NULL, FALSE, NULL );  // Cleared
+  TWdata = malloc(s*n);
+}
+
+static void threadWriter (void *arg) {
+  if (!TWdata) return;
+  fwrite(TWdata, TWsize, TWn, TWfile);
+  ReleaseMutex(hWriteMutex);
+}
+
+static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
+  static int writerThread;
+  if (!TWdata) {
+    fwrite(d, s, n, f);
+    return 1;
+  }
+  // Wait here, if a threadWriter is occupied by an older write operation
+  // The mutex becomes unlocked only after completion of threadWriter.
+  WaitForSingleObject( hWriteMutex, INFINITE);
+  if (final) {
+    fwrite(d, s, n, f);
+    return 1;
+  }
+  memcpy(TWdata, d, s*n);
+  TWsize = s;
+  TWn = n;
+  TWfile = f;
+  return 0 != _beginthread( threadWriter, 0, &writerThread);
+}
+
+#else
+// Linux
+
+# include <sys/types.h>
+# include <pthread.h>
+
+static pthread_mutex_t write_m; // mutex to guard asynchronous fwrite operations
+
+void initParWrite(size_t s, int n) {
+  if (TWdata) return;
+  pthread_mutex_init(&write_m, 0);
+  TWdata = malloc(s*n);
+}
+
+static void *threadWriter (void *arg) {
+  if (!TWdata) return arg;
+  fwrite(TWdata, TWsize, TWn, TWfile);
+  pthread_mutex_unlock(&write_m);
+  return arg;
+}
+
+static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
+  static pthread_t writerThread;
+  if (!TWdata) {
+    fwrite(d, s, n, f);
+    return 1;
+  }
+  // Wait here, if a threadWriter is occupied by an older write operation
+  // write_m becomes unlocked only after completion of threadWriter.
+  pthread_mutex_lock(&write_m);
+  if (final) {
+    fwrite(d, s, n, f);
+    return 1;
+  }
+  memcpy(TWdata, d, s*n);
+  TWsize = s;
+  TWn = n;
+  TWfile = f;
+  return 0 != pthread_create(&writerThread, NULL, threadWriter, (void *) 0);
+}
+
+#endif
+
+
 /**************************************************************/
 /* Init does a general program initialization, which is ok    */
 /* for all modules of the VITESS program package.             */
@@ -203,7 +297,7 @@ char* FullInstallName(const char* fileName, const char* sRelPath)
 /*  --J  active trace points                                  */
 /*  --L  logfile                                              */
 /*  --P  parameter directory                                  */
-/*  --T  number of threads for execution                      */
+/*  --T  number of helper threads for execution               */
 /*  --U  minimal neutron weight                               */
 /*  --Z  random number generator initialization               */
 /**************************************************************/
@@ -224,7 +318,7 @@ void Init(int argc, char **argv, VtModID eModule)
   LogFileName    = NULL;
   ParDirectory   = NULL;
   BufferSize     = BUFFER_SIZE;
-  OutNeutPtr     = 0;
+  OutNeutNum     = 0;
   TracePoints    = FALSE;
   for (l=0; l<=MAX_COL; l++)
     dProbTotal[l] = 0.0;
@@ -400,7 +494,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   WriteInstrData(nModuleNo, EndPos, dLength, dRotZ, dRotY);
 
   /* flush the output buffer and close the input and output file */
-  OutputBufferFlush();
+  OutputBufferFlush(1);
   if(InputFileName)
     fclose(InputFilePtr);
   if(OutputFilePtr && OutputFilePtr!=stdout)
@@ -510,11 +604,11 @@ void WriteNeutron(Neutron *OutNeutron)
     dProbTotal[OutNeutron->Color] += OutNeutron->Probability;
 
   /* copy the neutron to the buffer */
-  CopyNeutron(OutNeutron, &(OutputNeutrons[OutNeutPtr++]));
+  CopyNeutron(OutNeutron, &(OutputNeutrons[OutNeutNum++]));
 
-  if(OutNeutPtr >= BufferSize)
+  if(OutNeutNum >= BufferSize)
     /* write the neutrons to the stream if the buffer is full */
-    OutputBufferFlush();
+    OutputBufferFlush(0);
 
   WriteTraceLine(OutNeutron);
 }
@@ -756,6 +850,10 @@ long ColumnsInFile(FILE* pFile)
   return nLns;
 }
 
+void setDetachedWrite() {
+  initParWrite(sizeof(Neutron), BufferSize);
+}
+
 
 
 /**************************************************************/
@@ -773,7 +871,7 @@ static void writeCompressed() {
   double dx,dy,dz, tarr[8];
   int wlen = 0;
 
-  for (ineut = OutNeutPtr; ineut > 0; ineut--) {
+  for (ineut = OutNeutNum; ineut > 0; ineut--) {
     double factor;
     int *iop;
     // copy data to prevent unwanted overwriting
@@ -927,17 +1025,18 @@ static int readCompressedNeutrons (void) {
 }
 #undef GULP
 
+
 static
-void OutputBufferFlush()
+void OutputBufferFlush(int final)
 {
   if (OutputFilePtr) {
     if (compressModeW == 0)
-      fwrite(OutputNeutrons, sizeof(Neutron), OutNeutPtr, OutputFilePtr);
+      fwritePar(OutputNeutrons, sizeof(Neutron), OutNeutNum, OutputFilePtr, final);
     else
       writeCompressed();
   }
-  NumNeutWritten += OutNeutPtr;
-  OutNeutPtr = 0;
+  NumNeutWritten += OutNeutNum;
+  OutNeutNum = 0;
   if(TracePoints) fprintf(LogFilePtr,".");
 }
 
