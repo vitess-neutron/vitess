@@ -62,7 +62,7 @@ int        max_mirr; // highest number of used mirror
 long	   User, NumWrong[MAXWORKER], nocolM = 10000, Wallonoff, NoCh;
 long	   number_vis_tr; // current number of visualised trajectories, used to limit output
 double	   rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
-int        mcperneutron = (MAX_MIRR*30);
+int        mcperneutron = (MAX_MIRR*3);
 
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
@@ -333,7 +333,7 @@ void OwnCleanup()
 
 /* Theta and Phi of a unit vector if Theta is the angle with the axis of lowest index  */
 
-void CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi)
+static VINLINE void CartesianToSpherical2(const VectorType Vector, double *Theta, double *Phi)
 {
   *Theta = acos(Vector[0]);
 
@@ -343,8 +343,23 @@ void CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi)
     *Phi = 2. * M_PI + atan2(Vector[2], Vector[1]);
 }
 
+static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const VectorType rt) {
+  // Area(r1,r2) > Area(r1,rt) + Area(r2, rt)
+  double lv1,lv2,lvt, lva,lvb,lvc, sp12,sp1t,sp2t;
+  lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVector²
+  lv2 = r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2];
+  lvt = rt[0]*rt[0] + rt[1]*rt[1] + rt[2]*rt[2];
+  sp12 = r1[0]*r2[0] + r1[1]*r2[1] + r1[2]*r2[2]; // ScalarProduct(r1,r2) 
+  sp1t = r1[0]*rt[0] + r1[1]*rt[1] + r1[2]*rt[2]; // ScalarProduct(r1,rt) 
+  sp2t = r2[0]*rt[0] + r2[1]*rt[1] + r2[2]*rt[2]; // ScalarProduct(r2,rt)
+  lva = sqrt(lv1*lv2);
+  lvb = sqrt(lv1*lvt);
+  lvc = sqrt(lv2*lvt);
+  return lva*fabs(sin(acos(sp12/lva))) >
+    lvb*fabs(sin(acos(sp1t/lvb))) + lvc*fabs(sin(acos(sp2t/lvc)));    
+}
 
-int hittriangle(VectorType r1, VectorType r2, VectorType rt)
+int hittriangle(const VectorType r1, const VectorType r2, const VectorType rt)
 {
   double the1, the2, thet, phi1, phi2, phit;
 
@@ -356,15 +371,15 @@ int hittriangle(VectorType r1, VectorType r2, VectorType rt)
   CartesianToSpherical2(rt, &thet, &phit);
 
   if (phi1 < phi2)
-    return phi1 < phit && phit < phi2 &&
-           Area(r1,r2) > Area(r1,rt) + Area(r2, rt);
+    return phi1 < phit && phit < phi2 && cmpAreas(r1,r2,rt);
 
   // phi1 > phi2
-  return (phi1 < phit && phit < 2*M_PI) ||
-         (0. < phit && phit < phi2 && Area(r1,r2) > Area(r1,rt) + Area(r2, rt));
+  return ((phi1 < phit && phit < 2*M_PI) || (0. < phit && phit < phi2)) && cmpAreas(r1,r2,rt);
 }
 
-int hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorType rt)
+/* hitwall computes if the neutron hits the wall */
+
+int hitwall(const VectorType r1, const VectorType r2, const VectorType r3, const VectorType r4, const VectorType rt)
 {
   return
     hittriangle(r1, r2, rt) ||
@@ -373,18 +388,19 @@ int hitwall(VectorType r1, VectorType r2, VectorType r3, VectorType r4, VectorTy
     hittriangle(r4, r1, rt);
 }
 
-
 /* CollideWall computes the collision with a wall */
 
-double CollideWall
-(int thread_i, double WL, VectorType SpinVector,
+static double CollideWall
+(const int thread_i, const double WL, const VectorType SpinVector,
  double *prob, VectorType pos, VectorType dir, VectorType spin,
- VectorType WallOffset, VectorType WallNormal, double  RotMatrixWall[3][3],
- VectorType r1, VectorType r2, VectorType r3, VectorType r4,
- double thetaC[2], double thetaCSM[2], double RthetaCSM[2], double mued[4], double mrangh, double mrangv)
+ const VectorType WallOffset, const VectorType WallNormal, double RotMatrixWall[3][3],
+ const VectorType r1, const VectorType r2, const VectorType r3, const VectorType r4,
+ const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2], 
+ const double mued[4], const double mrangh, const double mrangv)
 {
   VectorType rt;
-  double path, RotMatrixRang[3][3];	
+  double path, RotMatrixRang[3][3];
+  int angularSpread;
 
   if (PlaneLineIntersect(pos, dir, WallNormal, ScalarProduct(WallOffset, WallNormal), rt) == 0)
     return 99999;
@@ -396,12 +412,12 @@ double CollideWall
 
     if (ScalarProduct(replacement, dir) < 0.) return 99999;	
   }
-
-  /* random angular spread */
-  {
+  
+  if ((angularSpread = mrangh != 0 || mrangv != 0)) {
+    // random angular spread
     double rangh, rangv;
-    rangh = MonteCarloPar(- mrangh/2., mrangh/2., thread_i);
-    rangv = MonteCarloPar(- mrangv/2., mrangv/2., thread_i);
+    rangh = mrangh == 0 ? 0 : MonteCarloPar(- mrangh/2., mrangh/2., thread_i);
+    rangv = mrangv == 0 ? 0 : MonteCarloPar(- mrangv/2., mrangv/2., thread_i);
     FillRotMatrixZY(RotMatrixRang, rangv, rangh);
   }	
 
@@ -411,7 +427,7 @@ double CollideWall
   RotVector(RotMatrixWall, rt);
   RotVector(RotMatrixWall, dir);
 
-  if (mrangh != 0. || mrangv != 0.) {
+  if (angularSpread) {
     RotVector(RotMatrixRang, rt);
     RotVector(RotMatrixRang, dir);
   }
@@ -420,14 +436,13 @@ double CollideWall
   {
     double the, Choise, Refl[2], expon[2];
 		
-    Choise = MonteCarloPar(0,1, thread_i);
-    the = M_PI_2 - acos(fabs(dir[0]));
-
     if (! hitwall(r1, r2, r3, r4, rt)) {		
       RotBackVector(RotMatrixWall, dir);
       return 99999;
     }
 		
+    the = M_PI_2 - acos(fabs(dir[0]));
+
     if (SpinVector[quant_dir] == 1.) {
 
       /* spin up */
@@ -438,19 +453,20 @@ double CollideWall
 				
 	if(expon[0] > 500)
 	  expon[0] = 500;
-	if ( the > thetaC[0] * WL && the <= thetaCSM[0] * WL) {
+	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) {
 	  Refl[0] = RthetaCSM[0] +
 	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the);
+	  Choise = MonteCarloPar(0,1, thread_i);
 	  if (Choise < Refl[0])
 	    dir[0] *= -1.;
 	  else
 	    *prob *= exp(- expon[0]);
 	}
-	if (the >  thetaCSM[0] * WL)
+	if (the > thetaCSM[0] * WL)
 	  *prob *= exp(- expon[0]);
       }
 
-    } else if (SpinVector[quant_dir] == - 1.) {
+    } else if (SpinVector[quant_dir] == -1.) {
 
       /* spin down */
       if(the <= thetaC[1] * WL) {
@@ -462,6 +478,7 @@ double CollideWall
 	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) {
 	  Refl[1] = RthetaCSM[1] +
 	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the);
+	  Choise = MonteCarloPar(0,1, thread_i);
 	  if(Choise < Refl[1])
 	    dir[0] *= -1.;
 	  else
@@ -480,7 +497,7 @@ double CollideWall
 
   /* transform back into original frame  */
 	
-  if (mrangh != 0. || mrangv != 0.) {
+  if (angularSpread) {
     RotBackVector(RotMatrixRang, rt);
     RotBackVector(RotMatrixRang, dir);
   }
@@ -510,6 +527,9 @@ void processNeutron (int i, int thread_i) {
     prob[MAX_MIRR+1],
     PathA[MAX_MIRR+1];
   int j,m, nocol;
+  
+  // dmf test
+  memset(PathA, 0, sizeof(double)*(MAX_MIRR+1));
 
   if (p > 1 && number_vis_tr == 1000)
     p = 100;  // stop plotting trajectories 
@@ -589,14 +609,14 @@ void processNeutron (int i, int thread_i) {
       CopyVector(dir[l], Dir);
       Path = PathA[l];
       Prob = prob[l];
-      m=l;
+      m = l;
       nocol++;
       if (p) {
 	if (p==1)
 	  fprintf(COLLFILE,
 		  "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
 		  InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
-		  InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug,  InputNeutrons[i].Color, i,
+		  InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug, InputNeutrons[i].Color, i,
 		  ((int) SpinVector[quant_dir]),
 		  m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
 #ifdef VT_GRAPH
@@ -666,7 +686,7 @@ void processNeutron (int i, int thread_i) {
     CopyVector(Pos, neutron.Position);
     CopyVector(Dir, neutron.Vector);
 
-    neutron.Vector[0]	= sqrt(1 - sq(neutron.Vector[1]) - sq(neutron.Vector[2]));
+    neutron.Vector[0] = sqrt(1 - sq(neutron.Vector[1]) - sq(neutron.Vector[2]));
 
     CopyVector(SpinVector, neutron.Spin);
 

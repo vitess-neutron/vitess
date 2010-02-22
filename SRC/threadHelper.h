@@ -10,3 +10,6 @@ double VranPar(int thread_i);
 void ran_dir_3d_par (double *v, int thread_i);
 void printMCStatistic(FILE *f);
 void debugLock(), debugUnlock();
+
+int fwritePar(void *data, size_t s, int n, FILE *f);
+void initParWrite(size_t s, int n);

@@ -91,9 +91,7 @@ STOOL = sample.o $(MTOOL)
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-#CFLAGS = -s -O3 -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-CFLAGS = -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-#CFLAGS = -g -O3 -Wall -Wpointer-arith -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -144,12 +142,6 @@ flipper_coil : flipper_coil.c $(MTOOL)
 mon2_tofwl : mon2_tofwl.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-mon2_kdiv : mon2_kdiv.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-mon2_rdiv : mon2_rdiv.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 spin_reset : spin_reset.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -174,10 +166,13 @@ sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 collimator : collimator.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+capture_flux : capture_flux.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-capture_flux : capture_flux.c $(TOOL)
+guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 frame : frame.c $(MTOOL)
@@ -204,11 +199,11 @@ pol_mirror : pol_mirror.c $(MTOOL)
 direct_view : direct_view.c 
 	$(CC) -o $@ $^ $(LIBS)
 
-polariser_sm : polariser_sm.c $(MTOOL)
+mon2_rdiv : mon2_rdiv.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-polariser_sm_parallel : polariser_sm_parallel.c threadHelper.c $(MTOOL)
-	$(CC) -pthread -o $@ $^ $(LIBS)
+polariser_sm : polariser_sm.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
 
 monitorpol_1d : monitorpol_1d.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
@@ -222,10 +217,13 @@ sample_environment : sample_environment.c $(STOOL)
 slit : slit.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-mon2_posdiv : mon2_posdiv.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
+sm_ensemble_parallel : sm_ensemble_parallel.c threadHelper.c cpgplot.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(GRALIB)
 
 chopper_fermi : chopper_fermi.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mon2_posdiv : mon2_posdiv.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
@@ -273,13 +271,7 @@ standard_deviation : standard_deviation.c
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
-	$(CC) -pthread -o $@ $^ $(LIBS)
-
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
-sm_ensemble_parallel : sm_ensemble_parallel.c threadHelper.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
 writeout : writeout.c $(TOOL)
@@ -287,6 +279,9 @@ writeout : writeout.c $(TOOL)
 
 runtime : runtime.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
+
+polariser_sm_parallel : polariser_sm_parallel.c threadHelper.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
@@ -318,10 +313,13 @@ monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
 mirror_coating : mirror_coating.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+sample_powder : sample_powder.c $(STOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 grid : grid.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-sample_powder : sample_powder.c $(STOOL)
+mon2_kdiv : mon2_kdiv.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_wldiv : mon2_wldiv.c $(TOOL)

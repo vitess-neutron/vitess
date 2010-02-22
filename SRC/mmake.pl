@@ -39,7 +39,7 @@ my @Obj = qw(init general intersection matrix sample softabort);
 
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
-	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv
+	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 
@@ -48,7 +48,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 	    slit grid source spacewindow spacewindow_multiple space lenses);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_parallel
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_sm_parallel
@@ -76,7 +76,7 @@ my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
 my @PTool = qw(chop_phases standard_deviation direct_view);
 
 # modules with helper thread support
-my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel);
+my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
 
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
@@ -98,7 +98,7 @@ my %dep = (			# needed objects for a module
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl'
 	  );
-$dep{$_} = 'threadHelper' foreach qw(sm_ensemble_parallel chopper_fermi_parallel polariser_sm_parallel);
+$dep{$_} = 'threadHelper' foreach (@ParMod);
 
 # objects necessary for some modules, to be compiled separately
 my %K;
@@ -151,7 +151,7 @@ EOS
 
   print <<'EOS';
 
-TOOL = init.o general.o message.o
+TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = $(MTOOL) distrgauss.o
@@ -160,7 +160,7 @@ STOOL = sample.o $(MTOOL)
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -273,13 +273,14 @@ LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 |
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj"
+TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
 MGTOOL="$(IDIR)|distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+#ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
@@ -388,7 +389,7 @@ sub subRule {
     }
     s/zzz/$lib{$c}/;
     s/ooo/$sopt{$c}/;
-    s/(ML)/(ML_T)/g if $Thread{$c};
+    s/\(ML\)/\(ML_T\)/g if $Thread{$c};
     $s .= $_;
   }
 }

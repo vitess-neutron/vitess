@@ -205,7 +205,7 @@ void OwnInit(int argc, char *argv[])
 {
 	double field_hom[3]={0.0,0.0,50.0}, 
 	       AnglMainHoriz=0.0, AnglMainVert=0.0;
-	char*  FieldFileName="";
+	const char*  FieldFileName="";
 
 	PosMain[0] = PosMain[1] = PosMain[2] = 0.0;  
 

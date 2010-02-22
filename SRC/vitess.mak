@@ -33,13 +33,14 @@ LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj"
+TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
 MGTOOL="$(IDIR)\distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+#ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
@@ -59,6 +60,7 @@ ALL : \
 	"$(OD)\mon2_tofwl.exe" \
 	"$(OD)\mon2_wldiv.exe" \
 	"$(OD)\mon2_kdiv.exe" \
+	"$(OD)\mon2_rdiv.exe" \
 	"$(OD)\velselect.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
@@ -87,6 +89,7 @@ ALL : \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
+	"$(OD)\guide_parallel.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
@@ -245,6 +248,13 @@ SOURCE=$(SPATH)\mon2_kdiv.c
 "$(OD)\mon2_kdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_kdiv.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mon2_kdiv.pdb" /out:"$(OD)\mon2_kdiv.exe" "$(IDIR)\mon2_kdiv.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\mon2_rdiv.c
+"$(IDIR)\mon2_rdiv.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon2_rdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_rdiv.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon2_rdiv.pdb" /out:"$(OD)\mon2_rdiv.exe" "$(IDIR)\mon2_rdiv.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\velselect.c
 "$(IDIR)\velselect.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -334,7 +344,7 @@ SOURCE=$(SPATH)\chopper_fermi_parallel.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\chopper_fermi_parallel.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi_parallel.obj" "$(OD)\threadHelper.obj"
-	$(LINK32) $((ML_T)) /pdb:"$(OD)\chopper_fermi_parallel.pdb" /out:"$(OD)\chopper_fermi_parallel.exe" "$(IDIR)\chopper_fermi_parallel.obj" $(ITOOL) "$(OD)\threadHelper.obj" 
+	$(LINK32) $(ML_T) /pdb:"$(OD)\chopper_fermi_parallel.pdb" /out:"$(OD)\chopper_fermi_parallel.exe" "$(IDIR)\chopper_fermi_parallel.obj" $(ITOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\collimator_soller.c
 "$(IDIR)\collimator_soller.obj" : $(SOURCE)
@@ -441,6 +451,13 @@ SOURCE=$(SPATH)\guide.c
 "$(OD)\guide.exe" : "$(OD)" $(MTOOL) "$(OD)\guide.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide.pdb" /out:"$(OD)\guide.exe" "$(IDIR)\guide.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\guide_parallel.c
+"$(IDIR)\guide_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
+
 SOURCE=$(SPATH)\monitorpol_1d.c
 "$(IDIR)\monitorpol_1d.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -474,7 +491,7 @@ SOURCE=$(SPATH)\polariser_sm_parallel.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\polariser_sm_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\polariser_sm_parallel.obj" "$(OD)\threadHelper.obj"
-	$(LINK32) $((ML_T)) /pdb:"$(OD)\polariser_sm_parallel.pdb" /out:"$(OD)\polariser_sm_parallel.exe" "$(IDIR)\polariser_sm_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
+	$(LINK32) $(ML_T) /pdb:"$(OD)\polariser_sm_parallel.pdb" /out:"$(OD)\polariser_sm_parallel.exe" "$(IDIR)\polariser_sm_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\polariser_he3.c
 "$(IDIR)\polariser_he3.obj" : $(SOURCE)
@@ -675,7 +692,7 @@ SOURCE=$(SPATH)\sm_ensemble_parallel.c
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\sm_ensemble_parallel.exe" : "$(OD)" "$(OD)\sm_ensemble_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
-	$(LINK32) $((ML_T)) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
+	$(LINK32) $(ML_T) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
 
 SOURCE=$(SPATH)\dist_time.c
 "$(IDIR)\dist_time.obj" : $(SOURCE)

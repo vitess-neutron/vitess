@@ -9,7 +9,11 @@ extern int finishSoftabort;
 
 #ifdef _MSC_VER
 
+#ifndef WIN32KNOWN
 # include <windows.h>
+# define WIN32KNOWN 1
+#endif
+
 # include <stdio.h>
 
 # ifndef SOFTABORTMAIN
@@ -24,9 +28,11 @@ extern int finishSoftabort;
   void enableHandler() {
     if (HandlerEnabled) return;
     hS = CreateEvent( NULL, FALSE, FALSE, hName);
+    /*
     if (hS == NULL) {
       fprintf(LogFilePtr, "CreateEvent failed [%x]\n", GetLastError());
     }
+    */
     ResetEvent(hS);
     HandlerEnabled = 1;
   }
@@ -34,10 +40,12 @@ extern int finishSoftabort;
     int rc;
     finishSoftabort = 1;
     rc = WaitForSingleObject(hS, 0);
+    /*
     if (rc == WAIT_FAILED) {
       fprintf(LogFilePtr,"WaitForSingleObject failed %d\n", rc);
       return 1;
     }
+    */
   return WAIT_OBJECT_0 == rc;
   }
 # endif
@@ -45,7 +53,9 @@ extern int finishSoftabort;
 # define CHECK if (++sCount > 8) { sCount=0; if (stopEvent()) {goto my_exit;}}
 # define DECLARE_ABORT enableHandler();
 
+// end Windows
 #else
+// Linux
 
 # include <signal.h>
   void my_handler(int sig);

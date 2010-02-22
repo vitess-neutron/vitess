@@ -2,10 +2,10 @@
    parallel execution of a helper threads
 */
 
-#include "init.h"
-#include "softabort.h"
 #include <stdlib.h>
 #include <string.h>
+#include "init.h"
+#include "softabort.h"
 
 static Neutron* OutNeutronsParallel;
 //extern int      NThreads; // declared in init.h
@@ -24,8 +24,13 @@ static void doChunk(int thread_i);
 
 #ifdef WIN32
 
+#ifdef WIN32KNOWN
 # include <windows.h>
 # include <process.h>
+#else
+#define WIN32KNOWN 1
+#endif
+
 static HANDLE  hEvent1;
 static HANDLE  hEvent2;
 static HANDLE  hDone;
@@ -160,13 +165,8 @@ DEFLOCK(done);
 static pthread_mutex_t work_m;  // mutex to guard more_to_do and outstanding
 static pthread_mutex_t debug_m; // mutex to guard debug output
 
-void debugLock() {
-  pthread_mutex_lock(&debug_m);
-}
-
-void debugUnlock() {
-  pthread_mutex_unlock(&debug_m);
-}
+void debugLock()   { pthread_mutex_lock(&debug_m);}
+void debugUnlock() { pthread_mutex_unlock(&debug_m);}
 
 static void setDone () {
   int all_done = 0;
@@ -221,6 +221,7 @@ static int initParallel (int nworkers) {
 
   return nworkers;
 }
+
 
 static void startHelpers () {
   // prepare the release at the right barrier

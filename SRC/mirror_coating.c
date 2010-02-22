@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 //  McStas function has its cut-off at m*theta_c, 
 //                              not at m*theta_c(Ni) !!
 
-read:
+// read:
 	dR0      = GetDouble("reflectivity(Q=0)                      ");
 	dM       = GetDouble("m   = Qmax / Qmax(Ni)                  ");
 	dQc      = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.021743 for Ni)                 ");

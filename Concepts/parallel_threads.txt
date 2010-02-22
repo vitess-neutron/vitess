@@ -316,6 +316,19 @@ spacewindowXXX
 spin_reset
 spwindow
 
+Helper thread for source
+========================
+
+Because of the heavy use of MonteCarlo calls and the final output of every
+neutron generated, the source module is bound to serial execution.
+But we can move one obstacle out of the way: 
+When fwrite to the pipe occurs, source has to wait for the next next module
+to read pipe data. This is why we did not see 100 % CPU time for the source
+module in examples where following modules are not CPU intensive.
+For that purpose we introduce a helper thread, which copies the buffer data
+and does the fwrite, and the the helper threads waits for fwrite to complete,
+while source itself continues to produce neutron trajectories.
+
 Experimental timing
 ===================
 
@@ -326,6 +339,7 @@ stepping        : 2
 cpu MHz         : 1809.277
 cache size      : 1024 KB
 
+Second test with source helper thread + optimised sm_ensemble_parallel
 
 FILES/ParTest/PolCav2.gui
 source:  10000000 trajectories
@@ -334,6 +348,8 @@ serial		  1 helper	2 helper	3 helper	4 helper
 
 #define BUFFER_SIZE       50000
 40 s	          33 s		29 s		27 s		26 s
+36 s		  21 s		19 s		19s		19 s
 
-now we used the source output test2.bin as input:
-23 s		  16 s          12 s		11 s		10 s
+In the second test we stored the output before sm_ensemble to test2.bin
+and as input to the rest pipe
+10 s		  5 s		 4 s		 3 s		 4 s  
