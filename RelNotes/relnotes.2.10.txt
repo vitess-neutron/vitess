@@ -1,0 +1,18 @@
+VITESS 2.10alpha  Release Note
+------------------------------
+
+Helper threads:
+---------------
+
+Some modules may use helper threads to speed up simulations on system with multi
+core CPUs. If you select 1 to 4 helper threads in the main GUI window, these
+modules will start helper threads:
+source, chopper_fermi, polariser_sm, guide, and sm_ensemble.
+
+New modules:
+-----------
+lenses
+mirror_elliptical
+mon2_kdiv
+mon2_rdiv
+runtime
