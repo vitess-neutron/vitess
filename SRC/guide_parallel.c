@@ -823,6 +823,9 @@ int main(int argc, char *argv[])
   OwnCleanup();
   Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
 
+  // dmf test
+  exit(0);
+
   return 0;
 }
 

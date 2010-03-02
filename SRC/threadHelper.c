@@ -37,6 +37,7 @@ static HANDLE  hDone;
 static HANDLE  hWorkMutex;      // to guard commonly written variables
 static HANDLE  hDoneMutex;      // to indicate "work is done"
 static HANDLE  hDebugMutex;     // to guard debug output of threads
+static HANDLE  winThread[MAXWORKER];
 
 void debugLock() {
   WaitForSingleObject( hDebugMutex, INFINITE);
@@ -81,6 +82,8 @@ static void threadLoop (void *arg) {
       WaitForSingleObject( hEvent2, INFINITE ); // back barrier
     }
 
+    if (finishSoftabort) break;
+
     doChunk(my_thread_i);
 
     setDone();
@@ -102,7 +105,7 @@ static int initParallel (int nworkers) {
   hDebugMutex = CreateMutex( NULL, FALSE, NULL ); // request these mutexes here
 
   for (i=1; i<=nworkers; i++)
-    _beginthread( threadLoop, 0, &i);
+    winThread[i-1] = _beginthread( threadLoop, 0, (void *)i);
 
   return nworkers;
 }
@@ -130,6 +133,15 @@ static void startHelpers () {
 
 static void waitForHelpers() {
   WaitForSingleObject( hDone, INFINITE );
+}
+
+static void shutdownParallel() {
+  finishSoftabort = 1;
+  // break all brakes
+  SetEvent(hEvent1);
+  SetEvent(hEvent2);
+  // wait for termination of all helper threads 
+  WaitForMultipleObjects(NThreads, winThread, TRUE, INFINITE);
 }
 
 // end Windows
@@ -249,6 +261,8 @@ static void waitForHelpers() {
   WAITLOOP(done);
 }
 
+static void shutdownParallel() { }
+
 #endif  // Linux
 
 static double myVran(int n) {
@@ -336,7 +350,8 @@ void WriteNeutronParallel(Neutron *OutNeutron, int thread_i) {
   else {
     int i,c;
     i = thread_i - 1;  // i will be 0 for thread 1
-    if ((c = outNcount[i]) >= outNbufSize) myExit2("!!! temp buffer size %d too small for thread %d !!!\n", outNbufSize, thread_i);
+    if ((c = outNcount[i]) >= outNbufSize)
+      myExit2("!!! temp buffer size %d too small for thread %d !!!\n", outNbufSize, thread_i);
     outNcount[i] = c+1;
     CopyNeutron(OutNeutron, OutNeutronsParallel + i*outNbufSize + c);
   }
@@ -404,5 +419,6 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
     flushParallelOutput();
   }
   my_exit: ;
+  shutdownParallel();
 }
  
