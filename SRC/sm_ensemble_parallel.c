@@ -71,7 +71,7 @@ VectorType TranslOutput,
 double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
-           RotMatrixWall[MAX_MIRR+1][3][3], 
+           RotMatrixWall[MAX_MIRR+1][3][3],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
 	
 /* FINISH HEADER STORY */
@@ -230,7 +230,7 @@ void OwnInit(int argc, char *argv[])
       sscanf(arg, "%lf", &OutputAngleVert);
       break;
 
-      // Visual data 
+      // Visual data
     case 'a':
       sscanf(arg, "%lf", &Windh);
       break;					
@@ -349,14 +349,14 @@ static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const Vec
   lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVector²
   lv2 = r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2];
   lvt = rt[0]*rt[0] + rt[1]*rt[1] + rt[2]*rt[2];
-  sp12 = r1[0]*r2[0] + r1[1]*r2[1] + r1[2]*r2[2]; // ScalarProduct(r1,r2) 
-  sp1t = r1[0]*rt[0] + r1[1]*rt[1] + r1[2]*rt[2]; // ScalarProduct(r1,rt) 
+  sp12 = r1[0]*r2[0] + r1[1]*r2[1] + r1[2]*r2[2]; // ScalarProduct(r1,r2)
+  sp1t = r1[0]*rt[0] + r1[1]*rt[1] + r1[2]*rt[2]; // ScalarProduct(r1,rt)
   sp2t = r2[0]*rt[0] + r2[1]*rt[1] + r2[2]*rt[2]; // ScalarProduct(r2,rt)
   lva = sqrt(lv1*lv2);
   lvb = sqrt(lv1*lvt);
   lvc = sqrt(lv2*lvt);
   return lva*fabs(sin(acos(sp12/lva))) >
-    lvb*fabs(sin(acos(sp1t/lvb))) + lvc*fabs(sin(acos(sp2t/lvc)));    
+    lvb*fabs(sin(acos(sp1t/lvb))) + lvc*fabs(sin(acos(sp2t/lvc)));
 }
 
 int hittriangle(const VectorType r1, const VectorType r2, const VectorType rt)
@@ -395,7 +395,7 @@ static double CollideWall
  double *prob, VectorType pos, VectorType dir, VectorType spin,
  const VectorType WallOffset, const VectorType WallNormal, double RotMatrixWall[3][3],
  const VectorType r1, const VectorType r2, const VectorType r3, const VectorType r4,
- const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2], 
+ const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2],
  const double mued[4], const double mrangh, const double mrangv)
 {
   VectorType rt;
@@ -412,7 +412,7 @@ static double CollideWall
 
     if (ScalarProduct(replacement, dir) < 0.) return 99999;	
   }
-  
+
   if ((angularSpread = mrangh != 0 || mrangv != 0)) {
     // random angular spread
     double rangh, rangv;
@@ -527,12 +527,12 @@ void processNeutron (int i, int thread_i) {
     prob[MAX_MIRR+1],
     PathA[MAX_MIRR+1];
   int j,m, nocol;
-  
+
   // dmf test
   memset(PathA, 0, sizeof(double)*(MAX_MIRR+1));
 
   if (p > 1 && number_vis_tr == 1000)
-    p = 100;  // stop plotting trajectories 
+    p = 100;  // stop plotting trajectories
 
   InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
@@ -590,7 +590,7 @@ void processNeutron (int i, int thread_i) {
     for (im=1; im <= max_mirr; im++)
       if (PathA[im] != 99999.0)
 	break;
-    
+
     if (im > max_mirr) {
       // all PathA are 99999
       Path = 99999.0;
@@ -721,7 +721,10 @@ int main(int argc, char **argv)
   if (p==1) fclose(COLLFILE);	
 	
   OwnCleanup();
-  Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);	
+  Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);
+
+  // dmf test
+  exit(0);
 
   return 0;
 }

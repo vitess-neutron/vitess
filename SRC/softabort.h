@@ -19,7 +19,7 @@ extern int finishSoftabort;
 # ifndef SOFTABORTMAIN
   void enableHandler();
   extern int sCount;
-  int stopEvent();
+  int stopEventSeen();
 # else
   static const char *hName = "VitessStopHandle";
   static HANDLE hS;
@@ -27,7 +27,7 @@ extern int finishSoftabort;
   static int HandlerEnabled;
   void enableHandler() {
     if (HandlerEnabled) return;
-    hS = CreateEvent( NULL, FALSE, FALSE, hName);
+    hS = CreateEvent( NULL, TRUE, FALSE, hName);
     /*
     if (hS == NULL) {
       fprintf(LogFilePtr, "CreateEvent failed [%x]\n", GetLastError());
@@ -36,9 +36,8 @@ extern int finishSoftabort;
     ResetEvent(hS);
     HandlerEnabled = 1;
   }
-  int stopEvent () {
+  int stopEventSeen () {
     int rc;
-    finishSoftabort = 1;
     rc = WaitForSingleObject(hS, 0);
     /*
     if (rc == WAIT_FAILED) {
@@ -50,7 +49,7 @@ extern int finishSoftabort;
   }
 # endif
 
-# define CHECK if (++sCount > 8) { sCount=0; if (stopEvent()) {goto my_exit;}}
+# define CHECK if (++sCount > 8) { sCount=0; if (stopEventSeen()) {goto my_exit;}}
 # define DECLARE_ABORT enableHandler();
 
 // end Windows
