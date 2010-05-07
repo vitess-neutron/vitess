@@ -188,11 +188,10 @@ proc loadAll {extension} {
   # delete all modules
   deleteSomeModules $Mlf 1
 
-  # If a gui-file from a different OS becomes loaded, settings for GUI sizes
-  # and the default directory from this are mostly non-sense or not applicable.
-  # So we store all font settings.
-  # If the default path contains a double colon, we assume a windows environment.
-  set herewin [regexp : [globVal defdirectory_]]
+  # If a gui-file becomes loaded, settings for GUI sizes and the default directory
+  # would be changed, too. If values come from a different OS, these values would be
+  # non-sense or not applicable, at least these changes probably are unexpected.
+  # So we store GUI settings before loading, and re-set them afterwards.
   set savlist {defdirectory_ maxModule scrollWidth serif sserif monospaced
     itemlabwidth fileentrywidth}
   set vallist {}
@@ -211,11 +210,9 @@ proc loadAll {extension} {
     set errs "control file $name successfully loaded"
   }
 
-  if {$herewin != [regexp : [globVal defdirectory_]]} {
-    # restore old settings
-    foreach s $savlist sval $vallist {
-      gSet $s $sval
-    }
+  # restore old GUI settings
+  foreach s $savlist sval $vallist {
+    gSet $s $sval
   }
 
   setAll 0
