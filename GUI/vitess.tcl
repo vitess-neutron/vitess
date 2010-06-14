@@ -87,7 +87,7 @@ proc makeModuleSets {} {
     {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
-      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz
+      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
       monpol_divy monpol_divz monitorpol_pos
@@ -673,6 +673,9 @@ set a {
     "min. z [cm]" "minimal z value [cm]" "" h}}
   {max_z float "" {
     "max. z [cm]" "maximal z value [cm]" "" H}}
+  {}
+  {rotang float "0.0" {
+    "rot. angle [°]" "rotate window by [°]" "" A}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
     {no yes} {0 1}
@@ -1823,18 +1826,21 @@ set fLA {
     "filter lambda\nmax [A]" "end of lambda interval to be filtered, -1.0 means any" "" L}}
 }
 
-set fPA {
+set fPAy {
   {}
   {filtYMin float "" {
     "filter Y pos.\nmin [cm]" "begin of Y position interval to be filtered" "" y}}
   {filtYMax float "" {
     "filter Y pos.\nmax [cm]" "end of Y position interval to be filtered" "" Y}}
+}
+set fPAz {
   {}
   {filtZMin float "" {
     "filter Z pos.\nmin [cm]" "begin of Z position interval to be filtered" "" z}}
   {filtZMax float "" {
     "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
 }
+set fPA [concat $fPAy $fPAz]
 set fPAuv {
   {}
   {filtYMin float "" {
@@ -1940,6 +1946,34 @@ proc monpol_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
 
+### monitor
+###   divergence yz
+
+set mA {
+  {}
+  {min_div float -10 {
+    "min. div.\nx <-> yz [deg]" "lower bound of the monitored interval" "" m} 1}
+  {max_div float 10 {
+    "max. div.\nx <-> yz [deg]" "upper bound of the monitored interval" "" M} 1}
+  {}
+  {rotang_min float 0.0 {
+    "rot. angle min [deg]" "min. rotation angle of y-axis, used as projection" "" a}}
+  {rotang_max float 0.0 {
+    "rot. angle max [deg]" "max. rotation angle of y-axis, used as projection" "" A}}
+  {rotang_step float 0.0 {
+    "rot. angle step [deg]" "step of rotation angle of y-axis, used as projection. If > 0.0 multiple projections are summed up. If <= 0.0, only one projection is summed up." "" s}}
+}
+
+set pA2 {
+  {split_w radio yes {
+    "split\nweight" "the neutron probability weights are splited up by the number of projection angles. The number of trajectores are multiplied by the number of angles which affects the error!" "" P}
+    {yes no} {1 0}}
+}
+
+set mon1_divyzESET [concat [genFE divyz] $nA $nnA $mA $pA $pA2 $fA $fLA $fPA]
+proc mon1_divyzCheckErr {{app _}} {
+  return [checkMiMaErr min_div max_div "" $app]
+}
 
 ### monitor
 ###   mon1_y
@@ -1952,7 +1986,7 @@ set mA {
     "max. y [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_yESET [concat [genFE pos_y] $nA $nnA $mA $pA $fA $fLA]
+set mon1_yESET [concat [genFE pos_y] $nA $nnA $mA $pA $fA $fPAz $fLA]
 proc mon1_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -1973,7 +2007,7 @@ set mA {
     "max. z [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_zESET [concat [genFE pos_z] $nA $nnA $mA $pA $fA $fLA]
+set mon1_zESET [concat [genFE pos_z] $nA $nnA $mA $pA $fA $fPAy $fLA]
 proc mon1_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
