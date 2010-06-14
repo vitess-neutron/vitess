@@ -7,13 +7,13 @@ Threads won't work when output goes to pReflPlot,pReflParam, so we restrict.
 
 guide.c uses a structure NeutronGuide work variable Guide within main.
 What is the use of it's entries CriticalAngle and CutoffAngle?
-We have to localize Guide to a thread to avoid race usage; do to so we declare
+We have to localize Guide to a thread to avoid race usage; to do so we declare
 a global variable tguide[MAXWORKER] and use the pointer gW
 tguide = TGuide + thread_i;
 gW = &(tguide->Wall[0]);
 to access values in processNeutron.
 
-The "donkey" routine  PathThroughGuideGravOrder1 got the parameter ThisGuide by value - why?
+The "donkey" routine PathThroughGuideGravOrder1 got the parameter ThisGuide by value - why?
 Changed this to "by reference", as for the last parameter RefOut, which will be 0 now
 to indicate to do no output, or a valid address else.
 

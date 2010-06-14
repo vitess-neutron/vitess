@@ -31,6 +31,7 @@ double heightmin  = 0.0, /* z-coordinate: bottom of rectangular window          
 double lambdamin = 0.0,  /* Minimum lambda for flux count                          [A]  */
        lambdamax = 0.0;  /* Maximum lambda for flux count                          [A]  */
 long   WindowType = 0; /* 0 = No restrictions; 1 = circular window; 2 = rectangular window */
+double avColor = 0.0, avwColor = 0.0; /* Average color and weighted average color */
 
 
 int main(int argc, char **argv)
@@ -83,6 +84,8 @@ int main(int argc, char **argv)
 			CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
 			CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
 		}
+		avColor += (double)InputNeutrons[i].Color;
+		avwColor += (double)InputNeutrons[i].Color*InputNeutrons[i].Probability;
         Ntot++;
 	  }
 
@@ -99,7 +102,8 @@ int main(int argc, char **argv)
 	CaptErr = sqrt(sq(CaptInt)/Ntot + (Ntot*CaptQuad-sq(CaptInt))/(Ntot-1));
   else
     CaptErr = CaptInt;
-
+  avColor /= Ntot;
+  avwColor /= CaptInt;
 
   switch (WindowType)
   {
@@ -118,6 +122,10 @@ int main(int argc, char **argv)
 	fprintf(LogFilePtr,"Lambda window from %6.2f A to %6.2f A \n", lambdamin, lambdamax);
 
   fprintf(LogFilePtr, "Reference wavelength: %12.3f A\n", ReferenceWavelength);
+  if (avColor != 0.0) {
+	fprintf(LogFilePtr, "Average color       : %12.3f \n", avColor);
+	fprintf(LogFilePtr, "Avr. weighted color : %12.3f \n", avwColor);
+  }
   fprintf(LogFilePtr, "Capture area        : %12.3f cm^2\n", CaptArea);
   fprintf(LogFilePtr, "Capture flux        : %12.3e +/- %12.3e n/(s*cm^2) \n\n", CaptInt/CaptArea, CaptErr);
   

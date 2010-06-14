@@ -112,6 +112,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       mon1_y      {set com "monitor1$sys -k5"}
       mon1_z      {set com "monitor1$sys -k6"}
       mon1_energy {set com "monitor1$sys -k7"}
+      mon1_divyz  {set com "monitor1$sys -k8"}
       monpol_lambda {set com "monitorpol_1d$sys -k1"}
       monpol_time   {set com "monitorpol_1d$sys -k2"}
       monpol_divy   {set com "monitorpol_1d$sys -k3"}
