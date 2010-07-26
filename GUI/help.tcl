@@ -181,7 +181,7 @@ proc showHelpItem {item {w .helpsystem} {helparray Helpitems}} {
 	  set url [file join $SourceDirectory WWW $item]
 	  set furl file:$url
 	}
-	catch {exec $Browser -remote openURL($furl)} res
+	catch {exec $Browser $furl} res
 	if [regexp {o running} $res] {
 	  # try to start the browser with that topic
 	  catch {exec $Browser $furl &}
@@ -261,8 +261,9 @@ proc helpToHtml {{args ""}} {
 
 helpItem {Getting Started} {
 You can either start from scratch or with one of our examples, collected in the FILES sub-folder
-of the Vitess installation directory (menu 'File' | 'load instrument').
-In the first case, we recommend to create a new directory first and to define it as 'parameter directory'.
+of the Vitess installation directory (menu 'File' | 'LOAD Instrument').
+In the first case, we recommend to create a new directory first and to define it
+as 'parameter directory'.
 'input file' and 'output file' are only needed in special cases.
 The second step is to create a source.
 Click on the '--inactive--' button and choose your kind of source. You will get a default
@@ -278,10 +279,27 @@ The 'arrow-up' button shows the module in a separate window.
 The 'arrow-right' button shows the module parameters here, replacing this introduction.
 }
 
-helpItem {Visualsing Results} {
+helpItem {Visualising Results} {
 To visualise the result of your simulation, you should use a monitor, e.g. 'mon1_lambda'
 to see the wavelength dependence of the intensity.
 Click on the '--inactive--' button and choose 'visualise_data' -> 'mon1_lambda'.
+}
+
+helpItem {Saving an Instrument} {
+You may store settings of your assembled simulation to an instrument file
+with .gui extension (menu 'File' | 'save instrument').
+All parameter settings are part of the resulting file, so that you or others 
+may load that instrument on a later simulation, if you provide that file along with other
+files refered from the parameter directory.
+(There are few exceptions: Options and some global variables which would prevent
+the execution under a different environment are not saved here.)
+}
+
+helpItem {Packages} {
+Packages are stripped down parts of an instrument, like cascaded guides or monitors.
+You may save settings of consecutive modules as a package (menu 'File' | 'SAVE Package').
+A package may be added after the last module (menu 'File' | 'ADD Package'), or inserted
+after a module given by number (menu 'File' | 'INSERT Package').
 }
 
 helpItem Troubleshooting {

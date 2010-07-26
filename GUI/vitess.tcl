@@ -1966,7 +1966,7 @@ set mA {
 
 set pA2 {
   {split_w radio yes {
-    "split\nweight" "the neutron probability weights are splited up by the number of projection angles. The number of trajectores are multiplied by the number of angles which affects the error!" "" P}
+    "split\nweight" "the neutron probability weights are splitted up by the number of projection angles. The number of trajectores are multiplied by the number of angles which affects the error!" "" P}
     {yes no} {1 0}}
 }
 
@@ -1974,6 +1974,7 @@ set mon1_divyzESET [concat [genFE divyz] $nA $nnA $mA $pA $pA2 $fA $fLA $fPA]
 proc mon1_divyzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
+
 
 ### monitor
 ###   mon1_y
@@ -3001,7 +3002,7 @@ set lensesESET {
      normal from the ideal normal." "" q} ge0}
   {"Number of lenses" header}
   {nx int 1 {"Number of lenses" "Number of lenses in the X direction" "" I} gt0}
-  {"Visulalisation" header}
+  {"Visualisation" header}
   {visu radio no {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
   {visuald radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
@@ -4280,13 +4281,69 @@ proc moduleMenus {{n 1}} {
 
 # Unset temporary help variables to prevent them from being saved.
 # (variables matching single characters, or with Add in the end are
-# deleleted by setAll)
+# deleted by setAll)
 
-set TempVars {m0 m1 m2 m3 Mod1 Mod2 Refa Refb Refc Refm
-    dA nA nnA mA pA tA i1 i2 ll li al sps fr fl}
+set TempVars {
+  Mod1 Mod2
+  Refa Refb Refc Refm
+  al
+  dA
+  eA
+  fA fLA fPA fPAuv fPAy fPAz
+  fl fr
+  i1 i2
+  ld li ll
+  m0 m1 m2 m3 mA
+  nA nnA
+  pA pA2
+  res
+  sps
+  tA
+}
 foreach n $TempVars {
   catch {unset $n}
 }
+
+# Some globlal variables should not be saved or loaded
+# from instrument or package files:
+set DoNotSave {
+  audible_bell
+  bgColor buffersize
+  BigFramesmo BigFramelmo BigFramebender BigFrameflipper_gradient BigFramerotating_field
+  buttonColor canvasColor copresults
+  defdirectory_
+  doNotSave
+  DummyEntry
+  fileentrywidth
+  helpthreads_
+  Htmlhelp
+  infolevel
+  itemlabwidth
+  labColor
+  maxModule
+  MaxOutstringLength
+  menuButtonColor
+  menubarfont
+  menuColor
+  monospaced monofontfamily monofontsize monofonttype
+  noBLT
+  outfilename_
+  place
+  plotapp_
+  plotmode
+  radioColor
+  savedir_
+  scrollWidth simulation serif sserif
+  StartTime
+  TempVars
+  timeout
+}
+foreach s {b h l m t} {
+  foreach t {family size type} {
+    lappend DoNotSave [set n ${s}font$t]
+  }
+}
+
 
 # unset tool routines
 foreach p {sore genFE genFE2} {
