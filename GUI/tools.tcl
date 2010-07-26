@@ -197,7 +197,7 @@ Alternativly, you can use the help system in the internet:
   helpLink $w http://www.hmi.de/projects/ess/vitess/DOC/index.html t11
   $w insert end {
 
-For further questions, please send an email to vitess@hmi.de
+For further questions, please send an email to vitess@helmholtz-berlin.de
 
 }
 
@@ -205,7 +205,7 @@ For further questions, please send an email to vitess@hmi.de
   helpButton $w Tutorial t24 tutorial.pdf
   $w insert end \n
   helpButton $w {Inserting/Deleting a Module} t21
-  helpButton $w {Visualsing Results} t22
+  helpButton $w {Visualising Results} t22
   $w insert end \n
   helpButton $w Troubleshooting t23
 }
@@ -302,7 +302,7 @@ proc isNot {v args} {
   return 1
 }
 
-### if global variable a is not known, then define a with value
+### if global variable a is not known, then define a with value val
 ###
 proc forceDef {a val} {
   upvar #0 $a v
@@ -359,11 +359,13 @@ proc addToSet {set v} {
 ### 1. are not defined internally by Tcl/Tk (may change)
 ### 2. do not start with an uppercase letter or .
 ### 3. do not end with SET or Add
-### 4. are not an array variable
-### 5. do not belong to inactive modules after the last active one
+### 4. do not belong to inactive modules after the last active one
+### 5. are not in a list of temporary variables
+### 6. are not in a list of of taboo variables
+### 7. are not an array variable
 ###
 proc savableGlobals {} {
-  global maxModule DummyEntry TempVars
+  global maxModule DummyEntry TempVars DoNotSave
   set lasti 0
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -378,6 +380,7 @@ proc savableGlobals {} {
       if {$n > $lasti} continue
     }
     if {[lsearch $TempVars $e] >= 0} continue
+    if {[lsearch $DoNotSave $e] >= 0} continue
     global $e
     if {[catch {array size $e} size] || !$size} {
       lappend l $e

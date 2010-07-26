@@ -166,6 +166,9 @@ proc controlMenu {w} {
       {c "LOAD Instrument" {loadAll gui}}\
       {c "SAVE Instrument" {storeAll gui}} \
       {c "SAVE As" {storeAll gui newfile.gui}} s\
+      {c "ADD Packet" {addPacket}}\
+      {c "INSERT Packet" {insertPacketWindow}}\
+      {c "SAVE Packet" {savePacketWindow}} s\
       {c "SAVE to Directory" saveDirectory} s\
       {c "SAVE as Command" {storeAll bat}}\
       {c "SAVE as Grid Command" {storeAll grd}}\
