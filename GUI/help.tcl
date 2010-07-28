@@ -102,7 +102,7 @@ proc helpSystem {{w .helpsystem} {helparray Helpitems}} {
   if {![generateToplevel $w "XControl Help"]} {
     return 0
   }
-  global tk_version bgColor labColor bgColor infolevel
+  global tk_version bgColor labColor bgColor Infolevel
   wm minsize $w 30 2
   frame $w.s -bg $bgColor;    pack $w.s -side top -fill both
   frame $w.c -borderwidth 2 -bg $bgColor
@@ -149,7 +149,7 @@ proc helpSystem {{w .helpsystem} {helparray Helpitems}} {
   label $w.c.l -text "search for ..." -bg $labColor
   myEntry $w.c.e "" 16
   bButton $w.c.don Done "destroy $w"
-  if {$infolevel == "expert"} {
+  if {$Infolevel == "expert"} {
     bButton $w.c.html "Write HTML" helpToHtml
     pack $w.c.sel $w.c.l $w.c.e $w.c.html $w.c.don -side left -expand 1
   } else {
@@ -261,7 +261,7 @@ proc helpToHtml {{args ""}} {
 
 helpItem {Getting Started} {
 You can either start from scratch or with one of our examples, collected in the FILES sub-folder
-of the Vitess installation directory (menu 'File' | 'LOAD Instrument').
+of the VITESS installation directory (menu 'File' | 'LOAD Instrument').
 In the first case, we recommend to create a new directory first and to define it
 as 'parameter directory'.
 'input file' and 'output file' are only needed in special cases.

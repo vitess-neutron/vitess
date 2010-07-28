@@ -15,7 +15,7 @@ proc showRange {name e op} {
 proc generateExplanation {w list {descr ""}} {
   regsub -all {[^].a-zA-Z0-9()[_-]} [lindex $list 0] " " explanation
   set more [lindex $list 1]
-  global MaxOutstringLength
+  global MaxOutstringLength Infolevel VisibleModule
   set mlen [expr $MaxOutstringLength - 8]
   if {$more != ""} {
     foreach s [split $more "\n"] {
@@ -32,10 +32,8 @@ proc generateExplanation {w list {descr ""}} {
       append explanation "\n\t$s"
     }
   }
-  if {$explanation == ""} return
 
-  global infolevel VisibleModule
-  if {$infolevel == "expert"} {
+  if {$Infolevel == "expert"} {
     append explanation "\n\tinternal variable name : [lindex $descr 0]"
     switch [lindex $descr 1] {
       int - float {
@@ -56,6 +54,7 @@ proc generateExplanation {w list {descr ""}} {
       }
     }
   }
+  if {$explanation == ""} return
   if {[set opt [lindex $list 3]] != ""} {
     append explanation "\n\tcommand option -$opt"
   }

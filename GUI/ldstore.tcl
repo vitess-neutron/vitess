@@ -198,11 +198,12 @@ proc doInsertPacked {name insert_after} {
   set nkey {}
   set nval {}
   set nmods 0
-  global DoNotSave
+  global DoNotSave DoNotSaveRegexp
   while {[gets $f line] >= 0} {
     set sp [split $line]
     if {"gSet" != [lindex $sp 0]} continue
     set k [lindex $sp 1]
+    if [regexp $DoNotSaveRegexp $k] continue
     if {[lsearch $DoNotSave $k] >= 0} continue
     set v [lindex $sp 2]
     # remove braces from value
@@ -394,14 +395,14 @@ proc loadAll {extension} {
   # non-sense or not applicable, at least these changes probably are unexpected.
   # So we check if a variable to load is allowed.
 
-  global DoNotSave TempVars
+  global DoNotSave TempVars DoNotSaveRegexp
 
   set errs ""
   while {[gets $f line] >= 0} {
     set sp [split $line]
     if {"gSet" != [lindex $sp 0]} continue
     set e [lindex $sp 1]
-    if [regexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$} $e] continue
+    if [regexp $DoNotSaveRegexp $e] continue
     if {[lsearch $TempVars $e] >= 0} continue
     if {[lsearch $DoNotSave $e] >= 0} continue
     # match curly brace content
@@ -438,7 +439,7 @@ proc loadAll {extension} {
 
 proc deleteAllModules {} {
   # delete all modules
-  global Mlf Amf
+  global Mlf Amf DoNotSaveRegexp
   deleteSomeModules $Mlf 1
   reShowModules $Mlf
   removeTrailingDummies
@@ -446,7 +447,7 @@ proc deleteAllModules {} {
   gSet LastState ""
   helpFrame $Amf
   foreach e [stringToSet [info globals]] {
-    if [regexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$} $e] continue
+    if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e] {
       global $e
       catch {unset $e}

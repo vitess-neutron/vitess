@@ -32,7 +32,7 @@ proc setAll {{mode 0}} {
 proc windowManagerExit {} {
   global KillMe
   if {[info exists KillMe] && $KillMe} exit
-  if [dontDoit "Exit Vitess\nchanges not saved yet"] {
+  if [dontDoit "Exit VITESS\nchanges not saved yet"] {
     # restore withdrawn last chance window
     wm deiconify .
   } else {
@@ -59,7 +59,7 @@ proc confirmedExit {} {
   } elseif {$nt - $ov < 5} {
     return
   }
-  if [dontDoit "Exit Vitess\nchanges not saved yet"] return
+  if [dontDoit "Exit VITESS\nchanges not saved yet"] return
   set KillMe 1
   finalCheck
   exit
@@ -306,6 +306,7 @@ proc controlMenu {w} {
       {c "Apply settings" applySettings} s\
       {m Color color} s\
       {m "Info level" infolevel} \
+      {m "Check mode" checkmode} \
       {m "Copy results" copresults} \
       {m Plotmode plotmode} \
       {m Timeout timeout} s\
@@ -352,8 +353,11 @@ proc controlMenu {w} {
   cascEntries $wo.timeout timeout 10 100 500 1000 3600\
       5400 10000 20000 28800 57600 172800 unlimited
 
-  forceDef infolevel user
-  cascEntries $wo.infolevel infolevel user expert
+  forceDef Infolevel user
+  cascEntries $wo.infolevel Infolevel user expert
+
+  forceDef Checkmode normal
+  cascEntries $wo.checkmode Checkmode normal set_default strict
 
   forceDef copresults no
   cascEntries $wo.copresults copresults no "per simulation"

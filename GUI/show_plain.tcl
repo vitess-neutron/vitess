@@ -1,4 +1,4 @@
-### Project Vitess
+### Project VITESS
 ### plot graphs with plain TclTK widgets
 
 proc pCompare {a b} {

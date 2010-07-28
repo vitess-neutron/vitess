@@ -1,4 +1,4 @@
-### project Vitess
+### project VITESS
 ### HMI DN
 ### M. Fromme fromme@hmi.de
 ###
@@ -180,6 +180,8 @@ proc checkAll {} {
   propagateDigestValues
   set errors [forceParamDir]
   if {$errors} {return 0}
+  global Showinfo
+  set Showinfo 0
   if [errorWithValues input] {set errors 1}
   global DummyEntry maxModule
   set firstmod ""
@@ -204,7 +206,11 @@ proc checkAll {} {
     return 0
   }
 
-  clearText "description O.K.\n"
+  if {$Showinfo} {
+    showText "description O.K.\n"
+  } else {
+    clearText "description O.K.\n"
+  }
   return 1
 }
 
@@ -315,7 +321,7 @@ proc PsCheckWindows {} {
 
 proc startAction {{sercom ""} {simu simulation}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
-      SourceDirectory PsCheck Plotfile Plottype infolevel timeout StartTime
+      SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime
   set c $sercom
   set tool 0
   if {$simu == "tool"} {
