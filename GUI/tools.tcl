@@ -365,7 +365,7 @@ proc addToSet {set v} {
 ### 7. are not an array variable
 ###
 proc savableGlobals {} {
-  global maxModule DummyEntry TempVars DoNotSave
+  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp
   set lasti 0
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -375,7 +375,7 @@ proc savableGlobals {} {
   }
   set l {}
   foreach e [stringToSet [info globals]] {
-    if [regexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$} $e] continue
+    if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e a n] {
       if {$n > $lasti} continue
     }

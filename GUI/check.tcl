@@ -128,6 +128,7 @@ proc outofRange {name var format l u mandatory} {
 ###   (see description in e.g. vitess.tcl)
 ###
 proc errorInLine {e app {mod ""}} {
+  global Checkmode
   set var [lindex $e 0]
   if {$var == ""} {return 0};		# just separator item
   set type [lindex $e 1]
@@ -162,10 +163,23 @@ proc errorInLine {e app {mod ""}} {
     int   {return [outofRange $name v "%i" $arg4 $arg5 $mandatory]}
     float {return [outofRange $name v "%f" $arg4 $arg5 $mandatory]}
     radio {
-      # empty strings come from elder *.gui files here, just accept
-      if {$v == ""} {return 0}
-      foreach it $arg4 {
-	if {$v == $it} {return 0}
+      if {$v == ""} {
+	# empty strings might be the result of loading elder *.gui files
+	# accept this in normal check mode, warn in mode strict, set default else
+	switch $Checkmode {
+	  normal {return 0}
+	  set_default {
+	    set vdefault [lindex $e 2]
+	    set v $vdefault
+	    showText "!did set $name to default value '$vdefault'"
+	    gSet Showinfo 1
+	    return 0
+	  }
+	}
+      } else {
+	foreach it $arg4 {
+	  if {$v == $it} {return 0}
+	}
       }
       showText "!Please select an option for $name"
       return 1

@@ -6,6 +6,76 @@
 ### control variables lists and procedures for
 ### VITESS simulation
 ###
+
+# All variable here are global by default, because vitess.tcl is sourced in
+# the global call context.
+# VITESS lobal variable names follow some conventions:
+# - variable names must be of the form [a-zA-Z][a-zA-Z0-9_.]+
+# - an _ underscore as last character is for entry value variables only
+# - if the first character is uppercase, the variable will not be saved / loaded
+# - variables with SET, ESET or Add in the end are reserved for formular lists 
+# - mod<n> has either "--inactive--" or the name of module n as value,
+#   normal variable names should not have of the form mod[0-9]+
+# - <var>_<n> is the entry variable for entry var of module n; because this name
+#   is generated from var, names in ESETs should not end in _[0-9]+
+# - a dot . in a name is reserved for very special purposes
+# - a regular expression and 2 lists define what may be saved/loaded, see below
+#
+# Only some VITESS global variables may be loaded or saved.
+# To enable distinction three criteria are used:
+# 1 Variables matching a special regular expression are excluded,
+#   the expression is the global variable DoNotSaveRegexp
+#   - don't touch a variable beginning with a capital letter
+#   - ignore Tcl/TK variables
+#   - ignore ESET lists
+# 2 The global variable DoNotSave contains a list of variable names to exclude.
+# 3 The global TempVars contains names of temporary variables which are deleted
+#   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
+
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
+
+set DoNotSave {
+  audible_bell
+  bgColor buffersize
+  defdirectory_
+  fileentrywidth
+  helpthreads_
+  infolevel itemlabwidth
+  labColor
+  maxModule menuButtonColor menubarfont menuColor
+  monospaced monofontfamily monofontsize monofonttype
+  noBLT
+  outfilename_
+  place plotapp_ plotmode
+  radioColor
+  savedir_ scrollWidth simulation serif sserif
+  timeout
+}
+foreach s {b h l m t} {
+  foreach t {family size type} {
+    lappend DoNotSave [set n ${s}font$t]
+  }
+}
+
+set TempVars {
+  Mod1 Mod2
+  Refa Refb Refc Refm
+  al
+  dA
+  eA
+  fA fLA fPA fPAuv fPAy fPAz
+  fl fr
+  i1 i2
+  ld li ll
+  m0 m1 m2 m3 mA
+  nA nnA
+  pA pA2
+  res
+  sps
+  tA
+}
+
+
 ### list of all (static, always part of interface) input list structures
 ###
 set globalDescriptionSET {
@@ -3465,7 +3535,7 @@ proc checkModVar {i {wishedmode ""}} {
 	set sepw ""
       } else {
 	set name "$var module $i"
-	if {[getSystem] == "unix"} {set name "Vitess module $i $var"}
+	if {[getSystem] == "unix"} {set name "VITESS module $i $var"}
 	generateToplevel $sepw $name
 	frame $sepw.$var
 	pack $sepw.$var
@@ -4279,73 +4349,14 @@ proc moduleMenus {{n 1}} {
   }
 }
 
-# Unset temporary help variables to prevent them from being saved.
-# (variables matching single characters, or with Add in the end are
-# deleted by setAll)
 
-set TempVars {
-  Mod1 Mod2
-  Refa Refb Refc Refm
-  al
-  dA
-  eA
-  fA fLA fPA fPAuv fPAy fPAz
-  fl fr
-  i1 i2
-  ld li ll
-  m0 m1 m2 m3 mA
-  nA nnA
-  pA pA2
-  res
-  sps
-  tA
-}
+# Unset temporary help variables used here, variables matching single characters, 
+# or with Add in the end are deleted by setAll.
 foreach n $TempVars {
   catch {unset $n}
 }
 
-# Some globlal variables should not be saved or loaded
-# from instrument or package files:
-set DoNotSave {
-  audible_bell
-  bgColor buffersize
-  BigFramesmo BigFramelmo BigFramebender BigFrameflipper_gradient BigFramerotating_field
-  buttonColor canvasColor copresults
-  defdirectory_
-  doNotSave
-  DummyEntry
-  fileentrywidth
-  helpthreads_
-  Htmlhelp
-  infolevel
-  itemlabwidth
-  labColor
-  maxModule
-  MaxOutstringLength
-  menuButtonColor
-  menubarfont
-  menuColor
-  monospaced monofontfamily monofontsize monofonttype
-  noBLT
-  outfilename_
-  place
-  plotapp_
-  plotmode
-  radioColor
-  savedir_
-  scrollWidth simulation serif sserif
-  StartTime
-  TempVars
-  timeout
-}
-foreach s {b h l m t} {
-  foreach t {family size type} {
-    lappend DoNotSave [set n ${s}font$t]
-  }
-}
-
-
-# unset tool routines
+# unset tool routines used only here
 foreach p {sore genFE genFE2} {
   proc $p {} {}
 }

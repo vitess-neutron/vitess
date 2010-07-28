@@ -1,4 +1,4 @@
-### project Vitess
+### project VITESS
 ### HMI DN
 ### M. Fromme fromme@hmi.de
 ###
