@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>VITESS Execution Modes</title>
+  </head>
+
+  <body>
+    <h1>Execution Modes</h1>
+<pre>
+VITESS provides some tools to deal with series of simulations.
+
+With <em>series</em> we mean slightly different simulations of a given instrument,
+where some parameters are changed to observe and analyse the differences.
+
+First of all we need to keep GUI settings alongside with parameter files (input and output)
+in a common place: the <strong>parameter directory</strong>.
+
+VITESS supports this parameter directory in 
+
+   - copying parameter files to this directory on "load instrument"
+   - saving an Xc<date>.log file in this directory
+   - providing all programs in the execution pipe with a generic -P &lt;dir&gt; parameter
+   - doing all executions with that working directory
+
+What if we want to re-simulate a given problem, e.g. when we want to test a new
+program version or some minor parameter change?
+
+Without any VITESS support we would copy the parameter directory recursively to a new place,
+redo the simulation from that directory, and compare files one by one (sizes, file dates).
+This has the advantage of not to change or possibly destroy any old output,
+but populates your hard disk with many duplicates.
+<a name=old>
+With VITESS you may use Options/"Execution Mode" mode <strong>"save old"</strong> to re-do
+an old simulation. In that mode every plain file of the parameter directory
+is saved to a save_&lt;n&gt; sub directory before execution of the command pipe.
+After pipe execution VITESS tells which files have been changed in contents and lists those files
+in the save_&lt;n&gt; subdirectory; duplicates in the subdirectory are removed.
+<a name=copy>
+You may select the mode <strong>"copy results"</strong> to save results of a simulation
+to a Results subdirectory. All files except the log file in the parameter directory,
+which have a modification date later than the simulation start time,
+are copied to the Results subdirectory after finishing the simulation,
+the file name prepended with the creation data like
+  Results/20100927-160057.a.dat
+for a file a.dat created on the 27 th of September in 2010.
+
+If you plan to simulate an instrument with varied parameters, you should consider
+the VITESS tool <a href="sim_series.html">Generate Series</a>.
+</pre>
+<hr>
+<a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> <br> <br>
+<!-- Created: Mon Sep 27 14:55:48 MEST 2010 -->
+<!-- hhmts start -->
+Last modified: Mon Sep 27 15:16:48 MEST 2010
+<!-- hhmts end -->
+  </body>
+</html>

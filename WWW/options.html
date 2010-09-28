@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>VITESS Options</title>
+  </head>
+
+  <body>
+<pre>
+<h1>VITESS Options</h1>
+Some options, to be set from the Options menu in the GUI main window,
+modify the GUI appearance and execution details.
+
+<h4>Color</h4>
+You may change colors of GUI elements to your preferences.
+
+<h4>Info Level</h4>
+If you chose "expert" mode, select a module afterwards, and click on
+text labels of parameters, you will see more information on parameters,
+for instance restrictions.
+<a name=checkmode>
+<h4>Check Mode</h4>
+Before a given pipe is executed, or when you click on the "Check" button,
+VITESS checks entries for syntactic correctness, and bails out if
+some parameters for instance have values outside the specified range.
+
+A special problem arises when you load instrument definitions of older
+VITESS versions, where some new parameters have been added since. Mostly these
+are selection parameters, where new options have been added, and the
+default is that one which was constant before.
+
+In "strict" mode this is an error, in "normal" mode no parameter valued is
+provided in the pipe for that parameter, and in mode "set_default" this value
+is explicitly set.
+<h4>Execution Mode</h4>
+If you re-do a simulation and want to see what changes with a new version
+or some parameter modification, the 
+<a href="save_mode.html#old">"save old"</a> execution mode might be of interest.
+
+The mode <a href="save_mode.html#copy">"copy results"</a> 
+helps to store results of simulations in special subdirectories.
+
+<h4>Plot mode</h4>
+You may select "dots + lines" instead of default "dots" only.
+
+<h4>Timeout</h4>
+If a simulation might take too long, and you want restrict the time, you
+might select a timeout period in seconds. After that period simulations
+will be ended, like when you click the Stop button. 
+
+<h4>Fonts</h4>
+GUI elements use font settings for (family, size, type) triples.
+You may change these to your preferences and click "Apply Settings".
+
+<h4>Scrollbar width</h4>
+Just what it says...
+
+<h4>Buffersize</h4>
+Modules write buffers of neutrons down the pipe. For computers with enough
+memory, and especially when using helper threads, you may speed up
+execution if you increase the default value of 10000 neutron trajectories per buffer.
+</pre>
+<hr>
+<a href="vitess.html">Back to VITESS overview</a><br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a><br> 
+<!-- Created: Mon Sep 27 15:36:27 MEST 2010 -->
+<!-- hhmts start -->
+Last modified: Mon Sep 27 16:13:44 MEST 2010
+<!-- hhmts end -->
+  </body>
+</html>

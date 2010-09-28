@@ -193,7 +193,7 @@ proc doInsertPacked {name insert_after} {
     outProtocol "! file $name missing or unappropriate"
     return 0
   }
-  
+
   # read packet definitions from file
   set nkey {}
   set nval {}
@@ -262,7 +262,7 @@ proc doInsertPacked {name insert_after} {
 }
 
 proc insertPacket {w} {
-  set insert_after [entryVal ins_mod]
+  set insert_after [entryVal insmod]
   set name [entryVal ipacketfile]
   if {$name == ""} return
   if [doInsertPacked $name $insert_after] {
@@ -290,11 +290,11 @@ proc insertPacketWindow {} {
   fGroup $w.v $w.b
 
   gSet insPacketESET [list [list insmod radio 1 {insert\nbehind module} $actm $actm] {
-    istorefile browsefile "" {"package\nfilename" "Package modules will be inserted in the pipe."} r gui 1} ]
+    ipacketfile browsefile "" {"package\nfilename" "Package modules will be inserted in the pipe."} r gui 1} ]
   generateEntries $w.v insPacketESET
 
   bButton $w.b.cancel Cancel "destroy $w"
-  bButton $w.b.save "Insert Packet" "insertPacketWindow $w"
+  bButton $w.b.save "Insert Packet" "insertPacket $w"
   pack $w.b.cancel -side left
   pack $w.b.save -side right
 }

@@ -307,8 +307,8 @@ proc controlMenu {w} {
       {m Color color} s\
       {m "Info level" infolevel} \
       {m "Check mode" checkmode} \
-      {m "Copy results" copresults} \
-      {m Plotmode plotmode} \
+      {m "Execution mode" execmode} \
+      {m "Plot mode" plotmode} \
       {m Timeout timeout} s\
       {m "Fonts: text" tfont}\
       {m "monospaced text" monofont}\
@@ -359,8 +359,8 @@ proc controlMenu {w} {
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
 
-  forceDef copresults no
-  cascEntries $wo.copresults copresults no "per simulation"
+  forceDef Execmode normal
+  cascEntries $wo.execmode Execmode normal "save old" "copy results" 
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
