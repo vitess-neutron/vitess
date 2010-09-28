@@ -219,11 +219,11 @@ proc checkAll {} {
 ### newer than the simulation start time
 
 proc copyResults {} {
-  global copresults StartTime defdirectory_
-  if {$copresults == "no"} return
+  global Execmode StartTime defdirectory_
+  if {$Execmode != "copy results"} return
   set clist {}
   catch {
-    foreach fn [glob $defdirectory_/*] {
+    foreach fn [glob -directory $defdirectory_ *] {
       if [file isdirectory $fn] continue
       set e [file extension $fn]
       if {$e == ".log"} continue
@@ -319,6 +319,96 @@ proc PsCheckWindows {} {
   return 0
 }
 
+
+### save all (flat) files in the parameter directory to a new temporary directory
+### within the parameter directory
+
+proc saveEnvironment  {} {
+  global FilesBefore TimesBefore Execmode defdirectory_
+  if {$Execmode != "save old"} { return "" }
+  catch {unset TimesBefore}
+  set FilesBefore {}
+  set clist {}
+  catch {
+    foreach fn [glob -directory $defdirectory_ *] {
+      set ft [file type $fn]
+      if {$ft != "file"} continue
+      lappend FilesBefore $fn
+      file stat $fn fst
+      set TimesBefore($fn) $fst(mtime)
+    }
+  }
+  set tdir ""
+  # create a subdirectory of saved files
+  for {set i 1} {$i < 1000} {incr i} {
+    set tdir [file join  $defdirectory_ "saved_$i"]
+    if [file exists $tdir] continue
+    file mkdir $tdir
+    break
+  }
+  if {$i >= 1000} {
+    # no free slot
+    return ""
+  }
+  foreach fn $FilesBefore {
+    file copy $fn $tdir
+  }
+  return $tdir
+}
+
+proc sameMD5Hash {a b} {
+  if [catch {package require md5}] {return 0}
+  set ahash [md5::md5 -file $a]
+  set bhash [md5::md5 -file $b]
+  if {"$ahash" == "$bhash"} {return 1}
+  return 0
+}
+
+### compare contents of envDir with files in the parameter directory
+### exchange modified files with old files, and have new files
+### in the subdirectory; delete identical copies in the subdirectory;
+### delete the subdirectory if empty
+
+proc cleanupEnvDir {{envDir ""}} {
+  global FilesBefore TimesBefore defdirectory_
+  if {$envDir == ""} return
+  if {! [file exists $envDir]} return
+  set someremain 0
+  set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
+  catch {
+    foreach fn [glob -directory $defdirectory_ *] {
+      if [file isdirectory $fn] continue
+      if {[lsearch $FilesBefore $fn] != -1} {
+	file stat $fn fst
+	set tn [file tail $fn]
+	set ofn [file join $envDir $tn]
+	set remain 0
+	if {$fst(mtime) > $TimesBefore($fn)} {
+	  # Changed file found, mtime change;
+	  # If it is just today's log file: forget about it.
+	  if {$tn != $dayname} {
+	    # Have contents been changed, too ?
+	    # If not, we delete the saved version.
+	    if {! [sameMD5Hash $fn $ofn]} {
+	      set remain [set someremain 1]
+	    }
+	  }
+	}
+	if {$remain == 0} {
+	  # file has not been changed, delete the saved version
+	  file delete $ofn
+	} else {
+	  outProtocol "saved old file to $ofn"
+	}
+      }
+    }
+  }
+  if {$someremain == 0} {
+    file delete $envDir
+  }
+  catch {unset FilesBefore TimesBefore}
+}
+
 proc startAction {{sercom ""} {simu simulation}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime
@@ -350,21 +440,26 @@ proc startAction {{sercom ""} {simu simulation}} {
     if {"" == [set t [entryVal random_$v]]} continue
     set env(GSL_RNG_$vv) $t
   }
+
+  set sEnvDir [saveEnvironment]
+
   if $tool {
     regsub -all \n $c "" c
     set p [pardirPar]
     if {[getSystem] == "windows"} {
-      # ein \ für Stringersetzung, ein weiterer für exec !
+      # ein \ fÃ¼r Stringersetzung, ein weiterer fÃ¼r exec !
       # regsub -all / $p {\\\\} p
     }
     append c " --P$p"
     if [catch {eval exec >& $pname $c &} PipeIds] {
       showText "!could not execute tool command\n\t$PipeIds"
+      cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
       return
     }
   } elseif [catch {eval exec 2> $pname $c &} PipeIds] {
     showText "!could not start $simu\n\t$PipeIds"
+    cleanupEnvDir $sEnvDir
     conditionalCloseProtfile
     return
   }
@@ -421,6 +516,7 @@ proc startAction {{sercom ""} {simu simulation}} {
 	  incr i
 	}
       }
+      cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
       return
     }
@@ -451,7 +547,7 @@ proc stopAction {{verbose 1} {kill 0}} {
 	if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
       }
       default {
-	if {$verbose} {showText "!don´t know how to stop processes"}
+	if {$verbose} {showText "!donÂ´t know how to stop processes"}
       }
     }
   }
@@ -756,11 +852,17 @@ exit
 
 proc setSeriesColumn {j n} {
   if {$n < 2} return
-  set delta [entryVal series0.$j]
-  if {$delta == ""} return
-  if [catch {set delta [expr $delta + 0]}] return
   set v [entryVal series1.$j]
+  set delta [entryVal series0.$j]
+  if {$delta == ""} {
+    # repeat value
+    for {set i 2} {$i <= $n} {incr i} {
+      gSet series$i.${j}_ $v
+    }
+    return
+  }
   if {$v == ""} return
+  if [catch {set delta [expr $delta + 0]}] return
   if [catch {set h [expr $v + 0]}] return
   for {set i 2} {$i <= $n} {incr i} {
     gSet series$i.${j}_ [expr $v + ($i - 1) * $delta]

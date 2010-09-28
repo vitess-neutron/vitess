@@ -82,7 +82,7 @@ performance impact for those compute intensive modules which do not need MC at a
 For other modules the module maintainer must provide a maximum number of MC calls per input neutron.
 This number may be chosen arbitrarily, and a number chosen too high has no other disadvantage
 than a constant execution time offset.
-With that we guarantee "same binaray output" for runs with a given NThreads.
+With that we guarantee "same binary output" for runs with a given NThreads.
 Within processNeutron (and routines called within) we replace Vran() calls by
 VranParallel(thread_i) then, and MonteCarloParallel(x,y,thread_i) has to
 replace MonteCarlo(x,y).
