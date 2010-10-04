@@ -191,10 +191,10 @@ You can get help about every
   helpLink $w Help t10
   $w insert end {
 
-Alternativly, you can use the help system in the internet:
+Alternativly, you can visit web pages at
 }
 
-  helpLink $w http://www.hmi.de/projects/ess/vitess/DOC/index.html t11
+  helpLink $w http://www.helmholtz-berlin.de/vitess t11
   $w insert end {
 
 For further questions, please send an email to vitess@helmholtz-berlin.de
@@ -632,8 +632,15 @@ proc getSystem {} {
 }
 
 proc tmpFilename {{name temp.tmp}} {
+  global env
+  set n USER
+  foreach w {LOGNAME USERNAME} {
+    if [catch {set n $env($w)}] continue
+    break
+  }
+  set fn "$n[clock seconds]$name"
   if {[getSystem] != "windows"} {
-    return "/tmp/[exec whoami]$name"
+    return "/tmp/$fn"
   }
   global defdirectory_
   set d $defdirectory_
@@ -641,10 +648,10 @@ proc tmpFilename {{name temp.tmp}} {
     set d C:/temp
     # create C:/temp if not existing
     if [catch {file mkdir $d}] {
-      return $name
+      return $fn
     }
   }
-  return [file join $d $name]
+  return [file join $d $fn]
 }
 
 proc getDirectory {name} {

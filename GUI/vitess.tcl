@@ -3467,6 +3467,7 @@ proc editDefaults {} {
 proc cleanupModView {} {
   global Amf
   catch {removeSubwindows $Amf}
+  zeroProgress
 }
 
 

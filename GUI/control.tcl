@@ -570,7 +570,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.10alpha"
+  set t "VITESS 2.10beta"
   set maxModule 40
   set DummyEntry "--inactive--"
 
@@ -668,10 +668,13 @@ proc showBeef {w} {
   bButton $wb.check Check checkAction
   bButton $wb.start Start startAction
   frame  $wb.dummy
+  gSet Progress 0
+  ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
   bButton $wb.kill Kill "stopAction 1 1"
   bButton $wb.stop Stop stopAction
   pack $wb.check $wb.start -fill x
   pack $wb.dummy -fill x -anchor w -pady 3m
+  pack $wb.dummy.progress
   pack $wb.kill $wb.stop -fill x
 
   set wb $w.h.r

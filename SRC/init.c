@@ -5,16 +5,17 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler,                                     */
 /* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* Jan 2002  K. Lieutenant  reorganized routines                                            */
 /* Mar 2003  K. Lieutenant  new function 'ColumnsInFile'                                    */
-/* Jan 2004  K. Lieutenant  new function 'FullName' and changes for 'instrument.dat         */
+/* Jan 2004  K. Lieutenant  new function 'FulName' and changes for 'instrument.dat          */
 /* Feb 2004  M. Fromme      functions FullParName and FullInstallName                       */
 /* Feb 2004  K. Lieutenant  use of Full...Name, 'instrument.inf' and 'simulation.inf'       */
 /* Mar 2008  M. Fromme      compressed neutron data                                         */
 /* Jan 2010  M. Fromme      support for parallel thread execution                           */
+/* Oct 2010  M. Fromme      progress meter                                                  */
 /********************************************************************************************/
 
 #ifdef _MSC_VER
@@ -60,6 +61,9 @@ char*    LogFileName;     /* log filename  */
 char*    ParDirectory;    /* parameter directory */
 char*    InstallDirectory;
 
+char*    ProgressFile;    /* file to write progress in percent*/
+int      SourcePercent;   /* quantisized progress so far */
+long     SourceSize;      /* input file size */
 
 double   wei_min=0.0;     /* Minimal weight for tracing neutron */
 long     keygrav=1;
@@ -296,6 +300,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 /*  --G  gravitation                                          */
 /*  --J  active trace points                                  */
 /*  --L  logfile                                              */
+/*  --p  progress file                                        */
 /*  --P  parameter directory                                  */
 /*  --T  number of helper threads for execution               */
 /*  --U  minimal neutron weight                               */
@@ -330,29 +335,33 @@ void Init(int argc, char **argv, VtModID eModule)
   stPicture.eType  = 0;
   stPicture.pDescr = "";
 
-  setInstallDirectory(*argv++);	/* extract installation path from program name */
+  setInstallDirectory(*argv++);	// extract installation path from program name
 
   while ((a = *argv++)) {
-    if ('-' != *a || '-' != a[1]) continue; /* first two chars must be - */
+    if ('-' != *a || '-' != a[1]) continue; // first two chars must be -
     arg = a + 3;
     switch (a[2]) {
-    case 'f' :			/* input file if other than stdin */
+    case 'f' :			// input file if other than stdin
       marg[0] = arg;
       break;
 
-    case 'F':                   /* output file if other than stdout */
+    case 'F':                   // output file if other than stdout
       marg[1] = arg;
       break;
 
-    case 'L':                   /* output file if other than stderr */
+    case 'L':                   // output file if other than stderr
       marg[2] = arg;
       break;
 
-    case 'P':                   /* parameter (= default) directory */
+    case 'p':                   // progress file
+      ProgressFile = arg;
+      break;
+
+    case 'P':                   // parameter (= default) directory
       setParDirectory(arg);
       break;
 
-    case 'Z':                   /* init number for the random number generator */
+    case 'Z':                   // init number for the random number generator
 #if defined(PENV) || defined(_MSC_VER)
       {
 	int i;
@@ -371,16 +380,16 @@ void Init(int argc, char **argv, VtModID eModule)
 #endif
       break;
 
-    case 'B':                   /* determine the buffer size */
+    case 'B':                   // determine the buffer size
       sscanf(arg,"%ld", &BufferSize);
       break;
 
     case 'G':
-      keygrav = atol(arg);      /* key for gravity 1 -yes (default), 0 - no  */
+      keygrav = atol(arg);      // key for gravity 1 -yes (default), 0 - no
       break;
 
     case 'U':
-      wei_min = atof(arg);      /* minimal weight for tracing neutron */
+      wei_min = atof(arg);      // minimal weight for tracing neutron
       break;
 
     case 'J' :
@@ -388,22 +397,28 @@ void Init(int argc, char **argv, VtModID eModule)
       break;
 
     case 'T' :
-      NThreads = atol(arg);    /* requested number of threads for execution */
+      NThreads = atol(arg);    // requested number of threads for execution
       break;
 
     default :
       continue;
     }
-    *a = '+';                   /* remember that this argument has been processed */
+    *a = '+';                   // remember that this argument has been processed
   }
+
 
   /* Now we know how to handle filenames, which might correspond to the parameter directory */
   if ((arg = marg[0])) {
     if (strcmp(arg, "no_file")) {
       InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
       if (InputFilePtr) {
-	// Is it compressed ?
 	char b[4];
+	// Get file size to enable progress bar
+	if (0 == fseek(InputFilePtr, 0, SEEK_END)) {
+	  SourceSize = ftell(InputFilePtr);
+	  rewind(InputFilePtr);
+	}
+	// Is it compressed ?
 	compressModeR = 0;
 	if (4 == fread(b, 1, 4, InputFilePtr)) {
 	  if (memcmp(b, "cmp2", 4) == 0)
@@ -414,7 +429,7 @@ void Init(int argc, char **argv, VtModID eModule)
 	if (compressModeR)
 	  compressedRestlen = spinVector = 0;
 	else
-	  fseek(InputFilePtr, 0, SEEK_SET);
+	  rewind(InputFilePtr);
       }
     } else
       InputFilePtr = NULL;
@@ -512,7 +527,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   /* error for the given count rate calculated through adding squared errors
      - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
      - of the average count rate of each trajectory I_s = I_tot/N:
-       sqrt((<I_s²> - <I_s>²)/(N-1))
+       sqrt((<I_sÂ²> - <I_s>Â²)/(N-1))
      as independent contributions */
   if (NumNeutWritten > 1)
     dCntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
@@ -563,6 +578,20 @@ void print_module_name(const char *name)
     strncpy(sModuleName, sNameHlp, 20);
 }
 
+void adjustProgress(int spercent) {
+  if (spercent != SourcePercent) {
+    FILE *fo;
+    fo = fopen(ProgressFile, "w");
+    fprintf(fo, "%d\n", spercent);
+    fclose(fo);
+    SourcePercent = spercent;
+  }
+}
+
+static void adjustFileProgress() {
+  if (SourceSize) 
+    adjustProgress((int)(100.0 * ftell(InputFilePtr) / SourceSize));
+}
 
 /****************************************************************/
 /* ReadNeutrons reads BufferSize neutrons form the input stream */
@@ -575,6 +604,7 @@ int ReadNeutrons()
 
   if (compressModeR == 0) {
     NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
+    adjustFileProgress();
     for(i=0; i<NumNeutGot; i++) {
       WriteTraceLine(&InputNeutrons[i]);
       /* normalization of direction vector for modules representing hardware */
@@ -955,6 +985,7 @@ static int readCompressedNeutrons (void) {
     compressedRestlen = 0;
   }
   newread = fread(readp, 1, toread, InputFilePtr);
+  adjustFileProgress();
   if (rlen <= 0 && newread <= 0) 
     return 0;
   if (newread > 0)

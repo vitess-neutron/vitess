@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
 	print_module_name("eval_elast2 1.0");
 	OwnInit(argc, argv);
 	
+	ibinXY = 0;
 	switch (kind) 
 	{
 		case 1: fprintf(LogFilePtr, "Option: scattering angle and wavelength\n"); break;
@@ -275,7 +276,7 @@ int main(int argc, char *argv[])
 		//Print spectrum
 		for (ibinY = 0; ibinY < ibinX; ibinY++)
 		{
-			fprintf(fspectra,"%12g %12g %12g %8d\n", bin_sorted[ibinY]->X, bin_sorted[ibinY]->Y, bin_sorted[ibinY]->Int, bin_sorted[ibinY]->Counts);
+			fprintf(fspectra,"%12g %12g %12g %8ld\n", bin_sorted[ibinY]->X, bin_sorted[ibinY]->Y, bin_sorted[ibinY]->Int, bin_sorted[ibinY]->Counts);
 			bintc_sorted += bin_sorted[ibinY]->Int;
 			free(bin_sorted[ibinY]);
 		}
