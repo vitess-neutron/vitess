@@ -168,7 +168,7 @@ proc helpSystem {{w .helpsystem} {helparray Helpitems}} {
 }
 
 proc showHelpItem {item {w .helpsystem} {helparray Helpitems}} {
-  if [regexp {(html|pdf)$} $item] {
+  if [regexp {^http:|(html|pdf)$} $item] {
     global SourceDirectory Browser tcl_platform
     if {$Browser == ""} return
     set http [regexp {^http:} $item]

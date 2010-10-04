@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            GÃ©za Zsigmond                                                             */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /********************************************************************************************/
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	 dy;
-  long	 i, kind, exclusivecount, registered, BufferIndex, nbiny ;
+  long	 i, kind, exclusivecount, registered, BufferIndex, nbiny;
   double RotMatrixAnalysis[3][3], bpost[10001], bintc, binpol, analysis_dir[3];
   double Divy, Divz, bint[10001],bintch[10001],m,p,M,probactiv;
 
@@ -33,7 +33,9 @@ int main(int argc, char *argv[])
   p=0.0;
   exclusivecount=0;
   registered=0;
-
+  
+  nbiny = m = 0;
+  M = 0;
 
   /*input*/
   Init(argc, argv, VT_MON_POL_1);

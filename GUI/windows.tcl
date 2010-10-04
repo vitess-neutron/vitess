@@ -131,6 +131,7 @@ proc showText {s {newl \n} {errchar "!"}} {
 }
 
 proc clearText {{s ""}} {
+  zeroProgress
   upvar #0 Messagew w
   if {$w == ""} return
   set wt $w.a.t;		# $w.a.t is text area

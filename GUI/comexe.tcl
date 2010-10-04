@@ -27,7 +27,7 @@ proc lookWhosConcerned {serrep serpar serno \
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set ll [globVal inputESET]
   set wsh 0
-  global Comode Serdefault Plotfile Plottype\
+  global Comode Serdefault Plotfile Plottype ProgressFile\
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize
 
   switch [set Comode $mode] {
@@ -139,10 +139,12 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     set logopt $logf$i
     set imore " $insert --L$logopt"
+
     lappend PipeLogList $logopt
     if $intcom {
       set com [file join $prefi $com]
       if $first {
+	append com " --p$ProgressFile"
 	append fc "$com$imore"
 	#  input file
 	writeCommandOption [lindex $ll 0] _ "" $spar0 $srep0 $serno0
@@ -154,6 +156,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 	writeCommandOption $l _$i "" $serpar $serrep $serno
       }
     } elseif {$first} {
+      append com " --p$ProgressFile"
       append fc "$com$imore"
       set first 0
     } else {
@@ -409,6 +412,27 @@ proc cleanupEnvDir {{envDir ""}} {
   catch {unset FilesBefore TimesBefore}
 }
 
+proc zeroProgress  {} {
+  global Progress ProgressFile
+  set Progress 0
+  catch {file delete $ProgressFile}
+}
+
+proc showProgress {} {
+  global Progress ProgressFile
+  showText . ""
+  if [catch {open $ProgressFile r} f] {
+    set Progress 0
+    return
+  }
+  if {[gets $f ins] > 0} {
+    if {$ins <= 100 && $Progress != $ins} {
+      set Progress $ins
+    }
+  }
+  close $f
+}
+
 proc startAction {{sercom ""} {simu simulation}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime
@@ -486,11 +510,11 @@ proc startAction {{sercom ""} {simu simulation}} {
 	outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
 	stopAction
       } else {
-	showText . ""
+	showProgress
       }
       incr i
     } else {
-      showText . ""
+      showProgress
     }
     if {$PipeActive && [$PsCheck]} {
       after $wmsecs;			# wait for completion,
@@ -518,6 +542,7 @@ proc startAction {{sercom ""} {simu simulation}} {
       }
       cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
+      zeroProgress
       return
     }
   }
@@ -525,6 +550,9 @@ proc startAction {{sercom ""} {simu simulation}} {
 
 proc stopAction {{verbose 1} {kill 0}} {
   global PipeActive PipeIds PipeIdList PipeIdsAtStart PipeErr KillProg
+
+  zeroProgress
+
   if {[info exists PipeActive] && $PipeActive} {
     if {$kill} {set PipeActive 0}
     switch [getSystem] {

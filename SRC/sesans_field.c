@@ -23,7 +23,7 @@
 #define NMAX         3
 
 
-short ReadFieldArea (char* sFileName);
+short ReadFieldArea (const char* sFileName);
 short DetermineWalls();
 short DeterminePlane(Plane* wall,  VectorType vCorner1, VectorType vCorner2, VectorType vCorner3, VectorType vCorner4);
 void  Invert        (double Ni[NMAX+1][NMAX+1],   double Nm[NMAX+1][NMAX+1]);
@@ -42,7 +42,7 @@ short      nCorners=0,         // number of points limiting the magnetic field a
                                // indices of the corners defining the walls
 VectorType PosMain,            // centre of the magnetic field (not used at the moment)
            TranslOut,          // position of the new origin  (in the co-ordinate of the old origin)
-           domain_field,       // magnetic field [Ørsted] in Euler co-ordinates
+           domain_field,       // magnetic field [Ã˜rsted] in Euler co-ordinates
            vCorner[MAX_EDGES]; // position of the corners (limiting the magnetic field area)
 Plane      vWall[MAX_WALLS],   // structure describing the walls (limiting the magnetic field area)
            vExit;              // structure describing plane through new origin
@@ -287,7 +287,7 @@ void OwnCleanup()
 
 
 
-short ReadFieldArea(char* sFileName)
+short ReadFieldArea(const char* sFileName)
 {
 	short nCrnr=0;
 	FILE* pFieldFile;

@@ -103,6 +103,9 @@ int binSearch(int, double*, double);
 double**matrix(const int,const int);
 double calcFraction(double, double, double, double);
 
+void OwnInit(int argc, char *argv[]);
+void adjustProgress(int spercent);
+
 // ISIS Functions
 #include "source_isis.c"
 
@@ -344,7 +347,7 @@ int main(int argc, char *argv[])
 	    }
 	}
       if (stMod[imod].dTotalFlux > 0)
-	fprintf(LogFilePtr, "total neutron flux (in 2*pi) : %11.4e n/(cm²s) \n",   stMod[imod].dTotalFlux);
+	fprintf(LogFilePtr, "total neutron flux (in 2*pi) : %11.4e n/(cmÂ²s) \n",   stMod[imod].dTotalFlux);
       fprintf(LogFilePtr, "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", stMod[imod].dCntrX, stMod[imod].dCntrY, stMod[imod].dCntrZ);
       if (stMod[imod].bCircle)
 	{	fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",          stMod[imod].dDiameter);
@@ -361,7 +364,7 @@ int main(int argc, char *argv[])
       else if (eDirDet==VT_VIRT_WND)
 	fprintf(LogFilePtr, "divergence defined by virtual propagation window \n");
       else
-	fprintf(LogFilePtr, "angle of opening used        : %7.3f°    x %7.3f°   \n", 2*180*stTraj[imod].dMaxDivY/M_PI, 2*180*stTraj[imod].dMaxDivZ/M_PI);
+	fprintf(LogFilePtr, "angle of opening used        : %7.3fÂ°    x %7.3fÂ°   \n", 2*180*stTraj[imod].dMaxDivY/M_PI, 2*180*stTraj[imod].dMaxDivZ/M_PI);
       fprintf(LogFilePtr, "time averaged neutron current: %11.4e n/s in%9.6f str\n", stMod[imod].dCurrent, dSolAngle);
       fprintf(LogFilePtr, "wavelength band used         : %7.3f Ang - %7.3f Ang\n", stTraj[imod].dLambdaMin, stTraj[imod].dLambdaMax);
       if (stSrc.eSrcType != CWS)
@@ -369,7 +372,7 @@ int main(int argc, char *argv[])
       if (stMod[imod].dCurrent*(stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)==0.0)
 	Warning("The calculated absolute neutron flux for the given parameter set is zero,\n"
 		"probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)\n"
-		"the simulation is performed with a flux normalized to a max. value of 1 n/(cm²s) \n\n");
+		"the simulation is performed with a flux normalized to a max. value of 1 n/(cmÂ²s) \n\n");
       fprintf(LogFilePtr, "\n");
     }
 
@@ -384,7 +387,7 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, 
 	  "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
 	  "  in a distance of           : %7.3f m\n"
-	  "  with a declination of      : %7.3f°\n"
+	  "  with a declination of      : %7.3fÂ°\n"
 	  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
 	  (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), WindowWidth, WindowHeight,
 	  WindowDist/100.,
@@ -415,6 +418,11 @@ int main(int argc, char *argv[])
     Moderator *sM;
 
     CHECK;
+
+    // provide data for progress meter
+    if ((i & 0xff) == 0) {
+      adjustProgress((int)(100.0 * No / NumberOfNeutrons));
+    }
 
     /* ID of the trajectory */
     if (i==4294967295U) {
@@ -538,7 +546,7 @@ int main(int argc, char *argv[])
       Input.Vector[0] = sqrt(1.0 - sq(Input.Vector[1]) - sq(Input.Vector[2]));
 	
       /* correcting count rate for an equal distribution in solid angle 
-	 factor: tan'(theta)*tan'(phi) = cos²(theta)*cos²(phi)          */
+	 factor: tan'(theta)*tan'(phi) = cosÂ²(theta)*cosÂ²(phi)          */
       Phi   = atan(Input.Vector[1]/Input.Vector[0]);
       Theta = atan(Input.Vector[2]/Input.Vector[0]);
 	
@@ -1026,7 +1034,7 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
   if (pTraj->dTimeFrmMax > pTraj->dTimeFrmMin &&
       pTraj->dLambdaMax  > pTraj->dLambdaMin  && pTraj->dLambdaMin >= 0.0)
     {
-      /* openíng distribution file */
+      /* openÃ­ng distribution file */
       pDisFile = fopen(FullParName(pMod->sLTFileName),"rt");
       if (pDisFile==NULL)
 	pDisFile = fopen(FullInstallName(pMod->sLTFileName, "FILES/moderators/"),"rt");

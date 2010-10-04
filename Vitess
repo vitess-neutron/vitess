@@ -137,6 +137,8 @@ foreach f $modl {
 }
 unset modl
 
+set ProgressFile [tmpFilename "pgress.txt"]
+
 #bind Text <MouseWheel> {}
 #ind all <MouseWheel> [list mouseWheel %W %D]
 #proc mouseWheel {widget delta} {
