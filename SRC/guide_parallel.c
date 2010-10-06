@@ -40,7 +40,7 @@
 /*                                (data is complementary to traceing and writeout)          */
 /* 2.17  Sep 2009  A. Houben      Extended writeout of reflection parameters                */
 /* 2.18  Sep 2009  A. Houben      Changes to shape defined by file & some minor things      */
-/* 2.19  Oct 2009  A. Houben      Shape by file for nonäquidistant planes & minor things    */
+/* 2.19  Oct 2009  A. Houben      Shape by file for nonÃ¤quidistant planes & minor things    */
 /*                                (introduced rounding of XYZ positions but left commented) */
 /* 2.20  Dez 2009  A. Houben      -FROM FILE mode allows to give mirror filenames           */
 /*                                -GuidePieces are managed by array of struct GuidePiece    */
@@ -592,9 +592,9 @@ static void showSetup() {
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cmÂ²", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.3f x %7.3f cmÂ²", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
 
   switch (eGuideShapeY) {
@@ -622,7 +622,7 @@ static void showSetup() {
     else    fprintf(LogFilePtr, "constant width\n");
     break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f mÂ²\n", AreaY*2./1e4);
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ) {
   case VT_ELLIPTIC:
@@ -650,7 +650,7 @@ static void showSetup() {
     break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f mÂ²\n", AreaZ*2./1e4);
 
   if (Radius != 0.0) { /* curved guide */
     beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -670,7 +670,7 @@ static void showSetup() {
     } else {
       fprintf(LogFilePtr,"WARNING: Case of zero reflectivity for this file! Most probably the file was not found!\n");
     }
-    fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+    fprintf(LogFilePtr,  " surface area      :%8.3f mÂ²\n", pReflFiles[i].area/1.e4);
   }
 
   if (keyabut == 1)
@@ -681,7 +681,7 @@ static void showSetup() {
   if (surfacerough == 0.0)
     fprintf(LogFilePtr,"The walls have no waviness\n");
   else
-    fprintf(LogFilePtr,"The walls have a waviness of %10.3e°\n", atan(surfacerough)*180.0/M_PI);	
+    fprintf(LogFilePtr,"The walls have a waviness of %10.3eÂ°\n", atan(surfacerough)*180.0/M_PI);	
 
 	
   /****************************************************************************************/
@@ -796,7 +796,7 @@ int main(int argc, char *argv[])
   /********************************************************************************************/
   /* This module reads in a file of neutron structures, and defines a neutron guide as a set  */
   /* of five infinite planes with a global critical angle. It outputs the coordinates and time*/
-  /* displacement of any neutrons that pass through the guide without being absorbed.	    */
+  /* displacement of any neutrons that pass through the guide without being absorbed.	      */
   /*                                                                                          */
   /* Anything not directly commented is an InputNeutrons or an output routine.                */
   /********************************************************************************************/
@@ -814,7 +814,7 @@ int main(int argc, char *argv[])
   for (i=0; i<=NThreads; i++)
     TGuide[i] = Guide;
 
-  processPipedNeutrons(NThreads, processNeutron, 1, (NThreads && surfacerough) ? 10 : 0);
+  processPipedNeutrons(NThreads, processNeutron, 1, (NThreads && surfacerough) ? 100 : 0);
 
   fflush(LogFilePtr);
 	
@@ -1281,7 +1281,7 @@ void OwnInit   (int argc, char *argv[]) {
     GuideEntranceHeight = pPieces[0].Zpce*2.;
     GuideExitWidth = pPieces[nPieces].Ypce*2.;
     GuideExitHeight = pPieces[nPieces].Zpce*2.;
-    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonäquidistant planes */
+    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonÃ¤quidistant planes */
 
   } else {
 

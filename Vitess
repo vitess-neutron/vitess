@@ -1,5 +1,5 @@
-#!/usr/bin/wish
 #!/usr/bin/bltwish
+#!/usr/bin/wish
 #!/usr/local/bin/bltwish
 #!/usr/local/bin/wish8.4
 #!/net/bin/wish -f

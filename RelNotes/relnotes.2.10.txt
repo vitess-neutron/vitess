@@ -1,5 +1,5 @@
-VITESS 2.10alpha  Release Note
-------------------------------
+VITESS 2.10beta  Release Note
+-----------------------------
 
 Helper threads:
 ---------------
@@ -8,6 +8,31 @@ Some modules may use helper threads to speed up simulations on system with multi
 core CPUs. If you select 1 to 4 helper threads in the main GUI window, these
 modules will start helper threads:
 source, chopper_fermi, polariser_sm, guide, and sm_ensemble.
+
+Packages:
+---------
+
+Composing instruments is made easier with packages. You may store parts of an
+instrument, like a series of complicated guides, to a package, to be re-used
+later.
+The maximum number of modules is set to 40 now.
+
+Execution Modes:
+----------------
+
+When you simulate an instrument with slightly different parameters you may use
+two execution modes which help to compare results:
+"save old"
+In that mode every plain file of the parameter directory is saved to a save_<n> subdirectory
+before execution of the command pipe. After pipe execution VITESS tells which files have been
+changed in contents and lists those files in the save_<n> subdirectory;
+duplicates in the subdirectory are removed.
+"copy results"
+All files except the log file in the parameter directory, which have a modification date later
+than the simulation start time, are copied to the Results subdirectory after finishing the simulation,
+the file name prepended with the creation data like
+ Results/20100927-160057.a.dat
+for a file a.dat created on the 27 th of September in 2010.
 
 New modules:
 -----------
