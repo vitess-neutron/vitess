@@ -562,6 +562,15 @@ proc doGUICommand {prog mod {big ""}} {
   pack $w.b.do $w.b.canc -side left
 }
 
+proc trVar {n e op} {
+  global Progress ProgressTextL
+  if {$Progress == 0} {
+     set ProgressTextL ""
+  } else {
+    set ProgressTextL "$Progress %"
+  }
+}
+
 proc showBeef {w} {
   global bgColor canvasColor buttonColor xcontrolDefaultsESET \
       maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot
@@ -657,7 +666,7 @@ proc showBeef {w} {
   helpFrame $Amf
 
 ### action buttons
-  global fileentrywidth LastWin LastState
+  global fileentrywidth LastWin LastState Progress ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -668,13 +677,21 @@ proc showBeef {w} {
   bButton $wb.check Check checkAction
   bButton $wb.start Start startAction
   frame  $wb.dummy
-  gSet Progress 0
-  ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
   bButton $wb.kill Kill "stopAction 1 1"
   bButton $wb.stop Stop stopAction
   pack $wb.check $wb.start -fill x
   pack $wb.dummy -fill x -anchor w -pady 3m
-  pack $wb.dummy.progress
+  set Progress 0
+  if {"" == [info command ttk::progressbar]} {
+    set ProgressTextL ""
+    set wl $wb.dummy.l
+    label $wl -textvariable ProgressTextL
+    pack $wl
+    trace variable Progress w trVar
+  } else {
+    ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
+    pack $wb.dummy.progress
+  }
   pack $wb.kill $wb.stop -fill x
 
   set wb $w.h.r
