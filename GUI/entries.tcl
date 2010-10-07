@@ -172,19 +172,27 @@ proc fileEntry {w line labelwidth width {app _}} {
     mon2editablefile {set entype 2 ; set dirtype p; set dim 2}
   }
 
-  button $w.b -text Browse -background $bgColor -width 3\
+  # reduced width to save place, use text length - 2
+  if {[getSystem] == "windows"} {
+    set ww1 7
+    set ww2 4
+  } else {
+    set ww1 4
+    set ww2 2
+  }
+  button $w.b -text Browse -background $bgColor -width $ww1\
       -command [list browseFile $variable$app open $dirtype $ext 1]
   if {$dirtype == "d"} {set tt NewDir} {set tt BrowseN}
-  button $w.bn -text $tt -background $bgColor -width 4\
+  button $w.bn -text $tt -background $bgColor -width $ww1\
       -command [list browseFile $variable$app write $dirtype $ext]
 
   if {$entype != ""} {
-    button $w.x -text Edit -background $bgColor -width 1\
+    button $w.x -text Edit -background $bgColor -width $ww2\
 	-command "editFile $variable $entype $ext $app"
     if {$entype < 2} {
       pack $w.l $w.e $w.b $w.bn $w.x -side left -anchor w
     } else {
-      button $w.p -text Plot -background $bgColor -width 1\
+      button $w.p -text Plot -background $bgColor -width $ww2\
 	  -command [list plotMonFile $dim $variable $app]
       forceDef [set var ${variable}_r$app] 1
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor

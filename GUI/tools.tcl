@@ -241,6 +241,22 @@ proc dismissFrame {w {d dism}} {
   pack $w.$d.dismiss -side left
 }
 
+proc printFrame {w} {
+  global tcl_version
+  if {$tcl_version < 8.5} {
+    dismissFrame $w
+    return
+  }
+  set f $w.dism
+  frame $f
+  pack $f -side bottom -fill x -pady 2m
+  bButton $f.dismiss Dismiss "destroy $w"
+  bButton $f.print Print "$w.c postscript -file xy.ps"
+  label $f.l -text "to file xy.ps"
+  pack $f.dismiss -side left
+  pack $f.l $f.print -side right
+}
+
 ###
 ### tools to set and check global variables
 ###
@@ -642,8 +658,7 @@ proc tmpFilename {{name temp.tmp}} {
   if {[getSystem] != "windows"} {
     return "/tmp/$fn"
   }
-  global defdirectory_
-  set d $defdirectory_
+  set d [globVal defdirectory_]
   if {$d == "" || ! [file isdirectory $d]} {
     set d C:/temp
     # create C:/temp if not existing
@@ -681,7 +696,10 @@ proc browseFile {var access dirtype {ext ""} {mustexist false}} {
 	  set name [file dirname $name]
 	} else {
 	  # uses tries to create directory a/b/c/
-	  file mkdir $name
+	  if [catch {file mkdir $name}] {
+	    showText "unable to create directory $name"
+	    return
+	  }
 	}
       }
     }

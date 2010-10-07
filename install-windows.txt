@@ -6,7 +6,7 @@ Hahn-Meitner-Institut Berlin, now
 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
 
 Modules:
-	Klaus Lieutenant (klaus.lieutena@ife.no)
+	Klaus Lieutenant (klaus.lieutenant@helmholtz-berlin.de)
 	Géza Zsigmond    (geza.zsigmond@psi.ch)
 	Sergey Manoshin
 	Dietmar Wechsler
@@ -23,23 +23,22 @@ and runs fine on both operating systems.
 
 Installation under Windows
 
-This version came to you as a selfextracting file,
-which has been produced with Inno Setup (by Jordan Russell
-http://www.jrsoftware.org/isinfo.htm).
+This version came to you as a selfextracting file, which has been produced with Inno Setup
+(by Jordan Russell http://www.jrsoftware.org/isinfo.htm).
 
 You may compare the CRC32 or MD5 checksums of the downloaded
 vitess.exe install program with those stated at the web site
 https://www.helmholtz-berlin.de/vitess
 
+The installation does not need administrator privileges, all files are install under
+one directory the installer has access to.
 
-If you install the full version with Tcl/Tk + BLT
-files included, double-clicking the VITESS item on your
-desktop should start the application.
+If you install the full version with Tcl/Tk + BLT files included, double-clicking the VITESS
+icon on your desktop should start the application.
 
-If you install the minimal version, the desktop symbol
-might not link to your installed tcl software.
+If you install the minimal version, the desktop symbol might not link to your installed tcl software.
 Let us assume you installed tcl at C:\Programs\tcl
-and VITESS to c:\Programs\vitess.
+and VITESS to C:\Programs\vitess.
 Please change the program shortcut (link) on your desktop accordingly:
 VITESS start command
   C:\Programs\tcl\bin\wish.exe -f Vitess
@@ -54,8 +53,11 @@ CAVEAT:
 | parts to be separated by blanks.                                    |
 +---------------------------------------------------------------------+
 
-To uninstall VITESS you might use the uninstall item
-in the command (sub-) menu (like START/VITESS/uninstall)
+VITESS may use BLTwish extensions to Tcl/TK for plots of monitor modules.
+Newer versions of Tcl/TK are not compatible with BLT, but VITESS works fine
+with these versions where simpler plot widgets replace BLT widgets automatically.
+
+To uninstall VITESS you might use the uninstall item in the command (sub-) menu (like START/VITESS/uninstall)
 or the windows uninstall procedure for software
 (START/settings/system/software or German 
  START/Einstellungen../Systemsteuerung/Software). 

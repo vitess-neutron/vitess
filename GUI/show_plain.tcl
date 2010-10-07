@@ -49,9 +49,12 @@ proc showXYfile {fname} {
   canvas $w.c -width $canvaswidth -height $canvasheight
   pack $w.c
 
-  dismissFrame $w
+  printFrame $w
 
   set c $w.c
+
+  $c create text 3c 1c -text "file $fname" -anchor sw
+
   set x0 30
   set xf [expr $xmax - $xmin]
   if {$xf > 0} {
