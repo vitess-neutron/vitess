@@ -31,8 +31,7 @@ duplicates in the subdirectory are removed.
 All files except the log file in the parameter directory, which have a modification date later
 than the simulation start time, are copied to the Results subdirectory after finishing the simulation,
 the file name prepended with the creation data like
- Results/20100927-160057.a.dat
-for a file a.dat created on the 27 th of September in 2010.
+Results/20100927-160057.a.dat for a file a.dat created on the 27 th of September in 2010.
 
 New modules:
 -----------

@@ -3,10 +3,10 @@
 
 
 Hahn-Meitner-Institut Berlin, now
-Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+Helmholtz-Zentrum Berlin fÃ¼r Materialien und Energie GmbH
 
 Modules:
-	Géza Zsigmond      (geza.zsigmond@psi.ch)
+	GÃ©za Zsigmond      (geza.zsigmond@psi.ch)
 	Klaus Lieutenant   (klaus.lieutenant@ife.no)
 	Sergey Manoshin
 	Dietmar Wechsler
@@ -25,13 +25,15 @@ Installation under Unix
 
 1. check
 --------
-Your operating system should be Linux (versions from 2.0.35),
-SunOS (versions from 5.6), or OSF1(V4.0). Vitess may be compiled
-from sources for other versions of Unix. 
+Your operating system should be Linux (versions from 2.0.35).
+Vitess may be compiled from sources for other versions of Unix. 
 
 We assume Tcl/Tk software with a version 8.2 or higher
 is installed separately. If you miss information, try
 http://www.scriptics.com/software/
+VITESS may use BLTwish extensions to Tcl/TK for plots of monitor modules.
+Tcl/TK Versions >= 8.5 are not compatible with BLT, but VITESS works fine
+with these versions where simpler plot widgets replace BLT widgets automatically.
 
 The VITESS software comes to you as a gzipped tar file.
 When your browser asks for a file name to store the tar file,
@@ -42,7 +44,7 @@ to a name with .tar.gz ending like vitess.tar.gz .
 
 You may compare the CRC32 or MD5 checksums of the downloaded
 vitess.tar.gz with those stated at
-https://www.hmi.de/projects/ess/vitess/checksums.txt
+https://www.helmholtz-berlin.de/vitess
 
 The file vitess.tar.gz might be de-tared in whatever
 <vitess parent directory> you want, like /usr/bin for root installation
@@ -50,8 +52,7 @@ or $HOME for personal installation.
 
 Silver Bullet
 -------------
-If you have perl installed on your system, fetch and store locally
-https://www.hmi.de/projects/ess/vitess/installAndTest
+If you have perl installed on your system, fetch the script installAndTest
 
 	cd <vitess parent directory>
         installAndTest -v vitess.tar.gz
@@ -66,11 +67,11 @@ Or:
 2. do
 -----
 	cd <vitess parent directory>
-	gtar -zxvf vitess.tar.gz
+	gtar zxvf vitess.tar.gz
 
 	(if you do not have gtar, try
 		gunzip vitess.tar.gz
-		tar -xvf vitess.tar
+		tar xvf vitess.tar
 	)	
 
 3. edit script
@@ -93,9 +94,12 @@ We send you a patch on request, or you may produce the patched file by
 If you want to install Vitess for others, you might adopt the
 perl script callVitess to your needs.
 
+
 4. try it
 ---------
 	<vitess parent directory>/vitess/Vitess
+
+Alternatively you may the script callVitess provided in the tarball.
 
 Missing shared libraries?
 -------------------------
@@ -122,7 +126,7 @@ For module guide (from guide.c) we find
 
 guide.exe		 Windows 32 bit
 guide_Linux		 Linux i386
-guide_Linux_x86_64       Linux x86 64 architecture
+guide_Linux_x86_64       Linux x86 64 bit architecture
 and in the past
 guide_SunOS		 Solaris sparc
 guide_OSF		 Tru64 alpha

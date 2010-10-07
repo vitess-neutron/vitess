@@ -322,11 +322,11 @@ Helper thread for source
 Because of the heavy use of MonteCarlo calls and the final output of every
 neutron generated, the source module is bound to serial execution.
 But we can move one obstacle out of the way: 
-When fwrite to the pipe occurs, source has to wait for the next next module
+When fwrite to the pipe occurs, source has to wait for the next module
 to read pipe data. This is why we did not see 100 % CPU time for the source
 module in examples where following modules are not CPU intensive.
 For that purpose we introduce a helper thread, which copies the buffer data
-and does the fwrite, and the the helper threads waits for fwrite to complete,
+and does the fwrite, and the helper thread waits for fwrite to complete,
 while source itself continues to produce neutron trajectories.
 
 Experimental timing
