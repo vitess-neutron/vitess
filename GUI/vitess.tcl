@@ -126,14 +126,15 @@ proc makeModuleSets {} {
   global AvailableSET
   # 0 name of module categorie
   # 1 list of submodules; may be empty
-  # 2 help item; may be a list if different submodules have different help
+  # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
     {source {source_const_wave source_HMI source_ILL
       source_short_pulsed source_ESS source_IPNS source_ISIS source_SNS
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
-    {lenses}
+    {optical_elements {lense} {lense}}
+    {beamstop {} beamstop}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {space slit spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
@@ -141,10 +142,10 @@ proc makeModuleSets {} {
     {collimator {collimator collimator_radial collimator_soller} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
-    {mirror_elliptical {mirror_elliptical} mirror_elliptical}
+    {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
-    {magnetic_field {precessionfield rotating_field sesans_field} {precessionfield rotating_field sesans_field}}
+    {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {sample {sample_elasticisotr sample_inelast sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
@@ -311,15 +312,15 @@ Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
   {scale float ""
-    {"total flux\nat moderator\n[n/(cm²s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm²s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+    {"total flux\nat moderator\n[n/(cmÂ²s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cmÂ²s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
 }
 
 set m2 {
   {}
   {wfile pareditablefile "" {"user wavelength\ndist. file" "Name of the file that contains the wavelength distribution function M(lambda) for the moderator used. units:
-\tCW: [Ang], [n/(cm² s str Ang)]
-\tSS: [Ang], M(lambda) * F(t) must have the unit [n/(cm² s str Ang)]
+\tCW: [Ang], [n/(cmÂ² s str Ang)]
+\tSS: [Ang], M(lambda) * F(t) must have the unit [n/(cmÂ² s str Ang)]
 (cf. user time dist. file)"}}
   {temp float 0 {"moderator\ntemperature [K]" "the temperature is only needed and used, if no wavelength dist. file is given"} ge0}
   {color int "" {colour "The trajectories can be marked by a so-called 'colour' to identify, which moderator they come from."} 0 32767}
@@ -327,14 +328,14 @@ set m2 {
 
 set m3 {
   {}
-  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂ² s str Ang)]"}}
   {tau1 float ""
     {"tau_1 [us]" "First time constant of the pulse in microseconds (this is thought to be the smaller one of the two time constants).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
   {tau2 float ""
     {"tau_2 [us]" "Second time constant of the pulse in microseconds (this is thought to be the larger of the two time constants). In this case it describes the decay of the pulse (for t >> tau_1).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
   {}
   {tfile pareditablefile "" {"user time\ndist. file" "Name of the file that contains the time distribution function F(t) for the moderator used.
-  units: [ms], M(lambda) * F(t) must have the unit [n/(cm² s str Ang)]
+  units: [ms], M(lambda) * F(t) must have the unit [n/(cmÂ² s str Ang)]
   (cf. user wavelength dist. file)"}}
 }
 
@@ -376,7 +377,7 @@ Deviations of the moderator center from this position must be given here."}}
   {}
   {tstat radio TS1 {"target\nstation"} {TS1 TS2} {1 2}}
   {}
-  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂ² s str Ang)]"}}
 }
 
 ### pulsed sources
@@ -745,7 +746,7 @@ set a {
     "max. z [cm]" "maximal z value [cm]" "" H}}
   {}
   {rotang float "0.0" {
-    "rot. angle [°]" "rotate window by [°]" "" A}}
+    "rot. angle [Â°]" "rotate window by [Â°]" "" A}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
     {no yes} {0 1}
@@ -894,7 +895,7 @@ set guideESET {
   {gd_scat float 0 {
     "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
   {gd_abs float 0 {
-    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ã… [1/cm]" "" m} ge0}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
@@ -1768,9 +1769,9 @@ set rotating_fieldESET {
   {btrap radio no {bootstrap "Use or do not use a bootstrap configuration" "" T} {yes no} {1 0}}
 }
 
-### sesans_field
+### quadr_field
 ###
-set sesans_fieldESET {
+set quadr_fieldESET {
   {"Field range and strength" header}
   {sf_bf pareditablefile field.dat {"field range file" "data file (which is read) giving the range of the magnetic field" "" P}}
   {}
@@ -2423,8 +2424,8 @@ isotropic scattering: no value needed."}
   {sobv2 float "" {"radius 2 or\nthickness [Ang]"} gt0}
   {sobv3 float "" {"radius 3 or\nheight [Ang]"} gt0}
   {}
-  {rho1 float "" {"scat. len. dens.\nparticl. [1/cm²]" "scattering length density of the soluted particles"} gt0}
-  {rho2 float "" {"scat. len. dens.\nsolvent [1/cm²]" "scattering length density of the solvent"} gt0}
+  {rho1 float "" {"scat. len. dens.\nparticl. [1/cmÂ²]" "scattering length density of the soluted particles"} gt0}
+  {rho2 float "" {"scat. len. dens.\nsolvent [1/cmÂ²]" "scattering length density of the solvent"} gt0}
   {fpkl float "" {"vol. fraction\nof particles" "volume fraction of the ensemble of particles in solution"} gt0}
   {}
   {miscs float "" {"incoh. scatter.\ncoeff. [1/cm]"} ge0}
@@ -3038,10 +3039,9 @@ set sm_ensembleESET {
 }
 
 
-# new manoshine
-### lenses
+### lense
 ###
-set lensesESET {
+set lenseESET {
   {"Geometry description of a lense" header}
   {fxxa radio spherical {"Lense surface geometry" "Choose the lense geometry: surfaces" "" K} {spherical parabolic} {0 1}}
   {fx float 10 {"Cur_Radius1 [cm]" "Spherical lense: Curvature radius of the first surface of a lense" "" a} }
@@ -3248,7 +3248,7 @@ Parameters may be input textually (of type integer, float, string ...) in the li
 entry fields, or by selecting a radio button. Some filenames may be input
 by browsing.
 Without change, the parameter entries appear in the main Xcontrol window 'here'.
-If you like it select the other menu entry 'separate' to edit this modules´
+If you like it select the other menu entry 'separate' to edit this modulesÂ´
 parameters in a separate window, or leave these parameters invisible by now
 by selecting 'hidden'.
 The simulation pipe happens to become longer, if you select a new module

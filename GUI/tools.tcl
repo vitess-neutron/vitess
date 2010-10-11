@@ -812,7 +812,6 @@ proc yscroll {w command {side right}} {
 proc xscroll {w command {side top}} {
   global bgColor scrollWidth
   append w ".xscroll"
-  scrollbar $w -command $command -bg $bgColor\
-      -width $scrollWidth -orient horizontal
+  scrollbar $w -command $command -bg $bgColor -width $scrollWidth -orient horizontal
   pack $w -side $side -fill x
 }
