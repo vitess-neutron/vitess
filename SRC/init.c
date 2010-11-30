@@ -211,38 +211,62 @@ static void *TWdata;
 #define WIN32KNOWN 1
 #endif
 
-static HANDLE  hWriteMutex;
+static HANDLE hWriteMutex;
 
 void initParWrite(size_t s, int n) {
   if (TWdata) return;
   hWriteMutex = CreateMutex( NULL, FALSE, NULL );  // Cleared
-  TWdata = malloc(s*n);
+  if (hWriteMutex == NULL)
+    fprintf(LogFilePtr,"unable to CreateMutex, error: %d\n", GetLastError());
+  else
+    TWdata = malloc(s*n);
 }
 
 static void threadWriter (void *arg) {
+  int nwr, rc;
   if (!TWdata) return;
-  fwrite(TWdata, TWsize, TWn, TWfile);
-  ReleaseMutex(hWriteMutex);
+  rc = WaitForSingleObject(hWriteMutex, INFINITE);
+  if (rc)
+    fprintf(LogFilePtr,"WaitForSingleObject problem, rc %d\n", rc);
+  nwr = fwrite(TWdata, TWsize, TWn, TWfile);
+  if (nwr != TWn)
+    fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
+  rc = ReleaseMutex(hWriteMutex);
+  if (rc == 0)
+    fprintf(LogFilePtr,"unable to ReleaseMutex in threadWriter, error: %d\n", GetLastError());
 }
 
 static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
-  static int writerThread;
+  uintptr_t trc;
+  int nwr, rc;
+  // static int writerThread;
   if (!TWdata) {
-    fwrite(d, s, n, f);
-    return 1;
+    nwr = fwrite(d, s, n, f);
+    return n == nwr;
   }
   // Wait here, if a threadWriter is occupied by an older write operation
+  // by allocating hWriteMutex.
   // The mutex becomes unlocked only after completion of threadWriter.
-  WaitForSingleObject( hWriteMutex, INFINITE);
+  rc = WaitForSingleObject( hWriteMutex, INFINITE);
+
+  if (rc)
+    fprintf(LogFilePtr,"WaitForSingleObject problem, rc %d\n", rc);
   if (final) {
-    fwrite(d, s, n, f);
-    return 1;
+    nwr = fwrite(d, s, n, f);
+    return n == nwr;
   }
   memcpy(TWdata, d, s*n);
   TWsize = s;
   TWn = n;
   TWfile = f;
-  return 0 != _beginthread( threadWriter, 0, &writerThread);
+  // rc = _beginthread( threadWriter, 0, &writerThread);
+  trc = _beginthread( threadWriter, 0, 0);
+
+  rc = ReleaseMutex(hWriteMutex);
+  if (rc == 0)
+    fprintf(LogFilePtr,"unable to ReleaseMutex in fwritePar, error: %d\n", GetLastError());
+
+  return trc != 0 && trc != -1;
 }
 
 #else
@@ -255,29 +279,40 @@ static pthread_mutex_t write_m; // mutex to guard asynchronous fwrite operations
 
 void initParWrite(size_t s, int n) {
   if (TWdata) return;
-  pthread_mutex_init(&write_m, 0);
-  TWdata = malloc(s*n);
+  int rc = pthread_mutex_init(&write_m, 0);
+  if (rc)
+    fprintf(LogFilePtr,"pthread_mutex_init problem, rc %d\n", rc);
+  else
+    TWdata = malloc(s*n);
 }
 
 static void *threadWriter (void *arg) {
   if (!TWdata) return arg;
-  fwrite(TWdata, TWsize, TWn, TWfile);
-  pthread_mutex_unlock(&write_m);
+  int nwr = fwrite(TWdata, TWsize, TWn, TWfile);
+  if (nwr != TWn)
+    fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
+  int rc = pthread_mutex_unlock(&write_m);
+  if (rc)
+    fprintf(LogFilePtr,"unable to pthread_mutex_unlock in threadWriter, error: %d\n", rc);
   return arg;
 }
 
 static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   static pthread_t writerThread;
+  int nwr, rc;
   if (!TWdata) {
-    fwrite(d, s, n, f);
-    return 1;
+    nwr = fwrite(d, s, n, f);
+    return nwr == n;
   }
   // Wait here, if a threadWriter is occupied by an older write operation
   // write_m becomes unlocked only after completion of threadWriter.
-  pthread_mutex_lock(&write_m);
+  rc = pthread_mutex_lock(&write_m);
+  if (rc)
+    fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
+    
   if (final) {
-    fwrite(d, s, n, f);
-    return 1;
+    nwr = fwrite(d, s, n, f);
+    return nwr == n;
   }
   memcpy(TWdata, d, s*n);
   TWsize = s;
