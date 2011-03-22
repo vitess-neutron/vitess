@@ -16,6 +16,7 @@
 /* 1.08  Feb 2004  K. Lieutenant  'message.h', 'ERROR' and 'FullParName' included; output of */
 /*                                parameter file data; optimal phase into 'instrument.inf'   */
 /* 1.09  Nov 2005  K. Lieutenant  option: equivalent windows added                           */
+/* 1.10  Mar 2011  K. Lieutenant  correction: side deviation                                 */
 /*********************************************************************************************/
 
 #include "intersection.h"
@@ -103,7 +104,7 @@ int main(int argc, char *argv[])
 	Endpoint.D           = 0.0;
 
 	Init(argc, argv, VT_CHOP_DISC);
-	print_module_name("Space and Chopper 1.9");
+	print_module_name("Disc Chopper 1.10");
 	OwnInit(argc, argv);
 
 	CenterX   = 0.0;
@@ -170,8 +171,8 @@ int main(int argc, char *argv[])
 					/* gadolinium */
 					case 1:
 						if (InputNeutrons[i].Wavelength <= 0.35)
-						{	prob = -0.184285714*InputNeutrons[i].Wavelength  + 1.0127875714286;
-							if (prob >0.961) prob = 0.961;
+						{	prob = -0.1843*InputNeutrons[i].Wavelength  + 1.0128;
+							if (prob > 0.961) prob = 0.961;
 						}
 						else if ( InputNeutrons[i].Wavelength < 6.0)
 						{	double *pLmbdList=NULL, *pMuList=NULL;
@@ -368,23 +369,23 @@ void OwnCleanup()
 	}
 	/* phase for window 1 or diameter */
 	if (bPhase)
-	{	phi_wnd1        =  90.0/M_PI*(ThisChopper.Window[0].Right + ThisChopper.Window[0].Left);
+	{	phi_wnd1        = 180.0/M_PI * (ThisChopper.Window[0].Angle);
 		stPicture.dWPar = RedAngle(phi0-phi_wnd1, dir);
 	}
 	else
 	{	stPicture.dWPar = 2*ThisChopper.Radius;
 	}
-	/* phase for window 2 or RPM */
+	/* phase for window 2 or aperture */
 	if (bPhase && ThisChopper.NumberOfWindows >= 2)
-	{	phi_wnd2        =  90.0/M_PI*(ThisChopper.Window[1].Right + ThisChopper.Window[1].Left);
+	{	phi_wnd2        = 180.0/M_PI * (ThisChopper.Window[1].Angle);
 		stPicture.dHPar = RedAngle(phi0-phi_wnd2, dir);
 	}
 	else
-	{	stPicture.dHPar = 180.0/M_PI *(ThisChopper.Window[0].Right - ThisChopper.Window[0].Left);
+	{	stPicture.dHPar = 180.0/M_PI * (ThisChopper.Window[0].LiveZoneEnd - ThisChopper.Window[0].LiveZoneStart);
 	}
-	/* phase for window 3 or angle of aperture */
+	/* phase for window 3 or RPM */
 	if (bPhase && ThisChopper.NumberOfWindows >= 3)
-	{	phi_wnd3        =  90.0/M_PI*(ThisChopper.Window[2].Right + ThisChopper.Window[2].Left);
+	{	phi_wnd3        = 180.0/M_PI * (ThisChopper.Window[2].Angle);
 		stPicture.dRPar = RedAngle(phi0-phi_wnd3, dir);
 	}
 	else
@@ -435,7 +436,7 @@ void ReadChopperData() {
   short  k;
   int    iv;
   char   Buffer[CHAR_BUF_LENGTH];
-  double A, dY, dZ, Offset=0.0, WindowOpening, WindowHeight;
+  double WindowOpening, WindowHeight;
 
   fgets(Buffer,100,ChopperFile);
   sscanf(Buffer,"%d", &iv);
@@ -459,48 +460,32 @@ void ReadChopperData() {
   /* fprintf(LogFilePtr, "\n%d windows\n", ThisChopper.NumberOfWindows); */
 
   /* data of windows */
-  for(k=0;k<(int)ThisChopper.NumberOfWindows;k++) {
+  for(k=0;k<(int)ThisChopper.NumberOfWindows;k++) 
+  {
     if(fgets(Buffer,100,ChopperFile)==NULL) {
       fprintf(LogFilePtr,"ERROR: File %s does not contain %d window definitions\n",ChopperFileName,ThisChopper.NumberOfWindows);
       fclose(ChopperFile);
       exit(-1);
     }
-    sscanf(Buffer,"%lf %lf %lf %lf %lf",&Offset,&WindowHeight,&WindowOpening,
-	   &ThisChopper.Window[k].Left,&ThisChopper.Window[k].Right);
+    sscanf(Buffer,"%lf %lf %lf %lf %lf", &ThisChopper.Window[k].Angle, &WindowHeight, &WindowOpening,
+	                                     &ThisChopper.Window[k].Left,  &ThisChopper.Window[k].Right);
 
     fprintf(LogFilePtr, "Window %d: Position: %7.2f deg   Aperture: %6.2f deg   Height: %6.2f cm\n",
-	    k+1, Offset, WindowOpening, WindowHeight);
+	                    k+1, ThisChopper.Window[k].Angle, WindowOpening, WindowHeight);
+
     if (ThisChopper.Window[k].Left > 0.0 || ThisChopper.Window[k].Right > 0.0)
-      fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n",
-	      ThisChopper.Window[k].Left, ThisChopper.Window[k].Right);
+      fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n", ThisChopper.Window[k].Left, ThisChopper.Window[k].Right);
 
-    Offset        = 2.0*M_PI*Offset/360.0;
-    WindowOpening = 2.0*M_PI*WindowOpening/360.0;
+    ThisChopper.Window[k].Angle *= M_PI/180.0;
+    WindowOpening               *= M_PI/180.0;
+    ThisChopper.Window[k].Left  *= M_PI/180.0;
+    ThisChopper.Window[k].Right *= M_PI/180.0;
+    
+    ThisChopper.Window[k].LiveZoneStart = ThisChopper.Window[k].Angle - WindowOpening/2.0;
+    ThisChopper.Window[k].LiveZoneEnd   = ThisChopper.Window[k].Angle + WindowOpening/2.0;
 
-    ThisChopper.Window[k].Bottom = ThisChopper.Radius -WindowHeight;
-
-    if((ThisChopper.Window[k].Left!=0.0)||(ThisChopper.Window[k].Right!=0.0)) {
-      ThisChopper.Window[k].Left =  2.0*M_PI*ThisChopper.Window[k].Left/360.0 +(WindowOpening/2.0);
-      ThisChopper.Window[k].Right = 2.0*M_PI*ThisChopper.Window[k].Right/360.0+(WindowOpening/2.0);
-
-      A = 2.0*ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0)*cos(ThisChopper.Window[k].Left)
-	/
-	sin(ThisChopper.Window[k].Right+ThisChopper.Window[k].Left);
-
-      dZ=ThisChopper.Window[k].Bottom*cos(WindowOpening/2.0)-A*cos(ThisChopper.Window[k].Right);
-      dY=A*sin(ThisChopper.Window[k].Right)-ThisChopper.Window[k].Bottom*sin(WindowOpening/2.0);
-
-      ThisChopper.Window[k].Distance = sqrt(dY*dY+dZ*dZ);
-      ThisChopper.Window[k].Angle = atan2(dY,dZ)+Offset;
-
-    } else {
-      ThisChopper.Window[k].Left  = WindowOpening/2.0;
-      ThisChopper.Window[k].Right = WindowOpening/2.0;
-      ThisChopper.Window[k].Distance = 0.0;
-      ThisChopper.Window[k].Angle = Offset;
-    }
-    ThisChopper.Window[k].Left = -ThisChopper.Window[k].Left +Offset;
-    ThisChopper.Window[k].Right = ThisChopper.Window[k].Right+Offset;
+    ThisChopper.Window[k].Bottom   = ThisChopper.Radius - WindowHeight;
+    ThisChopper.Window[k].Distance = 0.0;
   }
 
   fclose(ChopperFile);
@@ -518,7 +503,10 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 	/***********************************************************************************/
 
 	double ChopperOffset=0.0, ChopperOffsetRed=0.0, OriginNeutronDistance, Time;
-	double Left, Right, WindowAngle=0.0, NeutronAngle, dY, dZ;
+	double Left, Right, WindowAngle=0.0, 
+	       NeutronAngle,   // angle from chopper axle to point of striking
+	       NeutronDist,    // distance from chopper axle to point of striking
+		   dY, dZ;         // point of striking
 	short  i;
 	int    RightTurns=0;
 	int    LeftTurns=0;
@@ -554,20 +542,29 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 			goto passed_outside;
 
 		/***********************************************************************************/
-		/* The offset of this window at the time the neutron strikes is calculated. It is  */
-		/* worth noting again here that the parameter Chopper.Window.Angle is defined as   */
-		/* that between the centre of the chopper and the point of convergence of the two  */
-		/* sides of the window in question; similarly the parameter Chopper.Window.Distance*/
-		/* is the distance between those two points.                                        */
+		/* The next statements calculate the angle between the chopper axle and the        */
+		/* neutron and their distance.                                                     */
 		/***********************************************************************************/
+		dZ = ThisNeutron->Position[2] - ThisChopper.Centre.Z;
+		dY = ThisNeutron->Position[1] - ThisChopper.Centre.Y;
+		NeutronAngle = atan2(dY,dZ);
+		NeutronDist  = sqrt(dY*dY + dZ*dZ);
 
-		/*msec. to sec. */
-		Time = ThisNeutron->Time/1000.0;
-
+		/***********************************************************************************/
+		/* The offset of this window at the time the neutron strikes is calculated.        */
+		/***********************************************************************************/
+		Time = ThisNeutron->Time/1000.0;  		/*msec. to sec. */
 		ChopperOffset = Time * ThisChopper.Frequency  + ChopperInitialOffset;
-		WindowAngle = ThisChopper.Window[i].Angle + ChopperOffset;
-		Left        = ThisChopper.Window[i].Left  + ChopperOffset;
-		Right       = ThisChopper.Window[i].Right + ChopperOffset;
+
+		WindowAngle = ChopperOffset + ThisChopper.Window[i].Angle;
+		Left        = ChopperOffset + ThisChopper.Window[i].LiveZoneStart; 
+		Right       = ChopperOffset + ThisChopper.Window[i].LiveZoneEnd;
+
+		/* Correction of window width by deviation */
+		if (ThisChopper.Window[i].Left != 0.0)	
+			Left  -= ThisChopper.Window[i].Left  - asin(ThisChopper.Window[i].Bottom/NeutronDist*sin(ThisChopper.Window[i].Left));
+		if (ThisChopper.Window[i].Right != 0.0)	
+			Right += ThisChopper.Window[i].Right - asin(ThisChopper.Window[i].Bottom/NeutronDist*sin(ThisChopper.Window[i].Right));
 
 		/***********************************************************************************/
 		/* The angles calculated above are now renormalized to lie between +PI and -PI     */
@@ -585,28 +582,6 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		while(ChopperOffset<=-M_PI) ChopperOffset+=2.0*M_PI;
 
 		/***********************************************************************************/
-		/* This next set of statements calculates the angle between the point of           */
-		/* convergence of the window sides and the incident neutron. The calculations      */
-		/* depending on whether the window sides diverge from the radial or not.           */
-		/* You will notice that the X ordinate is assumed to zero...					   */
-		/***********************************************************************************/
-		if(ThisChopper.Window[i].Distance !=0.0)
-		{
-			dZ = ThisNeutron->Position[2]
-			  -ThisChopper.Window[i].Distance*cos(WindowAngle)
-			  -ThisChopper.Centre.Z;
-			dY = ThisNeutron->Position[1]
-			  -ThisChopper.Window[i].Distance*sin(WindowAngle)
-			  -ThisChopper.Centre.Y;
-		}
-		else
-		{
-			dZ = ThisNeutron->Position[2] - ThisChopper.Centre.Z;
-			dY = ThisNeutron->Position[1] - ThisChopper.Centre.Y;
-		}
-		NeutronAngle = atan2(dY,dZ);
-
-		/***********************************************************************************/
 		/* Check this angle against the angle of the window sides - if it lie between the  */
 		/* window sides, the neutron is NOT BlockedByChopper.                              */
 		/***********************************************************************************/
@@ -621,7 +596,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		}
 		else
 		{
-			if(((NeutronAngle<Left)&&(NeutronAngle<Right))||   /* why not "> Left or < Right" */
+			if(((NeutronAngle<Left)&&(NeutronAngle<Right))||   /* why not "< Left or > Right" */
 				((NeutronAngle>Left)&&(NeutronAngle>Right)))
 			{
 				if (bSetColour)
