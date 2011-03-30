@@ -23,9 +23,12 @@
 # include <fcntl.h>
 # include <io.h>
 # define cSlash '\\'
+# define SET_BINARY_MODE(file) if (_setmode(_fileno(file),O_BINARY) == -1) myExit("Can't set binary mode\n");
 #else
 # define cSlash '/'
+# define SET_BINARY_MODE(file)
 #endif
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -486,29 +489,31 @@ void Init(int argc, char **argv, VtModID eModule)
       else
 	rewind(InputFilePtr);
     }
-
-  } else if (CompressedSize) {
-    double factor;
-    // we are second in the pipe, reading zcat output
-    zcat_p = compressBuf = malloc(COMPRESSBUFLEN);
-    compressedRestlen = fread(compressBuf, 1, COMPRESSBUFLEN, stdin);
-    if (compressedRestlen < 512)
-      myExit("doubios data from first module\n");
-    // Is it vitess-compressed also ?
-    if (memcmp(compressBuf, "cmp2", 4) == 0)
-      compressModeR = 2;
-    else if (memcmp(compressBuf, "cmp1", 4) == 0)
-      compressModeR = 1;
-    else
-      compressModeR = 0;
-
-    if (compressModeR) {
-      zcat_p += 4;
-      compressedRestlen -= 4;
+  } else {
+    SET_BINARY_MODE(stdin);
+    if (CompressedSize) {
+      double factor;
+      // we are second in the pipe, reading zcat output
+      zcat_p = compressBuf = malloc(COMPRESSBUFLEN);
+      compressedRestlen = fread(compressBuf, 1, COMPRESSBUFLEN, stdin);
+      if (compressedRestlen < 512)
+	myExit("dubious data from first module\n");
+      // Is it vitess-compressed also ?
+      if (memcmp(compressBuf, "cmp2", 4) == 0)
+	compressModeR = 2;
+      else if (memcmp(compressBuf, "cmp1", 4) == 0)
+	compressModeR = 1;
+      else
+	compressModeR = 0;
+      
+      if (compressModeR) {
+	zcat_p += 4;
+	compressedRestlen -= 4;
+      }
+      
+      factor = compressModeR == 0 ? 55.0 : compressModeR == 2 ? 29.0 : 45.8;
+      SourceSize = (long)(CompressedSize * 100.0 / factor);
     }
-
-    factor = compressModeR == 0 ? 55.0 : compressModeR == 2 ? 29.0 : 45.8;
-    SourceSize = (long)(CompressedSize * 100.0 / factor);
   }
 
   if ((arg = marg[1])) {
@@ -532,18 +537,12 @@ void Init(int argc, char **argv, VtModID eModule)
 	  compressModeW = 0;               // to catch an unknown CompressionMode
       }
     }
+  } else {
+    SET_BINARY_MODE(stdout);
   }
 
   if ((arg = marg[2]))
     LogFilePtr = fileOpen((LogFileName = FullParName(arg)), "wt");
-
-#ifdef _MSC_VER
-  if (InputFilePtr==stdin && _setmode(_fileno( stdin ), _O_BINARY ) == -1)
-    myExit("Can't set stdin to binary mode\n");
-
-  if (OutputFilePtr==stdout && _setmode(_fileno( stdout ), _O_BINARY ) == -1)
-    myExit("Can't set stdout to binary mode\n");
-#endif
 
   /* allocate memory for the neutron buffers */
   if ( (InputNeutrons  = (Neutron *)calloc(BufferSize, sizeof(Neutron))) == NULL ||
@@ -738,7 +737,7 @@ int ReadNeutrons()
 void WriteNeutron(Neutron *OutNeutron)
 {
   double tx = OutNeutron->Probability;
-  // some modules may produce unreasonable probablilities
+  // some modules may produce unreasonable probabilities
   if (isnan(tx) || tx < 0) {
     OutNeutron->Probability = 0;
   } else {
