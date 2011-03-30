@@ -22,9 +22,32 @@ proc lookWhosConcerned {serrep serpar serno \
   }
 }
 
+proc unzipCom {fname} {
+  if {$fname == ""} {return ""}
+  if {[file size $fname] < 512}  {return ""}
+  if {![regexp {\.([a-z]+)$} $fname r e]} {return ""}
+  if {$e == "gz" || $e == "z"} {
+    if {[getSystem] == "windows"} {return "[file join [globVal ExeDirectory] gzip.exe] -cd"}
+    catch {exec file $fname} res
+    if [string match "*gzip compressed data*" $res] {
+      # look if zcat is installed
+      if [catch {exec which zcat}] {return ""}
+      return "zcat"
+    }
+  }
+  return ""
+}
+
 ### compose the VITESS command pipe string
 ###
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
+
+  # mode may be action bat tcl grd ser kstate
+
+  # kstate is used to generate a hash of all settings, and the output should ignore
+  # things like the input, output file and overall options, because these are not saved
+  # when saving an instrument either.
+
   set ll [globVal inputESET]
   set wsh 0
   global Comode Serdefault Plotfile Plottype ProgressFile\
@@ -38,33 +61,39 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
   }
   upvar #0 ExeSuffix sys
-  set logf [tmpFilename vpipelog]
+  if {$mode == "kstate"} {
+    set logf l
+  } else {
+    set logf [tmpFilename vpipelog]
+  }
   set PipeLogList {}
   # fc will be the full command
   upvar #0 FullCommand fc
   set fc ""
-  lookWhosConcerned srep0 spar0 serno0 0 $Comode $serll sermol serpal
+  lookWhosConcerned srep0 spar0 serno0 0 $mode $serll sermol serpal
   #  3..6: random seed, random_gen, neutron weight, gravitation effect
   foreach {i} [lrange $ll 3 6] {
     # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
 
-  # add --T option if helper threads are selected, then set name part variable $par, too
   set par ""
-  catch {
-    if {[entryVal helpthreads] > 0} {
-      set par _parallel
-      writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
+  if {$mode != "kstate"} {
+    # add --T option if helper threads are selected, then set name part variable $par, too
+    catch {
+      if {[entryVal helpthreads] > 0} {
+	set par _parallel
+	writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
+      }
     }
   }
 
   set pdir [entryVal defdirectory]
   set insert "$fc --B$buffersize --P";	# general command options  
-  if {$Comode == "grd"} {append insert \$P} else {append insert $pdir}
+  if {$mode == "grd"} {append insert \$P} else {append insert $pdir}
 
   # restart construction of fc, general options have been saved to variable insert
-  switch $Comode {
+  switch $mode {
     bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
     grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
     tcl {
@@ -86,7 +115,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     upvar #0 $varName var
     if {![info exists var] || $var == $DummyEntry} continue
     set intcom 1
-    lookWhosConcerned serrep serpar serno $i $Comode $serll sermol serpal
+    lookWhosConcerned serrep serpar serno $i $mode $serll sermol serpal
 
     switch $var {
       chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
@@ -139,6 +168,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       }
       default    {set com $var$sys}
     }
+ 
     set logopt $logf$i
     set imore " $insert --L$logopt"
 
@@ -148,8 +178,16 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       if $first {
 	append com " --p$ProgressFile"
 	append fc "$com$imore"
-	#  input file
-	writeCommandOption [lindex $ll 0] _ "" $spar0 $srep0 $serno0
+	if {$mode != "kstate"} {
+	  # get name of input file
+	  set l [lindex $ll 0]
+	  set finame [entryVal [lindex $l 0]]
+	  if {"" != [set unzip [unzipCom $finame]]} {
+	    set fc "$unzip $finame | $fc --c[file size $finame]"
+	  } else {
+	    writeCommandOption $l _ "" $spar0 $srep0 $serno0
+	  }
+	}
 	set first 0
       } else {
 	append fc " | $com$imore"
@@ -165,17 +203,32 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       append fc " | $com$imore"
     }
   }
-  if {$fc != ""} {
-    #  output file
+
+  if {$fc != "" && $mode != "kstate" } {
+    switch [globVal Compmode] {
+      case nodebug -
+      case nodebug+gzip {set c 1}
+      case float -
+      case float+gzip {set c 2}
+      default {set c 0}
+    }
+    if $c {
+      # get name of output file
+      set foname [entryVal [lindex [lindex $ll 1] 0]]
+      if {$foname != "" && $foname != "no_file"} {
+	append fc " --C$c"
+      }
+    }
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
   }
-  if {$Comode == "grd"} {
+
+  if {$mode == "grd"} {
     # a shell environment will substitute $P
     regsub -all "$pdir/" $fc "\$P/" fc
   }
   # get rid of superfluous blanks
   regsub -all "  " $fc " " fc
-  if {$Comode == "bat"} {append fc "\nmv $logf* \$P"}
+  if {$mode == "bat"} {append fc "\nmv $logf* \$P"}
 
   return $fc
 }
@@ -197,8 +250,12 @@ proc checkAll {} {
     if {$firstmod == ""} {
       set firstmod $var
       if {! [regexp {^source_} $var]} {
-	if {"" == [entryVal infilename]} {
+	set infname [entryVal infilename]
+	if {"" == $infname} {
 	  showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
+	  set errors 1
+	} elseif {! [file exists $infname]} {
+	  showText "!The given input file does not exist"
 	  set errors 1
 	}
       }
@@ -287,6 +344,28 @@ proc cleanupPipes {} {
   copyResults
   if $errfound {
     outProtocol "RRRERRORS OCCURED: Read error messages of the modules concerned"
+  }
+  if [string match *gzip* [globVal Compmode]] {
+    # get name of output file
+    set foname [entryVal [lindex [lindex [globVal inputESET] 1] 0]]
+    if {$foname != "" && $foname != "no_file"} {
+      set foname [file join [entryVal defdirectory] $foname]
+      if {[file size $foname] > 512} {
+	# compress that file
+	outProtocol "try to compress $foname"
+	if {[getSystem] == "windows"} {
+	  set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
+	} else {
+	  set rc [catch {exec gzip -f $foname} res]
+	}
+	set fzname $foname.gz
+	if {$rc == 0 && [file exists $fzname]} {
+	  outProtocol "compressed to $fzname"
+	} else {
+	  outProtocol "did not compress, $res"
+	}
+      }
+    }
   }
   conditionalCloseProtfile
   catch {eval file delete $PipeLogList}

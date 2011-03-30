@@ -307,6 +307,7 @@ proc controlMenu {w} {
       {m Color color} s\
       {m "Info level" infolevel} \
       {m "Check mode" checkmode} \
+      {m "Output compression" compmode} \
       {m "Execution mode" execmode} \
       {m "Plot mode" plotmode} \
       {m Timeout timeout} s\
@@ -364,6 +365,9 @@ proc controlMenu {w} {
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
+
+  forceDef Compmode none
+  cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip
 
   fontMenu $wo mfont
   fontMenu $wo hfont
@@ -701,7 +705,7 @@ proc showBeef {w} {
   pack $wb.del -fill x
   pack $wb.dummy -fill x -anchor w -pady 12m
   pack $wb.del $wb.exit -fill x
-  set LastState [generateVitessCommand action]
+  set LastState [generateVitessCommand kstate]
   set LastWin $wb.exit
   bind $LastWin <Destroy> windowManagerExit
 }

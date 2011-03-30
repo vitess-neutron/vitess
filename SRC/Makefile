@@ -92,6 +92,7 @@ SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
 CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CDEBFLAGS = -pthread -g -O0 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -270,6 +271,9 @@ standard_deviation : standard_deviation.c
 
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
+
+guidedeb : guide.c init.c general.c message.c softabort.c intersection.c matrix.c
+	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
 
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)

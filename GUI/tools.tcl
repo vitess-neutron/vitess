@@ -544,10 +544,10 @@ proc conditionalCloseProtfile {} {
 
 proc dontDoit text {
   global LastState
-  set newState [generateVitessCommand action]
+  set newState [generateVitessCommand kstate]
   if {$newState == "" || $LastState == $newState} {return 0}
-  set rc [tk_messageBox -icon question -type yesno\
-	      -title "confirmed command" -message $text]
+  # puts "compare states\n$LastState\n and\n$newState"
+  set rc [tk_messageBox -icon question -type yesno -title "confirmed command" -message $text]
   if {$rc == "no"} {return 1}
   return 0
 }

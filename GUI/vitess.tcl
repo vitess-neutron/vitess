@@ -254,7 +254,7 @@ rename makeModuleSets {}
 ### Input parameters
 ###
 set inputESET {
-  {infilename parbrowsefile "" {"input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -f} r dat}
+  {infilename browsefile "" {"input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -f} r dat}
 
   {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -F}}
 
@@ -277,7 +277,7 @@ set inputESET {
 
   {helpthreads radio 0 {
     "helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}
-    {0 1 2 3 4} {0 1 2 3 4}}
+    {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
 }
 
 ### Xcontrol defaults
@@ -3333,7 +3333,7 @@ module1 --f<inputfilename> -a<value> ... | module2 -a<value> ... |
 	moduleN -a<value> ... --F<outputfilename>
 
 The 'pipe' ('|') command is part of the command shell and is common in Unix
-and Windows NT/95/98 systems.
+and Windows systems.
 (For Windows9x systems please refer to the hints given in the install.txt file.)
 In effect the above example couples the standard output stream 'stdout'
 of module1 with the standard input stream 'stdin' of module2. The same
@@ -3341,6 +3341,9 @@ is true for subsequent modules. Finally the last one, moduleN, writes
 its data to the file "outputfilename".
 If you are interested in intermediate results you can use the module <bwriteout>,
 which stores and passes through the data it receives.
+A special form of the pipe is used to read compressed data:
+gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
+  | module2 -a<value> ... | moduleN -a<value> ... 
 
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
@@ -3349,13 +3352,15 @@ package VITESS, i.e they have a common meaning. These options are
 1. neutron input filename	--f<filename>	stdin
 2. neutron output filename	--F<filename>	stdout
 3. rng init			--Z<value>	1
-4. neutron buffer size	--B<value>	10000
-5. logfilename		--L<filename>	stderr
+4. neutron buffer size	        --B<value>	10000
+5. logfilename		        --L<filename>	stderr
 6. dotter			--J
 7. gravity 			--G		1
-8. min. neutron weight	--U		1.0e-6
-9. parameter directory	--P
-10.helper threads       --T
+8. min. neutron weight	        --U		1.0e-6
+9. parameter directory	        --P
+10.helper threads               --T
+11.read potentially compressed  --c<bytesize>
+12.write compressed             --C<mode>       0
 
 1. neutron input filename (--f<filename>)
   This option is necessary for the first VITESS module of a pipe,
@@ -3413,6 +3418,21 @@ package VITESS, i.e they have a common meaning. These options are
   is the same for two runs with the same number of helper threads, no matter
   how many CPU cores a system may have.
 
+11. read potentially compressed data (--c)
+  If the first program in the pipe is an external program like gzip, which decompresses
+  a neutron trajectory file, the second program in the pipe will be the first
+  module of the instrument. This module knows to accept data from standard input then,
+  potentially compressed, and the value of this parameter gives the byte file size 
+  of the data file decompressed by the first program.
+
+12. write compressed data (--C)
+  If the compression mode is set to nodebug by global option, tracing information in
+  neutron structures are stripped off, reducing the file size to approximately  63%.
+  For the compression mode float neutron data are further reduced from double to
+  float values, reducing the file size to approx. 40%. These compression mode will
+  even improve VITESS performance, because they are straight forward and reduce I/O sizes.
+  Data files may be further compressed by gzip in a second step, independent of this.
+
 The specific input parameters for each module must not be controlled
 by the general command options.
 }
@@ -3449,6 +3469,30 @@ typedef struct {
   VectorType    Spin;
 } Neutron;
 
+}
+
+helpItem Compression {
+When exploring the parameter space of an instrument it often helps to split
+the instrument.
+The neutron trajectories of a first part, where parameters are fixed,
+are saved to a binary file, to be read over and over again in the second part
+of the instrument pipe, where parameters are changed often. 
+These neutron files may grow quite large.
+
+The menu bar option "Output compression" allows to compress data
+
+none          120 byte per neutron trajectory, default, 100%
+nodebug       strips trace information normally not used, reducing size to  63%
+float         additionally reduces double values to float, with almost no effect
+              on the further outcome; the binary file size shrinks to approx. 40%
+gzip          lossless, but more CPU intense compression, approx. 55%
+nodebug+gzip  reduction to approx. 45.8%
+float+gzip    reduction to approx. 29%
+
+VITESS modules read data files of nodebug or float compression directly, compressed
+input files with a .z or .gz extension are read with the help of the program gzip.
+gzip.exe is provided with the VITESS distribution for Windows, and gzip is assumed
+to be installed under Linux.
 }
 
 
