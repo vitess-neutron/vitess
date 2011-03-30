@@ -46,6 +46,7 @@ typedef struct
 	double dPulseFreq;     /* repetition rate of the pulses in Hz */
 	double dPulsePeriod;   /* period of pulse cycle         in ms */
 	double dPulseLength;   /* LPSS pulse length             in s  */
+	double dPower;         /* average power of the source   in W  */
 }
 Source;
 
@@ -109,27 +110,21 @@ FctTable;
 /***********************************************/
 
 long   IndLT        (const long i, const long j);
-double TotalFU      (const double dTemp,
-                     const short  nSourceType, const short  eSource, const short eModType);
-double EssModFU     (const double dLambda,     const double dTime,   const double p_dLength);
+double TotalFU      (const double dTemp,   const short  eSource,  const short   eModType,
+					 const double _dPower, const double _dPeriod, const double _dPulseLen);
+double EssModFU     (const double dLambda, const double dTime,    const double _dLength);
 
-double UserLambdaDis(const double dLambda, const double dModTemp);
 double Maxwellian   (const double dLambda, const double dModTemp);
 double NotMaxwell   (const double dLambda, const double dParam);
+double UserLambdaDis(const double dLambda, const double dModTemp);
 
 double UserLmbdTimeDis(const double dLambda, const double dTime);
 
-double UserTimeDis  (const double dTime,   const double dTauDecay, const double dTauAscent,
-                     const double dPLength);
-double PulseShape   (const double dTime,   const double dTauDecay, const double dTauAscent,
-                     const double dPLength);
-double PulseInt     (const double dTime,   const double dTauDecay, const double dTauAscent,
-                     const double dPLength);
-double PulseShapeInt(const double dTime,   const double dTauDecay, const double dTauAscent);
-
-double PulseShapeEss(const double dTime,   const double dTauDecay, const short  nPulseShape);
-double PulseIntEss  (const double dTime,   const double dTauDecay, const short  nPulseShape,
-                     const double dPLength);
+double UserTimeDis  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
+double PulseShapeP  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
+double PulseIntEss  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
+double PulseShape   (const double dTime, const double dTauDecay, const double dTauRatio);
+double PulseShapeInt(const double dTime, const double dTauDecay, const double dTauAscent);
 
 double f_cold       (const double dLambda);
 double f_therm      (const double dLambda);
