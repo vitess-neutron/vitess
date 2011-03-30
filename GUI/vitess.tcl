@@ -129,7 +129,7 @@ proc makeModuleSets {} {
   # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
     {source {source_const_wave source_HMI source_ILL
-      source_short_pulsed source_ESS source_IPNS source_ISIS source_SNS
+      source_short_pulsed source_SNS source_IPNS source_ISIS
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
@@ -525,10 +525,10 @@ proc sore {f s} {
   return [concat $f $s]
 }
 
-foreach s {short_pulsed ESS IPNS SNS} \
-        m {SPTScold EssSPThermDec IpnsSPThermPois SnsColdCpld} \
-        fr {50 50 50 60} \
-        sps {- ESS - SNS} {
+foreach s {short_pulsed SNS J-PARC IPNS} \
+        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois} \
+        fr {50 60 20 50} \
+        sps {- SNS - - } {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
@@ -550,7 +550,8 @@ proc ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 
 set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
 set source_ESS_LPTSESET [concat {
-  {name radio ESS {"name of source" "" "" N} {- ESS SNS} {- ESS SNS}}
+  {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
+  {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
   {freq float 16.667 {"pulse repetition\nrate [Hz]" "" "" R} 1}
   {plen float 2.0 {"proton pulse\nlength [ms]" "time dependence of neutron flux
      \tt < p:  1/s*[1-exp(-t/beta)]
@@ -688,6 +689,9 @@ set spin_resetESET {
     {Y "Y-component of the polarisation direction" "" Y}}
   {scpolz float 1
     {Z "Z-component of the polarisation direction" "" Z}}
+  {"Colour Reset" header}
+  {sccolor int 0
+    {"number of\ncolours" "if greater zero, the colour of the trajectories will be reset (to a value between 1 and this number)" "" c}}
 }
 
 ### Frame
@@ -804,6 +808,10 @@ set spacewindow_multipleESET [concat $a $winAdd]
 ### Space
 set spaceESET {
   {dist float "" {"distance [cm]" "" "" d} ge0}
+  {spc_scat float 0 {
+    "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
+  {spc_abs float 0 {
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
 }
 
 ### Slit
@@ -909,7 +917,7 @@ set guideESET {
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
-    "blade\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
+    "blade\nthickness [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
   {rad_curve float 0 {
     "curvature\n(radius) [m]"
     "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
@@ -918,16 +926,18 @@ set guideESET {
 
 set specoptAdd {
   {"Special options" header}
-  {waviness float 0
-    {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r}}
   {h_focus_pnt float 0 {
     "hor. focus dist.\nof ellipse [cm]"  "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
   {v_focus_pnt float 0 {
     "vert. focus dist.\nof ellipse [cm]" "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
   {}
-  {keyabut radio no {"abutment\nloss"
-    "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
-    {yes no} {1 0}}
+  {waviness float 0
+    {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r}}
+  {keyabut float 0
+    {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are absorbed." "" a} ge0}
+  {wavi_dis radio rectangular {"surface\ndistr."
+    "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
+    {rectangular Gaussian} {1 2}}
   {}
   {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
@@ -2666,7 +2676,10 @@ proc sample_reflectomCheckErr {{app _}} {
 ###   elasticisotr
 set sample_elasticisotrESET {
   {pf pareditablefile sampleelastizotr_default.iso {"parameter\nfile" "" "" P} r iso 1}
+  {"Special Options" header}
   {r int 1 {repetition "" "" A}}
+  {si_color int 0
+    {"colour" "if zero, all neutrons are scattered\nif not, only neutrons of this color are scattered" "" c}}
 }
 
 ### iso file description
