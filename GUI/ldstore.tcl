@@ -174,7 +174,7 @@ proc storeAll {extension {prosal ""} {as ""}} {
   close $f
   outProtocol "file stored"
   conditionalCloseProtfile
-  gSet LastState [generateVitessCommand action]
+  gSet LastState [generateVitessCommand kstate]
 }
 
 
@@ -347,7 +347,7 @@ proc setInstrumentfile {name} {
   global instrumentfile sserif
   regsub -all " " $name _ name
   set instrumentfile $name
-  regexp {[0-9a-zA-Z‰ˆ¸ƒ÷‹ﬂ_-]+} [file tail $instrumentfile] a
+  regexp {[0-9a-zA-Z√§√∂√º√Ñ√ñ√ú√ü_-]+} [file tail $instrumentfile] a
   if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
   .x.bm.hlab configure -text "Instrument $a" \
       -font [list $sserif $ls bold]
@@ -432,7 +432,7 @@ proc loadAll {extension} {
 
   # Ask if modified new default directory is ok
   confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-  gSet LastState [generateVitessCommand action]
+  gSet LastState [generateVitessCommand kstate]
 
   return 1
 }

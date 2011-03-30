@@ -12,6 +12,7 @@ extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
 extern long     OutNeutPtr;     /* points to the next free position in OutputNeutrons */
+extern long     CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
 extern ModProp  stPicture;      /* data needed to draw a picture of the component represented by the module */
 
 extern long     NumNeutGot;     /* number of neutrons read in the current batch */

@@ -16,6 +16,7 @@
 /* Mar 2008  M. Fromme      compressed neutron data                                         */
 /* Jan 2010  M. Fromme      support for parallel thread execution                           */
 /* Oct 2010  M. Fromme      progress meter                                                  */
+/* Mar 2011  M. Fromme      externally gzip comressed neutron data                          */
 /********************************************************************************************/
 
 #ifdef _MSC_VER
@@ -43,6 +44,8 @@ extern FILE* LogFilePtr;   /* pointer to the log file stream              */
 /**************************************************************/
 
 long     BufferSize;      /* size of the neutron input and output buffer */
+long     CompressedSize;  /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
+int      CompressionMode; /* if > 0, compression mode 1 (nodebug) 2(float) */
 Neutron* InputNeutrons;   /* input neutron Buffer */
 Neutron* OutputNeutrons;  /* output neutron buffer */
 Neutron *OutNeutronsCopy; // if this has been allocated in source.c, it may be used for double buffering
@@ -80,7 +83,7 @@ static long       TracePoints=FALSE;     /* creates dot for every written output
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static const char VITESS_VERSION[] = "2.9";
+static const char VITESS_VERSION[] = "2.10";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;
@@ -88,7 +91,7 @@ static int ParDirectoryLength, InstallDirectoryLength;
 #define COMPRESSBUFLEN 65536
 static int compressModeR, compressModeW, compressedRestlen, spinVector;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
-static char *compressBuf;
+static char *compressBuf, *zcat_p;
 
 int      NThreads;      /* number of helper threads for execution, set by --T */
 
@@ -309,7 +312,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   rc = pthread_mutex_lock(&write_m);
   if (rc)
     fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
-    
+
   if (final) {
     nwr = fwrite(d, s, n, f);
     return nwr == n;
@@ -324,23 +327,30 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 #endif
 
 
-/**************************************************************/
-/* Init does a general program initialization, which is ok    */
-/* for all modules of the VITESS program package.             */
-/* a processed option is marked by setting the leading - to + */
-/* Option processed here:                                     */
-/*  --B  number of buffer entries                             */
-/*  --f  input file name                                      */
-/*  --F  output file name                                     */
-/*  --G  gravitation                                          */
-/*  --J  active trace points                                  */
-/*  --L  logfile                                              */
-/*  --p  progress file                                        */
-/*  --P  parameter directory                                  */
-/*  --T  number of helper threads for execution               */
-/*  --U  minimal neutron weight                               */
-/*  --Z  random number generator initialization               */
-/**************************************************************/
+/*
+*************************************************************
+
+ Init does a general program initialization, which is ok
+ for all modules of the VITESS program package.
+ A processed option is marked by setting the leading - to +
+ Option processed here:
+  --B  number of buffer entries
+  --c  size        (if the first module is zcat, the second
+                    gets the compressed file's size here)
+  --C  mode        compression mode 1 (nodebug) or float (2)
+  --f  input file name
+  --F  output file name
+  --G  gravitation
+  --J  active trace points
+  --L  logfile
+  --p  progress file
+  --P  parameter directory
+  --T  number of helper threads for execution
+  --U  minimal neutron weight
+  --Z  random number generator initialization
+
+************************************************************
+*/
 
 void Init(int argc, char **argv, VtModID eModule)
 {
@@ -376,6 +386,13 @@ void Init(int argc, char **argv, VtModID eModule)
     if ('-' != *a || '-' != a[1]) continue; // first two chars must be -
     arg = a + 3;
     switch (a[2]) {
+    case 'c' :
+      sscanf(arg,"%ld", &CompressedSize);
+      break;
+    case 'C' :
+      sscanf(arg,"%d", &CompressionMode);
+      break;
+
     case 'f' :			// input file if other than stdin
       marg[0] = arg;
       break;
@@ -401,7 +418,7 @@ void Init(int argc, char **argv, VtModID eModule)
       {
 	int i;
         if (sscanf(arg, "%i", &i)) {
-	  char buf[24];	  
+	  char buf[24];	
 	  sprintf(buf, "GSL_RNG_SEED=%d", i);
 #      ifdef _MSC_VER
   	  _putenv(buf);
@@ -444,47 +461,77 @@ void Init(int argc, char **argv, VtModID eModule)
 
   /* Now we know how to handle filenames, which might correspond to the parameter directory */
   if ((arg = marg[0])) {
-    if (strcmp(arg, "no_file")) {
-      InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
-      if (InputFilePtr) {
-	char b[4];
-	// Get file size to enable progress bar
-	if (0 == fseek(InputFilePtr, 0, SEEK_END)) {
-	  SourceSize = ftell(InputFilePtr);
-	  rewind(InputFilePtr);
-	}
-	// Is it compressed ?
-	compressModeR = 0;
-	if (4 == fread(b, 1, 4, InputFilePtr)) {
-	  if (memcmp(b, "cmp2", 4) == 0)
-	    compressModeR = 2;
-	  else if (memcmp(b, "cmp1", 4) == 0)
-	    compressModeR = 1;
-	}
-	if (compressModeR)
-	  compressedRestlen = spinVector = 0;
-	else
-	  rewind(InputFilePtr);
-      }
-    } else
+    // we got some --f argument
+    if (strcmp(arg, "no_file") == 0)
       InputFilePtr = NULL;
+    else
+      InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
+    if (InputFilePtr) {
+      char b[4];
+      // Get file size to enable progress bar
+      if (0 == fseek(InputFilePtr, 0, SEEK_END)) {
+	SourceSize = ftell(InputFilePtr);
+	rewind(InputFilePtr);
+      }
+      // Is it compressed ?
+      compressModeR = 0;
+      if (4 == fread(b, 1, 4, InputFilePtr)) {
+	if (memcmp(b, "cmp2", 4) == 0)
+	  compressModeR = 2;
+	else if (memcmp(b, "cmp1", 4) == 0)
+	  compressModeR = 1;
+      }
+      if (compressModeR)
+	compressedRestlen = spinVector = 0;
+      else
+	rewind(InputFilePtr);
+    }
+
+  } else if (CompressedSize) {
+    double factor;
+    // we are second in the pipe, reading zcat output
+    zcat_p = compressBuf = malloc(COMPRESSBUFLEN);
+    compressedRestlen = fread(compressBuf, 1, COMPRESSBUFLEN, stdin);
+    if (compressedRestlen < 512)
+      myExit("doubios data from first module\n");
+    // Is it vitess-compressed also ?
+    if (memcmp(compressBuf, "cmp2", 4) == 0)
+      compressModeR = 2;
+    else if (memcmp(compressBuf, "cmp1", 4) == 0)
+      compressModeR = 1;
+    else
+      compressModeR = 0;
+
+    if (compressModeR) {
+      zcat_p += 4;
+      compressedRestlen -= 4;
+    }
+
+    factor = compressModeR == 0 ? 55.0 : compressModeR == 2 ? 29.0 : 45.8;
+    SourceSize = (long)(CompressedSize * 100.0 / factor);
   }
 
   if ((arg = marg[1])) {
-    if (strcmp(arg,"no_file")) {
+    if (strcmp(arg,"no_file") == 0)
+      OutputFilePtr = NULL;
+    else {
       OutputFilePtr = fileOpen((OutputFileName = FullParName(arg)), "wb");
       if (OutputFilePtr) {
-	if (strstr(OutputFileName, ".float.")) {
-	  compressModeW = 2;
-	  fwrite("cmp2", 1, 4, OutputFilePtr);
-	} else if (strstr(OutputFileName, ".nodebug.")) {
-	  compressModeW = 1;
+	if (CompressionMode)
+	  compressModeW = CompressionMode; // it has been stated explicitly
+	else if (strstr(OutputFileName, ".float."))
+	  compressModeW = 2;               // by filename convention
+	else if (strstr(OutputFileName, ".nodebug."))
+	  compressModeW = 1;               // by filename convention    
+
+	if (compressModeW == 1)
 	  fwrite("cmp1", 1, 4, OutputFilePtr);
-	} else 
-	  compressModeW = 0;
+	else if (compressModeW == 2)
+	  fwrite("cmp2", 1, 4, OutputFilePtr);
+	else
+	  compressModeW = 0;               // to catch an unknown CompressionMode
       }
-    } else
-      OutputFilePtr = NULL;
+    }
   }
 
   if ((arg = marg[2]))
@@ -614,30 +661,60 @@ void print_module_name(const char *name)
 }
 
 void adjustProgress(int spercent) {
-  if (spercent != SourcePercent) {
+  if (spercent != SourcePercent && ProgressFile) {
     FILE *fo;
     fo = fopen(ProgressFile, "w");
     fprintf(fo, "%d\n", spercent);
     fclose(fo);
-    SourcePercent = spercent;
   }
+  SourcePercent = spercent;
 }
 
 static void adjustFileProgress() {
-  if (SourceSize) 
+  if (SourceSize)
     adjustProgress((int)(100.0 * ftell(InputFilePtr) / SourceSize));
 }
 
 /****************************************************************/
-/* ReadNeutrons reads BufferSize neutrons form the input stream */
-/* in the input neutron Buffer InputNeutrons. The number of     */
+/* ReadNeutrons reads BufferSize neutrons from the input stream */
+/* to the input neutron Buffer InputNeutrons. The number of     */
 /* neutrons read is returned.                                   */
 /****************************************************************/
 int ReadNeutrons()
 {
-  long i;
+  if (compressModeR) {
 
-  if (compressModeR == 0) {
+    NumNeutGot = readCompressedNeutrons();
+
+  } else if (compressBuf) {
+
+    // zcat data without further vitess compression
+    int copy_len, full_len = sizeof(Neutron) * BufferSize;
+    if (compressedRestlen >= full_len)
+      copy_len = full_len;
+    else {
+      // try to read more data
+      // first copy rest data to the buffer begin
+      int rlen;
+      if (compressedRestlen)
+	memcpy(compressBuf, zcat_p, compressedRestlen);
+      rlen = fread(compressBuf + compressedRestlen,
+		   1, COMPRESSBUFLEN - compressedRestlen, InputFilePtr);
+      compressedRestlen += rlen;
+      // if we are at EOF, make sure we send only full neutron structures
+      copy_len = compressedRestlen >= full_len ? full_len :
+	sizeof(Neutron) * (compressedRestlen / sizeof(Neutron));
+      zcat_p = compressBuf;
+    }
+    memcpy(InputNeutrons, zcat_p, copy_len);
+    zcat_p += copy_len;
+    compressedRestlen -= copy_len;
+    NumNeutGot = copy_len / sizeof(Neutron);
+    adjustFileProgress();
+
+  } else {
+    // uncompressed neutrons are suitable for tracing
+    long i;
     NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
     adjustFileProgress();
     for(i=0; i<NumNeutGot; i++) {
@@ -646,9 +723,6 @@ int ReadNeutrons()
       if (stPicture.eModule < VT_MONITOR_1)
 	NormVector(InputNeutrons[i].Vector);
     }
-  } else {
-    NumNeutGot = readCompressedNeutrons();
-    // compressed neutrons are not meant for tracing
   }
   NumNeutRead += NumNeutGot;
   return NumNeutGot;
@@ -663,10 +737,16 @@ int ReadNeutrons()
 
 void WriteNeutron(Neutron *OutNeutron)
 {
-  dProbTotal[0] +=    OutNeutron->Probability;
-  dProbQuad     += sq(OutNeutron->Probability);
-  if (bSepRate && OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
-    dProbTotal[OutNeutron->Color] += OutNeutron->Probability;
+  double tx = OutNeutron->Probability;
+  // some modules may produce unreasonable probablilities
+  if (isnan(tx) || tx < 0) {
+    OutNeutron->Probability = 0;
+  } else {
+    dProbTotal[0] +=    tx;
+    dProbQuad     += sq(tx);
+    if (bSepRate && OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
+      dProbTotal[OutNeutron->Color] += tx;
+  }
 
   /* copy the neutron to the buffer */
   CopyNeutron(OutNeutron, &(OutputNeutrons[OutNeutNum++]));
@@ -875,7 +955,7 @@ long ColumnsInFile(FILE* pFile)
 
   if (pFile != NULL)
     {	ReadLine(pFile, Buffer, sizeof(Buffer)-1);
-      
+
       pPos = strchr(Buffer, ' ');
       while (pPos != NULL)
 	{
@@ -885,10 +965,10 @@ long ColumnsInFile(FILE* pFile)
 	  StrgLShift(Buffer, iPos);
 	  pPos = strchr(Buffer, ' ');
 	}
-      
+
       if (strlen(Buffer) > 1)
 	nLns++;
-      
+
       rewind(pFile);
     }
 
@@ -992,7 +1072,7 @@ static void writeCompressed() {
     }
     pn++;
   }
-    
+
   fwrite(OutputNeutrons, 1, wlen, OutputFilePtr);
 }
 #undef HULK
@@ -1007,9 +1087,14 @@ static int readCompressedNeutrons (void) {
   static unsigned long idNo;
 
   if (! compressBuf)
-    compressBuf = malloc(COMPRESSBUFLEN);
-  p = readp = compressBuf;
-  if (!p) return 0;
+     readp = compressBuf = malloc(COMPRESSBUFLEN);
+  else if (zcat_p) {
+    // we have read the first bytes from zcat already
+    readp = zcat_p;
+    zcat_p = 0;
+  } else
+    readp = compressBuf;
+  if (!(p = readp)) return 0;
 
   ngot = 0;
   toread = COMPRESSBUFLEN;
@@ -1019,12 +1104,14 @@ static int readCompressedNeutrons (void) {
     toread -= rlen;
     compressedRestlen = 0;
   }
-  newread = fread(readp, 1, toread, InputFilePtr);
-  adjustFileProgress();
-  if (rlen <= 0 && newread <= 0) 
-    return 0;
-  if (newread > 0)
-    rlen += newread;
+  if (toread > 0) {
+    newread = fread(readp, 1, toread, InputFilePtr);
+    adjustFileProgress();
+    if (rlen <= 0 && newread <= 0)
+      return 0;
+    if (newread > 0)
+      rlen += newread;
+  }
   ngot = 0;
   do {
     double x,y,z;
@@ -1053,7 +1140,7 @@ static int readCompressedNeutrons (void) {
     case 2: // spin down
       memcpy((void*) &pn->Spin, (void*)spinDown, sizeof(VectorType));
       break;
-    default: 
+    default:
       return 0; 		/* bad data */
     }
 
@@ -1081,7 +1168,7 @@ static int readCompressedNeutrons (void) {
     ngot++;
     pn++;
   } while (ngot < BufferSize && (rlen >= sizeof(Neutron) || (rlen > 0 && newread == 0)));
- 
+
   if (rlen > 0 && newread > 0) {
     // save the rest
     compressedRestlen = rlen;
