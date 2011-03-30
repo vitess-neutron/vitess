@@ -47,6 +47,7 @@
 /*                                -Mirror files are requested/loaded by GetReflFile and     */
 /*                                 stored in array of structs. Filename is key for reuse.   */
 /* 2.21  Jan 2010  A. Houben      Bin data with arbitrary parameters like x pos, m, ...     */
+/* 2.22  Oct 2010  K. Lieutenant  Gaussian waviness distribution                            */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -57,6 +58,7 @@
 #include "string.h"
 
 void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
+double gsl_ran_gaussian(const gsl_rng * r, const double sigma);
 
 //#define INDEX(x,y) (x*(nbinsX)+y)
 #define INDEX(x,y) (x*(nbinsY)+y)
@@ -110,12 +112,12 @@ typedef struct
 typedef struct
 {
 	int       RefCount;   /* Counts the number of reflections. 
-						   If the last reflection did not occure for any reason, 
-						   RefCount is increased by one, and multiplied by -1 */
+                            If the last reflection did not occure for any reason, 
+                            RefCount is increased by one, and multiplied by -1 */
 	int       RefCountY;  /* Number of reflection on horizontal guide planes */
 	int       RefCountZ;  /* Number of reflection on vertical guide planes */
 	char      *Output;    /* One line of text for each reflection */
-	NeutronEx *neutrons; /* List of neutron trajectory states */
+	NeutronEx *neutrons;  /* List of neutron trajectory states */
 	int       cneutrons;
 }
 ReflCond;
@@ -150,12 +152,8 @@ ReflFile;
 
 typedef struct
 {
-	double Xpce, Ypce, Zpce,  /* list of x-pos., width and height at beginning and end of pieces */
+	double Xpce, Ypce, Zpce,   /* list of x-pos., width and height at beginning and end of pieces */
        Wchan;                 /* list of widths of channel at beginning and end of each piece */
-	//ReflFile *RDataL,         /* Table of reflectivity for guide surface on left side        */
-    //   *RDataR,               /* Table of reflectivity for guide surface on right side       */
-    //   *RDataT,               /* Table of reflectivity for guide surface on top side         */
-    //   *RDataB;               /* Table of reflectivity for guide surface on bottom side      */
 	ReflFile *RData[4];        /* use GW_TOP, GW_BOTTOM, GW_LEFT, GW_RIGHT */
 }
 GuidePiece;
@@ -171,7 +169,7 @@ void   LoadReflFile(ReflFile *pReflFile);
 double Height    (double length);
 double Width     (double length);
 double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double  wei_min,
-                           GuidePiece *Pce, double surfacerough, long keygrav, long keyabut, ReflCond *RefOut);
+                           GuidePiece *Pce, double surfacerough, long keygrav, double AbutLen, ReflCond *RefOut, long iPiece);
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, GuidePiece *Pce, eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
 int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
@@ -189,8 +187,7 @@ double (*GetProb  )(ReflCond *RefOut, int cNeut) = NULL;
 /** Global variables         **/
 /******************************/
 
-long   keyabut  =0,
-       nPieces  =1,
+long   nPieces  =1,
        nChannels=1,
        nSpacers =0;
 int    keyReflParam = -1;     /* Trajectories to be written out:
@@ -228,17 +225,17 @@ double GuideEntranceHeight=0.0,
        dTotalLength,         /* total length of the guide  */
        dDeltaX, dDeltaY,     /* length in x- and y-direction of the total guide  */
        beta, beta_ges,       /* angle of declination between 2 pieces  and of the total guide */
-       spacer=0.0,
+       spacer  =0.0,
+       AbutLen =0.0,         /* area around the connection of guide segments, where neutrons are absorbed */
        surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
        MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
        MuAbs =0.0;           /* macroscopic absorption coeff. in 1/cm */
 double AreaY=0., AreaZ=0.;   /* Approximate area of guide planes in cm**2 */
-//double *Xpce, *Ypce, *Zpce,  /* list of x-pos., width and height at beginning and end of pieces */
-//       *Wchan;               /* list of widths of channel at beginning and end of each piece */
 GuidePiece *pPieces;         /* Holds piece Informations. Replaces Xpce, Ypce, Zpce */
 
 VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
         eGuideShapeZ=1;
+VtDistr eWaviDistr=VT_RECTANGULAR;  /* shape of the waviness distribution */
 
 const char  *ShapeFileName="guide_shape.dat";
 char  *ReflParamFileName=NULL;
@@ -254,11 +251,6 @@ FILE  *pReflL=NULL; /* file for describing left plane of guide */
 FILE  *pReflR=NULL; /* file for describing right plane of guide */
 FILE  *pReflT=NULL; /* file for describing top plane of guide */
 FILE  *pReflB=NULL; /* file for describing bottom plane of guide */
-
-/*double *RDataL=NULL,         // Table of reflectivity for guide surface on left side
-       *RDataR=NULL,         // Table of reflectivity for guide surface on right side
-       *RDataT=NULL,         // Table of reflectivity for guide surface on top side
-       *RDataB=NULL;         // Table of reflectivity for guide surface on bottom side */
 
 /* Extended FROM FILE */
 ReflFile *pReflFiles = {NULL};
@@ -342,7 +334,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.21");
+	print_module_name("guide 2.22");
 	OwnInit(argc, argv);
 
 
@@ -435,15 +427,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (keyabut == 1)
-		fprintf(LogFilePtr,"\nInside guide abutment loss is enabled \n");
-	else
-		fprintf(LogFilePtr,"\nInside guide abutment loss is disabled \n");
+	if (AbutLen > 0.0)
+		fprintf(LogFilePtr,"\nAbutment loss area :%8.3f cm\n", AbutLen);
 
 	if (surfacerough == 0.0)
 		fprintf(LogFilePtr,"The walls have no waviness \n");
 	else
-		fprintf(LogFilePtr,"The walls have a waviness of %10.3e° \n", atan(surfacerough)*180.0/M_PI);	
+		fprintf(LogFilePtr,"The walls have a waviness of %10.3e° ", atan(surfacerough)*180.0/M_PI);	
+	if (eWaviDistr==VT_GAUSSIAN)
+		fprintf(LogFilePtr,"rms Gaussian distribution \n");
+	else
+		fprintf(LogFilePtr,"max. rectangular distribution \n");
 
 	
 
@@ -648,7 +642,7 @@ int main(int argc, char *argv[])
 					}
 				}
 				
-				TimeOF1 = PathThroughGuideGravOrder1(&(InputNeutrons[i]), Guide, wei_min, &pPieces[j], surfacerough, keygrav, keyabut, &RefOut);
+				TimeOF1 = PathThroughGuideGravOrder1(&(InputNeutrons[i]), Guide, wei_min, &pPieces[j], surfacerough, keygrav, AbutLen, &RefOut, j);
 				
 				if (TimeOF1 == -1.0) /* trajectory is lost */
 				{	test=FALSE;
@@ -937,8 +931,8 @@ void OwnInit   (int argc, char *argv[])
 	{
 		if(argv[i][0]!='+')
 		{
-			arg=&argv[i][2];   //free   A   B                                 k K l L     n           q Q                        
-			switch(argv[i][1]) //used a   b   c C d D e E f F g G h H i I j J         m M   N o O p P     r R s S t T u U v V w W x X y Y z Z
+			arg=&argv[i][2];   //free   A   B                                 k K l L     n             Q                        
+			switch(argv[i][1]) //used a   b   c C d D e E f F g G h H i I j J         m M   N o O p P q   r R s S t T u U v V w W x X y Y z Z
 			{
 				case 'i':  /* left plane */
 					if( (pReflL = fopen(FullParName(arg),"r"))==NULL)
@@ -1081,11 +1075,14 @@ void OwnInit   (int argc, char *argv[])
 				  nSpacers  = nChannels - 1;
 				  break;
 				case 's':
-				  spacer =  atof(arg); /* width of bender channel border in cm */
+				  spacer  = atof(arg);  /* width of bender channel border in cm */
 				  break;
 
 				case 'a':
-				  keyabut =  atol(arg); /* key for abutment loss 1 -yes (default), 0 - no  */
+				  AbutLen = atof(arg);  /* area around the connection of guide segments where neutrons are absorbed */
+				  break;
+				case 'q':
+				  eWaviDistr  = atoi(arg);  /* enum: waviness distribution: 1: rectangular (default), 2: Gaussian  */
 				  break;
 				case 'r':
 				  surfacerough  =  atof(arg); /* Maximal angle of deviation of normal in degre */
@@ -1598,7 +1595,7 @@ double Width(double dLength)
 
 
 double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double  wei_min,
-                                  GuidePiece *Pce, double surfacerough, long keygrav, long keyabut, ReflCond *RefOut)
+                                  GuidePiece *Pce, double surfacerough, long keygrav, double AbutLen, ReflCond *RefOut, long iPiece)
 {
 	/***********************************************************************************/
 	/* This routine calculates the trajectory a neutron follows through a simple       */
@@ -1613,13 +1610,15 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
 	/* Note! The function is return Time Of Flight                                     */
 	/***********************************************************************************/
 
-	int     datanumber;
+	int     datanumber,
+          iColl=0;      // index of collisions
 	eGuideWall k = GW_INIT, ThisCollision = GW_INIT;
 	double  degangular, ThisReflectivity=0.;
 	double  TimeOF, TimeOFmin;
 	double  TimeOFTotal=0.0;
-	double  VelocityReal, DOTP;
-	double  VX, VY, VZ;
+	double  HitDist, DOTP;
+	double  VX, VY, VZ, AngleWavi;
+	double  RotMat[3][3];   
 	VectorType vWallN,  /* normal to the plane wall             */
 	           vWaviN;  /* normal to the wall with its waviness */
 	Neutron TempNeutron, NearestNeutron; /* Local copies of actual trajectory for loops */
@@ -1689,14 +1688,13 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
 			if(NearestNeutron.Vector[0] < 0.0)
 				return(-1.0);
 
-			/*  This feature rejects neutrons, which make reflections close to the guide exit */
-			if (keyabut == 1)
+			/*  Neutrons hitting the surface close to the guide exit are removed,
+          but not in the last segment (iPiece=nPieces-1)                          */
+			if (iPiece!=nPieces-1 && AbutLen > 0.0)
 			{
-				VelocityReal = (double)(V_FROM_LAMBDA(NearestNeutron.Wavelength));
-				if (TimeOFmin*VelocityReal <= 0.5)
-				{
+				HitDist = TimeOFmin * V_FROM_LAMBDA(NearestNeutron.Wavelength);
+				if (HitDist <= 0.5*AbutLen)
 					return(-1.0);
-				}
 			}
 
 			if (NearestNeutron.Probability < wei_min)
@@ -1718,6 +1716,18 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
 
 			return TimeOFTotal;
 		}
+    else
+    { 
+			/*  Neutrons hitting the surface close to the entrance of a guide segment are removed,
+          but not in the first segment (iPiece=0); only the first collision (iColl=1) can be considered */
+      iColl++;
+			if (iPiece!=0 && iColl==1 && AbutLen > 0.0)
+			{
+				HitDist = TimeOFmin * V_FROM_LAMBDA(NearestNeutron.Wavelength);
+				if (HitDist <= 0.5*AbutLen)
+					return(-1.0);
+			}
+    }
 
 
 		/***********************************************************************************/
@@ -1741,11 +1751,38 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, 
 		{
 			/* rough surface must not alter the side from which the neutron comes */
 			do
-			  {	// len = vector3rand(&VX, &VY, &VZ);
-			    gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
-			    vWaviN[0] = vWallN[0] + surfacerough*VX;
-			    vWaviN[1] = vWallN[1] + surfacerough*VY;
-			    vWaviN[2] = vWallN[2] + surfacerough*VZ;
+			{	/* Gaussian distribution */
+				if (eWaviDistr==VT_GAUSSIAN)
+				{	
+					CopyVector(vWallN, vWaviN);
+
+					// Rotate about y-axis if top or bottom plane
+					if (vWallN[1]==0)          // top, bottom
+					{	
+						AngleWavi = gsl_ran_gaussian(vit_gsl_rng, surfacerough);
+						FillRotMatrixY(RotMat, AngleWavi);
+						RotVector(RotMat, vWaviN); 
+					}
+					// Rotate about z-axis if left or right plane
+					else if (vWallN[2]==0)     // left, right
+					{	
+						AngleWavi = gsl_ran_gaussian(vit_gsl_rng, surfacerough);
+						FillRotMatrixZ(RotMat, AngleWavi);
+						RotVector(RotMat, vWaviN);  
+					}
+
+					// Rotate about x-axis
+					AngleWavi = gsl_ran_gaussian(vit_gsl_rng, surfacerough);
+					FillRotMatrixX(RotMat, AngleWavi);
+					RotVector(RotMat, vWaviN);
+				}
+				else
+				/* Rectangular distribution */
+				{	gsl_ran_dir_3d(vit_gsl_rng, &VX, &VY, &VZ);
+					vWaviN[0] = vWallN[0] + surfacerough*VX;
+					vWaviN[1] = vWallN[1] + surfacerough*VY;
+					vWaviN[2] = vWallN[2] + surfacerough*VZ;
+				}
 
 			    /* Renormalize normal vector */
 			    if (LengthVector(vWaviN) == 0.0)

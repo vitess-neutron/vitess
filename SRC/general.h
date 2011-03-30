@@ -128,6 +128,13 @@ typedef enum
 }
 VtModID;
 
+typedef enum
+{	
+	VT_RECTANGULAR = 1,
+	VT_GAUSSIAN    = 2,
+}
+VtDistr;
+
 
 typedef double VectorType[3];
 typedef double DoublePair[2];

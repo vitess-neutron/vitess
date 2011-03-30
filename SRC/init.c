@@ -542,7 +542,9 @@ void Init(int argc, char **argv, VtModID eModule)
   }
 
   if ((arg = marg[2]))
-    LogFilePtr = fileOpen((LogFileName = FullParName(arg)), "wt");
+    LogFilePtr = fopen((LogFileName = FullParName(arg)), "wt");
+    if (LogFilePtr==NULL)
+		exit (-1);
 
   /* allocate memory for the neutron buffers */
   if ( (InputNeutrons  = (Neutron *)calloc(BufferSize, sizeof(Neutron))) == NULL ||
