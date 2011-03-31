@@ -2,14 +2,14 @@
 
 # Script to
 # + test a Tcl/Tk unix installation
-# + call Vitess at HMI
+# + call Vitess at HZB
 # M.Fromme HMI Jan 2008
 
 use strict;
 
 ##################################################################################
 ### To be configured if used outside Helmholtz-Zentrum Berlin
-my @VHOSTS = qw(dinux4 dinux fisi01 fisi02 dixi3);
+my @VHOSTS = qw(dinux4 dinux fisi01 fisi02 dixi4);
 my $alternative = "call Vitess on any of @VHOSTS";
 
 my $installdir = '/net/pub/vitess';
