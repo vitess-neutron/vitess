@@ -184,8 +184,8 @@ proc errorInLine {e app {mod ""}} {
       showText "!Please select an option for $name"
       return 1
     }
-    filename - editablefile - browsefile - browsedir - \
-	parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+    filename - editablefile - browsefile - browsedir - parfilename - pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	  switch $type {
 	    filename - editablefile - browsefile - browsedir {
 	      set dir [getDirectory $v]
@@ -253,7 +253,7 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	}
       }
     }
-    parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+    parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
       if {$special == "" || $v != $special} {
 	set ptail [file tail $v]
 	switch $Comode {
@@ -268,8 +268,8 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	  default   {
 	    set v [file join [getDirectory [entryVal defdirectory]] $ptail]
 	    switch $rt {
-	      moneditablefile {set tt 1}
-	      mon2editablefile {set tt 2}
+	      moneditablefile - mneditablefile {set tt 1}
+	      mon2editablefile - mn2editablefile {set tt 2}
 	      default {set tt 0}
 	    }
 	    if {$tt > 0} {
@@ -316,6 +316,7 @@ proc errorWithValues {mod {showok 1} {app _}} {
   foreach l [globVal ${mod}ESET] {
     if [errorInLine $l $app $mod] {set errors 1}
   }
+
   if {[set tp [info proc ${mod}CheckErr]] != ""} {
     if [catch {eval $tp $app} res] {
       puts "Error within proc $tp"

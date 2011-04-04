@@ -163,15 +163,24 @@ proc fileEntry {w line labelwidth width {app _}} {
   set dirtype [lindex $line 7]
   if {$dirtype != "d"} {set dirtype f}
   set entype ""
+  set mondefault 1
   switch [lindex $line 1] {
     browsedir       {set dirtype d}
     editablefile    {set entype 0}
     parbrowsefile   {set dirtype p}
     pareditablefile {set entype 1 ; set dirtype p}
     moneditablefile {set entype 2 ; set dirtype p; set dim 1}
+    mneditablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 1}
     mon2editablefile {set entype 2 ; set dirtype p; set dim 2}
+    mn2editablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 2}
   }
 
+  # selectable monitor output
+  if {$entype == 2} {
+    set el [lindex [lindex $line 3] 2]
+    if {$el == "n"} {set fel 0} else {set fel 1}
+  }
+    
   # reduced width to save place, use text length - 2
   if {[getSystem] == "windows"} {
     set ww1 7
@@ -194,7 +203,7 @@ proc fileEntry {w line labelwidth width {app _}} {
     } else {
       button $w.p -text Plot -background $bgColor -width $ww2\
 	  -command [list plotMonFile $dim $variable $app]
-      forceDef [set var ${variable}_r$app] 1
+      forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
       pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.r -side left -anchor w
     }
@@ -267,7 +276,8 @@ proc strEntryVal {v {app _}} {
   }
   switch [lindex $line 1] {
     string - longstring - filename - parfilename - editablefile - browsefile - browsedir -\
-	pareditablefile - parbrowsefile - moneditablefile - mon2editablefile { return "\"$locv\""}
+	pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile { return "\"$locv\""}
     default { return $locv}
   }
 }
@@ -452,8 +462,8 @@ proc generateEntries {w globalset {delist {}} {app _}} {
 
     for {set k $item} {$k < $allitems} {incr k} {
       switch [lindex [set line [lindex $all $k]] 1] {
-	editablefile - browsefile - browsedir - pareditablefile - parbrowsefile\
-	- moneditablefile - mon2editablefile {
+	editablefile - browsefile - browsedir - pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	                   incr editfile;    lappend leditfile $line}
 	string - filename {incr filestring;  lappend lfilestring $line}
 	longstring        {incr longstring;  lappend llongstring $line}
