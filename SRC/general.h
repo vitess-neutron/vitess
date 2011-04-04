@@ -18,11 +18,12 @@
 
 #ifdef _MSC_VER
 
-#define M_PI            3.14159265358979323846  /* pi */
-#define M_PI_2          1.57079632679489661923  /* pi/2 */
-
-#define isnan(x) ((x) != (x))
-
+# include <float.h>
+# define M_PI            3.14159265358979323846  /* pi */
+# define M_PI_2          1.57079632679489661923  /* pi/2 */
+# define ISNAN(x) _isnan(x)
+#else
+# define ISNAN(x) isnan(x)
 #endif
 
 #define MN          1.6749284E-27
