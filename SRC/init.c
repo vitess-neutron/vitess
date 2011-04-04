@@ -92,7 +92,9 @@ static char       sModuleName[21];
 static int ParDirectoryLength, InstallDirectoryLength;
 
 #define COMPRESSBUFLEN 65536
-static int compressModeR, compressModeW, compressedRestlen, spinVector;
+static int compressModeR, compressModeW, compressBufLen, compressedRestlen, spinVector;
+static long byte_read_so_far;
+static char *pStore;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
 static char *compressBuf, *zcat_p;
 
@@ -174,16 +176,12 @@ static char *conCat (const char *b, const char* c, int sel) {
   }
   blen = strlen(b);
   clen = strlen(c);
-  if ((res = (char *) malloc(alen+blen+clen+1)))
-    /*{ if (alen)
-      memcpy(res, a, alen);
-      strcpy(res+alen, c);
-      strcpy(res+alen+clen, b);  */
-  { if (alen)
+  if ((res = (char *) malloc(alen+blen+clen+1))) {
+    if (alen) {
       strcpy(res, a);
-    else
-      strcpy(res,"");
-    strcat(res, c);
+      strcat(res, c);
+    } else
+      strcpy(res, c);
     strcat(res, b);
   }
   return res;
@@ -330,6 +328,12 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 #endif
 
 
+static void setCompressBufLen() {
+  int full_len = sizeof(Neutron) * BufferSize;
+  compressBufLen = COMPRESSBUFLEN > full_len ? full_len : COMPRESSBUFLEN;
+}
+
+
 /*
 *************************************************************
 
@@ -461,8 +465,19 @@ void Init(int argc, char **argv, VtModID eModule)
     *a = '+';                   // remember that this argument has been processed
   }
 
-
   /* Now we know how to handle filenames, which might correspond to the parameter directory */
+
+  // First of all try to open the logfile, if it has been requested.
+  if ((arg = marg[2])) {
+    // Do no use FileOpen to avoid recursion, but fopen directly.
+    LogFilePtr = fopen((LogFileName = FullParName(arg)), "w");
+    if (LogFilePtr == NULL) {
+      printf("ERROR: Can't open log file %s (%s)!\n", LogFileName, arg);
+      exit (-1);
+    }
+  }
+
+  // Then we care for input, decide if it is compressed.
   if ((arg = marg[0])) {
     // we got some --f argument
     if (strcmp(arg, "no_file") == 0)
@@ -471,7 +486,7 @@ void Init(int argc, char **argv, VtModID eModule)
       InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
     if (InputFilePtr) {
       char b[4];
-      // Get file size to enable progress bar
+      // Get the file size to enable a progress bar
       if (0 == fseek(InputFilePtr, 0, SEEK_END)) {
 	SourceSize = ftell(InputFilePtr);
 	rewind(InputFilePtr);
@@ -494,8 +509,9 @@ void Init(int argc, char **argv, VtModID eModule)
     if (CompressedSize) {
       double factor;
       // we are second in the pipe, reading zcat output
-      zcat_p = compressBuf = malloc(COMPRESSBUFLEN);
-      compressedRestlen = fread(compressBuf, 1, COMPRESSBUFLEN, stdin);
+      setCompressBufLen();
+      zcat_p = compressBuf = malloc(compressBufLen);
+      compressedRestlen = fread(compressBuf, 1, compressBufLen, stdin);
       if (compressedRestlen < 512)
 	myExit("dubious data from first module\n");
       // Is it vitess-compressed also ?
@@ -516,6 +532,7 @@ void Init(int argc, char **argv, VtModID eModule)
     }
   }
 
+  // Here we care for ouput, and if compression is an option.
   if ((arg = marg[1])) {
     if (strcmp(arg,"no_file") == 0)
       OutputFilePtr = NULL;
@@ -540,11 +557,6 @@ void Init(int argc, char **argv, VtModID eModule)
   } else {
     SET_BINARY_MODE(stdout);
   }
-
-  if ((arg = marg[2]))
-    LogFilePtr = fopen((LogFileName = FullParName(arg)), "wt");
-    if (LogFilePtr==NULL)
-		exit (-1);
 
   /* allocate memory for the neutron buffers */
   if ( (InputNeutrons  = (Neutron *)calloc(BufferSize, sizeof(Neutron))) == NULL ||
@@ -595,7 +607,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   OutputBufferFlush(1);
   if(InputFileName)
     fclose(InputFilePtr);
-  if(OutputFilePtr && OutputFilePtr!=stdout)
+  if(OutputFilePtr && OutputFilePtr != stdout)
     fclose(OutputFilePtr);
 
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
@@ -662,18 +674,66 @@ void print_module_name(const char *name)
 }
 
 void adjustProgress(int spercent) {
-  if (spercent != SourcePercent && ProgressFile) {
+  if (spercent == SourcePercent) return;
+  SourcePercent = spercent;
+  if (ProgressFile) {
     FILE *fo;
     fo = fopen(ProgressFile, "w");
     fprintf(fo, "%d\n", spercent);
     fclose(fo);
   }
-  SourcePercent = spercent;
 }
 
-static void adjustFileProgress() {
-  if (SourceSize)
-    adjustProgress((int)(100.0 * ftell(InputFilePtr) / SourceSize));
+static void adjustFileProgress(int rlen) {
+  long r;
+  // do nothing if we do not read neutrons from file or zcat pipe
+  if (SourceSize <= 0) return;
+  if (stdin == InputFilePtr)
+    r = byte_read_so_far += rlen; // we read from stdin and have to count bytes read so far by our selves
+  else
+    r = ftell(InputFilePtr);      // we read from file and use ftell to know which part we have done
+
+  adjustProgress((int)(100.0 * r / SourceSize));
+}
+
+static int readFromPipe() {
+  /* read neutrons from a gzip pipe.
+     it seems zcat does not like very big chunks, so we read small chunks
+     to an intermediate store, and deliver chunks of sizeof(Neutron) * BufferSize
+  */
+  char *p;
+  int clen, rlen, full_len = sizeof(Neutron) * BufferSize;
+  p = (char *)InputNeutrons;
+
+  if ((clen = compressedRestlen) >= 0) {
+    // First copy rest data to the buffer begin
+    memcpy(InputNeutrons, compressBuf, compressedRestlen);
+    p += compressedRestlen;
+    compressedRestlen = 0;
+  }
+
+  while (clen < full_len) {
+    if (clen + compressBufLen > full_len) {
+      if ((rlen = fread(compressBuf, 1, compressBufLen, stdin)) <= 0)
+	break;
+      clen += rlen;
+      if (clen > full_len) {
+	compressedRestlen = clen - full_len;
+	memcpy(p, compressBuf, rlen - compressedRestlen);
+	memmove(compressBuf, compressBuf + (rlen - compressedRestlen), compressedRestlen);
+	clen = full_len;
+      } else {
+	memcpy(p, compressBuf, rlen);
+	p += rlen;
+      }
+    } else {
+      if ((rlen = fread(p, 1, compressBufLen, stdin)) <= 0)
+	break;
+      clen += rlen;
+      p += rlen;
+    }
+  }
+  return clen;
 }
 
 /****************************************************************/
@@ -689,35 +749,16 @@ int ReadNeutrons()
 
   } else if (compressBuf) {
 
-    // zcat data without further vitess compression
-    int copy_len, full_len = sizeof(Neutron) * BufferSize;
-    if (compressedRestlen >= full_len)
-      copy_len = full_len;
-    else {
-      // try to read more data
-      // first copy rest data to the buffer begin
-      int rlen;
-      if (compressedRestlen)
-	memcpy(compressBuf, zcat_p, compressedRestlen);
-      rlen = fread(compressBuf + compressedRestlen,
-		   1, COMPRESSBUFLEN - compressedRestlen, InputFilePtr);
-      compressedRestlen += rlen;
-      // if we are at EOF, make sure we send only full neutron structures
-      copy_len = compressedRestlen >= full_len ? full_len :
-	sizeof(Neutron) * (compressedRestlen / sizeof(Neutron));
-      zcat_p = compressBuf;
-    }
-    memcpy(InputNeutrons, zcat_p, copy_len);
-    zcat_p += copy_len;
-    compressedRestlen -= copy_len;
+    // we read data from a zcat pipe, no further vitess decompression
+    int copy_len = readFromPipe();
     NumNeutGot = copy_len / sizeof(Neutron);
-    adjustFileProgress();
+    adjustFileProgress(copy_len);
 
   } else {
-    // uncompressed neutrons are suitable for tracing
+    // uncompressed neutrons
     long i;
     NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
-    adjustFileProgress();
+    adjustFileProgress(NumNeutGot*sizeof(Neutron));
     for(i=0; i<NumNeutGot; i++) {
       WriteTraceLine(&InputNeutrons[i]);
       /* normalization of direction vector for modules representing hardware */
@@ -740,7 +781,7 @@ void WriteNeutron(Neutron *OutNeutron)
 {
   double tx = OutNeutron->Probability;
   // some modules may produce unreasonable probabilities
-  if (isnan(tx) || tx < 0) {
+  if (ISNAN(tx) || tx < 0) {
     OutNeutron->Probability = 0;
   } else {
     dProbTotal[0] +=    tx;
@@ -1001,7 +1042,6 @@ void setDetachedWrite() {
 }
 
 
-
 /**************************************************************/
 /* LOCAL FUNCTIONS                                            */
 /**************************************************************/
@@ -1080,6 +1120,8 @@ static void writeCompressed() {
 
 #define GULP(s) p += s; rlen -= s;
 
+static int compressBufLen;
+
 static int readCompressedNeutrons (void) {
 
   Neutron *pn = InputNeutrons;
@@ -1087,32 +1129,35 @@ static int readCompressedNeutrons (void) {
   int     *pi, colword, dirbit,tocopy, i, rlen, ngot, toread, newread;
   static unsigned long idNo;
 
-  if (! compressBuf)
-     readp = compressBuf = malloc(COMPRESSBUFLEN);
-  else if (zcat_p) {
+  rlen = compressedRestlen;
+  if (zcat_p) {
     // we have read the first bytes from zcat already
-    readp = zcat_p;
+    p = zcat_p;
     zcat_p = 0;
-  } else
-    readp = compressBuf;
-  if (!(p = readp)) return 0;
-
-  ngot = 0;
-  toread = COMPRESSBUFLEN;
-  if ((rlen = compressedRestlen) > 0) {
-    // do not overwrite saved rest, but add fresh input
-    readp += rlen;
-    toread -= rlen;
-    compressedRestlen = 0;
+    adjustFileProgress(rlen);
+  } else {
+    if (! compressBuf) {
+      setCompressBufLen();
+      compressBuf = malloc(compressBufLen);
+    }
+    p = readp = compressBuf;
+    toread = compressBufLen;
+    if (rlen > 0) {
+      // do not overwrite saved rest, but add fresh input
+      readp += rlen;
+      toread -= rlen;
+    }
+    if (toread > 0) {
+      newread = fread(readp, 1, toread, InputFilePtr);
+      if (rlen <= 0 && newread <= 0)
+	return 0;
+      if (newread > 0) {
+	rlen += newread;
+	adjustFileProgress(newread);
+      }
+    }
   }
-  if (toread > 0) {
-    newread = fread(readp, 1, toread, InputFilePtr);
-    adjustFileProgress();
-    if (rlen <= 0 && newread <= 0)
-      return 0;
-    if (newread > 0)
-      rlen += newread;
-  }
+  compressedRestlen = 0;
   ngot = 0;
   do {
     double x,y,z;
@@ -1154,7 +1199,7 @@ static int readCompressedNeutrons (void) {
       // copy 6 floats -> double
       float  *fp = (float*) p;
       double *dp = & pn->Time;
-      for (i=0; i<8; i++)
+      for (i=0; i<6; i++)
 	dp[i] = fp[i];
       GULP(6*sizeof(float));
       // copy direction x,y as double
@@ -1173,7 +1218,7 @@ static int readCompressedNeutrons (void) {
   if (rlen > 0 && newread > 0) {
     // save the rest
     compressedRestlen = rlen;
-    memcpy(compressBuf, p, rlen);
+    memmove(compressBuf, p, rlen);
   }
   return ngot;
 }

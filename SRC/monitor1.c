@@ -453,11 +453,13 @@ my_exit:
     fprintf(LogFilePtr, "total number of traject. within binning and eval. time: %ld\n\n", nTrjTot);
 
   stPicture.eType = (short) kind;
+#ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
   if (pPosT!=NULL) free(pPosT);
   if (pInt !=NULL) free(pInt);
   if (pNorm!=NULL) free(pNorm);
   if (pSD  !=NULL) free(pSD);
   if (pBinN!=NULL) free(pBinN);
+#endif
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
