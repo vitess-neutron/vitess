@@ -488,7 +488,8 @@ proc doSaveDir {w} {
     foreach l [globVal ${var}ESET] {
       set vname [lindex $l 0]
       switch [lindex $l 1] {
-	parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+	parfilename - pareditablefile - parbrowsefile -\
+	    moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	  lappend pall [entryVal $vname _$i]
 	}
       }

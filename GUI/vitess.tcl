@@ -201,12 +201,13 @@ rename makeModuleSets {}
 ### 1 type, one of {float int string longstring select radio
 ###                 filename editablefile browsefile browsedir
 ###                 parfilename pareditablefile parbrowsefile
-###                 moneditablefile mon2editablefile}
+###                 moneditablefile mon2editablefile mneditablefile mn2editablefile}
 ###         browse indicates entries which are selectable by a file browser
 ###         par indicates a file which must reside in a
 ###            special default (parameter) directory
 ###         moneditablefile is a pareditablefile and a monitor output file of 1
 ###            dimensional data, where mon2editablefile is for 2 dimensional data
+###              mneditablefile and mn2editable file: no default autoplot
 ###
 ### 2 default value                 (meaningless for select)
 ### 3 comment list (item 0: label text,
@@ -220,7 +221,7 @@ rename makeModuleSets {}
 ### 4 list of pairs with {name_appendix default_bool}
 ###
 ### for types (browsefile browsedir editablefile parbrowsefile pareditablefile
-###            moneditablefile mon2editablefile)
+###            moneditablefile mon2editablefile mneditablefile mn2editablefile)
 ### 4 r for a readable file,
 ###   w for a valid filename
 ### 5 file extension, used to specify GUI-editable files
@@ -502,7 +503,23 @@ foreach s {const_wave HMI ILL} \
         m {ReactorCold HmiMS IllColdSrcCold} {
   set al [list modfile pareditablefile $m.mod $li w cmo 1]
   set source_${s}ESET [concat [list $al] $smASET $traceASET $cwsASET]
-  proc ${s}CheckErr {{app _}} {source_cwsCheckErr $app}
+  proc source_${s}CheckErr {{app _}} {source_cwsCheckErr $app}
+}
+
+proc copyMissingModfile {app} {
+  upvar #0 modfile$app mfile
+  if {$mfile != ""} {
+    upvar #0 defdirectory_ pdir
+    if [file isdirectory $pdir] {
+      set usefile [file join $pdir $mfile]
+      if {! [file exists $usefile]} {
+	set modsrc [file join [globVal SourceDirectory] FILES moderators $mfile]
+	if [file exists $modsrc] {
+	  file copy  $modsrc $usefile
+	}
+      }
+    }
+  }
 }
 
 proc source_cwsCheckErr {{app _}} {
@@ -513,7 +530,12 @@ proc source_cwsCheckErr {{app _}} {
     showText "!Direction can only be defined by window, if distance moderator to window > 0"
     return 1
   }
-  return [checkMiMaErr min_wavelength max_wavelength wavelength $app]
+
+  if [checkMiMaErr min_wavelength max_wavelength wavelength $app] {
+    return 1
+  }
+  copyMissingModfile $app
+  return 0
 }
 
 ### source
@@ -532,7 +554,7 @@ foreach s {short_pulsed SNS J-PARC IPNS} \
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
-  proc ${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
+  proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
 
 proc sore {f} {
@@ -542,7 +564,7 @@ proc sore {f} {
 set al [list modfile pareditablefile IsisTS1hydrogen.mod $li w imo 1]
 set fl [sore 50]
 set source_ISISESET [concat $fl [list $al] $smisisASET $traceASET $cwsASET]
-proc ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
+proc source_ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 
 
 ### source
@@ -878,7 +900,7 @@ set guideESET {
   {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane" "" Z}
     {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
   {}
-  {shape_file moneditablefile guide_shape.dat
+  {shape_file mneditablefile guide_shape.dat
     {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
   {}
   {enter_width float 6 {
