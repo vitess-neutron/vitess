@@ -18,7 +18,8 @@
 
 //#define BINS   5000
 //#define NCENTER 200
-#define INDEX(x,y) (x*(nbinsX)+y)
+//#define INDEX(x,y) (x*(nbinsX)+y)
+#define INDEX(x,y) (x*(nbinsY)+y)
 
 typedef struct
 {
@@ -102,14 +103,13 @@ int main(int argc, char *argv[])
 	  //qValue, dspacing,
 	  prob=0;
 
-	int ibinX, ibinY, ibinXY;
+	int ibinX = 0, ibinY = 0, ibinXY = 0;
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST2);
 	print_module_name("eval_elast2 1.0");
 	OwnInit(argc, argv);
 	
-	ibinXY = 0;
 	switch (kind) 
 	{
 		case 1: fprintf(LogFilePtr, "Option: scattering angle and wavelength\n"); break;
