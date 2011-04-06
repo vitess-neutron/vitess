@@ -179,7 +179,7 @@ int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
 void   DoBin(ReflCond *RefOut);
 
 typedef double(*GetVal)(ReflCond *RefOut, int cNeut);
-GetVal SetValueFunction(int key);
+GetVal SetValueFunction(const int key);
 
 double (*GetValueX)(ReflCond *RefOut, int cNeut) = NULL;
 double (*GetValueY)(ReflCond *RefOut, int cNeut) = NULL;
@@ -1873,7 +1873,7 @@ double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return (double)Re
 double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[2]; }
 
 
-GetVal SetValueFunction(int key)
+GetVal SetValueFunction(const int key)
 {
   /*
     #define iKeyMode           1
