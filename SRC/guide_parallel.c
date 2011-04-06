@@ -47,7 +47,7 @@
 /*                                -Mirror files are requested/loaded by GetReflFile and     */
 /*                                 stored in array of structs. Filename is key for reuse.   */
 /* 2.21  Jan 2010  A. Houben      Bin data with arbitrary parameters like x pos, m, ...     */
-/* 2.3   Feb 2010  M. Fromme      helper threads                                            */
+/* 2.30  Feb 2010  M. Fromme      helper threads                                            */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -121,8 +121,8 @@ ReflCond;
 
 typedef struct
 {
-  //	double  CriticalAngle;
-  //	double  CutoffAngle;
+	//double  CriticalAngle;
+	//double  CutoffAngle;
 	Plane	Wall[5];
 }
 NeutronGuide;
@@ -170,10 +170,10 @@ void   LoadReflFile(ReflFile *pReflFile);
 double Height    (double length);
 double Width     (double length);
 double PathThroughGuideGravOrder1(int thread_i,
-				  Neutron *ThisNeutron, NeutronGuide *ThisGuide, double  wei_min,
-				  GuidePiece *Pce, double surfacerough, long keygrav, long keyabut, ReflCond *RefOut);
+           Neutron *ThisNeutron, NeutronGuide *ThisGuide, double  wei_min,
+           GuidePiece *Pce, double surfacerough, long keygrav, long keyabut, ReflCond *RefOut);
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuide *ThisGuide, GuidePiece *Pce,
-		      eGuideWall ThisCollision, double degangular, double reflectivity);
+           eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
 int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
 void   DoBin(ReflCond *RefOut);
@@ -744,40 +744,40 @@ static void writeBindata () {
       ibinXY = INDEX(ibinX, ibinY);
       if (bin[ibinXY] != NULL)	{
 	// Generate averages
-	double factor = bin[ibinXY]->ProbSum;
-	bin[ibinXY]->ndata.degangular          /= factor;
-	bin[ibinXY]->ndata.m                   /= factor;
-	bin[ibinXY]->ndata.reflectivity        /= factor;
-	bin[ibinXY]->ndata.DivY                /= factor;
-	bin[ibinXY]->ndata.DivZ                /= factor;
-	//bin[ibinXY]->ndata.Mode                /= factor; //see below
-	//bin[ibinXY]->ndata.neutron.Color       /= factor;
-	bin[ibinXY]->ndata.neutron.Time        /= factor;
-	bin[ibinXY]->ndata.neutron.Wavelength  /= factor;
-	bin[ibinXY]->ndata.neutron.Position[0] /= factor;
-	bin[ibinXY]->ndata.neutron.Position[1] /= factor;
-	bin[ibinXY]->ndata.neutron.Position[2] /= factor;
-	bin[ibinXY]->ndata.neutron.Vector[0]   /= factor;
-	bin[ibinXY]->ndata.neutron.Vector[1]   /= factor;
-	bin[ibinXY]->ndata.neutron.Vector[2]   /= factor;
-	bin[ibinXY]->ndata.neutron.Spin[0]     /= factor;
-	bin[ibinXY]->ndata.neutron.Spin[1]     /= factor;
-	bin[ibinXY]->ndata.neutron.Spin[2]     /= factor;
-	bin[ibinXY]->RefCount                  /= factor;
-	bin[ibinXY]->RefCountY                 /= factor;
-	bin[ibinXY]->RefCountZ                 /= factor;
+	double ProbSum = bin[ibinXY]->ProbSum;
+	bin[ibinXY]->ndata.degangular          /= ProbSum;
+	bin[ibinXY]->ndata.m                   /= ProbSum;
+	bin[ibinXY]->ndata.reflectivity        /= ProbSum;
+	bin[ibinXY]->ndata.DivY                /= ProbSum;
+	bin[ibinXY]->ndata.DivZ                /= ProbSum;
+	//bin[ibinXY]->ndata.Mode                /= ProbSum; //see below
+	//bin[ibinXY]->ndata.neutron.Color       /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Time        /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Wavelength  /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Position[0] /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Position[1] /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Position[2] /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Vector[0]   /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Vector[1]   /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Vector[2]   /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Spin[0]     /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Spin[1]     /= ProbSum;
+	bin[ibinXY]->ndata.neutron.Spin[2]     /= ProbSum;
+	bin[ibinXY]->RefCount                  /= ProbSum;
+	bin[ibinXY]->RefCountY                 /= ProbSum;
+	bin[ibinXY]->RefCountZ                 /= ProbSum;
 
 	cout++;
 	fprintf(pReflPlot, fstr,
 		bin[ibinXY]->X                        , bin[ibinXY]->Y                        , bin[ibinXY]->Counts,
-		((double)(bin[ibinXY]->ndata.Mode)/factor),
+		((double)(bin[ibinXY]->ndata.Mode)/ProbSum),
 		bin[ibinXY]->Mode0                    , bin[ibinXY]->Mode5                    , bin[ibinXY]->Mode10                   ,
 		bin[ibinXY]->RefCount                 , bin[ibinXY]->RefCountY                , bin[ibinXY]->RefCountZ,
 		bin[ibinXY]->ndata.neutron.ID.IDGrp[0], bin[ibinXY]->ndata.neutron.ID.IDGrp[1], bin[ibinXY]->ndata.neutron.ID.IDNo,
 		bin[ibinXY]->ndata.ThisCollision      , bin[ibinXY]->ndata.degangular         , bin[ibinXY]->ndata.m,
 		bin[ibinXY]->ndata.reflectivity       , bin[ibinXY]->ndata.DivY               , bin[ibinXY]->ndata.DivZ,
 		bin[ibinXY]->ndata.neutron.Debug      ,
-		((double)bin[ibinXY]->ndata.neutron.Color)/factor,
+		((double)bin[ibinXY]->ndata.neutron.Color)/ProbSum,
 		bin[ibinXY]->ndata.neutron.Time       , bin[ibinXY]->ndata.neutron.Wavelength , bin[ibinXY]->ndata.neutron.Probability,
 		bin[ibinXY]->ndata.neutron.Position[0], bin[ibinXY]->ndata.neutron.Position[1], bin[ibinXY]->ndata.neutron.Position[2],
 		bin[ibinXY]->ndata.neutron.Vector[0]  , bin[ibinXY]->ndata.neutron.Vector[1]  , bin[ibinXY]->ndata.neutron.Vector[2],
@@ -804,7 +804,7 @@ int main(int argc, char *argv[])
   int i;
 
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 2.3");
+  print_module_name("guide_parallel 2.30");
   OwnInit(argc, argv);
 
   showSetup();
@@ -1873,7 +1873,8 @@ double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return (double)Re
 double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[2]; }
 
 
-GetVal SetValueFunction(int key) {
+GetVal SetValueFunction(int key)
+{
   /*
     #define iKeyMode           1
     #define iKeyMode0          2
@@ -1904,33 +1905,33 @@ GetVal SetValueFunction(int key) {
   */
 
   switch (key) {
-  case iKeyMode:         return &GetValueKeyMode;
-  case iKeyMode0:        return &GetValueNone;
-  case iKeyMode5:        return &GetValueNone;
-  case iKeyMode10:       return &GetValueNone;
-  case dKeyRefCount:     return &GetValueKeyRefCount;
-  case dKeyRefCountY:    return &GetValueKeyRefCountY;
-  case dKeyRefCountZ:    return &GetValueKeyRefCountZ;
+  case iKeyMode:          return &GetValueKeyMode;
+  case iKeyMode0:         return &GetValueNone;
+  case iKeyMode5:         return &GetValueNone;
+  case iKeyMode10:        return &GetValueNone;
+  case dKeyRefCount:      return &GetValueKeyRefCount;
+  case dKeyRefCountY:     return &GetValueKeyRefCountY;
+  case dKeyRefCountZ:     return &GetValueKeyRefCountZ;
   case iKeyThisCollision: return &GetValueKeyThisCollision;
-  case dKeydegangular:   return &GetValueKeydegangular;
-  case dKeym:            return &GetValueKeym;
-  case dKeyreflectivity: return &GetValueKeyreflectivity;
-  case dKeyDivY:         return &GetValueKeyDivY;
-  case dKeyDivZ:         return &GetValueKeyDivZ;
-  case iKeyColor:        return &GetValueKeyColor;
-  case dKeyTime:         return &GetValueKeyTime;
-  case dKeyWavelength:   return &GetValueKeyWavelength;
-  case dKeyProbability:  return &GetValueKeyProbability;
-  case dKeyPositionX:    return &GetValueKeyPositionX;
-  case dKeyPositionY:    return &GetValueKeyPositionY;
-  case dKeyPositionZ:    return &GetValueKeyPositionZ;
-  case dKeyVectorX:      return &GetValueKeyVectorX;
-  case dKeyVectorY:      return &GetValueKeyVectorY;
-  case dKeyVectorZ:      return &GetValueKeyVectorZ;
-  case dKeySpinX:        return &GetValueKeySpinX;
-  case dKeySpinY:        return &GetValueKeySpinY;
-  case dKeySpinZ:        return &GetValueKeySpinZ;
-  default:               return &GetValueNone;
+  case dKeydegangular:    return &GetValueKeydegangular;
+  case dKeym:             return &GetValueKeym;
+  case dKeyreflectivity:  return &GetValueKeyreflectivity;
+  case dKeyDivY:          return &GetValueKeyDivY;
+  case dKeyDivZ:          return &GetValueKeyDivZ;
+  case iKeyColor:         return &GetValueKeyColor;
+  case dKeyTime:          return &GetValueKeyTime;
+  case dKeyWavelength:    return &GetValueKeyWavelength;
+  case dKeyProbability:   return &GetValueKeyProbability;
+  case dKeyPositionX:     return &GetValueKeyPositionX;
+  case dKeyPositionY:     return &GetValueKeyPositionY;
+  case dKeyPositionZ:     return &GetValueKeyPositionZ;
+  case dKeyVectorX:       return &GetValueKeyVectorX;
+  case dKeyVectorY:       return &GetValueKeyVectorY;
+  case dKeyVectorZ:       return &GetValueKeyVectorZ;
+  case dKeySpinX:         return &GetValueKeySpinX;
+  case dKeySpinY:         return &GetValueKeySpinY;
+  case dKeySpinZ:         return &GetValueKeySpinZ;
+  default:                return &GetValueNone;
   }
 }
 

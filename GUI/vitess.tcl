@@ -960,16 +960,20 @@ set specoptAdd {
   {wavi_dis radio rectangular {"surface\ndistr."
     "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
     {rectangular Gaussian} {1 2}}
+  {addtocolor int 0 {
+    "add to\ncolor" "Add value to neutron color on each reflection." "" A} ""}
+  {addplane float 0 {
+    "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
   {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
     {"filename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
   {keyreflparam radio "Trajectories passing the guide end (with linefeed)" {"format"
-    "Choose which trajectories will be printed.\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
+    "Choose which trajectories will be printed. This option also affects reflection plot options below!!!\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
     {"Trajectories passing the guide end" "Trajectories passing the guide end (with linefeed)" "Only successful reflections" "Only successful reflections (with linefeed)" "Trajectories with at least one successful reflection" "Trajectories with at least one successful reflection (with linefeed)" "All trajectories" "All trajectories (with linefeed)"} {1 -1 2 -2 3 -3 4 -4}}
   {keyreflverbose radio no {"verbose\nlist"
     "Trajectories are written for each reflection and at the end of each guide piece." "" v}
-    {yes no} {1 0}}
+    {yes "enter & exit" no} {1 2 0}}
   {}
   {keyreflmin int 0 {
     "minimum number\nof reflections" "Minimum number of reflections." "" e} ge0 "" 0}
@@ -990,15 +994,19 @@ set specoptAdd {
   {reflplot_filename pareditablefile ""
     {"filename" "Filename for saving all reflections for plotting x, m, intensity, wavelength along the guide." "" P}}
   {}
+  {keyplotparam radio "All" {"filter"
+    "Choose which trajectories will be binned. This option is also affectd by format option above!!!\n0 = all events;\n1 = only scattered neutrons;\n2 = only died neutrons." "" B}
+    {"All" "Only scattered" "Only died"} {0 1 2}}
+  {}
   {keyX radio "Position X" {"X values"
     "Choose the property for the x bin." "" t}
-    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
   {keyY radio "m" {"Y values"
     "Choose the property for the y bin." "" T}
-    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+    {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
   {keyProb radio "Probability" {"Weight"
     "Choose the property for the weighting." "" V}
-    {"None" "Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Probability" "Wavelength" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z"} {0 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26}}
+    {"None" "Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {0 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
   {}
   {nbins int 1000 {
     "number\nof bins in X" "number of bins determines the segmentation of the X interval" "" k} 1 10000}
