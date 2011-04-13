@@ -19,9 +19,11 @@
 #include "ctype.h"
 
 #ifndef RND_SIMPLE
- #include <gsl/gsl_rng.h>
+ #include "gsl/gsl_rng.h"
  gsl_rng * vit_gsl_rng;
 #endif
+
+double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
 
@@ -59,10 +61,16 @@ double LAMBDA_FROM_V(const double x)
 /*  Random Functions                                                                    */
 /****************************************************************************************/
 
-
+/* uniformly distributed random numbers in [x,y] */
 double MonteCarlo(const double x, const double y)
 {
    return (y - x)*Vran() + x;
+}
+
+/* random numbers of Gaussian distribution with standard deviation 'Sigma' around 'Center' */
+double DistrGauss(double Center, double Sigma)
+{
+  return Center + gsl_ran_gaussian(vit_gsl_rng, Sigma);
 }
 
 

@@ -283,6 +283,36 @@ double MonteCarloPar(double x, double y, int thread_i) {
   return x + (y - x) * (thread_i <= 0 ? Vran() : myVran(thread_i-1));
 }
 
+/* Polar (Box-Mueller) method; See Knuth v2, 3rd ed, p122 */
+
+
+
+double ran_gaussian_par (const double sigma, int thread_i)
+{
+  double x, y, r2;
+
+  do
+  {
+    /* choose x,y in uniform square (-1,-1) to (+1,+1) */
+
+    x = -1 + 2 * VranPar(thread_i);
+    y = -1 + 2 * VranPar(thread_i);
+
+    /* see if it is in the unit circle */
+    r2 = x * x + y * y;
+  }
+  while (r2 > 1.0 || r2 == 0);
+
+  /* Box-Muller transform */
+  return sigma * y * sqrt (-2.0 * log (r2) / r2);
+}
+
+double DistrGaussPar(const double Center, const double Sigma, int thread_i)
+{
+  return Center + ran_gaussian_par(Sigma, thread_i);
+}
+
+
 void ran_dir_3d_par (double *p, int thread_i) {
 
   double s, a, x,y;
