@@ -953,17 +953,21 @@ set specoptAdd {
   {v_focus_pnt float 0 {
     "vert. focus dist.\nof ellipse [cm]" "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
   {}
-  {waviness float 0
-    {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r}}
-  {keyabut float 0
-    {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are absorbed." "" a} ge0}
-  {wavi_dis radio rectangular {"surface\ndistr."
+  {keyabut radio no {"abutment\nloss"
+    "Neutrons hitting the surface close to the connection of guide segment are absorbed." "" a}
+    {yes no} {1 0}}
+  {wavi_dis radio rectangular {"waviness\ndistr."
     "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
     {rectangular Gaussian} {1 2}}
   {addtocolor int 0 {
     "add to\ncolor" "Add value to neutron color on each reflection." "" A} ""}
   {addplane float 0 {
     "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
+  {}
+  {abutlen float 0
+    {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
+  {waviness float 0
+    {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}
   {}
   {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
