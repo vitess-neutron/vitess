@@ -411,7 +411,7 @@ static void doChunk(int thread_i) {
  my_exit:;
 }
 
-void processPipedNeutrons(int nthreads, void (*p)(int, int),
+void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po)(),
 			  int maxnratio, int maxmc) {
   int maxchunksize;
   DECLARE_ABORT;
@@ -422,10 +422,14 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
       int i;
       CHECK;
       for(i=0; i<NumNeutGot; i++)
-        p(i, 0);    
+        (*p)(i, 0);    
+      if (po) 
+        (*po)();
     }
     return;
- } 
+  } 
+  
+  // parallel execution
 
   NThreads = initParallel(nthreads);
   if (nthreads != NThreads) myExit("could not create threads\n");
@@ -444,11 +448,14 @@ void processPipedNeutrons(int nthreads, void (*p)(int, int),
     ChunkSize = 1 + NumNeutGot/(NThreads + 1);
     fillMCbuffers();
     startHelpers();
-    doChunk(0);  // the main thread does it's share parallel to helper threads
+    // the main thread does it's share doChunk(0)
+    // parallel to helper threads which do doChunk(1),...
+    doChunk(0);
     waitForHelpers();
     flushParallelOutput();
+    if (po) 
+      (*po)();
   }
   my_exit: ;
   shutdownParallel();
 }
- 

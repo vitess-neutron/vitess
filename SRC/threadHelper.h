@@ -1,7 +1,8 @@
 /* M. Fromme HZB 2010
    parallel execution of a helper threads
 */
-void   processPipedNeutrons(int nthreads, void (*p)(int, int), int maxnratio, int maxmc);
+void   processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int),  void (*po)(), int maxnratio, int maxmc);
+#define processPipedNeutrons(a,b,c,d) processPipedNeutronsWithOutput(a,b,0,c,d)
 
 void   WriteNeutronParallel(Neutron *n, int thread_i);
 double MonteCarloPar(double x, double y, int thread_i);
