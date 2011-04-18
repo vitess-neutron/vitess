@@ -173,6 +173,15 @@ capture_flux : capture_flux.c $(TOOL)
 source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+sourced : source.c src_modchar.c init.c general.c message.c softabort.c intersection.c matrix.c
+	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
+
+gpar : gpar.c threadHelper.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+gpard : gpar.c threadHelper.c init.c general.c message.c softabort.c intersection.c matrix.c
+	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
+
 guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 

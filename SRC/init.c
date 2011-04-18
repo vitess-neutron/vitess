@@ -94,7 +94,6 @@ static int ParDirectoryLength, InstallDirectoryLength;
 #define COMPRESSBUFLEN 65536
 static int compressModeR, compressModeW, compressBufLen, compressedRestlen, spinVector;
 static long byte_read_so_far;
-static char *pStore;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
 static char *compressBuf, *zcat_p;
 
@@ -291,12 +290,14 @@ void initParWrite(size_t s, int n) {
 }
 
 static void *threadWriter (void *arg) {
+  int nwr, rc;
   if (!TWdata) return arg;
-  int nwr = fwrite(TWdata, TWsize, TWn, TWfile);
+  if ((rc = pthread_mutex_lock(&write_m)))
+    fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
+  nwr = fwrite(TWdata, TWsize, TWn, TWfile);
   if (nwr != TWn)
     fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
-  int rc = pthread_mutex_unlock(&write_m);
-  if (rc)
+  if ((rc = pthread_mutex_unlock(&write_m)))
     fprintf(LogFilePtr,"unable to pthread_mutex_unlock in threadWriter, error: %d\n", rc);
   return arg;
 }
@@ -310,8 +311,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   }
   // Wait here, if a threadWriter is occupied by an older write operation
   // write_m becomes unlocked only after completion of threadWriter.
-  rc = pthread_mutex_lock(&write_m);
-  if (rc)
+  if ((rc = pthread_mutex_lock(&write_m)))
     fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
 
   if (final) {
@@ -322,6 +322,8 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   TWsize = s;
   TWn = n;
   TWfile = f;
+  if ((rc = pthread_mutex_unlock(&write_m)))
+    fprintf(LogFilePtr,"unable to pthread_mutex_unlock in threadWriter, error: %d\n", rc);
   return 0 != pthread_create(&writerThread, NULL, threadWriter, (void *) 0);
 }
 

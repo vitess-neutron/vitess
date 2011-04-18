@@ -38,6 +38,22 @@ proc unzipCom {fname} {
   return ""
 }
 
+set COPYCOM {
+proc pcom {fn res} {
+  upvar $res r
+  set f [open $fn r]
+  while {[gets $f ins] > 0} {append r $ins}
+  close $f
+  file delete $fn
+}
+proc pwrite {fn res} {
+  set f [open $fn w]
+  puts $f $res
+  close $f
+}
+}
+
+
 ### compose the VITESS command pipe string
 ###
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
@@ -89,15 +105,19 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   }
 
   set pdir [entryVal defdirectory]
-  set insert "$fc --B$buffersize --P";	# general command options  
-  if {$mode == "grd"} {append insert \$P} else {append insert $pdir}
+  set insert "$fc --B$buffersize --P";	# general command options
+  switch $mode {
+    bat - tcl - grd {append insert \$P}
+    default {append insert $pdir}
+  }
 
   # restart construction of fc, general options have been saved to variable insert
   switch $mode {
-    bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
+    bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
     tcl {
-      set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\n"
+      global COPYCOM
+      set fc "\#!/usr/bin/tclsh$COPYCOM\nset V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
 	append fc "set env(GSL_RNG_$vv) $t\n"
@@ -120,7 +140,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     switch $var {
       chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
-      guide       {set com "guide$par$sys"}
+      guide       {
+        set com "guide_parallel$sys"
+# hack dmf, allways guide_parallel
+#      guide       {set com "guide$par$sys"}
+      }
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
@@ -168,15 +192,19 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       }
       default    {set com $var$sys}
     }
- 
-    set logopt $logf$i
-    set imore " $insert --L$logopt"
 
+    set logopt $logf$i
+    switch $mode {
+      bat - tcl - grd {set imore  " $insert --L\$\{L\}$i"}
+      default {set imore " $insert --L$logopt"}
+    }
+    if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
+    
     lappend PipeLogList $logopt
     if $intcom {
       set com [file join $prefi $com]
       if $first {
-	append com " --p$ProgressFile"
+	append com $ppadd
 	append fc "$com$imore"
 	if {$mode != "kstate"} {
 	  # get name of input file
@@ -196,7 +224,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 	writeCommandOption $l _$i "" $serpar $serrep $serno
       }
     } elseif {$first} {
-      append com " --p$ProgressFile"
+      append com $ppadd
       append fc "$com$imore"
       set first 0
     } else {
@@ -222,14 +250,14 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
   }
 
-  if {$mode == "grd"} {
-    # a shell environment will substitute $P
-    regsub -all "$pdir/" $fc "\$P/" fc
-  }
   # get rid of superfluous blanks
   regsub -all "  " $fc " " fc
-  if {$mode == "bat"} {append fc "\nmv $logf* \$P"}
 
+  switch $mode {
+    bat {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*\n"}
+    tcl {append fc "\n\nforeach fn \[glob \$L*\] \{pcom \$fn res\}\npwrite \$P/result.txt \$res\n"}
+    default {}
+  }
   return $fc
 }
 
@@ -894,7 +922,7 @@ set COM {$c}
 set PipeLogList {$PipeLogList}
 set pname $pname
 "
-  
+
   foreach v {seed gen} vv {SEED TYPE} {
     if {"" == [set t [entryVal random_$v]]} continue
     append fc "set env(GSL_RNG_$vv) $t\n"
