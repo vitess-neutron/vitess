@@ -20,6 +20,8 @@ static float    maxmcusage;      // to report max. fill ratio of mc buffers
 static int      doParBarrier;	 // 0 (back) or 1 (start)
 static int      outstanding;     // number of threads not ready yet
 
+static gsl_rng **vit_thread_gsl_rng;    // individual generators for threads 
+
 static void doChunk(int thread_i);
 
 #ifdef WIN32
@@ -266,7 +268,11 @@ static void shutdownParallel() { }
 #endif  // Linux
 
 static double myVran(int n) {
-  // use a precomputed random number
+  if (vit_thread_gsl_rng)
+    // generate a random number for thread n, n=0,1,..
+    return gsl_rng_uniform (vit_thread_gsl_rng[n]);
+
+  // else use a pre-computed random number
   int c = MCcount[n] - 1;
   if (c < 0) myExit2("insufficient random number storage (%d,%d) for threads, increase prefetch buffer size\n", n,MCbufSize);
   MCcount[n] = c;
@@ -284,8 +290,6 @@ double MonteCarloPar(double x, double y, int thread_i) {
 }
 
 /* Polar (Box-Mueller) method; See Knuth v2, 3rd ed, p122 */
-
-
 
 double ran_gaussian_par (const double sigma, int thread_i)
 {
@@ -338,6 +342,19 @@ static int createThreadBuffers() {
   if ( ! (OutNeutronsParallel = (Neutron *) malloc(NThreads*outNbufSize*sizeof(Neutron))) ||
        ! (outNcount           = (int *)     calloc(NThreads, sizeof(int))))
     return 0;
+  if (MCbufSize < 0) {
+    // prepare individual random number generators per thread
+    int n;
+    extern long int VRandomSeed;
+    vit_thread_gsl_rng = malloc(NThreads * sizeof(gsl_rng *));
+    for (n=0; n<NThreads; n++) {
+      gsl_rng * g;
+      vit_thread_gsl_rng[n] = g = gsl_rng_alloc(gsl_rng_default);
+      if (!g) 
+        myExit("unable to create individual random number generators!\n");
+      gsl_rng_set(g, VRandomSeed+n+1);
+    } 
+  }
   if (MCbufSize <= 0) return 1;
   return
     (MCbuffer = (double *) malloc(NThreads*MCbufSize*sizeof(double))) &&
@@ -368,9 +385,12 @@ static void fillMCbuffers() {
 }
 
 void printMCStatistic(FILE *f) {
-  if (NThreads > 0) 
+  if (NThreads <= 0) return; 
+  if (MCbufSize > 0) 
     fprintf(f, "maximum usage of mc prefetch buffers %8.1f %%, buffer sizes %d, %d helper thread(s)\n",
 	    100*maxmcusage, MCbufSize, NThreads);
+  else
+    fprintf(f, "used %d helper thread(s)\n", NThreads);
 }
 
 
@@ -436,9 +456,11 @@ void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po
 
   doProc = p;    // remember what to do in threads
 
-  if (maxnratio <= 0) maxnratio = 0;
+  if (maxnratio <= 0)
+    maxnratio = 0;
   maxchunksize = 1 + BufferSize/(NThreads + 1);
   outNbufSize = maxnratio * maxchunksize;
+
   MCbufSize = maxmc * maxchunksize;
 
   if (! createThreadBuffers()) myExit("Couldn't allocate memory for temporary thread buffers\n");
@@ -446,7 +468,8 @@ void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po
   while (ReadNeutrons()) {
     CHECK;
     ChunkSize = 1 + NumNeutGot/(NThreads + 1);
-    fillMCbuffers();
+    if (MCbufSize > 0) 
+      fillMCbuffers();
     startHelpers();
     // the main thread does it's share doChunk(0)
     // parallel to helper threads which do doChunk(1),...

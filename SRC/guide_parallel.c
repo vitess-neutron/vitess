@@ -975,8 +975,11 @@ int main(int argc, char *argv[])
   TGuide[0].Wall = Guide.Wall;
   for (i=1; i<=NThreads; i++)
     TGuide[i].Wall = copyWalls(Guide.Wall);
-
-  needPreRand = (NThreads && surfacerough) ? 100 : 0;
+  
+  // needPreRand value:
+  // 100 means pre-compute 100 random numbers per neutron
+  // -1 (any negative value) means use an individual random number generator per thread
+  needPreRand = (NThreads && surfacerough) ? -1 : 0;
 
   if (NThreads > 0 && pReflParam) {
     int allsize;
@@ -997,7 +1000,7 @@ int main(int argc, char *argv[])
   Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
 
   // dmf test
-  exit(0);
+  // exit(0);
 
   return 0;
 }

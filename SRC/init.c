@@ -97,7 +97,8 @@ static long byte_read_so_far;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
 static char *compressBuf, *zcat_p;
 
-int      NThreads;      /* number of helper threads for execution, set by --T */
+int      NThreads;      // number of helper threads for execution, set by --T
+unsigned long int VRandomSeed;  // random seed, default 0, set by --Z
 
 /**************************************************************/
 /* local functions                                            */
@@ -262,12 +263,12 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   TWsize = s;
   TWn = n;
   TWfile = f;
-  // rc = _beginthread( threadWriter, 0, &writerThread);
-  trc = _beginthread( threadWriter, 0, 0);
-
   rc = ReleaseMutex(hWriteMutex);
   if (rc == 0)
     fprintf(LogFilePtr,"unable to ReleaseMutex in fwritePar, error: %d\n", GetLastError());
+
+  // rc = _beginthread( threadWriter, 0, &writerThread);
+  trc = _beginthread( threadWriter, 0, 0);
 
   return trc != 0 && trc != -1;
 }
@@ -278,41 +279,35 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 # include <sys/types.h>
 # include <pthread.h>
 
-static pthread_mutex_t write_m; // mutex to guard asynchronous fwrite operations
-
 void initParWrite(size_t s, int n) {
-  if (TWdata) return;
-  int rc = pthread_mutex_init(&write_m, 0);
-  if (rc)
-    fprintf(LogFilePtr,"pthread_mutex_init problem, rc %d\n", rc);
-  else
+  if (!TWdata) 
     TWdata = malloc(s*n);
 }
 
 static void *threadWriter (void *arg) {
-  int nwr, rc;
-  if (!TWdata) return arg;
-  if ((rc = pthread_mutex_lock(&write_m)))
-    fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
-  nwr = fwrite(TWdata, TWsize, TWn, TWfile);
-  if (nwr != TWn)
-    fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
-  if ((rc = pthread_mutex_unlock(&write_m)))
-    fprintf(LogFilePtr,"unable to pthread_mutex_unlock in threadWriter, error: %d\n", rc);
+  if (TWdata) {
+    int nwr, rc;
+    nwr = fwrite(TWdata, TWsize, TWn, TWfile);
+    rc = fflush( TWfile);
+    if (nwr != TWn || rc)
+      fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
+  }
   return arg;
 }
 
+static pthread_t writerThread;
+
 static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
-  static pthread_t writerThread;
   int nwr, rc;
   if (!TWdata) {
     nwr = fwrite(d, s, n, f);
     return nwr == n;
   }
-  // Wait here, if a threadWriter is occupied by an older write operation
-  // write_m becomes unlocked only after completion of threadWriter.
-  if ((rc = pthread_mutex_lock(&write_m)))
-    fprintf(LogFilePtr,"pthread_mutex_lock problem, rc %d\n", rc);
+  // Wait here, if an older threadWriter is still writing.
+  if (writerThread) {
+    rc = pthread_join(writerThread, 0);
+    writerThread = 0;
+  }
 
   if (final) {
     nwr = fwrite(d, s, n, f);
@@ -322,9 +317,8 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   TWsize = s;
   TWn = n;
   TWfile = f;
-  if ((rc = pthread_mutex_unlock(&write_m)))
-    fprintf(LogFilePtr,"unable to pthread_mutex_unlock in threadWriter, error: %d\n", rc);
-  return 0 != pthread_create(&writerThread, NULL, threadWriter, (void *) 0);
+  rc = pthread_create(&writerThread, NULL, threadWriter, (void *) 0);
+  return rc == 0;
 }
 
 #endif
@@ -424,20 +418,18 @@ void Init(int argc, char **argv, VtModID eModule)
 
     case 'Z':                   // init number for the random number generator
 #if defined(PENV) || defined(_MSC_VER)
-      {
-	int i;
-        if (sscanf(arg, "%i", &i)) {
-	  char buf[24];	
-	  sprintf(buf, "GSL_RNG_SEED=%d", i);
+      if (sscanf(arg, "%i", &VRandomSeed)) {
+        char buf[24];	
+        sprintf(buf, "GSL_RNG_SEED=%d", VRandomSeed);
 #      ifdef _MSC_VER
-  	  _putenv(buf);
+        _putenv(buf);
 #      else
-  	  putenv(buf);
+        putenv(buf);
 #      endif
-	}
       }
 #else
-      setenv("GSL_RNG_SEED", arg, 1);
+      if (sscanf(arg, "%li", &VRandomSeed))
+        setenv("GSL_RNG_SEED", arg, 1);
 #endif
       break;
 
@@ -569,7 +561,8 @@ void Init(int argc, char **argv, VtModID eModule)
   gsl_rng_env_setup();
   T = gsl_rng_default;
   vit_gsl_rng = gsl_rng_alloc (T);
-
+  if (VRandomSeed)
+    gsl_rng_set(vit_gsl_rng, VRandomSeed);
 }
 
 
