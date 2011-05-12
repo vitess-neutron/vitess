@@ -1262,15 +1262,17 @@ void   WriteTraceLine(Neutron* pNeutron)
       { pFile = fopen(FullParName(sFileName), "a");
       }
     }
-    fprintf(pFile, "%2d %-20.20s:",  nModNr, sModuleName);
-    fprintf(pFile," %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
-            pNeutron->Debug,       pNeutron->Color,
-            pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
-            pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2],
-            pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
-            pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]);
-    /* fprintf(pFile, "%2d %-20.20s: t=% .5e y=% .5e z=% .5e col=%5d\n",  nModNr, sModuleName,
-                   pNeutron->Time, pNeutron->Position[1], pNeutron->Position[2], pNeutron->Color);*/
-    fclose (pFile);
+    if (pFile != NULL) {
+      fprintf(pFile, "%2d %-20.20s:",  nModNr, sModuleName);
+      fprintf(pFile," %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
+              pNeutron->Debug,       pNeutron->Color,
+              pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
+              pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2],
+              pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
+              pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]);
+      /* fprintf(pFile, "%2d %-20.20s: t=% .5e y=% .5e z=% .5e col=%5d\n",  nModNr, sModuleName,
+                     pNeutron->Time, pNeutron->Position[1], pNeutron->Position[2], pNeutron->Color);*/
+      fclose (pFile);
+    }
   }
 }

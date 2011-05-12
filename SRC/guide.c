@@ -1795,7 +1795,13 @@ void OwnInit   (int argc, char *argv[])
         }
         fprintf(pFile, "%10.3f  %10.4f  %10.4f\n", pPieces[j].Xpce/100.0, 2.0*pPieces[j].Ypce, 2.0*pPieces[j].Zpce);
       }
-
+      
+      /* alloc */
+      pPieces[j].RData = calloc(nPlanes, sizeof(ReflFile*));
+      if (!pPieces[j].RData) { fprintf(LogFilePtr,"ERROR: Not enough memory for reflectivity of planes!\n");
+        exit(-1);
+      }
+      
       /* Calculate Area for this reflectivity file */
       if (j > 0) {
         if (pPieces[j-1].RData[GW_LEFT]!=NULL)
@@ -2231,6 +2237,10 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide *ThisGuide,
 
     /* Determine number of reflectivity value in reflectivty file */
     datanumber =  (int)(degangular*1000.0/(NearestNeutron.Wavelength));
+    if (datanumber < 0) {
+      CountMessageID(ALL_NEGATIVE_INT, NearestNeutron.ID);
+      return -1.0;
+    }
 
     /* Choose the reflectivity file/value and multiply probability by reflectivity value */
     //if (ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM || ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT) {

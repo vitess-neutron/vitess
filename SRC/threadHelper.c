@@ -268,12 +268,13 @@ static void shutdownParallel() { }
 #endif  // Linux
 
 static double myVran(int n) {
+  int c = 0;
   if (vit_thread_gsl_rng)
     // generate a random number for thread n, n=0,1,..
     return gsl_rng_uniform (vit_thread_gsl_rng[n]);
 
   // else use a pre-computed random number
-  int c = MCcount[n] - 1;
+  c = MCcount[n] - 1;
   if (c < 0) myExit2("insufficient random number storage (%d,%d) for threads, increase prefetch buffer size\n", n,MCbufSize);
   MCcount[n] = c;
   return MCbuffer[n*MCbufSize + c];
