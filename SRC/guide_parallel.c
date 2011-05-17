@@ -47,6 +47,9 @@
 /*                                -Mirror files are requested/loaded by GetReflFile and     */
 /*                                 stored in array of structs. Filename is key for reuse.   */
 /* 2.21  Jan 2010  A. Houben      Bin data with arbitrary parameters like x pos, m, ...     */
+/* 2.23  Jun 2010  A. Houben      Additional guide planes by extra rotation of top/bottom or*/
+/* (guide.c)                      left/right planes by given angle a < 90deg around x axis  */
+/*                                 --> a = 45deg --> octagon shape; a = 60deg --> hexagon   */
 /* 3.1   Feb 2010  M. Fromme      helper threads                                            */
 /* 3.2   Mar 2011  K. Lieutenant  Gaussian waviness distribution, length of abutment loss   */
 /********************************************************************************************/
@@ -1684,7 +1687,7 @@ void   LoadReflFile(ReflFile *pReflFile) {
   if (pReflFile && pReflFile->filename) {
     if (pReflFile->pfile == NULL)
       pReflFile->pfile = fopen(FullParName(pReflFile->filename), "r");
-    else {
+    if (pReflFile->pfile != NULL) {
       nLines = LinesInFile(pReflFile->pfile);
       pReflFile->maxdata = nLines * 10;
       pReflFile->Rdata = calloc(pReflFile->maxdata, sizeof(double));
