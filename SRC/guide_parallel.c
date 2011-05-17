@@ -1180,7 +1180,7 @@ void OwnInit   (int argc, char *argv[]) {
   FILE* pFile=NULL;
   char sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
   ReflFile *pRefFileLast;
-  double bintervalX=1.0, bintervalY=1.0;
+  double bintervalX=1.0, bintervalY=1.0, rot=0.0;
   int ibinX, ibinY;
 
   // guide parameter character usage:
@@ -1299,7 +1299,7 @@ void OwnInit   (int argc, char *argv[]) {
         rotplane = 0.0;
       } else if (fabs(rotplane) > 0.0) {
         keyAddPlane = rotplane > 0.0 ? 1 : 2;
-        double rot = rotplane;
+        rot = rotplane;
         while (rot < 90.0) {
           rot += rotplane;
           nPlanes += 4;
