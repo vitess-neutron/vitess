@@ -870,7 +870,7 @@ static void showSetup() {
   }
 }
 
-static void writeReflPix (BINDATA *pix) {
+static void writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 = X; 2 = Y
   double ProbSum;
   NeutronEx *bp;
 
@@ -901,7 +901,7 @@ static void writeReflPix (BINDATA *pix) {
   pix->RefCountZ          /= ProbSum;
 
   fprintf(pReflPlot, fstr,
-          pix->X                 , pix->Y                 , pix->Counts,
+          (datarange!=2)?pix->X:0.0, (datarange!=1)?pix->Y:0.0, pix->Counts,
           ((double)(bp->Mode)/ProbSum),
           pix->Mode0             , pix->Mode5             , pix->Mode10,
           pix->RefCount          , pix->RefCountY         , pix->RefCountZ,
@@ -913,14 +913,16 @@ static void writeReflPix (BINDATA *pix) {
           bp->neutron.Time       , bp->neutron.Wavelength , bp->neutron.Probability,
           bp->neutron.Position[0], bp->neutron.Position[1], bp->neutron.Position[2],
           bp->neutron.Vector[0]  , bp->neutron.Vector[1]  , bp->neutron.Vector[2],
-          bp->neutron.Spin[0]    , bp->neutron.Spin[1]    , bp->neutron.Spin[2]
+          bp->neutron.Spin[0]    , bp->neutron.Spin[1]    , bp->neutron.Spin[2],
+          ProbSum
           );
   
 }
 
 static void writeBindata () {
 
-  int i;
+  //int i;
+  int ibinXY, ibinX, ibinY, cout;
   BINDATA *pix;
   char buf[3][40];
 
@@ -929,19 +931,31 @@ static void writeBindata () {
   GetKeyName(KeyProb, buf[2]);
   fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n#==Data==\n", buf[0], buf[1], buf[2]);
 
-  for (i=0; i < nbinsX*nbinsY; i++)
-    if ((pix = binXY[i]))
-      writeReflPix(pix);
+  //for (i=0; i < nbinsX*nbinsY; i++)
+  for (ibinX = 0; ibinX < nbinsX; ibinX++)
+  {
+    cout = 0;
+    for (ibinY = 0; ibinY < nbinsY; ibinY++)
+    {
+      ibinXY = INDEX(ibinX, ibinY);
+      if ((pix = binXY[ibinXY])) {
+        cout++;
+        writeReflPix(pix, 0);
+      }
+    }
+    if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+  }
 
   fprintf(pReflPlot, "\n#==XData==\n");
-  for (i=0; i < nbinsX; i++)
-    if ((pix = binX[i]))
-      writeReflPix(pix);
+  for (ibinX=0; ibinX < nbinsX; ibinX++)
+    if ((pix = binX[ibinX]))
+      writeReflPix(pix, 1);
 
+  if (keyReflParam<0) fprintf(pReflPlot,"\n");
   fprintf(pReflPlot, "\n#==YData==\n");
-  for (i=0; i < nbinsY; i++)
-    if ((pix = binY[i]))
-      writeReflPix(pix);
+  for (ibinY=0; ibinY < nbinsY; ibinY++)
+    if ((pix = binY[ibinY]))
+      writeReflPix(pix, 2);
 
 }
 

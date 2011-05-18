@@ -954,7 +954,7 @@ int main(int argc, char *argv[])
 		fprintf(pReflPlot, "\n#==XData==\n");
 		for (ibinX = 0; ibinX < nbinsX; ibinX++)
 		{
-			cout = 0;
+			//cout = 0;
 			if (binX[ibinX] != NULL)
 			{// Generate averages
 				binX[ibinX]->ndata.degangular          /= binX[ibinX]->ProbSum;
@@ -979,7 +979,7 @@ int main(int argc, char *argv[])
 				binX[ibinX]->RefCountY                 /= binX[ibinX]->ProbSum;
 				binX[ibinX]->RefCountZ                 /= binX[ibinX]->ProbSum;
 
-				cout++;
+				//cout++;
 				fprintf(pReflPlot, fstr, 
 					binX[ibinX]->X                        , 0.                                    , binX[ibinX]->Counts, 
 					((double)(binX[ibinX]->ndata.Mode)/binX[ibinX]->ProbSum), 
@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[])
     fprintf(pReflPlot, "\n#==YData==\n");
     for (ibinY = 0; ibinY < nbinsY; ibinY++)
     {
-      cout = 0;
+      //cout = 0;
       if (binY[ibinY] != NULL)
       {// Generate averages
         binY[ibinY]->ndata.degangular          /= binY[ibinY]->ProbSum;
@@ -1029,7 +1029,7 @@ int main(int argc, char *argv[])
         binY[ibinY]->RefCountY                 /= binY[ibinY]->ProbSum;
         binY[ibinY]->RefCountZ                 /= binY[ibinY]->ProbSum;
 
-        cout++;
+        //cout++;
         fprintf(pReflPlot, fstr, 
                 0.                                    , binY[ibinY]->Y                        , binY[ibinY]->Counts, 
                 ((double)(binY[ibinY]->ndata.Mode)/binY[ibinY]->ProbSum), 
