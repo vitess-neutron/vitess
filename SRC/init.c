@@ -286,10 +286,9 @@ void initParWrite(size_t s, int n) {
 
 static void *threadWriter (void *arg) {
   if (TWdata) {
-    int nwr, rc;
+    int nwr;
     nwr = fwrite(TWdata, TWsize, TWn, TWfile);
-    rc = fflush( TWfile);
-    if (nwr != TWn || rc)
+    if (nwr != TWn)
       fprintf(LogFilePtr,"thread write problem, only %d of %d items written\n", nwr, TWn);
   }
   return arg;
@@ -785,12 +784,11 @@ void WriteNeutron(Neutron *OutNeutron)
       dProbTotal[OutNeutron->Color] += tx;
   }
 
-  /* copy the neutron to the buffer */
-  CopyNeutron(OutNeutron, &(OutputNeutrons[OutNeutNum++]));
+  if (OutputFilePtr)
+    CopyNeutron(OutNeutron, OutputNeutrons + OutNeutNum);
 
-  if(OutNeutNum >= BufferSize)
-    /* write the neutrons to the stream if the buffer is full */
-    OutputBufferFlush(0);
+  if (++OutNeutNum >= BufferSize)
+    OutputBufferFlush(0);  // flush to stream, and give trace marks
 
   WriteTraceLine(OutNeutron);
 }

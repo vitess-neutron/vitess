@@ -64,7 +64,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_paral
 	    mirror_elliptical
 	   );
 
-# modules which need MGTOOL (=MTOOL + distrgauss)
+# modules which need MGTOOL (=MTOOL)
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
 # modules which need STOOL (=MTOOL + sample)
@@ -154,7 +154,7 @@ EOS
 TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL) distrgauss.o
+MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
@@ -276,7 +276,7 @@ LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /
 TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
-MGTOOL="$(IDIR)|distrgauss.obj" $(MTOOL)
+MGTOOL=$(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
 #ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)

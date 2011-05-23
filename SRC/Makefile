@@ -85,7 +85,7 @@ direct_view
 TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL) distrgauss.o
+MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
