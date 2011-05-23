@@ -89,6 +89,7 @@ typedef enum
 	VT_SLIT        =  24,
 	VT_LENSE       =  25,
 	VT_ELMIRROR    =  26,
+	VT_BEAMSTOP    =  27,
 	VT_CHOP_DISC   =  31,
 	VT_CHOP_FERMI  =  32,
 	VT_VEL_SELECT  =  41,

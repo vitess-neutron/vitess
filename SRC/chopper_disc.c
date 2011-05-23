@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		Warning("No neutron hit the chopper");
+		Warning("No neutron hit the chopper\n");
 	}
 
 	OwnCleanup();
