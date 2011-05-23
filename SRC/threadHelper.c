@@ -49,8 +49,8 @@ void debugUnlock() {
   ReleaseMutex(hDebugMutex);
 }
 
-static int setDone () {
-  int i, all_done;
+static void setDone () {
+  int all_done;
   all_done = 0;
 
   WaitForSingleObject( hWorkMutex, INFINITE );
@@ -66,7 +66,6 @@ static int setDone () {
     SetEvent(hDone); 
     ReleaseMutex(hDoneMutex);
   }
-  return i;
 }
 
 static void threadLoop (void *arg) {
@@ -268,7 +267,7 @@ static void shutdownParallel() { }
 #endif  // Linux
 
 static double myVran(int n) {
-  int c = 0;
+  int c;
   if (vit_thread_gsl_rng)
     // generate a random number for thread n, n=0,1,..
     return gsl_rng_uniform (vit_thread_gsl_rng[n]);

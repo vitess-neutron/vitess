@@ -1315,6 +1315,7 @@ void OwnInit   (int argc, char *argv[]) {
       if (fabs(rotplane) >= 90.0) {
         rotplane = 0.0;
       } else if (fabs(rotplane) > 0.0) {
+        double rot;
         keyAddPlane = rotplane > 0.0 ? 1 : 2;
         rot = rotplane;
         while (rot < 90.0) {
