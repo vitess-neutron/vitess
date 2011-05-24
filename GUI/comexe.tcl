@@ -58,7 +58,7 @@ proc pwrite {fn res} {
 ###
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
-  # mode may be action bat tcl grd ser kstate
+  # mode may be: action bat tcl grd ser kstate
 
   # kstate is used to generate a hash of all settings, and the output should ignore
   # things like the input, output file and overall options, because these are not saved
@@ -87,21 +87,19 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   upvar #0 FullCommand fc
   set fc ""
   lookWhosConcerned srep0 spar0 serno0 0 $mode $serll sermol serpal
-  #  3..6: random seed, random_gen, neutron weight, gravitation effect
-  foreach {i} [lrange $ll 3 6] {
+  #  3..7: random seed, random_gen, neutron weight, gravitation effect, helper threads
+  foreach {i} [lrange $ll 3 7] {
     # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
 
   set par ""
-  if {$mode != "kstate"} {
-    # add --T option if helper threads are selected, then set name part variable $par, too
-    catch {
-      if {[entryVal helpthreads] > 0} {
-	set par _parallel
-	writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
-      }
-    }
+  # select parallel image versions for batch processing, ignore this for kstate,
+  # and use parallel image version if helper threads have been demanded otherwise
+  switch $mode {
+    bat - tcl - grd - ser {set par _parallel}
+    kstate { }
+    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
   }
 
   set pdir [entryVal defdirectory]
@@ -140,11 +138,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     switch $var {
       chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
-      guide       {
-        set com "guide_parallel$sys"
-# hack dmf, allways guide_parallel
-#      guide       {set com "guide$par$sys"}
-      }
+      guide       {set com "guide$par$sys"}
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
@@ -712,7 +706,7 @@ proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
     set com $c
     # substitute special options by list values
     for {set i 0} {$i < $ll} {incr i} {
-      regsub \#$i\# $com [lindex $v $i] com
+      regsub -all \#$i\# $com [lindex $v $i] com
     }
     set pre s[lindex $tindl $step]_
     incr step
@@ -757,9 +751,12 @@ proc lPack2 {w t tvar f tw} {
 }
 
 proc storeSeriesFile {w} {
-  if {[set f [openWriteFile tcl]] == 0} return
+  if {[set f [openWriteFile tcl "" fname]] == 0} return
   puts $f [$w.v.text get 1.0 end]
   close $f
+  if {[getSystem] == "unix"}  {
+    catch {exec chmod +x $fname}
+  }
   destroy $w
 }
 
@@ -895,6 +892,7 @@ proc saveSeries {w {act tofile}} {
       if {"no" == [tk_messageBox -icon question -type yesno -title "confirmed command"\
 		  -message "This simulation has been done at\n$r\nReally do it again?"]} return
     }
+    # now execute the series
     exeSeries $pdir $copy $cfiles $cdir $c $ll $vl $tindl
     storeMd5 $smd5
     return
@@ -937,7 +935,7 @@ foreach v $VL {
   set com $COM
   # substitute special options by list values
   for {set i 0} {$i < $LL} {incr i} {
-    regsub \#$i\# $com [lindex $v $i] com
+    regsub -all \#$i\# $com [lindex $v $i] com
   }
   # execute pipe
   catch {eval exec 2> $pname $com}
