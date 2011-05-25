@@ -41,6 +41,7 @@ spacewindow \
 spacewindow_multiple \
 space \
 lenses \
+beamstop \
 detector \
 eval_elast \
 eval_elast2 \
@@ -92,7 +93,6 @@ SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
 CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-CDEBFLAGS = -pthread -g -O0 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -173,17 +173,8 @@ capture_flux : capture_flux.c $(TOOL)
 source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-sourced : source.c src_modchar.c init.c general.c message.c softabort.c intersection.c matrix.c
-	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
-
-gpar : gpar.c threadHelper.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-gpard : gpar.c threadHelper.c init.c general.c message.c softabort.c intersection.c matrix.c
-	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
-
 guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -pthread -o $@ $^ $(LIBS)
 
 frame : frame.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
@@ -281,9 +272,6 @@ standard_deviation : standard_deviation.c
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-guidedeb : guide.c init.c general.c message.c softabort.c intersection.c matrix.c
-	gcc $(CDEBFLAGS) -o $@ $^ $(LIBS)
-
 sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
@@ -313,6 +301,9 @@ mon2_pos : mon2_pos.c $(TOOL)
 
 dist_time : dist_time.c cpgplot.c $(TOOL)
 	$(CC) -o $@ $^ $(GRALIB)
+
+beamstop : beamstop.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
 
 eval_elast2 : eval_elast2.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
