@@ -843,6 +843,18 @@ set slitESET {
   {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H} ge0}
 }
 
+### Beamstop
+set beamstopESET {
+  {dist_stop float "" {"distance\n to beamstop [cm]" "" "" d} ge0}
+  {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "progagation of neutrons to beamstop\ndetector expects neutrons at sample position" "" p} {no yes} {0 1}}
+  {"coordinates of a circular beamstop" header}
+  {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
+  {"coordinates of a rectangular beamstop" header}
+  {width_stop float "" {"width [cm]" "width of a rectangular beamstop [cm]" "" W} ge0}
+  {hite_stop  float "" {"height [cm]" "height of a rectangular beamstop [cm]" "" H} ge0}
+}
+
 ### Grid
 ###
 set gridESET {
@@ -964,7 +976,7 @@ set specoptAdd {
   {addplane float 0 {
     "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
-  {abutlen float 0
+  {abutlen float ""
     {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}

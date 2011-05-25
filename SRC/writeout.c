@@ -11,6 +11,7 @@
 /* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
 /* 1.4f Jan  2010  A. Houben       WriteOut only if given color matches Neutron color        */
 /* 1.4g Feb  2010  A. Houben       Added wavelength, Div and yz position filter              */
+/* 1.4h Feb  2010  K. Lieutenant   colour = 0 means all                                      */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -22,7 +23,7 @@
 
 FILE *AsciiFile;
 short bF_format=FALSE;
-short DetectColor = -1; // WriteOut only neutrons with a given color, -1 means any
+short DetectColor = 0; // WriteOut only neutrons with a given color, -1 means any
 double filtLambdaMin=-1.0,          /* filter      */
 	   filtLambdaMax=-1.0,
  	   filtYMin=-1.0e10,
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.4g");
+  print_module_name("writeout 1.4h");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 		  if (fabs(Divz) > filtZDiv) continue;
 	  }
 
-	  if (DetectColor < 0 || InputNeutrons[i].Color == DetectColor)
+	  if (DetectColor <= 0 || InputNeutrons[i].Color == DetectColor)
       fprintf(AsciiFile, form,
 	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
 	      InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
