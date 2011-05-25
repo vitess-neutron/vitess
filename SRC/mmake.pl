@@ -45,7 +45,7 @@ my @C = qw(ascii2bin monitor1
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
-	    slit grid source spacewindow spacewindow_multiple space lenses);
+	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_parallel

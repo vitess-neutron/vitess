@@ -83,6 +83,7 @@ ALL : \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
 	"$(OD)\lenses.exe" \
+	"$(OD)\beamstop.exe" \
 	"$(OD)\detector.exe" \
 	"$(OD)\eval_elast.exe" \
 	"$(OD)\eval_elast2.exe" \
@@ -408,6 +409,13 @@ SOURCE=$(SPATH)\lenses.c
 
 "$(OD)\lenses.exe" : "$(OD)" $(ITOOL) "$(OD)\lenses.obj" "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\lenses.pdb" /out:"$(OD)\lenses.exe" "$(IDIR)\lenses.obj" $(ITOOL) "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"  $(GRALIB)
+
+SOURCE=$(SPATH)\beamstop.c
+"$(IDIR)\beamstop.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\beamstop.exe" : "$(OD)" $(ITOOL) "$(OD)\beamstop.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\beamstop.pdb" /out:"$(OD)\beamstop.exe" "$(IDIR)\beamstop.obj" $(ITOOL) 
 
 SOURCE=$(SPATH)\detector.c
 "$(IDIR)\detector.obj" : $(SOURCE)

@@ -583,7 +583,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.10beta"
+  set t "VITESS 2.10"
   set maxModule 50
   set DummyEntry "--inactive--"
 

@@ -1,5 +1,5 @@
-VITESS 2.10beta  Release Note
------------------------------
+VITESS 2.10  Release Note
+-------------------------
 
 Helper threads:
 ---------------
@@ -58,3 +58,4 @@ mirror_elliptical
 mon2_kdiv
 mon2_rdiv
 runtime
+beamstop
