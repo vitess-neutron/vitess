@@ -1,0 +1,153 @@
+﻿description O.K.
+
+Parameter directory is L:/FILES/ELLI_MIRR_DIR
+Starting simulation
+D:/Programme/Vitess2-10beta/MODULES/source.exe -S3 --pC:/temp/ics1304695283pgress.txt --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog1 -NESS -L5.0 -R16.667 -p2.0 -aL:/FILES/ELLI_MIRR_DIR/EssLPCold_1x1.mod -n100000 -m4.5 -t0 -y0 -M5.5 -T3 -z0 -d1 -P0 -X0 -Y0 -V1 -D100 -w10 -h10 -i0 -A0 -k0 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k1 --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog2 -OL:/FILES/ELLI_MIRR_DIR/guide_in.mtl -n100 -C0 -f1 -m0 -M20 -p1 -e0 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_pos.exe --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog3 -OL:/FILES/ELLI_MIRR_DIR/source.pos -y80 -z80 -w-4 -W4 -h-4 -H4 -p1 -e0 -F0 -l-1.0 -L21 
+| D:/Programme/Vitess2-10beta/MODULES/mirror_elliptical.exe --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog4 -a350 -b7 -c20 -d250 -e0 -k0 -Q0.0 -g0 -A0 -C500 -D-7 -E7 -H-20 -K20 -s500 -t0 -w0 -y1 -Y1 -v0 -l0 -u1 -R0 -iL:/FILES/ELLI_MIRR_DIR/mirr30op10.dat -IL:/FILES/ELLI_MIRR_DIR/mirr30op10.dat -q0 -p0 -V0 -z0 -r55.0 
+| D:/Programme/Vitess2-10beta/MODULES/space.exe --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog5 -d100 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_pos.exe --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog6 -OL:/FILES/ELLI_MIRR_DIR/dist100.pos -y60 -z100 -w-6 -W6 -h-10 -H10 -p1 -e0 -F0 -l-1.0 -L21 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k1 --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog7 -OL:/FILES/ELLI_MIRR_DIR/dist100.mtl -n100 -C0 -f1 -m0.2 -M20 -p1 -e1 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k3 --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog8 -OL:/FILES/ELLI_MIRR_DIR/dist100.mdy -n120 -C0 -f0 -m-3 -M3 -p1 -e1 -l-1.0 -L21 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k4 --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog9 -OL:/FILES/ELLI_MIRR_DIR/dist100.mdz -n120 -C0 -f0 -m-3 -M3 -p1 -e1 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k5 --Z1 --U1.0e-25 --G1 --B10000 --PL:/FILES/ELLI_MIRR_DIR --LL:/FILES/ELLI_MIRR_DIR/ics1305105261vpipelog10 -OL:/FILES/ELLI_MIRR_DIR/dist100.mty -n40 -C0 -f0 -m-10 -M10 -p1 -e0 -l-1.0 -L-1.0 --Fno_file
+simulation (dd0 18d8 1de4 1268 ec4 10d8 c38 f8 1940 1c14 ) (3536 6360 7652 4712 3780 4312 3128 248 6464 7188) is active
+..------------------------------
+GSL_RNG_TYPE=ran3
+GSL_RNG_SEED=1
+
+
+VITESS version 2.10  module Source and Window 1.15
+
+> Simulation of long pulse spallation source ESS <
+pulse length                 :   2.000 ms 
+pulse frequency              :  16.667 Hz 
+average power                :   5.000 MW 
+
+Warning: Maximal accelerator current of  60.0 mA exceeds limit of 50.0 mA!
+coupled moderator
+moderator temperature        :  50.000 K
+total neutron flux (in 2*pi) : 1.5342e+014 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :   1.000 cm  x   1.000 cm 
+divergence defined by propagation window 
+time averaged neutron current: 2.4376e+011 n/s in 0.009983 str
+wavelength band used         :   4.500 Ang -   5.500 Ang
+time interval used           :   0.000 ms  -   3.000 ms 
+
+real window    (W x H)       :  10.000 cm  x  10.000 cm
+  in a distance of           :   1.000 m
+  with a declination of      :   0.000°
+polarization                 :   0.000 %  X: 0.000 Y: 0.000 Z: 1.000
+Center of beam at window     :(100.000    0.003    0.011) cm 
+Average TOF                  :   2.531 ms 
+
+Gravity is enabled 
+Cutoff probability per traj. : 1.000e-025 
+
+number of trajectories started         :      100000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :      100000
+(time averaged) neutron count rate     : 1.3500e+010 +/- 4.964e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_wavelength 1.7
+Norm     : 0.200000
+Binning  : 100 bins from    0.00000 to   20.00000 Ang
+File     : L:/FILES/ELLI_MIRR_DIR/guide_in.mtl
+total neutron count rate within binning and eval. time: 1.3500e+010 n/s 
+
+ 2 number of trajectories read         :      100000
+   number of trajectories written      :      100000
+(time averaged) neutron count rate     : 1.3500e+010 +/- 4.964e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_pos 1.2b
+ 3 number of trajectories read         :      100000
+   number of trajectories written      :      100000
+(time averaged) neutron count rate     : 1.3500e+010 +/- 4.964e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module Elliptic Mirror 1.22
+Halfaxis of ellipsoid   350.000000   7.000000   20.000000
+The reflectivity of the mirror is choosen according refl. files
+Only reflected neutrons are going later in the next module
+The dependance of reflectivity from polarization of neutron is disabled
+The reflected surface is an ideal mirror
+Minimal weight for tracing neutron   1.000000e-025
+No air attenuation
+Magnetic field direction - AXIS OX
+Elliptic mirror: Gravity is enabled
+ 4 number of trajectories read         :      100000
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module Space 1.2
+Distance between entrance and exit plane:  100.000  cm 
+Center of beam at exit:  ( 100.000,  0.001,  0.066) cm, TOF =  10.1086 ms 
+ 
+ 5 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_pos 1.2b
+ 6 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_wavelength 1.7
+Norm     : 0.198000
+Binning  : 100 bins from    0.20000 to   20.00000 Ang
+File     : L:/FILES/ELLI_MIRR_DIR/dist100.mtl
+total neutron count rate within binning and eval. time: 3.8351e+009 n/s 
+
+ 7 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_horizontal divergence 1.7
+Binning  : 120 bins from   -3.00000 to    3.00000 deg
+File     : L:/FILES/ELLI_MIRR_DIR/dist100.mdy
+total neutron count rate within binning and eval. time: 3.8351e+009 n/s 
+
+ 8 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_vertical divergence 1.7
+Binning  : 120 bins from   -3.00000 to    3.00000 deg
+File     : L:/FILES/ELLI_MIRR_DIR/dist100.mdz
+total neutron count rate within binning and eval. time: 3.8351e+009 n/s 
+
+ 9 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_horizontal position 1.7
+Binning  : 40 bins from  -10.00000 to   10.00000 cm
+File     : L:/FILES/ELLI_MIRR_DIR/dist100.mty
+total neutron count rate within binning and eval. time: 3.8351e+009 n/s 
+
+10 number of trajectories read         :       32703
+   number of trajectories written      :       32703
+(time averaged) neutron count rate     : 3.8351e+009 +/- 2.464e+007 n/s 
+------------------------------
+simulation finished after 1 s
+
+

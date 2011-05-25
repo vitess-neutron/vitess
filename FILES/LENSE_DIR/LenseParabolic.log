@@ -1,0 +1,163 @@
+description O.K.
+
+Parameter directory is L:/FILES/LENSE_DIR
+Starting simulation
+D:/Programme/Vitess2-10beta/MODULES/source.exe -S1 --pC:/temp/ics1304695283pgress.txt --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog1 -aL:/FILES/LENSE_DIR/const.src -n1000000 -m18.5 -t0 -y0 -M19.5 -T0 -z0 -d0 -P100 -X0 -Y0 -V1 -D0 -w10 -h10 -i0 -A0 -k0 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_pos.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog2 -OL:/FILES/LENSE_DIR/source.pos -y120 -z120 -w-6 -W6 -h-6 -H6 -p1 -e0 -F0 -l-1.0 -L-1.0 
+| D:/Programme/Vitess2-10beta/MODULES/lenses.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog3 -K1 -a1.27 -b1.27 -c2 -A0.1 -d1.5 -e0 -k0 -s3.5 -t0 -w0 -i10 -H0 -R1.05e-6 -C1.8 -D0.441 -Q0.0 -q0 -I1 -y0 -l0 -W0 -x10000 -S0.0 -m0.0 -M0.0 -z0 -r20.0 -V0 -Y0 
+| D:/Programme/Vitess2-10beta/MODULES/space.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog4 -d1 -M0 -m0 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_pos.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog5 -OL:/FILES/LENSE_DIR/lense.pos -y120 -z120 -w-6 -W6 -h-6 -H6 -p1 -e0 -F0 -l-1.0 -L-1.0 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_posdiv.exe -q1 --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog6 -OL:/FILES/LENSE_DIR/lense.ydy -y200 -z200 -w-2 -W2 -h-0.05 -H0.05 -p1 -e0 -F0 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k5 --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog7 -OL:/FILES/LENSE_DIR/lense.mty -n120 -C0 -f0 -m-6 -M6 -p1 -e0 
+| D:/Programme/Vitess2-10beta/MODULES/space.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog8 -d4900 -M0 -m0 
+| D:/Programme/Vitess2-10beta/MODULES/mon2_pos.exe --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog9 -OL:/FILES/LENSE_DIR/focus.pos -y120 -z120 -w-6 -W6 -h-6 -H6 -p1 -e0 -F0 -l-1.0 -L-1.0 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k5 --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog10 -OL:/FILES/LENSE_DIR/focus.mty -n120 -C0 -f0 -m-6 -M6 -p1 -e0 
+| D:/Programme/Vitess2-10beta/MODULES/monitor1.exe -k6 --Z1 --U1.e-25 --G0 --B10000 --PL:/FILES/LENSE_DIR --LL:/FILES/LENSE_DIR/ics1305105678vpipelog11 -OL:/FILES/LENSE_DIR/focus.mtz -n120 -C0 -f0 -m-6 -M6 -p1 -e1 --Fno_file
+simulation (1c98 1c30 1924 eb0 148c 19fc 1ca8 df0 11b0 1c0c 758 ) (7320 7216 6436 3760 5260 6652 7336 3568 4528 7180 1880) is active
+...------------------------------
+GSL_RNG_TYPE=ran3
+GSL_RNG_SEED=1
+
+
+VITESS version 2.10  module Source and Window 1.15
+
+> Simulation of constant wave source  <
+
+wavelength distribution file : const.dat 
+total neutron flux (in 2*pi) : 1.0000e+008 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+angle of opening used        :   0.000°    x   0.000°   
+time averaged neutron current: 0.0000e+000 n/s in 0.000000 str
+wavelength band used         :  18.500 Ang -  19.500 Ang
+Warning: The calculated absolute neutron flux for the given parameter set is zero,
+probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)
+the simulation is performed with a flux normalized to a max. value of 1 n/(cm²s) 
+
+
+
+real window    (W x H)       :  10.000 cm  x  10.000 cm
+  in a distance of           :   0.000 m
+  with a declination of      :   0.000°
+polarization                 : 100.000 %  X: 0.000 Y: 0.000 Z: 1.000
+Center of beam at window     :(  0.000    0.000   -0.002) cm 
+Average TOF                  :   0.000 ms 
+
+Gravity is disabled 
+Cutoff probability per traj. : 1.000e-025 
+
+number of trajectories started         :     1000000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :     1000000
+(time averaged) neutron count rate     : 4.1667e-002 +/- 4.167e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_pos 1.2b
+ 2 number of trajectories read         :     1000000
+   number of trajectories written      :     1000000
+(time averaged) neutron count rate     : 4.1667e-002 +/- 4.167e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module LENSES with gravity 1.20
+Lense: Gravity is disabled
+Lense surfaces have parabolic  form
+Number of lenses: 1
+Parabolic deep  1.270000 cm  1.270000 cm  2.000000  cm
+Thickness of the lense 0.100000  cm
+WARNING! The thickness of the lense along main optical axis is SMALL (< 1.0 cm)! Please change it.
+WARNING! The thickness of the lense along main optical axis is SMALL (< 0.5 cm )! Please change it.
+Material of lense:   SiO2
+Reading data from DATABASE
+!! CALCULATATED delta=(1-refraction coeff) = 3.2407407E-007 FOR wavelength 1.0 Ang
+!! CALCULATATED refraction coeff = 9.9999968E-001 FOR wavelength 1.0 Ang
+!!!!!! For parabolic and thin lense: radius of curvature = 1.574803 cm
+!!!!!! For parabolic and thin lense: Focal length  6074.240720 cm (for 20.000000 Angs) and for Number of Lenses = 1
+!!P!!! For parabolic lense: radius of curvature = 1.574803 cm
+!!P!!! For parabolic lense: Focal length  6074.240783 cm (for 20.000000 Angs) and for Number of Lenses = 1
+No attenuation in lenses
+NO Diafragm with inner radius1 = 0.000000 and outer radius2 = 0.000000 activated
+The reflected surface is an ideal lense
+Minimal weight for tracing neutron   1.000000e-025
+ 3 number of trajectories read         :     1000000
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module Space 1.2
+Distance between entrance and exit plane:    1.000  cm 
+Center of beam at exit:  (   1.000, -0.002, -0.000) cm, TOF =   0.2161 ms 
+ 
+ 4 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_pos 1.2b
+ 5 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_posdiv 1.2a
+ 6 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_horizontal position 1.7
+Binning  : 120 bins from   -6.00000 to    6.00000 cm
+File     : L:/FILES/LENSE_DIR/lense.mty
+total neutron count rate within binning and eval. time: 5.2540e-003 n/s 
+
+ 7 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module Space 1.2
+Distance between entrance and exit plane: 4900.000  cm 
+Center of beam at exit:  (4900.000, -0.000, -0.000) cm, TOF = 235.5513 ms 
+ 
+ 8 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module mon2_pos 1.2b
+ 9 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_horizontal position 1.7
+Binning  : 120 bins from   -6.00000 to    6.00000 cm
+File     : L:/FILES/LENSE_DIR/focus.mty
+total neutron count rate within binning and eval. time: 5.2540e-003 n/s 
+
+10 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+
+
+VITESS version 2.10  module monitor1_vertical position 1.7
+Binning  : 120 bins from   -6.00000 to    6.00000 cm
+File     : L:/FILES/LENSE_DIR/focus.mtz
+total neutron count rate within binning and eval. time: 5.2540e-003 n/s 
+
+11 number of trajectories read         :      126097
+   number of trajectories written      :      126097
+(time averaged) neutron count rate     : 5.2540e-003 +/- 1.480e-005 n/s 
+------------------------------
+simulation finished after 2 s
+
+
