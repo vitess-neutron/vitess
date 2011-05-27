@@ -196,6 +196,10 @@ double (*GetProb  )(ReflCond *RefOut, int cNeut) = NULL;
 /** Global variables         **/
 /******************************/
 
+// REMEMBER: Do not write to a global variable in process_neutron, 
+// with the only exception of arrays, where the thread index is used 
+// to restrict write access to a part for that thread only!
+
 short  keyabut   = 0;         /* key for abutment loss 0: no  1: yes */
 long   nPieces   = 1,
        nChannels = 1,
@@ -325,9 +329,9 @@ static NeutronGuide TGuide[MAXWORKER];
 // These variables are declared static globally,
 // because they are written in main and read in processNeutron:
 
-static ReflCond GRefOut[MAXWORKER], *PRefOut;
-static double dXpce,  // length of a piece incl. diff. in y- or z- position
-  dDelY,  dDelZ,      // difference in y- or z-position of a piece
+static ReflCond GRefOut[MAXWORKER];
+static double GdXpce,  // length of a piece incl. diff. in y- or z- position
+  GdDelY, GdDelZ,      // difference in y- or z-position of a piece
   RotMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}},
   dCosBetH = 1.0,
   dSinBetH = 0.0;     // cos(beta/2) and sin(beta/2)
@@ -390,11 +394,13 @@ static void CountMessageThread (int thread_i, VtMsgID code, TotalID id) {
 // Callback routine processNeutron is responsible to process neutron i;
 // thread_i indicates the tread which is performing, in case of serial execution this is thread 0 
 
-void processNeutron(int i, int thread_i) {
+void processNeutron(int neutron_i, int thread_i) {
 
+  ReflCond *PRefOut;
   long   j, kChan;
   short  test;
   Plane  *gW;
+  Neutron *myneutron;
   NeutronGuide guide;
   double TimeOF1, TimeOF2,
     dDelYr, dDelYl,     // difference in y-position of the left and right side of a piece resp.
@@ -403,12 +409,18 @@ void processNeutron(int i, int thread_i) {
     right_beg,left_beg, // right and left position of the beginning of a channel of a piece
     right_end,left_end; // right and left position of the end of a channel of a piece
 
-  /* InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
+  double dXpce = GdXpce;
+  // double dDelY = GdDelY;
+  double dDelZ = GdDelZ;
+
+  myneutron = InputNeutrons + neutron_i;
+
+  /* myneutron->Position.X = 0.0;   !!!!!!!! */
   /****************************************************************************************/
   /* Check to see if the neutron is initially in the entrance to the guide...             */
   /****************************************************************************************/
-  if (fabs(InputNeutrons[i].Position[1]) > GuideEntranceWidth/2.0)  return;
-  if (fabs(InputNeutrons[i].Position[2]) > GuideEntranceHeight/2.0) return;
+  if (fabs(myneutron->Position[1]) > GuideEntranceWidth/2.0)  return;
+  if (fabs(myneutron->Position[2]) > GuideEntranceHeight/2.0) return;
 
   test = TRUE;
   kChan = 0;
@@ -427,11 +439,11 @@ void processNeutron(int i, int thread_i) {
       right_beg = -GuideEntranceWidth/2.0 + k*(pPieces[0].Wchan + spacer);
       left_beg  = right_beg + pPieces[0].Wchan;
 
-      if (    (right_beg < InputNeutrons[i].Position[1]) 
-           && (left_beg  > InputNeutrons[i].Position[1]))  {
+      if (    (right_beg < myneutron->Position[1]) 
+           && (left_beg  > myneutron->Position[1]))  {
 
         kChan = k;
-        InputNeutrons[i].Color = (short)(k+1);
+        myneutron->Color = (short)(k+1);
         /* left and right walls of guide exchanged by the channel walls             */
         /* for elliptical parabolic shape, this has to be calculated for each piece */
         if (eGuideShapeY!=VT_PARABOLIC && eGuideShapeY!=VT_ELLIPTIC && eGuideShapeY!=VT_FROM_FILE) {
@@ -617,8 +629,8 @@ void processNeutron(int i, int thread_i) {
         double d = 0;
         int k;
         for (k=0; k < GW_EXIT; k++) {
-          d = (gW[k].B*InputNeutrons[i].Position[1] + 
-               gW[k].C*InputNeutrons[i].Position[2] + 
+          d = (gW[k].B*myneutron->Position[1] + 
+               gW[k].C*myneutron->Position[2] + 
                gW[k].D) / gW[k].D;
           if (d < 0)
             break;
@@ -631,15 +643,15 @@ void processNeutron(int i, int thread_i) {
     }
     
     if (keyReflVerbose != 0 && j == 0)
-      WriteReflParam(PRefOut, 5, &(InputNeutrons[i]), &pPieces[j], GW_INIT, 0., 0.);
+      WriteReflParam(PRefOut, 5, myneutron, &pPieces[j], GW_INIT, 0., 0.);
     
     // donkey work routine
     TimeOF1 = PathThroughGuideGravOrder1
       (thread_i,
-       &(InputNeutrons[i]), guide, wei_min, &pPieces[j], surfacerough, keygrav, keyabut, PRefOut);
+       myneutron, guide, wei_min, &pPieces[j], surfacerough, keygrav, keyabut, PRefOut);
 
     if (keyReflVerbose == 2 && j == nPieces-1)
-      WriteReflParam(PRefOut, 5, &(InputNeutrons[i]), &pPieces[j], GW_EXIT, 0., 0.);
+      WriteReflParam(PRefOut, 5, myneutron, &pPieces[j], GW_EXIT, 0., 0.);
 
     if (TimeOF1 == -1.0) {
       test=FALSE;
@@ -650,14 +662,14 @@ void processNeutron(int i, int thread_i) {
     /* Update the coordinates.                                                              */
     /****************************************************************************************/
 
-    InputNeutrons[i].Position[0] -= dXpce;
+    myneutron->Position[0] -= dXpce;
 
     /* For curved guide: frame rotated for next piece, but not after last piece */
     if (Radius != 0.0 && j < nPieces-1) {
       /* horizontal position and flight direction adjusted */
-      RotVector(RotMatrix, InputNeutrons[i].Position);
-      RotVector(RotMatrix, InputNeutrons[i].Vector);
-      RotVector(RotMatrix, InputNeutrons[i].Spin);
+      RotVector(RotMatrix, myneutron->Position);
+      RotVector(RotMatrix, myneutron->Vector);
+      RotVector(RotMatrix, myneutron->Spin);
     }
     TimeOF2 += TimeOF1;
 
@@ -696,9 +708,9 @@ void processNeutron(int i, int thread_i) {
 
   if (test==FALSE) return;
 
-  if (fabs(InputNeutrons[i].Position[1]) > 0.5*GuideExitWidth ||
-      fabs(InputNeutrons[i].Position[2]) > 0.5*GuideExitHeight) {
-    CountMessageThread(thread_i, GUID_OUT_OF_EXIT, InputNeutrons[i].ID);
+  if (fabs(myneutron->Position[1]) > 0.5*GuideExitWidth ||
+      fabs(myneutron->Position[2]) > 0.5*GuideExitHeight) {
+    CountMessageThread(thread_i, GUID_OUT_OF_EXIT, myneutron->ID);
     return;
   }
 
@@ -708,7 +720,7 @@ void processNeutron(int i, int thread_i) {
   /****************************************************************************************/
   {
     double pathlen;            // total neutron pathlength in the guide
-    Neutron Output = InputNeutrons[i];
+    Neutron Output = *myneutron;
 
     pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
 
@@ -722,7 +734,7 @@ void processNeutron(int i, int thread_i) {
 }
 
 
-static void showSetup() {
+static void showAndCompleteSetup() {
 
   int i;
 
@@ -832,33 +844,33 @@ static void showSetup() {
   {
     double Length1, Length2; // length of a piece incl. diff. in z- or y-position resp.
 
-    dXpce = piecelength;
-    dDelY = (GuideExitWidth  - GuideEntranceWidth)  / (2.0*nPieces);
-    dDelZ = (GuideExitHeight - GuideEntranceHeight) / (2.0*nPieces);
-    Length1 = sqrt(dXpce*dXpce+dDelZ*dDelZ);
-    Length2 = sqrt(dXpce*dXpce+dDelY*dDelY);
+    GdXpce = piecelength;
+    GdDelY = (GuideExitWidth  - GuideEntranceWidth)  / (2.0*nPieces);
+    GdDelZ = (GuideExitHeight - GuideEntranceHeight) / (2.0*nPieces);
+    Length1 = sqrt(GdXpce*GdXpce+GdDelZ*GdDelZ);
+    Length2 = sqrt(GdXpce*GdXpce+GdDelY*GdDelY);
 
     /* top plane */
-    Guide.Wall[GW_TOP].A =  dDelZ/Length1;
+    Guide.Wall[GW_TOP].A =  GdDelZ/Length1;
     Guide.Wall[GW_TOP].B =  0.0;
-    Guide.Wall[GW_TOP].C = -dXpce/Length1;
+    Guide.Wall[GW_TOP].C = -GdXpce/Length1;
     Guide.Wall[GW_TOP].D = -Guide.Wall[GW_TOP].C * (GuideEntranceHeight/2.0);
 
     /* bottom plane */
-    Guide.Wall[GW_BOTTOM].A = -dDelZ/Length1;
+    Guide.Wall[GW_BOTTOM].A = -GdDelZ/Length1;
     Guide.Wall[GW_BOTTOM].B =  0.0;
-    Guide.Wall[GW_BOTTOM].C = -dXpce/Length1;
+    Guide.Wall[GW_BOTTOM].C = -GdXpce/Length1;
     Guide.Wall[GW_BOTTOM].D =  Guide.Wall[GW_BOTTOM].C * (GuideEntranceHeight/2.0);
 
     /* left plane */
-    Guide.Wall[GW_LEFT].A = -dDelY/Length2;
-    Guide.Wall[GW_LEFT].B =  dXpce/Length2;
+    Guide.Wall[GW_LEFT].A = -GdDelY/Length2;
+    Guide.Wall[GW_LEFT].B =  GdXpce/Length2;
     Guide.Wall[GW_LEFT].C =  0.0;
     Guide.Wall[GW_LEFT].D = -Guide.Wall[GW_LEFT].B * (GuideEntranceWidth/2.0);
 
     /* right plane */
-    Guide.Wall[GW_RIGHT].A =  dDelY/Length2;
-    Guide.Wall[GW_RIGHT].B =  dXpce/Length2;
+    Guide.Wall[GW_RIGHT].A =  GdDelY/Length2;
+    Guide.Wall[GW_RIGHT].B =  GdXpce/Length2;
     Guide.Wall[GW_RIGHT].C =  0.0;
     Guide.Wall[GW_RIGHT].D =  Guide.Wall[GW_RIGHT].B * (GuideEntranceWidth/2.0);
 
@@ -866,7 +878,7 @@ static void showSetup() {
     Guide.Wall[GW_EXIT].A =  1.0;
     Guide.Wall[GW_EXIT].B =  0.0;
     Guide.Wall[GW_EXIT].C =  0.0;
-    Guide.Wall[GW_EXIT].D = -dXpce;
+    Guide.Wall[GW_EXIT].D = -GdXpce;
   }
 }
 
@@ -921,7 +933,6 @@ static void writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 
 
 static void writeBindata () {
 
-  //int i;
   int ibinXY, ibinX, ibinY, cout;
   BINDATA *pix;
   char buf[3][40];
@@ -931,7 +942,6 @@ static void writeBindata () {
   GetKeyName(KeyProb, buf[2]);
   fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n#==Data==\n", buf[0], buf[1], buf[2]);
 
-  //for (i=0; i < nbinsX*nbinsY; i++)
   for (ibinX = 0; ibinX < nbinsX; ibinX++)
   {
     cout = 0;
@@ -987,14 +997,14 @@ int main(int argc, char *argv[])
   if (! (Guide.Wall = calloc(nPlanes+1, sizeof(Plane))))
     myExit("ERROR: Not enough memory for guide data!\n");
 
-  showSetup();
+  showAndCompleteSetup();
 
   TGuide[0].Wall = Guide.Wall;
   for (i=1; i<=NThreads; i++)
     TGuide[i].Wall = copyWalls(Guide.Wall);
   
   // needPreRand value:
-  // 100 means pre-compute 100 random numbers per neutron
+  // 100 would mean pre-compute 100 random numbers per neutron
   // -1 (any negative value) means use an individual random number generator per thread
   needPreRand = (NThreads && surfacerough) ? -1 : 0;
 
@@ -1015,9 +1025,6 @@ int main(int argc, char *argv[])
 
   OwnCleanup();
   Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
-
-  // dmf test
-  // exit(0);
 
   return 0;
 }
@@ -1197,7 +1204,7 @@ void OwnInit   (int argc, char *argv[]) {
   FILE* pFile=NULL;
   char sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
   ReflFile *pRefFileLast;
-  double bintervalX=1.0, bintervalY=1.0, rot=0.0;
+  double bintervalX=1.0, bintervalY=1.0;
   int ibinX, ibinY;
 
   // guide parameter character usage:
@@ -1955,7 +1962,7 @@ double PathThroughGuideGravOrder1(int thread_i,
 
     if (ThisCollision == GW_EXIT) {
 
-      if(NearestNeutron.Vector[0] < 0.0)
+      if (NearestNeutron.Vector[0] < 0.0)
         return -1.0;
 
       /*  This feature rejects neutrons, which make reflections close to the guide exit */

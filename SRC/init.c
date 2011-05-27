@@ -212,7 +212,7 @@ static void *TWdata;
 #ifndef WIN32KNOWN
 # include <windows.h>
 # include <process.h>
-#define WIN32KNOWN 1
+# define WIN32KNOWN 1
 #endif
 
 static HANDLE hWriteMutex;
@@ -243,7 +243,7 @@ static void threadWriter (void *arg) {
 static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   uintptr_t trc;
   int nwr, rc;
-  // static int writerThread;
+
   if (!TWdata) {
     nwr = fwrite(d, s, n, f);
     return n == nwr;
@@ -267,7 +267,6 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   if (rc == 0)
     fprintf(LogFilePtr,"unable to ReleaseMutex in fwritePar, error: %d\n", GetLastError());
 
-  // rc = _beginthread( threadWriter, 0, &writerThread);
   trc = _beginthread( threadWriter, 0, 0);
 
   return trc != 0 && trc != -1;
@@ -809,9 +808,10 @@ void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ
   /* source module writes header lines */
   if (nModuleNo==0)
   { pFile = fopen( FullParName("instrument.inf"), "w");
-    fprintf(pFile, "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver.      W-Par.       "
-	    "H-Par.       R-Par       number  type Description\n");
-    fprintf(pFile, "# ----------------------------------------------------------------------------------------------"
+    fprintf(pFile,
+            "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver.      W-Par.       "
+	    "H-Par.       R-Par       number  type Description\n"
+            "# ----------------------------------------------------------------------------------------------"
 	    "--------------------------------------------------\n");
   }
   /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
@@ -945,10 +945,9 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
 }
 
 
-
-/***************************************************************/
-/* Copies the contents of a structure 'Neutron' to another one */
-/***************************************************************/
+/*************************************************************/
+/* Copy the contents of a structure 'Neutron' to another one */
+/*************************************************************/
 
 void CopyNeutron(Neutron *source, Neutron *dest)
 {
@@ -1268,8 +1267,6 @@ void   WriteTraceLine(Neutron* pNeutron)
               pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2],
               pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
               pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]);
-      /* fprintf(pFile, "%2d %-20.20s: t=% .5e y=% .5e z=% .5e col=%5d\n",  nModNr, sModuleName,
-                     pNeutron->Time, pNeutron->Position[1], pNeutron->Position[2], pNeutron->Color);*/
       fclose (pFile);
     }
   }

@@ -17,7 +17,6 @@
 #endif
 
 #ifdef _MSC_VER
-
 # include <float.h>
 # define M_PI            3.14159265358979323846  /* pi */
 # define M_PI_2          1.57079632679489661923  /* pi/2 */
@@ -56,13 +55,13 @@
 #define CHAR_BUF_SMALL      256
 
 #ifdef RND_SIMPLE
-  #ifdef WINDOWS
-    #define Vran() rand()
-  #else
-    #define Vran() random()
-  #endif
+# ifdef WINDOWS
+#  define Vran() rand()
+# else
+#  define Vran() random()
+# endif
 #else  
-  #define Vran() gsl_rng_uniform (vit_gsl_rng)
+# define Vran() gsl_rng_uniform (vit_gsl_rng)
 #endif
 
 typedef enum
@@ -248,7 +247,6 @@ typedef struct
 ModProp;
 
 
-
 /******************************/
 /** Prototypes               **/
 /******************************/
@@ -262,7 +260,7 @@ double LAMBDA_FROM_V(const double x);
 double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
 
-double sq   (const double Value);                        /* = Value*Value*/
+double sq   (const double Value);                        // Value*Value
 double atan0(const double a, const double b);
 double Round(const double value);
 double RoundP(const double value, const int decimal);
@@ -305,6 +303,5 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 #endif
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
-
 #endif
 
