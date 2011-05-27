@@ -30,7 +30,7 @@ static void doChunk(int thread_i);
 # include <windows.h>
 # include <process.h>
 #else
-#define WIN32KNOWN 1
+# define WIN32KNOWN 1
 #endif
 
 static HANDLE  hEvent1;
@@ -57,7 +57,7 @@ static void setDone () {
   if (outstanding) {
     outstanding--;
     if (outstanding == 0) all_done = 1;
-    }
+  }
   ReleaseMutex(hWorkMutex);
 
   if (all_done) {
@@ -100,10 +100,9 @@ static int initParallel (int nworkers) {
   hEvent1 = CreateEvent(NULL, TRUE, FALSE, NULL);
   hEvent2 = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-  hWorkMutex = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not 
-  hDoneMutex = CreateMutex( NULL, FALSE, NULL );  // request these mutexes here
-
-  hDebugMutex = CreateMutex( NULL, FALSE, NULL ); // request these mutexes here
+  hWorkMutex  = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not 
+  hDoneMutex  = CreateMutex( NULL, FALSE, NULL );  //   request these mutexes here
+  hDebugMutex = CreateMutex( NULL, FALSE, NULL );
 
   for (i=1; i<=nworkers; i++)
     winThread[i-1] = _beginthread( threadLoop, 0, (void *)i);
@@ -187,7 +186,7 @@ static void setDone () {
   if (outstanding) {
     outstanding--;
     if (outstanding == 0) all_done = 1;
-    }
+  }
   pthread_mutex_unlock(&work_m);
   if (all_done) {
     // signal work is done to master

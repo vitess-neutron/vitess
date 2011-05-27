@@ -43,7 +43,7 @@ char      sMsgText[MESSAGE_LEN+1]=""; /* message text build of table text and da
 
 void MsgInit()
 {
-	memset(stMessage, '\0', 10*sizeof(VtMessage));
+  memset(stMessage, 0, 10*sizeof(VtMessage));
 }
 
 
