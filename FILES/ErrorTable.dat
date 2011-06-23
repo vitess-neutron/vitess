@@ -7,4 +7,6 @@
 300 E %ld trajector%s passed outside the chopper
 800 E for %ld trajector%s the calculated Q-value is higher (or smaller) than all values in the file %s 
 801 E %ld trajector%s initially already inside (or behind) the sample
+802 E %ld trajector%s initially already inside the sample environment
+803 E %ld trajector%s initially already outside the sample environment
 901 E %ld trajector%s initially already inside the detector\nplease increase distance to compensate for the detector thickness
