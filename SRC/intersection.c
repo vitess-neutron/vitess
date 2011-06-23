@@ -449,7 +449,7 @@ long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Directio
 			t4 = t_cyl[0];
 		}
 		// if t4 is close to zero, the neutron has already passed through the hollow cylinder
-		if (t4 < 1.0E-06)
+		if (t4 < 1.0E-08)
 			rc = FALSE;
 		else
 			rc = TRUE;

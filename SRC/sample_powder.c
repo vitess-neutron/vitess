@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
       /* Do anything to be done for the Scattering */
       if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN))
       {
-        if (nisp < 2)
+        if (nisp == 1)
           CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
 
         /* the neutron may be scattered between InISP[0] and InISP[1] */
