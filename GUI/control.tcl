@@ -92,6 +92,43 @@ proc applySettings {} {
   showModulesAgain 1
 }
 
+# possible sizes of truetype fonts, first elements are Linux default,
+# second used for windows per default, thirs smallest possible
+set HFontSizes {13 9 7}
+set BFontSizes {12 9 7}
+set LFontSizes {11 8 6}
+set TFontSizes {10 8 6}
+
+set FontSizeIndex 0
+if {[getSystem] == "windows"} {set FontSizeIndex 1}
+
+proc setFontSizes {} {
+  global HFontSizes BFontSizes LFontSizes TFontSizes
+  global FontSizeIndex hfontsize lfontsize bfontsize tfontsize mfontsize monofontsize
+  set hfontsize [lindex $HFontSizes $FontSizeIndex]
+  set lfontsize [lindex $LFontSizes $FontSizeIndex]
+  set bfontsize [lindex $BFontSizes $FontSizeIndex]
+  set tfontsize [lindex $TFontSizes $FontSizeIndex]
+  set mfontsize $bfontsize
+  set monofontsize $tfontsize
+}
+
+proc smallerFonts {} {
+  global FontSizeIndex
+  if {$FontSizeIndex >= 2} return
+  incr FontSizeIndex
+  setFontSizes
+  showModulesAgain 1
+}
+
+proc biggerFonts {} {
+  global FontSizeIndex
+  if {$FontSizeIndex <= 0} return
+  incr FontSizeIndex -1
+  setFontSizes
+  showModulesAgain 1
+}
+
 proc chooseColor {{mode 1}} {
   global bgColor labColor radioColor menuButtonColor canvasColor\
       menuColor buttonColor entryColor
@@ -304,6 +341,8 @@ proc controlMenu {w} {
   set wo $w.opt.menu
   popMenu $wo \
       {c "Apply settings" applySettings} s\
+      {c "Smaller fonts" smallerFonts} \
+      {c "Bigger fonts" biggerFonts} s\
       {m Color color} s\
       {m "Info level" infolevel} \
       {m "Check mode" checkmode} \
@@ -401,6 +440,10 @@ proc sbuttonFont {} {
   global bfontfamily lfontsize bfonttype
   return [list $bfontfamily $lfontsize $bfonttype]
 }
+proc ssbuttonFont {} {
+  global tfontfamily lfontsize tfonttype
+  return [list $tfontfamily [expr $lfontsize - 1]  $tfonttype]
+}
 proc labelFont {} {
   global lfontfamily lfontsize lfonttype
   return [list $lfontfamily $lfontsize $lfonttype]
@@ -413,44 +456,42 @@ proc monoFont {} {
   global monofontfamily monofontsize monofonttype
   return [list $monofontfamily $monofontsize $monofonttype]
 }
-
+proc bigLabelFont {} {
+  global sserif FontSizeIndex
+  switch [getSystem] {
+    windows {set ls [lindex {18 14 12} $FontSizeIndex]}
+    default {set ls [lindex {20 18 14} $FontSizeIndex]}
+  }
+  if {$ls >= 16 && [winfo screenwidth .] <= 1024} {set ls 12}
+  return [list $sserif $ls bold]
+}
 
 proc setOptions {} {
   global serif sserif monospaced \
-      mfontfamily mfontsize mfonttype \
-      hfontfamily hfontsize hfonttype bfontfamily bfontsize bfonttype \
-      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype \
+      mfontfamily mfonttype \
+      hfontfamily hfonttype bfontfamily bfonttype \
+      lfontfamily lfonttype tfontfamily tfonttype \
       monofontfamily monofontsize monofonttype
   if [info exists hfontfamily] return
 
+  setFontSizes
+
   set hfontfamily $sserif
-  set hfontsize 13
   set hfonttype bold
 
   set bfontfamily $sserif
-  set bfontsize 12
   set bfonttype bold
 
   set lfontfamily $serif
-  set lfontsize 11
   set lfonttype bold
 
   set tfontfamily $sserif
-  set tfontsize 10
   set tfonttype normal
 
   set monofontfamily $monospaced
-  set monofontsize $tfontsize
   set monofonttype $tfonttype
 
-  if {[getSystem] == "windows"} {
-    incr hfontsize -4
-    incr lfontsize -3
-    incr bfontsize -3
-    incr tfontsize -2
-  }
   set mfontfamily $bfontfamily
-  set mfontsize $bfontsize
   set mfonttype $bfonttype
 
   set mf [menubarFont]
@@ -577,7 +618,7 @@ proc trVar {n e op} {
 
 proc showBeef {w} {
   global bgColor canvasColor buttonColor xcontrolDefaultsESET \
-      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot
+      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot FontSizeIndex
 
   set XRoot $w
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
@@ -604,20 +645,23 @@ proc showBeef {w} {
   frame $w.h.input -bg $bgColor -relief sunken -bd 2
   pack $w.h.input -fill both
 
-  if {[getSystem] == "windows"} {
-    set cw 8c;				# list canvas width
-    set ch 7.3c;			# list canvas height
-    set amw 17c;			# actual module frame width
-    set Tth 10;				# text window height
-    set cmw 11c;                        # header canvas width
-    set hcs 20;                         # VITESS header text size
-  } else {
-    set cw 9c
-    set ch 10c
-    set amw 19c
-    set Tth 12
-    set cmw 12c
-    set hcs 24
+  switch [getSystem] {
+    windows {
+      set cw 8c;			   	   # list canvas width
+      set ch 7.3c;	    		           # list canvas height
+      set amw 17c;			           # actual module frame width
+      set Tth 10;				   # text window height
+      set cmw 11c;                                 # header canvas width
+      set hcs [lindex {20 16 12} $FontSizeIndex];  # VITESS header text size
+    }
+    default {
+      set cw 9c
+      set ch 10c
+      set amw 19c
+      set Tth 12
+      set cmw 12c
+      set hcs [lindex {24 18 14} $FontSizeIndex]
+    }
   }
   set sh 50c;				# scrolled list virtual height
   frame $Root.l -relief sunken -bd 2
@@ -656,10 +700,9 @@ proc showBeef {w} {
 	-font [list $sserif $hcs bold] -anchor n -text $t
     pack $w.bm.hlab $w.bm.c -side left
   }
-  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
-  label $w.bm.notice -bg $bgColor -fg steelblue \
-      -text "Click parameter names for help!"\
-      -font [list $sserif $ls bold]
+
+  label $w.bm.notice -bg $bgColor -fg steelblue -font [bigLabelFont]\
+      -text "Click parameter names for help!"
   pack $w.bm.notice -side right
   bind $w.bm.notice <ButtonPress> {showHelpItem VITESS-GUI}
 
@@ -669,7 +712,7 @@ proc showBeef {w} {
 
   helpFrame $Amf
 
-### action buttons
+  ### action buttons
   global fileentrywidth LastWin LastState Progress ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
