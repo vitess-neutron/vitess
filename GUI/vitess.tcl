@@ -409,6 +409,7 @@ set smoESET [concat {
 set lmoESET $smoESET
 
 # all pulsed source moderator descriptions need a big scrollable edit frame
+set BigFramecmo 1
 set BigFramesmo 1
 set BigFramelmo 1
 
@@ -3725,8 +3726,8 @@ proc serializeCrsFile {f mode var app} {
       set oframedef "standard frame generation"
     } else {
       set oframedef "user defined frame"
-      readNumItems $f $blist $app
     }
+    readNumItems $f $blist $app
   } else {
     if {$oframedef == "user defined frame"} {set odef 1} else {set odef 0}
     puts $f "$mposx $mposy $mposz\n$offahoriz $offavert"

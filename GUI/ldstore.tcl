@@ -344,13 +344,12 @@ proc setInstrumentName {} {
 }
 
 proc setInstrumentfile {name} {
-  global instrumentfile sserif
+  global instrumentfile
   regsub -all " " $name _ name
   set instrumentfile $name
   regexp {[0-9a-zA-ZäöüÄÖÜß_-]+} [file tail $instrumentfile] a
-  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
-  .x.bm.hlab configure -text "Instrument $a" \
-      -font [list $sserif $ls bold]
+
+  .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont]
 }
 
 

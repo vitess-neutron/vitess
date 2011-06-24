@@ -312,6 +312,7 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
 
 
 proc giveRoom {w c} {
+  # use a scroll frame, if global variable c is set
   if {[info globals $c] == ""} {
     return $w
   }
@@ -322,5 +323,6 @@ proc giveRoom {w c} {
     set ew 18c
     set eh 20c
   }
+
   return [scrollFrame $w right $ew $eh 30c]
 }

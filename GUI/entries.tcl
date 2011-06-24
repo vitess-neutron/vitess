@@ -189,19 +189,20 @@ proc fileEntry {w line labelwidth width {app _}} {
     set ww1 4
     set ww2 2
   }
-  button $w.b -text Browse -background $bgColor -width $ww1\
+  set fnt [ssbuttonFont]
+  button $w.b -text Browse -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app open $dirtype $ext 1]
   if {$dirtype == "d"} {set tt NewDir} {set tt BrowseN}
-  button $w.bn -text $tt -background $bgColor -width $ww1\
+  button $w.bn -text $tt -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app write $dirtype $ext]
 
   if {$entype != ""} {
-    button $w.x -text Edit -background $bgColor -width $ww2\
+    button $w.x -text Edit -background $bgColor -width $ww2 -font $fnt\
 	-command "editFile $variable $entype $ext $app"
     if {$entype < 2} {
       pack $w.l $w.e $w.b $w.bn $w.x -side left -anchor w
     } else {
-      button $w.p -text Plot -background $bgColor -width $ww2\
+      button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
 	  -command [list plotMonFile $dim $variable $app]
       forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
