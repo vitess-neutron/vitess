@@ -48,7 +48,7 @@ proc textWindow {w th tfont {series 0}} {
 # separate window(big).
 #
 proc sizeTextWindow {{bigwin 0} {series 0}} {
-  global Textw Bigw Tth bgColor tfontfamily tfontsize tfonttype scrollWidth LastMarker
+  global Textw Bigw Tth bgColor tfontfamily tfontsize tfonttype scrollWidth LastMarker FontSizeIndex
   upvar #0 Messagew w
   set fontsize $tfontsize
   set scrollWidth 8
@@ -58,7 +58,7 @@ proc sizeTextWindow {{bigwin 0} {series 0}} {
     set Bigw .message
     generateToplevel $Bigw "VITESS Output"
     set w $Bigw.t
-    if {"windows" == [getSystem]} {
+    if {$FontSizeIndex >= 1} {
       set th 30
       incr fontsize 1
     } else {
@@ -280,7 +280,8 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
   if {$set != ""} {
     setGlobals 0 $set $app
   }
-  if {$geo != "" && [getSystem] == "windows"} {
+  global FontSizeIndex
+  if {$geo != "" && $FontSizeIndex >= 1} {
     # adjust windows to be higher: 90 % margin to top
     if {4 == [scan $geo "%dx%d+%d+%d" width height gx gy]} {
       set geo ${width}x${height}+${gx}+[expr int(0.9*$gy)]
@@ -316,7 +317,8 @@ proc giveRoom {w c} {
   if {[info globals $c] == ""} {
     return $w
   }
-  if {[getSystem] == "windows"} {
+  global FontSizeIndex
+  if {$FontSizeIndex >= 1} {
     set ew 16c;  # edit frame width
     set eh 18c;  # edit frame height
   } else {

@@ -108,7 +108,7 @@ proc showXYfile {fname} {
   set p [lsort -command pCompare $p]
 
   set graph $fname
-  global Egr bfontfamily lfontsize
+  global Egr bfontfamily lfontsize FontSizeIndex
 
   set Egr($graph,xmin) $xmin
   set Egr($graph,ymin) $ymin
@@ -131,7 +131,8 @@ proc showXYfile {fname} {
 
   # x0 is the left margin and position of y axis
   #   it should be big enough to allow axis labels left to to the y axis
-  set yfont [list $bfontfamily [expr $lfontsize - 4] normal]
+  if {$FontSizeIndex > 0} {set sms 1} else {set sms 3}
+  set yfont [list $bfontfamily [expr $lfontsize - $sms] normal]
   set x0 [font measure $yfont 123456789012]
   set Egr($graph,xref) $x0
   # xright is the right margin of the data rectangle
@@ -171,7 +172,7 @@ proc showXYfile {fname} {
   # x axis
   $c create line $x0 $y0 [expr $canvaswidth - $xright] $y0 -width 1
 
-  set xfont [list $bfontfamily [expr $lfontsize - 2] bold]
+  set xfont [list $bfontfamily [expr $lfontsize - $sms + 1] bold]
   for {set t $nicex_min} {$t <= $xmax} {set t [expr $t+$delta_x]} {
     if {$t >= $xmin} {
       set x [x2canvas $graph $t]

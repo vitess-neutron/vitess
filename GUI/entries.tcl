@@ -153,7 +153,7 @@ proc valEntryLabel {w variable label labelwidth width {app _}} {
 }
 
 proc fileEntry {w line labelwidth width {app _}} {
-  global bgColor radioColor
+  global bgColor radioColor FontSizeIndex
   lFrame $w
   set variable [lindex $line 0]
   forceDef $variable$app [lindex $line 2]
@@ -182,7 +182,7 @@ proc fileEntry {w line labelwidth width {app _}} {
   }
     
   # reduced width to save place, use text length - 2
-  if {[getSystem] == "windows"} {
+  if {$FontSizeIndex >= 1} {
     set ww1 7
     set ww2 4
   } else {
