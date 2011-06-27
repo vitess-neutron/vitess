@@ -178,8 +178,11 @@ static char *conCat (const char *b, const char* c, int sel) {
   clen = strlen(c);
   if ((res = (char *) malloc(alen+blen+clen+1))) {
     if (alen) {
-      strcpy(res, a);
-      strcat(res, c);
+      memcpy(res, a, alen);
+      if (clen)
+        strcpy(res+alen, c);
+      else
+        res[alen} = 0;
     } else
       strcpy(res, c);
     strcat(res, b);
