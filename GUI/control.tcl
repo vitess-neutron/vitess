@@ -92,15 +92,22 @@ proc applySettings {} {
   showModulesAgain 1
 }
 
-# possible sizes of truetype fonts, first elements are Linux default,
-# second used for windows per default, thirs smallest possible
+# possible sizes of truetype fonts, first elements are default
+# for for displays > 1024x780,
+# second used for windows per default, third smallest possible
 set HFontSizes {13 9 7}
 set BFontSizes {12 9 7}
 set LFontSizes {11 8 6}
 set TFontSizes {10 8 6}
 
-set FontSizeIndex 0
-if {[getSystem] == "windows"} {set FontSizeIndex 1}
+set FontSizeMinIndex 0
+# check the maximal window size
+if {[winfo screenwidth .] <= 1024 ||
+    [winfo screenheight .] <= 780 ||
+    [getSystem] == "windows"} {
+  set FontSizeMinIndex 1
+}
+set FontSizeIndex $FontSizeMinIndex
 
 proc setFontSizes {} {
   global HFontSizes BFontSizes LFontSizes TFontSizes
@@ -122,8 +129,8 @@ proc smallerFonts {} {
 }
 
 proc biggerFonts {} {
-  global FontSizeIndex
-  if {$FontSizeIndex <= 0} return
+  global FontSizeIndex FontSizeMinIndex
+  if {$FontSizeIndex <= $FontSizeMinIndex} return
   incr FontSizeIndex -1
   setFontSizes
   showModulesAgain 1
@@ -571,7 +578,7 @@ proc performCommand {prog mod {tw ""} {ts ""}} {
 }
 
 proc doGUICommand {prog mod {big ""}} {
-  global bgColor
+  global bgColor FontSizeIndex
   set w .guitool
   catch {destroy $w}
   generateToplevel $w "Tool Module $mod"
@@ -579,7 +586,7 @@ proc doGUICommand {prog mod {big ""}} {
   if {$big != ""} {
     set ew 16
     set eh 12
-    if {[getSystem] != "windows"} {
+    if {$FontSizeIndex == 0} {
       incr ew 2
       incr eh 2
     }
@@ -645,22 +652,26 @@ proc showBeef {w} {
   frame $w.h.input -bg $bgColor -relief sunken -bd 2
   pack $w.h.input -fill both
 
-  switch [getSystem] {
-    windows {
-      set cw 8c;			   	   # list canvas width
-      set ch 7.3c;	    		           # list canvas height
-      set amw 17c;			           # actual module frame width
-      set Tth 10;				   # text window height
-      set cmw 11c;                                 # header canvas width
-      set hcs [lindex {20 16 12} $FontSizeIndex];  # VITESS header text size
-    }
-    default {
+  # the FontSizeIndex select the size of GUI canvas sizes
+  # 0 for relative big workstation displays
+  # 1,2.. smaller displays, like VGA resolution
+
+  switch $FontSizeIndex {
+    0 {
       set cw 9c
       set ch 10c
       set amw 19c
       set Tth 12
       set cmw 12c
       set hcs [lindex {24 18 14} $FontSizeIndex]
+    }
+    default {
+      set cw 8c;			   	   # list canvas width
+      set ch 7.3c;	    		           # list canvas height
+      set amw 17c;			           # actual module frame width
+      set Tth 10;				   # text window height
+      set cmw 11c;                                 # header canvas width
+      set hcs [lindex {20 16 12} $FontSizeIndex];  # VITESS header text size
     }
   }
   set sh 50c;				# scrolled list virtual height
@@ -791,8 +802,7 @@ proc controlGUI {
     setOptions
     wm title . "Last chance"
     wm geometry . +400+400
-    if {[getSystem] == "windows"} {set bs 12} else {set bs 14}
-    set font [list $sserif $bs bold]
+    set font [buttonFont]
     button .sos -text "Restore Xcontrol" \
 	-command [list controlGUI $defaultdirectory $edescription $w $geo 1] \
 	-font $font -bg $buttonColor
