@@ -104,7 +104,7 @@ Alternatively you may the script callVitess provided in the tarball.
 Missing shared libraries?
 -------------------------
 installAndTest may find shared libraries needed e.g. for the
-bender executable. Those libraries may be missing on minimal 
+bender or visual executable. Those libraries may be missing on minimal 
 systems, but are easily installed from RPMs by your local Unix guru.
 
 Compilation from sources
