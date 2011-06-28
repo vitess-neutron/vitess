@@ -182,7 +182,7 @@ static char *conCat (const char *b, const char* c, int sel) {
       if (clen)
         strcpy(res+alen, c);
       else
-        res[alen} = 0;
+        res[alen] = 0;
     } else
       strcpy(res, c);
     strcat(res, b);
