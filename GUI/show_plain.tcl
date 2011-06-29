@@ -44,9 +44,6 @@ proc nicenum {x floor} {
     return [expr -$nf * pow(10,$exponX)]
   }
   set value [expr $nf * pow(10,$exponX)]
-  if {abs($value-$x) > 100} {
-    return $x
-  }
   return $value
 }
 
@@ -69,7 +66,6 @@ proc pCompare {a b} {
 }
 
 proc prettyNumber {t} {
-  if {[string length $t] <= 11} {return $t}
   return [format %g $t]
 }
 
@@ -181,7 +177,7 @@ proc showXYfile {fname} {
       # tick on top
       $c create line $x $ytop $x [expr $ytop + $ticklen]
       # add the label
-      $c create text [x2canvas $graph $t] $texty -text $t -font $xfont -anchor n
+      $c create text [x2canvas $graph $t] $texty -text [prettyNumber $t] -font $xfont -anchor n
     }
   }
 
