@@ -320,11 +320,14 @@ proc giveRoom {w c} {
   global FontSizeIndex
   if {$FontSizeIndex >= 1} {
     set ew 16c;  # edit frame width
-    set eh 18c;  # edit frame height
+    set eh 18;  # edit frame height
   } else {
     set ew 18c
-    set eh 20c
+    set eh 20
   }
 
-  return [scrollFrame $w right $ew $eh 30c]
+  # maxh: maximal height in cm, 70 % of display_pix_height / pix_per_cm
+  set maxh [expr 0.7 * [winfo screenheight .] / [winfo fpixels . 1c]]
+  if {$eh > $maxh}  {set eh $maxh}
+  return [scrollFrame $w right $ew ${eh}c 30c]
 }
