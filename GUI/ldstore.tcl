@@ -349,7 +349,7 @@ proc setInstrumentfile {name} {
   set instrumentfile $name
   regexp {[0-9a-zA-ZäöüÄÖÜß_-]+} [file tail $instrumentfile] a
 
-  .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont]
+  .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
 }
 
 

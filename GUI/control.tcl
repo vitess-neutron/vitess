@@ -95,7 +95,7 @@ proc applySettings {} {
 # possible sizes of truetype fonts, first elements are default
 # for for displays > 1024x780,
 # second used for windows per default, third smallest possible
-set HFontSizes {13 9 7}
+set HFontSizes {12 9 7}
 set BFontSizes {12 9 7}
 set LFontSizes {11 8 6}
 set TFontSizes {10 8 6}
@@ -463,12 +463,10 @@ proc monoFont {} {
   global monofontfamily monofontsize monofonttype
   return [list $monofontfamily $monofontsize $monofonttype]
 }
-proc bigLabelFont {} {
+proc bigLabelFont {{a ""}} {
   global sserif FontSizeIndex
-  switch [getSystem] {
-    windows {set ls [lindex {18 14 12} $FontSizeIndex]}
-    default {set ls [lindex {20 18 14} $FontSizeIndex]}
-  }
+  set ls [lindex {18 14 12} $FontSizeIndex]
+  if {$a != ""} {incr ls $a}
   if {$ls >= 16 && [winfo screenwidth .] <= 1024} {set ls 12}
   return [list $sserif $ls bold]
 }
@@ -656,22 +654,40 @@ proc showBeef {w} {
   # 0 for relative big workstation displays
   # 1,2.. smaller displays, like VGA resolution
 
+  # pcm: pixel per cm
+  set pcm [winfo fpixels . 1c]
+
+  # hpx available whole window height in pixel
+  set hpx [winfo screenheight .]
+
+  # ch: fixed height of module list and visible module window, in cm
+  # 0.8 means the VITESS window should not take more than 80 % of the display height
+  # 12/28 is the ratio of module list window per total height we want to obtain
+  
+  set ch [expr $hpx * 0.8 * 12.0/28.0 / $pcm]c
+  
+  # length and width of window components given in cm
+  # cw    list canvas width
+  # ch    list canvas height
+  # amw   actual module frame width
+  # cmw   header canvas width
+  # vbh   vitess banner height
+
+  # Tth   text window height, in characters of given font, means visible text lines
+  set Tth 10
+  
   switch $FontSizeIndex {
     0 {
       set cw 9c
-      set ch 10c
       set amw 19c
-      set Tth 12
       set cmw 12c
-      set hcs [lindex {24 18 14} $FontSizeIndex]
+      set vbh 1.0c
     }
     default {
-      set cw 8c;			   	   # list canvas width
-      set ch 7.3c;	    		           # list canvas height
-      set amw 17c;			           # actual module frame width
-      set Tth 10;				   # text window height
-      set cmw 11c;                                 # header canvas width
-      set hcs [lindex {20 16 12} $FontSizeIndex];  # VITESS header text size
+      set cw 8c
+      set amw 17c
+      set cmw 11c
+      set vbh 0.8c
     }
   }
   set sh 50c;				# scrolled list virtual height
@@ -699,21 +715,21 @@ proc showBeef {w} {
   setInstrumentfile 1
   bind $w.bm.hlab <ButtonPress> setInstrumentName
 
+  set blf [bigLabelFont]
   upvar #0 MainBitmap bitm
   if {[info exists bitm] && $bitm != "" && ![catch {glob $bitm}]} {
     image create photo image1 -file $bitm
     label $w.bm.c -image image1 -bd 1 -relief sunken
     pack $w.bm.c $w.bm.hlab -padx .5m -pady .5m
   } else {
-    canvas $w.bm.c -width $cmw -height 1.2c -bg $canvasColor \
+    canvas $w.bm.c -width $cmw -height $vbh -bg $canvasColor \
 	-highlightbackground $canvasColor
-    $w.bm.c create text 7c 5 -fill steelblue \
-	-font [list $sserif $hcs bold] -anchor n -text $t
+    $w.bm.c create text 7c 5 -fill steelblue -font $blf -anchor n -text $t
     pack $w.bm.hlab $w.bm.c -side left
   }
 
-  label $w.bm.notice -bg $bgColor -fg steelblue -font [bigLabelFont]\
-      -text "Click parameter names for help!"
+  set blf [bigLabelFont -3]
+  label $w.bm.notice -bg $bgColor -fg steelblue -font $blf -text "Click parameter names for help!"
   pack $w.bm.notice -side right
   bind $w.bm.notice <ButtonPress> {showHelpItem VITESS-GUI}
 
