@@ -9,7 +9,7 @@
 
 # All variable here are global by default, because vitess.tcl is sourced in
 # the global call context.
-# VITESS lobal variable names follow some conventions:
+# VITESS global variable names follow some conventions:
 # - variable names must be of the form [a-zA-Z][a-zA-Z0-9_.]+
 # - an _ underscore as last character is for entry value variables only
 # - if the first character is uppercase, the variable will not be saved / loaded
@@ -45,7 +45,6 @@ set DoNotSave {
   maxModule menuButtonColor menubarfont menuColor
   monospaced monofontfamily monofontsize monofonttype
   noBLT
-  outfilename_
   place plotapp_ plotmode
   radioColor
   savedir_ scrollWidth simulation serif sserif
