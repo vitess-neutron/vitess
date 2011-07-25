@@ -49,8 +49,6 @@ proc finalCheck {} {
 }
 
 proc confirmedExit {} {
-  # debug
-  # exit
   global TryingToExit KillMe
   if {[info exists KillMe] && $KillMe} return
   set nt [clock seconds]
@@ -61,6 +59,7 @@ proc confirmedExit {} {
   }
   if [dontDoit "Exit VITESS\nchanges not saved yet"] return
   set KillMe 1
+  catch {closeCmdHandles}
   finalCheck
   exit
 }

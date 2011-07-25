@@ -69,17 +69,77 @@ proc prettyNumber {t} {
   return [format %g $t]
 }
 
-proc showXYfile {fname} {
+
+proc getFreeCmdHandle {} {
+  global CmdFileInd
+  if [info exists CmdFileInd] {
+    set CmdFileInd [expr ($CmdFileInd + 1) % 8]
+  } else {
+    set CmdFileInd 0
+  }
+  return $CmdFileInd
+}
+
+proc closeCmdHandles {} {
+  for {set i 0} {$i < 8} {incr i} {
+    upvar #0 FH$i gp
+    if [info exists gp] {
+      catch {close $gp}
+    }
+  }
+}
+
+proc useExtPlotCmd {app fname {sys ""}} {
+  upvar #0 FH[getFreeCmdHandle] gp
+  if {! [info exists gp]} {
+    set gp [open "|$app" r+]
+    if {$sys == "windows"} {
+      puts $gp "set term $sys"
+    }
+  }
+  puts $gp "plot '$fname'"
+  flush $gp
+} 
+
+proc checkXYfile  {fname} {
   if [catch {open $fname r} f] {
     showText "! can't open $fname"
-    return
+    return 0
   }
   if [eof $f] {
     close $f
     showText "! empty $fname"
-    return
+    return 0
+  }
+  gets $f ins
+  close $f
+  if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
+    showText "! insufficient XY plot file"
+    return 0
+  }
+  return 1
+}
+
+proc showXYfile {fname} {
+
+  if {! [checkXYfile $fname]} return
+
+  set gcmd [globVal plotapp_]
+  set mysys [getSystem] 
+  if {$gcmd != ""} {
+    if {$mysys == "unix"} {
+      if {! [file exists $gcmd]} {
+        set gcmd [exec which $gcmd]
+      }
+    }
+    if [file exists $gcmd] {
+      useExtPlotCmd $gcmd $fname $mysys
+      return
+    }
   }
 
+  set f [open $fname r]
+ 
   set i [getFreePlot]
   set w .plot$i
 
@@ -179,7 +239,10 @@ proc showXYfile {fname} {
       # add the label
       $c create text [x2canvas $graph $t] $texty -text [prettyNumber $t] -font $xfont -anchor n
     }
+    # at least one tic text, even if all values are 0, but stop the loop in this case!
+    if {$delta_x <= 0} break
   }
+
 
   # y axis
   $c create line $x0 $y0 $x0 $ytop -width 1
@@ -202,6 +265,8 @@ proc showXYfile {fname} {
       # add the label
       $c create text $textx $y -text [prettyNumber $f] -anchor e -font $yfont
     }
+    # at least one tic text, even if all values are 0, but stop the loop in this case!
+    if {$delta_y <= 0} break
   }
 
   # draw data points
