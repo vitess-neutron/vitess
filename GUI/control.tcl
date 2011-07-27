@@ -221,7 +221,6 @@ proc controlMenu {w} {
       {c "Edit *.inf File" {editInfFile 1}} s\
       {c "Plot File" {plotFile 1}} \
       {c "2D Plot File" {plotFile 2}} \
-      {c "Ext. Plot File" plotFile} s \
       {c} \
       {c EXIT confirmedExit}
 
@@ -364,7 +363,7 @@ proc controlMenu {w} {
       {m label lfont} s\
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
-      {c "external settings" editDefaults} s\
+      {c "Helper applications" editDefaults} s\
       {m Buffersize buffersize}
 
   set ww $wo.intern
