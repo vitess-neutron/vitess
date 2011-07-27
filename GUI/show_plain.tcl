@@ -81,7 +81,7 @@ proc getFreeCmdHandle {} {
 }
 
 proc closeCmdHandles {} {
-  for {set i 0} {$i < 8} {incr i} {
+  for {set i 0} {$i < 4} {incr i} {
     upvar #0 FH$i gp
     if [info exists gp] {
       catch {close $gp}
@@ -89,57 +89,72 @@ proc closeCmdHandles {} {
   }
 }
 
-proc useExtPlotCmd {app fname {sys ""}} {
-  upvar #0 FH[getFreeCmdHandle] gp
-  if {! [info exists gp]} {
+proc useExtPlotCmd {app fname} {
+  global WindowIndex Plotfile
+  upvar #0 FH0 gp
+  if [info exists gp] {
+    set WindowIndex [expr ($WindowIndex + 1) % 4]
+  } else {
     set gp [open "|$app" r+]
-    if {$sys == "windows"} {
-      puts $gp "set term $sys"
-    }
+    set WindowIndex 0
   }
+  set wxtcmd "set term wxt $WindowIndex size 480,360"
+  puts $gp $wxtcmd
+
+  # keyboard bindings to print and generate PDF files:
+  #   keyboard P pressed: generate a PDF file
+  set ofn [tmpFilename plot.pdf]
+  switch [set mysys [getSystem]] {
+    unix {set dummy /dev/null}
+    windows {set dummy nul}
+  }
+  #   second set output command is to close the pdf file
+  #   wxt command in the end, to show further plots
+  set c "set term pdf color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+  puts $gp "bind P \"$c\""
+
+  #   keyboard p pressed: send postcript output to the default printer
+  #                       for other systems just bind p to generating a PDF file, too
+  if {$mysys == "unix"} {
+    set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+  }
+  puts $gp "bind p \"$c\""
+
   puts $gp "plot '$fname'"
   flush $gp
-} 
+}
 
-proc checkXYfile  {fname} {
-  if [catch {open $fname r} f] {
-    showText "! can't open $fname"
-    return 0
+proc getPreferredPlotCmd {} {
+  global PreferredPlotCmd
+  if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
+  set PreferredPlotCmd ""
+  switch [getSystem] {
+    unix {return [set PreferredPlotCmd [exec which gnuplot]]}
+    windows {
+      foreach pat {* */* */*/*} {
+        foreach d {C D} {
+          set li [glob -nocomplain $d:/$pat/binary/gnuplot.exe]
+          if {[llength $li] > 0} {
+            return [set PreferredPlotCmd [lindex $li 0]]
+          }
+        }
+      }
+    }
+    default {return ""}
   }
-  if [eof $f] {
-    close $f
-    showText "! empty $fname"
-    return 0
-  }
-  gets $f ins
-  close $f
-  if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
-    showText "! insufficient XY plot file"
-    return 0
-  }
-  return 1
 }
 
 proc showXYfile {fname} {
 
-  if {! [checkXYfile $fname]} return
+  if {! [checkPlotfile $fname]} return
 
-  set gcmd [globVal plotapp_]
-  set mysys [getSystem] 
-  if {$gcmd != ""} {
-    if {$mysys == "unix"} {
-      if {! [file exists $gcmd]} {
-        set gcmd [exec which $gcmd]
-      }
-    }
-    if [file exists $gcmd] {
-      useExtPlotCmd $gcmd $fname $mysys
-      return
-    }
+  if {"" != [set gcmd [getPreferredPlotCmd]]} {
+    useExtPlotCmd $gcmd $fname
+    return
   }
 
   set f [open $fname r]
- 
+
   set i [getFreePlot]
   set w .plot$i
 
@@ -159,7 +174,7 @@ proc showXYfile {fname} {
   }
   close $f
 
-  # input data may not have ordered x values: 
+  # input data may not have ordered x values:
   # sort them so that we may connect them by a graph line
   set p [lsort -command pCompare $p]
 
@@ -197,8 +212,8 @@ proc showXYfile {fname} {
   set Egr($graph,yref) [set ymargin 30]
   # ytop is the top margin
   set Egr($graph,ytop) [set ytop 8]
-  
-  # y0 is the canvas y coordinate of the x axis 
+
+  # y0 is the canvas y coordinate of the x axis
   set y0 [expr $canvasheight - $ymargin + $ytop]
 
   # value ranges of data

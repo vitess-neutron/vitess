@@ -39,17 +39,31 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   }
 }
 
-# show 2d array coded with colors
-proc show2Dfile {fname} {
+proc checkPlotfile  {fname} {
   if [catch {open $fname r} f] {
     showText "! can't open $fname"
-    return
+    return 0
   }
   if [eof $f] {
     close $f
     showText "! empty $fname"
-    return
+    return 0
   }
+  gets $f ins
+  close $f
+  if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
+    showText "! insufficient plot file"
+    return 0
+  }
+  return 1
+}
+
+# show 2d array coded with colors
+proc show2Dfile {fname} {
+
+  if {! [checkPlotfile $fname]} return
+
+  set f [open $fname r]
 
   set i [getFreePlot]
   set w .plot$i
@@ -59,11 +73,7 @@ proc show2Dfile {fname} {
   set xl {};	 # x tic values
   set yl {};     # y tic values
 
-  if {[gets $f ins] <= 0} {
-    close $f
-    showText "! empty file $fname"
-    return
-  }
+  gets $f ins
 
   set ll [eval list $ins]
   if [string compare "#x y z" "$ll"] {
@@ -174,24 +184,8 @@ proc plotFile {{twod 0}} {
   catch {fileDialog open} name
   if {$name == ""} return
   switch $twod {
-    2 { show2Dfile $name}
     1 { showXYfile $name}
-    0 {
-      global plotapp_ tcl_platform
-      if {$tcl_platform(platform) == "windows"} {
-	if [catch {glob $plotapp_} resname] {
-	  showText "!No valid plot application specified"
-	  return
-	}
-	set plotapp_ $resname
-      }
-      set tname [tmpFilename tplot.dat]
-      if [catch {open $tname w} f] return
-      puts $f "plot '$name'\npause -1\n"
-      close $f
-      catch {exec 2> /dev/null $plotapp_ $tname &}
-      catch {file delete $tname}
-    }
+    2 { show2Dfile $name}
   }
 }
 
