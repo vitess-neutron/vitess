@@ -152,7 +152,7 @@ proc storeAll {extension {prosal ""} {as ""}} {
     if {$la > 0} {set n [string range $n 0 [incr la -1]]}
     setInstrumentfile $n
   } else {
-    if {[set f [openWriteFile $extension]] == 0} return
+    if {[set f [openWriteFile $extension "" fname]] == 0} return
   }
   switch $extension {
     gui {
@@ -172,7 +172,7 @@ proc storeAll {extension {prosal ""} {as ""}} {
     }
   }
   close $f
-  outProtocol "file stored"
+  outProtocol "stored file $fname"
   conditionalCloseProtfile
   gSet LastState [generateVitessCommand kstate]
 }

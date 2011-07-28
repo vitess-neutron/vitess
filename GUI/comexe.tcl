@@ -38,27 +38,52 @@ proc unzipCom {fname} {
   return ""
 }
 
-set COPYCOM {
-proc pcom {fn res} {
-  upvar $res r
-  set f [open $fn r]
-  while {[gets $f ins] > 0} {append r $ins}
-  close $f
-  file delete $fn
-}
-proc pwrite {fn res} {
-  set f [open $fn w]
-  puts $f $res
-  close $f
+set TCL_TOOL {
+proc pwrite {fnw pattern} {
+  set fo [open $fnw w]
+  foreach fn [glob $pattern*] {
+    set f [open $fn r]
+    while {[gets $f ins] > 0} {puts $fo $ins}
+    close $f
+    file delete $fn
+  }
+  close $fo
 }
 }
 
+set PERL_TOOL {
+sub pwrite {
+  my ($fnw, $pattern) = @_;
+  open FO,">$fnw";
+  foreach $fn (glob("$pattern*")) {
+    open F, $fn;
+    print FO $_ while <F>;
+    close F;
+    unlink $fn;
+  }
+  close FO;
+}
+}
+
+# do not change indentation in PYTHON_TOOL
+set PYTHON_TOOL {
+import os
+import glob
+from string import Template
+def pwrite(fn,pattern):
+ f=open(fn, 'w')
+ for name in glob.glob(pattern+'*'):
+  for line in open(name):
+   f.write(line)
+  os.remove(name)
+ f.close
+}
 
 ### compose the VITESS command pipe string
 ###
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
-  # mode may be: action bat tcl grd ser kstate
+  # mode may be: action bat sh tcl pl py grd ser kstate
 
   # kstate is used to generate a hash of all settings, and the output should ignore
   # things like the input, output file and overall options, because these are not saved
@@ -70,7 +95,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize
 
   switch [set Comode $mode] {
-    bat - tcl - grd - ser {set prefi \$V}
+    bat - sh - tcl - pl - py - grd - ser {set prefi \$V}
     default {
       set prefi $ExeDirectory
       set Plotfile {}; set Plottype {}
@@ -97,7 +122,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   # select parallel image versions for batch processing, ignore this for kstate,
   # and use parallel image version if helper threads have been demanded otherwise
   switch $mode {
-    bat - tcl - grd - ser {set par _parallel}
+    bat - sh - tcl - pl - py - grd - ser {set par _parallel}
     kstate { }
     default {if {[entryVal helpthreads] > 0} {set par _parallel} }
   }
@@ -105,22 +130,30 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set pdir [entryVal defdirectory]
   set insert "$fc --B$buffersize --P";	# general command options
   switch $mode {
-    bat - tcl - grd {append insert \$P}
+    bat - sh - tcl - pl -  py - grd {append insert \$P}
     default {append insert $pdir}
   }
 
   # restart construction of fc, general options have been saved to variable insert
   switch $mode {
-    bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    bat {set fc "V=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
     tcl {
-      global COPYCOM
-      set fc "\#!/usr/bin/tclsh$COPYCOM\nset V $ExeDirectory\nset P $pdir\nset L $logf\n"
+      set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
 	append fc "set env(GSL_RNG_$vv) $t\n"
       }
       append fc "exec "
+    }
+    pl {
+      set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
+      }
+      append fc "system \""
     }
     default {set fc ""}
   }
@@ -189,7 +222,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
     set logopt $logf$i
     switch $mode {
-      bat - tcl - grd {set imore  " $insert --L\$\{L\}$i"}
+      bat - sh - tcl - pl - py - grd {set imore  " $insert --L\$\{L\}$i"}
       default {set imore " $insert --L$logopt"}
     }
     if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
@@ -247,9 +280,32 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   # get rid of superfluous blanks
   regsub -all "  " $fc " " fc
 
+  # for script file output replace parameter directory strings by $P
   switch $mode {
-    bat {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*\n"}
-    tcl {append fc "\n\nforeach fn \[glob \$L*\] \{pcom \$fn res\}\npwrite \$P/result.txt \$res\n"}
+   bat - sh - tcl - pl - py {
+     regsub -all "$pdir/" $fc "\$P/" fc
+   }
+   default {}
+  }
+
+  switch $mode {
+    bat {append fc "\ntype $logf* > \$P/result.txt\ndel $logf*"}
+    sh  {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*"}
+    tcl {append fc "\npwrite \$P/result.txt \$L"}
+    pl  {append fc "\";\npwrite(\"\$P/result.txt\", \"\$L\");"}
+    py  {
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append oex "GSL_RNG_$vv='$t' "
+      }
+      set oc "s=Template('$fc')\n"
+      append oc "r=s.substitute(V='$ExeDirectory',P='$pdir',L='$logf')\n"
+      set fc "\#! /usr/bin/env python"
+      append fc [globVal PYTHON_TOOL]
+      append fc $oc
+      append fc "os.system(\"export $oex;\"+r)\n"
+      append fc "pwrite('$pdir/result.txt', '$logf')"
+    }
     default {}
   }
   return $fc

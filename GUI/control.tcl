@@ -213,9 +213,7 @@ proc controlMenu {w} {
       {c "INSERT Packet" {insertPacketWindow}}\
       {c "SAVE Packet" {savePacketWindow}} s\
       {c "SAVE to Directory" saveDirectory} s\
-      {c "SAVE as Command" {storeAll bat}}\
-      {c "SAVE as Grid Command" {storeAll grd}}\
-      {c "SAVE tcl" {storeAll tcl}} s\
+      {m "Export as" mex} s\
       {c "Generate Series" {genSeries .gser}} s\
       {c "New *.inf File" editInfFile} \
       {c "Edit *.inf File" {editInfFile 1}} s\
@@ -223,6 +221,16 @@ proc controlMenu {w} {
       {c "2D Plot File" {plotFile 2}} \
       {c} \
       {c EXIT confirmedExit}
+
+  menu $w.fil.menu.mex -bg $menuColor -tearoff 0
+  popMenu $w.fil.menu.mex \
+      {c "bat shell script" {storeAll bat}}\
+      {c "sh shell script" {storeAll sh}}\
+      {c "tcl script" {storeAll tcl}}\
+      {c "sh grid script" {storeAll grd}}\
+      {c "pl perl script" {storeAll pl}}\
+      {c "py python script" {storeAll py}} 
+
 
   popMenu $w.copa.menu \
       {c "Copy  Module Parameters" copyModPars} \
