@@ -129,6 +129,40 @@ proc savePacketWindow {} {
   pack $w.b.save -side right
 }
 
+proc fileSettings {{saveit 0}} {
+  set descs "settings save file"
+  if {$saveit} {
+    if {[set f [openWriteFile gui "" name]] == 0} return
+    puts $f "#$descs"
+    puts $f "#version [globVal XcontrolVersion]"
+    foreach g [savableSettings] {
+      puts $f "gSet $g \{[globVal $g]\}"
+    }
+  } else {
+    set name [fileDialog open gui]
+    if {"" == [set f [openSaveFile $name $descs]]} return
+    set errs ""
+    while {[gets $f line] >= 0} {
+      set sp [split $line]
+      if {"gSet" != [lindex $sp 0]} continue
+      set e [lindex $sp 1]
+      if {! [isSavableSetting $e]} continue
+      # match curly brace content
+      if {[regexp "\{(.+)\}" $line a v]} {
+        gSet $e "$v"
+        #puts "gSet $e \"$v\""
+      } elseif {[string match "*\{\}" $line]} {
+        gSet $e ""
+      }  else {
+        set errs "!dubious input in $name ignored ($line)"
+      }
+    }
+    if {$errs == ""} {set errs "control file $name successfully loaded"}
+    applySettings
+  }
+  close $f
+}
+
 proc storeAll {extension {prosal ""} {as ""}} {
   conditionalOpenProtfile
   if {$extension == "gui"} {
@@ -352,18 +386,14 @@ proc setInstrumentfile {name} {
   .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
 }
 
-
-###
-proc loadAll {extension} {
-  if [dontDoit "You have unsaved changes. Forget them?"] return
-
-  set name [fileDialog open $extension]
-  if {$name == ""} return
-
+proc openSaveFile {name descs} {
   # check if file has been written by a previous storeAll
+
+  if {$name == ""} return ""
+
   set version -1
-  if [catch {open $name r} f] { return 0}
-  if {[gets $f] == "#experiment description save file"} {
+  if [catch {open $name r} f] {return ""}
+  if {[gets $f] == "#$descs"} {
     if {1 != [scan [gets $f] "#version %d" version]} {
       set version 0
     }
@@ -371,14 +401,25 @@ proc loadAll {extension} {
   if {$version == -1} {
     close $f
     outProtocol "! file $name is no instrument file"
-    return 0
+    return ""
   }
   set a [globVal XcontrolVersion]
   if {int($version) != int($a)} {
+    close $f
     outProtocol "! version $version of $name doesn't match actual version $a"
-    return 0
+    return ""
   }
+  return $f
+}
 
+###
+proc loadAll {extension} {
+  if [dontDoit "You have unsaved changes. Forget them?"] return
+
+  set name [fileDialog open $extension]
+  set f [openSaveFile $name "experiment description save file"]
+  if {$f == ""} return
+ 
   # remember old default directory
   global defdirectory_ Mlf
   set olddef $defdirectory_
@@ -416,7 +457,7 @@ proc loadAll {extension} {
   }
   close $f
   if {$errs == ""} {
-    append errs "control file $name successfully loaded"
+    set errs "control file $name successfully loaded"
   }
 
   setAll 0

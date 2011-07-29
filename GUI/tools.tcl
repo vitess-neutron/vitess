@@ -405,6 +405,39 @@ proc savableGlobals {} {
   return $l
 }
 
+### return list of all globals which
+### 1. are not defined internally by Tcl/Tk (may change)
+### 2. do not start with an uppercase letter or .
+### 3. do not end with SET or Add
+### 4. do not belong to modules
+### 5. are not in a list of temporary variables
+### 6. are not in a list of of taboo variables
+### 7. are not an array variable
+###
+
+proc isSavableSetting {e} {
+  global TempVars DoSaveSetting DoNotSaveSetting DoNotSaveSettingRegexp
+  if {[lsearch $DoSaveSetting $e] >= 0} {return 1}
+  if [regexp $DoNotSaveSettingRegexp $e] {return 0}
+  if [regexp {_([0-9]+)$} $e a n] {return 0}
+  if {[lsearch $TempVars $e] >= 0} {return 0}
+  if {[lsearch $DoNotSaveSetting $e] >= 0} {return 0}
+  return 1
+}
+
+proc savableSettings {} {
+  set l {}
+  foreach e [stringToSet [info globals]] {
+    if [isSavableSetting $e] {
+      global $e
+      if {[catch {array size $e} size] || !$size} {
+        lappend l $e
+      }
+    }
+  }
+  return $l
+}
+
 
 proc nextNumItems {f n result} {
   upvar $result ores

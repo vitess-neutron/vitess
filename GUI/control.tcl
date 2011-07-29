@@ -85,6 +85,11 @@ proc showModulesAgain {{delall 0}} {
   }
   reShowModules $Mlf
   setInstrumentfile $savname
+  # give a hint of the overall geometry, otherwise we see a stamp with Linux
+  if {[getSystem] == "unix"} {
+    # this in conjunction with KDE works like "maximize to full window"
+    wm geometry .x 800x600
+  }
 }
 
 proc applySettings {} {
@@ -350,34 +355,47 @@ proc controlMenu {w} {
   menu $w.hel.menu.m3 -bg $menuColor -tearoff 0
   eval popMenu $w.hel.menu.m3 $li3
 
-
   set wo $w.opt.menu
   popMenu $wo \
       {c "Apply settings" applySettings} s\
+      {c "Load settings" {fileSettings 0}} \
+      {c "Save settings" {fileSettings 1}} s\
       {c "Smaller fonts" smallerFonts} \
-      {c "Bigger fonts" biggerFonts} s\
-      {m Color color} s\
-      {m "Info level" infolevel} \
+      {c "Bigger fonts" biggerFonts} \
+      {m Fonts afont} s\
       {m "Check mode" checkmode} \
       {m "Output compression" compmode} \
       {m "Execution mode" execmode} \
+      {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
-      {m Timeout timeout} s\
-      {m "Fonts: text" tfont}\
+      {m "Scrollbar width" swid} s\
+      {m Xcontrol intern} s\
+      {c "Helper applications" editDefaults}
+
+  set ww $wo.afont
+  menu $ww -bg $menuColor -tearoff 0
+  popMenu $ww \
+      {m text tfont}\
       {m "monospaced text" monofont}\
       {m menubar mfont}\
       {m header hfont}\
       {m button bfont}\
-      {m label lfont} s\
-      {m "Scrollbar width" swid} s\
-      {m Xcontrol intern} s\
-      {c "Helper applications" editDefaults} s\
-      {m Buffersize buffersize}
+      {m label lfont}
+
+  fontMenu $ww mfont
+  fontMenu $ww hfont
+  fontMenu $ww bfont
+  fontMenu $ww lfont
+  fontMenu $ww monofont
+  fontMenu $ww tfont
 
   set ww $wo.intern
   menu $ww -bg $menuColor -tearoff 0
   popMenu $ww \
       {m "GUI Style" tk_strictMotif} \
+      {m Color color} s\
+      {m "Info level" infolevel} \
+      {m Timeout timeout} s\
       {m Bell bell} \
       {m Precision prec} \
       {m Protocol prot}
@@ -395,19 +413,19 @@ proc controlMenu {w} {
   forceDef audible_bell on
   cascEntries $ww.bell audible_bell on off
 
-  set ww $wo.color
-  menu $ww -bg $menuColor -tearoff 0
-  popMenu $ww \
+  set www $ww.color
+  menu $www -bg $menuColor -tearoff 0
+  popMenu $www \
       {c Background {chooseColor 1}} \
       {c Buttons {chooseColor 2}} \
       {c Entries {chooseColor 3}}
 
   forceDef timeout unlimited
-  cascEntries $wo.timeout timeout 10 100 500 1000 3600\
+  cascEntries $ww.timeout timeout 10 100 500 1000 3600\
       5400 10000 20000 28800 57600 172800 unlimited
 
   forceDef Infolevel user
-  cascEntries $wo.infolevel Infolevel user expert
+  cascEntries $ww.infolevel Infolevel user expert
 
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
@@ -421,12 +439,6 @@ proc controlMenu {w} {
   forceDef Compmode none
   cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip
 
-  fontMenu $wo mfont
-  fontMenu $wo hfont
-  fontMenu $wo bfont
-  fontMenu $wo lfont
-  fontMenu $wo monofont
-  fontMenu $wo tfont
 
   forceDef scrollWidth 8
   cascEntries $wo.swid scrollWidth 4 8 12 16
