@@ -28,33 +28,59 @@
 #   - don't touch a variable beginning with a capital letter
 #   - ignore Tcl/TK variables
 #   - ignore ESET lists
-# 2 The global variable DoNotSave contains a list of variable names to exclude.
+# 2 The global variables DoNotSaveSetting and DoNotSave contain lists of variable names to exclude.
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
+set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
-set DoNotSave {
+# Some variables for settings begin with a capital letter, or are otherwise rejected by 
+# the regular expression, but should be saved:
+set DoSaveSetting {
+  audible_bell
+  plotapp_
+  BFontSizes Browser
+  Checkmode Compmode
+  Execmode
+  FontSizeIndex FontSizeMinIndex
+  HFontSizes
+  Infolevel
+  LFontSizes LastMarker
+  MaxOutstringLength
+  Plottype ProtocolMode
+  TFontSizes TextPos Tth
+  WinPos
+}
+
+set DoNotSaveSetting {
+  defdirectory_
+  helpthreads_
+  noBLT
+  savedir_
+}
+
+set DoNotSave [concat $DoNotSaveSetting {
   audible_bell
   bgColor buffersize
-  defdirectory_
   fileentrywidth
-  helpthreads_
   infolevel itemlabwidth
   labColor
   maxModule menuButtonColor menubarfont menuColor
   monospaced monofontfamily monofontsize monofonttype
-  noBLT
   place plotapp_ plotmode
   radioColor
-  savedir_ scrollWidth simulation serif sserif
+  scrollWidth simulation serif sserif
   timeout
-}
+}]
+
 foreach s {b h l m t} {
   foreach t {family size type} {
     lappend DoNotSave [set n ${s}font$t]
   }
 }
+
+lappend DoNotSaveSetting instrumentfile
 
 set TempVars {
   Mod1 Mod2
