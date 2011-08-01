@@ -719,10 +719,20 @@ set writeoutESET {
   {filtZMax float "" {
     "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
   {}
+  {filtYDivMin float "-1.0" {
+    "filter horz. div.\nmin [deg]" "min horz. divergency, -1.0 means any" "" e}}
   {filtYDiv float "-1.0" {
     "filter horz. div.\nmax [deg]" "max horz. divergency, -1.0 means any" "" d}}
+  {}
+  {filtZDivMin float "-1.0" {
+    "filter vert. div.\nmin [deg]" "min vert. divergency, -1.0 means any" "" E}}
   {filtZDiv float "-1.0" {
     "filter vert. div.\nmax [deg]" "max vert. divergency, -1.0 means any" "" D}}
+  {}
+  {filtDivMin float "-1.0" {
+    "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
+  {filtDivMax float "-1.0" {
+    "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
 
 ### spin_reset

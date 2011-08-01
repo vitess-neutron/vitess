@@ -12,6 +12,9 @@
 /* 1.4f Jan  2010  A. Houben       WriteOut only if given color matches Neutron color        */
 /* 1.4g Feb  2010  A. Houben       Added wavelength, Div and yz position filter              */
 /* 1.4h Feb  2010  K. Lieutenant   colour = 0 means all                                      */
+/* 1.4i Jul  2011  A. Houben       colour = -1 means all; colour = 0 means only untaged      */
+/*                                 neutrons by previous modules                              */
+/* 1.4j Aug  2011  A. Houben       extended divergence filters                               */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -30,8 +33,14 @@ double filtLambdaMin=-1.0,          /* filter      */
        filtYMax=1.0e10,
 	   filtZMin=-1.0e10,
 	   filtZMax=1.0e10,
-	   filtYDiv=0.5,
-	   filtZDiv=0.5;
+	   filtYDivMin=-1.0,
+	   filtZDivMin=-1.0,
+     filtDivMin=-1.0,
+     filtYDivMax=-1.0,
+	   filtZDivMax=-1.0,
+     filtDivMax=-1.0;
+int  calcDivY = 0,
+     calcDivZ = 0;
 
 void OwnInit(int argc, char *argv[]);
 void OwnCleanup();
@@ -41,11 +50,11 @@ int main(int argc, char **argv)
 {
   int i;
   const char *form;
-  double Divy, Divz;
+  double Divy, Divz, Div;
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.4h");
+  print_module_name("writeout 1.4j");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -78,24 +87,43 @@ int main(int argc, char **argv)
 	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
 	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
 	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
-	
-	  if (filtYDiv >= 0.) {
-		  Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+	  
+    if (calcDivY) {
+      Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
 		  Divy*=180.0/M_PI;
 		  if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
 			{Divy=0.0;}
-		  if (fabs(Divy) > filtYDiv) continue;
-	  }
-
-	  if (filtZDiv >= 0.) {
-		  Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+    }
+    if (calcDivZ) {
+      Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
 		  Divz*=180.0/M_PI;
 		  if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
 			{Divz=0.0;}
-		  if (fabs(Divz) > filtZDiv) continue;
+      if (calcDivY) Div = sqrt(sq(Divy) + sq(Divz));
+    }
+
+	  if (filtYDivMin >= 0.) {
+		  if (fabs(Divy) < filtYDivMin) continue;
+	  }    
+    if (filtYDivMax >= 0.) {
+		  if (fabs(Divy) > filtYDivMax) continue;
+	  }
+  
+    if (filtZDivMin >= 0.) {
+		  if (fabs(Divz) < filtZDivMin) continue;
+	  }
+	  if (filtZDivMax >= 0.) {
+		  if (fabs(Divz) > filtZDivMax) continue;
 	  }
 
-	  if (DetectColor <= 0 || InputNeutrons[i].Color == DetectColor)
+    if (filtDivMin >= 0.) {
+		  if (fabs(Div) < filtDivMin) continue;
+	  }
+	  if (filtDivMax >= 0.) {
+		  if (fabs(Div) > filtDivMax) continue;
+	  }
+
+	  if (DetectColor < 0 || InputNeutrons[i].Color == DetectColor)
       fprintf(AsciiFile, form,
 	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,          
 	      InputNeutrons[i].Debug,       InputNeutrons[i].Color,       
@@ -159,12 +187,28 @@ void  OwnInit(int argc, char *argv[])
           filtZMax = atof(&argv[i][2]);   /* filter Z */
           break;
 	    
-	    case 'd':
-          filtYDiv = atof(&argv[i][2]);   /* filter DivY, -1 means any */
+	      case 'd':
+          filtYDivMax = atof(&argv[i][2]);   /* filter DivYMax, -1 means any */
           break;
 
         case 'D':
-          filtZDiv = atof(&argv[i][2]);   /* filter DivZ, -1 means any */
+          filtZDivMax = atof(&argv[i][2]);   /* filter DivZMax, -1 means any */
+          break;
+
+        case 'e':
+          filtYDivMin = atof(&argv[i][2]);   /* filter DivYMin, -1 means any */
+          break;
+
+        case 'E':
+          filtZDivMin = atof(&argv[i][2]);   /* filter DivZMin, -1 means any */
+          break;
+
+        case 'g':
+          filtDivMin = atof(&argv[i][2]);   /* filter DivMin, -1 means any */
+          break;
+
+        case 'G':
+          filtDivMax = atof(&argv[i][2]);   /* filter DivMax, -1 means any */
           break;
 
         default:
@@ -174,6 +218,10 @@ void  OwnInit(int argc, char *argv[])
       }
     }
   }
+
+  calcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+
   if (AsciiFileName != NULL)
   { if ((AsciiFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
     { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
