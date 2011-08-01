@@ -95,7 +95,10 @@ proc useExtPlotCmd {app fname} {
   if [info exists gp] {
     set WindowIndex [expr ($WindowIndex + 1) % 4]
   } else {
-    set gp [open "|$app" r+]
+    switch [getSystem] {
+      windows {set gp [open "|[list $app]" r+]}
+      default {set gp [open "|$app" r+]}
+    }
     set WindowIndex 0
   }
   set wxtcmd "set term wxt $WindowIndex size 480,360"
@@ -124,23 +127,36 @@ proc useExtPlotCmd {app fname} {
   flush $gp
 }
 
+proc ffile {roota rootb np {maxlevel 4}} {
+  set dirl [list $roota $rootb]
+  set ff 0
+  for {set i 0} {$i < $maxlevel} {incr i} {
+    set lnew {}
+    foreach d $dirl {
+      set f [file join $d $np]
+      catch {
+        if [file exists $f] {set ff 1}
+      }
+      if {$ff} {return $f}
+	  set pat [file join $d *]
+      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
+      foreach dli $ssi {
+        lappend lnew $dli
+      }
+    }
+    if {[llength $lnew] <= 0} break
+    set dirl $lnew
+  }
+  return ""
+}
+
 proc getPreferredPlotCmd {} {
   global PreferredPlotCmd
   if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
-  set PreferredPlotCmd ""
   switch [getSystem] {
     unix {return [set PreferredPlotCmd [exec which gnuplot]]}
-    windows {
-      foreach pat {* */* */*/*} {
-        foreach d {C D} {
-          set li [glob -nocomplain $d:/$pat/binary/gnuplot.exe]
-          if {[llength $li] > 0} {
-            return [set PreferredPlotCmd [lindex $li 0]]
-          }
-        }
-      }
-    }
-    default {return ""}
+    windows {return [set PreferredPlotCmd [ffile C:/ D:/ binary/gnuplot.exe]]}
+    default {return [set PreferredPlotCmd ""]}
   }
 }
 
