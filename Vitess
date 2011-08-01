@@ -3,8 +3,9 @@
 
 ### VITESS simulation GUI start script
 
-# try to use BLT
-set NoBLT [catch {package require BLT}]
+# to use BLT uncomment next line
+#set NoBLT [catch {package require BLT}]
+set NoBLT 1
 
 proc VScroll {w {u 5}} {
   # scroll module windows
