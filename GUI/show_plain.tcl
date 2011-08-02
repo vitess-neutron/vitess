@@ -98,12 +98,28 @@ proc getPlotCmdHandle {app {proceed 1}} {
     }
   } else {
     switch [getSystem] {
-      windows {set gp [open "|[list $app]" r+]}
-      default {set gp [open "|$app" r+]}
+      windows {set gp [open "|[list $app] 2>@1" r+]}
+      default {set gp [open "|$app 2>@1" r+]}
     }
     set WindowIndex 0
   }
   return $gp
+}
+
+proc flushGnuplotCmd {f cmd} {
+  puts $f $cmd
+  puts $f "print 'XXXXXX'"
+  flush $f
+  while 1 {
+    set len [gets $f line]
+    if {$len <= 0} return
+    if [string match XXXXXX $line] {
+      outProtocol "plot done"
+      return
+    }
+    regsub "line 0:" $line "gnuplot:" line
+    outProtocol "! $line"
+  }
 }
 
 proc doGnuplotCmd {w} {
@@ -112,15 +128,13 @@ proc doGnuplotCmd {w} {
   if {$c == ""} return
   set app [getPreferredPlotCmd]
   if {$app == ""} return
-  set gp [getPlotCmdHandle $app 0]
-  puts $gp $c
-  flush $gp
+  flushGnuplotCmd [getPlotCmdHandle $app 0] $c
 }
 
 proc useExtPlotCmd {app fname} {
   global Plotfile GnuPlotCmd WindowIndex
   set gp [getPlotCmdHandle $app]
-  set wxtcmd "set term wxt $WindowIndex size 480,360 position 200,300"
+  set wxtcmd "set term wxt $WindowIndex size 480,360"
   puts $gp $wxtcmd
 
   # keyboard bindings to print and generate PDF files:
@@ -141,12 +155,10 @@ proc useExtPlotCmd {app fname} {
     set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
   }
   puts $gp "bind p \"$c\""
-  set GnuPlotCmd "plot '$fname'"
-  puts $gp $GnuPlotCmd
-  flush $gp
+  flushGnuplotCmd $gp [set GnuPlotCmd "plot '$fname'"]
 }
 
-proc ffile {roota rootb np {maxlevel 4}} {
+proc findFile {roota rootb np {maxlevel 4}} {
   set dirl [list $roota $rootb]
   set ff 0
   for {set i 0} {$i < $maxlevel} {incr i} {
@@ -174,7 +186,7 @@ proc getPreferredPlotCmd {} {
   if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
   switch [getSystem] {
     unix {return [set PreferredPlotCmd [exec which gnuplot]]}
-    windows {return [set PreferredPlotCmd [ffile C:/ D:/ binary/gnuplot.exe]]}
+    windows {return [set PreferredPlotCmd [findFile C:/ D:/ binary/gnuplot.exe]]}
     default {return [set PreferredPlotCmd ""]}
   }
 }
