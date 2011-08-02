@@ -476,6 +476,7 @@ proc nextNumItems {f n result} {
 proc readNumItems {f alist app} {
   foreach l $alist {
     upvar #0 $l$app $l
+
   }
   set l [llength $alist]
   if {[nextNumItems $f $l ni] >= $l} {

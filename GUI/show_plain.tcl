@@ -89,11 +89,13 @@ proc closeCmdHandles {} {
   }
 }
 
-proc useExtPlotCmd {app fname} {
-  global WindowIndex Plotfile
+proc getPlotCmdHandle {app {proceed 1}} {
+  global WindowIndex
   upvar #0 FH0 gp
   if [info exists gp] {
-    set WindowIndex [expr ($WindowIndex + 1) % 4]
+    if {$proceed} {
+      set WindowIndex [expr ($WindowIndex + 1) % 4]
+    }
   } else {
     switch [getSystem] {
       windows {set gp [open "|[list $app]" r+]}
@@ -101,7 +103,24 @@ proc useExtPlotCmd {app fname} {
     }
     set WindowIndex 0
   }
-  set wxtcmd "set term wxt $WindowIndex size 480,360"
+  return $gp
+}
+
+proc doGnuplotCmd {w} {
+  global GnuPlotCmd
+  set c [string trim $GnuPlotCmd]
+  if {$c == ""} return
+  set app [getPreferredPlotCmd]
+  if {$app == ""} return
+  set gp [getPlotCmdHandle $app 0]
+  puts $gp $c
+  flush $gp
+}
+
+proc useExtPlotCmd {app fname} {
+  global Plotfile GnuPlotCmd WindowIndex
+  set gp [getPlotCmdHandle $app]
+  set wxtcmd "set term wxt $WindowIndex size 480,360 position 200,300"
   puts $gp $wxtcmd
 
   # keyboard bindings to print and generate PDF files:
@@ -122,8 +141,8 @@ proc useExtPlotCmd {app fname} {
     set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
   }
   puts $gp "bind p \"$c\""
-
-  puts $gp "plot '$fname'"
+  set GnuPlotCmd "plot '$fname'"
+  puts $gp $GnuPlotCmd
   flush $gp
 }
 

@@ -210,7 +210,7 @@ proc controlMenu {w} {
   pack $w.fil $w.copa $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
   #pack $w.hel -side right -ipadx 2m
 
-  popMenu $w.fil.menu \
+  set lmenu {
       {c "LOAD Instrument" {loadAll gui}}\
       {c "SAVE Instrument" {storeAll gui}} \
       {c "SAVE As" {storeAll gui newfile.gui}} s\
@@ -223,9 +223,13 @@ proc controlMenu {w} {
       {c "New *.inf File" editInfFile} \
       {c "Edit *.inf File" {editInfFile 1}} s\
       {c "Plot File" {plotFile 1}} \
-      {c "2D Plot File" {plotFile 2}} \
-      {c} \
-      {c EXIT confirmedExit}
+      {c "2D Plot File" {plotFile 2}}
+  }
+  if {"" != [getPreferredPlotCmd]} {
+    lappend lmenu {c "Plot Cmd" {plotCmdWindow}}
+  }
+  lappend lmenu {c} {c EXIT confirmedExit}
+  eval popMenu $w.fil.menu $lmenu
 
   menu $w.fil.menu.mex -bg $menuColor -tearoff 0
   popMenu $w.fil.menu.mex \
