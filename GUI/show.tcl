@@ -189,3 +189,16 @@ proc plotFile {{twod 0}} {
   }
 }
 
+proc plotCmdWindow {} {
+  set w .x.plotcmd
+  generateToplevel $w "Gnuplot Command" "" +20+[expr [winfo screenheight .] - 80]
+  global entryColor GnuPlotCmd buttonColor
+  forceDef GnuPlotCmd ""
+  entry $w.e -width 120 -relief sunken -textvariable GnuPlotCmd -bg $entryColor
+  set com "doGnuplotCmd $w"
+  bind $w.e <Return> $com
+  bind $w.e <KP_Enter> $com
+  button $w.do -text Do -command $com -font [sbuttonFont] -background $buttonColor
+  pack $w.e -side left -expand no
+  pack $w.do -side left
+}
