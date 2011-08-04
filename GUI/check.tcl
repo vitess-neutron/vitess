@@ -276,6 +276,8 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	      set vv [entryVal ${varname}_r $app]
 	      if {$vv == "" || $vv == "1"} {
 		lappend Plotfile $v
+                set topt [entryVal ${varname}_o $app]
+                if {$topt != "" && $topt != "_"} {set tt $topt}
 		lappend Plottype $tt
 	      }
 	    }

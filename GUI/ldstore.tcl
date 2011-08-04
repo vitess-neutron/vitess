@@ -580,39 +580,43 @@ proc saveDirectory {} {
   pack $w.b.save -side right
 }
 
-proc saveInfFile {w fn} {
+proc saveTextFile {w fn kind} {
   if [catch {open $fn w} f] {
-    showText "!!could not rewrite instrument file $fn"
+    showText "!!could not write $kind $fn"
   } else {
     puts $f [$w.v.text get 1.0 end]
     close $f
-    showText "Instrument file $fn written"
+    showText "$kind $fn written"
   }
   destroy $w
 }
 
-proc editInfFile {{mode 0}} {
-  global defdirectory_ bgColor monospaced
-  if $mode {set ft open} else {set ft write}
-  if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
-  set w .editinf
+proc showTextEditWindow {w fn kind height {dowarn 0}} {
+  global monospaced bgColor
   catch {destroy $w}
-  generateToplevel $w "Edit Instrument File"
+  generateToplevel $w "Edit $kind"
   fGroup $w.v $w.b
   text $w.v.text -relief raised -bd 2 \
-      -height 32 -width 150\
+      -height $height -width 150\
       -font [list $monospaced 8 normal] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
   yscroll $w.v "$w.v.text yview"
   pack $w.v.text -side left -fill both -expand yes
   if [catch {open $fn r} f] {
-    showText "old file $fn did not exist"
+    if {$dowarn} {showText "old file $fn did not exist"}
   } else {
     while {[gets $f line] >= 0} {$w.v.text insert end "$line\n"}
     close $f
   }
-  bButton $w.b.save Save+Close "saveInfFile $w $fn"
+  bButton $w.b.save Save+Close [list saveTextFile $w $fn "$kind "]
+  bButton $w.b.delcan Delete+Close "file delete $fn; destroy $w"
   bButton $w.b.cancel Cancel "destroy $w"
-  pack $w.b.save $w.b.cancel -side left -expand 1
+  pack $w.b.save $w.b.delcan $w.b.cancel -side left -expand 1
+}
+
+proc editInfFile {{mode 0}} {
+  if $mode {set ft open} else {set ft write}
+  if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
+  showTextEditWindow .editinf $fn "Instrument File" 32 1
 }

@@ -681,14 +681,7 @@ proc getSystem {} {
   return $tcl_platform(platform)
 }
 
-proc tmpFilename {{name temp.tmp}} {
-  global env
-  set n USER
-  foreach w {LOGNAME USERNAME} {
-    if [catch {set n $env($w)}] continue
-    break
-  }
-  set fn "$n[clock seconds]$name"
+proc getFullTmpFile {fn} {
   if {[getSystem] != "windows"} {
     return "/tmp/$fn"
   }
@@ -701,6 +694,16 @@ proc tmpFilename {{name temp.tmp}} {
     }
   }
   return [file join $d $fn]
+}
+
+proc tmpFilename {{name temp.tmp}} {
+  global env
+  set n USER
+  foreach w {LOGNAME USERNAME} {
+    if [catch {set n $env($w)}] continue
+    break
+  }
+  return [getFullTmpFile "$n[clock seconds]$name"]
 }
 
 proc getDirectory {name} {
