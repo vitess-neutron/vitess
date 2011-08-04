@@ -203,32 +203,27 @@ proc controlMenu {w} {
 
   mMenu $w.fil File
   mMenu $w.copa Edit
+  mMenu $w.plo Plot
   mMenu $w.con Configure
   mMenu $w.opt Options
   mMenu $w.tool Tools
   mMenu $w.hel Help
-  pack $w.fil $w.copa $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
-  #pack $w.hel -side right -ipadx 2m
+  pack $w.fil $w.copa $w.plo $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
 
   set lmenu {
-      {c "LOAD Instrument" {loadAll gui}}\
-      {c "SAVE Instrument" {storeAll gui}} \
-      {c "SAVE As" {storeAll gui newfile.gui}} s\
-      {c "ADD Packet" {addPacket}}\
-      {c "INSERT Packet" {insertPacketWindow}}\
-      {c "SAVE Packet" {savePacketWindow}} s\
-      {c "SAVE to Directory" saveDirectory} s\
-      {m "Export as" mex} s\
-      {c "Generate Series" {genSeries .gser}} s\
-      {c "New *.inf File" editInfFile} \
-      {c "Edit *.inf File" {editInfFile 1}} s\
-      {c "Plot File" {plotFile 1}} \
-      {c "2D Plot File" {plotFile 2}}
+    {c "LOAD Instrument" {loadAll gui}}
+    {c "SAVE Instrument" {storeAll gui}} 
+    {c "SAVE As" {storeAll gui newfile.gui}} s
+    {c "ADD Packet" {addPacket}}
+    {c "INSERT Packet" {insertPacketWindow}}
+    {c "SAVE Packet" {savePacketWindow}} s
+    {c "SAVE to Directory" saveDirectory} s
+    {m "Export as" mex} s
+    {c "Generate Series" {genSeries .gser}} s
+    {c "New *.inf File" editInfFile}
+    {c "Edit *.inf File" {editInfFile 1}} s
   }
-  if {"" != [getPreferredPlotCmd]} {
-    lappend lmenu {c "Plot Cmd" {plotCmdWindow}}
-  }
-  lappend lmenu {c} {c EXIT confirmedExit}
+  lappend lmenu {c EXIT confirmedExit}
   eval popMenu $w.fil.menu $lmenu
 
   menu $w.fil.menu.mex -bg $menuColor -tearoff 0
@@ -245,10 +240,20 @@ proc controlMenu {w} {
       {c "Copy  Module Parameters" copyModPars} \
       {c "Paste Module Parameters" pasteModPars}
 
+  set lmenu {{c "Plot File" {plotFile 1}} {c "2D Plot File" {plotFile 2}}}
+  if {"" != [getPreferredPlotCmd]} {
+    lappend lmenu \
+        {c "Plot Cmd" {plotCmdWindow}}\
+        {c "Plot using Template" {plotTemplateCmdWindow}} s\
+        {c "New Template" {newTemplate}}\
+        {c "Edit Template" {editTemplate}}
+  }
+  eval popMenu $w.plo.menu $lmenu
+
+
   popMenu $w.con.menu \
       {c "Set Instrument Name" setInstrumentName} s\
       {c "Define Instrument Digest" genDigest}
-
 
   set clist {ascii2bin
     define_direction direct_view gener_batch mirror_coating surface_file
@@ -444,7 +449,8 @@ proc controlMenu {w} {
   cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip
 
 
-  forceDef scrollWidth 8
+  if {[getSystem] == "windows"} {set scw 16} else {set scw 8}
+  forceDef scrollWidth $scw
   cascEntries $wo.swid scrollWidth 4 8 12 16
 
   forceDef buffersize 10000

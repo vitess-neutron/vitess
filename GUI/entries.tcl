@@ -165,14 +165,15 @@ proc fileEntry {w line labelwidth width {app _}} {
   set entype ""
   set mondefault 1
   switch [lindex $line 1] {
-    browsedir       {set dirtype d}
-    editablefile    {set entype 0}
-    parbrowsefile   {set dirtype p}
-    pareditablefile {set entype 1 ; set dirtype p}
-    moneditablefile {set entype 2 ; set dirtype p; set dim 1}
-    mneditablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 1}
+    browsedir        {set dirtype d}
+    editablefile     {set entype 0}
+    parbrowsefile    {set dirtype p}
+    pareditablefile  {set entype 1 ; set dirtype p}
+    moneditablefile  {set entype 2 ; set dirtype p; set dim 1}
+    mneditablefile   {set mondefault 0; set entype 2 ; set dirtype p; set dim 1}
     mon2editablefile {set entype 2 ; set dirtype p; set dim 2}
-    mn2editablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 2}
+    mn2editablefile  {set mondefault 0; set entype 2 ; set dirtype p; set dim 2}
+    montemplot       {set entype 3; set dirtype f; set dim 0}
   }
 
   # selectable monitor output
@@ -192,6 +193,20 @@ proc fileEntry {w line labelwidth width {app _}} {
   set fnt [ssbuttonFont]
   button $w.b -text Browse -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app open $dirtype $ext 1]
+
+  if {$entype == 3} {
+    button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
+	  -command [list plotMonFile $dim $variable $app]
+    # template radio selection
+    forceDef [set var ${variable}_o$app] -
+    frame $w.u -bg $bgColor
+    optEntry $w.u.r $var [getPlotTemplates]
+    pack $w.u.r
+    label $w.lu -text using -bg $bgColor
+    pack $w.l $w.e $w.b $w.p $w.lu $w.u -side left -anchor w
+    return
+  }
+
   if {$dirtype == "d"} {set tt NewDir} {set tt BrowseN}
   button $w.bn -text $tt -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app write $dirtype $ext]
@@ -204,9 +219,22 @@ proc fileEntry {w line labelwidth width {app _}} {
     } else {
       button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
 	  -command [list plotMonFile $dim $variable $app]
+      # Autoplot selection
       forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
-      pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.r -side left -anchor w
+      # template radio selection
+      set tlist [getPlotTemplates 0]
+      if {[llength $tlist] > 0} {
+        set var ${variable}_o$app
+        upvar #0 $var v
+        set v $dim
+        frame $w.u -bg $bgColor
+        optEntry $w.u.r $var $tlist
+        pack $w.u.r
+        pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.u $w.r -side left -anchor w
+      } else {
+        pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.r -side left -anchor w
+      }
     }
   } else {
     pack $w.l $w.e $w.b $w.bn -side left -anchor w

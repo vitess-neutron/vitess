@@ -572,22 +572,36 @@ proc cleanupEnvDir {{envDir ""}} {
 }
 
 proc zeroProgress  {} {
-  global Progress ProgressFile
+  global Progress ProgressFile ProgressTimeStart
   set Progress 0
+  set ProgressTimeStart [clock seconds]
   catch {file delete $ProgressFile}
 }
 
 proc showProgress {} {
-  global Progress ProgressFile
-  showText . ""
+  global Progress ProgressFile ProgressTimeStart ProgressLastTic  
+  set now [clock seconds]
   if [catch {open $ProgressFile r} f] {
+    showText . ""
     set Progress 0
+    set ProgressLastTic $now
     return
   }
   if {[gets $f ins] > 0} {
     if {$ins <= 100 && $Progress != $ins} {
       set Progress $ins
+      if {$Progress > 0 && $Progress < 100} {
+        if {($now - $ProgressLastTic) > 60} {
+          set expectedtime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
+          showText "$expectedtime seconds to finish simulation"
+          set ProgressLastTic $now
+        } else {
+          showText . ""
+        }
+      }
     }
+  } else {
+    showText . ""
   }
   close $f
 }
@@ -689,14 +703,8 @@ proc startAction {{sercom ""} {simu simulation}} {
 
       set PipeActive 0
       if {$sercom == ""} {
-	set i 0
-	foreach p $Plotfile {
-	  if {[lindex $Plottype $i] == 1} {
-	    showXYfile $p
-	  } else {
-	    show2Dfile $p
-	  }
-	  incr i
+	foreach p $Plotfile pt $Plottype {
+          showPlotFile $p $pt
 	}
       }
       cleanupEnvDir $sEnvDir
