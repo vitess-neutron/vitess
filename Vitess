@@ -106,6 +106,7 @@ switch $tcl_platform(platform) {
     set MaxOutstringLength 90
     bind all <Button-4>  {VScroll %W -5}
     bind all <Button-5>  {VScroll %W 5}
+    set scrollWidth 8
   }
   windows {
     set SourceDirectory [pwd]
@@ -125,6 +126,7 @@ switch $tcl_platform(platform) {
       set serif Courier
     }
     set sserif Arial
+    set scrollWidth 16
   }
   default {
     puts "System not supported.\n"
@@ -148,8 +150,6 @@ set menuColor $c
 
 set itemlabwidth 16
 set fileentrywidth 48
-
-set scrollWidth 8
 
 set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
 
