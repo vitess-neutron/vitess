@@ -572,9 +572,10 @@ proc cleanupEnvDir {{envDir ""}} {
 }
 
 proc zeroProgress  {} {
-  global Progress ProgressFile ProgressTimeStart
+  global Progress ProgressFile ProgressTimeStart ProgressLastTic
   set Progress 0
   set ProgressTimeStart [clock seconds]
+  set ProgressLastTic $ProgressTimeStart
   catch {file delete $ProgressFile}
 }
 
@@ -591,9 +592,17 @@ proc showProgress {} {
     if {$ins <= 100 && $Progress != $ins} {
       set Progress $ins
       if {$Progress > 0 && $Progress < 100} {
-        if {($now - $ProgressLastTic) > 60} {
+        if {($now - $ProgressLastTic) > 20} {
           set expectedtime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
-          showText "$expectedtime seconds to finish simulation"
+          if {$expectedtime > 3600} {
+            showText [format "%02d:%02d hours to finish simulation" [expr int($expectedtime/3600)] [expr int(($expectedtime/60)%60)]]
+          } else {
+            if {$expectedtime > 60} {
+              showText [format "%02d:%02d minutes to finish simulation" [expr int($expectedtime/60)] [expr int($expectedtime%60)]]
+            } else {
+              showText "$expectedtime seconds to finish simulation"
+            }
+          }
           set ProgressLastTic $now
         } else {
           showText . ""
