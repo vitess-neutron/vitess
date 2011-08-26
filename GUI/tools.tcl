@@ -224,8 +224,11 @@ proc headLine {w text} {
 }
 proc bButton {w text command} {
   global buttonColor
-  button $w  -font [buttonFont] -text $text -command $command\
-      -background $buttonColor
+  button $w -font [buttonFont] -text $text -command $command -background $buttonColor
+}
+proc bsButton {w text command} {
+  global buttonColor
+  button $w -font [sbuttonFont] -text $text -command $command -background $buttonColor
 }
 proc bPack {args} {
   foreach but $args {

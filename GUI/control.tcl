@@ -778,23 +778,27 @@ proc showBeef {w} {
   set wb $w.h.b
   bButton $wb.check Check checkAction
   bButton $wb.start Start startAction
-  frame  $wb.dummy
-  bButton $wb.kill Kill "stopAction 1 1"
-  bButton $wb.stop Stop stopAction
-  pack $wb.check $wb.start -fill x
-  pack $wb.dummy -fill x -anchor w -pady 3m
+  bButton $wb.startv Trajectories startActionV
+  frame $wb.meter
+  frame $wb.stop
+  bsButton $wb.stop.kill Kill "stopAction 1 1"
+  bsButton $wb.stop.stop Stop stopAction
+  pack $wb.check $wb.start $wb.startv -fill x
+
+  pack $wb.meter -fill x -anchor w
   set Progress 0
   if {"" == [info command ttk::progressbar]} {
     set ProgressTextL ""
-    set wl $wb.dummy.l
+    set wl $wb.meter.l
     label $wl -textvariable ProgressTextL
     pack $wl
     trace variable Progress w trVar
   } else {
-    ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
-    pack $wb.dummy.progress
+    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable Progress
+    pack $wb.meter.progress  -fill x
   }
-  pack $wb.kill $wb.stop -fill x
+  pack $wb.stop -anchor w -fill x
+  pack $wb.stop.stop $wb.stop.kill -side left -ipadx 1m
 
   set wb $w.h.r
   bButton $wb.del Fresh deleteAllModules
