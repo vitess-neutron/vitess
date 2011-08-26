@@ -1881,7 +1881,7 @@ set quadr_fieldESET {
 ###
 set visualESET {
   {visdev radio display {device "visual device" "" o} {display file display+file} {1 2 3}}
-  {vt radio "circular beam" {type "type of\nvisualization" "" R}
+  {vt radio "circular beam" {type "type of\nvisualisation" "" R}
     {"circular beam" "rectangular beam" "time_of_arrival(wavelength)" "wavelength(time_of_arrival)"}
     {1 2 3 4}}
   {}
@@ -3168,8 +3168,8 @@ set lenseESET {
   {"Number of lenses" header}
   {nx int 1 {"Number of lenses" "Number of lenses in the X direction" "" I} gt0}
   {"Visualisation" header}
-  {visu radio no {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
-  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {visu radio no {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
+  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
   {"Ray-tracing after lenses" header}
   {visurtal radio no {"Visual ray-tracing \n after lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
@@ -3212,10 +3212,10 @@ set mirror_ellipticalESET {
   {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" t}}
   {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" w}}
   {"Visulalisation" header}
-  {visu radio yes {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
+  {visu radio yes {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
   {visuty radio XZ {"Type of visualisation" "choose plane for visualisation" "" Y} {XZ XY YZ} {0 1 2}}
-  {visual radio no {"Full visualisation" "Visalisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}
-  {visualty radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {visual radio no {"Full visualisation" "Visualisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}
+  {visualty radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {"Reflectivity for the elliptic mirror" header}
   {reflne radio no {"Reflected neutrons" "If yes is chosen, only reflected neutrons are going later, if no all neutrons are going later" "" u} {yes no} {1 0}}
   {outkey radio yes {"Ideal reflection" "Choose ideal reflection or from reflectivities files" "" R}

@@ -150,6 +150,13 @@ set menuColor $c
 
 set itemlabwidth 16
 set fileentrywidth 48
+set VisState 0
+# VisGather is an external program to gather 1. step visualisation results
+set VisGather [file join $ExeDirectory gather$ExeSuffix]
+if {![file exists $VisGather]} {set VisGather ""}
+# VisMerge is an external program to merge 2. step visualisation results
+set VisMerge [file join $ExeDirectory merge$ExeSuffix]
+if {![file exists $VisMerge]} {set VisMerge ""}
 
 set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
 

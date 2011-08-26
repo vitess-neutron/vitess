@@ -38,6 +38,7 @@ proc unzipCom {fname} {
   return ""
 }
 
+# following are global strings whose values are not to be evaluated
 set TCL_TOOL {
 proc pwrite {fnw pattern} {
   set fo [open $fnw w]
@@ -51,6 +52,7 @@ proc pwrite {fnw pattern} {
 }
 }
 
+# this pwrite is _not_ a tcl, but a perl script
 set PERL_TOOL {
 sub pwrite {
   my ($fnw, $pattern) = @_;
@@ -92,7 +94,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set ll [globVal inputESET]
   set wsh 0
   global Comode Serdefault Plotfile Plottype ProgressFile\
-      maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize
+      maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize VisState VisLogList
 
   switch [set Comode $mode] {
     bat - sh - tcl - pl - py - grd - ser {set prefi \$V}
@@ -108,14 +110,19 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     set logf [tmpFilename vpipelog]
   }
   set PipeLogList {}
+  set VisLogList {}
   # fc will be the full command
   upvar #0 FullCommand fc
   set fc ""
   lookWhosConcerned srep0 spar0 serno0 0 $mode $serll sermol serpal
   #  3..7: random seed, random_gen, neutron weight, gravitation effect, helper threads
-  foreach {i} [lrange $ll 3 7] {
+  foreach i [lrange $ll 3 6] {
     # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
+  }
+  if {$VisState <= 0} {
+    # no helper threads with visualisation runs
+    writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
   }
 
   set par ""
@@ -225,6 +232,14 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       bat - sh - tcl - pl - py - grd {set imore  " $insert --L\$\{L\}$i"}
       default {set imore " $insert --L$logopt"}
     }
+    switch $VisState {
+      1 - 3 {
+        lappend VisLogList [set vfile $logf${i}v]
+        if {$VisState == 1} {set vopt v} else {set vopt V}
+        append imore " --$vopt$vfile"
+      }
+      default {}
+    }
     if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
     
     lappend PipeLogList $logopt
@@ -319,7 +334,7 @@ proc checkAll {} {
   global Showinfo
   set Showinfo 0
   if [errorWithValues input] {set errors 1}
-  global DummyEntry maxModule
+  global DummyEntry maxModule VisState
   set firstmod ""
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -327,6 +342,14 @@ proc checkAll {} {
     if {![info exists var] || $var == $DummyEntry} continue
     if {$firstmod == ""} {
       set firstmod $var
+      if {$VisState > 0} {
+        # check for reasonable number_of_neutrons
+        set n [entryVal number_of_neutrons _$i]
+        if {$n == "" || $n > 100000} {
+	  showText "!The number of trajectories for a visualisation run should be at most 100000"
+	  set errors 1
+        }
+      }
       if {! [regexp {^source_} $var]} {
 	set infname [entryVal infilename]
 	if {"" == $infname} {
@@ -419,6 +442,7 @@ proc cleanupPipes {} {
     }
     close $f
   }
+
   copyResults
   if $errfound {
     outProtocol "RRRERRORS OCCURED: Read error messages of the modules concerned"
@@ -615,9 +639,93 @@ proc showProgress {} {
   close $f
 }
 
-proc startAction {{sercom ""} {simu simulation}} {
+proc reduceFList {ln} {
+  upvar #0 $ln glist
+  set miss 0
+  set rlist {}
+  foreach el $glist {
+    if [file exists $el] {lappend rlist $el} else {set miss 1}
+  }
+  if {$miss} {
+    set glist $rlist
+    return [expr [llength $rlist] <= 0 ? 0 : 1]
+  }
+  return [expr [llength $glist] <= 0 ? 0 : 1]
+}
+
+proc condDelList {ln} {
+  upvar #0 $ln glist
+  foreach el $glist {
+    if [file exists $el] {catch {file delete $el} }
+  }
+  set glist {}
+}
+
+proc doGather {gcom glist} {
+  upvar $glist gl
+  if {$gcom == ""} {return ''}
+  set visRes [tmpFilename vgather]
+  set com "$gcom $visRes $gl"
+  if [catch {eval exec $com}] {
+    catch {file delete $visRes}
+    return ''
+  }
+  if {$visRes != "" &&! [file exists $visRes]} {
+    return ''
+  }
+  return $visRes
+}
+ 
+proc startActionV {} {
+  # start a visualisation run
+  global PipeActive VisState VisGather VisMerge VisLogList
+  if {$VisMerge == ""} {
+    showText "!Not yet implemented"
+    return
+  }
+  if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
+    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
+    return
+  }
+  set VisState 1
+  startAction "" "" 1
+  if {$VisState == 2 && [reduceFList VisLogList]} {
+    # gather results of first run
+    set partres [doGather $VisGather VisLogList]
+    incr VisState
+  } else {
+    set VisState 0
+  }
+  condDelList VisLogList
+  if {$VisState != 3} {
+    stopAction
+    return
+  }
+  startAction "" "" 1
+  if {$VisState == 4 && [reduceFList VisLogList]} {
+    # merge visualisation trajectories
+    set fullres [doGather $VisMerge VisLogList]
+  } else {
+    set fullres ''
+  }
+  lappend VisLogList $partres
+  condDelList VisLogList
+
+  set VisState 0
+
+  # launch viewer
+  if {[info procs VisViewer] != '' && $fullres != ''} {
+    VisViewer $fullres
+  }
+}
+
+proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
-      SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime
+      SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime VisState
+  if {($VisState != 0 && $visrun == 0) || ([info exists PipeActive] && $PipeActive)} {
+    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
+    return
+  }
   set c $sercom
   set tool 0
   if {$simu == "tool"} {
@@ -687,16 +795,18 @@ proc startAction {{sercom ""} {simu simulation}} {
   }
   set i 0
   while {1} {
-    if {$wsecs != 0} {
-      if {$i == $ctout} {
-	outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
-	stopAction
+    if {$VisState == 0 || $VisState == 3} {
+      if {$wsecs != 0} {
+        if {$i == $ctout} {
+          outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
+          stopAction
+        } else {
+          showProgress
+        }
+        incr i
       } else {
-	showProgress
+        showProgress
       }
-      incr i
-    } else {
-      showProgress
     }
     if {$PipeActive && [$PsCheck]} {
       after $wmsecs;			# wait for completion,
@@ -711,7 +821,7 @@ proc startAction {{sercom ""} {simu simulation}} {
       outProtocol "!$simu finished after $dtime s"
 
       set PipeActive 0
-      if {$sercom == ""} {
+      if {$sercom == "" && $VisState == 0} {
 	foreach p $Plotfile pt $Plottype {
           showPlotFile $p $pt
 	}
@@ -725,7 +835,7 @@ proc startAction {{sercom ""} {simu simulation}} {
 }
 
 proc stopAction {{verbose 1} {kill 0}} {
-  global PipeActive PipeIds PipeIdList PipeIdsAtStart PipeErr KillProg
+  global PipeActive PipeIds PipeIdList PipeIdsAtStart PipeErr KillProg VisState
 
   zeroProgress
 
@@ -755,6 +865,7 @@ proc stopAction {{verbose 1} {kill 0}} {
       }
     }
   }
+  set VisState 0
 }
 
 ####### Execute / Store Series  ###################

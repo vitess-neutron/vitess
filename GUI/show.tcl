@@ -602,3 +602,25 @@ proc plotTemplateCmdWindow {} {
   generateToplevel $w "Plot Template Command" "" +20-120
   fileEntry $w.e {fn montemplot "" {"plot file"} "" dat} 8 64 _tplot_
 }
+
+proc VisViewer {fn} {
+  # visualise neutron trajectories
+  global Browser tcl_platform
+  if {$Browser == ""} return
+  switch $tcl_platform(platform) {
+    unix {
+      set url file:$fn
+      catch {exec $Browser $url} res
+      if [regexp {o running} $res] {
+        # try to start the browser with that topic
+        catch {exec $Browser $url &}
+      }
+    }
+    default {
+      regsub -all / $fn \\ url
+      showText "$Browser $url"
+      catch {exec $Browser $url &}
+    }
+  }
+  showText "visualise $url"
+}
