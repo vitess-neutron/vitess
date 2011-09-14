@@ -25,6 +25,11 @@ proc setAll {{mode 0}} {
   }
 }
 
+proc finalExit {} {
+  global tcl_platform
+  if {$tcl_platform(os) == "Darwin"} {destroy .}
+  exit
+}
 
 ### catch destroy events from window manager, but
 ### normal exit at confirmed situations
@@ -37,7 +42,7 @@ proc windowManagerExit {} {
     wm deiconify .
   } else {
     finalCheck
-    exit
+    finalExit
   }
 }
 
@@ -61,7 +66,7 @@ proc confirmedExit {} {
   set KillMe 1
   catch {closeCmdHandles}
   finalCheck
-  exit
+  finalExit
 }
 
 proc showModulesAgain {{delall 0}} {

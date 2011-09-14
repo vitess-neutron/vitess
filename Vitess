@@ -1,4 +1,7 @@
-#!/usr/bin/wish
+#!/bin/sh
+# the next line restarts using wish \
+exec /usr/bin/wish "$0" "$@"
+
 #!/usr/bin/bltwish
 
 ### VITESS simulation GUI start script
@@ -54,34 +57,38 @@ proc wheelEvent { x y delta } {
 switch $tcl_platform(platform) {
   unix {
     switch $tcl_platform(os) {
-      OSF1 - SunOS - Linux {}
+      OSF1 - SunOS - Linux {
+        # Browser for HTML help display:
+        # Select whatever is installed from mozilla, netscape, ...
+        # It should be callable as
+        # mozilla -remote openURL(file:vitess.html)
+        # otherwise change help.tcl accordingly
+        set Browser ""
+        foreach b {firefox mozilla netscape communicator konqueror} {
+          catch {
+            catch {exec sh -c "which $b"} bb
+            if {$bb != "" && [file exists $bb]} {
+              set Browser $bb
+            }
+          }
+          if {$Browser != ""} break
+        }
+        catch {unset b bb} 
+      }
+      Darwin {
+        set Browser open
+      }
       default {
-	puts "System not supported.\n"
-	exit
+        puts "System not supported.\n"
+        exit
       }
     }
-    # Browser for HTML help display:
-    # Select whatever is installed from mozilla, netscape, ...
-    # It should be callable as
-    # mozilla -remote openURL(file:vitess.html)
-    # otherwise change help.tcl accordingly
-    set Browser ""
-    foreach b {firefox mozilla netscape communicator konqueror} {
-      catch {
-	catch {exec sh -c "which $b"} bb
-	if {$bb != "" && [file exists $bb]} {
-	  set Browser $bb
-	}
-      }
-      if {$Browser != ""} break
-    }
-    catch {unset b bb} 
     if {$Browser == ""} {
       puts "no browser found!"
     }
     set serif Courier
     set sserif Helvetica
-
+    
     regsub ^./ [glob [info script]] "" s
     set i [string last / $s]
     incr i -1
