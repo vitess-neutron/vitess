@@ -153,7 +153,7 @@ proc valEntryLabel {w variable label labelwidth width {app _}} {
 }
 
 proc fileEntry {w line labelwidth width {app _}} {
-  global bgColor radioColor FontSizeIndex
+  global bgColor radioColor FontSizeIndex tcl_platform
   lFrame $w
   set variable [lindex $line 0]
   forceDef $variable$app [lindex $line 2]
@@ -181,9 +181,9 @@ proc fileEntry {w line labelwidth width {app _}} {
     set el [lindex [lindex $line 3] 2]
     if {$el == "n"} {set fel 0} else {set fel 1}
   }
-    
+ 
   # reduced width to save place, use text length - 2
-  if {$FontSizeIndex >= 1} {
+  if {$FontSizeIndex >= 1 || $tcl_platform(os) == "Darwin"} {
     set ww1 7
     set ww2 4
   } else {
