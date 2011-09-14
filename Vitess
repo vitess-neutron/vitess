@@ -153,7 +153,7 @@ set radioColor $c
 set buttonColor #98b4a0
 set menuButtonColor $c
 set canvasColor $c
-set menuColor $c
+if {$tcl_platform(os) == "Darwin"} {set menuColor black} else {set menuColor $c}
 
 set itemlabwidth 16
 set fileentrywidth 48

@@ -410,7 +410,10 @@ proc getPreferredPlotCmd {} {
   global PreferredPlotCmd
   if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
   switch [getSystem] {
-    unix {return [set PreferredPlotCmd [exec which gnuplot]]}
+    unix {
+	if [catch {exec which gnuplot} res] {set res ""}
+	return [set PreferredPlotCmd $res]
+    }
     windows {return [set PreferredPlotCmd [findFile C:/ D:/ binary/gnuplot.exe]]}
     default {return [set PreferredPlotCmd ""]}
   }
