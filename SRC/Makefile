@@ -90,7 +90,12 @@ MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
+
+ifeq ($(SYS),Darwin)
+ARCH = $(shell uname -m)
+else
 ARCH = $(shell uname -i)
+endif
 
 CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
@@ -111,16 +116,30 @@ endif
 
 SUBDIR = $(SYS)
 XLIBL = lib
+
 ifeq ($(SYS),Linux)
+NVERS=1
+endif
+ifeq ($(SYS),Darwin)
+NVERS=1
+CFLAGS = -pthread -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+endif
+
+ifeq ($(NVERS),	1)
  CCOMP = gcc
  CC = $(CCOMP) $(CFLAGS)
  GRAOPT2 = -DDO_PNG
  ifeq ($(ARCH),x86_64)
   SUBDIR = $(SYS)_$(ARCH)
-  SUBDIR = Linux_x86_64
   XLIBL = lib64
  endif
- GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+
+ ifeq ($(SYS),Darwin)
+  G2D=/Users/dmf_local/SRC/vitess/SRC/g2-0.72/$(SUBDIR)
+  GRASLIB = -I$(G2D) -L$(G2D) -L/usr/X11/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lm
+ else
+  GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+ endif
 endif
 
 

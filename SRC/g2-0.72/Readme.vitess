@@ -1,0 +1,18 @@
+g2 is provided with sources for VITESS.
+
+To compile it for your architecture,
+determine <sys> with 'uname', and <arch> with 'uname -m'.
+Possible names for specific directories <sysarch> by now are
+  Linux
+    (32 bit)
+  Linux_x86_64
+  Darwin_x86_64
+
+Compile g2 with make, create  <sysarch> subdirectory,
+- copy include files from include subdirectory to <sysarch>
+- move libg2.a to <syarch>
+- cleanup *.o files in src directory
+
+
+
+
