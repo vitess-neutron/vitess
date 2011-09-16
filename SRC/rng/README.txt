@@ -21,7 +21,18 @@ taus gfsr4 mt19937 ranlux ran3
 
 To set a specific seed value you have to set the env. variable GSL_RNG_SEED.
 
-To compile an object library with Linux, Solaris, or Tru64 use
+To compile an object library with Linux or Darwin (in the past Solaris, Tru64) use
 
 gmake libgslran
+
+Then create a subdirectory according to the architecture, as
+Linux
+  (32 bit)
+Linux_x86_64
+Darwin_x86_64
+OSF1
+Solaris
+
+and mv libgslran.a to that subdirectory.
+
 

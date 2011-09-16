@@ -54,7 +54,7 @@ $PCOLS      number of colums in the file, may be comma separated or free formatt
 
 helpItem Gnuplot {
 Since version 2.11 VITESS uses Gnuplot, which provides the wxt terminal type to display data
-under Windows and Linux in the same fashion.
+under Windows and Linux in the same fashion. For Mac Os X the terminal type x11 (aqua?) is used.
 You may zoom and reposition the plot windows to the size you need, and may zoom inside the data range.
 
 Pressing the P button produces a PDF file of the plot, named <account><unix-time>plot.pdf
@@ -302,9 +302,10 @@ proc doGnuplotCmd {w} {
 }
 
 proc useExtPlotCmd {app fname} {
-  global Plotfile GnuPlotCmd WindowIndex
+  global Plotfile GnuPlotCmd WindowIndex tcl_platform
   set gp [getPlotCmdHandle $app]
-  set wxtcmd "set term wxt $WindowIndex size 480,360"
+  if {$tcl_platform(os) == "Darwin"} {set wxt x11} else {set wxt wxt}
+  set wxtcmd "set term $wxt $WindowIndex size 480,360"
   puts $gp $wxtcmd
 
   # keyboard bindings to print and generate PDF files:

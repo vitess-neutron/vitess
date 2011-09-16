@@ -12,29 +12,32 @@ COPTFLAGS = $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_
 CDEBFLAGS = $(INCL) -Wall
 
 SYS = $(shell uname)
-SUBSYS = $(SYS)
-
-ifeq ($(SYS),SunOS)
-CC = /net/bin/gcc
-endif
-
-ifeq ($(SYS),OSF1)
-CC = /net/bin/gcc
-endif
 
 ifeq ($(SYS),Linux)
-CC = gcc
-ARCH = (shell uname -i)
-ifeq ($(ARCH),x86_64)
-SUBSYS = $(SYS)_$(ARCH)
-endif
+ UVERS=1
+else
+ ifeq ($(SYS),Darwin)
+  UVERS=1
+ endif
 endif
 
-CC = gcc
+ifeq ($(UVERS),1)
+ CC = gcc
+ ARCH = $(shell uname -m)
+ ifeq ($(ARCH),x86_64)
+  SUBSYS = "$(SYS)_$(ARCH)"
+ else
+  SUBSYS = $(SYS)
+ endif
+else
+ CC = /net/bin/gcc
+ SUBSYS = $(SYS)
+endif
+
 AR           = ar
 ARFLAGS      = -rs
 
-libgslran: $(SUBSYS)/libgslran.a
+all: $(SUBSYS)/libgslran.a
 
 $(SUBSYS)/libgslran.a : $(AUXI.c) $(RNG_O.c)
 	$(MAKE) clean
