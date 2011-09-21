@@ -2030,8 +2030,9 @@ double PathThroughGuideGravOrder1(int thread_i,
     datanumber = (int)(degangular*1000.0 / NearestNeutron.Wavelength);
 
     /* Choose the reflectivity file/value and multiply probability by reflectivity value */
-    if (ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM ||
-        ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT) {
+    /*if (ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM ||
+        ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT) {*/
+    if (ThisCollision < GW_EXIT) {
       if (Pce->RData[ThisCollision]==NULL || datanumber >= Pce->RData[ThisCollision]->maxdata) {
         if (RefOut)
           WriteReflParam(RefOut, 10, &NearestNeutron, Pce, ThisCollision, degangular, 0.);
