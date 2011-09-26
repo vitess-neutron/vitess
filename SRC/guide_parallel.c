@@ -882,7 +882,7 @@ static void showAndCompleteSetup() {
   }
 }
 
-static void writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 = X; 2 = Y
+static int writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 = X; 2 = Y
   double ProbSum;
   NeutronEx *bp;
 
@@ -891,6 +891,7 @@ static void writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 
 
   // Generate averages
   bp = &(pix->ndata);
+  if (pix->ProbSum <= 0.) return 0;
   ProbSum = pix->ProbSum;
   bp->degangular          /= ProbSum;
   bp->m                   /= ProbSum;
@@ -928,7 +929,7 @@ static void writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 
           bp->neutron.Spin[0]    , bp->neutron.Spin[1]    , bp->neutron.Spin[2],
           ProbSum
           );
-  
+  return 1;
 }
 
 static void writeBindata () {
@@ -948,10 +949,7 @@ static void writeBindata () {
     for (ibinY = 0; ibinY < nbinsY; ibinY++)
     {
       ibinXY = INDEX(ibinX, ibinY);
-      if ((pix = binXY[ibinXY])) {
-        cout++;
-        writeReflPix(pix, 0);
-      }
+      if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
     }
     if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
   }
@@ -1136,7 +1134,7 @@ void DoBin(ReflCond *RefOut, int thread_i)
     rp = &(RefOut->neutrons[cNeut]);
 
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
-                binX  + ibinX  + thread_i*nbinsX*nbinsY);
+                binX  + ibinX  + thread_i*nbinsX);
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
                 binY  + ibinY  + thread_i*nbinsY);
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
@@ -1984,7 +1982,7 @@ double PathThroughGuideGravOrder1(int thread_i,
       ThisNeutron->Probability = NearestNeutron.Probability;
 
       TimeOFTotal =  TimeOFTotal + TimeOFmin;
-      if (keyReflVerbose != 0 && RefOut)
+      if (keyReflVerbose == 1 && RefOut)
         WriteReflParam(RefOut, 5, ThisNeutron, Pce, ThisCollision, 0., 0.);
       
       return TimeOFTotal;
@@ -2155,30 +2153,34 @@ void WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, GuidePiece *P
       RefOut->insert_at += slen;
     }
 
-    // add neutron to reflection storage
+    // add neutron to reflection storage /* neutrons */
+    if ((ThisCollision < GW_EXIT) && 
+      ((keyPlotParam == 0) || ((keyPlotParam == 1) && (Mode == 0)) || ((keyPlotParam == 2) && (Mode == 10)))) 
+    {
+      
+      // first fetch enough space for that
+      if (RefOut->alloc_neutrons == 0) {
+        if (!(RefOut->neutrons = malloc(allocNeutrons * sizeof(NeutronEx))))
+          myExit("unable to malloc refl storage\n");
+        RefOut->alloc_neutrons = allocNeutrons;
+      } else if (RefOut->alloc_neutrons <= RefOut->cneutrons) {
+        RefOut->alloc_neutrons += allocNeutrons;
+        if (!(RefOut->neutrons = realloc(RefOut->neutrons, RefOut->alloc_neutrons * sizeof(NeutronEx))))
+          myExit("unable to realloc refl storage\n");
+      }
 
-    // first fetch enough space for that
-    if (RefOut->alloc_neutrons == 0) {
-      if (!(RefOut->neutrons = malloc(allocNeutrons * sizeof(NeutronEx))))
-        myExit("unable to malloc refl storage\n");
-      RefOut->alloc_neutrons = allocNeutrons;
-    } else if (RefOut->alloc_neutrons <= RefOut->cneutrons) {
-      RefOut->alloc_neutrons += allocNeutrons;
-      if (!(RefOut->neutrons = realloc(RefOut->neutrons, RefOut->alloc_neutrons * sizeof(NeutronEx))))
-        myExit("unable to realloc refl storage\n");
+      rp = &(RefOut->neutrons[RefOut->cneutrons]);
+      CopyNeutron(pNeutron, &(rp->neutron));
+      rp->neutron.Position[0] += Pce->Xpce + XpceZero;
+      rp->ThisCollision = ThisCollision;
+      rp->degangular = degangular;
+      rp->m = mVal;
+      rp->reflectivity = reflectivity;
+      rp->DivY = DivY;
+      rp->DivZ = DivZ;
+      rp->Mode = Mode;
+      RefOut->cneutrons++;
     }
-
-    rp = &(RefOut->neutrons[RefOut->cneutrons]);
-    CopyNeutron(pNeutron, &(rp->neutron));
-    rp->neutron.Position[0] += Pce->Xpce + XpceZero;
-    rp->ThisCollision = ThisCollision;
-    rp->degangular = degangular;
-    rp->m = mVal;
-    rp->reflectivity = reflectivity;
-    rp->DivY = DivY;
-    rp->DivZ = DivZ;
-    rp->Mode = Mode;
-    RefOut->cneutrons++;
   }
 
   if (Mode != 5) {
