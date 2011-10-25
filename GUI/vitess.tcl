@@ -3108,8 +3108,8 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
-  {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module)" "" Q}
-    {X Y Z} {0 1 2}}
+  {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
+    {X Y Z N} {0 1 2 -1}}
   {"output frame" header}
   {x float 200 {"X' [cm]" "x coordinate in output frame" "" r}}
   {y float   0 {"Y' [cm]" "y coordinate in output frame" "" s}}
