@@ -91,6 +91,7 @@ void	OwnInit(int argc, char *argv[]);
 void	OwnCleanup();
 void	CartesianToSpherical2(VectorType Vector, double *Theta, double *Phi);
 
+int     useQuantDir=1;
 
 /* FINISH HEADER STORY */
 
@@ -368,9 +369,12 @@ void OwnInit(int argc, char *argv[])
 
     case 'Q':
       sscanf(&argv[1][2], "%d", &quant_dir); 
-      if ((quant_dir !=0)&&(quant_dir !=1)&&(quant_dir !=2)) {
+      if ((quant_dir !=0)&&(quant_dir !=1)&&(quant_dir !=2)&&(quant_dir !=-1)) {
 	fprintf(LogFilePtr,"\nERROR:  wrong quantization direction definition. \n\n");
 	exit(0);
+      }
+      else if (quant_dir == -1) {
+	useQuantDir = 0;
       }
       break;
 
@@ -672,10 +676,10 @@ double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,
 		Choise = MonteCarlo(0,1);
 		the = M_PI_2 - (double) acos(fabs(dir[0])); 
 
-		if(fabs(SpinVector[quant_dir])!=1.) {NumWrong+=1; *prob = 0. ;}
+		if(fabs(SpinVector[quant_dir])!=1. && useQuantDir) {NumWrong+=1; *prob = 0. ;}
 
 		/* here if spin up */
-		if(SpinVector[quant_dir]==1.)
+		if(SpinVector[quant_dir]==1. || !useQuantDir)
 		{
 			if(the <= thetaC[0] * WL) 
 			{	dir[0] *= -1.;
