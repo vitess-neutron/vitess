@@ -550,6 +550,10 @@ field amplitude and frequency */
 //		fprintf(LogFilePtr,"BBBBB PRECESSION Pos after rota transl X =  %f  Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
 //		fprintf(LogFilePtr,"===================================================================================================\n");		
 
+		Neutrons.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
+		Neutrons.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
+		Neutrons.ID.IDNo=InputNeutrons[i].ID.IDNo;
+		Neutrons.Debug=InputNeutrons[i].Debug;
 
 	Neutrons.Time = TOF ;
 
@@ -562,6 +566,7 @@ field amplitude and frequency */
 	CopyVector(Dir, Neutrons.Vector) ;
 
 	CopyVector(SpinVector, Neutrons.Spin) ;
+
 
 
 	/* writes output binary file */
