@@ -797,7 +797,7 @@ proc openWriteFile {ext {sugg ""} {fname ""}} {
 
 proc getFileDialogTypes {ext} {
   global fileDialogSET
-  if {$fileDialogSET == ""} {set fileDialogSET {{"All files" {*}}}}
+  if {$fileDialogSET == ""} {set fileDialogSET {{"All files" *}}}
   if {$ext != ""} {
     # reorder types to have the selected type first
     set count [llength $fileDialogSET]
@@ -817,9 +817,22 @@ proc getFileDialogTypes {ext} {
   return $fileDialogSET
 }
 
-proc fileDialog {operation {ext ""} {ifile Untitled}} {
-  set types [getFileDialogTypes $ext]
-  set def [entryVal defdirectory]
+proc fDialog {operation ext ifile def} {
+  if {$operation == "open"} {
+    if {$def != ""} {
+      return [tk_getOpenFile -initialdir $def]
+    }
+    return [tk_getOpenFile]
+  }
+  if {$ext == ""} {set ext txt}
+  set ifile [file tail $ifile]
+  if {$def != ""} {
+    return [tk_getSaveFile -initialfile $ifile -defaultextension .$ext -initialdir $def]
+  }
+  return [tk_getSaveFile -initialfile $ifile -defaultextension .$ext]
+}
+
+proc fDialogTypes {operation ext ifile def types} {
   if {$operation == "open"} {
     if {$def != ""} {
       return [tk_getOpenFile -filetypes $types -initialdir $def]
@@ -830,11 +843,19 @@ proc fileDialog {operation {ext ""} {ifile Untitled}} {
   set ifile [file tail $ifile]
   if {$def != ""} {
     return [tk_getSaveFile -filetypes $types  \
-		-initialfile $ifile \
-		-defaultextension .$ext -initialdir $def]
+		-initialfile $ifile -defaultextension .$ext -initialdir $def]
   }
   return [tk_getSaveFile -filetypes $types  \
 	      -initialfile $ifile -defaultextension .$ext]
+}
+
+proc fileDialog {operation {ext ""} {ifile Untitled}} {
+  global browse_ext_mode tcl_platform
+  set def [entryVal defdirectory]
+  if {$tcl_platform(os) == "Darwin" && $browse_ext_mode == "all"} {
+    return [fDialog $operation $ext $ifile $def]
+  }
+  return [fDialogTypes $operation $ext $ifile $def [getFileDialogTypes $ext]]
 }
 
 proc getSerializeProc {ext} {
