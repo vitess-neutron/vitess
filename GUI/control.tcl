@@ -382,6 +382,7 @@ proc controlMenu {w} {
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
+      {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
       {c "Helper applications" editDefaults}
@@ -449,6 +450,9 @@ proc controlMenu {w} {
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
+
+  forceDef browse_ext_mode select
+  cascEntries $wo.browse_ext_mode browse_ext_mode all select
 
   forceDef Compmode none
   cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip

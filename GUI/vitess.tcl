@@ -62,7 +62,7 @@ set DoNotSaveSetting {
 
 set DoNotSave [concat $DoNotSaveSetting {
   audible_bell
-  bgColor buffersize
+  bgColor browse_ext_mode buffersize
   fileentrywidth
   infolevel itemlabwidth
   labColor
@@ -119,7 +119,7 @@ set fileDialogSET {
   {"X,Y ASCII files" {.dat}}
   {"2 D Intensity files" {.out}}
   {"chopper files" {.chp .par .dat}}
-  {"crystal" {.crs .par .dat}}
+  {crystal {.crs .par .dat}}
   {"moderator (cws source)"  {.mod .cmo .src}}
   {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
