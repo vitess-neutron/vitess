@@ -4417,7 +4417,8 @@ proc moduleMenus {{n 1}} {
   set maxi $maxModule
   if {$maxi > $n} {set maxi $n}
 
-  if {![string match fdown [image names]]} {
+  if {![regexp fdown [image names]]} {
+    # create these images once from bitmap files
     set fpath [file join [globVal SourceDirectory] BITMAPS]
     image create bitmap fdown -file  [file join $fpath downarr.xbm]
     image create bitmap fright -file [file join $fpath rightarr.xbm]
