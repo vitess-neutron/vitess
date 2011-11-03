@@ -283,7 +283,7 @@ proc flushGnuplotCmd {f cmd} {
   flush $f
   while 1 {
     if {[gets $f line] <= 0} return
-    if [string match XXXXXX $line] {
+    if [regexp XXXXXX $line] {
       outProtocol "plot done"
       return
     }

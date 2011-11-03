@@ -39,7 +39,7 @@ MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
 MGTOOL=$(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
-#ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+
 ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
@@ -678,8 +678,8 @@ SOURCE=$(SPATH)\bender.c
 "$(IDIR)\bender.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bendtest.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\bender_inter_data.obj" "$(OD)\cpgplot.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bendtest.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\bender_inter_data.obj" "$(OD)\cpgplot.obj"
+"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
+	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
 
 SOURCE=$(SPATH)\visual.c
 "$(IDIR)\visual.obj" : $(SOURCE)
