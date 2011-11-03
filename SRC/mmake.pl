@@ -167,6 +167,7 @@ EOS
 }
 
 my ($lpath, $sys, $arch, $s, @LPath, %LPath);
+my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
 
 while ($_ = shift) {
@@ -265,7 +266,7 @@ EOS
   $_ = "./g2-0.72/$subdir";
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
-  print OF ' -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm';
+  print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
   print OF ' -lttf' if $sys ne 'Darwin';
   print OF ' -lm';
 
@@ -528,12 +529,11 @@ sub checkLibs {
     print STDERR "no checks for libraries, as $sys is not known here\n";
     return;                    # no further checks for unknown systems
   }
-  my @Places = @LPath;
-  push @Places, $_;
+  my @Places = (@LPath, $_);
 
-  foreach (qw(X11 gd png z freetype Xpm)) {
+  foreach my $lib (qw(X11 gd png z freetype Xpm)) {
     my $found = 0;
-    my $lname = "lib$_.$ext";
+    my $lname = "lib$lib.$ext";
     foreach (@Places) {
       if (-s "$_/$lname") {
         $found = 1;
@@ -541,6 +541,19 @@ sub checkLibs {
       }
     }
     next if $found;
+    if ($lib eq 'png') {
+      # hack: look for libpng14
+      print STDERR "\tlooking for libpng14, $lname not found\n";
+      $lname = "libpng14.$ext";
+      foreach (@Places) {
+        if (-s "$_/$lname") {
+          $libpng = 'png14';
+          $found = 1;
+          last;
+        }
+      }
+      next if $found;
+    }
     print STDERR "could not locate $lname\n";
   }
 }
