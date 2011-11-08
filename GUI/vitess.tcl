@@ -186,7 +186,7 @@ proc makeModuleSets {} {
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
-      monpol_divy monpol_divz monitorpol_pos
+      monpol_divy monpol_divz monitorpol_pos monitor2D
       } {visual monitor}}
   }
 
@@ -2367,6 +2367,88 @@ set mon2_rdivESET [concat [genFE2 rdiv] $nA $mA $pA $FA $fA $fLA $fPAuv]
 proc mon2_rdivCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
+}
+
+### monitor2D
+### generic monitor
+
+set mA1 {
+  {parameter1 radio pos_y {
+    "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+}	
+
+set mA2 {
+  {parameter2 radio pos_z {
+    "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+}
+set mAV {
+  {}
+  {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
+  {min_vy float 0 {"minimal\ny-value" "" "" h} -1E6 1E6 1}
+  {}
+  {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {max_vy float 0 {"maximal\ny-value" "" "" H} -1E6 1E6 1}
+}
+
+set nA {
+  {}	
+  {number_xbins int 100 {
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+  {number_ybins int 100 {
+    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
+}
+
+set fA1 {
+  {filter_param1 radio none {
+    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}	
+}
+set fA2 {
+  {filter_param2 radio none {
+    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}
+}
+
+set fPAi {
+  {}
+  {filtIMin float "" {
+    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {
+    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+}
+
+set fPAj {
+  {}
+  {filtJMin float "" {
+    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {
+    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+}
+
+set polAH {
+  {"Polarisation analysis" header}
+}
+
+
+set polA {
+  {polA radio no {
+    "Polarisation\nanalysis" "If switched on, define the polarisation analysis axis" "" P}
+    {no yes} {0 1}}
+}
+
+set dA {
+  {"Analysis direction" header}
+  {dirx float 1 {"direction\nX" "x component of the direction vector representing the quantization direction" "" r}}
+  {diry float 0 {"direction\nY" "y component of the direction vector representing the quantization direction" "" s}}
+  {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
+}
+
+set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
+proc monitor2DCheckErr {{app _}} {
+  return [checkMiMaErr number_xbins number_ybins "" $app]
+#  return [checkMiMaErr min_z max_z "" $app]
 }
 
 ### sample
