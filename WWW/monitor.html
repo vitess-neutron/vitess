@@ -77,7 +77,42 @@ are taken into account<br>
    <br>
    <br>
    <br>
-    </p>
+
+<h2> Monitor2D</h2>
+   The module <b>monitor2D</b> allows to plot arbitrary combinations of following
+parameters against each other in a 2D plot:
+
+<p> <b>position </b> in the y-z plane: <b>pos_y</b> and  <b>pos_z</b>
+
+<p> <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
+
+<p> <b>wavelength</b> 
+
+<p> <b>energy</b>
+
+<p> <b>time</b>
+
+<p> <b>wave vector</b> in the y-z plane:  <b>k_y</b> and <b>k_z</b>, defined as k_y(z) = (div_y(z) * 2 * pi) / lambda
+
+<p> <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
+
+<p> Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as 
+filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
+applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
+
+<p> Additional input needed by the module:
+
+<p> <b>Probability weight</b>: if one deactivates the probability weight each neutron<br>
+  is considered with the weight 1, otherwise (default) the attributed<br>
+   probabilities (due to the operations of the modules before) are considered.<br>
+   
+<p> <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br>
+  successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled ) 
+  are transferred to the subsequent module. <br>
+
+<p> <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
+
+</p>
    
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
   <a href="mailto:vitess@hmi.de">Email vitess@hmi.de</a>   
