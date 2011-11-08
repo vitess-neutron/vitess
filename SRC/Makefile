@@ -18,6 +18,7 @@ mon2_tofwl \
 mon2_wldiv \
 mon2_kdiv \
 mon2_rdiv \
+monitor2D \
 velselect \
 writeout \
 gener_batch \
@@ -83,6 +84,7 @@ standard_deviation \
 direct_view
 
 TOOL = init.o general.o message.o softabort.o
+NTOOL = mathvector.o mathmatrix.o mon2D.o $(TOOL)
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = $(MTOOL)
@@ -90,7 +92,9 @@ STOOL = sample.o $(MTOOL)
 
 CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 CCOMP = gcc
+CPLUSCOMP = g++
 CC = $(CCOMP) $(CFLAGS)
+CPLUS = $(CPLUSCOMP) $(CFLAGS)
 LIBS = -Lrng/Linux_x86_64 -lgslran -lm
 GDOPEN = g2_open_gd
 GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/Linux_x86_64 -lgslran -I./g2-0.72/Linux_x86_64 -L./g2-0.72/Linux_x86_64 -L/usr/local/lib -L/usr/X11R6/lib64 -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
@@ -315,8 +319,13 @@ define_direction : define_direction.c $(MTOOL)
 monitor1 : monitor1.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+monitor2D : monitor2D.cpp $(NTOOL)	
+	$(CPLUS) -o $@ $^ $(LIBS)
+
 .c.o:
 	$(CC) -c $<
+.cpp.o:
+	$(CPLUS) -c $<
 
 Unix:
 	-mkdir Unix
