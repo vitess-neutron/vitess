@@ -291,11 +291,7 @@ EOS
 .c.o:
 	$(CC) -c $<
 
-Unix:
-	-mkdir Unix
-	a=_$(SUBDIR) ; h='Unix/' ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
-	-rm -f *.o
-Move:
+install:
 	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
 	-rm -f *.o
 Copy:
@@ -311,7 +307,7 @@ generated $makefile
     to compile VITESS sources here, do
     make
        to compile VITESS sources
-    make Move
+    make install
        to move the executables to ../MODULES
 EOS
 
@@ -530,6 +526,7 @@ sub checkLibs {
     return;                    # no further checks for unknown systems
   }
   my @Places = (@LPath, $_);
+  my $anyerr;
 
   foreach my $lib (qw(X11 gd png z freetype Xpm)) {
     my $found = 0;
@@ -555,5 +552,26 @@ sub checkLibs {
       next if $found;
     }
     print STDERR "could not locate $lname\n";
+    $anyerr = 1;
+  }
+  return unless $anyerr;
+  if ($sys eq 'Darwin') {
+    print STDERR "read gnuplot_darwin.txt for tips to install needed tools\n";
+  } elsif ($sys eq 'Linux') {
+    if (-s '/etc/SuSE-release') {
+      print STDERR <<EOS;
+Use yast2 to search & install packages!
+VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
+If something is missing after installing these, try to add the -devel
+packages of libs, like libgd-devel, libpng-devel.
+EOS
+    } else {
+      print STDERR <<EOS;
+Use your Linux distribution tool to search & install packages!
+VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
+If something is missing after installing these, try to add the developer
+packages of libs.
+EOS
+    }
   }
 }

@@ -2,12 +2,13 @@
 	for pulsed and continuous sources
 
 
-Hahn-Meitner-Institut Berlin, now
 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+former Hahn-Meitner-Institut Berlin
 
 Modules:
+	Klaus Lieutenant   (klaus.lieutenant@helmholtz-berlin.de)
+        Andreas Houben
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
-	Klaus Lieutenant   (klaus.lieutenant@ife.no)
 	Sergey Manoshin
 	Dietmar Wechsler
 	Friedrich Streffer
@@ -18,115 +19,123 @@ GUI Software:
 
 README
 
-This program has been developed on Unix and Windows, 
-and runs fine on both operating systems.
+This program has been developed on Unix and Windows, and runs fine on both operating systems.
+As a special variant of Unix, it has been ported to run with Mac OS X (Darwin).
+
+Since version 2.11 VITESS uses gnuplot as a default plot program if present.
+We assume gnuplot to be installed with a Linux distribution, and provide some
+instructions for Mac users how to install gnuplot and other tools needed
+by VITESS modules, see darwin_gnuplot.txt.
 
 Installation under Unix
-
-1. check
---------
-Your operating system should be Linux (versions from 2.0.35).
-Vitess may be compiled from sources for other versions of Unix. 
-
-We assume Tcl/Tk software with a version 8.2 or higher
-is installed separately. If you miss information, try
-http://www.scriptics.com/software/
-VITESS may use BLTwish extensions to Tcl/TK for plots of monitor modules.
-Tcl/TK Versions >= 8.5 are not compatible with BLT, but VITESS works fine
-with these versions where simpler plot widgets replace BLT widgets automatically.
-
+-----------------------
 The VITESS software comes to you as a gzipped tar file.
-When your browser asks for a file name to store the tar file,
-it might suggest
+When your browser asks for a file name to store the tar file, it might suggest
 	vitess_download
-without any .tar.gz extension. We assume you change that default
-to a name with .tar.gz ending like vitess.tar.gz .
+We assume you change that to a name with .tar.gz ending like vitess.tar.gz if necessary.
 
-You may compare the CRC32 or MD5 checksums of the downloaded
-vitess.tar.gz with those stated at
+You may compare the CRC32, MD5 or SHA1 checksums of the downloaded vitess.tar.gz with those given at
+
 https://www.helmholtz-berlin.de/vitess
 
-The file vitess.tar.gz might be de-tared in whatever
-<vitess parent directory> you want, like /usr/bin for root installation
-or $HOME for personal installation.
-
-Silver Bullet
--------------
-If you have perl installed on your system, fetch the script installAndTest
-
-	cd <vitess parent directory>
-        installAndTest -v vitess.tar.gz
-
-This will check your Tcl/Tk installation, extract the tarball,
-check for shared libraries, ...
-        installAndTest -h
-to see what is possible.
-
-Or:
-
-2. do
+Linux
 -----
-	cd <vitess parent directory>
-	gtar zxvf vitess.tar.gz
+The file vitess.tar.gz may be uncompressed in whatever
+<vitess parent directory> you want, like
+$HOME for a personal installation in $HOME/vitess, _no root privileges_ needed!
+Assumed the tarball is ~/Downloads/vitess.tar.gz, you might do
+cd
+tar zxvf ~/Downloads/vitess.tar.gz
 
-	(if you do not have gtar, try
-		gunzip vitess.tar.gz
-		tar xvf vitess.tar
-	)	
+If you want to install system wide, /usr/opt may be a good idea for root.
 
-3. edit script
---------------
-Please change the first line of the vitess start script
-	<vitess parent directory>/vitess/Vitess
-from
-	#!/usr/local/bin/bltwish
-to the correct path of the bltwish image.
-If you do not have a bltwish installed, just take the normal wish.
-We used vitess with different versions of wish and bltwish, but
-recommend the latest versions 8.4 / 2.4.
+We assume you have installed Tcl/Tk, and libgd using libz, libpng, and libttf (libfreetype)
+from your distribution. Compiled binaries are for SuSE 10.2 (32 bit) and 11.3 (64 bit).
 
-(Due to a bug in /usr/local/lib/tk8.4/tkfbox.tcl browsing
-directories and files fails with some distributions. 
-We send you a patch on request, or you may produce the patched file by 
-       installAndTest -p tkfbox.tcl
-)
+Darwin
+------
+When downloading, Safari puts the tarball to ~/Downloads/vitess.tar.gz
+and a double click on that file will produce the ~/Downloads/vitess/ directory.
+Move it to a place more appropriate, if you like.
 
-If you want to install Vitess for others, you might adopt the
-perl script callVitess to your needs.
+The binaries will work on Darwin 10.6 (snow leopard) and 10.7 (lion) Mac, if you install gnuplot,
+because VITESS and gnuplot share some tool libraries like libgd.
+
+You will need administrator privileges to install gnuplot, but it will be
+a short time to do, if you follow the instructions in gnuplot_darwin.txt
+on a Darwin 10.6 (snow leopard) or 10.7 (lion) Mac.
+
+All Unix systems, compilation from sources
+------------------------------------------
+We assume Tcl/Tk software with a version 8.2 or higher is installed separately.
+VITESS version 2.11 has been tested with Tcl/Tk 8.5 .
+If you miss information, try
+http://www.tcl.tk/
+
+The Tcl/Tk code should work with little or no modification for all Unix derivates.
+You need not compile a special wish for your system.
+
+VITESS used BLTwish extensions to Tcl/TK for plots of monitor modules.
+Tcl/TK Versions >= 8.5 are not compatible with BLT, but VITESS works fine
+with these versions where gnuplot is installed, or simpler plot widgets replace
+BLT widgets automatically,
+
+C sources have been compiled for Windows, Linux, Darwin, and elder versions for
+Solaris and Tru64, too.
+
+The Perl script mmake.pl in the SRC directory may be used to generate a GNU Makefile
+adopted to the local Unix, like configure does for other software.
+As some modules need GD graphics routines, which rely on auxiliary libraries,
+mmake.pl looks for these and gives hints if they are missing on your system. 
+As an extra this script generates a nmake file vitess.mak
+suitable for Microsoft Studio compilers. Just call
+cd SRC
+mmake.pl -h
+to see what options are possible, and
+make
+make install
+to compile and then move the binaries to the MODULES directory.
 
 
-4. try it
----------
-	<vitess parent directory>/vitess/Vitess
+VITESS start script
+-------------------
+try
+<vitess parent directory>/vitess/Vitess
 
-Alternatively you may the script callVitess provided in the tarball.
+You may change the first 3 lines
+#!/bin/sh
+# the next line restarts using wish \
+exec /usr/bin/wish "$0" "$@"
+
+to use another wish than /usr/bin/wish if necessary.
+(Versions up to 2.8 had
+#!/usr/local/bin/bltwish
+as first line to use the bltwish, which would be valid for VITESS on elder Linux systems.)
+
+Alternatively you may adopt the script callVitess provided in the tarball.
 
 Missing shared libraries?
 -------------------------
-installAndTest may find shared libraries needed e.g. for the
-bender or visual executable. Those libraries may be missing on minimal 
-systems, but are easily installed from RPMs by your local Unix guru.
+Some modules like bender or visual need more shared libraries, see above.
+To see what is missing you might use the ldd command with Linux or otool -L with Darwin.
 
-Compilation from sources
-------------------------
-The Tcl/Tk code should work with little or no modification
-for all Unix derivates.
-
-C sources have been compiled for Linux, elder versions for
-Solaris and Tru64, too.
 
 Difference to the Windows version
 ---------------------------------
-The Windows version comes alongside with standard Tcl/Tk
-software. For the Vitess part the only difference to the
-Unix version is to be seen in the directory for executable
-images. The MODULES directory contains those files, you
-need the right ones for your operating system. 
-For module guide (from guide.c) we find
+The Windows version comes alongside with standard Tcl/Tk software and gnuplot,
+which have to be installed separately with Unix.
+
+The MODULES directory contains binary executable files for modules, you
+need the right ones for your operating system.
+
+For the module guide (from guide.c) we find
 
 guide.exe		 Windows 32 bit
 guide_Linux		 Linux i386
 guide_Linux_x86_64       Linux x86 64 bit architecture
+guide_Darwin             Darwin 32 bit
+guide_Darwin_x86_64      Darwin 64 bit
+
 and in the past
 guide_SunOS		 Solaris sparc
 guide_OSF		 Tru64 alpha
