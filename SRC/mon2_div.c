@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            GÃ©za Zsigmond                                                             */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      Added wavelength and yz position filter                    */
 /* 1.2b JAN 2010  A. Houben      xyz output                                                 */
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
+  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0 ;
   double Divy, Divz, DivYmin, DivYmax, DivZmin, DivZmax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 		 filtZMin=-1.0e10,
 		 filtZMax=1.0e10;
   long format = 0;
-
+  DivYmin = DivYmax = DivZmin = DivZmax = 0;
 
   BufferIndex = 0;
   p=0.0;

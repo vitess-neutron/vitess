@@ -52,6 +52,7 @@ int main(int argc, char **argv)
   const char *form;
   double Divy, Divz, Div;
 
+  Divy = Divz = Div = 0;
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
   print_module_name("writeout 1.4j");

@@ -58,6 +58,9 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_paral
 	    mirror_elliptical
           );
 
+# modules NTOOL (= TOOL + mathvector mathmatrix mon2D)
+my @CN = qw(monitor2D);
+
 # modules which need MGTOOL (=MTOOL)
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
@@ -76,6 +79,7 @@ my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
 $Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
+$Macro{$_} = '$(NTOOL)' foreach (@CN);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
@@ -123,7 +127,7 @@ my %Thread;
 $Thread{$_} = 1 foreach @ParMod;
 
 
-my @All = (@C, @CI, @CM, @CMG, @CS, @Gexe, @PTool);
+my @All = (@C, @CI, @CM, @CN, @CMG, @CS, @Gexe, @PTool);
 
 ###
 ### end define targets #####################################################################
@@ -247,6 +251,7 @@ ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
+NTOOL = mathvector.o mathmatrix.o mon2D.o $(TOOL)
 
 EOS
 
@@ -259,12 +264,15 @@ EOS
   print OF <<EOS;
 CCOMP = gcc
 CC = \$(CCOMP) \$(CFLAGS)
+CPLUSCOMP = g++
+CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
 LIBS = -Lrng/$subdir -lgslran -lm
 GDOPEN = g2_open_gd
 EOS
 
-  $_ = "./g2-0.72/$subdir";
-  print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
+  my $g2sub = './g2-0.72';
+  $_ = "$g2sub/$subdir";
+  print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$g2sub/include -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
   print OF ' -lttf' if $sys ne 'Darwin';
@@ -280,16 +288,20 @@ all: $(ALL)
 EOS
 
   $dep{$_} = "$_ $dep{$_}" foreach @All;
+
   foreach my $d (keys %dep) {
     my $l = $lib{$d} || '$(LIBS)';
-    print OF $d, ' : ',  join('.c ', split(' ', $dep{$d})), '.c ', $Macro{$d},
-      "\n\t", '$(CC)', ($Thread{$d} ? ' -pthread' : ''),
+    my ($ccomp, $srces) = translateDep(split(' ', $dep{$d}));
+
+    print OF $d, ' : ', $srces, " $Macro{$d}\n\t", $ccomp, ($Thread{$d} ? ' -pthread' : ''),
         ' -o $@ $^ ', "$l\n\n";
   }
 
   print OF <<'EOS';
 .c.o:
 	$(CC) -c $<
+.cpp.o:
+	$(CPLUS) -c $<
 
 install:
 	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
@@ -351,7 +363,7 @@ IDIR=.|Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /EHsc /c 
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
@@ -363,6 +375,7 @@ LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /
 TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
+NTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathmatrix.obj" "$(IDIR)|mon2D.obj" $(ITOOL)
 MGTOOL=$(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
@@ -371,6 +384,11 @@ ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(IDIR)}.obj::
    $(CPP) @<<
    $(CPP_PROJ) $<
 <<
@@ -413,8 +431,12 @@ EOS
   $rule =~ s/ITOOL/MTOOL/g;
   subRule($rule, @CM);
 
+  # NTool, @CN
+  $rule =~ s/MTOOL/NTOOL/g;
+  subRule($rule, @CN);
+
   # MGTool, @CMG
-  $rule =~ s/MTOOL/MGTOOL/g;
+  $rule =~ s/NTOOL/MGTOOL/g;
   subRule($rule, @CMG);
 
   # STool, @CS
@@ -482,6 +504,10 @@ sub subRule {
   my $rule = shift;
   foreach my $c (@_) {
     $_ = $rule;
+    if (-s "$c.cpp") {
+      # cpp Quelle
+      s/xxx\.c/$c.cpp/g;
+    }
     s/xxx/$c/g;
     my $d = $dep{$c};
     if ($d eq '') {
@@ -574,4 +600,25 @@ packages of libs.
 EOS
     }
   }
+}
+
+sub translateDep {
+  my $all_cc = 1;
+  my ($s, $fn, @F);
+  foreach (@_) {
+    $fn = "$_.cpp";
+    if (-s $fn) {
+      $all_cc = 0;
+    } else {
+      $fn = "$_.c";
+      myexit("$fn missing") unless -s $fn;
+    }
+    push @F, $fn;
+  }
+  return ($all_cc ? '$(CC)' : '$(CPLUS)', join(' ', @F));
+}
+
+sub myexit {
+  print "$_[0]!\n";
+  exit 0;
 }

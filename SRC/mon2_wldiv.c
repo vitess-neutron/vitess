@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            GÃ©za Zsigmond                                                             */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      Added yz position filter                                   */
 /* 1.2b JAN 2010  A. Houben      xyz output                                                 */
@@ -28,15 +28,15 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	index_yz, index_c, dwl,ddiv;
-  long	i, exclusivecount, registered, BufferIndex, nbin_wl, nbin_div;
+  long	i, exclusivecount, registered, BufferIndex, nbin_wl=0, nbin_div=0;
   double wl_, div_, wl_min, wl_max, constrain_min, constrain_max, div_min, div_max,p, probactiv, bintc;
   double filtYMin=-1.0e10,
-         filtYMax=1.0e10,
-		 filtZMin=-1.0e10,
-		 filtZMax=1.0e10;
+    filtYMax=1.0e10,
+    filtZMin=-1.0e10,
+    filtZMax=1.0e10;
   double div_other_direction;
   long format = 0;
-
+  wl_min = wl_max = constrain_min = constrain_max = div_min = div_max = 0;
 
   BufferIndex = 0;
   p=0.0;

@@ -40,7 +40,7 @@
 /*                                (data is complementary to traceing and writeout)          */
 /* 2.17  Sep 2009  A. Houben      Extended writeout of reflection parameters                */
 /* 2.18  Sep 2009  A. Houben      Changes to shape defined by file & some minor things      */
-/* 2.19  Oct 2009  A. Houben      Shape by file for nonäquidistant planes & minor things    */
+/* 2.19  Oct 2009  A. Houben      Shape by file for nonequidistant planes & minor things    */
 /*                                (introduced rounding of XYZ positions but left commented) */
 /* 2.20  Dez 2009  A. Houben      -FROM FILE mode allows to give mirror filenames           */
 /*                                -GuidePieces are managed by array of struct GuidePiece    */
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
          dSinBetH = 0.0,     /* cos(beta/2) and sin(beta/2)            */
          TimeOF1, TimeOF2,
          RotMatrix[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
-  double cx, sx, d;
+  double cx, sx, d = 0;
 
   NeutronGuide Guide;
   Neutron      Output;
@@ -374,9 +374,9 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cmÂ²", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.3f x %7.3f cmÂ²", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
   switch (eGuideShapeY)
   { case VT_ELLIPTIC:
@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
       else    fprintf(LogFilePtr, "constant width\n");
       break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f mÂ²\n", AreaY*2./1e4);
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ)
   { case VT_ELLIPTIC:
@@ -431,7 +431,7 @@ int main(int argc, char *argv[])
       break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f mÂ²\n", AreaZ*2./1e4);
 
   if (Radius != 0.0)  /* curved guide */
   {	beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
       } else {
         fprintf(LogFilePtr,"WARNING: Case of zero reflectivity for this file! Most probably the file was not found!\n");
       }
-      fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+      fprintf(LogFilePtr,  " surface area      :%8.3f mÂ²\n", pReflFiles[i].area/1.e4);
     } else {
       break;
     }
@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
   { fprintf(LogFilePtr,"The walls have no waviness \n");
   }
   else
-  {	fprintf(LogFilePtr,"The walls have a waviness of %10.3e° ", atan(surfacerough)*180.0/M_PI);	
+  {	fprintf(LogFilePtr,"The walls have a waviness of %10.3eÂ° ", atan(surfacerough)*180.0/M_PI);	
     if (eWaviDistr==VT_GAUSSIAN)
       fprintf(LogFilePtr,"rms Gaussian distribution \n");
     else
@@ -885,7 +885,9 @@ int main(int argc, char *argv[])
     //fprintf(pReflPlot, "#   X          Y        counts   Mode  0   5   10  RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z  WeightSum\n"
 	    //           "#   1          2          3      4=A  4:A      5=A 6=A  6:1N       7:1N  8:A       9:A   10:A           11:A     12:A  13:1N  14:A   15:A   16:A     17:S           18:A       19:A       20:A       21:A      22:A      23:A      24:A 25:A 26:A\n"
     const char *fstr="%10.4f %10.4f %10d %5.1f %7d %7d %7d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f %11.3e\n";
-    char buf[3][40] = {0};
+    char buf[3][40];
+
+    memset(buf, 0, 3*40); // clean initialisation
 
     GetKeyName(KeyX, buf[0]);
     GetKeyName(KeyY, buf[1]);
@@ -1775,7 +1777,7 @@ void OwnInit   (int argc, char *argv[])
     GuideEntranceHeight = pPieces[0].Zpce*2.;
     GuideExitWidth = pPieces[nPieces].Ypce*2.;
     GuideExitHeight = pPieces[nPieces].Zpce*2.;
-    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonäquidistant planes */
+    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonequidistant planes */
   }
   else
   {
