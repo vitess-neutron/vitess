@@ -62,7 +62,7 @@ The binaries will work on Darwin 10.6 (snow leopard) and 10.7 (lion) Mac, if you
 because VITESS and gnuplot share some tool libraries like libgd.
 
 You will need administrator privileges to install gnuplot, but it will be
-a short time to do, if you follow the instructions in gnuplot_darwin.txt
+a short time to do, if you follow the instructions in darwin_gnuplot.txt
 on a Darwin 10.6 (snow leopard) or 10.7 (lion) Mac.
 
 All Unix systems, compilation from sources
