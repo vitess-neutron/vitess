@@ -36,6 +36,7 @@ LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /
 TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
+NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(ITOOL)
 MGTOOL=$(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
@@ -44,6 +45,11 @@ ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
+ $(CPP) @<<
+ $(CPP_PROJ) $<
+<<
+
+.cpp{$(IDIR)}.obj::
  $(CPP) @<<
  $(CPP_PROJ) $<
 <<
@@ -109,6 +115,7 @@ ALL : \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
+	"$(OD)\monitor2D.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
 	"$(OD)\resonator_drabkin.exe" \
@@ -591,6 +598,13 @@ SOURCE=$(SPATH)\mirror_elliptical.c
 
 "$(OD)\mirror_elliptical.exe" : "$(OD)" $(MTOOL) "$(OD)\mirror_elliptical.obj" "$(OD)\mirrrefl.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mirror_elliptical.pdb" /out:"$(OD)\mirror_elliptical.exe" "$(IDIR)\mirror_elliptical.obj" $(MTOOL) "$(OD)\mirrrefl.obj" 
+
+SOURCE=$(SPATH)\monitor2D.cpp
+"$(IDIR)\monitor2D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) 
 
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)
