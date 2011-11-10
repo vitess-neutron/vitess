@@ -22,6 +22,9 @@
 #include "intersection.h"
 #include "precessionfield.h"
 
+static double	domain_field_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], 
+  PosDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], DimDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], RotMatrixField[3][3], LarmorMatrix[3][3];
+
 static double RotMatrixMain[3][3];
 
 int main(int argc, char **argv)
