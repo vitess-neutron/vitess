@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
 	if (strcmp(sConcentr,"y")==0 || strcmp(sConcentr,"Y")==0 || strcmp(sConcentr,"yes")==0 || strcmp(sConcentr,"Yes")==0)
 		bConcentric = TRUE;
 
-	if (sFileName)
+	if (strlen(sFileName) > 0)
 	{	if (nNoChannels > 0  &&  dRadius != 0.0  &&  dWaferThick > 0.0  &&  strlen(sFileName) > 0) 
 		{	
 			double dHeightEntr, dHeightExit,      /* Border of wafer at entrance and exit */
-					 dHeightE0=0.0,                 /* Exit height for angle 0°   */
+					 dHeightE0=0.0,                 /* Exit height for angle 0Â°   */
 					 dRadCenter=0.0;                /* Radius of centered circles */
 			long   nCh, nWa;
 
