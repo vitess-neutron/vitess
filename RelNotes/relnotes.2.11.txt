@@ -1,0 +1,40 @@
+VITESS 2.11  Release Note
+-------------------------
+
+Plotting
+--------
+
+XY plots will be done using gnuplot now, if gnuplot is available.
+Gnuplot windows allow scaling and zooming, and you may easily print plots.
+A general plot template handling allows to connect any user specific plot software.
+
+Mac OS X
+--------
+
+The GUI has been adopted to work with the Aqua version of wish of Mac OS X 10.7.2 Lion
+and 10.6.8 Snow Leopard.
+When suggest to install gnuplot software, as it shares needed libraries with
+VITESS modules, see darwin_gnuplot.txt and install-unix.txt.
+
+GUI
+---
+The GUI now uses TK 8.5 as default, as bltwish extensions are not necessary any more.
+The framework for trajectory visualisation has been added.
+You may see the estimated rest time for a simulation now.
+
+Instrument Export
+-----------------
+
+You may export instrument definitions specified with the GUI to perl and python script files.
+This helps to do scripted simulation jobs like optimisation in an environment different from Tcl/TK.
+
+Modules
+-------
+The new module monitor2D written in C++ allows to plot arbitrary combinations of parameters
+against each other in a 2D plot.
+New C++ classes mathvector and mathmatrix support 3D vector and 3x3 matrix operations. 
+
+A new option for the sm_ensemble module allows to ignore the spin of the neutrons.
+
+Bugfixes have been done for guide, guide_parallel, eval_elast2, and in general tool routines.
+The neutron ID transmission has been added for all modules.
