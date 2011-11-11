@@ -237,13 +237,13 @@ int Mon2D::FillMonitor(Neutron* n)
   }
 
   // Dismiss if outside the range of filter parameter 1, if defined
-  if (filterParam1 >= 0) {
+  if (filterParam1 > 0) {
     double filterValue1 = DetermineParameter(filterParam1, n);
     if (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) return 0;  
 }
 
   // Dismiss if outside the range of filter parameter 2, if defined
-  if (filterParam2 >= 0) {
+  if (filterParam2 > 0) {
     double filterValue2 = DetermineParameter(filterParam2, n);
     if (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2) return 0;
   }
