@@ -10,6 +10,7 @@ Modules:
         Andreas Houben
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
 	Sergey Manoshin
+        Daniil Nekrassov   (daniil.nekrassov@helmholtz-berlin.de)
 	Dietmar Wechsler
 	Friedrich Streffer
 
