@@ -94,6 +94,7 @@ ALL : \
 	"$(OD)\eval_elast.exe" \
 	"$(OD)\eval_elast2.exe" \
 	"$(OD)\eval_inelast.exe" \
+	"$(OD)\eval_sans.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
 	"$(OD)\guide_parallel.exe" \
@@ -451,6 +452,13 @@ SOURCE=$(SPATH)\eval_inelast.c
 
 "$(OD)\eval_inelast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_inelast.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\eval_inelast.pdb" /out:"$(OD)\eval_inelast.exe" "$(IDIR)\eval_inelast.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\eval_sans.c
+"$(IDIR)\eval_sans.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\eval_sans.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_sans.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_sans.pdb" /out:"$(OD)\eval_sans.exe" "$(IDIR)\eval_sans.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\frame.c
 "$(IDIR)\frame.obj" : $(SOURCE)

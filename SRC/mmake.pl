@@ -42,7 +42,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_parallel
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide guide_parallel
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_sm_parallel

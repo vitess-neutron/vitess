@@ -6,6 +6,7 @@ Possible names for specific directories <sysarch> by now are
   Linux
     (32 bit)
   Linux_x86_64
+  Darwin
   Darwin_x86_64
 
 Compile g2 with make, create  <sysarch> subdirectory,

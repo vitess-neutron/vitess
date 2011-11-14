@@ -22,7 +22,7 @@ INCDIR = /usr/local/include
 SHELL = /bin/sh
 
 CC           = gcc
-CFLAGS       = -I./src -g -O2  -I/usr/include/X11 -I/usr/local/include -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DUNIX=1 -DDO_PS=1 -DDO_FIG=1 -DDO_X11=1 -DDO_XDBE=1 -DDO_GD=1 -DDO_GIF=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 
+CFLAGS       = -I./src -g -O2  -I/usr/local/include -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DLINUX=1 -DDO_PS=1 -DDO_FIG=1 -DDO_X11=1 -DDO_XDBE=1 -DDO_GD=1 -DDO_GIF=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 
 INSTALL      = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 FIND         = find
@@ -86,7 +86,7 @@ all: libg2.a
 	test -d ./include || mkdir ./include
 	cp $(INS) ./include/
 
-shared: libg2.so
+shared: libg2.so.0.$(G2_VERSION)
 	@echo
 
 
@@ -94,11 +94,11 @@ libg2.a: $(OBJ)
 	$(AR) $(ARFLAGS) libg2.a $(OBJ)
 	test ! -n "$(RANLIB)" || $(RANLIB) $@
 
-libg2.so: $(OBJ)
-	  -o $@ $(OBJ) 
+libg2.so.0.$(G2_VERSION): $(OBJ)
+	ld -shared -soname libg2.so.0 -o $@ $(OBJ) 
 
-libg2.so: libg2.so
-	ln -f -s libg2.so $@
+libg2.so: libg2.so.0.$(G2_VERSION)
+	ln -f -s libg2.so.0.$(G2_VERSION) $@
 
 install: libg2.a
 	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
@@ -131,7 +131,7 @@ clean:
 	-rm -f ./g2_perl/test.jpg
 	-rm -f ./g2_perl/test.fig
 	-rm -f ./g2_perl/Makefile.old
-	-rm -f ./libg2.so
+	-rm -f ./libg2.so.0.$(G2_VERSION)
 	-rm -f libg2.$(G2_VERSION).a
 	-rm -f a.out
 	-rm -fr doc/html/ doc/latex/ doc/g2_refman.ps doc/g2_refman.pdf
