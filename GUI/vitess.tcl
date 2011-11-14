@@ -161,7 +161,7 @@ proc makeModuleSets {} {
     {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
-      {space slit spacewindow spacewindow_multiple grid}}
+      {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {velselect {} velselect}
     {collimator {collimator collimator_radial collimator_soller} collimator}
@@ -177,7 +177,7 @@ proc makeModuleSets {} {
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_inelast runtime}}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
     {frame {} frame}
     {external_command}
     {trajectories {writeout spin_reset} {writeout spin_reset}}
@@ -1012,7 +1012,7 @@ set specoptAdd {
   {addplane float 0 {
     "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
-  {abutlen float ""
+  {abutlen float 0
     {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}
@@ -3060,6 +3060,67 @@ proc eval_elast2CheckErr {{app _}} {
     set rc 1
   }
   if [checkMiMaErr minaY maxaY "" $app] {
+    set rc 1
+  }
+  return $rc
+}
+
+### eval
+###   sans
+set eval_sansESET {
+  {sn_sfile moneditablefile sans.eva {
+    "S(Q) file" "the spectrum file: it contains the S(Q) result" "" S}}
+  {sn_rfile pareditablefile "" {
+    "reference\nfile" "reference file: it contains the intensity distribution I(Q) at the detector for isotropic scattering" "" I}}
+  {sn_nbins int 100 {
+    "number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
+  {sn_mina float 0.001 {
+    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} gt0}
+  {sn_maxa float 1 {
+    "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
+  {sn_scat float 0.1 {
+    "scattering\nprobability" "total scattering probability of the isotropic scatterer" "" p} gt0}
+  {sn_bin_prz float "" {
+    "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+  {sn_dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
+  {sn_tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {}
+  {sn_fpath float "" {
+    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {sn_toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {sn_refwave float "" {
+    "reference\nwavelength [A]" "needed only for non-time of flight case, i.e. a crystal monochromator or velocity selector was used. In this case one must know which wavelength is assumed for the evaluation (to mirror the resolution adequately, naturally the stored wavelenghts cannot be used)" "" r} gt0}
+  {sn_timevalbegin float -1.e10 {
+    "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
+  {sn_timevalend float 1.e10 {
+    "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {sn_eval_colour int 0 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+}
+
+
+proc eval_sansCheckErr {{app _}} {
+  foreach l {sn_tof sn_fpath sn_toff sn_refwave sn_bin_prz sn_nbins}  {
+    upvar #0 $l$app $l
+  }
+  set rc 0
+  if {$sn_nbins == "" && $sn_bin_prz == ""} {
+    showText "!Please specify either the number of bins, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$sn_tof == "yes"} {
+    if {$sn_fpath == "" || $sn_toff == ""} {
+      showText "!Please specify flight path and time offset"
+      set rc 1
+    }
+  } elseif {$sn_refwave == ""} {
+    showText "!Please specify reference wavelength"
+    set rc 1
+  }
+  if [checkMiMaErr sn_mina sn_maxa "" $app] {
     set rc 1
   }
   return $rc
