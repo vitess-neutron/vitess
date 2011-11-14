@@ -1124,6 +1124,8 @@ static int readCompressedNeutrons (void) {
   int     *pi, colword, dirbit,tocopy, i, rlen, ngot, toread, newread;
   static unsigned long idNo;
 
+  newread = 0;
+
   rlen = compressedRestlen;
   if (zcat_p) {
     // we have read the first bytes from zcat already
