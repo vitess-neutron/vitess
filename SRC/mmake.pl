@@ -272,7 +272,7 @@ EOS
 
   my $g2sub = './g2-0.72';
   $_ = "$g2sub/$subdir";
-  print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$g2sub/include -I$_ -L$_";
+  print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
   print OF ' -lttf' if $sys ne 'Darwin';
