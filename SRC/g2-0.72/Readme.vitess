@@ -9,7 +9,9 @@ Possible names for specific directories <sysarch> by now are
   Darwin
   Darwin_x86_64
 
-Compile g2 with make, create  <sysarch> subdirectory,
+Compile g2 with configure,
+(Darwin hint: ./configure --with-x --x-includes=/usr/X11/include --x-libraries=/usr/X11/lib )
+make, create  <sysarch> subdirectory,
 - copy include files from include subdirectory to <sysarch>
 - move libg2.a to <syarch>
 - cleanup *.o files in src directory

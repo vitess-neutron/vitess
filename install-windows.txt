@@ -2,13 +2,13 @@
 	for pulsed and continuous sources
 
 
-Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
 former Hahn-Meitner-Institut Berlin
 
 Modules:
 	Klaus Lieutenant (klaus.lieutenant@helmholtz-berlin.de)
         Andreas Houben
-	Géza Zsigmond    (geza.zsigmond@psi.ch)
+	Geza Zsigmond    (geza.zsigmond@psi.ch)
 	Sergey Manoshin
         Daniil Nekrassov (daniil.nekrassov@helmholtz-berlin.de)
 	Dietmar Wechsler
