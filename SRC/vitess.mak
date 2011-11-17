@@ -124,6 +124,7 @@ ALL : \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
 	"$(OD)\sample_environment.exe" \
+	"$(OD)\sample_nxs.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble.exe" \
@@ -134,9 +135,8 @@ ALL : \
 	"$(OD)\direct_view.exe"
 
 SOURCE=$(SPATH)\init.c
-"$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
+$(IDIR)\init.obj" : $(SOURCE)
+	$(CPP) /DVVERS='"2.11"' $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -157,32 +157,32 @@ SOURCE=$(SPATH)\softabort.c
 "$(IDIR)\softabort.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\bender_inter_data.c
-"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\gener_fct.c
 "$(IDIR)\gener_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\read_table-lib.c
+"$(IDIR)\read_table-lib.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\mirrrefl.c
 "$(IDIR)\mirrrefl.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\threadHelper.c
-"$(IDIR)\threadHelper.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\lensetr.c
 "$(IDIR)\lensetr.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\src_modchar.c
-"$(IDIR)\src_modchar.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgio.c
+"$(IDIR)\sgio.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgfind.c
+"$(IDIR)\sgfind.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sq_calc.c
@@ -191,6 +191,34 @@ SOURCE=$(SPATH)\sq_calc.c
 
 SOURCE=$(SPATH)\ma_functions.c
 "$(IDIR)\ma_functions.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgsi.c
+"$(IDIR)\sgsi.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\nxs.c
+"$(IDIR)\nxs.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\bender_inter_data.c
+"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sghkl.c
+"$(IDIR)\sghkl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\threadHelper.c
+"$(IDIR)\threadHelper.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\src_modchar.c
+"$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgclib.c
+"$(IDIR)\sgclib.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ma_geom.c
@@ -662,6 +690,13 @@ SOURCE=$(SPATH)\sample_environment.c
 
 "$(OD)\sample_environment.exe" : "$(OD)" $(STOOL) "$(OD)\sample_environment.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sample_environment.pdb" /out:"$(OD)\sample_environment.exe" "$(IDIR)\sample_environment.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_nxs.c
+"$(IDIR)\sample_nxs.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
 
 SOURCE=$(SPATH)\chop_phases.c
 "$(IDIR)\chop_phases.obj" : $(SOURCE)

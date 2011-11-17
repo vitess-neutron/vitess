@@ -171,9 +171,9 @@ proc makeModuleSets {} {
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
-    {sample {sample_elasticisotr sample_inelast sample_powder
+    {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
-	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
+	sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
@@ -2511,6 +2511,14 @@ set samASET [list {Sample header} \
   ]
 
 ### sample
+###   nxs file description
+
+set nxsESET [concat $samASET {
+  {nxsfile pareditablefile "" {"nxs para-\nmeter file"} dr}
+}]
+  
+  
+### sample
 ###   pow file description
 
 set powESET [concat $samASET {
@@ -2573,6 +2581,10 @@ proc samplefilesCheckErr {type {app _}} {
     checkMv $cz "z direction" rc
   }
   return $rc
+}
+
+proc nxsCheckErr {{app _}} {
+  return [samplefilesCheckErr nxs $app]
 }
 
 proc powCheckErr {{app _}} {
@@ -2647,6 +2659,23 @@ set sample_environmentESET {
 ### proc sample_environmentCheckErr {{app _}} {
 ###   return [sampleCheckErr $app]
 ### }
+
+### sample
+###   nxs
+set sample_nxsESET [concat $sampleASET {
+  {samplefile pareditablefile nxs_sample.par {
+    "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r nxs 1}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
+    {yes no} {1 0}}
+  {trans_only radio no {"transmission\nonly" "'yes' only handles transmission (imaging mode), i.e. all neutrons intersecting the sample are transmitted and weighted according to the calculated total neutron cross section. 'no' additionally performs scattering." "" T}
+    {yes no} {1 0}}
+}]
+
+proc sample_nxsCheckErr {{app _}} {
+  return [sampleCheckErr $app]
+}
+
 
 ### sample
 ###   powder
@@ -4003,6 +4032,47 @@ proc serializeSampleFile {f mode var app submodule} {
 
 proc serializeSanFile {f mode var app} {
   serializeSampleFile $f $mode $var $app san
+}
+
+proc serializeNxsFile {f mode var app} {
+  set nlist {x y z cyl hei thick cx cy cz wid nxsfile density}
+  foreach l $nlist {
+    upvar #0 $l$app $l
+  }
+  if {$mode == "r"} {
+    foreach l $nlist {catch {unset $l}}
+    if {$f == "0"} return
+    if {[gets $f line] < 0 || [gets $f l1] < 0 || [gets $f l2] < 0} return
+    scan $line "%g%g%g" x y z
+    switch [string range [string tolower $l1] 0 2] {
+      cyl {
+	set cyl cylinder
+	scan $l2 "%g%g" thick hei
+	if {[gets $f l2] < 0} return
+	scan $l2 "%g%g%g" cx cy cz
+      }
+      bal {
+	set cyl sphere
+	scan $l2 "%g" thick
+      }
+      default {
+	set cyl cuboid
+	scan $l2 "%g%g%g" thick hei wid
+	if {[gets $f l2] < 0} return
+	scan $l2 "%g%g%g" cx cy cz
+      }
+    }
+    if {[gets $f l1] < 0} return
+    set nxsfile $l1
+  } else {
+    puts $f "$x $y $z"
+    switch $cyl {
+      cylinder {puts $f "cyl\n$thick $hei\n$cx $cy $cz"}
+      sphere {puts $f "bal\n$thick"}
+      default {puts $f "cub\n$thick $hei $wid\n$cx $cy $cz"}
+    }
+    puts $f "$nxsfile"
+  }
 }
 
 proc serializePowFile {f mode var app} {

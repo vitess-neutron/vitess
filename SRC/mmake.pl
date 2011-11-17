@@ -28,8 +28,13 @@ EOS
 
 ### define targets #####################################################
 ###
+# special object init handled implicitly for Makefile by the .c.o rule
+#     and explicitly for vitess.mak
+# it is special because it sees special definitions like the VITESS version
+my @InitObj = qw(init);
+
 # tool objects
-my @Obj = qw(init general intersection matrix sample softabort);
+my @Obj = qw(general intersection matrix sample softabort);
 
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
@@ -65,7 +70,7 @@ my @CN = qw(monitor2D);
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
 # modules which need STOOL (=MTOOL + sample)
-my @CS = qw(sample_powder sample_s_q sample_sans sample_environment);
+my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
 
 my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
 
@@ -94,7 +99,8 @@ my %dep = (			# needed objects for a module
 	   spacewindow_multiple => 'bender_inter_data',
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
-	   mirror_elliptical => 'mirrrefl'
+	   mirror_elliptical => 'mirrrefl',
+           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib'
 	  );
 $dep{$_} = 'threadHelper' foreach (@ParMod);
 
@@ -197,6 +203,23 @@ while ($_ = shift) {
   }
 }
 
+# try to read VITESS version from ../GUI/control.tcl
+
+my ($version, $fullversion);
+open F, '../GUI/control.tcl';
+while (<F>) {
+  if (/set t "VITESS ([0-9.]+)"/) {
+    $version = $fullversion = $1;
+    last;
+  }
+}
+close F;
+#if ($version ne '') {
+#  $_ = $ENV{ORGANIZATION};
+#  $fullversion .= " $_" if $_;
+#}
+
+
 &prepareMakefile if $makefile ne '';
 &prepareNMakefile if $nmakefile ne '';
 
@@ -220,6 +243,7 @@ sub prepareMakefile {
     $subdir = $sys;
     $xlib = 'lib';
   }
+
   $LPath{$_} = 1 foreach ('/usr/local/lib', '/usr/X11/lib', "/usr/X11R6/$xlib"); # always candidates
   $LPath{$_} = 1 foreach split ':', $lpath;
   # gather pathes which do exist
@@ -295,6 +319,15 @@ EOS
 
     print OF $d, ' : ', $srces, " $Macro{$d}\n\t", $ccomp, ($Thread{$d} ? ' -pthread' : ''),
         ' -o $@ $^ ', "$l\n\n";
+  }
+
+  if ($fullversion) {
+    my @T = gmtime time;
+    my $y = 1900 + $T[5];
+    my $m = 1 + $T[4];
+    my $d = $T[3];
+    $_ = "$fullversion $subdir $y-$m-$d";
+    print OF "init.o: init.c\n\t\$(CC) -DVVERS='\"$_\"' -c \$<\n"
   }
 
   print OF <<'EOS';
@@ -411,8 +444,15 @@ EOS
 
 EOS
 
+  my $rule = <<EOS;
+SOURCE=\$(SPATH)|xxx.c
+\$(IDIR)|xxx.obj\" : \$(SOURCE)
+	\$(CPP) /DVVERS='\"$version\"' \$(CPP_PROJ) \$(SOURCE)
+EOS
+  subRule($rule, @InitObj);
+
   # Objects
-  my $rule = $rulestart;
+  $rule = $rulestart;
   subRule($rule, @Obj);
 
   # Tool, @C
