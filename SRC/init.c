@@ -85,8 +85,11 @@ short    bTrace=TRUE,     /* criterion: write trace files */
 static long       TracePoints=FALSE;     /* creates dot for every written output buffer if TRUE */
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
+#ifndef VVERS
+# define VVERS "unknown"
+#endif
+static const char *VITESS_VERSION = VVERS;
 
-static const char VITESS_VERSION[] = "2.10";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;
