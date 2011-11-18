@@ -39,7 +39,7 @@ double referenceWavelength,  /* reference Wavelength for crystal monochromator (
        Flightpath=0,         /* length of neutron flight path [cm] */
        TimeOffset=0,         /* global shift of the neutron time t= t-TimeOffset [ms] */
        Qmin,Qmax,            /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-			 ProbScat,              /* scattering probability of the isotropic scatterer */
+			 ProbScat,             /* scattering probability of the isotropic scatterer */
        dLogProz=0.0,         /* percentage of increase to next bin      */
        dDelLambda,           /* difference between wavelength calculated from TOF and true wavelength  */
        dEvalTimeMin=-1.0e10, /* minimal and maximal time for evaluation */
@@ -55,11 +55,12 @@ short ReadRefSpec(double* pRefBin, double* pRefVal);
 
 int main(int argc, char *argv[])
 {
-	short rc;             /* return code        */
+	short 
+    bRefFile=FALSE;     /* criterion: reference file available */
 
 	int  
-    ibin,               /* index for the bins */
-    nSpec=0;            /* number of calculated S-values */
+    ibin,               /* index for the bins                  */
+    nSpec=0;            /* number of calculated S-values       */
 
 	long	
     i, 
@@ -83,12 +84,12 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast_sans 0.8");
+	print_module_name("eval_elast_sans 1.0");
 	OwnInit(argc, argv);
 
-  rc=ReadRefSpec(rmid, rint);
-  if (rc==FALSE)
-    Error ("reference spectrum could not be read");
+  bRefFile=ReadRefSpec(rmid, rint);
+  if (bRefFile==FALSE)
+    Warning("reference spectrum could not be read, constant value of 1 assumed");
 
 	memset(bpost,     0, BINS*sizeof(double));
 	memset(bint,      0, BINS*sizeof(double));
@@ -99,6 +100,8 @@ int main(int argc, char *argv[])
 	if (bLogBinning)
 	{	
 		bpost[0] = Qmin;
+		bint [0] = 0.0;
+		bcnt [0] = 0;
 
 		for(ibin = 1; bpost[ibin-1] < Qmax; ibin++)
 		{
@@ -184,20 +187,24 @@ int main(int argc, char *argv[])
 			else
 				bmid = (bpost[ibin]+bpost[ibin+1])/2.0;
 
-      if (bmid==rmid[ibin])
-      { Svalue = bint[ibin]/(rint[ibin]/ProbScat);
+      if (!bRefFile)
+      { rmid[ibin] = bmid;
+        rint[ibin] = 1.0;
+      } 
+
+      if (RoundP(bmid,6)==RoundP(rmid[ibin],6))
+      { 
         nSpec++;
-      }
-      else
-      { Svalue = 0.0;
-      }
-		  fprintf(pSpectrum,"%12g %12g %7ld\n", bmid, Svalue, bcnt[ibin]);
+        if (bint[ibin] > 0.0 && rint[ibin] > 0.0)
+        {
+          Svalue = bint[ibin]/(rint[ibin]/ProbScat);
+    		  fprintf(pSpectrum,"%12g %12g %7ld\n", bmid, Svalue, bcnt[ibin]);
+        }
+  		}
 		}
 		fclose(pSpectrum);
     if (nSpec==0)
       Error ("no agreement in binning between reference spectrum and SANS spectrum");
-    if (nSpec < nbins)
-      Warning ("no perfect agreement in binning between reference spectrum and SANS spectrum");
 	}
 
 
@@ -263,8 +270,8 @@ void OwnInit(int argc, char *argv[])
 				case 'I':
 				  if ((pReference = fopen(FullParName(arg),"r")))
 				    break;
-				  fprintf(LogFilePtr,"\nERROR: File %s could not be opened for input\n",arg);
-				  exit(-1);
+				  // fprintf(LogFilePtr,"\nERROR: File %s could not be opened for input\n",arg);
+				  // exit(-1);
 
 				case 'n':
 					nbins = atol(arg); /* number of bins */
@@ -301,7 +308,7 @@ void OwnInit(int argc, char *argv[])
 					break;
 
 				case 'p':
-					ProbScat = atof(arg)/100.0;           /* scattering probability of the isotropic scatterer */
+					ProbScat = atof(arg);                 /* scattering probability of the isotropic scatterer */
 					break;
 
 
