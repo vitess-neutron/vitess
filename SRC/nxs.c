@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "general.h"
 #include "nxs.h"
-
-
 
 /* GLOBAL CONSTANTS */
 double BOLTZMANN_CONSTANT_evK = 8.617343E-5; // in [eV/K]
@@ -20,8 +19,6 @@ double AVOGADRO = 6.0221417930E23; // [mol-1]
 double ATOMIC_MASS_U_kg = 1.6605402E-27; // atomic_mass in kg
 
 
-
-
 double distance( double x1, double y1, double z1, double x2, double y2, double z2 )
 {
   double dx = x2 - x1;
@@ -32,7 +29,6 @@ double distance( double x1, double y1, double z1, double x2, double y2, double z
 }
 
 
-
 /**
  * \fn int generateWyckoffPositions( UnitCell *uc )
  * Using SgInfo library function this initialises the unit cell (including its volume).
@@ -41,26 +37,33 @@ double distance( double x1, double y1, double z1, double x2, double y2, double z
  */
 int generateWyckoffPositions( UnitCell *uc )
 {
-  T_SgInfo SgInfo = uc->sgInfo;
-  unsigned int nTrV = SgInfo.LatticeInfo->nTrVector;
+  unsigned int nTrV,  nLoopInv, i,j,iLoopInv,iAtomInfo;
   const T_RTMx *lsmx;
   T_RTMx SMx;
-
-  unsigned int nLoopInv = Sg_nLoopInv(&SgInfo);
-  unsigned int i,j,iLoopInv,iAtomInfo;
   int iList;
+  T_SgInfo SgInfo;
+  
+  SgInfo = uc->sgInfo;
+
+  nTrV = SgInfo.LatticeInfo->nTrVector;
+
+  nLoopInv = Sg_nLoopInv(&SgInfo);
+
   uc->nAtoms = 0;
 
   for( iAtomInfo=0; iAtomInfo<uc->nAtomInfo; iAtomInfo++ )
   {
     AtomInfo ai;
+    double x0, y0, z0;
+    int *TrV;
+
     ai = uc->atomInfoList[iAtomInfo];
     ai.nAtoms = 0;
-    double x0 = ai.x[0];
-    double y0 = ai.y[0];
-    double z0 = ai.z[0];
-
-    int *TrV = SgInfo.LatticeInfo->TrVector;
+    x0 = ai.x[0];
+    y0 = ai.y[0];
+    z0 = ai.z[0];
+    
+    TrV = SgInfo.LatticeInfo->TrVector;
     for( j=0; j<nTrV; j++, TrV+=3 )
     {
       for( iLoopInv=0; iLoopInv<nLoopInv; iLoopInv++ )
@@ -71,21 +74,24 @@ int generateWyckoffPositions( UnitCell *uc )
         lsmx = SgInfo.ListSeitzMx;
         for( iList=0; iList<SgInfo.nList; iList++, lsmx++ )
         {
+          double x,y,z;
+          unsigned int l;
+          int isExclusive;
           for( i=0; i<9; i++ )
             SMx.s.R[i] = f * lsmx->s.R[i];
           for( i=0; i<3; i++ )
             SMx.s.T[i] = iModPositive(f * lsmx->s.T[i] + TrV[i], STBF);
 
-          double x = (double)SMx.s.R[0]*x0 + (double)SMx.s.R[1]*y0 + (double)SMx.s.R[2]*z0 + (double)SMx.s.T[0]/(double)STBF;
-          double y = (double)SMx.s.R[3]*x0 + (double)SMx.s.R[4]*y0 + (double)SMx.s.R[5]*z0 + (double)SMx.s.T[1]/(double)STBF;
-          double z = (double)SMx.s.R[6]*x0 + (double)SMx.s.R[7]*y0 + (double)SMx.s.R[8]*z0 + (double)SMx.s.T[2]/(double)STBF;
+          x = (double)SMx.s.R[0]*x0 + (double)SMx.s.R[1]*y0 + (double)SMx.s.R[2]*z0 + (double)SMx.s.T[0]/(double)STBF;
+          y = (double)SMx.s.R[3]*x0 + (double)SMx.s.R[4]*y0 + (double)SMx.s.R[5]*z0 + (double)SMx.s.T[1]/(double)STBF;
+          z = (double)SMx.s.R[6]*x0 + (double)SMx.s.R[7]*y0 + (double)SMx.s.R[8]*z0 + (double)SMx.s.T[2]/(double)STBF;
 
           x = x<0.0 ? fmod(1.0-fmod(-x,1.0),1.0) : fmod(x,1.0);
           y = y<0.0 ? fmod(1.0-fmod(-y,1.0),1.0) : fmod(y,1.0);
           z = z<0.0 ? fmod(1.0-fmod(-z,1.0),1.0) : fmod(z,1.0);
 
-          unsigned int l = 0;
-          int isExclusive = 1;
+          l = 0;
+          isExclusive = 1;
           while( l<ai.nAtoms && isExclusive )
           {
             if( distance(x,y,z,ai.x[l],ai.y[l],ai.z[l]) < 1E-3 )
@@ -123,6 +129,7 @@ int initUnitCell( UnitCell *uc )
   /* at first some initialization for SgInfo */
   T_SgInfo SgInfo;
   const T_TabSgName *tsgn;
+  double a,b,c,alpha,beta,gamma;
 
   SgInfo.MaxList = 192;
   SgInfo.ListSeitzMx = malloc( SgInfo.MaxList * sizeof(*SgInfo.ListSeitzMx) );
@@ -148,12 +155,12 @@ int initUnitCell( UnitCell *uc )
 
   /* get the unit cell volume depending on crystal system*/
   uc->volume = 0.0;
-  double a = uc->a;
-  double b = uc->b;
-  double c = uc->c;
-  double alpha = uc->alpha;
-  double beta = uc->beta;
-  double gamma = uc->gamma;
+  a = uc->a;
+  b = uc->b;
+  c = uc->c;
+  alpha = uc->alpha;
+  beta = uc->beta;
+  gamma = uc->gamma;
 
   /* V = a * b * c * sqrt(1 - cos(alpha)^2 - cos(beta)^2 - cos(gamma)^2
                             + 2 * cos(alpha) * cos(beta) * cos(gamma))
@@ -190,7 +197,8 @@ int initUnitCell( UnitCell *uc )
   printf( "\n# --------------------\n# ");
   PrintFullHM_SgName(tsgn, ' ', stdout);
   printf( "\n# Crystal system: %s\n", XS_Name[uc->crystalSystem] );
-  printf( "# TSGName: %s %i %s %s\n", SgInfo.TabSgName->HallSymbol, SgInfo.TabSgName->SgNumber, SgInfo.TabSgName->Extension, SgInfo.TabSgName->SgLabels );
+  printf( "# TSGName: %s %i %s %s\n", SgInfo.TabSgName->HallSymbol, SgInfo.TabSgName->SgNumber,
+          SgInfo.TabSgName->Extension, SgInfo.TabSgName->SgLabels );
   printf( "# Centric: %i\n", SgInfo.Centric );
   printf( "# LoopInv: %i\n", Sg_nLoopInv(&SgInfo) );
   printf( "# nList: %i\n", SgInfo.nList );
@@ -199,7 +207,8 @@ int initUnitCell( UnitCell *uc )
   printf( "# OrderP: %i\n", SgInfo.OrderP );
   printf( "# Point group: %s\n", PG_Names[PG_Index(SgInfo.PointGroup)] );
   printf( "# nGenerator: %i\n", SgInfo.nGenerator );
-  printf( "# GeneratorList: %i %i %i %i\n", SgInfo.Generator_iList[0], SgInfo.Generator_iList[1], SgInfo.Generator_iList[2], SgInfo.Generator_iList[3] );
+  printf( "# GeneratorList: %i %i %i %i\n", SgInfo.Generator_iList[0], SgInfo.Generator_iList[1],
+          SgInfo.Generator_iList[2], SgInfo.Generator_iList[3] );
 #endif
 
   uc->mass = 0.0;
@@ -220,10 +229,11 @@ int initUnitCell( UnitCell *uc )
  */
 int addAtomInfo( UnitCell *uc, AtomInfo ai )
 {
+  double temperature;
   uc->nAtomInfo++;
   uc->atomInfoList = (AtomInfo*)realloc( uc->atomInfoList, sizeof(AtomInfo)*uc->nAtomInfo );
 
-  double temperature = 293.0;
+  temperature = 293.0;
   ai.phi_1 = calcPhi_1( temperature/ai.debyeTemp );
   ai.B_iso = 5.7451121E3 * ai.phi_1 / ai.molarMass / ai.debyeTemp;
   ai.phi_3 = calcPhi_3( temperature/ai.debyeTemp );
@@ -241,15 +251,16 @@ int addAtomInfo( UnitCell *uc, AtomInfo ai )
 
 int dhkl_compare( const void *par1, const void *par2)
 {
-  return ( ((HKL*)par1)->dhkl<((HKL*)par2)->dhkl ) ? 1 : 0;
+  return ( ((s_HKL*)par1)->dhkl < ((s_HKL*)par2)->dhkl ) ? 1 : 0;
 }
 
 
 
 int equivhkl_compare( const void *par1, const void *par2)
 {
-  int hkl1 = abs( 1E4*((EquivHKL*)par1)->h ) + abs( 1E2*((EquivHKL*)par1)->k ) + abs( ((EquivHKL*)par1)->l );
-  int hkl2 = abs( 1E4*((EquivHKL*)par2)->h ) + abs( 1E2*((EquivHKL*)par2)->k ) + abs( ((EquivHKL*)par2)->l );
+  int hkl1, hkl2;
+  hkl1 = abs( 1E4*((EquivHKL*)par1)->h ) + abs( 1E2*((EquivHKL*)par1)->k ) + abs( ((EquivHKL*)par1)->l );
+  hkl2 = abs( 1E4*((EquivHKL*)par2)->h ) + abs( 1E2*((EquivHKL*)par2)->k ) + abs( ((EquivHKL*)par2)->l );
   return ( (hkl1<hkl2)  ? 1 : 0 );
 }
 
@@ -263,23 +274,32 @@ int equivhkl_compare( const void *par1, const void *par2)
  */
 int initHKL( UnitCell *uc )
 {
-  unsigned int ai;
+  unsigned int ai, i,j;
+  double tmp;
+  T_SgInfo SgInfo;
+  int minH, minK, minL, max_hkl, restriction, h,k,l;
+  s_HKL *hkl;
+  unsigned long index_count;
+
   uc->density = uc->mass / uc->volume / AVOGADRO * 1E24; // [g/cm^3]
 
 #ifdef DEBUG
+  {
   int pos;
   printf( "# Generated Positions:\n" );
   for( ai=0; ai<uc->nAtomInfo; ai++ )
     for( pos=0; pos<uc->atomInfoList[ai].nAtoms; pos++ )
-      printf( "#   %s   %.3f, %.3f, %.3f\n", uc->atomInfoList[ai].label,uc->atomInfoList[ai].x[pos], uc->atomInfoList[ai].y[pos], uc->atomInfoList[ai].z[pos] );
+      printf( "#   %s   %.3f, %.3f, %.3f\n", uc->atomInfoList[ai].label,uc->atomInfoList[ai].x[pos],
+              uc->atomInfoList[ai].y[pos], uc->atomInfoList[ai].z[pos] );
   printf( "Rel. Unit cell mass: %f [g/mol]\n", uc->mass );
   printf( "Unit cell volume: %f [AA^3]\n", uc->volume );
   printf( "Unit cell density: %f [g/cm^3]\n", uc->density );
+  }
 #endif
 
   /* at first calculate average sigmaCoherent and sigmaIncoherent for unit cell */
 
-  double tmp = 0.0;
+  tmp = 0.0;
   uc->avgSigmaIncoherent = 0.0;
   uc->avgSigmaCoherent = 0.0;
 
@@ -298,25 +318,23 @@ int initHKL( UnitCell *uc )
   uc->avgSigmaCoherent *= 0.04*M_PI;
 
   /* some initialization for SgInfo */
-  T_SgInfo SgInfo = uc->sgInfo;
+  SgInfo = uc->sgInfo;
 
   /* start calculation of permitted reflections and multiplicities */
-  int minH, minK, minL;
-  int max_hkl = uc->maxHKL_index;
-  int restriction;
+  max_hkl = uc->maxHKL_index;
+
   SetListMin_hkl( &SgInfo, max_hkl, max_hkl, &minH, &minK, &minL );
 
   /* how much hkl indices */
-  unsigned long index_count = (max_hkl-minH+1)*(max_hkl-minH+1)*(max_hkl-minH+1);
-  HKL *hkl = (HKL*)malloc(  sizeof(HKL)*index_count );
+  index_count = (max_hkl-minH+1)*(max_hkl-minH+1)*(max_hkl-minH+1);
+  hkl = (s_HKL*)malloc(  sizeof(s_HKL)*index_count );
 
-  unsigned int i = 0;
-  unsigned int j;
-  int h, k, l;
+  i = 0;
+
   /* initialize all hkl indices */
-//   for (h=minH; h<=max_hkl; h++)
-//   for (k=minK; k<=max_hkl; k++)
-//   for (l=minL; l<=max_hkl; l++)
+  //   for (h=minH; h<=max_hkl; h++)
+  //   for (k=minK; k<=max_hkl; k++)
+  //   for (l=minL; l<=max_hkl; l++)
   for( h=max_hkl; h>=minH; h-- )
   for( k=max_hkl; k>=minK; k-- )
   for( l=max_hkl; l>=minL; l-- )
@@ -324,6 +342,7 @@ int initHKL( UnitCell *uc )
     /* do not show hkls that are systematic absent for the space group */
     if( !IsSysAbsent_hkl( &SgInfo, h, k, l, &restriction ) )
     {
+      char is_exclusive;
       /* exclude (hkl)=(000) */
       if( h==0 && k==0 && l==0 )
         continue;
@@ -333,7 +352,7 @@ int initHKL( UnitCell *uc )
       hkl[i].l = l;
 
       /* check if equivalent plane has been found before (and calculated) */
-      char is_exclusive = 1;
+      is_exclusive = 1;
       for( j=0; j<i; j++ )
       {
         if( AreSymEquivalent_hkl(&SgInfo, h, k, l, hkl[j].h, hkl[j].k, hkl[j].l) )
@@ -357,16 +376,19 @@ int initHKL( UnitCell *uc )
   }
   /* reduce the allocated memory */
   uc->nHKL = i;
-  hkl = (HKL*)realloc( hkl, sizeof(HKL)*uc->nHKL );
+  hkl = (s_HKL*)realloc( hkl, sizeof(s_HKL)*uc->nHKL );
 
   for( i=0; i<uc->nHKL; i++ )
   {
     /* store the equivalent lattice plane (hkl) */
     T_Eq_hkl eqHKL;
-    hkl[i].multiplicity = BuildEq_hkl( &SgInfo, &eqHKL, hkl[i].h, hkl[i].k, hkl[i].l );
-    EquivHKL *equivHKL = (EquivHKL*)malloc( sizeof(EquivHKL)*eqHKL.N );
+    EquivHKL *equivHKL;
+    unsigned int nEqHKL;
 
-    unsigned int nEqHKL = eqHKL.N;
+    hkl[i].multiplicity = BuildEq_hkl( &SgInfo, &eqHKL, hkl[i].h, hkl[i].k, hkl[i].l );
+    equivHKL = (EquivHKL*)malloc( sizeof(EquivHKL)*eqHKL.N );
+
+    nEqHKL = eqHKL.N;
     for( j=0; j<nEqHKL; j++ )
     {
       equivHKL[j].h = eqHKL.h[j];
@@ -382,7 +404,7 @@ int initHKL( UnitCell *uc )
   /* end of initalizing */
 
   /* sort hkl lattice planes by d_hkl */
-  qsort( hkl, uc->nHKL, sizeof(HKL), dhkl_compare );
+  qsort( hkl, uc->nHKL, sizeof(s_HKL), dhkl_compare );
 
   uc->hklList = hkl;
   return 0;
@@ -391,14 +413,14 @@ int initHKL( UnitCell *uc )
 
 
 /**
- * \fn calcFSquare( HKL *hklReflex, UnitCell* uc )
+ * \fn calcFSquare( s_HKL *hklReflex, UnitCell* uc )
  * This function calculates the structure factor \f$|F|^2\f$.
  *
- * @param hklReflex HKL struct
+ * @param hklReflex s_HKL struct
  * @param uc UnitCell struct
  * @return
  */
-double calcFSquare( HKL *hklReflex, UnitCell *uc )
+double calcFSquare( s_HKL *hklReflex, UnitCell *uc )
 {
   unsigned int i, j;
   int h = hklReflex->h;
@@ -453,7 +475,7 @@ double calcFSquare( HKL *hklReflex, UnitCell *uc )
  * @param k Miller index k
  * @param l Miller index l
  * @param uc UnitCell struct
- * @return 
+ * @return
  */
 double calcDhkl( int h, int k, int l, UnitCell *uc )
 {
@@ -464,12 +486,12 @@ double calcDhkl( int h, int k, int l, UnitCell *uc )
   double alpha = uc->alpha;
   double beta = uc->beta;
   double gamma = uc->gamma;
-
-//   h = abs(h);
-//   k = abs(k);
-//   l = abs(l);
-
   double t1, t2, t3, t4, t5, t6, volume;
+
+  //   h = abs(h);
+  //   k = abs(k);
+  //   l = abs(l);
+
   switch( uc->crystalSystem )
   {
     /* XS_Cubic */
@@ -515,11 +537,7 @@ double calcDhkl( int h, int k, int l, UnitCell *uc )
 
 double calcPhi_1( double theta )
 {
-  double phi_1;
-
-  double a_n;
-  double step1, step2;
-  double n;
+  double phi_1, a_n, step1, step2, n, riemann_zeta_2, I_m;
 
   step1 = 1.0;
   step2 = 0.0;
@@ -534,8 +552,8 @@ double calcPhi_1( double theta )
     n = n + 1.0;
   }
 
-  double riemann_zeta_2 = M_PI*M_PI/6.0;
-  double I_m = theta * log( 1.0-exp(-1.0/theta) ) + theta*theta * (riemann_zeta_2 - a_n);
+  riemann_zeta_2 = M_PI*M_PI/6.0;
+  I_m = theta * log( 1.0-exp(-1.0/theta) ) + theta*theta * (riemann_zeta_2 - a_n);
 
   phi_1 = 0.5 + 2.0*I_m;
 
@@ -549,9 +567,7 @@ double calcPhi_3( double theta )
 {
   double phi_3;
 
-  double a_n;
-  double step1, step2;
-  double n;
+  double a_n, step1, step2, n, riemann_zeta_4, I_m;
 
   step1 = 1.0;
   step2 = 0.0;
@@ -566,15 +582,13 @@ double calcPhi_3( double theta )
     n = n + 1.0;
   }
 
-  double riemann_zeta_4 = M_PI*M_PI*M_PI*M_PI/90.0;
-  double I_m = theta * log( 1.0-exp(-1.0/theta) ) + 6.0*theta*theta * (riemann_zeta_4*theta*theta - a_n);
+  riemann_zeta_4 = M_PI*M_PI*M_PI*M_PI/90.0;
+  I_m = theta * log( 1.0-exp(-1.0/theta) ) + 6.0*theta*theta * (riemann_zeta_4*theta*theta - a_n);
 
   phi_3 = 0.25 + 2.0*I_m;
 
   return phi_3;
 }
-
-
 
 
 /**
@@ -588,7 +602,7 @@ double calcPhi_3( double theta )
  */
 double nxsCoherentElastic( double lambda, UnitCell* uc )
 {
-  HKL *hkl = uc->hklList;
+  s_HKL *hkl = uc->hklList;
 
   double xsect_coh_el = 0.0;
   // double energy = 8.18042531017E-2/(lambda*lambda);
@@ -624,13 +638,13 @@ double nxsCoherentElastic( double lambda, UnitCell* uc )
  */
 double nxsAbsorption( double lambda, UnitCell* uc )
 {
-  double sigma = 0.0;
+  double xsect_abs, sigma = 0.0;
   unsigned int i;
   for( i=0; i<uc->nAtomInfo; i++ )
   {
     sigma += uc->atomInfoList[i].sigmaAbsorption * uc->atomInfoList[i].nAtoms;
   }
-  double xsect_abs = sigma / 1.798 * lambda;
+  xsect_abs = sigma / 1.798 * lambda;
 
   return xsect_abs;
 }
@@ -649,7 +663,7 @@ double nxsAbsorption( double lambda, UnitCell* uc )
  */
 double nxsIncoherentElastic( double lambda, UnitCell* uc )
 {
-  double s_el_inc = 0.0;
+  double xsect_inc_el, s_el_inc = 0.0;
   unsigned int i;
   for( i=0; i<uc->nAtomInfo; i++ )
   {
@@ -657,7 +671,7 @@ double nxsIncoherentElastic( double lambda, UnitCell* uc )
     s_el_inc += value * ( 1.0 - exp(-1.0/value) ) * uc->atomInfoList[i].nAtoms;
   }
 
-  double xsect_inc_el = s_el_inc * uc->avgSigmaIncoherent;
+  xsect_inc_el = s_el_inc * uc->avgSigmaIncoherent;
   return xsect_inc_el;
 }
 
@@ -676,14 +690,16 @@ double nxsIncoherentElastic( double lambda, UnitCell* uc )
 double nxsIncoherentInelastic( double lambda, UnitCell* uc )
 {
   unsigned int i;
+  double phi1_phi3, value, s_el_inc, A,  s_total_inc;
   double xsect_inc_inel = 0.0;
+
   for( i=0; i<uc->nAtomInfo; i++ )
   {
-    double phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
-    double value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
-    double s_el_inc = value * ( 1.0 - exp(-1.0/value) );
-    double A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
-    double s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
+    phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
+    value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
+    s_el_inc = value * ( 1.0 - exp(-1.0/value) );
+    A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
+    s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
     xsect_inc_inel += (s_total_inc - s_el_inc) * uc->atomInfoList[i].nAtoms;
   }
 
@@ -706,14 +722,16 @@ double nxsIncoherentInelastic( double lambda, UnitCell* uc )
 double nxsCoherentInelastic( double lambda, UnitCell* uc )
 {
   unsigned int i;
+  double phi1_phi3, value, s_el_inc, A,  s_total_inc;
   double xsect_coh_inel = 0.0;
+
   for( i=0; i<uc->nAtomInfo; i++ )
   {
-    double phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
-    double value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
-    double s_el_inc = value * ( 1.0 - exp(-1.0/value) );
-    double A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
-    double s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
+    phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
+    value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
+    s_el_inc = value * ( 1.0 - exp(-1.0/value) );
+    A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
+    s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
     xsect_coh_inel += (s_total_inc - s_el_inc) * uc->atomInfoList[i].nAtoms;
   }
 
@@ -736,14 +754,16 @@ double nxsCoherentInelastic( double lambda, UnitCell* uc )
 double nxsTotalInelastic( double lambda, UnitCell* uc )
 {
   unsigned int i;
+  double phi1_phi3, value, s_el_inc, A,  s_total_inc;
   double xsect_total_inel = 0.0;
+
   for( i=0; i<uc->nAtomInfo; i++ )
   {
-    double phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
-    double value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
-    double s_el_inc = value * ( 1.0 - exp(-1.0/value) );
-    double A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
-    double s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
+    phi1_phi3 = uc->atomInfoList[i].phi_1 * uc->atomInfoList[i].phi_3;
+    value = lambda*lambda / 2.0 / uc->atomInfoList[i].B_iso;
+    s_el_inc = value * ( 1.0 - exp(-1.0/value) );
+    A = uc->atomInfoList[i].molarMass*ATOMIC_MASS_U_kg / MASS_NEUTRON_kg;
+    s_total_inc = A/(A+1.0)*A/(A+1.0) * ( 1.0 + 9.0 * phi1_phi3 * value/A/A );
     xsect_total_inel += (s_total_inc - s_el_inc) * uc->atomInfoList[i].nAtoms;
   }
 
@@ -757,6 +777,9 @@ double nxsTotalInelastic( double lambda, UnitCell* uc )
 MarchDollase initMarchDollase( UnitCell* uc )
 {
   MarchDollase md;
+  double n;
+  unsigned int i;
+
   md.N = 101;
   md.M = 1001;
   md.nOrientations = 0;
@@ -767,8 +790,7 @@ MarchDollase initMarchDollase( UnitCell* uc )
   md.sin_phi = (double*)malloc( sizeof(double)*md.N );
   md.cos_phi = (double*)malloc( sizeof(double)*md.N );
 
-  double n = (double)md.N;
-  unsigned int i;
+  n = (double)md.N;
   for( i=0; i<n; i++ )
   {
     md.sin_phi[i] = sin( M_PI/n*(double)i - M_PI/2.0 );
@@ -786,31 +808,34 @@ void addTexture( MarchDollase* md, Texture texture )
   int a = texture.a;
   int b = texture.b;
   int c = texture.c;
+  int h,k,l;
+  unsigned int i,j;
+  double cos_beta, sin_beta,  N_Nplus1, r, m;
+
+  UnitCell *uc;
+  s_HKL *hkl;
 
   if( a==0 && b==0 && c==0 )
     return;
 
-//   a = 1.0*texture.a + 0.0*texture.b + 0.0*texture.c;
-//   b = 0.0*texture.a + 0.0*texture.b - 1.0*texture.c;
-//   c = 0.0*texture.a + 1.0*texture.b + 0.0*texture.c;
+  //   a = 1.0*texture.a + 0.0*texture.b + 0.0*texture.c;
+  //   b = 0.0*texture.a + 0.0*texture.b - 1.0*texture.c;
+  //   c = 0.0*texture.a + 1.0*texture.b + 0.0*texture.c;
 
-  UnitCell *uc = md->unitcell;
-  HKL *hkl = uc->hklList;
+  uc = md->unitcell;
+  hkl = uc->hklList;
 
   /* calculate sin_beta and cos_beta for all planes */
   texture.sin_beta = (double**)malloc( sizeof(double*)*uc->nHKL );
   texture.cos_beta = (double**)malloc( sizeof(double*)*uc->nHKL );
 
-  int h;
-  int k;
-  int l;
-  unsigned int i,j;
-  double cos_beta, sin_beta;
   for( i=0; i<uc->nHKL; i++ )
   {
     unsigned int nEquivalent = hkl[i].multiplicity / 2;
+    EquivHKL *equivHKL;
+
     if( nEquivalent==0 ) nEquivalent = 1;
-    EquivHKL *equivHKL = hkl[i].equivHKL;
+    equivHKL = hkl[i].equivHKL;
 
     texture.sin_beta[i] = (double*)malloc( sizeof(double)*nEquivalent );
     texture.cos_beta[i] = (double*)malloc( sizeof(double)*nEquivalent );
@@ -834,15 +859,16 @@ void addTexture( MarchDollase* md, Texture texture )
   }
 
   /* calculate P_alpha_H in constant cos_alpha_H steps */
-  double N_Nplus1 = 1.0 /(double)(md->N+1.0);
-  double r = texture.r;
+  N_Nplus1 = 1.0 /(double)(md->N+1.0);
+  r = texture.r;
   texture.P_alpha_H = (double*)malloc( sizeof(double)*md->M );
 
-  double m = (double)md->M;
+  m = (double)md->M;
   for ( i=0; i<md->M; i++ )
   {
-    double cos_alpha_H = 2.0/m*i - 1.0;
-    double sin_alpha_H = sin( acos(cos_alpha_H) );
+    double  cos_alpha_H, sin_alpha_H;
+    cos_alpha_H = 2.0/m*i - 1.0;
+    sin_alpha_H = sin( acos(cos_alpha_H) );
     texture.P_alpha_H[i] = pow( r*r*cos_alpha_H*cos_alpha_H + sin_alpha_H*sin_alpha_H/r, -1.5 ) * N_Nplus1;
   }
 
@@ -850,8 +876,6 @@ void addTexture( MarchDollase* md, Texture texture )
   md->texture = (Texture*)realloc( md->texture, sizeof(Texture)*md->nOrientations );
   md->texture[md->nOrientations-1] = texture;
 }
-
-
 
 
 
@@ -870,45 +894,49 @@ double nxsCoherentElasticTexture( double lambda, MarchDollase* md )
   //   z = z/length_xyz;
 
   UnitCell *uc = md->unitcell;
-  HKL *hkl = uc->hklList;
+  s_HKL *hkl = uc->hklList;
   Texture *texture = md->texture;
   unsigned int nEquivalent;
 
   /* for all d-spacings... */
   unsigned int i, j, k, l;
+
   for( i=0; i<uc->nHKL; i++ )
   {
     double delta = lambda - 2.0*hkl[i].dhkl;
     if( delta < -1E-6 )
     {
+      double alpha_h, sin_alpha_h, cos_alpha_h,  cos_beta, sin_beta;
       double corr = 0.0;
       nEquivalent = hkl[i].multiplicity / 2;
       if( nEquivalent==0 ) nEquivalent = 1;
 
       /* calculate alpha_h */
-      double alpha_h = M_PI/2.0 - asin( lambda/2.0/hkl[i].dhkl );
-      double sin_alpha_h = sin( alpha_h );
-      double cos_alpha_h = cos( alpha_h );
+      alpha_h = M_PI/2.0 - asin( lambda/2.0/hkl[i].dhkl );
+      sin_alpha_h = sin( alpha_h );
+      cos_alpha_h = cos( alpha_h );
 
       /* calculate the correction factor... */
       for( j=0; j<md->nOrientations; j++ )
       {
         for( k=0; k<nEquivalent; k++ )
         {
-          double cos_beta = texture[j].cos_beta[i][k];
-          double sin_beta = texture[j].sin_beta[i][k];
+          cos_beta = texture[j].cos_beta[i][k];
+          sin_beta = texture[j].sin_beta[i][k];
           for( l=0; l<md->N; l++ )
           {
-            double sin_phi = md->sin_phi[l];
+            double sin_phi, a, cos_alpha_H;
+            unsigned int index;
+            sin_phi = md->sin_phi[l];
             // double cos_phi = md->cos_phi[l];
 
-            double a = cos_beta*cos_alpha_h - sin_beta*sin_alpha_h*sin_phi;
-//             double b = sin_beta*cos_phi;
-//             double c = cos_beta*sin_alpha_h + sin_beta*cos_alpha_h*sin_phi;
-            double cos_alpha_H = a/* + b + c*/;
-//             cos_alpha_H = a*x+b*y+c*z;
+            a = cos_beta*cos_alpha_h - sin_beta*sin_alpha_h*sin_phi;
+            //             double b = sin_beta*cos_phi;
+            //             double c = cos_beta*sin_alpha_h + sin_beta*cos_alpha_h*sin_phi;
+            cos_alpha_H = a/* + b + c*/;
+            //             cos_alpha_H = a*x+b*y+c*z;
 
-            unsigned int index = (int)( (1.0+cos_alpha_H)/2.0*(double)md->M );
+            index = (int)( (1.0+cos_alpha_H)/2.0*(double)md->M );
             corr += md->texture[j].P_alpha_H[index] * md->texture[j].f;
           }
         } /* end of nEquivalent */

@@ -34,14 +34,13 @@ extern "C"
 */
 
 
-
 /**
 \struct <EquivHKL>
 
   \brief struct for symmetry equivalent Miller indices (hkl)
 
   This struct is used by struct HKL to hold symmetry equivalent hkl.
-  \see HKL
+  \see s_HKL
 */
 typedef struct {
   int h;                           /*!< Miller index */
@@ -65,7 +64,7 @@ typedef struct {
   double dhkl;                     /*!< hkl lattice spacing in &Aring;*/
   double FSquare;                  /*!< \f$|F|^2\f$ (structure factor) */
   EquivHKL *equivHKL;              /*!< holds the symmetry equivalent reflections including the current indices */
-} HKL;
+} s_HKL;
 
 
 /**
@@ -101,7 +100,7 @@ typedef struct {
 
   \brief struct for unit cell descrpition
 
-  This struct stores space group symbol, the lattice parameters, the three sigma values, the atom mass the Debye temperature, some calculated values and the HKL and UnitCell struct as well as the SgInfo struct (see SgInfo documentation on http://cci.lbl.gov/sginfo/).
+  This struct stores space group symbol, the lattice parameters, the three sigma values, the atom mass the Debye temperature, some calculated values and the s_HKL and UnitCell struct as well as the SgInfo struct (see SgInfo documentation on http://cci.lbl.gov/sginfo/).
 */
 typedef struct {
   int crystalSystem;         /*!< crysal system: XS_Tetragonal, XS_Hexagonal, XS_Cubic ... */
@@ -121,7 +120,7 @@ typedef struct {
   double volume;             /*!< unit cell volume */
   unsigned int nHKL;         /*!< number of hkl reflections after initUnitCell() */
   unsigned int maxHKL_index; /*!< maximum hkl index */
-  HKL *hklList;              /*!< \see HKL */
+  s_HKL *hklList;            /*!< \see HKL */
   double mass;               /*!< unit cell mass [\f$\frac{g}{mol}\f$]*/
   double density;            /*!< unit cell density [\f$\frac{g}{cm^3}\f$]*/
 } UnitCell;
@@ -165,7 +164,7 @@ typedef struct{
 
 
 double calcDhkl( int h, int k, int l, UnitCell* uc );
-double calcFSquare( HKL *hklReflex, UnitCell* uc );
+double calcFSquare( s_HKL *hklReflex, UnitCell* uc );
 int initUnitCell( UnitCell *uc );
 int addAtomInfo( UnitCell *uc, AtomInfo ai );
 int initHKL( UnitCell *uc );
