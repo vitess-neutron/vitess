@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>Module Beamstop</title>
+</head>
+ <body>
+ 
+<h1>VITESS Module Beamstop</h1>
+<br>
+The module <b>beamstop</b> simulates a beamstop of rectangular or circular shape. 
+It is regarded as a plane area and is centered around the beam axis. Distance and size of the beamstop have to be given.
+Assuming that it is between sample and detector, it does not change the co-ordinate system (in contrast to most other modules).
+Thus, the origin remains at the sample position. As a consequence, the distance of the detector module is the distance to the sample in any case.  
+<br>
+There are two options: either all neutrons are propagated to the plane through the beamstop or the neutrons remain at their positions. 
+In both cases, those neutrons that hit the beamstop or would hit the beamstop are removed.
+The main difference is that the first option only makes sense if the beamstop is in front of a planar detector,
+because otherwise they may not reach the plane through beamstop or end up behind the detector.
+<br>
+<br>
+<h3><font size="+2"> Parameters for module 'beamstop' </font></h3>
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">distance from sample<br>[cm]        </td>
+       <td valign="top">distance between sample and beamstop</td>
+       <td valign="top">&gt;0 </td>
+       <td valign="top">-d    </td>
+     </tr>
+
+     <tr>
+       <td valign="top">beamstop shape</td>
+       <td valign="top">shape of the beamstop: rectangular or circular</td>
+       <td valign="top">'rectangular'<br>'circular' </td>
+       <td valign="top">-R                          </td>
+     </tr>
+
+     <tr>
+       <td valign="top">beam propagation</td>
+       <td valign="top">'no' (default): neutrons remain on the sample surface  <br>
+                        'yes'         : neutrons are propagated to the beamstop  
+                                        (only useful, if the beamstop is in front of a planar detector)</td>
+       <td valign="top">'no'<br>'yes'</td>
+       <td valign="top">-p           </td>
+     </tr>
+
+     <tr>
+       <td valign="top">radius<br/>[cm]</td>
+       <td valign="top">(for option 'circular shape'): radius of the beamstop</td>
+       <td valign="top">&gt; 0 </td>
+       <td valign="top">-r     </td>
+     </tr>
+
+     <tr>
+       <td valign="top">width<br/>[cm]</td>
+       <td valign="top">(for option 'rectangular shape'): width of the beamstop</td>
+       <td valign="top">&gt; 0  </td>
+       <td valign="top">-W      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">height<br/>[cm]</td>
+       <td valign="top">(for option 'rectangular shape'): height of the beamstop</td>
+       <td valign="top">&gt; 0  </td>
+       <td valign="top">-H      </td>
+     </tr>
+   
+  </tbody> 
+</table>
+<br> 
+<br>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>
