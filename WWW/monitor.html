@@ -1,20 +1,20 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-            
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-            
+
   <meta name="GENERATOR"
  content="Mozilla/4.73 [en] (WinNT; I) [Netscape]">
   <title>Module Monitor</title>
 </head>
   <body>
-      
+
 <h1>VITESS Module Monitor</h1>
-      
+
 <h2> Monitor</h2>
-   The module <b>monitor</b> is needed to obtain information about the <b>wavelength</b>, 
+   The module <b>monitor</b> is needed to obtain information about the <b>wavelength</b>,
  <b>time</b>, <b>divergence</b> or <b>position </b>(y-z-plane) dependent <b>intensity
 or polarization distribution</b> of the neutron output given from the previous
 module. <br>
@@ -24,17 +24,17 @@ column  represents the standard deviations per channel. The data of this
 file can  be visualised by appropriate means, e.g. 'Origin', or one can try
 to use the plot facilities of the VITESS GUI. The monitor module does not
 influence the neutron stream between the neighbouring modules, unless the
-option exclusive  counts is activated (see below).   
+option exclusive  counts is activated (see below).
 <p>The following information has to be given as an input </p>
-   
+
 <p>monitor file name<br>
    <br>
    number of bins: the interval to be considered (e.g. the wavelength range)<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  will be partitioned into number of bins segments of equal size.<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  In the case of position, one can give a different number of bins for<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  each direction of the y-z-plane for obtaining a rectangular segmentation.<br>
 <br>
 colour: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if colour is zero,
@@ -43,36 +43,36 @@ the intensity of all trajectories is displayed<br>
 &nbsp; &nbsp;if colour is 1, 2, ....., only the trajectories with that colour
 are taken into account<br>
   </p>
-   
+
 <p>normalise with binsize: if activated, in each channel count-rate and standard
  deviation are normalised with the binsize on the wavelength, time-of-flight,
  etc axis.<br>
   </p>
-   
+
 <p> minimal value, maximal value: the values defining the interval of interest.<br>
    <br>
    probability weight: if one deactivates the probability weight each neutron<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  is considered with the weight 1, otherwise (default) the attributed<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  probabilities (due to the operations of the modules before) are considered.<br>
    <br>
    exclusive counts: if activated, only those neutrons which have been monitored<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  successfully (e.g. the wavelength of the neutron lies in the monitored<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  wavelength interval) are transferred to the subsequent module. <br>
   begin, end of evaluation: (for 1-dim case, not used in 'monitor_time')<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  only neutrons arriving in that time interval are considered in the<br>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  evaluation<br>
    <br>
    If monitoring polarization </p>
-   
+
 <p>analysis direction: in case of monitoring polarization distributions it
  is <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  represented by a vector in cartesian coordinates<br>
    <br>
    <br>
@@ -86,7 +86,7 @@ parameters against each other in a 2D plot:
 
 <p> <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
 
-<p> <b>wavelength</b> 
+<p> <b>wavelength</b>
 
 <p> <b>energy</b>
 
@@ -96,7 +96,7 @@ parameters against each other in a 2D plot:
 
 <p> <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
 
-<p> Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as 
+<p> Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
 filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
 applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
 
@@ -105,19 +105,19 @@ applied, in which the average neutron spin component parallel to the analysis di
 <p> <b>Probability weight</b>: if one deactivates the probability weight each neutron<br>
   is considered with the weight 1, otherwise (default) the attributed<br>
    probabilities (due to the operations of the modules before) are considered.<br>
-   
+
 <p> <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br>
-  successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled ) 
+  successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled )
   are transferred to the subsequent module. <br>
 
 <p> <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
 
 </p>
-   
+
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-  <a href="mailto:vitess@hmi.de">Email vitess@hmi.de</a>   
+  <a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a>
 <p><!-- hhmts start --><font size="-1">Last modified: </font>Mon Jun 30 17:24:23
- MEST 2003 G. Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  --> </font><!-- hhmts end --> 
+ MEST 2003 G. Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  --> </font><!-- hhmts end -->
  </p>
   <br>
   <br>

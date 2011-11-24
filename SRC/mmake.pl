@@ -444,10 +444,11 @@ EOS
 
 EOS
 
+  $version =~ /([0-9]+)\.([0-9]+)/;
   my $rule = <<EOS;
 SOURCE=\$(SPATH)|xxx.c
-\$(IDIR)|xxx.obj\" : \$(SOURCE)
-	\$(CPP) /DVVERS='\"$version\"' \$(CPP_PROJ) \$(SOURCE)
+"\$(IDIR)|xxx.obj" : \$(SOURCE)
+	\$(CPP) /DVMAJOR=$1 /DVMINOR=$2 \$(CPP_PROJ) \$(SOURCE)
 EOS
   subRule($rule, @InitObj);
 

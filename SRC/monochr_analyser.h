@@ -8,13 +8,13 @@
 #define	STRING_BUFFER 50
 
 /********************************************************************/
-/* general definitions for the module crys.c						*/
+/* general definitions for the module crys.c			    */
 
 
 FILE		*AsciiFile, *Par_Crys, *Foc_Crys;
 char		*ParameterFileName, *GeomFileName ;
 int			OrderReflection, NumberCE[2], ParGeomN, d_spr_option, geom_option;
-long		NumOut, BufferIndex, Repetition, repet, i ;
+long		NumOut, BufferIndex, Repetition, repet;
 double		TOF, WL, Prob, d_ran, d_ran_min, d_ran_max, arg, thr, phr, thrmax, phrmax, deltaphr ;
 double		Index, Matrix[3][3], Option, User, ParGeom[PAR_GEOM], IntegralIntensity ;
 double		d_spacing, d_fwhm, d_range, mosaic_range, mosaic_fwhm[2], Reflectivity ;
@@ -38,7 +38,7 @@ void		ReadParameterFile() ;
 void		ReadFocFile() ;
 void		FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double RotVert_F[CRYS_SIZE][CRYS_SIZE], double RotHoriz_F[CRYS_SIZE][CRYS_SIZE]) ;
 void		OutputAscii(double TOF, double WL, double Prob, VectorType Pos, VectorType Dir) ;
-void		SelectCE(double *index) ;
+void		SelectCE(double *index, int i) ;
 void		MosaicMaxProb(VectorType Dir, double *thr, VectorType Mosaic) ;
 void		AnglesOutputFrame(double RotHoriz, double RotVert, double *AnglFocHoriz, double *AnglFocVert) ;
 void		CopyMatricesToMatrix(int i, int j, double Matrix[3][3][CRYS_SIZE][CRYS_SIZE], double Result[3][3]) ;

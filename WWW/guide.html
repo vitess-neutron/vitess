@@ -1,44 +1,44 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-                        
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-                        
+
   <meta name="GENERATOR"
  content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
   <title>Module Guide</title>
 </head>
   <body>
-            
+
 <h1> VITESS Module Guide</h1>
-      The module <b>guide</b> simulates the neutron flight path through a 
+      The module <b>guide</b> simulates the neutron flight path through a
 mirrored   guide calculating the intensity loss for each reflection (in dependence
- of the neutron wavelength and the incident angle). It can be straight, diverging 
-  or converging,&nbsp;or consist of several straight parts that form a polygon 
-  section with a certain curvature. It can also consist of several vertical 
+ of the neutron wavelength and the incident angle). It can be straight, diverging
+  or converging,&nbsp;or consist of several straight parts that form a polygon
+  section with a certain curvature. It can also consist of several vertical
   channels (bender option).&nbsp; In this case, the module   bender must
 be used.<br>
      Subsequent modules always refer to the new origin, which is defined
 as  the  middle of the exit window. It is generated automatically by the
 program,  also in the case of curvature (the orientation of the frame follows
 the curvature).   <br>
-     <i></i>      
+     <i></i>
 <p>&nbsp; </p>
-         
+
 <p><img src="Guide2.GIF" height="286" width="568">
       <br>
      &nbsp; <br>
      &nbsp; </p>
-         
+
 <h3> Simulation parameters</h3>
       The effect of gravity is considered in this module, if this option
-is chosen.  Trajectories with a probability/count rate less than the 'minimal 
+is chosen.  Trajectories with a probability/count rate less than the 'minimal
  weight'  are taken out of the simulation. <br>
-     &nbsp;      
+     &nbsp;
 <h3> Guide shapes</h3>
 <p> The guide consists of one or several planar pieces. The number of
-pieces and the length of <b>each</b> piece are input parameters. 
+pieces and the length of <b>each</b> piece are input parameters.
 Each piece may be converging or diverging.
 Elliptical and parabolic guide shapes can be chosen; these shapes are approached
 by several planar pieces. Converging and diverging as well as guides of constant
@@ -46,46 +46,46 @@ cross-section can be simulated as one piece. Convergence or divergence
 is then defined by input and output width and height. This is identical to using several
 pieces if there is no abutment loss (see Table below) included and runs faster.
 Special guide shapes can be realized using the option 'shape from file' that allows any
-symmetric shape and an individual coating for each piece.</p> 
-  
-<p> A curved guide is described by a polygon. In this case, a radius of curvature (unequal zero) must 
+symmetric shape and an individual coating for each piece.</p>
+
+<p> A curved guide is described by a polygon. In this case, a radius of curvature (unequal zero) must
   be given. The co-ordinate system is rotated by an angle&nbsp;</p>
-         
+
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; beta = 2.0*arcsin(length/(2*radius))&nbsp;</p>
-         
+
 <p>between two succeeding pieces. The first piece is aligned to the preceding
-   module, the last piece is aligned to the following module. The algorithm 
-  used here works properly only for guides with constant width. Therefore 
-<i>the  combination of curvature and horizontal converging/diverging is not 
+   module, the last piece is aligned to the following module. The algorithm
+  used here works properly only for guides with constant width. Therefore
+<i>the  combination of curvature and horizontal converging/diverging is not
 supported!</i>&nbsp;</p>
-         
+
 <h3> Mathematical description </h3>
 <p>Each piece is described by 5 planes: left, right, top , bottom and exit.
    Each plane is described by an equation of first order: </p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ax + by + cz + d = 0&nbsp;</p>
-         
-<p>The coefficients a,b,c,d are calculated from guide length as well as width 
-  and height of entrance and exit. The trajectory is calculated until the 
-exit  plane is reached, taking into account the intensity loss for each reflection. 
+
+<p>The coefficients a,b,c,d are calculated from guide length as well as width
+  and height of entrance and exit. The trajectory is calculated until the
+exit  plane is reached, taking into account the intensity loss for each reflection.
   A warning is given, if a trajectory is found out of the exit area.<br>
       </p>
-         
+
 <p>If the real guide does not consist of straight pieces, a large number
-of pieces must be used for a good simulation. Alternatively, the module 'bender' 
-  can be used. The module 'bender' uses arcs instead of planes for the surface 
+of pieces must be used for a good simulation. Alternatively, the module 'bender'
+  can be used. The module 'bender' uses arcs instead of planes for the surface
   of the guide.  <br /> </p>
-         
+
 <h3> Bender option</h3>
       The guide can be divided into channels (in the x-z-plane). The entrance
   width of each channel is determined by: <br>
      [entrance_width - (number_of_channels - 1) * spacer_width] / number_of_channels.
    <br>
      &nbsp; <br>
-     &nbsp; &nbsp;      
+     &nbsp; &nbsp;
 <h3> Reflectivity Files</h3>
       The reflectivity files describe the reflection properties of the coating:
-       
+
 <pre>mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0)
 <br> mirr1a.dat: Ni coating&nbsp;&nbsp;  (theta_Ni    = 0.099138 deg/&Aring;*lambda)
 <br> mirr1b.dat: Ni-58 coating (theta_Ni-58 = 0.11456  deg/&Aring;*lambda)
@@ -110,12 +110,12 @@ If no reflectivity file is given as an input, the guide operates in total
 absorption mode, i.e. each neutron hitting a guide wall is lost. <br>
      There is one file for the left (= inner) side, one for the right (=
 outer   side) and one for the top and bottom of the bender (channels). <br>
-     &nbsp;      
+     &nbsp;
 <h3><br>
      </h3>
-         
+
 <h2>Module parameters:</h2>
-      &nbsp;      
+      &nbsp;
 <table border="1" width="90%">
       <tbody>
          <tr>
@@ -143,10 +143,10 @@ or pieces need to be given.<br>
 approach an ellipse, which is defined by entrance and exit width, and an
 angle describing the position of the ellipse. This angle and the number or
 pieces need to be given (see below). <br>
-      <b>from file</b>: the guide consists of several straight pieces of that might 
-have different length and different coating and can be converging or diverging. 
+      <b>from file</b>: the guide consists of several straight pieces of that might
+have different length and different coating and can be converging or diverging.
 Each piece is described by one line in the file; the parameters that have to be given are:
-Position, width and height of the beginning of the piece, reflectivity files for left, 
+Position, width and height of the beginning of the piece, reflectivity files for left,
 right, top and bottom plane. <br>
       </td>
       <td valign="top">-Y, -Z</td>
@@ -223,7 +223,7 @@ right, top and bottom plane. <br>
       <tr>
       <td valign="top">focus dist. of ellipse<br>[cm]</td>
       <td>only needed for elliptic shape:<br>
-          The elliptical shape of the guide is defined by 3 parameters: the entrance width/height, the exit widht/height 
+          The elliptical shape of the guide is defined by 3 parameters: the entrance width/height, the exit widht/height
           and the distance from the guide exit to the (2nd) focal point in horizontal/vertical direction.
           This distance has to be given here. All other parameters are calculated, some are given in the log file.   </td>
       <td valign="top">-f, -F</td>
@@ -251,52 +251,52 @@ right, top and bottom plane. <br>
 
       <tr>
       <td>surface waviness<br>[deg]</td>
-      <td>amplitude of waviness<br> For a rectangular distribution, this value is the maximal angle of deviation 
+      <td>amplitude of waviness<br> For a rectangular distribution, this value is the maximal angle of deviation
 	        of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value. </td>
       <td>-r</td>
       </tr>
-                     
-  </tbody>     
+
+  </tbody>
 </table>
 
-<br/> <br/> 
+<br/> <br/>
 <p> </p>
 <h3> Example for guide shape from file </h3>
 <pre>
-# position [m]  width [cm]  height [cm]   coating L    coating R    coating T    coating B  
+# position [m]  width [cm]  height [cm]   coating L    coating R    coating T    coating B
 #-------------------------------------------------------------------------------------------
-     0.000       12.007       12.007       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     0.137       12.692       12.692       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     0.294       13.424       13.424       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     0.471       14.205       14.205       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     0.674       15.037       15.037       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     0.904       15.923       15.923       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     1.165       16.864       16.864       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     1.463       17.862       17.862       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     1.801       18.919       18.919       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     2.186       20.035       20.035       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     2.624       21.211       21.211       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     3.122       22.447       22.447       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     3.688       23.742       23.742       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     4.332       25.093       25.093       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     5.065       26.496       26.496       m60w.dat     m60w.dat     m60w.dat     m60w.dat 
-     5.899       27.946       27.946       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-     6.847       29.434       29.434       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-     7.925       30.948       30.948       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-     9.151       32.471       32.471       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    10.546       33.980       33.980       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    12.133       35.444       35.444       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    13.937       36.824       36.824       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    15.990       38.061       38.061       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    18.324       39.080       39.080       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    20.980       39.775       39.775       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-    24.000       39.995       39.995       m30w.dat     m30w.dat     m30w.dat     m30w.dat 
-</pre>            
+     0.000       12.007       12.007       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     0.137       12.692       12.692       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     0.294       13.424       13.424       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     0.471       14.205       14.205       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     0.674       15.037       15.037       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     0.904       15.923       15.923       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     1.165       16.864       16.864       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     1.463       17.862       17.862       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     1.801       18.919       18.919       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     2.186       20.035       20.035       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     2.624       21.211       21.211       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     3.122       22.447       22.447       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     3.688       23.742       23.742       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     4.332       25.093       25.093       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     5.065       26.496       26.496       m60w.dat     m60w.dat     m60w.dat     m60w.dat
+     5.899       27.946       27.946       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+     6.847       29.434       29.434       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+     7.925       30.948       30.948       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+     9.151       32.471       32.471       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    10.546       33.980       33.980       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    12.133       35.444       35.444       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    13.937       36.824       36.824       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    15.990       38.061       38.061       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    18.324       39.080       39.080       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    20.980       39.775       39.775       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+    24.000       39.995       39.995       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+</pre>
 <p> </p>
-         
+
 <hr>
 <a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de</a>      
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 
 </body>
 </html>

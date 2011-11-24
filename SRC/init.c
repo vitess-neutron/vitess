@@ -85,10 +85,6 @@ short    bTrace=TRUE,     /* criterion: write trace files */
 static long       TracePoints=FALSE;     /* creates dot for every written output buffer if TRUE */
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
-#ifndef VVERS
-# define VVERS "unknown"
-#endif
-static const char *VITESS_VERSION = VVERS;
 
 static char       sModuleName[21];
 
@@ -657,7 +653,20 @@ void print_module_name(const char *name)
 {
   char sNameHlp[41], *pBlank;
 
-  fprintf(LogFilePtr,"\n\nVITESS version %s  module %s\n", VITESS_VERSION, name);
+#ifdef WIN32
+# if defined(VMAJOR) && defined(VMINOR)
+    fprintf(LogFilePtr,"\n\nVITESS version %d.%d  %s  module %s\n", 
+            VMAJOR, VMINOR, __DATE__, name);
+# else
+    fprintf(LogFilePtr,"\n\nVITESS module %s  %s\n", name, __DATE__);
+# endif
+#else
+# ifdef VVERS
+    fprintf(LogFilePtr,"\n\nVITESS version %s  module %s\n", VVERS, name);
+# else
+    fprintf(LogFilePtr,"\n\nVITESS module %s  %s\n", name, __DATE__);
+# endif
+#endif
 
   /* Keeping name in mind (without "Space and" and without version number */
   if (strncmp(name, "Space and ", 10)==0)
@@ -1137,6 +1146,7 @@ static int readCompressedNeutrons (void) {
     adjustFileProgress(rlen);
   } else {
     if (! compressBuf) {
+
       setCompressBufLen();
       compressBuf = malloc(compressBufLen);
     }

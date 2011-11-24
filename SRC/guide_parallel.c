@@ -380,10 +380,7 @@ static void CountMessageThread (int thread_i, VtMsgID code, TotalID id) {
     return;
   }
 
-  switch (code) {
-  case GUID_NO_PLANE : i = 0; break;
-  default : i = 1;
-  }
+  i = code == GUID_NO_PLANE ? 0 : 1;
 
   if (! C_M[i][thread_i]) 
     C_I[i][thread_i] = id;
@@ -1911,7 +1908,7 @@ double PathThroughGuideGravOrder1(int thread_i,
     /***********************************************************************************/
     /* Loop through all five planes....                                                */
     /***********************************************************************************/
-    for (k=GW_TOP; k<GW_INIT; k++) { /* GW_TOP = 0, GW_INIT = 5 */
+    for (k=GW_TOP; (int)k < GW_INIT; k++) { /* GW_TOP = 0, GW_INIT = 5 */
         
       /***********************************************************************************/
       /* Find the point where this neutron trajectory intercepts the current plane       */
@@ -2030,7 +2027,7 @@ double PathThroughGuideGravOrder1(int thread_i,
     /* Choose the reflectivity file/value and multiply probability by reflectivity value */
     /*if (ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM ||
         ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT) {*/
-    if (ThisCollision < GW_EXIT) {
+    if ((int)ThisCollision < GW_EXIT) {
       if (Pce->RData[ThisCollision]==NULL || datanumber >= Pce->RData[ThisCollision]->maxdata) {
         if (RefOut)
           WriteReflParam(RefOut, 10, &NearestNeutron, Pce, ThisCollision, degangular, 0.);
@@ -2154,7 +2151,7 @@ void WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, GuidePiece *P
     }
 
     // add neutron to reflection storage /* neutrons */
-    if ((ThisCollision < GW_EXIT) && 
+    if (((int)ThisCollision < GW_EXIT) && 
       ((keyPlotParam == 0) || ((keyPlotParam == 1) && (Mode == 0)) || ((keyPlotParam == 2) && (Mode == 10)))) 
     {
       

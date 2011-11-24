@@ -1,6 +1,6 @@
 /* The free non-commercial use of these routines is granted */
 /* providing due credit is given to the authors.            */
-/* Author: Géza Zsigmond, last change JUL 2002              */
+/* Author: GÃ©za Zsigmond, last change JUL 2002              */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,7 @@
 #include "softabort.h"
 #include "matrix.h"
 #include "intersection.h"
+
 
 int main(int argc, char **argv)
 {
@@ -25,9 +26,9 @@ int main(int argc, char **argv)
   DECLARE_ABORT;
 
   while (ReadNeutrons())  {
-
+    int i;
     CHECK;
-    for(i=0; i<NumNeutGot; i++) {
+    for (i=0; i<NumNeutGot; i++) {
       CHECK;
       /*InputNeutrons[i].Position[0]	= 0. ;*/
 
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
       /* selects CE on which the neutron is reflected and gives global variables
 	 in	the frame of CE */
 
-      SelectCE(&Index) ;
+      SelectCE(&Index, i) ;
 
       if (Index == 0./* no CE was found */) goto getlost ;
 
@@ -244,92 +245,86 @@ int main(int argc, char **argv)
 /********************************************************************/
 
 
-
-
 /* selects CE on which the neutron is reflected and gives output in frame
    of CE */
 
-void	SelectCE(double *index)
+void	SelectCE(double *index, int i)
 {
   int		k, l ;
   double	pos[3], dir[3] ;
 
 
-  for(k = 0;k<NumberCE[0];k++)
-    {
-      for(l = 0;l<NumberCE[1];l++)
-	{
+  for(k = 0;k<NumberCE[0];k++) {
+    for(l = 0;l<NumberCE[1];l++) {
 
-	  /* intermediate variables */
+      /* intermediate variables */
 
-	  CopyVector(InputNeutrons[i].Position, pos) ;
+      CopyVector(InputNeutrons[i].Position, pos) ;
 
-	  CopyVector(InputNeutrons[i].Vector, dir) ;
+      CopyVector(InputNeutrons[i].Vector, dir) ;
 
 
-	  CopyVectorsToVector(k, l, PosCE_F, PosCE) ;
+      CopyVectorsToVector(k, l, PosCE_F, PosCE) ;
 
-	  CopyVectorsToVector(k, l, DimCE_F, DimCE) ;
+      CopyVectorsToVector(k, l, DimCE_F, DimCE) ;
 
-	  CopyMatricesToMatrix(k, l, RotMatrixCE_F, RotMatrixCE) ;
-
-
-	  /* computes neutron variables in the frame of the CE */
-
-	  SubVector(pos, PosCE) ;
-
-	  RotVector(RotMatrixCE, pos) ;
-
-	  RotVector(RotMatrixCE, dir) ;
+      CopyMatricesToMatrix(k, l, RotMatrixCE_F, RotMatrixCE) ;
 
 
-	  /* here computes the depth where the neutron meets the reflecting
-	     plane, equivalent to a parallel shift of a t=0 CE in the frame of CE */
+      /* computes neutron variables in the frame of the CE */
 
-	  {
-	    VectorType Pos1, Pos2 ;
+      SubVector(pos, PosCE) ;
 
-	    if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2) == 0) { goto nextCE ;}
+      RotVector(RotMatrixCE, pos) ;
 
-	    Depth[0] = MonteCarlo(Pos1[0], Pos2[0]) ;
-	  }
+      RotVector(RotMatrixCE, dir) ;
 
 
-	  Depth[1] = Depth[2] = 0 ;
+      /* here computes the depth where the neutron meets the reflecting
+         plane, equivalent to a parallel shift of a t=0 CE in the frame of CE */
 
-	  SubVector(pos, Depth) ;
+      {
+        VectorType Pos1, Pos2 ;
+
+        if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2) == 0) { goto nextCE ;}
+
+        Depth[0] = MonteCarlo(Pos1[0], Pos2[0]) ;
+      }
 
 
-	  /* here we have the CE and initialise the values */
+      Depth[1] = Depth[2] = 0 ;
 
-	  *index = 1. ;
+      SubVector(pos, Depth) ;
 
-	  CopyVector(pos, InputNeutrons[i].Position) ;
 
-	  CopyVector(dir, InputNeutrons[i].Vector) ;
+      /* here we have the CE and initialise the values */
+
+      *index = 1. ;
+
+      CopyVector(pos, InputNeutrons[i].Position) ;
+
+      CopyVector(dir, InputNeutrons[i].Vector) ;
 
 			
-	  /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
+      /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
 
-	  if(Option != 1) { int p, q;
+      if(Option != 1) { int p, q;
 			
-	    for(p = 0;p<3;p++) for(q = 0;q<3;q++) RotMatrixBragg[p][q] = RotMatrixCE[p][q];
-	  }
+        for(p = 0;p<3;p++) for(q = 0;q<3;q++) RotMatrixBragg[p][q] = RotMatrixCE[p][q];
+      }
 
+      return ;
 
-	  return ;
+    nextCE: ;
 
-
-	nextCE: ;
-
-	  *index = 0. ;
-
-	}
+      *index = 0. ;
     }
+  }
 
   return ;
 
 }/* End SelectCE */
+
 
 /* computes mosaic orientation of maximum probability in frame of Bragg */
 

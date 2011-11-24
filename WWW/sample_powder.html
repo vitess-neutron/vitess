@@ -1,16 +1,16 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-    
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-    
+
   <meta name="GENERATOR"
  content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
   <title>Module Powder Sample</title>
 </head>
   <body>
-  
+
 <h1> VITESS Module Powder sample</h1>
  The powder sample module describes the coherent and incoherent elastic scattering
 of a powder sample. The coordinate system of an incoming neutron is defined
@@ -22,12 +22,12 @@ powder sample module uses the angles <font face="Symbol">q</font> and <font
 the +x-axis and covers the range from [0..<font face="Symbol">p</font>]. <font
  face="Symbol">f</font> is the angle between the projection of the vector
 r in the yz-plane and the +y-axis and has the range of [0..2<font
- face="Symbol">p</font>[. 
-<p>A neutron is written to the output by this module, if the neutron arrives 
+ face="Symbol">p</font>[.
+<p>A neutron is written to the output by this module, if the neutron arrives
 at the sample surface after scattering. The coordinate system has still the
 same orientation, but the origin has moved to the center of the sample. All
 sample modules consider the divergence of each neutron without any approximation
-to obtain the true direction of the flightpath after the scattering process. 
+to obtain the true direction of the flightpath after the scattering process.
 </p>
 <p>Description of the scattering: <br>
 First of all it is determined if the neutron intersects the sample. If the
@@ -38,52 +38,52 @@ p<sub>coh</sub> (see e.g. Squires (3.103)) of the scattering process results
 from summing up the single contributions P<sub>coh, d</sub> for all d-spacings
 which satisfy the Bragg equation for a neutron with wavelength <font
  face="Symbol">l</font><sub>i</sub>: </p>
-<center> 
+<center>
 <p><font face="Symbol">s</font><sub>coh,d</sub>(cone) = V<sub>smpl</sub>*<font
  face="Symbol">l</font><sub>i</sub><sup>3</sup>/(4v<sub>0</sub>&sup2;) *
-|F<sub>d</sub>|<sup>2 </sup>/ sin(0.5<font face="Symbol">*q</font><sub>sc,i</sub>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+|F<sub>d</sub>|<sup>2 </sup>/ sin(0.5<font face="Symbol">*q</font><sub>sc,i</sub>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 (Squires (3.103)) </p>
-<p>=&gt;&nbsp; p<sub>coh,d&nbsp;&nbsp; </sub>=&nbsp; I<sub>out,coh </sub>/ 
-I<sub>in </sub>= <font face="Symbol">s</font><sub>coh,d</sub>(cone) / A<sub>smpl</sub> 
-=&nbsp; L<sub>i</sub>*<font face="Symbol">l</font><sub>i</sub><sup>3</sup>/(4*v<sub>0</sub>&sup2;) 
+<p>=&gt;&nbsp; p<sub>coh,d&nbsp;&nbsp; </sub>=&nbsp; I<sub>out,coh </sub>/
+I<sub>in </sub>= <font face="Symbol">s</font><sub>coh,d</sub>(cone) / A<sub>smpl</sub>
+=&nbsp; L<sub>i</sub>*<font face="Symbol">l</font><sub>i</sub><sup>3</sup>/(4*v<sub>0</sub>&sup2;)
 <font face="Symbol">*</font> |F<sub>d</sub>|<sup>2 </sup>/ sin(0.5*<font
  face="Symbol">q</font><sub>sc,i</sub>) </p>
-<p>with&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="Symbol">q</font><sub>sc,i 
+<p>with&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="Symbol">q</font><sub>sc,i
 </sub>=&nbsp; 2<font face="Symbol">*</font>asin(<font face="Symbol">l</font><sub>i</sub>/(2*d))</p>
 </center>
-  
-<p>F<sub>d</sub> denotes the structure factor; it is the sum over all reciprocal 
-lattice vectors with the same d-spacing d. (d and |F<sub>d</sub>|<sup>2</sup> 
-are taken from the structure factor file.) <font face="Symbol">q</font><sub>sc,i</sub> 
-is the scattering angle of the i-th trajectory, V<sub>smpl</sub> the sample 
-volume, and v<sub>0</sub> the unit cell volume.&nbsp; I<sub>in </sub>denotes 
-the incoming neutron current, I<sub>out,coh </sub>the current of the neutrons 
-scattered to the cone<font face="Symbol">. </font>A<sub>smpl</sub> is the 
-area of the sample perpendicular to the beam direction. L<sub>i</sub> denotes 
+
+<p>F<sub>d</sub> denotes the structure factor; it is the sum over all reciprocal
+lattice vectors with the same d-spacing d. (d and |F<sub>d</sub>|<sup>2</sup>
+are taken from the structure factor file.) <font face="Symbol">q</font><sub>sc,i</sub>
+is the scattering angle of the i-th trajectory, V<sub>smpl</sub> the sample
+volume, and v<sub>0</sub> the unit cell volume.&nbsp; I<sub>in </sub>denotes
+the incoming neutron current, I<sub>out,coh </sub>the current of the neutrons
+scattered to the cone<font face="Symbol">. </font>A<sub>smpl</sub> is the
+area of the sample perpendicular to the beam direction. L<sub>i</sub> denotes
 the total length of the flightpath of the trajectory under consideration through
 the sample. The values for |F<sub>d</sub>|<sup>2</sup>&nbsp; contain the
 Debye-Waller factor. <br>
 The direction of the trajectory i after the sample is given by (<font
- face="Symbol">q</font><sub>i</sub>, <font face="Symbol">f</font><sub>i</sub> 
+ face="Symbol">q</font><sub>i</sub>, <font face="Symbol">f</font><sub>i</sub>
 ). The angle <font face="Symbol">q</font><sub>i </sub>is determined by <font
- face="Symbol">q</font><sub>sc,i </sub>; <font face="Symbol">f</font><sub>i</sub> 
-is given by a Monte Carlo choice between <font face="Symbol">f - Df</font> 
+ face="Symbol">q</font><sub>sc,i </sub>; <font face="Symbol">f</font><sub>i</sub>
+is given by a Monte Carlo choice between <font face="Symbol">f - Df</font>
 and <font face="Symbol">f + Df</font>. </p>
 <p>In addition to the coherent scattering, the incoherent scattering can be
-treated. This gives an isotropic distribution of the incoherently scattered 
+treated. This gives an isotropic distribution of the incoherently scattered
 neutrons. This scattering&nbsp; probability is given by </p>
-<center> 
+<center>
 <p>p<sub>inc </sub>=&nbsp; I<sub>out,inc </sub>/ I<sub>in&nbsp; </sub>= N<font
  face="Symbol">*s</font><sub>inc</sub>/A<sub>smpl</sub> = V<sub>smpl</sub>/v<sub>0</sub><font
  face="Symbol">*s</font><sub>inc</sub>/A<sub>smpl</sub> = L<sub>i</sub>/v<sub>0</sub><font
  face="Symbol">*s</font><sub>inc</sub>= L<sub>i</sub>*<font
  face="Symbol">m</font><sub>inc</sub></p>
 </center>
-  
-<p><font face="Symbol">s</font><sub>inc</sub> is the incoherent scattering 
-cross section of the unit cell; <font face="Symbol">m</font><sub>inc</sub>= 
+
+<p><font face="Symbol">s</font><sub>inc</sub> is the incoherent scattering
+cross section of the unit cell; <font face="Symbol">m</font><sub>inc</sub>=
 <font face="Symbol">s</font><sub>inc</sub>/v is the macroscopic incoherent
-scattering cross section, which can be given as an input in the sample file. 
+scattering cross section, which can be given as an input in the sample file.
 </p>
 <p>The scattering is restricted to an angular range of [<font
  face="Symbol">q</font>-<font face="Symbol">Dq, q</font>+<font
@@ -103,36 +103,36 @@ by a factor <font face="Symbol">Dq</font>. A limitation of the <font
 because the value is chosen by a Monte Carlo choice in the given range (see
 above). So, the restricted solid angle is taken into account by using the
 factors </p>
-<center> 
+<center>
 <p>G<sub>inc&nbsp; </sub>= <font face="Symbol">Df/p * Dq</font> <br>
 G<sub>coh </sub>= <font face="Symbol">Df/p&nbsp;&nbsp;&nbsp; </font>.</p>
 </center>
-  
-<p>For all trajectories, an attenuation A<sub>t</sub> is considered as follows: 
+
+<p>For all trajectories, an attenuation A<sub>t</sub> is considered as follows:
 </p>
-<center> 
+<center>
 <p>A<sub>t</sub> = exp{-L<sub>n </sub><font face="Symbol">* </font>(<font
  face="Symbol">m</font><sub>tot </sub>+ <font face="Symbol">m</font><sub>abs</sub><font
  face="Symbol">*l</font>/(1.798 Ang))}</p>
 </center>
-  
-<p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp; 
+
+<p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp;
 -&gt;&nbsp; point of scattering&nbsp; -&gt;&nbsp; surface). <font
  face="Symbol">m</font><sub>tot</sub> = <font face="Symbol">s</font><sub>tot</sub>/v<sub>0
 </sub>denotes the total macroscopic scattering cross section to be interpreted
 as wavelength independent, <font face="Symbol">m</font><sub>abs</sub> = <font
  face="Symbol">s</font><sub>abs</sub>/v<sub>0 </sub>is the macroscopic absorption
-cross section (to be provided for <font face="Symbol">l</font>= 1.798 Ang). 
+cross section (to be provided for <font face="Symbol">l</font>= 1.798 Ang).
 </p>
-<p>For one incoming trajectory, N<sub>coh</sub>+N<sub>inc</sub> trajectories 
-are generated. Summing over these trajectories, the total probability for 
+<p>For one incoming trajectory, N<sub>coh</sub>+N<sub>inc</sub> trajectories
+are generated. Summing over these trajectories, the total probability for
 the scattering of a&nbsp; trajectory is then composed by: </p>
-<center> 
-<p>P = <font face="Symbol">(</font>G<sub>coh </sub>p<sub>coh,d</sub>&nbsp; 
-+&nbsp; G<sub>inc </sub>p<sub>inc </sub>sin <font face="Symbol">q</font><sub>j</sub>) 
+<center>
+<p>P = <font face="Symbol">(</font>G<sub>coh </sub>p<sub>coh,d</sub>&nbsp;
++&nbsp; G<sub>inc </sub>p<sub>inc </sub>sin <font face="Symbol">q</font><sub>j</sub>)
 <font face="Symbol">* </font>A<sub>t</sub> / N<sub>r</sub></p>
 </center>
-  
+
 <p>where N<sub>r</sub> denotes the number of repetitions. sin <font
  face="Symbol">q</font><sub>i</sub> considers the <font face="Symbol">q</font>-dependence
 of the isotropic distribution of the scattering orientations. Due to considering
@@ -142,7 +142,7 @@ trajectories. <br>
 &nbsp; <br>
 &nbsp; </p>
 <h2> Module parameters:</h2>
- &nbsp; 
+ &nbsp;
 <table border="1" width="90%">
  <tbody>
     <tr>
@@ -166,8 +166,8 @@ area, which extends from [<font face="Symbol">q</font>-<font
  face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>] and [<font
  face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
  face="Symbol">Df</font>].&nbsp; <br>
-      <font face="Symbol">q</font> is defined as the angle between +x-axis 
-(main flight direction of the neutrons) and the Vector R to be described. 
+      <font face="Symbol">q</font> is defined as the angle between +x-axis
+(main flight direction of the neutrons) and the Vector R to be described.
       <font face="Symbol">f</font> is the angle between the +y-axis and the
 projection of R to the yz-plane. x,y and z form a right-handed system. <br>
 &nbsp;!!!Note: If you specify any parameter of <font face="Symbol">Dq, q,
@@ -178,7 +178,7 @@ Df, f,</font> you must specify all of them.!!! <br>
  </tr>
   <tr>
  <td>repetitions</td>
-  <td>'repetitions' specifies the number of data sets (trajectories) generated 
+  <td>'repetitions' specifies the number of data sets (trajectories) generated
 for each scattered trajectory. A larger number of repetitions enriches the
 population on the detector and gives therefore better statistics in the spectrum.</td>
   <td>&nbsp;-A</td>
@@ -189,32 +189,32 @@ population on the detector and gives therefore better statistics in the spectrum
       <i>no</i>: incoherent scattering is omitted</td>
   <td>&nbsp;-I</td>
  </tr>
- 
+
   </tbody>
 </table>
   <br>
-&nbsp; 
+&nbsp;
 <p><b><font size="+2">Sample file parameters:</font></b> </p>
 <p>first an example (the order written to the sample file differs from the
 sequence chosen in the GUI): </p>
-<p>100.0 0.0 0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-# sample position relative to the coordinate system defined by the preceding 
+<p>100.0 0.0 0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# sample position relative to the coordinate system defined by the preceding
 module <br>
-cyl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+cyl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # sample geometry (cyl, bal or cub) <br>
-2.0 10.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+2.0 10.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # radius and height of the cylinder in cm <br>
-1.0 0.0 0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+1.0 0.0 0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # orientation of the cylinder; need not be normalised <br>
-Al_300.str&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Al_300.str&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # file containing the structure factor data for the unit cell <br>
 0.000494 0.09057 0.01392 # macroscopic cross sections: incoherent, total
 and absorption <br>
-66.38&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+66.38&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # unit cell volume in cubic Angstrom </p>
 <p>Anything after the # character is interpreted as a comment. <br>
 &nbsp; <br>
-&nbsp; 
+&nbsp;
 <table border="1" width="90%">
  <tbody>
     <tr>
@@ -225,7 +225,7 @@ and absorption <br>
   <tr>
  <td>x,y,z&nbsp; <br>
 [cm]</td>
-  <td>position of the sample centre relative to the coordinate system defined 
+  <td>position of the sample centre relative to the coordinate system defined
 by the preceding module</td>
  </tr>
   <tr>
@@ -249,20 +249,20 @@ by the preceding module</td>
  </tr>
   <tr>
  <td>x,y,z direction</td>
-  <td>vector components describing the orientation of the sample (it is not 
+  <td>vector components describing the orientation of the sample (it is not
 necessary to give a normalized vector). <br>
-      <b>cylinder</b>: the vector&nbsp; is always perpendicular to the top 
+      <b>cylinder</b>: the vector&nbsp; is always perpendicular to the top
 of the cylinder (standard cyl. position (001), height along the z-axis). <br>
-      <b>cuboid</b>: Standard is the (1,0,0) direction, i.e. the sample has 
-a thickness in x-direction, a width in y-direction and height in z-direction. 
-By giving a different vector the whole sample is rotated in this direction, 
-i.e. the planes separated by 'thickness' remain perpendicular to this vector. 
+      <b>cuboid</b>: Standard is the (1,0,0) direction, i.e. the sample has
+a thickness in x-direction, a width in y-direction and height in z-direction.
+By giving a different vector the whole sample is rotated in this direction,
+i.e. the planes separated by 'thickness' remain perpendicular to this vector.
       <br>
       <b>sphere</b>: no values needed.</td>
  </tr>
   <tr>
  <td>structure factor file</td>
-  <td>This file (*.str) contains two columns, the first one for the d-spacings 
+  <td>This file (*.str) contains two columns, the first one for the d-spacings
 and the second column <br>
 contains the appropriate values for |F<sub>d</sub>|<sup>2</sup>.</td>
  </tr>
@@ -278,14 +278,14 @@ absorption <br>
 [Ang&sup3;]</td>
   <td>volume of the unit cell</td>
  </tr>
- 
+
   </tbody>
 </table>
   </p>
 <p> </p>
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de</a>
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 
 </body>
 </html>
