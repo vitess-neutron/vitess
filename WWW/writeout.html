@@ -1,44 +1,44 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-    
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-    
+
   <meta name="GENERATOR"
  content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
   <title>Module Writeout</title>
 </head>
   <body>
-  
+
 <h1> VITESS Module Writeout</h1>
- The writeout module can be inserted between two VITESS modules or at the 
-end of a pipe to convert&nbsp; binary neutron data (the output of the antecendent 
+ The writeout module can be inserted between two VITESS modules or at the
+end of a pipe to convert&nbsp; binary neutron data (the output of the antecendent
 module)&nbsp; to an ASCII file of nine columns containing the following useful
-information about each neutron: 
+information about each neutron:
 <p>1. the ID of the trajectory. e.g. AA0000914 </p>
 <p>2. the tracing information (T: tracing, N: no tracing) </p>
 <p>3. the 'color' of the trajectory (reserved for the user's demands) </p>
-<p>4. total neutron time (whole history of the neutron is considered) in ms 
+<p>4. total neutron time (whole history of the neutron is considered) in ms
 </p>
 <p>5. neutron wave length in &Aring; </p>
-<p>6. neutron probability = neutron current [n/s] represented by the trajectory 
+<p>6. neutron probability = neutron current [n/s] represented by the trajectory
 (whole "probability history" is considered) </p>
 <p>7.-9. the exact neutron position (x- ,y- ,z- coordinate, [cm]) with respect
 to the coordinate system provided by the module which generated the binary
 output&nbsp; read by <i>writeout</i> </p>
-<p>10.-12. neutron flight direction (x- ,y- ,z- coordinate of the direction 
+<p>10.-12. neutron flight direction (x- ,y- ,z- coordinate of the direction
 cosinus) </p>
 <p>13.-15. the spin components (x- ,y- ,z- coordinate of the spin) </p>
-<p>There is currently one exception to this scheme: The neutron data file 
-taken from the output of the detector module differs with respect to&nbsp; 
+<p>There is currently one exception to this scheme: The neutron data file
+taken from the output of the detector module differs with respect to&nbsp;
 columns 7.-9&nbsp; (as described in the detector help section). <br>
 &nbsp; </p>
 <p>Note: The writeout module does not disturb the normal processing of the
 pipe! </p>
 <p>
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 
 </body>
 </html>

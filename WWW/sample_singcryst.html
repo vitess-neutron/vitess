@@ -1,38 +1,38 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-           
+
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
-           
+
   <meta name="author" content="Geza Zsigmond">
   <title>VITESS Single Crystal Sample</title>
 </head>
   <body>
-     
+
 <h1>Single crystal sample</h1>
-     
+
 <pre wrap=""><br></pre>
    The integrated intensity I of a particular reflection measured in a TOF
  neutron diffraction experiment can be written as a function of the wavelength
  and the Bragg angle:<br>
-     
+
 <pre wrap=""><br><img src="I_hkl_formula.gif" alt="I_hkl_formula"
  width="693" height="103"><br><br></pre>
    where h, k, l are the Miller indices designating the Bragg peaks, and
 the  wavelength dependent correction factors are in the order given above:
 the  incident<br>
-   spectral neutron flux, the detector efficiency, the absorption correction, 
+   spectral neutron flux, the detector efficiency, the absorption correction,
  the extinction correction, and alfa= I_TDS/I_Bragg, the thermal diffuse scattering
  (TDS) correction. <br>
    ( J. Peters and W. Jauch, Science Progress (2002), 85 (4), 297&#8211;317).<br>
    In this module we can treat the extinction, TDS correction by combining
- a normalisation factor, d-spacing spread or by a reflection dependent coefficient 
- multiplying Fhkl<sup class="moz-txt-sup">2</sup> in the structure factor 
+ a normalisation factor, d-spacing spread or by a reflection dependent coefficient
+ multiplying Fhkl<sup class="moz-txt-sup">2</sup> in the structure factor
 file.<br>
-     
+
 <h2><b>Parameter descriptions</b></h2>
-     
+
 <table border="1" cols="3" width="84%">
      <tbody>
        <tr>
@@ -42,13 +42,13 @@ file.<br>
        </tr>
        <tr>
          <td>parameter file</td>
-         <td>in this file are given: reciprocal unit vectors, normalisation, 
+         <td>in this file are given: reciprocal unit vectors, normalisation,
  absorption, sample position, etc (see below)</td>
          <td>-P</td>
        </tr>
        <tr>
          <td>structure factor file</td>
-         <td>each line contains: h   k l  Fhkl<sup class="moz-txt-sup">2</sup> 
+         <td>each line contains: h   k l  Fhkl<sup class="moz-txt-sup">2</sup>
    (see below)<br>
          </td>
          <td>-S</td>
@@ -58,13 +58,13 @@ file.<br>
          </td>
          <td>options 1: Lorentzian, 2: Gaussian distributions, functions
 describing  the d-spacing probability distribution with<br>
-    maximum at the nominal value (for the exact nominal value ideal reflectivity 
+    maximum at the nominal value (for the exact nominal value ideal reflectivity
  = 1., see also normalisation)<br>
          </td>
          <td>-o</td>
        </tr>
        <tr>
-         <td>                     
+         <td>
       <p>d-spacing spread&nbsp;</p>
          </td>
          <td>gives FWHM/d-spacing, the relative 'thickness' of the Ewald
@@ -77,7 +77,7 @@ direction,  silicon ~ 0.0001=0.01%<br>
          <td valign="top">reciprocal unit vectors A, B, C<br>
    [1/A]<br>
          </td>
-         <td valign="top">x,y,z components of the reciprocal unit vectors 
+         <td valign="top">x,y,z components of the reciprocal unit vectors
 A, B, C defined in the sample frame<br>
          </td>
          <td valign="top">parameter file<br>
@@ -87,7 +87,7 @@ A, B, C defined in the sample frame<br>
          <td valign="top">normalisation<br>
    [arb.u.]<br>
          </td>
-         <td valign="top">normalisation factor containing for example the 
+         <td valign="top">normalisation factor containing for example the
 number  density <br>
          </td>
          <td valign="top">parameter file<br>
@@ -97,7 +97,7 @@ number  density <br>
          <td valign="top">absorption<br>
    &nbsp;[1/cm/A]<br>
          </td>
-         <td valign="top">attenuation due to absorption within the sample 
+         <td valign="top">attenuation due to absorption within the sample
 per wavelength<br>
          </td>
          <td valign="top">parameter file<br>
@@ -116,7 +116,7 @@ per wavelength<br>
          <td valign="top">phi(Z), chi(X), omega(again Z)<br>
    [deg]<br>
          </td>
-         <td valign="top">rotation angles of sample i.e. the reciprocal unit 
+         <td valign="top">rotation angles of sample i.e. the reciprocal unit
  vectors around the&nbsp; Z, X and again Z axes<br>
          </td>
          <td valign="top">parameter file<br>
@@ -125,7 +125,7 @@ per wavelength<br>
        <tr>
          <td valign="top">sample geometry<br>
          </td>
-         <td valign="top">sample shape options: 'cub', 'cyl'inder (vertical), 
+         <td valign="top">sample shape options: 'cub', 'cyl'inder (vertical),
  'ball' <br>
          </td>
          <td valign="top">parameter file<br>
@@ -135,7 +135,7 @@ per wavelength<br>
          <td valign="top">thickness or diameter, height, width<br>
    [cm]<br>
          </td>
-         <td valign="top">rectangular sample dimensions in x,y,z directions 
+         <td valign="top">rectangular sample dimensions in x,y,z directions
  (sample frame)<br>
          </td>
          <td valign="top">parameter file<br>
@@ -146,14 +146,14 @@ per wavelength<br>
          <font color="#000000">horizontal, vertical</font><br>
          <font color="#000000">[deg]</font></td>
          <td valign="top"><font color="#000000">a frame rotation about the
- Z axis and then a rotation about the (new)Y axis defines a new orientation 
+ Z axis and then a rotation about the (new)Y axis defines a new orientation
  for the neutrons written to the output</font><br>
          </td>
          <td valign="top">parameter file<br>
          </td>
        </tr>
-           
-  </tbody>   
+
+  </tbody>
 </table>
    <br>
    <br>
@@ -188,7 +188,7 @@ v.  B&nbsp; Y [1/A], recipr. unit v. B&nbsp; Z [1/A]<br>
   1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  1&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp;thickness or diameter
  [cm], height [cm], width [cm]<br>
-  109.3&nbsp;&nbsp;&nbsp;&nbsp; 20.7&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+  109.3&nbsp;&nbsp;&nbsp;&nbsp; 20.7&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp; &nbsp; output angle horiz. [deg], output angle vert. [deg]<br>
   <br>
    VITESS rotation convention: Smaller index axis rotated towards higher
@@ -197,15 +197,15 @@ index  axis is positive!<br>
    <br>
    <b>The structure factor file</b> contains <br>
    <br>
- no. refl &nbsp;&nbsp; h   &nbsp;&nbsp;&nbsp; k &nbsp;&nbsp;&nbsp; l  &nbsp;&nbsp;&nbsp; 
+ no. refl &nbsp;&nbsp; h   &nbsp;&nbsp;&nbsp; k &nbsp;&nbsp;&nbsp; l  &nbsp;&nbsp;&nbsp;
 Fhkl<sup class="moz-txt-sup">2</sup> <br>
    <br>
    in each line (Debay-Waller factor can be included here). <br>
-   All incoming trajectories will sample each reflection and the successful 
+   All incoming trajectories will sample each reflection and the successful
 ones are written out i.e. number of incoming trajectories will be larger than
 the number of incoming trajectories. <br>
- The third coordinate 'colour' will contain which reflection has happened 
-(no.refl), this can be seen if you use 'writeout' to view the ASCII output 
+ The third coordinate 'colour' will contain which reflection has happened
+(no.refl), this can be seen if you use 'writeout' to view the ASCII output
 (as in the example, but for longer runs do not forget<br>
    to cancel 'writeout' to save memory and computing time).<br>
    <br>
@@ -224,11 +224,11 @@ the number of incoming trajectories. <br>
  11 18 -10 -1 0.00165<br>
  12 19 -10 -1 5.67392E-4<br>
    <br>
-     
-<hr width="100%" size="2"><a href="vitess.html">   Back to VITESS overview</a> 
+
+<hr width="100%" size="2"><a href="vitess.html">   Back to VITESS overview</a>
   <br>
-   <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>     
-<p><!-- hhmts start --><font size="-1">Last modified: Wed Apr&nbsp; 2 18:53:44 
+   <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
+<p><!-- hhmts start --><font size="-1">Last modified: Wed Apr&nbsp; 2 18:53:44
  MEST 2003</font><font size="-1">, G. Zs.</font><!-- hhmts end --><br>
    &nbsp; </p>
    <br>

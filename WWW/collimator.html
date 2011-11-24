@@ -1,43 +1,43 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
   <title>Module Collimator</title>
 </head>
  <body>
- 
+
 <h1>VITESS Modules Collimator, Soller Collimator and Radial Collimator</h1>
 <br>
 <h3>VITESS Module Collimator</h3>
 The module <b>collimator</b> simulates a soller collimator of a certain length, width and height consisting of a number of channels separated by blades of a certain thickness.
 Exit width and height can be different from entrance width and height.
-For each trajectory, it is checked whether the neutron is outside the exit or entrance area and if a channel wall is hit; in these cases the trajectory is removed. 
+For each trajectory, it is checked whether the neutron is outside the exit or entrance area and if a channel wall is hit; in these cases the trajectory is removed.
 Otherwise it is propagated to the collimator exit (without loss in intensity).
 This is a realistic description of a Soller collimator and is therefore the recommended choice.<br>
 <br>
 <h3>VITESS Module Soller Collimator</h3>
-<p> In contrast, the module <b>collimator_soller</b> simulates a collimator by allowing a certain divergence range (in the x-y-plane) which is described by a triangular distribution 
-characterising the probability that a neutron of a certain divergence passes through the collimator.&nbsp; The maximal possible divergence d_phi then corresponds to the width 
+<p> In contrast, the module <b>collimator_soller</b> simulates a collimator by allowing a certain divergence range (in the x-y-plane) which is described by a triangular distribution
+characterising the probability that a neutron of a certain divergence passes through the collimator.&nbsp; The maximal possible divergence d_phi then corresponds to the width
 w and length l of a soller collimator channel, i.e. tan d_phi = w/l. The FWHM of the probability distribution (the peak is centered at divergence 0) is also d_phi.
 The module <b>collimator_soller</b> does neither change the neutron position or direction nor the frame of reference.&nbsp;<br>
-This method of simulating collimation is a good approximation. If the module is used, entrance and exit area should be simulated in addition using either the module <b>slit</b> 
+This method of simulating collimation is a good approximation. If the module is used, entrance and exit area should be simulated in addition using either the module <b>slit</b>
 or <b>spacewindow</b> to allow for the limitation in solid angle and take care of the propagation.</p>
-This module can also be used to simulate a radial collimator. In this case, the direction of the first channel, the number of channels and the 'additional angular spacing' 
-have to be given: <br/> 
-Each collimation center is defined by an angle corresponding to divergence 0. The first centre is defined by the 'minimum of angle range'. 
-The following centers (always higher angles) are calculated by considering a gap of (2*allowed_div_fwhm + additional_spacing) between two centers. 
-'allowed_div_fwhm' is the FWHM value of the triangular shape. 'additional_spacing' is the additional angular distance between the collimation centers 
+This module can also be used to simulate a radial collimator. In this case, the direction of the first channel, the number of channels and the 'additional angular spacing'
+have to be given: <br/>
+Each collimation center is defined by an angle corresponding to divergence 0. The first centre is defined by the 'minimum of angle range'.
+The following centers (always higher angles) are calculated by considering a gap of (2*allowed_div_fwhm + additional_spacing) between two centers.
+'allowed_div_fwhm' is the FWHM value of the triangular shape. 'additional_spacing' is the additional angular distance between the collimation centers
 due to the size of collimator spacers. Therefore, the maximal direction of the last center can be calculated as:
 <br>
 <br>
-&nbsp;&nbsp;&nbsp;angle_max = angle_min + (num_centers - 1)*(2*allowed_div_fwhm + additional_spacing) 
+&nbsp;&nbsp;&nbsp;angle_max = angle_min + (num_centers - 1)*(2*allowed_div_fwhm + additional_spacing)
 <br>
 <br>
 <h3>VITESS Module Radial Collimator</h3>
-A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>. 
-As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits the absorbing walls. 
+A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>.
+As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits the absorbing walls.
 It considers also the height of the collimator and propagates the neutrons to the end of the radial collimator. <br />
 Furthermore, an oscillation of the collimator can be treated. If this is used, the orientation of the collimator (at the time the neutron is passing)
 is determined by a random choice within a range given. In this way, the shadowing effect of the blades can be simulated and the extent of this effect estimated.
@@ -83,9 +83,9 @@ is determined by a random choice within a range given. In this way, the shadowin
        <td valign="top">The lowest angle defining a zero-divergence direction               <br/>
 	           &nbsp;&nbsp;0 deg: direction of the beam impinging on the sample (= x-axis) <br/>
 	                      90 deg: to the left (= y-axis)                                   <br/>
-                        The following centers (always higher angles) are calculated by considering 
+                        The following centers (always higher angles) are calculated by considering
                         a gap of (2*allowed_div_fwhm + angle_spacing) between two centers.     </td>
-       <td valign="top">[-180°, 180°[  </td>
+       <td valign="top">[-180Â°, 180Â°[  </td>
        <td valign="top">-m       </td>
      </tr>
 
@@ -104,10 +104,10 @@ is determined by a random choice within a range given. In this way, the shadowin
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-a      </td>
      </tr>
-   
-  </tbody> 
+
+  </tbody>
 </table>
-<br> 
+<br>
 <br>
 <br>
 <h3><font size="+2"> Parameters for module 'collimator' </font></h3>
@@ -155,9 +155,9 @@ is determined by a random choice within a range given. In this way, the shadowin
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-s      </td>
      </tr>
-  </tbody> 
+  </tbody>
 </table>
-<br> 
+<br>
 <br>
 <br>
 <h3><font size="+2"> Parameters for module 'collimator_radial' </font></h3>
@@ -176,14 +176,14 @@ is determined by a random choice within a range given. In this way, the shadowin
        <td valign="top">hor. direction to the center of the collimator <br/>
 	                       0 deg: direction of the beam impinging on the sample (= x-axis)          <br/>
 	                      90 deg: to the left (= y-axis)</td>
-       <td valign="top">[-180°,180°]</td>
+       <td valign="top">[-180Â°,180Â°]</td>
        <td valign="top">-a   </td>
      </tr>
 
      <tr>
        <td valign="top">width<br>[deg]      </td>
        <td valign="top">angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel) </td>
-       <td valign="top">[0°,360°]</td>
+       <td valign="top">[0Â°,360Â°]</td>
        <td valign="top">-w   </td>
      </tr>
 
@@ -229,13 +229,13 @@ is determined by a random choice within a range given. In this way, the shadowin
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-s      </td>
      </tr>
-   
-  </tbody> 
+
+  </tbody>
 </table>
- <br> 
- 
+ <br>
+
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
- <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 <p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
 MET DST 2001 <!-- hhmts end --></font> </p>
 <br>

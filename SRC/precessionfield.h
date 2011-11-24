@@ -7,7 +7,7 @@
 
 	FILE		*FieldMapFile, *XFILE;
 	char		*FieldFileName, XFileName[STRING_BUFFER];
-	long		Option, User, coildir, NumOut, Repetition, repet,  i, wall_1, wall_2, ind_x, ind_y, ind_z, ind_x_max, ind_y_max, ind_z_max ;
+	long		Option, User, coildir, NumOut, Repetition, repet, wall_1, wall_2, ind_x, ind_y, ind_z, ind_x_max, ind_y_max, ind_z_max ;
 	double		field_guide[3], field_parameter, field_precession, TOF, TOF1, TOF2, TOF3, WL, Prob, phi, the, PhaseShift, NumberPrecessions ;
 	double		width, height, depth, field_hom[3], AnglMainHoriz, AnglMainVert, ProbCutoff, IntegralIntensity ;
 	VectorType	Pos, Dir, SpinVector, Path, Pos1, Pos2, domain_field, PosDomain, PosMain, DimDomain, TranslOut, FWHM ;

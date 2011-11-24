@@ -30,9 +30,13 @@ This helps to do scripted simulation jobs like optimisation in an environment di
 
 Modules
 -------
-The new module monitor2D written in C++ allows to plot arbitrary combinations of parameters
+The new module  monitor2D  written in C++ allows to plot arbitrary combinations of parameters
 against each other in a 2D plot.
 New C++ classes mathvector and mathmatrix support 3D vector and 3x3 matrix operations. 
+
+The new module  sample_nxs  simulates coherent and incoherent scattering, absorption and
+transmission based on the calculation of wavelength-dependent neutron cross sections
+and the unit cell definition, i.e. the crystallographic structure, of the sample.
 
 A new option for the sm_ensemble module allows to ignore the spin of the neutrons.
 

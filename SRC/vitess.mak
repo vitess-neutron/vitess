@@ -135,8 +135,8 @@ ALL : \
 	"$(OD)\direct_view.exe"
 
 SOURCE=$(SPATH)\init.c
-$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVVERS='"2.11"' $(CPP_PROJ) $(SOURCE)
+"$(IDIR)\init.obj" : $(SOURCE)
+	$(CPP) /DVMAJOR=2 /DVMINOR=11 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)

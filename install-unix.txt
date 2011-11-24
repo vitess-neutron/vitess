@@ -3,7 +3,7 @@
 
 
 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
-former Hahn-Meitner-Institut Berlin
+        former Hahn-Meitner-Institut Berlin
 
 Modules:
 	Klaus Lieutenant   (klaus.lieutenant@helmholtz-berlin.de)
@@ -44,7 +44,7 @@ Linux
 The file vitess.tar.gz may be uncompressed in whatever
 <vitess parent directory> you want, like
 $HOME for a personal installation in $HOME/vitess, _no root privileges_ needed!
-Assumed the tarball is ~/Downloads/vitess.tar.gz, you might do
+Assumed the tar ball is ~/Downloads/vitess.tar.gz, you might do
 cd
 tar zxvf ~/Downloads/vitess.tar.gz
 
@@ -55,7 +55,7 @@ from your distribution. Compiled binaries are for SuSE 10.2 (32 bit) and 11.3 (6
 
 Darwin
 ------
-When downloading, Safari puts the tarball to ~/Downloads/vitess.tar.gz
+When downloading, Safari puts the tar ball to ~/Downloads/vitess.tar.gz
 and a double click on that file will produce the ~/Downloads/vitess/ directory.
 Move it to a place more appropriate, if you like.
 
@@ -84,12 +84,18 @@ BLT widgets automatically,
 C sources have been compiled for Windows, Linux, Darwin, and elder versions for
 Solaris and Tru64, too.
 
-The Perl script mmake.pl in the SRC directory may be used to generate a GNU Makefile
-adopted to the local Unix, like configure does for other software.
+VITESS relies on the pseudorandom number generators from the GNU Scientific Library.
+We provide these in the rng sub directory, see rng/README.txt.
+Another prerequisite for some modules is the g2 library provided, 
+see g2-0.72/Readme.vitess on how to compile this library.
+
+The Perl script  mmake.pl  in the SRC directory may be used to generate a
+GNU Makefile adopted to the local Unix, like configure does for other software.
 As some modules need GD graphics routines, which rely on auxiliary libraries,
 mmake.pl looks for these and gives hints if they are missing on your system. 
-As an extra this script generates a nmake file vitess.mak
-suitable for Microsoft Studio compilers. Just call
+  (As an extra this script generates a nmake file vitess.mak
+  suitable for Microsoft Studio compilers.)
+Just call
 cd SRC
 mmake.pl -h
 to see what options are possible, and
@@ -109,11 +115,11 @@ You may change the first 3 lines
 exec /usr/bin/wish "$0" "$@"
 
 to use another wish than /usr/bin/wish if necessary.
-(Versions up to 2.8 had
-#!/usr/local/bin/bltwish
-as first line to use the bltwish, which would be valid for VITESS on elder Linux systems.)
+  (VITESS versions up to 2.8 had
+  #!/usr/local/bin/bltwish
+  as first line to use the bltwish, which would be valid on elder Linux systems.)
 
-Alternatively you may adopt the script callVitess provided in the tarball.
+Alternatively you may adopt the script callVitess provided in the tar ball.
 
 Missing shared libraries?
 -------------------------

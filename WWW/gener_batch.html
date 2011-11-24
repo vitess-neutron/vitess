@@ -1,26 +1,26 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-        
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
   <title>VITESS Tool Generate Batches</title>
 </head>
   <body>
-    
+
 <h1>VITESS Tool Generate Batches</h1>
   To do a series of simulations, you start with an instrument you haved developed
  using the GUI. When you have completed it, you use the "Check" button to
 generate the pipe command in the output window. This output has to be saved
 (just as it was generated) giving it a name with the extension "bat", e.g.
-'simulation.bat'.  
+'simulation.bat'.
 <p>To define the series you have to generate a second file with the same
 name, but the extension "inf",&nbsp; in this case 'simulation.inf'. You can
 choose and edit that file by using the menu "File"-&gt;"Edit Series File".
 <br>
- You might start with the file "SeriesTemplate.inf". This info file is also 
+ You might start with the file "SeriesTemplate.inf". This info file is also
 delivered - directory .../VITESS/FILES - and looks like that: </p>
- 
+
 <p>WinNT 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
  # Operating system (WinNT, Win98, Unix, Linux);&nbsp; number of batch files
  <br>
@@ -45,52 +45,52 @@ delivered - directory .../VITESS/FILES - and looks like that: </p>
  # test <br>
  run_2&nbsp; 249000000&nbsp; I:\FILES\Test\sphere500.san <br>
  &nbsp; </p>
- 
-<p>This file defines what the parser "GenerBatch" will do. It generates 1 
+
+<p>This file defines what the parser "GenerBatch" will do. It generates 1
 or 2 batch files. <br>
  For Unix and Linux it is always 1 file, named 'simulationS'. <br>
- It contents the pipe commands for all simulations. In these commands, the 
-original parameter values are substituted by those, given in the file 'simulation.inf'. 
+ It contents the pipe commands for all simulations. In these commands, the
+original parameter values are substituted by those, given in the file 'simulation.inf'.
 Each command is embedded in some other commands that make sure that <br>
  - the log file information is collected in a file "history.txt" <br>
  - date and time of the beginning and the end of the simulation are noted
 <br>
  - the files that shall be saved are copied (see below) <br>
  - names of series and simulation are written to the history file </p>
- 
+
 <p>In Windows the same is done, if you give 1 (or nothing, because it is
 the default value) as "number of batch files", (1. line, 2. parameter in
 "SeriesTemplate.inf"). You will get a batch file 'simulationS.bat' then.
 <br>
- Alternatively, you can choose 2 batch files. In this case, you get the files 
-'simulationB.bat' and 'simulationV.bat'. The latter one is very similar to 
+ Alternatively, you can choose 2 batch files. In this case, you get the files
+'simulationB.bat' and 'simulationV.bat'. The latter one is very similar to
 the original 'simulation.bat', except: <br>
  &nbsp;- that it is changed to a working batch file <br>
  &nbsp;- that the variable parameters are substituted by %1, %2, etc. <br>
- This batch file is called by the other one - 'simulationB.bat' - and the 
+ This batch file is called by the other one - 'simulationB.bat' - and the
 variable parameters are given as parameters to the lower level batch ('simulationV.bat').
  <br>
- Due to the MS-DOS restrictions, this method can only be used, if there are 
+ Due to the MS-DOS restrictions, this method can only be used, if there are
 less than 10 variable parameters in the series. Otherwise, the other way to
 do it must be chosen. </p>
- 
+
 <p>In the example given above, 2 runs are demanded and two parameters are
  variable. The first variable parameter is in module 1 and identified by
 the command option -n. This is the number of trajectories (if "Source" is
 the first module). In the first run it has a value of 9 Mio., in the second
 of 249 Mio. <br>
- The second variable parameter is the command option -S of module 16. This 
-is the name of a file; in this case it is thought to be the name of a (SANS) 
+ The second variable parameter is the command option -S of module 16. This
+is the name of a file; in this case it is thought to be the name of a (SANS)
 sample. Here two different samples are used for the 2 runs. (The symbols characterising
 a command option can be seen by clicking on the label of the item.) </p>
- 
+
 <p>To save the results of the simulations, a list of files must be given
 that shall be copied (line 6 and 7 of the template file). They are copied
 to a file with the new name "run-name_filename". Therefore, every run must
 have its name; and there should be no blanks, commas etc. within the names.
 Additionally, the name will appear in the title of the simulation in the
 history file. </p>
- 
+
 <p>Further explanations: <br>
  - Everything after a sign '#' in the info file is regarded as a comment.
 <br>
@@ -103,51 +103,51 @@ by "C:/temp/log" or "/tmp/vpipelog" by "/tmp/log" <br>
  &nbsp; 'V' means: a length reduction by substituting "C:/temp/vpipelog"
 by "C:/L" or "/tmp/vpipelog" by "/tmp/L" and by deleting "--B10000" <br>
  &nbsp; These changes might be necessary as the length of the pipe command
- that can be executed is restricted in MS-DOS. (1 kByte for Windows 98, 2 
+ that can be executed is restricted in MS-DOS. (1 kByte for Windows 98, 2
 kByte for Windows NT) <br>
- - In the third line the 'parameter directory' (or 'default directory') has 
+ - In the third line the 'parameter directory' (or 'default directory') has
 to be given <br>
- - In the fourth line a name for the simulation series can be given. It will 
+ - In the fourth line a name for the simulation series can be given. It will
 appear in the titles of the history file. (Blanks etc. are allowed.) </p>
- 
+
 <p>When you have completed that file, you can start the parser "GenerBatch"
  from the menu ("Tools"-&gt;"Generate Batches"). You have to give the file
  name 'simulation' and its directory. Then 'simulationV.bat' and 'simulationB.bat'
  or 'simulationS.bat' or 'simulationS' are generated. <br>
- In the Unix/Linux batches, the environment variables $VIMG and $PDIR are 
-used for the module and the parameter directory resp.. In the Windows batches, 
-the logical drives V: and P: are used for those directories. If they already 
-exist as logical drives, the connection is removed. If they exist as physical 
-drives, the batch file must be changed; P or V must be substituted by another 
+ In the Unix/Linux batches, the environment variables $VIMG and $PDIR are
+used for the module and the parameter directory resp.. In the Windows batches,
+the logical drives V: and P: are used for those directories. If they already
+exist as logical drives, the connection is removed. If they exist as physical
+drives, the batch file must be changed; P or V must be substituted by another
 letter. <br>
  The series can then be started outside the GUI as a separated batch (by
 typing 'simulationB.bat'/'simulationS.bat'/'sh simulationS') in a DOS/Unix
 shell.</p>
- 
+
 <p>Restrictions:<br>
- max. number of modules: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+ max. number of modules: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp; &nbsp;30<br>
  max. number of variable parameters:&nbsp; 25<br>
- max. number of simulations: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; 
+ max. number of simulations: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;
 100<br>
  max. number of files to be copied: &nbsp; &nbsp; 10 <br>
   </p>
- 
+
 <p>Concluding remarks: <br>
- - It is necessary to start from the right platform. If you want to switch 
+ - It is necessary to start from the right platform. If you want to switch
 it (e.g. from Windows 98 to Unix) you have to transfer the GUI file.<br>
- - A more flexible and easier solution will be presented in the next version 
+ - A more flexible and easier solution will be presented in the next version
 of VITESS.  </p>
- 
+
 <p>Legend: <br>
  "fixed_name": names written in signs of quotation are fixed names <br>
  'example'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : names written in apostrophes
  are examples for naming </p>
- 
+
 <p> </p>
- 
+
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
- <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>  
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 <p><!-- hhmts start --><font size="-1">Last modified:&nbsp;</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
  </p>
  <br>

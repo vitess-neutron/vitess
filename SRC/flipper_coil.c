@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            GÃ©za Zsigmond                                                             */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  JUL 2004  G. Zsigmond  corrections for tilted flipper option                        */
 /********************************************************************************************/
@@ -24,11 +24,11 @@
 #define	STRING_BUFFER 50
 #define	FIELD_SIZE	100
 
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
+#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */
 
 	FILE		*Par_Field, *XFILE;
 	char		Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER];
-	long		User, coildir, NumOut, Repetition, repet,  i, wall_1, wall_2, ind_x, ind_y, ind_z, ind_x_max, ind_y_max, ind_z_max ;
+	long		User, coildir, NumOut, Repetition, repet, wall_1, wall_2, ind_x, ind_y, ind_z, ind_x_max, ind_y_max, ind_z_max ;
 	double		field_guide[3], field_parameter, field_coil, TOF, TOF1, TOF2, TOF3, WL, Prob, phi, the, PhaseShift, NumberPrecessions1, NumberPrecessions2, NumberPrecessions3 ;
 	double		width, height, depth, AnglMainHoriz, AnglMainVert, ProbCutoff, IntegralIntensity ;
 	static double RotMatrixMain[3][3], domain_field_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], PosDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], RotMatrixField[3][3], LarmorMatrix[3][3];
@@ -51,272 +51,255 @@
 int main(int argc, char **argv)
 {
 
- /* Initialize the program according to the parameters given  */ 
+  /* Initialize the program according to the parameters given  */
 
-	Init(argc, argv, VT_FLIP_COIL); 
+  Init(argc, argv, VT_FLIP_COIL);
 
-	OwnInit(argc, argv);
+  OwnInit(argc, argv);
 
- /* Get the neutrons from the file */
-DECLARE_ABORT;
+  /* Get the neutrons from the file */
+  DECLARE_ABORT;
   while((ReadNeutrons())!= 0)
-  {
-CHECK;	/* here is what happens to the neutron */
+    {
+      int i;
+      CHECK;	/* here is what happens to the neutron */
+
+      for(i=0;i<NumNeutGot ;i++)
+
+        {
+          CHECK;
+
+          /*InputNeutrons[i].Position[0]	= 0. ;*/
+
+          TOF = InputNeutrons[i].Time ;
+
+          WL = InputNeutrons[i].Wavelength ;
+
+          Prob = InputNeutrons[i].Probability ;
+
+          CopyVector(InputNeutrons[i].Position, Pos) ;
+
+          CopyVector(InputNeutrons[i].Vector, Dir) ;
+
+          InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+
+          CopyVector(InputNeutrons[i].Spin, SpinVector) ;
 
 
-for(i=0;i<NumNeutGot ;i++)
-
-{ 
-CHECK;
-
-	/*InputNeutrons[i].Position[0]	= 0. ;*/
-
-	TOF = InputNeutrons[i].Time ;
-
-	WL = InputNeutrons[i].Wavelength ;
-
-	Prob = InputNeutrons[i].Probability ;
-
-	CopyVector(InputNeutrons[i].Position, Pos) ;
-
-	CopyVector(InputNeutrons[i].Vector, Dir) ;
-
-	InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
-
-	CopyVector(InputNeutrons[i].Spin, SpinVector) ; 
-
-
-/* translates into frame of the main field and rotates coordinates  */
+          /* translates into frame of the main field and rotates coordinates  */
 	
-	SubVector(Pos, PosMain) ;
+          SubVector(Pos, PosMain) ;
 
-	RotVector(RotMatrixMain, Pos ) ; 
+          RotVector(RotMatrixMain, Pos ) ;
 
-	RotVector(RotMatrixMain, Dir ) ; 
+          RotVector(RotMatrixMain, Dir ) ;
 
-	/* enter position and TOF 	*/
-	{
+          /* enter position and TOF 	*/
+          {
 
-	VectorType Path  ; /* displacement vector*/
+            VectorType Path  ; /* displacement vector*/
 
-	TOF1 = (- depth/2. - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
+            TOF1 = (- depth/2. - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
 
-		/* precession calculated  */
+            /* precession calculated  */
 
-		PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)) ;  NumberPrecessions1 = PhaseShift/2./M_PI ;
+            PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)) ;  NumberPrecessions1 = PhaseShift/2./M_PI ;
 
-		FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
+            FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
 
-		RotVector(LarmorMatrix, SpinVector) ;
+            RotVector(LarmorMatrix, SpinVector) ;
 
-		RotVector(RotMatrixMain, SpinVector) ; 
+            RotVector(RotMatrixMain, SpinVector) ;
 
 
-	CopyVector(Dir, Path) ;
+            CopyVector(Dir, Path) ;
 
-	MultiplyByScalar(Path, (- depth/2. - Pos[0])/ Dir[0] ) ;
+            MultiplyByScalar(Path, (- depth/2. - Pos[0])/ Dir[0] ) ;
 
-	AddVector(Pos, Path) ;  TOF += TOF1 ;
+            AddVector(Pos, Path) ;  TOF += TOF1 ;
 	
-	}			
+          }			
 
+          /* looks for first domain */
 
-/* looks for first domain */
+          ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2 ;
 
-	ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2 ;
+          if((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost ;
 
-	if((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost ;
+          ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2 ;
 
-	ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2 ;
+          if((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost ;
 
-	if((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost ;
+          ind_x = 1 ;
 
-	ind_x = 1 ; 
+          /******************** starts to scan ******************************/
 
-/*	
-******************* starts to scan ******************************/
+          NumberPrecessions2 = 0 ;
 
-	NumberPrecessions2 = 0 ;
+          while (ind_x != (ind_x_max +1))
+            {
+              CopyVectorsToVector3(ind_x, ind_y, ind_z, PosDomain_F, PosDomain) ;
 
-while (ind_x != (ind_x_max +1)) 
-{
-	CopyVectorsToVector3(ind_x, ind_y, ind_z, PosDomain_F, PosDomain) ;
+              CopyVectorsToVector3(ind_x, ind_y, ind_z, domain_field_F, domain_field) ;
 
-	CopyVectorsToVector3(ind_x, ind_y, ind_z, domain_field_F, domain_field) ;
+              /* calculate field matrix */
 
-	/* calculate field matrix */
-
-	FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]) ; 
+              FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]) ;
 		
-	/**/
+              /**/
 
 
-
-/* translates into frame of the field domain */
+              /* translates into frame of the field domain */
 	
-	SubVector(Pos, PosDomain) ;
+              SubVector(Pos, PosDomain) ;
 
+              /* calculate entrance end exit coordinates of domain*/
 
-/* calculate entrance end exit coordinates of domain*/
-
-
-	{ 
+              {
 		
 		VectorType pos, dir;	CopyVector(Pos, pos) ;	CopyVector(Dir, dir) ;
 	
 		/* gives intersection positions with domain */
 
-		if(IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost ; 
+		if(IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost ;
 
-	    if(wall_2 == 0) goto getlost ;
+                if(wall_2 == 0) goto getlost ;
 
 		/* ordering */
 
 		if(Pos1[0] > Pos2[0]) 	
 		
-		{VectorType V ;	int wall; CopyVector(Pos1, V) ;	CopyVector(Pos2, Pos1) ; CopyVector(V, Pos2) ; 	
+                  {VectorType V ;	int wall; CopyVector(Pos1, V) ;	CopyVector(Pos2, Pos1) ; CopyVector(V, Pos2) ; 	
 		
-		wall = wall_1 ; wall_1 = wall_2 ; wall_2 = wall ;}
+                    wall = wall_1 ; wall_1 = wall_2 ; wall_2 = wall ;}
 
-	}
+              }
 
-
-
-	/* moment of arriving at the domain wall, new position */
+              /* moment of arriving at the domain wall, new position */
 
 
-	CopyVector(Pos1, Pos) ;
+              CopyVector(Pos1, Pos) ;
 
-	/* time of precession in the domain field - precession calculated in the field frame */
+              /* time of precession in the domain field - precession calculated in the field frame */
 
-	TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+              TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-	RotVector(RotMatrixField, SpinVector) ; 
+              RotVector(RotMatrixField, SpinVector) ;
 
-	PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  NumberPrecessions2 += PhaseShift/2./M_PI ;
+              PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  NumberPrecessions2 += PhaseShift/2./M_PI ;
 
-	FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
+              FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
 
-	RotVector(LarmorMatrix, SpinVector) ;
+              RotVector(LarmorMatrix, SpinVector) ;
 
-	RotBackVector(RotMatrixField, SpinVector) ;
+              RotBackVector(RotMatrixField, SpinVector) ;
 
+              /* moment of exiting at the domain wall, new position */
 
-	/* moment of exiting at the domain wall, new position */
+              TOF += TOF2 ;
 
-	TOF += TOF2 ;
+              CopyVector(Pos2, Pos) ;
 
-	CopyVector(Pos2, Pos) ;
-
-/* translates back into main frame */
+              /* translates back into main frame */
 	
-	AddVector(Pos, PosDomain) ;
+              AddVector(Pos, PosDomain) ;
 
-	/* searching new domain */ if(wall_2 == 1) goto getlost;
+              /* searching new domain */ if(wall_2 == 1) goto getlost;
 
-	if(wall_2 == 2) {ind_x += 1 ; }
+              if(wall_2 == 2) {ind_x += 1 ; }
 
-	if(wall_2 == 3) {ind_y += -1 ; }
+              if(wall_2 == 3) {ind_y += -1 ; }
 
-	if(wall_2 == 4) {ind_y += 1 ; }
+              if(wall_2 == 4) {ind_y += 1 ; }
 
-	if(wall_2 == 5) {ind_z += -1 ; }
+              if(wall_2 == 5) {ind_z += -1 ; }
 
-	if(wall_2 == 6) {ind_z += 1 ;}
+              if(wall_2 == 6) {ind_z += 1 ;}
 
 
-/*if(ind_x > ind_x_max) goto exitfield ; */
-if(ind_y == 0) goto exitfield ; 
-if(ind_y > ind_y_max) goto exitfield ; 
-if(ind_z == 0) goto exitfield; 
-if(ind_z > ind_z_max) goto exitfield;
+              /*if(ind_x > ind_x_max) goto exitfield ; */
+              if(ind_y == 0) goto exitfield ;
+              if(ind_y > ind_y_max) goto exitfield ;
+              if(ind_z == 0) goto exitfield;
+              if(ind_z > ind_z_max) goto exitfield;
 
-/*goto newdomain ;*/}
+              /*goto newdomain ;*/}
 
 	exitfield: ;
 
+          /* Output matters */
+	
+          AddVector(Pos, PosMain) ;
+
+          RotBackVector(RotMatrixMain, Pos ) ;
+
+          RotBackVector(RotMatrixMain, Dir ) ;
+
+          RotBackVector(RotMatrixMain, SpinVector) ;
+
+          IntegralIntensity += Prob ;
+
+          NumOut++ ;
 
 
-/*******************************************************************************/
+          /* computes neutron variables in the output frame */
+
+          SubVector(Pos, TranslOut) ;
 
 
-	/* Output matters */
+          /* translates neutron variables for output - X'=0. */
+
+          {
+
+            VectorType Path ;
+
+            TOF3 = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
+
+
+            /* precession calculated  */
+
+            PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)) ;  NumberPrecessions3 = PhaseShift/2./M_PI ;
+
+            FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
+
+            RotVector(LarmorMatrix, SpinVector) ;
 
 	
-	AddVector(Pos, PosMain) ;
+            CopyVector(Dir, Path) ;
 
-	RotBackVector(RotMatrixMain, Pos ) ; 
+            MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
 
-	RotBackVector(RotMatrixMain, Dir ) ; 
-
-	RotBackVector(RotMatrixMain, SpinVector) ; 
-
-	IntegralIntensity += Prob ;
-
-	NumOut++ ;
-
-
-	/* computes neutron variables in the output frame */ 
-
-	SubVector(Pos, TranslOut) ;
-
-
-	/* translates neutron variables for output - X'=0. */
-
-	{
-
-	VectorType Path ;
-
-	TOF3 = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
-
-
-		/* precession calculated  */
-
-		PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)) ;  NumberPrecessions3 = PhaseShift/2./M_PI ;
-
-		FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
-
-		RotVector(LarmorMatrix, SpinVector) ;
-
-
+            AddVector(Pos, Path) ;  TOF += TOF3 ;
 	
-	CopyVector(Dir, Path) ;
-
-	MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-
-	AddVector(Pos, Path) ;  TOF += TOF3 ;
-	
-	}			/* Path = displacement vector */
+          }			/* Path = displacement vector */
 
 
-	/* transmit coordinates which were not changed, the rest overwrite below */
-	Neutrons = InputNeutrons[i]; 
+          /* transmit coordinates which were not changed, the rest overwrite below */
+          Neutrons = InputNeutrons[i];
+
+          Neutrons.Time = TOF ;
+
+          CopyVector(Pos, Neutrons.Position) ;
+
+          CopyVector(SpinVector, Neutrons.Spin) ;
 
 
-	Neutrons.Time = TOF ;
+          /* writes output binary file */
 
-	CopyVector(Pos, Neutrons.Position) ;
-
-	CopyVector(SpinVector, Neutrons.Spin) ;
-
-
-	/* writes output binary file */
-
-	WriteNeutron(&Neutrons) ;
+          WriteNeutron(&Neutrons) ;
 
 	getlost: ;
 
-}
+        }
+    }
 
-  }
-   
- /* Do the general cleanup */
-my_exit:
-	OwnCleanup(); 
+  /* Do the general cleanup */
+ my_exit:
+  OwnCleanup();
 
-	Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);	
 
-	fprintf(LogFilePtr," \n") ;
+  fprintf(LogFilePtr," \n") ;
 
 
   return 0;
@@ -427,11 +410,11 @@ void OwnInit(int argc, char *argv[])
 	FillRotMatrixZY(RotMatrixMain, AnglMainVert, AnglMainHoriz) ;
 
 
-		DimDomain[0] = depth/ind_x_max ; 
+		DimDomain[0] = depth/ind_x_max ;
 
-		DimDomain[1] = width/ind_y_max ; 
+		DimDomain[1] = width/ind_y_max ;
 
-		DimDomain[2] = height/ind_z_max ; 
+		DimDomain[2] = height/ind_z_max ;
 
 
 
@@ -454,33 +437,33 @@ void OwnInit(int argc, char *argv[])
 			
 			if(PosDomain_F[0][ind_x][ind_y][ind_z] < (double) (- (ind_x_max/2 * DimDomain[0] - field_parameter)))
 			{
-				field_cart[0] = 0. ; 
+				field_cart[0] = 0. ;
 				
-				field_cart[1] = 0. ; 
+				field_cart[1] = 0. ;
 				
 				field_cart[2] = field_coil/field_parameter * (PosDomain_F[0][ind_x][ind_y][ind_z]  + ind_x_max/2 * DimDomain[0]) ;
 			}
 
 			else if(PosDomain_F[0][ind_x][ind_y][ind_z] > (double) (ind_x_max/2 * DimDomain[0] - field_parameter))
 			{
-				field_cart[0] = 0. ; 
+				field_cart[0] = 0. ;
 				
-				field_cart[1] = 0. ; 
+				field_cart[1] = 0. ;
 				
 				field_cart[2] =  field_coil * (1. - (PosDomain_F[0][ind_x][ind_y][ind_z]  - (ind_x_max/2 * DimDomain[0] - field_parameter))/field_parameter ) ;
 			}
 
-			else 
+			else
 			{
 				field_cart[0] = 0. ; field_cart[1] = 0 ; field_cart[2] = field_coil  ;
 			}					
 
-			if(coildir != 1) 
+			if(coildir != 1)
 			{
 			field_cart[1] = field_cart[2] ; field_cart[2] = 0.;
 			}
 
-			RotVector(RotMatrixMain, field_guide ) ; 
+			RotVector(RotMatrixMain, field_guide ) ;
 
 			AddVector(field_cart, field_guide) ;
 
@@ -557,7 +540,7 @@ long l ;
 		}
 }
 
-void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE]) 
+void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE])
 {
 long l ;
 
@@ -581,11 +564,11 @@ n[0] = 1. ; n[1] = n[2] = 0. ; *wall_1 = *wall_2 = 0 ;
 
 	if(PlaneLineIntersect2(Pos, Dir, n, - DimDomain[0]/2, pos0) == TRUE)
 	{
-		if(  (fabs(pos0[1]) <= DimDomain[1]/2) && (fabs(pos0[2]) <= DimDomain[2]/2) ) 
+		if(  (fabs(pos0[1]) <= DimDomain[1]/2) && (fabs(pos0[2]) <= DimDomain[2]/2) )
 		{
 			if(LengthVector(Pos1) == 0.) CopyVector(pos0, Pos1) ; *wall_1 = 1;}
 			else {CopyVector(pos0, Pos2) ; *wall_2 = 1;}
-	} 
+	}
 	if(PlaneLineIntersect2(Pos, Dir, n, + DimDomain[0]/2, pos1) == TRUE)
 	{
 		if(  (fabs(pos1[1]) <= DimDomain[1]/2) && (fabs(pos1[2]) <= DimDomain[2]/2) )
@@ -618,7 +601,7 @@ n[2] = 1. ; n[0] = n[1] = 0. ;
 
 	if(PlaneLineIntersect2(Pos, Dir, n, - DimDomain[2]/2, pos4) == TRUE)
 	{
-		if( (fabs(pos4[0]) <= DimDomain[0]/2) && (fabs(pos4[1]) <= DimDomain[1]/2)  ) 
+		if( (fabs(pos4[0]) <= DimDomain[0]/2) && (fabs(pos4[1]) <= DimDomain[1]/2)  )
 		{
 			if(LengthVector(Pos1) == 0.) {CopyVector(pos4, Pos1) ; *wall_1 = 5;}
 			else {CopyVector(pos4, Pos2) ; *wall_2 = 5;}
@@ -626,7 +609,7 @@ n[2] = 1. ; n[0] = n[1] = 0. ;
 	}
 	if(PlaneLineIntersect2(Pos, Dir, n, + DimDomain[2]/2, pos5) == TRUE)
 	{
-		if( (fabs(pos5[0]) <= DimDomain[0]/2) && (fabs(pos5[1]) <= DimDomain[1]/2)  ) 
+		if( (fabs(pos5[0]) <= DimDomain[0]/2) && (fabs(pos5[1]) <= DimDomain[1]/2)  )
 		{
 			if(LengthVector(Pos1) == 0.) {CopyVector(pos5, Pos1) ; *wall_1 = 6;}
 			else {CopyVector(pos5, Pos2) ; *wall_2 = 6;}
