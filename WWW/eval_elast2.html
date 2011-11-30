@@ -1,0 +1,28 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+
+  <meta name="GENERATOR"
+ content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
+  <title>Module Evaluation 2D</title>
+</head>
+  <body>
+
+<h1> VITESS Module Evaluation 2D (eval_elast2)</h1>
+
+<pre>The module <b>eval_elast2</b> is supposed to be used for elastic<br>scattering (e.g. powder diffraction, SANS).<br><br>The diffractogram or spectra file will contain the neutron probabilities counted for each<br>segment of the evaluation interval (with respect to the evaluation parameter<br>of interest).<br><br>The following information has to be given as an input:<br><br>evaluation parameter: choose between scattering angle vs. wavelength and <br>&nbsp; scattering angle vs. TOF<br><br>spectra file: the name of the spectra file which will contain<br>&nbsp; the evaluated data has to be given.<br><br>number of bins in X and Y: number of bins determines the segmentation of the<br>&nbsp; scattering angle and wavelength or TOF direction. <br>&nbsp; It is therewiththe number of values written to the file.<br><br>minimum, maximum: the bounds of the interval for the evaluation parameter.</pre>
+
+<pre>increase to next bin X and Y: for a logarithmic binning the percentage has to be given<br>&nbsp; by which the upper limit of each bin exceeds its lower limit.<br>&nbsp; If this value is set, the given 'number of bins' is ignored&nbsp;<br><br>dead-spot: only needed if the direct beam points to the detector<br>&nbsp;&nbsp; (as in the case of SANS).<br>&nbsp;&nbsp; All neutrons with a scattering angle(2 theta) between 0 and dead-spot [deg]<br>&nbsp;&nbsp; will therefore not be considered in the evaluation.<br><br>probability weight: if one deactivates the probability weight each<br>&nbsp;&nbsp; neutron is considered with the weight 1, otherwise (default)<br>&nbsp;&nbsp; the attributed probabilities (due to the operations of the modules before)<br>&nbsp;&nbsp; are considered.<br><br>time of flight:&nbsp; if the wavelength of the neutrons shall be<br>&nbsp;&nbsp; determined by time of flight analysis (i.e. each wavelength is<br>&nbsp;&nbsp; calculated from the flight path and the flight time)<br>&nbsp;&nbsp; this option must be activated when using scattering angle vs. wavelength.<br><br>flight path [cm]: length of total neutron flight path,<br>&nbsp;&nbsp; needed only for time of flight analysis.<br><br>time offset [ms]: global shift of the neutron time t&nbsp; t-TimeOffset [ms],<br>&nbsp;&nbsp; useful to shift the temporal reference point for the time of flight analysis<br></pre>
+
+<pre>begin, end of evaluation: the bounds of the time interval for the evaluation.<br>&nbsp;&nbsp; Only neutrons arriving in that time interval are considered in the<br>&nbsp;&nbsp; evaluation<br></pre>
+
+<pre>color, mincolor, maxcolor: either the exact color is needed for evaluation (0 is any) or <br>&nbsp;&nbsp; the color has to be in the range between mincolor and maxcolor (-1 is any color range).<br><br></pre>
+
+<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
+
+</body>
+</html>
