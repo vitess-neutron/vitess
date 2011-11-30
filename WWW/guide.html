@@ -115,7 +115,6 @@ outer   side) and one for the top and bottom of the bender (channels). <br>
      </h3>
 
 <h2>Module parameters:</h2>
-      &nbsp;
 <table border="1" width="90%">
       <tbody>
          <tr>
@@ -228,6 +227,26 @@ right, top and bottom plane. <br>
           This distance has to be given here. All other parameters are calculated, some are given in the log file.   </td>
       <td valign="top">-f, -F</td>
       </tr>
+      
+      <tr>
+      <td>Add to color</td>
+      <td>Add value to neutron color on each reflection.</td>
+      <td>-A</td>
+      </tr>
+      
+      <tr>
+      <td valign="top">Additional plane angle<br>[deg]</td>
+      <td>Adds additional planes by rotating the top/bottom or left/right planes 
+	        by the given angle around the x axis. If the angle is positive the 
+        	top/bottom planes are duplicated. For negative angles the left/right 
+	        planes are duplicated. The reflectivity files are taken from the 
+	        original plane and may not be altered seperately. The height and width 
+	        still define the outer dimensions. Example: 45 means an octagon shape by 
+	        copying the top/bottom planes and rotating them by 45 deg around the x 
+	        axis. -60 gives a hexagon with plain top/bottom and declined left/right 
+	        walls.</td>
+      <td valign="top">-n</td>
+      </tr>
 
       <tr>
       <td>abutment loss</td>
@@ -259,9 +278,609 @@ right, top and bottom plane. <br>
   </tbody>
 </table>
 
+<br>
+<h3>Reflection list parameters:</h3>
+<table border="1" width="90%">
+      <tbody>
+         <tr>
+      <td><b>Parameter</b> <br>
+           <b>Unit</b></td>
+       <td><b>Description</b></td>
+       <td><b>Command option</b></td>
+      </tr>
+      
+      <tr>
+      <td>filename</td>
+      <td>Give the output filename to activate the evaluation on a reflection base. The reflections are saved with parameters like position, 
+	        divergency, ... along the guide.</td>
+      <td>-o</td>
+      </tr>
+      
+      <tr>
+      <td>format</td>
+      <td>Choose which trajectories will be printed. This option also affects 
+	reflection plot options below!!!<br>
+	1 = only those leaving the guide<br>
+	2 = all successfull reflections; no matter if the trajectory reaches the 
+	guide end<br>
+	3 = only those with at least one successful scattering event 
+	(tracjectory may end with an unsuccessfull event)<br>
+	4 = all<br>
+	A negative number adds a line feed between each trajectory.</td>
+      <td>-O</td>
+      </tr>
+      
+      <tr>
+      <td>verbose list</td>
+      <td>Trajectories are written for each reflection (yes) and the end & exit and at the end of each 
+	guide piece (no).</td>
+      <td>-v</td>
+      </tr>
+      
+      <tr>
+      <td>number of reflections</td>
+      <td>The evaluation can be restrained to a number of reflections the neutron has to have.<br>The range can be given for any, for horizonal or vertical direction.</td>
+      <td>-e, -E,<br>-c, -C,<br>-d, -D</td>
+      </tr>
+      
+        </tbody>
+</table>
+
+
+
+
+
+<br>
+<h3>Reflection plot parameters:</h3>
+<table border="1" width="90%">
+      <tbody>
+         <tr>
+      <td><b>Parameter</b> <br>
+           <b>Unit</b></td>
+       <td><b>Description</b></td>
+       <td><b>Command option</b></td>
+      </tr>
+      
+      <tr>
+      <td>filename</td>
+      <td>Giving the filename for saving all reflections for plotting x, m, intensity, 
+	wavelength along the guide will activate the evaluation.</td>
+      <td>-P</td>
+      </tr>
+      
+      <tr>
+      <td>format</td>
+      <td>Choose which trajectories will be binned. This option is also affectd by 
+	format option above!!!<br>
+	0 = all events;<br>
+	1 = only scattered neutrons;<br>
+	2 = only died neutrons.</td>
+      <td>-B</td>
+      </tr>
+      
+      <tr>
+      <td>X, Y, Weight values</td>
+      <td>Choose the property for the x and y bin and the weighting. Any choice is possible.
+        <br>If only a 1D binning is needed choose any second parameter. The output will contain a 2D binning and a 1D binning for each X and Y parameter (see sections in output file ==XData== and ==YData==).</td>
+      <td>-t, -T<br>-V</td>
+      </tr>
+      
+      <tr>
+      <td>number of bins in X, Y</td>
+      <td>The number of bins determines the segmentation of the X and Y interval.</td>
+      <td>-k, -K</td>
+      </tr>
+      
+      <tr>
+      <td>minimum and maximum X, Y</td>
+      <td>Lower (minimum) and upper (maximum) bounds of the evaluation intervals for X and Y.</td>
+      <td>-x, -X<br>-u, -U</td>
+      </tr>
+      
+        </tbody>
+</table>
+
 <br/> <br/>
 <p> </p>
-<h3> Example for guide shape from file </h3>
+<h2> Output of reflection list option </h2>
+A detailed description of this option will be published in 2012.<br>The following table is taken from this publication and shows the colums of the output file:
+<br><br>
+<table border=1 cellspacing=0 cellpadding=0 width=619
+ style='width:464.3pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><b><span>#</span></b></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p ><b><span>Label</span></b></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span>Description</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>1</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>____ID____</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Constant ID for each neutron, e.g.
+  AA000000001.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>2</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Scattered</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Did a (reflection) event occur in the guide
+  peace?</span><br><span>T = true/yes; F = false/no; – = no reflection.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>3</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>plane</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Indicating the super-mirror plane of the
+  event. See Table&nbsp;Reflection plot.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>4</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>refangle</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Angle of incidence (in degree).</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>5</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>m_Ni</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Needed m<sub>c</sub> to have a successful
+  reflection.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>6</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>reflectivity</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Reflectivity as used from mirror-file.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>7/8</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.85pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>DivY/DivZ</span></p>
+  </td>
+  <td width=472 valign=top style='width:354.15pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Horizontal and vertical divergence in degree.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=51 valign=top style='width:38.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>9–22</span></p>
+  </td>
+  <td width=568 colspan=2 valign=top style='width:426.0pt;border:none;
+  border-bottom:solid black 1.0pt;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Like output of writeout module column 2–15.
+  See also Reflection plot.</span></p>
+  </td>
+ </tr>
+</table>
+
+<h2> Output of reflection plot option </h2>
+A detailed description of this option will be published in 2012.<br>The following table is taken from this publication and shows the colums of the output file:
+<br><br>
+<table border=1 cellspacing=0 cellpadding=0 width=619
+ style='width:464.3pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><b><span>#</span></b></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span>Label</span></b></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><b><span>Type</span></b></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border-top:solid black 1.0pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span>Description</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>1</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>X</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>&nbsp;</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Center of x-bin.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>2</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Y</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>&nbsp;</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Center of y-bin.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>3</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>counts</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>C</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Number of events in bin.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>4</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Mode</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>S</span></p>
+  </td>
+  <td width=413 rowspan=4 valign=top style='width:309.6pt;border:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Similar to column “Scattered” in “Reflection
+  list”. The columns sum up or count the number of neutrons that are scattered,
+  passed or died in this bin.</span><br><span>0 = Scattered; 5 = no reflection; 10 = died.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>5</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>0</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>C</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>6</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>5</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>C</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>7</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>10</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>C</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>8</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>RefCount</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 rowspan=3 valign=top style='width:309.6pt;border:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Averaged over current reflection counter
+  property for any direction (RefCount) or y/z direction of all neutrons in the
+  bin.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>9</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>RCy</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>10</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>RCz</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>11</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>____ID____</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>1N</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Constant ID for each neutron, e.g.
+  AA000000001.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>12</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>plane</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>1N</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Indicating the super-mirror plane of the
+  event. The number of planes is depending on the “additional planes option”
+  (s. text). The maximal value n is equal to the number of planes and indicates
+  the exit window: 0 = top; 1 = bottom; 2 = left; 3 = right; &lt;n&nbsp;= other
+  planes; n = exit window.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>13</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>refangle</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Angle of incidence (in degree).</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>14</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>m_Ni</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Needed m<sub>c</sub> to have a successful
+  reflection.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>15</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>reflectivity</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Reflectivity as used from mirror-file.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>16/17</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>DivY/DivZ</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Horizontal and vertical divergence in degree.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>18</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Trc</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>1N</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Was the neutron traced? T = Tracing; N = Not.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>19</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>color</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>For arbitrary use.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>20</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>TOF</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Total neutron time in ms.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>21</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>lambda</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Neutron wavelength in Å.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>22</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>count rate</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>S</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Neutron probability = count rate in n/s.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>23–25</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>pos_x,y,z</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Coordinates within guide in cm.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>26–28</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>dir_x,y,z</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Flight direction as direction cosinus.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>29–31</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>sp_x,y,z</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>A</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Spin components.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.8pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>32</span></p>
+  </td>
+  <td width=96 valign=top style='width:71.95pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>WeightSum</span></p>
+  </td>
+  <td width=52 valign=top style='width:38.95pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p align=center style='text-align:center'><span>S</span></p>
+  </td>
+  <td width=413 valign=top style='width:309.6pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span>Sum over weighting channel.</span></p>
+  </td>
+ </tr>
+</table>
+
+<br/> <br/>
+<p> </p>
+<h2> Example for guide shape from file </h2>
 <pre>
 # position [m]  width [cm]  height [cm]   coating L    coating R    coating T    coating B
 #-------------------------------------------------------------------------------------------
