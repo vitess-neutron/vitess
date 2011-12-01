@@ -145,7 +145,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   switch $mode {
     bat {set fc "V=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
-    grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
+    grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}
     tcl {
       set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
@@ -167,6 +167,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set first 1
 
   catch {unset Serdefault};		# will become an array of gui-values for series
+
+  set usedIdices {}
 
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -229,7 +231,10 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
     set logopt $logf$i
     switch $mode {
-      bat - sh - tcl - pl - py - grd {set imore  " $insert --L\$\{L\}$i"}
+      bat - sh - tcl - pl - py - grd {
+        set imore  " $insert --L\$\{L\}$i"
+        lappend usedIdices $i
+      }
       default {set imore " $insert --L$logopt"}
     }
     switch $VisState {
@@ -306,6 +311,13 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   switch $mode {
     bat {append fc "\ntype $logf* > \$P/result.txt\ndel $logf*"}
     sh  {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*"}
+    grd {
+      set s ""
+      foreach v $usedIdices {
+        append s " gridlog$v"
+      }
+      append fc "\ncat$s > job`date +%s`.log\nrm -f$s\n"
+    }
     tcl {append fc "\npwrite \$P/result.txt \$L"}
     pl  {append fc "\";\npwrite(\"\$P/result.txt\", \"\$L\");"}
     py  {
