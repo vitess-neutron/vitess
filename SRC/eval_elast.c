@@ -38,6 +38,8 @@ int   probactiv=TRUE,        /* probactiv=1 means probabilities activated,
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
                                 FALSE: linear binning                  */
 
+int scatterAxis = -1;        /* Direction of scattering for correct calculation of scattering parameters */
+
 long  nbins,                 /* number of bins */
       nColour,               /* colour necessary for the trajectory to be regarded
                                 colour 0 means: all trajectories are regarded  */
@@ -73,11 +75,10 @@ int main(int argc, char *argv[])
 	  center[NCENTER], totcenter[NCENTER], range[NCENTER],
 	  time, lambda, 
 	  TwoTheta, TwoThetaDeg, Phi, 
-	  qValue, dspacing,
+	  qValue, dspacing, 
 	  prob=0;
 
 	int ibin;
-
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
@@ -131,8 +132,23 @@ int main(int argc, char *argv[])
 	{	for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
+			  
 
-			CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+			  if (scatterAxis == 1) {
+			    /* Neutron temp = InputNeutrons[i]; */
+			    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[2])); */
+			    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
+			    TwoTheta = (double) atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+			    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+			  }
+			  else if (scatterAxis == 2) {
+			    /* Neutron temp = InputNeutrons[i]; */
+			    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[1])); */
+			    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
+			    TwoTheta = (double) atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+			    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+			  }
+			  else CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
 			time     = InputNeutrons[i].Time - TimeOffset;
 			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
@@ -392,6 +408,14 @@ void OwnInit(int argc, char *argv[])
 					/* probactiv=1 means probabilities activated, else neutron weight is set to 1.0 */
 					break;
 
+			        case 'A':
+				  scatterAxis = atoi(arg);
+				  if (scatterAxis > 2) {
+				    	fprintf(LogFilePtr,"ERROR: invalid scattering axis!!!");
+					exit(-1);
+				  }
+				  break;
+					
 				default:
 					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n", argv[i]);
 					exit(-1);
