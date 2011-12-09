@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>Module Neutron Refraction Lens</title>
+</head>
+ <body>
+ 
+<h1>VITESS Neutron Refraction Lens</h1>
+<br>
+The module <b>lens</b> simulates one or a stack of refractive neutron lenses. 
+Two kinds of lenses are included in the module: a lens with spherical geometry and one with parabolic geometry. 
+The geometry has to be chosen as the first step. (See radio button 'Lens surface geometry'). 
+The second step is to describe the geometry of a lens numerically. 
+Four parameters are included in the module 'Cur_radius1', 'Cur_radius2', 'RadiusMain' and 'Thickness' (see figure 1). <br />
+Please note, that, if the parameters 'Cur_radius1' and/or 'Cur_radius2' are given as zero, one of the sides of the lens will be a straight vertical line (or plane). 
+The parameters 'Cur_radius1' and/or 'Cur_radius2' can have negative values; in this case the surfaces (parabolic or spherical) will be of convex shape 
+- in contrast to figure 1, where concave shapes are shown.
+<br />
+<p>
+<img src="SphericalLens.jpg" name="Grafik" border="0" height="372" width="433" align="bottom">
+</p>
+Figure 1a: spherical lens <br />
+<br />
+<br />   
+<p>
+<img src="ParabolicLens.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
+</p>
+Figure 1b: parabolic lens <br />
+<br />
+The next step is to choose the position of the lens.  The paramters in 'Position main' and 'Output frame' have to be given. 
+The section 'Position Main' contains three parameters describing where the center point of the lens is situated (see Figure 2). 
+The section 'Output frame' contains as well three parameters and describes where the output plane and its center are situated. 
+This is the origin for the following module.  
+Please note that the parameters 'Position center Y', 'Position center Z', 'Output frame Y' and 'Output frame Z' usually have to be set to zero. 
+Otherwise the lens center and/or the center point in the output plane will be shifted along axis OY and OZ. 
+If the 'Position center Y', 'Position center Z' are not zero, (only) the lens will be shifted along axis OY and/or OZ. 
+If the 'Output frame Y' and 'Output frame Z' are not zero, a coordinate transformation will take place and all components in the instrument after the lens will be shifted. 
+(as with module frame).
+<br />   
+<p>
+<img src="LensPositioning.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
+</p>
+Figure 2: positioning of the lenses, co-ordinate system and output frame <br />
+<br />
+The next step is to choose the material of the lens. One has two possibilities: a) choose the material from a list, see radio button 'Material of lenses'. 
+The data of the material included in the module are given in  Table 1. 
+b) choose the attenuation of the neutron flux in the lens (or disable the attenuation). <br />
+Please note that only the (wavelength dependent) absorption part of the attenuation is simulated by the module, but not the scattering part.
+This can be adjusted by the user, see option 'Scattering part'. Please give the appropriate value if it is necessary.
+If one does not find the material for you lens, one can give the refraction coefficient in the module. 
+Set the radio button 'Material of a lens' to 'input' and give the refraction coefficient in the option 'refraction input' AND the wavelength in the option 'Refract wave'. 
+Due to the (quadratic) wavelength dependence of refraction and its (linear) dependence of the attenuation coefficients, 
+one has to know at which wavelength the refraction and attenuation coefficients are measured or calculated, usually it is 1.8 Ang, but you can give another input value, 
+if required. <br />
+The next option is the 'Number of lenses'. This option is very important due to the very small refractive index of all materials for neutron waves.
+In order to have appropriate focal distance (10-20 m) you have to use a stack of 5-20 lens usually. 
+If this module simulates only one lens, you have to create a long pipe with a lot of modules 'lens'. This is very uncomfortable and slows the simulations. 
+To avoid that, you can simply give the number of lenses you like. The lenses will be situated as given in Figure 2. 
+All neutrons leave the stack via the final output frame (after the last lens). <br />   
+<br />   
+<p>
+<img src="LensMaterial.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
+</p>
+Table: properties of different lens materials<br />
+<p>
+<img src="DiaphragmaAfterLens.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
+</p>
+Figure 3: diaphragma after lens <br />
+<br />
+<br>
+<h3><font size="+2"> Parameters for module 'quadr_field' </font></h3>
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">Cur_Radius1<br>[cm]</td>
+       <td valign="top">Spherical lens: Curvature radius of the first surface of the lense (where the neutrons enter) - see Figure 1a<br />
+                        Parabolic lens: distance between parabola at y=z=0 and y=z=RadiusMain for the first surface of the lense (where the neutrons enter) - see Figure 1b</td>
+       <td valign="top">any</td>
+       <td valign="top">-a</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Cur_Radius2<br>[cm]</td>
+       <td valign="top">Spherical lens: Curvature radius of the second surface of the lense (where the neutrons leave) - see Figure 1a<br />
+                        Parabolic lens: distance between parabola at y=z=0 and y=z=RadiusMain for the second surface of the lense (where the neutrons leave) - see Figure 1b</td>
+       <td valign="top">any</td>
+       <td valign="top">-b</td>
+     </tr>
+
+     <tr>
+       <td valign="top">RadiusMain<br>[cm]</td>
+       <td valign="top">Both lenses: radius of the lens - see Figure 1a and 1b</td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-c</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Thickness<br>[cm]</td>
+       <td valign="top">Both lenses: Thickness of the lens along the central axis</td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-A</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Lense surface geometry</td>
+       <td valign="top">geometry of the lens</td>
+       <td valign="top">'spherical'<br />'parabolic'</td>
+       <td valign="top">-K</td>
+     </tr>
+
+     <tr>
+       <td valign="top">position center X, Y, Z<br>[cm]</td>
+       <td valign="top">one lens: position of the lens <br />
+                        several lenses: center position of the stack of lenses </td>
+       <td valign="top">any</td>
+       <td valign="top">-d -e -k</td>
+     </tr>
+
+     <tr>
+       <td valign="top">output frame X, Y, Z<br>[cm]</td>
+       <td valign="top">x-, y- and z-position of the output frame (in the input frame) (see figure 2) </td>
+       <td valign="top">any</td>
+       <td valign="top">-s -t -w</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Refract input</td>
+       <td valign="top">Refractive index given by the user<br>
+                        used if 'material of the lens'='input' (cf. text)</td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-R</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Refract wave<br>[Å]</td>
+       <td valign="top">wavelength for the refractive index given by the user            <br>
+                        used if the refractive index is given by the user (cf. text) </td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-C</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Absorption part<br>[1/cm]</td>
+       <td valign="top">macroscopic absorption cross-section given by the user<br>
+                        used if 'material of the lens'='input' (cf. text)</td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-D</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Scattering part<br>[1/cm]</td>
+       <td valign="top">macroscopic scattering cross-section given by a user</td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-Q</td>
+     </tr>
+
+     <tr>
+       <td valign="top">surface roughness<br>[deg]</td>
+       <td valign="top">amplitude of waviness of a rectangular distribution <br>
+                        this value is the maximal angle of deviation of the surface normal from the ideal normal. </td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-q</td>
+     </tr>
+
+     <tr>
+       <td valign="top">material of a lens</td>
+       <td valign="top">material of the lens  </td>
+       <td valign="top">'O','CO<sub>2</sub>','C'<br/>'Be','F','Bi'<br/>'MgO','Pb','MgF'<br/>'SiO<sub>2</sub>''ZrO<sub>2</sub>','Mg'<br/>,'Si','Zr','Al'</td>
+       <td valign="top">-i</td>
+     </tr>
+
+     <tr>
+       <td valign="top">attenuation activation</td>
+       <td valign="top">yes: attenuation inside the lens <br>
+                        no:  no attenuation inside the lens </td>
+       <td valign="top">'yes'<br />'no'</td>
+       <td valign="top">-H</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Number of lenses</td>
+       <td valign="top">number of lenses in the stack </td>
+       <td valign="top">&gt;=1</td>
+       <td valign="top">-I</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Lens number</td>
+       <td valign="top">Lens number for visualisation (0 - means all lenses) </td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-E</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Number of trajectories</td>
+       <td valign="top">Number of trajectories for the visualisation after the lens</td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-x</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Max X</td>
+       <td valign="top">maximal x value at the ray-tracing picture, 0.0 means auto-calculation</td>
+       <td valign="top">&gt;=0.0</td>
+       <td valign="top">-S</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Visual ray-tracing after lense</td>
+       <td valign="top">no: no visualisation                                 <br/>
+                        XZ: visualisation using a projection to the XZ plane <br/>
+                        XY: visualisation using a projection to the XY plane </td>
+       <td valign="top">'no'<br/>'XZ'<br/>'XY'</td>
+       <td valign="top">-W</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Inner radius<br>[cm]</td>
+       <td valign="top">Inner radius of the diaphragm at the exit of the lenses (see Figure 3)</td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-m</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Outer radius<br>[cm]</td>
+       <td valign="top">Outer radius of the diaphragm at the exit of the lenses (see Figure 3)</td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-M</td>
+     </tr>
+
+     <tr>
+       <td valign="top">file name</td>
+       <td valign="top">name of the output file </td>
+       <td valign="top"> - </td>
+       <td valign="top">-p </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Lens number</td>
+       <td valign="top">Lens number for the output (0 - means all lenses) </td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-v</td>
+     </tr>
+
+     <tr>
+       <td valign="top">activate output</td>
+       <td valign="top">yes: activate output of the coordinates for the lens <br>
+                        no:  no output written </td>
+       <td valign="top">'yes'<br />'no'</td>
+       <td valign="top">-z</td>
+     </tr>
+
+     <tr>
+       <td valign="top">wavelength<br>[Å]</td>
+       <td valign="top">wavelength for focal distance calculation </td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-r</td>
+     </tr>
+
+     <tr>
+       <td valign="top">choose formula</td>
+       <td valign="top">formulae for focal distance calculation: <br />
+                        thick: exact formula                     <br>
+                        thin:  approximation for thin lenses     </td>
+       <td valign="top">'thick'<br />'thin'</td>
+       <td valign="top">-V</td>
+     </tr>
+
+     <tr>
+       <td valign="top">activate flight</td>
+       <td valign="top">yes: propagation to the focal distance   <br>
+                        no:  neutrons remain at the lens surface </td>
+       <td valign="top">'yes'<br />'no'</td>
+       <td valign="top">-Y</td>
+     </tr>
+   
+  </tbody> 
+</table>
+<br> 
+<br>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@hmi.de</a> 
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>
