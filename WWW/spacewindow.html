@@ -17,8 +17,7 @@ They all take into account gravity (if this option is chosen).
 It can consider attenuation inside the window and non-perfect absorption outside the window.
 Their x-coordinates are reset to 0 (as in most others modules) after finishing the propagation treatment.
 </p>
-<img SRC="window1.gif" height=259 width=575></pre>
-&nbsp;
+<img SRC="windows1.gif" height=259 width=575></pre> <br>
 <br>
 <h3>VITESS Module Space</h3>
 The module <b>space</b> simply simulates the propagation over a certain distance. But an attenuation inside the medium can be considered by
@@ -53,7 +52,7 @@ If the file is given, the exp. transmission is activated automatically, otherwis
 <br>
 <pre>
 The file format describing the transmission is:
-Wavelength [Ã…]           attenuation Âµ [1/cm] 
+Wavelength [Å]           attenuation µ [1/cm] 
 Note: the wavelength range must be from shortest to longest wavelength in the table
 
 For the outer materials, the following options exist
@@ -97,7 +96,7 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
 
      <tr>
        <td valign="top">absorption<br>[1/cm]</td>
-       <td valign="top">macroscopic absorption cross-section for 1.798 Ãƒ<br />
+       <td valign="top">macroscopic absorption cross-section for 1.798 Ã<br />
                         The absorption cross-section for the wavelength under consideration is calculated in the module from this value. </td>
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-m      </td>
@@ -207,7 +206,7 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
        <td valign="top">orientation of the normal vector of the window  <br/>
 	                       0 deg: direction along the x-axis              <br/>
 	                      90 deg: to the left (= y-axis)                  </td>
-       <td valign="top">[-180Â°,180Â°] </td>
+       <td valign="top">[-180°,180°] </td>
        <td valign="top">-A           </td>
      </tr>
 
