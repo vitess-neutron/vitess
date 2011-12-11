@@ -206,6 +206,7 @@
     if (strlen(mc_rt_File) == 0) return (-1);
     if (!strcmp(mc_rt_File,"NULL") || !strcmp(mc_rt_File,"0"))  return(-1);
     mc_rt_hfile = fopen(mc_rt_File, "r");
+
     if(!mc_rt_hfile)
     {
       char mc_rt_path[256];
@@ -229,6 +230,7 @@
         return (-1);
       }
     }
+
     stat(mc_rt_File,&mc_rt_stfile); mc_rt_filesize = mc_rt_stfile.st_size;
     if (mc_rt_offset && *mc_rt_offset) fseek(mc_rt_hfile, *mc_rt_offset, SEEK_SET);
     mc_rt_begin     = ftell(mc_rt_hfile);
@@ -396,16 +398,18 @@
     mc_rt_Header[0] = '\0';
 
     do { /* while (!mc_rt_flag_End_row_loop) */
-      char  mc_rt_line[1024*1024];
+      char  mc_rt_line[1024];
       long  mc_rt_back_pos=0;   /* ftell start of line */
-
       mc_rt_back_pos = ftell(mc_rt_hfile);
-      if (fgets(mc_rt_line, 1024*1024, mc_rt_hfile) != NULL) { /* analyse line */
+
+      if (fgets(mc_rt_line, 1024, mc_rt_hfile) != NULL) { /* analyse line */
         int mc_rt_i=0;
         char  mc_rt_flag_Store_into_header=0;
         /* first skip blank and tabulation characters */
+
         while (mc_rt_line[mc_rt_i] == ' ' || mc_rt_line[mc_rt_i] == '\t') mc_rt_i++;
         /* handle comments: stored in header */
+
         if ((mc_rt_line[mc_rt_i] == '#') || (mc_rt_line[mc_rt_i] == '%')
         || (mc_rt_line[mc_rt_i] == ';') || (mc_rt_line[mc_rt_i] == '/'))
         { /* line is a comment */
@@ -499,6 +503,7 @@
             mc_rt_flag_Store_into_header = 1;
           }
         } /* end: if not line comment else numerical */
+
         if (mc_rt_flag_Store_into_header) { /* add line into header */
           mc_rt_count_in_header += strlen(mc_rt_line);
           if (mc_rt_count_in_header+4096 > mc_rt_malloc_size_h)
@@ -511,7 +516,6 @@
           /* exit line and file if passed desired block */
           if (mc_rt_block_number && mc_rt_block_number == mc_rt_block_Current_index) {
             mc_rt_flag_End_row_loop  = 1;
-
           }
         }
       } /* end: if fgets */

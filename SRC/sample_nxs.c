@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
   /* Go and get the sample geometry and name of nxs parameter file */
   InitSample(&Sample);
   GetSample (&Sample, nxsFileName);
+
   switch (Sample.Type)
     { case VT_CUBE:
         fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
@@ -145,7 +146,7 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n",
               Sample.SG.Ball.r);
       break;
-    default : ;
+    //default: break;
     }
   fprintf(LogFilePtr, "NXS parameter file: %s\n", nxsFileName);
 
@@ -446,13 +447,14 @@ void OwnCleanup(DoublePair *StrucFac)
 /* End OwnCleanup */
 
 
+
 int readParameterFile( char *fileName, UnitCell *uc )
 {
   t_Table dataTable;
   int i;
   char **parsing;
 
-  int column_label = 10;
+  int column_label = 1;
   int column_b_coherent = 2;
   int column_sigma_inc = 3;
   int column_sigma_abs = 4;
@@ -463,7 +465,6 @@ int readParameterFile( char *fileName, UnitCell *uc )
   int column_z = 9;
 
   AtomInfo ai;
-
   /* setup a default Fe unit cell */
   uc->spaceGroup = "229";
   uc->a = uc->b = uc->c = 2.866;
@@ -471,7 +472,6 @@ int readParameterFile( char *fileName, UnitCell *uc )
 
   /* read the file */
   Table_Read(&dataTable, FullParName(fileName), 1); /* read 1st block data from file into table */
-
 
   /* parsing of header for sample parameters */
   parsing = Table_ParseHeader(dataTable.header,

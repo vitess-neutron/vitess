@@ -137,7 +137,7 @@
     char    constantstep;  /* true when 1st column/vector data has constant step */
     char    method[32];    /* interpolation method: nearest, linear */
   } t_Table;
-
+ 
 /* read_table-lib function prototypes */
 /* ========================================================================= */
 
@@ -168,6 +168,14 @@ double Table_Interp1d(double x, double x1, double y1, double x2, double y2);
 double Table_Interp1d_nearest(double x, double x1, double y1, double x2, double y2);
 double Table_Interp2d(double x, double y, double x1, double y1, double x2, double y2,
                       double z11, double z12, double z21, double z22);
+
+#ifdef  _MSC_VER
+/* The Microsoft visual C++ compiler spews about 1000 warnings during */
+/* compilation of gnuplot. The following lines disable most of them.  */
+#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+#define _CRT_SECURE_NO_WARNINGS
+#endif					  
+
 
 #endif
 
