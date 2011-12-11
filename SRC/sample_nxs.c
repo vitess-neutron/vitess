@@ -23,13 +23,24 @@
 /*          transmitted, absorbed or scattered (coherently or incoherently).                    */
 /*                                                                                              */
 /*                                                                                              */
+/*  The sample module makes use of the SgInfo library, whose free usage is granted by the       */
+/*  following notice:                                                                           */
+/*                                                                                              */
+/*  Copyright Notice:                                                                           */
+/*  Space Group Info (c) 1994-96 Ralf W. Grosse-Kunstleve                                       */
+/*  Permission to use and distribute this software and its documentation for noncommercial      */
+/*  use and without fee is hereby granted, provided that the above copyright notice appears     */
+/*  in all copies and that both that copyright notice and this permission notice appear in      */
+/*  the supporting documentation. It is not allowed to sell this software in any way. This      */
+/*  software is not in the public domain.                                                       */
+/*                                                                                              */
+/*                                                                                              */
 /* The free non-commercial use of these routines is granted providing due credit is given to    */
 /* the authors.                                                                                 */
 /*                                                                                              */
-/* 1.0  Nov 2011  M. Boin    Transmission works based on the exponential attenuation function.  */
-/*                             Coherent and incoherent scattering and absorption are also       */
-/*                             possible.                                                        */
-/*                             Tested with VITESS 2.9 on Windows 7 using MinGW compiler         */
+/* 1.0  Nov 2011  M. Boin    1st official release                                             */
+/*                           Transmission, absorption, coherent and incoherent scattering       */
+/*                           implemented.                                                       */
 /*                                                                                              */
 /************************************************************************************************/
 
