@@ -30,9 +30,19 @@ extern "C"
 /*! \file nxs.h
     \brief nxs header file.
 
-    Details.
-*/
+    Details: ...
 
+
+    The nxs library includes the SgInfo library, whose free usage is granted by the following notice:
+
+    Copyright Notice:
+    Space Group Info (c) 1994-96 Ralf W. Grosse-Kunstleve
+    Permission to use and distribute this software and its documentation for noncommercial
+    use and without fee is hereby granted, provided that the above copyright notice appears
+    in all copies and that both that copyright notice and this permission notice appear in
+    the supporting documentation. It is not allowed to sell this software in any way. This
+    software is not in the public domain.
+*/
 
 /**
 \struct <EquivHKL>

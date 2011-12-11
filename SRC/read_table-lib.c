@@ -148,7 +148,8 @@
 /* solve dependencies */
 #include <stdarg.h>
 #ifndef FLT_MAX         
-#define FLT_MAX         3.40282347E+38F /* max decimal value of a "float" */
+//#define FLT_MAX         3.40282347E+38F /* max decimal value of a "float" */
+#define FLT_MAX         3.40282346E+38F /* max decimal value of a "float" */
 #endif
 
 
