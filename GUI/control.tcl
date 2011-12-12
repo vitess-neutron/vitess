@@ -596,9 +596,14 @@ proc performCommand {prog mod {tw ""} {ts ""}} {
     writeCommandOption $l _gt
   }
 
+  # puts "doing :exec $fc --P[pardirPar]:"
   # execute the command, catch errors
   if [catch {eval exec $fc --P[pardirPar]} res] {
-    showText "!could not execute tool command $prog"
+    if {$prog == "dist_time"} {
+      showText $res
+    } else {
+      showText "!could not execute tool command $prog\n$res"
+    }
     return
   }
   if {$tw == ""} return

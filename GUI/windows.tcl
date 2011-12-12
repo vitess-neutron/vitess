@@ -329,5 +329,6 @@ proc giveRoom {w c} {
   # maxh: maximal height in cm, 70 % of display_pix_height / pix_per_cm
   set maxh [expr 0.7 * [winfo screenheight .] / [winfo fpixels . 1c]]
   if {$eh > $maxh}  {set eh $maxh}
-  return [scrollFrame $w right $ew ${eh}c 30c]
+  # give 45c virtual height, was 30c
+  return [scrollFrame $w right $ew ${eh}c 45c]
 }

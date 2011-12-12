@@ -83,14 +83,14 @@ foreach s {b h l m t} {
 lappend DoNotSaveSetting instrumentfile
 
 set TempVars {
-  Mod1 Mod2
+  Mod1 Mod2 Mod3
   Refa Refb Refc Refm
   al
   dA
   eA
   fA fLA fPA fPAuv fPAy fPAz
   fl fr
-  i1 i2
+  i1 i2 i3
   ld li ll
   m0 m1 m2 m3 mA
   nA nnA
@@ -367,16 +367,21 @@ set m3 {
 
 set Mod1 {}
 set Mod2 {}
+set Mod3 {}
 foreach e [concat $m1 $m2] {
   set n [lindex $e 0]
   if {$n == "" || [lindex $e 1] == "header"} {
-    set i1 [set i2 $e]
+    set i1 $e
+    set i2 $e
+    set i3 $e
   } else {
     set i1 [lreplace $e 0 0 ${n}1]
     set i2 [lreplace $e 0 0 ${n}2]
+    set i3 [lreplace $e 0 0 ${n}3]
   }
   lappend Mod1 $i1
   lappend Mod2 $i2
+  lappend Mod3 $i3
 }
 
 ### cws source module description
@@ -386,7 +391,10 @@ set cmoESET [concat {
 } $Mod1 {
   {"Moderator 2" header}
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
-} $Mod2 ]
+} $Mod2 {
+  {"Moderator 3" header}
+  {usemod3 radio unused {"third moderator"} {used unused} {1 0}}
+} $Mod3 ]
 
 ### ISIS variant
 
@@ -410,16 +418,21 @@ Deviations of the moderator center from this position must be given here."}}
 
 set Mod1 {}
 set Mod2 {}
+set Mod3 {}
 foreach e [concat $m0 $m1 $m2 $m3] {
   set n [lindex $e 0]
   if {$n == "" || [lindex $e 1] == "header"} {
-    set i1 [set i2 $e]
+    set i1 $e
+    set i2 $e
+    set i3 $e
   } else {
     set i1 [lreplace $e 0 0 ${n}1]
     set i2 [lreplace $e 0 0 ${n}2]
+    set i3 [lreplace $e 0 0 ${n}3]
   }
   lappend Mod1 $i1
   lappend Mod2 $i2
+  lappend Mod3 $i3
 }
 
 ### spss source module description
@@ -428,7 +441,10 @@ set smoESET [concat {
 } $Mod1 {
   {"Moderator 2" header}
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
-} $Mod2 ]
+} $Mod2 {
+  {"Moderator 3" header}
+  {usemod3 radio unused {"third moderator"} {used unused} {1 0}}
+} $Mod3 ]
 
 ### lpss source module description
 set lmoESET $smoESET
@@ -4316,21 +4332,26 @@ proc convert2Code {ll app} {
   return $s
 }
 
+# read / write moderator description file
+
 proc serializeModFile {f mode var app} {
   set al {temp color shape cx cy cz width height spaord scale current
     wfile tfile wtfile modtype tau1 tau2}
   set il1 [prepList $al 1]
   set il2 [prepList $al 2]
+  set il3 [prepList $al 3]
 
-  set nlist [concat $il1 $il2]
-  upvar #0 usemod2$app umod
+  set nlist [concat $il1 $il2 $il3]
+  upvar #0 usemod2$app umod2
+  upvar #0 usemod3$app umod3
 
   if {$mode == "r"} {
     foreach l $nlist {
       upvar #0 $l$app $l
       catch {unset $l}
     }
-    set umod unused
+    set umod2 unused
+    set umod3 unused
     if {$f == "0"} return
     set imode -1
     while {[gets $f line] >= 0} {
@@ -4341,7 +4362,10 @@ proc serializeModFile {f mode var app} {
       switch [incr imode] {
 	0 {set tl $il1}
 	1 {set tl $il2
-	  set umod used
+	  set umod2 used
+	}
+	2 {set tl $il3
+	  set umod3 used
 	}
       }
       if {[llength $ll] != [llength $tl]} continue
@@ -4361,8 +4385,11 @@ proc serializeModFile {f mode var app} {
 # Moderators:  center size  distribution files  time
 # Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d"
     puts $f [convert2Code $il1 $app]
-    if {$umod == "used"} {
+    if {$umod2 == "used"} {
       puts $f [convert2Code $il2 $app]
+    }
+    if {$umod3 == "used"} {
+      puts $f [convert2Code $il3 $app]
     }
   }
 }
