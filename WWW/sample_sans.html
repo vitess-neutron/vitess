@@ -12,17 +12,14 @@
   <body>
   
 <h1> VITESS Module SANS Sample</h1>
- This module describes small angle scattering at monodispers hard spheres. 
-The coordinate system of an incoming neutron is defined by the preceding module
-as well as the main flight path of the neutrons. The main flight direction
-of the neutrons defines the +x-axis. The y-axis is defined as the horizontal
-axis and the z-axis as the vertical one. The module SANS sample uses the
-angles <font face="Symbol">q</font> and <font face="Symbol">f. q</font> is
-defined as the angle between a vector r and the +x-axis and covers the range
-from [0..<font face="Symbol">p</font>]. <font face="Symbol">f</font> is the
-angle between the projection of the vector r in the yz-plane and the +y-axis
-and has the range of [0..2<font face="Symbol">p</font>[. 
-<p>A neutron is written to the output by this module, if the neutron arrives 
+The module <b>sample_sans</b> describes small angle scattering at monodispers hard particles. 
+The coordinate system of an incoming neutron is defined by the preceding module. The direction of the beamline defines the +x-axis. 
+The y-axis is defined as the horizontal axis to the left and the z-axis as the vertical one upwards.
+The module SANS sample uses the angles &theta; and &phi;. 
+&theta; is defined as the angle between a vector a vector <b>R</b> defining the flight direction of the neutron and the +x-axis and covers a range of [0..&pi;]. 
+&phi; is the angle between the projection of the vector r in the yz-plane and the +y-axis and has a range of [0..2&pi;[. 
+<p>
+A neutron is written to the output by this module, if the neutron arrives 
 at the sample surface after scattering. The coordinate system has still the
 same orientation, but the origin has moved to the center of the sample. All
 sample modules consider the divergence of each neutron without any approximation
@@ -32,102 +29,92 @@ to obtain the true direction of the flightpath after the scattering process.
 First of all it is determined if the neutron intersects the sample. If the
 neutron does not intersect the sample, it is discarded. Otherwise the neutron
 is scattered along its path through the sample at a certain distance L<sub>s</sub>
-from its entrance, which is determined by a Monte Carlo choice. <br>
-The scattering is restricted to an angular range of [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>], [<font
- face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
- face="Symbol">Df</font>] by the input values for <font face="Symbol">q, Dq</font>,
-<font face="Symbol">f, Df</font>. The direction of the trajectory i after
-the sample is given by (<font face="Symbol">q</font><sub>i</sub>, <font
- face="Symbol">f</font><sub>i</sub> ). For both, coherent scattering and
-incoherent scattering, both angles <font face="Symbol">q</font><sub>i</sub> 
-and <font face="Symbol">f</font><sub>i </sub>are determined by a Monte Carlo
-choice in these ranges. Therefore, the number of trajectories per solid angle
-in this range depends on the choice of the range. To get the real flux into
-this solid angle, this has to be considered by the factors </p>
-<center>G<sub>inc </sub>= G<sub>coh </sub>= <font face="Symbol">Df/p * Dq</font></center>
-  
-<p>(see below). The differential cross section is given by the square of the
+from its entrance, which is determined by a Monte Carlo choice. 
+<br>
+The scattering is restricted to an angular range of [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;] by the input values for &theta;, &Delta;&theta;, &phi; and &Delta;&phi;. 
+The direction of the trajectory i after the sample is given by (&theta;<sub>i</sub>, &phi;<sub>i</sub>). 
+For both, coherent scattering and incoherent scattering, both angles &theta;<sub>i</sub> and &phi;<sub>i</sub> are determined by a Monte Carlo
+choice in these ranges. Therefore, the number of trajectories per solid angle in this range depends on the choice of the range. 
+To get the real flux into this solid angle, this has to be considered by the factors 
+</p>
+<center>
+  G<sub>inc </sub>= G<sub>coh</sub> = &Delta;&phi;/&pi; * &Delta;&theta;
+</center>
+<p>
+(see below). The differential cross section is given by the square of the
 scattering amplitude (see e.g. Feigin, Svergun, Structure Analysis by Small-Angle
 X-Ray and Neutron Scattering (2.2), or P. Fratzl in 'PSI Proceedings 97-01,
-Cold Neutrons - High Resolution'): </p>
-<center> 
-<p>d<font face="Symbol">s/</font>d<font face="Symbol">W&nbsp; = |A</font>(Q)|<sup>2</sup> 
-= |Integral(<font face="Symbol">r</font>(<b>r</b>) exp(i<b>Q*r</b>) dV)|<sup>2</sup></p>
-</center>
-  
-<p>Integration yields for N identical particles of volume V<sub>p</sub> and
-scattering length density <font face="Symbol">r</font><sub>p</sub>: </p>
-<center> 
-<p>= N <font face="Symbol">r</font><sub>p</sub><sup>2</sup> V<sub>p</sub><sup>2 
-</sup>F(Q)</p>
-</center>
-  
-<p>with the Form Factor F(<b>Q</b>) = <font face="Symbol">|</font>S(<b>Q</b>)|<sup>2</sup> 
-= |Integral(exp(i<b>Q*r</b>)dV)/V<sub>p</sub>|<sup>2</sup>. Considering also
-the scattering length density <font face="Symbol">r</font><sub>s</sub> of
-the solution: </p>
-<center> 
-<p>d<font face="Symbol">s/</font>d<font face="Symbol">W </font>= N(<font
- face="Symbol">r</font><sub>p</sub>-<font face="Symbol">r</font><sub>s</sub>)<sup>2</sup> 
-V<sub>p</sub><sup>2 </sup>F(<b>Q</b>) = (<font face="Symbol">r</font><sub>p</sub>-<font
- face="Symbol">r</font><sub>s</sub>)<sup>2</sup> f<sub>p </sub>V<sub>p</sub>V<sub>smpl
-</sub>F(<b>Q</b>)</p>
-</center>
-  
-<p>where f<sub>p </sub>is the volume fraction of the particles and V<sub>smpl</sub> 
-the sample volume. Now it is possible to calculate the cross section for scattering
-into a solid angle <font face="Symbol">W</font>. For a discrete number of
-orientations (<font face="Symbol">q</font><sub>i</sub>, <font
- face="Symbol">f</font><sub>i</sub> ): </p>
-<center> 
-<p><font face="Symbol">s</font><sub>coh</sub>(<font face="Symbol">W</font>) 
-= d<font face="Symbol">s/</font>d<font face="Symbol">W&nbsp;</font> (<font
- face="Symbol">f</font><sub>max</sub>-<font face="Symbol">f</font><sub>min</sub>)(<font
- face="Symbol">q</font><sub>max</sub>-<font face="Symbol">q</font><sub>min</sub>) 
-1/N<sub>i</sub> <font face="Symbol">S</font> sin <font face="Symbol">q</font><sub>i</sub></p>
-</center>
-  
-<p>&nbsp;(The meaning of N<sub>i</sub> is explained below). Here, we get: 
+Cold Neutrons - High Resolution'): 
 </p>
 <center> 
-<p><font face="Symbol">s</font><sub>coh</sub>(<font face="Symbol">W</font>) 
-= (<font face="Symbol">r</font><sub>p</sub>-<font face="Symbol">r</font><sub>s</sub>)<sup>2</sup> 
-f<sub>p </sub>V<sub>p</sub>V<sub>sample </sub>F(<b>Q</b>)&nbsp; (<font
- face="Symbol">f</font><sub>max</sub>-<font face="Symbol">f</font><sub>min</sub>)(<font
- face="Symbol">q</font><sub>max</sub>-<font face="Symbol">q</font><sub>min</sub>) 
-1/N<sub>i</sub> <font face="Symbol">S</font> sin <font face="Symbol">q</font><sub>i</sub> 
+<p>
+    d&sigma;/d&Omega; = |A</font>(Q)|<sup>2</sup> = | &int; &rho;(<b>r</b>) exp(i<b>Q*r</b>) dV)|<sup>2</sup>
 </p>
-<p>= G<sub>coh </sub>4<font face="Symbol">p</font> (<font face="Symbol">r</font><sub>p</sub>-<font
- face="Symbol">r</font><sub>s</sub>)<sup>2</sup> f<sub>p </sub>V<sub>p</sub>V<sub>smpl
-</sub>F(<b>Q</b>)&nbsp; 1/N<sub>i</sub><font face="Symbol">S</font> sin <font
- face="Symbol">q</font><sub>i</sub></p>
 </center>
-  
-<p>The probability of scattering neutrons into this solid angle is: </p>
+<p>
+Integration yields for N identical particles of volume V<sub>p</sub> and scattering length density &rho;<sub>p</sub>: 
+</p>
 <center> 
-<p>P<sub>coh </sub>=&nbsp; I<sub>out,coh </sub>/ I<sub>in </sub>= <font
- face="Symbol">s</font><sub>coh</sub>(<font face="Symbol">W</font>) /A<sub>smpl</sub></p>
+<p>
+= N <font face="Symbol">r</font><sub>p</sub><sup>2</sup> V<sub>p</sub><sup>2 </sup>F(Q)
+</p>
 </center>
- <sub></sub> 
-<p>I<sub>in </sub>denotes the incoming neutron current, I<sub>out,coh </sub>the 
-current of the neutrons scattered into the solid angle <font
- face="Symbol">W. </font>A<sub>smpl</sub> is the area of the sample perpendicular
-to the beam direction. With the preceding equation: </p>
-<center>P<sub>coh </sub>= G<sub>coh </sub>4<font face="Symbol">p</font> (<font
- face="Symbol">r</font><sub>p</sub>-<font face="Symbol">r</font><sub>s</sub>)<sup>2</sup> 
-f<sub>p </sub>V<sub>p</sub>V<sub>smpl</sub>/A<sub>smpl</sub> F(<b>Q</b>)&nbsp; 
-1/N<sub>i</sub> <font face="Symbol">S</font> sin <font face="Symbol">q</font><sub>ii</sub> 
+<p>
+with the Form Factor F(<b>Q</b>) = |S(<b>Q</b>)|<sup>2</sup> = | &int; exp(i<b>Q*r</b>)dV / V<sub>p</sub>|<sup>2</sup>. 
+Considering also the scattering length density &rho;<sub>s</sub> of the solution: 
+</p>
+<center> 
+<p>
+     d&sigma;/d&Omega; = N(&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> V<sub>p</sub><sup>2 </sup>F(<b>Q</b>) 
+                        = (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p </sub>V<sub>p</sub>V<sub>smpl</sub>F(<b>Q</b>)</p>
+</center>
+<p>
+where f<sub>p</sub> is the volume fraction of the particles and V<sub>smpl</sub> the sample volume. 
+Now it is possible to calculate the cross section for scattering into a solid angle &Omega;. 
+For a discrete number of orientations (&theta;<sub>i</sub>,&phi;<sub>i</sub>): 
+</p>
+<p>
+<center> 
+     &sigma;<sub>coh</sub>(&Omega;) = d&sigma;/d&Omega; (&phi;<sub>max</sub>-&phi;<sub>min</sub>)(&theta;<sub>max</sub>-&theta;<sub>min</sub>) 
+                                        1/N<sub>i</sub> &sum; sin &theta;<sub>i</sub></p>
+</center>
+<p>
+(The meaning of N<sub>i</sub> is explained below). Here, we get: 
+</p>
+<center> 
+<p>
+     &sigma;<sub>coh</sub>(&Omega;) = (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> V<sub>sample</sub> F(<b>Q</b>)
+                                        (&phi;<sub>max</sub>-&phi;<sub>min</sub>)(&theta;<sub>max</sub>-&theta;<sub>min</sub>)  
+                                         1/N<sub>i</sub> &sum; sin &theta;<sub>i</sub></p>
+</p>
+<p>
+                                    = G<sub>coh</sub> 4&pi; (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> V<sub>smpl</sub> 
+                                      F(<b>Q</b>) 1/N<sub>i</sub> &sum; sin &theta;<sub>i</sub></p>
+</center>
+<p>
+The probability of scattering neutrons into this solid angle is: 
+</p>
+<center> 
+<p>
+             P<sub>coh</sub> = I<sub>out,coh </sub>/ I<sub>in </sub> = &sigma;<sub>coh</sub>(&Omega;) / A<sub>smpl</sub></p>
+</center>
+<p>
+I<sub>in </sub>denotes the incoming neutron current, I<sub>out,coh </sub>the current of the neutrons scattered into the solid angle &Omega;. 
+A<sub>smpl</sub> is the area of the sample perpendicular to the beam direction. 
+With the preceding equation: 
+</p>
+<center>
+       P<sub>coh</sub> = G<sub>coh</sub> 4&pi; (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> V<sub>smpl</sub>/A<sub>smpl</sub> F(<b>Q</b>)&nbsp; 
+                                   1/N<sub>i</sub> &sum; sin &theta;<sub>i</sub> 
 <br>
-= G<sub>coh&nbsp; </sub>4<font face="Symbol">p</font> (<font
- face="Symbol">r</font><sub>p</sub>-<font face="Symbol">r</font><sub>s</sub>)<sup>2</sup> 
-f<sub>p </sub>V<sub>p </sub>L<sub>i&nbsp; </sub>F(<b>Q</b>)&nbsp; 1/N<sub>i 
-</sub><font face="Symbol">S</font> sin <font face="Symbol">q</font><sub>i</sub> 
+                       = G<sub>coh</sub> 4&pi; (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> </sub>L<sub>i </sub>F(<b>Q</b>) &sum; sin &theta;<sub>i</sub>  
 <br>
-=: G<sub>coh</sub><font face="Symbol">&nbsp;&nbsp; </font>p<sub>coh </sub>1/N<sub>i 
-</sub><font face="Symbol">S</font> sin <font face="Symbol">q</font><sub>i</sub></center>
-  
-<p>L<sub>i</sub> denotes the total length of the flightpath of the trajectory 
+                       =: G<sub>coh</sub> p<sub>coh</sub> 1/N<sub>i</sub> &sum; sin &theta;<sub>i</sub>
+</center>
+<br/>
+for the real samples. For the isotropic scatterer the form factor F(<b>Q</b>) and the product (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> are set to 1. 
+<p>
+L<sub>i</sub> denotes the total length of the flightpath of the trajectory 
 under consideration through the sample. N<sub>i</sub> is the number of trajectories
 times the number of repetitions, the sum is over these N<sub>i</sub> orientations.
 (In practice, the influence of the number of trajectories on the probability
@@ -137,62 +124,58 @@ the probability that a neutron is scattered at all. <br>
 The values for F(<b>Q</b>) can be calculated from size and shape for particles
 of a simple geometry, e.g. for spheres </p>
 <center> 
-<p>F<sub>spheres</sub>(Q) =&nbsp;<img src="Image6.gif" border="0"
- height="61" width="189" align="middle">
+<p>F<sub>spheres</sub>(Q) =&nbsp;<img src="Image6.gif" border="0" height="61" width="189" align="middle">
 </p>
 </center>
   
-<p>Apart from spheres, the form factors of ellipsoids, cylinders and parallelepipeds 
-are introduced in the program. The formula are taken from the literature mentioned
-above. Apart from the spheres, the orientation of the particle is relatively
-to the neutron flight direction is determined by a Monte Carlo choice before
-the treatment of the scattering event. </p>
-<p>In addition to the coherent scattering, the incoherent scattering can be
-treated. This gives an isotropic distribution of the incoherently scattered 
-neutrons. This scattering&nbsp; probability is given by </p>
+<p>Apart from spheres, the form factors of ellipsoids, cylinders and parallelepipeds are introduced in the program. 
+The formula are taken from the literature mentioned above. 
+Additionally, isotropicscttering can be chosen for testing normalization purposes.
+Apart from the spheres, the orientation of the particle relatively to the neutron flight direction is determined 
+by a Monte Carlo choice before the treatment of the scattering event. 
+</p>
+<p>
+In addition to the coherent scattering, the incoherent scattering can be treated. 
+This gives an isotropic distribution of the incoherently scattered neutrons. This scattering probability is given by </p>
 <center> 
-<p>p<sub>inc </sub>=&nbsp; I<sub>out,inc </sub>/ I<sub>in&nbsp; </sub>= N<font
- face="Symbol">*s</font><sub>inc</sub>/ A<sub>smpl</sub> = V<sub>smpl</sub>/v<sub>0</sub><font
- face="Symbol">*s</font><sub>inc</sub>/A<sub>smpl</sub> = L<sub>i</sub><font
- face="Symbol">*s</font><sub>inc</sub>/v<sub>0 </sub>= L<sub>i</sub>*<font
- face="Symbol">m</font><sub>inc</sub></p>
+<p>
+    p<sub>inc </sub> = &nbsp; I<sub>out,inc </sub>/ I<sub>in</sub>
+                     = N &sigma;<sub>inc</sub>/ A<sub>smpl</sub> 
+                     = V<sub>smpl</sub>/v<sub>0</sub> * &sigma;<sub>inc</sub>/A<sub>smpl</sub> 
+                     = L<sub>i</sub> &sigma;<sub>inc</sub>/v<sub>0 </sub>
+                     = L<sub>i</sub> &mu;<sub>inc</sub></p>
 </center>
-  
-<p><font face="Symbol">s</font><sub>inc</sub> is the incoherent scattering 
-cross section of the unit cell; <font face="Symbol">m</font><sub>inc</sub>= 
-<font face="Symbol">s</font><sub>inc</sub>/v is the macroscopic incoherent
+<p>
+&sigma;<sub>inc</sub> is the incoherent scattering cross section of the unit cell; 
+&mu;<sub>inc</sub> = &sigma;<sub>inc</sub>/v is the macroscopic incoherent
 scattering cross section, which can be given as an input in the sample file. 
 </p>
 <p>For all trajectories, an attenuation A<sub>t</sub> is considered as follows: 
 </p>
 <center> 
-<p>A<sub>t</sub> = exp{-L<sub>n </sub><font face="Symbol">* </font>(<font
- face="Symbol">m</font><sub>tot </sub>+ <font face="Symbol">m</font><sub>abs</sub><font
- face="Symbol">*l</font>/(1.798 Ang))}</p>
+<p>
+            A<sub>t</sub> = exp{-L<sub>n </sub>(&mu;<sub>tot</sub> + &mu;<sub>abs</sub> &lambda;/1.798 &Aring)}
+</p>
 </center>
   
-<p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp; 
--&gt;&nbsp; point of scattering&nbsp; -&gt;&nbsp; surface). <font
- face="Symbol">m</font><sub>tot</sub> = <font face="Symbol">s</font><sub>tot</sub>/v<sub>0
-</sub>denotes the total macroscopic scattering cross section to be interpreted
-as wavelength independent, <font face="Symbol">m</font><sub>abs</sub> = <font
- face="Symbol">s</font><sub>abs</sub>/v<sub>0 </sub>is the macroscopic absorption
-cross section (to be provided for <font face="Symbol">l</font>= 1.798 Ang). 
+ <p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp; 
+-&gt;&nbsp; point of scattering&nbsp; -&gt;&nbsp; surface). 
+&mu;<sub>tot</sub> = &sigma;<sub>tot</sub>/v<sub>0</sub> 
+denotes the total macroscopic scattering cross section to be interpreted
+as wavelength independent, &mu;<sub>abs</sub> = &sigma;<sub>abs</sub>/v<sub>0</sub>is the macroscopic absorption
+cross section (to be provided for &lambda;= 1.798 &Aring). 
 </p>
 <p>For each incoming trajectory, N<sub>r </sub>- only coherent scattering 
 - or 2*N<sub>r</sub> - with incoherent scattering - trajectories are generated. 
 Summing over these trajectories, the probability for the scattering of a&nbsp;
 trajectory is then composed by: </p>
 <center> 
-<p>P = <font face="Symbol">S </font>(G<sub>coh </sub>p<sub>coh</sub>sin <font
- face="Symbol">q</font><sub>i</sub> + G<sub>inc </sub>p<sub>inc </sub>sin 
-<font face="Symbol">q</font><sub>j</sub>) <font face="Symbol">* </font>A<sub>t</sub> 
-/ N<sub>r</sub></p>
+<p>
+           P = &sum; (G<sub>coh </sub>p<sub>coh</sub>sin &theta;<sub>i</sub> + G<sub>inc </sub>p<sub>inc </sub>
+               sin &theta;<sub>i</sub>) <font face="Symbol">* </font>A<sub>t</sub> / N<sub>r</sub></p>
 </center>
   
-<p>where sin <font face="Symbol">q</font><sub>i</sub> considers the <font
- face="Symbol">q</font>-dependence of the isotropic distribution of the scattering
-orientations. <br>
+<p>where sin &theta;<sub>i</sub> considers the &theta;-dependence of the isotropic distribution of the scattering orientations. <br>
 &nbsp; <br>
 &nbsp; <br>
 &nbsp; </p>
@@ -200,49 +183,47 @@ orientations. <br>
  &nbsp; 
 <table border="1" width="90%">
  <tbody>
-    <tr>
- <td><b>Parameter</b> <br>
-      <b>Unit</b></td>
-  <td><b>Description</b></td>
-  <td><b>Command option</b></td>
- </tr>
   <tr>
- <td>sample file</td>
-  <td>The sample file describes the geometry and properties of the sample.</td>
-  <td>&nbsp;-S</td>
- </tr>
+    <td><b>Parameter</b> <br>
+        <b>Unit</b></td>
+    <td><b>Description</b></td>
+    <td><b>Command option</b></td>
+  </tr>
+
   <tr>
- <td>Theta, dTheta,&nbsp; <br>
-Phi, dPhi <br>
-[deg]</td>
-  <td>These parameters describe the solid angle covered by the detector. The
-direction (<font face="Symbol">q,f</font>) points to the middle of the covered
-area, which extends from [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>] and [<font
- face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
- face="Symbol">Df</font>].&nbsp; <br>
-      <font face="Symbol">q</font> is defined as the angle between +x-axis 
-(main flight direction of the neutrons) and the Vector R to be described. 
-      <font face="Symbol">f</font> is the angle between the +y-axis and the
-projection of R to the yz-plane. x,y and z form a right-handed system. <br>
-&nbsp;!!!Note: If you specify any parameter of <font face="Symbol">Dq, q,
-Df, f,</font> you must specify all of them.!!! <br>
-&nbsp;The default is a coverage of 4<font face="Symbol">p</font>.</td>
-  <td>&nbsp;-D, -d, <br>
-&nbsp;-P,-p</td>
- </tr>
+    <td>sample file</td>
+    <td>The sample file describes the geometry and properties of the sample.</td>
+    <td>&nbsp;-S</td>
+  </tr>
+
   <tr>
- <td>repetitions</td>
-  <td>'repetitions' specifies the number of data sets (trajectories) generated 
-for each scattered trajectory. A larger number of repetitions enriches the
-population on the detector and gives therefore better statistics in the spectrum.</td>
-  <td>&nbsp;-A</td>
- </tr>
+    <td>&theta;, &Delta;&theta;<br>&phi;, &Delta;&phi;<br>[deg]</td>
+    <td>These parameters describe the solid angle covered by the detector. The
+        direction (<font face="Symbol">q,f</font>) points to the middle of the covered
+        area in th range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;] and [&phi;-&Delta;&phi;, &phi;+&Delta;&phi;].&nbsp; <br>
+        &theta; is defined as the angle between +x-axis (beam line) and the Vector <b>R</b> of the flight direction of the neutron. 
+        &phi; is the angle between the +y-axis and the projection of <b>R</b> to the yz-plane. 
+        x,y and z form a right-handed system. <br>
+        !!!Note: If you specify any parameter of &theta;, &Delta;&theta; &phi;, &Delta;&phi; you must specify all of them.!!! <br>
+        The default is a coverage of 4&pi;.</td>
+    <td>-D, -d<br>-P, -p</td>
+  </tr>
+
   <tr>
- <td>incoherent scattering</td>
-  <td><i>yes</i>: neutrons are additionally scattered incoherently <br>
-      <i>no</i>: incoherent scattering is omitted</td>
-  <td>&nbsp;-I</td>
+    <td>repetitions</td>
+    <td>'repetitions' specifies the number of data sets (trajectories) generated 
+        for each scattered trajectory. A larger number of repetitions enriches the
+        population on the detector and gives therefore better statistics in the spectrum, 
+        but the number of density of events in the parameter space is not increases, e.g. the number of different wavelength values remains the same.
+        Therefore, an increase of the number of trajectories created by the source module is favorable. </td>
+    <td>&nbsp;-A</td>
+  </tr>
+
+  <tr>
+    <td>incoherent scattering</td>
+    <td><i>yes</i>: neutrons are additionally scattered incoherently <br>
+        <i>no</i>: incoherent scattering is omitted</td>
+    <td>&nbsp;-I</td>
  </tr>
  
   </tbody>
@@ -263,107 +244,99 @@ cub&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 # orientation of the cuboid: thickness is in x-direction, height in z-direction 
 (vector need not be normalised) <br>
 S 500.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-# sperical particles of radius 500 Ang <br>
+# sperical particles of radius 500 &Aring; <br>
 10000000000.0 30000000000.0 0.03 # scattering length densities: particles 
 1E10 1/cm&sup2;, solution 3E10 1/cm&sup2;, 3 % vol. frac. of particles <br>
 0.0 0.5 0.05&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 # Scattering cross sections: incoherent=0, total=0.5 cm<sup>-1</sup> and absorption=0.05
-cm<sup>-1</sup>Ang<sup>-1</sup> </p>
+cm<sup>-1</sup>&Aring;<sup>-1</sup> </p>
 <p>Anything after the # character is interpreted as a comment. <br>
-&nbsp; <br>
-&nbsp; 
+<br>
 <table border="1" width="89%">
  <tbody>
-    <tr>
- <td><b>Parameter</b> <br>
-      <b>Unit</b></td>
-  <td><b>Description</b></td>
- </tr>
   <tr>
- <td>x,y,z&nbsp; <br>
-[cm]</td>
-  <td>position of the sample centre relative to the coordinate system defined 
-by the preceding module</td>
- </tr>
+    <td><b>Parameter</b> <br>
+        <b>Unit</b></td>
+    <td><b>Description</b></td>
+  </tr>
+
   <tr>
- <td>sample geometry</td>
-  <td>cylinder&nbsp; or&nbsp; sphere&nbsp; or&nbsp; cuboid</td>
- </tr>
+    <td>x,y,z<br>[cm]</td>
+    <td>position of the sample centre relative to the coordinate system defined by the preceding module</td>
+  </tr>
+
   <tr>
- <td>thickness or radius&nbsp; <br>
-[cm]</td>
-  <td>thickness of cuboid, or radius of sphere, or radius of cylinder</td>
- </tr>
+    <td>sample geometry</td>
+    <td>cylinder or sphere or cuboid</td>
+  </tr>
+
   <tr>
- <td>height <br>
-[cm]</td>
-  <td>height&nbsp; of cuboid, or height of cylinder</td>
- </tr>
+    <td>thickness or radius<br>[cm]</td>
+    <td>thickness of cuboid, or radius of sphere, or radius of cylinder</td>
+  </tr>
+
   <tr>
- <td>width <br>
-[cm]</td>
-  <td>width of cuboid</td>
- </tr>
+    <td>height<br>[cm]</td>
+    <td>height of cuboid, or height of cylinder</td>
+  </tr>
+
   <tr>
- <td>x,y,z direction</td>
-  <td>vector components describing the orientation of the sample (it is not 
-necessary to give a normalized vector). <br>
-      <b>cylinder</b>: the vector&nbsp; is always perpendicular to the top 
-of the cylinder (standard cyl. position (001), height along the z-axis). <br>
-      <b>cuboid</b>: Standard is the (1,0,0) direction, i.e. the sample has 
-a thickness in x-direction, a width in y-direction and height in z-direction. 
-By giving a different vector the whole sample is rotated in this direction, 
-i.e. the planes separated by 'thickness' remain perpendicular to this vector. 
-      <br>
-      <b>sphere</b>: no values needed.</td>
- </tr>
+    <td>width<br>[cm]</td>
+    <td>width of cuboid</td>
+  </tr>
+
   <tr>
- <td>scattering objects</td>
-  <td>geometry of the particles in solution: <br>
-spheres&nbsp; or&nbsp; ellipsoids&nbsp; or&nbsp; parallelepipeds&nbsp; or&nbsp;
-cylinders&nbsp; (or isotropically scattering objects for testing)</td>
- </tr>
+   <td>x,y,z direction</td>
+   <td>vector components describing the orientation of the sample (it is not necessary to give a normalized vector). <br>
+       <b>cylinder</b>: the vector&nbsp; is always perpendicular to the top of the cylinder (standard cyl. position (001), height along the z-axis). <br>
+       <b>cuboid</b>: Standard is the (1,0,0) direction, i.e. the sample has a thickness in x-direction, a width in y-direction and height in z-direction. 
+         By giving a different vector the whole sample is rotated in this direction, i.e. the planes separated by 'thickness' remain perpendicular to this vector. <br>
+       <b>sphere</b>: no values needed.</td>
+  </tr> 
+
   <tr>
- <td>radius 1 or length&nbsp; <br>
-radius 2 or thickness <br>
-radius 3 or height <br>
-[Ang]</td>
-  <td>sizes of the particles in solution <br>
-      <b>spheres</b>: the radius of the spheres must be given in radius 1, 
-the other parameters are not needed&nbsp; <br>
-      <b>ellipsoids</b>: the three radii of the ellipsoid must be given <br>
-      <b>parallelepipeds</b>: length, thickness and height of the three radii 
-of the parallelepiped must be given <br>
-      <b>cylinders</b>: the first two parameters are radius 1 and radius 2
-of the cylinder, the third is the length <br>
-      <b>isotropic</b>: no parameter needed</td>
- </tr>
+    <td>scattering objects</td>
+    <td>geometry of the particles in solution: <br>
+       spheres, ellipsoids, parallelepipeds, cylinders <br>
+       additionally, isotropically scattering objects can be chosen for testing normalization purposes</td>
+  </tr>
+
   <tr>
- <td>scat. len. dens. particl. <br>
-[1/cm&sup2;]</td>
-  <td>scattering length density of the particles</td>
- </tr>
+    <td>radius 1 or length<br>
+        radius 2 or thickness <br>
+        radius 3 or height <br>[&Aring;]</td>
+    <td>sizes of the particles in solution <br>
+        <b>spheres</b>: the radius of the spheres must be given in radius 1, the other parameters are not needed<br>
+        <b>ellipsoids</b>: the three radii of the ellipsoid must be given <br>
+        <b>parallelepipeds</b>: length, thickness and height of the parallelepiped must be given <br>
+        <b>cylinders</b>: the first two parameters are radius 1 and radius 2 of the cylinder, the third is the length <br>
+        <b>isotropic</b>: no parameter needed</td>
+  </tr>
+
   <tr>
- <td>scat. len. dens. solution <br>
-[1/cm&sup2;]</td>
-  <td>scattering length density of the solution</td>
- </tr>
+    <td>scat. len. dens. particl.<br>[1/cm&sup2;]</td>
+    <td>scattering length density of the particles</td>
+  </tr> 
+
   <tr>
- <td>vol. fraction of particles</td>
-  <td>volume fraction of the particles in solution (for 5 %: 0.05)</td>
- </tr>
+    <td>scat. len. dens. solution<br>[1/cm&sup2;]</td>
+    <td>scattering length density of the solution</td>
+   </tr>
+
   <tr>
- <td>incoherent scattering,&nbsp; <br>
-total scattering, <br>
-absorption <br>
-[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>Ang<sup>-1</sup>]</td>
-  <td>macroscopic cross sections</td>
- </tr>
+    <td>vol. fraction of particles</td>
+    <td>volume fraction of the particles in solution (for 5 %: 0.05)</td>
+  </tr>
+
+  <tr>
+    <td>incoherent scattering<br>total scattering<br>absorption<br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>&Aring;<sup>-1</sup>]</td>
+    <td>macroscopic cross sections</td>
+  </tr>
  
-  </tbody>
+ </tbody>
 </table>
-  </p>
-<p> </p>
+</p>
+
 <hr>
 <a href="vitess.html">Back to VITESS overview</a> <br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
