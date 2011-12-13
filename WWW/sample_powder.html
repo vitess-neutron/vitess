@@ -12,18 +12,14 @@
   <body>
 
 <h1> VITESS Module Powder sample</h1>
- The powder sample module describes the coherent and incoherent elastic scattering
-of a powder sample. The coordinate system of an incoming neutron is defined
-by the preceding module as well as the main flight path of the neutrons.
-The main flight direction of the neutrons defines the +x-axis. The y-axis
-is defined as the horizontal axis and the z-axis as the vertical one. The
-powder sample module uses the angles <font face="Symbol">q</font> and <font
- face="Symbol">f. q</font> is defined as the angle between a vector r and
-the +x-axis and covers the range from [0..<font face="Symbol">p</font>]. <font
- face="Symbol">f</font> is the angle between the projection of the vector
-r in the yz-plane and the +y-axis and has the range of [0..2<font
- face="Symbol">p</font>[.
-<p>A neutron is written to the output by this module, if the neutron arrives
+The module <b>sample_powder</b> describes the coherent and incoherent elastic scattering of a powder sample. 
+The coordinate system of an incoming neutron is defined by the preceding module. The direction of the beamline defines the +x-axis. 
+The y-axis is defined as the horizontal axis to the left and the z-axis as the vertical one upwards. 
+The powder sample module uses the angles &theta; and &phi;. 
+&theta; is defined as the angle between a vector <b>R</b> defining the flight direction of the neutron and the +x-axis and covers a range of [0..&pi;]. 
+&phi; is the angle between the projection of the vector <b>R</b> to the yz-plane and the +y-axis and has a range of [0..2 &pi;[. 
+<p>
+A neutron is written to the output by this module, if the neutron arrives 
 at the sample surface after scattering. The coordinate system has still the
 same orientation, but the origin has moved to the center of the sample. All
 sample modules consider the divergence of each neutron without any approximation
@@ -36,161 +32,128 @@ is scattered along its path through the sample at a certain distance L<sub>s</su
 from its entrance, which is determined by a Monte Carlo choice. The probability
 p<sub>coh</sub> (see e.g. Squires (3.103)) of the scattering process results
 from summing up the single contributions P<sub>coh, d</sub> for all d-spacings
-which satisfy the Bragg equation for a neutron with wavelength <font
- face="Symbol">l</font><sub>i</sub>: </p>
+which satisfy the Bragg equation for a neutron with wavelength &lambda;<sub>i</sub>: </p>
 <center>
-<p><font face="Symbol">s</font><sub>coh,d</sub>(cone) = V<sub>smpl</sub>*<font
- face="Symbol">l</font><sub>i</sub><sup>3</sup>/(4v<sub>0</sub>&sup2;) *
-|F<sub>d</sub>|<sup>2 </sup>/ sin(0.5<font face="Symbol">*q</font><sub>sc,i</sub>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(Squires (3.103)) </p>
-<p>=&gt;&nbsp; p<sub>coh,d&nbsp;&nbsp; </sub>=&nbsp; I<sub>out,coh </sub>/
-I<sub>in </sub>= <font face="Symbol">s</font><sub>coh,d</sub>(cone) / A<sub>smpl</sub>
-=&nbsp; L<sub>i</sub>*<font face="Symbol">l</font><sub>i</sub><sup>3</sup>/(4*v<sub>0</sub>&sup2;)
-<font face="Symbol">*</font> |F<sub>d</sub>|<sup>2 </sup>/ sin(0.5*<font
- face="Symbol">q</font><sub>sc,i</sub>) </p>
-<p>with&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="Symbol">q</font><sub>sc,i
-</sub>=&nbsp; 2<font face="Symbol">*</font>asin(<font face="Symbol">l</font><sub>i</sub>/(2*d))</p>
-</center>
+<p>&sigma;<sub>coh,d</sub>(cone) = V<sub>smpl</sub>*&lambda;<sub>i</sub><sup>3</sup>/(4v<sub>0</sub>&sup2;) * |F<sub>d</sub>|<sup>2 </sup>/ sin(0.5*&theta;<sub>sc,i</sub>)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Squires (3.103)) </p>
 
-<p>F<sub>d</sub> denotes the structure factor; it is the sum over all reciprocal
-lattice vectors with the same d-spacing d. (d and |F<sub>d</sub>|<sup>2</sup>
-are taken from the structure factor file.) <font face="Symbol">q</font><sub>sc,i</sub>
-is the scattering angle of the i-th trajectory, V<sub>smpl</sub> the sample
-volume, and v<sub>0</sub> the unit cell volume.&nbsp; I<sub>in </sub>denotes
-the incoming neutron current, I<sub>out,coh </sub>the current of the neutrons
-scattered to the cone<font face="Symbol">. </font>A<sub>smpl</sub> is the
-area of the sample perpendicular to the beam direction. L<sub>i</sub> denotes
+<p>=&gt;&nbsp; p<sub>coh,d&nbsp;&nbsp; </sub>=&nbsp; I<sub>out,coh </sub>/I<sub>in </sub>= &sigma;<sub>coh,d</sub>(cone) / A<sub>smpl</sub> 
+=&nbsp; L<sub>i</sub>*&lambda;<sub>i</sub><sup>3</sup>/(4*v<sub>0</sub>&sup2;)&nbsp;*&nbsp; |F<sub>d</sub>|<sup>2 </sup>/ sin(0.5*&theta;<sub>sc,i</sub>) </p>
+
+<p>with&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &theta;<sub>sc,i 
+</sub>=&nbsp; 2<font face="Symbol">*</font>asin(&lambda;<sub>i</sub>/(2*d))</p>
+</center>
+  
+<p>F<sub>d</sub> denotes the structure factor; it is the sum over all reciprocal 
+lattice vectors with the same d-spacing d. (d and |F<sub>d</sub>|<sup>2</sup> 
+are taken from the structure factor file.) &theta;<sub>sc,i</sub> 
+is the scattering angle of the i-th trajectory, V<sub>smpl</sub> the sample 
+volume, and v<sub>0</sub> the unit cell volume.&nbsp; I<sub>in </sub>denotes 
+the incoming neutron current, I<sub>out,coh </sub>the current of the neutrons 
+scattered to the cone<font face="Symbol">. </font>A<sub>smpl</sub> is the 
+area of the sample perpendicular to the beam direction. L<sub>i</sub> denotes 
 the total length of the flightpath of the trajectory under consideration through
-the sample. The values for |F<sub>d</sub>|<sup>2</sup>&nbsp; contain the
-Debye-Waller factor. <br>
-The direction of the trajectory i after the sample is given by (<font
- face="Symbol">q</font><sub>i</sub>, <font face="Symbol">f</font><sub>i</sub>
-). The angle <font face="Symbol">q</font><sub>i </sub>is determined by <font
- face="Symbol">q</font><sub>sc,i </sub>; <font face="Symbol">f</font><sub>i</sub>
-is given by a Monte Carlo choice between <font face="Symbol">f - Df</font>
-and <font face="Symbol">f + Df</font>. </p>
-<p>In addition to the coherent scattering, the incoherent scattering can be
-treated. This gives an isotropic distribution of the incoherently scattered
-neutrons. This scattering&nbsp; probability is given by </p>
+the sample. The values for |F<sub>d</sub>|<sup>2</sup>&nbsp; contain the Debye-Waller factor. 
+<br>
+The direction of the trajectory i after the sample is given by (&theta;<sub>i</sub>, &phi;<sub>i</sub>). 
+The angle &theta;<sub>i</sub> is determined by &theta<sub>sc,i </sub>; &phi;<sub>i</sub> 
+is given by a Monte Carlo choice between &phi - &Delta;&phi; and &phi + &Delta;&phi;. </p>
+<p>
+In addition to the coherent scattering, incoherent scattering can be treated.
+This gives an isotropic distribution of the incoherently scattered neutrons. 
+The scattering probability is given by </p>
 <center>
-<p>p<sub>inc </sub>=&nbsp; I<sub>out,inc </sub>/ I<sub>in&nbsp; </sub>= N<font
- face="Symbol">*s</font><sub>inc</sub>/A<sub>smpl</sub> = V<sub>smpl</sub>/v<sub>0</sub><font
- face="Symbol">*s</font><sub>inc</sub>/A<sub>smpl</sub> = L<sub>i</sub>/v<sub>0</sub><font
- face="Symbol">*s</font><sub>inc</sub>= L<sub>i</sub>*<font
- face="Symbol">m</font><sub>inc</sub></p>
+<p>p<sub>inc </sub>=&nbsp; I<sub>out,inc </sub>/ I<sub>in&nbsp; </sub>= N&sigma;<sub>inc</sub>/A<sub>smpl</sub> = V<sub>smpl</sub>/v<sub>0</sub>
+ &sigma;<sub>inc</sub>/A<sub>smpl</sub> = L<sub>i</sub>/v<sub>0</sub>*&sigma;<sub>inc</sub> = L<sub>i</sub>*&mu;<sub>inc</sub></p>
 </center>
-
-<p><font face="Symbol">s</font><sub>inc</sub> is the incoherent scattering
-cross section of the unit cell; <font face="Symbol">m</font><sub>inc</sub>=
-<font face="Symbol">s</font><sub>inc</sub>/v is the macroscopic incoherent
-scattering cross section, which can be given as an input in the sample file.
+  
+<p>&sigma;<sub>inc</sub> is the incoherent scattering cross section of the unit cell; 
+&mu;<sub>inc</sub> = &sigma;<sub>inc</sub>/v is the macroscopic incoherent scattering cross section, which can be given as an input in the sample file. 
 </p>
-<p>The scattering is restricted to an angular range of [<font
- face="Symbol">q</font>-<font face="Symbol">Dq, q</font>+<font
- face="Symbol">Dq</font>], [<font face="Symbol">f</font>-<font
- face="Symbol">Df, f</font>+<font face="Symbol">Df</font>] by the input values
-for <font face="Symbol">q, Dq</font>, <font face="Symbol">f, Df</font>. For
-coherent scattering, <font face="Symbol">q</font><sub>i</sub> is determined
-by the Bragg condition . If it is out of the range [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>], the trajectory
-is discarded. Therefore, no correction for this angle is necessary. For incoherent
-scattering, <font face="Symbol">q</font><sub>i</sub> is determined by a Monte
-Carlo choice in the range [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>]. Therefore, the
-intensity in this range depends on the choice of the range. This is corrected
-by a factor <font face="Symbol">Dq</font>. A limitation of the <font
- face="Symbol">f</font>-range must be corrected for both kinds of scattering,
-because the value is chosen by a Monte Carlo choice in the given range (see
-above). So, the restricted solid angle is taken into account by using the
-factors </p>
+<p>The scattering is restricted to an angular range of [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;],[&phi;-&Delta;&phi;, &phi;+&Delta;&phi;] 
+by the input values &theta;, &Delta;&theta;, &phi; and &Delta;&phi;. 
+For coherent scattering, &theta;<sub>i</sub> is determined by the Bragg condition . 
+If it is out of the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;], the trajectory is discarded. 
+Therefore, no correction for this angle is necessary. For incoherent scattering, &theta;<sub>i</sub> is determined by a Monte
+Carlo choice in the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;]. 
+Therefore, the intensity in this range depends on the choice of the range. This is corrected by a factor &Delta;&theta;. 
+A limitation of the &phi;-range must be corrected for both kinds of scattering, because the value is chosen by a Monte Carlo choice 
+in the given range (see above). So, the restricted solid angle is taken into account by using the factors 
+</p>
 <center>
-<p>G<sub>inc&nbsp; </sub>= <font face="Symbol">Df/p * Dq</font> <br>
-G<sub>coh </sub>= <font face="Symbol">Df/p&nbsp;&nbsp;&nbsp; </font>.</p>
+<p>G<sub>inc&nbsp; </sub> = &Delta;&phi;/&pi; * &Delta;&theta; <br> 
+G<sub>coh </sub> = &Delta;&phi;/&pi; </font>.</p>
 </center>
 
 <p>For all trajectories, an attenuation A<sub>t</sub> is considered as follows:
 </p>
 <center>
-<p>A<sub>t</sub> = exp{-L<sub>n </sub><font face="Symbol">* </font>(<font
- face="Symbol">m</font><sub>tot </sub>+ <font face="Symbol">m</font><sub>abs</sub><font
- face="Symbol">*l</font>/(1.798 Ang))}</p>
+<p>A<sub>t</sub> = exp{-L<sub>n </sub> (&mu;<sub>tot </sub>+ &mu;<sub>abs</sub> &lambda;/1.798 &Aring;)}</p>
 </center>
-
-<p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp;
--&gt;&nbsp; point of scattering&nbsp; -&gt;&nbsp; surface). <font
- face="Symbol">m</font><sub>tot</sub> = <font face="Symbol">s</font><sub>tot</sub>/v<sub>0
-</sub>denotes the total macroscopic scattering cross section to be interpreted
-as wavelength independent, <font face="Symbol">m</font><sub>abs</sub> = <font
- face="Symbol">s</font><sub>abs</sub>/v<sub>0 </sub>is the macroscopic absorption
-cross section (to be provided for <font face="Symbol">l</font>= 1.798 Ang).
+  
+<p>L<sub>n</sub> is the total neutron flight path in the sample (surface&nbsp; -&gt;&nbsp; point of scattering&nbsp; -&gt;&nbsp; surface). 
+&mu;<sub>tot</sub> = &sigma;<sub>tot</sub>/v<sub>0</sub> denotes the total macroscopic scattering cross section to be interpreted as wavelength independent, 
+&mu;<sub>abs</sub> = &sigma;<sub>abs</sub>/v<sub>0</sub> is the macroscopic absorption cross section (to be provided for &lambda; = 1.798 &Aring;). 
 </p>
-<p>For one incoming trajectory, N<sub>coh</sub>+N<sub>inc</sub> trajectories
-are generated. Summing over these trajectories, the total probability for
-the scattering of a&nbsp; trajectory is then composed by: </p>
-<center>
-<p>P = <font face="Symbol">(</font>G<sub>coh </sub>p<sub>coh,d</sub>&nbsp;
-+&nbsp; G<sub>inc </sub>p<sub>inc </sub>sin <font face="Symbol">q</font><sub>j</sub>)
-<font face="Symbol">* </font>A<sub>t</sub> / N<sub>r</sub></p>
+<p>
+For one incoming trajectory, N<sub>r</sub>(N<sub>coh</sub> + 1) trajectories are generated, where N<sub>r</sub> denotes the number of repetitions. 
+Summing over these trajectories, the total probability for the scattering of a trajectory is then given by: 
+</p>
+<p>
+<center> 
+P = <font face="Symbol">(</font>G<sub>coh </sub>p<sub>coh,d</sub> + G<sub>inc </sub>p<sub>inc </sub>sin &theta;<sub>i</sub>) </font>A<sub>t</sub> / N<sub>r</sub></p>
 </center>
-
-<p>where N<sub>r</sub> denotes the number of repetitions. sin <font
- face="Symbol">q</font><sub>i</sub> considers the <font face="Symbol">q</font>-dependence
-of the isotropic distribution of the scattering orientations. Due to considering
-all accessible Bragg peaks, N<sub>coh </sub>is often greater than 1, even
-if N<sub>r</sub> = 1. So don't worry about obtaining more output than input
-trajectories. <br>
+<p>
+sin &theta;<sub>i</sub> considers the &theta;-dependence of the isotropic distribution of the scattering orientations. 
+Due to considering all accessible Bragg peaks, N<sub>coh </sub>is often greater than 1, even if N<sub>r</sub> = 1. 
+So don't worry about obtaining more output than input trajectories. <br>
 &nbsp; <br>
 &nbsp; </p>
 <h2> Module parameters:</h2>
  &nbsp;
 <table border="1" width="90%">
  <tbody>
-    <tr>
- <td><b>Parameter</b> <br>
-      <b>Unit</b></td>
-  <td><b>Description</b></td>
-  <td><b>Command option</b></td>
- </tr>
   <tr>
- <td>sample file</td>
-  <td>The sample file describes the geometry and properties of the sample.</td>
-  <td>&nbsp;-S</td>
- </tr>
-  <tr>
- <td>Theta, dTheta,&nbsp; <br>
-Phi, dPhi <br>
-[deg]</td>
-  <td>These parameters describe the solid angle covered by the detector. The
-direction (<font face="Symbol">q,f</font>) points to the middle of the covered
-area, which extends from [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>] and [<font
- face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
- face="Symbol">Df</font>].&nbsp; <br>
-      <font face="Symbol">q</font> is defined as the angle between +x-axis
-(main flight direction of the neutrons) and the Vector R to be described.
-      <font face="Symbol">f</font> is the angle between the +y-axis and the
-projection of R to the yz-plane. x,y and z form a right-handed system. <br>
-&nbsp;!!!Note: If you specify any parameter of <font face="Symbol">Dq, q,
-Df, f,</font> you must specify all of them.!!! <br>
-&nbsp;The default is a coverage of 4<font face="Symbol">p</font>.</td>
-  <td>&nbsp;-D, -d, <br>
-&nbsp;-P,-p</td>
- </tr>
-  <tr>
- <td>repetitions</td>
-  <td>'repetitions' specifies the number of data sets (trajectories) generated
-for each scattered trajectory. A larger number of repetitions enriches the
-population on the detector and gives therefore better statistics in the spectrum.</td>
-  <td>&nbsp;-A</td>
- </tr>
-  <tr>
- <td>incoherent scattering</td>
-  <td><i>yes</i>: neutrons are additionally scattered incoherently <br>
-      <i>no</i>: incoherent scattering is omitted</td>
-  <td>&nbsp;-I</td>
+   <td><b>Parameter</b> <br>
+       <b>Unit</b></td>
+   <td><b>Description</b></td>
+   <td><b>Command option</b></td>
  </tr>
 
-  </tbody>
+ <tr>
+   <td>sample file</td>
+   <td>The sample file describes the geometry and properties of the sample.</td>
+   <td>&nbsp;-S</td>
+ </tr>
+
+ <tr>
+   <td>&theta;, &Delta;&theta;<br> &phi;, &Delta;&phi;<br>[deg]</td>
+   <td>These parameters describe the solid angle covered by the detector. The direction (&theta;,&phi;) points to the middle of the covered area, 
+       which extends from [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;] and [&phi;-&Delta;&phi;, &phi;+&Delta;&phi;].<br>
+       &theta; is defined as the angle between +x-axis (main flight direction of the neutrons) and the vector <b>R</b> describing the flight direction. 
+       &phi; is the angle between the +y-axis and the projection of R to the yz-plane. x,y and z form a right-handed system. <br>
+       !!!Note: If you specify any parameter of &theta;, &Delta;&theta;, &phi;, &Delta;&phi;, you must specify all of them.!!! 
+       The default is a coverage of 4&pi;.</td>
+   <td>&nbsp;-D, -d,<br>-P, -p</td>
+ </tr>
+
+ <tr>
+   <td>repetitions</td>
+   <td>'repetitions' specifies the number of data sets (trajectories) generated for each scattered trajectory. 
+       A larger number of repetitions enriches the population at the detector and gives therefore better statistics in the spectrum,
+       but the number of density of events in the parameter space is not increases, e.g. the number of different wavelength values remains the same.
+       Therefore, an increase of the number of trajectories created by the source module is favorable. </td>
+   <td>&nbsp;-A</td>
+ </tr>
+
+ <tr>
+   <td>incoherent scattering</td>
+   <td><i>yes</i>: neutrons are additionally scattered incoherently <br>
+       <i>no</i>: incoherent scattering is omitted</td>
+   <td>&nbsp;-I</td>
+ </tr>
+ 
+ </tbody>
 </table>
   <br>
 &nbsp;
@@ -260,32 +223,28 @@ i.e. the planes separated by 'thickness' remain perpendicular to this vector.
       <br>
       <b>sphere</b>: no values needed.</td>
  </tr>
-  <tr>
- <td>structure factor file</td>
-  <td>This file (*.str) contains two columns, the first one for the d-spacings
-and the second column <br>
-contains the appropriate values for |F<sub>d</sub>|<sup>2</sup>.</td>
- </tr>
-  <tr>
- <td>incoherent scattering,&nbsp; <br>
-total scattering,&nbsp; <br>
-absorption <br>
-[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>Ang<sup>-1</sup>]</td>
-  <td>macroscopic cross sections</td>
- </tr>
-  <tr>
- <td>unit cell volume <br>
-[Ang&sup3;]</td>
-  <td>volume of the unit cell</td>
- </tr>
 
-  </tbody>
+  <tr>
+    <td> structure factor file</td>
+    <td> This file (*.str) contains two columns, the first one for the d-spacings
+         and the second column contains the appropriate values for |F<sub>d</sub>|<sup>2</sup>.</td>
+  </tr>
+
+  <tr>
+    <td> incoherent scattering<br>total scattering<br>absorption <br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>&Aring;<sup>-1</sup>]</td>
+    <td> macroscopic cross sections</td>
+  </tr>
+
+  <tr>
+    <td> unit cell volume <br>[&Aring;&sup3;]</td>
+    <td> volume of the unit cell</td>
+  </tr>
+
+ </tbody>
 </table>
-  </p>
-<p> </p>
+</p>
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
-
 </body>
 </html>
