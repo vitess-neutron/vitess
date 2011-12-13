@@ -64,6 +64,9 @@ extern gsl_rng * vit_gsl_rng;
 /* compilation of gnuplot. The following lines disable most of them.  */
 #pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
 #define _CRT_SECURE_NO_WARNINGS
+# if _MSC_VER <= 1200
+    typedef unsigned int uintptr_t; 
+# endif
 #endif
 
 #endif
