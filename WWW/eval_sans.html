@@ -22,14 +22,26 @@ The output 'spectra file' of <b>eval_elast</b> now contains the reference spectr
 It needs to be copied and renamed to assure that it will not be changed by the following simulation(s). 
 This file is now the 'reference file' in the <b>eval_sans</b> module. This module will calculate I(Q) of the sample and deliver S(Q) as the ratio
 <br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S(Q) = F_norm * I_smpl(Q)/I_ref(Q) 
-<br>
-<br>
+<p>
+<center> 
+         S(Q) = F_norm * I_smpl(Q)/I_ref(Q) 
+</center>
+</p>
+<p>
 F_norm considers the different scattering probabilities of the SANS samples and the isotropic scatterer into forward direction (&theta;=0). 
-It is of the order of magnitude 1E-4 to 1E-3 and can either be determined by adjusting the low Q end to S(Q)=1 or ....
-
-
+For the isotropic scatterer, the form factor F(<b>Q</b>) and the product (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> are set to 1 (cf. 'sample_sans.html'.)
+Therefore:
+</p>
+<p>
+<center> 
+         F_norm = 1 / {(&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> </sub>F(<b>Q</b>)}
+</center>
+</p>
+<p>
+It is of the order of magnitude 1E-4 to 1E-3.
+</p>
+<br/>
+<br/>
 <h3><font size="+2"> Parameters for module 'eval_sans' </font></h3>
 <br>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
@@ -71,7 +83,9 @@ It is of the order of magnitude 1E-4 to 1E-3 and can either be determined by adj
 
      <tr>
        <td valign="top">normalization parameter </td>
-       <td valign="top">The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (&theta;=0) </td>
+       <td valign="top">The ratio of the intensity of the isotropic scatterer to that of the SANS sample in forward direction (&theta;=0)
+                        The theoretical value is: <br/>
+                        F_norm = 1 / ((&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> </sub>F(<b>Q</b>))</td>
        <td valign="top">&gt;0 <br> typical 1e-4 </td>
        <td valign="top">-p    </td>
      </tr>
