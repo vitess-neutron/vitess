@@ -225,10 +225,6 @@ SOURCE=$(SPATH)\ma_geom.c
 "$(IDIR)\ma_geom.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\cpgplot.c
-"$(IDIR)\cpgplot.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\ascii2bin.c
 "$(IDIR)\ascii2bin.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -729,6 +725,10 @@ SOURCE=$(SPATH)\bendchtr.c
 
 SOURCE=$(SPATH)\bendertr.c
 "$(IDIR)\bendertr.obj" : $(SOURCE)
+	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\cpgplot.c
+"$(IDIR)\cpgplot.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\bender.c

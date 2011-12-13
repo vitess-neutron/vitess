@@ -105,12 +105,16 @@ my %dep = (			# needed objects for a module
 $dep{$_} = 'threadHelper' foreach (@ParMod);
 
 # objects necessary for some modules, to be compiled separately
+# remember in %K we already have these
+# (omit cpgplot here, it should go to @Gobj, not @Obj
+
 my %K;
 foreach (keys %dep) {
   foreach (split(' ', $dep{$_})) {
-    $K{$_} = 1;
+    $K{$_} = 1 unless $_ eq 'cpgplot';
   }
 }
+
 push @Obj, keys(%K);
 
 $dep{bender} = $_ = 'bendtest bendchtr bendertr bender_inter_data cpgplot';
@@ -498,6 +502,7 @@ EOS
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 EOS
+  print "Gobj:\n@Gobj\n";
   subRule($rule, @Gobj);
 
   $rule .= <<'EOS';
