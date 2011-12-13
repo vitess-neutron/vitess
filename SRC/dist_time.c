@@ -17,7 +17,6 @@
 #include "init.h"
 #include "cpgplot.h"
 
-
 #define TRUE  1
 #define FALSE 0
 
@@ -78,7 +77,8 @@ int main(int argc, char* argv[])
     bDrawDet=TRUE,   /* criterion: draw line for detector */
     nNumChop=0,      /* number of choppers */
     nFr;             /* running variable in loop over frames */
-  const char *GraphDev;	
+  const char *GraphDev;
+
 #ifdef DO_WIN32
 # define DEFAULTNAME "dist_time.ps"
 #else
@@ -219,67 +219,63 @@ int main(int argc, char* argv[])
 
   fprintf(LogFilePtr, "Figure saved as %s\n", pFullName);
 
-  return 1;
+  return 0;
 }
 
 static
 void OwnInit   (int argc, char *argv[])
 {
-  long   i;
+  int   i;
   char  *arg=NULL;
 
   for(i=1; i<argc; i++) {
-    if(argv[i][0]!='+') {
-      arg=&argv[i][2];
-      switch(argv[i][1]) {
-      case 'D':
-        /* distance source - detector [m] */
-        fDetDist = (float) atof(arg);		
-        argv[i][0]='+';
-        break;
-      case 'f':
-        /* First desired frame */
-        nFrameMin = (short) atoi(arg);
-        argv[i][0]='+';
-        if (nFrameMin < 0)
-          Error("Frames that can be displayed are 0, 1, 2, ....");
-        break;
-      case 'F':
-        /* Title of the figure */
-        pFileName = arg;
-        argv[i][0]='+';
-        break;
-      case 'R':
-        /* repetition time of pulses [ms] */
-        fTrep = (float) atof(arg);		
-        argv[i][0]='+';
-        break;
-      case 'p':
-        /* pulse length */
-        fTp = (float) atof(arg);		
-        argv[i][0]='+';
-        break;
-      case 's':
-        sleepsecs = atoi(arg);
-        if (sleepsecs < 0)
-          sleepsecs = 0;
-        else if (sleepsecs > 100)
-          sleepsecs = 100;
-        break;
-      case 't':
-        /* Time to be displayed      [ms] */
-        fTmax = (float) atof(arg);			
-        argv[i][0]='+';
-        break;
-      case 'T':
-        /* Title of the figure */
-        pTitle = arg;
-        argv[i][0]='+';
-        break;
-      }
+    if (argv[i][0] == '+') continue; 
+    arg = &argv[i][2];
+    switch (argv[i][1]) {
+    case 'D':
+      /* distance source - detector [m] */
+      fDetDist = (float) atof(arg);		
+      break;
+    case 'f':
+      /* First desired frame */
+      nFrameMin = (short) atoi(arg);
+      if (nFrameMin < 0)
+        Error("Frames that can be displayed are 0, 1, 2, ....");
+      break;
+    case 'F':
+      /* Title of the figure */
+      pFileName = arg;
+      break;
+    case 'R':
+      /* repetition time of pulses [ms] */
+      fTrep = (float) atof(arg);		
+      break;
+    case 'p':
+      /* pulse length */
+      fTp = (float) atof(arg);		
+      break;
+    case 's':
+      sleepsecs = atoi(arg);
+      if (sleepsecs < 0)
+        sleepsecs = 0;
+      else if (sleepsecs > 100)
+        sleepsecs = 100;
+      break;
+    case 't':
+      /* Time to be displayed      [ms] */
+      fTmax = (float) atof(arg);			
+      break;
+    case 'T':
+      /* Title of the figure */
+      pTitle = arg;
+      break;
+    default:
+      continue;
     }
+    argv[i][0] = '+';
   }
 }
+
 
 /*
   fChopAngle = GetFloat("Angle of opening           [deg]        : ");
@@ -293,51 +289,49 @@ short ReadChopper(int argc, char *argv[])
 {
   long   i;
   char  *arg=NULL;
-  short bDist=FALSE, bAngle=FALSE, bPhase=FALSE,
-    bOpen=FALSE, bWnd=FALSE;
+  short bDist=FALSE, bAngle=FALSE, bPhase=FALSE, bOpen=FALSE, bWnd=FALSE;
 
   for(i=1; i<argc; i++) {
-    if(argv[i][0]!='+') {
-      arg=&argv[i][2];
-      switch(argv[i][1]) {
-      case 'a':
-        /* Angle of opening   [deg] */
-        fChopAngle = (float) atof(arg);		
-        bAngle=TRUE;
-        break;
-      case 'C':
-        /*Distance: source - chopper [m] */
-        fChopDist = (float) atof(arg);		
-        if (fChopDist==0.0)
-          return FALSE;
-        bDist=TRUE;
-        break;
-      case 'N':
-        /* No of aperture openings per cycle */
-        nNumOpen = (short) atoi(arg);
-        bOpen=TRUE;
-        break;
-      case 'n':
-        /* No of apertures on chopper */
-        nNumWnd = (short) atoi(arg);
-        bWnd=TRUE;
-        break;
-      case 'o':
-        /* Chopper phase      [deg] */
-        fChopPhase = (float) atof(arg);			
-        bPhase=TRUE;
-        break;
+    if(argv[i][0] =='+') continue;
+    arg = &argv[i][2];
+    switch(argv[i][1]) {
+    case 'a':
+      /* Angle of opening   [deg] */
+      fChopAngle = (float) atof(arg);		
+      bAngle=TRUE;
+      break;
+    case 'C':
+      /*Distance: source - chopper [m] */
+      fChopDist = (float) atof(arg);		
+      if (fChopDist==0.0)
+        return FALSE;
+      bDist=TRUE;
+      break;
+    case 'N':
+      /* No of aperture openings per cycle */
+      nNumOpen = (short) atoi(arg);
+      bOpen=TRUE;
+      break;
+    case 'n':
+      /* No of apertures on chopper */
+      nNumWnd = (short) atoi(arg);
+      bWnd=TRUE;
+      break;
+    case 'o':
+      /* Chopper phase      [deg] */
+      fChopPhase = (float) atof(arg);			
+      bPhase=TRUE;
+      break;
 
-      default:
-        sprintf(sBuffer, "Unknown command option: %s\n",argv[i]);
-        Error(sBuffer);
-        exit(-1);
-        break;
-      }
-      argv[i][0]='+';
-      if (bDist && bAngle && bPhase && bOpen && bWnd)
-        return TRUE;
+    default:
+      sprintf(sBuffer, "Unknown command option: %s\n",argv[i]);
+      Error(sBuffer);
+      exit(-1);
+      break;
     }
+    argv[i][0] = '+';
+    if (bDist && bAngle && bPhase && bOpen && bWnd)
+      return TRUE;
   }
   return FALSE;
 }
