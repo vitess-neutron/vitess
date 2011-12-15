@@ -13,12 +13,12 @@ Mac OS X
 
 The GUI has been adopted to work with the Aqua version of wish of Mac OS X 10.7.2 Lion
 and 10.6.8 Snow Leopard.
-When suggest to install gnuplot software, as it shares needed libraries with
+We suggest to install gnuplot software, as it shares needed libraries with
 VITESS modules, see darwin_gnuplot.txt and install-unix.txt.
 
 GUI
 ---
-The GUI now uses TK 8.5 as default, as bltwish extensions are not necessary any more.
+The GUI uses TK 8.5 as default now, as bltwish extensions are not necessary any more.
 The framework for trajectory visualisation has been added.
 You may see the estimated rest time for a simulation now.
 
