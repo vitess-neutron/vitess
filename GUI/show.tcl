@@ -301,11 +301,36 @@ proc doGnuplotCmd {w} {
   flushGnuplotCmd [getPlotCmdHandle $app 0] $c
 }
 
+proc getGnuplotTerminalType {} {
+  global GnuPlotTerminal
+  if [info exists GnuPlotTerminal] {
+    return $GnuPlotTerminal
+  }
+  # set the prefered gnuplot type wxt
+  set GnuPlotTerminal wxt
+  if [catch {set gpt [open "|[getPreferredPlotCmd] 2>@1" r+]}] return
+  puts $gpt "set term wxt"
+  puts $gpt "print 'YYY'"
+  flush $gpt
+  while 1 {
+    if {[gets $gpt line] < 0} break
+    if [regexp YYY $line] break
+    if [regexp unknown $line] {
+      # sorry, just plain x11 to be used
+      set GnuPlotTerminal x11
+      break
+    }
+  }
+  catch {close $gpt}
+  return $GnuPlotTerminal
+}
+
 proc useExtPlotCmd {app fname} {
   global Plotfile GnuPlotCmd WindowIndex tcl_platform
+  set wxt [getGnuplotTerminalType]
   set gp [getPlotCmdHandle $app]
-  if {$tcl_platform(os) == "Darwin"} {set wxt x11} else {set wxt wxt}
-  set wxtcmd "set term $wxt $WindowIndex size 480,360"
+  set wxtcmd "set term $wxt $WindowIndex"
+  if {$wxt == "wxt"} {append wxtcmd " size 480,360"}
   puts $gp $wxtcmd
 
   # keyboard bindings to print and generate PDF files:
