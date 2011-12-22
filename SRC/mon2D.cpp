@@ -305,7 +305,8 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     
   case 4:
     neutronVector.x[1] = 0;
-    paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
+    if (neutronVector.x[2] > 0) paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
+    else paramValue = (90. - (neutronVector.Theta()*180./M_PI))*(-1.);
     break;
     
   case 5:

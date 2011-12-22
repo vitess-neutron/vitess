@@ -2447,7 +2447,6 @@ set polAH {
   {"Polarisation analysis" header}
 }
 
-
 set polA {
   {polA radio no {
     "Polarisation\nanalysis" "If switched on, define the polarisation analysis axis" "" P}
@@ -2463,8 +2462,8 @@ set dA {
 
 set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
 proc monitor2DCheckErr {{app _}} {
-  return [checkMiMaErr number_xbins number_ybins "" $app]
-#  return [checkMiMaErr min_z max_z "" $app]
+  if [checkMiMaErr min_vx max_vx "" $app] {return 1}
+  return [checkMiMaErr min_vy max_vy "" $app]
 }
 
 ### sample
