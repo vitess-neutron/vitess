@@ -185,6 +185,8 @@ void   PrintMaximalM(double *RData, long i);
 int    FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
 void   DoBin(ReflCond *RefOut);
 //double GetValProb(const double *ValProb, const int Key);
+double GetLengthFromFile(FILE *file);
+
 
 typedef double(*GetVal)(ReflCond *RefOut, int cNeut);
 GetVal SetValueFunction(const int key);
@@ -1665,6 +1667,10 @@ void OwnInit   (int argc, char *argv[])
 
   if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
   {	
+
+	if (eGuideShapeY != VT_FROM_FILE || eGuideShapeZ != VT_FROM_FILE) 
+		  dTotalLength = GetLengthFromFile (pFile);
+	  
     for(j=0; j <= nPieces; j++)
     {	
       ReadLine(pFile, sLine, sizeof(sLine)-1);
@@ -1674,8 +1680,10 @@ void OwnInit   (int argc, char *argv[])
       pPieces[j].Xpce *= 100.0;
       if (j==0) XpceZero = pPieces[0].Xpce;
       pPieces[j].Xpce -= XpceZero;
-      pPieces[j].Ypce *=   0.5;
-      pPieces[j].Zpce *=   0.5;
+      if (eGuideShapeY==VT_FROM_FILE) pPieces[j].Ypce *=   0.5;
+		else pPieces[j].Ypce =  Width(pPieces[j].Xpce)/2.0;
+	  if (eGuideShapeZ==VT_FROM_FILE) pPieces[j].Zpce *=   0.5;
+		else pPieces[j].Zpce = Height(pPieces[j].Xpce)/2.0;
       /*pPieces[j].Xpce = RoundP(pPieces[j].Xpce, 7);
       pPieces[j].Ypce = RoundP(pPieces[j].Ypce, 7);
       pPieces[j].Zpce = RoundP(pPieces[j].Zpce, 7);*/
@@ -2037,6 +2045,42 @@ double Width(double dLength)
   }
 
   return dWidth;
+}
+
+double GetLengthFromFile(FILE *file)
+{
+
+	char sLine[512];
+	double xStart = 0;
+	double xEnd = 0;
+
+	fpos_t position;	
+	fgetpos (file, &position);
+
+	int j = 0;
+	
+	for(j=0; j <= nPieces; j++)
+    {	
+   		ReadLine(file, sLine, sizeof(sLine)-1);
+
+		double tempX, tempY, tempZ;
+		char* stemp1, stemp2, stemp3, stemp4;
+		
+		sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ, 
+		       (char*) &stemp1, (char*) &stemp2, (char*) &stemp3, (char*) &stemp4);
+
+	tempX *= 100.;
+		
+	if (j == 0) xStart = tempX;
+
+	if (j == nPieces) xEnd = tempX;
+		
+	}
+
+	fsetpos(file, &position);
+	
+	return (xEnd - xStart);
+	
 }
 
 

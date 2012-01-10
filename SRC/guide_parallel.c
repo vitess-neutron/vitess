@@ -182,6 +182,7 @@ void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, GuidePiece 
 void   PrintMaximalM(double *RData, long i);
 int    FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY);
 void   DoBin(ReflCond *RefOut, int thread_i);
+double GetLengthFromFile(FILE *file);
 
 typedef double(*GetVal)(ReflCond *RefOut, int cNeut);
 GetVal SetValueFunction(const int key);
@@ -1520,6 +1521,9 @@ void OwnInit   (int argc, char *argv[]) {
 
   if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE) {
 
+	if (eGuideShapeY != VT_FROM_FILE || eGuideShapeZ != VT_FROM_FILE) 
+			  dTotalLength = GetLengthFromFile (pFile);
+	  
     for (j=0; j <= nPieces; j++) {
       ReadLine(pFile, sLine, sizeof(sLine)-1);
 
@@ -1529,8 +1533,10 @@ void OwnInit   (int argc, char *argv[]) {
       pPieces[j].Xpce *= 100.0;
       if (j==0) XpceZero = pPieces[0].Xpce;
       pPieces[j].Xpce -= XpceZero;
-      pPieces[j].Ypce *=   0.5;
-      pPieces[j].Zpce *=   0.5;
+	 if (eGuideShapeY==VT_FROM_FILE) pPieces[j].Ypce *=   0.5;
+		else pPieces[j].Ypce =  Width(pPieces[j].Xpce)/2.0;
+	  if (eGuideShapeZ==VT_FROM_FILE) pPieces[j].Zpce *=   0.5;
+		else pPieces[j].Zpce = Height(pPieces[j].Xpce)/2.0;
       pPieces[j].Wchan = (2.0*pPieces[j].Ypce - nSpacers*spacer)/(double)nChannels;
       if (pPieces[j].Wchan <= 0.0)
         Error("Geometry impossible. Channel width gets zero (or less)");
@@ -1608,7 +1614,7 @@ void OwnInit   (int argc, char *argv[]) {
           rot += rotplane;
         }
       }
-    }
+	}
 
     dTotalLength = RoundP(pPieces[nPieces].Xpce - pPieces[0].Xpce, 7);
     GuideEntranceWidth = pPieces[0].Ypce*2.;
@@ -1868,6 +1874,43 @@ double Width(double dLength) {
     return 0.0;
   }
 }
+
+double GetLengthFromFile(FILE *file)
+{
+
+	char sLine[512];
+	double xStart = 0;
+	double xEnd = 0;
+
+	fpos_t position;	
+	fgetpos (file, &position);
+
+	int j = 0;
+	
+	for(j=0; j <= nPieces; j++)
+    {	
+   		ReadLine(file, sLine, sizeof(sLine)-1);
+
+		double tempX, tempY, tempZ;
+		char* stemp1, stemp2, stemp3, stemp4;
+		
+		sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ, 
+		       (char*) &stemp1, (char*) &stemp2, (char*) &stemp3, (char*) &stemp4);
+
+	tempX *= 100.;
+		
+	if (j == 0) xStart = tempX;
+
+	if (j == nPieces) xEnd = tempX;
+		
+	}
+
+	fsetpos(file, &position);
+	
+	return (xEnd - xStart);
+	
+}
+
 
 double PathThroughGuideGravOrder1(int thread_i,
                                   Neutron *ThisNeutron, NeutronGuide guide, double wei_min,
