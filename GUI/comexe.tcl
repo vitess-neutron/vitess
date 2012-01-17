@@ -608,25 +608,26 @@ proc cleanupEnvDir {{envDir ""}} {
 }
 
 proc zeroProgress  {} {
-  global Progress ProgressFile ProgressTimeStart ProgressLastTic
-  set Progress 0
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLastTic
+  set Progress [set ProgressS 0]
   set ProgressTimeStart [clock seconds]
   set ProgressLastTic $ProgressTimeStart
   catch {file delete $ProgressFile}
 }
 
 proc showProgress {} {
-  global Progress ProgressFile ProgressTimeStart ProgressLastTic  
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLastTic  
   set now [clock seconds]
   if [catch {open $ProgressFile r} f] {
     showText . ""
-    set Progress 0
+    set Progress [set ProgressS 0]
     set ProgressLastTic $now
     return
   }
   if {[gets $f ins] > 0} {
     if {$ins <= 100 && $Progress != $ins} {
       set Progress $ins
+      set ProgressS [expr $ins > 98 ? 99 : $ins]
       if {$Progress > 0 && $Progress < 100} {
         if {($now - $ProgressLastTic) > 20} {
           set expectedtime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
