@@ -655,11 +655,12 @@ proc doGUICommand {prog mod {big ""}} {
 }
 
 proc trVar {n e op} {
-  global Progress ProgressTextL
-  if {$Progress == 0} {
+  global ProgressS ProgressTextL
+  # ProgressS is in the range 0-99
+  if {$ProgressS == 0} {
      set ProgressTextL ""
   } else {
-    set ProgressTextL "$Progress %"
+    set ProgressTextL "$ProgressS %"
   }
 }
 
@@ -782,7 +783,7 @@ proc showBeef {w} {
   helpFrame $Amf
 
   ### action buttons
-  global fileentrywidth LastWin LastState Progress ProgressTextL
+  global fileentrywidth LastWin LastState Progress ProgressS ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -800,7 +801,7 @@ proc showBeef {w} {
   pack $wb.check $wb.start $wb.startv -fill x
 
   pack $wb.meter -fill x -anchor w
-  set Progress 0
+  set Progress [set ProgressS 0]
   if {"" == [info command ttk::progressbar]} {
     set ProgressTextL ""
     set wl $wb.meter.l
@@ -808,8 +809,8 @@ proc showBeef {w} {
     pack $wl
     trace variable Progress w trVar
   } else {
-    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable Progress
-    pack $wb.meter.progress  -fill x
+    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable ProgressS
+    pack $wb.meter.progress -fill x
   }
   pack $wb.stop -anchor w -fill x
   pack $wb.stop.stop $wb.stop.kill -side left -ipadx 1m
