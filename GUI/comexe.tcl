@@ -608,48 +608,58 @@ proc cleanupEnvDir {{envDir ""}} {
 }
 
 proc zeroProgress  {} {
-  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLastTic
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLT ProcessLastTic
   set Progress [set ProgressS 0]
+  set ProcessLastTic 0
   set ProgressTimeStart [clock seconds]
-  set ProgressLastTic $ProgressTimeStart
+  set ProgressLT ""
   catch {file delete $ProgressFile}
 }
 
 proc showProgress {} {
-  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLastTic  
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLT ProcessLastTic
   set now [clock seconds]
   if [catch {open $ProgressFile r} f] {
     showText . ""
     set Progress [set ProgressS 0]
-    set ProgressLastTic $now
     return
   }
-  if {[gets $f ins] > 0} {
-    if {$ins <= 100 && $Progress != $ins} {
-      set Progress $ins
-      set ProgressS [expr $ins > 98 ? 99 : $ins]
-      if {$Progress > 0 && $Progress < 100} {
-        if {($now - $ProgressLastTic) > 20} {
-          set expectedtime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
-          if {$expectedtime > 3600} {
-            showText [format "%02d:%02d hours to finish simulation" [expr int($expectedtime/3600)] [expr int(($expectedtime/60)%60)]]
-          } else {
-            if {$expectedtime > 60} {
-              showText [format "%02d:%02d minutes to finish simulation" [expr int($expectedtime/60)] [expr int($expectedtime%60)]]
-            } else {
-              showText "$expectedtime seconds to finish simulation"
-            }
-          }
-          set ProgressLastTic $now
-        } else {
-          showText . ""
-        }
-      }
-    }
-  } else {
-    showText . ""
-  }
+  set rc [gets $f ins]
   close $f
+  if {$rc <= 0 || $ins > 100 || $Progress == $ins} {
+    showText . ""
+    return
+  }
+
+  set Progress $ins
+  set ProgressS [expr $ins > 96 ? 97 : $ins]
+  if {$Progress <= 0} {
+    showText . ""
+    return
+  }
+  set resttime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
+  if {$Progress == 100 || $resttime <= 10} {
+    if {"pipe is finishing" == $ProgressLT} {
+      showText . ""
+    } else {
+      showText [set ProgressLT "pipe is finishing"]
+    }
+    return
+  }
+
+  if {[incr ProcessLastTic] < 20} {
+    showText . ""
+  } else {
+    set ProcessLastTic 0
+    if {$resttime > 3600} {
+      set ProgressLT [format "%02d:%02d hours to finish simulation" [expr int($resttime/3600)] [expr int(($resttime/60)%60)]]
+    } elseif {$resttime > 60} {
+      set ProgressLT [format "%02d:%02d minutes to finish simulation" [expr int($resttime/60)] [expr int($resttime%60)]]
+    } else {
+      set ProgressLT "$resttime seconds to finish first module"
+    }
+    showText $ProgressLT
+  }
 }
 
 proc reduceFList {ln} {

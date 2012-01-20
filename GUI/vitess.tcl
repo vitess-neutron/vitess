@@ -2461,6 +2461,7 @@ set dA {
 }
 
 set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mA2 mAV nA  pA FA fA fLA fA1 fA2 fPAi fPAj polAH polA dA
 proc monitor2DCheckErr {{app _}} {
   if [checkMiMaErr min_vx max_vx "" $app] {return 1}
   return [checkMiMaErr min_vy max_vy "" $app]
