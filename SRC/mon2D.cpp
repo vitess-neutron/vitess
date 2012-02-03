@@ -306,7 +306,7 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
   case 4:
     neutronVector.x[1] = 0;
     if (neutronVector.x[2] > 0) paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
-    else paramValue = (90. - (neutronVector.Theta()*180./M_PI))*(-1.);
+    else paramValue = 90. - (neutronVector.Theta()*180./M_PI +180.);
     break;
     
   case 5:
@@ -328,7 +328,8 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     
   case 9:
     neutronVector.x[1] = 0;
-    divz = (M_PI / 2.0) - neutronVector.Theta();
+    if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
+    else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
     paramValue = divz * 2. * M_PI / n->Wavelength;  // kz: z component of the wave vector
     break;
     
