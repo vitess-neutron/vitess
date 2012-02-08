@@ -897,9 +897,9 @@ set slitESET {
 
 ### Beamstop
 set beamstopESET {
-  {dist_stop float "" {"distance\n to beamstop [cm]" "" "" d} ge0}
+  {dist_stop float "" {"distance\n from sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "progagation of neutrons to beamstop\ndetector expects neutrons at sample position" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface \n'yes'         : neutrons are propagated to the beamstop" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -1881,7 +1881,7 @@ set rotating_fieldESET {
 ###
 set quadr_fieldESET {
   {"Field range and strength" header}
-  {sf_bf pareditablefile field.dat {"field range file" "data file (which is read) giving the range of the magnetic field" "" P}}
+  {sf_bf pareditablefile field.dat {"field range file" "input file giving the range of the magnetic field" "" P}}
   {}
   {sf_mx float 0 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" F}}
   {sf_my float 0 {"magnetic\nfield Y [Oe]" "y component of the magnetic field in Oe" "" G}}
@@ -2569,9 +2569,9 @@ set envESET {
   {env_hei float "" {"height [cm]" "outer height of the cylinder"} gt0}
   {env_sffile pareditablefile "" {"structure\nfactor file"} r}
   {Scattering header}
-  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
-  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
-  {env_abs float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
+  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic incoherent scattering cross-section"} 1}
+  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic total scattering cross-section"} 1}
+  {env_abs float "" {"absorption\n[1/cm]" "macroscopic absorption cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {env_ucv float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 50}
 }
 
@@ -2742,7 +2742,7 @@ set sample_environmentESET {
   {ev_file pareditablefile environ.env {"parameter file"
     "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
   {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
-  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment before sample" "" r} {in out} {1 2}}
+  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment after sample" "" r} {in out} {1 2}}
 }
 
 ### proc sample_environmentCheckErr {{app _}} {
@@ -3004,33 +3004,29 @@ set isoESET {
 ###
 set capture_fluxESET {
   {"General parameters" header}
-  {foilarea float 1
-    {"gold foil\narea [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
-  {}
   {refwave float 1.798 {
     "reference\nwavelength [A]" "default value is 1.798 A. Use 0.0 to avoid the use of a reference wavelength." "" R} ge0}
   {}
-  {}
-  {circ radio "no window" {"window type" "defines the area which is taken into account" "" t} {"no window" circular rectangular} {0 1 2}}
-  {"circular window coordinates" header}
-  {radi float 0.5 {"radius [cm]" "radius of circular window in cm" "" r} gt0}
-  {centy float 0 {"center y [cm]" "" "" y} }
-  {centz float 0 {"center z [cm]" "" "" z} }
-  {"rectangular window coordinates" header}
+  {circ radio "rectangular" {"window type" "shape of the gold foil" "" t} {circular rectangular} {1 2}}
+  {"circular foil coordinates" header}
+  {radi float 0.5 {"radius [cm]" "radius of a circular foil in cm" "" r} gt0}
+  {centy float 0 {"center y [cm]" "center y (horizontal) of a circular foil [cm]" "" y} }
+  {centz float 0 {"center z [cm]" "center z (vertical) of a circular foil[cm]" "" z} }
+  {"rectangular foil coordinates" header}
   {min_y float -0.5 {
-    "min. y [cm]" "minimal y value [cm]" "" w}}
+    "min. y [cm]" "minimal y value (right) of a rectangular foil [cm]" "" w}}
   {max_y float 0.5 {
-    "max. y [cm]" "maximul y value [cm]" "" W}}
+    "max. y [cm]" "maximul y value (left) of a rectangular foil [cm]" "" W}}
   {}
   {min_z float -0.5 {
-    "min. z [cm]" "minimal z value [cm]" "" h}}
+    "min. z [cm]" "minimal z value of a rectangular foil [cm]" "" h}}
   {max_z float 0.5 {
-    "max. z [cm]" "maximal z value [cm]" "" H}}
+    "max. z [cm]" "maximal z value of a rectangular foil [cm]" "" H}}
   {"lambda window" header}
   {min_lambda float 0.0 {
-    "min. lambda [A]" "minimal lambda value [A]. If min and max lambda is zero this option is ignored." "" l}}
+    "min. lambda [A]" "minimal lambda value [A]. If min and max lambda are zero this option is ignored." "" l}}
   {max_lambda float 0.0 {
-    "max. lambda [A]" "maximal lambda value [A]. If min and max lambda is zero this option is ignored." "" L}}
+    "max. lambda [A]" "maximal lambda value [A]. If min and max lambda are zero this option is ignored." "" L}}
 }
 
 ### eval
@@ -3199,7 +3195,7 @@ set eval_sansESET {
   {sn_maxa float 1 {
     "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
   {sn_scat float 0.1 {
-    "scattering\nprobability" "total scattering probability of the isotropic scatterer" "" p} gt0}
+    "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {sn_bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {sn_dspot float "" {
