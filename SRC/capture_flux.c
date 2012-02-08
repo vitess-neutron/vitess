@@ -3,10 +3,11 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.00  Feb 2008                 initial version                                            */
+/* 1.00  Feb 2008  K. Lieutenant  initial version                                            */
 /* 1.01  Oct 2009  A. Houben      User may change reference wavelength                       */
 /* 1.10  Oct 2009  A. Houben      Limit capture area by circle or rectangle (like window)    */
 /* 1.11  Nov 2009  A. Houben      Limit captured flux by wave-length range                   */
+/* 1.12  Nov 2009  K. Lieutenant  gold foil area calculated                                  */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_CAPTURE);
-  print_module_name("capture_flux 1.11");
+  print_module_name("capture_flux 1.12");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -149,9 +150,9 @@ void  OwnInit(int argc, char *argv[])
     { switch(argv[i][1])
       { 
 		/* area */
-		case 'A':
+		/* case 'A':
 			CaptArea = atof(&argv[i][2]);  
-			break;
+			break; */
 		case 'R':
 			ReferenceWavelength = atof(&argv[i][2]);  
 			break;
@@ -198,6 +199,16 @@ void  OwnInit(int argc, char *argv[])
       }
     }
   }
+
+  if (WindowType==1)        // circular
+  {
+    CaptArea = sq(winradius)*M_PI;
+  }
+  else if (WindowType==2)   // rectangular
+  {
+    CaptArea = (heightmax-heightmin)*(widthmax-widthmin);
+  }
+
   return;
 }
 
