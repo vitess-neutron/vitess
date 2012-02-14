@@ -2409,12 +2409,18 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}	
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}
+}
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill both criteriea (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
 }
 
 set fPAi {
@@ -2450,8 +2456,8 @@ set dA {
   {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
 }
 
-set monitor1DESET [concat [genFE mon1D] $mA1 $mAV $nA $pA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
-unset mA1 mAV nA fA1 fA2 fPAi fPAj polAH polA dA
+set monitor1DESET [concat [genFE mon1D] $mA1 $mAV $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mAV nA fA1 fA2 fComb fPAi fPAj polAH polA dA
 proc monitor1DCheckErr {{app _}} {
   if [checkMiMaErr min_vx max_vx "" $app] {return 1}
   return {0}
@@ -2492,12 +2498,18 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}	
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}
+}
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill both criteriea (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
 }
 
 set fPAi {
@@ -2533,8 +2545,8 @@ set dA {
   {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
 }
 
-set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
-unset mA1 mA2 mAV nA  pA FA fA fLA fA1 fA2 fPAi fPAj polAH polA dA
+set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mA2 mAV nA  pA FA fA fLA fA1 fA2 fComb fPAi fPAj polAH polA dA
 proc monitor2DCheckErr {{app _}} {
   if [checkMiMaErr min_vx max_vx "" $app] {return 1}
   return [checkMiMaErr min_vy max_vy "" $app]
@@ -3102,7 +3114,7 @@ proc eval_elastCheckErr {{app _}} {
 ###   elast2
 set eval_elast2ESET {
   {psel radio "Scattering angle [deg] and wavelength [A]" {
-    "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+      "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
   {psort radio "Intensity" {
     "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
   {}
