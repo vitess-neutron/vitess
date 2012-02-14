@@ -38,6 +38,7 @@ Mon1D::Mon1D()
 
   filterParam1 = -1;
   filterParam2 = -1;
+  filterComb = -1;
 
   normalise = -1; 
   
@@ -88,6 +89,10 @@ void Mon1D::Init(int argc, char* argv[])
 	  case 'J':  
 	    filterParam2 = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	    break;
+
+	  case 'C':  
+            filterComb = atoi(&argv[i][2]); // filter combination (AND,OR)
+            break;
 
 	  case 'p':
 	    pWeight  = atof(&argv[i][2]);
@@ -202,16 +207,23 @@ int Mon1D::FillMonitor(Neutron* n)
   }
 
   // Dismiss if outside the range of filter parameter 1, if defined
-  if (filterParam1 > 0) {
+  if (filterParam1 > 0 && (filterParam2 < 0 || filterComb==1)) {
     double filterValue1 = DetermineParameter(filterParam1, n);
     if (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) return 0;  
 }
 
   // Dismiss if outside the range of filter parameter 2, if defined
-  if (filterParam2 > 0) {
+  if (filterParam2 > 0 && (filterParam1 < 0 || filterComb==1)) {
     double filterValue2 = DetermineParameter(filterParam2, n);
     if (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2) return 0;
   }
+
+  // Dismiss if outside the range of filter parameter 1 and 2 (pass if fulfilled 1 OR 2)
+  if (filterComb==0 && filterParam1 > 0 && filterParam2 > 0) {
+    double filterValue1 = DetermineParameter(filterParam1, n);
+    double filterValue2 = DetermineParameter(filterParam2, n);
+    if ( (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) && (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2)) return 0;  
+}
 
   // Fill the monitor data if no polarisation analysis required
   if (!analysePol) {
@@ -306,6 +318,14 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
   case 11:
     // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
     paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+    break;
+
+  case 12:
+    paramValue = (n->Color %100);
+    break;
+
+  case 13:
+    paramValue = (n->Color - (n->Color%100) ) / 100;
     break;
     
   default:
