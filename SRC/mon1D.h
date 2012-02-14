@@ -55,6 +55,7 @@ class Mon1D {
 
   int filterParam1;  // filter parameter 1, optional input parameter
   int filterParam2;  // filter parameter 2, optional input parameter
+  int filterComb; //filter 1 and 2 combined with AND or OR
   
   int analysePol;  // switched on if polarisation analysis desired, optional input parameter
 

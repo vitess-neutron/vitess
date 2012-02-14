@@ -2346,7 +2346,11 @@ double PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide *ThisGuide,
     ThisNeutron->Position[2] = NearestNeutron.Position[2];
 
     ThisNeutron->Probability = NearestNeutron.Probability;
-    ThisNeutron->Color += AddToColor;
+
+    if(ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM)
+      ThisNeutron->Color += AddToColor;
+    else if(ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT)
+      ThisNeutron->Color += AddToColor*100;
 
     TimeOFTotal +=  TimeOFmin;
     WriteReflParam(RefOut, 0, ThisNeutron, ThisGuide, Pce, ThisCollision, degangular, ThisReflectivity);
