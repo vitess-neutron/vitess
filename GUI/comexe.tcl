@@ -686,42 +686,57 @@ proc condDelList {ln} {
 
 proc doGather {gcom glist} {
   upvar $glist gl
-  if {$gcom == ""} {return ''}
+  if {$gcom == ""} {return ""}
   set visRes [tmpFilename vgather]
-  set com "$gcom $visRes $gl"
+
+  switch [globVal trajmode] {
+    "SVG xz" {set opt " -s"}
+    "SVG xy" {set opt " -S"}
+    X3D      {set opt " -x"}
+    default  {set opt ""}
+  }
+
+  set com "$gcom$opt -o $visRes $gl"
   if [catch {eval exec $com}] {
     catch {file delete $visRes}
-    return ''
+    return ""
   }
-  if {$visRes != "" &&! [file exists $visRes]} {
-    return ''
+  if {$visRes != "" && [file exists $visRes]} {
+    return $visRes
   }
-  return $visRes
+  return ""
 }
  
 proc startActionV {} {
   # start a visualisation run
   global PipeActive VisState VisGather VisMerge VisLogList
-  if {$VisMerge == ""} {
-    showText "!Not yet implemented"
-    return
-  }
   if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
     showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
     return
   }
-  set VisState 1
-  startAction "" "" 1
-  if {$VisState == 2 && [reduceFList VisLogList]} {
-    # gather results of first run
-    set partres [doGather $VisGather VisLogList]
-    incr VisState
+  if  {$VisGather != ""} {
+    set VisState 1
+    startAction "" "" 1
+    if {$VisState == 2 && [reduceFList VisLogList]} {
+      # gather results of first run
+      set partres [doGather $VisGather VisLogList]
+      incr VisState
+    } else {
+      set VisState 0
+    }
+    condDelList VisLogList
+    if {$VisState != 3} {
+      stopAction
+      return
+    }
   } else {
-    set VisState 0
+    # we do not know how to compute and merge the instrument geometry
+    # but may be how to compute trajectories
+    set partres ""
+    set VisState 3
   }
-  condDelList VisLogList
-  if {$VisState != 3} {
-    stopAction
+  if {$VisMerge == ""} {
+    showText "!Computation of trajectories not yet implemented"
     return
   }
   startAction "" "" 1
@@ -729,16 +744,23 @@ proc startActionV {} {
     # merge visualisation trajectories
     set fullres [doGather $VisMerge VisLogList]
   } else {
-    set fullres ''
+    set fullres ""
   }
-  lappend VisLogList $partres
+  if {$partres != ""} {
+    lappend VisLogList $partres
+  }
   condDelList VisLogList
 
   set VisState 0
 
-  # launch viewer
-  if {[info procs VisViewer] != '' && $fullres != ''} {
-    VisViewer $fullres
+  if {$fullres != ""} {
+    if {[info procs VisViewer] != "" && [regexp SVG $trajmode]} {
+      # launch viewer if known
+      VisViewer $fullres
+      catch {file delete $fullres}
+    } else {
+      showText "Find trajectories at $fullres"
+    }
   }
 }
 
