@@ -634,7 +634,7 @@ proc plotTemplateCmdWindow {} {
 
 proc VisViewer {fn} {
   # visualise neutron trajectories
-  global Browser tcl_platform
+  global Browser tcl_platform trajmode
   if {$Browser == ""} return
   switch $tcl_platform(platform) {
     unix {

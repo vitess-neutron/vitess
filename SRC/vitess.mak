@@ -132,7 +132,8 @@ ALL : \
 	"$(OD)\dist_time.exe" \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
-	"$(OD)\direct_view.exe"
+	"$(OD)\direct_view.exe" \
+	"$(OD)\sortiap.exe"
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
@@ -714,6 +715,13 @@ SOURCE=$(SPATH)\direct_view.c
 
 "$(OD)\direct_view.exe" : "$(OD)" "$(OD)\direct_view.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\direct_view.pdb" /out:"$(OD)\direct_view.exe" "$(IDIR)\direct_view.obj"
+
+SOURCE=$(SPATH)\sortiap.c
+"$(IDIR)\sortiap.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sortiap.exe" : "$(OD)" "$(OD)\sortiap.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sortiap.pdb" /out:"$(OD)\sortiap.exe" "$(IDIR)\sortiap.obj"
 
 SOURCE=$(SPATH)\bendtest.c
 "$(IDIR)\bendtest.obj" : $(SOURCE)

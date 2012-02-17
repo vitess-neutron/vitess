@@ -68,7 +68,7 @@ set DoNotSave [concat $DoNotSaveSetting {
   labColor
   maxModule menuButtonColor menubarfont menuColor
   monospaced monofontfamily monofontsize monofonttype
-  place plotapp_ plotmode
+  place plotapp_ plotmode trajmode
   radioColor
   scrollWidth simulation serif sserif
   timeout
@@ -3714,7 +3714,7 @@ gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
 
-			<boption>		<bdefault>
+		          	<boption>       <bdefault>
 1. neutron input filename	--f<filename>	stdin
 2. neutron output filename	--F<filename>	stdout
 3. rng init			--Z<value>	1
@@ -3727,6 +3727,8 @@ package VITESS, i.e they have a common meaning. These options are
 10.helper threads               --T
 11.read potentially compressed  --c<bytesize>
 12.write compressed             --C<mode>       0
+13.generate geometry file       --v<filename>   do not generate geometry file
+14.generate trajectory file     --V<filename>   do not generate trajectory file
 
 1. neutron input filename (--f<filename>)
   This option is necessary for the first VITESS module of a pipe,
@@ -3798,6 +3800,13 @@ package VITESS, i.e they have a common meaning. These options are
   float values, reducing the file size to approx. 40%. These compression mode will
   even improve VITESS performance, because they are straight forward and reduce I/O sizes.
   Data files may be further compressed by gzip in a second step, independent of this.
+
+13. generate geometry file (--v)
+  In this mode all modules of the pipe do not generate neutron trajectories, but write
+  geometric information about the module to a file.
+
+14. generate trajectory file (--V)
+  With this mode modules additionally write geometric information of interaction points.
 
 The specific input parameters for each module must not be controlled
 by the general command options.
@@ -4824,3 +4833,4 @@ foreach n $TempVars {
 foreach p {sore genFE genFE2} {
   proc $p {} {}
 }
+#puts [info globals]

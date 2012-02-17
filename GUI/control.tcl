@@ -382,6 +382,7 @@ proc controlMenu {w} {
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
+      {m Trajectories trajmode} \
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
@@ -450,6 +451,9 @@ proc controlMenu {w} {
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
+
+  forceDef trajmode "SVG xz"
+  cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
 
   forceDef browse_ext_mode select
   cascEntries $wo.browse_ext_mode browse_ext_mode all select
