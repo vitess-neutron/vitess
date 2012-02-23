@@ -26,8 +26,13 @@ proc setAll {{mode 0}} {
 }
 
 proc finalExit {} {
-  global tcl_platform
+  global tcl_platform FilesToDeleteList
   if {$tcl_platform(os) == "Darwin"} {destroy .}
+  if [info exists FilesToDeleteList] {
+    foreach f $FilesToDeleteList {
+      catch {file delete $f}
+    }
+  }
   exit
 }
 

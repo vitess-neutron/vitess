@@ -697,7 +697,9 @@ proc doGather {gcom glist} {
   }
 
   set com "$gcom$opt -o $visRes $gl"
+  # puts "debug: doing\n$com"
   if [catch {eval exec $com}] {
+    # puts "debug: caught exception"
     catch {file delete $visRes}
     return ""
   }
@@ -709,11 +711,12 @@ proc doGather {gcom glist} {
  
 proc startActionV {} {
   # start a visualisation run
-  global PipeActive VisState VisGather VisMerge VisLogList
+  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode
   if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
     showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
     return
   }
+  # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
   if  {$VisGather != ""} {
     set VisState 1
     startAction "" "" 1
@@ -740,7 +743,8 @@ proc startActionV {} {
     return
   }
   startAction "" "" 1
-  if {$VisState == 4 && [reduceFList VisLogList]} {
+
+  if [reduceFList VisLogList] {
     # merge visualisation trajectories
     set fullres [doGather $VisMerge VisLogList]
   } else {
@@ -757,9 +761,10 @@ proc startActionV {} {
     if {[info procs VisViewer] != "" && [regexp SVG $trajmode]} {
       # launch viewer if known
       VisViewer $fullres
-      catch {file delete $fullres}
+      # result file is to be deleted when VITESS finishes
+      lappend FilesToDeleteList $fullres
     } else {
-      showText "Find trajectories at $fullres"
+      showText "Find trajectories in $fullres"
     }
   }
 }

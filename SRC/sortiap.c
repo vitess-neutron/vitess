@@ -52,8 +52,10 @@ void usage() {
          "\tinfile\tone ore more input file names\n"
          "\t-o outfile\tresult file, default stdout\n"
          "\toption\tmay be\n"
-         "\t\t-s\tSVG sideview output, default text\n"
+         "\t\t-s\tSVG sideview output\n"
          "\t\t-S\tSVG topview output\n"
+         "sortiap sorts point output from VITESS trajectory runs.\n"
+         "The default is plain text output for further processing.\n"
          );
   exit(0);
 }
@@ -90,8 +92,8 @@ p_point newPoint(const char *data) {
   p = calloc(1, sizeof(t_point));
   if (svg_output) {
     int color;
-    float lambda, pos[3];
-    if (5 != sscanf(data, "%d %f %f %f %f", &color, &lambda, pos, pos+1, pos+2))
+    float lambda, weight, pos[3];
+    if (6 != sscanf(data, "%d %f %f %f %f %f", &color, &lambda, &weight, pos, pos+1, pos+2))
         myexit1("insufficient point data %s\n", data);
     p->u.pos[0] = pos[0];
     p->u.pos[1] = pos[instrument_view == SIDEVIEW ? 2 : 1];
