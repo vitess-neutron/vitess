@@ -684,16 +684,40 @@ proc condDelList {ln} {
   set glist {}
 }
 
-proc doGather {gcom glist} {
+proc doGather {gcom geomfile glist} {
+  global defdirectory_
   upvar $glist gl
   if {$gcom == ""} {return ""}
-  set visRes [tmpFilename vgather]
-
   switch [globVal trajmode] {
-    "SVG xz" {set opt " -s"}
-    "SVG xy" {set opt " -S"}
-    X3D      {set opt " -x"}
-    default  {set opt ""}
+    "SVG xz" {set m 1}
+    "SVG xy" {set m 2}
+    X3D      {set m 3}
+    default  {set m 0}
+  }
+
+  if {$geomfile != "" && [file exists $geomfile]} {set gex 1} else {set gex 0} 
+  switch $m {
+    0 {set opt ""
+      set ext txt
+    }
+    1 - 2 {
+      if {$m == 1} {set opt " -s"} else {set opt " -z"}
+      if {$gex} {append opt " -S $geomfile"}
+      set ext svg
+    }
+    3 { if {$gex} {set opt " -X $geomfile"} else {set opt " -x"}
+      set ext x3d
+    }
+  }
+
+  if {$geomfile == ""} {
+    set visRes [tmpFilename _geom.$ext]
+  } else {
+    # generate a new file name  in the parameter directory 
+    for {set i 1} {$i < 1000} {incr i} {
+      set visRes [file join $defdirectory_ geom_$i.$ext]
+      if {! [file exists $visRes]} break
+    }
   }
 
   set com "$gcom$opt -o $visRes $gl"
@@ -703,7 +727,7 @@ proc doGather {gcom glist} {
     catch {file delete $visRes}
     return ""
   }
-  if {$visRes != "" && [file exists $visRes]} {
+  if [file exists $visRes] {
     return $visRes
   }
   return ""
@@ -717,56 +741,79 @@ proc startActionV {} {
     return
   }
   # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
+  set firstText ""
+  set visRes ""
   if  {$VisGather != ""} {
+    # VisState 1 for first --v invocation
     set VisState 1
     startAction "" "" 1
-    if {$VisState == 2 && [reduceFList VisLogList]} {
+    if [reduceFList VisLogList] {
+      # puts "debug: reduceFList VisLogList $VisLogList"
       # gather results of first run
-      set partres [doGather $VisGather VisLogList]
-      incr VisState
-    } else {
-      set VisState 0
+      if {$VisGather == "just-concatenate"} {
+        set visRes [tmpFilename _3dvis]
+        if {"0" == [catch {open $visRes w} outf]} {
+          foreach fname $VisLogList {
+            if {"0" != [catch {open $fname r} f]} continue
+            while {[gets $f line] >= 0} {
+              puts $outf $line
+            }
+            close $f
+          }
+          close $outf
+        }
+      } else {
+        set visRes [doGather $VisGather "" VisLogList]
+      }
+      # result file is to be deleted when VITESS finishes
+      lappend FilesToDeleteList $visRes
+      set firstText "Find 3D geometry in $visRes"
     }
-    condDelList VisLogList
-    if {$VisState != 3} {
-      stopAction
-      return
-    }
-  } else {
-    # we do not know how to compute and merge the instrument geometry
-    # but may be how to compute trajectories
-    set partres ""
-    set VisState 3
   }
+
+  condDelList VisLogList
+
   if {$VisMerge == ""} {
+    if {$firstText != ""} {showText $firstText} 
+    set VisState 0
     showText "!Computation of trajectories not yet implemented"
     return
   }
+
+  # VisState 3 for --V invocation
+  set VisState 3
   startAction "" "" 1
 
   if [reduceFList VisLogList] {
     # merge visualisation trajectories
-    set fullres [doGather $VisMerge VisLogList]
+    set fullres [doGather $VisMerge $visRes VisLogList]
   } else {
     set fullres ""
   }
-  if {$partres != ""} {
-    lappend VisLogList $partres
-  }
+  
+  # puts "debug: fullres $fullres  trajmode $trajmode"
   condDelList VisLogList
-
   set VisState 0
 
   if {$fullres != ""} {
-    if {[info procs VisViewer] != "" && [regexp SVG $trajmode]} {
-      # launch viewer if known
-      VisViewer $fullres
-      # result file is to be deleted when VITESS finishes
-      lappend FilesToDeleteList $fullres
-    } else {
-      showText "Find trajectories in $fullres"
+    if [regexp SVG $trajmode] {
+      if {[info procs VisViewer] != ""} {
+        # launch SVG viewer = browser
+        VisViewer $fullres
+      }
+    } elseif [regexp X3D $trajmode] {
+      set ecom [getPreferredX3DCmd]
+      if {$ecom != ""} {
+        # launch external X3D viewer
+        catch {exec $ecom $fullres &}
+      } elseif {[info procs VisViewer] != ""} {
+        # launch viewer = browser
+        VisViewer $fullres
+      }
     }
+    showText "Find trajectories in $fullres"
   }
+  if {$firstText != ""} {showText $firstText} 
 }
 
 proc startAction {{sercom ""} {simu simulation} {visrun 0}} {

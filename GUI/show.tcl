@@ -445,6 +445,32 @@ proc getPreferredPlotCmd {} {
   }
 }
 
+proc getPreferredX3DCmd {} {
+  global PreferredX3DCmd
+  set cmd [entryVal x3dapp]
+  if {$cmd != "" && [file exists $cmd]} {
+    return [set PreferredX3DCmd $cmd]
+  }
+  if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
+  set ecmd ""
+  switch [getSystem] {
+    unix {
+      set ecmd [globVal env(X3DAPP)]
+      if {$ecmd == "" && $cmd != ""} {
+	if [catch {exec which $cmd} ecmd] {set ecmd ""}
+      }
+    }
+    windows {
+      if {$cmd == ""} break
+      if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
+      set ecmd [findFile C:/ D:/ $cmd]
+    }
+    default { }
+  }
+  if {$ecmd != ""} { gSet x3dapp_ $ecmd }
+  return [set PreferredPlotCmd $ecmd]
+}
+
 proc getFileDimensions {tfn itemarray} {
   upvar $itemarray la
   if [catch {open $tfn r} f] return
