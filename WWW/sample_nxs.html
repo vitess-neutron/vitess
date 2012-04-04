@@ -1,12 +1,8 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
-
-  <meta name="GENERATOR"
- content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module sample_nxs</title>
 </head>
   <body>
@@ -44,7 +40,7 @@ The unit cell initialisation requires a number of input parameters:
 <LI>Properties of atoms contributing to the unit cell (<em>&sigma;</span><sub>coh</sub></em>, <em>&sigma;</span><sub>inc</sub></em>, <em>&sigma;<sub>abs</sub></em>, <em>M</em> and <em>&theta;<sub>D</sub></em>)
 <LI>Arrangment of atoms inside the unit cell (given by the Wyckoff position).
 </UL>
-Each of these parameters is served by an nxs parameter file (see <a href="#section3.2">§3.2</a> for details). A unit cell is composed and the present lattice reflections and symmetry equivalent lattice planes are determined. As part of the initialisation of the virtual sample, the lattice distances <em>d</em>, structure factors <em>F</em> for all <em>hkl</em> Miller indices and the unit cell volume are calculated to provide the necessary parameters for the neutron cross section calculation.
+Each of these parameters is served by an nxs parameter file (see <a href="#section3.2">Â§3.2</a> for details). A unit cell is composed and the present lattice reflections and symmetry equivalent lattice planes are determined. As part of the initialisation of the virtual sample, the lattice distances <em>d</em>, structure factors <em>F</em> for all <em>hkl</em> Miller indices and the unit cell volume are calculated to provide the necessary parameters for the neutron cross section calculation.
 
 
 <h4><a name="section1.2"> 1.2 Neutron cross section calculation</a></h4>
@@ -77,8 +73,8 @@ After the wavelength-dependent neutron cross section is completed a transmission
 <center><em>p<sub>transmit</sub> = exp( - &sigma;<sub>total</sub> / V<sub>0</sub> * l)</em></center>
 <br><br>
 where <em>l</em> is the neutron transmission path length through the sample (i.e. the sample thickness).<br>
-The following propagation depends on a command option provided as a module parameter. Here, the 'transmission_only' switch (see <a href="#section2">§2</a>) is used to divide between to different simulation modes. If the option is <em>yes</em>, all neutrons hitting the sample will be transmitted and their weighting factor is attenuated by multiplication with <em>p<sub>transmit</sub></em>. Thus, wavelength-dependent neutron transmission including the effects of the crystallographic structure is simulated. This is useful in order to quickly simulated Bragg edge neutron transmission spectra, for example.<br>
-In order realise neutron scattering, the 'transmission_only' switch should be set to <em>no</em> (default). Then, neutron transmission s performed only, if <em>p<sub>transmit</sub></em> > a random number between 0 and 1. Otherwise, another random number (Monte Carlo number) will be created to decide between absorption and coherent and incoherent scattering. The latter is only possible if the module parameter '-I' is activated (see <a href="#section2">§2</a>). For the coherent scattering the available lattice planes, their distances and structure factors are used to determine the Bragg angles and their individual probalities for coherent scattering along the Debye Scherrer cones. The angular range in both directions (Bragg angle and vertical scattering angle) can be restricted to focus on a smaller region as reported in the following section. If it turns out that the neutron is to be absorbed due to the Monte Carlo choice, the neutron is simply not written to the output of the sample_nxs module. 
+The following propagation depends on a command option provided as a module parameter. Here, the 'transmission_only' switch (see <a href="#section2">Â§2</a>) is used to divide between to different simulation modes. If the option is <em>yes</em>, all neutrons hitting the sample will be transmitted and their weighting factor is attenuated by multiplication with <em>p<sub>transmit</sub></em>. Thus, wavelength-dependent neutron transmission including the effects of the crystallographic structure is simulated. This is useful in order to quickly simulated Bragg edge neutron transmission spectra, for example.<br>
+In order realise neutron scattering, the 'transmission_only' switch should be set to <em>no</em> (default). Then, neutron transmission s performed only, if <em>p<sub>transmit</sub></em> > a random number between 0 and 1. Otherwise, another random number (Monte Carlo number) will be created to decide between absorption and coherent and incoherent scattering. The latter is only possible if the module parameter '-I' is activated (see <a href="#section2">Â§2</a>). For the coherent scattering the available lattice planes, their distances and structure factors are used to determine the Bragg angles and their individual probalities for coherent scattering along the Debye Scherrer cones. The angular range in both directions (Bragg angle and vertical scattering angle) can be restricted to focus on a smaller region as reported in the following section. If it turns out that the neutron is to be absorbed due to the Monte Carlo choice, the neutron is simply not written to the output of the sample_nxs module. 
 
 
 <h3><a name="section2"> 2. Module parameters</a></h3>
@@ -216,9 +212,9 @@ This is the first official release of the sample_nxs module. It is further plann
 
 <h3><a name="references">5. References</a></h3>
 <UL>
-<LI><a name="binder1970">K. Binder (1970)</a>, <em>Phys. Status Solidi B</em> <b>41</b>(5), 767–779, [<a href="http://dx.doi.org/10.1002/pssb.19700410233">doi:10.1002/pssb.19700410233</a>]
+<LI><a name="binder1970">K. Binder (1970)</a>, <em>Phys. Status Solidi B</em> <b>41</b>(5), 767Â–779, [<a href="http://dx.doi.org/10.1002/pssb.19700410233">doi:10.1002/pssb.19700410233</a>]
 <LI><a name="boin2011">M. Boin, A. Hilger, N. Kardjilov, S.Y. Zhang, E.C. Oliver, J.A. James, C. Randau &amp; R.C. Wimpory (2011)</a>, <em>J. Appl. Cryst.</em> <b>44</b>(5), 1040-1046, [<a href="http://dx.doi.org/10.1107/S0021889811025970">doi:10.1107/S0021889811025970</a>]
-<LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160–1167.
+<LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160Â–1167.
 <LI><a name="grosse1995"> R.W. Grosse-Kunstleve (1995)</a>, <em>SgInfo - a Comprehensive Collection of ANSI C Routines for the Handling of Space Groups</em>, [<a href="http://cci.lbl.gov/sginfo/">http://cci.lbl.gov/sginfo/</a>]
 <LI><a name="vogel2000">S.C. Vogel (2000)</a>, PhD thesis, Christian-Albrecht University, Kiel, Germany.
 

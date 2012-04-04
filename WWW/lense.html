@@ -1,15 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module Neutron Refraction Lens</title>
 </head>
  <body>
  
 <h1>VITESS Neutron Refraction Lens</h1>
-<br>
+<p>
 The module <b>lens</b> simulates one or a stack of refractive neutron lenses. 
 Two kinds of lenses are included in the module: a lens with spherical geometry and one with parabolic geometry. 
 The geometry has to be chosen as the first step. (See radio button 'Lens surface geometry'). 
@@ -18,13 +17,11 @@ Four parameters are included in the module 'Cur_radius1', 'Cur_radius2', 'Radius
 Please note, that, if the parameters 'Cur_radius1' and/or 'Cur_radius2' are given as zero, one of the sides of the lens will be a straight vertical line (or plane). 
 The parameters 'Cur_radius1' and/or 'Cur_radius2' can have negative values; in this case the surfaces (parabolic or spherical) will be of convex shape 
 - in contrast to figure 1, where concave shapes are shown.
-<br />
 <p>
 <img src="SphericalLens.jpg" name="Grafik" border="0" height="372" width="433" align="bottom">
 </p>
 Figure 1a: spherical lens <br />
-<br />
-<br />   
+  
 <p>
 <img src="ParabolicLens.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
 </p>
@@ -68,11 +65,10 @@ Table: properties of different lens materials<br />
 <p>
 <img src="DiaphragmaAfterLens.jpg" name="Grafik" border="0" height="272" width="433" align="bottom">
 </p>
-Figure 3: diaphragma after lens <br />
-<br />
-<br>
-<h3><font size="+2"> Parameters for module 'quadr_field' </font></h3>
-<br>
+Figure 3: diaphragma after lens
+<p>
+<h3>Parameters for module 'quadr_field'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -143,7 +139,7 @@ Figure 3: diaphragma after lens <br />
      </tr>
 
      <tr>
-       <td valign="top">Refract wave<br>[Å]</td>
+       <td valign="top">Refract wave<br>[Ã…]</td>
        <td valign="top">wavelength for the refractive index given by the user            <br>
                         used if the refractive index is given by the user (cf. text) </td>
        <td valign="top">&gt;0</td>
@@ -263,7 +259,7 @@ Figure 3: diaphragma after lens <br />
      </tr>
 
      <tr>
-       <td valign="top">wavelength<br>[Å]</td>
+       <td valign="top">wavelength<br>[Ã…]</td>
        <td valign="top">wavelength for focal distance calculation </td>
        <td valign="top">&gt;0</td>
        <td valign="top">-r</td>
@@ -288,8 +284,7 @@ Figure 3: diaphragma after lens <br />
    
   </tbody> 
 </table>
-<br> 
-<br>
+<p>
  
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 

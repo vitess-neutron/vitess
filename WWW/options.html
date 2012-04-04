@@ -1,68 +1,90 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <title>VITESS Options</title>
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <title>VITESS Options</title>
   </head>
-
   <body>
-<pre>
 <h1>VITESS Options</h1>
+<p>
 Some options, to be set from the Options menu in the GUI main window,
 modify the GUI appearance and execution details.
-
+<p>
 You may <b>Save settings</b> to a gui file, to be loaded later by <b>Load settings</b>.
-
+<p>
 Some options on fonts and sizes take effect after </b>Apply settings</b> only,
 because all Tk windows have to be redrawn for this purpose.
-<h4>Fonts</h4>GUI elements use font settings for (family, size, type) triples.
-You may change these to your preferences and click <b>Apply Settings</b>.
+<p>
+<h4>Fonts</h4>
+<p>GUI elements use font settings for (family, size, type) triples.
+You may change these to your preferences and click <b>Apply Settings</b>.<br>
 In some cases where font defaults are to small or big, you may just
 click <b>Smaller fonts</b> or <b>Bigger fonts</b> to have an effect immediately.
-<h4>Check Mode</h4>Before a given pipe is executed, or when you click on the "Check" button,
-VITESS checks entries for syntactic correctness, and bails out if
+<h4>Check Mode</h4>
+<p>Before a given pipe is executed, or when you click on the "Check" button,
+VITESS checks entries for syntactic correctness,<br> and bails out if
 some parameters for instance have values outside the specified range.
+<p>
 A special problem arises when you load instrument definitions of older
-VITESS versions, where some new parameters have been added since. Mostly these
+VITESS versions, where some new parameters have been added since. <br>Mostly these
 are selection parameters, where new options have been added, and the
 default is that one which was constant before.
-In <b>strict</b> mode this is an error, in <b>normal</b> mode no parameter valued is
+<p>In <b>strict</b> mode this is an error, in <b>normal</b> mode no value is
 provided in the pipe for that parameter, and in mode <b>set_default</b> this value
 is explicitly set.
-<h4>Output compression</h4>If you save the output of the last pipe module to a file, this file may
+<h4>Output compression</h4>
+<p>
+If you save the output of the last pipe module to a file, this file may
 be reduced in size when you enable compression.
+<p>
 The smallest size comes with <b>float+gzip</b> compression, you may use <b>nodebug</b>
-in any case where you need no debug information on individual trajectories.
+in any case where you need no debug information on individual trajectories.<br>
 A better compression comes with <b>float</b> mode, where the position information
 is reduced to float accuracy.
-<h4>Execution Mode</h4>If you re-do a simulation and want to see what changes with a new version
+<h4>Execution Mode</h4>
+<p>If you re-do a simulation and want to see what changes with a new version
 or some parameter modification, the <a href="save_mode.html#old"><b>save old</b></a> execution mode might be of interest.
-The mode <a href="save_mode.html#copy"><b>copy results</b></a> helps to store results of simulations in special subdirectories.
-<h4>Buffersize</h4>Modules write buffers of neutrons down the pipe. For computers with enough
-memory, and especially when using helper threads, you may speed up
+<p>The mode <a href="save_mode.html#copy"></a><b>copy results</b></a> helps to store results of simulations in special subdirectories.
+<h4>Buffersize</h4>
+<p>
+Modules write buffers of neutrons down the pipe. For computers with enough
+memory, and especially when using helper threads,<br> you may speed up
 execution if you increase the default value of 10000 neutron trajectories per buffer.
-<h4>Plot mode</h4>You may select <b>dots + lines</b> instead of default <b>dots</b> only.
-<h4>Browse selection</h4>MAC OS X : File selction in an Aqua browser window allows to select files
-of a given type by default. This may trouble you if you want to plot a 
-file with non-default file extension for example. You may select
-<b>all</b> for this option to be able to select any file here.
-<h4>Scrollbar width</h4>Just what it says...
-<h4>Helper applications</h4>You may select another plot program to be used instead of gnuplot here.
-
-<h3>XControl options:</h3><h4>Color</h4>You may change colors of GUI elements to your preferences.
-<h4>Info Level</h4>If you chose <b>expert</b> mode, select a module afterwards, and click on
+<h4>Plot mode</h4>
+You may select <b>dots + lines</b> instead of default <b>dots</b> only.
+<h4>Trajectories</h4>
+You may select the output format of geometry information to 
+<b>SVG xy</b>,  <b>SVG yz</b>, <b>X3D</b> or <b>plain text</b>.
+<h4>Browse selection</h4>
+MAC OS X: File selction in an Aqua browser window allows to select files
+of a given extension only.<br>
+Trouble comes when you want to plot a file with a non-default file extension. Select
+option <b>all</b> here to enable selection of any file.
+<h4>Scrollbar width</h4>
+Just what it says...
+<h4>Helper applications</h4>
+You may select another plot program to be used instead of gnuplot here.<br>
+If you have a virtual reality tool to render X3D scenes installed, you may
+select it here, default is InstantPlayer.
+<h3>XControl options</h3>
+<h4>Color</h4>
+You may change colors of GUI elements to your preferences.
+<h4>Info Level</h4>
+If you chose <b>expert</b> mode, select a module afterwards, and click on
 text labels of parameters, you will see more information on parameters,
 for instance restrictions.
-<a name=checkmode>
-<h4>Timeout</h4>If a simulation might take too long, and you want to restrict the execution time,
+<a name=checkmode></a>
+<h4>Timeout</h4>
+If a simulation might take too long, and you want to restrict the execution time,
 you might select a timeout period in seconds. After that period a simulation 
 will be ended, like when you click the Stop button. 
-</pre>
+<p>
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a><br> 
 <!-- Created: Mon Sep 27 15:36:27 MEST 2010 -->
 <!-- hhmts start -->
-Last modified: Thu Nov 24 10:50:35 MET 2011
+Last modified: Thu Mar 29 16:37:46 MEST 2012
 <!-- hhmts end -->
   </body>
 </html>
