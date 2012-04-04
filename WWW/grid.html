@@ -1,15 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module Grid</title>
 </head>
  <body>
  
 <h1>VITESS Module Grid</h1>
-<br>
+<p>
 The module <b>grid</b> simulates propagation of neutrons from the origin (x=0) to a multi-aperture collimator of circular or rectangular outer shape. 
 This grid collimator represents a plate with multiple rectangular windows transmitting the neutrons. 
 The size of the circular or rectangular plate and the distance from the former module to the plate along the x-axis have to be given by the user. 
@@ -19,8 +18,8 @@ The collimator plate can be shifted horizontally and/or vertically.
 The vertical shifting is useful to simulate a special 'gravitational monochromator'. 
 The vertical shift can be calculated automatically by the module, if the parameters belonging to 'Options gravity monochromator' are set. 
 Deviations of some parameters from ideal values can be simulated (see 'Deviation of parameters').
-Non-ideal absorption in the plate can also be treated. The transmission is calculated then as: <br />
-<br />
+Non-ideal absorption in the plate can also be treated. The transmission is calculated then as:
+<p>
 &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*distance)&ensp;<br />
 <br />
 where 'distance' is the length of the path of the neutron in the given material, (which is calculated automatically).
@@ -30,20 +29,18 @@ The x-coordinates are reset to 0 (as usual) at the end of the treatment in this 
 <p><img src="windows1.gif" name="Grafik" border="0" height="272" align="bottom">  </p>
 
 Figure: propagation to grid plate
-<br />
-<br />
-
-
-
-<h3>Parameeter file defining the holes</h3>
+<p>
+<h3>Parameter file defining the holes</h3>
+<p>
 The user has to create a file describing the windows of the grid system. The number of lines is equal to the number of holes in the multiple collimator grid.
 The format of each line is like this: <br />
 1st column: (y-coordinate): horizontal position of the center of the hole <br />
 2nd column: (z-coordinate): vertical position of the center of the hole <br />
-3rd column: half width = half height of the hole <br />
-<br />
-<b>Example:</b> <br />
-4 quadratic holes of 1 x 1 cm² in a distance of 1.2 cm (horizontally and vertically) would look like that: <br />
+3rd column: half width = half height of the hole
+<p>
+<b>Example:</b>
+<p>
+4 quadratic holes of 1 x 1 cmÂ² in a distance of 1.2 cm (horizontally and vertically) would look like that: <br />
 <pre>
 #   y     z   halfwidth
 #----------------------
@@ -52,10 +49,9 @@ The format of each line is like this: <br />
   -0.6   0.6   0.5 
    0.6   0.6   0.5
 </pre>
-<br>
-<br>
-<h3><font size="+2"> Parameters for module 'grid' </font></h3>
-<br>
+<p>
+<h3>Parameters for module 'grid'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -189,7 +185,7 @@ The format of each line is like this: <br />
      </tr>
 
      <tr>
-       <td valign="top">Grav.Monochr.: Grav.Monoch. wavelength<br>[Å]            </td>
+       <td valign="top">Grav.Monochr.: Grav.Monoch. wavelength<br>[Ã…]            </td>
        <td valign="top">wavelength for which the grid system should be optimized </td>
        <td valign="top">&gt;0</td>
        <td valign="top"> -n  </td>
@@ -197,8 +193,7 @@ The format of each line is like this: <br />
    
   </tbody> 
 </table>
-<br> 
-<br>
+<p>
  
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 

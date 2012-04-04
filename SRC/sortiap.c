@@ -287,8 +287,6 @@ void drawRectangle(float *fa, char *rots, float width, float height) {
     use = buf;
     olduse = 1;
   }
-
-  // X3D Rectangle2D has default size 2,2 in x,y plane
   fprintf (outf, "<Transform scale='%s %s 1' rotation='%s' translation='%s %s %s'>%s</Transform>\n",
            sS5(width/2.0, b1), sS5(height/2.0, b2), rots,
            sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5), 
