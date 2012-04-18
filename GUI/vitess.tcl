@@ -807,7 +807,7 @@ set a {
   {dist_orig_window float 0 {
     "distance orig.\n  <-> win. [cm]"
     "distance from origin to window when projecting along the x axis"
-    "" l} ge0 "" 1}
+    "" l}}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
@@ -834,6 +834,14 @@ set a {
     "use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F}
     {no yes} {0 1}
   }
+  {"Filter options" header}
+  {treatcolor int -1 {
+    "treat color" "Treat only events with given color. A negative number means any color." "" f}}
+  {"Additional window options" header}
+  {phimin float -1 {
+    "min. phi [°]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
+  {phimax float -1 {
+    "max. phi [°]" "Filter for maximum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" P}}
 }
 
 set spacewindowESET [concat $a $winAdd]
