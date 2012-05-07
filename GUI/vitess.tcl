@@ -2400,7 +2400,7 @@ proc mon2_rdivCheckErr {{app _}} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
 set mAV {
@@ -2418,12 +2418,12 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}	
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
@@ -2479,13 +2479,13 @@ proc monitor1DCheckErr {{app _}} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
 set mA2 {
   {parameter2 radio pos_z {
     "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
-    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 set mAV {
   {}
@@ -2507,12 +2507,12 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}	
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR} {0 1 2 3 4 5 6 7 8 9 10 11 12 13}}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi colorTB colorLR color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
