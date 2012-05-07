@@ -242,13 +242,13 @@ int Mon2D::FillMonitor(Neutron* n)
   }
 
   // Dismiss if outside the range of filter parameter 1, if defined (independent of filter 2: combined with AND)
-  if (filterParam1 > 0 && (filterParam2 < 0 || filterComb==1)) {
+  if (filterParam1 > 0 && (filterParam2 <= 0 || filterComb==1)) {
     double filterValue1 = DetermineParameter(filterParam1, n);
     if (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) return 0;  
 }
 
   // Dismiss if outside the range of filter parameter 2, if defined (independent of filter 1: combined with AND)
-  if (filterParam2 > 0 && (filterParam1 < 0 || filterComb==1)) {
+  if (filterParam2 > 0 && (filterParam1 <= 0 || filterComb==1)) {
     double filterValue2 = DetermineParameter(filterParam2, n);
     if (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2) return 0;
   }
@@ -356,11 +356,15 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     break;
 
   case 12:
-    paramValue = (n->Color %100);
+    paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
     break;
 
   case 13:
-    paramValue = (n->Color - (n->Color%100) ) / 100;
+    paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
+    break;
+
+  case 14:
+    paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
     break;
     
   default:
