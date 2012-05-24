@@ -433,7 +433,7 @@ my_exit:
       if(pBinN[iBin]!=0) //pBinN[iBin]=1;
 		pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
       fprintf(pFileMon,"% 7.7E\t% 11.7E \t% 11.7E \t% 11.7E \n",
-                       (pPosT[iBin]+pPosT[iBin+1])/2.0,(pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/pNorm[iBin]/(double)crot);
+                       (pPosT[iBin]+pPosT[iBin+1])/2.0,(pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
 
