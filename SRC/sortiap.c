@@ -11,6 +11,15 @@
 #include <ctype.h>
 #include <math.h>
 
+#ifdef _MSC_VER
+# include <float.h>
+# define M_PI            3.14159265358979323846  /* pi */
+# define M_PI_2          1.57079632679489661923  /* pi/2 */
+# define ISNAN(x) _isnan(x)
+#else
+# define ISNAN(x) isnan(x)
+#endif
+
 typedef union {
   char *t;
   float pos[3];  // xyz coordinates, only x and second for SVG
@@ -51,7 +60,7 @@ char strokeWB[16], *strokeWS;  // stroke width format
 
 int xz_view; // default 0, view x,y
 
-#define toRad(a) a*(M_PI/180.0)
+#define toRad(a) (float)(a*(M_PI/180.0))
 
 void usage() {
   printf("usage:\n"
@@ -136,6 +145,8 @@ void insertPoint(const char *ids, const char *point_data) {
   }
 }
 
+char * sS(float v, char *s, const char *format);
+
 #define sS2(a,b) sS(a,b, "%12.2f")
 #define sS3(a,b) sS(a,b, "%12.3f")
 #define sS4(a,b) sS(a,b, "%12.4f")
@@ -184,17 +195,17 @@ float fMod(float a, float m) {
 void genColor (int n, char *s) {
   float ang, r,g,b, v;
   char b1[16], b2[16], b3[16];
-  ang = fMod(n, 360.0);
-  r = g = b = 0;
+  ang = fMod((float)n, 360.0f);
+  r = g = b = 0.0f;
   if (ang <= 120) {
-    g = v = ang / 120.0;
-    r = 1.0 - v;
+    g = v = ang / 120.0f;
+    r = 1.0f - v;
   } else if (ang <= 240) {
-    b = v = (ang - 120.0) / 120.0;
-    g = 1.0 - v;
+    b = v = (ang - 120.0f) / 120.0f;
+    g = 1.0f - v;
   } else {
-    r = v = (ang - 240.0) / 120.0;
-    b = 1.0 - v;
+    r = v = (ang - 240.0f) / 120.0f;
+    b = 1.0f - v;
   }
   sprintf(s, "%s %s %s",
           sS2(r, b1),
@@ -288,7 +299,7 @@ void drawRectangle(float *fa, char *rots, float width, float height) {
     olduse = 1;
   }
   fprintf (outf, "<Transform scale='%s %s 1' rotation='%s' translation='%s %s %s'>%s</Transform>\n",
-           sS5(width/2.0, b1), sS5(height/2.0, b2), rots,
+           sS5(width/2.0f, b1), sS5(height/2.0f, b2), rots,
            sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5), 
            use);
 }
@@ -333,8 +344,8 @@ void rotPoint(float *x, float *y, float sina, float cosa) {
 }
 
 float toAng(float a) {
-  if (a < 0) return M_PI - acos(-a);
-  return acos(a);
+  if (a < 0) return (float) (M_PI - acos(-a));
+  return (float) acos(a);
 }
 
 #define ROTATIONS 63
@@ -356,9 +367,9 @@ void drawEllipsoidShape (float xlow, float xhigh) {
 
   deltang = d / cuts;
 
-  ang = (2*M_PI) / (ROTATIONS+1);
-  sina = sin(ang);
-  cosa = cos(ang);
+  ang = (float)((2*M_PI) / (ROTATIONS+1));
+  sina = (float) sin(ang);
+  cosa = (float) cos(ang);
 
   // we define the ellipsoid surface by extrusion of a circular plane
   fputs("<Extrusion solid='false' beginCap='false' endCap='false' crossSection='", outf);
@@ -374,14 +385,14 @@ void drawEllipsoidShape (float xlow, float xhigh) {
   // spine points along x axis
   fputs("' spine='", outf);
   x = xlow;
-  scale[0] = sqrt(1.0 - x*x);
+  scale[0] = (float) sqrt(1.0 - x*x);
   ang = lowang;
   fprintf(outf, "%s 0 0 ", sS3(x,b1));
   for (i=1; i<=cuts; i++) {
     ang -= deltang;
-    x = ang <= 0 ? 1 : cos(ang);
+    x = ang <= 0 ? 1 : (float) cos(ang);
     fprintf(outf, "%s 0 0 ", sS3(x,b1));
-    scale[i] = sqrt(1.0 - x*x);
+    scale[i] = (float) sqrt(1.0 - x*x);
   }
 
   // scale is an array of radius values for the corresponding y,z cuts
@@ -540,17 +551,17 @@ void geom2X3D(char *fn) {
       // draw open rectangle as four adjacent rectangles
       { float x,y,smallw,smallh, w1,w2, h1,h2, xshift, yshift;
         rotString(0, 0, 1, fa[3], fa[4], fa[5], rots); // is the same for all 4
-        w1 = fa[6]; w2 = fa[7];
+        w1 = fa[6]; w2 = fa[8];
+        h1 = fa[7]; h2 = fa[9];
         x = fa[0];
         smallw = (w1-w2)/2;
         xshift = (w2+smallw)/2;
         fa[0] = x - xshift;
-        drawRectangle(fa, rots, smallw, height); 
+        drawRectangle(fa, rots, smallw, h1); 
         fa[0] = x + xshift;
-        drawRectangle(fa, rots, smallw, height);
+        drawRectangle(fa, rots, smallw, h1);
         fa[0] = x;
         y = fa[1];
-        h1 = fa[8]; h2 = fa[9];
         smallh = (h1-h2)/2;
         yshift = (h2+smallh)/2;
         fa[1] = y - yshift;
@@ -572,7 +583,7 @@ void geom2X3D(char *fn) {
     case GT_Cuboid:
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' translation='%s'>%s</Transform>\n",
-               sS5(fa[6]/2.0, b1), sS5(fa[7]/2.0, b2), sS5(fa[9]/2.0, b3), trans, shape);
+               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3), trans, shape);
       break;
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
@@ -593,9 +604,9 @@ void geom2X3D(char *fn) {
                "<Extrusion solid='false' beginCap='false' endCap='false' "
                "spine='-1 0 0 1 0 0' direction='1 0 0 0 1 0 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>\n",
-               sS5(fa[6]/2., b1), rots, trans, HULLMAT,
-               sS5(fa[7]/2., b2), sS5(fa[9]/2., b3),
-               sS5(fa[8]/2., b4), sS5(fa[10]/2., b5) );
+               sS5(fa[6]/2.0f, b1), rots, trans, HULLMAT,
+               sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
+               sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
       break;
     case GT_Hull6:
       break;
@@ -604,7 +615,7 @@ void geom2X3D(char *fn) {
     case GT_Ellipsoid:
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[6]/2.0, b1), sS5(fa[7]/2.0, b2), sS5(fa[8]/2.0, b3), 
+               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3), 
                rots,
                sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5) );
       drawEllipsoidShape(fa[9], fa[10]);
@@ -612,9 +623,9 @@ void geom2X3D(char *fn) {
       break;
     case GT_HollowCylinder:
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      scales = S5(fa[7]/2.0, b2);
+      scales = sS5(fa[7]/2.0f, b2);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'>",
-               sS5(fa[6]/2.0, b1), scales, scales,
+               sS5(fa[6]/2.0f, b1), scales, scales,
                rots,
                sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5));
       drawHollowCylinderShape(fa[8]);
@@ -746,9 +757,9 @@ void setScaledM(float m[4][4], float xsize, float ysize, float zsize) {
 void applyDirM(float res[4][4], float m[4][4], float n[3], float angle) {
   float fcosa, cosa, sina, r[4][4];
   setM(r);
-  sina = sin(angle);
-  cosa = cos(angle);
-  fcosa = 1.0 - cosa;
+  sina = (float) sin(angle);
+  cosa =(float) cos(angle);
+  fcosa = 1.0f - cosa;
   r[0][0] = n[0]*n[0]*fcosa + cosa;
   r[0][1] = n[0]*n[1]*fcosa - n[2]*sina;
   r[0][2] = n[0]*n[2]*fcosa + n[1]*sina;
@@ -764,7 +775,7 @@ void applyDirM(float res[4][4], float m[4][4], float n[3], float angle) {
 }
 
 void normVec(float v[3]) {
-  float d = 1.0 / sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+  float d = 1.0f / (float) sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
   v[0] *= d;
   v[1] *= d;
   v[2] *= d;
@@ -865,10 +876,10 @@ void geom2SVG(char *fn) {
       if (vtype == 5) {
         // draw the enclosing cuboid
         //            half length, radius, radius
-        setScaledM(mat1, fa[7]/2.0, fa[6], fa[6]);
+        setScaledM(mat1, fa[7]/2.0f, fa[6], fa[6]);
       } else {
         //  each half of    length  width      height
-        setScaledM(mat1, fa[6]/2.0, fa[7]/2.0, fa[9]/2.0);
+        setScaledM(mat1, fa[6]/2.0f, fa[7]/2.0f, fa[9]/2.0f);
       }
       // we rotate, so that the z axis becomes the given orientation (ox,oy,oz)
       // that is we rotate around (0,0,1) x (ox,oy,oz) by the scalar product (0,0,1)*(ox,oy,oz)
@@ -906,7 +917,7 @@ void writeSVG() {
     
   // compute value range
 
-  c1[0] = c2[0] = svg_width;
+  c1[0] = c2[0] = (float) svg_width;
   c1[1] = c2[1] = 0;
 
   for (id=0; id<id_count; id++) 
@@ -926,7 +937,7 @@ void writeSVG() {
   } else {
     float xlen, xfactor;
     xlen = c1[1] - c1[0];
-    xfactor = xlen / 100.0;
+    xfactor = xlen / 100.0f;
     xhigh = xlow + xwhigh*xfactor;
     xlow += xwlow*xfactor;
 

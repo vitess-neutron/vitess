@@ -384,18 +384,19 @@ proc radioRow_down {w var {app _}} {
 ### row of selectbuttons; labels found form argument list
 ###
 proc selectRowlpar {w line app {lwidth 12}} {
-  set font [textFont]
+  set font [stextFont]
   boundLabel $w.l $line $lwidth
   pack $w.l -in $w -side left -anchor w
   set v [lindex $line 0]
   set v [string tolower $v$app]
+  global bgColor
   foreach f [lindex $line 4] {
     set text [lindex $f 0]
     set s [string tolower $text]
     set vv $v$s
     forceDef $vv [lindex $f 1]
-    checkbutton $w.$s -text $text -variable $vv -font $font
-    pack $w.$s -in $w -side left -padx 1m -anchor w
+    checkbutton $w.$s -text $text -variable $vv -font $font -background $bgColor
+    pack $w.$s -in $w -side left -anchor w
   }
 }
 
