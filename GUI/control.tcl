@@ -501,6 +501,10 @@ proc labelFont {} {
   global lfontfamily lfontsize lfonttype
   return [list $lfontfamily $lfontsize $lfonttype]
 }
+proc stextFont {} {
+  global tfontfamily tfontsize tfonttype
+  return [list $tfontfamily [expr $tfontsize - 2] $tfonttype]
+}
 proc textFont {} {
   global tfontfamily tfontsize tfonttype
   return [list $tfontfamily $tfontsize $tfonttype]

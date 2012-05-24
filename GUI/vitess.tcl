@@ -245,8 +245,8 @@ rename makeModuleSets {}
 ### for type {select}
 ### 4 list of pairs with {name_appendix default_bool}
 ###
-### for types (browsefile browsedir editablefile parbrowsefile pareditablefile
-###            moneditablefile mon2editablefile mneditablefile mn2editablefile)
+### for types {browsefile browsedir editablefile parbrowsefile pareditablefile
+###            moneditablefile mon2editablefile mneditablefile mn2editablefile}
 ### 4 r for a readable file,
 ###   w for a valid filename
 ### 5 file extension, used to specify GUI-editable files
