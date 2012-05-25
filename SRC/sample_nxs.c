@@ -38,10 +38,10 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to    */
 /* the authors.                                                                                 */
 /*                                                                                              */
-/* 1.0  Nov 2011  M. Boin    1st official release                                             */
+/* 1.0  Nov 2011  M. Boin    1st official release                                               */
 /*                           Transmission, absorption, coherent and incoherent scattering       */
 /*                           implemented.                                                       */
-/*                                                                                              */
+/* 1.0a May 2012  A. Houben  Color is also set for coherently scattered neutrons                */
 /************************************************************************************************/
 
 #include <string.h>
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
   /* get several things done before programme start */
   /* which have actually nothing to do with physics */
   Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_nxs 1.0");
+  print_module_name("sample_nxs 1.0a");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of nxs parameter file */
@@ -271,6 +271,7 @@ int main(int argc, char *argv[])
 
                       if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta)
                         {
+                          InputNeutrons[i].Color = (short)(nColor);
                           /* Bring the neutron several times on the cone */
                           for(iGen=0; iGen<GenNeutrons; iGen++)
                             {
