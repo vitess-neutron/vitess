@@ -716,6 +716,7 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
+  {outSeparator radio Space {"Separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {detectcolor int -1 {
     "writeout color" "Write only events with given color. A negative number means any color." "" C}
     }
@@ -750,6 +751,10 @@ set writeoutESET {
     "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "-1.0" {
     "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
+  {}
+  {"column selection" header}
+  {}
+  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
 }
 
 ### spin_reset
