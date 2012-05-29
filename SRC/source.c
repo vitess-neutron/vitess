@@ -35,6 +35,7 @@
 /* 1.14  Apr  2007  D. Champion    fix parameter directory bug in isis moderator file reading*/
 /* 1.14a Feb  2010  A. Houben      Bug fix in GetTraceState: index out of array dimension    */
 /* 1.15  Mar  2011  K. Lieutenant  ESS and SNS moderator character. as a function of power   */
+/* 1.16  Jan  2012  K. Lieutenant  visualization                                             */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -88,7 +89,7 @@ TrajParam stTraj  [NUM_MOD]; /* trajectory data           */
 FctTable  stFluxT [NUM_MOD], /* data of time distr.       */
           stFluxL [NUM_MOD], /* data of wavelength distr. */
           stFluxLT[NUM_MOD]; /* data of wavelength & time distr. */
-//ISource   TS;
+
 
 /* local functions */
 void  OwnCleanup();
@@ -146,8 +147,9 @@ int main(int argc, char *argv[])
    Neutron Input;
 
    /* Initialize */
+   bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.15");
+   print_module_name("Source and Window 1.16");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -171,17 +173,14 @@ int main(int argc, char *argv[])
    fprintf(LogFilePtr, "\n> Simulation of ");
    if (stSrc.eSrcType == CWS)
    {  fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
-      stPicture.eType = CWS;
    }
    else	
    {  if (stSrc.eSrcType==SPSS)
       {  fprintf(LogFilePtr, "short pulse spallation source %s <\n", stSrc.pSrcName);
-         stPicture.eType = SPSS;
       }
       else
       {  fprintf(LogFilePtr, "long pulse spallation source %s <\n", stSrc.pSrcName);
          fprintf(LogFilePtr, "pulse length                 : %7.3f ms \n", 1000.*stSrc.dPulseLength);
-         stPicture.eType = LPSS;
       }
       fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.dPulseFreq);
       fprintf(LogFilePtr, "average power                : %7.3f MW \n\n", stSrc.dPower/1000000.);
@@ -381,13 +380,9 @@ int main(int argc, char *argv[])
                  "probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)\n"
                  "the simulation is performed with a flux normalized to a max. value of 1 n/(cm²s) \n\n");
       fprintf(LogFilePtr, "\n");
-      }  // end loop over moderators
+   }  // end loop over moderators
 
-   stPicture.dWPar = Ymax - Ymin;
-   stPicture.dRPar = Declination;
-   stPicture.nNumber = nNumMod;
-   stPicture.pDescr  = sText;
-   WriteInstrData(0, NullPos,0.0, 0.0,0.0);
+   WriteInstrData(NullPos);
    WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
    /* Propagation, Polarisation */
@@ -428,7 +423,7 @@ int main(int argc, char *argv[])
       }
 
       /* ID of the trajectory */
-      if (i==4294967295U) 
+      if (i==4294967295U) // = 2^32-1 = largest unsigned integer number
       {
          i=0; 
          if (ig2=='Z') 
@@ -587,6 +582,9 @@ int main(int argc, char *argv[])
         Input.Spin[2]= -PolVecZ; 
       } 
 
+      // Write interaction point
+		  WriteIAP(&Input, VT_CREATED);
+
       /* propagation between Moderator and window */
       if (keygrav==ON)
          TimeOF = NeutronPlaneIntersectionGrav(&Input,Endpoint);
@@ -603,9 +601,16 @@ int main(int argc, char *argv[])
       SumProb   += prob;
       Input.Probability = prob;
 
+      // Check passing through slit and write interaction point
+
       if (eDirDet!=VT_VIRT_WND)
-      {	if (fabs(Input.Position[1]) > WindowWidth/2.0)  continue;
-         if (fabs(Input.Position[2]) > WindowHeight/2.0) continue;
+      {	if (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) 
+        { WriteIAP(&Input, VT_OUT_OF_WND);
+          continue;
+        }
+        else
+    		{ WriteIAP(&Input, VT_PASSED);
+        }
       }
       Input.Position[0]=0.0;
 
@@ -639,11 +644,12 @@ int main(int argc, char *argv[])
    fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f\n", NumberOfNeutrons);
 
 
-   /* Do the general cleanup */
-   OwnCleanup();
-   Cleanup(-Endpoint.D,-0.5*(Ymax+Ymin),0.0, 0.0,0.0);
+  /* Do the general cleanup */
+  stGeometry.pDescr = sText;
+  OwnCleanup();
+  Cleanup(-Endpoint.D,-0.5*(Ymax+Ymin),0.0, 0.0,0.0);
 
-   return(0);
+  return(0);
 }
 
 
@@ -656,7 +662,6 @@ void OwnInit(int argc, char **argv)
 
    /* Initialize */
    stSrc.dPulseLength = 0.002;      /* [s] LPSS pulse length 2 ms            */ 
-   stSrc.dPower       = 5.0e6;      /* [W] time averaged source power        */ 
    stSrc.pSrcName     = "";
 
    /*  */
@@ -680,12 +685,11 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'd':
-            { int v = atol(arg);
-              if (v < 0 || v > 2)
-                Error("Wrong parameter for 'direction determination'");
-              eDirDet = (short) v; 
-              break;
-            }
+            eDirDet = (short) atol(arg); 
+            if (eDirDet < 0 || eDirDet > 2)
+              Error("Wrong parameter for 'direction determination'");
+            break;
+
           case 'A':
             dTimeMeas = (double) atof(arg); /* [s] */
             break;
@@ -702,9 +706,11 @@ void OwnInit(int argc, char **argv)
             stSrc.pSrcName = arg;
             if (strcmp(arg,"ESS")==0)
             {	stSrc.nSource = ESS;
+              stSrc.dPower  = 5.0e6;        /* [W] time averaged source power        */ 
             }
             else if (strcmp(arg,"SNS")==0)
             {	stSrc.nSource  = SNS;
+              stSrc.dPower  = 1.0e6;        /* [W] time averaged source power        */ 
             }
             else 
             {	stSrc.nSource = ANYSOURCE;	  /* no specific source given */
@@ -814,12 +820,61 @@ void OwnInit(int argc, char **argv)
 /* -------------------------------- */
 void OwnCleanup()
 {
-  short m;
+  short m,     /* index for moderators  */
+        kc=0,  /* index for circular moderators */
+        ks=0;  /* index for rectangular moderators */
 
   /* print messages of loops (if existing) */
-  PrintMessage(SRC_L_RANGE_TOO_SMALL, stMod[imod].sLFileName, OFF);
-  PrintMessage(SRC_T_RANGE_TOO_SMALL, stMod[imod].sTFileName, OFF);
-  PrintMessage(SRC_LT_RANGE_TOO_SMALL,stMod[imod].sLTFileName,OFF);
+  // PrintMessage(SRC_L_RANGE_TOO_SMALL, stMod[imod].sLFileName, OFF);
+  // PrintMessage(SRC_T_RANGE_TOO_SMALL, stMod[imod].sTFileName, OFF);
+  // PrintMessage(SRC_LT_RANGE_TOO_SMALL,stMod[imod].sLTFileName,OFF);
+
+
+  // Geometry data
+  if (bVisInstr)
+  { stGeometry.nCircles=0;
+    stGeometry.nRectangles=0;
+
+    for (m=0; m < nNumMod; m++)
+    { 
+      if (stMod[m].bCircle)
+        stGeometry.nCircles++;
+      else
+        stGeometry.nRectangles++;
+    }
+    if (stGeometry.nCircles > 0)
+      stGeometry.pCircle = calloc(stGeometry.nCircles, sizeof(VtCircle));
+    if (stGeometry.nRectangles > 0)
+      stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+
+    for (m=0; m < nNumMod; m++)
+    { 
+      if (stMod[m].bCircle)
+      {  stGeometry.pCircle[kc].vCntr[0]   = stMod[m].dCntrX;
+        stGeometry.pCircle[kc].vCntr[1]   = stMod[m].dCntrY;
+        stGeometry.pCircle[kc].vCntr[2]   = stMod[m].dCntrZ;
+        stGeometry.pCircle[kc].vNormal[0] = 1.0;
+        stGeometry.pCircle[kc].vNormal[1] = 0.0;
+        stGeometry.pCircle[kc].vNormal[2] = 0.0;
+        stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
+        stGeometry.pCircle[kc].AngleBeg   =   0.0;
+        stGeometry.pCircle[kc].AngleEnd   = 360.0;
+        kc++;
+      }
+      else
+      { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].dCntrX;
+        stGeometry.pRectangle[ks].vCntr[1]   = stMod[m].dCntrY;
+        stGeometry.pRectangle[ks].vCntr[2]   = stMod[m].dCntrZ;
+        stGeometry.pRectangle[ks].vNormal[0] = 1.0;
+        stGeometry.pRectangle[ks].vNormal[1] = 0.0;
+        stGeometry.pRectangle[ks].vNormal[2] = 0.0;
+        stGeometry.pRectangle[ks].Width      = stMod[m].dWidth;
+        stGeometry.pRectangle[ks].Height     = stMod[m].dHeight;
+        ks++;
+      }
+    }
+    stGeometry.eModule = VT_SOURCE;
+  }
 
   /* free allocated memory */
   for (m=0; m < nNumMod; m++)
@@ -832,14 +887,6 @@ void OwnCleanup()
       if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
   }
   if (g_pTrace!=NULL) free(g_pTrace);
-
-  /* set description for instrument plot */
-  stPicture.dWPar   = WindowWidth;
-  stPicture.dHPar   = 0.0;
-  stPicture.dRPar   = 0.0;
-  stPicture.eType   = 0;
-  stPicture.nNumber = 0L;
-  stPicture.pDescr  = "";
 }
 /* End OwnCleanup */
 

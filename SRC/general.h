@@ -39,6 +39,10 @@
 #define UP          1
 #define DOWN        0
 
+#define SPIN_UP     1
+#define SPIN_UNDEF  0
+#define SPIN_DOWN  -1
+
 #define ON          1
 #define OFF         0
 
@@ -136,6 +140,21 @@ typedef enum
 }
 VtDistr;
 
+typedef enum
+{	
+	VT_CREATED   = 0,
+	VT_OUTSIDE   = 1,
+	VT_OUT_OF_WND= 2,
+	VT_PASSED    = 3,
+	VT_ENTERED   = 4,
+	VT_TRANSIT   = 5,
+	VT_REFLECTED = 6,
+	VT_SCATTERED = 7,
+	VT_ABSORBED  = 8,
+	VT_EXITED    = 9,
+}
+VtReason;
+
 
 typedef double VectorType[3];
 typedef double DoublePair[2];
@@ -191,6 +210,19 @@ Neutron;
 
 typedef struct
 {
+  float          pos[3];
+  float          lambda;
+  float          weight;
+	TotalID        id;
+	short          color;
+  VtReason       reason;
+	short          spin;
+}
+VtTrajPoint;
+
+
+typedef struct
+{
       double height, width, thickness;
 }
 CubeType;
@@ -236,13 +268,137 @@ SampleType;
 
 typedef struct
 {
+  VectorType vPosBeg;
+  VectorType vPosEnd;
+}  
+VtLine;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Width;
+  double     Height;
+}  
+VtRectangle;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Width;
+  double     Height;
+  double     InnerWidth;
+  double     InnerHeight;
+}  
+VtOpenRect;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Radius;
+  double     AngleBeg;
+  double     AngleEnd;
+}  
+VtCircle;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Length;
+  double     Width;
+  double     Height;
+}  
+VtCuboid;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Length;
+  double     WidthIn;
+  double     WidthOut;
+  double     HeightIn;
+  double     HeightOut;
+}  
+VtHull;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Radius;
+}  
+VtCylinder;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Radius;
+  double     InnerRadius;
+}  
+VtHolCyl;
+
+typedef struct
+{
+  VectorType vCntr;
+  double     Radius;
+}  
+VtSphere;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Width;
+  double     Height;
+  double     Xlow;
+  double     Xhigh;
+}  
+VtEllipsoid;
+
+typedef struct
+{
+  VtModID      eModule;
+  VtLine*      pLine;
+  int          nLines;
+  VtRectangle* pRectangle;
+  int          nRectangles; 
+  VtOpenRect*  pOpenRect;
+  int          nOpenRects; 
+  VtCircle*    pCircle;
+  int          nCircles; 
+  VtCuboid*    pCuboid;
+  int          nCuboids;
+  VtHull*      pHull;
+  int          nHulls;
+  VtCylinder*  pCylinder;
+  int          nCylinders;
+  VtHolCyl*    pHolCyl;
+  int          nHolCyls;
+  VtEllipsoid* pEllipsoid;
+  int          nEllipsoids;
+  VtSphere*    pSphere;
+  int          nSpheres;
+  char*        pDescr;   /* description   */
+}
+VtModGeom;
+
+typedef struct
+{
   VtModID  eModule;
   double   dWPar;    /* width, ...             */
   double   dHPar;    /* height, end width, ... */
   double   dRPar;    /* radius, ...            */
   long     nNumber;  /* number of ....         */
   short    eType;    /* shape, mon. par., ...  */
-  const char* pDescr;   /* material, ...          */
+  char*    pDescr;   /* material, ...          */
 }
 ModProp;
 
@@ -278,14 +434,17 @@ double LengthVector (const VectorType Vector);
 double DistVector   (const VectorType Vec1, const VectorType Vec2);
 double ScalarProduct(const VectorType Vec1, const VectorType Vec2);
 double AngleVectors (const VectorType v1, const VectorType v2);
-double Area(const VectorType v1, const VectorType v2);
+double Area            (const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
-void   RotVector       (double RotMatrix[3][3], VectorType Vector);
-void   RotBackVector   (double RotMatrix[3][3], VectorType Vector);
-void   FillRMatrixZY   (double RotMatrix[3][3], const double roty, const double rotz);
+
+void   RotVector         (double RotMatrix[3][3], VectorType Vector);
+void   RotBackVector     (double RotMatrix[3][3], VectorType Vector);
+void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const double rotz);
+void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
+void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
 FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);
