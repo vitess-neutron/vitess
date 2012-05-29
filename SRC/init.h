@@ -5,6 +5,8 @@
 
 #include "general.h"
 
+#define WriteIAP(a,b) if(bVisTraj)WriteWWP(a,b)
+
 // maximum number of helper threads
 #define MAXWORKER 32
 
@@ -13,7 +15,8 @@ extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
 extern long     OutNeutPtr;     /* points to the next free position in OutputNeutrons */
 extern long     CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
-extern ModProp  stPicture;      /* data needed to draw a picture of the component represented by the module */
+extern ModProp  stPicture;      /* additional information for 'instrument.inf' */
+extern VtModGeom stGeometry;    /* data needed to draw a picture of the component represented by the module */
 
 extern long     NumNeutGot;     /* number of neutrons read in the current batch */
 extern double   NumNeutRead;    /* number of neutrons read in total */
@@ -31,6 +34,9 @@ extern double   wei_min;        /* Minimal weight for tracing neutron */
 extern long     keygrav;
 extern long     idum;           /* random number specific */
 extern short    bOldFrame;      /* criterion: new co-ordinate system set for current module */
+extern short    bVisInstalled,  /* criterion: visualization routines installed */
+                bVisTraj,       /* criterion: instrument visualization      */
+                bVisInstr;      /* criterion: visualization of trajectories */
 
 extern int      NThreads;      /* number of helper threads for execution, set by --T */
 
@@ -40,10 +46,29 @@ void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
 void print_module_name(const char *name);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
-void WriteInstrData   (long    nModuleNo, VectorType EndPos, double  dLength, double  dRotZ, double  dRotY);
-void ReadInstrData    (long*   pModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY);
+
+void WriteWWP(Neutron *pNeutron, VtReason eReason);
+
+void WriteInstrData   (VectorType EndPos);
+long ReadInstrData    (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY);
 void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
 void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
+void WriteGeomData    (VectorType vBegPos);
+
+void DrawLine         (FILE* pGeomFile, char* pDescr, VectorType RelPosB,  VectorType RelPosE);
+void DrawRectangle    (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height);
+void DrawOpenRect     (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
+                       double InnerWidth, double InnerHeight);
+void DrawCircle       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
+void DrawCuboid       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height); 
+void DrawHull         (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
+                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut); 
+void DrawCylinder     (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
+void DrawHolCyl       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
+                       const double Radius, const double InnerRadius);
+void DrawSphere       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, double Radius);
+void DrawEllipsoid    (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height);
+
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);
 long ColumnsInFile    (FILE* pFile);
