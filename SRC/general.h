@@ -386,7 +386,7 @@ typedef struct
   int          nEllipsoids;
   VtSphere*    pSphere;
   int          nSpheres;
-  char*        pDescr;   /* description   */
+  const char*  pDescr;   /* description   */
 }
 VtModGeom;
 

@@ -5,7 +5,7 @@
 
 #include "general.h"
 
-#define WriteIAP(a,b) if(bVisTraj)WriteWWP(a,b)
+#define WriteIAP(a,b) {if(bVisTraj)WriteWWP(a,b);}
 
 // maximum number of helper threads
 #define MAXWORKER 32
@@ -55,19 +55,19 @@ void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
 void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 void WriteGeomData    (VectorType vBegPos);
 
-void DrawLine         (FILE* pGeomFile, char* pDescr, VectorType RelPosB,  VectorType RelPosE);
-void DrawRectangle    (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height);
-void DrawOpenRect     (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
+void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
+void DrawRectangle    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height);
+void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
                        double InnerWidth, double InnerHeight);
-void DrawCircle       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
-void DrawCuboid       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height); 
-void DrawHull         (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
+void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
+void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height); 
+void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
                        double WidthIn,  double WidthOut, double HeightIn, double HeightOut); 
-void DrawCylinder     (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
-void DrawHolCyl       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
+void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
+void DrawHolCyl       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
                        const double Radius, const double InnerRadius);
-void DrawSphere       (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, double Radius);
-void DrawEllipsoid    (FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height);
+void DrawSphere       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double Radius);
+void DrawEllipsoid    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height);
 
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);
