@@ -131,9 +131,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   switch $mode {
     bat - sh - tcl - pl - py - grd - ser {set par _parallel}
     kstate { }
-#    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
     default {set par _parallel}
   }
+  #    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
 
   set pdir [entryVal defdirectory]
   set insert "$fc --B$buffersize --P";	# general command options
@@ -722,6 +722,7 @@ proc doGather {gcom geomfile glist} {
   }
 
   set com "$gcom$opt -o $visRes $gl"
+  # dmf:debug
   # puts "debug: doing\n$com"
   if [catch {eval exec $com}] {
     # puts "debug: caught exception"
@@ -806,6 +807,8 @@ proc startActionV {} {
       set ecom [getPreferredX3DCmd]
       if {$ecom != ""} {
         # launch external X3D viewer
+        # dmf:debug
+        # puts "doing :$ecom $fullres"
         catch {exec $ecom $fullres &}
       } elseif {[info procs VisViewer] != ""} {
         # launch viewer = browser

@@ -166,7 +166,7 @@ set VisGather [file join $ExeDirectory gather$ExeSuffix]
 if {! [file exists $VisGather]} {set VisGather "just-concatenate"}
 
 # VisMerge is an external program to merge 2. step visualisation results
-set VisMerge [file join $ExeDirectory merge$ExeSuffix]
+set VisMerge [file join $ExeDirectory sortiap$ExeSuffix]
 if {![file exists $VisMerge]} {set VisMerge ""}
 
 set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]

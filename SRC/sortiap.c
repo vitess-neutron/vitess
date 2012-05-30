@@ -682,7 +682,7 @@ void writeX3D() {
     else {
       genColor(mat, buf);
       fprintf(outf, "<Shape DEF='L-%d'>"
-              "<Appearance><Material DEF='M-%d' diffuseColor='%s'/></Appearance>"
+              "<Appearance><Material DEF='M-%d' diffuseColor='0 0 0' emissiveColor='%s'/></Appearance>"
               "<LineSet vertexCount='%d'><Coordinate point='",
               ntraj, mat, buf, count);
       material_known[mat] = 1;

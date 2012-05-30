@@ -367,8 +367,11 @@ static void setCompressBufLen() {
   --L  logfile
   --p  progress file
   --P  parameter directory
+  --t  test mode
   --T  number of helper threads for execution
   --U  minimal neutron weight
+  --v  visualization output: geometry file
+  --V  visualization output: trajectory file
   --Z  random number generator initialization
 
 ************************************************************
@@ -414,6 +417,11 @@ void Init(int argc, char **argv, VtModID eModule)
     if ('-' != *a || '-' != a[1]) continue; // first two chars must be -
     arg = a + 3;
     switch (a[2]) {
+
+    case 'B':                   // determine the buffer size
+      sscanf(arg,"%ld", &BufferSize);
+      break;
+
     case 'c' :
       sscanf(arg,"%ld", &CompressedSize);
       break;
@@ -429,6 +437,14 @@ void Init(int argc, char **argv, VtModID eModule)
       marg[1] = arg;
       break;
 
+    case 'G':
+      keygrav = atol(arg);      // key for gravity 1 -yes (default), 0 - no
+      break;
+
+    case 'J' :
+      TracePoints=TRUE;
+      break;
+
     case 'L':                   // output file if other than stderr
       marg[2] = arg;
       iModuleNo = DetModNo(arg);
@@ -440,6 +456,29 @@ void Init(int argc, char **argv, VtModID eModule)
 
     case 'P':                   // parameter (= default) directory
       setParDirectory(arg);
+      break;
+
+    case 't' :
+      bTest = TRUE;
+      break;
+
+    case 'T' :
+      NThreads = atol(arg);     // requested number of threads for execution
+      break;
+
+    case 'U':
+      wei_min = atof(arg);      // minimal weight for tracing neutron
+      break;
+
+    case 'v' :
+      pGeomFileName = arg;      // geometry file name
+      bVisInstr=TRUE;
+      break;
+
+    case 'V' :
+      pTrajFileName= arg;       // trajectory file name
+      TrajFilePtr  = fopen(FullParName(pTrajFileName), "w");
+      bVisTraj     = TRUE;
       break;
 
     case 'Z':                   // init number for the random number generator
@@ -457,39 +496,6 @@ void Init(int argc, char **argv, VtModID eModule)
       if (sscanf(arg, "%li", &VRandomSeed))
         setenv("GSL_RNG_SEED", arg, 1);
 #endif
-      break;
-
-    case 'B':                   // determine the buffer size
-      sscanf(arg,"%ld", &BufferSize);
-      break;
-
-    case 'G':
-      keygrav = atol(arg);      // key for gravity 1 -yes (default), 0 - no
-      break;
-
-    case 'U':
-      wei_min = atof(arg);      // minimal weight for tracing neutron
-      break;
-
-    case 'J' :
-      TracePoints=TRUE;
-      break;
-
-    case 'v' :
-      pGeomFileName=arg;
-      bVisInstr=TRUE;
-      break;
-    case 'V' :
-      pTrajFileName= arg;
-      TrajFilePtr  = fopen(FullParName(pTrajFileName), "w");
-      bVisTraj     = TRUE;
-      break;
-    case 't' :
-      bTest = TRUE;
-      break;
-
-    case 'T' :
-      NThreads = atol(arg);     // requested number of threads for execution
       break;
 
     default :
