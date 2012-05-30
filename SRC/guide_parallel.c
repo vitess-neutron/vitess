@@ -2120,11 +2120,12 @@ double PathThroughGuideGravOrder1(int thread_i,
 
       if (keyReflVerbose == 1 && RefOut)
         WriteReflParam(RefOut, 5, pThisNeutron, Pce, ThisCollision, 0., 0.);
-      if (iPiece==nPieces-1) 
-        WriteIAP(pThisNeutron, VT_EXITED);
-      else
-        WriteIAP(pThisNeutron, VT_TRANSIT);
 
+      if (iPiece == nPieces-1) {
+        WriteIAP(pThisNeutron, VT_EXITED);
+      } else {
+        WriteIAP(pThisNeutron, VT_TRANSIT);
+      }
       TimeOFTotal += TimeOFmin;
       return TimeOFTotal;
     }

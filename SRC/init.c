@@ -397,16 +397,16 @@ void Init(int argc, char **argv, VtModID eModule)
 
   memset(&stPicture, '\0', sizeof(ModProp));
   stPicture.eModule= eModule;
-  stPicture.dWPar  = 0.0;
-  stPicture.dHPar  = 0.0;
-  stPicture.dRPar  = 0.0;
+  // stPicture.dWPar  = 0.0;
+  // stPicture.dHPar  = 0.0;
+  // stPicture.dRPar  = 0.0;
   stPicture.nNumber= 1L;
-  stPicture.eType  = 0;
-  stPicture.pDescr = "";
+  // stPicture.eType  = 0;
+  // stPicture.pDescr = "";
 
   memset(&stGeometry, '\0', sizeof(VtModGeom));
   stGeometry.eModule= eModule;
-  stGeometry.pDescr = "";
+  // stGeometry.pDescr = "";
 
   setInstallDirectory(*argv++);	// extract installation path from program name
 
@@ -1261,14 +1261,14 @@ static void Transform(VectorType vAbsVec, const VectorType vRelVec, const Vector
 
 
 
-void DrawLine(FILE* pGeomFile, char* pDescr, VectorType vAbsPosB, VectorType vAbsPosE)
+void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorType vAbsPosE)
 {
   fprintf(pGeomFile, "Line           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %s\n", 
                      vAbsPosB[0]/100.0, vAbsPosB[1]/100.0, vAbsPosB[2]/100.0, 
                      vAbsPosE[0]/100.0, vAbsPosE[1]/100.0, vAbsPosE[2]/100.0,  pDescr);
 }   
 
-void DrawRectangle(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir,
+void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                    double Width, double Height)
 {
   fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %s\n", 
@@ -1277,7 +1277,7 @@ void DrawRectangle(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorTyp
                      Width/100.0, Height/100.0,   pDescr);        
 }
 
-void DrawOpenRect(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
+void DrawOpenRect(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
                   double InnerWidth, double InnerHeight)
 {
   fprintf(pGeomFile, "OpenRectangle  %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %10.5f %10.5f   %s\n", 
@@ -1286,7 +1286,7 @@ void DrawOpenRect(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType
                      Width/100.0, Height/100.0,  InnerWidth/100.0, InnerHeight/100.0,   pDescr);        
 }
    
-void DrawCircle(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir,
+void DrawCircle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                 double Radius, double AngleBeg, double AngleEnd)
 {
   fprintf(pGeomFile, "Circle         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n", 
@@ -1295,7 +1295,7 @@ void DrawCircle(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType v
                      Radius/100.0, AngleBeg, AngleEnd,  pDescr); 
 }   
 
-void DrawCuboid(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, 
+void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
                 double Length, double Width, double Height)
 {
   fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f  %10.5f %10.5f   %s\n", 
@@ -1303,7 +1303,7 @@ void DrawCuboid(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType v
                      Length/100.0, Width/100.0, Height/100.0, pDescr);
 }
 
-void DrawHull(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, 
+void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
               double Length, double WidthIn, double WidthOut, double HeightIn, double HeightOut)
 {
   fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f  %10.5f %10.5f   %10.5f %10.5f   %s\n", 
@@ -1311,7 +1311,7 @@ void DrawHull(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDi
                      Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, pDescr);
 }
 
-void DrawCylinder(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir,
+void DrawCylinder(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                   const double Len, const double Radius)
 {
   fprintf(pGeomFile, "Cylinder       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %s\n", 
@@ -1319,7 +1319,7 @@ void DrawCylinder(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType
                      Len/100.0, Radius/100.0,   pDescr);
 }   
 
-void DrawHolCyl(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
+void DrawHolCyl(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
                 const double Radius, const double InnerRadius)
 {
   fprintf(pGeomFile, "HollowCylinder %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n", 
@@ -1327,7 +1327,7 @@ void DrawHolCyl(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType v
                      Len/100.0, Radius/100.0, InnerRadius/100.0,   pDescr);
 }   
 
-void DrawSphere(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, 
+void DrawSphere(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, 
                 double Radius)
 {
   fprintf(pGeomFile, "Sphere         %10.5f %10.5f %10.5f   %10.5f   %s\n", 
@@ -1335,7 +1335,7 @@ void DrawSphere(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr,
                      Radius/100.0,   pDescr);
 }   
 
-void DrawEllipsoid(FILE* pGeomFile, char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height)
+void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height)
 {
   fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f  %10.5f %10.5f   %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],

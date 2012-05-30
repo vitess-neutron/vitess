@@ -131,7 +131,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   switch $mode {
     bat - sh - tcl - pl - py - grd - ser {set par _parallel}
     kstate { }
-    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
+#    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
+    default {set par _parallel}
   }
 
   set pdir [entryVal defdirectory]

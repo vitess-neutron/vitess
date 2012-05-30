@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   int i, csep;
   //const char *formID, *formTrc, *formColor, *formTOF, *formLambda, *formCounts;
   //const char *formPosX, *formPosY, *formPosZ, *formDirX, *formDirY, *formDirZ, *formSpX, *formSpY, *formSpZ;
-  char form[15][15] = {0};
+  static char form[15][15];
   const char *sep;
   double Divy, Divz, Div;
 
@@ -309,7 +309,8 @@ void  OwnInit(int argc, char *argv[])
           DetectColor = (short) atoi(&argv[i][2]);
           break;
       case 'c':
-          sscanf(&(argv[i][2]),"%1d%1d%1d%1d%1d%1d%1d%1d%1d", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
+        //          sscanf(&(argv[i][2]),"%1d%1d%1d%1d%1d%1d%1d%1d%1d", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
+          sscanf(&(argv[i][2]),"%hd%hd%hd%hd%hd%hd%hd%hd%hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
           break;
 		
 		case 'l':
