@@ -53,7 +53,7 @@ void WriteInstrData   (VectorType EndPos);
 long ReadInstrData    (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY);
 void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
 void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
-void WriteGeomData    (VectorType vBegPos);
+void WriteGeomData    (VectorType vBegPos, double Length);
 
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
 void DrawRectangle    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height);

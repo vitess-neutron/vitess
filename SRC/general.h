@@ -142,16 +142,17 @@ VtDistr;
 
 typedef enum
 {	
-	VT_CREATED   = 0,
-	VT_OUTSIDE   = 1,
-	VT_OUT_OF_WND= 2,
-	VT_PASSED    = 3,
-	VT_ENTERED   = 4,
-	VT_TRANSIT   = 5,
-	VT_REFLECTED = 6,
-	VT_SCATTERED = 7,
-	VT_ABSORBED  = 8,
-	VT_EXITED    = 9,
+	VT_CREATED   = 0,    // source
+	VT_OUTSIDE   = 1,    // guide 
+	VT_OUT_OF_WND= 2,    // slit
+	VT_PASSED    = 3,    // chopper, slit
+	VT_ENTERED   = 4,    // guide
+	VT_TRANSIT   = 5,    // from one guide segment to the next
+	VT_REFLECTED = 6,    // guide or mirror surface
+	VT_SCATTERED = 7,    // sample
+	VT_ABSORBED  = 8,    // chopper, guide, collimator
+	VT_EXITED    = 9,    // guide
+	VT_DETECTED  = 10,   // detector
 }
 VtReason;
 
