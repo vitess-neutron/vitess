@@ -77,6 +77,8 @@ double    NumberOfNeutrons=0,
           FracPolDir  =  0.0,  /* fraction of neutrons in polarization direction */
 
           Declination =  0.0,  /* declination between mod. surface normal and propagation window */
+          dDecCos,             /* cosinus and sinus of the declination of the moderator         */
+          dDecSin,             /* to the instrument direction                                   */
           WindowDist  =  0.0,  /* distance moderator - (virtual) window                          */
           WindowHeight= 10.0, 
           WindowWidth = 10.0;
@@ -124,8 +126,6 @@ int main(int argc, char *argv[])
    double  TimeAtModerator,
      No,
      dSolAngle=0,       /* solid angle of the neutron beam at the moderator              */
-     dDecCos,           /* cosinus and sinus of the declination of the moderator         */
-     dDecSin,           /* to the instrument direction                                   */
      Phi, Theta,        /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
      dWndY, dWndZ,      /* position where trajectory passes window 
 					      (MC choice for option eDirDet = VT_REAL_WND or VT_VIRT_WND)   */
@@ -135,8 +135,6 @@ int main(int argc, char *argv[])
      CenterX, CenterY,  /* averaged values                                               */
      CenterZ, AveTimeOF,/*     at window                                                 */
      SumProb,           /* sum of probabilities (counts) used to calculate average values*/
-     Ymin    = 1000.0, 
-     Ymax    =-1000.0,  /* minimal and maximal y-position of moderator system            */
      dFact   =    1.0,  /* for 'direction by window' */
      PolNorm =    0.0;
      
@@ -356,15 +354,10 @@ int main(int argc, char *argv[])
          fprintf(LogFilePtr, "total neutron flux (in 2*pi) : %11.4e n/(cm²s) \n",   stMod[imod].dTotalFlux);
       fprintf(LogFilePtr, "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", stMod[imod].dCntrX, stMod[imod].dCntrY, stMod[imod].dCntrZ);
       if (stMod[imod].bCircle)
-      {  fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",          stMod[imod].dDiameter);
-         Ymin = Min(Ymin, stMod[imod].dCntrY - 0.5*stMod[imod].dDiameter);
-         Ymax = Max(Ymax, stMod[imod].dCntrY + 0.5*stMod[imod].dDiameter);
-      }
+        fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",          stMod[imod].dDiameter);
       else
-      {  fprintf(LogFilePtr, "moderator size (W x H)       : %7.3f cm  x %7.3f cm \n", stMod[imod].dWidth, stMod[imod].dHeight);
-         Ymin = Min(Ymin, stMod[imod].dCntrY - 0.5*stMod[imod].dWidth);
-         Ymax = Max(Ymax, stMod[imod].dCntrY + 0.5*stMod[imod].dWidth);
-      }
+        fprintf(LogFilePtr, "moderator size (W x H)       : %7.3f cm  x %7.3f cm \n", stMod[imod].dWidth, stMod[imod].dHeight);
+
       if (eDirDet==VT_REAL_WND)
          fprintf(LogFilePtr, "divergence defined by propagation window \n");
       else if (eDirDet==VT_VIRT_WND)
@@ -645,9 +638,9 @@ int main(int argc, char *argv[])
 
 
   /* Do the general cleanup */
-  stGeometry.pDescr = sText;
+  stGeometry.pDescr = "Source";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
   OwnCleanup();
-  Cleanup(-Endpoint.D,-0.5*(Ymax+Ymin),0.0, 0.0,0.0);
+  Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
 
   return(0);
 }
@@ -833,7 +826,7 @@ void OwnCleanup()
   // Geometry data
   if (bVisInstr)
   { stGeometry.nCircles=0;
-    stGeometry.nRectangles=0;
+    stGeometry.nRectangles=1;
 
     for (m=0; m < nNumMod; m++)
     { 
@@ -844,17 +837,17 @@ void OwnCleanup()
     }
     if (stGeometry.nCircles > 0)
       stGeometry.pCircle = calloc(stGeometry.nCircles, sizeof(VtCircle));
-    if (stGeometry.nRectangles > 0)
-      stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+    stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
 
+    // Moderators
     for (m=0; m < nNumMod; m++)
     { 
       if (stMod[m].bCircle)
-      {  stGeometry.pCircle[kc].vCntr[0]   = stMod[m].dCntrX;
+      { stGeometry.pCircle[kc].vCntr[0]   = stMod[m].dCntrX;
         stGeometry.pCircle[kc].vCntr[1]   = stMod[m].dCntrY;
         stGeometry.pCircle[kc].vCntr[2]   = stMod[m].dCntrZ;
-        stGeometry.pCircle[kc].vNormal[0] = 1.0;
-        stGeometry.pCircle[kc].vNormal[1] = 0.0;
+        stGeometry.pCircle[kc].vNormal[0] = dDecCos;
+        stGeometry.pCircle[kc].vNormal[1] = dDecSin;
         stGeometry.pCircle[kc].vNormal[2] = 0.0;
         stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
         stGeometry.pCircle[kc].AngleBeg   =   0.0;
@@ -865,14 +858,25 @@ void OwnCleanup()
       { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].dCntrX;
         stGeometry.pRectangle[ks].vCntr[1]   = stMod[m].dCntrY;
         stGeometry.pRectangle[ks].vCntr[2]   = stMod[m].dCntrZ;
-        stGeometry.pRectangle[ks].vNormal[0] = 1.0;
-        stGeometry.pRectangle[ks].vNormal[1] = 0.0;
+        stGeometry.pRectangle[ks].vNormal[0] = dDecCos;
+        stGeometry.pRectangle[ks].vNormal[1] = dDecSin;
         stGeometry.pRectangle[ks].vNormal[2] = 0.0;
         stGeometry.pRectangle[ks].Width      = stMod[m].dWidth;
         stGeometry.pRectangle[ks].Height     = stMod[m].dHeight;
         ks++;
       }
     }
+
+    // Propagation window
+    stGeometry.pRectangle[ks].vCntr[0]   = WindowDist;
+    stGeometry.pRectangle[ks].vCntr[1]   = 0.0;
+    stGeometry.pRectangle[ks].vCntr[2]   = 0.0;
+    stGeometry.pRectangle[ks].vNormal[0] = 1.0;
+    stGeometry.pRectangle[ks].vNormal[1] = 0.0;
+    stGeometry.pRectangle[ks].vNormal[2] = 0.0;
+    stGeometry.pRectangle[ks].Width      = WindowWidth;
+    stGeometry.pRectangle[ks].Height     = WindowHeight;
+
     stGeometry.eModule = VT_SOURCE;
   }
 

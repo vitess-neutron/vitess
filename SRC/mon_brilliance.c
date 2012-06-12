@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   /* initialisation */
   /* -------------- */
   Init   (argc, argv, VT_MONITOR_1);
-  print_module_name("mon_brilliance 0.9");
+  print_module_name("mon_brilliance 1.0");
   OwnInit(argc, argv);
 
   if (pFileRef!=NULL)
@@ -303,7 +303,8 @@ my_exit:
   if (normalise==2)
     fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
 
-  stPicture.eType = (short) kind;
+  stPicture.pDescr = "mon_brilliance";
+  stPicture.eType  = (short) kind;
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
   if (pPosT!=NULL) free(pPosT);
   if (pInt !=NULL) free(pInt);

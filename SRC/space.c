@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 
 	fprintf(LogFilePtr," \n");
 
-  stPicture.pDescr  = "space";
+  stPicture.pDescr = "space";
 	Cleanup(Length,0.0,0.0, 0.0,0.0);
 	
 	return(0);

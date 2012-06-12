@@ -68,7 +68,7 @@ FILE*    TrajFilePtr=NULL;   /* pointer to file into which the interaction point
 char*    InputFileName;      /* file to read neutrons */
 char*    OutputFileName;     /* file to write neutrons */
 char*    LogFileName;        /* log file name  */
-char*    pGeomFileName=NULL; /* name of instrument geometry file */
+char*    pGeomFileName="geometry.inf"; /* name of instrument geometry file */
 char*    pTrajFileName=NULL; /* trajectory file name  */
 char*    ParDirectory;       /* parameter directory */
 char*    InstallDirectory;
@@ -84,7 +84,7 @@ short    bTrace=TRUE,        /* criterion: write trace files             */
          bSepRate =TRUE,     /* criterion: write separate count rates    */
          bTest    =FALSE,    /* criterion: test run (without trajectories)   */
          bVisInstalled=FALSE,/* criterion: visualization routines installed */
-         bVisInstr=FALSE,    /* criterion: instrument visualization      */
+         bVisInstr=TRUE,     /* criterion: instrument visualization      */
          bVisTraj =FALSE;    /* criterion: visualization of trajectories */
 double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of this module */
          RotZ=0.0, RotY=0.0, /*      hor. and vert. rotation of the local co-ordinate system relative to the absolute one  */
@@ -400,16 +400,10 @@ void Init(int argc, char **argv, VtModID eModule)
 
   memset(&stPicture, '\0', sizeof(ModProp));
   stPicture.eModule= eModule;
-  // stPicture.dWPar  = 0.0;
-  // stPicture.dHPar  = 0.0;
-  // stPicture.dRPar  = 0.0;
   stPicture.nNumber= 1L;
-  // stPicture.eType  = 0;
-  // stPicture.pDescr = "";
 
   memset(&stGeometry, '\0', sizeof(VtModGeom));
   stGeometry.eModule= eModule;
-  // stGeometry.pDescr = "";
 
   setInstallDirectory(*argv++);	// extract installation path from program name
 
@@ -673,7 +667,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     WriteInstrData(EndPos);
   }
   if (bVisInstr)
-    WriteGeomData(BegPosM);
+    WriteGeomData(BegPosM, LengthVector(Shift));
 
   /* flush the output buffer and close the input and output file */
   OutputBufferFlush(1);
@@ -909,8 +903,8 @@ void WriteInstrData(VectorType Pos)
   if (nModuleNo==0)
   { pFile = fopen( FullParName("instrument.inf"), "w");
     fprintf(pFile,
-            "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver. \n"
-            "# ----------------------------------------------------------------------------\n");
+            "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
+            "# ------------------------------------------------------------------------------------\n");
   }
   /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
   else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
@@ -945,7 +939,7 @@ void WriteInstrData(VectorType Pos)
   if (pFile) {
     char cNF=' ';
     if (bOldFrame) cNF='F';
-    fprintf(pFile, "%3ld %3d %-18.18s %7.3f %7.3f %7.3f %7.3f  %8.3f %8.3f %c\n",
+    fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
                    nModuleNo, stPicture.eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
                    180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
     /* mark end of actual part */
@@ -972,7 +966,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
   nCall++;
 
   // only a limited number of trajectories will be written
-  if (eReason==VT_OUT_OF_WND || eReason==VT_PASSED || eReason==VT_ABSORBED || eReason==VT_EXITED)
+  if (eReason==VT_OUTSIDE || eReason==VT_OUT_OF_WND || eReason==VT_ABSORBED || eReason==VT_DETECTED)
     nTraj++;
   if (nTraj > MAX_TRAJ/(NThreads+1)) return;
 
@@ -984,7 +978,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
     Wwp.pos[l] = (BegPosS[l] + RelPos[l])/100.0;    // cm -> m
   
   Wwp.lambda = (float) pNeutron->Wavelength;
-  if (eReason==VT_ABSORBED || eReason==VT_REFLECTED || eReason==VT_OUT_OF_WND)
+  if (eReason==VT_ABSORBED || eReason==VT_SCATTERED || eReason==VT_REFLECTED || eReason==VT_OUT_OF_WND || eReason==VT_DETECTED)
     Wwp.weight = (float) pNeutron->Probability;
   else
     Wwp.weight = 0.0;
@@ -1010,7 +1004,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
 }
 
 
-void WriteGeomData(VectorType vBegPos)
+void WriteGeomData(VectorType vBegPos, double Length)
 {
   FILE*      pGeomFile=NULL;
   int        k;
@@ -1021,7 +1015,8 @@ void WriteGeomData(VectorType vBegPos)
   /* the source module opens the file */
   if (stGeometry.eModule == VT_SOURCE)
   { pGeomFile = fopen( FullParName(pGeomFileName), "w");
-    fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angels\n#\n"); 
+    if (pGeomFile)
+      fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angels\n#\n"); 
     CopyVector(vNull, vBegPos);
   }
   /* each other module appends a line */
@@ -1033,6 +1028,16 @@ void WriteGeomData(VectorType vBegPos)
   { 
     if (bVisInstalled)
     { 
+      /* Circles */
+      for (k=0; k < stGeometry.nCircles; k++)
+      { 
+        Transform (vAbsCntr, stGeometry.pCircle[k].vCntr, vBegPos);
+        Transform (vDir,     stGeometry.pCircle[k].vNormal, vNull);
+
+        DrawCircle(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+                   stGeometry.pCircle[k].Radius, stGeometry.pCircle[k].AngleBeg, stGeometry.pCircle[k].AngleEnd); 
+      }
+
       /* Lines */
       for (k=0; k < stGeometry.nLines; k++)
       { 
@@ -1060,16 +1065,6 @@ void WriteGeomData(VectorType vBegPos)
         DrawOpenRect(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
                      stGeometry.pOpenRect[k].Width,      stGeometry.pOpenRect[k].Height, 
                      stGeometry.pOpenRect[k].InnerWidth, stGeometry.pOpenRect[k].InnerHeight); 
-      }
-
-      /* Circles */
-      for (k=0; k < stGeometry.nCircles; k++)
-      { 
-        Transform (vAbsCntr, stGeometry.pCircle[k].vCntr, vBegPos);
-        Transform (vDir,     stGeometry.pCircle[k].vNormal, vNull);
-
-        DrawCircle(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
-                   stGeometry.pCircle[k].Radius, stGeometry.pCircle[k].AngleBeg, stGeometry.pCircle[k].AngleEnd); 
       }
 
       /* Cuboids */
@@ -1135,15 +1130,15 @@ void WriteGeomData(VectorType vBegPos)
     { // if visualisation is not yet implemented draw square or cylinder
       Transform (vDir, vX, vNull);
 
-      if (BlnLen > 0.0)
+      if (Length > 0.0)
       { CopyVector      (vX, vRelPos);
-        MultiplyByScalar(vRelPos, 0.5*BlnLen);
+        MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
-        DrawCylinder(pGeomFile, stPicture.pDescr, vAbsCntr, vDir, BlnLen, 4.0);
+        DrawCylinder(pGeomFile, stPicture.pDescr, vAbsCntr, vDir, Length, 5.0);
       }
       else
       {
-        DrawRectangle(pGeomFile, stPicture.pDescr, vAbsCntr, vDir, 7.0, 7.0);
+        DrawRectangle(pGeomFile, stPicture.pDescr, vBegPos, vDir, 15.0, 15.0);
       }
     }
 
@@ -1304,7 +1299,7 @@ void DrawCircle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
                 double Length, double Width, double Height)
 {
-  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f  %10.5f %10.5f   %s\n", 
+  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
                      Length/100.0, Width/100.0, Height/100.0, pDescr);
 }
@@ -1312,7 +1307,7 @@ void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
               double Length, double WidthIn, double WidthOut, double HeightIn, double HeightOut)
 {
-  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f  %10.5f %10.5f   %10.5f %10.5f   %s\n", 
+  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %10.5f %10.5f   %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
                      Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, pDescr);
 }

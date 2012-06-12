@@ -1073,7 +1073,7 @@ int main(int argc, char *argv[])
   }
 
   OwnCleanup();
-  Cleanup(sqrt(sq(dTotalLength)-sq(dDeltaY)),dDeltaY,0.0, beta_ges, 0.0);
+  Cleanup(dDeltaX,dDeltaY,0.0, beta_ges, 0.0);
 
   return 0;
 }
@@ -1804,16 +1804,19 @@ void OwnCleanup() {
       stGeometry.pHull[k].Length      = pPieces[k+1].Xpce - pPieces[k].Xpce;
       stGeometry.pHull[k].vNormal[1]  = atan(k*beta);
       stGeometry.pHull[k].vNormal[2]  = 0.0;
-      stGeometry.pHull[k].vNormal[0]  = 1.0-sqrt(1.0 - sq(stGeometry.pHull[k].vNormal[1]) -sq(stGeometry.pHull[k].vNormal[2]));
+      stGeometry.pHull[k].vNormal[0]  = sqrt(1.0 - sq(stGeometry.pHull[k].vNormal[1]) - sq(stGeometry.pHull[k].vNormal[2]));
       stGeometry.pHull[k].WidthIn     = 2.0*pPieces[k].Ypce;
       stGeometry.pHull[k].HeightIn    = 2.0*pPieces[k].Zpce;
       stGeometry.pHull[k].WidthOut    = 2.0*pPieces[k+1].Ypce;
       stGeometry.pHull[k].HeightOut   = 2.0*pPieces[k+1].Zpce;
-      stGeometry.pHull[k].vCntr[0]    = (k+0.50)*dDeltaX/nPieces;
       if (Radius > 0.0)
+      { stGeometry.pHull[k].vCntr[0]  = Radius*sin(k*beta) + 0.5*piecelength; //(k+0.50)*dDeltaX/nPieces;
         stGeometry.pHull[k].vCntr[1]  = Radius*(1.0-cos(k*beta));
+      }
       else
+      { stGeometry.pHull[k].vCntr[0]  = (k+0.5)*piecelength;
         stGeometry.pHull[k].vCntr[1]  = 0.0;
+      }
       stGeometry.pHull[k].vCntr[2]    = 0.0;
     }
     stGeometry.pDescr  = "guide";
