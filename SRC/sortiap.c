@@ -45,10 +45,46 @@ float scale2 = 1;             // scale factor for second dimension, SVG output
 
 FILE *outf;
 
+char *x3d_option_filename;
+float viewport[3][2] = {{-1e5,1e5},{-1e5,1e5},{-1e5,1e5}};
+
 int svg_width = 800;
 int svg_height = 600;
 const char *svg_line_color = "#448"; // dark blue
 char strokeWB[16], *strokeWS;  // stroke width format
+
+const char
+// line green
+  *LineAppearance="<Appearance><Material diffuseColor='0 1 0'/></Appearance>",
+// circle gray
+  *CircleAppearance="<Appearance><Material diffuseColor='.7 .7 .7' specularColor='.2 .2 .2'/></Appearance>",
+  *CUBEMAT="<Appearance><Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+// rectangle, blue
+  *RECTMAT="<Appearance><Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+  *CYLMAT="<Appearance><Material diffuseColor='.9 .9 0'/></Appearance>",
+  *SPHEREMAT="<Appearance><Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+  *HULLMAT="<Appearance><Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+  *ELLIPSMAT="<Appearance><Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+  *ELLIPS2MAT= "<Appearance><Material DEF='cylcolor' diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>";
+
+// Type enumeration of geometric elements
+
+typedef enum {
+  GT_Line      = 1, // line individual shape def, but common appearance
+  GT_Rectangle = 2, // rectangle
+  GT_Circle    = 3, // circle
+  GT_Cuboid    = 4, // cuboid
+  GT_Cylinder  = 5, // cylinder
+  GT_Sphere    = 6, // sphere
+  GT_Hull      = 7, // hull of a pyramid section, no top and bottom plane
+                    // given by length, bottom width,height and top width,height 
+  GT_HollowCylinder = 8,  // cylinder without inner cylinder
+  GT_Hull6          = 9,  // hull, given by length, bottom w1,w2,h, top w1,w2,h
+  GT_Hull8          = 10, // hull, given by length, bottom w1,w2,h1,h2, top w1,w2,h1,h2
+  GT_Ellipsoid      = 11,  // cut of an ellipsoid
+  GT_OpenRectangle  = 12 // rectangle with spare inner rectangle
+} GType;
+
 
 /* 
    x along neutron beam
@@ -69,6 +105,7 @@ void usage() {
          "\t-o outfile\tresult file, default stdout\n"
          "\n\toption\tmay be\n"
          "\t-a\tread ids from all input files, default is to assume all ids\n\t\t\tare to be seen in the first file\n"
+         "\t-f setupfile\n\t\tload a file with x3d options\n"
          "\t-s\tSVG x,y output\n"
          "\t-S geometry\tSVG output with instrument geometry\n"
          "\t-z\toption for SVG to output x,z coordinates\n"
@@ -85,6 +122,73 @@ void usage() {
 
 #define myexit(s) {fprintf(stderr,s); exit(2);}
 #define myexit1(s,a) {fprintf(stderr,s,a); exit(2);}
+
+void setVF(float *v, const char *s) {
+  if (1 > sscanf(s, "%f", v))
+    myexit("unable to read x3d option from file\n");
+}
+
+#define GVF(a) if (strcmp(line+1, #a)==0) setVF(&a,p)
+#define GVV(a,b) if (strcmp(line+1, #a)==0) setVF(&(b),p)
+#define GVS(a,b) if (strcmp(line+1, #a)==0) b=strdup(p)
+
+void parseX3dOptionFile() {
+  FILE *xf;
+  char *p, *q, line[256];
+  int v;
+  if (! x3d_option_filename) return;
+  xf = fopen(x3d_option_filename, "r");
+  while (fgets(line, 255, xf)) {
+    if ((p = strchr(line, '#')))
+      *p = 0;
+    if (! (p = strchr(line, '='))) continue;
+    *p++ = 0;
+    q = line;
+    while ((v = *q))
+      *q++ = tolower(v);
+    // chomp, reduce to printable characters
+    q = p;
+    while ((v = *q) && isprint(v))
+      ++q;
+    *q = 0;
+    switch (line[0]) {
+    case 'c':
+      GVS(ylmat,CYLMAT);
+      GVS(ircleappearance,CircleAppearance);
+      break;
+    case 'e':
+      GVS(llipsmat,ELLIPSMAT);
+      GVS(llips2mat,ELLIPS2MAT);
+      break;
+    case 'h':
+      GVS(ullmat,HULLMAT);
+      break;
+    case 'l':
+      GVS(ineappearance,LineAppearance);
+      break;
+    case 'r':
+      GVS(ectmat,RECTMAT);
+      break;
+    case 's':
+      GVS(pheremat,SPHEREMAT);
+      break;
+    case 'x':
+      GVV(low,  viewport[0][0]);
+      GVV(high, viewport[0][1]);
+      break;
+    case 'y':
+      GVV(low,  viewport[1][0]);
+      GVV(high, viewport[1][1]);
+      break;
+    case 'z':
+      GVV(low,  viewport[2][0]);
+      GVV(high, viewport[2][1]);
+      break;
+    default: ;
+    }
+  }
+  fclose(xf);
+}
 
 int compIDs(const void* p1, const void* p2) {
   return memcmp(p1, p2, id_len);
@@ -233,37 +337,6 @@ void rotString (float u1, float u2, float u3,
           sS5((float)a3, s3), sS5((float)ang, s4));
 }
 
-const char
-// line green
-  *LineAppearance="<Appearance><Material diffuseColor='0 1 0'/></Appearance>",
-// circle gray
-  *CircleAppearance="<Appearance><Material diffuseColor='.7 .7 .7' specularColor='.2 .2 .2'/></Appearance>",
-  *CUBEMAT="<Appearance><Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-// rectangle, blue
-  *RECTMAT="<Appearance><Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *CYLMAT="<Appearance><Material diffuseColor='.9 .9 0'/></Appearance>",
-  *SPHEREMAT="<Appearance><Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *HULLMAT="<Appearance><Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *ELLIPSMAT="<Appearance><Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *ELLIPS2MAT= "<Appearance><Material DEF='cylcolor' diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>";
-
-// Type enumeration of geometric elements
-
-typedef enum {
-  GT_Line      = 1, // line individual shape def, but common appearance
-  GT_Rectangle = 2, // rectangle
-  GT_Circle    = 3, // circle
-  GT_Cuboid    = 4, // cuboid
-  GT_Cylinder  = 5, // cylinder
-  GT_Sphere    = 6, // sphere
-  GT_Hull      = 7, // hull of a pyramid section, no top and bottom plane
-                    // given by length, bottom width,height and top width,height 
-  GT_HollowCylinder = 8,  // cylinder without inner cylinder
-  GT_Hull6          = 9,  // hull, given by length, bottom w1,w2,h, top w1,w2,h
-  GT_Hull8          = 10, // hull, given by length, bottom w1,w2,h1,h2, top w1,w2,h1,h2
-  GT_Ellipsoid      = 11,  // cut of an ellipsoid
-  GT_OpenRectangle  = 12 // rectangle with spare inner rectangle
-} GType;
 
 const char *x3d_old[13], *x3d_new[13];
 
@@ -409,12 +482,34 @@ void drawEllipsoidShape (float xlow, float xhigh) {
   fputs("'/>\n", outf);
 }
 
+int outOfView(float *fa) {
+  int i;
+  for (i=0; i<3; i++) {
+    float v = fa[i];
+    if (v < viewport[i][0] || v > viewport[i][1])
+      return 1;
+  }
+  return 0;
+}
+
+void restrictPoint(float *fa) {
+  int i;
+  for (i=0; i<3; i++) {
+    float v = fa[i];
+    if (v < viewport[i][0])
+      fa[i] = viewport[i][0];
+    else if (v > viewport[i][1])
+      fa[i] = viewport[i][1];
+  }
+}
+
 #define MAXARGS 16
 
 int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods) {
   int vtype, len, slen, nargs, rc;
   char *rs, *p;
 
+ skip_me:
   while ((rs = fgets(line,255,gf))) {
     if (strchr(line, '#')) continue;
     if ((p = strchr(line, ' ')) || (p = strchr(line, '\t')))
@@ -497,6 +592,11 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   *mods = p;
   while (isprint(*p)) ++p;
   *p = 0;
+
+  // apply viewport, if specified
+  if (x3d_option_filename &&
+      (outOfView(fa) || (vtype ==  GT_Line && outOfView(fa+3))))
+    goto skip_me;
   return vtype;
 }
 
@@ -598,7 +698,7 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);      
       break;
     case GT_Hull:
-      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
+      rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s 1 1' rotation='%s' translation='%s'>"
                "<Shape>%s"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
@@ -639,7 +739,7 @@ void geom2X3D(char *fn) {
 
 void writeX3D() {
   int ntraj, count, i, id, mat;
-  p_point p,q;
+  p_point p,q, first_p, last_p;
   char buf[32], material_known[32];
 
   // start X3D file
@@ -665,10 +765,32 @@ void writeX3D() {
 
     p = q = point_buffer[id];
     count = 0;
-    while (p) {
-      count++;
-      if (!p->next) break;
-      p = p->next;
+    last_p = 0;
+    if (x3d_option_filename) {
+      first_p = 0;
+      while (p) {
+        if (count) {
+          last_p = p;
+          ++count;
+          if (outOfView(p->u.pos)) {
+            // add a last point, but restrict to bounds
+            restrictPoint(p->u.pos);
+            break;
+          }
+        } else if (!outOfView(p->u.pos)) {
+          count = 1;
+          first_p = last_p = p;
+        }
+        if (!p->next) break;
+        p = p->next;
+      }
+    } else {
+      first_p = p;
+      while (p) {
+        ++count;
+        if (!p->next) break;
+        p = p->next;
+      }
     }
     if (count <= 1) continue; // a single point is of no interest
 
@@ -688,11 +810,14 @@ void writeX3D() {
       material_known[mat] = 1;
     }
 
-    for (p = q; p; p = p->next) 
+    for (p = first_p; p; p = p->next) {
       for (i=0; i<3; i++) {
         fputs(sS4(p->u.pos[i], buf), outf);
         putc(' ', outf);
       }
+      if (p == last_p)
+        break;
+    }
     fseek(outf, -1, SEEK_CUR); 
     fprintf(outf, "'/></LineSet></Shape>\n");
   }
@@ -1074,14 +1199,17 @@ int main (int argc, char **argv) {
           usage();
         break;
       case 'a': ids_from_all_files = 1; break;
-      case 's': output_type = 1; break;
-      case 'S': output_type = 1; geom_file = *argv++; break;
-      case 'z': xz_view = 1; break;
-      case 'x': output_type = 2; break;
-      case 'X': output_type = 3; geom_file = *argv++; break;
+      case 'f' : x3d_option_filename = *argv++;
+        if (!x3d_option_filename || !*x3d_option_filename) usage();
+        break;
       case 'o' : outfilename = *argv++;
         if (!outfilename || !*outfilename) usage();
         break;
+      case 's': output_type = 1; break;
+      case 'S': output_type = 1; geom_file = *argv++; break;
+      case 'x': output_type = 2; break;
+      case 'X': output_type = 3; geom_file = *argv++; break;
+      case 'z': xz_view = 1; break;
       default: usage();
       }
     } else {
@@ -1097,6 +1225,8 @@ int main (int argc, char **argv) {
     if (!outf) myexit1("unable to write file %s\n", outfilename);
   } else
     outf = stdout;
+
+  parseX3dOptionFile();
 
   maxIdFile = ids_from_all_files ? infilecount-1 : 0;
 

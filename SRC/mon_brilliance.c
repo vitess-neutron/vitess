@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
          Y, Z;                 // hor. and vert. position of the neutron under consideration             
   double dBinSize,             // size of each bin 
          MonData[3];           // data in one monitor row
-  double DivY, DivZ, DivR,     // hor., vert. and radial divergence of the trajectory
+  double DivY, DivZ=0, DivR,   // hor., vert. and radial divergence of the trajectory
          *pPosT=NULL,          /* limits of bin (minimal and maximal value)  */
          *pInt=NULL,           /* intensity (=count rate) per bin  */
          *pNorm=NULL,          /* normalisation value for each bin */
@@ -78,9 +78,9 @@ int main(int argc, char *argv[])
          Brilliance,           // brilliance within one bin
          Transmission,         // brilliance transfer within one bin
          BrillMax=0.0,         // maximal brilliance
-         BrillAve,             // average brilliance
+         BrillAve=0,           // average brilliance
          TransMax=0.0,         // maximal brilliance transfer
-         TransAve,             // average brilliance transfer
+         TransAve=0,           // average brilliance transfer
          BrillAveIn=0.0;       // average brilliance of reference spectrum
   long   *pBinN=NULL;          // number of trajectories per bin 
 
@@ -270,7 +270,7 @@ my_exit:
       else
         pSD[iBin] = 0.0;
 
-      fprintf(pFileMon,"%11.7e  %11.7e  %11.7e  %7d \n", ParCntr, Transmission, pSD[iBin], pBinN[iBin]);
+      fprintf(pFileMon,"%11.7e  %11.7e  %11.7e  %7ld\n", ParCntr, Transmission, pSD[iBin], pBinN[iBin]);
 
       BrillMax = Max(BrillMax, Brilliance);
       TransMax = Max(TransMax, Transmission);
@@ -299,7 +299,7 @@ my_exit:
   }
 
   fprintf(LogFilePtr, "total neutron count rate within given ranges: %11.4e n/s \n", dIntTot);
-  fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm² s Å sterad)\n\n", BrillAve, BrillMax);
+  fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cmÂ² s Ã… sterad)\n\n", BrillAve, BrillMax);
   if (normalise==2)
     fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
 
@@ -380,10 +380,10 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'l':
-        MinLmbd = atof(&argv[i][2]);   // lower bound lambda [Å]
+        MinLmbd = atof(&argv[i][2]);   // lower bound lambda [Ã…]
         break;
       case 'L':
-        MaxLmbd = atof(&argv[i][2]);   // upper bound lambda [Å]
+        MaxLmbd = atof(&argv[i][2]);   // upper bound lambda [Ã…]
         break;
 
       case 'y':
