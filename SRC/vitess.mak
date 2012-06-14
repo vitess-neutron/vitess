@@ -67,6 +67,7 @@ ALL : \
 	"$(OD)\mon2_wldiv.exe" \
 	"$(OD)\mon2_kdiv.exe" \
 	"$(OD)\mon2_rdiv.exe" \
+	"$(OD)\mon_brilliance.exe" \
 	"$(OD)\velselect.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
@@ -288,6 +289,13 @@ SOURCE=$(SPATH)\mon2_rdiv.c
 
 "$(OD)\mon2_rdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_rdiv.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mon2_rdiv.pdb" /out:"$(OD)\mon2_rdiv.exe" "$(IDIR)\mon2_rdiv.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\mon_brilliance.c
+"$(IDIR)\mon_brilliance.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon_brilliance.exe" : "$(OD)" $(TOOL) "$(OD)\mon_brilliance.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon_brilliance.pdb" /out:"$(OD)\mon_brilliance.exe" "$(IDIR)\mon_brilliance.obj" $(TOOL) 
 
 SOURCE=$(SPATH)\velselect.c
 "$(IDIR)\velselect.obj" : $(SOURCE)

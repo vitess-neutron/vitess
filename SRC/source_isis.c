@@ -17,7 +17,7 @@ int cmdnumberD(char *,double*);
 int cmdnumberI(char *,int*,const int);
 double polInterp(double*,double*,int,double);
 FILE *openFile(char*);
-double LoadIsisDistrib(FILE*,const double,const double);
+double LoadIsisDistrib(FILE*, double, double);
 int timeStart(char*);
 int timeEnd(char*);
 int energyBin(char*,double,double,double*,double*);
@@ -231,7 +231,7 @@ FILE* openFile(char* FileName)
   return efile;
 }
 
-double LoadIsisDistrib(  FILE* TFile, double Einit, double Eend)
+double LoadIsisDistrib(FILE* TFile, double Einit, double Eend)
 /*!
   Process a general h.o file to create an integrated
   table of results from Einit -> Eend

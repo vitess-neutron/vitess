@@ -714,7 +714,7 @@ proc doGather {gcom geomfile glist} {
   if {$geomfile == ""} {
     set visRes [tmpFilename _geom.$ext]
   } else {
-    # generate a new file name  in the parameter directory 
+    # generate a new file name in the parameter directory 
     for {set i 1} {$i < 1000} {incr i} {
       set visRes [file join $defdirectory_ geom_$i.$ext]
       if {! [file exists $visRes]} break
@@ -722,8 +722,8 @@ proc doGather {gcom geomfile glist} {
   }
 
   set com "$gcom$opt -o $visRes $gl"
-  # dmf:debug
-  # puts "debug: doing\n$com"
+  # dmf:debug uncommnent next line
+  #puts "debug: doing\n$com"
   if [catch {eval exec $com}] {
     # puts "debug: caught exception"
     catch {file delete $visRes}
@@ -794,6 +794,7 @@ proc startActionV {} {
   }
   
   # puts "debug: fullres $fullres  trajmode $trajmode"
+  # dmf:debug comment next line
   condDelList VisLogList
   set VisState 0
 
@@ -807,8 +808,8 @@ proc startActionV {} {
       set ecom [getPreferredX3DCmd]
       if {$ecom != ""} {
         # launch external X3D viewer
-        # dmf:debug
-        # puts "doing :$ecom $fullres"
+        # dmf:debug uncomment next line
+        #puts "doing :$ecom $fullres"
         catch {exec $ecom $fullres &}
       } elseif {[info procs VisViewer] != ""} {
         # launch viewer = browser

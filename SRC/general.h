@@ -399,7 +399,7 @@ typedef struct
   double   dRPar;    /* radius, ...            */
   long     nNumber;  /* number of ....         */
   short    eType;    /* shape, mon. par., ...  */
-  char*    pDescr;   /* material, ...          */
+  const char*  pDescr;   /* material, ...          */
 }
 ModProp;
 
