@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
 	/* initialisation */
 	BufferIndex   = 0;
-  bVisInstalled = TRUE;
+        bVisInstalled = TRUE;
 
 	Init(argc, argv, VT_SLIT);
 	print_module_name("Slit 1.1");

@@ -183,7 +183,7 @@ proc makeModuleSets {} {
     {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
-      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz
+      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
       monpol_divy monpol_divz monitorpol_pos monitor1D monitor2D
@@ -2210,6 +2210,45 @@ set monpol_zESET [concat [genFE p_pos_z] $nA $mA $pA $dA]
 proc monpol_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
+
+### monitor
+###   mon_brilliance
+
+set ra {
+  {refile parbrowsefile "" {"reference file" "" "" S}}
+  {ffile parbrowsefile "" {"flux file" "" "" F}}
+  {}
+  {kind radio lambda {kind "" "" k} 
+    {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
+  {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
+  {}
+  {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
+  {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
+  {}
+  {lowbh float "" {"low bound\nheight [cm]" "lower bound for the height [cm]" "" z}}
+  {upbh float "" {"up bound\nheight [cm]" "upper bound for the height [cm]" "" Z}}
+  {}
+  {lowhd float "" {"low bound\nhor div [deg]" "lower bound for the horizontal divergence [deg]" "" h}}
+  {uphd float "" {"up bound\nhor div [deg]" "upper bound for the horizontal divergence [deg]" "" H}}
+  {}
+  {lowvd float "" {"low bound\nvert div [deg]" "lower bound for the vertical divergence [deg]" "" v}}
+  {upvd float "" {"up bound\nvert div [deg]" "upper bound for the vertical divergence [deg]" "" V}}
+  {}
+  {lowrd float "" {"low bound\nradial div [deg]" "lower bound for the radial divergence [deg]" "" r}}
+  {uprd float "" {"up bound\nradial div [deg]" "upper bound for the radial divergence [deg]" "" R}}
+  {}
+  {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
+  {}
+  {mint float "" {"minimal time [s]" "minimal time for monitoring" "" t}}
+  {maxt float "" {"maximal time [s]" "maximal time for monitoring" "" T}}
+  {}
+  {freq float "" {"frequency [Hz]" "frequency of the pulsed source" "" f}}
+}
+
+set mon_brillianceESET [concat [genFE brilliance] $nA $nnA $ra]
+unset ra
+
 
 ### mon2
 ###   position
