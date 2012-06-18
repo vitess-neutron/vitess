@@ -43,6 +43,8 @@
 
 extern FILE* LogFilePtr;   /* pointer to the log file stream              */
 
+const char *sInstrumentInf = "instrument.inf";
+
 /**************************************************************/
 /* This file contains several global variables which are      */
 /* essential to each VITESS program module                    */
@@ -68,7 +70,7 @@ FILE*    TrajFilePtr=NULL;   /* pointer to file into which the interaction point
 char*    InputFileName;      /* file to read neutrons */
 char*    OutputFileName;     /* file to write neutrons */
 char*    LogFileName;        /* log file name  */
-char*    pGeomFileName="geometry.inf"; /* name of instrument geometry file */
+const char *pGeomFileName="geometry.inf"; /* name of instrument geometry file */
 char*    pTrajFileName=NULL; /* trajectory file name  */
 char*    ParDirectory;       /* parameter directory */
 char*    InstallDirectory;
@@ -641,16 +643,15 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
              EndPos; /* end position of this module  [m] */
 
   /* update 'instrument.inf' */
-  if (!bVisTraj)
-  { if (stPicture.eModule!=VT_SOURCE)
-    { nModuleNo=ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY);
-    }
-    else
-    { nModuleNo=0;
+  if (!bVisTraj) {
+    if (stPicture.eModule == VT_SOURCE) {
+      nModuleNo=0;
       BegPosM[0]=BegPosM[1]=BegPosM[2]=0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
-    }
+    } else 
+      nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY);
+
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
 
     ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
@@ -664,6 +665,8 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     BlnLen += LengthVector(Shift);
     RotZ   += dHorizAngle;
     RotY   += dVertAngle;
+
+    fprintf(LogFilePtr, "writing instr data, module %ld\n", nModuleNo);
     WriteInstrData(EndPos);
   }
   if (bVisInstr)
@@ -887,7 +890,6 @@ void WriteNeutron(Neutron *OutNeutron)
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
 /* 'WriteGeomData()   writes data to draw the instrument                          */
 /*  WriteWWP()        writes an intersection point to the trajectory file         */
-/* 'ReadInstrData()'  reads these data                                            */
 /* 'WriteInstrData()' writes data that other modules may need                     */
 /*                    (meas.time, wavelength, frequency)                          */
 /* 'ReadInstrData()'  reads these data                                            */
@@ -896,44 +898,52 @@ void WriteNeutron(Neutron *OutNeutron)
 void WriteInstrData(VectorType Pos)
 {
   FILE*  pFile=NULL;
-  char   *pBuffer, sBuffer[CHAR_BUF_SMALL+1];
-  int    m, i;
+  char   *pBuffer;
 
-  /* source module writes header lines */
-  if (nModuleNo==0)
-  { pFile = fopen( FullParName("instrument.inf"), "w");
+  if (nModuleNo==0) {
+
+    // source module writes header
+
+    pFile = fopen( FullParName(sInstrumentInf), "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
-  }
-  /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
-  else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
-  { i=-1;
-    pBuffer = malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
-    pFile = fopen(FullParName("instrument.inf"), "r");
-    if (pFile)
-    { for (m=-2; m<nModuleNo; m++)
-      { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
-        strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
-        if (memcmp(sBuffer, "EOP", 3)==0)
-        { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
-          strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+
+  } else if (InputFilePtr!=NULL && InputFilePtr!=stdin) {
+
+    // first module of 2nd, 3rd ... part re-writes file up to end of previous part
+  
+    char *inp;
+    pBuffer = inp = malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
+    pFile = fopen(FullParName(sInstrumentInf), "r");
+    if (pFile) {
+      int m;
+      for (m=-2; m<nModuleNo; m++) {
+        if (fgets (inp, CHAR_BUF_SMALL-1, pFile)) {
+          if (memcmp(inp, "EOP", 3)==0)
+            fgets (inp, CHAR_BUF_SMALL-1, pFile);
+          inp += CHAR_BUF_SMALL;
         }
       }
       fclose(pFile);
     }
-    pFile = fopen( FullParName("instrument.inf"), "w");
-    if (pFile)
-    { for (m=0; m<=i; m++)
-        fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
-      fprintf(pFile, "EOP\n");
+    pFile = fopen(FullParName(sInstrumentInf), "w");
+    if (pFile) {
+      char *p = pBuffer;
+      while (p != inp) {
+        fputs(p, pFile);
+        p += CHAR_BUF_SMALL;
+      }
+      fputs("EOP\n", pFile);
     }
     free(pBuffer);
     pBuffer=0;
-  }
-  /* each other module appends a line */
-  else
-  { pFile = fopen(FullParName("instrument.inf"), "a");
+
+  } else {
+
+    // each other module appends a line
+    pFile = fopen(FullParName(sInstrumentInf), "a");
+
   }
 
   if (pFile) {
@@ -944,7 +954,7 @@ void WriteInstrData(VectorType Pos)
                    180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
     /* mark end of actual part */
     if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
-      fprintf(pFile, "EOP\n");
+      fputs("EOP\n", pFile);
     fclose(pFile);
   }
 }
@@ -1159,29 +1169,39 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
   *pRotY   = 0.0;
   *pRotZ   = 0.0;
 
-  pFile = fopen(FullParName("instrument.inf"), "r");
-  if (pFile)
-  {
-    // if module no is given read this row
-    if (iModuleNo > 0)
-    { do 
-      { ReadLine(pFile, sLine, sizeof(sLine)-1);
-        sscanf(sLine, "%ld", &nModNo);
+  pFile = fopen(FullParName(sInstrumentInf), "r");
+
+  if (pFile)  {
+
+    if (iModuleNo > 0) {
+
+      // module no is given, read its description row
+      int found=0;
+      while (ReadLine(pFile, sLine, sizeof(sLine)-1))
+        if (1 == sscanf(sLine, "%ld", &nModNo) && iModuleNo == nModNo) {
+          found = 1;
+          break;
+        }
+      if (!found) {
+        fclose(pFile);
+        return 0;
       }
-      while (nModNo < iModuleNo);
-    }
+
+    } else if (InputFilePtr==NULL || InputFilePtr==stdin) {
+
     // otherwise read last line
-    else if (InputFilePtr==NULL || InputFilePtr==stdin)
-    { /* Read last line and copy content, except:
-		   lines containing F at pos 116-118, they have not a new frame) */
-      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
-      { sscanf(sBuffer, "%ld", &nModNo);
-		  // ndig = short(floor(lg10(*pModuleNo));
+
+      /* Read last line and copy content, except:
+         lines containing F at pos 116-118, they have not a new frame) */
+      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1)) {
+        sscanf(sBuffer, "%ld", &nModNo);
+        // ndig = short(floor(lg10(*pModuleNo));
         if (sBuffer[77]!='F' && sBuffer[78]!='F' && sBuffer[79]!='F') strcpy(sLine, sBuffer);
       }
-    }
-    else
-    {  /* read until end of previous part, if input file is used */
+
+    } else {
+
+      // read until end of previous part, if input file is used
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
       { if (memcmp(sBuffer, "EOP", 3)==0)
         {  nModNo = No;
@@ -1190,11 +1210,12 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
         else
         { sscanf(sBuffer, "%ld", &No);
           if (sBuffer[77]!='F' && sBuffer[78]!='F' && sBuffer[79]!='F') strcpy(sLineH, sBuffer);
-	      }
+        }
       }
       if (strlen(sLine)==0) {nModNo = No; strcpy(sLine, sLineH);}
     }
-    // extract data from line and change to radians amd cm
+
+    // extract data from line and change to radians and cm
     sscanf(sLine, "%ld %3d %18c %lf %lf %lf %lf %lf %lf",
                   &nDum, &nModuleID, sBuffer, pLength, &Pos[0], &Pos[1], &Pos[2], pRotZ, pRotY);
     Pos[0]  *= 100.0;
