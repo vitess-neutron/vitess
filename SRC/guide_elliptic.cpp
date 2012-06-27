@@ -91,6 +91,7 @@ void OwnInit(int argc, char *argv[])
 	  
 	  case 'H':
 	    shapeHor = atoi(&argv[i][2]); // Horizontal guide shape: 0=constant, 1=straight, 2=elliptic
+	    break; 
 
 	  case 'a':
 	    longAxisHor = atof(&argv[i][2]); //Length of long axis in horizontal plane in m
@@ -195,7 +196,8 @@ void OwnInit(int argc, char *argv[])
      if (longAxisHor > 0 && lengthGuide > 0) {
 
        if (startWidth > 0 || endWidth > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes. \n");
+	 fprintf(LogFilePtr,"Long axis: %f, start width: %f, end width: %f \n", longAxisHor, startWidth, endWidth);
 	 exit(-1);
        }
        else {
@@ -211,6 +213,7 @@ void OwnInit(int argc, char *argv[])
      
        if (longAxisHor > 0 || shortAxisHor > 0) {
 	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes.");
+	 fprintf(LogFilePtr,"Lond axis: %f, short axis: %f", longAxisHor, shortAxisHor);
 	 exit(-1);
        }
        else {
@@ -240,7 +243,7 @@ void OwnInit(int argc, char *argv[])
      if (longAxisVer > 0 && lengthGuide > 0) {
 
        if (startHeight > 0 || endHeight > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the size of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either entrance/exit parameters or the size of the axes.");
 	 exit(-1);
        }
        else {
@@ -253,7 +256,7 @@ void OwnInit(int argc, char *argv[])
      else if (lengthGuide > 0 && startHeight > 0 && endHeight > 0 && distToFocus > 0) {
      
        if (longAxisVer > 0 || shortAxisVer > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the size of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either entrance/exit parameters or the size of the axes.");
 	 exit(-1);
        }
        else {
