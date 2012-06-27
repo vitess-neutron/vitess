@@ -36,11 +36,11 @@ MathVector MathVector::Rotate(double alphaX, double alphaY, double alphaZ)
   // Rotation around the y-axis
   X = cos(alphaY)*X + sin(alphaY)*Z;
   Y = Y;
-  Z = sin(alphaY)*Y + cos(alphaY)*Z;
+  Z = (-1.)*sin(alphaY)*X + cos(alphaY)*Z;
 
    // Rotation around the z-axis
   X = cos(alphaZ)*X - sin(alphaZ)*Y;
-  Y = (-1.)*sin(alphaZ)*X + cos(alphaZ)*Y;
+  Y = sin(alphaZ)*X + cos(alphaZ)*Y;
   Z = Z;
 
 
