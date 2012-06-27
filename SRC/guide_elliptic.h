@@ -21,16 +21,16 @@ extern "C" {
 int shapeHor=-1;
 int shapeVer=-1;
 
-double longAxisHor=0;
-double longAxisVer=0;
-double shortAxisHor=0;
-double shortAxisVer=0;
-double lengthGuide=0;
+double longAxisHor=-1;
+double longAxisVer=-1;
+double shortAxisHor=-1;
+double shortAxisVer=-1;
+double lengthGuide=-1;
 
-double startWidth=0;
-double endWidth=0;
-double startHeight=0;
-double endHeight=0;
+double startWidth=-1;
+double endWidth=-1;
+double startHeight=-1;
+double endHeight=-1;
 
 double startPoint=0;
 double endPoint=0;
