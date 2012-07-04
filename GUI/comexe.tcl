@@ -311,7 +311,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   switch $mode {
     bat {append fc "\ntype $logf* > \$P/result.txt\ndel $logf*"}
-    sh  {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*"}
+    sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
     grd {
       set s ""
       foreach v $usedIdices {
