@@ -231,6 +231,7 @@ void OwnInit(int argc, char *argv[])
    else if (shapeHor == 0 || shapeHor == 1) {
 
      slopeStraightHor = (endWidth - startWidth) / (200.*lengthGuide);
+     fprintf(LogFilePtr,"Horizontal shape is straight with start width %f cm, end width %f cm, and a slope of %f \n", startWidth, endWidth, slopeStraightHor);
      if (shapeHor == 0 && slopeStraightHor != 0) {
        fprintf(LogFilePtr,"Horizontal shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
@@ -274,6 +275,7 @@ void OwnInit(int argc, char *argv[])
    else if (shapeVer == 0 || shapeVer == 1) {
 
      slopeStraightVer = (endHeight - startHeight) / (200.*lengthGuide);
+     fprintf(LogFilePtr,"Vertical shape is straight with start height %f cm, end height %f cm, and a slope of %f \n", startHeight, endHeight, slopeStraightVer);
      if (shapeVer == 0 && slopeStraightVer != 0) {
        fprintf(LogFilePtr,"Vertical shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
@@ -474,7 +476,7 @@ int ProcessNeutron(Neutron* n)
     
     // For neutrons reflecting off guide at the very beginning the parabolic case can fail. 
     // Approximate by straight trajectory, should be fine within first 2% of the size of the major axis, e.g. within first 1.5m for major axis = 75m
-    if ((fabs(nTemp1.Position[2]/100.) > fabs(CalculateEllipsePoint(nTemp1.Position[0], longAxisVer, shortAxisVer, 1))) &&
+    if ((fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) &&
 	((distTempX2 - distTempX1) > 1e-5) && (n->Position[0] < (startPoint + 0.02*longAxisVer))) {
       CopyNeutron(n, &nTemp2);
       endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
@@ -485,8 +487,8 @@ int ProcessNeutron(Neutron* n)
       if (fabs(distTempX1 - distTempX2) < 1e-5) {
 
 	n->Position[0] = nTemp1.Position[0];
-	n->Position[1] = CalculateEllipsePoint(nTemp1.Position[0], longAxisHor, shortAxisHor, fabs(nTemp1.Position[1])/nTemp1.Position[1]);
-	n->Position[2] = CalculateEllipsePoint(nTemp1.Position[0], longAxisVer, shortAxisVer, fabs(nTemp2.Position[2])/nTemp2.Position[2]);
+	n->Position[1] = CalculateGuidePoint(nTemp1.Position[0], 1, fabs(nTemp1.Position[1])/nTemp1.Position[1]);
+	n->Position[2] = CalculateGuidePoint(nTemp1.Position[0], 2, fabs(nTemp2.Position[2])/nTemp2.Position[2]);
 	n->Vector[1] = nTemp1.Vector[1];
 	n->Vector[2] = nTemp2.Vector[2];
 	n->Vector[0] = sqrt(1. - nTemp1.Vector[1]*nTemp1.Vector[1] - nTemp2.Vector[2]*nTemp2.Vector[2]);
@@ -498,20 +500,22 @@ int ProcessNeutron(Neutron* n)
       // Reflection takes place first in horizontal plane
       else if (distTempX1 < distTempX2) {
 	
-	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateEllipsePoint(nTemp1.Position[0], longAxisVer, shortAxisVer, 1))) {
+	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
 
-	  double ellipseAtLastCollision = CalculateEllipsePoint(nTemp1.Position[0], longAxisVer, shortAxisVer, fabs( n->Position[2])/ n->Position[2])*100.;
+	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
+	  if (distTempX1 > 0) {
+	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
+	  // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
+	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
+	  // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);
 	  
-	  	  //	  fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
-	  //		  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
-	//	  fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	  //		  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);
-
-	  ellipseAtLastCollision = CalculateEllipsePoint(n->Position[0], longAxisVer, shortAxisVer, fabs( n->Position[2])/ n->Position[2])*100.;	  
+	  ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
 	  double x = n->Position[0];
-	  double slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
-	  //	  fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
-	  //	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	  double slope = 0;
+	  if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
+	  // fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
+	  // 	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	  }
 	  badNeutrons++;
 	  return 0;
 
@@ -531,6 +535,11 @@ int ProcessNeutron(Neutron* n)
 
       // Reflection takes place first in vertical plane
       else {
+
+	if (fabs(nTemp2.Position[1]/100.) > fabs(CalculateGuidePoint(nTemp2.Position[0], 1, 1))) {
+	  badNeutrons++;
+	  return 0;
+	}
 
 	tof += (nTemp2.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp2.Position[0];
@@ -919,6 +928,7 @@ void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, 
   
 }
 
+
 void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y)
 {
 
@@ -928,15 +938,22 @@ void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidth
     double x1 = (shapeWidthAtZero - a0)/(a1 - slopeFromShape);
     double x2 = ((-1.)*shapeWidthAtZero - a0)/(a1 + slopeFromShape);
 
-    if (x1 < x2 && x1 > xMin) {
+    if (x1 >= xMin && x2 < xMin) {
       x = x1;
       y = a1*x1 + a0;
     }
-    else if (x1 > x2 && x2 > xMin) {
+    else if (x2 >= xMin && x1 < xMin) {
       x = x2;
       y = a1*x2 + a0;
     }
-    else exit(-1);
+    else if (x1 >= xMin && x2 >= xMin) {
+      x = Min(x1, x2);
+      y = a1*x + a0;
+    }
+    else {
+      fprintf(LogFilePtr,"WTF? x1 = %f & x2 = %f xMin = %f \n", x1, x2, xMin);
+      exit(-1);
+    }
   }
 
   else {
@@ -998,24 +1015,57 @@ double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, dou
   a1 = a1 + 2.*a2*x;
 
   if (positive) a1 = a1 - 2.*fabs(a1 - slopeFromShape);
-  else a1 = a1 + 2.*fabs(a1 - slopeFromShape);
+  else a1 = a1 + 2.*fabs(a1 + slopeFromShape);
 
   return a1;
 
 }
 
 
-double CalculateEllipsePoint (double x, double a, double b, double sign)
+double CalculateGuidePoint (double x, int dir, double sign)
 {
 
-  double y = b*sqrt(1. - x*x/(a*a));
-  y *= sign;
-  
+  int shape = 0;
+  double slope = 0;
+  double y = 0;
+
+  if (dir == 1) {
+    shape = shapeHor;
+    if (shape < 2) {
+      slope = slopeStraightHor;
+      y = (startWidth/200. + (x - startPoint)*slope)*sign;
+    }
+    else {
+      y = CalculateEllipsePoint(x, longAxisHor, shortAxisHor, sign);
+    }
+  }
+  else if (dir == 2) {
+     shape = shapeVer;
+    if (shape < 2) {
+      slope = slopeStraightVer;
+      y = (startHeight/200. + (x - startPoint)*slope)*sign;
+    }
+    else {
+      y = CalculateEllipsePoint(x, longAxisVer, shortAxisVer, sign);
+    }
+  }
+  else {
+    fprintf(LogFilePtr,"Wrong direction for guide shape! \n");
+    exit(-1);
+  }
+
   return y;
 
 }
 
 
+double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign)
+{
+
+  double y = shortAxis*sqrt(1. - x*x/(longAxis*longAxis))*sign;
+  return y;
+
+}
 
 
 
