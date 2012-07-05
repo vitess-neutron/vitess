@@ -89,7 +89,8 @@ void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, 
 void IntersectStraightTrajectoryWithEllipse(double longAxis, double shortAxis, double b, double m, double xMin, double &x, double &y);
 void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y);
 
-double CalculateEllipsePoint(double x, double a, double b, double sign = 1.);
+double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign = 1.);
+double CalculateGuidePoint(double x, int dir, double sign = 1.);
 
 int TestAbsorptionInBeamstop();
 
