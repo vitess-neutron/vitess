@@ -1,9 +1,8 @@
 #ifndef GUIDE_ELLIPTIC_CPP
 #define GUIDE_ELLIPTIC_CPP
 
-
 #include <math.h>
-
+#define isnan(x) ((x) != (x))
 
 // extern "C" {
 // #include "init.h"
@@ -443,6 +442,8 @@ int ProcessNeutron(Neutron* n)
 
   //Sanity check
   if (n->Vector[0] == 0 || n->Wavelength == 0 || n->Probability == 0) return 0;
+  if (isnan(n->Position[0]) || isnan(n->Position[1]) ||
+	  isnan(n->Position[2])) return 0;
 
   // Propagate the trajectory in x-y and x-z plane
   // Calculate where the first interaction occurs
@@ -476,7 +477,7 @@ int ProcessNeutron(Neutron* n)
     
     // For neutrons reflecting off guide at the very beginning the parabolic case can fail. 
     // Approximate by straight trajectory, should be fine within first 2% of the size of the major axis, e.g. within first 1.5m for major axis = 75m
-    if ((fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) &&
+    if (keygrav && shapeVer == 2 && (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) &&
 	((distTempX2 - distTempX1) > 1e-5) && (n->Position[0] < (startPoint + 0.02*longAxisVer))) {
       CopyNeutron(n, &nTemp2);
       endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
@@ -498,9 +499,9 @@ int ProcessNeutron(Neutron* n)
       }
       
       // Reflection takes place first in horizontal plane
-      else if (distTempX1 < distTempX2) {
+      else if (distTempX1 < distTempX2) {	
 	
-	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
+		if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
 
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  if (distTempX1 > 0) {
@@ -586,6 +587,11 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
   double m = neutronVector.x[plane] / neutronVector.x[0];
   double b = m*xMin*(-1.) + neutronPosition.x[plane];
 
+  /*if (isnan(b) && isnan(neutronPosition.x[plane])) {
+	  fprintf(LogFilePtr,"Parameters for nan neutrons: m %f, b %f, plane %d, nPos %f \n", m, b, plane, n->Position[plane]);
+	  exit(-1);
+  }
+*/
   // // Check whether the neutron hits the exit in this plane:
   // double posAtExit = m*endPoint + b;
   // if ((fabs(posAtExit) < endWidth/2 && plane == 1) ||  (fabs(posAtExit) < endHeight/2 && plane == 2)) {
@@ -608,8 +614,8 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
   }
 
   double x,y;
-  if (shape == 2) IntersectStraightTrajectoryWithEllipse(longAxis, shortAxis, b, m, xMin + pow(10, -8), x, y);
-  else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, b, m, 0, xMin + pow(10, -8), x, y);
+  if (shape == 2) IntersectStraightTrajectoryWithEllipse(longAxis, shortAxis, b, m, xMin + pow(10., -8.), x, y);
+  else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, b, m, 0, xMin + pow(10., -8.), x, y);
 
   if (x == -6666) {
     //    fprintf(LogFilePtr,"Coordinates for nan neutrons: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", n->Position[0], n->Position[1], n->Position[2],            
@@ -748,8 +754,8 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
 
   double x,y;
 
-   if (shape == 2) IntersectParabolicTrajectoryWithEllipse(longAxis, shortAxis, a0, a1, a2, xMin + pow(10, -5), x, y, false);
-   else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, a0, a1, a2, xMin + pow(10, -8), x, y);
+   if (shape == 2) IntersectParabolicTrajectoryWithEllipse(longAxis, shortAxis, a0, a1, a2, xMin + pow(10., -5.), x, y, false);
+   else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, a0, a1, a2, xMin + pow(10., -8.), x, y);
   // double posNeutronAtCollisionPoint = a0 + a1*x + a2*x*x;
   // if (fabs(posNeutronAtCollisionPoint) > (CalculateEllipsePoint(longAxis, shortAxis, x)+1e-6)) {
   //   fprintf(LogFilePtr,"Collision point wrongly reconstructed! %f %f \n, " , posNeutronAtCollisionPoint, CalculateEllipsePoint(longAxis, shortAxis, x));
@@ -938,22 +944,26 @@ void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidth
     double x1 = (shapeWidthAtZero - a0)/(a1 - slopeFromShape);
     double x2 = ((-1.)*shapeWidthAtZero - a0)/(a1 + slopeFromShape);
 
-    if (x1 >= xMin && x2 < xMin) {
+    if (x1 > xMin && x2 <= xMin) {
       x = x1;
       y = a1*x1 + a0;
     }
-    else if (x2 >= xMin && x1 < xMin) {
+    else if (x2 > xMin && x1 <= xMin) {
       x = x2;
       y = a1*x2 + a0;
     }
-    else if (x1 >= xMin && x2 >= xMin) {
+    else if (x1 > xMin && x2 > xMin) {
       x = Min(x1, x2);
       y = a1*x + a0;
     }
-    else {
-      fprintf(LogFilePtr,"WTF? x1 = %f & x2 = %f xMin = %f \n", x1, x2, xMin);
+	else  if (x1 <= xMin && x2 <= xMin){
+		x = lengthGuide;
+		y = 0;
+	}
+	 else {
+      fprintf(LogFilePtr,"WTF? x1 = %f & x2 = %f xMin = %f slope = %f \n", x1, x2, xMin, a0);
       exit(-1);
-    }
+    }	
   }
 
   else {
@@ -1128,8 +1138,8 @@ void SolveQuarticEquation(double a, double b, double c, double d, double* soluti
     y3 = (-1.)*(u+v)/2.;
 
     // complex parts of solutions 2 & 3
-    y2_i = (-1.)*((u-v)/2.)*sqrt(3);
-    y3_i = ((u-v)/2.)*sqrt(3);
+    y2_i = (-1.)*((u-v)/2.)*sqrt(3.);
+    y3_i = ((u-v)/2.)*sqrt(3.);
 
   }
 
