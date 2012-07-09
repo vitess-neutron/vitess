@@ -678,7 +678,7 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'd':
-            eDirDet = (short) atol(arg); 
+            eDirDet = (VtDirect) atol(arg); 
             if (eDirDet < 0 || eDirDet > 2)
               Error("Wrong parameter for 'direction determination'");
             break;

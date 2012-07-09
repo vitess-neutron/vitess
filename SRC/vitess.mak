@@ -118,6 +118,7 @@ ALL : \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\monitor2D.exe" \
+	"$(OD)\guide_elliptic.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
 	"$(OD)\resonator_drabkin.exe" \
@@ -646,6 +647,13 @@ SOURCE=$(SPATH)\monitor2D.cpp
 
 "$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) 
+
+SOURCE=$(SPATH)\guide_elliptic.cpp
+"$(IDIR)\guide_elliptic.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_elliptic.exe" : "$(OD)" $(NTOOL) "$(OD)\guide_elliptic.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(NTOOL) 
 
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)

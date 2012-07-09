@@ -386,6 +386,259 @@ proc setInstrumentfile {name} {
   .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
 }
 
+proc optVal {com c} {
+  if {[regexp " -${c}(\[^ \]+)" $com a o]} {
+    return $o
+  }
+  return ""
+}
+
+proc findModName {n com} {
+  # return the module name for a given executable name n
+  switch $n {
+    chopper_fermi {
+      switch [optVal $com O] {
+        1 {return chopper_fermi_str}
+        2 {return chopper_fermi_cur}
+        default {return $n}
+      }
+    }
+    lenses {return lense}
+    monochr_analyser {
+      switch [optVal $com O] {
+        1 {return ma_flat}
+        2 {return ma_focus}
+        3 {return ma_focus_dat}
+        default {return $n}
+      }
+    }
+    monitor1 {
+      switch [optVal $com k] {
+        1 {return mon1_lambda}
+        2 {return mon1_time}
+        3 {return mon1_divy}
+        4 {return mon1_divz}
+        5 {return mon1_y}
+        6 {return mon1_z}
+        7 {return mon1_energy}
+        8 {return mon1_divyz}
+        default {return $n}
+      }
+    }
+    mon2_posdiv {
+      switch [optVal $com q] {
+        1 {return mon2_y_divy}
+        2 {return mon2_z_divz}
+        default {return $n}
+      }
+    }
+    monitorpol_1d {
+      switch [optVal $com k] {
+        1 {return monpol_lambda}
+        2 {return monpol_time}
+        3 {return monpol_divy}
+        4 {return monpol_divz}
+        5 {return monpol_y}
+        6 {return monpol_z}
+        default {return $n}
+      }
+    }
+    sesans_field {return quadr_field}
+    source {
+      regexp {([^\/]+)\.mod} [optVal $com a] a oa
+      set oa [string tolower $oa]
+      switch [optVal $com S] {
+        1 { 
+          switch -regexp $oa {
+            hmi {return source_HMI}
+            ill {return source_ILL}
+            default {return source_const_wave}
+          }
+        }
+        2 {
+          switch -regexp $oa {
+            ipns {return source_IPNS}
+            parc {return source_J-PARC}
+            sns {return source_SNS}
+            isis {return source_ISIS}
+            ess {return source_ESS}
+            default {return source_short_pulsed}
+          }
+        }
+        3 {return source_ESS_LPTS}
+        default {return $n}
+      }
+    }
+    default {
+      upvar #0 ${n}ESET mm
+      if [info exists mm] { return $n}
+      return external_command
+    }
+  }
+}
+
+proc interpretCommand {com mi gsetkey gsetval} {
+  # dmf:debug
+  # uncomment next 2 lines
+  #puts "interpretCommand $mi"
+  #puts $com
+  set modname ""
+  upvar $gsetkey gkey
+  upvar $gsetval gval
+
+  foreach c [split $com] {
+    set c [string trim $c]
+    if {$c == ""} continue
+    if {$modname != ""} {
+      if {"-" != [string range $c 0 0]} continue
+      set k [string range $c 1 1]
+      if {"-" == $k} {
+        # a global options starting with --
+        set v [string range $c 3 end]
+        switch [string range $c 2 2] {
+          G { lappend gkey gravity_
+            if $v {set v on} else {set v off}
+            lappend gval $v
+          }
+          U {lappend gkey wei_min_
+            lappend gval $v
+          }
+          default {}
+        }
+        continue
+      }
+      set v [string range $c 2 end]
+      # if the value v contains a dollar, this is probably from pipe variables
+      # which are not accessible here
+      if [regexp {\$} $v] {
+        # extract a filename at the end if possible
+        if [regexp {\/([^\/]+)$} $v a o] {
+          set v $o
+        }
+      }
+      set ais($k) $v
+      #puts "  $k : $v"
+    } else {
+      # see if there is a / within
+      if [regexp {\/([^\/]+)$} $c a fn] {
+        # if it contains a .exe
+        if {[regexp {^(.+)\.exe$} $fn a p]} {
+          # got some Windows exe file
+        } elseif {[regexp {^(.+)_(Linux|Darwin)} $fn a p op]} {
+          # got some Linux or Mac image
+        } else continue
+        # cut off _parallel if seen
+        if {[regexp {^(.+)_parallel$} $p a op]} {
+          set p $op
+        }
+        set modname [findModName $p $com]
+        if {$modname == ""} return ; # no chance to find a valid module
+        lappend gkey mod$mi
+        lappend gval $modname
+        #puts "mod$mi -> $modname"
+      }
+    }
+  }
+  if {$modname == ""} { return 0}
+  upvar \#0 ${modname}ESET modl
+  foreach line $modl {
+    set olist [lindex $line 3]
+    set ochar [lindex $olist 3]
+    if [info exists ais($ochar)] {
+      set oname [lindex $line 0]
+      set v $ais($ochar)
+      if {"radio" == [lindex $line 1]} {
+        # re-map radio itmes
+        set i 0
+        foreach vv [lindex $line 5] {
+          if {$v == "$vv"} {
+            set v [lindex [lindex $line 4] $i]
+            break
+          } else {
+            incr i
+          }
+        }
+      }
+      lappend gkey ${oname}_$mi
+      lappend gval $v
+      # dmf:debug
+      #uncomment next line
+      #puts "+ ${oname}_$mi -> $v"
+    }
+  }
+  return 1
+}
+
+proc doImportPipe {name} {
+  # import an instrument from a pipe command in a file
+
+  if [catch {open $name r} f] return
+
+  set gsetkey {}
+  set gsetval {}
+  set mi 1
+  while {[gets $f line] >= 0} {
+    if [regexp {\|} $line] {
+      foreach c [split $line |] {
+        set c [string trim $c]
+        if {$c == ""} continue
+        if [interpretCommand $c $mi gsetkey gsetval] {
+          incr mi
+        }
+      }
+      break
+    }
+  }
+  close $f
+  if {$mi < 2} {
+    outProtocol "--- could not parse pipe file $name to a VITESS instrument ---"
+    return
+  }
+
+  # close all gui modules
+
+  # remember old default directory
+  global defdirectory_ Mlf
+  set olddef $defdirectory_
+
+  # this will probably be the new default directory
+  set nd [file dirname $name]
+
+  # delete all modules
+  deleteSomeModules $Mlf 1
+
+  # set global variables
+  foreach k $gsetkey v $gsetval {
+    gSet $k "$v"
+  }
+
+  setAll 0
+  conditionalOpenProtfile
+  outProtocol "--- pipe file $name successfully parsed ---"
+  conditionalCloseProtfile
+
+  # open gui modules
+
+  reShowModules $Mlf
+
+  removeTrailingDummies
+  setInstrumentfile $name
+
+  # Ask if modified new default directory is ok
+  confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
+  gSet LastState [generateVitessCommand kstate]
+
+  return 1
+}
+
+proc importPipe {} {
+  if [dontDoit "You have unsaved changes. Forget them?"] return
+  set name [fileDialog open]
+  if {$name == ""} return
+  doImportPipe $name
+}
+
+
 proc openSaveFile {name descs} {
   # check if file has been written by a previous storeAll
 

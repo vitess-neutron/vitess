@@ -228,6 +228,7 @@ proc controlMenu {w} {
     {c "INSERT Packet" {insertPacketWindow}}
     {c "SAVE Packet" {savePacketWindow}} s
     {c "SAVE to Directory" saveDirectory} s
+    {c "Import Pipe" {importPipe}}
     {m "Export as" mex} s
     {c "Generate Series" {genSeries .gser}} s
     {c "New *.inf File" editInfFile}
@@ -306,6 +307,7 @@ proc controlMenu {w} {
       {c "Instrument Digest" {showHelpItem digest.html}} \
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
+      {c Trajectories {showHelpItem trajectories.html}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
       {m "Modules A - F" m1} \
@@ -457,7 +459,13 @@ proc controlMenu {w} {
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
-  forceDef trajmode "SVG xz"
+  # if we have an X3D viewer installed, prefer this over SVG
+  if {[getPreferredX3DCmd] == ""} {
+    set emode X3D
+  } else {
+    set emode "SVG xz"
+  }
+  forceDef trajmode $emode
   cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
 
   forceDef browse_ext_mode select
@@ -685,8 +693,10 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
+  # This is the place where main GUI elements are created.
+  # Global setups like sizes and limits are set here.
   set t "VITESS 2.11"
-  set maxModule 50
+  set maxModule 100
   set DummyEntry "--inactive--"
 
   frame $w.bm -bg $bgColor; # top header

@@ -64,7 +64,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide g
           );
 
 # modules NTOOL (= TOOL + mathvector mathmatrix mon2D)
-my @CN = qw(monitor2D);
+my @CN = qw(monitor2D guide_elliptic);
 
 # modules which need MGTOOL (=MTOOL)
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);

@@ -260,8 +260,8 @@ double
 double AreaY=0., AreaZ=0.;   /* Approximate area of guide planes in cm**2 */
 GuidePiece *pPieces;         /* Holds piece Informations. Replaces Xpce, Ypce, Zpce */
 
-VtShape eGuideShapeY=1,      /* shape of guide in y- and z-direction */
-       eGuideShapeZ=1;
+VtShape eGuideShapeY=VT_LINEAR,      /* shape of guide in y- and z-direction */
+        eGuideShapeZ=VT_LINEAR;
 VtDistr eWaviDistr=VT_RECTANGULAR;  /* shape of the waviness distribution */
 
 const char  *ShapeFileName="guide_shape.dat";

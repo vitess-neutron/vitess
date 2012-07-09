@@ -179,27 +179,27 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     lookWhosConcerned serrep serpar serno $i $mode $serll sermol serpal
 
     switch $var {
-      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
+      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       guide       {set com "guide$par$sys"}
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
-      mon1_divy   {set com "monitor1$sys -k3"}
-      mon1_divyz  {set com "monitor1$sys -k8"}
-      mon1_divz   {set com "monitor1$sys -k4"}
-      mon1_energy {set com "monitor1$sys -k7"}
       mon1_lambda {set com "monitor1$sys -k1"}
       mon1_time   {set com "monitor1$sys -k2"}
+      mon1_divy   {set com "monitor1$sys -k3"}
+      mon1_divz   {set com "monitor1$sys -k4"}
       mon1_y      {set com "monitor1$sys -k5"}
       mon1_z      {set com "monitor1$sys -k6"}
+      mon1_energy {set com "monitor1$sys -k7"}
+      mon1_divyz  {set com "monitor1$sys -k8"}
       mon2_y_divy  {set com "mon2_posdiv$sys -q1"}
       mon2_z_divz  {set com "mon2_posdiv$sys -q2"}
-      monpol_divy   {set com "monitorpol_1d$sys -k3"}
-      monpol_divz   {set com "monitorpol_1d$sys -k4"}
       monpol_lambda {set com "monitorpol_1d$sys -k1"}
       monpol_time   {set com "monitorpol_1d$sys -k2"}
+      monpol_divy   {set com "monitorpol_1d$sys -k3"}
+      monpol_divz   {set com "monitorpol_1d$sys -k4"}
       monpol_y      {set com "monitorpol_1d$sys -k5"}
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
