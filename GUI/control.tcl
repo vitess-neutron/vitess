@@ -429,8 +429,7 @@ proc controlMenu {w} {
   forceDef tcl_precision 12
   cascEntries $ww.prec tcl_precision 8 9 10 11 12 13 14 15 16 17
 
-  set gval [expr {[getSystem] == "unix"}]
-  forceDef tk_strictMotif $gval
+  forceDef tk_strictMotif [expr {[getSystem] == "unix"}]
   cascEntries $ww.tk_strictMotif tk_strictMotif 1 0
 
   forceDef audible_bell on
@@ -460,11 +459,7 @@ proc controlMenu {w} {
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
   # if we have an X3D viewer installed, prefer this over SVG
-  if {[getPreferredX3DCmd] == ""} {
-    set emode X3D
-  } else {
-    set emode "SVG xz"
-  }
+  if {[getPreferredX3DCmd] == ""} {set emode X3D} else {set emode "SVG xz"}
   forceDef trajmode $emode
   cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
 
@@ -756,7 +751,7 @@ proc showBeef {w} {
       set vbh 0.8c
     }
   }
-  set sh 50c;				# scrolled list virtual height
+  set sh ${maxModule}c;				# scrolled list virtual height
   frame $Root.l -relief sunken -bd 2
   frame $Root.r -relief sunken -bd 2
   pack $Root.l -side left -fill both
