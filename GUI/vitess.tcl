@@ -156,7 +156,7 @@ proc makeModuleSets {} {
     {source {source_const_wave source_HMI source_ILL
       source_short_pulsed source_SNS source_IPNS source_ISIS
       source_ESS_LPTS} source}
-    {guide {guide bender} {guide bender}}
+    {guide {guide bender guide_elliptic} {guide bender guide_elliptic}}
     {sm_ensemble {} sm_ensemble}
     {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
@@ -1118,6 +1118,67 @@ proc guideCheckErr {{app _}} {
   return 0
 }
 
+### Elliptic Guide
+###
+set guide_ellipticESET {
+  {"Shape and size of guide" header}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+    {constant linear elliptic} {0 1 2}}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+    {constant linear elliptic} {0 1 2}}
+  {}
+  {shape_file mneditablefile guide_shape.dat
+    {"guide shape" "File containing ellipse parameters" "" O}}
+  {}
+  {axis_long_hor float 0 {
+    "Major ellipse\naxis in x-y plane [m]"
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
+  {axis_short_hor float 0 {
+    "Minor ellipse\naxis in x-y plane [m]"
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+  {}
+  {axis_long_ver float 0 {
+    "Major ellipse\naxis in x-z plane [m]"
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
+  {axis_short_ver float 0 {
+    "Minor ellipse\naxis in x-z plane [m]"
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+  {}	 		
+  {enter_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+  {enter_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+  {}
+  {exit_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+  {exit_height float 10 {
+    "exit\nheight [cm]"
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+  {}
+  {length_guide float 0 {
+    "Guide length [m]"
+    "Length of guide in m"  "" l} ge0 "" 1}	
+  {dist_focus float 0 {
+    "Distance from \nexit to focus [m]"
+    "Distance from guide exit to focal point of the ellipse.\n Note that focal points in horizontal and vertical plane\n must be the same."  "" d} ge0 "" 1}	
+  {"Guide characteristics" header}
+  {"Reflectivity files" header}
+  {lrefl_filename pareditablefile mirr1a.dat
+    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
+  {rrefl_filename pareditablefile mirr1a.dat
+    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+  {tbrefl_filename pareditablefile mirr1a.dat
+    {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
+  {brefl_filename pareditablefile mirr1a.dat
+    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  
+}
+
+set guide_ellipticESET [concat $guide_ellipticESET]
+
 ### Bender
 ###
 ### special options: h H s l R; i m k; I M K; u A; g c; z w; C T O; r a y p V t; o
@@ -1472,6 +1533,10 @@ set ma_flatESET {
   {dspread float 0.00005 {"d spread"
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
+  {}
+  {mode int 1 {"Crystal mode" "Choose between reflection of the characteristic wavelength and \n transmission of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+  {coeff float 0.00005 {"Absorption\n coefficient"
+    "Absorption coefficient in the crystal in [1/cm]." "" C}}
   {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d}
     {Lorentzian Gaussian} {1 2}}
