@@ -431,11 +431,19 @@ void   LoadReflFile(ReflFile *pReflFile)
 int ProcessNeutron(Neutron* n)
 { 
   
+  bool endReached = false;
+  double xMin = startPoint;
+  double tof = 0.;
+  //  double startPosition = n->Position[0];
+  n->Position[0] = xMin;
+  
   // Check if neutron misses the guide entrance
   if (n->Position[1] >= (startWidth / 2.) || n->Position[1] <= ((-1.)*startWidth / 2.)) {
+    WriteIAPEllGuide(n, VT_OUTSIDE);
     return 0;
   }
   if (n->Position[2] >= (startHeight / 2.) || n->Position[2] <= ((-1.)*startHeight / 2.)) {
+    WriteIAPEllGuide(n, VT_OUTSIDE);
     return 0;
   }
   
@@ -445,22 +453,18 @@ int ProcessNeutron(Neutron* n)
   if (isnan(n->Position[0]) || isnan(n->Position[1]) ||
 	  isnan(n->Position[2])) return 0;
 
+  
   // Propagate the trajectory in x-y and x-z plane
   // Calculate where the first interaction occurs
   // Since guide changes the divergence, in particular n->Vector[0], 
   // propagation in perpendicular plane is affected.
 
-  bool endReached = false;
-  double xMin = startPoint;
-  //  double distance = 0.;
-  double tof = 0.;
-  double startPosition = n->Position[0];
-  n->Position[0] = xMin;
+  WriteIAPEllGuide(n, VT_ENTERED);
 
   // Calculate next intersection point; 
   // sum up the travelled distance in x direction
   while (!endReached) {
-
+    
     if (n->Vector[0] == 0) return 0;
 
     Neutron nTemp1;
@@ -473,7 +477,10 @@ int ProcessNeutron(Neutron* n)
     endReached = PropagateStraightTrajectory(&nTemp1, distTempX1, xMin, 1, shapeHor);
     double distTempX2 = 0;
     if (keygrav == 1)  endReached &= PropagateParabolicTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
-    else endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+    else {
+      endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+      if (nTemp1.Probability < wei_min && nTemp2.Probability < wei_min) neutronsKilledStraight--;
+    }
     
     // For neutrons reflecting off guide at the very beginning the parabolic case can fail. 
     // Approximate by straight trajectory, should be fine within first 2% of the size of the major axis, e.g. within first 1.5m for major axis = 75m
@@ -481,6 +488,7 @@ int ProcessNeutron(Neutron* n)
 	((distTempX2 - distTempX1) > 1e-5) && (n->Position[0] < (startPoint + 0.02*longAxisVer))) {
       CopyNeutron(n, &nTemp2);
       endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+      if (nTemp1.Probability < wei_min && nTemp2.Probability < wei_min) neutronsKilledStraight--;
     }     
 
     if (!endReached) {
@@ -493,6 +501,13 @@ int ProcessNeutron(Neutron* n)
 	n->Vector[1] = nTemp1.Vector[1];
 	n->Vector[2] = nTemp2.Vector[2];
 	n->Vector[0] = sqrt(1. - nTemp1.Vector[1]*nTemp1.Vector[1] - nTemp2.Vector[2]*nTemp2.Vector[2]);
+	n->Color += 101;
+	if (n->Probability <= wei_min)  {
+	  WriteIAPEllGuide(n, VT_ABSORBED);
+	  return 0;
+	}
+	WriteIAPEllGuide(n, VT_REFLECTED);
+	WriteIAPEllGuide(n, VT_REFLECTED);
 	xMin = nTemp1.Position[0];
 	simultaneousCollisions++;
 
@@ -501,15 +516,14 @@ int ProcessNeutron(Neutron* n)
       // Reflection takes place first in horizontal plane
       else if (distTempX1 < distTempX2) {	
 	
-		if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
-
+	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
+	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  if (distTempX1 > 0) {
 	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
 	  // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
 	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	  // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);
-	  
+	  // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
 	  ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
 	  double x = n->Position[0];
 	  double slope = 0;
@@ -525,12 +539,16 @@ int ProcessNeutron(Neutron* n)
 	tof += (nTemp1.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp1.Position[0];
 	CopyNeutron(&nTemp1, n);
-
+	n->Color += 1;
+	
 	// fprintf(LogFilePtr,"Coordinates after straight reflection: y %f, z %f \n", n->Position[1], n->Position[2]);
 	
 	// Check if neutron got absorbed
-	if (n->Probability <= wei_min)  return 0;
-
+	if (n->Probability <= wei_min)  {
+	  WriteIAPEllGuide(n, VT_ABSORBED);
+	  return 0;
+	}
+	WriteIAPEllGuide(n, VT_REFLECTED);
 	
       }
 
@@ -545,17 +563,24 @@ int ProcessNeutron(Neutron* n)
 	tof += (nTemp2.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp2.Position[0];
 	CopyNeutron(&nTemp2, n);
+	n->Color += 100;
 
 	// fprintf(LogFilePtr,"Coordinates after parabolic reflection: y %f, z %f \n", n->Position[1], n->Position[2]);
 	// Check if neutron got absorbed
-	if (n->Probability <= wei_min)  return 0;
-	
+	if (n->Probability <= wei_min) {
+	  WriteIAPEllGuide(n, VT_ABSORBED);
+	  return 0;
+	}
+	WriteIAPEllGuide(n, VT_REFLECTED);
+
       }
     }
 
     // Trajectory reached the guide exit
     else {
       
+      n->Position[0] = endPoint;
+      WriteIAPEllGuide(n, VT_EXITED);
       n->Position[0] = 0.; //startPosition + lengthGuide*100.;
       n->Position[1] = nTemp1.Position[1];
       n->Position[2] = nTemp2.Position[2];
@@ -1414,6 +1439,18 @@ void OwnCleanup()
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
   for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
+
+  return;
+
+}
+
+void WriteIAPEllGuide(Neutron *n, VtReason eReason)
+{
+
+  double xPosTemp = n->Position[0];
+  n->Position[0] = (n->Position[0] - startPoint)*100.;
+  WriteIAP(n, eReason);
+  n->Position[0] = xPosTemp;
 
   return;
 

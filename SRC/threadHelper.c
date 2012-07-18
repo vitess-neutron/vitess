@@ -105,7 +105,7 @@ static int initParallel (int nworkers) {
   hDebugMutex = CreateMutex( NULL, FALSE, NULL );
 
   for (i=1; i<=nworkers; i++)
-    winThread[i-1] = _beginthread( threadLoop, 0, (void *)i);
+    winThread[i-1] = (HANDLE) _beginthread( threadLoop, 0, (void *)i);
 
   return nworkers;
 }
@@ -345,7 +345,7 @@ static int createThreadBuffers() {
     // prepare individual random number generators per thread
     int n;
     extern long int VRandomSeed;
-    vit_thread_gsl_rng = malloc(NThreads * sizeof(gsl_rng *));
+    vit_thread_gsl_rng = (gsl_rng**) malloc(NThreads * sizeof(gsl_rng *));
     for (n=0; n<NThreads; n++) {
       gsl_rng * g;
       vit_thread_gsl_rng[n] = g = gsl_rng_alloc(gsl_rng_default);

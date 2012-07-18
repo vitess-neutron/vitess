@@ -17,6 +17,7 @@
 
 #include "general.h"
 #include "ctype.h"
+#include "time.h"
 
 #ifndef RND_SIMPLE
  #include "gsl/gsl_rng.h"
@@ -109,7 +110,7 @@ double Round(const double value)
 
 double RoundP(const double value, const int decimal)
 {
-	double f = pow(10, decimal);
+	double f = pow(10.0, decimal);
 	return Round(value * f) / f;
 }
 
@@ -423,6 +424,25 @@ void Abort()
 	exit(-1);
 }
 
+
+/* Wait(time)
+   remains 'time' sec in this function  
+*/
+void Wait(float WaitTime)
+{
+  int   c1, c2;
+  float DelT;  // time in sec
+
+  c1=clock();
+
+  do
+  { c2=clock();
+    DelT = ((float)(c2-c1))/CLOCKS_PER_SEC;
+  }
+  while (DelT < WaitTime);  
+
+  return;
+}
 
 
 /****************************************************************************************/
