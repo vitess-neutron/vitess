@@ -33,12 +33,13 @@ extern char*    ParDirectory;   /* parameter directory */
 extern double   wei_min;        /* Minimal weight for tracing neutron */
 extern long     keygrav;
 extern long     idum;           /* random number specific */
-extern short    bOldFrame;      /* criterion: new co-ordinate system set for current module */
-extern short    bVisInstalled,  /* criterion: visualization routines installed */
-                bVisTraj,       /* criterion: instrument visualization      */
-                bVisInstr;      /* criterion: visualization of trajectories */
+extern short    bOldFrame,      /* criterion: new co-ordinate system set for current module */
+                bTest,          /* criterion: test run (without trajectories)   */
+                bVisInstalled,  /* criterion: visualization routines installed  */
+                bVisTraj,       /* criterion: instrument visualization          */
+                bVisInstr;      /* criterion: visualization of trajectories     */
 
-extern int      NThreads;      /* number of helper threads for execution, set by --T */
+extern int      NThreads;       /* number of helper threads for execution, set by --T */
 
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,

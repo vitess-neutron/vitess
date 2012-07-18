@@ -451,6 +451,7 @@ FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);
 void   Warning(const char *text);
 void   Abort();
+void   Wait(float WaitTime);
 
 int    ReadLine(FILE* pFile, char* pLine, int nStrLen);
 void   ReadParString(FILE *fpt, char *stringvar);

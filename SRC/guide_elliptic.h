@@ -104,5 +104,6 @@ void OwnInit(int argc, char *argv[]);
 void LoadReflFile(ReflFile* pReflFile);
 void OwnCleanup();
 
+void WriteIAPEllGuide(Neutron *n, VtReason eReason);
 
 #endif

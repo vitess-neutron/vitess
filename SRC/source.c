@@ -607,7 +607,7 @@ int main(int argc, char *argv[])
       }
       Input.Position[0]=0.0;
 
-      if (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T')
+      if (!bTest && (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
          WriteNeutron(&Input);
    }  // end loop over trajectories
 

@@ -455,7 +455,8 @@ void Init(int argc, char **argv, VtModID eModule)
       break;
 
     case 't' :
-      bTest = TRUE;
+      bTest  = TRUE;
+      bVisInstr = FALSE;
       break;
 
     case 'T' :
@@ -545,7 +546,7 @@ void Init(int argc, char **argv, VtModID eModule)
       double factor;
       // we are second in the pipe, reading zcat output
       setCompressBufLen();
-      zcat_p = compressBuf = malloc(compressBufLen);
+      zcat_p = compressBuf = (char*) malloc(compressBufLen);
       compressedRestlen = fread(compressBuf, 1, compressBufLen, stdin);
       if (compressedRestlen < 512)
 	myExit("dubious data from first module\n");
@@ -609,7 +610,7 @@ void Init(int argc, char **argv, VtModID eModule)
   if (bVisTraj)
   { if (eModule!=VT_SOURCE)
     { nModuleNo=ReadInstrData(iModuleNo, BegPosM, &BlnLen, &RotZ, &RotY);
-      if (nModuleNo!=iModuleNo)
+      if (nModuleNo!=(iModuleNo-1))
       { sprintf(text, "Module %ld could not be found in 'instrument.inf'", iModuleNo);
         Error(text);
       }
@@ -643,14 +644,17 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
              EndPos; /* end position of this module  [m] */
 
   /* update 'instrument.inf' */
-  if (!bVisTraj) {
-    if (stPicture.eModule == VT_SOURCE) {
-      nModuleNo=0;
+  if (!bVisTraj)
+  { if (stPicture.eModule == VT_SOURCE) 
+    { nModuleNo=0;
       BegPosM[0]=BegPosM[1]=BegPosM[2]=0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
-    } else 
+    } 
+    else 
+    { if (bTest) Wait(0.75*iModuleNo);
       nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY);
+    }
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
 
@@ -914,7 +918,7 @@ void WriteInstrData(VectorType Pos)
     // first module of 2nd, 3rd ... part re-writes file up to end of previous part
   
     char *inp;
-    pBuffer = inp = malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
+    pBuffer = inp = (char*) malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
     pFile = fopen(FullParName(sInstrumentInf), "r");
     if (pFile) {
       int m;
@@ -1171,23 +1175,25 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
 
   pFile = fopen(FullParName(sInstrumentInf), "r");
 
-  if (pFile)  {
-
-    if (iModuleNo > 0) {
-
+  if (pFile)  
+  {
+    if (iModuleNo > 0) 
+	{
       // module no is given, read its description row
       int found=0;
       while (ReadLine(pFile, sLine, sizeof(sLine)-1))
-        if (1 == sscanf(sLine, "%ld", &nModNo) && iModuleNo == nModNo) {
+        if (sscanf(sLine, "%ld", &nModNo)==1 && nModNo==(iModuleNo-1)) 
+		{
           found = 1;
           break;
         }
-      if (!found) {
-        fclose(pFile);
+      if (!found) 
+	  { fclose(pFile);
         return 0;
       }
 
-    } else if (InputFilePtr==NULL || InputFilePtr==stdin) {
+    } 
+	else if (InputFilePtr==NULL || InputFilePtr==stdin) {
 
     // otherwise read last line
 
@@ -1533,8 +1539,6 @@ static void writeCompressed() {
 
 #define GULP(s) p += s; rlen -= s;
 
-static int compressBufLen;
-
 static int readCompressedNeutrons (void) {
 
   Neutron *pn = InputNeutrons;
@@ -1553,7 +1557,7 @@ static int readCompressedNeutrons (void) {
   } else {
     if (! compressBuf) {
       setCompressBufLen();
-      compressBuf = malloc(compressBufLen);
+      compressBuf = (char*) malloc(compressBufLen);
     }
     p = readp = compressBuf;
     toread = compressBufLen;
@@ -1700,7 +1704,7 @@ static long DetModNo(const char* pArg)
   char* pos;
   long iMod;
 
-  pos = strrchr(pArg, 'g');
+  pos = (char*) strrchr(pArg, 'g');
   pos++;
   iMod= atol(pos);
 

@@ -811,8 +811,7 @@ set winAdd {
 set a {
   {dist_orig_window float 0 {
     "distance orig.\n  <-> win. [cm]"
-    "distance from origin to window when projecting along the x axis"
-    "" l}}
+    "distance from origin to window when projecting along the x axis" "" l} ge0 "" 1}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
@@ -3324,7 +3323,7 @@ set eval_sansESET {
   {sn_nbins int 100 {
     "number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
   {sn_mina float 0.001 {
-    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} gt0}
+    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} ge0}
   {sn_maxa float 1 {
     "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
   {sn_scat float 0.1 {
