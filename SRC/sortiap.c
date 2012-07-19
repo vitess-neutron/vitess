@@ -55,17 +55,18 @@ char strokeWB[16], *strokeWS;  // stroke width format
 
 const char
 // line green
-  *LineAppearance="<Appearance><Material diffuseColor='0 1 0'/></Appearance>",
+  *LineAppearance="<Material diffuseColor='0 1 0'/>",
 // circle gray
-  *CircleAppearance="<Appearance><Material diffuseColor='.7 .7 .7' specularColor='.2 .2 .2'/></Appearance>",
-  *CUBEMAT="<Appearance><Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
+  *CircleAppearance="<Material diffuseColor='.7 .7 .7' specularColor='.2 .2 .2'/>",
+  *CUBEMAT="<Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/>",
 // rectangle, blue
-  *RECTMAT="<Appearance><Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *CYLMAT="<Appearance><Material diffuseColor='.9 .9 0'/></Appearance>",
-  *SPHEREMAT="<Appearance><Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *HULLMAT="<Appearance><Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *ELLIPSMAT="<Appearance><Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>",
-  *ELLIPS2MAT= "<Appearance><Material DEF='cylcolor' diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.5'/></Appearance>";
+  *RECTMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *TRIANGLEMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *CYLMAT="<Material diffuseColor='.9 .9 0'/>",
+  *SPHEREMAT="<Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *HULLMAT="<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *ELLIPSMAT="<Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *ELLIPS2MAT= "<Material DEF='cylcolor' diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.5'/>";
 
 // Type enumeration of geometric elements
 
@@ -81,10 +82,13 @@ typedef enum {
   GT_HollowCylinder = 8,  // cylinder without inner cylinder
   GT_Hull6          = 9,  // hull, given by length, bottom w1,w2,h, top w1,w2,h
   GT_Hull8          = 10, // hull, given by length, bottom w1,w2,h1,h2, top w1,w2,h1,h2
-  GT_Ellipsoid      = 11,  // cut of an ellipsoid
-  GT_OpenRectangle  = 12 // rectangle with spare inner rectangle
+  GT_Ellipsoid      = 11, // cut of an ellipsoid
+  GT_OpenRectangle  = 12, // rectangle with spare inner rectangle
+  GT_Triangle       = 13  // triangle given by 3 * x,y,z coordinates
 } GType;
 
+// GTMAX must be highest number of GType
+#define GTMAX 13
 
 /* 
    x along neutron beam
@@ -100,8 +104,8 @@ int xz_view; // default 0, view x,y
 
 void usage() {
   printf("usage:\n"
-         "sortiap {option} [-o outfile] infile {infile}\n"
-         "\tinfile\t\tone ore more input file names\n"
+         "sortiap {option} [-o outfile] {infile}\n"
+         "\tinfile\t\tzero ore more names of input files with trajectories\n"
          "\t-o outfile\tresult file, default stdout\n"
          "\n\toption\tmay be\n"
          "\t-a\tread ids from all input files, default is to assume all ids\n\t\t\tare to be seen in the first file\n"
@@ -120,7 +124,7 @@ void usage() {
   exit(0);
 }
 
-#define myexit(s) {fprintf(stderr,s); exit(2);}
+#define myexit(s) {fputs(s,stderr); exit(2);}
 #define myexit1(s,a) {fprintf(stderr,s,a); exit(2);}
 
 void setVF(float *v, const char *s) {
@@ -171,6 +175,9 @@ void parseX3dOptionFile() {
       break;
     case 's':
       GVS(pheremat,SPHEREMAT);
+      break;
+    case 't':
+      GVS(rianglemat,TRIANGLEMAT);
       break;
     case 'x':
       GVV(low,  viewport[0][0]);
@@ -338,30 +345,47 @@ void rotString (float u1, float u2, float u3,
 }
 
 
-const char *x3d_old[13], *x3d_new[13];
+const char *x3d_old[GTMAX+1], *x3d_new[GTMAX+1];
 
 void defineMaterials () {
   static char buf[256];
-  x3d_old[1] = x3d_new[1] =  LineAppearance;
-  x3d_old[3] = x3d_new[3] = CircleAppearance;
+  sprintf(buf, "<Appearance>%s</Appearance>", LineAppearance);
+  x3d_old[GT_Line] = x3d_new[GT_Line] = strdup(buf);
 
-  x3d_old[4] = "<Shape USE='cuboid'/>";
-  sprintf(buf, "<Shape DEF='cuboid'><Box/>%s</Shape>", CUBEMAT);
-  x3d_new[4] = strdup(buf);
+  sprintf(buf, "<Appearance>%s</Appearance>", CircleAppearance);
+  x3d_old[GT_Circle] = x3d_new[GT_Circle] = strdup(buf);
 
-  x3d_old[5] = "<Shape USE='cylinder'/>";
-  sprintf(buf, "<Shape DEF='cylinder'><Cylinder/>%s</Shape>", CYLMAT);
-  x3d_new[5] = strdup(buf);
+  x3d_old[GT_Cuboid] = "<Shape USE='cuboid'/>";
+  sprintf(buf, "<Shape DEF='cuboid'><Box/><Appearance>%s</Appearance></Shape>", CUBEMAT);
+  x3d_new[GT_Cuboid] = strdup(buf);
 
-  x3d_old[6] = "<Shape USE='sphere'/>";
-  sprintf(buf, "<Shape DEF='sphere'><Sphere/>%s</Shape>", SPHEREMAT);
-  x3d_new[6] = strdup(buf);
+  x3d_old[GT_Cylinder] = "<Shape USE='cylinder'/>";
+  sprintf(buf, "<Shape DEF='cylinder'><Cylinder/><Appearance>%s</Appearance></Shape>", CYLMAT);
+  x3d_new[GT_Cylinder] = strdup(buf);
+
+  x3d_old[GT_Sphere] = "<Shape USE='sphere'/>";
+  sprintf(buf, "<Shape DEF='sphere'><Sphere/><Appearance>%s</Appearance></Shape>", SPHEREMAT);
+  x3d_new[GT_Sphere] = strdup(buf);
+
+  x3d_old[GT_Triangle] = "<Appearance USE='triangle'/>";
+  sprintf(buf, "<Appearance DEF='triangle'>%s</Appearance>", TRIANGLEMAT);
+  x3d_new[GT_Triangle] = strdup(buf);
+
 }
 
-void drawRectangle(float *fa, char *rots, float width, float height) {
-  static char buf[256];
-  const char *use;
-  char b1[16], b2[16], b3[16], b4[16], b5[16];
+void drawTriangle(float fa[9], const char *use) {
+  int i;
+  static char b1[16];
+  fprintf (outf, "<Shape>%s<IndexedFaceSet coordIndex='0 1 2' solid='false'><Coordinate point='%s", use, sS5(fa[0], b1));
+  for (i=1; i<9; i++)
+    fprintf (outf, " %s", sS5(fa[i], b1));
+  fputs ("'/></IndexedFaceSet></Shape>\n", outf);
+}
+
+void drawRectangle(float *fa, char *rots, float width, float height, float angle) {
+
+  static char buf[256], pre[48], b1[16], b2[16], b3[16], b4[16], b5[16];
+  const char *use, *post;
   static int olduse;
 
   if (olduse) {
@@ -371,10 +395,19 @@ void drawRectangle(float *fa, char *rots, float width, float height) {
     use = buf;
     olduse = 1;
   }
-  fprintf (outf, "<Transform scale='%s %s 1' rotation='%s' translation='%s %s %s'>%s</Transform>\n",
+  if (angle != 0) {
+    // the rectangle should be rotated by angle first
+    // (0 0 1) is the orientation of 2D objects
+    sprintf(pre, "<Transform rotation='0 0 1 %s'>", sS5(toRad(angle), b1));
+    post = "</Transform>";
+  } else {
+    pre[0] = 0;
+    post = "";
+  }
+  fprintf (outf, "<Transform scale='%s %s 1' rotation='%s' translation='%s %s %s'>%s%s%s</Transform>\n",
            sS5(width/2.0f, b1), sS5(height/2.0f, b2), rots,
            sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5), 
-           use);
+           pre, use, post);
 }
 
 
@@ -526,7 +559,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     if (0 == strcmp(rs, "ircle")) {
       vtype = GT_Circle;  nargs = 9;
     } else if (0 == strcmp(rs, "uboid")) {
-      vtype = GT_Cuboid;  nargs = 11;
+      vtype = GT_Cuboid;  nargs = 9;
     } else if (0 == strcmp(rs, "ylinder")) {
       vtype = GT_Cylinder;  nargs = 8;
     }
@@ -554,7 +587,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     break;
   case 'R':
     if (0 == strcmp(rs, "ectangle")) {
-      vtype = GT_OpenRectangle;  nargs = 8;
+      vtype = GT_OpenRectangle;  nargs = 9;
     }
     break;
   case 'S':
@@ -563,6 +596,12 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     } else if (0 == strcmp(rs, "phere")) {
       vtype = GT_Sphere;  nargs = 4; 
     }
+    break;
+  case 'T':
+    if (0 == strcmp(rs, "riangle")) {
+      vtype = GT_Triangle;  nargs = 9;
+    }
+    break;
   }
   if (vtype < 0)
     return vtype;
@@ -609,13 +648,11 @@ void geom2X3D(char *fn) {
   const char *shape;
   static char line[256], trans[64], scaleb[64], rots[64],
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
-    used_before[10];  // denotes if a base geometric element has been defined so far
+    used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
   int vtype, ngeom = 0;
 
   defineMaterials();
-
-  memset(used_before, 0, 10);
 
   if (! *fn || ! (gf = fopen(fn, "r")))
     myexit("unable to read geometry file\n");
@@ -627,9 +664,10 @@ void geom2X3D(char *fn) {
     if (vtype < 0)
       myexit1("unknown geometry item in %s\n", fn);
 
-    // first 3 values give x,y,z position
-    sprintf(trans, "%s %s %s",
-            sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
+    if (vtype != GT_Triangle)
+      // first 3 values give x,y,z position
+      sprintf(trans, "%s %s %s",
+              sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
 
     shape = used_before[vtype] ? x3d_old[vtype] : x3d_new[vtype];
     used_before[vtype] = 1;
@@ -645,7 +683,7 @@ void geom2X3D(char *fn) {
     case GT_Rectangle:
       // Orientation of 2D objects is 0,0,1
       rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
-      drawRectangle(fa, rots, fa[6], fa[7]); 
+      drawRectangle(fa, rots, fa[6], fa[7], fa[8]); 
       break;
     case GT_OpenRectangle:
       // draw open rectangle as four adjacent rectangles
@@ -657,18 +695,18 @@ void geom2X3D(char *fn) {
         smallw = (w1-w2)/2;
         xshift = (w2+smallw)/2;
         fa[0] = x - xshift;
-        drawRectangle(fa, rots, smallw, h1); 
+        drawRectangle(fa, rots, smallw, h1, 0); 
         fa[0] = x + xshift;
-        drawRectangle(fa, rots, smallw, h1);
+        drawRectangle(fa, rots, smallw, h1, 0);
         fa[0] = x;
         y = fa[1];
         smallh = (h1-h2)/2;
         yshift = (h2+smallh)/2;
         fa[1] = y - yshift;
-        drawRectangle(fa, rots, w2, smallh); 
+        drawRectangle(fa, rots, w2, smallh, 0); 
         fa[1] = y + yshift;
-        drawRectangle(fa, rots, w2, smallh);
-      } 
+        drawRectangle(fa, rots, w2, smallh, 0);
+      }
       break;
     case GT_Circle:
       /// X3D ArcClose2D has default radius 1 in x,y plane
@@ -695,7 +733,7 @@ void geom2X3D(char *fn) {
     case GT_Sphere:
       scales = sS5(fa[3], scaleb);
       fprintf (outf, "<Transform scale='%s %s %s' translation='%s'>%s</Transform>\n",
-               scales, scales, scales, trans, shape);      
+               scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
@@ -715,7 +753,7 @@ void geom2X3D(char *fn) {
     case GT_Ellipsoid:
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3), 
+               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
                rots,
                sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5) );
       drawEllipsoidShape(fa[9], fa[10]);
@@ -729,7 +767,10 @@ void geom2X3D(char *fn) {
                rots,
                sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5));
       drawHollowCylinderShape(fa[8]);
-      fprintf (outf, "</Transform>\n");
+      fputs ("</Transform>\n", outf);
+      break;
+    case GT_Triangle:
+      drawTriangle(fa, shape);
       break;
     }
   }
@@ -740,24 +781,22 @@ void geom2X3D(char *fn) {
 void writeX3D() {
   int ntraj, count, i, id, mat;
   p_point p,q, first_p, last_p;
-  char buf[32], material_known[32];
+  static char buf[32], material_known[32];
 
   // start X3D file
-  fprintf(outf,
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+  fputs(  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
           "<!DOCTYPE X3D PUBLIC \"ISO//Web3D//DTD X3D 3.0//EN\" \"http://www.web3d.org/specifications/x3d-3.0.dtd\">\n"
           "<X3D profile='Interactive' version='3.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='http://www.web3d.org/specifications/x3d-3.0.xsd'>\n"
           "<head>\n"
           "<meta content='VITESS trajectories' name='editors'/>\n"
           "</head>\n"
           "<Scene>\n"
-          "<NavigationInfo type='\"EXAMINE\" \"ANY\"'/>\n"
+          "<NavigationInfo type='\"EXAMINE\" \"ANY\"'/>\n",
+          outf
           );
 
-  if (geom_file) 
+  if (geom_file)
     geom2X3D(geom_file);
-
-  memset(material_known, 0, 32);
 
   ntraj = 0;
 
@@ -818,10 +857,10 @@ void writeX3D() {
       if (p == last_p)
         break;
     }
-    fseek(outf, -1, SEEK_CUR); 
-    fprintf(outf, "'/></LineSet></Shape>\n");
+    fseek(outf, -1, SEEK_CUR);
+    fputs("'/></LineSet></Shape>\n", outf);
   }
-  fprintf(outf, "</Scene></X3D>\n");
+  fputs("</Scene></X3D>\n", outf);
 }
 
 float SquarePoints[][3] = { {-1,-1,0}, {1,-1,0}, {1,1,0}, {-1,1,0} };
@@ -894,7 +933,7 @@ void applyDirM(float res[4][4], float m[4][4], float n[3], float angle) {
   r[2][0] = n[2]*n[0]*fcosa - n[1]*sina;
   r[2][1] = n[2]*n[1]*fcosa + n[0]*sina;
   r[2][2] = n[2]*n[2]*fcosa + cosa;
-  r[3][3] = 1; 
+  r[3][3] = 1;
 
   matMul(res, r, m);
 }
@@ -1039,13 +1078,13 @@ void writeSVG() {
   p_point p,q;
   char ba[16], bb[16], bc[16], bd[16];
   float c1[2], c2[2], v, xlow, xhigh, xdelta, ydelta, d;
-    
+
   // compute value range
 
   c1[0] = c2[0] = (float) svg_width;
   c1[1] = c2[1] = 0;
 
-  for (id=0; id<id_count; id++) 
+  for (id=0; id<id_count; id++)
     for (p = point_buffer[id]; p; p = p->next) {
       minMax(c1, p->u.pos[0]);
       v = p->u.pos[1] *= scale2;
@@ -1086,11 +1125,11 @@ void writeSVG() {
   }
 
   xdelta =  (xhigh - xlow) / 100;
-  // to have comparable dimensions, we force y values 
+  // to have comparable dimensions, we force y values
 
   ydelta = (c2[1] - c2[0]) / 10;
   d = c2[1] - c2[0] + 2*ydelta;
-  strokeWS = sS5(d/100, strokeWB); 
+  strokeWS = sS5(d/100, strokeWB);
 
   // start SVG file
   fprintf(outf,
@@ -1105,8 +1144,8 @@ void writeSVG() {
           "</script></defs>\n",
           sS2(xlow -xdelta, ba), sS2(c2[0]-ydelta, bb),
           sS2(xhigh+xdelta, bc), sS2(c2[1]+ydelta, bd) );
- 
-  if (geom_file) 
+
+  if (geom_file)
     geom2SVG(geom_file);
 
   ntraj = 0;
@@ -1135,20 +1174,20 @@ void writeSVG() {
       pa = sS3(p->u.pos[0], ba);
       pb = sS3(b, bb);
       fprintf(outf,"%s,%s", pa, pb);
-      if (++i < count) fputc(',', outf); 
+      if (++i < count) fputc(',', outf);
     }
-    fprintf(outf, "\"/></g>\n");
+    fputs("\"/></g>\n", outf);
   }
 
   // finish SVG file
   for (i=1; i<=ntraj; i++)
     fprintf(outf, "<use id=\"uset%d\" xlink:href=\"#t%d\" onclick=\"meldung(%d);\"/>\"\n",
             i,i,i);
-  fprintf(outf, "</svg>\n");
+  fputs("</svg>\n", outf);
 }
 
 void writeTrajectory(int i) {
-  static char idstring[32]; // static to terminate string by 0  
+  static char idstring[32]; // static to terminate string by 0
   int count = 0;
   p_point p,q;
 
@@ -1218,7 +1257,8 @@ int main (int argc, char **argv) {
     }
   }
 
-  if (infilecount < 1) usage();
+  if (infilecount < 1 && (output_type < 1 || output_type > 3))
+    usage();
 
   if (outfilename) {
     outf = fopen(outfilename, "w");
@@ -1227,6 +1267,17 @@ int main (int argc, char **argv) {
     outf = stdout;
 
   parseX3dOptionFile();
+
+  if (infilecount < 1) {
+    // just transform the experiment geometry
+    if (output_type == 1)
+      writeSVG();
+    else
+      writeX3D();
+    if (outf != stdout)
+      fclose(outf);
+    return 0;
+  }
 
   maxIdFile = ids_from_all_files ? infilecount-1 : 0;
 
