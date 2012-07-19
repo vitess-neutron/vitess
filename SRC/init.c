@@ -614,6 +614,9 @@ void Init(int argc, char **argv, VtModID eModule)
       { sprintf(text, "Module %ld could not be found in 'instrument.inf'", iModuleNo);
         Error(text);
       }
+	  else
+	  {  nModuleNo = iModuleNo;
+	  }
       CopyVector(BegPosM, BegPosS);
     }
     else
