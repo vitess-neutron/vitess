@@ -1,4 +1,6 @@
-#/********************************************************************************************/
+#ifndef MATHFUNCTIONS_CPP
+#define MATHFUNCTIONS_CPP
+/********************************************************************************************/
 /*  VITESS module 'mathfunctions.cpp'                                                       */
 /*    functions written in C++ for various VITESS modules                                   */
 /*                                                                                          */
@@ -9,12 +11,16 @@
 /* 1.0  D.Nekrassov: Jul 2012,  initial version                                             */
 /********************************************************************************************/
 
+extern "C" {
 #include "general.h"
+#include "init.h"
+}
+
 #include "mathfunctions.h"
 
 // extern FILE*    LogFilePtr;     /* stream to which things are logged */
 
-double startPoint, endPoint;
+
 
 // Use 4 equations to determine ellipse parameters
 // x1^2 = longAxis*longAxis - longAxis*longAxis/(shortAxis*shortAxis)*y1*y1
@@ -47,7 +53,6 @@ short CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, dou
 
   if (fabs((y2 - y1)/y2) < 1e-4) {
 
-    //    for (int i = 0; i < 4; i++) solutions[i] = length/2.;
     double x = length/2.;
     double focalPoint = x + dist;
 
@@ -73,7 +78,7 @@ short CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, dou
 	shortAxis = shortAxisTemp;
       }
       else {
-	//	fprintf(LogFilePtr,"WARNING: Check ellipse parameters for correctness!\n");
+	fprintf(LogFilePtr,"WARNING: Check ellipse parameters for correctness!\n");
       }
       
     }
@@ -142,6 +147,15 @@ short CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, dou
     }
   }
   return solutionFound;
+
+}
+
+
+double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign)
+{
+
+  double y = shortAxis*sqrt(1. - x*x/(longAxis*longAxis))*sign;
+  return y;
 
 }
 
@@ -383,3 +397,93 @@ void SolveQuarticEquation(double a, double b, double c, double d, double* soluti
 
 }
 
+double CheckSolution(double x, double a, double b, double c, double d)
+{
+
+  double y = pow(x, 4) + a*pow(x,3) + b*pow(x, 2) + c*x + d;
+
+  if (fabs(y) > 1e-4) {
+
+    double newX = ImprovePrecision(x, y, a, b, c, d);
+    y = pow(newX, 4) + a*pow(newX, 3) + b*pow(newX, 2) + c*newX + d;
+    return newX;
+  }
+  else {
+    return x;
+  }
+}
+
+double ImprovePrecision(double x, double y, double a, double b, double c, double d)
+{
+
+  double diff = 1.;
+  double lastDiff = y;
+  double lastX = x;
+  double lastXWithDifferentSign = x;
+  double factor = 1.;
+  bool useDeltaX = true;
+
+  int j = 0;
+
+  while (j < 50) {
+
+    double deltaX = x*0.0000001*factor;
+    if (useDeltaX) x += deltaX;
+
+    diff = pow(x, 4) + a*pow(x,3) + b*pow(x, 2) + c*x + d;
+
+    if (fabs(diff) < 1e-4) break;
+
+    if (useDeltaX) {
+      if ((diff/lastDiff) > 0 && fabs(diff) < fabs(lastDiff)) {
+	
+	factor *= 2.;
+	lastDiff = diff;
+	
+      }
+      else if ((diff/lastDiff) > 0 && fabs(diff) > fabs(lastDiff)) {
+	
+	factor *= -2.;
+	lastDiff = diff;
+	
+      }
+      else if ((diff/lastDiff) < 0) {
+	
+	lastXWithDifferentSign = lastX;
+	lastX = x;
+	x = (x + lastXWithDifferentSign)/2.;
+	useDeltaX = false;
+	lastDiff = diff;
+	
+      }
+    }
+    else {
+
+      if ((diff/lastDiff) < 0) {
+
+	lastXWithDifferentSign = lastX;
+	lastX = x;
+	x = (x + lastXWithDifferentSign)/2.;
+	lastDiff = diff;
+
+      }
+      else {
+
+	lastX = x;
+	x = (x + lastXWithDifferentSign)/2.;
+	lastDiff = diff;
+
+      }
+
+    }
+
+    j++;
+
+  }
+
+  return x;
+
+}
+
+
+#endif
