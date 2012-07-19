@@ -429,6 +429,8 @@ void processNeutron(int neutron_i, int thread_i) {
   myneutron = InputNeutrons + neutron_i;
 
   /* myneutron->Position.X = 0.0;   !!!!!!!! */
+  CopyVector(BegPosM, BegPosS);
+
   /****************************************************************************************/
   /* Check to see if the neutron is initially in the entrance to the guide...             */
   /****************************************************************************************/
@@ -664,6 +666,8 @@ void processNeutron(int neutron_i, int thread_i) {
     
     if (keyReflVerbose != 0 && j == 0)
       WriteReflParam(PRefOut, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
+    if (j == 0)
+      WriteIAP(myneutron, VT_ENTERED); 
     
     // donkey work routine
     TimeOF1 = PathThroughGuideGravOrder1
@@ -672,8 +676,6 @@ void processNeutron(int neutron_i, int thread_i) {
 
     if (keyReflVerbose == 2 && j == nPieces-1)
       WriteReflParam(PRefOut, 5, myneutron, &pPieces[j], eGwExit, 0., 0.);
-    if (j == nPieces-1)
-      WriteIAP(myneutron, VT_ENTERED); 
 
     if (TimeOF1 == -1.0) {
       test=FALSE;
@@ -2098,7 +2100,7 @@ double PathThroughGuideGravOrder1(int thread_i,
       if (iPiece == nPieces-1) {
         WriteIAP(pThisNeutron, VT_EXITED);
       } else {
-        WriteIAP(pThisNeutron, VT_TRANSIT);
+ //       WriteIAP(pThisNeutron, VT_TRANSIT);
       }
       TimeOFTotal += TimeOFmin;
       return TimeOFTotal;

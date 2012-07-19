@@ -375,7 +375,8 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr, "\n");
    }  // end loop over moderators
 
-   WriteInstrData(NullPos);
+   if (!bVisTraj) 
+     WriteInstrData(NullPos);
    WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
    /* Propagation, Polarisation */
