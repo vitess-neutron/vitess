@@ -13,7 +13,7 @@ extern "C" {
 }
 
 #include "mathvector.h"
-
+#include "mathfunctions.h"
 
 
 /*** Global variables ***/
@@ -89,15 +89,15 @@ void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, 
 void IntersectStraightTrajectoryWithEllipse(double longAxis, double shortAxis, double b, double m, double xMin, double &x, double &y);
 void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y);
 
-double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign = 1.);
+//double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign = 1.);
 double CalculateGuidePoint(double x, int dir, double sign = 1.);
 
 int TestAbsorptionInBeamstop();
 
-bool CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, double length, double dist, double &longAxis, double &shortAxis);
-void SolveQuarticEquation(double a, double b, double c, double d, double* solutions, bool switchSign);
-double ImprovePrecision(double x, double y, double a, double b, double c, double d);
-double CheckSolution(double x, double a, double b, double c, double d);
+/* bool CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, double length, double dist, double &longAxis, double &shortAxis); */
+/* void SolveQuarticEquation(double a, double b, double c, double d, double* solutions, bool switchSign); */
+/* double ImprovePrecision(double x, double y, double a, double b, double c, double d); */
+/* double CheckSolution(double x, double a, double b, double c, double d); */
 
 
 void OwnInit(int argc, char *argv[]);
