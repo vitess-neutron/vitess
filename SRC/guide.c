@@ -2053,34 +2053,29 @@ double GetLengthFromFile(FILE *file)
 	char sLine[512];
 	double xStart = 0;
 	double xEnd = 0;
+	int j = 0;
+	double tempX, tempY, tempZ;
+	char* stemp1, stemp2, stemp3, stemp4;
 
 	fpos_t position;	
 	fgetpos (file, &position);
-
-	int j = 0;
 	
 	for(j=0; j <= nPieces; j++)
-    {	
-   		ReadLine(file, sLine, sizeof(sLine)-1);
-
-		double tempX, tempY, tempZ;
-		char* stemp1, stemp2, stemp3, stemp4;
+  {	
+    ReadLine(file, sLine, sizeof(sLine)-1);
 		
-		sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ, 
-		       (char*) &stemp1, (char*) &stemp2, (char*) &stemp3, (char*) &stemp4);
-
-	tempX *= 100.;
+    sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ, 
+                                            (char*) &stemp1, (char*) &stemp2, (char*) &stemp3, (char*) &stemp4);
+  	tempX *= 100.;
 		
-	if (j == 0) xStart = tempX;
-
-	if (j == nPieces) xEnd = tempX;
+    if (j == 0) xStart = tempX;
+    if (j == nPieces) xEnd = tempX;
 		
 	}
 
 	fsetpos(file, &position);
 	
 	return (xEnd - xStart);
-	
 }
 
 
