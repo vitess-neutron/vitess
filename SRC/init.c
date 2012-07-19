@@ -1027,7 +1027,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   int        k;
   VectorType vRelPos,                            // position vector in the local co-ordinate system
              vDir,                               // direction vector in the absolute co-ordinate system
-             vAbsCntr, vAbsPos1, vAbsPos2;       // position vector in the absolute co-ordinate system
+   vAbsCntr, vAbsPos1, vAbsPos2, vAbsPos3;       // position vector in the absolute co-ordinate system
 
   /* the source module opens the file */
   if (stGeometry.eModule == VT_SOURCE)
@@ -1070,8 +1070,20 @@ void WriteGeomData(VectorType vBegPos, double Length)
         Transform (vDir,     stGeometry.pRectangle[k].vNormal, vNull);
 
         DrawRectangle(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
-                      stGeometry.pRectangle[k].Width, stGeometry.pRectangle[k].Height); 
+                      stGeometry.pRectangle[k].Width, stGeometry.pRectangle[k].Height, 
+		      stGeometry.pRectangle[k].rotAngle); 
       }
+
+      /* Triangles */
+      for (k=0; k < stGeometry.nTriangles; k++)
+      { 
+        Transform (vAbsPos1, stGeometry.pTriangle[k].vEdges[0], vBegPos);
+        Transform (vAbsPos2, stGeometry.pTriangle[k].vEdges[1], vBegPos);
+	Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
+
+        DrawTriangle(pGeomFile, stGeometry.pDescr, vAbsPos1, vAbsPos2, vAbsPos3); 
+      }
+           
 
       /* OpenRectangles */
       for (k=0; k < stGeometry.nOpenRects; k++)
@@ -1155,7 +1167,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
       }
       else
       {
-        DrawRectangle(pGeomFile, stPicture.pDescr, vBegPos, vDir, 15.0, 15.0);
+        DrawRectangle(pGeomFile, stPicture.pDescr, vBegPos, vDir, 15.0, 15.0, 0.);
       }
     }
 
@@ -1300,12 +1312,21 @@ void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorTy
 }   
 
 void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
-                   double Width, double Height)
+                   double Width, double Height, double rotAngle)
 {
-  fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %s\n", 
+  fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f  %10.5f %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  
                      vDir[0], vDir[1], vDir[2],
-                     Width/100.0, Height/100.0,   pDescr);        
+	             Width/100.0, Height/100.0, rotAngle, pDescr);        
+}
+
+void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2,
+                   VectorType vEdge3)
+{
+  fprintf(pGeomFile, "Triangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %s\n", 
+	  vEdge1[0]/100.0, vEdge1[1]/100.0, vEdge1[2]/100.0, 
+	  vEdge2[0]/100.0, vEdge2[1]/100.0, vEdge2[2]/100.0,
+	  vEdge3[0]/100.0, vEdge3[1]/100.0, vEdge3[2]/100.0, pDescr);        
 }
 
 void DrawOpenRect(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 

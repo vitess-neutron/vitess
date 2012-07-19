@@ -280,8 +280,15 @@ typedef struct
   VectorType vNormal;
   double     Width;
   double     Height;
+  double     rotAngle;
 }  
 VtRectangle;
+
+typedef struct
+{
+  VectorType vEdges[3];
+}  
+VtTriangle;
 
 typedef struct
 {
@@ -371,6 +378,8 @@ typedef struct
   int          nLines;
   VtRectangle* pRectangle;
   int          nRectangles; 
+  VtTriangle*  pTriangle;
+  int          nTriangles; 
   VtOpenRect*  pOpenRect;
   int          nOpenRects; 
   VtCircle*    pCircle;

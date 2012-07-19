@@ -28,7 +28,7 @@
 /******************************/
 
 void  OwnInit(int argc, char *argv[]);
-
+void  SetGeometryData();
 
 /******************************/
 /** Global Variables         **/
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 	EndPoint2.D = -1.0*(Thicknesscoll+DistMove);
 
 
-
+	SetGeometryData();
 
 	/*if(keygrav == 1)
 	{
@@ -361,7 +361,8 @@ int main(int argc, char *argv[])
       if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
 				Output = InputNeutrons[i];
 				WriteNeutron(&Output);
-        continue;
+				WriteIAP(&Output, VT_EXITED);
+				continue;
       }
 
       if (bOldFrame==FALSE) {
@@ -372,6 +373,8 @@ int main(int argc, char *argv[])
       } else
 			  Output = InputNeutrons[i];
 
+     WriteIAP(&Output, VT_ENTERED);
+     
 			if (keygrav == 1)
 			{
 				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
@@ -410,7 +413,10 @@ int main(int argc, char *argv[])
         //CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
         //Phi = Phi*180.0/M_PI;
         Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
-        if (Phi < minPhi || Phi > maxPhi) continue;
+        if (Phi < minPhi || Phi > maxPhi) {
+	  WriteIAP(&Output, VT_ABSORBED);
+	  continue;
+	}
       }
 
 			if(bCircularWindow==TRUE)
@@ -470,6 +476,8 @@ int main(int argc, char *argv[])
         } else
            InputNeutrons[i]=Output;
 
+	WriteIAP(&Output, VT_EXITED);
+	
 				WriteNeutron(&Output);
       }
 			else /* else, if hitting beamstop or out of window */
@@ -502,7 +510,13 @@ int main(int argc, char *argv[])
 	 				 InputNeutrons[i].Time += (double)TOF3;
 	 				 InputNeutrons[i].Position[0]=0.0;
 					 Output = InputNeutrons[i];
-				 	 WriteNeutron(&Output);
+				 	 if (InputNeutrons[i].Probability <= wei_min) {
+					   WriteIAP(&Output, VT_ABSORBED);
+					 }
+					 else {
+					   WriteIAP(&Output, VT_EXITED);
+					   WriteNeutron(&Output);
+					 }
 				 }
 			}
 		}
@@ -654,7 +668,51 @@ void  OwnInit(int argc, char *argv[])
 
 
 
+void SetGeometryData()
+{
 
 
+  bVisInstalled = TRUE;
+ // Geometry data
+  if (bVisInstr)
+  { 
 
+    if (bCircularWindow) {
+      
+      stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
+      stGeometry.nCylinders = 1;
 
+      stGeometry.pCylinder[0].Radius = winradius;
+      stGeometry.pCylinder[0].Length = Max(Thicknesscoll, Thicknesscolli);
+      stGeometry.pCylinder[0].vCntr[0]  = DistMove + stGeometry.pCylinder[0].Length/2.;
+      stGeometry.pCylinder[0].vCntr[1]  = ywincenter;
+      stGeometry.pCylinder[0].vCntr[2]  = zwincenter;
+      stGeometry.pCylinder[0].vSymAxis[0] = 1.;
+      stGeometry.pCylinder[0].vSymAxis[1] = 0.;
+      stGeometry.pCylinder[0].vSymAxis[2] = 0.;
+      
+      stGeometry.pDescr  = "space window";
+      stGeometry.eModule = VT_WINDOW;
+
+    }
+    else {
+
+    stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
+    stGeometry.nCuboids = 1; 
+
+    stGeometry.pCuboid[0].Length = widthmax - widthmin; 
+    stGeometry.pCuboid[0].Width  = heightmax - heightmin;
+    stGeometry.pCuboid[0].Height = Max(Thicknesscoll, Thicknesscolli);
+    stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Height/2.;
+    stGeometry.pCuboid[0].vCntr[1]  = ywincenter;
+    stGeometry.pCuboid[0].vCntr[2]  = zwincenter;
+    stGeometry.pCuboid[0].vNormal[0]= 0.0;
+    stGeometry.pCuboid[0].vNormal[1]= cos(rotang);
+    stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
+
+    stGeometry.pDescr  = "space window";
+    stGeometry.eModule = VT_WINDOW;
+
+    }
+  }
+}
