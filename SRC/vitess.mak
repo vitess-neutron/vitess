@@ -98,7 +98,6 @@ ALL : \
 	"$(OD)\eval_sans.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
-	"$(OD)\guide_parallel.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
@@ -117,11 +116,12 @@ ALL : \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
+	"$(OD)\flipper_gradient.exe" \
+	"$(OD)\rotating_field.exe" \
+	"$(OD)\resonator_drabkin.exe" \
 	"$(OD)\monitor2D.exe" \
 	"$(OD)\guide_elliptic.exe" \
-	"$(OD)\rotating_field.exe" \
-	"$(OD)\flipper_gradient.exe" \
-	"$(OD)\resonator_drabkin.exe" \
+	"$(OD)\guide_parallel.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
@@ -508,13 +508,6 @@ SOURCE=$(SPATH)\guide.c
 "$(OD)\guide.exe" : "$(OD)" $(MTOOL) "$(OD)\guide.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide.pdb" /out:"$(OD)\guide.exe" "$(IDIR)\guide.obj" $(MTOOL) 
 
-SOURCE=$(SPATH)\guide_parallel.c
-"$(IDIR)\guide_parallel.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\guide_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
-	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
-
 SOURCE=$(SPATH)\monitorpol_1d.c
 "$(IDIR)\monitorpol_1d.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -641,6 +634,27 @@ SOURCE=$(SPATH)\mirror_elliptical.c
 "$(OD)\mirror_elliptical.exe" : "$(OD)" $(MTOOL) "$(OD)\mirror_elliptical.obj" "$(OD)\mirrrefl.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mirror_elliptical.pdb" /out:"$(OD)\mirror_elliptical.exe" "$(IDIR)\mirror_elliptical.obj" $(MTOOL) "$(OD)\mirrrefl.obj" 
 
+SOURCE=$(SPATH)\flipper_gradient.c
+"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\flipper_gradient.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_gradient.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\rotating_field.c
+"$(IDIR)\rotating_field.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\rotating_field.exe" : "$(OD)" $(MTOOL) "$(OD)\rotating_field.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\resonator_drabkin.c
+"$(IDIR)\resonator_drabkin.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MTOOL) "$(OD)\resonator_drabkin.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MTOOL) 
+
 SOURCE=$(SPATH)\monitor2D.cpp
 "$(IDIR)\monitor2D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -652,29 +666,15 @@ SOURCE=$(SPATH)\guide_elliptic.cpp
 "$(IDIR)\guide_elliptic.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\guide_elliptic.exe" : "$(OD)" $(NTOOL) "$(OD)\guide_elliptic.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(NTOOL) 
+"$(OD)\guide_elliptic.exe" : "$(OD)" $(GTOOL) "$(OD)\guide_elliptic.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(GTOOL) 
 
-SOURCE=$(SPATH)\rotating_field.c
-"$(IDIR)\rotating_field.obj" : $(SOURCE)
+SOURCE=$(SPATH)\guide_parallel.c
+"$(IDIR)\guide_parallel.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\rotating_field.exe" : "$(OD)" $(MGTOOL) "$(OD)\rotating_field.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MGTOOL) 
-
-SOURCE=$(SPATH)\flipper_gradient.c
-"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\flipper_gradient.exe" : "$(OD)" $(MGTOOL) "$(OD)\flipper_gradient.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MGTOOL) 
-
-SOURCE=$(SPATH)\resonator_drabkin.c
-"$(IDIR)\resonator_drabkin.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MGTOOL) "$(OD)\resonator_drabkin.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MGTOOL) 
+"$(OD)\guide_parallel.exe" : "$(OD)" $(MGTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MGTOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\sample_powder.c
 "$(IDIR)\sample_powder.obj" : $(SOURCE)

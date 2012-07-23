@@ -47,7 +47,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide guide_parallel
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_sm_parallel
@@ -61,13 +61,19 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide g
 	    sample_singcryst
 	    cas_v40
 	    mirror_elliptical
+            flipper_gradient
+            rotating_field
+            resonator_drabkin
           );
 
 # modules NTOOL (= TOOL + mathvector mathmatrix mon2D)
-my @CN = qw(monitor2D guide_elliptic);
+my @CN = qw(monitor2D);
 
-# modules which need MGTOOL (=MTOOL)
-my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
+# modules which need MGTOOL (=MTOOL + mathfunctions)
+my @CMG = qw(guide_parallel);
+
+# module which need GTOOL (=TOOL + mathvector mathfunctions)
+my @CG = qw(guide_elliptic);
 
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
@@ -85,6 +91,7 @@ $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
 $Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
 $Macro{$_} = '$(NTOOL)' foreach (@CN);
+$Macro{$_} = '$(GTOOL)' foreach (@CG);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
@@ -137,7 +144,7 @@ my %Thread;
 $Thread{$_} = 1 foreach @ParMod;
 
 
-my @All = (@C, @CI, @CM, @CN, @CMG, @CS, @Gexe, @PTool);
+my @All = (@C, @CI, @CM, @CN, @CG, @CMG, @CS, @Gexe, @PTool);
 
 ###
 ### end define targets #####################################################################
@@ -277,9 +284,10 @@ EOS
 TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL)
+MGTOOL = $(MTOOL) mathfunctions.o
 STOOL = sample.o $(MTOOL)
 NTOOL = mathvector.o mathmatrix.o mon2D.o $(TOOL)
+GTOOL = mathvector.o mathfunctions.o $(TOOL)
 
 EOS
 
@@ -480,8 +488,12 @@ EOS
   $rule =~ s/MTOOL/NTOOL/g;
   subRule($rule, @CN);
 
+  # GTool, @CG
+  $rule =~ s/NTOOL/GTOOL/g;
+  subRule($rule, @CG);
+
   # MGTool, @CMG
-  $rule =~ s/NTOOL/MGTOOL/g;
+  $rule =~ s/GTOOL/MGTOOL/g;
   subRule($rule, @CMG);
 
   # STool, @CS
