@@ -263,7 +263,9 @@ double
   surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
   MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
   MuAbs =0.0,           /* macroscopic absorption coeff. in 1/cm */
-  rotplane = 0.0;       /* Additional planes: rotation angle */
+  rotplane = 0.0,       /* Additional planes: rotation angle */
+  startPoint = 0.0,
+  endPoint = 0.0;
 
 double AreaY=0., AreaZ=0.;   /* Approximate area of guide planes in cm**2 */
 GuidePiece *pPieces;         /* Holds piece Informations. Replaces Xpce, Ypce, Zpce */
