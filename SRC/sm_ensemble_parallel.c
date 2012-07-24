@@ -317,11 +317,20 @@ void OwnInit(int argc, char *argv[])
 void DetermineAndLogMirrorShape(int i)
 {
 
-  fprintf(LogFilePtr, "%10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
-	  r1[i][0], r1[i][1], r1[i][2], r2[i][0], r2[i][1], r2[i][2], r3[i][0], r3[i][1], r3[i][2], r4[i][0], r4[i][1], r4[i][2]);
-
-  // Initialise all 6 vectors in a quadrangle
+	// Initialise all 6 vectors in a quadrangle
   VectorType v[6];
+  int largestVectorIndex = -1;
+  int secondLargestVectorIndex = -1;
+  double largestVector = 0.;
+  double width = 0.;
+  int widthIndex = -1;
+  double height = 0.;
+  int heightIndex = -1;
+  int j;
+  int numRightAngles[4];
+  int counter = 0;
+  short isRectangle = 1;	
+
   CopyVector(r2[i], v[0]);  
   SubVector(v[0], r1[i]);
 
@@ -340,14 +349,8 @@ void DetermineAndLogMirrorShape(int i)
   CopyVector(r4[i], v[5]);  
   SubVector(v[5], r2[i]);
 
-  int largestVectorIndex = -1;
-  int secondLargestVectorIndex = -1;
-  double largestVector = 0.;
-  double width = 0.;
-  int widthIndex = -1;
-  double height = 0.;
-  int heightIndex = -1;
-  int j;
+  fprintf(LogFilePtr, "%10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
+	  r1[i][0], r1[i][1], r1[i][2], r2[i][0], r2[i][1], r2[i][2], r3[i][0], r3[i][1], r3[i][2], r4[i][0], r4[i][1], r4[i][2]);
 
   // Determine the two largest vectors of the mirror element
   // In a rectangle these are the two diagonals
@@ -378,38 +381,36 @@ void DetermineAndLogMirrorShape(int i)
 
   // Determine whether we deal with a rectangle
   // 4 right angles have to be present
-  int numRightAngles[4];
+  
   for (j = 0; j < 4; j++) numRightAngles[j] = 0;
-  int counter = 0;
+	
   for (j = 0; j < 6; j++) {
-    if (j == largestVectorIndex || j == secondLargestVectorIndex) continue;
-    
-    int k;
+	  int k;	
+	if (j == largestVectorIndex || j == secondLargestVectorIndex) continue;
+
     for (k = j; k < j+6; k++) {
       int kk = k%6;
-      if (kk == largestVectorIndex || kk == secondLargestVectorIndex) continue;
-      
-      double scalarProd = fabs(ScalarProduct(v[j], v[kk]));
+	  double scalarProd = fabs(ScalarProduct(v[j], v[kk]));	
       double angle = acos(scalarProd/(LengthVector(v[j])*LengthVector(v[kk])))*180./M_PI;
+      if (kk == largestVectorIndex || kk == secondLargestVectorIndex) continue;
       if (angle > 89.9)  numRightAngles[counter]++;
     }
     
     counter++;
   }
 
-  short isRectangle = 1;
   for (j = 0; j < 4; j++) isRectangle &= (numRightAngles[j] == 2);
   
   // Set the rectangle parameters
   if (isRectangle) {
 
+	VectorType zAxis = {0, 0, 1};
+    double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));		
     stGeometry.nRectangles++;
     CopyVector(WallOffset[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
     CopyVector(WallNormal[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vNormal);
     stGeometry.pRectangle[stGeometry.nRectangles-1].Width = width;
     stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
-    VectorType zAxis = {0, 0, 1};
-    double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));
     stGeometry.pRectangle[stGeometry.nRectangles-1].rotAngle = rotationAngle/M_PI*180.;
 
   }
@@ -492,10 +493,11 @@ void SetGeometryData()
  
   // Geometry data
  if (bVisInstr) {
-   
+   int i;
+
    stGeometry.pRectangle = calloc(max_mirr, sizeof(VtRectangle));
    stGeometry.pTriangle = calloc(max_mirr*2, sizeof(VtTriangle));
-   int i;
+   
    for (i = 1; i <= max_mirr; i++) {
      DetermineAndLogMirrorShape(i);
    }
@@ -509,8 +511,10 @@ void SetGeometryData()
 
 void OwnCleanup()
 {
-  SetGeometryData();
-  int i,c;
+  
+	int i,c;
+	SetGeometryData();
+  
 #ifdef VT_GRAPH
   if (p >= 2) cpgclos();
 #endif
@@ -792,7 +796,10 @@ void processNeutron (int i, int thread_i) {
     }
 
     for (l=1; l<=max_mirr; l++) { // loop over mirrors
-      if (m == l) continue;
+      Neutron *n;
+	  CopyNeutron(&InputNeutrons[i], n);
+
+	  if (m == l) continue;
       for (im=1; im<=max_mirr; im++)
 	if (im != l && PathA[l] > PathA[im])
 	  break;
@@ -805,6 +812,11 @@ void processNeutron (int i, int thread_i) {
       Prob = prob[l];
       m = l;
       nocol++;
+	  
+	  CopyVector(Pos, n->Position);
+	  CopyVector(Dir, n->Vector);
+	  WriteIAP(n, VT_REFLECTED);
+
       if (p) {
 	if (p==1)
 	  fprintf(COLLFILE,
