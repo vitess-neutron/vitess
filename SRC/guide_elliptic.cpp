@@ -217,7 +217,7 @@ void OwnInit(int argc, char *argv[])
        }
        else {
           
-	 if (!CalculateEllipseParametersFromStartAndExitWidths(startWidth, endWidth, lengthGuide, distToFocus, longAxisHor, shortAxisHor)) {
+	 if (!CalculateEllipseParametersFromStartAndExitWidths(startWidth, endWidth, lengthGuide, distToFocus, longAxisHor, shortAxisHor, startPoint, endPoint)) {
 	   fprintf(LogFilePtr,"Unable to determine horizontal ellipse parameters from input!");
 	   exit (-1);
 	 }
@@ -261,7 +261,7 @@ void OwnInit(int argc, char *argv[])
        }
        else {
  
-	 if (!CalculateEllipseParametersFromStartAndExitWidths(startHeight, endHeight, lengthGuide, distToFocus, longAxisVer, shortAxisVer)) {
+	 if (!CalculateEllipseParametersFromStartAndExitWidths(startHeight, endHeight, lengthGuide, distToFocus, longAxisVer, shortAxisVer, startPoint, endPoint)) {
 	   fprintf(LogFilePtr,"Unable to determine vertical ellipse parameters from input!");
 	   exit (-1);
 	 }
