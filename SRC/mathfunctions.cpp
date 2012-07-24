@@ -11,12 +11,14 @@
 /* 1.0  D.Nekrassov: Jul 2012,  initial version                                             */
 /********************************************************************************************/
 
+
 extern "C" {
 #include "general.h"
 #include "init.h"
 }
 
 #include "mathfunctions.h"
+
 
 // extern FILE*    LogFilePtr;     /* stream to which things are logged */
 
@@ -39,7 +41,8 @@ extern "C" {
 //return values: longAxis and shortAxis are returned in m!
 //               startPoint and endPoint are x coordinates for the entrance and exit of the ellipse 
 //               in a coordinate system, of which the origin is in the center of the ellipse.
-short CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, double length, double dist, double &longAxis, double &shortAxis)
+short CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, double length, double dist, 
+		double &longAxis, double &shortAxis, double& startPoint, double &endPoint)
 {
 
   double y1 = w1/200.;
@@ -160,9 +163,10 @@ double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double
 }
 
 
-extern "C" short C_CalculateEllipseParameters(double w1, double w2, double length, double dist, double* longAxis, double* shortAxis)
+extern "C" short C_CalculateEllipseParameters(double w1, double w2, double length, double dist, 
+		double* longAxis, double* shortAxis, double* startPoint, double* endPoint)
 {
-  return CalculateEllipseParametersFromStartAndExitWidths(w1, w2, length, dist, *longAxis, *shortAxis);    
+  return CalculateEllipseParametersFromStartAndExitWidths(w1, w2, length, dist, *longAxis, *shortAxis, *startPoint, *endPoint);    
 }
 // Script assumes following equation: x^4 + a*x^3 + b*x^2 + c*x + d = 0
 // double solutions*: pointer to array with 4 doubles.

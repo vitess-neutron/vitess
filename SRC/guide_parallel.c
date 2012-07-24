@@ -1,3 +1,6 @@
+#ifndef GUIDE_PARALLEL_C
+#define GUIDE_PARALLEL_C
+
 /********************************************************************************************/
 /*  VITESS module guide                                                                     */
 /* The free non-commercial use of these routines is granted providing due credit is given to*/
@@ -64,10 +67,10 @@
 #include "string.h"
 #include "threadHelper.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "mathfunctions.h"
-
-
 
 #define INDEX(x,y) (x*(nbinsY)+y)
 
@@ -263,9 +266,11 @@ double
   surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
   MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
   MuAbs =0.0,           /* macroscopic absorption coeff. in 1/cm */
-  rotplane = 0.0,       /* Additional planes: rotation angle */
-  startPoint = 0.0,
-  endPoint = 0.0;
+  rotplane = 0.0;      /* Additional planes: rotation angle */
+
+double startPoint=0.;
+double endPoint=0.;
+
 
 double AreaY=0., AreaZ=0.;   /* Approximate area of guide planes in cm**2 */
 GuidePiece *pPieces;         /* Holds piece Informations. Replaces Xpce, Ypce, Zpce */
@@ -1876,7 +1881,7 @@ double Height(double dLength)
       break;
 
     case VT_ELLIPTIC:
-      C_CalculateEllipseParameters(GuideEntranceHeight, GuideExitHeight, dTotalLength/100.0, D_Foc2Z/100.0, &LAxisZ, &SAxisZ);
+      C_CalculateEllipseParameters(GuideEntranceHeight, GuideExitHeight, dTotalLength/100.0, D_Foc2Z/100.0, &LAxisZ, &SAxisZ, &startPoint, &endPoint);
 	  FocDistZ       = 100.0 * sqrt(sq(LAxisZ) - sq(SAxisZ)); // m -> cm
 	  GuideMaxHeight = 200.0 * SAxisZ;                        // m -> cm
 	  LAxisZ        *= 100.0;                                 // m -> cm
@@ -1922,7 +1927,7 @@ double Width(double dLength)
       break;
 
     case VT_ELLIPTIC:
-      C_CalculateEllipseParameters(GuideEntranceWidth, GuideExitWidth, dTotalLength/100.0, D_Foc2Y/100.0, &LAxisY, &SAxisY);
+      C_CalculateEllipseParameters(GuideEntranceWidth, GuideExitWidth, dTotalLength/100.0, D_Foc2Y/100.0, &LAxisY, &SAxisY, &startPoint, &endPoint);
 	  FocDistY      = 100.0*sqrt(sq(LAxisY) - sq(SAxisY)); // m -> cm
 	  GuideMaxWidth = 200.0*SAxisY;                        // m -> cm
 	  LAxisY       *= 100.0;                               // m -> cm
@@ -2481,3 +2486,6 @@ void GetKeyName(const int key, char* buf)
     default:                sprintf(buf, "%s:%d", "None"                    , key); break;
   }
 }
+
+
+#endif
