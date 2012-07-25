@@ -544,7 +544,7 @@ static VINLINE void CartesianToSpherical2(const VectorType Vector, double *Theta
 static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const VectorType rt) {
   // Area(r1,r2) > Area(r1,rt) + Area(r2, rt)
   double lv1,lv2,lvt, lva,lvb,lvc, sp12,sp1t,sp2t;
-  lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVector²
+  lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVectorÂ²
   lv2 = r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2];
   lvt = rt[0]*rt[0] + rt[1]*rt[1] + rt[2]*rt[2];
   sp12 = r1[0]*r2[0] + r1[1]*r2[1] + r1[2]*r2[2]; // ScalarProduct(r1,r2)
@@ -796,10 +796,11 @@ void processNeutron (int i, int thread_i) {
     }
 
     for (l=1; l<=max_mirr; l++) { // loop over mirrors
-      Neutron *n;
-	  CopyNeutron(&InputNeutrons[i], n);
+      Neutron myneutron, *n;
+      n = &myneutron;
+      CopyNeutron(&InputNeutrons[i], n);
 
-	  if (m == l) continue;
+      if (m == l) continue;
       for (im=1; im<=max_mirr; im++)
 	if (im != l && PathA[l] > PathA[im])
 	  break;
@@ -813,9 +814,9 @@ void processNeutron (int i, int thread_i) {
       m = l;
       nocol++;
 	  
-	  CopyVector(Pos, n->Position);
-	  CopyVector(Dir, n->Vector);
-	  WriteIAP(n, VT_REFLECTED);
+      CopyVector(Pos, n->Position);
+      CopyVector(Dir, n->Vector);
+      WriteIAP(n, VT_REFLECTED);
 
       if (p) {
 	if (p==1)
@@ -915,7 +916,7 @@ int main(int argc, char **argv)
   if (p==1) {
     COLLFILE = fopen(COLLFILEName, "w");
     fprintf(COLLFILE,
-	    "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/°\n\n");
+	    "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/Â°       dir z/Â°\n\n");
   }
 
   // no helper threads when plotting or writing to file per neutron
