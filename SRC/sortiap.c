@@ -66,31 +66,32 @@ const char
   *SPHEREMAT="<Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *HULLMAT="<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *ELLIPSMAT="<Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/>",
-  *ELLIPS2MAT= "<Material DEF='cylcolor' diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.5'/>";
+  *ELLIPS2MAT= "<Material diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.3'/>";
 
 // Type enumeration of geometric elements
 
 typedef enum {
   GT_Line      = 1, // line individual shape def, but common appearance
-  GT_Rectangle = 2, // rectangle
-  GT_Circle    = 3, // circle
-  GT_Cuboid    = 4, // cuboid
-  GT_Cylinder  = 5, // cylinder
-  GT_Sphere    = 6, // sphere
+  GT_Rectangle = 2,
+  GT_Circle    = 3,
+  GT_Cuboid    = 4,
+  GT_Cylinder  = 5,
+  GT_Sphere    = 6,
   GT_Hull      = 7, // hull of a pyramid section, no top and bottom plane
-                    // given by length, bottom width,height and top width,height 
+                    // given by length, bottom width,height and top width,height
   GT_HollowCylinder = 8,  // cylinder without inner cylinder
   GT_Hull6          = 9,  // hull, given by length, bottom w1,w2,h, top w1,w2,h
   GT_Hull8          = 10, // hull, given by length, bottom w1,w2,h1,h2, top w1,w2,h1,h2
   GT_Ellipsoid      = 11, // cut of an ellipsoid
   GT_OpenRectangle  = 12, // rectangle with spare inner rectangle
-  GT_Triangle       = 13  // triangle given by 3 * x,y,z coordinates
+  GT_Triangle       = 13, // triangle given by 3 * x,y,z coordinates
+  GT_CylSlice       = 14  // slice from a cylinder hull
 } GType;
 
 // GTMAX must be highest number of GType
-#define GTMAX 13
+#define GTMAX 14
 
-/* 
+/*
    x along neutron beam
    z vertical axis
    y forms a horizontal plane with x axis
@@ -115,9 +116,9 @@ void usage() {
          "\t-z\toption for SVG to output x,z coordinates\n"
          "\t-x\tX3D output\n"
          "\t-X geometry\tX3D output, with geometry file insert\n"
-         "\t--xlow val\trestrict x range, default 0 %%\n" 
-         "\t--xhigh val\trestrict x range, default 100 %%\n" 
-         "\t--scale val\tscale factor for second dimension, default 1\n" 
+         "\t--xlow val\trestrict x range, default 0 %%\n"
+         "\t--xhigh val\trestrict x range, default 100 %%\n"
+         "\t--scale val\tscale factor for second dimension, default 1\n"
          "sortiap sorts point output from VITESS trajectory runs.\n"
          "The default is plain text output for further processing.\n"
          );
@@ -126,6 +127,7 @@ void usage() {
 
 #define myexit(s) {fputs(s,stderr); exit(2);}
 #define myexit1(s,a) {fprintf(stderr,s,a); exit(2);}
+#define myexit2(s,a,b) {fprintf(stderr,s,a,b); exit(2);}
 
 void setVF(float *v, const char *s) {
   if (1 > sscanf(s, "%f", v))
@@ -264,7 +266,7 @@ char * sS(float v, char *s, const char *format);
 #define sS5(a,b) sS(a,b, "%12.5f")
 
 char * sS(float v, char *s, const char *format) {
-  // convert a float value to text, without superfluous leading or trailing characters 
+  // convert a float value to text, without superfluous leading or trailing characters
   int i;
   char *q, *p = s;
   sprintf(s, format, v);
@@ -327,8 +329,8 @@ void genColor (int n, char *s) {
 #define CrossProd(a1,a2,a3, u1,u2,u3, v1,v2,v3) a1 = u2*v3 - u3*v2; a2 = u3*v1 - u1*v3; a3 = u1*v2 - u2*v1;
 #define ScalProd(u1,u2,u3, v1,v2,v3) u1*v1 + u2*v2 + u3*v3
 
-void rotString (float u1, float u2, float u3, 
-                float v1, float v2, float v3, 
+void rotString (float u1, float u2, float u3,
+                float v1, float v2, float v3,
                 char *s) {
   // Compute the rotation to transform the normalized vector (u1,u2,u3) to (v1,v2,v3) :
   // The cross product defines a perpendicular axis, we take that as rotation axis.
@@ -340,7 +342,7 @@ void rotString (float u1, float u2, float u3,
   CrossProd(a1, a2, a3, u1,u2,u3, v1,v2,v3);
   ang = acos(ScalProd(u1,u2,u3, v1,v2,v3));
   sprintf(s, "%s %s %s %s",
-          sS5((float)a1, s1), sS5((float)a2, s2), 
+          sS5((float)a1, s1), sS5((float)a2, s2),
           sS5((float)a3, s3), sS5((float)ang, s4));
 }
 
@@ -371,6 +373,10 @@ void defineMaterials () {
   sprintf(buf, "<Appearance DEF='triangle'>%s</Appearance>", TRIANGLEMAT);
   x3d_new[GT_Triangle] = strdup(buf);
 
+  x3d_old[GT_Rectangle] = "<Shape USE='rectangle'/>";
+  sprintf(buf, "<Shape DEF='rectangle'><Rectangle2D/><Appearance>%s</Appearance></Shape>", RECTMAT);
+  x3d_new[GT_Rectangle] = strdup(buf);
+
 }
 
 void drawTriangle(float fa[9], const char *use) {
@@ -382,19 +388,21 @@ void drawTriangle(float fa[9], const char *use) {
   fputs ("'/></IndexedFaceSet></Shape>\n", outf);
 }
 
-void drawRectangle(float *fa, char *rots, float width, float height, float angle) {
+void drawSimpleShape(float x, float y, float width, float height, const char *shape) {
 
-  static char buf[256], pre[48], b1[16], b2[16], b3[16], b4[16], b5[16];
-  const char *use, *post;
-  static int olduse;
+  static char b1[16], b2[16], b3[16], b4[16];
 
-  if (olduse) {
-    use = "<Shape USE='rectangle'/>";
-  } else {
-    sprintf(buf, "<Shape DEF='rectangle'><Rectangle2D DEF='BackDrop'/>%s</Shape>", RECTMAT);
-    use = buf;
-    olduse = 1;
-  }
+  fprintf (outf, "<Transform scale='%s %s 1' translation='%s %s 0'>%s</Transform>\n",
+           sS5(width/2.0f, b1), sS5(height/2.0f, b2),
+           sS5(x, b3), sS5(y, b4),
+           shape);
+}
+
+void drawRectangle(float *fa, const char *shape, const char *rots, float width, float height, float angle) {
+
+  static char pre[48], b1[16], b2[16], b3[16], b4[16], b5[16];
+  const char *post;
+
   if (angle != 0) {
     // the rectangle should be rotated by angle first
     // (0 0 1) is the orientation of 2D objects
@@ -406,22 +414,23 @@ void drawRectangle(float *fa, char *rots, float width, float height, float angle
   }
   fprintf (outf, "<Transform scale='%s %s 1' rotation='%s' translation='%s %s %s'>%s%s%s</Transform>\n",
            sS5(width/2.0f, b1), sS5(height/2.0f, b2), rots,
-           sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5), 
-           pre, use, post);
+           sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5),
+           pre, shape, post);
 }
 
 
 void drawHollowCylinderShape(float inner_r) {
-  
+
   const char *nuse, *use;
-  char b[16];
+  char b[16], ss[256];
   static const char *ouse;
 
   if (ouse) {
     nuse = use = ouse;
   } else {
-    nuse = ELLIPS2MAT;
-    ouse = use = "<Appearance><Material USE='cylcolor'/></Appearance>";
+    sprintf(ss, "<Appearance DEF='cylcolor'>%s</Appearance>", ELLIPS2MAT);
+    nuse = ss;
+    ouse = use = "<Appearance USE='cylcolor'/>";
   }
   fprintf( outf,
           "<Transform rotation='1 0 0 1.57' translation='0 -1 0'>"
@@ -430,7 +439,7 @@ void drawHollowCylinderShape(float inner_r) {
           "<Shape>%s<Cylinder top='false' bottom='false' solid='false'/></Shape>"
           "<Shape>%s<Cylinder radius='0.5' top='false' bottom='false' solid='false'/></Shape>"
           "<Transform rotation='1 0 0 1.57' translation='0 1 0'><Shape USE='ring'/></Transform>\n",
-          nuse, sS3(inner_r, b), use, use );
+          nuse, sS3(inner_r, b), use, use);
 }
 
 void printPoint(float x, float y) {
@@ -449,12 +458,59 @@ void rotPoint(float *x, float *y, float sina, float cosa) {
   *y = sina*a + cosa*b;
 }
 
+
 float toAng(float a) {
-  if (a < 0) return (float) (M_PI - acos(-a));
+  if (a < 0) {
+    return (float) (M_PI - acos(-a));
+  }
   return (float) acos(a);
 }
 
+
 #define ROTATIONS 63
+
+void drawCylSlice (float dirang, float openang) {
+  float x, y, deltang, a, sina, cosa;
+
+  // assure sensible angles
+  if (dirang < 0   || dirang > 360) return;
+  if (openang <= 0 || openang > 180) return;
+
+  // compute first point of a line along a circular arc
+  a = toRad(dirang - openang/2);
+  sina = (float) sin(a);
+  cosa = (float) cos(a);
+  x = 1.0f;
+  y = 0.0f;
+  rotPoint(&x,&y, sina, cosa);
+
+  // define the cylinder slice by extrusion of a circular arc line
+  fputs("<Extrusion solid='false' beginCap='false' endCap='false' crossSection='", outf);
+  if (openang < 2) {
+    // use only 2 points, if the slice is smaller than 2 degree
+    printPoint(x,y);
+    a = toRad(openang);
+    sina = (float) sin(a);
+    cosa = (float) cos(a);
+    rotPoint(&x,&y, sina, cosa);
+    printPoint(x,y);
+  } else {
+    // one point per degree
+    int j, npoints;
+    npoints = (int) openang;
+    deltang = openang / npoints;
+    a = toRad(deltang);
+    sina = (float) sin(a);
+    cosa = (float) cos(a);
+    for (j=0; j<=npoints; j++) {
+      printPoint(x,y);
+      rotPoint(&x,&y, sina, cosa);
+    }
+  }
+
+  // extrusion spine along z axis
+  fputs("' spine='0 0 -1 0 0 1' orientation='0 0 1'/>\n", outf);
+}
 
 void drawEllipsoidShape (float xlow, float xhigh) {
   float x, y, d, deltang, ang, sina, cosa, lowang,highang;
@@ -562,11 +618,13 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
       vtype = GT_Cuboid;  nargs = 9;
     } else if (0 == strcmp(rs, "ylinder")) {
       vtype = GT_Cylinder;  nargs = 8;
+    } else if (0 == strcmp(rs, "ylSlice")) {
+      vtype = GT_CylSlice;  nargs = 11;
     }
     break;
-  case 'L':
-    if (0 == strcmp(rs, "ine")) {
-      vtype = GT_Line;  nargs = 6;
+  case 'E':
+    if (0 == strcmp(rs, "llipsoid")) {
+      vtype = GT_Ellipsoid;  nargs = 11;
     }
     break;
   case 'H':
@@ -577,24 +635,27 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     } else if (0 == strcmp(rs, "ull8")) {
       vtype = GT_Hull8;  nargs = 15;
     } else if (0 == strcmp(rs, "ollowCylinder")) {
-      vtype = GT_HollowCylinder;  nargs = 10;
+      vtype = GT_HollowCylinder;  nargs = 9;
+    }
+    break;
+  case 'L':
+    if (0 == strcmp(rs, "ine")) {
+      vtype = GT_Line;  nargs = 6;
     }
     break;
   case 'O':
     if (0 == strcmp(rs, "penRectangle")) {
-      vtype = GT_Rectangle;  nargs = 10;
+      vtype = GT_OpenRectangle;  nargs = 10;
     }
     break;
   case 'R':
     if (0 == strcmp(rs, "ectangle")) {
-      vtype = GT_OpenRectangle;  nargs = 9;
+      vtype = GT_Rectangle;  nargs = 9;
     }
     break;
   case 'S':
-    if (0 == strcmp(rs, "quare")) {
-      vtype = GT_Rectangle;  nargs = 8;
-    } else if (0 == strcmp(rs, "phere")) {
-      vtype = GT_Sphere;  nargs = 4; 
+    if (0 == strcmp(rs, "phere")) {
+      vtype = GT_Sphere;  nargs = 4;
     }
     break;
   case 'T':
@@ -650,7 +711,7 @@ void geom2X3D(char *fn) {
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
-  int vtype, ngeom = 0;
+  int vtype, vvtype, ngeom = 0;
 
   defineMaterials();
 
@@ -662,20 +723,23 @@ void geom2X3D(char *fn) {
   while ((vtype = parseGeomItem(gf, line, fa, &ngeom, &mods))) {
 
     if (vtype < 0)
-      myexit1("unknown geometry item in %s\n", fn);
+      myexit2("unknown geometry item in %s line\n%s\n", fn, line);
 
     if (vtype != GT_Triangle)
       // first 3 values give x,y,z position
       sprintf(trans, "%s %s %s",
               sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
 
-    shape = used_before[vtype] ? x3d_old[vtype] : x3d_new[vtype];
-    used_before[vtype] = 1;
+    // GT_Rectangle and GT_OpenRectangle use the same shape
+    vvtype = vtype == GT_OpenRectangle ? GT_Rectangle : vtype;
+
+    shape = used_before[vvtype] ? x3d_old[vvtype] : x3d_new[vvtype];
+    used_before[vvtype] = 1;
 
     switch (vtype) {
     case GT_Line:
     fprintf(outf, "<Shape DEF='%s-%d'>%s<LineSet vertexCount='2' colorPerVertex='false'><Coordinate point='"
-            "%s %s %s %s %s %s'></LineSet></Shape>\n",
+            "%s %s %s %s %s %s'/><Color color='1 0 0 1 0 0'/></LineSet></Shape>\n",
             mods, ngeom, shape,
             sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3),
             sS5(fa[3], b4), sS5(fa[4], b5), sS5(fa[5], b6) );
@@ -683,29 +747,27 @@ void geom2X3D(char *fn) {
     case GT_Rectangle:
       // Orientation of 2D objects is 0,0,1
       rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
-      drawRectangle(fa, rots, fa[6], fa[7], fa[8]); 
+      drawRectangle(fa, shape, rots, fa[6], fa[7], fa[8]);
       break;
     case GT_OpenRectangle:
       // draw open rectangle as four adjacent rectangles
-      { float x,y,smallw,smallh, w1,w2, h1,h2, xshift, yshift;
-        rotString(0, 0, 1, fa[3], fa[4], fa[5], rots); // is the same for all 4
+      { float smallw,smallh, w1,w2, h1,h2, xshift, yshift;
+        // common rotation and translation for all 4 part rectangles
+        rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
+        fprintf (outf, "<Transform rotation='%s' translation='%s %s %s'>",
+                 rots, sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5));
         w1 = fa[6]; w2 = fa[8];
         h1 = fa[7]; h2 = fa[9];
-        x = fa[0];
         smallw = (w1-w2)/2;
         xshift = (w2+smallw)/2;
-        fa[0] = x - xshift;
-        drawRectangle(fa, rots, smallw, h1, 0); 
-        fa[0] = x + xshift;
-        drawRectangle(fa, rots, smallw, h1, 0);
-        fa[0] = x;
-        y = fa[1];
+        drawSimpleShape(-xshift, 0, smallw, h1, shape);
+        shape = x3d_old[vvtype]; // at least now
+        drawSimpleShape(xshift, 0, smallw, h1, shape);
         smallh = (h1-h2)/2;
         yshift = (h2+smallh)/2;
-        fa[1] = y - yshift;
-        drawRectangle(fa, rots, w2, smallh, 0); 
-        fa[1] = y + yshift;
-        drawRectangle(fa, rots, w2, smallh, 0);
+        drawSimpleShape(0, -yshift, w2, smallh, shape);
+        drawSimpleShape(0, yshift, w2, smallh, shape);
+        fputs ("</Transform>\n", outf);
       }
       break;
     case GT_Circle:
@@ -725,10 +787,13 @@ void geom2X3D(char *fn) {
       break;
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
-      scales = sS5(fa[6], scaleb);
+      // 0 1 2  Ort
+      // 3 4 5  Richtung
+      // 6 7    Länge Radius
+      scales = sS5(fa[7], scaleb);
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s'>%s</Transform>\n",
-               scales, scales, sS5(fa[7], b1), rots, trans, shape);
+               scales, sS5(fa[6]/2.0f, b1), scales, rots, trans, shape);
       break;
     case GT_Sphere:
       scales = sS5(fa[3], scaleb);
@@ -736,9 +801,9 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
-      rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
+      rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s 1 1' rotation='%s' translation='%s'>"
-               "<Shape>%s"
+               "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
                "spine='-1 0 0 1 0 0' direction='1 0 0 0 1 0 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>\n",
@@ -747,17 +812,26 @@ void geom2X3D(char *fn) {
                sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
       break;
     case GT_Hull6:
-      break;
     case GT_Hull8:
+      // not yet implemented
       break;
     case GT_Ellipsoid:
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
                sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
                rots,
-               sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5) );
+               sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawEllipsoidShape(fa[9], fa[10]);
-      fprintf (outf, "%s</Shape></Transform>\n", ELLIPSMAT);
+      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", ELLIPSMAT);
+      break;
+    case GT_CylSlice:
+      rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
+      fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
+               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
+               rots,
+               sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
+      drawCylSlice(fa[9], fa[10]);
+      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", RECTMAT);
       break;
     case GT_HollowCylinder:
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
@@ -765,7 +839,7 @@ void geom2X3D(char *fn) {
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'>",
                sS5(fa[6]/2.0f, b1), scales, scales,
                rots,
-               sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5));
+               sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6));
       drawHollowCylinderShape(fa[8]);
       fputs ("</Transform>\n", outf);
       break;
@@ -784,16 +858,16 @@ void writeX3D() {
   static char buf[32], material_known[32];
 
   // start X3D file
-  fputs(  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          "<!DOCTYPE X3D PUBLIC \"ISO//Web3D//DTD X3D 3.0//EN\" \"http://www.web3d.org/specifications/x3d-3.0.dtd\">\n"
-          "<X3D profile='Interactive' version='3.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='http://www.web3d.org/specifications/x3d-3.0.xsd'>\n"
-          "<head>\n"
-          "<meta content='VITESS trajectories' name='editors'/>\n"
-          "</head>\n"
-          "<Scene>\n"
-          "<NavigationInfo type='\"EXAMINE\" \"ANY\"'/>\n",
-          outf
-          );
+  fputs( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+         "<!DOCTYPE X3D PUBLIC \"ISO//Web3D//DTD X3D 3.0//EN\" \"http://www.web3d.org/specifications/x3d-3.0.dtd\">\n"
+         "<X3D profile='Interactive' version='3.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='http://www.web3d.org/specifications/x3d-3.0.xsd'>\n"
+         "<head>\n"
+         "<meta content='VITESS experiment geometry plus trajectories' name='editors'/>\n"
+         "</head>\n"
+         "<Scene>\n"
+         "<NavigationInfo type='\"EXAMINE\" \"ANY\"'/>\n",
+         outf
+         );
 
   if (geom_file)
     geom2X3D(geom_file);
@@ -1266,7 +1340,7 @@ int main (int argc, char **argv) {
   } else
     outf = stdout;
 
-  parseX3dOptionFile();
+  if (output_type != 1) parseX3dOptionFile();
 
   if (infilecount < 1) {
     // just transform the experiment geometry

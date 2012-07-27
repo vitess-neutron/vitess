@@ -393,6 +393,7 @@ proc controlMenu {w} {
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
+      {c "X3D options" editX3DOptions} \
       {c "Helper applications" editDefaults}
 
   set ww $wo.afont

@@ -833,7 +833,7 @@ proc saveDirectory {} {
   pack $w.b.save -side right
 }
 
-proc saveTextFile {w fn kind} {
+proc saveTextFile {w fn kind {destroyAtEnd 1}} {
   if [catch {open $fn w} f] {
     showText "!!could not write $kind $fn"
   } else {
@@ -841,16 +841,19 @@ proc saveTextFile {w fn kind} {
     close $f
     showText "$kind $fn written"
   }
-  destroy $w
+  if {$destroyAtEnd} {
+    destroy $w
+  }
 }
 
-proc showTextEditWindow {w fn kind height {dowarn 0}} {
+proc showTextEditWindow {w fn kind height {dowarn 0} {width 150}} {
   global monospaced bgColor
   catch {destroy $w}
   generateToplevel $w "Edit $kind"
   fGroup $w.v $w.b
+  if {$width > 100} {set fontsize 8} else {set fontsize 9}
   text $w.v.text -relief raised -bd 2 \
-      -height $height -width 150\
+      -height $height -width $width\
       -font [list $monospaced 8 normal] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
@@ -862,10 +865,11 @@ proc showTextEditWindow {w fn kind height {dowarn 0}} {
     while {[gets $f line] >= 0} {$w.v.text insert end "$line\n"}
     close $f
   }
-  bButton $w.b.save Save+Close [list saveTextFile $w $fn "$kind "]
+  bButton $w.b.save Save [list saveTextFile $w $fn "$kind" 0]
+  bButton $w.b.savecl Save+Close [list saveTextFile $w $fn "$kind"]
   bButton $w.b.delcan Delete+Close "file delete $fn; destroy $w"
   bButton $w.b.cancel Cancel "destroy $w"
-  pack $w.b.save $w.b.delcan $w.b.cancel -side left -expand 1
+  pack $w.b.save $w.b.savecl $w.b.delcan $w.b.cancel -side left -expand 1
 }
 
 proc editInfFile {{mode 0}} {
