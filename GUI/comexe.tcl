@@ -707,6 +707,8 @@ proc doGather {gcom geomfile glist} {
       set ext svg
     }
     3 { if {$gex} {set opt " -X $geomfile"} else {set opt " -x"}
+      set optfilename [getX3DoptfileName]
+      if [file exists $optfilename] {append opt " -f $optfilename"}
       set ext x3d
     }
   }

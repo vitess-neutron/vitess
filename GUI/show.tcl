@@ -445,6 +445,20 @@ proc getPreferredPlotCmd {} {
   }
 }
 
+proc getX3DoptfileName {} {
+  upvar #0 X3DoptfileName fn
+  if [info exists fn] {return $fn}
+  if { [getSystem] == "unix"} {
+    set fn [globVal env(X3DOPT)]
+    if {$fn == ""} {
+      set fn [file join [globVal env(HOME)] .x3dopt]
+    }
+  } else {
+    set fn [file join [globVal SourceDirectory] FILES x3d.opt]
+  }
+  return $fn
+}
+
 proc getPreferredX3DCmd {} {
   global PreferredX3DCmd
   set cmd [entryVal x3dapp]
@@ -469,6 +483,31 @@ proc getPreferredX3DCmd {} {
   }
   if {$ecmd != ""} { gSet x3dapp_ $ecmd }
   return [set PreferredPlotCmd $ecmd]
+}
+
+proc editX3DOptions {} {
+  set fn [getX3DoptfileName]
+  if {! [file exists $fn]} {
+    if [catch {open $fn w} f] {
+      showText "!Could not write x3d option file $fn"
+      return
+    }
+    puts $f {# X3D options
+# uncomment and edit lines
+#xlow=-1
+#xhigh=100
+#ylow=-1
+#yhigh=100
+#zlow=-1
+#zhigh=100
+# material definitions like 
+#hullmat=<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>
+# for cubemat rectmat trianglemat cylmat spheremat ellipsmat ellips2mat
+    }
+    close $f
+  }
+
+  showTextEditWindow .x3dedit $fn "X3D Options" 16 0 100
 }
 
 proc getFileDimensions {tfn itemarray} {

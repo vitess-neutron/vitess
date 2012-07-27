@@ -1,0 +1,75 @@
+Alle geometrischen Elemente werden in Textzeilen erwartet.
+Eine Textzeile beginnt mit dem Elementname, gefolgt von bis zu 15 Gleitpunktzahlen.
+Der Rest der Zeile wird als textuelle Beschreibung des Elements gelesen.
+Die Parameter werden in Meter bzw. Grad erwartet, wenn nicht anders vermerkt.
+
+Die Anzahl der Parameter ist typabhängig.
+Line
+1 x  2 y  3 z             1. Endpunkt
+4 x  5 y  6 z             2. Endpunkt
+
+Triangle                  Dreieck, gegeben durch 3 Punkte
+1 x  2 y  3 z             1. Punkt
+3 x  4 y  5 z             2. Punkt
+6 x  7 y  8 z             3. Punkt
+
+Für die weiteren sind die ersten 3 Parameter gleich
+1 x  2 y  3 z            Mittelpunkt des Elements
+
+Sphere                   Kugel
+4  radius
+
+Bei den übrigen sind die ersten 6 Parameter gleichbedeutend
+4 dirx  5 diry  6 dirz    die Richtung des Symmetrieachse, normalisiert
+
+Angaben zu Länge, Höhe, Breite verstehen sich immer symmetrisch zum Mittelpunkt,
+z.B. ist die Ausdehnung in X-Richtung [x - length/2, x + length/2]
+
+Rectangle
+7 width   8 height       Breite (y) und Höhe des Rechtecks
+9 angle                  Drehwinkel
+
+OpenRectangle            Rechteck mit ausgeschnittenem inneren Rechteck
+7 width   8 height       Breite und Höhe des Rechtecks
+9 width   10 height      Breite und Höhe des inneren Rechtecks
+
+Circle                   Kreissektor, zwischen den Winkeln alpha und beta
+7 radius  8 alpha  9 beta
+
+Cuboid                   Quader, alle 6 Außenflächen sind Teil des Elements
+7 length  8 width  9 height 
+
+Cylinder                 Zylinder, Boden und Deckel sind Teil des Elements                         
+7 length  8 radius 
+
+Hull                     Hülle eines rechteckigen Trichters, ohne Boden und Deckel
+7 length  8 entry width  9 exit width  10 entry height  11 exit height
+
+((((     vielleicht einmal
+Hull6                     Hülle eines sechseckigen Trichters, ohne Boden und Deckel
+7 length
+8 1.entry width 9 2.entry width  10 entry height 
+11 1.exit width  12 2.exit height  13 exit height
+
+Hull8                     Hülle eines achteckigen Trichters, ohne Boden und Deckel
+7 length
+8 1.entry width  9 2.entry width  10 1.entry height 11 2. entry height
+12 1.exit width 13 2.exit width 14 1.exit height 15 2.exit height
+)))))
+
+HollowCylinder           zylindrische Hülle
+7 length  8 radius  9 inner radius        der innere Radius wird als Anteilszahl aus (0,1) erwartet
+
+Ellipsoid                 Ellipsoid mit offenen Enden in der Längsachse
+7 length  8 width  9 height
+10 xlow  11 xhigh         ein geschlossenes Ellipsoid ginge von -1 bis 1, hier werden -1 < xlow < xhigh < 1 erwartet
+
+CylSlice                  Ausschnitt einer Zylinderhülle, z.B. für Detektoren
+7 length  8 width  9 height
+10 dirang  11 openang     das Recheck wird in Richtung dirang mit einem Öffnungswinkel openang erwartet
+
+
+
+
+
+

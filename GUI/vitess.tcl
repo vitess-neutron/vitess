@@ -4657,7 +4657,7 @@ proc serializeImoFile {f mode var app} {
 }
 
 
-proc editSave {var param ext app {saveAs 0}} {
+proc editSave {var param ext app {saveAs 0} {destroyAtEnd 1}} {
 # param = 1 forces that a file with new filename is within
 # the given default directory
   if [errorWithValues $ext 1 $app] return
@@ -4682,7 +4682,9 @@ proc editSave {var param ext app {saveAs 0}} {
     puts $f [$w.v.text get 1.0 end]
   }
   close $f
-  destroy $w
+  if {$destroyAtEnd} {
+    destroy $w
+  }
 }
 
 
@@ -4735,10 +4737,10 @@ proc editFile {var param ext app} {
   if  {$f != "0"} {close $f}
 
   bButton $w.b.check Check "clearText; errorWithValues $ext 1 $app"
-  bButton $w.b.save "Save+Close" "editSave $var $param $ext $app"
+  bButton $w.b.savecl "Save+Close" "editSave $var $param $ext $app"
   bButton $w.b.saveas "Save As" "editSave $var $param $ext $app 1"
   bButton $w.b.cancel Cancel "destroy $w"
-  pack $w.b.check $w.b.save $w.b.saveas $w.b.cancel -side left -expand 1
+  pack $w.b.check $w.b.savecl $w.b.saveas $w.b.cancel -side left -expand 1
 }
 
 proc helpOnModule {i} {
