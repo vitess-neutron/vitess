@@ -494,6 +494,7 @@ proc editX3DOptions {} {
     }
     puts $f {# X3D options
 # uncomment and edit lines
+# viewport restriction
 #xlow=-1
 #xhigh=100
 #ylow=-1
@@ -502,7 +503,10 @@ proc editX3DOptions {} {
 #zhigh=100
 # material definitions like 
 #hullmat=<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>
-# for cubemat rectmat trianglemat cylmat spheremat ellipsmat ellips2mat
+# for cubemat rectmat trianglemat cylmat spheremat ellipsmat ellips2mat labelmat
+# annotation labels
+#fontstyle=<FontStyle DEF='label_font' family='"SANS"' justify='"MIDDLE" "MIDDLE"' size='.1'/>
+#labels=0
     }
     close $f
   }
