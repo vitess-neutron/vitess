@@ -47,6 +47,7 @@ FILE *outf;
 
 char *x3d_option_filename;
 float viewport[3][2] = {{-1e5,1e5},{-1e5,1e5},{-1e5,1e5}};
+int annotationLabels=1;        // if set, annotate X3D model with module names
 
 int svg_width = 800;
 int svg_height = 600;
@@ -62,11 +63,15 @@ const char
 // rectangle, blue
   *RECTMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *TRIANGLEMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
-  *CYLMAT="<Material diffuseColor='.9 .9 0'/>",
+  *CYLMAT="<Material diffuseColor='.9 .9 .1' emissiveColor='.1 .1 .9' transparency='.5'/>",
   *SPHEREMAT="<Material diffuseColor='.9 .1 .1' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *HULLMAT="<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *ELLIPSMAT="<Material diffuseColor='.3 .1 .3' emissiveColor='.1 .1 .33' transparency='.5'/>",
-  *ELLIPS2MAT= "<Material diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.3'/>";
+  *ELLIPS2MAT= "<Material diffuseColor='0.2 0.6 0.5' emissiveColor='.1 .1 .33' transparency='.3'/>",
+
+  *LABELMAT="<Material diffuseColor='1 1 .3' emissiveColor='.33 .33 .1'/>",
+  *FONTSTYLE="<FontStyle DEF='label_font' family='\"SANS\"' justify='\"MIDDLE\" \"MIDDLE\"' size='.1'/>"
+;
 
 // Type enumeration of geometric elements
 
@@ -134,7 +139,13 @@ void setVF(float *v, const char *s) {
     myexit("unable to read x3d option from file\n");
 }
 
+void setVI(int *v, const char *s) {
+  if (1 > sscanf(s, "%d", v))
+    myexit("unable to read x3d option from file\n");
+}
+
 #define GVF(a) if (strcmp(line+1, #a)==0) setVF(&a,p)
+#define GVI(a,b) if (strcmp(line+1, #a)==0) setVI(&(b),p)
 #define GVV(a,b) if (strcmp(line+1, #a)==0) setVF(&(b),p)
 #define GVS(a,b) if (strcmp(line+1, #a)==0) b=strdup(p)
 
@@ -166,10 +177,15 @@ void parseX3dOptionFile() {
       GVS(llipsmat,ELLIPSMAT);
       GVS(llips2mat,ELLIPS2MAT);
       break;
+    case 'f':
+      GVS(ontstyle,FONTSTYLE);
+      break;
     case 'h':
       GVS(ullmat,HULLMAT);
       break;
     case 'l':
+      GVI(abels,annotationLabels);
+      GVS(abelmat,LABELMAT);
       GVS(ineappearance,LineAppearance);
       break;
     case 'r':
@@ -290,6 +306,11 @@ char * sS(float v, char *s, const char *format) {
       *p = '-';
     }
   }
+  // -0 becomes 0
+  if (p[0] == '-' && p[1] == '0' && p[2] == 0) {
+    p[0] = '0';
+    p[1] = 0;
+  }
   return p;
 }
 
@@ -338,6 +359,18 @@ void rotString (float u1, float u2, float u3,
 
   char s1[16], s2[16], s3[16], s4[16];
   double a1,a2,a3, ang;
+
+  // normalize v
+  float v, vfactor;
+  v = v1*v1 + v2*v2 + v3*v3;
+  if (v == 0) {
+    strcpy(s, "1 0 0 0");
+    return;
+  }
+  vfactor = (float)(1.0 / sqrt(v));
+  v1 *= vfactor;
+  v2 *= vfactor;
+  v3 *= vfactor;
 
   CrossProd(a1, a2, a3, u1,u2,u3, v1,v2,v3);
   ang = acos(ScalProd(u1,u2,u3, v1,v2,v3));
@@ -508,8 +541,8 @@ void drawCylSlice (float dirang, float openang) {
     }
   }
 
-  // extrusion spine along z axis
-  fputs("' spine='0 0 -1 0 0 1' orientation='0 0 1'/>\n", outf);
+  // extrusion spine along y axis
+  fputs("' spine='0 -1 0 0 1 0' orientation='0 1 0 0 0 1 0 0'/>\n", outf);
 }
 
 void drawEllipsoidShape (float xlow, float xhigh) {
@@ -700,6 +733,56 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   return vtype;
 }
 
+#define swapYZ(y,z) v=fa[y]; fa[y]=fa[z]; fa[z] = -v
+#define swapWH(w,h) v=fa[w]; fa[w]=fa[h]; fa[h] = v
+
+static void vitessToX3Dcoordinates(float *fa, int vtype) {
+
+  // Both VITESS and X3D use a right handed coordinate system, but
+  // the VITESS y axis becomes the negative X3D z axis, and
+  // the VITESS z axis becomes the X3D y axis :
+  // x_x3d = x
+  // y_x3d = z
+  // z_x3d = -y
+  // We use swapYZ to transform 3d coordinates, and swapWH to transform
+  // width and height values.
+
+  float v;
+
+  swapYZ(1,2); // first point, always present
+
+  if (vtype == GT_Line || vtype == GT_Triangle) {
+    swapYZ(4,5); // 2. point
+    if (vtype == GT_Triangle) {
+      swapYZ(7,8); // 3. point
+    }
+  } else if (vtype != GT_Sphere) {
+    // all these have a direction vector in elements 3,4,5
+    swapYZ(4,5); // direction
+
+    switch (vtype) {
+    case GT_OpenRectangle:
+      swapWH(8,9);
+      // fall through
+    case GT_Rectangle:
+      swapWH(6,7);
+      break;
+    case GT_Ellipsoid:
+    case GT_Cuboid:
+    case GT_CylSlice:
+      swapWH(7,8);
+      break;
+    case GT_Hull:
+      swapWH(7,9);
+      swapWH(8,10);
+      break;
+    default : ;
+    }
+  }
+
+        
+}
+
 void geom2X3D(char *fn) {
 
   // parse a geometry file from VITESS to X3D output
@@ -711,7 +794,7 @@ void geom2X3D(char *fn) {
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
-  int vtype, vvtype, ngeom = 0;
+  int vtype, vvtype, ngeom = 0, firstmodule=1;
 
   defineMaterials();
 
@@ -725,11 +808,12 @@ void geom2X3D(char *fn) {
     if (vtype < 0)
       myexit2("unknown geometry item in %s line\n%s\n", fn, line);
 
-    if (vtype != GT_Triangle)
-      // first 3 values give x,y,z position
-      sprintf(trans, "%s %s %s",
-              sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
+    vitessToX3Dcoordinates(fa, vtype);
 
+    // first 3 values give x,y,z position
+    sprintf(trans, "%s %s %s",
+            sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
+    
     // GT_Rectangle and GT_OpenRectangle use the same shape
     vvtype = vtype == GT_OpenRectangle ? GT_Rectangle : vtype;
 
@@ -775,7 +859,7 @@ void geom2X3D(char *fn) {
       rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
       fprintf (outf,
                "<Transform rotation='%s' translation='%s'><Shape DEF='circle-%d'>%s"
-               "<AcrClose2D closureType='PIE' radius='%s' startAngle='%s' endAngle='%s'/>"
+               "<ArcClose2D closureType='PIE' radius='%s' startAngle='%s' endAngle='%s'/>"
                "</Shape></Transform>\n",
                rots, trans, ngeom, shape,
                sS5(fa[6], b1), sS5(toRad(fa[7]), b2), sS5(toRad(fa[8]), b3) );
@@ -801,11 +885,17 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
-      rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
+      // 6   Länge
+      // 7   Eingangsbreite
+      // 8   Ausgangsbreite
+      // 9   Eingangshöhe
+      // 10  Ausgangshöhe
+      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
+      // direction has _4_ parameters, vector + angle
       fprintf (outf, "<Transform scale='%s 1 1' rotation='%s' translation='%s'>"
                "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
-               "spine='-1 0 0 1 0 0' direction='1 0 0 0 1 0 0 0' "
+               "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>\n",
                sS5(fa[6]/2.0f, b1), rots, trans, HULLMAT,
                sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
@@ -825,7 +915,7 @@ void geom2X3D(char *fn) {
       fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", ELLIPSMAT);
       break;
     case GT_CylSlice:
-      rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
+      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
                sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
                rots,
@@ -847,13 +937,29 @@ void geom2X3D(char *fn) {
       drawTriangle(fa, shape);
       break;
     }
+
+    if (!annotationLabels) continue;
+
+    // show module name
+    if (firstmodule) {
+      fprintf (outf, "<Transform translation='%s'><Billboard><Shape>"
+               "<Appearance DEF='label_appearance'>%s</Appearance>"
+               "<Text string='%s'>%s</Text></Shape></Billboard></Transform>\n",
+               trans, LABELMAT, mods, FONTSTYLE);
+      firstmodule = 0;
+    } else
+      fprintf (outf, "<Transform translation='%s'><Billboard><Shape>"
+               "<Appearance USE='label_appearance'/>"
+               "<Text string='%s'><FontStyle USE='label_font'/></Text></Shape></Billboard></Transform>\n",
+               trans, mods);
+    
   }
   fclose(gf);
 }
 
 
 void writeX3D() {
-  int ntraj, count, i, id, mat;
+  int ntraj, count, id, mat;
   p_point p,q, first_p, last_p;
   static char buf[32], material_known[32];
 
@@ -924,10 +1030,14 @@ void writeX3D() {
     }
 
     for (p = first_p; p; p = p->next) {
-      for (i=0; i<3; i++) {
-        fputs(sS4(p->u.pos[i], buf), outf);
-        putc(' ', outf);
-      }
+      // transform VITESS coordinates to X3D coordinates
+      fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x
+      putc(' ', outf);
+      fputs(sS4(p->u.pos[2], buf), outf);   // y_x3d = z
+      putc(' ', outf);
+      fputs(sS4(- p->u.pos[1], buf), outf); // z_x3d = -y
+      putc(' ', outf);
+
       if (p == last_p)
         break;
     }
