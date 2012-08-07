@@ -1533,12 +1533,11 @@ set ma_flatESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-  {mode int 1 {"Crystal mode" "Choose between reflection of the characteristic wavelength and \n transmission of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
   {coeff float 0.00005 {"Absorption\n coefficient"
     "Absorption coefficient in the crystal in [1/cm]." "" C}}
   {}
-  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d}
-    {Lorentzian Gaussian} {1 2}}
+  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
 }
 
 ### Monochromator analyser
@@ -3384,13 +3383,17 @@ set eval_inelastESET {
     geometry "Choose geometry type of TOF instrument." "" A}
     {"direct geometry" "inverted geometry"} {0 1}}
   {}
-  {rwlen float 6.27  {"reference\nwavelength [A]" "Initial or final wavelength of the neutrons which is known from the experimental setup." "" c} gt0 "" 1}
-  {pfpath float 10 {"primary flight\npath [cm]"   "Distance from the moderator to sample and from sample to detector." "" a} gt0 "" 1}
-  {sfpath float 2 {"secondary flight\npath [cm]" "Distance from the moderator to sample and from sample to detector." "" b} gt0 "" 1}
-  {nbins int 100 {"number\nof bins" "The number of time and energy channels to be considered." "" C} ge1 "" 1}
-  {mint float 0   {"minimal\ntime [ms]" "The TOF range in which the user is interested to bin intensities." "" e} 1}
-  {maxt float 100   {"maximal\ntime [ms]" "The TOF range in which the user is interested to bin intensities." "" g} 1}
-  {toff float 0    {"time offset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
+  {pfpath float 10  {"primary\nflight path [cm]"   "Distance from the moderator to sample and from sample to detector." "" a} gt0 "" 1}
+  {sfpath float 2   {"secondary\nflight path [cm]" "Distance from the moderator to sample and from sample to detector." "" b} gt0 "" 1}
+  {rwlen float 6.27 {"reference\nwavelength [A]" "Initial or final wavelength of the neutrons which is known from the experimental setup." "" c} gt0 "" 1}
+  {toff float 0   {"time\noffset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
+  {nbins int 100  {"number\nof bins" "The number of time and energy channels to be considered.\nOnly 1 range needs to be given, the other range is calculated." "" C} ge1 "" 1}
+  {}
+  {mine float -2  {"min. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" m} }
+  {maxe float  2  {"max. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" M} }
+  {}
+  {mint float  50 {"minimal\ntime [ms]" "The TOF range (reduced by the time offset) in which the user is interested to bin intensities." "" e} }
+  {maxt float  60 {"maximal\ntime [ms]" "The TOF range (reduced by the time offset) in which the user is interested to bin intensities." "" g} }
   {grtbin float 0 {"gradient\nof timebins" "Derivative s of the time channel width in function of TOF (as described in the help manual, sec. 4)." "" h} gt-0.1 lt0.1}
   {}
   {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j} 1}

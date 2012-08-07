@@ -87,14 +87,4 @@ extern gsl_rng * vit_gsl_rng;
 #define myExit1(s,a) {fprintf (LogFilePtr,s,a); exit(-1);}
 #define myExit2(s,a,b) {fprintf (LogFilePtr,s,a,b); exit(-1);}
 
-#ifdef  _MSC_VER
-/* The Microsoft visual C++ compiler spews about 1000 warnings during */
-/* compilation of gnuplot. The following lines disable most of them.  */
-#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
-#define _CRT_SECURE_NO_WARNINGS
-# if _MSC_VER <= 1200
-    typedef unsigned int uintptr_t; 
-# endif
-#endif
-
 #endif

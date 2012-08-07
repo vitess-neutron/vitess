@@ -13,14 +13,14 @@
 
 FILE		*AsciiFile, *Par_Crys, *Foc_Crys;
 char		*ParameterFileName, *GeomFileName ;
-int			OrderReflection, NumberCE[2], ParGeomN, d_spr_option, geom_option;
+int			OrderReflection, NumberCE[2], ParGeomN, d_spr_option, geom_option, mode;
 long		NumOut, BufferIndex, Repetition, repet;
 double		TOF, WL, Prob, d_ran, d_ran_min, d_ran_max, arg, thr, phr, thrmax, phrmax, deltaphr ;
 double		Index, Matrix[3][3], Option, User, ParGeom[PAR_GEOM], IntegralIntensity ;
-double		d_spacing, d_fwhm, d_range, mosaic_range, mosaic_fwhm[2], Reflectivity ;
+double		d_spacing, d_fwhm, d_range, mosaic_range, mosaic_fwhm[2], Reflectivity, absCoeff ;
 double		RotHoriz, RotVert, BraggHoriz, BraggVert, PosCE[3], DimCE[3], Depth[3] ;
-double		TranslFoc[3], TranslFoc_def[3], AnglFocHoriz, AnglFocVert ;
-double		RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3] ;
+double		TranslFoc[3], TranslFoc_def[3], AnglFocHoriz, AnglFocVert, totalXOffset, rotOffset ;
+double		RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3], RotMatrixSurf[3][3] ;
 double		RotHoriz_F[CRYS_SIZE][CRYS_SIZE], RotVert_F[CRYS_SIZE][CRYS_SIZE], PosCE_F[3][CRYS_SIZE][CRYS_SIZE], DimCE_F[3][CRYS_SIZE][CRYS_SIZE] ;
 double		RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE] ;
 double      DevH, DevV;              /* horizontal and vertical deviation from correct crystal orientation */
@@ -48,7 +48,8 @@ void		CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_
 double		Mosaicity(VectorType Mosaic) ;
 double		dSpreadLorentzian(double d_spacing) ;
 double		dSpreadGaussian(double d_spacing) ;
-
+void            TransmitNeutron(Neutron* n);
+double          CalculateRotationOffset();
 
 /********************************************************************/
 
