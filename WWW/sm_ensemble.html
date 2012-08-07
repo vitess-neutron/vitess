@@ -1,255 +1,223 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <link rel="stylesheet" type="text/css" href="default.css">
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
   <meta name="Author" content="geza">
   <title>VITESS Supermirror Ensemble</title>
 </head>
   <body>
    <b><font size="+3">VITESS Supermirror-Ensemble</font></b>   
-<p>This module simulates an ensemble of supermirror (SM) planes of up to 10
-elements. This can be used for the simulation of more complicated guide systems,
+<p>
+This module simulates an ensemble of mirror or supermirror (SM) planes of up to 16
+elements. This can be used for the simulation of more complicated optical systems,
 with branch geometry. For example one can use 4 elements as a normal guide
 and put one transparent element into this tilted by an angle relative to
-the main (beam) axis and use it as polarizer. Both sides of the supermirror
- plates reflect. <br>
- The visualisation of neutron paths or collision points available. The module
- will visualise only first 10000 trajectories or points. Also you can choose
-a device for visualisation: display, file or both. <br>
-  &nbsp; <br>
-  &nbsp; <br>
-  &nbsp;   
+the main (beam) axis and use it as polarizer. Both sides of the supermirror plates reflect. 
+<br />
+Shapes and positions of the SM elements have to be given in the file "geometry and reflectivity data". 
+Size and shape of each element are defíned by giving the four corners in a plane perpendicular to the beam.
+The center of each mirror is then moved to his final position; then two rotations are executed to get the mirror in the right orientation. 
+A triangular shape can also be treated: 3 'corners' have to be co-linear for that.
+</p>
+<p>
+The algorithm calculates the angle of inclination for each trajectory and decides about reflection or transmission depending on the reflectivity.
+For angles below theta_c, a reflectivity of 1 is assumed, for angles above thetaCSM, reflectivity of 0 is used (see Table: 'Parameter file'). 
+For angles between theta_c and thetaCSM, the reflectivity decreases linearly from 1 to R. 
+Neutrons that are not reflected are transmitted.<br>
+In the case of transmission, the new direction after refraction is determined and the attenuation inside the material calculated using an wavelength
+dependent and a wavelength independent term.
+</p>
+<p>
+Visualisation of neutron paths or collision points is available. The module will visualize only the first 10000 trajectories or points. <br>
+</p>
+<br>
+<h3><font size="+2"> Parameters for module 'sm_ensemble' </font></h3>
+
 <table border="1" cols="3" width="84%">
    <tbody>
       <tr>
-   <td>Parameter</td>
-    <td>Description</td>
-    <td>Command Option</td>
-   </tr>
-    <tr>
-   <td>geometry and reflectivity data file</td>
-    <td>In this file are given: the shape, position, angle, angular spread, 
- 'up' and 'down' reflectivity, absorbtion (see below)</td>
-    <td>-P</td>
-   </tr>
-    <tr>
-   <td>stop at collisions</td>
-    <td>At this number of collisions it stops and writes out the trajectory. 
- This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. 
- collisions.</td>
-    <td>-M</td>
-   </tr>
-    <tr>
-        <td valign="top">spin quantisation direction <br>
-        </td>
-        <td valign="top">direction of spin quantisation in accordance with
- input data (e.g.source module)<br>
-        </td>
-        <td valign="top">-Q<br>
-        </td>
+        <td><b>Parameter<br> Unit</b>></td>
+        <td><b>Description</b></td>
+        <td><b>Command Option</b></td>
       </tr>
-      <tr>
-   <td>visualisation</td>
-    <td>If 'yes' (1), it writes out the collisions into a file "collisions.dat".
- Else: it visualises the trajectories</td>
-    <td>-T</td>
-   </tr>
 
       <tr>
-   <td>device</td>
-    <td>Choose the device for visualisation: 1 - display, 2 - file, 3 -
-display+file </td>
-    <td>-o</td>
-   </tr>
+        <td>geometry and reflectivity data file</td>
+        <td>In this file shape, position, orientation, angular spread, 'up' and 'down' reflectivity curves and absorption of the mirrors have to be given</td>
+        <td>-P</td>
+      </tr>
 
+      <tr>
+        <td>stop at collisions</td>
+        <td>At this number of collisions it stops and writes out the trajectory. This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. collisions.</td>
+        <td>-M</td>
+      </tr>
 
-    <tr>
-   <td><font color="#000000">output frame</font>               
-      <p><font color="#000000">X',Y',Z'</font> </p>
-               
-      <p><font color="#000000">[cm]</font></p>
-        </td>
-    <td><font color="#000000">The position of the output frame origin in
-the  original frame. It represents the translation vector applied to shift
-the  origin of the original (input) frame to the new (output) position.</font></td>
-    <td>-r, -s, -t</td>
-   </tr>
-    <tr>
-   <td><font color="#000000">output angle&nbsp;</font> <br>
-        <font color="#000000">horizontal, vertical</font>               
-      <p><font color="#000000">[deg]</font></p>
-        </td>
-    <td><font color="#000000">A rotation about the Z axis and then a rotation 
- about the (new)Y axis defines a new orientation for the neutrons written 
-to the output.</font></td>
-    <td>-h, -v</td>
-   </tr>
+      <tr>
+        <td valign="top">spin quantisation direction </td>
+        <td valign="top">direction of spin quantisation in accordance with input data (e.g.source module) </td>
+        <td valign="top">-Q </td>
+      </tr>
+
+      <tr>
+        <td>visualisation</td>
+        <td>If 'yes' (1), it writes out the collisions into a file "collisions.dat".<br>
+            Else: it visualises the trajectories</td>
+        <td>-T</td>
+      </tr>
+
+      <tr>
+        <td>device</td>
+        <td>Choose the device for visualisation: 1 - display, 2 - file, 3 - display+file </td>
+        <td>-o</td>
+      </tr>
+
+      <tr>
+        <td>output frame<br>X',Y',Z'<br>[cm]</td>
+        <td>The position of the output frame origin in the  original frame. It represents the translation vector applied to shift
+            the  origin of the original (input) frame to the new (output) position.</td>
+        <td>-r, -s, -t</td>
+      </tr>
+
+      <tr>
+        <td>output angle<br>horizontal, vertical<br>[deg]</td>
+        <td>A rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output.</td>
+        <td>-h, -v</td>
+      </tr>
          
   </tbody>  
 </table>
-    </p>
+</p>
+      
+<p>
+<img src="DefineGeomSME.gif" height="759" width="498">
+</p>
+
+<h3><font size="+2"> Parameter file describing the mirrors in module 'sm_ensemble' </font></h3>
    
-<p>The shape and position of the SM elements has to be given in the file "geometry
-and reflectivity data". </p>
+<p>
+<table border="1" cols="3" width="84%">
+   <tbody>
+      <tr>
+        <td><b>Parameter<br> Unit</b>></td>
+        <td><b>Description</b></td>
+        <td><b>Values</b></td>
+      </tr>
+
+      <tr>
+        <td>on/off</td>
+        <td>defines if the wall is active (1) or not (0) (i.e. you can switch it off)<br>
+             at most 16 walls can be active  </td>
+        <td>1: on <br> 0: off</td>
+      </tr>
+
+      <tr>
+        <td>y<sub>i</sub>, z<sub>i</sub> i=1,..,4<br>[cm]</td>
+        <td>defines shape and size of a mirror element: <br> 
+            the positions of the corners of a quadrangle are given in a plane perpendicular to the beam <br>
+            you can also form a triangle if 3 'corners' are co-linear(cf. figure above)</td>
+        <td>any</td>
+      </tr>
+
+      <tr>
+        <td>X Y Z<br>[cm]</td>
+        <td>X,Y,Z defines the position of the mirror:
+            The element (defined by y<sub>1</sub> to z<sub>4</sub>) is supposed to arranged around the origin (0,0,0). 
+            This point of the mirror is now translated to its rigth place in the final geometry by a shift by the vector (X,Y,Z). </td>
+        <td>1: on <br> 0: off</td>
+      </tr>
+
+      <tr>
+        <td>H/° V/°<br>[deg]</td>
+        <td>Rotation angles which define the final normal vector of the mirror. <br>
+            It is first rotated (in a horizontal plane) about the z-axis by an angle 'H'. <br>
+            Then it is rotated (in a vertikal plane) about the y-axis by an angle 'V'.    <br>
+        <td>-180° to 180°</td>
+      </tr>
+
+      <tr>
+        <td>h/° h/°<br>[deg]</td>
+        <td>is the full width of a rectangular distribution expected for the variations in the plane orientation. <br>
+            For each trajectory a deviation from the average orientation in the given range is determined by a Monte Carlo choice. <br>
+        <td>theoretically<br>-180° to 180°</td>
+      </tr>
+
+      <tr>
+        <td>thetaC<br>[rad]</td>
+        <td>angle up to which 1 Å neutrons are totally reflected, corresponding to m=1</td>
+        <td>typically: 0.00173</td>
+      </tr>
+
+      <tr>
+        <td>theta_csm<br>[rad]</td>
+        <td>angle up to which 1 Å neutrons are reflected, corresponding to the m-value</td>
+        <td>m*0.00173</td>
+      </tr>
+
+      <tr>
+        <td>R_csm</td>
+        <td>reflectivity for theta_csm:<br>
+            theta_c < theta < theta_csm R decreases linearly from 1 to R_csm<br>
+            theta < theta_c  : R = 1.0 <br>
+            theta > theta_csm: R = 0.0 </td>
+        <td>0 ... 1</td>
+      </tr>
+
+      <tr>
+        <td>µ*d</td>
+        <td>wavelength <b>dependent</b> part of the attenuation (in case óf transmission)<br>
+            d is the thickness of the mirror in cm<br>
+            µ is the macroscopic attenuation (in 1/cm) for 1 Å neutrons</td>
+        <td>> 0.0</td>
+      </tr>
+
+      <tr>
+        <td>µ_incoh*d</td>
+        <td>wavelength <b>independent</b> part of the attenuation (in case óf transmission)<br>
+            d is the thickness of the mirror in cm<br>
+            µ_incoh is the macroscopic attenuation (in 1/cm)</td>
+        <td>> 0.0</td>
+      </tr>
+
+      <tr>
+        <td>wall</td>
+        <td>name given by the user to the walls (no real input)</td>
+        <td>any text</td>
+      </tr>
+         
+  </tbody>  
+</table>
+</p>
+
    
-<p>Example: </p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 118.75&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -118.75&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -118.75&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 118.75&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 118.75&nbsp; -2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.000&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- A&nbsp; 1 ----- 
+<p>
+<b>Example:</b> 
+</p>
+
+<p>
+The following example shows the realization of a bi-spectral extraction system consisting of 3 vertical m=3 supermirrors and 2 horizontal m=2 supermirrors.
+The vertical mirrors are 0.77° and 0.19° inclined (relative to the beamline) in the direction shown in the figure. <br />
+5 numbers have to be given to define the reflectivity curve (s. Table below), both for up- and down-neutrons.
 </p>
    
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -181.25&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -181.25&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 418.75&nbsp; -2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.000&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 
- 00.0002375&nbsp; 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 
- 00.0002375&nbsp; 00.0000&nbsp;&nbsp;&nbsp;&nbsp; ----- B&nbsp; 2 ----- </p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -300.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -300.00&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 300.00&nbsp;&nbsp; 2.98&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 90.000&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- C&nbsp; 3 ----- 
+<p>
+<img src="ExtractionSystem.png" name="Grafik" border="0" height="250" width="346" align="bottom">
 </p>
    
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 181.23&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -181.23&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -181.23&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 181.23&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 418.75&nbsp; -5.89&nbsp;&nbsp; 0.00&nbsp;&nbsp; -90.917&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00097&nbsp;&nbsp;&nbsp; 0.00098&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- D&nbsp; 4 ----- 
-<br>
-  &nbsp; </p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 300.01&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -300.01&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -300.01&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 300.01&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 300.00&nbsp; -0.99&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 89.620&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.30&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00202&nbsp;&nbsp;&nbsp; 0.0034900&nbsp;&nbsp;&nbsp; 0.90&nbsp;&nbsp; 00.0002375&nbsp;
- 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00081&nbsp;&nbsp;&nbsp;
- 0.00082&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 00.0002375&nbsp;
-00.0000&nbsp;&nbsp;&nbsp;&nbsp;  ----- E&nbsp; 5 ----- </p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 150.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;
- -150.00&nbsp;&nbsp;&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; -150.00&nbsp;&nbsp;&nbsp;&nbsp;
- -5.00&nbsp;&nbsp;&nbsp;&nbsp; 150.00&nbsp;&nbsp;&nbsp; -5.00&nbsp;&nbsp;&nbsp;
- 150.00&nbsp;&nbsp; 1.99&nbsp;&nbsp; 0.00&nbsp;&nbsp; -89.620&nbsp;&nbsp;&nbsp;
- 0.000&nbsp;&nbsp; 0.30&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00202&nbsp;&nbsp;&nbsp; 0.0034900&nbsp;&nbsp;&nbsp; 0.90&nbsp;&nbsp; 00.0002375&nbsp;
- 000.0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00081&nbsp;&nbsp;&nbsp;
- 0.00082&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp;&nbsp; 00.0002375&nbsp;
-00.0000&nbsp;&nbsp;&nbsp;&nbsp;  ----- F&nbsp; 6 ----- <br>
-  &nbsp; </p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- -2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -2.98&nbsp;&nbsp; 
- -300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp; -300.00&nbsp;&nbsp;&nbsp; 
- 300.00&nbsp;&nbsp; 0.00&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp;&nbsp; 
- 90.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- G&nbsp; 7 ----- 
-</p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- -2.98&nbsp;&nbsp; 300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -2.98&nbsp;&nbsp; 
- -300.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.98&nbsp; -300.00&nbsp;&nbsp;&nbsp; 
- 300.00&nbsp;&nbsp; 0.00&nbsp; -5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp; -90.000&nbsp;&nbsp;
-0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00205&nbsp;&nbsp;&nbsp;
-0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- H&nbsp; 8 ----- 
-</p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- -5.80&nbsp;&nbsp; -181.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp; 
--181.25&nbsp;&nbsp;&nbsp; 418.75&nbsp; -2.98&nbsp;&nbsp; 5.00&nbsp;&nbsp;&nbsp;&nbsp; 
-0.000&nbsp;&nbsp; 90.000&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- I&nbsp; 9 ----- 
-</p>
-   
-<p>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp; 181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- -5.80&nbsp;&nbsp; 181.16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp; 
- -181.25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp;&nbsp; -0.01&nbsp;&nbsp;&nbsp; 
- 418.75&nbsp; -2.98&nbsp; -5.00&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp; -90.000&nbsp;&nbsp; 
- 0.00&nbsp;&nbsp;&nbsp; 0.00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.00205&nbsp;&nbsp;&nbsp; 
- 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 100.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- 0.00205&nbsp;&nbsp;&nbsp; 0.00206&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00&nbsp; 
- 100.000&nbsp; 00.000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----- J 10 ----- </p>
-   
-<p>on/off&nbsp;&nbsp;&nbsp; y1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- y2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- y3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- y4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Z&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- H/&deg;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V/&deg;&nbsp;&nbsp;&nbsp;&nbsp; h/&deg;&nbsp;&nbsp;&nbsp;&nbsp; 
- v/&deg;&nbsp;&nbsp;&nbsp; Up: thetaC&nbsp;&nbsp;&nbsp; thetaCSM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- R&nbsp;&nbsp;&nbsp;&nbsp; mue*d&nbsp;&nbsp;&nbsp;&nbsp; mue_incoh*d&nbsp;&nbsp;&nbsp; 
- Down: thetaC&nbsp;&nbsp;&nbsp; thetaCSM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- R&nbsp;&nbsp;&nbsp;&nbsp; mue*d&nbsp;&nbsp;&nbsp;&nbsp; mu_incoh*d&nbsp;&nbsp;&nbsp;&nbsp; 
- wall label <br>
-  &nbsp; </p>
-   
-<p>EXPLANATIONS: </p>
-   
-<p>1) on/off tells if the wall is active (i.e. you can switch it off) <br>
-  2) Let us assume that first the 10 elements lie in a plane perpendicular 
-to the beam. Then y<sub>i</sub>, z<sub>i</sub> i=1,..,4 defines the positions 
- of the element corners (you can also form a triangle if 3 'corners' are co-linear).
-For all i we have x<sub>i</sub>=0. X,Y,Z gives the translation of the element
-centres to the rigth place in the final geometry and H/&deg; ,&nbsp;&nbsp;
-V/&deg; are the Euler rotation angles which define the final normal vector
-when the element was rotated into the right direction. Now one has a defined
-geometry. </p>
-   
-<p><img src="DefineGeomSME.gif" height="759" width="498">
-   </p>
-   
-<p>3) h/&deg;,&nbsp;&nbsp; v/&deg; is the full width of the rectangular distribution
- expected for the uncertainties of the plane adjustment. <br>
-  4) Up/Down: thetaC [rad],&nbsp;&nbsp;&nbsp; thetaCSM [rad],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
- R&nbsp;&nbsp;&nbsp;&nbsp; give the shape of the reflectivity curve for both
- spin states. R = reflectivity at thetaCSM&nbsp; (generally R &lt; 1). <br>
-  5) mue*d&nbsp; (wavelength dependent),&nbsp;&nbsp;&nbsp; mu_incoh*d (wavelength
- independent) give the attenuation coefficients [1/cm] &times; d i.e. supermirror 
-thickness in cm. <br>
-  6) 'wall label' is the name given by the user to the walls (no real input) 
- </p>
-   
-<p> <br>
-  &nbsp; <br>
-  &nbsp; </p>
-   
-<p> </p>
+<pre>
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.80   200.0   200.0       --left--- 
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88     0.00024   0.00150        0.00173  0.00519  0.80   0.00024    0.00150   --center--- 
+1     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.80   200.0   200.0       --right--- 
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.92   200.0   200.0       --top--- 
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.92   200.0   200.0       --bot--- 
+on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Up: theta_c  theta_csm  R_csm   µ*d      µ_incoh*d  Down: theta_c theta_csm R_csm   µ*d    µ_incoh*d     wall
+</pre>
    
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>   
+  <a href="mailto:vitess@helmholtz-berlin.de">vitess@hmi.de</a>   
 <p><!-- hhmts start --><font size="-1">Last modified: Fri Jul&nbsp; 4 16:51:30
  MEST 2003</font><font size="-1">, G. Zs.</font><!-- hhmts end --> <br>
   &nbsp; </p>

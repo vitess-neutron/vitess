@@ -38,14 +38,24 @@ double ENERGY_FROM_LAMBDA(const double x)
 	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
-double LAMBDA_FROM_ENERGY(const double x)
+double LAMBDA_FROM_ENERGY(const double e)
 {
-	return(sqrt(81805.048 / x)); /* [ueV]   -> [Ang] */
+	return(sqrt(81805.048 / e)); /* [ueV]   -> [Ang] */
 }
 
-double ENERGY_FROM_V(const double x)
+double ENERGY_FROM_V(const double v)
 {
-	return(0.5227033 * x * x);   /* [cm/ms] -> [ueV] */
+	return(0.5227033 * v * v);   /* [cm/ms] -> [ueV] */
+}
+
+double V_FROM_ENERGY(const double e)
+{
+	return(sqrt(e / 0.5227033)); /* [ueV] -> [cm/ms] */
+}
+
+double LAMBDA_FROM_V(const double x)
+{
+	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
 }
 
 double V_FROM_LAMBDA(const double x)
@@ -53,10 +63,6 @@ double V_FROM_LAMBDA(const double x)
 	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
-double LAMBDA_FROM_V(const double x)
-{
-	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
-}
 
 /****************************************************************************************/
 /*  Random Functions                                                                    */

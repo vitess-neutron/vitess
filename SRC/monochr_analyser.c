@@ -37,12 +37,22 @@ int main(int argc, char **argv)
       /* selects CE on which the neutron is reflected and gives global variables
 	 in	the frame of CE */
 
+      double startTime = InputNeutrons[i].Time;
+      VectorType startPosition;
+      VectorType startVector;
+      int ii = 0;
+      for (ii = 0; ii < 3; ii++) {
+	startVector[ii] = InputNeutrons[i].Vector[ii];
+	startPosition[ii] = InputNeutrons[i].Position[ii];
+      }
+
       SelectCE(&Index, i) ;
 
       if (Index == 0./* no CE was found */) goto getlost ;
 
       /* moment of arriving at the crystal plane, new position */
 
+     
       InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /
 	V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
@@ -158,7 +168,7 @@ int main(int argc, char **argv)
 	    if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_ran) ;
 	    if(d_spr_option == 2) Prob *= dSpreadGaussian(d_ran) ;
 
-	    if(Prob <= wei_min) goto getlost2 ;
+	    if(Prob <= wei_min && mode==1) goto getlost2 ;
 
 	    IntegralIntensity += Prob ;
 
@@ -174,6 +184,18 @@ int main(int argc, char **argv)
 	    RotBackVector(Matrix, Dir) ;
 	    
 	    /** end here if mosaic **/
+	  }
+
+	  if (mode == 2) {
+	    InputNeutrons[i].Probability -= Prob;
+	    InputNeutrons[i].Time = startTime;
+	    ii = 0;
+	    for (ii = 0; ii < 3; ii++) {
+	      InputNeutrons[i].Vector[ii] = startVector[ii];
+	      InputNeutrons[i].Position[ii] = startPosition[ii];
+	    }
+	    TransmitNeutron(&InputNeutrons[i]);
+	    continue;
 	  }
 
 	  /* computes neutron variables in the initial frame */
@@ -234,7 +256,8 @@ int main(int argc, char **argv)
 
   OwnCleanup();
 
-  Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
+  if (mode == 1) Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
+  else  Cleanup(totalXOffset, 0, 0, 0, 0);
 
   return 0;
 }
@@ -363,7 +386,8 @@ void OwnInit(int argc, char *argv[])
   DevV         = 0.0;
   GapH         = 0.0;
   GapV         = 0.0;
-
+  mode = 1;
+  absCoeff = 0;
 
   while(argc>1)
     {
@@ -406,6 +430,13 @@ void OwnInit(int argc, char *argv[])
 	  sscanf(&argv[1][2], "%lf", &DevV) ;
 	  break;
 
+	case 'X':
+	  sscanf(&argv[1][2], "%d", &mode) ;
+	  break;
+
+	case 'C':
+	  sscanf(&argv[1][2], "%lf", &absCoeff) ;
+	  break;
 
 	case 'd':
 	  sscanf(&argv[1][2], "%d", &d_spr_option) ;
@@ -540,11 +571,13 @@ void OwnInit(int argc, char *argv[])
       NumberCE[0] = NumberCE[1] = 1 ;
 
       CopyVectorToVectors(0, 0, PosCE, PosCE_F) ;
-
       CopyVectorToVectors(0, 0, DimCE, DimCE_F) ;
 
       RotHoriz_F[0][0]= RotHoriz ; RotVert_F[0][0]= RotVert ;
 
+      FillRotMatrixZY(RotMatrixSurf, RotVert, RotHoriz);
+      rotOffset = CalculateRotationOffset();
+      totalXOffset = PosCE[0] + DimCE[0]/2. + rotOffset;
       goto cont ;
     }
 
@@ -841,4 +874,76 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
     {
       Result[k][i][j] = Vector[k] ;
     }
+}
+
+
+
+void TransmitNeutron(Neutron* n)
+{
+
+  VectorType dir;
+  VectorType pos;
+
+  int i = 0;
+
+  for (i = 0; i < 3; i++) {
+    dir[i] = n->Vector[i];
+    pos[i] = n->Position[i];
+  }
+  
+  pos[0] -= PosCE[0];
+  pos[1] -= PosCE[1];
+  pos[2] -= PosCE[2];
+  
+  RotBackVector(RotMatrixSurf, pos);
+  RotBackVector(RotMatrixSurf, dir);
+ 
+  VectorType Pos1, Pos2;
+
+  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2))
+    {
+      
+      SubVector(Pos2, Pos1);
+      double distInCrystal = LengthVector(Pos2);       
+      double weightFactor = exp (-1.*distInCrystal*absCoeff);
+      n->Probability *= weightFactor;
+      
+    }
+  
+  
+  double scalar = totalXOffset / n->Vector[0];
+  for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar;
+  
+  double ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
+  n->Time += ToF;
+
+  WriteNeutron(n);
+  
+  return;
+  
+}
+
+
+double CalculateRotationOffset()
+{
+
+  VectorType vec1;
+  VectorType vec2;
+
+  vec1[0] = DimCE[0]/2.;
+  vec1[1] = DimCE[1]/2;
+  vec1[2] = DimCE[2]/2.;
+
+  vec2[0] = DimCE[0]/2.;
+  vec2[1] = DimCE[1]/2;
+  vec2[2] = -DimCE[2]/2.;
+
+  RotVector(RotMatrixSurf, vec1);
+  RotVector(RotMatrixSurf, vec2);
+
+  double xOffset1 = fabs(vec1[0]);
+  double xOffset2 = fabs(vec2[0]);
+
+  return Max(xOffset1, xOffset2);
+
 }

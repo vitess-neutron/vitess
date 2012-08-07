@@ -25,6 +25,16 @@
 # define ISNAN(x) isnan(x)
 #endif
 
+#ifdef  _MSC_VER
+/* The Microsoft visual C++ compiler spews about 1000 warnings during */
+/* compilation of gnuplot. The following lines disable most of them.  */
+#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+#define _CRT_SECURE_NO_WARNINGS
+# if _MSC_VER <= 1200
+    typedef unsigned int uintptr_t; 
+# endif
+#endif
+
 #define MN          1.6749284E-27
 #define G           9.80665
 #define K           1.380662E-23
@@ -417,11 +427,12 @@ ModProp;
 /** Prototypes               **/
 /******************************/
 
-double ENERGY_FROM_LAMBDA(const double x);
-double LAMBDA_FROM_ENERGY(const double x);
-double ENERGY_FROM_V   (const double x);
-double V_FROM_LAMBDA   (const double x);
+double ENERGY_FROM_LAMBDA(const double lmbd);
+double LAMBDA_FROM_ENERGY(const double E);
+double ENERGY_FROM_V   (const double v);
+double V_FROM_ENERGY   (const double E);
 double LAMBDA_FROM_V(const double x);
+double V_FROM_LAMBDA   (const double x);
 
 double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
