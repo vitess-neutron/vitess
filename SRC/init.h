@@ -70,7 +70,8 @@ void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
 void DrawHolCyl       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
                        const double Radius, const double InnerRadius);
 void DrawSphere       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double Radius);
-void DrawEllipsoid    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height);
+void DrawEllipsoid    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, 
+		       double Height, double xLow, double xHigh);
 
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);

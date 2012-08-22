@@ -34,8 +34,10 @@ double endHeight=-1;
 
 double startPoint=0;
 double endPoint=0;
+double vertOffset=0.;
 
-double distToFocus=0;
+double distToFocusHor=0;
+double distToFocusVer=-1;
 
 double slopeStraightHor=0;
 double slopeStraightVer=0;
@@ -82,7 +84,7 @@ int PropagateNeutron();
 bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
 bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
 
-double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, bool positive);
+double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, int plane, bool positive);
 double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, double a2, double x, bool positive);
 
 void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, double a0, double a1, double a2, double xMin, double& x, double& y, bool switchSign);
@@ -104,6 +106,7 @@ void OwnInit(int argc, char *argv[]);
 void LoadReflFile(ReflFile* pReflFile);
 void OwnCleanup();
 
+void SetGeometryData();
 void WriteIAPEllGuide(Neutron *n, VtReason eReason);
 
 #endif
