@@ -1,9 +1,45 @@
-Alle geometrischen Elemente werden in Textzeilen erwartet.
-Eine Textzeile beginnt mit dem Elementname, gefolgt von bis zu 15 Gleitpunktzahlen.
-Der Rest der Zeile wird als textuelle Beschreibung des Elements gelesen.
-Die Parameter werden in Meter bzw. Grad erwartet, wenn nicht anders vermerkt.
+Erlaubtes Eingabeformat für die Umwandlung in X3D
+-------------------------------------------------
 
-Die Anzahl der Parameter ist typabhängig.
+Module schreiben Geometrie-Informationen in Textdateien, die vom GUI
+konkateniert werden. Das Programm sortiap wandelt diese Information u.a.
+in X3D. Hier wird beschrieben, welche Eingaben sortiap lesen kann.
+
+Kommententare beginnen mit # , alle Zeichen ab dem Doppelkreuz in einer
+Zeile werden ignoriert.
+Für die Definition von Eigenschaften kann man Zeilen der Form
+DEF key=value
+einfügen. key ist alles nach "DEF " und vor "=" und sollte ein Name sein, 
+der in den folgenden Zeilen durch value ersetzt wird, wobei value alle 
+abdruckbaren Zeichen hinter dem gefundenen "=" umfasst.
+
+Alle geometrischen Elemente werden in Textzeilen erwartet. Sie haben die Form
+<element> {<floatvalue>} [<description>[:<material>]]
+
+Eine Textzeile beginnt also mit der Elementbezeichnung <element> , gefolgt von bis zu 15 Gleitpunktzahlen.
+Danach kann eine textuelle Beschreibung des Elements <description> folgen, 
+und schließlich eine Materialangabe <material>.
+Wenn <description> mit einem Unterstrich endet, wird sie im X3D-File ignoriert, ansonsten
+kann sie am Ort des Elements ausgegeben werden.
+Wenn <material> angegeben ist, wird zunächst eine Ersetzung versucht. In jedem Fall
+sollte eine X3D-Beschreibung wie z.B. 
+<Material diffuseColor='.1 .1 .9' emissiveColor='.33 .33 .1' transparency='.1'/>
+herauskommen.
+(Beispiel:
+Sphere 13 0 0 .5  Kugel_:<Material diffuseColor='.1 .1 .9' emissiveColor='.33 .33 .1' transparency='.1'/>
+hat den gleichen Effekt wie
+DEF blue=<Material diffuseColor='.1 .1 .9' emissiveColor='.33 .33 .1' transparency='.1'/>
+Sphere 13 0 0 .5  Kugel_:blue
+und weil die Beschreibung mit _ endet, wird sie in der X3D Szene ignoriert.
+Die Kugel wird bläulich, Farbreihenfolge Rot Grün Blau 1 .1 .9, und wenig durchsichtig .1
+aussehen.
+)
+
+Die Parameter werden in Meter bzw. Grad erwartet, wenn nicht anders vermerkt.
+Die Eingabe in VITESS Koordinaten wird in X3D Koordinaten gewandelt.
+
+Die Anzahl der Parameter ist abhängig von <element>:
+
 Line
 1 x  2 y  3 z             1. Endpunkt
 4 x  5 y  6 z             2. Endpunkt
@@ -13,7 +49,7 @@ Triangle                  Dreieck, gegeben durch 3 Punkte
 3 x  4 y  5 z             2. Punkt
 6 x  7 y  8 z             3. Punkt
 
-Für die weiteren sind die ersten 3 Parameter gleich
+Für alle weiteren sind die ersten 3 Parameter gleich
 1 x  2 y  3 z            Mittelpunkt des Elements
 
 Sphere                   Kugel

@@ -412,6 +412,28 @@ void defineMaterials () {
 
 }
 
+char *shapeString(char *buf, int vtype, char *appearance) {
+  const char *xtype = 0;
+  switch (vtype) {
+  case GT_Line:
+  case GT_Circle:
+  case GT_Triangle:
+    sprintf(buf, "<Appearance>%s</Appearance>", appearance);
+    break;
+  case GT_Cuboid:    xtype = "Box"; break;
+  case GT_Cylinder:  xtype = "Cylinder"; break;
+  case GT_Sphere:    xtype = "Sphere"; break;
+  case GT_Rectangle: xtype = "Rectangle2D"; break;
+  default:
+    *buf = 0;
+  }
+ 
+  if (xtype)
+    sprintf(buf, "<Shape><%s/><Appearance>%s</Appearance></Shape>", xtype, appearance);
+    
+  return buf;
+}
+
 void drawTriangle(float fa[9], const char *use) {
   int i;
   static char b1[16];
@@ -452,18 +474,22 @@ void drawRectangle(float *fa, const char *shape, const char *rots, float width, 
 }
 
 
-void drawHollowCylinderShape(float inner_r) {
+void drawHollowCylinderShape(float inner_r, char *appearance) {
 
   const char *nuse, *use;
   char b[16], ss[256];
   static const char *ouse;
 
-  if (ouse) {
-    nuse = use = ouse;
+  if (appearance) {
+    nuse = use = appearance;
   } else {
-    sprintf(ss, "<Appearance DEF='cylcolor'>%s</Appearance>", ELLIPS2MAT);
-    nuse = ss;
-    ouse = use = "<Appearance USE='cylcolor'/>";
+    if (ouse) {
+      nuse = use = ouse;
+    } else {
+      sprintf(ss, "<Appearance DEF='cylcolor'>%s</Appearance>", ELLIPS2MAT);
+      nuse = ss;
+      ouse = use = "<Appearance USE='cylcolor'/>";
+    }
   }
   fprintf( outf,
           "<Transform rotation='1 0 0 1.57' translation='0 -1 0'>"
@@ -627,9 +653,44 @@ void restrictPoint(float *fa) {
 
 #define MAXARGS 16
 
-int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods) {
+typedef
+struct s_definition {
+  char *key;
+  char *value;
+  struct s_definition *next;
+} t_definition;
+
+static t_definition *definition;
+
+static void insertDef(char *key, char *value) {
+  t_definition *d;
+
+  if (! key || strlen(key) <= 0 || ! value || strlen(value) <= 0) return;
+
+  d = (t_definition*) calloc(1, sizeof(t_definition));
+  d->key = strdup(key);
+  d->value = strdup(value);
+  d->next = definition;
+
+  definition = d;
+}
+
+static char *lookForDef(char *name) {
+  t_definition *d;
+
+  if (!name || strlen(name) <= 0) return 0;
+
+  for (d = definition; d; d = d->next)
+    if (0 == strcmp(name, d->key))
+      return d->value;
+
+  return name;
+}
+
+
+int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods, char **appearance) {
   int vtype, len, slen, nargs, rc;
-  char *rs, *p;
+  char *rs, *p, *q;
 
  skip_me:
   while ((rs = fgets(line,255,gf))) {
@@ -639,7 +700,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   }
   if (!rs) return 0;
 
-  ++(*ngeom);
   *p++ = 0;
   len = strlen(line);
   vtype = -1;
@@ -653,6 +713,16 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
       vtype = GT_Cylinder;  nargs = 8;
     } else if (0 == strcmp(rs, "ylSlice")) {
       vtype = GT_CylSlice;  nargs = 11;
+    }
+    break;
+  case 'D':
+    if  (0 == strcmp(rs, "EF")) {
+      // DEF key=value
+      if (p[0] && (q = strchr(p+1, '='))) {
+        *q++ = 0;
+        insertDef(p, q);
+      }
+      return 0;
     }
     break;
   case 'E':
@@ -697,8 +767,11 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     }
     break;
   }
+
   if (vtype < 0)
     return vtype;
+
+  ++(*ngeom);
 
   switch (nargs) {
   case  4: rc = sscanf(p, "%f %f %f %f%n", fa,fa+1,fa+2,fa+3, &slen); break;
@@ -723,8 +796,18 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   p += slen;
   while (isspace(*p)) ++p;
   *mods = p;
+
+  // if we find a : this separates some appearance information
+  if ((q = strchr(p, ':'))) {
+    *q++ = 0;
+    p = q;
+  }
+
+  // zero terminate behind last printable char
   while (isprint(*p)) ++p;
   *p = 0;
+
+  *appearance = lookForDef(q);
 
   // apply viewport, if specified
   if (x3d_option_filename &&
@@ -788,13 +871,13 @@ void geom2X3D(char *fn) {
   // parse a geometry file from VITESS to X3D output
 
   FILE *gf;
-  char *mods, *scales;
+  char *mods, *scales, *appearance;
   const char *shape;
-  static char line[256], trans[64], scaleb[64], rots[64],
+  static char line[256], trans[64], scaleb[64], rots[64], shapestr[256],
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
-  int vtype, vvtype, ngeom = 0, firstmodule=1;
+  int vtype, vvtype, len, ngeom = 0, firstmodule=1;
 
   defineMaterials();
 
@@ -803,7 +886,7 @@ void geom2X3D(char *fn) {
 
   // parse input of geometry file to X3D output
 
-  while ((vtype = parseGeomItem(gf, line, fa, &ngeom, &mods))) {
+  while ((vtype = parseGeomItem(gf, line, fa, &ngeom, &mods, &appearance))) {
 
     if (vtype < 0)
       myexit2("unknown geometry item in %s line\n%s\n", fn, line);
@@ -817,8 +900,12 @@ void geom2X3D(char *fn) {
     // GT_Rectangle and GT_OpenRectangle use the same shape
     vvtype = vtype == GT_OpenRectangle ? GT_Rectangle : vtype;
 
-    shape = used_before[vvtype] ? x3d_old[vvtype] : x3d_new[vvtype];
-    used_before[vvtype] = 1;
+    if (appearance)
+      shape = shapeString(shapestr, vtype, appearance);
+    else {
+      shape = used_before[vvtype] ? x3d_old[vvtype] : x3d_new[vvtype];
+      used_before[vvtype] = 1;
+    }
 
     switch (vtype) {
     case GT_Line:
@@ -845,7 +932,8 @@ void geom2X3D(char *fn) {
         smallw = (w1-w2)/2;
         xshift = (w2+smallw)/2;
         drawSimpleShape(-xshift, 0, smallw, h1, shape);
-        shape = x3d_old[vvtype]; // at least now
+        if (!appearance)
+          shape = x3d_old[vvtype]; // at least now
         drawSimpleShape(xshift, 0, smallw, h1, shape);
         smallh = (h1-h2)/2;
         yshift = (h2+smallh)/2;
@@ -897,7 +985,7 @@ void geom2X3D(char *fn) {
                "<Extrusion solid='false' beginCap='false' endCap='false' "
                "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>\n",
-               sS5(fa[6]/2.0f, b1), rots, trans, HULLMAT,
+               sS5(fa[6]/2.0f, b1), rots, trans, appearance ? appearance : HULLMAT,
                sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
                sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
       break;
@@ -912,7 +1000,8 @@ void geom2X3D(char *fn) {
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawEllipsoidShape(fa[9], fa[10]);
-      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", ELLIPSMAT);
+      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", 
+               appearance ? appearance : ELLIPSMAT);
       break;
     case GT_CylSlice:
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
@@ -921,7 +1010,8 @@ void geom2X3D(char *fn) {
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawCylSlice(fa[9], fa[10]);
-      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", RECTMAT);
+      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n",
+               appearance ? appearance : RECTMAT);
       break;
     case GT_HollowCylinder:
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
@@ -930,7 +1020,7 @@ void geom2X3D(char *fn) {
                sS5(fa[6]/2.0f, b1), scales, scales,
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6));
-      drawHollowCylinderShape(fa[8]);
+      drawHollowCylinderShape(fa[8], appearance);
       fputs ("</Transform>\n", outf);
       break;
     case GT_Triangle:
@@ -940,7 +1030,10 @@ void geom2X3D(char *fn) {
 
     if (!annotationLabels) continue;
 
-    // show module name
+    // show the module name, if it does not end with _
+    len = strlen(mods);
+    if (len <= 0 || mods[len-1] == '_') continue;
+
     if (firstmodule) {
       fprintf (outf, "<Transform translation='%s'><Billboard><Shape>"
                "<Appearance DEF='label_appearance'>%s</Appearance>"
@@ -1195,7 +1288,7 @@ void geom2SVG(char *fn) {
   // parse a geometry file from VITESS to SVG output
 
   FILE *gf;
-  char *mods;
+  char *mods, *appearance;
   static char line[256];
   static float fa[MAXARGS], n[3], mat[4][4], mat1[4][4];
   int vtype, ngeom = 0;
@@ -1205,7 +1298,7 @@ void geom2SVG(char *fn) {
 
   // parse input of geometry file to X3D output
 
-  while ((vtype = parseGeomItem(gf, line, fa, &ngeom, &mods))) {
+  while ((vtype = parseGeomItem(gf, line, fa, &ngeom, &mods, &appearance))) {
     if (vtype < 0)
       myexit1("unknown geometry item in %s\n", fn);
 

@@ -1,0 +1,29 @@
+VITESS 3.0  Release Note
+------------------------
+
+Visualization:
+--------------
+
+A framework for the visualization of the instrument geometry and neutron trajectories
+has been implemented. Modules produce individual output files in special exececution
+modes which are gathered in another step and transformed to X3D (3 dimensional virtual reality)
+or SVG (2D vector graphic) files then, under control of the GUI.
+Virtual reality scenes may be examined with external viewers then, as 2D graphics
+may be shown by means of a browser.
+The framework has been filled for the following modules yet:
+source, guide, space, supermirror ensemble
+and is considered "beta".
+
+Pipe import:
+------------
+
+Simulation pipes with VITESS modules may be (re-)imported to a GUI representation
+of the instrument, the input file may be any text file with a line containing 
+the pipe command.
+
+The maximal number of modules in the pipe has been extended to 100 now.
+
+New modules:
+------------
+elliptic guide
+mon_brilliance
