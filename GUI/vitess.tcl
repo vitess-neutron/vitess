@@ -1123,7 +1123,7 @@ set guide_ellipticESET {
   {"Shape and size of guide" header}
   {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
     {constant linear elliptic} {0 1 2}}
-  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be the same!" "" V}
     {constant linear elliptic} {0 1 2}}
   {}
   {shape_file mneditablefile guide_shape.dat
@@ -1160,9 +1160,12 @@ set guide_ellipticESET {
   {length_guide float 0 {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
-  {dist_focus float 0 {
-    "Distance from \nexit to focus [m]"
-    "Distance from guide exit to focal point of the ellipse.\n Note that focal points in horizontal and vertical plane\n must be the same."  "" d} ge0 "" 1}	
+  {dist_focus_hor float 0 {
+    "Distance from \nexit to focus horizontal [m]"
+    "Distance from guide exit to focal point of the ellipse in horizontal plane.\n "  "" d}}	
+   {dist_focus_ver float 0 {
+    "Distance from \nexit to focus vertical [m]"
+    "Distance from guide exit to focal point of the ellipse in vertical plane.\n "  "" D}}	  
   {"Guide characteristics" header}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
