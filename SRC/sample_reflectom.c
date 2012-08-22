@@ -58,21 +58,40 @@ int main(int argc, char **argv)
 		/* Loop over all neutrons read */
 		for(i=0; i<NumNeutGot; i++)
 		{
-			CHECK
+		  CHECK;
+
+		  short int reflectionNotDone = 1;
+		  short int incohScatNotDone = useIncoherent && (g_nOption==1);
+		 
+
+		  while (reflectionNotDone || (incohScatNotDone && g_nOption==1)) {
+
+		    short int treatingReflection = 1;
+		    double phi, theta = 0;
+		    if (reflectionNotDone) reflectionNotDone = 0;
+		    else if (incohScatNotDone) {
+		      incohScatNotDone = 0;
+		      treatingReflection = 0;
+		    }
 
 			/* corrections: 
 				InputNeutrons[i].Position[0]	= 0. ; */
-			InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
-
+			  //			InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+			  double mod = sqrt(  sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1]) + sq(InputNeutrons[i].Vector[2]));
+			
 			/* copies input data to output data */
 			Neutrons   = InputNeutrons[i];
+
+			Neutrons.Vector[0] = Neutrons.Vector[0]/mod;
+			Neutrons.Vector[1] = Neutrons.Vector[1]/mod;
+			Neutrons.Vector[2] = Neutrons.Vector[2]/mod;
 
 			g_dProbIn  = InputNeutrons[i].Probability ;
 			g_dProbOut = 0.0;
 
 
 			/* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
-			nIndex = Reflect(&Neutrons) ;
+			nIndex = Reflect(&Neutrons, treatingReflection) ;
 
 			if(nIndex == 0) /* no CE was found */ 
 				continue;
@@ -85,30 +104,62 @@ int main(int argc, char **argv)
 			MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
 			AddVector  (Neutrons.Position, vPath) ; /* vPath = displacement vector */
 
-
-			/* scattering angle */
-			CopyVector(vDirIn, vDirOut) ;
-			RotVector (mRotMatrixOut, vDirOut) ;
-			SubVector (vDirOut, vDirIn) ;
-			arg = LengthVector(vDirOut)/2.0 ;    /* arg is sin(scattering angle) */
-			thr = (double) asin(arg) ;
-
-			/* computes momentum transfer */
-			dQ = 4*M_PI*sin(thr)/Neutrons.Wavelength;
-
-
-			/* probability of reflection */
-			if (g_nOption==2)
-				dR = 1.0 ;           /* reference sample has reflectivity 1 */
-			else 
-				dR = ReadReflect(dQ);
-
-			g_dProbOut = g_dProbIn * dR ;
-
+			// Here, the specular reflection case is treated
+			if (treatingReflection) {
+			  /* scattering angle */
+			  CopyVector(vDirIn, vDirOut) ;
+			  RotVector (mRotMatrixOut, vDirOut) ;
+			  SubVector (vDirOut, vDirIn) ;
+			  arg = LengthVector(vDirOut)/2.0 ;    /* arg is sin(scattering angle) */
+			  thr = (double) asin(arg) ;
+			  
+			  /* computes momentum transfer */
+			  dQ = 4.*M_PI*sin(thr)/Neutrons.Wavelength;
+			  
+			  //			fprintf(LogFilePtr, "%5.4f\t%5.4f\n", dQ, 4.*M_PI*sin(0.5*M_PI/180.)/Neutrons.Wavelength);
+			  
+			  /* probability of reflection */
+			  if (g_nOption==2)
+			    dR = 1.0 ;           /* reference sample has reflectivity 1 */
+			  else 
+			    dR = ReadReflect(dQ);
+			  
+			  g_dProbOut = g_dProbIn * dR ;
+			  
 			if(g_dProbOut <= wei_min)
-				continue;
-
+			  continue;
+			
 			Neutrons.Probability = g_dProbOut;
+			
+			}
+
+			// Here, the incoherent scattering is treated
+			else {
+			  double deltaTheta = maxTheta - minTheta;
+
+			  if (maxTheta > 0 && minTheta < 0) {
+			    deltaTheta = Max(maxTheta, fabs(minTheta));
+			    if (fabs(minTheta) > maxTheta) theta = MonteCarlo(minTheta, 0); 
+			    else theta = MonteCarlo(0, maxTheta); 
+			  }
+			  else theta = MonteCarlo(minTheta, maxTheta); 
+
+			  int switchSign = 0;
+			  double phiMin, phiMax;
+			  
+			  CalculatePhiRange(theta, &phiMin, &phiMax, &switchSign);
+			  
+			  double deltaPhi = (phiMax - phiMin)*(switchSign+1.);
+			  phi = MonteCarlo(phiMin, phiMax);
+
+			  if (switchSign) {
+			    double random = MonteCarlo(-1, 1);
+			    phi *= fabs(random)/random;
+			  }
+			  fprintf(LogFilePtr,"Random phi: %f\n", phi*180./M_PI);
+			  Neutrons.Probability *= fabs(sin(theta))*deltaTheta*deltaPhi/M_PI*signalToBkgAreaFactor;
+			  // FillRotMatrixZY(RotMatrixIncoherent, sqrt(theta*theta + phi*phi)*fabs(theta)/theta, phi);
+			}
 
 			/* prepares data for writeout and writes */
 			/* computes reflected direction in the frame of CE */
@@ -118,6 +169,18 @@ int main(int argc, char **argv)
 			RotBackVector(RotMatrixCE, Neutrons.Position) ;
 			RotBackVector(RotMatrixCE, Neutrons.Vector) ;
 			AddVector(Neutrons.Position, PosCE) ;
+
+			/* rotate the direction of the vector for incoherent scattering */
+			if (!treatingReflection) {
+			  double realPhi = theta*sin(phi);
+			  double realTheta = theta*cos(phi);
+			  fprintf(LogFilePtr,"Final theta: %f, final phi: %f\n", realTheta*180./M_PI, realPhi*180./M_PI);
+			  Neutrons.Vector[0] = cos(realTheta)*cos(realPhi);
+			  Neutrons.Vector[1] = cos(realTheta)*sin(realPhi);
+			  Neutrons.Vector[2] = sin(realTheta);
+			  Neutrons.Color += 5000;
+			  //			  RotVector(RotMatrixIncoherent, Neutrons.Vector);
+			}
 
 			/* makes depth correction to get back to the old frame for Depth != 0 */
 			RotBackVector(RotMatrixCE, Depth) ;
@@ -131,6 +194,7 @@ int main(int argc, char **argv)
 			/*	writes output binary file */
 			NumOut++ ;
 			WriteNeutron(&Neutrons) ;
+		  }
 		}
 	}
 
@@ -146,7 +210,7 @@ int main(int argc, char **argv)
 
 /* controls, if neutron is reflected and gives output in frame of CE */
 
-short	Reflect(Neutron* p_pNeutron)
+short	Reflect(Neutron* p_pNeutron, short int treatingReflection)
 {
 	VectorType ISP1, ISP2,         /* Intersection points (entry and exit)  */
 	           NeutPos, NeutDir;   /* Neutron position and flight direction */
@@ -172,6 +236,17 @@ short	Reflect(Neutron* p_pNeutron)
 
 	SubVector(NeutPos, Depth) ;
 
+	// Do the incoherent scattering here
+	if (!treatingReflection) {
+	  
+	  SubVector(ISP2, ISP1);
+	  double pathInSample = MonteCarlo(0, LengthVector(ISP2));;
+	  double prob = 1. - exp(-muInc*pathInSample);
+	  p_pNeutron->Probability *= prob; 
+	  if (prob > maxProb) maxProb = prob;
+	  if (p_pNeutron->Probability <= wei_min) return (FALSE);
+
+	}
 
 	/* here we have the CE and initialise the values */
 	CopyVector(NeutPos, p_pNeutron->Position) ;
@@ -217,7 +292,7 @@ double	ReadReflect(const double p_dQ)
 
 
 
-/* own initialization of the monochromator/analyser module */
+/* own initialization of the sample_reflectom module */
 
 void OwnInit(int argc, char *argv[])
 {
@@ -233,7 +308,12 @@ void OwnInit(int argc, char *argv[])
 	NumOut          = 0 ;
 	g_nOption       = 1 ;
 	g_nNoAngle      = 1 ;
-
+	maxProb         = 0.;
+	detWidth        = 0.;
+	detHeight       = 0.;
+        signalToBkgAreaFactor = 1.;
+        minTheta        = 0;
+	maxTheta        = 0;
 
 	  /*    INPUT  */
 	while(argc>1)
@@ -264,6 +344,25 @@ void OwnInit(int argc, char *argv[])
 
 			case 'a':
 				sscanf(arg, "%lf", &g_dRotAngle) ;
+				break;
+			case 'B':
+				sscanf(arg, "%d", &useIncoherent) ;
+				break;	
+			case 'X':
+			        muInc =atof(&argv[1][2]);
+				fprintf(LogFilePtr,"mu Incoherent: %f \n", muInc);
+				break;	
+			case 'p':
+			        detWidth = atof(&argv[1][2]);
+				break;	
+		        case 't':
+			        detHeight = atof(&argv[1][2]);
+				break;
+		        case 'd':
+			        detDist = atof(&argv[1][2]);
+				break;
+		        case 'S':	
+			        signalToBkgAreaFactor = atof(&argv[1][2]);
 				break;
 
 		}
@@ -302,6 +401,9 @@ void OwnInit(int argc, char *argv[])
 	AnglFocHoriz *= M_PI/180. ;
 	AnglFocVert	 *= M_PI/180. ;
 
+	
+	CalculateThetaRange();
+
 	/* computes rotation matrix corresponding to the output frame
 	   (focus direction) */
 	FillRotMatrixZY(RotMatrixFoc, AnglFocVert, AnglFocHoriz) ;
@@ -331,8 +433,9 @@ void OwnCleanup()
 	/* print error that might have occured many times */
 	PrintMessage(SMPL_Q_RANGE_TOO_SMALL, "", ON);
 
+	fprintf(LogFilePtr,"Maximum scattering probability reached: %f \n", maxProb);
 	fprintf(LogFilePtr," \n");
-
+	
 	/* set description for instrument plot */
 	stPicture.eType = (short) g_nOption;
 	stPicture.dWPar = DimCE[1];
@@ -460,4 +563,82 @@ void AnglesOutputFrame(double RotHoriz, double RotVert, double *AnglFocHoriz, do
 
 	*AnglFocHoriz	*= 180./M_PI ;
 	*AnglFocVert	*= 180./M_PI ;
+}
+
+void CalculateThetaRange()
+{
+  // Calculate the theta range covered by the detector
+  double theta = atan(detHeight/2./detDist);
+  minTheta = 2.*g_dRotAngle - theta;
+  maxTheta =  2.*g_dRotAngle + theta;
+
+  return;
+  
+}
+
+// For detectors close to the direct beam, deltaPhi is a function of theta
+// Calculate corresponding deltaPhi for each trajectory individually.
+void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switchSign)
+{
+  // Calculate the location at the detector which is hit by the direkt beam
+  double h0 = -detDist * tan(g_dRotAngle*2.);
+
+  // Calculate the location that is hit by the trajectory with the angle of theta
+  double h = detDist * tan(theta - g_dRotAngle*2.);
+ 
+  // Distance between end of detector and the direct beam position
+  double h0Dist = fabs(fabs(h0) - detHeight/2.);   
+
+  // Distance between direct beam and currect trajectory position
+  double hDist = fabs(h0 - h);
+
+  // 
+  double largestDist = sqrt(pow(detWidth/2., 2) + pow(h0Dist, 2));
+
+  if (fabs(h0) >= detHeight/2.) {
+    if (largestDist >= hDist) {
+      *phiMin = -acos(h0Dist/hDist);
+      *phiMax = -*phiMin;
+    }
+    else {
+      *phiMin = -asin(detWidth/2./hDist);
+      *phiMax = -*phiMin;
+    }
+    
+  }
+  else {
+    
+    if (hDist <= h0Dist) {
+      *phiMin = -M_PI;
+      *phiMax = M_PI;
+    }
+    else if (hDist > h0Dist && hDist <= detWidth/2.) {
+
+      *phiMin = (-1.)*(M_PI/2. + asin(h0Dist/hDist));
+      *phiMax = -*phiMin;
+      
+    }
+    else if (hDist > detWidth/2. && hDist <= (detHeight - h0Dist)) {
+
+      *phiMin = (-1.)*(M_PI/2. - acos(detWidth/(2.*hDist)));
+      *phiMax = -*phiMin;
+
+    }
+    else if (hDist > (detHeight - h0Dist) && hDist <= largestDist) {
+
+       *phiMin = (-1.)*(M_PI/2. - acos(detWidth/(2.*hDist)));
+       *phiMax = (-1.)*(acos((detHeight - h0Dist)/hDist));
+       *switchSign = 1.;
+
+    }
+    else {
+      *phiMin = 0.;
+      *phiMax = 0.;
+    }
+  }
+
+  fprintf(LogFilePtr,"theta: %f, h: %f, h0: %f, phiMin: %f, phiMax: %f \n", theta * 180./M_PI, h, h0, *phiMin* 180./M_PI, *phiMax* 180./M_PI);
+
+  return;
+
 }
