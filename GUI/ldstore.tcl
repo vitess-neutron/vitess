@@ -73,7 +73,7 @@ proc doSavePacket {w} {
   set resi 1
   for {set i $m1} {$i <= $m2} {incr i} {
     set v [globVal mod$i]
-    if {$v != "--inactive--" } {
+    if {$v != "" && $v != "--inactive--" } {
       set ge($i) $resi
       puts $f "gSet mod$resi \{$v\}"
       incr resi
@@ -343,9 +343,7 @@ proc deleteSomeModules {w i} {
     catch {destroy $sepw}
     upvar #0 visM$i v
     upvar #0 mod$i mv
-    if [info exists v] {
-      set v [set mv $DummyEntry]
-    }
+    set v [set mv $DummyEntry]
   }
 }
 
