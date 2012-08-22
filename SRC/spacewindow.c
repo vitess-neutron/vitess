@@ -358,27 +358,31 @@ int main(int argc, char *argv[])
 			/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
 			/****************************************************************************************/
 
-      if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
-				Output = InputNeutrons[i];
-				WriteNeutron(&Output);
-				WriteIAP(&Output, VT_EXITED);
-				continue;
-      }
-
-      if (bOldFrame==FALSE) {
+			  if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
+			    Output = InputNeutrons[i];
+			    WriteIAP(&Output, VT_EXITED);
+			    WriteNeutron(&Output);
+			    continue;
+			  }
+			
+			if (bOldFrame==FALSE) {
 			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
 			  if (InputNeutrons[i].Wavelength == 0.0) continue;
 			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
 			  if (VelocityReal <= 0.0) continue;
-      } else
-			  Output = InputNeutrons[i];
+			} 
+			else {
 
-     WriteIAP(&Output, VT_ENTERED);
-     
-			if (keygrav == 1)
-			{
-				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+			  Output = InputNeutrons[i];			
+
 			}
+			
+			WriteIAP(&InputNeutrons[i], VT_ENTERED);
+
+			if (keygrav == 1)
+			  {
+			    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+			  }
 			else
 			{
 				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
@@ -470,14 +474,15 @@ int main(int argc, char *argv[])
 
 
         if (bOldFrame==FALSE) {
-					InputNeutrons[i].Position[0]=0.0;
+	  WriteIAP(&InputNeutrons[i], VT_EXITED);
+	  InputNeutrons[i].Position[0]=0.0;
           InputNeutrons[i].Time += (double)TOF3 ;
-				  Output = InputNeutrons[i];
-        } else
+	  Output = InputNeutrons[i];
+        } 
+	else {
            InputNeutrons[i]=Output;
-
-	WriteIAP(&Output, VT_EXITED);
-	
+	   WriteIAP(&InputNeutrons[i], VT_EXITED);
+	}
 				WriteNeutron(&Output);
       }
 			else /* else, if hitting beamstop or out of window */
@@ -508,7 +513,7 @@ int main(int argc, char *argv[])
 //	 				 fprintf(LogFilePtr,"surf prob = %f mu = %f \n",prob,mu);
 	 				 InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
 	 				 InputNeutrons[i].Time += (double)TOF3;
-	 				 InputNeutrons[i].Position[0]=0.0;
+	 				 InputNeutrons[i].Position[0]=DistMove;
 					 Output = InputNeutrons[i];
 				 	 if (InputNeutrons[i].Probability <= wei_min) {
 					   WriteIAP(&Output, VT_ABSORBED);
@@ -518,6 +523,20 @@ int main(int argc, char *argv[])
 					   WriteNeutron(&Output);
 					 }
 				 }
+				else {
+				  if (keygrav == 1)
+				    {
+				      TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPoint2);
+				    }
+				  else
+				    {
+				      TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPoint2);
+				    }
+				   InputNeutrons[i].Probability = 0.;
+				   InputNeutrons[i].Position[0]=DistMove;
+				   InputNeutrons[i].Time += (double)TOF3;
+				   WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+				}
 			}
 		}
 	}

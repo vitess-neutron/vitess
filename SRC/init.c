@@ -1144,7 +1144,8 @@ void WriteGeomData(VectorType vBegPos, double Length)
         Transform (vDir,     stGeometry.pEllipsoid[k].vSymAxis, vNull);
 
         DrawEllipsoid(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
-                      stGeometry.pEllipsoid[k].Length, stGeometry.pEllipsoid[k].Width, stGeometry.pEllipsoid[k].Height); 
+                      stGeometry.pEllipsoid[k].Length, stGeometry.pEllipsoid[k].Width, 
+		      stGeometry.pEllipsoid[k].Height, stGeometry.pEllipsoid[k].Xlow, stGeometry.pEllipsoid[k].Xhigh); 
       }
 
       /* Spheres */
@@ -1387,11 +1388,11 @@ void DrawSphere(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
                      Radius/100.0,   pDescr);
 }   
 
-void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height)
+void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double xLow, double xHigh)
 {
-  fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f  %10.5f %10.5f   %s\n", 
-                     vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-                     Length/100.0, Width/100.0, Height/100.0, pDescr);
+  fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f %10.5f   %s\n", 
+	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
+	  Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
 }
 
 

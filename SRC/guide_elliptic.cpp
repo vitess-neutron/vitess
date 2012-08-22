@@ -2,7 +2,7 @@
 #define GUIDE_ELLIPTIC_CPP
 
 #include <math.h>
-#define isnan(x) ((x) != (x))
+//#define isnan(x) ((x) != (x))
 
 // extern "C" {
 // #include "init.h"
@@ -130,8 +130,12 @@ void OwnInit(int argc, char *argv[])
 	    lengthGuide  = atof(&argv[i][2]); // Guide length in m
 	    break;
 
-	    case 'd':
-	    distToFocus  = atof(&argv[i][2]); // Distancs to focal point from guide exit
+	 case 'd':
+	    distToFocusHor  = atof(&argv[i][2]); // Distance to focal point from guide exit
+	    break; 
+
+	 case 'D':
+	    distToFocusVer  = atof(&argv[i][2]); // Distancs to focal point from guide exit
 	    break; 
 
 	  case 'i':  /* left plane */
@@ -189,9 +193,12 @@ void OwnInit(int argc, char *argv[])
     }
 
 
+   if (distToFocusVer < 0) distToFocusVer = distToFocusHor;
+
    //Check if enough parameters were given
    //Treat horizontal plane first
-   if (shapeHor == 2) {
+   if (shapeHor == 2) { // We are dealing with an ellipse
+
      if (longAxisHor > 0 && lengthGuide > 0) {
 
        if (startWidth > 0 || endWidth > 0) {
@@ -208,7 +215,7 @@ void OwnInit(int argc, char *argv[])
        }
 
      }
-     else if (lengthGuide > 0 && startWidth > 0 && endWidth > 0 && distToFocus > 0) {
+     else if (lengthGuide > 0 && startWidth > 0 && endWidth > 0 && distToFocusHor > 0) {
      
        if (longAxisHor > 0 || shortAxisHor > 0) {
 	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes.");
@@ -217,7 +224,7 @@ void OwnInit(int argc, char *argv[])
        }
        else {
           
-	 if (!CalculateEllipseParametersFromStartAndExitWidths(startWidth, endWidth, lengthGuide, distToFocus, longAxisHor, shortAxisHor, startPoint, endPoint)) {
+	 if (!CalculateEllipseParametersFromStartAndExitWidths(startWidth, endWidth, lengthGuide, distToFocusHor, longAxisHor, shortAxisHor, startPoint, endPoint)) {
 	   fprintf(LogFilePtr,"Unable to determine horizontal ellipse parameters from input!");
 	   exit (-1);
 	 }
@@ -227,7 +234,7 @@ void OwnInit(int argc, char *argv[])
        }
      }
    }
-   else if (shapeHor == 0 || shapeHor == 1) {
+   else if (shapeHor == 0 || shapeHor == 1) { // We are dealing with a constant or straight guide 
 
      slopeStraightHor = (endWidth - startWidth) / (200.*lengthGuide);
      fprintf(LogFilePtr,"Horizontal shape is straight with start width %f cm, end width %f cm, and a slope of %f \n", startWidth, endWidth, slopeStraightHor);
@@ -237,9 +244,11 @@ void OwnInit(int argc, char *argv[])
      }
 
    }
+
    //Check if enough parameters were given
    //Treat the vertical plane now
-   if (shapeVer == 2) {
+   if (shapeVer == 2) { // we are dealing with an ellipse
+
      if (longAxisVer > 0 && lengthGuide > 0) {
 
        if (startHeight > 0 || endHeight > 0) {
@@ -253,7 +262,7 @@ void OwnInit(int argc, char *argv[])
        }
 
      }
-     else if (lengthGuide > 0 && startHeight > 0 && endHeight > 0 && distToFocus > 0) {
+     else if (lengthGuide > 0 && startHeight > 0 && endHeight > 0 && distToFocusVer > 0) {
      
        if (longAxisVer > 0 || shortAxisVer > 0) {
 	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either entrance/exit parameters or the size of the axes.");
@@ -261,17 +270,24 @@ void OwnInit(int argc, char *argv[])
        }
        else {
  
-	 if (!CalculateEllipseParametersFromStartAndExitWidths(startHeight, endHeight, lengthGuide, distToFocus, longAxisVer, shortAxisVer, startPoint, endPoint)) {
+	 // Needed in case the vertical ellipse has another coordinate system
+	 double startPointTemp = 0.;
+	 double endPointTemp = 0.;
+
+	 if (!CalculateEllipseParametersFromStartAndExitWidths(startHeight, endHeight, lengthGuide, distToFocusVer, longAxisVer, shortAxisVer, startPointTemp, endPointTemp)) {
 	   fprintf(LogFilePtr,"Unable to determine vertical ellipse parameters from input!");
 	   exit (-1);
 	 }
+
+	 //Shift of the vertical wrt the horizontal coordinate system
+	 vertOffset = startPointTemp - startPoint;
        
-	 fprintf(LogFilePtr,"Found vertical ellipse parameters according to user input: long axis: %f m, short axis: %f m \n", longAxisVer, shortAxisVer);
+	 fprintf(LogFilePtr,"Found vertical ellipse parameters according to user input: long axis: %f m, short axis: %f m, shift of x-axis: %f m \n", longAxisVer, shortAxisVer, vertOffset);
 
        }
      }
    }
-   else if (shapeVer == 0 || shapeVer == 1) {
+   else if (shapeVer == 0 || shapeVer == 1) { // We are dealing with a constant or straight guide 
 
      slopeStraightVer = (endHeight - startHeight) / (200.*lengthGuide);
      fprintf(LogFilePtr,"Vertical shape is straight with start height %f cm, end height %f cm, and a slope of %f \n", startHeight, endHeight, slopeStraightVer);
@@ -284,6 +300,9 @@ void OwnInit(int argc, char *argv[])
        endPoint = lengthGuide/2.;
      }
    }
+
+   SetGeometryData(); 
+
    return;
 
 }
@@ -330,6 +349,7 @@ void   LoadReflFile(ReflFile *pReflFile)
 int ProcessNeutron(Neutron* n)
 { 
   
+  // Initialise some parameters in the beginning
   bool endReached = false;
   double xMin = startPoint;
   double tof = 0.;
@@ -353,8 +373,8 @@ int ProcessNeutron(Neutron* n)
 
   //Sanity check
   if (n->Vector[0] == 0 || n->Wavelength == 0 || n->Probability == 0) return 0;
-  if (isnan(n->Position[0]) || isnan(n->Position[1]) ||
-	  isnan(n->Position[2])) return 0;
+  if (ISNAN(n->Position[0]) || ISNAN(n->Position[1]) ||
+	  ISNAN(n->Position[2])) return 0;
 
   
   // Propagate the trajectory in x-y and x-z plane
@@ -373,15 +393,20 @@ int ProcessNeutron(Neutron* n)
     Neutron nTemp1;
     Neutron nTemp2;
 
+    // Create two temporary trajectories for horizontal/vertical propagation
     CopyNeutron(n, &nTemp1);
     CopyNeutron(n, &nTemp2);
 
+    // Find out which one collides first with the guide
     double distTempX1 = 0;
     endReached = PropagateStraightTrajectory(&nTemp1, distTempX1, xMin, 1, shapeHor);
     double distTempX2 = 0;
-    if (keygrav == 1)  endReached &= PropagateParabolicTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+
+    // Shift the coordinate system for the vertical plane
+    if (keygrav == 1)  endReached &= PropagateParabolicTrajectory(&nTemp2, distTempX2, xMin+vertOffset, 2, shapeVer);
     else {
-      endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+       // Shift the coordinate system for the vertical plane
+      endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin+vertOffset, 2, shapeVer);
       if (nTemp1.Probability < wei_min && nTemp2.Probability < wei_min) neutronsKilledStraight--;
     }
     
@@ -390,12 +415,12 @@ int ProcessNeutron(Neutron* n)
     if (keygrav && shapeVer == 2 && (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) &&
 	((distTempX2 - distTempX1) > 1e-5) && (n->Position[0] < (startPoint + 0.02*longAxisVer))) {
       CopyNeutron(n, &nTemp2);
-      endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin, 2, shapeVer);
+      endReached &= PropagateStraightTrajectory(&nTemp2, distTempX2, xMin+vertOffset, 2, shapeVer);
       if (nTemp1.Probability < wei_min && nTemp2.Probability < wei_min) neutronsKilledStraight--;
     }     
 
     if (!endReached) {
-      // If reflection locations for both dimensions are closer together than 10^-5 m, ignore the difference
+      // If reflection locations for both dimensions are closer together than 10^-5 m, ignore the difference, there are usually just a few
       if (fabs(distTempX1 - distTempX2) < 1e-5) {
 
 	n->Position[0] = nTemp1.Position[0];
@@ -421,35 +446,35 @@ int ProcessNeutron(Neutron* n)
       // Reflection takes place first in horizontal plane
       else if (distTempX1 < distTempX2) {	
 	
+	// Here something went wrong, first reflection takes place in the horizontal plane,
+	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
 	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  if (distTempX1 > 0) {
-	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
-	  // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
-	  // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	  // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
-	  ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
-	  double x = n->Position[0];
-	  double slope = 0;
-	  if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
-	  // fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
-	  // 	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
+	    // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
+	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
+	    // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
+	    // ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
+	    // double x = n->Position[0];
+	    // double slope = 0;
+	    // if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
+	    // fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
+	    // 	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
 	  }
 	  badNeutrons++;
 	  return 0;
 
 	}
 
+	// Update ToF and other variables according to the new collision point
 	tof += (nTemp1.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp1.Position[0];
 	CopyNeutron(&nTemp1, n);
-	n->Color += 1;
-	
-	// fprintf(LogFilePtr,"Coordinates after straight reflection: y %f, z %f \n", n->Position[1], n->Position[2]);
+	n->Color += 1; // Use +1 for color for horizontal reflection
 	
 	// Check if neutron got absorbed
-
 	if (n->Probability <= wei_min)  {
 	  WriteIAPEllGuide(n, VT_ABSORBED);
 	  return 0;
@@ -461,19 +486,20 @@ int ProcessNeutron(Neutron* n)
       // Reflection takes place first in vertical plane
       else {
 
+	// Here something went wrong, first reflection takes place in the vertical plane,
+	// but in horizontal the trajectory already left the guide!
 	if (fabs(nTemp2.Position[1]/100.) > fabs(CalculateGuidePoint(nTemp2.Position[0], 1, 1))) {
 	  badNeutrons++;
 	  return 0;
 	}
 
+	// Update ToF and other variables according to the new collision point
 	tof += (nTemp2.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp2.Position[0];
 	CopyNeutron(&nTemp2, n);
-	n->Color += 100;
+	n->Color += 100; // Use +100 for color for horizontal reflection
 
-	// fprintf(LogFilePtr,"Coordinates after parabolic reflection: y %f, z %f \n", n->Position[1], n->Position[2]);
 	// Check if neutron got absorbed
-
 	if (n->Probability <= wei_min) {
 	  WriteIAPEllGuide(n, VT_ABSORBED);
 	  return 0;
@@ -484,15 +510,13 @@ int ProcessNeutron(Neutron* n)
     }
 
     // Trajectory reached the guide exit
-    else {
-      
+    else {      
 
       n->Position[0] = endPoint;
-      WriteIAPEllGuide(n, VT_EXITED);
-
-      n->Position[0] = 0.; //startPosition + lengthGuide*100.;
       n->Position[1] = nTemp1.Position[1];
       n->Position[2] = nTemp2.Position[2];
+      WriteIAPEllGuide(n, VT_EXITED);
+      n->Position[0] = 0.; //startPosition + lengthGuide*100.;
       n->Vector[2] = nTemp2.Vector[2]; // Take into account change of direction due to gravity since last reflection
       tof += (endPoint - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
       n->Time += tof;
@@ -508,6 +532,7 @@ int ProcessNeutron(Neutron* n)
 
 
 // Calculate next intersection point for  straight trajectories, choose between planes: 1 for x-y, 2 for x-z plane
+// For the x-z plane, take into account a possible offset between the coordinate systems (only for ellipses)
 bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape)
 {
 
@@ -521,11 +546,7 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
   double m = neutronVector.x[plane] / neutronVector.x[0];
   double b = m*xMin*(-1.) + neutronPosition.x[plane];
 
-  /*if (isnan(b) && isnan(neutronPosition.x[plane])) {
-	  fprintf(LogFilePtr,"Parameters for nan neutrons: m %f, b %f, plane %d, nPos %f \n", m, b, plane, n->Position[plane]);
-	  exit(-1);
-  }
-*/
+ 
   // // Check whether the neutron hits the exit in this plane:
   // double posAtExit = m*endPoint + b;
   // if ((fabs(posAtExit) < endWidth/2 && plane == 1) ||  (fabs(posAtExit) < endHeight/2 && plane == 2)) {
@@ -534,6 +555,7 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
   //   return 1;
   // }
 
+  // Initialise ellipse parameters
   double longAxis = longAxisHor;
   double shortAxis = shortAxisHor;
   double slopeFromShape = slopeStraightHor;
@@ -547,17 +569,26 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
     shapeWidthAtZero = startHeight/200. - slopeFromShape*startPoint;
   }
 
+  // Find the intersection point either with an elliptic or a straight guide (shape)
   double x,y;
   if (shape == 2) IntersectStraightTrajectoryWithEllipse(longAxis, shortAxis, b, m, xMin + pow(10., -8.), x, y);
   else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, b, m, 0, xMin + pow(10., -8.), x, y);
 
+  // Take into account a possible offset of the vertical coordinate system
+  if (plane == 2) {
+    xMin -= vertOffset;
+    x -= vertOffset;
+    neutronPosition.x[0] -= vertOffset;
+    b += m*vertOffset;
+  }
+
+  // There was some unknown problem, currently such cases do not occur
   if (x == -6666) {
-    //    fprintf(LogFilePtr,"Coordinates for nan neutrons: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", n->Position[0], n->Position[1], n->Position[2],            
-    //	    n->Vector[0], n->Vector[1], n->Vector[2]);
     dist = endPoint - xMin;
     return 1;
   }
 
+  // Trajectory leaves the guide without further reflection
   if (x > endPoint) {
     n->Position[plane] = (m*endPoint + b)*100.;
     dist = endPoint - xMin;
@@ -565,17 +596,19 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
     return 1;
   }
 
+  // Trajectory hits the guide
   else{
 
     double newSlope = 0;
     if (shape == 2) {
-      if (y > 0)  newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, m, 0, x, true);
-      else newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, m, 0, x, false);
+      if (y > 0)  newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, m, 0, x, plane, true);
+      else newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, m, 0, x, plane, false);
     }
     else {
       if (y > 0) newSlope =  CalculateAngleAfterReflectionLinear(slopeFromShape, m, 0, x, true);
       else newSlope = CalculateAngleAfterReflectionLinear(slopeFromShape, m, 0, x, false);
     }
+
     // Very rarely the slope is wrongly calculated!
      if (newSlope != newSlope) {
       dist = 0;
@@ -584,11 +617,14 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
       return 0;
     }
 
+     // From the slope of the straight representing the neutron trajectory,
+     // calculate the angle after reflection and thus the new slope
     double slopeBefore = m;
 
     double reflAngle = atan(fabs(newSlope - slopeBefore)/2.)/M_PI*180.;
     double totalAngle = atan(newSlope - slopeBefore);
 
+    // Find the right reflection file
     if (y >= 0 && plane == 1) {
       int datanumber =  (int)(reflAngle*1000.0/(n->Wavelength));
       if (reflContainer[0].maxdata > datanumber) n->Probability *= reflContainer[0].Rdata[datanumber];
@@ -611,10 +647,13 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
     }
     else n->Probability = 0;
 
+    // Log the number of trajectories absorbed
     if (n->Probability == 0) neutronsKilledStraight++;
 
+    // Distance wrt the x-axis between the last and current collision point
     dist = x - neutronPosition.x[0];
 
+    // Rotate the trajectory after collision
     MathVector neutronVectorAfterReflection (0, 0, 0);
     if (plane == 1) neutronVectorAfterReflection = neutronVector.Rotate(0, 0, totalAngle);
     else neutronVectorAfterReflection = neutronVector.Rotate(0, totalAngle*(-1.), 0);
@@ -623,7 +662,8 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
     // fprintf(LogFilePtr,"Neutron vector after reflection straight: %f %f %f\n", neutronVectorAfterReflection.x[0],  
     // 	    neutronVectorAfterReflection.x[1], neutronVectorAfterReflection.x[2]);
     
-// propagate also perpendicular direction
+
+    // Propagate also the perpendicular direction
     
     int otherplane = 0;
     if (plane == 1) otherplane = 2;
@@ -653,6 +693,7 @@ bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plan
 }
 
 // Calculate next intersection point for parabolic trajectories, choose between planes: 1 for x-y, 2 for x-z plane
+// For the x-z plane, take into account a possible offset between the coordinate systems (only for ellipses)
 bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape)
 {
   
@@ -664,14 +705,12 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
   // Create a parabolic equation from trajectory: y = a2x^2 + a1x + a0, use G=9.81m/s^2 for a2.
   // use m and s as units
   double a1 = neutronVector.x[plane] / neutronVector.x[0];
-  //  fprintf(LogFilePtr,"Start parameters parabolic trajectory: a0 %f, a1 %f \n", a0, a1);
 
   double a2 = (-1.)*0.5*G/pow(V_FROM_LAMBDA(n->Wavelength)*10., 2);
   a1 -= 2.*a2*xMin;
   double a0 = neutronPosition.x[plane] - a1*xMin - a2*xMin*xMin;
 
-  //  fprintf(LogFilePtr,"Start parameters parabolic trajectory: a2 %f\n", a2);
- 
+   // Initialise ellipse parameters
   double longAxis = longAxisHor;
   double shortAxis = shortAxisHor;
   double slopeFromShape = slopeStraightHor;
@@ -686,16 +725,18 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
 
   }
 
+  // Find the intersection point either with an elliptic or a straight guide (shape)
   double x,y;
 
    if (shape == 2) IntersectParabolicTrajectoryWithEllipse(longAxis, shortAxis, a0, a1, a2, xMin + pow(10., -5.), x, y, false);
    else IntersectTrajectoryWithLinearShape(slopeFromShape, shapeWidthAtZero, a0, a1, a2, xMin + pow(10., -8.), x, y);
-  // double posNeutronAtCollisionPoint = a0 + a1*x + a2*x*x;
-  // if (fabs(posNeutronAtCollisionPoint) > (CalculateEllipsePoint(longAxis, shortAxis, x)+1e-6)) {
-  //   fprintf(LogFilePtr,"Collision point wrongly reconstructed! %f %f \n, " , posNeutronAtCollisionPoint, CalculateEllipsePoint(longAxis, shortAxis, x));
-  //   IntersectParabolicTrajectory(longAxis, shortAxis, a0, a1, a2, xMin + pow(10, -14), x, y, true);
-  // }
 
+   if (plane==2) {
+     xMin -= vertOffset;
+     x -= vertOffset;
+   }
+   
+   // There was some unknown problem, currently such cases do not occur
    if (x == -6666) {
      //     fprintf(LogFilePtr,"Coordinates for nan neutrons: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", n->Position[0], n->Position[1], n->Position[2],
      //	     n->Vector[0], n->Vector[1], n->Vector[2]);
@@ -703,22 +744,25 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
      return 1;
    }
    
+  // Trajectory leaves the guide without further reflection
+   if (x >= endPoint) {
+     double endPointTemp = endPoint;
+     if (plane==2) endPointTemp += vertOffset;
+     double slope = a1  + 2.*a2*endPointTemp;
+     n->Vector[plane] = slope*(n->Vector[0]);
+     n->Position[plane] = (a0 + a1*endPointTemp + a2*endPointTemp*endPointTemp)*100.; //  convert from m to cm
+     dist = endPoint - xMin;
+     n->Position[0] = endPoint;
+     return 1;
+   }
 
-  if (x >= endPoint) {
-    double slope = a1 + 2.*a2*endPoint;
-    n->Vector[plane] = slope*(n->Vector[0]);
-    n->Position[plane] = (a0 + a1*endPoint + a2*endPoint*endPoint)*100.; //  convert from m to cm
-    dist = endPoint - xMin;
-    n->Position[0] = endPoint;
-    return 1;
-  }
-
+  // Trajectory hits the guide
   else {
 
     double newSlope = 0;
     if (shape == 2) {
-      if (y > 0)  newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, a1, a2, x, true);
-      else newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, a1, a2, x, false);
+      if (y > 0)  newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, a1, a2, x, plane, true);
+      else newSlope = CalculateAngleAfterReflectionEllipse(longAxis, shortAxis, a1, a2, x, plane, false);
     }
     else {
       if (y > 0) newSlope =  CalculateAngleAfterReflectionLinear(slopeFromShape, a1, a2, x, true);
@@ -733,11 +777,19 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
       return 0;
     }
 
+    // switch back to vertical system for calculation of the trajectory angle
+    if (plane==2) {
+      x += vertOffset;
+    }
+
+   // From the slope of the parabula representing the neutron trajectory at the collision position,
+    // calculate the angle after reflection and thus the new slope 
     double slopeBefore = a1 + 2.*a2*x;
     neutronVector.x[plane] = slopeBefore*(neutronVector.x[0]);
     double reflAngle = atan(fabs(newSlope - slopeBefore)/2.)/M_PI*180.;
     double totalAngle = atan(newSlope - slopeBefore);
 
+    // Find the right reflection file
     if (y >= 0 && plane == 1) {
       int datanumber =  (int)(reflAngle*1000.0/(n->Wavelength));
       if (reflContainer[0].maxdata > datanumber) n->Probability *= reflContainer[0].Rdata[datanumber];
@@ -760,20 +812,19 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
     }
     else n->Probability = 0;
 
+     // Log the number of trajectories absorbed
     if (n->Probability == 0) neutronsKilledParabolic++;
 
+    // Distance wrt the x-axis between the last and current collision point
     dist = x - neutronPosition.x[0];
     
+    // Rotate the trajectory after collision
     MathVector neutronVectorAfterReflection (0, 0, 0);
     if (plane == 1) neutronVectorAfterReflection = neutronVector.Rotate(0, 0, totalAngle);
     else  neutronVectorAfterReflection = neutronVector.Rotate(0, totalAngle*(-1.), 0);
     
-    
-    // fprintf(LogFilePtr,"y and total angle parabolic: %f %f\n", y, totalAngle/M_PI*180.);
 
-    //    fprintf(LogFilePtr,"Slope, %f, total angle %f, new angle %f\n", slopeBefore, totalAngle, neutronVector.x[plane]);
-
-     // propagate also perpendicular direction    
+    // Propagate also perpendicular direction    
     int otherplane = 0;
     if (plane == 1) otherplane = 2;
     else otherplane = 1;
@@ -785,6 +836,8 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
     n->Vector[0] = neutronVectorAfterReflection.x[0];
     n->Vector[plane] = neutronVectorAfterReflection.x[plane];
     n->Position[0] = x; // note: position still in m!
+    // correct the position for the coordinate system offset
+    if (plane == 2) n->Position[0] -= vertOffset;
     n->Position[plane] = y*100.; //convert from m to cm
 
     if (n->Vector[0] <= 0) n->Probability = 0;
@@ -832,6 +885,8 @@ void IntersectStraightTrajectoryWithEllipse(double longAxis, double shortAxis, d
 
 }
 
+// Find intersection point by solving the quartic equation:
+// (a2*x^2 + a1*x + a0)^2 = shortAxis*shortAxis*(1 - x*x/longAxis*longAxis)
 void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, double a0, double a1, double a2, double xMin, double& x, double& y, bool switchSign)
 {
 
@@ -849,7 +904,7 @@ void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, 
   double minSolution = longAxis;
 
   for (int i = 0; i < 4; i++) {
-    if (solutions[i] > xMin && solutions[i] < endPoint) {
+    if (solutions[i] > xMin && solutions[i] < (endPoint + vertOffset)) {
 
       if (solutions[i] < minSolution) minSolution = solutions[i];
 
@@ -869,6 +924,7 @@ void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, 
 }
 
 
+// Simple case: Intersect a parabolic or straight (a2=0) trajectory with a straight guide
 void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y)
 {
 
@@ -929,10 +985,12 @@ void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidth
 
 }
 
-double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, bool positive)
-{
 
-  
+// Calculate the trajectory angle after collision with an elliptic guide
+double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, int plane, bool positive)
+{  
+
+  if (plane == 2) x += vertOffset;
 
   double a = longAxis;
   double b = shortAxis;
@@ -952,7 +1010,7 @@ double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, d
 
 }
 
-
+// Calculate the trajectory angle after collision with a straight guide
 double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, double a2, double x, bool positive)
 {
 
@@ -965,7 +1023,9 @@ double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, dou
 
 }
 
-
+// Calculate the halfwidth/height at a certain position expressed in internal coordinates
+// with the origin at the centre of the (horizontal) ellipse 
+// In case the vertical ellipse has an offset in the coordinate system, it is accounted for in this function
 double CalculateGuidePoint (double x, int dir, double sign)
 {
 
@@ -985,6 +1045,7 @@ double CalculateGuidePoint (double x, int dir, double sign)
   }
   else if (dir == 2) {
      shape = shapeVer;
+     x += vertOffset;
     if (shape < 2) {
       slope = slopeStraightVer;
       y = (startHeight/200. + (x - startPoint)*slope)*sign;
@@ -1003,13 +1064,14 @@ double CalculateGuidePoint (double x, int dir, double sign)
 }
 
 
+// Some log writing...
 void OwnCleanup()
 {
 
   fprintf(LogFilePtr,"Elliptic parameters used from input: \n");
   fprintf(LogFilePtr,"Long axis: %f m, short axis %f m, in horizontal plane \n", longAxisHor, shortAxisHor);
   fprintf(LogFilePtr,"Long axis: %f m, short axis %f m, in vertical plane \n", longAxisVer, shortAxisVer);
-  fprintf(LogFilePtr,"Length of guide: %f %f %f \n", lengthGuide, startPoint, endPoint);
+  fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f \n", lengthGuide, startPoint, endPoint);
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
   for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
@@ -1018,6 +1080,108 @@ void OwnCleanup()
 
 }
 
+void SetGeometryData()
+{
+
+
+  bVisInstalled = TRUE;
+ // Geometry data
+  if (bVisInstr) {
+
+    if (shapeHor==2 && shapeVer==2 && vertOffset == 0)  {      
+      
+      stGeometry.pEllipsoid = (VtEllipsoid*) calloc(1, sizeof(VtEllipsoid));
+      stGeometry.nEllipsoids = 1;
+      stGeometry.pEllipsoid[0].vCntr[0] = (0 - startPoint)*100.;
+      stGeometry.pEllipsoid[0].vCntr[1] = 0.;
+      stGeometry.pEllipsoid[0].vCntr[2] = 0.;
+
+      stGeometry.pEllipsoid[0].vSymAxis[0] = 1;
+      stGeometry.pEllipsoid[0].vSymAxis[1] = 0.;
+      stGeometry.pEllipsoid[0].vSymAxis[2] = 0.;
+      
+      stGeometry.pEllipsoid[0].Length = longAxisHor*200.;
+      stGeometry.pEllipsoid[0].Width = shortAxisHor*200.;
+      stGeometry.pEllipsoid[0].Height = shortAxisVer*200.;
+      stGeometry.pEllipsoid[0].Xlow = startPoint*100.;
+      stGeometry.pEllipsoid[0].Xhigh = endPoint*100.;
+
+    }
+    else if (shapeHor < 2 && shapeVer < 2) {
+
+      stGeometry.pHull = (VtHull*) calloc(1, sizeof(VtEllipsoid));
+      stGeometry.nHulls = 1;
+
+      stGeometry.pHull[0].vCntr[0] = (0 - startPoint)*100.;
+      stGeometry.pHull[0].vCntr[1] = 0.;
+      stGeometry.pHull[0].vCntr[2] = 0.;
+
+      stGeometry.pHull[0].vNormal[0] = 1;
+      stGeometry.pHull[0].vNormal[1] = 0.;
+      stGeometry.pHull[0].vNormal[2] = 0.;
+      
+      stGeometry.pHull[0].Length = lengthGuide*100.;
+      stGeometry.pHull[0].WidthIn = startWidth*100.;
+      stGeometry.pHull[0].WidthOut = endWidth*100.;
+      stGeometry.pHull[0].HeightIn = startHeight*100.;
+      stGeometry.pHull[0].HeightOut = endHeight*100.;
+
+    }
+
+    else {
+
+      stGeometry.nHulls = (int)(lengthGuide*100.) / 50 + 1;
+      stGeometry.pHull = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
+
+      for (int i = 0; i < (stGeometry.nHulls - 1); i++) {
+
+	stGeometry.pHull[i].vCntr[0] = i*50. + 25.;
+	stGeometry.pHull[i].vCntr[1] = 0.;
+	stGeometry.pHull[i].vCntr[2] = 0.;
+
+	stGeometry.pHull[i].vNormal[0] = 1;
+	stGeometry.pHull[i].vNormal[1] = 0.;
+	stGeometry.pHull[i].vNormal[2] = 0.;	
+
+	stGeometry.pHull[i].Length = 50.;
+	stGeometry.pHull[i].WidthIn = 200.*CalculateGuidePoint(startPoint + 0.5*i, 1);
+	stGeometry.pHull[i].WidthOut = 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 1);
+	stGeometry.pHull[i].HeightIn = 200.*CalculateGuidePoint(startPoint + 0.5*i, 2);
+	stGeometry.pHull[i].HeightOut = 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 2);
+
+      }
+
+      double remainingDist = double ((int)(lengthGuide*100.) % 50);
+      if (remainingDist == 0) {
+	stGeometry.nHulls--;
+      }
+      else {
+	stGeometry.pHull[stGeometry.nHulls - 1].vCntr[0] = (stGeometry.nHulls - 1)*50. + remainingDist/2.;
+	stGeometry.pHull[stGeometry.nHulls - 1].vCntr[1] = 0.;
+	stGeometry.pHull[stGeometry.nHulls - 1].vCntr[2] = 0.;
+	
+	stGeometry.pHull[stGeometry.nHulls - 1].vNormal[0] = 1;
+	stGeometry.pHull[stGeometry.nHulls - 1].vNormal[1] = 0.;
+	stGeometry.pHull[stGeometry.nHulls - 1].vNormal[2] = 0.;	
+	
+	stGeometry.pHull[stGeometry.nHulls - 1].Length = remainingDist;
+	stGeometry.pHull[stGeometry.nHulls - 1].WidthIn = 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 1);
+	stGeometry.pHull[stGeometry.nHulls - 1].WidthOut = 200.*CalculateGuidePoint(endPoint, 1);
+	stGeometry.pHull[stGeometry.nHulls - 1].HeightIn = 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 2);
+      stGeometry.pHull[stGeometry.nHulls - 1].HeightOut = 200.*CalculateGuidePoint(endPoint, 2);
+      }
+    }
+    
+    stGeometry.pDescr  = "elliptic guide";
+    stGeometry.eModule = VT_GUIDE;
+
+  }
+    
+  return;
+
+}
+
+// Function needed since all positions are in [cm] for trajectory visualisation
 void WriteIAPEllGuide(Neutron *n, VtReason eReason)
 {
 
