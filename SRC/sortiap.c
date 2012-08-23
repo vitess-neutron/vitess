@@ -476,7 +476,7 @@ void drawRectangle(float *fa, const char *shape, const char *rots, float width, 
 
 void drawHollowCylinderShape(float inner_r, char *appearance) {
 
-  const char *nuse, *use;
+  const char *nuse, *use, *rads;
   char b[16], ss[256];
   static const char *ouse;
 
@@ -491,14 +491,15 @@ void drawHollowCylinderShape(float inner_r, char *appearance) {
       ouse = use = "<Appearance USE='cylcolor'/>";
     }
   }
+  rads = sS3(inner_r, b);
   fprintf( outf,
           "<Transform rotation='1 0 0 1.57' translation='0 -1 0'>"
           "<Shape DEF='ring'>%s<Disk2D innerRadius='%s' outerRadius='1' solid='false'/></Shape>"
           "</Transform>"
           "<Shape>%s<Cylinder top='false' bottom='false' solid='false'/></Shape>"
-          "<Shape>%s<Cylinder radius='0.5' top='false' bottom='false' solid='false'/></Shape>"
+          "<Shape>%s<Cylinder radius='%s' top='false' bottom='false' solid='false'/></Shape>"
           "<Transform rotation='1 0 0 1.57' translation='0 1 0'><Shape USE='ring'/></Transform>\n",
-          nuse, sS3(inner_r, b), use, use);
+           nuse, rads, use, use, rads);
 }
 
 void printPoint(float x, float y) {
@@ -828,7 +829,7 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
   // y_x3d = z
   // z_x3d = -y
   // We use swapYZ to transform 3d coordinates, and swapWH to transform
-  // width and height values.
+  // width and height values for 3D objects.
 
   float v;
 
@@ -844,12 +845,6 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     swapYZ(4,5); // direction
 
     switch (vtype) {
-    case GT_OpenRectangle:
-      swapWH(8,9);
-      // fall through
-    case GT_Rectangle:
-      swapWH(6,7);
-      break;
     case GT_Ellipsoid:
     case GT_Cuboid:
     case GT_CylSlice:
@@ -859,10 +854,9 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
       swapWH(7,9);
       swapWH(8,10);
       break;
-    default : ;
+    default : ; // we must not swap width,height values for 2D objects 
     }
   }
-
         
 }
 
@@ -916,14 +910,14 @@ void geom2X3D(char *fn) {
             sS5(fa[3], b4), sS5(fa[4], b5), sS5(fa[5], b6) );
       break;
     case GT_Rectangle:
-      // Orientation of 2D objects is 0,0,1
+      // The default orientation of 2D objects in X3D is 0 0 1
       rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
       drawRectangle(fa, shape, rots, fa[6], fa[7], fa[8]);
       break;
     case GT_OpenRectangle:
-      // draw open rectangle as four adjacent rectangles
+      // Construct with default orientation 0 0 1,
+      // draw the open rectangle as four adjacent rectangles in the x,y plane 
       { float smallw,smallh, w1,w2, h1,h2, xshift, yshift;
-        // common rotation and translation for all 4 part rectangles
         rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
         fprintf (outf, "<Transform rotation='%s' translation='%s %s %s'>",
                  rots, sS5(fa[0], b3), sS5(fa[1], b4), sS5(fa[2], b5));
@@ -943,7 +937,7 @@ void geom2X3D(char *fn) {
       }
       break;
     case GT_Circle:
-      /// X3D ArcClose2D has default radius 1 in x,y plane
+      /// X3D ArcClose2D has default orientation 0 0 1 and radius 1 in x,y plane
       rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
       fprintf (outf,
                "<Transform rotation='%s' translation='%s'><Shape DEF='circle-%d'>%s"
@@ -953,16 +947,21 @@ void geom2X3D(char *fn) {
                sS5(fa[6], b1), sS5(toRad(fa[7]), b2), sS5(toRad(fa[8]), b3) );
       break;
     case GT_Cuboid:
+      // X3D Cuboid has default orientation 0 1 0
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      fprintf (outf, "<Transform scale='%s %s %s' translation='%s'>%s</Transform>\n",
-               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3), trans, shape);
+      // desired length fa[6] becomes scale fa[6]/2 for y axis
+      // desired width  fa[7] becomes scale fa[7]/2 for x axis
+      // desired height fa[8] becomes scale fa[8]/2 for z axis
+      fprintf (outf, "<Transform scale='%s %s %s' translation='%s' rotation='%s'>%s</Transform>\n",
+               sS5(fa[7]/2.0f, b1), sS5(fa[6]/2.0f, b2), sS5(fa[8]/2.0f, b3), trans, rots, shape);
       break;
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
-      // 0 1 2  Ort
-      // 3 4 5  Richtung
-      // 6 7    Länge Radius
-      scales = sS5(fa[7], scaleb);
+      // 0 1 2  location
+      // 3 4 5  direction
+      // 6 7    length radius
+      // The desired length fa[6] becomes scale fa[6]/2 for y axis.
+      scales = sS5(fa[7], scaleb);  // radius scale for x and z
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s'>%s</Transform>\n",
                scales, sS5(fa[6]/2.0f, b1), scales, rots, trans, shape);
@@ -973,14 +972,15 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
-      // 6   Länge
-      // 7   Eingangsbreite
-      // 8   Ausgangsbreite
-      // 9   Eingangshöhe
-      // 10  Ausgangshöhe
+      // Hull is constructed from an extrusion with default orientation 0 1 0
+      // 6   length
+      // 7   entry width    8   exit width
+      // 9   entry height  10  exit height
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      // direction has _4_ parameters, vector + angle
-      fprintf (outf, "<Transform scale='%s 1 1' rotation='%s' translation='%s'>"
+      // The desired length fa[6] becomes the scale factor fa[6]/2 for the y axis,
+      // width and height are scaled individually by extrusion scale factors.
+      // Remember: an extrusion direction has _4_ parameters, vector + angle.
+      fprintf (outf, "<Transform scale='1 %s 1' rotation='%s' translation='%s'>"
                "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
                "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
@@ -994,6 +994,7 @@ void geom2X3D(char *fn) {
       // not yet implemented
       break;
     case GT_Ellipsoid:
+      // We construct the ellipsoid with a default orientation 1 0 0
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
                sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
@@ -1004,9 +1005,16 @@ void geom2X3D(char *fn) {
                appearance ? appearance : ELLIPSMAT);
       break;
     case GT_CylSlice:
+      // The construction is part of a cylinder hull, where the cylinder base and top have constant y values -1 and 1
+      // and the default orientation is 0 1 0.
+      // The desired length fa[6] becomes the scale factor fa[6]/2 for the y axis,
+      // the desired width fa[7] becomes the scale fa[7]/2 for the x axis,
+      // and the desired height fa[8] becomes the scale fa[8]/2 for the z axis.
+
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
+
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
+               sS5(fa[7]/2.0f, b1), sS5(fa[6]/2.0f, b2), sS5(fa[8]/2.0f, b3),
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawCylSlice(fa[9], fa[10]);
@@ -1014,10 +1022,12 @@ void geom2X3D(char *fn) {
                appearance ? appearance : RECTMAT);
       break;
     case GT_HollowCylinder:
+      // default orientation 0 1 0
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      scales = sS5(fa[7]/2.0f, b2);
+      // desired length fa[6] becomes y scale fa[6]/2
+      scales = sS5(fa[7]/2.0f, b2);  // radius scale
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'>",
-               sS5(fa[6]/2.0f, b1), scales, scales,
+               scales, sS5(fa[6]/2.0f, b1), scales,
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6));
       drawHollowCylinderShape(fa[8], appearance);

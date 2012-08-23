@@ -663,6 +663,43 @@ proc openSaveFile {name descs} {
   return $f
 }
 
+proc checkConsistency {} {
+  # As gui input files may contain inconsistent settings for various reasons.
+  # We look for global variables which might disturb further work.
+  # First we look for variables mod_<number> 
+  # These should be set to --inactive-- or a valid modul name.
+  # All global variables of the form <name>_<number> are deleted, if they
+  # do no belong to a active module.
+
+  global maxModule DummyEntry
+
+  for {set i 1} {$i <= $maxModule} {incr i} {
+    upvar #0 mod$i mod
+    set validmod($i) 0
+    if [info exists mod] {
+      if {$mod != "$DummyEntry"} {
+        # check if it is a valid module name
+        upvar #0 ${mod}ESET m
+        if [info exists m] {set validmod($i) 1}
+      }
+    }
+    if $validmod($i) continue
+    set mod $DummyEntry
+  }
+
+  # Delete global <name>_<number> variables, if they do no belong to a valid module.
+  foreach e [info globals] {
+    if {[regexp {^mod([0-9]+)$} $e a n]} {
+      if {$n >= 0 && $n <= $maxModule} continue
+    } else {
+      if {! [regexp {_([0-9]+)$} $e a n]} continue
+      if {$n >= 0 && $n <= $maxModule && $validmod($n)} continue
+    }
+    global $e
+    unset $e
+  }
+}
+
 ###
 proc loadAll {extension} {
   if [dontDoit "You have unsaved changes. Forget them?"] return
@@ -707,6 +744,9 @@ proc loadAll {extension} {
     }
   }
   close $f
+
+  checkConsistency
+
   if {$errs == ""} {
     set errs "control file $name successfully loaded"
   }
