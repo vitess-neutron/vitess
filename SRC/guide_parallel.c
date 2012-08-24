@@ -1837,7 +1837,7 @@ void OwnCleanup() {
       }
       stGeometry.pHull[k].vCntr[2]    = 0.0;
     }
-    stGeometry.pDescr  = "guide";
+    stGeometry.pDescr  = "guide:yellow";
     stGeometry.eModule = VT_GUIDE;
   }
 

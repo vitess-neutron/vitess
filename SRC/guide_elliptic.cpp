@@ -1172,7 +1172,7 @@ void SetGeometryData()
       }
     }
     
-    stGeometry.pDescr  = "elliptic guide_:yellow";
+    stGeometry.pDescr  = "elliptic guide:yellow";
     stGeometry.eModule = VT_GUIDE;
 
   }

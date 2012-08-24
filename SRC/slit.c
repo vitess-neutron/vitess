@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     stGeometry.pRectangle[0].vNormal[1]= 0.0;
     stGeometry.pRectangle[0].vNormal[2]= 0.0;
 
-    stGeometry.pDescr  = "slit";
+    stGeometry.pDescr  = "slit:cyan";
     stGeometry.eModule = VT_SLIT;
   }
 

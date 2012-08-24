@@ -514,7 +514,7 @@ void SetGeometryData()
      DetermineAndLogMirrorShape(i);
    }
 
-   stGeometry.pDescr  = "sm ensemble_:green";
+   stGeometry.pDescr  = "sm ensemble:green";
    stGeometry.eModule = VT_SM_ENSEMBLE;
 
  }
