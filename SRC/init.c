@@ -1194,24 +1194,20 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
         DrawSphere(pGeomFile, stGeometry.pDescr,  vAbsCntr, stGeometry.pSphere[k].Radius);
       }
-    }
-    else
-    { // if visualisation is not yet implemented draw square or cylinder
+    } else {
+      // if visualisation is not yet implemented draw square or cylinder
+      char description[40];        
       Transform (vDir, vX, vNull);
 
-      if (Length > 0.0)
-      { CopyVector      (vX, vRelPos);
+      if (Length > 0.0) {
+        CopyVector      (vX, vRelPos);
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
-	char description[40];
 	strcpy(description, sModuleName);
 	strncat(description, ":white", 6);
 	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
         DrawCylinder(pGeomFile, (const char*) description, vAbsCntr, vDir, Length, 5.0);
-      }
-      else
-      {
-	char description[40];
+      } else {
 	strcpy(description, sModuleName);
 	strncat(description, ":grey", 5);
 	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
@@ -1240,23 +1236,22 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
 
   if (pFile)  
   {
-    if (iModuleNo > 0) 
-	{
+    if (iModuleNo > 0) {
       // module no is given, read its description row
       int found=0;
       while (ReadLine(pFile, sLine, sizeof(sLine)-1))
         if (sscanf(sLine, "%ld", &nModNo)==1 && nModNo==(iModuleNo-1)) 
-		{
-          found = 1;
-          break;
-        }
-      if (!found) 
-	  { fclose(pFile);
+          {
+            found = 1;
+            break;
+          }
+      if (!found) {
+        fclose(pFile);
         return 0;
       }
-
+      
     } 
-	else if (InputFilePtr==NULL || InputFilePtr==stdin) {
+    else if (InputFilePtr==NULL || InputFilePtr==stdin) {
 
     // otherwise read last line
 
