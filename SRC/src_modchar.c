@@ -74,7 +74,7 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 	   _nModType   :      decoupled POISONED, DECOUPLED unpoisened, COUPLED
 	   _dPower     : [W]  average source power                             
 	   _dPeriod    : [ms] time between 2 pulses                             
-	   _dPulseLen  : [s]  average source power                             */
+	   _dPulseLen  : [s]  pulse length                             */
 
 	double dFUAmpl= 0.0,
 	       dFacM  = 1.0,     //     integral of fct. M(lambda) = number of Maxwellian functions 
@@ -111,7 +111,7 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 		case ESS:
 			/* maximal accelerator current */
 			dCurrMax   = dEpulse / _dPulseLen / U0;
-			if (dCurrMax > 0.050)
+			if (dCurrMax > 0.05001)
 			{	sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of %4.1f mA", 1000.0*dCurrMax, 1000.0*dCurrLimit);
 				Warning(sBuffer);
 			}

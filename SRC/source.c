@@ -36,6 +36,7 @@
 /* 1.14a Feb  2010  A. Houben      Bug fix in GetTraceState: index out of array dimension    */
 /* 1.15  Mar  2011  K. Lieutenant  ESS and SNS moderator character. as a function of power   */
 /* 1.16  Jan  2012  K. Lieutenant  visualization                                             */
+/* 1.17  Aug  2012  K. Lieutenant  new characteristics for the ESS cold moderator            */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.16");
+   print_module_name("Source and Window 1.17");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -182,6 +183,7 @@ int main(int argc, char *argv[])
       }
       fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.dPulseFreq);
       fprintf(LogFilePtr, "average power                : %7.3f MW \n\n", stSrc.dPower/1000000.);
+
    }
 
    /* for all moderators in the system */
@@ -291,6 +293,9 @@ int main(int argc, char *argv[])
             if (stSrc.dPulseFreq != 0.0)
                stMod[imod].dFUAmpl = stMod[imod].dTotalFlux / (2*M_PI * stSrc.dPulseFreq) ;
          }
+
+		 if (stSrc.eSrcType==LPSS_OPT && stMod[imod].dModTemp < 100.0)
+            fprintf(LogFilePtr, "optimized ");
          switch(stMod[imod].eModType)
          {  case MULT_SPEC: fprintf(LogFilePtr, "multi-spectral moderator\n"); break;
             case POISONED : fprintf(LogFilePtr, "decoupled poisoned moderator\n"); break;
@@ -515,13 +520,18 @@ int main(int argc, char *argv[])
             }
          }
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
-         // case ESS, SNS
-            prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
-
+         { // case ESS, SNS
+		    if (stSrc.eSrcType == LPSS_OPT && stMod[imod].dModTemp < 100.0)   // new cold moderator
+			  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm
+			         * log(1.402 + 0.898 * Input.Wavelength);
+		    else
+			  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+		 }
          else
-            prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
+         {  prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
                  * stFluxT[imod].pDisFct(TimeAtModerator, sM->dTauDecay, sM->dTauDecay/sM->dTauAscent, stSrc.dPulseLength) 
                  / stFluxT[imod].dInt * sM->dNorm;
+		 }
       }
 
       if(prob <= 0.0) continue; 
@@ -1075,8 +1085,9 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
   {
     switch (stSrc.eSrcType) 
 	{
-      case SPSS: pFluxT->pDisFct = PulseShapeP; break;
-      case LPSS: pFluxT->pDisFct = PulseIntEss;   break;
+      case SPSS:     pFluxT->pDisFct = PulseShapeP; break;
+      case LPSS_OPT: 
+	  case LPSS: pFluxT->pDisFct = PulseIntEss; break;
       default  : Error("Wrong value for variable 'source type'\n");
                  exit(-1);
     }
