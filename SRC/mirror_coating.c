@@ -17,7 +17,7 @@
 #include "init.h"
 
 #define THETA_NI 0.099138
-#define PI       3.1415926535898 
+#define PI       3.1415926535898
 
 // static char sBuffer[128];
 
@@ -28,27 +28,27 @@ double RoundD   (const double in, const int nDigits);
 int main(int argc, char* argv[])
 {
 	double  M,           // m      : official factor of supermirror
-          M2,          // m'     : real SM factor R(Q) profile 
+                M2,          // m'     : real SM factor R(Q) profile
 	        Q,           // Q      : momentum transfer of the reflection
 	        Qc,          // Q_c    : crit. momentum transfer  (see figure)
 	        QcNi,        // Q_c(Ni): crit. momentum transfer of nickel
 	        W,           // W      : width of cut-off  [1/Ang]
 	        ThetaC,      // theta_c: crit. angle for lambda = 1 Angstroem
 	        ThetaM,      // theta_max = m * theta_c(Ni)        (see figure)
-	        ThetaW,      // 
+	        ThetaW,      //
 	        Theta,       // theta  : reflection angle for lambda = 1 Angstroem
-	        R0,          // R_0    : reflectivity for 0 <= Q <= Q_c 
+	        R0,          // R_0    : reflectivity for 0 <= Q <= Q_c
 	                     //                 (or 0 <= theta <= theta_c)
-	        Rm,          // R_m    : reflectivity for Q = m * Q_c(Ni)
-	        R,           // R      : reflectivity for Q or theta, 
+	        Rm=0,        // R_m    : reflectivity for Q = m * Q_c(Ni)
+	        R,           // R      : reflectivity for Q or theta,
 	        alpha =0.0,  // slope Delta_R / Delta_theta
 	        alphaQ=0.0,  // slope Delta_R / Delta_Q
           betaQ =0.0;  // quadratic term to describe R(q)
   short   bSN=FALSE;   // criterion: use SwissNeutronics parameter
 	long    i, nLen;
 	FILE*   pFile;
-	char    sFileName[50]="", 
-	        sSNPar[50]="", 
+	char    sFileName[50]="",
+	        sSNPar[50]="",
 	       *pFullName;
 
 	Init(argc, argv, VT_TOOL);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 //	printf("                                              ");
 
 // WARNING:
-//  cut-off at m*theta_c, 
+//  cut-off at m*theta_c,
 //      not at m*theta_c(Ni) !!
 
 // read:
@@ -86,14 +86,14 @@ int main(int argc, char* argv[])
   	Qc = 0.0217;
     W  = 0.0022 - 0.0002*M;
   	R0 = 0.99;
-    M2 = M*0.9853 + 0.1978;   
+    M2 = M*0.9853 + 0.1978;
   }
   else
 	{ Qc = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.0217   for Ni)                 ");
 	  W  = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	  R0 = GetDouble("reflectivity(Q=0)                      ");
 	  Rm = GetDouble("reflectivity(Q=m*Q_c(Ni))              ");
-    M2 = M;   
+    M2 = M;
   }
 	GetString(sFileName, "Name of the mirror file                ");
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 	if (M*Qc < Qc)
 	{	
 		Qc *= M;
-		printf("\nNOTE: m*Q_c < 1: therefore  Q_c = %7.5f  set \n\n", Qc); 
+		printf("\nNOTE: m*Q_c < 1: therefore  Q_c = %7.5f  set \n\n", Qc);
 	}
 
 	/* write to parameter directory or to FILES in install directory */
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 	// 	pFullName = FullInstallName(sFileName, "FILES/");
 	pFile = fopen(pFullName, "w");
 	
-	if (pFile!=NULL) 
+	if (pFile!=NULL)
 	{
 		ThetaC = 180.0/PI*asin(Qc/(4*PI));
 		ThetaW = 180.0/PI*asin(W/(4*PI));
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
 	getchar();
 	getchar();
 	getchar();
-  
+
 	/* release the buffer memory */
 	free(InputNeutrons);
 	free(OutputNeutrons);
@@ -212,5 +212,5 @@ double RoundD(const double in, const int nDigits)
 
 	out = floor(in * pow(10, nDigits) + 0.5);
 
-	return out / pow(10, nDigits); 
+	return out / pow(10, nDigits);
 }

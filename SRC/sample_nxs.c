@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n",
               Sample.SG.Ball.r);
       break;
-    //default: break;
+    default: break;
     }
   fprintf(LogFilePtr, "NXS parameter file: %s\n", nxsFileName);
 
