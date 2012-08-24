@@ -729,7 +729,7 @@ void SetGeometryData()
     stGeometry.pCuboid[0].vNormal[1]= cos(rotang);
     stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
 
-    stGeometry.pDescr  = "space window_:cyan";
+    stGeometry.pDescr  = "space window:cyan";
     stGeometry.eModule = VT_WINDOW;
 
     }

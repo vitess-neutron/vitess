@@ -422,7 +422,7 @@ void OwnCleanup()
       stGeometry.pLine[2*k+1].vPosEnd[1] = ThisChopper.Centre.Y + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
       stGeometry.pLine[2*k+1].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);  
     }
-    stGeometry.pDescr  = "disc chopper";
+    stGeometry.pDescr  = "disc chopper:white";
     stGeometry.eModule = VT_CHOP_DISC;
   }
 

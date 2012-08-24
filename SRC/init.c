@@ -676,8 +676,13 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     fprintf(LogFilePtr, "writing instr data, module %ld\n", nModuleNo);
     WriteInstrData(EndPos);
   }
-  if (bVisInstr)
+  if (bVisInstr) {
+    Shift[0]= dShiftX;
+    Shift[1]= dShiftY;
+    Shift[2]= dShiftZ;
     WriteGeomData(BegPosM, LengthVector(Shift));
+  }
+    
 
   /* flush the output buffer and close the input and output file */
   OutputBufferFlush(1);
@@ -1049,28 +1054,44 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Circles */
       for (k=0; k < stGeometry.nCircles; k++)
       { 
+
+	const char* sDescr;
+	sDescr = "";
+	if (k == 0 || k == (stGeometry.nCircles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	
         Transform (vAbsCntr, stGeometry.pCircle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCircle[k].vNormal, vNull);
 
-        DrawCircle(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+        DrawCircle(pGeomFile, sDescr, vAbsCntr, vDir, 
                    stGeometry.pCircle[k].Radius, stGeometry.pCircle[k].AngleBeg, stGeometry.pCircle[k].AngleEnd); 
       }
 
       /* Lines */
       for (k=0; k < stGeometry.nLines; k++)
       { 
+	const char* sDescr;
+	sDescr = "";
+	if (k == 0 || k == (stGeometry.nLines-1)) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsPos1, stGeometry.pLine[k].vPosBeg, vBegPos);
         Transform (vAbsPos2, stGeometry.pLine[k].vPosEnd, vBegPos);
-        DrawLine(pGeomFile, stGeometry.pDescr, vAbsPos1, vAbsPos2);
+        DrawLine(pGeomFile, sDescr, vAbsPos1, vAbsPos2);
       }
 
       /* Rectangles */
       for (k=0; k < stGeometry.nRectangles; k++)
       { 
+	const char* sDescr;
+	sDescr = "";
+	if (k == 0 || k == (stGeometry.nRectangles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsCntr, stGeometry.pRectangle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pRectangle[k].vNormal, vNull);
 
-        DrawRectangle(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+        DrawRectangle(pGeomFile, sDescr, vAbsCntr, vDir, 
                       stGeometry.pRectangle[k].Width, stGeometry.pRectangle[k].Height, 
 		      stGeometry.pRectangle[k].rotAngle); 
       }
@@ -1078,11 +1099,16 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Triangles */
       for (k=0; k < stGeometry.nTriangles; k++)
       { 
+	const char* sDescr;
+	sDescr = "";
+	if (k == 0 || k == (stGeometry.nTriangles-1)) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsPos1, stGeometry.pTriangle[k].vEdges[0], vBegPos);
         Transform (vAbsPos2, stGeometry.pTriangle[k].vEdges[1], vBegPos);
 	Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
 
-        DrawTriangle(pGeomFile, stGeometry.pDescr, vAbsPos1, vAbsPos2, vAbsPos3); 
+        DrawTriangle(pGeomFile, sDescr, vAbsPos1, vAbsPos2, vAbsPos3); 
       }
            
 
@@ -1100,20 +1126,32 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Cuboids */
       for (k=0; k < stGeometry.nCuboids; k++)
       { 
+	
+	const char* sDescr;
+	sDescr = "";
+	if (k == 0 || k == (stGeometry.nCuboids-1)) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	
         Transform (vAbsCntr, stGeometry.pCuboid[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCuboid[k].vNormal,  vNull);
 
-        DrawCuboid(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+        DrawCuboid(pGeomFile, sDescr, vAbsCntr, vDir, 
                    stGeometry.pCuboid[k].Length, stGeometry.pCuboid[k].Width, stGeometry.pCuboid[k].Height); 
       }
 
       /* Hulls */
       for (k=0; k < stGeometry.nHulls; k++)
       { 
+
+	const char* sDescr;
+	sDescr = (const char*) strchr(stGeometry.pDescr, ':');
+	if (k == 0 || k == (stGeometry.nHulls-1)) sDescr = stGeometry.pDescr;
+	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsCntr, stGeometry.pHull[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pHull[k].vNormal,  vNull);
 
-        DrawHull(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, stGeometry.pHull[k].Length, 
+        DrawHull(pGeomFile, sDescr, vAbsCntr, vDir, stGeometry.pHull[k].Length, 
                  stGeometry.pHull[k].WidthIn,  stGeometry.pHull[k].WidthOut, 
                  stGeometry.pHull[k].HeightIn, stGeometry.pHull[k].HeightOut); 
       }
@@ -1165,11 +1203,19 @@ void WriteGeomData(VectorType vBegPos, double Length)
       { CopyVector      (vX, vRelPos);
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
-        DrawCylinder(pGeomFile, stPicture.pDescr, vAbsCntr, vDir, Length, 5.0);
+	char description[40];
+	strcpy(description, sModuleName);
+	strncat(description, ":white", 6);
+	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
+        DrawCylinder(pGeomFile, (const char*) description, vAbsCntr, vDir, Length, 5.0);
       }
       else
       {
-        DrawRectangle(pGeomFile, stPicture.pDescr, vBegPos, vDir, 15.0, 15.0, 0.);
+	char description[40];
+	strcpy(description, sModuleName);
+	strncat(description, ":grey", 5);
+	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
+	DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
       }
     }
 
