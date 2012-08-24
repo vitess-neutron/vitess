@@ -97,6 +97,7 @@ set TempVars {
   pA pA2
   res
   sps
+  pow
   tA
 }
 
@@ -153,9 +154,9 @@ proc makeModuleSets {} {
   # 1 list of submodules; may be empty
   # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
-    {source {source_const_wave source_HMI source_ILL
+    {source {source_const_wave source_ILL source_HMI source_FRM2
       source_short_pulsed source_SNS source_IPNS source_ISIS
-      source_ESS_LPTS} source}
+      source_ESS_LPTS source_ESS_2012} source}
     {guide {guide bender guide_elliptic} {guide bender guide_elliptic}}
     {sm_ensemble {} sm_ensemble}
     {optical_elements {lense} {lense}}
@@ -542,8 +543,8 @@ Only those trajectories are started in the second run that are found in the 'ray
 
 set li {"moderator\ndescription file" "Name of the file containing the description of the source and one or two moderators. Existing files are in FILES/moderators" "" a}
 
-foreach s {const_wave HMI ILL} \
-        m {ReactorCold HmiMS IllColdSrcCold} {
+foreach s {const_wave HMI ILL FRM2} \
+        m {ReactorCold HmiMS IllColdSrcCold FRM-II_ColdFile} {
   set al [list modfile pareditablefile $m.mod $li w cmo 1]
   set source_${s}ESET [concat [list $al] $smASET $traceASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {source_cwsCheckErr $app}
@@ -584,18 +585,20 @@ proc source_cwsCheckErr {{app _}} {
 ### source
 ###   SPSS short pulsed spallation sources
 
-proc sore {f s} {
+proc sore {f s p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
   set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS} {- ESS SNS}]]
-  return [concat $f $s]
+  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
+  return [concat $f $s $p]
 }
 
 foreach s {short_pulsed SNS J-PARC IPNS} \
         m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois} \
         fr {50 60 20 50} \
-        sps {- SNS - - } {
+        sps {- SNS - - } \
+        pow {- 1.0 - - } {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
-  set fl [sore $fr $sps]
+  set fl [sore $fr $sps $pow]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
@@ -613,25 +616,28 @@ proc source_ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 ### source
 ###   LPSS long pulsed spallation sources
 
-set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
-set source_ESS_LPTSESET [concat {
-  {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-  {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
-  {freq float 16.667 {"pulse repetition\nrate [Hz]" "" "" R} 1}
-  {plen float 2.0 {"proton pulse\nlength [ms]" "time dependence of neutron flux
-     \tt < p:  1/s*[1-exp(-t/beta)]
-     \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
-} [list $al] $smASET $traceASET $cwsASET]
+foreach s {ESS_LPTS ESS_2012} {
 
-proc source_ESS_LPTSCheckErr {{app _}} {
-  foreach l {tau1 tau2 name}  {
-    upvar #0 $l$app $l
+  set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
+  set source_${s}ESET [concat {
+    {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
+    {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
+    {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
+    {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
+       \tt < p:  1/s*[1-exp(-t/beta)]
+       \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
+  } [list $al] $smASET $traceASET $cwsASET]
+
+  proc source_${s}CheckErr {{app _}} {
+    foreach l {tau1 tau2 name}  {
+      upvar #0 $l$app $l
+    }
+    if {$name == "" && ($tau1 == "" || $tau2 == "")} {
+      showText "!Please specify tau1 and tau2 or select a known source"
+      return 1
+    }
+    return [source_cwsCheckErr $app]
   }
-  if {$name == "" && ($tau1 == "" || $tau2 == "")} {
-    showText "!Please specify tau1 and tau2 or select a known source"
-    return 1
-  }
-  return [source_cwsCheckErr $app]
 }
 
 ### Detector
@@ -1123,7 +1129,7 @@ set guide_ellipticESET {
   {"Shape and size of guide" header}
   {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
     {constant linear elliptic} {0 1 2}}
-  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be the same!" "" V}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
     {constant linear elliptic} {0 1 2}}
   {}
   {shape_file mneditablefile guide_shape.dat
@@ -1160,12 +1166,9 @@ set guide_ellipticESET {
   {length_guide float 0 {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
-  {dist_focus_hor float 0 {
-    "Distance from \nexit to focus horizontal [m]"
-    "Distance from guide exit to focal point of the ellipse in horizontal plane.\n "  "" d}}	
-   {dist_focus_ver float 0 {
-    "Distance from \nexit to focus vertical [m]"
-    "Distance from guide exit to focal point of the ellipse in vertical plane.\n "  "" D}}	  
+  {dist_focus float 0 {
+    "Distance from \nexit to focus [m]"
+    "Distance from guide exit to focal point of the ellipse.\n Note that focal points in horizontal and vertical plane\n must be the same."  "" d} ge0 "" 1}	
   {"Guide characteristics" header}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
@@ -2284,8 +2287,8 @@ set ra {
   {refile parbrowsefile "" {"reference file" "" "" S}}
   {ffile parbrowsefile "" {"flux file" "" "" F}}
   {}
-  {kind radio lambda {kind "" "" k} 
-    {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
   {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
   {}
@@ -2304,15 +2307,13 @@ set ra {
   {lowrd float "" {"low bound\nradial div [deg]" "lower bound for the radial divergence [deg]" "" r}}
   {uprd float "" {"up bound\nradial div [deg]" "upper bound for the radial divergence [deg]" "" R}}
   {}
-  {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
-  {}
   {mint float "" {"minimal time [s]" "minimal time for monitoring" "" t}}
   {maxt float "" {"maximal time [s]" "maximal time for monitoring" "" T}}
   {}
   {freq float "" {"frequency [Hz]" "frequency of the pulsed source" "" f}}
 }
 
-set mon_brillianceESET [concat [genFE brilliance] $nA $nnA $ra]
+set mon_brillianceESET [concat [genFE brilliance] $nA $ra]
 unset ra
 
 

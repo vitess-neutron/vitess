@@ -21,6 +21,7 @@
 #define CWS       1
 #define SPSS      2
 #define LPSS      3
+#define LPSS_OPT  4
 
 #define POISONED   1   /* moderator decoupled poisoned        */
 #define DECOUPLED  2   /* moderator decoupled unpoisoned      */
