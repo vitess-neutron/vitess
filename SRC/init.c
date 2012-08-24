@@ -1033,6 +1033,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   if (stGeometry.eModule == VT_SOURCE)
   { pGeomFile = fopen( FullParName(pGeomFileName), "w");
     if (pGeomFile)
+      DefineColors(pGeomFile);
       fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angels\n#\n"); 
     CopyVector(vNull, vBegPos);
   }
@@ -1395,6 +1396,24 @@ void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vec
 	  Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
 }
 
+
+void DefineColors(FILE* pGeomFile)
+{
+
+  fprintf(pGeomFile, "DEF red=<Material diffuseColor='.9 .01 .01' emissiveColor='.9 .01 .01' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF green=<Material diffuseColor='.01 .9 .01' emissiveColor='.01 .9 .01' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF blue=<Material diffuseColor='.01 .01 .9' emissiveColor='.01 .01 .9' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF yellow=<Material diffuseColor='.9 .6 .01' emissiveColor='.9 .6 .01' transparency='.3'/> \n");
+  fprintf(pGeomFile, "DEF orange=<Material diffuseColor='.9 .4 .01' emissiveColor='.9 .4 .01' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF cyan=<Material diffuseColor='.0 .99 .99' emissiveColor='.0 .99 .99' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF magenta=<Material diffuseColor='.9 .01 .6' emissiveColor='.9 .01 .6' transparency='.4'/> \n");
+  fprintf(pGeomFile, "DEF grey=<Material diffuseColor='.6 .6 .6' emissiveColor='.6 .6 .6' transparency='.4'/> \n"); 
+  fprintf(pGeomFile, "DEF black=<Material diffuseColor='.01 .01 .01' emissiveColor='.01 .01 .01' transparency='.4'/> \n"); 
+  fprintf(pGeomFile, "DEF white=<Material diffuseColor='.99 .99 .99' emissiveColor='.99 .99 .99' transparency='.4'/> \n");
+
+  return;
+
+}
 
 
 /*************************************************************/

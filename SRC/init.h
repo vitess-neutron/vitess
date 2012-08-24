@@ -56,6 +56,7 @@ void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
 void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 void WriteGeomData    (VectorType vBegPos, double Length);
 
+void DefineColors     (FILE* pGeomFile);
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
 void DrawRectangle    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, double rotAngle);
 void DrawTriangle     (FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2,
