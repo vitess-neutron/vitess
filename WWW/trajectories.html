@@ -77,7 +77,21 @@ systems, download it as a binary to be used without fee in a non-commercial vers
 If you select (Options / Helper applications) an external X3D viewer installed on your system, it will be used to
 show the generated geometry file. If the default InstantPlayer is present on your
 system, this default will be found and used.
-  
+<br>
+The interaction with the 3D scene is very flexible. In the beginning the scene is shown
+with the source in the middle. In examine mode (key shortcut e) you may orient the scene
+with the mouse, left button pressed. It's like touching and turning a virtual ball around
+the origin. Use the mouse wheel to zoom in an out. If you want another module in the center,
+switch to mode "look at" (key shortcut l) and click at the module you're interested in.
+After that switch back to mode examine. If you got lost, press R or r.
+<br>
+When generating a X3D scene, VITESS looks for an option file. You may edit this file with
+the GUI, Otions / X3D options. With Unix, this file is ~/.x3dopt, for Windows it's
+FILES\x3d.opt where VITESS has been installed.
+<br>
+When editing this file with the GUI, you may see what may be changed, and with what syntax.
+You may restrict the scene to some bounds, change the color and transparency of scene objects,
+and may switch off text annotation.  
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 

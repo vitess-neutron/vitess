@@ -793,6 +793,11 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   }
   if (rc != nargs) return -1;
 
+  // apply viewport, if specified
+  if (x3d_option_filename &&
+      (outOfView(fa) || (vtype ==  GT_Line && outOfView(fa+3))))
+    goto next_line;
+
   // mods is the zero terminated module name string
   p += slen;
   while (isspace(*p)) ++p;
@@ -810,10 +815,19 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
 
   *appearance = lookForDef(q);
 
-  // apply viewport, if specified
-  if (x3d_option_filename &&
-      (outOfView(fa) || (vtype ==  GT_Line && outOfView(fa+3))))
-    goto next_line;
+  // restrict the characters of mods, otherwise we might see funny things / nothing in X3D
+  q =  *mods; 
+  q[-1] = ' '; // always allowed 
+  for (p = q; *p; p++) {
+    int c = *p;
+    if (c < 32 || c >= 127 ||
+        c == '\t' || c == '<'  || c == '>'  || c == '\\' || c == '\'' || c == '"')
+      c = ' ';
+    if (q[-1] == ' ' && c == ' ') continue; // do not repeat blanks
+    *q++ = c;
+  }
+  *q = 0;
+  
   return vtype;
 }
 

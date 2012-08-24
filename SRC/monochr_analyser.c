@@ -19,28 +19,29 @@ int main(int argc, char **argv)
   /* Initialize the program according to the parameters given   */
 
   Init(argc, argv, VT_MONOC_ANALY);
-      
+
   OwnInit(argc, argv);
 
   /* Get the neutrons from the file */
   DECLARE_ABORT;
 
   while (ReadNeutrons())  {
-    int i;
+    int i, ii;
+    double startTime;
+    VectorType startPosition;
+    VectorType startVector;
+
     CHECK;
     for (i=0; i<NumNeutGot; i++) {
       CHECK;
-      /*InputNeutrons[i].Position[0]	= 0. ;*/
 
       InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
       /* selects CE on which the neutron is reflected and gives global variables
 	 in	the frame of CE */
 
-      double startTime = InputNeutrons[i].Time;
-      VectorType startPosition;
-      VectorType startVector;
-      int ii = 0;
+      startTime = InputNeutrons[i].Time;
+
       for (ii = 0; ii < 3; ii++) {
 	startVector[ii] = InputNeutrons[i].Vector[ii];
 	startPosition[ii] = InputNeutrons[i].Position[ii];
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
 
       /* moment of arriving at the crystal plane, new position */
 
-     
+
       InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /
 	V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
@@ -69,178 +70,178 @@ int main(int argc, char **argv)
       RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;
 
       for(repet=0;repet<Repetition;repet++) {
-	  CHECK;
-	  TOF = InputNeutrons[i].Time ;
+        CHECK;
+        TOF = InputNeutrons[i].Time ;
 
-	  WL = InputNeutrons[i].Wavelength ;
+        WL = InputNeutrons[i].Wavelength ;
 
-	  Prob = InputNeutrons[i].Probability / Repetition ;
+        Prob = InputNeutrons[i].Probability / Repetition ;
 
-	  CopyVector(InputNeutrons[i].Position, Pos) ;
+        CopyVector(InputNeutrons[i].Position, Pos) ;
 
-	  CopyVector(InputNeutrons[i].Vector, Dir) ;
+        CopyVector(InputNeutrons[i].Vector, Dir) ;
 
 
-	  /* start here if no mosaic */
-	  if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
+        /* start here if no mosaic */
+        if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
 	
-	    double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
+          double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
 
-	    CartesianToSpherical(Dir, &theta_Bragg, &phi_Bragg);
+          CartesianToSpherical(Dir, &theta_Bragg, &phi_Bragg);
 
-	    theta_refl = M_PI - theta_Bragg ;
+          theta_refl = M_PI - theta_Bragg ;
 
-	    phi_refl = phi_Bragg ;
+          phi_refl = phi_Bragg ;
 
-	    SphericalToCartesian(Dir, &theta_refl, &phi_refl) ;
+          SphericalToCartesian(Dir, &theta_refl, &phi_refl) ;
 
-	    d_sp = WL * OrderReflection / 2 / (double) cos(theta_Bragg) ;
+          d_sp = WL * OrderReflection / 2 / (double) cos(theta_Bragg) ;
 
-	    /* probability of reflection */
+          /* probability of reflection */
 
-	    Prob *= Reflectivity ;
+          Prob *= Reflectivity ;
 
-	    if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_sp) ;
-	    if(d_spr_option == 2) Prob *= dSpreadGaussian(d_sp) ;
+          if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_sp) ;
+          if(d_spr_option == 2) Prob *= dSpreadGaussian(d_sp) ;
 
-	    if(Prob <= wei_min) goto getlost2 ;
+          if(Prob <= wei_min) goto getlost2 ;
 
-	    IntegralIntensity += Prob ;
+          IntegralIntensity += Prob ;
 
-	    /** end here if no mosaic **/}
+          /** end here if no mosaic **/}
 
-	  /** start here if mosaic **/
-	  if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.) 	{
+        /** start here if mosaic **/
+        if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.) 	{
 
-	    /* random d-spacing */
+          /* random d-spacing */
 
-	    d_ran_min = d_spacing - d_range/2. * d_fwhm ;
+          d_ran_min = d_spacing - d_range/2. * d_fwhm ;
 
-	    d_ran_max = d_spacing + d_range/2. * d_fwhm ;
+          d_ran_max = d_spacing + d_range/2. * d_fwhm ;
 
-	    d_ran = MonteCarlo(d_ran_min, d_ran_max) ;
+          d_ran = MonteCarlo(d_ran_min, d_ran_max) ;
 
-	    arg = WL * OrderReflection / 2. / d_ran ;
+          arg = WL * OrderReflection / 2. / d_ran ;
 
-	    if (arg > 1.) goto getlost2 ;/* wavelength to large */
+          if (arg > 1.) goto getlost2 ;/* wavelength to large */
 
-	    /* computes reflection angle corresponding to d_ran */
+          /* computes reflection angle corresponding to d_ran */
 
-	    thr = (double) acos(arg) ;
+          thr = (double) acos(arg) ;
 
-	    /* computes mosaic orientation of maximum probability in "Bragg" frame which is the
-	       frame obtained when rotating the original frame until diffraction plane normal vector gets parallel
-	       to X axis (normal vector of Bragg planes showing in flight direction) */
+          /* computes mosaic orientation of maximum probability in "Bragg" frame which is the
+             frame obtained when rotating the original frame until diffraction plane normal vector gets parallel
+             to X axis (normal vector of Bragg planes showing in flight direction) */
 
-	    MosaicMaxProb(Dir, &thr, Mosaic) ;
+          MosaicMaxProb(Dir, &thr, Mosaic) ;
 
-	    /* ... in frame of neutron which is the frame obtained when rotating the original frame
-	       until wave vector gets parallel to X axis*/
+          /* ... in frame of neutron which is the frame obtained when rotating the original frame
+             until wave vector gets parallel to X axis*/
 
-	    RotMatrixX(Dir, Matrix) ;
+          RotMatrixX(Dir, Matrix) ;
 
-	    RotVector(Matrix, Mosaic) ;
+          RotVector(Matrix, Mosaic) ;
 
-	    CartesianToSpherical(Mosaic, &thrmax, &phrmax) ;
+          CartesianToSpherical(Mosaic, &thrmax, &phrmax) ;
 
-	    /*	computes random mosaic normal in the frame of neutron close to the maximum probability */
+          /*	computes random mosaic normal in the frame of neutron close to the maximum probability */
 
-	    deltaphr = mosaic_range * Min(mosaic_fwhm[0], mosaic_fwhm[1]) ;
+          deltaphr = mosaic_range * Min(mosaic_fwhm[0], mosaic_fwhm[1]) ;
 
-	    if(deltaphr > M_PI) deltaphr = M_PI ;
+          if(deltaphr > M_PI) deltaphr = M_PI ;
 
-	    phr = MonteCarlo(phrmax - deltaphr, phrmax + deltaphr) ;
+          phr = MonteCarlo(phrmax - deltaphr, phrmax + deltaphr) ;
 
-	    SphericalToCartesian(Mosaic, &thr, &phr) ;
+          SphericalToCartesian(Mosaic, &thr, &phr) ;
 
-	    /* computes mosaic normal in the "Bragg" frame */
+          /* computes mosaic normal in the "Bragg" frame */
 
-	    RotMatrixX(Dir, Matrix) ;
+          RotMatrixX(Dir, Matrix) ;
 
-	    RotBackVector(Matrix, Mosaic) ;
+          RotBackVector(Matrix, Mosaic) ;
 
-	    /* probability of reflection from mosaic */
+          /* probability of reflection from mosaic */
 
-	    Prob *= Reflectivity ;
+          Prob *= Reflectivity ;
 
-	    Prob *= Mosaicity(Mosaic) ;
+          Prob *= Mosaicity(Mosaic) ;
 
-	    if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_ran) ;
-	    if(d_spr_option == 2) Prob *= dSpreadGaussian(d_ran) ;
+          if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_ran) ;
+          if(d_spr_option == 2) Prob *= dSpreadGaussian(d_ran) ;
 
-	    if(Prob <= wei_min && mode==1) goto getlost2 ;
+          if(Prob <= wei_min && mode==1) goto getlost2 ;
 
-	    IntegralIntensity += Prob ;
+          IntegralIntensity += Prob ;
 
-	    /*	 computes reflected direction in the frame of neutron */
+          /*	 computes reflected direction in the frame of neutron */
 
-	    thr = M_PI - 2 * thr ;
-	    phr = M_PI + phr ;
+          thr = M_PI - 2 * thr ;
+          phr = M_PI + phr ;
 
-	    SphericalToCartesian(Dir, &thr, &phr) ;
+          SphericalToCartesian(Dir, &thr, &phr) ;
 
-	    /* computes reflected direction in the "Bragg"(Option=1) or CE frame (Option !=1)*/
+          /* computes reflected direction in the "Bragg"(Option=1) or CE frame (Option !=1)*/
 
-	    RotBackVector(Matrix, Dir) ;
-	    
-	    /** end here if mosaic **/
-	  }
+          RotBackVector(Matrix, Dir) ;
+	
+          /** end here if mosaic **/
+        }
 
-	  if (mode == 2) {
-	    InputNeutrons[i].Probability -= Prob;
-	    InputNeutrons[i].Time = startTime;
-	    ii = 0;
-	    for (ii = 0; ii < 3; ii++) {
-	      InputNeutrons[i].Vector[ii] = startVector[ii];
-	      InputNeutrons[i].Position[ii] = startPosition[ii];
-	    }
-	    TransmitNeutron(&InputNeutrons[i]);
-	    continue;
-	  }
+        if (mode == 2) {
+          InputNeutrons[i].Probability -= Prob;
+          InputNeutrons[i].Time = startTime;
+          ii = 0;
+          for (ii = 0; ii < 3; ii++) {
+            InputNeutrons[i].Vector[ii] = startVector[ii];
+            InputNeutrons[i].Position[ii] = startPosition[ii];
+          }
+          TransmitNeutron(&InputNeutrons[i]);
+          continue;
+        }
 
-	  /* computes neutron variables in the initial frame */
+        /* computes neutron variables in the initial frame */
 
-	  RotBackVector(RotMatrixBragg, Dir);
+        RotBackVector(RotMatrixBragg, Dir);
 
-	  RotBackVector(RotMatrixCE, Pos) ;
+        RotBackVector(RotMatrixCE, Pos) ;
 
-	  AddVector(Pos, PosCE) ;
+        AddVector(Pos, PosCE) ;
 
-	  /* makes depth correction to get back to the old frame for Depth != 0 */
+        /* makes depth correction to get back to the old frame for Depth != 0 */
 
-	  RotBackVector(RotMatrixCE, Depth) ;
+        RotBackVector(RotMatrixCE, Depth) ;
 
-	  AddVector(Pos, Depth) ;
+        AddVector(Pos, Depth) ;
 
-	  /* computes neutron variables in the output frame */
+        /* computes neutron variables in the output frame */
 
-	  SubVector(Pos, TranslFoc) ;
+        SubVector(Pos, TranslFoc) ;
 
-	  RotVector(RotMatrixFoc, Pos) ;
+        RotVector(RotMatrixFoc, Pos) ;
 
-	  RotVector(RotMatrixFoc, Dir) ;
+        RotVector(RotMatrixFoc, Dir) ;
 
-	  /* transmit coordinates which were not changed, the rest overwrite below */
+        /* transmit coordinates which were not changed, the rest overwrite below */
 
-	  Neutrons = InputNeutrons[i];
+        Neutrons = InputNeutrons[i];
 
-	  Neutrons.Time = TOF ;
+        Neutrons.Time = TOF ;
 
-	  Neutrons.Probability = Prob ;
+        Neutrons.Probability = Prob ;
 
-	  CopyVector(Pos, Neutrons.Position) ;
+        CopyVector(Pos, Neutrons.Position) ;
 
-	  CopyVector(Dir, Neutrons.Vector) ;
+        CopyVector(Dir, Neutrons.Vector) ;
 
-	  /* writes output binary file */
+        /* writes output binary file */
 
-	  NumOut++ ;
+        NumOut++ ;
 
-	  WriteNeutron(&Neutrons) ;
+        WriteNeutron(&Neutrons) ;
 
-	getlost2: ;
+      getlost2: ;
 
-	}/*repetition*/
+      }/*repetition*/
 
 
       /* here continues if neutron gets lost */
@@ -261,11 +262,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
-
-
-/********************************************************************/
-/********************************************************************/
 
 
 /* selects CE on which the neutron is reflected and gives output in frame
@@ -640,7 +636,7 @@ void OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
 
-}/* End OwnCleanup */
+}
 
 
 /* ReadParameterFile() reads the parameters from "crys.par" */
@@ -670,7 +666,6 @@ void ReadParameterFile()
       TranslFoc[0]=ReadParF(Par_Crys) ; TranslFoc[1]=ReadParF(Par_Crys) ; TranslFoc[2]=ReadParF(Par_Crys) ; ReadParComment(Par_Crys) ;
 
       AnglFocHoriz=ReadParF(Par_Crys) ; AnglFocVert=ReadParF(Par_Crys) ; ReadParComment(Par_Crys) ;
-
     }
 
   /* check some values */
@@ -729,9 +724,7 @@ void ReadFocFile()
 {
   int	i, j, k ;
 
-
   /* reads from file by using ReadParF() and ReadParComment() */
-
 
   NumberCE[0] = ReadParI(Foc_Crys) ; NumberCE[1] = ReadParI(Foc_Crys) ; ReadParComment(Foc_Crys) ;
 
@@ -740,7 +733,6 @@ void ReadFocFile()
     {
       for(j = 0;j<NumberCE[1];j++)
 	{
-
 
 	  PosCE_F[0][i][j]=ReadParF(Foc_Crys) ; PosCE_F[1][i][j]=ReadParF(Foc_Crys) ; PosCE_F[2][i][j]=ReadParF(Foc_Crys) ;
 
@@ -763,7 +755,6 @@ void ReadFocFile()
 	      PosCE_F[k][i][j]		+= PosCE[k] ;
 
 	      DimCE_F[k][i][j]		+= DimCE[k] ;
-
 	    }
 
 	  RotHoriz_F[i][j]		+= RotHoriz ;
@@ -815,7 +806,6 @@ void	FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double R
     {
       for(j = 0;j<NumberCE[1];j++)
 	{
-
 	  RotHoriz = RotHoriz_F[i][j] ;
 
 	  RotVert	= RotVert_F[i][j] ;
@@ -823,7 +813,6 @@ void	FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double R
 	  FillRotMatrixZY(RotMatrix, RotVert, RotHoriz) ;
 
 	  CopyMatrixToMatrices(i, j, RotMatrix, RotMatrixCE_F) ;
-
 	}
     }
 }
@@ -834,26 +823,18 @@ void   CopyMatricesToMatrix(int i, int j, double Matrix[3][3][CRYS_SIZE][CRYS_SI
   int k, l ;
 
   for(k = 0;k<3;k++)
-    {
-      for(l = 0;l<3;l++)
-	{
-	  Result[k][l] = Matrix[k][l][i][j] ;
-	}
-    }
+    for(l = 0;l<3;l++)
+      Result[k][l] = Matrix[k][l][i][j] ;
 }
-
 
 void	CopyMatrixToMatrices(int i, int j, double Result[3][3], double Matrix[3][3][CRYS_SIZE][CRYS_SIZE])
 {
   int k, l ;
 
   for(k = 0;k<3;k++)
-    {
-      for(l = 0;l<3;l++)
-	{
-	  Matrix[k][l][i][j] = Result[k][l] ;
-	}
-    }
+    for(l = 0;l<3;l++)
+      Matrix[k][l][i][j] = Result[k][l] ;
+	
 }
 
 void	CopyVectorsToVector(int i, int j, double Vector[3][CRYS_SIZE][CRYS_SIZE], double Result[3])
@@ -861,9 +842,7 @@ void	CopyVectorsToVector(int i, int j, double Vector[3][CRYS_SIZE][CRYS_SIZE], d
   int k ;
 
   for(k = 0;k<3;k++)
-    {
       Result[k] = Vector[k][i][j] ;
-    }
 }
 
 void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_SIZE][CRYS_SIZE])
@@ -871,64 +850,50 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
   int k ;
 
   for(k = 0;k<3;k++)
-    {
-      Result[k][i][j] = Vector[k] ;
-    }
+    Result[k][i][j] = Vector[k] ;
 }
-
 
 
 void TransmitNeutron(Neutron* n)
 {
-
-  VectorType dir;
-  VectorType pos;
-
-  int i = 0;
+  VectorType dir, pos, Pos1, Pos2;
+  int i;
+  double scalar, ToF;
 
   for (i = 0; i < 3; i++) {
     dir[i] = n->Vector[i];
     pos[i] = n->Position[i];
   }
-  
+
   pos[0] -= PosCE[0];
   pos[1] -= PosCE[1];
   pos[2] -= PosCE[2];
-  
+
   RotBackVector(RotMatrixSurf, pos);
   RotBackVector(RotMatrixSurf, dir);
- 
-  VectorType Pos1, Pos2;
 
-  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2))
-    {
-      
-      SubVector(Pos2, Pos1);
-      double distInCrystal = LengthVector(Pos2);       
-      double weightFactor = exp (-1.*distInCrystal*absCoeff);
-      n->Probability *= weightFactor;
-      
-    }
-  
-  
-  double scalar = totalXOffset / n->Vector[0];
-  for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar;
-  
-  double ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
+  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) {
+    double distInCrystal, weightFactor;
+    SubVector(Pos2, Pos1);
+    distInCrystal = LengthVector(Pos2);
+    weightFactor = exp (-1.*distInCrystal*absCoeff);
+    n->Probability *= weightFactor;
+  }
+
+  scalar = totalXOffset / n->Vector[0];
+  for (i = 0; i < 3; i++)
+    n->Position[i] += n->Vector[i]*scalar;
+
+  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
   n->Time += ToF;
 
   WriteNeutron(n);
-  
-  return;
-  
 }
-
 
 double CalculateRotationOffset()
 {
-
-  VectorType vec1;
-  VectorType vec2;
+  VectorType vec1, vec2;
+  double xOffset1, xOffset2;
 
   vec1[0] = DimCE[0]/2.;
   vec1[1] = DimCE[1]/2;
@@ -941,9 +906,8 @@ double CalculateRotationOffset()
   RotVector(RotMatrixSurf, vec1);
   RotVector(RotMatrixSurf, vec2);
 
-  double xOffset1 = fabs(vec1[0]);
-  double xOffset2 = fabs(vec2[0]);
+  xOffset1 = fabs(vec1[0]);
+  xOffset2 = fabs(vec2[0]);
 
   return Max(xOffset1, xOffset2);
-
 }
