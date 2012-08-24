@@ -693,7 +693,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   int vtype, len, slen, nargs, rc;
   char *rs, *p, *q;
 
- skip_me:
+ next_line:
   while ((rs = fgets(line,255,gf))) {
     if (strchr(line, '#')) continue;
     if ((p = strchr(line, ' ')) || (p = strchr(line, '\t')))
@@ -723,7 +723,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
         *q++ = 0;
         insertDef(p, q);
       }
-      return 0;
+      goto next_line;
     }
     break;
   case 'E':
@@ -813,7 +813,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   // apply viewport, if specified
   if (x3d_option_filename &&
       (outOfView(fa) || (vtype ==  GT_Line && outOfView(fa+3))))
-    goto skip_me;
+    goto next_line;
   return vtype;
 }
 
