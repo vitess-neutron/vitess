@@ -410,6 +410,8 @@ typedef struct
 }
 VtModGeom;
 
+
+
 typedef struct
 {
   VtModID  eModule;
@@ -418,7 +420,6 @@ typedef struct
   double   dRPar;    /* radius, ...            */
   long     nNumber;  /* number of ....         */
   short    eType;    /* shape, mon. par., ...  */
-  const char*  pDescr;   /* material, ...          */
 }
 ModProp;
 
