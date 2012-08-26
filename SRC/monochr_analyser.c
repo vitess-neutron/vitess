@@ -1,6 +1,13 @@
-/* The free non-commercial use of these routines is granted */
-/* providing due credit is given to the authors.            */
-/* Author: Géza Zsigmond, last change JUL 2002              */
+/*********************************************************************************************/
+/*  VITESS module  space                                                                     */
+/* The free non-commercial use of these routines is granted providing due credit is given to */
+/* the authors.                                                                              */
+/*                                                                                           */
+/* 1.0      2000  G. Zsigmond     initial version                                            */
+/* ...                                                                                       */
+/* 1.8  Jul 2002  G. Zsigmond                                                                */
+/* 1.9  Aug 2012  K. Lieutenant   visualization included                                     */
+/*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,9 +23,14 @@
 
 int main(int argc, char **argv)
 {
-  /* Initialize the program according to the parameters given   */
+  double startTime;
+  VectorType startPosition;
+  VectorType startVector;
+  int ii = 0;
 
+	/* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_MONOC_ANALY);
+  print_module_name("Monochr_analyser 1.9") ;
 
   OwnInit(argc, argv);
 
@@ -51,23 +63,32 @@ int main(int argc, char **argv)
 
       if (Index == 0./* no CE was found */) goto getlost ;
 
-      /* moment of arriving at the crystal plane, new position */
+	  // if CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
+	  // in the frame of the reflecting crystal element.
 
+	  /* moment of arriving at the crystal plane, new position */   
+      InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
-      InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /
-	V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
       CopyVector(InputNeutrons[i].Vector, Path) ;
-
       MultiplyByScalar(Path, - InputNeutrons[i].Position[0]/ InputNeutrons[i].Vector[0] ) ;
+	  AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
 
-      AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
+	  // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
+	  // in the frame of the reflecting crystal element.
 
       /* for flat option (Option =1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position */
 
-      RotBackVector(RotMatrixCE, InputNeutrons[i].Vector) ;
+      RotBackVector(RotMatrixCE, InputNeutrons[i].Vector) ;  // Vector is now back to the original frame
 
-      RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;
+	  // write intersection point
+	  Neutrons = InputNeutrons[i];
+	  RotBackVector(RotMatrixCE, Neutrons.Position) ;  
+	  AddVector(Neutrons.Position, PosCE);
+	  Neutrons.Probability = InputNeutrons[i].Probability * (1.0 - Reflectivity);
+	  WriteIAP(&Neutrons, VT_REFLECTED);   // Reflectivity fehlt
+ 
+      RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
 
       for(repet=0;repet<Repetition;repet++) {
         CHECK;
@@ -264,69 +285,53 @@ int main(int argc, char **argv)
 }
 
 
-/* selects CE on which the neutron is reflected and gives output in frame
-   of CE */
+
+/********************************************************************/
+/********************************************************************/
+
+/* selects CE on which the neutron is reflected and gives output in frame of CE */
 
 void	SelectCE(double *index, int i)
 {
   int		k, l ;
   double	pos[3], dir[3] ;
 
-
   for(k = 0;k<NumberCE[0];k++) {
     for(l = 0;l<NumberCE[1];l++) {
 
       /* intermediate variables */
-
       CopyVector(InputNeutrons[i].Position, pos) ;
-
-      CopyVector(InputNeutrons[i].Vector, dir) ;
-
+      CopyVector(InputNeutrons[i].Vector,   dir) ;
 
       CopyVectorsToVector(k, l, PosCE_F, PosCE) ;
-
       CopyVectorsToVector(k, l, DimCE_F, DimCE) ;
-
       CopyMatricesToMatrix(k, l, RotMatrixCE_F, RotMatrixCE) ;
 
-
       /* computes neutron variables in the frame of the CE */
-
       SubVector(pos, PosCE) ;
-
       RotVector(RotMatrixCE, pos) ;
-
       RotVector(RotMatrixCE, dir) ;
-
 
       /* here computes the depth where the neutron meets the reflecting
          plane, equivalent to a parallel shift of a t=0 CE in the frame of CE */
-
       {
         VectorType Pos1, Pos2 ;
 
         if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2) == 0) { goto nextCE ;}
 
         Depth[0] = MonteCarlo(Pos1[0], Pos2[0]) ;
+        Depth[1] = Depth[2] = 0.0 ;
       }
-
-
-      Depth[1] = Depth[2] = 0 ;
 
       SubVector(pos, Depth) ;
 
-
       /* here we have the CE and initialise the values */
-
       *index = 1. ;
 
       CopyVector(pos, InputNeutrons[i].Position) ;
-
       CopyVector(dir, InputNeutrons[i].Vector) ;
 
-			
       /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
-
       if(Option != 1) { int p, q;
 			
         for(p = 0;p<3;p++) for(q = 0;q<3;q++) RotMatrixBragg[p][q] = RotMatrixCE[p][q];
@@ -335,7 +340,6 @@ void	SelectCE(double *index, int i)
       return ;
 
     nextCE: ;
-
       *index = 0. ;
     }
   }
@@ -373,9 +377,6 @@ void	MosaicMaxProb(VectorType Dir, double *th, VectorType Mosaic)
 
 void OwnInit(int argc, char *argv[])
 {
-  fprintf(LogFilePtr," \n") ;
-  print_module_name("monochr_analyser 1.8") ;
-
   d_spr_option = 1;
   geom_option  = 1;
   DevH         = 0.0;
@@ -856,9 +857,10 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
 
 void TransmitNeutron(Neutron* n)
 {
-  VectorType dir, pos, Pos1, Pos2;
-  int i;
-  double scalar, ToF;
+ 
+  VectorType Pos1, Pos2, dir, pos;
+  double distInCrystal, weightFactor, scalar, ToF;
+  int i = 0;
 
   for (i = 0; i < 3; i++) {
     dir[i] = n->Vector[i];
@@ -872,6 +874,19 @@ void TransmitNeutron(Neutron* n)
   RotBackVector(RotMatrixSurf, pos);
   RotBackVector(RotMatrixSurf, dir);
 
+  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2))
+    {
+      SubVector(Pos2, Pos1);
+      distInCrystal = LengthVector(Pos2);       
+      weightFactor = exp (-1.*distInCrystal*absCoeff);
+      n->Probability *= weightFactor;
+    }
+  
+  
+  scalar = totalXOffset / n->Vector[0];
+  for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar;
+  
+  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
   if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) {
     double distInCrystal, weightFactor;
     SubVector(Pos2, Pos1);
@@ -892,8 +907,8 @@ void TransmitNeutron(Neutron* n)
 
 double CalculateRotationOffset()
 {
+  double     xOffset1, xOffset2;
   VectorType vec1, vec2;
-  double xOffset1, xOffset2;
 
   vec1[0] = DimCE[0]/2.;
   vec1[1] = DimCE[1]/2;

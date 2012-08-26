@@ -2030,10 +2030,11 @@ set nA {
     "number\nof bins"
     "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
   {mtrl_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated\nnegative values mean that all files containing colour 0, 1, 2, ... -Input are generated simultaneously"
+	"" C} -10 32768}
 }
 set nnA {
-  {withbin radio yes {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
+  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
 }
 
 set mA {
