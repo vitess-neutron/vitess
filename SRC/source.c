@@ -521,11 +521,16 @@ int main(int argc, char *argv[])
          }
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
          { // case ESS, SNS
-		    if (stSrc.eSrcType == LPSS_OPT && stMod[imod].dModTemp < 100.0)   // new cold moderator
-			  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm
-			         * log(1.402 + 0.898 * Input.Wavelength);
+		    if (stSrc.eSrcType == LPSS_OPT && stMod[imod].dModTemp < 100.0)   // new cold moderator, empirical correction factor
+            { double lmbd = Input.Wavelength;
+				prob = EssModFU(lmbd, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm
+			         * log(1.402 + 0.898 * lmbd);
+			  if (lmbd <= 2.5) prob *= 2.0776 - 4.1093*lmbd + 4.8836*sq(lmbd) - 2.4715*pow(lmbd,3) + 0.4521*pow(lmbd,4);
+			  if (lmbd >  2.5 && lmbd <= 3.5) prob *= 4.3369 - 1.8367*lmbd + 0.2524*sq(lmbd);
+            }
 		    else
-			  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+			{ prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+			}
 		 }
          else
          {  prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  

@@ -297,8 +297,7 @@ int main(int argc, char *argv[])
     fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm² s Å sterad)\n\n", BrillAve, BrillMax);
     if (normalise==2)
       fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
- 
-    // stPicture.pDescr = "mon_brilliance";
+
     stPicture.eType  = (short) kind;
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
     if (pPosT!=NULL) free(pPosT);
