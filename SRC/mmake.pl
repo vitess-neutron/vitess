@@ -302,7 +302,7 @@ CCOMP = gcc
 CC = \$(CCOMP) \$(CFLAGS)
 CPLUSCOMP = g++
 CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
-LIBS = -Lrng/$subdir -lgslran -lm
+LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
 
