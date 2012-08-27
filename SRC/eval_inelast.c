@@ -1,13 +1,14 @@
-/********************************************************************************************/
-/*  VITESS module 'eval_inelast.c'                                                          */
-/*                                                                                          */
-/* The free non-commercial use of these routines is granted                                 */
-/* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
-/* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
-/* 1.3  NOV 2005  K. Lieutenant  transformation scattering angles -> direction removed      */
-/********************************************************************************************/
+/********************************************************************************************************/
+/*  VITESS module 'eval_inelast.c'                                                                      */
+/*                                                                                                      */
+/* The free non-commercial use of these routines is granted                                             */
+/* providing due credit is given to the authors.                                                        */
+/* 1.0            Géza Zsigmond                                                                         */
+/* 1.1  Jul 2002  Géza Zsigmond  change                                                                 */
+/* 1.2  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                           */
+/* 1.3  Nov 2005  K. Lieutenant  transformation scattering angles -> direction removed                  */
+/* 1.4  Aug 2012  K. Lieutenant  calculation of energy transfer and restriction of ang. range corrected */
+/********************************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +49,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given  */
   Init   (argc, argv, VT_EVAL_INELAST);
+  print_module_name("eval_inelast 1.4") ;
   OwnInit(argc, argv);
 
   /* calculates TOF channel boundaries and init p_TOF*/
@@ -80,7 +82,6 @@ int main(int argc, char **argv)
 	  {
         double rotz, roty;
 
-        // SphericalToCartesian(Vector, &InputNeutrons[i].Vector[0], &InputNeutrons[i].Vector[1]) ;
         CartesianToEulerZY(InputNeutrons[i].Vector, &roty, &rotz);
 
         if( (rotz < Angle - AngleRange) || (rotz > Angle + AngleRange)	) goto getlost ;
@@ -176,12 +177,7 @@ double betha;
 
 void OwnInit(int argc, char *argv[])
 {
-	fprintf(LogFilePtr," \n") ;
-
-	print_module_name("eval_inelast 1.3") ;
-
-
-/*    INPUT  */
+	/*    INPUT  */
 
 	while(argc>1)
 	{
