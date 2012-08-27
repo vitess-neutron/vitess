@@ -11,7 +11,7 @@ or SVG (2D vector graphic) files then, under control of the GUI.
 Virtual reality scenes may be examined with external viewers then, as 2D graphics
 may be shown by means of a browser.
 The framework has been filled for the following modules yet:
-  source, guide, chopper_disk, space, spacewindow, slit, supermirror ensemble, 
+Source, guide, chopper_disk, space, spacewindow, slit, supermirror ensemble, guide_elliptic
 and is considered "beta".
 
 Pipe import:
@@ -25,5 +25,15 @@ The maximal number of modules in the pipe has been extended to 100 now.
 
 New modules:
 ------------
-elliptic guide
-mon_brilliance
+elliptic guide: Represents a guide with a true elliptic shape, opposed to the regular guide module, which approximates a curved shape by segmentation and interpolation.
+mon_brilliance: Displays the brilliance distribution
+monitor1D: A generic 1D monitor
+
+
+Bug fixes, improvements:
+-----------------------
+
+- monitor1D & 2D: Color as filter variable introduced
+- monochr_analyzer: Transition mode added
+- sample_reflectom: Incoherent scattering added
+- ...
