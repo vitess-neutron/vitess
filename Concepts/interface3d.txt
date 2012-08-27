@@ -101,11 +101,5 @@ Ellipsoid                 Ellipsoid mit offenen Enden in der Längsachse
 10 xlow  11 xhigh         ein geschlossenes Ellipsoid ginge von -1 bis 1, hier werden -1 < xlow < xhigh < 1 erwartet
 
 CylSlice                  Ausschnitt einer Zylinderhülle, z.B. für Detektoren
-7 length  8 width  9 height
-10 dirang  11 openang     das Recheck wird in Richtung dirang mit einem Öffnungswinkel openang erwartet
-
-
-
-
-
-
+7 height 8 radius
+9 dirang  10 openang      das Recheck wird in Richtung dirang mit einem Öffnungswinkel openang erwartet

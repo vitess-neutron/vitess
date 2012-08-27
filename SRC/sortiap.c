@@ -534,7 +534,7 @@ void drawCylSlice (float dirang, float openang) {
 
   // assure sensible angles
   if (dirang < 0   || dirang > 360) return;
-  if (openang <= 0 || openang > 180) return;
+  if (openang <= 0 || openang >= 360) return;
 
   // compute first point of a line along a circular arc
   a = toRad(dirang - openang/2);
@@ -713,7 +713,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     } else if (0 == strcmp(rs, "ylinder")) {
       vtype = GT_Cylinder;  nargs = 8;
     } else if (0 == strcmp(rs, "ylSlice")) {
-      vtype = GT_CylSlice;  nargs = 11;
+      vtype = GT_CylSlice;  nargs = 10;
     }
     break;
   case 'D':
@@ -861,7 +861,6 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     switch (vtype) {
     case GT_Ellipsoid:
     case GT_Cuboid:
-    case GT_CylSlice:
       swapWH(7,8);
       break;
     case GT_Hull:
@@ -1026,12 +1025,11 @@ void geom2X3D(char *fn) {
       // and the desired height fa[8] becomes the scale fa[8]/2 for the z axis.
 
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-
+      scales = sS5(fa[7], b1); // radius
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[7]/2.0f, b1), sS5(fa[6]/2.0f, b2), sS5(fa[8]/2.0f, b3),
-               rots,
+               scales, sS5(fa[6]/2.0f, b2), scales, rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
-      drawCylSlice(fa[9], fa[10]);
+      drawCylSlice(fa[8], fa[9]);
       fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n",
                appearance ? appearance : RECTMAT);
       break;
@@ -1039,7 +1037,7 @@ void geom2X3D(char *fn) {
       // default orientation 0 1 0
       rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
       // desired length fa[6] becomes y scale fa[6]/2
-      scales = sS5(fa[7]/2.0f, b2);  // radius scale
+      scales = sS5(fa[7], b2);  // radius scale
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'>",
                scales, sS5(fa[6]/2.0f, b1), scales,
                rots,
