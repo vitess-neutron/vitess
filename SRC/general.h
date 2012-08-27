@@ -383,6 +383,19 @@ VtEllipsoid;
 
 typedef struct
 {
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Radius;
+  double     Width;
+  double     Height;
+  double     Phi;
+  double     OpenAngle;
+}
+VtCylSlice;  
+  
+
+typedef struct
+{
   VtModID      eModule;
   VtLine*      pLine;
   int          nLines;
@@ -406,6 +419,8 @@ typedef struct
   int          nEllipsoids;
   VtSphere*    pSphere;
   int          nSpheres;
+  VtCylSlice*  pCylSlice;
+  int          nCylSlices;
   const char*  pDescr;   /* description   */
 }
 VtModGeom;
