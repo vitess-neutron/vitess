@@ -432,9 +432,9 @@ my_exit:
         {
           if(pBinN[iBin+jMon*(nBiny+1)]!=0) 
 		    pSD[iBin+jMon*(nBiny+1)] = pInt[iBin+jMon*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+jMon*(nBiny+1)]));
-          fprintf(pFileMonC[jMon-1],"%12.4e   %14.7e   %14.7e   %10d \n",
-                           (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+jMon*(nBiny+1)]/pNorm[iBin]), pSD[iBin+jMon*(nBiny+1)]/pNorm[iBin], 
-			  	            pBinN[iBin+jMon*(nBiny+1)]);
+          fprintf(pFileMonC[jMon-1],"%12.4e   %14.7e   %14.7e   %10ld\n",
+                  (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+jMon*(nBiny+1)]/pNorm[iBin]), pSD[iBin+jMon*(nBiny+1)]/pNorm[iBin], 
+                  pBinN[iBin+jMon*(nBiny+1)]);
         }
         fclose(pFileMonC[jMon-1]);
       }
