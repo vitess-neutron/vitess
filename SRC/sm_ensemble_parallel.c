@@ -829,6 +829,7 @@ void processNeutron (int i, int thread_i) {
       CopyVector(Pos, n->Position);
       CopyVector(Dir, n->Vector);
       WriteIAP(n, VT_REFLECTED);
+      InputNeutrons[i].Color++;
 
       if (p) {
 	if (p==1)
