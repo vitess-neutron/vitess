@@ -125,14 +125,10 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
   }
 
-  set par ""
   # select parallel image versions for batch processing, ignore this for kstate,
   # and use parallel image version if helper threads have been demanded otherwise
-  switch $mode {
-    bat - sh - tcl - pl - py - grd - ser {set par _parallel}
-    kstate { }
-    default {set par _parallel}
-  }
+  if {$mode == "kstate"} {set par ""} else {set par _parallel}
+
   #    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
 
   set pdir [entryVal defdirectory]

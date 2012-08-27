@@ -47,7 +47,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_sm_parallel
@@ -78,7 +78,7 @@ my @CG = qw(guide_elliptic);
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
 
-my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
+my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
 # auxillary programs without further libs
 my @PTool = qw(chop_phases standard_deviation direct_view sortiap);
@@ -89,7 +89,7 @@ my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parall
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
-$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
+$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble_parallel', @CM);
 $Macro{$_} = '$(NTOOL)' foreach (@CN);
 $Macro{$_} = '$(GTOOL)' foreach (@CG);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
@@ -131,10 +131,10 @@ foreach (split) {
   push @Gobj, $_ unless $K{$_};
 }
 
-$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble sm_ensemble_parallel);
+$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble_parallel);
 
 my (%sopt, %lib);
-foreach (qw(visual bender dist_time sm_ensemble sm_ensemble_parallel lenses)) {
+foreach (qw(visual bender dist_time sm_ensemble_parallel lenses)) {
   $sopt{$_} = '$(GRAOPT)';      # special compile options for a module
   $lib{$_} = '$(GRALIB)';       # needed libs for a module
 }
@@ -219,7 +219,7 @@ while ($_ = shift) {
 my ($version, $fullversion);
 open F, '../GUI/control.tcl';
 while (<F>) {
-  if (/set t "VITESS ([0-9.]+)"/) {
+  if (/set t "VITESS ([0-9.a-z]+)"/) {
     $version = $fullversion = $1;
     last;
   }

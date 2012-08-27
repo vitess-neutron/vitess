@@ -23,12 +23,7 @@
 
 int main(int argc, char **argv)
 {
-  double startTime;
-  VectorType startPosition;
-  VectorType startVector;
-  int ii = 0;
-
-	/* Initialize the program according to the parameters given   */
+  /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_MONOC_ANALY);
   print_module_name("Monochr_analyser 1.9") ;
 

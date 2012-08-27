@@ -98,7 +98,6 @@ ALL : \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\eval_sans.exe" \
 	"$(OD)\frame.exe" \
-	"$(OD)\guide.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
@@ -130,7 +129,6 @@ ALL : \
 	"$(OD)\sample_nxs.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
-	"$(OD)\sm_ensemble.exe" \
 	"$(OD)\sm_ensemble_parallel.exe" \
 	"$(OD)\dist_time.exe" \
 	"$(OD)\chop_phases.exe" \
@@ -140,7 +138,7 @@ ALL : \
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=2 /DVMINOR=11 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=0 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -502,13 +500,6 @@ SOURCE=$(SPATH)\frame.c
 "$(OD)\frame.exe" : "$(OD)" $(MTOOL) "$(OD)\frame.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\frame.pdb" /out:"$(OD)\frame.exe" "$(IDIR)\frame.obj" $(MTOOL) 
 
-SOURCE=$(SPATH)\guide.c
-"$(IDIR)\guide.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\guide.exe" : "$(OD)" $(MTOOL) "$(OD)\guide.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\guide.pdb" /out:"$(OD)\guide.exe" "$(IDIR)\guide.obj" $(MTOOL) 
-
 SOURCE=$(SPATH)\monitorpol_1d.c
 "$(IDIR)\monitorpol_1d.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -769,13 +760,6 @@ SOURCE=$(SPATH)\visual.c
 
 "$(OD)\visual.exe" : "$(OD)" "$(OD)\visual.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\visual.pdb" /out:"$(OD)\visual.exe" "$(IDIR)\visual.obj" "$(OD)\cpgplot.obj"
-
-SOURCE=$(SPATH)\sm_ensemble.c
-"$(IDIR)\sm_ensemble.obj" : $(SOURCE)
-	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sm_ensemble.exe" : "$(OD)" "$(OD)\sm_ensemble.obj" $(MTOOL) "$(OD)\cpgplot.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble.pdb" /out:"$(OD)\sm_ensemble.exe" "$(IDIR)\sm_ensemble.obj" "$(OD)\cpgplot.obj"
 
 SOURCE=$(SPATH)\sm_ensemble_parallel.c
 "$(IDIR)\sm_ensemble_parallel.obj" : $(SOURCE)
