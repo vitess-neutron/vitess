@@ -1194,6 +1194,19 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
         DrawSphere(pGeomFile, stGeometry.pDescr,  vAbsCntr, stGeometry.pSphere[k].Radius);
       }
+      
+      /* CylSlices */
+      for (k=0; k < stGeometry.nCylSlices; k++)
+      { 
+        Transform (vAbsCntr, stGeometry.pCylSlice[k].vCntr,  vBegPos);
+        Transform (vDir,     stGeometry.pCylSlice[k].vSymAxis, vNull);
+
+	DrawCylSlice(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+		     stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width, 
+		     stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi, stGeometry.pCylSlice[k].OpenAngle);
+
+      }
+
     } else {
       // if visualisation is not yet implemented draw square or cylinder
       char description[40];        
@@ -1437,6 +1450,12 @@ void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vec
 	  Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
 }
 
+void DrawCylSlice(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double Width, double Height, double Phi, double openAngle)
+{
+  fprintf(pGeomFile, "CylSlice      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f   %s\n", 
+	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
+	  Height/100.0,  Radius/100.0, Phi, openAngle, pDescr);
+}
 
 void DefineColors(FILE* pGeomFile)
 {
