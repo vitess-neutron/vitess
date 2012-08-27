@@ -11,7 +11,7 @@ or SVG (2D vector graphic) files then, under control of the GUI.
 Virtual reality scenes may be examined with external viewers then, as 2D graphics
 may be shown by means of a browser.
 The framework has been filled for the following modules yet:
-source, guide, space, supermirror ensemble
+  source, guide, chopper_disk, space, spacewindow, slit, supermirror ensemble, 
 and is considered "beta".
 
 Pipe import:
