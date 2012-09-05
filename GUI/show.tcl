@@ -465,7 +465,7 @@ proc getPreferredX3DCmd {} {
   if {$cmd != "" && [file exists $cmd]} {
     return [set PreferredX3DCmd $cmd]
   }
-  if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
+  if [info exists PreferredX3DCmd] {return $PreferredX3DCmd}
   set ecmd ""
   switch [getSystem] {
     unix {
@@ -475,9 +475,10 @@ proc getPreferredX3DCmd {} {
       }
     }
     windows {
-      if {$cmd == ""} break
-      if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
-      set ecmd [findFile C:/ D:/ $cmd]
+      if {$cmd != ""} {
+        if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
+        set ecmd [findFile C:/ D:/ $cmd]
+      }
     }
     default { }
   }
