@@ -92,8 +92,14 @@ parameters against each other in a 2D plot:
 
 <p> <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
 
+<p> <b>color </b> If color is counted in guide module, <b>col_vert</b>
+  and <b>col_hor</b> correspond to reflections in vertical or horizontal plane,
+  while <b>color</b> is the sum (i.e. all reflections) 
+
 <p> Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
-filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
+filters in order to restrict the parameter space shown in the plot. If two
+  filters are defined, they can be combined with <b>AND</b> (only neutrons fulfilling
+  both criteria) or <b>OR</b> (neutrons fulfilling at least one criterium). If desired, polarisation analysis can be
 applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
 
 <p> Additional input needed by the module:
