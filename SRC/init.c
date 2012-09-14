@@ -885,8 +885,10 @@ void WriteNeutron(Neutron *OutNeutron)
   } else {
     dProbTotal[0] +=    tx;
     dProbQuad     += sq(tx);
-    if (bSepRate && OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
-      dProbTotal[OutNeutron->Color] += tx;
+    //use colorTB+colorLR in case they are counted separately (by guide)
+    int col_write=(OutNeutron->Color - OutNeutron->Color%100)  / 100 + (OutNeutron->Color %100);
+    if (bSepRate && col_write >= 1 && col_write <= MAX_COL)
+      dProbTotal[col_write] += tx;
   }
 
   if (OutputFilePtr)

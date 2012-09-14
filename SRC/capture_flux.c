@@ -78,16 +78,20 @@ int main(int argc, char **argv)
 
 
 	  if (!bOutOfWindow && !bOutOfLambda) {
-        if (ReferenceWavelength <= 0.) {
-			CaptInt  +=    InputNeutrons[i].Probability;
-			CaptQuad += sq(InputNeutrons[i].Probability);
-		} else {
-			CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
-			CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
-		}
-		avColor += (double)InputNeutrons[i].Color;
-		avwColor += (double)InputNeutrons[i].Color*InputNeutrons[i].Probability;
-        Ntot++;
+	    if (ReferenceWavelength <= 0.) {
+	      CaptInt  +=    InputNeutrons[i].Probability;
+	      CaptQuad += sq(InputNeutrons[i].Probability);
+	    } else {
+	      CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
+	      CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
+	    }
+
+	    //colour counting: sum (horizontal+vertical)
+	    double col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
+	    avColor += col;
+	    avwColor += col*InputNeutrons[i].Probability;
+
+	    Ntot++;
 	  }
 
       WriteNeutron(&(InputNeutrons[i]));
@@ -103,6 +107,7 @@ int main(int argc, char **argv)
 	CaptErr = sqrt(sq(CaptInt)/Ntot + (Ntot*CaptQuad-sq(CaptInt))/(Ntot-1));
   else
     CaptErr = CaptInt;
+
   avColor /= Ntot;
   avwColor /= CaptInt;
 
@@ -123,7 +128,7 @@ int main(int argc, char **argv)
 	fprintf(LogFilePtr,"Lambda window from %6.2f A to %6.2f A \n", lambdamin, lambdamax);
 
   fprintf(LogFilePtr, "Reference wavelength: %12.3f A\n", ReferenceWavelength);
-  if (avColor != 0.0) {
+  if (avColor != 0.0 && Ntot!=0) {
 	fprintf(LogFilePtr, "Average color       : %12.3f \n", avColor);
 	fprintf(LogFilePtr, "Avr. weighted color : %12.3f \n", avwColor);
   }
