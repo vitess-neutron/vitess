@@ -1166,9 +1166,12 @@ set guide_ellipticESET {
   {length_guide float 0 {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
-  {dist_focus float 0 {
-    "Distance from \nexit to focus [m]"
-    "Distance from guide exit to focal point of the ellipse.\n Note that focal points in horizontal and vertical plane\n must be the same."  "" d} ge0 "" 1}	
+  {dist_focus_hor float 0 {
+    "Distance from exit to \n focus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+  {dist_focus_ver float 0 {
+    "Distance from exit to \n focus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	 
   {"Guide characteristics" header}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
@@ -3062,6 +3065,9 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+  {}
+  {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
+  {muInc float 0 {"Incoherent pathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
@@ -3507,6 +3513,7 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
+    {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
   {"output frame" header}
