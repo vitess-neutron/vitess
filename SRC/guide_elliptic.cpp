@@ -970,7 +970,7 @@ void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidth
     x_0[2] = -p2/2. + sqrt(pow(p2/2., 2) - q2);
     x_0[3] = -p2/2. - sqrt(pow(p2/2., 2) - q2);
 
-    double minPos = lengthGuide;
+    double minPos = endPoint + lengthGuide;
 
     for (int i = 1; i < 4; i++) {
       if (x_0[i] > xMin && x_0[i] < minPos) minPos = x_0[i];
@@ -1071,7 +1071,7 @@ void OwnCleanup()
   fprintf(LogFilePtr,"Elliptic parameters used from input: \n");
   fprintf(LogFilePtr,"Long axis: %f m, short axis %f m, in horizontal plane \n", longAxisHor, shortAxisHor);
   fprintf(LogFilePtr,"Long axis: %f m, short axis %f m, in vertical plane \n", longAxisVer, shortAxisVer);
-  fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f \n", lengthGuide, startPoint, endPoint);
+  fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f vertOffset %f \n", lengthGuide, startPoint, endPoint, vertOffset);
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
   for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
