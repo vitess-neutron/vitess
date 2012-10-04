@@ -178,6 +178,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
       chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       guide       {set com "guide$par$sys"}
+      guide_ideal {set com "guide_elliptic$sys"}
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}

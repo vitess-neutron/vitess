@@ -157,7 +157,7 @@ proc makeModuleSets {} {
     {source {source_const_wave source_ILL source_HMI source_FRM2
       source_short_pulsed source_SNS source_IPNS source_ISIS
       source_ESS_LPTS source_ESS_2012} source}
-    {guide {guide bender guide_elliptic} {guide bender guide_elliptic}}
+    {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
     {sm_ensemble {} sm_ensemble}
     {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
@@ -1123,7 +1123,75 @@ proc guideCheckErr {{app _}} {
   return 0
 }
 
-### Elliptic Guide
+### Ideally shaped Guide
+###
+set guide_idealESET {
+  {"Shape and size of guide" header}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+    {constant linear elliptic} {0 1 2}}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+    {constant linear elliptic} {0 1 2}}
+  {}
+  {shape_file mneditablefile guide_shape.dat
+    {"guide shape" "File containing ellipse parameters" "" O}}
+  {}
+  {axis_long_hor float 0 {
+    "Major ellipse\naxis in x-y plane [m]"
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
+  {axis_short_hor float 0 {
+    "Minor ellipse\naxis in x-y plane [m]"
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+  {}
+  {axis_long_ver float 0 {
+    "Major ellipse\naxis in x-z plane [m]"
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
+  {axis_short_ver float 0 {
+    "Minor ellipse\naxis in x-z plane [m]"
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+  {}	 		
+  {enter_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+  {enter_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+  {}
+  {exit_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+  {exit_height float 10 {
+    "exit\nheight [cm]"
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+  {}
+  {length_guide float 0 {
+    "Guide length [m]"
+    "Length of guide in m"  "" l} ge0 "" 1}	
+  {dist_focus_hor float 0 {
+    "Distance from exit to \n focus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+  {dist_focus_ver float 0 {
+    "Distance from exit to \n focus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+  {} 
+   {addColor float 0 {
+    "Add to color"
+    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
+  {"Guide characteristics" header}
+  {"Reflectivity files" header}
+  {lrefl_filename pareditablefile mirr1a.dat
+    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
+  {rrefl_filename pareditablefile mirr1a.dat
+    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+  {tbrefl_filename pareditablefile mirr1a.dat
+    {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
+  {brefl_filename pareditablefile mirr1a.dat
+    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  
+}
+
+set guide_idealESET [concat $guide_idealESET]
+
+### Elliptical Guide (old)
 ###
 set guide_ellipticESET {
   {"Shape and size of guide" header}
@@ -1171,7 +1239,11 @@ set guide_ellipticESET {
     "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
   {dist_focus_ver float 0 {
     "Distance from exit to \n focus  in ver. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	 
+    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+  {} 
+   {addColor float 0 {
+    "Add to color"
+    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
   {"Guide characteristics" header}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
@@ -3065,9 +3137,16 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
-  {}
+  {"Incoherent scattering" header}
   {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
+  {}
   {muInc float 0 {"Incoherent pathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
+  {}
+  {detDist float 0 {"Detector distance" "If incoherent scattering from sample is taken into account, \n specify the distance to the detector. This is needed together with detector \n width and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" d}}	
+  {detW float 0 {"Detector width" "If incoherent scattering from sample is taken into account, \n specify the width the detector. This is needed together with detector \n distance and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" p}}	
+  {detH float 0 {"Detector height" "If incoherent scattering from sample is taken into account, \n specify the height the detector. This is needed together with detector \n distance and detector width to calculate the solid angle \n the incoherent part of the background is scattered to." "" t}}
+  {}
+  {detN float 1 {"Norm factor" "If incoherent scattering from sample is taken into account, \n the norm factor describes the fraction of the detector \n where the specular signal is expected with respect to \n the whole detector area. If it's not specified, the proper normalisation \n should be done in the subsequent analysis." "" S}}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
