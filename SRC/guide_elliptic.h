@@ -56,6 +56,7 @@ int neutronsKilledStraight = 0;
 int neutronsKilledParabolic = 0;
 int simultaneousCollisions = 0;
 int badNeutrons = 0;
+int changeColor = 0;
 
 typedef struct
 {

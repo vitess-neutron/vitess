@@ -138,6 +138,10 @@ void OwnInit(int argc, char *argv[])
 	    distToFocusVer  = atof(&argv[i][2]); // Distancs to focal point from guide exit
 	    break; 
 
+	  case 'C':
+	    changeColor = atoi(&argv[i][2]); // Modify color with each reflection
+	    break;
+
 	  case 'i':  /* left plane */
 	    if( (fReflFileLeftPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL) //Reflectivity file left plane
           {	fprintf(LogFilePtr,"ERROR: File %s containing coating of left plane could not be opened\n",&argv[i][2]);
@@ -199,10 +203,10 @@ void OwnInit(int argc, char *argv[])
    //Treat horizontal plane first
    if (shapeHor == 2) { // We are dealing with an ellipse
 
-     if (longAxisHor > 0 && lengthGuide > 0) {
+     if (longAxisHor > 0 && shortAxisHor > 0 && lengthGuide > 0) {
 
        if (startWidth > 0 || endWidth > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes. \n");
+	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify a) either entrance AND exit parameters or b) the size of the axes. \n");
 	 fprintf(LogFilePtr,"Long axis: %f, start width: %f, end width: %f \n", longAxisHor, startWidth, endWidth);
 	 exit(-1);
        }
@@ -218,7 +222,7 @@ void OwnInit(int argc, char *argv[])
      else if (lengthGuide > 0 && startWidth > 0 && endWidth > 0 && distToFocusHor > 0) {
      
        if (longAxisHor > 0 || shortAxisHor > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either entrance/exit parameters or the length of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for horizontal plane, please specify either a) entrance/exit parameters or b) the size of the axes.");
 	 fprintf(LogFilePtr,"Lond axis: %f, short axis: %f", longAxisHor, shortAxisHor);
 	 exit(-1);
        }
@@ -249,10 +253,10 @@ void OwnInit(int argc, char *argv[])
    //Treat the vertical plane now
    if (shapeVer == 2) { // we are dealing with an ellipse
 
-     if (longAxisVer > 0 && lengthGuide > 0) {
+     if (longAxisVer > 0 && shortAxisVer > 0 && lengthGuide > 0) {
 
        if (startHeight > 0 || endHeight > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either entrance/exit parameters or the size of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either a) entrance/exit parameters or b) the size of the axes.");
 	 exit(-1);
        }
        else {
@@ -265,7 +269,7 @@ void OwnInit(int argc, char *argv[])
      else if (lengthGuide > 0 && startHeight > 0 && endHeight > 0 && distToFocusVer > 0) {
      
        if (longAxisVer > 0 || shortAxisVer > 0) {
-	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either entrance/exit parameters or the size of the axes.");
+	 fprintf(LogFilePtr,"Ambiguous input for vertical plane, please specify either a) entrance/exit parameters or b) the size of the axes.");
 	 exit(-1);
        }
        else {
@@ -430,7 +434,7 @@ int ProcessNeutron(Neutron* n)
 	n->Vector[2] = nTemp2.Vector[2];
 	n->Vector[0] = sqrt(1. - nTemp1.Vector[1]*nTemp1.Vector[1] - nTemp2.Vector[2]*nTemp2.Vector[2]);
 
-	n->Color += 101;
+	if (changeColor) n->Color += 101;
 	if (n->Probability <= wei_min)  {
 	  WriteIAPEllGuide(n, VT_ABSORBED);
 	  return 0;
@@ -472,7 +476,7 @@ int ProcessNeutron(Neutron* n)
 	tof += (nTemp1.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp1.Position[0];
 	CopyNeutron(&nTemp1, n);
-	n->Color += 1; // Use +1 for color for horizontal reflection
+	if (changeColor) n->Color += 1; // Use +1 for color for horizontal reflection
 	
 	// Check if neutron got absorbed
 	if (n->Probability <= wei_min)  {
@@ -497,7 +501,7 @@ int ProcessNeutron(Neutron* n)
 	tof += (nTemp2.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 	xMin = nTemp2.Position[0];
 	CopyNeutron(&nTemp2, n);
-	n->Color += 100; // Use +100 for color for horizontal reflection
+	if (changeColor) n->Color += 100; // Use +100 for color for horizontal reflection
 
 	// Check if neutron got absorbed
 	if (n->Probability <= wei_min) {
