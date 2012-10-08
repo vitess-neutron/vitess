@@ -246,7 +246,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       default {}
     }
     if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
-    
+
     lappend PipeLogList $logopt
     if $intcom {
       set com [file join $prefi $com]
@@ -523,7 +523,7 @@ proc PsCheckWindows {} {
 
 proc saveEnvironment  {} {
   global FilesBefore TimesBefore Execmode defdirectory_
-  if {$Execmode != "save old"} { return "" }
+  if {$Execmode != "save old"  && $Execmode != "restore old"} { return "" }
   catch {unset TimesBefore}
   set FilesBefore {}
   set clist {}
@@ -562,47 +562,76 @@ proc sameMD5Hash {a b} {
   return 0
 }
 
-### compare contents of envDir with files in the parameter directory
-### exchange modified files with old files, and have new files
+### Compare contents of envDir with files in the parameter directory.
+### In mode "save old" exchange modified files with old files, and have new files
 ### in the subdirectory; delete identical copies in the subdirectory;
-### delete the subdirectory if empty
+### delete the subdirectory if empty.
+### In mode "restore old" try to restore the situation before.
 
 proc cleanupEnvDir {{envDir ""}} {
-  global FilesBefore TimesBefore defdirectory_
+  global FilesBefore TimesBefore Execmode defdirectory_
   if {$envDir == ""} return
-  if {! [file exists $envDir]} return
+  if {! [file isdirectory $envDir]} return
   set someremain 0
   set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
   catch {
     foreach fn [glob -directory $defdirectory_ *] {
       if [file isdirectory $fn] continue
-      if {[lsearch $FilesBefore $fn] != -1} {
-	file stat $fn fst
-	set tn [file tail $fn]
-	set ofn [file join $envDir $tn]
-	set remain 0
-	if {$fst(mtime) > $TimesBefore($fn)} {
-	  # Changed file found, mtime change;
-	  # If it is just today's log file: forget about it.
-	  if {$tn != $dayname} {
-	    # Have contents been changed, too ?
-	    # If not, we delete the saved version.
-	    if {! [sameMD5Hash $fn $ofn]} {
-	      set remain [set someremain 1]
-	    }
-	  }
-	}
-	if {$remain == 0} {
-	  # file has not been changed, delete the saved version
-	  file delete $ofn
-	} else {
-	  outProtocol "saved old file to $ofn"
-	}
+      set tn [file tail $fn]
+      # If it is just today's log file: forget about it.
+      if {$tn == "$dayname"} continue
+      set ofn [file join $envDir $tn]
+      set fni [lsearch $FilesBefore $fn]
+      if {$Execmode == "restore old"} {
+        if {$fni < 0} {
+          # delete the new file, which did not exist before
+          file delete $fn
+        } else {
+          # file existed before
+          file stat $fn fst
+          if {$fst(mtime) > $TimesBefore($fn)} {
+            # changed mtime
+            # rename the old file, to keep the old modification date
+            file rename -force $ofn $fn
+          }
+        }
+      } else if {$fni >= 0} {
+        file stat $fn fst
+        set remain 0
+        if {$fst(mtime) > $TimesBefore($fn)} {
+          # File has a change mtime, have contents been changed, too ?
+          if [sameMD5Hash $fn $ofn] {
+            set remain 2
+          } else {
+            set remain [set someremain 1]
+          }
+        }
+        if {$remain == 0} {
+          # file has not been changed, delete the copy
+          file delete $ofn
+        } elseif {$remain == 2} {
+          # file has a new modification date, but the same contents
+          # rename it, to keep the old modification date
+          file rename -force $ofn $fn
+        } else {
+          outProtocol "saved old file to $ofn"
+        }
       }
     }
   }
+  if {$Execmode == "restore old"} {
+    # some old files may have been deleted, restore them
+    foreach ofn [glob -directory $envDir *] {
+      if [file isdirectory $ofn] continue
+      set tn [file tail $ofn]
+      if {$tn == "$dayname"} continue
+      set fn [file join $defdirectory_ $tn]
+      if [file exists $fn] continue
+      file rename -force $ofn $fn
+    }
+  }
   if {$someremain == 0} {
-    file delete $envDir
+    file delete -force $envDir
   }
   catch {unset FilesBefore TimesBefore}
 }
@@ -695,7 +724,7 @@ proc doGather {gcom geomfile glist} {
     default  {set m 0}
   }
 
-  if {$geomfile != "" && [file exists $geomfile]} {set gex 1} else {set gex 0} 
+  if {$geomfile != "" && [file exists $geomfile]} {set gex 1} else {set gex 0}
   switch $m {
     0 {set opt ""
       set ext txt
@@ -715,7 +744,7 @@ proc doGather {gcom geomfile glist} {
   if {$geomfile == ""} {
     set visRes [tmpFilename _geom.$ext]
   } else {
-    # generate a new file name in the parameter directory 
+    # generate a new file name in the parameter directory
     for {set i 1} {$i < 1000} {incr i} {
       set visRes [file join $defdirectory_ geom_$i.$ext]
       if {! [file exists $visRes]} break
@@ -735,14 +764,120 @@ proc doGather {gcom geomfile glist} {
   }
   return ""
 }
- 
+
+proc pipeIsActive {} {
+  global PipeActive VisState
+  if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
+    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
+    return 1
+  }
+  return 0
+}
+
+proc startActionD {} {
+  # Start a dry run.
+  # A dry run is a pipe execution with few neutron trajectories.
+  # If modules miss something, they will bark.
+  # Result files in the parameter directory become deleted.
+
+  if [pipeIsActive] return
+
+  if {![checkAll]} return
+
+  global PipeActive PipeIds FilesToDeleteList PipeIdList PsCheck PipeLogList PipeIdsAtStart
+
+  set c [generateVitessCommand action]
+
+  # first module should be a source module
+  set coms [split $c |]
+  set fparts [split [lindex $coms 0]]
+  if {! [regexp {MODULES/source} [lindex $fparts 0]]} {
+    showText "!First module should be a source module for a dry run."
+    return
+  }
+  # generate 100 trajectories only
+  # change parameter -n to 100
+  set lnew {}
+  foreach i $fparts {
+    if [regexp {^-n} $i] {
+      lappend lnew "-n100"
+    } else {
+      lappend lnew $i
+    }
+  }
+  set fcnew [join $lnew]
+  set c [join [lreplace $coms 0 0 $fcnew] |]
+
+  set pname [tmpFilename pipstd.err]
+  lappend PipeLogList $pname
+  conditionalOpenProtfile
+
+  update
+  stopAction 0
+  global env Execmode
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    set env(GSL_RNG_$vv) $t
+  }
+
+  # force "restore old" execution mode
+  set savmode $Execmode
+  set Execmode "restore old"
+  set sEnvDir [saveEnvironment]
+
+  if [catch {eval exec 2> $pname $c &} PipeIds] {
+    showText "!could not start simulation\n\t$PipeIds"
+    cleanupEnvDir $sEnvDir
+    conditionalCloseProtfile
+    set Execmode $savmode
+    return
+  }
+
+  set PipeActive 1
+  set PipeIdList [split $PipeIds]
+  set PipeIds ""
+  foreach p $PipeIdList {
+    append PipeIds [format "%x " $p]
+  }
+  set PipeIdsAtStart $PipeIdList
+  outProtocol "dry run ($PipeIds) ($PipeIdList) is active"
+  set wsecs 1
+  set wmsecs [expr 1000 * $wsecs]
+  set i 0
+  while {1} {
+    if {$i == 10} {
+      outProtocol "!\ndry run took more than 10 seconds,\n\tstopping pipe"
+      stopAction
+    } else {
+      showProgress
+    }
+    incr i
+    if {$PipeActive && [$PsCheck]} {
+      after $wmsecs;			# wait for completion,
+      update;				# but allow other window events
+    } else {
+      update
+      if {!$PipeActive} {
+	showText "doing cleanup"
+      }
+      cleanupPipes
+      set PipeActive 0
+      cleanupEnvDir $sEnvDir
+      conditionalCloseProtfile
+      zeroProgress
+      set Execmode $savmode
+      return
+    }
+  }
+}
+
+
 proc startActionV {} {
   # start a visualisation run
   global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode
-  if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
-    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
-    return
-  }
+
+  if [pipeIsActive] return
+
   # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
   set firstText ""
   set visRes ""
@@ -777,7 +912,7 @@ proc startActionV {} {
   condDelList VisLogList
 
   if {$VisMerge == ""} {
-    if {$firstText != ""} {showText $firstText} 
+    if {$firstText != ""} {showText $firstText}
     set VisState 0
     showText "!Computation of trajectories not yet implemented"
     return
@@ -793,7 +928,7 @@ proc startActionV {} {
   } else {
     set fullres ""
   }
-  
+
   # puts "debug: fullres $fullres  trajmode $trajmode"
   # dmf:debug comment next line
   condDelList VisLogList
@@ -819,16 +954,15 @@ proc startActionV {} {
     }
     showText "Find trajectories in $fullres"
   }
-  if {$firstText != ""} {showText $firstText} 
+  if {$firstText != ""} {showText $firstText}
 }
 
 proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime VisState
-  if {($VisState != 0 && $visrun == 0) || ([info exists PipeActive] && $PipeActive)} {
-    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
-    return
-  }
+
+  if [pipeIsActive] return
+
   set c $sercom
   set tool 0
   if {$simu == "tool"} {

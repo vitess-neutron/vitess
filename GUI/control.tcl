@@ -810,14 +810,18 @@ proc showBeef {w} {
   set fileentrywidth $savw
 
   set wb $w.h.b
-  bButton $wb.check Check checkAction
+  frame $wb.check
+  bsButton $wb.check.c1 Check checkAction
+  bsButton $wb.check.c2 "Dryrun" startActionD
+  pack $wb.check -anchor w -fill x
+  pack $wb.check.c1 $wb.check.c2 -side left -ipadx 1m
   bButton $wb.start Start startAction
   bButton $wb.startv Trajectories startActionV
   frame $wb.meter
   frame $wb.stop
-  bsButton $wb.stop.kill Kill "stopAction 1 1"
-  bsButton $wb.stop.stop Stop stopAction
-  pack $wb.check $wb.start $wb.startv -fill x
+  bsButton $wb.stop.kill "  Kill  " "stopAction 1 1"
+  bsButton $wb.stop.stop "  Stop   " stopAction
+  pack $wb.start $wb.startv -fill x
 
   pack $wb.meter -fill x -anchor w
   set Progress [set ProgressS 0]
