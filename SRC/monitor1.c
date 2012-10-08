@@ -17,7 +17,7 @@
 /* 1.6  K. Lieutenant FEB 2005 intensity as a function of energy                             */
 /* 1.6a A. Houben     JAN 2010 filter for wavelength and yz position (only if applicable)    */
 /* 1.7  A. Houben     MAY 2010 monitor for div on x-axis rotated by rot angle                */
-/* 1.8  A. Houben     Aug 2012 multiple file output                                          */
+/* 1.8  A. Lieutenant Aug 2012 multiple file output                                          */
 /*********************************************************************************************/
 
 // includes and definitions
@@ -31,7 +31,7 @@
 #include "general.h"
 
 #define MAX_KIND  8
-#define MAX_COLS 10
+#define MAX_COLS 25
 
 
 // Prototypes
@@ -97,9 +97,6 @@ int main(int argc, char *argv[])
 
   /* init */
   Init(argc, argv, VT_MONITOR_1);
-
-  sprintf(sModuleName, "monitor1_%s 1.7", sParN[kind] );
-  print_module_name(sModuleName);
 
   /* own init */
   for(i=1; i<argc; i++)
@@ -227,8 +224,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  // if (MonitorFileName==NULL)
-  //   {fprintf(LogFilePtr,"\n you must define a MonitorOutputFile"); exit(99);}
+  sprintf(sModuleName, "monitor1_%s 1.8", sParN[kind] );
+  print_module_name(sModuleName);
 
   if (nAddMons > 0)
   { 
@@ -395,7 +392,7 @@ int main(int argc, char *argv[])
           dIntTot     += prob;
           nTrjTot     += 1;
           registered = 1;
-          if (nAddMons > 0)
+          if (nAddMons > 0 && iCol > 0 && iCol <= nAddMons)
           { 
             pInt [iBin + iCol*(nBiny+1)] += prob;
             pBinN[iBin + iCol*(nBiny+1)] += 1;

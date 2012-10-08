@@ -378,29 +378,29 @@ void OwnCleanup()
 
   // Geometry data
   if (bVisInstr)
-  { stGeometry.pCircle  = calloc(ThisChopper.NumberOfWindows + 1, sizeof(VtCircle));
+  { stGeometry.pCircle  = (VtCircle*) calloc(ThisChopper.NumberOfWindows + 1, sizeof(VtCircle));
     stGeometry.nCircles = ThisChopper.NumberOfWindows + 1; 
-    stGeometry.pLine    = calloc(2*ThisChopper.NumberOfWindows, sizeof(VtLine));
-    stGeometry.nLines   = 2*ThisChopper.NumberOfWindows; 
+    // stGeometry.pLine    = (VtLine*) calloc(2*ThisChopper.NumberOfWindows, sizeof(VtLine));
+    // stGeometry.nLines   = 2*ThisChopper.NumberOfWindows; 
 
     stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D;
     stGeometry.pCircle[0].vCntr[1]   = ThisChopper.Centre.Y;
     stGeometry.pCircle[0].vCntr[2]   = ThisChopper.Centre.Z;
-    stGeometry.pCircle[0].Radius     = ThisChopper.Radius;
-    stGeometry.pCircle[0].AngleBeg   =   0.0;
-    stGeometry.pCircle[0].AngleEnd   = 360.0;
+    stGeometry.pCircle[0].Radius     = ThisChopper.Window[0].Bottom;
+    stGeometry.pCircle[0].AngleBeg   =   0.01;
+    stGeometry.pCircle[0].AngleEnd   = 359.99;
     stGeometry.pCircle[0].vNormal[0] =   1.0;
     stGeometry.pCircle[0].vNormal[1] =   0.0;
     stGeometry.pCircle[0].vNormal[2] =   0.0;
 
     for (k=0; k < ThisChopper.NumberOfWindows; k++)
     { 
-		  phi_wnd = 180.0/M_PI * (ThisChopper.Window[k].Angle + ChopperInitialOffset + ThisChopper.Frequency * time);
-		  phi_red = RedAngle(phi_wnd, -1);
+      phi_wnd = 180.0/M_PI * (ThisChopper.Window[k].Angle + ChopperInitialOffset + ThisChopper.Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
+      phi_red = RedAngle(phi_wnd, -1);
 
-      stGeometry.pCircle[k+1].Radius     = ThisChopper.Window[k].Bottom;
-      stGeometry.pCircle[k+1].AngleBeg   = phi_red - 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
-      stGeometry.pCircle[k+1].AngleEnd   = phi_red + 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
+      stGeometry.pCircle[k+1].Radius     = ThisChopper.Radius;
+      stGeometry.pCircle[k+1].AngleBeg   = phi_red + 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
+      stGeometry.pCircle[k+1].AngleEnd   = phi_red - 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
       stGeometry.pCircle[k+1].vCntr[0]   = -Endpoint.D;
       stGeometry.pCircle[k+1].vCntr[1]   = ThisChopper.Centre.Y;
       stGeometry.pCircle[k+1].vCntr[2]   = ThisChopper.Centre.Z;
@@ -408,19 +408,19 @@ void OwnCleanup()
       stGeometry.pCircle[k+1].vNormal[1] = 0.0;
       stGeometry.pCircle[k+1].vNormal[2] = 0.0;
 
-      stGeometry.pLine[2*k].vPosBeg[0] = -Endpoint.D;
-      stGeometry.pLine[2*k].vPosBeg[1] = ThisChopper.Centre.Y + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      /* stGeometry.pLine[2*k].vPosBeg[0] = -Endpoint.D;
+      stGeometry.pLine[2*k].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      stGeometry.pLine[2*k].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
       stGeometry.pLine[2*k].vPosEnd[0] = -Endpoint.D;
-      stGeometry.pLine[2*k].vPosEnd[1] = ThisChopper.Centre.Y + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);  
+      stGeometry.pLine[2*k].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      stGeometry.pLine[2*k].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);  
 
       stGeometry.pLine[2*k+1].vPosBeg[0] = -Endpoint.D;
-      stGeometry.pLine[2*k+1].vPosBeg[1] = ThisChopper.Centre.Y + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
-      stGeometry.pLine[2*k+1].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
       stGeometry.pLine[2*k+1].vPosEnd[0] = -Endpoint.D;
-      stGeometry.pLine[2*k+1].vPosEnd[1] = ThisChopper.Centre.Y + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
-      stGeometry.pLine[2*k+1].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);  
+      stGeometry.pLine[2*k+1].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd); */
     }
     stGeometry.pDescr  = "disc chopper:white";
     stGeometry.eModule = VT_CHOP_DISC;

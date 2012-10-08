@@ -155,7 +155,7 @@ proc makeModuleSets {} {
   # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
     {source {source_const_wave source_ILL source_HMI source_FRM2
-      source_short_pulsed source_SNS source_IPNS source_ISIS
+      source_short_pulsed source_SNS source_IPNS source_ISIS source_CSNS
       source_ESS_LPTS source_ESS_2012} source}
     {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
     {sm_ensemble {} sm_ensemble}
@@ -478,7 +478,7 @@ set smASET {
     "max. divergence\nx <-> z [deg]"
     "maximal divergence theta [deg] (half of angular spread x-z-plane)"
     "" z} le90}
-  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
+  {dirdet radio "by window" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
   Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
   In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
     {"by divergence" "by window" "by virtual window"} {0 1 2}}
@@ -492,6 +492,10 @@ set smisisASET {
   {}
   {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
   {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
+  {}
+  {dirdet radio "by window" {"direction\ndefined" "The distribution of flight directions are defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
+  Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
+    {"by window" "by virtual window"} {1 2}}
   {" " header}
 }
 
@@ -587,16 +591,16 @@ proc source_cwsCheckErr {{app _}} {
 
 proc sore {f s p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
-  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS} {- ESS SNS}]]
+  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
   set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
   return [concat $f $s $p]
 }
 
-foreach s {short_pulsed SNS J-PARC IPNS} \
-        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois} \
-        fr {50 60 20 50} \
-        sps {- SNS - - } \
-        pow {- 1.0 - - } {
+foreach s {short_pulsed SNS J-PARC IPNS CSNS} \
+        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois CsnsH2coupled} \
+        fr {50 60 20 50 25} \
+        sps {- SNS - - CSNS} \
+        pow {- 1.0 - - 0.1} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps $pow]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
@@ -2365,8 +2369,12 @@ set ra {
   {}
   {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
   {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
+  {}
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
   {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
+  {}
+  {mint float "" {"minimal time [ms]" "minimal time for monitoring" "" t}}
+  {maxt float "" {"maximal time [ms]" "maximal time for monitoring" "" T}}
   {}
   {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
   {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
@@ -2382,9 +2390,6 @@ set ra {
   {}
   {lowrd float "" {"low bound\nradial div [deg]" "lower bound for the radial divergence [deg]" "" r}}
   {uprd float "" {"up bound\nradial div [deg]" "upper bound for the radial divergence [deg]" "" R}}
-  {}
-  {mint float "" {"minimal time [s]" "minimal time for monitoring" "" t}}
-  {maxt float "" {"maximal time [s]" "maximal time for monitoring" "" T}}
   {}
   {freq float "" {"frequency [Hz]" "frequency of the pulsed source" "" f}}
 }

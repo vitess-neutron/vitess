@@ -695,12 +695,18 @@ void processNeutron(int neutron_i, int thread_i) {
 
     myneutron->Position[0] -= dXpce;
 
-    /* For curved guide: frame rotated for next piece, but not after last piece */
-    if (Radius == 0.0)
-    {  if (bVisTraj)
-        BegPosS[0] += dXpce;
+    /* Position vector for interaction points adjusted  */
+    if (bVisTraj)
+    {  
+      VectorType Shift={0.0,0.0,0.0};  /* Shift of end position  */
+
+      Shift[0]= dXpce;
+      RotBackVector(RotMatrixS, Shift);
+      AddVector(BegPosS, Shift);
     }
-    else
+
+	/* For curved guide: frame rotated for next piece, but not after last piece */
+    if (Radius > 0.0)
     { 
       /* horizontal position and flight direction adjusted */
       if (j < nPieces-1)
@@ -708,20 +714,10 @@ void processNeutron(int neutron_i, int thread_i) {
         RotVector(RotMatrix, myneutron->Position);
         RotVector(RotMatrix, myneutron->Vector);
         RotVector(RotMatrix, myneutron->Spin);
-      }
 
-      /* Rotation matrix for interaction points adjusted  */
-      if (bVisTraj)
-      {
-        VectorType Shift={0.0,0.0,0.0};  /* Shift of end position  */
-        Shift[0]= dXpce;
-
-        RotBackVector(RotMatrixS, Shift);
-        AddVector(BegPosS, Shift);
-
-        if (j < nPieces-1)
-        { FillRMatrixZY(RotMatrixS, RotY, RotZ+(j+1)*beta);
-        }
+        /* Rotation matrix for interaction points adjusted  */
+        if (bVisTraj)
+          FillRMatrixZY(RotMatrixS, RotY, RotZ+(j+1)*beta);
       }
     }
 
@@ -1797,6 +1793,7 @@ void   LoadReflFile(ReflFile *pReflFile) {
 
 void OwnCleanup() {
 
+  double GdLen;   // length from beginning of the guide to the center of the actual element
   int k;
 
   if (NThreads > 0) {
@@ -1827,16 +1824,19 @@ void OwnCleanup() {
       stGeometry.pHull[k].HeightIn    = 2.0*pPieces[k].Zpce;
       stGeometry.pHull[k].WidthOut    = 2.0*pPieces[k+1].Ypce;
       stGeometry.pHull[k].HeightOut   = 2.0*pPieces[k+1].Zpce;
+
+      GdLen = 0.5*(pPieces[k].Xpce + pPieces[k+1].Xpce);  
       if (Radius > 0.0)
-      { stGeometry.pHull[k].vCntr[0]  = Radius*sin(k*beta) + 0.5*piecelength; //(k+0.50)*dDeltaX/nPieces;
-        stGeometry.pHull[k].vCntr[1]  = Radius*(1.0-cos(k*beta));
-      }
-      else
-      { stGeometry.pHull[k].vCntr[0]  = (k+0.5)*piecelength;
-        stGeometry.pHull[k].vCntr[1]  = 0.0;
-      }
-      stGeometry.pHull[k].vCntr[2]    = 0.0;
+      { stGeometry.pHull[k].vCntr[0] = Radius * sin(GdLen/Radius);
+        stGeometry.pHull[k].vCntr[1] = Radius * (1.0-cos(GdLen/Radius));
+	  }
+	  else
+      { stGeometry.pHull[k].vCntr[0] = GdLen;      
+        stGeometry.pHull[k].vCntr[1] = 0.0;
+	  }
+      stGeometry.pHull[k].vCntr[2]   = 0.0;
     }
+
     stGeometry.pDescr  = "guide:yellow";
     stGeometry.eModule = VT_GUIDE;
   }
@@ -1887,7 +1887,7 @@ double Height(double dLength)
 	  LAxisZ        *= 100.0;                                 // m -> cm
 	  LcntrZ         = dTotalLength - FocDistZ + D_Foc2Z;
 	  D_Foc1Z        = 2.0*FocDistZ - dTotalLength - D_Foc2Z;
-	  dHeight        = GuideMaxWidth * sqrt(1.0 - sq((dLength-LcntrZ)/LAxisZ));
+	  dHeight        = GuideMaxHeight * sqrt(1.0 - sq((dLength-LcntrZ)/LAxisZ));
       break;
 
     default:

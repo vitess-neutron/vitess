@@ -121,13 +121,14 @@ int main(int argc, char *argv[])
         pInt [iBin]=0.0;
         pSD  [iBin]=0.0;
         pBinN[iBin]=0;
-        if (normalise==2)
+		// for brilliance transfer read reference file and assign these values as normalization
+        if (normalise==2)                       
           { ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1);
             StrgScanLF(sBuffer, MonData, 3, 0);
             pNorm[iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
             BrillAveIn += MonData[1]/nBin;
           }
-        else
+        else                                    // absolute brilliance
           { pNorm[iBin] = 1.0;
           }
       }
@@ -179,6 +180,8 @@ int main(int argc, char *argv[])
 
         /* exclude traj. with wrong colours: (nColour=0 means: all colours accepted) */
         if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+
+		/* exclude traj. outside the given ranges */
         if (Lmbd < MinLmbd || Lmbd > MaxLmbd) continue;
         if (Time < MinTime || Time > MaxTime) continue;
         if (Y    < MinY    || Y    > MaxY   ) continue;
@@ -187,6 +190,7 @@ int main(int argc, char *argv[])
         if (DivZ < MinDivZ || DivZ > MaxDivZ) continue;
         if (DivR < MinDivR || DivR > MaxDivR) continue;
 
+		// determine channel for a given trajetory depending on the variable parameter
         switch (kind) {
         case 1: //monitor lambda dependent brilliance
           iBin = (int)floor(nBin * (Lmbd - MinLmbd)/(MaxLmbd - MinLmbd));
@@ -235,17 +239,19 @@ int main(int argc, char *argv[])
 
  my_exit:
 
-    if (pFileMon != NULL) {
-      for (iBin = 0; iBin < nBin; iBin++) {
+    if (pFileMon != NULL) 
+    {
+      for (iBin = 0; iBin < nBin; iBin++) 
+      {
         switch(kind)
-          { case 1: DelLmbd = (pPosT[iBin+1] - pPosT[iBin]);              break;
+        { case 1: DelLmbd = (pPosT[iBin+1] - pPosT[iBin]);              break;
           case 2: DelTime = (pPosT[iBin+1] - pPosT[iBin]) / 1000.0;     break; // ms -> s
           case 3: DelY    = (pPosT[iBin+1] - pPosT[iBin]);              break;
           case 4: DelZ    = (pPosT[iBin+1] - pPosT[iBin]);              break;
           case 5: DelDivY = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
           case 6: DelDivZ = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
           case 7: DelDivR = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-          }
+        }
 
         ParCntr = (pPosT[iBin]+pPosT[iBin+1])/2.0;
 
@@ -258,7 +264,11 @@ int main(int argc, char *argv[])
           Brilliance = pInt[iBin] / PhaseSpaceVol;
         else
           Brilliance = pInt[iBin] / PhaseSpaceVol / Freq / DelTime;
-        Transmission = Brilliance / pNorm[iBin];
+        
+		if (pNorm[iBin] > 0.0)
+		  Transmission = Brilliance / pNorm[iBin];
+		else
+          Transmission = 1.0;
 
         if(pBinN[iBin]!=0)
           pSD[iBin] = Transmission / sqrt((double)pBinN[iBin]);
@@ -294,7 +304,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(LogFilePtr, "total neutron count rate within given ranges: %11.4e n/s \n", dIntTot);
-    fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm² s Å sterad)\n\n", BrillAve, BrillMax);
+    fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm^2 s Ang sterad)\n\n", BrillAve, BrillMax);
     if (normalise==2)
       fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
 
@@ -445,8 +455,8 @@ void OwnInit(int argc, char *argv[])
   DelDivZ = (MaxDivZ - MinDivZ) * M_PI/180.0; // deg -> rad
   DelDivR = (MaxDivR - MinDivR) * M_PI/180.0; // deg -> rad
 
-  // pulsed source assumed if time is variable parameter
-  if (kind==2) src_type=1;
+  // pulsed source assumed if time is variable parameter or frequency > 0
+  if (kind==2  || Freq > 0.0) src_type=1;
 
   if (src_type==1 && Freq==0.0)
     ReadSimData(&TimeMeas, &LmbdWant, &Freq);
