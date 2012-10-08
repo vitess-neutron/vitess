@@ -208,7 +208,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_ILL  {set com "source$sys -S1"}
       source_IPNS {set com "source$sys -S2"}
       source_ISIS {set com "source$sys -S2"}
-      source_SNS {set com "source$sys -S2"}
+      source_SNS  {set com "source$sys -S2"}
+      source_CSNS {set com "source$sys -S2"}
       source_const_wave  {set com "source$sys -S1"}
       source_short_pulsed {set com "source$sys -S2"}
       external_command {

@@ -878,6 +878,7 @@ int ReadNeutrons()
 
 void WriteNeutron(Neutron *OutNeutron)
 {
+  int    col_write =0;
   double tx = OutNeutron->Probability;
   // some modules may produce unreasonable probabilities
   if (ISNAN(tx) || tx < 0) {
@@ -886,7 +887,7 @@ void WriteNeutron(Neutron *OutNeutron)
     dProbTotal[0] +=    tx;
     dProbQuad     += sq(tx);
     //use colorTB+colorLR in case they are counted separately (by guide)
-    int col_write=(OutNeutron->Color - OutNeutron->Color%100)  / 100 + (OutNeutron->Color %100);
+    col_write=(OutNeutron->Color - OutNeutron->Color%100)  / 100 + (OutNeutron->Color %100);
     if (bSepRate && col_write >= 1 && col_write <= MAX_COL)
       dProbTotal[col_write] += tx;
   }
@@ -897,6 +898,7 @@ void WriteNeutron(Neutron *OutNeutron)
   if (++OutNeutNum >= BufferSize)
     OutputBufferFlush(0);  // flush to stream, and give trace marks
 
+  WriteIAP(OutNeutron, VT_EXITED);
   WriteTraceLine(OutNeutron);
 }
 

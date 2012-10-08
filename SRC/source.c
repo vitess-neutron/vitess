@@ -37,6 +37,7 @@
 /* 1.15  Mar  2011  K. Lieutenant  ESS and SNS moderator character. as a function of power   */
 /* 1.16  Jan  2012  K. Lieutenant  visualization                                             */
 /* 1.17  Aug  2012  K. Lieutenant  new characteristics for the ESS cold moderator            */
+/* 1.18  Sep  2012  K. Lieutenant  CSNS source                                               */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -84,7 +85,7 @@ double    NumberOfNeutrons=0,
           WindowHeight= 10.0, 
           WindowWidth = 10.0;
 Plane     Endpoint;
-VtDirect  eDirDet=VT_DIVERGENCE; /* enum 'modus to determine neutron flight direction' */
+VtDirect  eDirDet=VT_REAL_WND; /* enum 'modus to determine neutron flight direction' */
 
 Source    stSrc;             /* source data               */
 Moderator stMod   [NUM_MOD]; /* moderator data            */
@@ -148,7 +149,7 @@ int main(int argc, char *argv[])
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.17");
+   print_module_name("Source and Window 1.18");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -202,8 +203,6 @@ int main(int argc, char *argv[])
          IFptr = openFile(FullParName(stMod[imod].sLTFileName));
          ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
          fclose(IFptr);
-         // set to be propagation window instead of divergence which is default
-         eDirDet=VT_REAL_WND;
          fprintf(LogFilePtr,"Isis moderator - target station %d \n",stMod[imod].eIsisTS);
         } 
         else 
@@ -246,15 +245,15 @@ int main(int argc, char *argv[])
       }
       else
       {
-         if (stMod[imod].eIsisTS > 0) 
+      /*   if (stMod[imod].eIsisTS > 0) 
          {
             fprintf(LogFilePtr, "ERROR: ISIS moderator can only be used with direction defined by propagation window.\n");
             //	    exit(-1);
          } 
          else 
-         {
+         { */
             dSolAngle = SolidAngle(stTraj[imod].dMaxDivY, stTraj[imod].dMaxDivZ);
-         }
+         //}
       }
 
       /* calculate flux and mean current of the neutron beam */
@@ -285,6 +284,11 @@ int main(int argc, char *argv[])
          /* case ESS, SNS */
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
          {  stMod[imod].dFUAmpl    = TotalFU(stMod[imod].dModTemp, stSrc.nSource, stMod[imod].eModType, stSrc.dPower, stSrc.dPulsePeriod, stSrc.dPulseLength);
+            stMod[imod].dTotalFlux = 2*M_PI * stMod[imod].dFUAmpl * stSrc.dPulseFreq ;
+         }
+        /* case CSNS */
+         else if (stSrc.nSource==CSNS)
+         {  stMod[imod].dFUAmpl    = CsnsTotalFU(stMod[imod].dModTemp, stMod[imod].eModType, stSrc.dPower);
             stMod[imod].dTotalFlux = 2*M_PI * stMod[imod].dFUAmpl * stSrc.dPulseFreq ;
          }
          else
@@ -356,8 +360,8 @@ int main(int argc, char *argv[])
          }
       }
       if (stMod[imod].dTotalFlux > 0)
-         fprintf(LogFilePtr, "total neutron flux (in 2*pi) : %11.4e n/(cm²s) \n",   stMod[imod].dTotalFlux);
-      fprintf(LogFilePtr, "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", stMod[imod].dCntrX, stMod[imod].dCntrY, stMod[imod].dCntrZ);
+         fprintf(LogFilePtr,"total neutron flux (in 2*pi) : %11.4e n/(cm²s) \n",   stMod[imod].dTotalFlux);
+      fprintf(LogFilePtr,   "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", stMod[imod].dCntrX, stMod[imod].dCntrY, stMod[imod].dCntrZ);
       if (stMod[imod].bCircle)
         fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",          stMod[imod].dDiameter);
       else
@@ -368,9 +372,9 @@ int main(int argc, char *argv[])
       else if (eDirDet==VT_VIRT_WND)
          fprintf(LogFilePtr, "divergence defined by virtual propagation window \n");
       else
-         fprintf(LogFilePtr, "angle of opening used        : %7.3f°    x %7.3f°   \n", 2*180*stTraj[imod].dMaxDivY/M_PI, 2*180*stTraj[imod].dMaxDivZ/M_PI);
-      fprintf(LogFilePtr, "time averaged neutron current: %11.4e n/s in%9.6f str\n", stMod[imod].dCurrent, dSolAngle);
-      fprintf(LogFilePtr, "wavelength band used         : %7.3f Ang - %7.3f Ang\n", stTraj[imod].dLambdaMin, stTraj[imod].dLambdaMax);
+         fprintf(LogFilePtr, "angle of opening used        : %7.3f     x %7.3f deg \n", 2*180*stTraj[imod].dMaxDivY/M_PI, 2*180*stTraj[imod].dMaxDivZ/M_PI);
+      fprintf(LogFilePtr,    "time averaged neutron current: %11.4e n/s in%9.6f str\n", stMod[imod].dCurrent, dSolAngle);
+      fprintf(LogFilePtr,    "wavelength band used         : %7.3f Ang - %7.3f Ang\n", stTraj[imod].dLambdaMin, stTraj[imod].dLambdaMax);
       if (stSrc.eSrcType != CWS)
          fprintf(LogFilePtr, "time interval used           : %7.3f ms  - %7.3f ms \n", stTraj[imod].dTimeFrmMin, stTraj[imod].dTimeFrmMax);
       if (stMod[imod].dCurrent*(stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)==0.0)
@@ -532,8 +536,12 @@ int main(int argc, char *argv[])
 			{ prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
 			}
 		 }
+         else if (stSrc.nSource==CSNS)
+         { // case CSNS
+           prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / sM->dFUAmpl * sM->dNorm;
+         }
          else
-         {  prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
+         { prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
                  * stFluxT[imod].pDisFct(TimeAtModerator, sM->dTauDecay, sM->dTauDecay/sM->dTauAscent, stSrc.dPulseLength) 
                  / stFluxT[imod].dInt * sM->dNorm;
 		 }
@@ -709,21 +717,18 @@ void OwnInit(int argc, char **argv)
 
             /* source and moderator */
           case 'S':
-            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS; 4: HiLPSS */
+            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS; 4: ESS-2012 */
             break;
           case 'N':
             stSrc.pSrcName = arg;
             if (strcmp(arg,"ESS")==0)
-            {	stSrc.nSource = ESS;
-              stSrc.dPower  = 5.0e6;        /* [W] time averaged source power        */ 
-            }
+              stSrc.nSource = ESS;
             else if (strcmp(arg,"SNS")==0)
-            {	stSrc.nSource  = SNS;
-              stSrc.dPower  = 1.0e6;        /* [W] time averaged source power        */ 
-            }
+              stSrc.nSource  = SNS;
+            else if (strcmp(arg,"CSNS")==0)
+              stSrc.nSource  = CSNS;
             else 
-            {	stSrc.nSource = ANYSOURCE;	  /* no specific source given */
-            }
+              stSrc.nSource = ANYSOURCE;	  /* no specific source given */
             break;
 
           case 'R':
@@ -1493,4 +1498,3 @@ calcFraction(double EI,double EE,double Ea,double Eb)
 
   return frac;
 }
-
