@@ -119,6 +119,7 @@ ALL : \
 	"$(OD)\flipper_gradient.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\resonator_drabkin.exe" \
+	"$(OD)\monitor1D.exe" \
 	"$(OD)\monitor2D.exe" \
 	"$(OD)\guide_elliptic.exe" \
 	"$(OD)\guide_parallel.exe" \
@@ -159,6 +160,10 @@ SOURCE=$(SPATH)\softabort.c
 "$(IDIR)\softabort.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\mon1D.cpp
+"$(IDIR)\mon1D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\gener_fct.c
 "$(IDIR)\gener_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -179,16 +184,16 @@ SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\sq_calc.c
+"$(IDIR)\sq_calc.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\sgio.c
 "$(IDIR)\sgio.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sgfind.c
 "$(IDIR)\sgfind.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\sq_calc.c
-"$(IDIR)\sq_calc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ma_functions.c
@@ -217,6 +222,10 @@ SOURCE=$(SPATH)\threadHelper.c
 
 SOURCE=$(SPATH)\src_modchar.c
 "$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mon2D.cpp
+"$(IDIR)\mon2D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sgclib.c
@@ -647,12 +656,19 @@ SOURCE=$(SPATH)\resonator_drabkin.c
 "$(OD)\resonator_drabkin.exe" : "$(OD)" $(MTOOL) "$(OD)\resonator_drabkin.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\monitor1D.cpp
+"$(IDIR)\monitor1D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monitor1D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor1D.obj" "$(OD)\mon1D.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monitor1D.pdb" /out:"$(OD)\monitor1D.exe" "$(IDIR)\monitor1D.obj" $(NTOOL) "$(OD)\mon1D.obj" 
+
 SOURCE=$(SPATH)\monitor2D.cpp
 "$(IDIR)\monitor2D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) 
+"$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj" "$(OD)\mon2D.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) "$(OD)\mon2D.obj" 
 
 SOURCE=$(SPATH)\guide_elliptic.cpp
 "$(IDIR)\guide_elliptic.obj" : $(SOURCE)
