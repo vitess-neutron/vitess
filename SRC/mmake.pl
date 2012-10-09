@@ -66,8 +66,8 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
             resonator_drabkin
           );
 
-# modules NTOOL (= TOOL + mathvector mathmatrix mon2D)
-my @CN = qw(monitor2D);
+# modules NTOOL (= TOOL + mathvector mathmatrix)
+my @CN = qw(monitor1D monitor2D);
 
 # modules which need MGTOOL (=MTOOL + mathfunctions)
 my @CMG = qw(guide_parallel);
@@ -107,7 +107,9 @@ my %dep = (			# needed objects for a module
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl',
-           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib'
+           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib',
+           monitor1D => 'mon1D',
+           monitor2D => 'mon2D'
 	  );
 $dep{$_} = 'threadHelper' foreach (@ParMod);
 
@@ -286,7 +288,7 @@ ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = mathfunctions.o $(MTOOL)
 STOOL = sample.o $(MTOOL)
-NTOOL = mathvector.o mathmatrix.o mon2D.o $(TOOL)
+NTOOL = mathvector.o mathmatrix.o $(TOOL)
 GTOOL = mathvector.o mathfunctions.o $(TOOL)
 
 EOS

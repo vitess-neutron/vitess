@@ -108,6 +108,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     set logf l
   } else {
     set logf [tmpFilename vpipelog]
+    set logtmp [file tail $logf]
   }
   set PipeLogList {}
   set VisLogList {}
@@ -140,7 +141,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # restart construction of fc, general options have been saved to variable insert
   switch $mode {
-    bat {set fc "V=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    bat {
+      regsub -all / $ExeDirectory \\ winexdir
+      regsub -all / $pdir \\ winpdir
+      set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
+    }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}
     tcl {
@@ -231,7 +236,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
     set logopt $logf$i
     switch $mode {
-      bat - sh - tcl - pl - py - grd {
+      bat {
+        set imore  " $insert --LP:\\$logtmp$i"
+        lappend usedIdices $i
+      }
+      sh - tcl - pl - py - grd {
         set imore  " $insert --L\$\{L\}$i"
         lappend usedIdices $i
       }
@@ -302,14 +311,20 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # for script file output replace parameter directory strings by $P
   switch $mode {
-   bat - sh - tcl - pl - py {
-     regsub -all "$pdir/" $fc "\$P/" fc
-   }
-   default {}
+    bat {
+      regsub -all {\$V/} $fc V:\\ fc
+      regsub -all {\$P/} $fc P:\\ fc
+      regsub -all {\$P} $fc P:\\ fc
+      regsub -all {$pdir/} $fc P:\\ fc
+    }
+    sh - tcl - pl - py {
+      regsub -all "$pdir/" $fc "\$P/" fc
+    }
+    default {}
   }
-
+  
   switch $mode {
-    bat {append fc "\ntype $logf* > \$P/result.txt\ndel $logf*"}
+    bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
     sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
     grd {
       set s ""
@@ -796,11 +811,11 @@ proc startActionD {} {
     return
   }
   # generate 100 trajectories only
-  # change parameter -n to 100
+  # change parameter -n to 100000
   set lnew {}
   foreach i $fparts {
     if [regexp {^-n} $i] {
-      lappend lnew "-n100"
+      lappend lnew "-n100000"
     } else {
       lappend lnew $i
     }

@@ -198,7 +198,6 @@ proc storeAll {extension {prosal ""} {as ""}} {
     }
     bat {
       set c [generateVitessCommand bat]
-      if {"windows" == [getSystem]} {regsub -all / $c \\ c}
       puts $f $c
     }
     default {

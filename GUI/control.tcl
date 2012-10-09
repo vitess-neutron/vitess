@@ -238,14 +238,21 @@ proc controlMenu {w} {
   eval popMenu $w.fil.menu $lmenu
 
   menu $w.fil.menu.mex -bg $menuColor -tearoff 0
-  popMenu $w.fil.menu.mex \
-      {c "bat shell script" {storeAll bat}}\
-      {c "sh shell script" {storeAll sh}}\
-      {c "tcl script" {storeAll tcl}}\
-      {c "sh grid script" {storeAll grd}}\
-      {c "pl perl script" {storeAll pl}}\
-      {c "py python script" {storeAll py}} 
-
+  set flist {
+    {c "tcl script" {storeAll tcl}}
+    {c "pl perl script" {storeAll pl}}
+    {c "py python script" {storeAll py}}
+  } 
+  if {[getSystem] == "unix"} {
+    lappend flist \
+      {c "sh shell script" {storeAll sh}} \
+      {c "sh grid script" {storeAll grd}}
+  } else {
+    lappend flist \
+      {c "bat shell script" {storeAll bat}}
+  }
+  eval popMenu $w.fil.menu.mex $flist
+  unset flist
 
   popMenu $w.copa.menu \
       {c "Copy  Module Parameters" copyModPars} \
@@ -691,7 +698,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.0beta"
+  set t "VITESS 3.0"
   set maxModule 100
   set DummyEntry "--inactive--"
 

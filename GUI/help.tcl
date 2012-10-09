@@ -304,9 +304,11 @@ after a module given by number (menu 'File' | 'INSERT Package').
 
 helpItem Troubleshooting {
 Input errors are partly checked by the GUI - click 'Check' to do this.
-If the command line occurs in the control window (bottom of screen), the GUI has found no mistakes.
-In order to find possible problems, error messages should be read in the control window.
-If the pipe command cannot be executed,
+The GUI tells if it found errors in the control window (bottom of screen).
+A more thorough check may be done with 'Dryrun'. A dryrun is a pipe execution with
+few neutron trajectories, where temporary result files become deleted.
+
+In order to find possible problems, module messages should be read in the control window.
 1) "could not start pipe couldn't execute "C:\Program": no such file or directory"
    Reason: The path contains a 'blank'. (File names and paths must not have a 'blank'.)
 2) "could not start simulation
