@@ -1080,6 +1080,24 @@ void OwnCleanup()
 
   for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
 
+  double trueX = startPoint;
+  double shiftedX = 0;
+  double step = 0.5;
+
+  fprintf(fShapeFilePointer, "# x[m] \t width[m] \t height[m] \n");
+
+  while (trueX <= endPoint) {
+
+    fprintf(fShapeFilePointer, " %f \t %f \t %f \n", shiftedX, CalculateGuidePoint(trueX, 1, 1)*2. , CalculateGuidePoint(trueX, 2, 1)*2.);
+    shiftedX += step;
+    trueX += step;
+
+  }
+
+  if ((trueX - step) < endPoint) fprintf(fShapeFilePointer, " %f \t %f \t %f \n", endPoint - startPoint, CalculateGuidePoint(endPoint, 1, 1)*2. , CalculateGuidePoint(endPoint, 2, 1)*2.);
+
+  fclose (fShapeFilePointer);
+
   return;
 
 }
