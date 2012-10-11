@@ -147,7 +147,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "set GSL_RNG_$vv='$t'\n"
+	append fc "set GSL_RNG_$vv=$t\n"
       }
     }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
@@ -546,17 +546,7 @@ proc saveEnvironment  {} {
   catch {unset TimesBefore}
   set FilesBefore {}
   set clist {}
-  catch {
-    foreach fn [glob -directory $defdirectory_ *] {
-      set ft [file type $fn]
-      if {$ft != "file"} continue
-      lappend FilesBefore $fn
-      file stat $fn fst
-      set TimesBefore($fn) $fst(mtime)
-    }
-  }
-  set tdir ""
-  # create a subdirectory of saved files
+  # create a subdirectory for saved files
   for {set i 1} {$i < 1000} {incr i} {
     set tdir [file join  $defdirectory_ "saved_$i"]
     if [file exists $tdir] continue
@@ -567,7 +557,12 @@ proc saveEnvironment  {} {
     # no free slot
     return ""
   }
-  foreach fn $FilesBefore {
+  foreach fn [glob -nocomplain -directory $defdirectory_ *] {
+    if {[file type $fn] != "file"} continue
+    set tname [file tail $fn]
+    lappend FilesBefore $tname
+    file stat $fn fst
+    set TimesBefore($tname) $fst(mtime)
     file copy $fn $tdir
   }
   return $tdir
@@ -593,51 +588,51 @@ proc cleanupEnvDir {{envDir ""}} {
   if {! [file isdirectory $envDir]} return
   set someremain 0
   set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
-  catch {
-    foreach fn [glob -directory $defdirectory_ *] {
-      if [file isdirectory $fn] continue
-      set tn [file tail $fn]
-      # If it is just today's log file: forget about it.
-      if {$tn == "$dayname"} continue
-      set ofn [file join $envDir $tn]
-      set fni [lsearch $FilesBefore $fn]
-      if {$Execmode == "restore old"} {
-        if {$fni < 0} {
-          # delete the new file, which did not exist before
-          file delete $fn
-        } else {
-          # file existed before
-          file stat $fn fst
-          if {$fst(mtime) > $TimesBefore($fn)} {
-            # changed mtime
-            # rename the old file, to keep the old modification date
-            file rename -force $ofn $fn
-          }
-        }
-      } else if {$fni >= 0} {
+
+  foreach fn [glob -nocomplain -directory $defdirectory_ *] {
+    if [file isdirectory $fn] continue
+    set tn [file tail $fn]
+    # If it is just today's log file: forget about it.
+    if {$tn == "$dayname"} continue
+    set ofn [file join $envDir $tn]
+    set fni [lsearch $FilesBefore $tn]
+    if {$Execmode == "restore old"} {
+      if {$fni < 0} {
+        # delete the new file, which did not exist before
+        file delete $fn
+      } else {
+        # file existed before
         file stat $fn fst
-        set remain 0
-        if {$fst(mtime) > $TimesBefore($fn)} {
-          # File has a change mtime, have contents been changed, too ?
-          if [sameMD5Hash $fn $ofn] {
-            set remain 2
-          } else {
-            set remain [set someremain 1]
-          }
-        }
-        if {$remain == 0} {
-          # file has not been changed, delete the copy
-          file delete $ofn
-        } elseif {$remain == 2} {
-          # file has a new modification date, but the same contents
-          # rename it, to keep the old modification date
+        if {$fst(mtime) > $TimesBefore($tn)} {
+          # changed mtime
+          # rename the old file; do not copy, to keep the old modification date
           file rename -force $ofn $fn
-        } else {
-          outProtocol "saved old file to $ofn"
         }
+      }
+    } elseif {$fni >= 0} {
+      file stat $fn fst
+      set remain 0
+      if {$fst(mtime) > $TimesBefore($tn)} {
+        # File has a changed mtime, have contents been changed, too ?
+        if [sameMD5Hash $fn $ofn] {
+          set remain 2
+        } else {
+          set remain [set someremain 1]
+        }
+      }
+      if {$remain == 0} {
+        # file has not been changed, delete the copy
+        file delete $ofn
+      } elseif {$remain == 2} {
+        # file has a new modification date, but the same contents
+        # rename it, to keep the old modification date
+        file rename -force $ofn $fn
+      } else {
+        outProtocol "saved old file to $ofn"
       }
     }
   }
+
   if {$Execmode == "restore old"} {
     # some old files may have been deleted, restore them
     foreach ofn [glob -directory $envDir *] {
