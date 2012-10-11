@@ -414,7 +414,7 @@ my_exit:
   { for (iBin = 0; iBin < nBiny; iBin++)
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
-      fprintf(pFileMon,"% 7.7E\t% 11.7E \t% 11.7E \t% 11.7E \n",
+      fprintf(pFileMon,"%12.4e   %14.7e   %14.7e %12.2f\n",
                        (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
