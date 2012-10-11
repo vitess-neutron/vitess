@@ -1272,12 +1272,10 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
 
     // otherwise read last line
 
-      /* Read last line and copy content, except:
-         lines containing F at pos 116-118, they have not a new frame) */
+      /* Read last line and copy content, except: lines containing F in 87. column, they have not a new frame) */
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1)) {
         sscanf(sBuffer, "%ld", &nModNo);
-        // ndig = short(floor(lg10(*pModuleNo));
-        if (sBuffer[77]!='F' && sBuffer[78]!='F' && sBuffer[79]!='F') strcpy(sLine, sBuffer);
+        if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLine, sBuffer);
       }
 
     } else {
@@ -1290,7 +1288,7 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
         }
         else
         { sscanf(sBuffer, "%ld", &No);
-          if (sBuffer[77]!='F' && sBuffer[78]!='F' && sBuffer[79]!='F') strcpy(sLineH, sBuffer);
+          if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLineH, sBuffer);
         }
       }
       if (strlen(sLine)==0) {nModNo = No; strcpy(sLine, sLineH);}
