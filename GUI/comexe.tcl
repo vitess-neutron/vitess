@@ -145,6 +145,10 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       regsub -all / $ExeDirectory \\ winexdir
       regsub -all / $pdir \\ winpdir
       set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "set GSL_RNG_$vv='$t'\n"
+      }
     }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}

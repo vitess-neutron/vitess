@@ -78,6 +78,7 @@ int main(int argc, char **argv)
 
 
 	  if (!bOutOfWindow && !bOutOfLambda) {
+	    double col;
 	    if (ReferenceWavelength <= 0.) {
 	      CaptInt  +=    InputNeutrons[i].Probability;
 	      CaptQuad += sq(InputNeutrons[i].Probability);
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 	    }
 
 	    //colour counting: sum (horizontal+vertical)
-	    double col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
+	    col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
 	    avColor += col;
 	    avwColor += col*InputNeutrons[i].Probability;
 
