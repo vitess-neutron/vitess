@@ -975,7 +975,7 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime VisState
 
-  if [pipeIsActive] return
+  if {$visrun == 0 && [pipeIsActive]} return
 
   set c $sercom
   set tool 0
