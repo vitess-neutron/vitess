@@ -1,4 +1,4 @@
-#!/net/bin/wish -f
+#!/usr/bin/wish -f
 puts "\nYour operating system version :\n"
 foreach n {os osVersion} {
   puts "\t$n      \t$tcl_platform($n)"
@@ -6,13 +6,20 @@ foreach n {os osVersion} {
 puts {
 
 The system info above should fit one of the following
+        os              Linux
+        osVersion       2.0.35
+        
+        os              Darwin
+        osVersion       > 10
+
+
+(in the past also
         os              OSF1
         osVersion       V4.0
 
         os              SunOS
         osVersion       5.6
+)
 
-        os              Linux
-        osVersion       2.0.35
 }
 exit
