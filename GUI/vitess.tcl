@@ -2604,7 +2604,7 @@ set mAV {
 set nA {
   {}	
   {number_xbins int 100 {
-    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
 }
 
 set fA1 {
@@ -2691,9 +2691,9 @@ set mAV {
 set nA {
   {}	
   {number_xbins int 100 {
-    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
   {number_ybins int 100 {
-    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
+    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1E6 1}
 }
 
 set fA1 {
