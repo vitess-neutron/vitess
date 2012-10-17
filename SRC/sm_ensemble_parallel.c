@@ -71,7 +71,7 @@ VectorType TranslOutput,
 double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
-           RotMatrixWall[MAX_MIRR+1][3][3],
+  RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
 	
 /* FINISH HEADER STORY */
@@ -478,30 +478,32 @@ void DetermineAndLogMirrorShape(int i)
       break;
     }
 
-     fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
-	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2], 
-	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]);
+     /* fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n",  */
+     /* 	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2],  */
+     /* 	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]); */
 
     stGeometry.nTriangles++;    
     CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
     CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
     CopyVector(thirdPoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
+
+    
 
     stGeometry.nTriangles++;
     CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
     CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
     CopyVector(thirdPoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
 
   }
