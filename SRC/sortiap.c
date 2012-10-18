@@ -106,6 +106,8 @@ typedef enum {
 
 int xz_view; // default 0, view x,y
 
+int transformV2X3D = 1; // transform VITESS to X3D coordinates
+
 #define toRad(a) (float)(a*(M_PI/180.0))
 
 void usage() {
@@ -195,6 +197,7 @@ void parseX3dOptionFile() {
       GVS(pheremat,SPHEREMAT);
       break;
     case 't':
+      GVI(ransformv2x3d,transformV2X3D);
       GVS(rianglemat,TRIANGLEMAT);
       break;
     case 'x':
@@ -898,7 +901,8 @@ void geom2X3D(char *fn) {
     if (vtype < 0)
       myexit2("unknown geometry item in %s line\n%s\n", fn, line);
 
-    vitessToX3Dcoordinates(fa, vtype);
+    if (transformV2X3D)
+      vitessToX3Dcoordinates(fa, vtype);
 
     // first 3 values give x,y,z position
     sprintf(trans, "%s %s %s",
@@ -1145,12 +1149,20 @@ void writeX3D() {
     }
 
     for (p = first_p; p; p = p->next) {
-      // transform VITESS coordinates to X3D coordinates
-      fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x
+      float y,z;
+      fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x_vitess = x
       putc(' ', outf);
-      fputs(sS4(p->u.pos[2], buf), outf);   // y_x3d = z
+      if (transformV2X3D) {
+        // transform VITESS coordinates to X3D coordinates
+        y =   p->u.pos[2];   // y_x3d = z
+        z = - p->u.pos[1];   // z_x3d = -y
+      } else {
+        y = p->u.pos[1];
+        z = p->u.pos[2];
+      }
+      fputs(sS4(y, buf), outf);
       putc(' ', outf);
-      fputs(sS4(- p->u.pos[1], buf), outf); // z_x3d = -y
+      fputs(sS4(z, buf), outf);
       putc(' ', outf);
 
       if (p == last_p)

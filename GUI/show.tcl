@@ -508,6 +508,7 @@ proc editX3DOptions {} {
 # annotation labels
 #fontstyle=<FontStyle DEF='label_font' family='"SANS"' justify='"MIDDLE" "MIDDLE"' size='.1'/>
 #labels=0
+#transformv2x3d=0
     }
     close $f
   }
