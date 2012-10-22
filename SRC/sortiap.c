@@ -38,7 +38,7 @@ p_point * point_buffer;
 int len_factor=1;
 int output_type;  // 0 text,  1 svg,  2 x3d, 3 x3d with geometry
 char *geom_file;
-int ids_from_all_files;
+int ids_from_all_files=1;
 
 float xwlow = 0, xwhigh = 100;  // x range for SVG output, %
 float scale2 = 1;             // scale factor for second dimension, SVG output
@@ -116,7 +116,6 @@ void usage() {
          "\tinfile\t\tzero ore more names of input files with trajectories\n"
          "\t-o outfile\tresult file, default stdout\n"
          "\n\toption\tmay be\n"
-         "\t-a\tread ids from all input files, default is to assume all ids\n\t\t\tare to be seen in the first file\n"
          "\t-f setupfile\n\t\tload a file with x3d options\n"
          "\t-s\tSVG x,y output\n"
          "\t-S geometry\tSVG output with instrument geometry\n"
@@ -693,7 +692,7 @@ static char *lookForDef(char *name) {
 
 
 int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods, char **appearance) {
-  int vtype, len, slen, nargs, rc;
+  int vtype, len, slen, nargs, i;
   char *rs, *p, *q;
 
  next_line:
@@ -712,7 +711,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     if (0 == strcmp(rs, "ircle")) {
       vtype = GT_Circle;  nargs = 9;
     } else if (0 == strcmp(rs, "uboid")) {
-      vtype = GT_Cuboid;  nargs = 9;
+      vtype = GT_Cuboid;  nargs = 10;
     } else if (0 == strcmp(rs, "ylinder")) {
       vtype = GT_Cylinder;  nargs = 8;
     } else if (0 == strcmp(rs, "ylSlice")) {
@@ -736,11 +735,11 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     break;
   case 'H':
     if (0 == strcmp(rs, "ull")) {
-      vtype = GT_Hull;  nargs = 11;
+      vtype = GT_Hull;  nargs = 12;
     } else if (0 == strcmp(rs, "ull6")) {
-      vtype = GT_Hull6;  nargs = 13;
+      vtype = GT_Hull6;  nargs = 14;
     } else if (0 == strcmp(rs, "ull8")) {
-      vtype = GT_Hull8;  nargs = 15;
+      vtype = GT_Hull8;  nargs = 16;
     } else if (0 == strcmp(rs, "ollowCylinder")) {
       vtype = GT_HollowCylinder;  nargs = 9;
     }
@@ -777,24 +776,12 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
 
   ++(*ngeom);
 
-  switch (nargs) {
-  case  4: rc = sscanf(p, "%f %f %f %f%n", fa,fa+1,fa+2,fa+3, &slen); break;
-  case  6: rc = sscanf(p, "%f %f %f %f %f %f%n", fa,fa+1,fa+2,fa+3,fa+4,fa+5, &slen); break;
-  case  8: rc = sscanf(p, "%f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7, &slen); break;
-  case  9: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8, &slen); break;
-  case 10: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9, &slen); break;
-  case 11: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10, &slen); break;
-  case 13: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10,fa+11,fa+12, &slen); break;
-  case 15: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10,fa+11,fa+12,fa+13,fa+14, &slen); break;
-  default: rc = 0;
-  }
-  if (rc != nargs) return -1;
+  for (i=0; i<nargs; i++)
+    if (sscanf(p, "%f%n", fa+i, &slen))
+      p += slen;
+    else
+      break;
+  if (i != nargs) return -1;
 
   // apply viewport, if specified
   if (x3d_option_filename &&
@@ -802,7 +789,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     goto next_line;
 
   // mods is the zero terminated module name string
-  p += slen;
   while (isspace(*p)) ++p;
   *mods = p;
 
@@ -876,6 +862,33 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
         
 }
 
+int preTrans (float nx, float ny,  float nz) {
+  // start transformation from default (1,0,0) to (nx,ny,nz)
+  static char rots[64];
+  int t = 0;
+  if (nx != 1 || ny || nz) {
+    if (ny) {
+      // tilt plane
+      rotString(nx, 0, nz, nx,ny,nz, rots);
+      fprintf (outf, "<Transform rotation='%s'>", rots);
+      t++;
+    }
+    if (nx || nz) {
+      // rotate around y axis
+      rotString(1, 0, 0, nx, 0, nz, rots);
+      fprintf (outf, "<Transform rotation='%s'>", rots);
+      t++;
+    }
+  }
+  return t;
+}
+
+void postTrans(int t) {
+  while (t--)
+    fputs ("</Transform>", outf);
+  putc('\n', outf);
+}
+
 void geom2X3D(char *fn) {
 
   // parse a geometry file from VITESS to X3D output
@@ -887,7 +900,7 @@ void geom2X3D(char *fn) {
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
-  int vtype, vvtype, len, ngeom = 0, firstmodule=1;
+  int vtype, vvtype, len, opentrans, ngeom = 0, firstmodule=1;
 
   defineMaterials();
 
@@ -963,15 +976,21 @@ void geom2X3D(char *fn) {
                rots, trans, ngeom, shape,
                sS5(fa[6], b1), sS5(toRad(fa[7]), b2), sS5(toRad(fa[8]), b3) );
       break;
+
     case GT_Cuboid:
-      // X3D Cuboid has default orientation 0 1 0
-      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      // desired length fa[6] becomes scale fa[6]/2 for y axis
-      // desired width  fa[7] becomes scale fa[7]/2 for x axis
-      // desired height fa[8] becomes scale fa[8]/2 for z axis
-      fprintf (outf, "<Transform scale='%s %s %s' translation='%s' rotation='%s'>%s</Transform>\n",
-               sS5(fa[7]/2.0f, b1), sS5(fa[6]/2.0f, b2), sS5(fa[8]/2.0f, b3), trans, rots, shape);
+      fprintf (outf, "<Transform translation='%s'>", trans);
+      opentrans = preTrans(fa[3], fa[4], fa[5]) + 2;
+      // desired length fa[6] scales x axis
+      // width  fa[7] scales z axis
+      // height fa[8] scales y axis
+      fprintf (outf, "<Transform scale='%s %s %s'", sS5(fa[6]/2.0f, b1), sS5(fa[8]/2.0f, b2), sS5(fa[7]/2.0f, b3));
+      if (fa[9]) {
+        fprintf (outf, " rotation='1 0 0 %s'", sS5(toRad(fa[9]), b1));
+      }
+      fprintf (outf, ">%s", shape);
+      postTrans(opentrans);
       break;
+
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
       // 0 1 2  location
@@ -989,22 +1008,33 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
-      // Hull is constructed from an extrusion with default orientation 0 1 0
       // 6   length
       // 7   entry width    8   exit width
       // 9   entry height  10  exit height
-      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
+      // 11  angle
+      fprintf (outf, "<Transform translation='%s'>", trans);
+      opentrans = preTrans(fa[3], fa[4], fa[5]) + 1;
+
+      if (fa[11])
+        fprintf (outf, "<Transform rotation='1 0 0 %s'>", sS5(toRad(fa[11]), b1));
+
+      // Hull is constructed from an extrusion with default orientation 0 1 0
+      rotString(0,1,0, 1,0,0, rots);
       // The desired length fa[6] becomes the scale factor fa[6]/2 for the y axis,
       // width and height are scaled individually by extrusion scale factors.
       // Remember: an extrusion direction has _4_ parameters, vector + angle.
-      fprintf (outf, "<Transform scale='1 %s 1' rotation='%s' translation='%s'>"
+
+      fprintf (outf, "<Transform scale='1 %s 1' rotation='%s'>"
                "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
                "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
-               "scale='%s %s %s %s'/></Shape></Transform>\n",
-               sS5(fa[6]/2.0f, b1), rots, trans, appearance ? appearance : HULLMAT,
+               "scale='%s %s %s %s'/></Shape></Transform>",
+               sS5(fa[6]/2.0f, b1), rots, appearance ? appearance : HULLMAT,
                sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
                sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
+      if (fa[11])
+        fputs ("</Transform>", outf);
+      postTrans(opentrans);
       break;
     case GT_Hull6:
     case GT_Hull8:
@@ -1548,7 +1578,6 @@ int main (int argc, char **argv) {
         else
           usage();
         break;
-      case 'a': ids_from_all_files = 1; break;
       case 'f' : x3d_option_filename = *argv++;
         if (!x3d_option_filename || !*x3d_option_filename) usage();
         break;
