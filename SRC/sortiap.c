@@ -27,13 +27,19 @@ typedef union {
 
 // t_point is for a list of positions in a trajectory, here stored as strings
 typedef struct s_point {
-  t_point_union u;
   struct s_point *next;
+  t_point_union u;
 } t_point, *p_point;
 
-int id_len, id_count;
-char *id_buffer;
-p_point * point_buffer;
+typedef unsigned int u_int;
+typedef struct s_hashentry {
+  struct s_hashentry *next;
+  char *key;
+  p_point point;
+  u_int hashvalue;
+} t_hashentry, *p_hashentry;
+
+t_hashentry hashA[65536];
 
 int len_factor=1;
 int output_type;  // 0 text,  1 svg,  2 x3d, 3 x3d with geometry
@@ -217,34 +223,27 @@ void parseX3dOptionFile() {
   fclose(xf);
 }
 
-int compIDs(const void* p1, const void* p2) {
-  return memcmp(p1, p2, id_len);
-}
-
-int searchId(const char *id) {
-
-  // binary search for a given id in a sorted array of ids
-  int ihalf, ilow, ihigh, rc;
-
-  ilow = 0;
-  ihigh = id_count - 1;
-  while (ilow <= ihigh) {
-    ihalf = (ilow+ihigh) / 2;
-    rc = memcmp(id, id_buffer + ihalf*id_len, id_len);
-    if (rc == 0) return ihalf;
-    if (rc < 0)
-      ihigh = ihalf - 1; // move left
-    else
-      ilow = ihalf + 1;  // move right
+u_int myHash(const char *s) {
+  // RSHash
+  const u_int b = 378551;
+  u_int a, hash;
+  int len;
+  a    = 63689;
+  hash = 0;
+  for (len = strlen(s); len; len--) {
+    hash = hash * a + (*s++);
+    a   *= b;
   }
-  myexit1("unknown id %s encountered\n", id);
-  return -1;  // never
+  return hash;
 }
 
-p_point newPoint(const char *data) {
+void addPoint(p_point *pp, const char *data) {
+
   int color;
   float lambda, weight;
-  p_point p = calloc(1, sizeof(t_point));
+  p_point p, ip;
+
+  p = calloc(1, sizeof(t_point));
   if (output_type) {
     // SVG or X3D
     if (6 != sscanf(data, "%d %f %f %f %f %f", &color, &lambda, &weight,
@@ -257,22 +256,39 @@ p_point newPoint(const char *data) {
     // text
     p->u.t = strdup(data);
 
-  return p;
+  // insert p to list
+  ip = *pp;
+  if (ip) {
+    while (ip->next)
+      ip = ip->next;
+    ip->next = p;
+  } else
+    *pp = p;
 }
 
-void insertPoint(const char *ids, const char *point_data) {
-  p_point lp, next_lp;
-
-  // search neutron id in list
-  int id = searchId(ids);
-
-  if ((lp = point_buffer[id])) {
-    // find last point of trajectory so far and append new point
-    while ((next_lp = lp->next))
-      lp = next_lp;
-    lp->next = newPoint(point_data);
+void insertPoint(const char *id, const char *content) {
+  p_hashentry ph, nph;
+  // hash id
+  u_int hv = myHash(id);
+  ph = hashA + (hv & 0xffff);
+  if (ph->key) {
+    while (1)
+      if (hv == ph->hashvalue && 0 == strcmp(id, ph->key)) {
+        addPoint(&(ph->point), content);
+        return;
+      } else if (ph->next) {
+        ph = ph->next;
+      } else {
+        ph->next = nph = (p_hashentry) calloc(1, sizeof(t_hashentry));
+        nph->key = strdup(id);
+        nph->hashvalue = hv;
+        addPoint(&(nph->point), content);
+        return;
+      }
   } else {
-    point_buffer[id] = newPoint(point_data);
+    ph->key = strdup(id);
+    ph->hashvalue = hv;
+    addPoint(&(ph->point), content);
   }
 }
 
@@ -1108,8 +1124,9 @@ void geom2X3D(char *fn) {
 
 
 void writeX3D() {
-  int ntraj, count, id, mat;
+  int ntraj, count, mat, hi;
   p_point p,q, first_p, last_p;
+  p_hashentry ph;
   static char buf[32], material_known[32];
 
   // start X3D file
@@ -1129,77 +1146,79 @@ void writeX3D() {
 
   ntraj = 0;
 
-  for (id=0; id<id_count; id++) {
+  for (hi=0; hi<65536; hi++) {
+    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+      p = q = ph->point;
 
-    p = q = point_buffer[id];
-    count = 0;
-    last_p = 0;
-    if (x3d_option_filename) {
-      first_p = 0;
-      while (p) {
-        if (count) {
-          last_p = p;
-          ++count;
-          if (outOfView(p->u.pos)) {
-            // add a last point, but restrict to bounds
-            restrictPoint(p->u.pos);
-            break;
+      count = 0;
+      last_p = 0;
+      if (x3d_option_filename) {
+        first_p = 0;
+        while (p) {
+          if (count) {
+            last_p = p;
+            ++count;
+            if (outOfView(p->u.pos)) {
+              // add a last point, but restrict to bounds
+              restrictPoint(p->u.pos);
+              break;
+            }
+          } else if (!outOfView(p->u.pos)) {
+            count = 1;
+            first_p = last_p = p;
           }
-        } else if (!outOfView(p->u.pos)) {
-          count = 1;
-          first_p = last_p = p;
+          if (!p->next) break;
+          p = p->next;
         }
-        if (!p->next) break;
-        p = p->next;
-      }
-    } else {
-      first_p = p;
-      while (p) {
-        ++count;
-        if (!p->next) break;
-        p = p->next;
-      }
-    }
-    if (count <= 1) continue; // a single point is of no interest
-
-    ++ntraj;
-    mat = ntraj % 32;
-    if (material_known[mat])
-      fprintf(outf,
-              "<Shape DEF='L-%d'><Appearance><Material USE='M-%d'/></Appearance>"
-              "<LineSet vertexCount='%d'><Coordinate point='",
-            ntraj, mat, count);
-    else {
-      genColor(mat, buf);
-      fprintf(outf, "<Shape DEF='L-%d'>"
-              "<Appearance><Material DEF='M-%d' diffuseColor='0 0 0' emissiveColor='%s'/></Appearance>"
-              "<LineSet vertexCount='%d'><Coordinate point='",
-              ntraj, mat, buf, count);
-      material_known[mat] = 1;
-    }
-
-    for (p = first_p; p; p = p->next) {
-      float y,z;
-      fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x_vitess = x
-      putc(' ', outf);
-      if (transformV2X3D) {
-        // transform VITESS coordinates to X3D coordinates
-        y =   p->u.pos[2];   // y_x3d = z
-        z = - p->u.pos[1];   // z_x3d = -y
       } else {
-        y = p->u.pos[1];
-        z = p->u.pos[2];
+        first_p = p;
+        while (p) {
+          ++count;
+          if (!p->next) break;
+          p = p->next;
+        }
       }
-      fputs(sS4(y, buf), outf);
-      putc(' ', outf);
-      fputs(sS4(z, buf), outf);
-      putc(' ', outf);
+      if (count <= 1) continue; // a single point is of no interest
 
-      if (p == last_p)
-        break;
+      ++ntraj;
+      mat = ntraj % 32;
+      if (material_known[mat])
+        fprintf(outf,
+                "<Shape DEF='L-%d'><Appearance><Material USE='M-%d'/></Appearance>"
+                "<LineSet vertexCount='%d'><Coordinate point='",
+                ntraj, mat, count);
+      else {
+        genColor(mat, buf);
+        fprintf(outf, "<Shape DEF='L-%d'>"
+                "<Appearance><Material DEF='M-%d' diffuseColor='0 0 0' emissiveColor='%s'/></Appearance>"
+                "<LineSet vertexCount='%d'><Coordinate point='",
+                ntraj, mat, buf, count);
+        material_known[mat] = 1;
+      }
+
+      for (p = first_p; p; p = p->next) {
+        float y,z;
+        fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x_vitess = x
+        putc(' ', outf);
+        if (transformV2X3D) {
+          // transform VITESS coordinates to X3D coordinates
+          y =   p->u.pos[2];   // y_x3d = z
+          z = - p->u.pos[1];   // z_x3d = -y
+        } else {
+          y = p->u.pos[1];
+          z = p->u.pos[2];
+        }
+        fputs(sS4(y, buf), outf);
+        putc(' ', outf);
+        fputs(sS4(z, buf), outf);
+        putc(' ', outf);
+        
+        if (p == last_p)
+          break;
+      }
+      fseek(outf, -1, SEEK_CUR);
+      fputs("'/></LineSet></Shape>\n", outf);
     }
-    fseek(outf, -1, SEEK_CUR);
-    fputs("'/></LineSet></Shape>\n", outf);
   }
   fputs("</Scene></X3D>\n", outf);
 }
@@ -1414,9 +1433,10 @@ void geom2SVG(char *fn) {
 
 void writeSVG() {
 
-  int id, i, ntraj;
+  int hi, i, ntraj;
   int count = 0;
   p_point p,q;
+  p_hashentry ph;
   char ba[16], bb[16], bc[16], bd[16];
   float c1[2], c2[2], v, xlow, xhigh, xdelta, ydelta, d;
 
@@ -1425,8 +1445,9 @@ void writeSVG() {
   c1[0] = c2[0] = (float) svg_width;
   c1[1] = c2[1] = 0;
 
-  for (id=0; id<id_count; id++)
-    for (p = point_buffer[id]; p; p = p->next) {
+  for (hi=0; hi<65536; hi++)
+    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+      p = ph->point;
       minMax(c1, p->u.pos[0]);
       v = p->u.pos[1] *= scale2;
       minMax(c2, v);
@@ -1446,23 +1467,24 @@ void writeSVG() {
     xhigh = xlow + xwhigh*xfactor;
     xlow += xwlow*xfactor;
 
-    for (id=0; id<id_count; id++) {
-      p_point newlist, nold;
-      float v1;
-      newlist = nold = 0;
-      for (p = point_buffer[id]; p; p = p->next) {
-        v1 = p->u.pos[0];
-        if (v1 < xlow || v1 > xhigh) continue;
-        if (newlist) {
-          nold->next = p;
-          nold = p;
-        } else
-          newlist = nold = p;
+    for (hi=0; hi<65536; hi++)
+      for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+        p_point newlist, nold;
+        float v1;
+        newlist = nold = 0;
+        for (p = ph->point; p; p = p->next) {
+          v1 = p->u.pos[0];
+          if (v1 < xlow || v1 > xhigh) continue;
+          if (newlist) {
+            nold->next = p;
+            nold = p;
+          } else
+            newlist = nold = p;
+        }
+        if (nold)
+          nold->next = 0;
+        ph->point = newlist;
       }
-      if (nold)
-        nold->next = 0;
-      point_buffer[id] = newlist;
-    }
   }
 
   xdelta =  (xhigh - xlow) / 100;
@@ -1491,35 +1513,35 @@ void writeSVG() {
 
   ntraj = 0;
 
-  for (id=0; id<id_count; id++) {
+  for (hi=0; hi<65536; hi++)
+    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+      p = q = ph->point;
+      count = 0;
+      while (p) {
+        count++;
+        if (!p->next) break;
+        p = p->next;
+      }
+      if (count <= 1) continue; // a single point is of no interest
 
-    p = q = point_buffer[id];
-    count = 0;
-    while (p) {
-      count++;
-      if (!p->next) break;
-      p = p->next;
+      ++ntraj;
+      fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
+              ntraj, svg_line_color, strokeWS);
+      
+      i = 0;
+      for (p = q; p; p = p->next) {
+        float a,b;
+        char *pa,*pb;
+        a = p->u.pos[0];
+        b = p->u.pos[1];
+        pa = sS3(p->u.pos[0], ba);
+        pb = sS3(b, bb);
+        fprintf(outf,"%s,%s", pa, pb);
+        if (++i < count) fputc(',', outf);
+      }
+      fputs("\"/></g>\n", outf);
     }
-    if (count <= 1) continue; // a single point is of no interest
-
-    ++ntraj;
-    fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
-             ntraj, svg_line_color, strokeWS);
-
-    i = 0;
-    for (p = q; p; p = p->next) {
-      float a,b;
-      char *pa,*pb;
-      a = p->u.pos[0];
-      b = p->u.pos[1];
-      pa = sS3(p->u.pos[0], ba);
-      pb = sS3(b, bb);
-      fprintf(outf,"%s,%s", pa, pb);
-      if (++i < count) fputc(',', outf);
-    }
-    fputs("\"/></g>\n", outf);
-  }
-
+  
   // finish SVG file
   for (i=1; i<=ntraj; i++)
     fprintf(outf, "<use id=\"uset%d\" xlink:href=\"#t%d\" onclick=\"meldung(%d);\"/>\"\n",
@@ -1527,32 +1549,33 @@ void writeSVG() {
   fputs("</svg>\n", outf);
 }
 
-void writeTrajectory(int i) {
-  static char idstring[32]; // static to terminate string by 0
-  int count = 0;
+void writeTrajectories() {
+  int count, hi;
   p_point p,q;
+  p_hashentry ph;
 
-  p = q = point_buffer[i];
-
-  while (p) {
-    count++;
-    if (!p->next) break;
-    p = p->next;
-  }
-  if (count <= 1) return; // a single point is of no interest
-
-  memcpy(idstring, id_buffer + id_len*i, id_len);
-  fprintf(outf, "%d %s\n", count, idstring);
-  for (p = q; p; p = p->next)
-    fprintf(outf, "%s\n", p->u.t);
+  for (hi=0; hi<65536; hi++)
+    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+      p = q = ph->point;
+      count = 0;
+      while (p) {
+        count++;
+        if (!p->next) break;
+        p = p->next;
+      }
+      if (count <= 1) continue; // a single point is of no interest
+      fprintf(outf, "%d %s\n", count, ph->key);
+      for (p = q; p; p = p->next)
+        fputs(p->u.t, outf);
+    }
 }
 
 
 int main (int argc, char **argv) {
 
-  char *arg, *p, *bufp, *s;
+  char *arg, *p, *s;
   static char line[256];
-  int i, id, maxIdFile;
+  int i;
   FILE *f;
   static char *outfilename;
   static char *infilename[128];
@@ -1619,81 +1642,11 @@ int main (int argc, char **argv) {
     return 0;
   }
 
-  maxIdFile = ids_from_all_files ? infilecount-1 : 0;
-
-  // count neutron ids from files
-
-  for (i=0; i<=maxIdFile; i++) {
-    if (! (f = fopen(infilename[i], "r")))
-      myexit1("unable to read %s\n", infilename[i]);
-    while (fgets(line,255,f)) {
-      int len;
-      if (strchr(line, '#')) continue;
-      id_count++;
-      if ((p = strchr(line, ' ')) || (p = strchr(line, '\t'))) {
-        *p = 0;
-        len = strlen(line);
-        if (id_len) {
-          if (len != id_len)
-            myexit1("insufficient neutron ids in %s\n",infilename[i]);
-        } else
-          id_len = len;
-      } else
-        myexit1("insufficient input in %s\n",infilename[i]);
-    }
-    fclose(f);
-  }
-
-  // read ids now
-  id_buffer = bufp = malloc(id_len*id_count);
-
-  for (i=0; i<=maxIdFile; i++) {
-    if (! (f = fopen(infilename[i], "r")))
-      myexit1("unable to read %s\n", infilename[i]);
-    while (fgets(line,255,f)) {
-      if (strchr(line, '#')) continue;
-      memcpy(bufp, line, id_len);
-      bufp += id_len;
-    }
-    fclose(f);
-  }
-
-  // sort ids
-  qsort((void *)id_buffer, id_count, (size_t) id_len, compIDs);
-
-  if (maxIdFile > 0) {
-    // eliminate double id entries
-    int remain = 1;
-    int gap = 0;
-    char *n;
-    p = id_buffer;
-    n = p + id_len;
-    for (i=1; i<id_count; i++) {
-      if (0 == memcmp(p, n, id_len))
-        gap = 1;
-      else {
-        ++remain;
-        p += id_len;
-        if (gap)
-          memcpy(p, n, id_len);
-      }
-      n += id_len;
-    }
-    if (2*remain < id_count) {
-      n = realloc(id_buffer, remain*id_len);
-      id_buffer = n;
-    }
-    id_count = remain;
-  }
-
-  point_buffer = (p_point *) calloc(id_count, sizeof(p_point));
-
   for (i=0; i<infilecount; i++) {
     if (! (f = fopen(infilename[i], "r")))
       myexit1("unable to read %s\n", infilename[i]);
 
     while (fgets(line,255,f)) {
-      int slen;
       if ((p = strchr(line, '#'))) {
         const char *tests = "unit_length=";
         if ((s = strstr(p,tests))) {
@@ -1704,13 +1657,14 @@ int main (int argc, char **argv) {
           else if (s[0] == 'm' && s[1] == 'm')
             len_factor = 1000;
         }
-        continue;
-      }
-      slen = strlen(line);
-      if (slen < id_len+2)
-        myexit1("insufficient data in input line :%s:\n", line);
-      line[slen-1] = 0;  // remove \n
-      insertPoint(line, line + id_len + 1);
+      } else if ((p = strchr(line, ' ')) || (p = strchr(line, '\t'))) {
+        int len;
+        *p++ = 0;
+        len = strlen(p);
+        p[len] = 0;  // remove \n
+        insertPoint(line, p);
+      } else
+        myexit1("insufficient input in %s\n",infilename[i]);
     }
     fclose(f);
   }
@@ -1725,8 +1679,7 @@ int main (int argc, char **argv) {
     writeX3D();
     break;
   default:
-    for (id=0; id<id_count; id++)
-      writeTrajectory(id);
+    writeTrajectories();
   }
 
   if (outf != stdout)
