@@ -63,7 +63,7 @@ long	   User, NumWrong[MAXWORKER], nocolM = 10000, Wallonoff, NoCh;
 long	   number_vis_tr; // current number of visualised trajectories, used to limit output
 double	   rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
 int        mcperneutron = (MAX_MIRR*3);
-short int   increaseColor=0;
+int        increaseColor=0;
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
            r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
