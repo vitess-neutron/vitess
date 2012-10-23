@@ -40,6 +40,7 @@ extern short    bOldFrame,      /* criterion: new co-ordinate system set for cur
                 bVisInstr;      /* criterion: visualization of trajectories     */
 
 extern int      NThreads;       /* number of helper threads for execution, set by --T */
+extern double  RotMatrixM[3][3];
 
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
@@ -64,9 +65,9 @@ void DrawTriangle     (FILE* pGeomFile, const char* pDescr, VectorType vEdge1, V
 void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
                        double InnerWidth, double InnerHeight);
 void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
-void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height); 
+void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle); 
 void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
-                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut); 
+                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle); 
 void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
 void DrawHolCyl       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, 
                        const double Radius, const double InnerRadius);
