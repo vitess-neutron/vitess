@@ -44,10 +44,9 @@ t_hashentry hashA[65536];
 int len_factor=1;
 int output_type;  // 0 text,  1 svg,  2 x3d, 3 x3d with geometry
 char *geom_file;
-int ids_from_all_files=1;
 
 float xwlow = 0, xwhigh = 100;  // x range for SVG output, %
-float scale2 = 1;             // scale factor for second dimension, SVG output
+float scale2 = 1;               // scale factor for second dimension, SVG output
 
 FILE *outf;
 
@@ -140,7 +139,7 @@ void usage() {
 #define myexit2(s,a,b) {fprintf(stderr,s,a,b); exit(2);}
 
 float normalizeAngle(float a) {
-  // normalize angle
+  // normalize an angle to the range of 0 - 360 deg
   while (a < 0)
     a += 360;
   while (a > 360)
