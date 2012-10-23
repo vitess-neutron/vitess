@@ -145,7 +145,8 @@ int main(int argc, char *argv[])
 								if (iChanIn==iChanOut)
 								{
 									OutNeutron.Time += (ToF1 + ToF2);
-									WriteNeutron(&OutNeutron);
+									// WriteNeutron(&OutNeutron);
+									WriteNeutron(&InputNeutrons[i]);
 								}
 							}
 						} // bHit2
@@ -171,7 +172,8 @@ int main(int argc, char *argv[])
 
 	SphericalToCartesian(vDir, &Theta, &Phi);
 	CartesianToEulerZY  (vDir, &RotY,  &RotZ);
-	Cleanup(DistExit*vDir[0], DistExit*vDir[1], DistExit*vDir[2], RotZ, RotY); 
+	//	Cleanup(DistExit*vDir[0], DistExit*vDir[1], DistExit*vDir[2], RotZ, RotY); 
+	Cleanup(0., 0., 0., 0., 0.);
 
 	return(0);
 }

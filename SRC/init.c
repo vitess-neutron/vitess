@@ -90,16 +90,18 @@ short    bTrace=TRUE,        /* criterion: write trace files             */
          bVisTraj =FALSE;    /* criterion: visualization of trajectories */
 double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of this module */
          RotZ=0.0, RotY=0.0, /*      hor. and vert. rotation of the local co-ordinate system relative to the absolute one  */
-         RotMatrixM[3][3],   /*      matrix to rotate between these co-ordinate systems */
+         RotMatrixM[3][3],            
          RotMatrixS[3][3];   /*      matrix to rotate from abs. co-ordinate system to co-ordinate system of last section   */
 long     nModuleNo=0,        /*      number of the previous module, increased in Cleanup() */
-         iModuleNo=0;        //      number of this module determined from parameter for log file
+         iModuleNo=0,        //      number of this module determined from parameter for log file
+         lastIDShift=0;      // Shift of the ID needed for visualisation in case modules create additional trajectories
+int      powerIDShift=9;     // Needed to include the module number in the overall neutron ID avoiding dublication 
 VectorType vNull={0.0,0.0,0.0},
            vX   ={1.0,0.0,0.0},
            BegPosM={0.0,0.0,0.0}, /* [cm] end position of prev. module = origin of this module in absolute co-ordinate system   */
            BegPosS={0.0,0.0,0.0}; /* [cm] end position of prev. section = origin of this section in absolute co-ordinate system */
 
-
+TotalID  tempID;
 /**************************************************************/
 /* static variables                                           */
 /**************************************************************/
@@ -628,6 +630,11 @@ void Init(int argc, char **argv, VtModID eModule)
     }
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
     FillRMatrixZY(RotMatrixS, RotY, RotZ);
+
+    /* Determine new ID scheme for neutrons cloned in the last module */
+    if (nModuleNo > 99) powerIDShift -= 2;
+    else if (nModuleNo > 9 && nModuleNo < 100) powerIDShift -= 1;
+    lastIDShift = nModuleNo*pow(10, powerIDShift);
   }
 }
 
@@ -838,9 +845,10 @@ static int readFromPipe() {
 /****************************************************************/
 int ReadNeutrons()
 {
+  long i;   // index of trajectories
+
   // no treatment of neutrons in preparation run
   if (bTest) return 0;
-
 
   if (compressModeR) {
 
@@ -855,16 +863,37 @@ int ReadNeutrons()
 
   } else {
     // uncompressed neutrons
-    long i;
     NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
     adjustFileProgress(NumNeutGot*sizeof(Neutron));
-    for(i=0; i<NumNeutGot; i++) {
-      WriteTraceLine(&InputNeutrons[i]);
-      /* normalization of direction vector for modules representing hardware */
-      if (stPicture.eModule < VT_MONITOR_1)
-        NormVector(InputNeutrons[i].Vector);
-    }
   }
+
+  for(i=0; i<NumNeutGot; i++) 
+  {
+    
+    WriteTraceLine(&InputNeutrons[i]);
+    
+    if (stPicture.eModule < VT_MONITOR_1)
+      NormVector(InputNeutrons[i].Vector);
+    else continue;
+    // Check if a neutron with such an ID has been here before
+    // If neutrons with same IDs arriving, shift the ID!
+    if (tempID.IDNo != InputNeutrons[i].ID.IDNo) {
+      WriteIAP(&InputNeutrons[i], VT_ENTERED);
+      tempID = InputNeutrons[i].ID;
+    }
+    else {     
+      tempID = InputNeutrons[i].ID;
+      lastIDShift++;
+      // Increase the first letter to indicate the level of cloning of this trajectory
+      InputNeutrons[i].ID.IDGrp[0]++;
+      // Change the neutron ID to avoid dublicity with other trajectories
+      InputNeutrons[i].ID.IDNo += lastIDShift;
+      WriteIAP(&InputNeutrons[i], VT_ENTERED);
+    }
+    /* normalization of direction vector for modules representing hardware */
+    
+  }
+
   NumNeutRead += NumNeutGot;
   return NumNeutGot;
 }
@@ -898,7 +927,6 @@ void WriteNeutron(Neutron *OutNeutron)
   if (++OutNeutNum >= BufferSize)
     OutputBufferFlush(0);  // flush to stream, and give trace marks
 
-  WriteIAP(OutNeutron, VT_EXITED);
   WriteTraceLine(OutNeutron);
 }
 
@@ -1025,7 +1053,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
   { Wwp.spin=SPIN_UNDEF;
   }
 
-  fprintf(TrajFilePtr, "%c%c%09lu %5d %8.5f %11.3e %10.5f %10.5f %10.5f  %2d %2d \n",  
+  fprintf(TrajFilePtr, "%c%c%010lu %5d %8.5f %11.3e %10.5f %10.5f %10.5f  %2d %2d \n",  
                        Wwp.id.IDGrp[0], Wwp.id.IDGrp[1], Wwp.id.IDNo, Wwp.color, Wwp.lambda, Wwp.weight, Wwp.pos[0], Wwp.pos[1], Wwp.pos[2], Wwp.spin, Wwp.reason); 
 }
 
@@ -1140,7 +1168,8 @@ void WriteGeomData(VectorType vBegPos, double Length)
         Transform (vDir,     stGeometry.pCuboid[k].vNormal,  vNull);
 
         DrawCuboid(pGeomFile, sDescr, vAbsCntr, vDir, 
-                   stGeometry.pCuboid[k].Length, stGeometry.pCuboid[k].Width, stGeometry.pCuboid[k].Height); 
+                   stGeometry.pCuboid[k].Length, stGeometry.pCuboid[k].Width, 
+		   stGeometry.pCuboid[k].Height,  stGeometry.pCuboid[k].rotAngle); 
       }
 
       /* Hulls */
@@ -1157,7 +1186,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
         DrawHull(pGeomFile, sDescr, vAbsCntr, vDir, stGeometry.pHull[k].Length, 
                  stGeometry.pHull[k].WidthIn,  stGeometry.pHull[k].WidthOut, 
-                 stGeometry.pHull[k].HeightIn, stGeometry.pHull[k].HeightOut); 
+                 stGeometry.pHull[k].HeightIn, stGeometry.pHull[k].HeightOut, stGeometry.pHull[k].rotAngle); 
       }
 
       /* Cylinders */
@@ -1406,19 +1435,19 @@ void DrawCircle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 }   
 
 void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
-                double Length, double Width, double Height)
+                double Length, double Width, double Height, double rotAngle)
 {
-  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n", 
+  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f  %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-                     Length/100.0, Width/100.0, Height/100.0, pDescr);
+	  Length/100.0, Width/100.0, Height/100.0, rotAngle, pDescr);
 }
 
 void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, 
-              double Length, double WidthIn, double WidthOut, double HeightIn, double HeightOut)
+              double Length, double WidthIn, double WidthOut, double HeightIn, double HeightOut, double rotAngle)
 {
-  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %10.5f %10.5f   %s\n", 
+  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n", 
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-                     Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, pDescr);
+	  Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, rotAngle, pDescr);
 }
 
 void DrawCylinder(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,

@@ -328,6 +328,7 @@ typedef struct
   double     Length;
   double     Width;
   double     Height;
+  double     rotAngle;
 }  
 VtCuboid;
 
@@ -340,6 +341,7 @@ typedef struct
   double     WidthOut;
   double     HeightIn;
   double     HeightOut;
+  double     rotAngle;
 }  
 VtHull;
 
