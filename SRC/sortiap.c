@@ -690,6 +690,7 @@ void restrictPoint(float *fa) {
 #define MAXARGS 16
 
 typedef
+
 struct s_definition {
   char *key;
   char *value;
@@ -854,7 +855,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
 }
 
 #define swapYZ(y,z) v=fa[y]; fa[y]=fa[z]; fa[z] = -v
-#define swapWH(w,h) v=fa[w]; fa[w]=fa[h]; fa[h] = v
 
 static void vitessToX3Dcoordinates(float *fa, int vtype) {
 
@@ -864,8 +864,7 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
   // x_x3d = x
   // y_x3d = z
   // z_x3d = -y
-  // We use swapYZ to transform 3d coordinates, and swapWH to transform
-  // width and height values for 3D objects.
+  // We use swapYZ to transform 3d coordinates.
 
   float v;
 
@@ -880,21 +879,8 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     // all these have a direction vector in elements 3,4,5
     swapYZ(4,5); // direction
 
-    switch (vtype) {
-    case GT_Ellipsoid:
-    case GT_Cuboid:
-      swapWH(7,8);
-      break;
-    case GT_Hull:
-      swapWH(7,9);
-      swapWH(8,10);
-      break;
-    case GT_CylSlice:
-      // mirror direction angle
-      fa[8] = mirrAng(fa[8]);
-      break;
-    default : ; // we must not swap width,height values for 2D objects 
-    }
+    if (vtype == GT_CylSlice)
+      fa[8] = mirrAng(fa[8]); // mirror direction angle
   }
         
 }
@@ -1067,8 +1053,8 @@ void geom2X3D(char *fn) {
                "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>",
                sS5(fa[6]/2.0f, b1), rots, appearance ? appearance : HULLMAT,
-               sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
-               sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
+               sS5(fa[9]/2.0f, b2), sS5(fa[7]/2.0f, b3),
+               sS5(fa[10]/2.0f, b4), sS5(fa[8]/2.0f, b5) );
       if (fa[11])
         fputs ("</Transform>", outf);
       postTrans(opentrans);
@@ -1079,9 +1065,10 @@ void geom2X3D(char *fn) {
       break;
     case GT_Ellipsoid:
       // We construct the ellipsoid with a default orientation 1 0 0
+      // The width fa[7] scales the z axis, height fa[8] the y axis
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
+               sS5(fa[6]/2.0f, b1), sS5(fa[8]/2.0f, b2), sS5(fa[7]/2.0f, b3),
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawEllipsoidShape(fa[9], fa[10]);
