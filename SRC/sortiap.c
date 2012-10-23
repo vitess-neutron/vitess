@@ -114,8 +114,6 @@ int xz_view; // default 0, view x,y
 
 int transformV2X3D = 1; // transform VITESS to X3D coordinates
 
-#define toRad(a) (float)(a*(M_PI/180.0))
-
 void usage() {
   printf("usage:\n"
          "sortiap {option} [-o outfile] {infile}\n"
@@ -140,6 +138,25 @@ void usage() {
 #define myexit(s) {fputs(s,stderr); exit(2);}
 #define myexit1(s,a) {fprintf(stderr,s,a); exit(2);}
 #define myexit2(s,a,b) {fprintf(stderr,s,a,b); exit(2);}
+
+float normalizeAngle(float a) {
+  // normalize angle
+  while (a < 0)
+    a += 360;
+  while (a > 360)
+    a -= 360;
+  return a;  
+}
+
+float toRad(float a) {
+  // deg -> rad
+  return (float) (normalizeAngle(a) * (M_PI/180.0));
+}
+
+float mirrAng(float a) {
+  // mirror angle [deg]
+  return normalizeAngle(-a);
+}
 
 void setVF(float *v, const char *s) {
   if (1 > sscanf(s, "%f", v))
@@ -871,6 +888,10 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     case GT_Hull:
       swapWH(7,9);
       swapWH(8,10);
+      break;
+    case GT_CylSlice:
+      // mirror direction angle
+      fa[8] = mirrAng(fa[8]);
       break;
     default : ; // we must not swap width,height values for 2D objects 
     }
