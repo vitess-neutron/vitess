@@ -37,9 +37,11 @@ typedef struct s_hashentry {
   char *key;
   p_point point;
   u_int hashvalue;
+  int count;
 } t_hashentry, *p_hashentry;
 
-t_hashentry hashA[65536];
+#define HASHALEN 65536
+p_hashentry hashA[HASHALEN];
 
 int len_factor=1;
 int output_type;  // 0 text,  1 svg,  2 x3d, 3 x3d with geometry
@@ -149,7 +151,7 @@ float normalizeAngle(float a) {
 
 float toRad(float a) {
   // deg -> rad
-  return (float) (normalizeAngle(a) * (M_PI/180.0));
+  return normalizeAngle(a) * (M_PI/180.0);
 }
 
 float mirrAng(float a) {
@@ -242,24 +244,24 @@ void parseX3dOptionFile() {
 u_int myHash(const char *s) {
   // RSHash
   const u_int b = 378551;
-  u_int a, hash;
-  int len;
+  u_int a, hash, v;
+
   a    = 63689;
   hash = 0;
-  for (len = strlen(s); len; len--) {
-    hash = hash * a + (*s++);
+  while ((v = *s++)) {
+    hash = hash * a + v;
     a   *= b;
   }
   return hash;
 }
 
-void addPoint(p_point *pp, const char *data) {
+void addPoint(p_hashentry phash, const char *data) {
 
   int color;
   float lambda, weight;
-  p_point p, ip;
+  p_point p, pold;
 
-  p = calloc(1, sizeof(t_point));
+  p = malloc(sizeof(t_point));
   if (output_type) {
     // SVG or X3D
     if (6 != sscanf(data, "%d %f %f %f %f %f", &color, &lambda, &weight,
@@ -272,40 +274,45 @@ void addPoint(p_point *pp, const char *data) {
     // text
     p->u.t = strdup(data);
 
-  // insert p to list
-  ip = *pp;
-  if (ip) {
-    while (ip->next)
-      ip = ip->next;
-    ip->next = p;
+  // push p to list
+  if ((p->next = pold = phash->point)) {
+    if (output_type && p->u.pos[0] == pold->u.pos[0] &&
+        p->u.pos[1] == pold->u.pos[1] && p->u.pos[2] == pold->u.pos[2]) {
+      free(p); // omit doublettes
+      return;
+    }
+    phash->count++;
   } else
-    *pp = p;
+    phash->count = 1;
+
+  phash->point = p;
 }
 
 void insertPoint(const char *id, const char *content) {
   p_hashentry ph, nph;
   // hash id
-  u_int hv = myHash(id);
-  ph = hashA + (hv & 0xffff);
-  if (ph->key) {
+  u_int hv, hind;
+  hv = myHash(id);
+  hind = hv % HASHALEN;
+  if ((ph = hashA[hind])) {
     while (1)
       if (hv == ph->hashvalue && 0 == strcmp(id, ph->key)) {
-        addPoint(&(ph->point), content);
-        return;
+        break;
       } else if (ph->next) {
         ph = ph->next;
       } else {
         ph->next = nph = (p_hashentry) calloc(1, sizeof(t_hashentry));
-        nph->key = strdup(id);
-        nph->hashvalue = hv;
-        addPoint(&(nph->point), content);
-        return;
+        ph = nph;
+        ph->key = strdup(id);
+        ph->hashvalue = hv;
+        break;
       }
   } else {
+    hashA[hind] = ph = (p_hashentry) calloc(1, sizeof(t_hashentry));
     ph->key = strdup(id);
     ph->hashvalue = hv;
-    addPoint(&(ph->point), content);
   }
+  addPoint(ph, content);
 }
 
 char * sS(float v, char *s, const char *format);
@@ -566,8 +573,7 @@ float toAng(float a) {
 void drawCylSlice (float dirang, float openang) {
   float x, y, deltang, a, sina, cosa;
 
-  // assure sensible angles
-  if (dirang < 0   || dirang > 360) return;
+  // assure sensible open angle
   if (openang <= 0 || openang >= 360) return;
 
   // compute first point of a line along a circular arc
@@ -1132,7 +1138,7 @@ void geom2X3D(char *fn) {
 
 void writeX3D() {
   int ntraj, count, mat, hi;
-  p_point p,q, first_p, last_p;
+  p_point p, first_p;
   p_hashentry ph;
   static char buf[32], material_known[32];
 
@@ -1153,17 +1159,16 @@ void writeX3D() {
 
   ntraj = 0;
 
-  for (hi=0; hi<65536; hi++) {
-    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
-      p = q = ph->point;
+  for (hi=0; hi<HASHALEN; hi++) {
+    for (ph = hashA[hi]; ph; ph = ph->next) {
 
-      count = 0;
-      last_p = 0;
+      p = ph->point;
       if (x3d_option_filename) {
+        // we have to restrict points to a view
+        count = 0;
         first_p = 0;
         while (p) {
           if (count) {
-            last_p = p;
             ++count;
             if (outOfView(p->u.pos)) {
               // add a last point, but restrict to bounds
@@ -1172,18 +1177,14 @@ void writeX3D() {
             }
           } else if (!outOfView(p->u.pos)) {
             count = 1;
-            first_p = last_p = p;
+            first_p = p;
           }
           if (!p->next) break;
           p = p->next;
         }
       } else {
+        count = ph->count;
         first_p = p;
-        while (p) {
-          ++count;
-          if (!p->next) break;
-          p = p->next;
-        }
       }
       if (count <= 1) continue; // a single point is of no interest
 
@@ -1220,7 +1221,7 @@ void writeX3D() {
         fputs(sS4(z, buf), outf);
         putc(' ', outf);
         
-        if (p == last_p)
+        if (--count <= 0)
           break;
       }
       fseek(outf, -1, SEEK_CUR);
@@ -1442,7 +1443,7 @@ void writeSVG() {
 
   int hi, i, ntraj;
   int count = 0;
-  p_point p,q;
+  p_point p;
   p_hashentry ph;
   char ba[16], bb[16], bc[16], bd[16];
   float c1[2], c2[2], v, xlow, xhigh, xdelta, ydelta, d;
@@ -1452,8 +1453,8 @@ void writeSVG() {
   c1[0] = c2[0] = (float) svg_width;
   c1[1] = c2[1] = 0;
 
-  for (hi=0; hi<65536; hi++)
-    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next) {
       p = ph->point;
       minMax(c1, p->u.pos[0]);
       v = p->u.pos[1] *= scale2;
@@ -1474,8 +1475,8 @@ void writeSVG() {
     xhigh = xlow + xwhigh*xfactor;
     xlow += xwlow*xfactor;
 
-    for (hi=0; hi<65536; hi++)
-      for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
+    for (hi=0; hi<HASHALEN; hi++)
+      for (ph = hashA[hi]; ph; ph = ph->next) {
         p_point newlist, nold;
         float v1;
         newlist = nold = 0;
@@ -1520,23 +1521,16 @@ void writeSVG() {
 
   ntraj = 0;
 
-  for (hi=0; hi<65536; hi++)
-    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
-      p = q = ph->point;
-      count = 0;
-      while (p) {
-        count++;
-        if (!p->next) break;
-        p = p->next;
-      }
-      if (count <= 1) continue; // a single point is of no interest
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next) {
+
+      if ((count = ph->count) <= 1) continue; // a single point is of no interest
 
       ++ntraj;
       fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
               ntraj, svg_line_color, strokeWS);
       
-      i = 0;
-      for (p = q; p; p = p->next) {
+      for (p = ph->point; p; p = p->next) {
         float a,b;
         char *pa,*pb;
         a = p->u.pos[0];
@@ -1544,7 +1538,7 @@ void writeSVG() {
         pa = sS3(p->u.pos[0], ba);
         pb = sS3(b, bb);
         fprintf(outf,"%s,%s", pa, pb);
-        if (++i < count) fputc(',', outf);
+        if (--count > 0) fputc(',', outf);
       }
       fputs("\"/></g>\n", outf);
     }
@@ -1557,24 +1551,18 @@ void writeSVG() {
 }
 
 void writeTrajectories() {
-  int count, hi;
-  p_point p,q;
+  int hi;
+  p_point p;
   p_hashentry ph;
 
-  for (hi=0; hi<65536; hi++)
-    for (ph = hashA + hi; ph && ph->key; ph = ph->next) {
-      p = q = ph->point;
-      count = 0;
-      while (p) {
-        count++;
-        if (!p->next) break;
-        p = p->next;
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next)
+      if (ph->count > 1) {
+        // at least 2 points
+        fprintf(outf, "%d %s\n", ph->count, ph->key);
+        for (p = ph->point; p; p = p->next)
+          fputs(p->u.t, outf);
       }
-      if (count <= 1) continue; // a single point is of no interest
-      fprintf(outf, "%d %s\n", count, ph->key);
-      for (p = q; p; p = p->next)
-        fputs(p->u.t, outf);
-    }
 }
 
 
@@ -1582,7 +1570,8 @@ int main (int argc, char **argv) {
 
   char *arg, *p, *s;
   static char line[256];
-  int i;
+  int i, hi;
+  p_hashentry ph;
   FILE *f;
   static char *outfilename;
   static char *infilename[128];
@@ -1649,6 +1638,7 @@ int main (int argc, char **argv) {
     return 0;
   }
 
+  // read all trajectory files, construct point lists for ids found
   for (i=0; i<infilecount; i++) {
     if (! (f = fopen(infilename[i], "r")))
       myexit1("unable to read %s\n", infilename[i]);
@@ -1665,16 +1655,30 @@ int main (int argc, char **argv) {
             len_factor = 1000;
         }
       } else if ((p = strchr(line, ' ')) || (p = strchr(line, '\t'))) {
-        int len;
-        *p++ = 0;
-        len = strlen(p);
-        p[len] = 0;  // remove \n
+        *p++ = 0; // terminate id string
         insertPoint(line, p);
       } else
         myexit1("insufficient input in %s\n",infilename[i]);
     }
     fclose(f);
   }
+
+  // revert point lists to restore original order
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next)
+      if (ph->count > 1) {
+        p_point left, mid, right;
+        left = 0;
+        mid = ph->point;
+        while (1) {
+          right = mid->next;
+          mid->next = left;
+          if (! right) break;
+          left = mid;
+          mid = right;
+        }
+        ph->point = mid;
+      }
 
   // write trajectories
   switch (output_type) {
