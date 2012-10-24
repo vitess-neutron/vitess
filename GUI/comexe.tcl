@@ -889,39 +889,21 @@ proc startActionD {} {
 
 proc startActionV {} {
   # start a visualisation run
-  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode
+  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode defdirectory_
 
   if [pipeIsActive] return
 
   # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
-  set firstText ""
-  set visRes ""
-  if  {$VisGather != ""} {
-    # VisState 1 for first --v invocation
-    set VisState 1
-    startAction "" "" 1
-    if [reduceFList VisLogList] {
-      # puts "debug: reduceFList VisLogList $VisLogList"
-      # gather results of first run
-      if {$VisGather == "just-concatenate"} {
-        set visRes [tmpFilename _3dvis]
-        if {"0" == [catch {open $visRes w} outf]} {
-          foreach fname $VisLogList {
-            if {"0" != [catch {open $fname r} f]} continue
-            while {[gets $f line] >= 0} {
-              puts $outf $line
-            }
-            close $f
-          }
-          close $outf
-        }
-      } else {
-        set visRes [doGather $VisGather "" VisLogList]
-      }
-      # result file is to be deleted when VITESS finishes
-      lappend FilesToDeleteList $visRes
-      set firstText "Find 3D geometry in $visRes"
-    }
+
+  # VisState 1 for first --v invocation
+  set VisState 1
+  startAction "" "" 1
+  if [reduceFList VisLogList] {
+    # assume modules have written a valid geometry.inf
+    set geom [file join $defdirectory_ geometry.inf]
+    set firstText "Find 3D geometry in $geom"
+  } else {
+    set geom [set firstText ""]
   }
 
   condDelList VisLogList
@@ -939,7 +921,7 @@ proc startActionV {} {
 
   if [reduceFList VisLogList] {
     # merge visualisation trajectories
-    set fullres [doGather $VisMerge $visRes VisLogList]
+    set fullres [doGather $VisMerge $geom VisLogList]
   } else {
     set fullres ""
   }
