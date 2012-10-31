@@ -374,12 +374,17 @@ proc checkAll {} {
     if {$firstmod == ""} {
       set firstmod $var
       if {$VisState > 0} {
-        # check for reasonable number_of_neutrons
+        # check for reasonable number_of_neutrons when visualizing trajectories
         set n [entryVal number_of_neutrons _$i]
         if {$n != ""} {
           if {$n > 100000} {
-            showText "!The number of trajectories for a visualisation run should be at most 100000"
-            set errors 1
+            set t [entryVal trace _$i]
+            set tfile [entryVal utrcfunction _$i]
+            # no problem, if a raytracing filename is given, an the option activated this file
+            if {$tfile == "" || $t == "no"} {
+              showText "!The number of trajectories for a visualisation run should be at most 100000"
+              set errors 1
+            }
           }
         }
       }
