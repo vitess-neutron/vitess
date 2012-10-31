@@ -376,9 +376,11 @@ proc checkAll {} {
       if {$VisState > 0} {
         # check for reasonable number_of_neutrons
         set n [entryVal number_of_neutrons _$i]
-        if {$n == "" || $n > 100000} {
-	  showText "!The number of trajectories for a visualisation run should be at most 100000"
-	  set errors 1
+        if {$n != ""} {
+          if {$n > 100000} {
+            showText "!The number of trajectories for a visualisation run should be at most 100000"
+            set errors 1
+          }
         }
       }
       if {! [regexp {^source_} $var]} {
