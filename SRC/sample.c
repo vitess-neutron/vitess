@@ -276,6 +276,7 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
 
 		/* write the Neutron to the output file   */
 		WriteNeutron(&OutNeut);
+    WriteIAP(&OutNeut, VT_SCATTERED);
 	} 
 	else 
 	{ /* Uhh, here is something terribly wrong */

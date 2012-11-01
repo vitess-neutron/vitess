@@ -877,7 +877,7 @@ int ReadNeutrons()
     else continue;
     // Check if a neutron with such an ID has been here before
     // If neutrons with same IDs arriving, shift the ID!
-    if (tempID.IDNo != InputNeutrons[i].ID.IDNo) {
+    if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) {
       WriteIAP(&InputNeutrons[i], VT_ENTERED);
       tempID = InputNeutrons[i].ID;
     }
@@ -1086,11 +1086,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Circles */
       for (k=0; k < stGeometry.nCircles; k++)
       { 
-
-	const char* sDescr;
-	sDescr = "";
-	if (k == 0 || k == (stGeometry.nCircles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = "";
+	      if (k == 0 || k == (stGeometry.nCircles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 	
         Transform (vAbsCntr, stGeometry.pCircle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCircle[k].vNormal, vNull);
@@ -1102,10 +1101,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Lines */
       for (k=0; k < stGeometry.nLines; k++)
       { 
-	const char* sDescr;
-	sDescr = "";
-	if (k == 0 || k == (stGeometry.nLines-1)) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = "";
+	      if (k == 0 || k == (stGeometry.nLines-1)) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsPos1, stGeometry.pLine[k].vPosBeg, vBegPos);
         Transform (vAbsPos2, stGeometry.pLine[k].vPosEnd, vBegPos);
@@ -1115,10 +1114,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Rectangles */
       for (k=0; k < stGeometry.nRectangles; k++)
       { 
-	const char* sDescr;
-	sDescr = "";
-	if (k == 0 || k == (stGeometry.nRectangles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = "";
+	      if (k == 0 || k == (stGeometry.nRectangles-1) || stGeometry.eModule == VT_SOURCE ) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsCntr, stGeometry.pRectangle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pRectangle[k].vNormal, vNull);
@@ -1131,14 +1130,14 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Triangles */
       for (k=0; k < stGeometry.nTriangles; k++)
       { 
-	const char* sDescr;
-	sDescr = "";
-	if (k == 0 || k == (stGeometry.nTriangles-1)) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = "";
+	      if (k == 0 || k == (stGeometry.nTriangles-1)) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsPos1, stGeometry.pTriangle[k].vEdges[0], vBegPos);
         Transform (vAbsPos2, stGeometry.pTriangle[k].vEdges[1], vBegPos);
-	Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
+	      Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
 
         DrawTriangle(pGeomFile, sDescr, vAbsPos1, vAbsPos2, vAbsPos3); 
       }
@@ -1158,11 +1157,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Cuboids */
       for (k=0; k < stGeometry.nCuboids; k++)
       { 
-	
-	const char* sDescr;
-	sDescr = "";
-	if (k == 0 || k == (stGeometry.nCuboids-1)) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = "";
+	      if (k == 0 || k == (stGeometry.nCuboids-1)) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 	
         Transform (vAbsCntr, stGeometry.pCuboid[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCuboid[k].vNormal,  vNull);
@@ -1176,10 +1174,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       for (k=0; k < stGeometry.nHulls; k++)
       { 
 
-	const char* sDescr;
-	sDescr = (const char*) strchr(stGeometry.pDescr, ':');
-	if (k == 0 || k == (stGeometry.nHulls-1)) sDescr = stGeometry.pDescr;
-	else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+	      const char* sDescr;
+	      sDescr = (const char*) strchr(stGeometry.pDescr, ':');
+	      if (k == 0 || k == (stGeometry.nHulls-1)) sDescr = stGeometry.pDescr;
+	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsCntr, stGeometry.pHull[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pHull[k].vNormal,  vNull);
@@ -1234,9 +1232,9 @@ void WriteGeomData(VectorType vBegPos, double Length)
         Transform (vAbsCntr, stGeometry.pCylSlice[k].vCntr,  vBegPos);
         Transform (vDir,     stGeometry.pCylSlice[k].vSymAxis, vNull);
 
-	DrawCylSlice(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
-		     stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width, 
-		     stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi, stGeometry.pCylSlice[k].OpenAngle);
+        DrawCylSlice(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir, 
+		    stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width, 
+		    stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi, stGeometry.pCylSlice[k].OpenAngle);
 
       }
 
@@ -1249,15 +1247,15 @@ void WriteGeomData(VectorType vBegPos, double Length)
         CopyVector      (vX, vRelPos);
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
-	strcpy(description, sModuleName);
-	strncat(description, ":white", 6);
-	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
+	      strcpy(description, sModuleName);
+	      strncat(description, ":white", 6);
+	      fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
         DrawCylinder(pGeomFile, (const char*) description, vAbsCntr, vDir, Length, 5.0);
       } else {
-	strcpy(description, sModuleName);
-	strncat(description, ":grey", 5);
-	fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
-	DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
+	      strcpy(description, sModuleName);
+	      strncat(description, ":grey", 5);
+	      fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description); 
+	      DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
       }
     }
 
