@@ -3,7 +3,8 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 0.9  Nov  2008  K. Lieutenant   initial version                                           */
+/* 1.0  Nov  2008  K. Lieutenant   initial version                                           */
+/* 1.1  Oct  2012  K. Lieutenant   only 1 Bragg reflection                                   */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -22,7 +23,7 @@
 /******************************/
 
 char  *SampleFileName;      // parameter file name (located in argv)
-short  nColor  = 0;        // colour of the neutrons scattered from the environment
+short  nColor  = 0;         // colour of the neutrons scattered from the environment
 double DelTheta ,           // 
        Theta    ,           // solid angles into which scattering takes place        
        DelPhi   ,
@@ -32,6 +33,7 @@ double DelTheta ,           //
        Diameter =10.0,      // outer diameter of the sample environment  (= 2*R_out)
        Thickness= 0.0;      // thickness of the sample environment  (= R_out - R_in)
 VtDir  eDirEnv;             // direction for sample environment: 1:'in' or 2:'out' 
+SampleType stEnvironment;   // properties of the sample environment    
 
 
 /******************************/
@@ -47,11 +49,11 @@ extern VtDir  g_eDir;             /* direction for sample environment: 'in' or '
 /** Prototypes               **/
 /******************************/
 
-void  OwnInit       (SampleType* pEnvironment, int argc, char* argv[]);
-void  OwnCleanup    (DoublePair* pStrucFac);
-short ReadEnvironPar(SampleType* pEnvironment, char* pStrucFileName);
-long  ReadStrucFact (char* StrFileName,  DoublePair* pStrucFac[]);
-
+void  OwnInit          (SampleType* pEnvironment, int argc, char* argv[]);
+void  OwnCleanup       (DoublePair* pStrucFac);
+short ReadEnvironPar   (SampleType* pEnvironment, char* pStrucFileName);
+long  ReadStrucFact    (char* StrFileName, DoublePair* pStrucFac[]);
+long  ChooseBraggReflex(long* pNrefl, long Nstrcfac, DoublePair* pStrucFac[], double Wavelength);
 
 
 /******************************/
@@ -60,31 +62,32 @@ long  ReadStrucFact (char* StrFileName,  DoublePair* pStrucFac[]);
 
 int main(int argc, char **argv)
 {
-	int        i,j;
-   long       nisp,                /* number of intersection points to come */
-	           Nth;                 /* counting variable of structure factor */
-	double     Lbf;                 /* full path length of the neutron in the sample */
-	double     Ls;                  /* distance of the neutron in the sample before sc. */
-	long       NumStrucFac;         /* number of reflections in the structure factor */
-	char       sStrucFileName[99];  /* structure factor file name                    */
-	double     DetFacCoh,           /* cares about the detector coverage             */
-	           DetFacInc,           /*  for coherent and incoherent scattering       */
-	           HelpFac;             /* contains k independent term of the scattering */
-	VectorType InISP[2],            /* neutron intersection with sample without scattering */
-	           SP;                  /* position of scattering event                  */
-	DoublePair *pStrucFac=NULL;
-	Neutron    OutNeutron;
-	SampleType stEnvironment;       /* properties of the sample environment          */
-   double     ScProbCoh, ScProbF,  /* probability for coherent, incoh. scattering and transmission */
+  int        i,j;
+  long       nisp,                /* number of intersection points to come               */
+	           Nth,                 /* index of the structure factor                       */
+             Nrefl;               /* number of reflections for the given wavelength      */
+  double     Lbf;                 /* full path length of the neutron in the sample       */
+  double     Ls;                  /* distance of the neutron in the sample before scat.  */
+  long       NumStrucFac;         /* number of reflections in the structure factor file  */
+  char       sStrucFileName[99];  /* structure factor file name                          */
+  double     DetFacCoh,           /* cares about the detector coverage                   */
+	           DetFacInc,           /*  for coherent and incoherent scattering             */
+	           HelpFac;             /* contains k independent term of the scattering       */
+  VectorType InISP[2],            /* neutron intersection with sample without scattering */
+	           SP;                  /* position of scattering event                        */
+  DoublePair *pStrucFac=NULL;
+  Neutron    OutNeutron;
+  double     ScProbCoh, ScProbF,  /* probability for coherent, incoh. scattering and transmission */
 	           ScProbInc, ScProbT,
 	           ScTheta,             /* scattering angles (in neutron coordinate system) */
 	           ScPhi;
-	double     RotMatrixSmpl[3][3]; /* Rotation matrix that transforms a Vector to the */
-	double     RotMatrixNeut[3][3];
+  double     RotMatrixSmpl[3][3]; /* Rotation matrix that transforms a Vector to the */
+  double     RotMatrixNeut[3][3];
 
 	/* Initialize the program according to the parameters given   */
 	Init(argc, argv, VT_SMPL_ENVIRON);
-	print_module_name("sample_environment 1.0");
+	print_module_name("sample_environment 1.1");
+  bVisInstalled = TRUE;
 
 	/* Module specific initialization and reading of sample geometry and name of the structure factor file */
 	InitSample    (&stEnvironment);
@@ -170,44 +173,50 @@ int main(int argc, char **argv)
 				/* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
 				HelpFac = Lbf*pow(OutNeutron.Wavelength,3)/(4.0*UCV*UCV);
 
-				ScProbCoh = 0.0;
 				OutNeutron.Color = nColor;
+        if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
+        if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
 
-				/* Scatter at each suitable |F(k)| */
-				for(Nth=0; pStrucFac[Nth][0] > 0.5*OutNeutron.Wavelength 
-				           && Nth < NumStrucFac && ScProbCoh < 1.0; Nth++)
-				{ 
-					/* ScTheta is the angle of the scattered neutron with its original flight path */
-					ScTheta = 2.0*asin(OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0]));
+        /* choose one suitable |F(k)| for Bragg scattering */
+        Nth=ChooseBraggReflex(&Nrefl, NumStrucFac, &pStrucFac, OutNeutron.Wavelength);
 
-					/* Only trajectories between Theta-DelTheta and Theta+DelTheta are regarded. 
-						The deviation from straight direction (neutTheta) of the incoming neutrons
-						is supposed to be neglectible                            */
-					if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
-					{
-						/* ScProb is the scattering-cross section (Squires 3.103) */
-						/*  devided by the sample area                            */
-						/* as I_sc = sigma * flux = sigma / area * current        */
-						/* it contains the d-spacing dependent terms              */
-						/*  and the d-spacing independent HelpFac terms s.o.      */
-						ScProbF   =  HelpFac / sin(0.5*ScTheta) * pStrucFac[Nth][1];
-						ScProbCoh += ScProbF;
+        /* ScTheta is the angle of the scattered neutron with its original flight path */
+        ScTheta = 2.0*asin(OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0]));
 
-						/* ScPhi is the angle of the scattered neutron with the +y-axis */
-						/*  of the neutron co-ordinate system                           */
-						ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+        /* Only trajectories between Theta-DelTheta and Theta+DelTheta are regarded. 
+           The deviation from straight direction (neutTheta) of the incoming neutrons
+           is supposed to be neglectible                            */
+        if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
+        {
+          /* ScProb is the scattering-cross section (Squires 3.103) */
+          /*  devided by the sample area                            */
+          /* as I_sc = sigma * flux = sigma / area * current        */
+          /* it contains the d-spacing dependent terms              */
+          /*  and the d-spacing independent HelpFac terms s.o.      */
+          ScProbF =  Nrefl * HelpFac / sin(0.5*ScTheta) * pStrucFac[Nth][1];
 
-						/* Ok, now everthing needed is known, put it together */
-						ProcessNeutronToEnd(&(OutNeutron), SP, Ls, DetFacCoh, ScProbF,
-												  ScTheta, ScPhi, &stEnvironment, RotMatrixNeut, RotMatrixSmpl);
-					} 
-				}  
+          /* ScPhi is the angle of the scattered neutron with the +y-axis */
+          /*  of the neutron co-ordinate system                           */
+          ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+
+          /* Ok, now everthing needed is known, put it together */
+          ProcessNeutronToEnd(&(OutNeutron), SP, Ls, DetFacCoh, ScProbF,
+							                ScTheta, ScPhi, &stEnvironment, RotMatrixNeut, RotMatrixSmpl);
+        } 
+
+        /* determine the total scattering cross-section */
+				ScProbCoh = 0.0;
+        for (Nth=0; Nth < Nrefl; Nth++)
+          ScProbCoh += (HelpFac / (OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0])) * pStrucFac[Nth][1]);
 
 				/************************************/
-				/* Second the incoherent scattering */
+				/*  Then the incoherent scattering  */
 				/************************************/
 				/* Determine the scattering angle and the probability */
 				OutNeutron.Color = (short)(nColor+1);
+        if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
+        if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
+     
 				ScPhi     = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
 				ScTheta   = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
 				ScProbInc = Lbf*MuInc * sin(ScTheta);
@@ -215,9 +224,9 @@ int main(int argc, char **argv)
 				ProcessNeutronToEnd(&OutNeutron, SP, Ls, DetFacInc, ScProbInc,
 				                    ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
 
-				/************************************/
-				/* Third the transmitted neutrons   */
-				/************************************/
+				/******************************/
+				/* The transmitted neutrons   */
+				/******************************/
 				// move the neutron a little bit into the sample environment 
 				// to avoid problems with wrong sign
 				for(j=0; j<3; j++)
@@ -289,7 +298,7 @@ void  OwnInit(SampleType* pEnvironment, int argc, char *argv[])
 				  nColor = (short) atoi(&argv[i][2]);
 				  break;
 				case 'r':
-				  eDirEnv = (short) atoi(&argv[i][2]);   // 1:in   2: out
+				  eDirEnv = (VtDir) atoi(&argv[i][2]);   // 1:in   2: out
 				  break;
 
 			/*	case 'D':
@@ -342,6 +351,40 @@ void OwnCleanup(DoublePair *pStrucFac)
 	PrintMessage(ENV_TRAJ_OUTSIDE, "", ON);
 	PrintMessage(ALL_NEGATIVE_INT, "", ON);
 	fprintf(LogFilePtr, "\n");
+
+  /* Geometry data */
+  if (bVisInstr && eDirEnv==VT_OUT)
+  { 
+	  /* stGeometry.pHolCyl  = (VtHolCyl*) calloc(1, sizeof(VtHolCyl));
+	  stGeometry.nHolCyls = 1; 
+	      
+	  stGeometry.pHolCyl[0].Radius     = stEnvironment.SG.HCyl.r_out; 
+	  stGeometry.pHolCyl[0].InnerRadius= stEnvironment.SG.HCyl.r_in / stEnvironment.SG.HCyl.r_out;
+	  stGeometry.pHolCyl[0].Length     = stEnvironment.SG.HCyl.h_out;
+	  stGeometry.pHolCyl[0].vCntr[0]   = 0.0;
+	  stGeometry.pHolCyl[0].vCntr[1]   = 0.0;
+	  stGeometry.pHolCyl[0].vCntr[2]   = 0.0;
+	  stGeometry.pHolCyl[0].vSymAxis[0]= 0.0;
+	  stGeometry.pHolCyl[0].vSymAxis[1]= 0.0;
+	  stGeometry.pHolCyl[0].vSymAxis[2]= 1.0;
+	  stGeometry.pHolCyl  = (VtHolCyl*) calloc(1, sizeof(VtHolCyl));
+	  stGeometry.nHolCyls = 1; */
+	      
+	  stGeometry.pCylinder  = (VtCylinder*) calloc(1, sizeof(VtCylinder));
+	  stGeometry.nCylinders = 1; 
+	      
+	  stGeometry.pCylinder[0].Radius     = stEnvironment.SG.HCyl.r_out; 
+	  stGeometry.pCylinder[0].Length     = stEnvironment.SG.HCyl.h_out;
+	  stGeometry.pCylinder[0].vCntr[0]   = 0.0;
+	  stGeometry.pCylinder[0].vCntr[1]   = 0.0;
+	  stGeometry.pCylinder[0].vCntr[2]   = 0.0;
+	  stGeometry.pCylinder[0].vSymAxis[0]= 0.0;
+	  stGeometry.pCylinder[0].vSymAxis[1]= 0.0;
+	  stGeometry.pCylinder[0].vSymAxis[2]= 1.0;
+
+	  stGeometry.pDescr  = "sample_environment:cyan";
+	  stGeometry.eModule = VT_SMPL_ENVIRON;
+  }
 
 	/* Release the allocated memory */
 	if (pStrucFac!=NULL)
@@ -433,4 +476,33 @@ long ReadStrucFact(char* sStrFileName, DoublePair* pStrucFac[])
 	return NumLines;
 }
 
+/*********************************************************/
+// *pNrefl       number of reflections for the given wavelength
+//  Nstrcfac     number of reflections in the structure factor file
+//  pStrucFac[]  list of structure factors
+//  Wavelength   wavelength of the neutron
+/*********************************************************/
+long  ChooseBraggReflex(long* pNrefl, long Nstrcfac, DoublePair* pStrucFac[], double Wavelength)
+{
+  long Irefl,    // chosen index of reflection
+       Ifac;     // Index of reflection
 
+  // calculate number of possible reflections
+  *pNrefl = 0;
+  for (Ifac=0; Ifac < Nstrcfac; Ifac++)
+  { 
+    if ((*pStrucFac)[Ifac][0] > 0.5*Wavelength)
+      (*pNrefl)++;
+  }
+
+  // choose one of these reflections
+  Irefl = (long) floor(MonteCarlo(0.0, (double) *pNrefl));
+
+  return Irefl;
+}
+
+
+
+
+
+    

@@ -6,6 +6,7 @@
 /* 1.0                           initial version                                        */
 /* 1.1  Jun 2001  G. Zsigmond    SOFTABORT                                              */
 /* 1.2  Jan 2002  K. Lieutenant  reorganisation                                         */
+/* 1.3  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                           */
 /* 1.4  Feb 2004  K. Lieutenant  'message' and 'ERROR' included                         */
 /* 1.5  Apr 2004  K. Lieutenant  probability divided by repetition                      */
 /* 1.5a Dec 2004  K. Lieutenant  option 'no TOF' added                                  */
@@ -103,128 +104,123 @@ int main(int argc, char *argv[])
   /* Get the neutrons from the file */
   DECLARE_ABORT
 
-    while((ReadNeutrons())!= 0)
-      {
-	CHECK
+  while((ReadNeutrons())!= 0)
+  {
+    CHECK
 
-	  for(i=0; i<NumNeutGot; i++) 
-	    {
-	      CHECK
+    for(i=0; i<NumNeutGot; i++) 
+    {
+      CHECK
 
-		// Use a copy to work on
-		WorkNeutron = InputNeutrons[i];
+      // Use a copy to work on
+      WorkNeutron = InputNeutrons[i];
 	      
-	      /* First rotate the position and direction of the neutron to the detector frame */
-	      RotVector(RotMatrix, WorkNeutron.Position);
-	      RotVector(RotMatrix, WorkNeutron.Vector);
+      /* First rotate the position and direction of the neutron to the detector frame */
+      RotVector(RotMatrix, WorkNeutron.Position);
+      RotVector(RotMatrix, WorkNeutron.Vector);
 	       
 
-	      if(NeutronIntersectsDetector(&(WorkNeutron),&Detector,ISP)) 
-		{
+      if(NeutronIntersectsDetector(&(WorkNeutron),&Detector,ISP)) 
+      {
 		  
-		  /* determine the length of the path through the scintilator */
-		  FullLengthInDetector = DistVector(ISP[0], ISP[1]);
+        /* determine the length of the path through the scintilator */
+        FullLengthInDetector = DistVector(ISP[0], ISP[1]);
 		  
-		  /* intensity norm factor */
-		  norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
+        /* intensity norm factor */
+        norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
 
-		  /* now the influence of the wavelength*/
-		  if(WorkNeutron.Wavelength < 5.0)
-		    LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
-		  else
-		    LambdaProb = 1.0;
+        /* now the influence of the wavelength*/
+        if(WorkNeutron.Wavelength < 5.0)
+	        LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
+        else
+	        LambdaProb = 1.0;
 
-		  for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
-		    {
-		      if (eTOF==VT_TOF_CALC)
-			{	/* determine the scattering point in the scintilator */
-			  LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
-			  ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-			}
-		      else
-			{
-			  LengthTillScattering = 0.0;
-			  ScatteringProb = MaxEfficiency * LambdaProb;
-			}
+        for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
+        {
+          if (eTOF==VT_TOF_CALC)
+          {	/* determine the scattering point in the scintilator */
+            LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
+            ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
+          }
+          else
+          {
+            LengthTillScattering = 0.0;
+            ScatteringProb = MaxEfficiency * LambdaProb;
+          }
 
-		      if(bMonitor)
-			{	ScatteringProb       = 1.0;
-			  LengthTillScattering = 0.0;
-			}
+          if(bMonitor)
+          { ScatteringProb       = 1.0;
+            LengthTillScattering = 0.0;
+          }
 
-		      for(j=0; j<3; j++)
-			SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
+          for(j=0; j<3; j++)
+            SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
 
-		      DetectorSpot(SP, DetSpot, &Detector);
+          DetectorSpot(SP, DetSpot, &Detector);
 
-		      TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
-			V_FROM_LAMBDA(WorkNeutron.Wavelength);
+          TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
+          V_FROM_LAMBDA(WorkNeutron.Wavelength);
 
-		      /* everythings done, so rot back the vectors and put all together 
-			 and set output data of the neutron */
-		      OutNeutron             = WorkNeutron;
-		      OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
-		      OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
+          /* everythings done, so rot back the vectors and put all together 
+          and set output data of the neutron */
+          OutNeutron             = WorkNeutron;
+          OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
+          OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
 		      		     		      
-
-		      if (bMonitor)
-			{
-			  RotBackVector(RotMatrix, SP);
-			  CopyVector(SP, OutNeutron.Position);
-			  
-			}
-		      else
-			{	
-			  RotBackVector(RotMatrix,DetSpot);
-			  CopyVector(DetSpot, OutNeutron.Position);
-			  NormVector(DetSpot);
-			  CopyVector(DetSpot, OutNeutron.Vector);
-			}
-
+          if (bMonitor)
+          {
+            RotBackVector(RotMatrix, SP);
+            CopyVector(SP, OutNeutron.Position);
+          }
+          else
+          {	
+            RotBackVector(RotMatrix,DetSpot);
+            CopyVector(DetSpot, OutNeutron.Position);
+            NormVector(DetSpot);
+            CopyVector(DetSpot, OutNeutron.Vector);
+          }
 		      
-		      // write interaction point - only once per incoming trajectory
-		      if (NeutCount < 1)  
-			{ if (AddColor > 0) OutNeutron.Color += AddColor;
-			  
-			  WriteIAP(&OutNeutron, VT_DETECTED);
-			}
+          // write interaction point - only once per incoming trajectory
+          if (NeutCount < 1)  
+          { if (AddColor > 0) OutNeutron.Color += AddColor;
+            WriteIAP(&OutNeutron, VT_DETECTED);
+          }
 
-		      // write out neutrons that shall be detected
-		      if ((DetectColor < 1) || (InputNeutrons[i].Color == DetectColor)) 
-			{
-			  
-			  // the neutron co-ordinates are adapted to the shift of the co-ordinate for a flat detector (see below)
-			  if (geom==2)
-			    SubVector(OutNeutron.Position, vShift);
-			  if (AddColor > 0) OutNeutron.Color += AddColor;
-			  WriteNeutron(&OutNeutron);			  
-			 
-			}
-		    } /* loop count */
-		} 
-	      else /* if neutron does not intersect detector */ 
-		{
-		  VectorType Pos1, Pos2;  // intersection points of trajectory with cylinder
+          // write out neutrons that shall be detected
+          if ((DetectColor < 1) || (InputNeutrons[i].Color == DetectColor)) 
+          {
+            // the neutron co-ordinates are adapted to the shift of the co-ordinate for a flat detector (see below)
+            if (geom==2)
+              SubVector(OutNeutron.Position, vShift);
+            if (AddColor > 0) OutNeutron.Color += AddColor;
+              WriteNeutron(&OutNeutron);			  
+          }
+        } /* loop count */
+      } 
+      else /* if neutron does not intersect detector */ 
+      {
+        VectorType Pos1, Pos2;  // intersection points of trajectory with cylinder
  
-		  if (geom==2) // flat
-		    { 
-		      RotBackVector(RotMatrix, WorkNeutron.Vector);
-		      RotBackVector(RotMatrix, WorkNeutron.Position);
-		      PlaneLineIntersect(WorkNeutron.Position, WorkNeutron.Vector, vDir, distance, WorkNeutron.Position);
-		    }
-		  else
-		    { IntersectionWithInfiniteCylinder(distance, WorkNeutron.Position, WorkNeutron.Vector, Pos1, Pos2);
-		      if (Pos1[0]*WorkNeutron.Vector[0] > 0)
-			CopyVector(Pos1, WorkNeutron.Position);
-		      else
-			CopyVector(Pos2, WorkNeutron.Position);
-		      RotBackVector(RotMatrix, WorkNeutron.Vector);
-		      RotBackVector(RotMatrix, WorkNeutron.Position);
-		    }
-		  WriteIAP(&WorkNeutron, VT_OUTSIDE);
-		}
-	    } //for(i=0; i<NumNeutGot; i++)
-      } //while((ReadNeutrons())!= 0)
+        if (geom==2) // flat
+        { 
+          RotBackVector(RotMatrix, WorkNeutron.Vector);
+          RotBackVector(RotMatrix, WorkNeutron.Position);
+          PlaneLineIntersect(WorkNeutron.Position, WorkNeutron.Vector, vDir, distance, WorkNeutron.Position);
+        }
+        else
+        { 
+          IntersectionWithInfiniteCylinder(distance, WorkNeutron.Position, WorkNeutron.Vector, Pos1, Pos2);
+          if (Pos1[0]*WorkNeutron.Vector[0] > 0)
+            CopyVector(Pos1, WorkNeutron.Position);
+          else
+            CopyVector(Pos2, WorkNeutron.Position);
+          RotBackVector(RotMatrix, WorkNeutron.Vector);
+          RotBackVector(RotMatrix, WorkNeutron.Position);
+        }
+        WriteIAP(&WorkNeutron, VT_OUTSIDE);
+      }
+    } //for(i=0; i<NumNeutGot; i++)
+  } //while((ReadNeutrons())!= 0)
 
  my_exit:
   /* Do module specific cleanups */

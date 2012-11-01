@@ -662,7 +662,7 @@ int main(int argc, char *argv[])
 
 
   /* Do the general cleanup */
-  stGeometry.pDescr = "Source";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
+  stGeometry.pDescr = "source:yellow";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
   OwnCleanup();
   Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
 
