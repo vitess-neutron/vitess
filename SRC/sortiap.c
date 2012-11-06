@@ -522,7 +522,8 @@ void drawHollowCylinderShape(float inner_r, char *appearance) {
   static const char *ouse;
 
   if (appearance) {
-    nuse = use = appearance;
+    sprintf(ss, "<Appearance>%s</Appearance>", appearance);
+    nuse = use = ss;
   } else {
     if (ouse) {
       nuse = use = ouse;
