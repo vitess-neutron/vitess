@@ -15,6 +15,7 @@
 /*                                deletion of Q-range, adding of incoher. scattering          */
 /* 1.6  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                 */
 /* 1.7  Feb 2004  K. Lieutenant  'FullParName', 'message' & 'ERROR' included; output extended */
+/* 1.8  Nov 2012  K. Lieutenant  size distribution of spheres                                 */
 /**********************************************************************************************/
 
 #include <string.h>
@@ -37,15 +38,15 @@ double DelTheta= M_PI/2.0,  /* angles determining the detector coverage */
 long   GenNeutrons =1;      /* how many trajectories to generate per incoming trajectory */
 char  *SampleFileName,      /* pointer to the name of the sample file      */
        g_cGeometry = ' ';   /* geometry parameter: 
-                               S: spheres,        R = SizeA
-                               E: ellipsoids      Rx= SizeA´, Ry= SizeB, Rz= SizeC
-                               C: cylinders,      Rx= SizeA´, Ry= SizeB, L = SizeC
-                               P: parallelepiped, a = SizeA´, b = SizeB, c = SizeC
+                               S: spheres,        R  = SizeA
+                               s: size dstr. sph. Rmin=SizeA, Rmax=SizeB
+                               E: ellipsoids      Rx = SizeA, Ry = SizeB, Rz = SizeC
+                               C: cylinders,      Rx = SizeA, Ry = SizeB, L  = SizeC
+                               P: parallelepiped, a  = SizeA, b  = SizeB, c  = SizeC
                                I: no scattering objects, isotropic scattering */ 
 double g_fSizeA   = -1.0, 
        g_fSizeB   = -1.0, 
-       g_fSizeC   = -1.0,   /* size of the particles [Angstr.] e.g. hard spere radius in x-, y-, 
-                               and z-direction */
+       g_fSizeC   = -1.0,   /* size of the particles [Angstr.] e.g. hard spere radius in x-, y-, and z-direction */
        g_fRho1    = 1.0e10, /* scattering length density of particles */
        g_fRho2    = 1.0e10, /* scattering length density of solution */
        g_fFracPtkl= 0.01,   /* volume fraction of the particles */
@@ -104,7 +105,7 @@ int main(int argc, char *argv[])
 	           fFormFac,    /* normalized form factor for the partical shape and size */
 	           fFac, 
 	           neutTheta,
-				  neutPhi;
+	           neutPhi;
 	double     DetFacInc,   /* care about the detector coverage  */
 	           DetFacCoh,     
 	           Lbf;         /* full path length of the neutron in the sample */
@@ -116,8 +117,9 @@ int main(int argc, char *argv[])
 	long       Nth;         /* counting variable of structure factor */
 	double     ScTheta,     /* angle of coherent Scattering */
 	           ScProb,      /* scattering probability */
+             Radius,      /* radius of a sphere     */
 	           OutTheta,    /* Final angles of the neutron in the sample system */
-				  OutPhi;
+             OutPhi;
 	double     RotMatrixSmpl[3][3], /* Rotation matrices that transform a Vector to the */
 	           RotMatrixNeut[3][3]; /* sample coordinate system                         */
 							
@@ -125,10 +127,9 @@ int main(int argc, char *argv[])
 	           nisp,        /* number of intersection points to come */
 	           NeutCount;
 
-	/* get several things done before program starts  */
-	/* which have actually nothing to do with physics */
+	/* Initialization */
 	Init(argc, argv, VT_SMPL_SANS);
-	print_module_name("sample_sans 1.7");
+	print_module_name("sample_sans 1.8");
 	OwnInit(argc, argv);
 
 	/* Go and get the geometry of the sample and the scattering objects */
@@ -158,6 +159,9 @@ int main(int argc, char *argv[])
 	switch (g_cGeometry)
 	{	case 'S': 
 			fprintf(LogFilePtr, "Spherical particles : %8.2f Ang radius\n", g_fSizeA); 
+			break;
+		case 'D': 
+			fprintf(LogFilePtr, "Spherical particles from %8.2f to %8.2f Ang radius\n", g_fSizeA, g_fSizeB); 
 			break;
 		case 'E': 
 			fprintf(LogFilePtr, "Elliptic particles  : radii %8.2f,%8.2f,%8.2f Ang\n", 
@@ -259,19 +263,24 @@ int main(int argc, char *argv[])
 					{
 						case 'S': 
 							fFormFac = FormFactorSphere(qValue, g_fSizeA);
-							fVolPtkl  = 1.0e-24 * 4.0/3.0 * M_PI * pow(g_fSizeA,3);
+							fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * pow(g_fSizeA,3);
+							break;
+						case 'D': 
+              Radius   = MonteCarlo(g_fSizeA, g_fSizeB);
+							fFormFac = FormFactorSphere(qValue, Radius);
+							fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * pow(Radius,3);
 							break;
 						case 'E': 
 							fFormFac = FormFactorEllipsoid(dQ[0], g_fSizeA, dQ[1], g_fSizeB, dQ[2], g_fSizeC);
-							fVolPtkl  = 1.0e-24 * 4.0/3.0 * M_PI * g_fSizeA*g_fSizeB*g_fSizeC;
+							fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * g_fSizeA*g_fSizeB*g_fSizeC;
 							break;
 						case 'C': 
 							fFormFac = FormFactorCylinder(dQ[0], g_fSizeA, dQ[1], g_fSizeB, dQ[2], g_fSizeC);
-							fVolPtkl  = 1.0e-24 * M_PI * g_fSizeA*g_fSizeB * g_fSizeC;
+							fVolPtkl = 1.0e-24 * M_PI * g_fSizeA*g_fSizeB * g_fSizeC;
 							break;
 						case 'P': 
 							fFormFac = FormFactorEpiped(dQ[0], g_fSizeA, dQ[1], g_fSizeB, dQ[2], g_fSizeC);
-							fVolPtkl  = 1.0e-24 * g_fSizeA*g_fSizeB*g_fSizeC;
+							fVolPtkl = 1.0e-24 * g_fSizeA*g_fSizeB*g_fSizeC;
 							break;
 						default:
 							fFormFac = 1.0; 
@@ -510,14 +519,21 @@ void GetSample(SampleType *Sample)
 				case 'C':
 				case 'P': 
 					if (g_fSizeA==-1.0 || g_fSizeB==-1.0 || g_fSizeC==-1.0)
-					{	fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particle in %s",
+					{	fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s",
+						                    SampleFileName);
+						exit(-1);
+					}
+					break;
+				case 'D': 
+					if (g_fSizeA==-1.0 || g_fSizeB==-1.0)
+					{	fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s",
 						                    SampleFileName);
 						exit(-1);
 					}
 					break;
 				case 'S':
 					if (g_fSizeA==-1.0)
-					{	fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particle in %s",
+					{	fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s",
 						                    SampleFileName);
 						exit(-1);
 					}
