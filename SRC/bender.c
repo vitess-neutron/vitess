@@ -82,7 +82,7 @@
   int do_visualise; /* default : no visualisation */
   long number_vis_tr=0; /* counter : number of trajectories, which was visualised */
   long	cancel_vis=0; /* cancel visualisation */
-  extern int gselec=1; /* choose the output 1 - display only, 2 - file only,
+  extern int gselec; /* choose the output 1 - display only, 2 - file only,
 			    3 - both, defined in cpgplot.c */
 #endif
 
@@ -285,7 +285,8 @@ int main(int argc, char *argv[])
   Nchannels = 0;
   BufferIndex = 0;
   surfacerough = 0.0; /*set by default */
-  // gselec = 1 ; /* Activate visualisation device -screen */
+
+  gselec = 1 ; /* Activate visualisation device -screen */
 
   /*input*/
   Init(argc, argv, VT_BENDER);
