@@ -2898,14 +2898,15 @@ proc powCheckErr {{app _}} {
 set sanESET [concat $samASET {
   {Scattering header}
   {sob radio spheres {
-    "scattering\nobject" "specifies the shape of the scattering object. According to this selection, the next three parameters are taken. For
+    "scattering\nobjects" "specifies the shape of the scattering objects. According to this selection, the next three parameters are taken. For
 spheres: radius
-ellipsoid: three radii
-parallelepiped: length, width, height
-cylinder: radius 1, radius 2, height
+polydispersive spheres: minimal and maximal radius
+ellipsoids: three radii
+parallelepipeds: length, width, height
+cylinders: radius 1, radius 2, height
 isotropic scattering: no value needed."}
-    {spheres ellipsoid parallelepiped cylinder "isotropic scattering"}
-    {S E P C I}
+    {"spheres" "polydispersive spheres" "ellipsoids" "parallelepipeds" "cylinders" "isotropic scattering"}
+    {S D E P C I}
   }
   {}
   {hsrad float "" {"radius 1 or\nlength [Ang]"} gt0}
@@ -4306,9 +4307,10 @@ proc serializeSampleFile {f mode var app submodule} {
 	catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
 	switch $s {
 	  S {set sob spheres}
-	  E {set sob ellipsoid}
-	  P {set sob parallelepiped}
-	  C {set sob cylinder}
+	  D {set sob "polydispersive spheres"}
+	  E {set sob ellipsoids}
+	  P {set sob parallelepipeds}
+	  C {set sob cylinders}
 	  default {set sob "isotropic scattering"}
 	}
 	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
@@ -4340,9 +4342,10 @@ proc serializeSampleFile {f mode var app submodule} {
       san {
 	switch $sob {
 	  spheres {set s S}
-	  ellipsoid {set s E}
-	  parallelepiped {set s P}
-	  cylinder {set s C}
+	  "polydispersive spheres" {set s D}
+	  ellipsoids {set s E}
+	  parallelepipeds {set s P}
+	  cylinders {set s C}
 	  default {set s I}
 	}
 	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
