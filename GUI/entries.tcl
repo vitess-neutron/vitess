@@ -227,7 +227,8 @@ proc fileEntry {w line labelwidth width {app _}} {
       if {[llength $tlist] > 0} {
         set var ${variable}_o$app
         upvar #0 $var v
-        set v $dim
+        if {$dim > 1} {set li 1} else {set li 0}
+        set v [lindex $tlist $li]
         frame $w.u -bg $bgColor
         optEntry $w.u.r $var $tlist
         pack $w.u.r
