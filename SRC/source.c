@@ -47,6 +47,7 @@
 #include "softabort.h"
 #include "intersection.h"
 #include "src_modchar.h"
+#include "source_csns.h"
 #include "message.h"
 
 

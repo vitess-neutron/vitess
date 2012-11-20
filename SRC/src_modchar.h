@@ -114,9 +114,7 @@ FctTable;
 long   IndLT        (const long i, const long j);
 double TotalFU      (const double dTemp,   const short  eSource,  const short  eModType,
 					 const double dPower,  const double dPeriod,  const double dPulseLen);
-double CsnsTotalFU  (const double dTemp,   const short  eModType, const double dPower);
 double EssModFU     (const double dLambda, const double dTime,    const double dLength);
-double CsnsModFU    (const double dLambda, const double dTime,    const double dPosY,    const double dPosZ);
 
 double Maxwellian   (const double dLambda, const double dModTemp);
 double NotMaxwell   (const double dLambda, const double dParam);
