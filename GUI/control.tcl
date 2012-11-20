@@ -33,6 +33,10 @@ proc finalExit {} {
       catch {file delete $f}
     }
   }
+  set fdir [file join [globVal SourceDirectory] FILES .saved]
+  foreach f [glob -nocomplain -directory $fdir *.gui] {
+    catch {file delete $f}
+  }
   exit
 }
 
@@ -222,7 +226,7 @@ proc controlMenu {w} {
 
   set lmenu {
     {c "LOAD Instrument" {loadAll gui}}
-    {c "SAVE Instrument" {storeAll gui}} 
+    {c "SAVE Instrument" {storeAll gui}}
     {c "SAVE As" {storeAll gui newfile.gui}} s
     {c "ADD Packet" {addPacket}}
     {c "INSERT Packet" {insertPacketWindow}}
@@ -242,7 +246,7 @@ proc controlMenu {w} {
     {c "tcl script" {storeAll tcl}}
     {c "pl perl script" {storeAll pl}}
     {c "py python script" {storeAll py}}
-  } 
+  }
   if {[getSystem] == "unix"} {
     lappend flist \
       {c "sh shell script" {storeAll sh}} \
@@ -255,6 +259,8 @@ proc controlMenu {w} {
   unset flist
 
   popMenu $w.copa.menu \
+      {c "Recover Instrument" recoverFileGUI} \
+      {s} \
       {c "Copy  Module Parameters" copyModPars} \
       {c "Paste Module Parameters" pasteModPars}
 
@@ -399,9 +405,22 @@ proc controlMenu {w} {
       {m Trajectories trajmode} \
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
-      {m Xcontrol intern} s\
+      {m Xcontrol intern} \
+      {m Recovery recovery} s\
       {c "X3D options" editX3DOptions} \
       {c "Helper applications" editDefaults}
+
+  set ww $wo.recovery
+  menu $ww -bg $menuColor -tearoff 0
+  popMenu $ww \
+      {m Snapshots states} \
+      {m "Snap Interval (s)" secs}
+
+  forceDef StoreStates 8
+  cascEntries $ww.states StoreStates 2 4 8 16
+
+  forceDef WatchSeconds 60
+  cascEntries $ww.secs WatchSeconds 5 10 30 60 300 600 900
 
   set ww $wo.afont
   menu $ww -bg $menuColor -tearoff 0
@@ -461,7 +480,7 @@ proc controlMenu {w} {
   cascEntries $wo.checkmode Checkmode normal set_default strict
 
   forceDef Execmode normal
-  cascEntries $wo.execmode Execmode normal "save old" "copy results" 
+  cascEntries $wo.execmode Execmode normal "save old" "copy results"
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
@@ -732,9 +751,9 @@ proc showBeef {w} {
   # ch: fixed height of module list and visible module window, in cm
   # 0.8 means the VITESS window should not take more than 80 % of the display height
   # 12/28 is the ratio of module list window per total height we want to obtain
-  
+
   set ch [expr $hpx * 0.8 * 12.0/28.0 / $pcm]c
-  
+
   # length and width of window components given in cm
   # cw    list canvas width
   # ch    list canvas height
@@ -744,7 +763,7 @@ proc showBeef {w} {
 
   # Tth   text window height, in characters of given font, means visible text lines
   set Tth 10
-  
+
   switch $FontSizeIndex {
     0 {
       set cw 9c
@@ -809,7 +828,7 @@ proc showBeef {w} {
   helpFrame $Amf
 
   ### action buttons
-  global fileentrywidth LastWin LastState Progress ProgressS ProgressTextL
+  global fileentrywidth LastWin Progress ProgressS ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -852,9 +871,53 @@ proc showBeef {w} {
   pack $wb.del -fill x
   pack $wb.dummy -fill x -anchor w -pady 12m
   pack $wb.del $wb.exit -fill x
-  set LastState [generateVitessCommand kstate]
+  saveLastState
   set LastWin $wb.exit
   bind $LastWin <Destroy> windowManagerExit
+}
+
+proc saveLastState {{fromsavepoint 1}} {
+  global LastState LastCheck StateStoreInd StoreStates
+
+  set i 0
+  set st [generateVitessCommand kstate]
+
+  set sav 0
+  if {! [set sexist [info exists StateStoreInd]]} {
+    set sav 1
+  } elseif {! [info exists LastState]} {
+    set sav 1
+  } elseif {$st == $LastState} {
+    set sav 0
+  } else {
+    set sav 1
+  }
+  if $sav {
+    set LastState $st
+    if {! $fromsavepoint} {
+      if $sexist {
+        set i [expr [incr StateStoreInd] % $StoreStates]
+      } else {
+        set StateStoreInd 0
+      }
+      set fdir [file join [globVal SourceDirectory] FILES .saved]
+      file mkdir $fdir
+      set fn [file join $fdir $i.gui]
+      storeAll gui "" $fn 0
+    }
+  }
+  set LastCheck [clock seconds]
+}
+
+proc watchdogMonitor {} {
+  global WatchSeconds PipeActive LastCheck
+  if {$PipeActive} {
+    set tdelta [expr 1000*$WatchSeconds]
+  } else {
+    saveLastState 0
+    set tdelta [expr 1000*($LastCheck + $WatchSeconds - [clock seconds])]
+  }
+  after $tdelta watchdogMonitor
 }
 
 ### main control widget of Xcontrol, specific for VITESS if the name of this widget
@@ -919,4 +982,8 @@ proc controlGUI {
     if {$w == "."} {set w ""}
     showBeef $w
   }
+
+  global WatchSeconds PipeActive
+  set PipeActive 0
+  after [expr 1000*$WatchSeconds] watchdogMonitor
 }

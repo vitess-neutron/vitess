@@ -13,7 +13,7 @@
 # - variable names must be of the form [a-zA-Z][a-zA-Z0-9_.]+
 # - an _ underscore as last character is for entry value variables only
 # - if the first character is uppercase, the variable will not be saved / loaded
-# - variables with SET, ESET or Add in the end are reserved for formular lists 
+# - variables with SET, ESET or Add in the end are reserved for formular lists
 # - mod<n> has either "--inactive--" or the name of module n as value,
 #   normal variable names should not have of the form mod[0-9]+
 # - <var>_<n> is the entry variable for entry var of module n; because this name
@@ -35,7 +35,7 @@
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
-# Some variables for settings begin with a capital letter, or are otherwise rejected by 
+# Some variables for settings begin with a capital letter, or are otherwise rejected by
 # the regular expression, but should be saved:
 set DoSaveSetting {
   audible_bell
@@ -62,7 +62,8 @@ set DoNotSaveSetting {
 
 set DoNotSave [concat $DoNotSaveSetting {
   audible_bell
-  bgColor browse_ext_mode buffersize
+  bgColor browse_ext_mode buffersize buttonColor
+  canvasColor
   fileentrywidth
   infolevel itemlabwidth
   labColor
@@ -1031,7 +1032,8 @@ set guideESET {
     "curvature\n(radius) [m]"
     "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
 }
-
+# guide needs a scrollable window
+set BigFrameguide 1
 
 set specoptAdd {
   {"Special options" header}
@@ -1176,7 +1178,7 @@ set guide_idealESET {
   {dist_focus_ver float 0 {
     "Distance from exit to \n focus  in ver. plane [m]"
     "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
-  {} 
+  {}
    {addColor float 0 {
     "Add to color"
     "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
@@ -1190,7 +1192,7 @@ set guide_idealESET {
     {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
   {brefl_filename pareditablefile mirr1a.dat
     {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  
+
 }
 
 set guide_idealESET [concat $guide_idealESET]
@@ -1244,7 +1246,7 @@ set guide_ellipticESET {
   {dist_focus_ver float 0 {
     "Distance from exit to \n focus  in ver. plane [m]"
     "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
-  {} 
+  {}
    {addColor float 0 {
     "Add to color"
     "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
@@ -1258,7 +1260,7 @@ set guide_ellipticESET {
     {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
   {brefl_filename pareditablefile mirr1a.dat
     {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  
+
 }
 
 set guide_ellipticESET [concat $guide_ellipticESET]
@@ -2367,7 +2369,7 @@ set ra {
   {refile parbrowsefile "" {"reference file" "" "" S}}
   {ffile parbrowsefile "" {"flux file" "" "" F}}
   {}
-  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
   {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
   {}
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
@@ -2818,8 +2820,8 @@ set samASET [list {Sample header} \
 set nxsESET [concat $samASET {
   {nxsfile pareditablefile "" {"nxs para-\nmeter file"} dr}
 }]
-  
-  
+
+
 ### sample
 ###   pow file description
 
@@ -3274,7 +3276,7 @@ set eval_elastESET {
   {prob_w radio yes {
     "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
   {sAxis radio none {
-    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	 
+    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	
  {bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
@@ -3929,7 +3931,7 @@ If you are interested in intermediate results you can use the module <bwriteout>
 which stores and passes through the data it receives.
 A special form of the pipe is used to read compressed data:
 gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
-  | module2 -a<value> ... | moduleN -a<value> ... 
+  | module2 -a<value> ... | moduleN -a<value> ...
 
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
@@ -4010,7 +4012,7 @@ package VITESS, i.e they have a common meaning. These options are
   If the first program in the pipe is an external program like gzip, which decompresses
   a neutron trajectory file, the second program in the pipe will be the first
   module of the instrument. This module knows to accept data from standard input then,
-  potentially compressed, and the value of this parameter gives the byte file size 
+  potentially compressed, and the value of this parameter gives the byte file size
   of the data file decompressed by the first program.
 
 12. write compressed data (--C)
@@ -4071,7 +4073,7 @@ When exploring the parameter space of an instrument it often helps to split
 the instrument.
 The neutron trajectories of a first part, where parameters are fixed,
 are saved to a binary file, to be read over and over again in the second part
-of the instrument pipe, where parameters are changed often. 
+of the instrument pipe, where parameters are changed often.
 These neutron files may grow quite large.
 
 The menu bar option "Output compression" allows to compress data
@@ -4110,6 +4112,20 @@ proc cleanupModView {} {
 }
 
 
+proc highlightSelectedModule {{i -1}} {
+  # highlight selected module
+  global maxModule Mlf bgColor entryColor
+  for {set ii 0} {$ii < $maxModule} {incr ii} {
+    if [winfo exists $Mlf.g$ii.label] {
+      if {$ii == $i} {
+        $Mlf.g$ii.label configure -bg $entryColor
+      } else {
+        $Mlf.g$ii.label configure -bg $bgColor
+      }
+    }
+  }
+}
+
 ### checkModVar
 ###
 proc checkModVar {i {wishedmode ""}} {
@@ -4141,13 +4157,13 @@ proc checkModVar {i {wishedmode ""}} {
   }
   set needMoreModules 0
   cleanupModView
+
   switch $sep {
     here {				# normal entries in main window
       catch {destroy $sepw}
       set sepw ""
       set wm $Amf;			# actual module frame
-      if {$visible == $DummyEntry} {set n $wm.label} else {
-	set n $wm.$visible}
+      if {$visible == $DummyEntry} {set n $wm.label} else {set n $wm.$visible}
       catch {destroy $n}
       set visible $var
       if {$var == $DummyEntry} {
@@ -4155,7 +4171,12 @@ proc checkModVar {i {wishedmode ""}} {
       } else {
 	fGroup $wm.h $wm.$var
 	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor
-	pack $wm.h.head
+        entry $wm.h.mname -width 6 -bg $bgColor -textvariable mmm_$i
+        # bind  $wm.h.mname <Key> "showModName $i"
+        bind  $wm.h.mname <Leave> "showModName $i"
+        pack $wm.h.mname -side left
+	pack $wm.h.head -side left -expand yes -fill both
+
 	generateEntries $wm.$var ${var}ESET $delist _$i
 	set needMoreModules 1
 	regsub {.c.f$} $Amf .c sw
@@ -4201,6 +4222,8 @@ proc checkModVar {i {wishedmode ""}} {
       set needMoreModules 1
     }
   }
+
+  if {$sep == "here"} {highlightSelectedModule $i} else highlightSelectedModule
 
   if {!$needMoreModules} return
   set nexti [expr $i + 1]
@@ -4866,6 +4889,9 @@ proc trimModules {w i rmlist deflist} {
   }
   # reactivate saved modules for new indices
   reShowModules $w
+
+  # show given names of modules
+  showModName
 }
 
 proc moveDown {oldi} {
@@ -4881,7 +4907,7 @@ proc moveDown {oldi} {
   set deflist {}
   lappend deflist [list visM$oldi $DummyEntry] [list mod$oldi $DummyEntry]
   set allglob [info globals]
-  set w $Mlf;
+  set w $Mlf
 
   # append a free module below
   if {$i < $maxModule} {        # else we're full
@@ -4961,12 +4987,32 @@ proc removeMod {oldi} {
     lappend deflist [list visM$newi $DummyEntry] [list mod$newi $DummyEntry]
     trimModules $w $oldi $rmlist $deflist
   }
+  highlightSelectedModule
+}
+
+proc showModName {{i ""}} {
+  global Mlf maxModule DummyEntry
+  if {$i != ""} {
+    $Mlf.g$i.nlabel configure -text [globVal mmm_$i]
+  } else {
+    for {set i 0} {$i < $maxModule} {incr i} {
+      upvar #0 mmm_$i m
+      set v ""
+      if {[globVal mod$i] == $DummyEntry} {
+        catch {unset m}
+      } else {
+        catch {set v $m}
+      }
+      set w $Mlf.g$i.nlabel
+      if [winfo exists $w] {$w configure -text $v}
+    }
+  }
 }
 
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf labColor radioColor menuColor menuButtonColor
+  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor
   set fn [headerFont]
   set lfn [labelFont]
   set tfn [textFont]
@@ -5015,6 +5061,8 @@ proc moduleMenus {{n 1}} {
     button $w.top -image ftop -command "checkModVar $i separate"
     button $w.cross -image fcross -command "removeMod $i"
 
+    label $w.nlabel -font $tfn -bg $bgColor
+
     set varName mod$i
     upvar #0 $varName var
     set var $DummyEntry
@@ -5042,12 +5090,12 @@ proc moduleMenus {{n 1}} {
 	}
       }
     }
-    pack $w.cross $w.down $w.label $w.opt $w.top $w.right -side left -padx 1 -anchor w
+    pack $w.cross $w.down $w.label $w.opt $w.top $w.right $w.nlabel -side left -padx 1 -anchor w
   }
 }
 
 
-# Unset temporary help variables used here, variables matching single characters, 
+# Unset temporary help variables used here, variables matching single characters,
 # or with Add in the end are deleted by setAll.
 foreach n $TempVars {
   catch {unset $n}
