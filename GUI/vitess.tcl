@@ -221,7 +221,7 @@ rename makeModuleSets {}
 ###
 ### General positions & meaning in lists
 ###
-### these lists should have name ending with (or at least including) ESET
+### these lists should have names ending with (or at least including) ESET
 ### like singleDetectorESET
 ###
 ### 0 name of global variable (first part of name for type select)
@@ -274,7 +274,7 @@ rename makeModuleSets {}
 ### An entry of type filename must specify an existing file or directory.
 ### The input may contain tilde (~) notation on unix systems.
 ### If a filename entry becomes checked, and the file or directory
-### exists, it is replaced by a fully qualified filename. This helpss
+### exists, it is replaced by a fully qualified filename. This helps
 ### to avoid error situations, where a filename is used with a different
 ### default environment than xcontrol.
 ###
@@ -4172,7 +4172,7 @@ proc checkModVar {i {wishedmode ""}} {
 	fGroup $wm.h $wm.$var
 	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor
         entry $wm.h.mname -width 6 -bg $bgColor -textvariable mmm_$i
-        # bind  $wm.h.mname <Key> "showModName $i"
+        bind  $wm.h.mname <KeyRelease> "showModName $i"
         bind  $wm.h.mname <Leave> "showModName $i"
         pack $wm.h.mname -side left
 	pack $wm.h.head -side left -expand yes -fill both

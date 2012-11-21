@@ -419,8 +419,8 @@ proc controlMenu {w} {
   forceDef StoreStates 8
   cascEntries $ww.states StoreStates 2 4 8 16
 
-  forceDef WatchSeconds 60
-  cascEntries $ww.secs WatchSeconds 5 10 30 60 300 600 900
+  forceDef WatchSeconds 30
+  cascEntries $ww.secs WatchSeconds 5 10 20 30 60 300 600 900
 
   set ww $wo.afont
   menu $ww -bg $menuColor -tearoff 0
@@ -447,14 +447,10 @@ proc controlMenu {w} {
       {m "Info level" infolevel} \
       {m Timeout timeout} s\
       {m Bell bell} \
-      {m Precision prec} \
       {m Protocol prot}
 
   forceDef ProtocolMode action
   cascEntries $ww.prot ProtocolMode action everything nothing
-
-  forceDef tcl_precision 12
-  cascEntries $ww.prec tcl_precision 8 9 10 11 12 13 14 15 16 17
 
   forceDef tk_strictMotif [expr {[getSystem] == "unix"}]
   cascEntries $ww.tk_strictMotif tk_strictMotif 1 0
@@ -876,48 +872,66 @@ proc showBeef {w} {
   bind $LastWin <Destroy> windowManagerExit
 }
 
-proc saveLastState {{fromsavepoint 1}} {
-  global LastState LastCheck StateStoreInd StoreStates
+proc saveLastState {} {
+  # Save the state, which is hashed in a generated command.
+  global LastState
+  set LastState [generateVitessCommand kstate]
+}
+
+proc doSnapshot {} {
+  global LastSnapState LastCheck StateStoreInd StoreStates
 
   set i 0
+
   set st [generateVitessCommand kstate]
 
-  set sav 0
-  if {! [set sexist [info exists StateStoreInd]]} {
-    set sav 1
-  } elseif {! [info exists LastState]} {
-    set sav 1
-  } elseif {$st == $LastState} {
-    set sav 0
+  set sexist [info exists StateStoreInd]
+
+  if {! $sexist} {
+    set do_snap 1
+  } elseif {! [info exists LastSnapState]} {
+    set do_snap 1
+  } elseif {$st == $LastSnapState} {
+    set do_snap 0
   } else {
-    set sav 1
+    set do_snap 1
   }
-  if $sav {
-    set LastState $st
-    if {! $fromsavepoint} {
-      if $sexist {
-        set i [expr [incr StateStoreInd] % $StoreStates]
-      } else {
-        set StateStoreInd 0
-      }
-      set fdir [file join [globVal SourceDirectory] FILES .saved]
-      file mkdir $fdir
-      set fn [file join $fdir $i.gui]
-      storeAll gui "" $fn 0
+
+  if $do_snap {
+    set LastSnapState $st
+
+    if $sexist {
+      set i [expr [incr StateStoreInd] % $StoreStates]
+    } else {
+      set StateStoreInd 0
     }
+    set fdir [file join [globVal SourceDirectory] FILES .saved]
+    file mkdir $fdir
+    set fn [file join $fdir $i.gui]
+    storeAll gui "" $fn 0
   }
+
+  # indicate snap time to watchdog
   set LastCheck [clock seconds]
 }
 
 proc watchdogMonitor {} {
   global WatchSeconds PipeActive LastCheck
-  if {$PipeActive} {
-    set tdelta [expr 1000*$WatchSeconds]
-  } else {
-    saveLastState 0
-    set tdelta [expr 1000*($LastCheck + $WatchSeconds - [clock seconds])]
+  
+  set tsec $WatchSeconds
+  if {! $PipeActive} {
+    set do_snap 1
+    if [info exists Lastcheck] {
+      set tdelta [expr [clock seconds] - $LastCheck]
+      if {$tdelta < $tsec} {
+        set do_snap 0
+        incr tsec -$tdelta
+      }
+    }
+    if $do_snap doSnapshot
   }
-  after $tdelta watchdogMonitor
+  # reenable watchdog execution
+  after [expr 1000*$tsec] watchdogMonitor
 }
 
 ### main control widget of Xcontrol, specific for VITESS if the name of this widget
@@ -975,15 +989,14 @@ proc controlGUI {
     wm withdraw .
     showModulesAgain
   } else {
-    global ControlDirectory
+    global ControlDirectory WatchSeconds PipeActive
+    set PipeActive 0
     set ControlDirectory $defaultdirectory
     setAll
     # for the xcontrol root window names start with . dot
     if {$w == "."} {set w ""}
     showBeef $w
+    after [expr 1000*$WatchSeconds] watchdogMonitor
   }
 
-  global WatchSeconds PipeActive
-  set PipeActive 0
-  after [expr 1000*$WatchSeconds] watchdogMonitor
 }

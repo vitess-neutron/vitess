@@ -348,6 +348,9 @@ proc deleteSomeModules {w i} {
     upvar #0 visM$i v
     upvar #0 mod$i mv
     set v [set mv $DummyEntry]
+    # dump old module name tag
+    upvar #0 mmm_$i mt
+    catch {unset mt}
   }
 }
 
@@ -634,9 +637,10 @@ proc doImportPipe {name} {
 }
 
 proc importPipe {} {
-  if [dontDoit "You have unsaved changes. Forget them?"] return
   set name [fileDialog open]
   if {$name == ""} return
+  if [dontDoit "Your changes will be saved to a snapshot only. Continue importing a pipe?"] return
+  doSnapshot
   doImportPipe $name
 }
 
@@ -671,7 +675,7 @@ proc cleanupGlobalVariables {} {
 
   # Delete global <name>_<number> variables, if they do not belong to a valid module.
   # First we look for entry variables of active modules.
-  global DummyEntry maxModule
+  global DummyEntry maxModule ENames
 
   for {set i 1} {$i <= $maxModule} {incr i} {
     upvar #0 mod$i mod
@@ -681,14 +685,13 @@ proc cleanupGlobalVariables {} {
     upvar #0 ${mod}ESET m
     if {! [info exists m]} continue
     set mname($i) $mod
-    if [info exists name($mod)] continue ; # variables of that module have been extracted already
-    set name($mod) 1
+    if [info exists ENames($mod)] continue ; # variable names of that module are known
     foreach n $m {
       set he [lindex $n 1]
       if {$he == "" || $he == "header"} continue
-      lappend nlist($mod) [lindex $n 0]
+      lappend ENames($mod) [lindex $n 0]
     }
-    lappend nlist($mod) mmm ; # special module name entry 
+    lappend ENames($mod) mmm ; # special module name entry 
     # puts "$mod ::::"
     # puts $nlist($mod)
   }
@@ -698,7 +701,7 @@ proc cleanupGlobalVariables {} {
     if {! [regexp {^(.+)_([0-9]+)$} $e a nm n]} continue
     # puts "lookat $e"
     if [info exists mname($n)] {
-      set rc [lsearch $nlist($mname($n)) $nm]
+      set rc [lsearch $ENames($mname($n)) $nm]
       # puts "   $mname($n) exists, $nm has index $rc"
       if {$rc >= 0} continue
     }
@@ -752,10 +755,12 @@ proc loadAll {extension {givenname ""}} {
 
   set name $givenname
   if {$name == ""} {
-    if [dontDoit "You have unsaved changes. Forget them?"] return
-
     set name [fileDialog open $extension]
+    if {$name == ""} return
   }
+
+  if [dontDoit "Your changes will be saved to a snapshot only. Continue loading?"] return
+  doSnapshot
 
   set f [openSaveFile $name "experiment description save file"]
   if {$f == ""} return
@@ -993,16 +998,23 @@ proc lCompare  {a b} {
 }
 
 proc recoverFile {w fn} {
-  destroy $w
-  loadAll gui $fn
-  # who recovered a file will may be need more snapshots
+  # who recoveres a file will probably need more snapshots
   global StoreStates
   if {$StoreStates < 8} {set StoreStates 8}
+
+  # dump the recovery GUI window
+  destroy $w
+
+  # load the old snapshot
+  loadAll gui $fn
 }
 
 proc recoverFileGUI {} {
   set w .rgui
-  if [winfo exists $w] return
+  if [winfo exists $w] {
+    raise $w
+    return
+  }
   global FTime bgColor
   set fdir [file join [globVal SourceDirectory] FILES .saved]
   set i 0
@@ -1014,7 +1026,10 @@ proc recoverFileGUI {} {
     lappend findex $i
     incr i
   }
-  if {$i == 0} return
+  if {$i == 0} {
+    showText "!No snapshots taken so far"
+    return
+  }
   set findex [lsort -command lCompare $findex]
 
   set n "Recover Instrument"
