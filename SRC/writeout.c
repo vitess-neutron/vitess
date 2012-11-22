@@ -56,7 +56,8 @@ short bF_format=FALSE,
   bF_cCounts=TRUE,
   bF_cPosition=TRUE,
   bF_cDirection=TRUE,
-  bF_cSpin=TRUE;
+  bF_cSpin=TRUE,
+  bF_Active=TRUE;
 
 short DetectColor = 0; // WriteOut only neutrons with a given color, -1 means any
 double filtLambdaMin=-1.0,          // filter
@@ -102,89 +103,82 @@ int main(int argc, char **argv)
     sep = " ";
 
   csep = 0;
-  fprintf(AsciiFile,"#");
-  if (bF_Separator) { // Tabular
-    if (bF_format) { // float
-      if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
-      if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
-      if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-      if (bF_cTOF)       { SP(form[cTOF],    "%7.3f");     FP("TOF"); }
-      if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("lambda"); }
-      if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP("count_rate"); }
-      if (bF_cPosition)  {
-        SP(form[cPosX],   "%8.4f");     FP("pos_x");
-        SP(form[cPosY],   "%8.4f");     FP("pos_y");
-        SP(form[cPosZ],   "%8.4f");     FP("pos_z");
+  if (AsciiFile) {
+    fputs("#", AsciiFile);
+    if (bF_Separator) { // Tabular
+      if (bF_format) { // float
+        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
+        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
+        if (bF_cTOF)       { SP(form[cTOF],    "%7.3f");     FP("TOF"); }
+        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("lambda"); }
+        if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP("count_rate"); }
+        if (bF_cPosition)  {
+          SP(form[cPosX],   "%8.4f");     FP("pos_x");
+          SP(form[cPosY],   "%8.4f");     FP("pos_y");
+          SP(form[cPosZ],   "%8.4f");     FP("pos_z"); }
+        if (bF_cDirection) {
+          SP(form[cDirX],   "%9.6f");     FP("dir_x");
+          SP(form[cDirY],   "%9.6f");     FP("dir_y");
+          SP(form[cDirZ],   "%9.6f");     FP("dir_z"); }
+        if (bF_cSpin)      {
+          SP(form[cSpinX],  "%4.1f");     FP("sp_x");
+          SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+          SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+      } else { // exp
+        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
+        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
+        if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("TOF"); }
+        if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("lambda"); }
+        if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP("count_rate"); }
+        if (bF_cPosition)  {
+          SP(form[cPosX],   "% .5e");     FP("pos_x");
+          SP(form[cPosY],   "% .5e");     FP("pos_y");
+          SP(form[cPosZ],   "% .5e");     FP("pos_z"); } 
+        if (bF_cDirection) {
+          SP(form[cDirX],   "% .5e");     FP("direction_x");
+          SP(form[cDirY],   "% .5e");     FP("direction_y");
+          SP(form[cDirZ],   "% .5e");     FP("direction_z"); }
+        if (bF_cSpin)      {
+          SP(form[cSpinX],  "% .5e");     FP("spin_x");
+          SP(form[cSpinY],  "% .5e");     FP("spin_y");
+          SP(form[cSpinZ],  "% .5e");     FP("spin_z"); }
       }
-      if (bF_cDirection) {
-        SP(form[cDirX],   "%9.6f");     FP("dir_x");
-        SP(form[cDirY],   "%9.6f");     FP("dir_y");
-        SP(form[cDirZ],   "%9.6f");     FP("dir_z");
+    } else { //Space
+      if (bF_format) { // float
+        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
+        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
+        if (bF_cTOF)       { SP(form[cTOF],    " %7.3f");    FP("    TOF"); }
+        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda"); }
+        if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate"); }
+        if (bF_cPosition)  { SP(form[cPosX],   " %8.4f");    FP("    pos_x");
+                             SP(form[cPosY],   "%8.4f");     FP("   pos_y");
+                             SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
+        if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("     dir_x");
+                             SP(form[cDirY],   "%9.6f");     FP("    dir_y");
+                             SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
+                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+      } else { // exp
+        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
+        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
+        if (bF_cTOF)       { SP(form[cTOF],    " %.5e");     FP("     TOF"); }
+        if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("       lambda"); }
+        if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP(" count_rate"); }
+        if (bF_cPosition)  { SP(form[cPosX],   " % .5e");    FP("         pos_x");
+                             SP(form[cPosY],   "% .5e");     FP("       pos_y");
+                             SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
+        if (bF_cDirection) { SP(form[cDirX],   " % .5e");    FP("  direction_x");
+                             SP(form[cDirY],   "% .5e");     FP(" direction_y");
+                             SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  " % .5e");    FP("       spin_x");
+                             SP(form[cSpinY],  "% .5e");     FP("      spin_y");
+                             SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
       }
-      if (bF_cSpin)      {
-        SP(form[cSpinX],  "%4.1f");     FP("sp_x");
-        SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-        SP(form[cSpinZ],  "%4.1f");     FP("sp_z");
-      }
-    } else { // exp
-      if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
-      if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
-      if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-      if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("TOF"); }
-      if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("lambda"); }
-      if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP("count_rate"); }
-      if (bF_cPosition)  {
-        SP(form[cPosX],   "% .5e");     FP("pos_x");
-        SP(form[cPosY],   "% .5e");     FP("pos_y");
-        SP(form[cPosZ],   "% .5e");     FP("pos_z"); } 
-      if (bF_cDirection) {
-        SP(form[cDirX],   "% .5e");     FP("direction_x");
-        SP(form[cDirY],   "% .5e");     FP("direction_y");
-        SP(form[cDirZ],   "% .5e");     FP("direction_z"); }
-      if (bF_cSpin)      {
-        SP(form[cSpinX],  "% .5e");     FP("spin_x");
-        SP(form[cSpinY],  "% .5e");     FP("spin_y");
-        SP(form[cSpinZ],  "% .5e");     FP("spin_z"); }
-    }
-  } else { //Space
-    if (bF_format) { // float
-      if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
-      if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
-      if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-      if (bF_cTOF)       { SP(form[cTOF],    " %7.3f");    FP("    TOF"); }
-      if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda"); }
-      if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate"); }
-      if (bF_cPosition)  {
-        SP(form[cPosX],   " %8.4f");    FP("    pos_x");
-        SP(form[cPosY],   "%8.4f");     FP("   pos_y");
-        SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
-      if (bF_cDirection) {
-        SP(form[cDirX],   " %9.6f");    FP("     dir_x");
-        SP(form[cDirY],   "%9.6f");     FP("    dir_y");
-        SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
-      if (bF_cSpin)      {
-        SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
-        SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-        SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-    } else { // exp
-      if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
-      if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
-      if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-      if (bF_cTOF)       { SP(form[cTOF],    " %.5e");     FP("     TOF"); }
-      if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("       lambda"); }
-      if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP(" count_rate"); }
-      if (bF_cPosition)  {
-        SP(form[cPosX],   " % .5e");    FP("         pos_x");
-        SP(form[cPosY],   "% .5e");     FP("       pos_y");
-        SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
-      if (bF_cDirection) {
-        SP(form[cDirX],   " % .5e");    FP("  direction_x");
-        SP(form[cDirY],   "% .5e");     FP(" direction_y");
-        SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
-      if (bF_cSpin)      {
-        SP(form[cSpinX],  " % .5e");    FP("       spin_x");
-        SP(form[cSpinY],  "% .5e");     FP("      spin_y");
-        SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
     }
   }
   fputs("\n", AsciiFile);
@@ -197,6 +191,7 @@ int main(int argc, char **argv)
           CHECK;
 
 	  WriteNeutron(&(InputNeutrons[i]));
+	  if (!bF_Active) continue;
 
 	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
 	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
@@ -289,6 +284,9 @@ void  OwnInit(int argc, char *argv[])
             case 'F':
               bF_format = (short) atoi(&argv[i][2]);
               break;
+            case 'a':
+              sscanf(&(argv[i][2]),"%hd", &bF_Active);
+              break;
             case 'S':
               bF_Separator = (short) atoi(&argv[i][2]);
               break;
@@ -296,7 +294,7 @@ void  OwnInit(int argc, char *argv[])
               DetectColor = (short) atoi(&argv[i][2]);
               break;
             case 'c':
-              sscanf(&(argv[i][2]),"%hd%hd%hd%hd%hd%hd%hd%hd%hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
+              sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
               break;
 		
             case 'l':
@@ -359,9 +357,11 @@ void  OwnInit(int argc, char *argv[])
   calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
   if (AsciiFileName != NULL)
-    { if ((AsciiFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
-        { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
-          exit(-1);
+    { if (bF_Active) 
+        { if ((AsciiFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
+            { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
+              exit(-1);
+            }
         }
     } 
   else 
@@ -373,5 +373,5 @@ void  OwnInit(int argc, char *argv[])
 
 void OwnCleanup()
 {
-  fclose(AsciiFile);
+  if (bF_Active) fclose(AsciiFile);
 }

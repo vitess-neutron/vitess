@@ -726,6 +726,7 @@ set external_commandESET {
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
+  {Active select Col {"Active?" "Writeout is active?" "" a} {{"" 1}}}
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
   {outSeparator radio Space {"Separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {detectcolor int -1 {
