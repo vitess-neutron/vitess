@@ -67,6 +67,7 @@ double  heightmin,       /* z-coordinate: bottom of rectangular window          
   double Thicknesscolli=0.0;
   double DistMove=0.0;
   short  TreatColor = -1; // Treat only neutrons with a given color
+  short  RemoveOtherColor = FALSE; // If treated only neutrons with a given color, all others are removed
   double minPhi=-1.0, maxPhi=-1.0;  //Angle in xz plane
 
 
@@ -360,8 +361,10 @@ int main(int argc, char *argv[])
 
 			  if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
 			    Output = InputNeutrons[i];
-			    WriteIAP(&Output, VT_EXITED);
-			    WriteNeutron(&Output);
+			    if (!RemoveOtherColor) {
+			        WriteIAP(&Output, VT_EXITED);
+			        WriteNeutron(&Output);
+			    }
 			    continue;
 			  }
 			
@@ -658,6 +661,9 @@ void  OwnInit(int argc, char *argv[])
 				break;
       case 'f':
 				sscanf(&(argv[i][2]),"%hd", &TreatColor);
+				break;
+      case 'd':
+				sscanf(&(argv[i][2]),"%hd", &RemoveOtherColor);
 				break;
       case 'p':
 				minPhi = atof(&argv[i][2]);
