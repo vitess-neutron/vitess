@@ -853,6 +853,9 @@ set a {
   {"Filter options" header}
   {treatcolor int -1 {
     "treat color" "Treat only events with given color. A negative number means any color." "" f}}
+  {removecol radio no {
+    "remove other\ncolors" "Remove all other events not matching color." "" d}
+    {no yes} {0 1}}
   {"Additional window options" header}
   {phimin float -1 {
     "min. phi [°]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
