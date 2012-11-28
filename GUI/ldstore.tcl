@@ -705,7 +705,7 @@ proc cleanupGlobalVariables {} {
       # puts "   $mname($n) exists, $nm has index $rc"
       if {$rc >= 0} continue
     }
-    # else dump that relict
+    # else delete that relict
     # lappend delist $e
     global $e
     unset $e

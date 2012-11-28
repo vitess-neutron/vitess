@@ -4884,7 +4884,7 @@ proc trimModules {w i rmlist deflist} {
   # delete all entry variable settings of superseeded modules
   foreach l $rmlist {
     global $l
-    unset $l
+    catch {unset $l}
   }
   # redefine saved entry variables for shifted module
   foreach item $deflist {
