@@ -2116,6 +2116,8 @@ double PathThroughGuideGravOrder1(int thread_i,
     { /*  Abutment loss:
           Neutrons hitting the surface close to the entrance of a guide segment are removed,
           but not in the first segment (iPiece=0); only the first collision (iColl=1) can be considered */
+      if (NearestNeutron.Vector[0] < 0.0 || NearestNeutron.Position[0] > dTotalLength*1.1)
+        return -1.0;
       iColl++;
       if (iPiece!=0 && iColl==1 && AbutLen > 0.0)
       {
