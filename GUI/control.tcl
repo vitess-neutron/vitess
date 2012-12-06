@@ -280,7 +280,7 @@ proc controlMenu {w} {
       {c "Define Instrument Digest" genDigest}
 
   set clist {ascii2bin
-    define_direction direct_view gener_batch mirror_coating surface_file
+    define_direction direct_view gener_batch mirror_coating surface_file gener_bispectral
     standard_deviation rvitess lattice_dist guide_shape
   }
   set htmlist $clist
@@ -289,7 +289,7 @@ proc controlMenu {w} {
 
   set nlist {"Convert Ascii to Binary"
     "Define Direction"
-    "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files"
+    "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files" "Generate Extraction System"
     "Standard Deviation" "Read and Visualise Output"
     "Lattice Distances" "Guide Shape"
     "Cryst. Analyzer Spectrom."
