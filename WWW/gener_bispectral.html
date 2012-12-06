@@ -1,0 +1,135 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <title>VITESS Tool Generate Extraction System</title>
+</head>
+  <body>
+  
+<h1>VITESS Tool: Generate Extraction System</h1>
+ This tool generates an input file for the sm_ensemble module, describing a
+(e.g. bispectral) extraction system consisting of up to 50 mirrors which can be
+combined with max. 4 guide walls (intransparent mirrors). The
+max. number of mirror plates (i.e. mirrors plus guide walls) the
+sm_ensemble module can process is 50. 
+
+Restrictions like the same shape for all mirrors do not reflect
+restrictions in the sm_ensemble module; if more complicated mirror setups than
+foreseen in this tool are desired, this tool can be used as starting point to
+understand the creation process of a sm_ensemle input file.
+
+<h2>The following information has to be given as input:</h2>
+
+<p>
+ <b>Number of mirrors and walls</b><br/>
+Super-mirror coated plates are referred to as <b>mirrors</b> if they allow for transmission,
+ and as <b>walls</b> if they do not.
+ <br/>
+
+ <b>Mirror plane</b> <br/>
+  refers to the orientation of the mirror plates: vertical (horizontal) means
+ the mirror is (approximately) embedded in the x-z (x-y) plane.
+ <br/>
+
+ <b>Equidistant mirrors of same length and with same inclination?</b> <br/>
+Yes/No: if <i>yes</i>, only a common length and angle to the x-axis has to be
+given, the smallest y or z coordinate (y<sub>1</sub> in fig. 1) and the distance between mirrors define
+the position of each mirror in the system (see figure 1). In this case, x=0 is
+ set at the beginning of the mirrors, i.e. guide walls can not
+ extent to smaller x than mirrors.
+
+If <i>no</i>, a seperate angle, length and position (in x and y or z) has to be given for each
+ mirror (see fig. 2). 
+
+ <br/>
+
+ <b>Mirror inclination w.r.t. x-axis</b> <br/>
+Angle to x-axis, see examples in figures 1-3.
+ <br/>
+
+ <b>Mirror length</b> <br/>
+Length of the mirror's projection on x-axis, see fig. 1.
+ <br/>
+
+ <b>(Smallest) y/z-coordinate</b> <br/>
+Horizontal (vertical) position of the lowest mirror when viewed in x-y (x-z)
+ plane (y<sub>1</sub> in example of figure 1). Has to be given only for
+ equidistant mirrors of same length and with same inclination. Otherwise, every
+ y<sub>i</sub> (z<sub>i</sub>) has to be specified (as in figures 2,3).
+ <br/>
+
+ <b>Mirror coating m</b> <br/>
+m-value of supermirror coating as integer between 1 and 7 [&#8594
+ theta_csm=0.00173&#8901m,
+ R_csm(m) as given on http://www.swissneutronics.ch/products/coatings.html].
+ <br/>
+
+ <b>Are the mirrors rectangular? Mirror width</b> <br/>
+Yes/No: if <i>yes</i>, only one width (i.e. length in y or z direction) has to
+ be given. If <i>no</i>, a trapezoidal shape is assumed and <b>width1</b> and <b>width2</b> have to be given
+ seperately, where the former corresponds to the width at lower x position
+ (i.e. at the entry of the extraction system) as shown in the lower part of
+ figure 1. All mirrors have the same width1, width2. For guide walls, each
+ wall has to be assigned a seperate width1, width 2.
+ <br/>
+
+ <b>Mirror substrate thickness d</b> <br/>
+Silicon substrate thickness, determines attenuation [silicon assumed &#8594 &#956*d=0.0048&#8901d, &#956_incoh*d=0.030&#8901d].
+ <br/>
+</p>
+
+
+
+<p>
+<table class="image" align=left>
+<caption align="top" style="font-style: italic;" >Figure 1: Simple mirror system of 3 parallel mirrors with same length and
+angle, mirror plane is vertical.</caption>
+<tr><td>
+<img src="ExtractionSystem_ParallelMirrors.png" style="width:566px;
+						       height:800px; border:1px
+						       solid black; font-size:
+						       9pt; font-style: italic;
+						       text-align: center;margin-right: 20px;"
+     title=Figure 1">
+</td></tr>
+</table>
+
+<table class="image" align=left>
+<caption align="top" style="font-style: italic;">Figure 2: Mirror system of 3 mirrors with different length and
+angles (&#945<sub>3</sub>>&#945<sub>2</sub>>&#945<sub>1</sub>>0,
+&#945<sub>1,wall</sub><0), and one non-transparent guide wall. Mirror plane is
+			   vertical.</caption>
+<tr><td>
+<img src="ExtractionSystem2_MirrorsAndWall.png" style="width:500px;
+						       height:400px; border:1px
+						       solid black; float:left;
+						       font-size: 9pt;
+						       font-style: italic;
+						       text-align: center;
+						       margin-right: 20px;">
+
+
+</td></tr>
+</table>
+
+<table class="image" align=left >
+<caption align="top" style="font-style: italic;" >Figure 3: Bent mirror built by 3 seperate mirror plates.</caption>
+<tr><td>
+<img src="ExtractionSystem3_BentMirror.png" style="width:500px; height:400px;
+						   float:left; font-size: 9pt;
+border:1px
+						       solid black;
+						   font-style: italic;
+						   text-align: center;
+						   margin-top: 20px;margin-right: 5px;">
+</td></tr>
+</table>
+</p>
+
+
+
+
+
+</body>
+</html>
