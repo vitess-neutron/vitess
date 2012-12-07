@@ -12,9 +12,12 @@
 /* 1.5a Dec 2004  K. Lieutenant  option 'no TOF' added                                  */
 /* 1.6  Nov 2005  K. Lieutenant  direction instead of scattering angles written         */
 /*                               correction: grid for cylindrical geometry              */
-/* 1.6a Dec 2009  A. Houben      Detect only neutrons with a given color and add a      */
+/* 1.6a Dec 2009  A. Houben      Detect only neutrons with a given color and add        */
 /*                               a value to the color property after detection          */
-/* 1.7  Oct 2012  D. Nekrassov                                                          */
+/* 1.7  Jul 2012  A. Houben      Cylindrical detector with constant angle in phi        */
+/*                               (pixel size will vary with phi)                        */
+/* 1.7a Jul 2012  A. Houben      Wavelength dependant probability is read from file     */
+/* 1.8  Oct 2012  D. Nekrassov                                                          */
 /*              & K. Lieutenant  visualization                                          */
 /****************************************************************************************/
 
@@ -34,10 +37,26 @@
 #define VT_TOF_CALC  1
 #define VT_TOF_BIN   2
 
+typedef struct
+{
+  double Lambda, Eff;
+}
+  EffData;
+
+
+typedef struct
+{
+  FILE    *pfile;
+  char    *filename;
+  EffData *data;
+  long    maxdata;
+}
+  EffFile;
 
 /* global variables */
 SampleType Detector;
 int        geom=0;           // detector geometry: 1: cylinder   2: flat
+short      phimode=0;      /* 0 = const. pixel size; 1 = const Delta phi */
 long       Columns=1, 		 /* number of columns of the detector*/
            Rows=1;    		 /* number of rows of the detector*/
 double     Thickness,
@@ -49,8 +68,10 @@ short      bMonitor,        /* option: only monitoring            */
 double     Theta,dTheta,
            dWidth, 
            RotMatrix[3][3];
-double     itheta, iphi;
+double     itheta, iphi, constphi;
 short      DetectColor = -1, AddColor = -1; // Detect only neutrons with a given color and assign a new color after detection
+
+EffFile Eff = {0};
 
 /* function pointers */
 long (*NeutronIntersectsDetector)(Neutron *Nin, SampleType *Detector, VectorType ISP[]);
@@ -68,6 +89,8 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector);
 void OwnInit   (int argc, char *argv[]);
 void OwnCleanup();
 
+double GetLambdaProbFromEff(const double lambda);
+static FILE * tryOpen(const char *fn, const char *s);
 
 int main(int argc, char *argv[])
 {
@@ -87,7 +110,7 @@ int main(int argc, char *argv[])
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_DETECTOR);
-  print_module_name("detector 1.7");
+  print_module_name("detector 1.8");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -130,10 +153,15 @@ int main(int argc, char *argv[])
         norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
 
         /* now the influence of the wavelength*/
-        if(WorkNeutron.Wavelength < 5.0)
-	        LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
-        else
-	        LambdaProb = 1.0;
+        if (Eff.maxdata > 0) {
+            LambdaProb = GetLambdaProbFromEff(WorkNeutron.Wavelength);
+          } else {
+            if(WorkNeutron.Wavelength < 5.0) {
+                LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
+              } else {
+                LambdaProb = 1.0;
+              }
+          }
 
         for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
         {
@@ -238,7 +266,23 @@ int main(int argc, char *argv[])
   return 0;
 }
 
+double GetLambdaProbFromEff(const double lambda) {
+  int i;
 
+  if (lambda < Eff.data[0].Lambda) {
+    if (lambda < 5.)
+      return 0.5 + 0.1*lambda;  //What should happen if not Eff.data for given wavelength?
+    else
+      return Eff.data[0].Eff;  //What should happen if not Eff.data for given wavelength?
+  } else {
+    for (i = 1; i<=Eff.maxdata; i++) {
+      if (lambda < Eff.data[i].Lambda)
+        return Eff.data[i].Eff + (Eff.data[i].Eff-Eff.data[i-1].Eff)/(Eff.data[i].Lambda-Eff.data[i-1].Lambda) * (lambda-Eff.data[i].Lambda);
+    }
+    if (i>Eff.maxdata) return Eff.data[i].Eff;  //What should happen if not Eff.data for given wavelength?
+  }
+  return -1.;
+}
 
 long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorType ISP[])
 {
@@ -392,13 +436,21 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 	I=floor(Columns*archpos/(2.0*dTheta));
 	SpotTheta=Theta+dTheta -((I+0.5)/Columns)*(2.0*dTheta);
 
-	JComp = SPHeight + Detector->SG.Cyl.height/2.0;
-	J = floor(JComp*Rows/Detector->SG.Cyl.height);
-
 	DetSpot[0]=Detector->SG.Cyl.r*cos(SpotTheta);
 	DetSpot[1]=Detector->SG.Cyl.r*sin(SpotTheta);
-	DetSpot[2]=Detector->SG.Cyl.height*(J+0.5-0.5*Rows)/Rows;
 
+	if (phimode == 0) {
+	    JComp = SPHeight + Detector->SG.Cyl.height/2.0;
+	    J = floor(JComp*Rows/Detector->SG.Cyl.height);
+
+	    DetSpot[2]=Detector->SG.Cyl.height*(J+0.5-0.5*Rows)/Rows;
+	  } else {
+	    JComp = atan2(Detector->SG.Cyl.r, SPHeight);
+	    J = floor((JComp-M_PI/2.)/constphi+0.5)*constphi+M_PI/2.;
+	
+	    DetSpot[2]=tan(M_PI/2.-J)*Detector->SG.Cyl.r;
+	  }
+        
 	RotVector(RotMatrix,DetSpot);
 }
 
@@ -417,6 +469,8 @@ void  OwnInit(int argc, char *argv[])
   int  optiontest=0, iv;
   double dHeight=0.0, thickness=0.0;
   long NoDetGrid=FALSE;
+  char sBuffer[512];
+  long count = 0;
 
   /* some default values */
   GenNeutrons=10;
@@ -461,6 +515,10 @@ void  OwnInit(int argc, char *argv[])
           optiontest |= 0x8;
           break;
 
+        case 'E':    /* efficiency file */
+           Eff.pfile = tryOpen( (Eff.filename = &argv[i][2]), "efficiency file");
+           break;
+
         case 'T':
           /* Theta is the angle between the +x-axis and the vector*/
           sscanf(&(argv[i][2]),"%lf", &itheta);
@@ -471,6 +529,11 @@ void  OwnInit(int argc, char *argv[])
           sscanf(&(argv[i][2]),"%lf", &iphi);
           iphi*=M_PI/180.0;
           break;
+
+        case 'p':
+	  /* Delta Phi */
+	  sscanf(&(argv[i][2]),"%hd", &phimode);
+	  break;
 
        case 'D':
           sscanf(&(argv[i][2]),"%lf", &distance);
@@ -539,6 +602,7 @@ void  OwnInit(int argc, char *argv[])
 	  Theta=itheta;
 	  if (cos(iphi) < 0.0) Theta=-Theta;
 	  dTheta=dWidth/(2.0*distance);
+	  constphi = atan(dHeight/2./distance)*2./Rows;
 
 	  NeutronIntersectsDetector=NeutronIntersectsCylDetector;
 	  DetectorSpot=CylinderDetSpot;
@@ -627,9 +691,27 @@ void  OwnInit(int argc, char *argv[])
       exit(-1);
     }
   if(NoDetGrid) DetectorSpot=NoDetSpot;
+  
+  if (Eff.pfile!=NULL) {
+      Eff.maxdata = LinesInFile(Eff.pfile);
+      Eff.data = calloc(Eff.maxdata-1, sizeof(EffData));
+      for(count=0; count < Eff.maxdata; count++) {
+        ReadLine(Eff.pfile, sBuffer, sizeof(sBuffer)-1);
+        sscanf(sBuffer, "%lf %lf", &Eff.data[count].Lambda, &Eff.data[count].Eff);
+      }
+      fclose(Eff.pfile);
+    }
 }
 
-
+static FILE * tryOpen(const char *fn, const char *s) {
+  FILE *f;
+  char *fulln = FullParName(fn);
+  f = fopen(fulln, "r");
+  if (f) 
+    return f;
+  myExit2("ERROR: File %s containing %s could not be opened\n", fulln, s);
+  return 0;
+}
 
 void OwnCleanup()
 {

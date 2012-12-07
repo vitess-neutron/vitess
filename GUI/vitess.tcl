@@ -668,6 +668,9 @@ set detectorESET {
     "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
   {eff float 0.95 {
     efficiency "Efficiency of the detector, range: 0<Efficiency<0.99999." "" e} gt0 1 1}
+    {}
+  {eff_file pareditablefile ""
+    {"lambda\nefficiency" "File containing two columns: wavelength and efficiency" "" E}}
   {phi float 0 {
     "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
   {theta float 0 {
@@ -691,6 +694,10 @@ set detectorESET {
   {addcolor int -1 {
     "add color" "Add value to color property after detection. A negative number means no change." "" S}
     }
+  {}
+  {"cylindrical geometry" header}
+  {}
+  {phimode select constphi {"const. phi" "use constant phi pixel" "" p} {{"" 0}}}
 }
 
 proc detectorCheckErr {{app _}} {
@@ -823,7 +830,7 @@ set winAdd {
 set a {
   {dist_orig_window float 0 {
     "distance orig.\n  <-> win. [cm]"
-    "distance from origin to window when projecting along the x axis" "" l} ge0 "" 1}
+    "distance from origin to window when projecting along the x axis" "" l}}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
