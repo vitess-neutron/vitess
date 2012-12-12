@@ -497,6 +497,7 @@ int main(int argc, char *argv[])
         Input.Wavelength = stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax  - stTraj[imod].dLambdaMin)  * Vran();
         Input.Time       = stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax - stTraj[imod].dTimeFrmMin) * Vran();
       }
+      if (Input.Wavelength==0.0) continue;
       	
       /*Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
       if (stSrc.eSrcType == CWS)
