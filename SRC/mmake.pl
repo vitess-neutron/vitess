@@ -96,7 +96,7 @@ $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
-	   source => 'src_modchar',
+	   source => 'src_modchar source_csns',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
 	   precessionfield => 'magneticmap',
