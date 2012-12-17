@@ -66,13 +66,15 @@ int        mcperneutron = (MAX_MIRR*3);
 int        increaseColor=0;
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
-           r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
+  r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1], WallOffsetShift[MAX_MIRR+1];
 	
 double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
   RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
+
+void SetGeometryData();
 	
 /* FINISH HEADER STORY */
 
@@ -313,7 +315,22 @@ void OwnInit(int argc, char *argv[])
   if (Par_Field)
     ReadParameterFile(Par_Field);
 
+  //Determine geometry for visualisation
+  SetGeometryData();
+
 } /* End OwnInit */
+
+
+void UpdateMirrorElementOffset(VectorType edgeVector, VectorType diagonalVector, VectorType newOffset, int nMirror)
+{
+
+  int nComp;
+  
+  for (nComp = 0; nComp < 3; nComp++) newOffset[nComp] = edgeVector[nComp] + 0.5*diagonalVector[nComp];
+
+  CopyVector(newOffset, WallOffsetShift[nMirror]);
+
+}
 
 
 void DetermineAndLogMirrorShape(int i)
@@ -321,6 +338,8 @@ void DetermineAndLogMirrorShape(int i)
 
 	// Initialise all 6 vectors in a quadrangle
   VectorType v[6];
+  VectorType elementCenterOffset;
+  VectorType elementCenterOffsetTemp;
   int largestVectorIndex = -1;
   int secondLargestVectorIndex = -1;
   double largestVector = 0.;
@@ -388,6 +407,35 @@ void DetermineAndLogMirrorShape(int i)
 			widthIndex = j;
 		}
   }
+
+  // Update the element offset, needed for a correct calculation of reflection points
+  // The offset MUST reside within the element!
+
+  CopyVector(WallOffset[i], elementCenterOffsetTemp);
+
+  switch (largestVectorIndex) {
+  case 0: 
+    UpdateMirrorElementOffset(r1[i], v[0], elementCenterOffset, i);
+    break;
+  case 1: 
+    UpdateMirrorElementOffset(r2[i], v[1], elementCenterOffset, i);
+    break;  
+  case 2: 
+    UpdateMirrorElementOffset(r3[i], v[2], elementCenterOffset, i);
+    break;  
+  case 3: 
+    UpdateMirrorElementOffset(r4[i], v[3], elementCenterOffset, i);
+    break;
+  case 4: 
+    UpdateMirrorElementOffset(r1[i], v[4], elementCenterOffset, i);
+    break;
+  case 5: 
+    UpdateMirrorElementOffset(r2[i], v[5], elementCenterOffset, i);
+    break;
+  default:
+    fprintf(LogFilePtr, "Offset of mirror element Nr. %d could not be updated! \n", i+1);
+    break;
+  }
  
   // Determine whether we deal with a rectangle
   // 4 right angles have to be present
@@ -417,7 +465,10 @@ void DetermineAndLogMirrorShape(int i)
 	VectorType zAxis = {0, 0, 1};
     double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));		
     stGeometry.nRectangles++;
-    CopyVector(WallOffset[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
+
+    RotBackVector(RotMatrixWall[i], elementCenterOffset);
+    AddVector(elementCenterOffset, elementCenterOffsetTemp);
+    CopyVector(elementCenterOffset, stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
     CopyVector(WallNormal[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vNormal);
     stGeometry.pRectangle[stGeometry.nRectangles-1].Width = width;
     stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
@@ -537,7 +588,7 @@ void OwnCleanup()
 {
   
 	int i,c;
-	SetGeometryData();
+
   
 #ifdef VT_GRAPH
   if (p >= 2) cpgclos();
@@ -616,11 +667,11 @@ static double CollideWall
 (const int thread_i, const double WL, const VectorType SpinVector,
  double *prob, VectorType pos, VectorType dir, VectorType spin,
  const VectorType WallOffset, const VectorType WallNormal, double RotMatrixWall[3][3],
- const VectorType r1, const VectorType r2, const VectorType r3, const VectorType r4,
+ VectorType r1,VectorType r2, VectorType r3,VectorType r4, const VectorType vOffsetShift,
  const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2],
  const double mued[4], const double mrangh, const double mrangv)
 {
-  VectorType rt;
+  VectorType rt, rt2;
   double path, RotMatrixRang[3][3];
   int angularSpread;
 
@@ -658,10 +709,20 @@ static double CollideWall
   {
     double the, Choise, Refl[2], expon[2];
 		
+    // Shift vector according to the new offset of the mirror element
+    SubVector(rt, vOffsetShift); 
+    
     if (! hitwall(r1, r2, r3, r4, rt)) {		
-      RotBackVector(RotMatrixWall, dir);
+
+      AddVector(rt, vOffsetShift); 
+      RotBackVector(RotMatrixWall, dir);      
       return 99999;
     }
+    
+    // Now shift back to the correct frame
+    AddVector(rt, vOffsetShift); 
+
+    CopyVector(rt, rt2);
 		
     the = M_PI_2 - acos(fabs(dir[0]));
 
@@ -733,8 +794,9 @@ static double CollideWall
   /* compute pathlength until collision */
 
   path = DistVector(rt, pos);
-	
+
   CopyVector(rt, pos);
+
   return path;
 }
 
@@ -800,11 +862,12 @@ void processNeutron (int i, int thread_i) {
       CopyVector(Dir, dir[l]);
       CopyVector(SpinVector, spin[l]);
       prob[l]= Prob;
-      if (m != l)
+      if (m != l) {
 	PathA[l] = CollideWall(thread_i, WL, SpinVector,
 			       &prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l],
-			       RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], thetaC[l], thetaCSM[l],
+			       RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], WallOffsetShift[l], thetaC[l], thetaCSM[l],
 			       RthetaCSM[l], mued[l], mrangh[l], mrangv[l]);
+      }
       else
 	PathA[l] = 99999;
     }                            // end loop over mirrors
@@ -856,7 +919,11 @@ void processNeutron (int i, int thread_i) {
 	  drawIt(Pos);
 #endif
       }
+
+      //     fprintf(LogFilePtr, "ID: %d, End position: %f %f %f  Mirror: %d\n", InputNeutrons[i].ID.IDNo, n->Position[0], n->Position[1], n->Position[2], l);
     }                             // end loop over mirrors
+
+    
 	
     if (nocol == nocolM)
       break; // leave collsions loop
@@ -935,6 +1002,8 @@ void processNeutron (int i, int thread_i) {
 int main(int argc, char **argv)
 {
 
+  int m;
+
   Init(argc, argv, VT_SM_ENSEMBLE);
   OwnInit(argc, argv);
 
@@ -947,8 +1016,23 @@ int main(int argc, char **argv)
   // no helper threads when plotting or writing to file per neutron
   if (p)
     NThreads = 0;
+  
+  for (m=1; m<=max_mirr; m++) {
+    
+    SubVector(r1[m], WallOffsetShift[m]); 
+    SubVector(r2[m], WallOffsetShift[m]); 
+    SubVector(r3[m], WallOffsetShift[m]); 
+    SubVector(r4[m], WallOffsetShift[m]); 
+  }
 
   processPipedNeutrons(NThreads, processNeutron, 1, mcperneutron);
+
+   for (m=1; m<=max_mirr; m++) {
+     AddVector(r1[m], WallOffsetShift[m]); 
+     AddVector(r2[m], WallOffsetShift[m]); 
+     AddVector(r3[m], WallOffsetShift[m]); 
+     AddVector(r4[m], WallOffsetShift[m]); 
+   }
 
   if (p==1) fclose(COLLFILE);	
 	
