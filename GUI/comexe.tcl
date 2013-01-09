@@ -321,7 +321,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       regsub -all {\$P} $fc P:\\ fc
       regsub -all {$pdir/} $fc P:\\ fc
     }
-    sh - tcl - pl - py {
+    sh - tcl - pl - py - grd {
       regsub -all "$pdir/" $fc "\$P/" fc
     }
     default {}

@@ -75,6 +75,7 @@ ALL : \
 	"$(OD)\lattice_dist.exe" \
 	"$(OD)\mirror_coating.exe" \
 	"$(OD)\surface_file.exe" \
+	"$(OD)\gener_bispectral.exe" \
 	"$(OD)\guide_shape.exe" \
 	"$(OD)\spin_reset.exe" \
 	"$(OD)\capture_flux.exe" \
@@ -236,6 +237,10 @@ SOURCE=$(SPATH)\ma_geom.c
 "$(IDIR)\ma_geom.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\source_csns.c
+"$(IDIR)\source_csns.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\ascii2bin.c
 "$(IDIR)\ascii2bin.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -348,6 +353,13 @@ SOURCE=$(SPATH)\surface_file.c
 "$(OD)\surface_file.exe" : "$(OD)" $(TOOL) "$(OD)\surface_file.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\surface_file.pdb" /out:"$(OD)\surface_file.exe" "$(IDIR)\surface_file.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\gener_bispectral.cpp
+"$(IDIR)\gener_bispectral.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\gener_bispectral.exe" : "$(OD)" $(TOOL) "$(OD)\gener_bispectral.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\gener_bispectral.pdb" /out:"$(OD)\gener_bispectral.exe" "$(IDIR)\gener_bispectral.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\guide_shape.c
 "$(IDIR)\guide_shape.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -429,8 +441,8 @@ SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" 
+"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
 
 SOURCE=$(SPATH)\spacewindow.c
 "$(IDIR)\spacewindow.obj" : $(SOURCE)

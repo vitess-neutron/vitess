@@ -1,0 +1,182 @@
+VITESS simulations using cluster computer facilities
+----------------------------------------------------
+
+VITESS instruments, simulated as pipes, do fit well to single
+computer nodes, and with thread parallelisation we may use many
+cores, too.
+
+But when it comes to clusters of computers things get complicated.
+- Cluster batch systems come in many flavours.
+- We may not split a single pipe to be executed on separated nodes
+ easily, and do not gain much doing so.
+
+A main idea here is too achieve better Monte Carlo statistics by 
+slicing the original random trajectories. A naive idea would be 
+to split the series N(1),...,N(k) of neutron trajectories to sub-series
+N(1)..N(k/n), N(1+k/n)..N(2*k/n),  ...  N(1+(n-1)*k/n)..N(k)
+if we have n nodes. But PNRGs (Pseudo Random Number Generators) use a state,
+and you may not easily skip the first k/n invocations.
+A better idea is to execute n pipes, each pipe with a different
+PRNG seed. (Internally each module for pipe i gets the same seed,
+but seeds are different for different pipes.)
+This assumes that the PRNG is good in the sense that the outcome
+of a simulation with seed 1 is stastically independent of a simulation
+started with seed 2. (We may _not_ prove that; We know for sure that
+starting two pipes with the same seed would not help.)
+
+The main obstacle here is that we must combine the results of n pipes.
+This would mean to concatenate output files with trajectories, if
+the result is these trajectories. In reality nobody is interested
+in plain trajectories, but in _monitored spectra of modules_.
+   (Of course it may be worth to produce a file with trajectories,
+   and then use this trajectory file as input for many sub-simulations.
+   This is typically done when splitting the instrument pipe at a point,
+   to which no more parameter variation is of interest, and then to
+   use this for interactive simulations as input, varying parameters
+   at the end of the instrument / pipe.
+   The point here is that cluster parallelization to produce the big
+   file with trajectories would have to copy and concatenate big
+   files, meaning much I/O, which does not gain much from parallel jobs.
+   One might batch-produce such a big file, but seldom.) 
+
+These spectra come in module-specific formats, and we have no
+general description here. The GUI does not know much about files
+a module uses, just if 
+ - it is editable
+ - resides in the parameter directory
+ - must be readable.
+
+To start a cluster job we have to prepare a batch job command file.
+This jobfile should be in a language the cluster nodes understand,
+which probably is Linux or some UNIX variant.
+A first template to do this is the .grd output when exporting an
+instrument to a grid file.
+The grd file is a /bin/sh file which contains the pipe command.
+Pathes for binaries and parameter directory are shell variables in the
+pipe command. Individual module log files are concatenated after
+pipe execution.
+
+If we want to start jobs on a cluster, we have to to more, as we
+- must not execute pipes using the same file names concurrently
+- may be have to copy input files to the target system first, and
+ transfer results back.
+
+A first template to do this was the script TOOLS/grid_command.pl which
+takes a grd file to be executed on a cluster at HZB, concatenating
+neutron trajectories of pipes executed in parallel. It supports the
+situation on the dirac cluster, where the cluster control node sees NFS directories of
+client Linux PCs where VITESS is installed, and compute nodes see /home, 
+where the working directory should be.
+
+You call grid_command.pl with a grd file as input, tell it where VITESS binaries
+are to be found, and wich root directory to use for work directories, and
+how many pipes to start.
+The script then does
+1. a Create the work directory if necessary.
+   b Under that create tempory work directories for each pipe instance.
+2. Copy all input files to  directories, copy VITESS binaries to the work root
+   if necessary.
+3. Generate a batch command file.
+4. Submit n jobs with that batch commmand file.
+   Doing a job means to cd to a specific work directory, and start a pipe
+   with a specific PRNG seed. 
+5. Wait for completion of all jobs.
+6. Concatenate log files to a single log file in the parameter director, if requested.
+7. Merge spectra to result files in the parameter directory. (not yet done)
+8. Remove all temporary directories created in step 1.
+
+(This assumes the parameter directory is visible on the execution nodes.)
+
+To improve this, that is to restrict step 2 to copy input files only, and to enable step 7 above,
+we need more detailed information about module files.
+First of all we need to have _all_ files in the parameter directory.
+Files used for input and output are a bad idea.
+(The GUI may enforce strict parameter directory file names.)
+grid_command.pl looks for all parameter directory file names
+in the pipe command and if such a file exists, copies it to the working temporary directory.
+This may be good enough, as we might just copy old output files, too.
+
+If it comes to spectrum result files, we need to know the type and size
+of the spectrum.
+The script could look for new files in temp. directories, which correspond
+to -$P/<filename> in the pipe command, and then do some heuristic like
+if its ascii text and has
+- 2 columns, its a mon1D file (x, count)
+- 4 columns, it is a monitor file (pos, count, xxx stdev, count traj)
+- many (>16 ?) columns its a mon2D file
+  matrix format 0
+    first line: x bins
+    y *
+       monitor, x * count
+  x y z format
+    first line #x y z
+    y * 
+      x *
+      x,y,count
+
+Any other file format will be ignored.
+
+In detail this improvement involves
+
+2. Identify all -$P/<filename> names in the pipe
+   (doublettes are errors!)
+   for each <filename>
+     if <filename> exist in the parameter directory, copy it to temp. directories
+     store the file time
+   
+7. Merge spectrum results:
+   for each <filename>
+     if it exists in a temp. directory
+       if its file time is newer than the stored file time, or the file did not exist before
+          if it's a text file
+             try to merge all files from temp. directories to one result file
+   Merging spectrum files means to sum counts, and may be check if other values are equal.
+   The spectrum type is determined by heuristic:
+   - special comment lines as header?
+   - number of columns when the first line is split after reduction of white space
+   Fail silently, if the spectrum type is not known / supported.
+
+Controlling the cluster job with the new script gridrun.pl 
+----------------------------------------------------------
+
+The original version of grid_command.pl was meant to run in a command tool / xterm,
+all the time from preparing the job files, then to start the batch jobs, until
+everything has been finished.
+This may be inconvenient, as this meta job may take a long time.
+If the client xterm is shut down for whatever reason before the meta job finished, it
+may be hard do steps 5 to 8, that is to see if batch jobs have finished, and merge the results.
+For this it is better to store the state of execution and let a script know modes.
+
+First you call the perl script gridrun like before, but it returns after step 4, showing a meta job number.
+Meta job numbers start with 1 and correspond to state files ~/.vitess/metajob<run-nr>
+
+A call
+gridrun -i
+or gridrun with no more parameters informs about meta jobs in general. A meta job may be 
+- waiting for completion
+- completed, but not merged
+- completed and finished
+
+gridrun -i 5
+tells just about meta job 5
+
+gridrun -f
+tries to finalize all completed, but still not merged, meta jobs.
+
+gridrun --abort 5
+aborts meta job 5 if still waiting for completion
+
+gridrun --delete 5
+deletes all information about meta job 5, aborting it before, if still active
+
+
+The work directories for gridrun are ~/.vitess/wdir<run-nr> and the temp. sub directories
+for jobs are  ~/.vitess/wdir<run-nr>/<job-nr>
+
+gridrun works with the Sun Grid Engine (SGE) and ssh remote command execution.
+SGE allows batch jobs to be queued with the qsub command, qstat informs of job states, ...
+The user has to wait until jobs are executed, which may take days. You have no control
+whether two jobs are run in parallel, or one after the other.
+
+For tighter control of execution you may use ssh remote command execution.
+This assumes you have pre-shared ssh keys for node access
