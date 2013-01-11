@@ -26,19 +26,19 @@ starting two pipes with the same seed would not help.)
 
 The main obstacle here is that we must combine the results of n pipes.
 This would mean to concatenate output files with trajectories, if
-the result is these trajectories. In reality nobody is interested
-in plain trajectories, but in _monitored spectra of modules_.
+the result is these trajectories. In reality you are mostly interested
+in _monitored spectra of modules_.
    (Of course it may be worth to produce a file with trajectories,
    and then use this trajectory file as input for many sub-simulations.
    This is typically done when splitting the instrument pipe at a point,
    to which no more parameter variation is of interest, and then to
    use this for interactive simulations as input, varying parameters
    at the end of the instrument / pipe.
-   The point here is that cluster parallelization to produce the big
-   file with trajectories would have to copy and concatenate big
-   files, meaning much I/O, which does not gain much from parallel jobs.
-   One might batch-produce such a big file, but seldom.) 
-
+   A point here is that is to use cluster parallelization to produce a big
+   file with trajectories needs to copy and concatenate big
+   files, meaning much I/O. One may batch-produce a file with trajectories
+   here, when you loose many in some modules, like a cascade of guides,
+   and only few reach the final module.)
 These spectra come in module-specific formats, and we have no
 general description here. The GUI does not know much about files
 a module uses, just if 
@@ -56,7 +56,7 @@ Pathes for binaries and parameter directory are shell variables in the
 pipe command. Individual module log files are concatenated after
 pipe execution.
 
-If we want to start jobs on a cluster, we have to to more, as we
+If we want to start jobs on a cluster, we have to know more, as we
 - must not execute pipes using the same file names concurrently
 - may be have to copy input files to the target system first, and
  transfer results back.
@@ -69,7 +69,7 @@ client Linux PCs where VITESS is installed, and compute nodes see /home,
 where the working directory should be.
 
 You call grid_command.pl with a grd file as input, tell it where VITESS binaries
-are to be found, and wich root directory to use for work directories, and
+are to be found, and which root directory to use for work directories, and
 how many pipes to start.
 The script then does
 1. a Create the work directory if necessary.
@@ -92,13 +92,13 @@ we need more detailed information about module files.
 First of all we need to have _all_ files in the parameter directory.
 Files used for input and output are a bad idea.
 (The GUI may enforce strict parameter directory file names.)
-grid_command.pl looks for all parameter directory file names
-in the pipe command and if such a file exists, copies it to the working temporary directory.
+The new script gridrun looks for all parameter directory file names
+in the pipe command, and if such a file exists, copies it to the working temporary directory.
 This may be good enough, as we might just copy old output files, too.
 
 If it comes to spectrum result files, we need to know the type and size
 of the spectrum.
-The script could look for new files in temp. directories, which correspond
+The script looks for new files in temporary directories, which correspond
 to -$P/<filename> in the pipe command, and then do some heuristic like
 if its ascii text and has
 - 2 columns, its a mon1D file (x, count)
@@ -119,17 +119,18 @@ Any other file format will be ignored.
 In detail this improvement involves
 
 2. Identify all -$P/<filename> names in the pipe
-   (doublettes are errors!)
+   (Doublettes may be errors, but also ok for input files used from different modules;
+   we are not able to distiguish these cases here.)
    for each <filename>
-     if <filename> exist in the parameter directory, copy it to temp. directories
+     if <filename> exists in the parameter directory, copy it to temporary directories
      store the file time
    
 7. Merge spectrum results:
    for each <filename>
-     if it exists in a temp. directory
+     if it exists in a temporary directory
        if its file time is newer than the stored file time, or the file did not exist before
           if it's a text file
-             try to merge all files from temp. directories to one result file
+             try to merge all files from temporary directories to one result file
    Merging spectrum files means to sum counts, and may be check if other values are equal.
    The spectrum type is determined by heuristic:
    - special comment lines as header?
@@ -179,4 +180,4 @@ The user has to wait until jobs are executed, which may take days. You have no c
 whether two jobs are run in parallel, or one after the other.
 
 For tighter control of execution you may use ssh remote command execution.
-This assumes you have pre-shared ssh keys for node access
+This assumes you have pre-shared ssh keys for node access.
