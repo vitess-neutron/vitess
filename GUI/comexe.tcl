@@ -151,7 +151,12 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       }
     }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
-    grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}
+    grd {
+      set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
+      if {"" != [set v [entryVal random_gen]]} {
+        append fc "G=$v\n"
+      }
+    }
     tcl {
       set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {

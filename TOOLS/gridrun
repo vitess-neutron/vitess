@@ -17,7 +17,6 @@ use strict;
 
 ###############################################################
 ### configuration
-my $testmode = 1;              # 0 for ordinary execution, 1 for tests
 
 # root of work directories
 my $wroot = "$ENV{HOME}/.vitess";
@@ -113,18 +112,18 @@ batchopt batcharg    additional arguments for the SGE batch system like -l cpu=8
 options may be
 -p number            number of parallel pipes to start
 -m                   do not merge neutron trajectory output files
--v                   verbose
---nodes node-list    list of names of queues to be used
+--v=mode             verbose mode (0:default,silence  1:show some actions 2:DEBUG)
+--nodes=node-list    list of names of queues to be used
                      enclose lists if more than one queue given, like 'all.q@node28 all.q@node29'
---ssh node-list      use ssh remote execution on these nodes, default is to run SGE jobs
+--ssh=node-list      use ssh remote execution on these nodes, default is to run SGE jobs
                      enclose lists like above, e.g. 'node28 node29'
---bin modules-dir    directory with VITESS binaries, default is to use those used in the grd file
+--bin=modules-dir    directory with VITESS binaries, default is to use those used in the grd file
                      or from the script environment as last resort
---param dir          directory with parameter files, overrides name given in the grd file
---name jobname       you may name the job
---option optstring   special bash command like 'ulimit -s 8192' or 'export LD_LIBRARY_PATH=...'
+--param=dir          directory with parameter files, overrides name given in the grd file
+--name=jobname       you may name the job
+--opt=optstring      special bash command like 'ulimit -s 8192' or 'export LD_LIBRARY_PATH=...'
                      for generated  bash command files, may be repeated
---trajectories n     explicitly give the number of neutron trajetories to simulated,
+--traj=n             explicitly give the number of neutron trajetories to simulated,
                      n overrides value in grd file
 
 B) inform about jobs
@@ -138,8 +137,9 @@ gridrun option
 option may be
 -F                   finalize all completed, but still not merged, jobs
 -f run-nr            finalize job run-nr
---abort run-nr       aborts job 5 if still waiting for completion
---delete run-nr      deletes all information about job 5, aborting it before, if still active
+--merge=run-nr       finalize job run-nr, keep temporary directories
+--abort=run-nr       aborts job 5 if still waiting for completion
+--delete=run-nr      deletes all information about job 5, aborting it before, if still active
 
 EOS
   exit 0;
@@ -149,7 +149,7 @@ my $now = time();
 
 my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param,
     $grid_mod_dir, $grid_work_dir, $submit_mode, $ssh_shell,
-    $verbose,
+    $verbose, $force_delete,
     $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories,
     $run_nr, $abort_run, $delete_run,
     $pipe_str,
@@ -165,40 +165,46 @@ my $gsl_rng_type = 'ran3';      # default PRNG
 while ($_ = shift) {
   if (/^-(.+)/) {
     $_ = $1;
+    if ($_ eq 's') {
+      # special mode, not interactive
+      $op_mode = 'submit';
+      last;
+    }
     if (/^-([a-zA-Z]+)=(.+)/) {
       my $opt = lc($1);
       &usage if $_ eq 'help' || $_ eq 'h';
-      if ($opt eq 'submit') {
-        # special mode, not interactive
-        $op_mode = $_;
-        last;
-      }
       # delete string quotes
       $_ = $2;
       s/^['"]//;
       s/['"]$//;
       my $arg = $_;
-      if ($opt eq 'nodes' || $opt eq 'ssh') {
-        $submit_mode = $opt if /ssh/;
+      if ($opt =~ /^node/ || $opt eq 'ssh') {
+        $submit_mode = $opt if $opt eq 'ssh';
         # silently discard comma separators
         tr/,/ /;
         @Node = split;
-        myexit('please give a list of queue nodes') unless @Node;
+        myexit("please give a list of $opt nodes") unless @Node;
       } elsif ($opt eq 'bin') {
         $vitess_binaries = $arg;
-      } elsif ($opt eq 'param') {
+      } elsif ($opt =~ /^par/) {
         $vitess_param = $arg;
       } elsif ($opt eq 'abort') {
         $op_mode = 'finalize';
         $abort_run = $arg;
-      } elsif ($_ eq 'delete') {
+      } elsif ($opt =~ /^del/) {
         $op_mode = 'finalize';
+        $force_delete = 1;
         $delete_run = $arg;
-      } elsif ($_ eq 'name') {
+      } elsif ($opt eq 'name') {
         $jobname = $arg;
-      } elsif ($_ eq 'trajectories') {
+      } elsif ($opt eq 'merge') {
+        $op_mode = 'finalize';
+        $run_nr = $arg;
+      } elsif ($opt =~ /^traj/) {
         $trajectories = $arg;
-      } elsif ($_ eq 'option') {
+      } elsif ($opt eq 'v') {
+        $verbose = $arg;
+      } elsif ($opt =~ /^opt/) {
         push @BashOption, $arg;
       } else {
         &usage;
@@ -214,9 +220,11 @@ while ($_ = shift) {
         $op_mode = 'info';
       } elsif ($_ eq 'f') {
         $op_mode = 'finalize';
-      } elsif ($_ eq 'F') {
-        $op_mode = 'finalize';
+        $force_delete = 1;
         $run_nr = shift;
+      } elsif ($_ eq 'F') {
+        $force_delete = 1;
+        $op_mode = 'finalize';
       } elsif ($_ eq 'p') {
         $n_instances = shift;
       }
@@ -227,8 +235,7 @@ while ($_ = shift) {
     $filename = $_;
   }
 }
-print "opmode $op_mode\n";
-exit;
+
 if ($op_mode eq 'submit') {
   startPipes(@ARGV);
 } elsif ($op_mode eq 'info') {
@@ -253,7 +260,7 @@ sub infoJobs {
     if ($run_nr) {
       $grid_work_dir = "$wroot/w$run_nr";
       if (-d $grid_work_dir) {
-        infoJob($grid_work_dir);
+        infoJob($run_nr, $grid_work_dir);
         $anyaction = 1;
       } else {
         print "no info for run number $run_nr.\n";
@@ -275,8 +282,9 @@ sub infoJobs {
   }
   return if $anyaction;
   $_ = abs_path($0);
-  print "No VITESS grid jobs known. Call\n$_ -h\nfor help.\n";
+  print "No VITESS jobs known. Call\n$_ -h\nfor help.\n";
 }
+
 
 sub infoJob {
   my ($j, $jdir) = @_;
@@ -296,8 +304,8 @@ sub infoJob {
   my $jn = $_ ? " ($_)" : '';
 
   my $oldstate = $newstate = $_ = $Jinfo{state};
-  if ($_ eq 'done') {
-    print "job $j$jn has already been finalized\n";
+  if ($_ eq 'finalized') {
+    print "Job $j$jn has already been finalized to $jdir .\n";
     return;
   }
 
@@ -320,11 +328,11 @@ sub infoJob {
   # show state
 
   if ($newstate eq 'running') {
-    print "job $j$jn is running.";
+    print "Job $j$jn is running.";
     print " Some pipes did not start yet." if $pipe_not_started;
     print "\n";
   } elsif ($newstate eq 'finished') {
-    print "pipes of job $j$jn have finished, you may finalize that job\n";
+    print "Job $j$jn pipes have finished, you may finalize it.\n";
   }
 
   # if state had changed, update the state file
@@ -350,7 +358,7 @@ sub finalizeJobs {
     if (-d $grid_work_dir) {
       finalizeJob($_, $grid_work_dir, $delete_run ? 2 : ($abort_run ? 1 : 0));
     } else {
-      print "run number $_ does not exist.\n";
+      print "Job $_ does not exist.\n";
     }
   } else {
     my @Runs;
@@ -370,14 +378,18 @@ sub finalizeJobs {
 sub finalizeJob {
   my ($j, $jdir, $fmode) = @_;
 
-  DeBug("finalizeJob $j, $jdir, $fmode");
+  DeBug("finalizeJob $j, $jdir, $fmode", 1);
 
   # mode may be 0:normal  1:abort  2:delete
 
   # read job state file
   my ($i, $newstate, %Jinfo);
   my $jobfile = "$jdir/$job_fn";
-  myexit("can't read job file $jobfile") unless -s $jobfile;
+  unless (-s $jobfile) {
+    DeBug("can't read job file $jobfile", 1);
+    deleteJob($j) if $fmode == 2;
+    return;
+  }
 
   open F, $jobfile;
   while (<F>) {
@@ -386,7 +398,7 @@ sub finalizeJob {
   }
   close F;
 
-  my $jn = "job $j";
+  my $jn = "Job $j";
   $_ = $Jinfo{jobname};
   $jn .= " ($_)" if $_;
 
@@ -395,7 +407,7 @@ sub finalizeJob {
     if ($fmode == 2) {
       deleteJob($j);
     } else {
-      print "$jn is krank\n";
+      print "$jn is krank!\n";
     }
     return;
   }
@@ -405,7 +417,7 @@ sub finalizeJob {
     if ($fmode == 2) {
       deleteJob($j);
     } else {
-      print "$jn has been finalized\n";
+      print "$jn has been finalized.\n";
     }
     return;
   }
@@ -432,18 +444,25 @@ sub finalizeJob {
   }
 
   # job has finished, merge results
-  return unless mergeResults($jdir, $Jinfo{time}, $Jinfo{pfiles}, $Jinfo{outfile});
+  my $rc = mergeResults($jdir, $Jinfo{time}, $Jinfo{pfiles}, $Jinfo{outfile});
 
+  if ($rc) {
+    DeBug("mergeResults returns :$rc:", 1);
+    print "Some results could not be merged, keeping file state as finished.\n";
+    return;
+  }
+
+  DeBug("set state finalized", 1);
   # update the state file
   $Jinfo{state} = 'finalized';
   open OF, ">$jobfile";
   print OF "$_=$Jinfo{$_}\n" foreach keys %Jinfo;
   close OF;
 
-  deleteTempWorkDirs($jdir);
+  deleteTempWorkDirs($jdir) if $force_delete;
 
   # show final state
-  print "$jn has been finalized.\n";
+  print "$jn has been finalized.\nPlease find the results in directory $jdir .\n";
 }
 
 
@@ -453,7 +472,7 @@ sub abortJob {
   my %Jinfo = @_;
   my $jdir = "$wroot/w$j";
 
-  DeBug("abortJob $j, $jdir");
+  DeBug("abortJob $j, $jdir", 1);
 
   my ($i, $pid, $pfn, $host, $jnr, $anyaction, @Jobdelist);
 
@@ -511,7 +530,7 @@ sub abortJob {
 
 sub deleteJob {
   my $d = "$wroot/w$_[0]";
-  DeBug("deleteJob $_[0], $d");
+  DeBug("deleteJob $_[0], $d", 1);
   deleteTempWorkDirs($d);
   delDir($d);
 }
@@ -520,6 +539,16 @@ sub deleteTempWorkDirs {
   my $jdir = $_[0];
   my $i = 1;
   $i++ while delDir("$jdir/$i");
+  # get rid of pipe std dummies, the copy of grindrun, and VITESS binaries
+  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{MACHTYPE}");
+  opendir D, $jdir;
+  while ($_ = readdir D) {
+    my $fn = "$jdir/$_";
+    unlink $fn if /^[0-9]+\.(log|stderr)\.txt$/ || $_ eq 'gridrun_' ||
+        (/_$sys$/ && -x $fn);
+  }
+  closedir D;
+
 }
 
 sub delDir {
@@ -533,6 +562,7 @@ sub delDir {
   rmdir $d;
   1;
 }
+
 
 sub startExecution {
 
@@ -555,8 +585,10 @@ sub startExecution {
     copy("$vitess_param/$_", "$tdir/$_") foreach @PFiles;
   }
 
+  DeBug('create command files');
   &createCommandfiles;
 
+  DeBug('copy binaries');
   # copy VITESS binaries to work dir
   foreach (@VBinary) {
     copy("$vitess_binaries/$_", "$grid_work_dir/$_");
@@ -568,34 +600,7 @@ sub startExecution {
   copy($0, $cs);
   chmod 0700, $cs;
 
-  # match pipe instances to execution nodes / queues
-  my ($nexti, $node, $rest, @I, @Match);
-  if ($nodes > 1 && $n_instances > 1) {
-    # put inst_per_node pipes on each parallel queue
-    my $inst_per_node = int($n_instances / $nodes);
-    $node = 0;
-    if ($inst_per_node <= 1) {
-      for ($i=1; $<=$n_instances; $i++) {
-        push @Match, "$Node[$node] $i";
-        $node++;
-      }
-    } else {
-      $i = 1;
-      for ($rest = $n_instances; $rest > 0; $rest -= $inst_per_node) {
-        if ($rest > $inst_per_node) {
-          $nexti = $i + $inst_per_node;
-        } else {
-          $nexti = $i + $rest;
-        }
-        @I = ($i..$nexti-1);
-        push @Match, "$Node[$node] @I";
-        $i = $nexti;
-        $node++;
-      }
-    }
-  } else {
-    push @Match, "$Node[0] 1 $n_instances";
-  }
+  my @Match = matchPipesToNodes($nodes);
 
   # write state file
   my $jobinfo =<<EOS;
@@ -626,7 +631,7 @@ EOS
       open OF, ">$fn";
       print OF $batchhead_sge;
       print OF "\#\$ $_ $Batcharg{$_}\n" foreach keys %Batcharg;
-      print OF "$cs --submit $run_nr $first $last\n";
+      print OF "$cs -submit $run_nr $first $last\n";
       close OF;
       # submit that job
       # we do a cd first to have sge log files there
@@ -652,20 +657,60 @@ EOS
     my ($bc, $logfn);
     foreach (@Match) {
       my ($node, $first, $last) = split;
-      $_ = "$cs --submit $run_nr $first $last";
+      $_ = "$cs -s $run_nr $first $last";
       $logfn = "$grid_work_dir/$first.log.txt";
       if ($ssh_shell eq 'tcsh') {
         $bc = "($_ > $logfn) >& $grid_work_dir/$first.stderr.txt";
       } else {
         $bc = "$_ > $logfn 2>\$1";
       }
-      print "doing:\nssh $node '$bc &'\n";
+      DeBug("ssh $node '$bc &'");
       system "ssh $node '$bc &'";
    }
   }
 
+  print "Job $run_nr started.\n";
 }
 
+
+sub matchPipesToNodes {
+
+  my $nodes = $_[0];
+
+  DeBug("match $nodes nodes to $n_instances instances", 1);
+
+  # match pipe instances to execution nodes / queues
+
+  return ("$Node[0] 1 $n_instances") if $nodes <= 1 || $n_instances <= 1;
+
+  my ($firsti, $nexti, $i, @I, @Match);
+  my $node = 0;
+
+  if ($n_instances <= $nodes) {
+    # put one pipe on the first nodes
+    for ($i=1; $i < $n_instances; $i++) {
+      push @Match, "$Node[$node] $i $i";
+      $node++;
+    }
+  } else {
+    my $inst_per_node = int($n_instances / $nodes);
+    # put inst_per_node pipes on execution nodes / queues 0..nodes-1
+    # the last node takes the rest
+    # the nodes 0..nodes-1 perform inst_per_node pipes
+    $nexti = 1;
+    for ($i=1; $i < $nodes; $i++) {
+      $firsti = $nexti;
+      $nexti = $firsti + $inst_per_node;
+      $_ = $nexti - 1;
+      push @Match, "$Node[$node] $firsti $_";
+      $node++;
+    }
+    # the last node takes the rest
+    push @Match, "$Node[$node] $nexti $n_instances";
+  }
+
+  @Match;
+}
 
 sub createWorkdir {
   mkdir $wroot, 0700 unless -d $wroot;
@@ -722,11 +767,18 @@ sub readGrdFile {
   myexit("found no VITESS pipe in $filename") unless @Pipe;
 
   # look for binaries and parameter file names accessed in the pipe
-  my ($fn, $c, @C, %V, %F);
+  my ($fn, $c, @C, @NewPipe, %V, %F);
   my $firstmod = 1;
+  my $i = 1;
+
+  my $t = ' --L$T/gridlog'; # is replacement string for logfile parameters
   foreach $c (@Pipe) {
     $_ = $c;
     @C = split;
+    # correct any log filename spec to be gridlog<i>
+    s/ +--L[^ ]+/$t$i/;
+    $i++;
+    push @NewPipe, $_;
     $_ = shift @C;
     $V{$1} = 1 if /^\$V\/(.+)$/;
     if ($firstmod) {
@@ -757,6 +809,7 @@ sub readGrdFile {
     }
     $firstmod = 0;
   }
+  @Pipe = @NewPipe;
   @VFile = keys %F;
 
   # Extract binary names from pipe, and replace correct image names if necessary
@@ -920,10 +973,17 @@ sub createCommandfiles {
   # Create command files for each pipe instance.
   # These are augmented grd files, with specific work directories and PRNG seeds.
 
-  my ($i, $cs, $tdir);
+  my ($i, $cs, $tdir, $tstr, $lasti, @TFile);
 
   # reduced number of neutrons, as we have parallel pipes
   my $pn = int(($trajectories ? $trajectories : $neutrons) / $n_instances);
+
+  # @TFile is array of all temp. file names
+  $lasti = 0 + @Pipe;
+  for ($i=1; $i <= $lasti; $i++) {
+    push @TFile, "\$T/gridlog$i";
+  }
+  $tstr = "@TFile";
 
   for ($i=1; $i<=$n_instances; $i++) {
     $tdir = "$grid_work_dir/$i";
@@ -946,10 +1006,13 @@ sub createCommandfiles {
 cd $tdir
 V=$grid_work_dir
 P=$tdir
-L=gridlog
 export GSL_RNG_TYPE=$gsl_rng_type
+T=`mktemp -d /tmp/vitXXXXXXXXXX` || exit 1
 echo "\$\$ \$HOST" > PIPEPID_
 $_
+cat -s $tstr > gridlog 2> /dev/null
+rm \$T/*
+rmdir \$T
 touch PIPEDONE_
 EOS
 
@@ -995,7 +1058,8 @@ sub mergeResults {
   my @F = split;
   my $ofn = shift;             # pipe output file
 
-  DeBug("mergeResults jdir $jdir\n\tofn $ofn\n\t@F");
+  DeBug("mergeResults of $jdir");
+  DeBug("\tofn $ofn\n\t@F", 1);
 
   my @Logline;
 
@@ -1007,18 +1071,11 @@ sub mergeResults {
     last unless -d $tdir;
     push @Logline, "\n-------------------- Instance $j --------------------\n\n";
     push @S, $tdir;
-    my @LFn = ("$tdir/c_.log");
-    # extract log files
-    for ($i=1; ; $i++) {
-      $_ = "$tdir/gridlog$i";
-      last unless -s $_;
-      push @LFn, $_;
-    }
-    foreach $lfn (@LFn) {
+    foreach $lfn ("$tdir/c_.log", "$tdir/gridlog") {
       open F, $lfn or next;
       push @Logline, $_ while <F>;
       close F;
-      unlink $lfn;
+      # unlink $lfn;
     }
   }
   my $n = $j - 1;
@@ -1064,7 +1121,7 @@ sub mergeResults {
           next;
         } elsif ($cols != 2 && $cols != 4) {
           # unknown spectrum type
-          $err = $anyerr = 1;
+          $err = 1;
           last;
         }
       }
@@ -1073,7 +1130,7 @@ sub mergeResults {
       foreach (split) {
         unless (/^[0-9efEF+.-]+$/) {
           # no number
-          $err = $anyerr =1;
+          $err =1;
           last;
         }
         push @I, 0+$_;
@@ -1083,11 +1140,12 @@ sub mergeResults {
     }
     close F;
 
+    # skip this file silently, if an error occured, assuming it is no spectrum file
     next if $err || $lines < 2;
 
     # merge contents of following files 2..$n
 
-    DeBug("$lines lines in $tf");
+    DeBug("$lines lines in $tf", 1);
     for ($j=1; $j<$n; $j++) {
       $fn = "$S[$j]/$mfn";
       next unless -s $fn;
@@ -1120,6 +1178,7 @@ sub mergeResults {
             $I[$i] += $N[$i];
           }
         } else {
+          # set anyerr too, to indicate something unexpected
           $err = $anyerr = 1;
           last;
         }
@@ -1127,10 +1186,11 @@ sub mergeResults {
         $tline++;
       }
       close F;
-      DeBug("read $tline lines in $fn");
+      DeBug("read $tline lines in $fn", 1);
       last if $err;
     }
 
+    # do not write this file's result, as file formats differed
     next if $err;
 
     # print result to work dir
@@ -1165,8 +1225,8 @@ sub mergeResults {
 
   # concatenate output of last module, if any
   $_ = "$jdir/$n/$ofn";
-  DeBug("look at outfile $_");
-  return unless -s $_;
+  DeBug("look at outfile $_", 1);
+  return 1 unless -s $_;
 
   # we have some neutron trajectory output
   if ($n <= 1) {
@@ -1183,11 +1243,11 @@ sub mergeResults {
         syswrite OF, $buffer, $r;
       }
       close F;
-      unlink $jfn;
+      unlink $jfn; # to keep quota a bay
     }
     close OF;
   }
-  $anyerr;
+  0; # everthing's fine
 
 }
 
@@ -1197,6 +1257,10 @@ sub myexit {
 }
 
 sub DeBug {
-  return unless $testmode;
-  print "DEBUG: $_[0]\n";
+  return unless $verbose;
+  if ($verbose < 2) {
+    print "$_[0]\n" unless $_[1];
+  } else {
+    print "DEBUG: $_[0]\n";
+  }
 }
