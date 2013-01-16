@@ -74,27 +74,27 @@ how many pipes to start.
 The script then does
 1. a Create the work directory if necessary.
    b Under that create tempory work directories for each pipe instance.
-2. Copy all input files to  directories, copy VITESS binaries to the work root
-   if necessary.
+2. Copy all input files to  directories, copy VITESS binaries to the work directory.
 3. Generate a batch command file.
 4. Submit n jobs with that batch commmand file.
    Doing a job means to cd to a specific work directory, and start a pipe
    with a specific PRNG seed. 
 5. Wait for completion of all jobs.
-6. Concatenate log files to a single log file in the parameter director, if requested.
-7. Merge spectra to result files in the parameter directory. (not yet done)
-8. Remove all temporary directories created in step 1.
+6. Concatenate log files to a single log file in the parameter director.
+7. Merge spectra to result files in the parameter directory. (not done in grid_command.pl)
+8. Concatenate output files of neutron trajectories.
+9. Remove all temporary directories created in step 1.
 
 (This assumes the parameter directory is visible on the execution nodes.)
 
 To improve this, that is to restrict step 2 to copy input files only, and to enable step 7 above,
-we need more detailed information about module files.
+we need to extract more detailed information about module files.
 First of all we need to have _all_ files in the parameter directory.
 Files used for input and output are a bad idea.
 (The GUI may enforce strict parameter directory file names.)
 The new script gridrun looks for all parameter directory file names
 in the pipe command, and if such a file exists, copies it to the working temporary directory.
-This may be good enough, as we might just copy old output files, too.
+This may be good enough. We might copy old output files, too.
 
 If it comes to spectrum result files, we need to know the type and size
 of the spectrum.
@@ -102,7 +102,7 @@ The script looks for new files in temporary directories, which correspond
 to -$P/<filename> in the pipe command, and then do some heuristic like
 if its ascii text and has
 - 2 columns, its a mon1D file (x, count)
-- 4 columns, it is a monitor file (pos, count, xxx stdev, count traj)
+- 4 columns, it is a monitor file (pos, weighted count, error, count traj)
 - many (>16 ?) columns its a mon2D file
   matrix format 0
     first line: x bins
@@ -119,16 +119,16 @@ Any other file format will be ignored.
 In detail this improvement involves
 
 2. Identify all -$P/<filename> names in the pipe
-   (Doublettes may be errors, but also ok for input files used from different modules;
-   we are not able to distiguish these cases here.)
+   (Doublettes may be errors, but are ok for input files used from different modules;
+   We are not able to distiguish these cases here.)
    for each <filename>
      if <filename> exists in the parameter directory, copy it to temporary directories
-     store the file time
+   remember the time at pipe start
    
 7. Merge spectrum results:
    for each <filename>
      if it exists in a temporary directory
-       if its file time is newer than the stored file time, or the file did not exist before
+       if its file time is newer than the stored time
           if it's a text file
              try to merge all files from temporary directories to one result file
    Merging spectrum files means to sum counts, and may be check if other values are equal.
@@ -137,8 +137,8 @@ In detail this improvement involves
    - number of columns when the first line is split after reduction of white space
    Fail silently, if the spectrum type is not known / supported.
 
-Controlling the cluster job with the new script gridrun.pl 
-----------------------------------------------------------
+Controlling the cluster job with the new script gridrun
+-------------------------------------------------------
 
 The original version of grid_command.pl was meant to run in a command tool / xterm,
 all the time from preparing the job files, then to start the batch jobs, until
@@ -148,36 +148,41 @@ If the client xterm is shut down for whatever reason before the meta job finishe
 may be hard do steps 5 to 8, that is to see if batch jobs have finished, and merge the results.
 For this it is better to store the state of execution and let a script know modes.
 
-First you call the perl script gridrun like before, but it returns after step 4, showing a meta job number.
-Meta job numbers start with 1 and correspond to state files ~/.vitess/metajob<run-nr>
+First you call the perl script gridrun like before, but it returns after step 4, showing a job number.
+Job numbers start with 1 and correspond to state files ~/.vitess/w<run-nr>
 
 A call
 gridrun -i
-or gridrun with no more parameters informs about meta jobs in general. A meta job may be 
+or gridrun with no more parameters informs about jobs in general. A job may be 
 - waiting for completion
-- completed, but not merged
+- completed, but not finished (data have not been merged)
 - completed and finished
 
 gridrun -i 5
 tells just about meta job 5
 
-gridrun -f
-tries to finalize all completed, but still not merged, meta jobs.
+gridrun -F
+tries to finalize all completed, but still not merged, jobs.
 
-gridrun --abort 5
-aborts meta job 5 if still waiting for completion
+gridrun --abort=5
+aborts job 5 if still waiting for completion
 
-gridrun --delete 5
-deletes all information about meta job 5, aborting it before, if still active
+gridrun --delete=5
+deletes all information about job 5, aborting it before, if still active
 
 
-The work directories for gridrun are ~/.vitess/wdir<run-nr> and the temp. sub directories
-for jobs are  ~/.vitess/wdir<run-nr>/<job-nr>
+The work directories for gridrun are ~/.vitess/w<run-nr> and the temporary sub directories
+for jobs are  ~/.vitess/w<run-nr>/<job-nr>
 
-gridrun works with the Sun Grid Engine (SGE) and ssh remote command execution.
+gridrun works with either direct ssh remote command execution, or submits jobs to 
+the Sun Grid Engine (SGE).
 SGE allows batch jobs to be queued with the qsub command, qstat informs of job states, ...
 The user has to wait until jobs are executed, which may take days. You have no control
 whether two jobs are run in parallel, or one after the other.
 
 For tighter control of execution you may use ssh remote command execution.
 This assumes you have pre-shared ssh keys for node access.
+
+In both cases all execution nodes must "see" the same UNIX home directory.
+VITESS binaries necessary to execute the pipe are copied to the working directory.
+(Need not be "installed" there, but should be executable on all nodes used.)
