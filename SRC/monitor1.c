@@ -410,8 +410,10 @@ int main(int argc, char *argv[])
 
 my_exit:
   // main monitor
-  if (pFileMon != NULL)
-  { for (iBin = 0; iBin < nBiny; iBin++)
+  if (pFileMon != NULL)     
+  { 
+    fprintf(pFileMon,"#Monitor\n");
+    for (iBin = 0; iBin < nBiny; iBin++)
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
       fprintf(pFileMon,"%12.4e   %14.7e   %14.7e %12.2f\n",
@@ -425,7 +427,9 @@ my_exit:
   if (nAddMons > 0) 
   { for (jMon=1; jMon<=nAddMons; jMon++)
     { if (pFileMonC[jMon-1] != NULL)
-      { for (iBin = 0; iBin < nBiny; iBin++)
+      { 
+	fprintf(pFileMonC[jMon-1],"#Monitor\n");
+	for (iBin = 0; iBin < nBiny; iBin++)
         {
           if(pBinN[iBin+jMon*(nBiny+1)]!=0) 
 		    pSD[iBin+jMon*(nBiny+1)] = pInt[iBin+jMon*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+jMon*(nBiny+1)]));

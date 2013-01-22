@@ -241,6 +241,7 @@ int main(int argc, char *argv[])
 
     if (pFileMon != NULL) 
     {
+      fprintf(pFileMon, "#Monitor\n");
       for (iBin = 0; iBin < nBin; iBin++) 
       {
         switch(kind)
