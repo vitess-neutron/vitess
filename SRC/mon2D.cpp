@@ -191,12 +191,20 @@ void Mon2D::Init(int argc, char* argv[])
 
   // Allocate the memory for the monitor data
   dataArray = (double**) malloc(nBinsX * sizeof(double*));
-  for (int i = 0; i < nBinsX; i++) dataArray[i] = (double*) malloc(nBinsY * sizeof(double));
+  dataArrayError = (double**) malloc(nBinsX * sizeof(double*));
+  dataArrayCounts = (int**) malloc(nBinsX * sizeof(int*));
+  for (int i = 0; i < nBinsX; i++) {
+    dataArray[i] = (double*) malloc(nBinsY * sizeof(double));
+    dataArrayError[i] = (double*) malloc(nBinsY * sizeof(double));
+    dataArrayCounts[i] = (int*) malloc(nBinsY * sizeof(int));
+  }
 
   for (int i = 0; i < nBinsX; i++) {
     for (int j = 0; j < nBinsY; j++) {
 
-      dataArray[i][j]=0;
+      dataArray[i][j]=0.;
+      dataArrayError[i][j]=0.;
+      dataArrayCounts[i][j]=0;
 
     }
   }
@@ -282,6 +290,9 @@ int Mon2D::FillMonitor(Neutron* n)
       dataArrayPolWeights[binX][binY] += 1.0;
     }
   }
+
+  dataArrayCounts[binX][binY]++;
+
   return 1;
 
 }
@@ -383,18 +394,23 @@ void Mon2D::WriteOut()
 {
 
   // For polarisation analysis, divide the value in each bin by the sum of spin weights
-  if (analysePol) {
+  
 
-    for(int binx = 0; binx < nBinsX; binx++) {
-      for(int biny = 0; biny < nBinsY; biny++) {
-
-	if (dataArrayPolWeights[binx][biny] > 0) dataArray[binx][biny]/=dataArrayPolWeights[binx][biny];
-	
+  for(int binx = 0; binx < nBinsX; binx++) {
+    for(int biny = 0; biny < nBinsY; biny++) {
+      
+      if (dataArray[binx][biny] > 0) {
+	dataArrayError[binx][biny] = dataArray[binx][biny]*sqrt(1./dataArrayCounts[binx][biny]);
+	if (analysePol && dataArrayPolWeights[binx][biny] > 0) {
+	  dataArray[binx][biny]/=dataArrayPolWeights[binx][biny];
+	}
       }
     }
-
   }
 
+ 
+  fprintf(fMonitor, "#Monitor\n");
+  
   switch (format) {
   case 0: // matrix format
     for(int binx = 0; binx < nBinsX; binx++)
@@ -415,10 +431,11 @@ void Mon2D::WriteOut()
     fprintf(fMonitor, "#x  y  z\n");
     for(int biny = 0; biny < nBinsY; biny++) {
       for(int binx = 0; binx < nBinsX; binx++) {
-	fprintf(fMonitor,"%5.3f\t%5.3f\t%5.3E\n", 
+	
+	fprintf(fMonitor,"%5.3f\t%5.3f\t%5.3E\t%5.3E\t%d\n", 
 		((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0, 
 		((yMin + yBinSize*biny) + (yMin + yBinSize*(biny+1.)))/2.0,
-		dataArray[binx][biny]);
+		dataArray[binx][biny], dataArrayError[binx][biny], dataArrayCounts[binx][biny]);
       }
       fprintf(fMonitor, "\n");
     }
@@ -427,8 +444,14 @@ void Mon2D::WriteOut()
   fclose(fMonitor);
 
   // Give back the memory space
-  for (int i = 0; i < nBinsX; i++) free(dataArray[i]);
+  for (int i = 0; i < nBinsX; i++) {
+    free(dataArray[i]);
+    free(dataArrayError[i]);
+    free(dataArrayCounts[i]);
+  }
   free (dataArray);
+  free(dataArrayError);
+  free(dataArrayCounts);
 
   if (analysePol) {
      for (int i = 0; i < nBinsX; i++) free(dataArrayPolWeights[i]);

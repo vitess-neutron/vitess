@@ -181,7 +181,7 @@ CHECK;	  registered=0;
 	}
     }
 my_exit:
-
+  fprintf(fmonitor,"#Monitor\n");
   for(dy = 0; dy<nbiny; dy++)
     {
       fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);

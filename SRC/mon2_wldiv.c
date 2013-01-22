@@ -18,10 +18,11 @@
 #include "softabort.h"
 #include "general.h"
 
-#define BINSIZE 201
+#include "mon2_header.h"
 
-  static double bdiv_[BINSIZE],bwl_[BINSIZE];
-  static double bin_wldiv[BINSIZE][BINSIZE];
+
+static double bdiv_[BINSIZE],bwl_[BINSIZE];
+static double** bin_wldiv;
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +38,8 @@ int main(int argc, char *argv[])
   double div_other_direction;
   long format = 0;
   wl_min = wl_max = constrain_min = constrain_max = div_min = div_max = 0;
+
+  bin_wldiv = binyz;
 
   BufferIndex = 0;
   p=0.0;
@@ -155,6 +158,12 @@ int main(int argc, char *argv[])
   /*initialisation */
 
   bintc = 0;
+  
+   //New pointers allowing for global write out
+  by = bwl_;
+  bz = bdiv_;
+
+
   for(dwl = 0; dwl<nbin_wl+1; dwl++)
     {
       bwl_[dwl] = wl_min + (wl_max-wl_min) * dwl / (double)nbin_wl;
@@ -163,6 +172,8 @@ int main(int argc, char *argv[])
 	{
 	  bdiv_[ddiv] = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
 	  bin_wldiv[dwl][ddiv] = 0.0;
+	  binyzerror[dwl][ddiv]=0.;
+	  binyzcounts[dwl][ddiv]=0;
 	}
     }
 
@@ -213,6 +224,7 @@ DECLARE_ABORT;
 	      bin_wldiv[dwl][ddiv] = bin_wldiv[dwl][ddiv] +  p;
 	      bintc = bintc + p;
 	      registered=1;
+	      binyzcounts[dwl][ddiv]++;
 	  }
 
 	  if((exclusivecount==1) && (registered==1)) {
@@ -221,33 +233,8 @@ DECLARE_ABORT;
 	}
   }
 my_exit:
-  switch (format) {
-	case 0:
-	  for(dwl = 0; dwl<nbin_wl; dwl++)
-		{
-		  fprintf(fmonitor,"%10.7f\t",(bwl_[dwl]+bwl_[dwl+1])/2.0);
-		}
-	  for(ddiv = 0; ddiv<nbin_div; ddiv++)
-		{
-		  fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-		  for(dwl = 0; dwl<nbin_wl; dwl++)
-		{
-		  fprintf(fmonitor,"%5.3E\t",bin_wldiv[dwl][ddiv]);
-		}
-		}
-	  break;
-    case 1:
-	  fprintf(fmonitor, "#x  y  z\n");
-	  for(ddiv = 0; ddiv<nbin_div; ddiv++) {
-		   for(dwl = 0; dwl<nbin_wl; dwl++) {
-			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bwl_[dwl]+bwl_[dwl+1])/2.0, (bdiv_[ddiv]+bdiv_[ddiv+1])/2.0, bin_wldiv[dwl][ddiv]);
-		  }
-		  fprintf(fmonitor, "\n");
-	  }
-	break;
-  }
-  fclose(fmonitor);
-
+ 
+  WriteOutput (fmonitor, format, nbin_wl, nbin_div);
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

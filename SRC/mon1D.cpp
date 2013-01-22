@@ -10,6 +10,8 @@ Mon1D::Mon1D()
 
   dataArray = 0;
   dataArrayPolWeights = 0;
+  dataArrayError = 0;
+  dataArrayCounts = 0;
 
   xMin = -1;
   xMax = -1;
@@ -166,6 +168,8 @@ void Mon1D::Init(int argc, char* argv[])
 
   // Allocate the memory for the monitor data
   dataArray = (double*) malloc(nBinsX * sizeof(double));
+  dataArrayError = (double*) malloc(nBinsX * sizeof(double));
+  dataArrayCounts = (int*) malloc(nBinsX * sizeof(int));
 
   for (int i = 0; i < nBinsX; i++) {
 
@@ -247,6 +251,9 @@ int Mon1D::FillMonitor(Neutron* n)
       dataArrayPolWeights[binX] += 1.0;
     }
   }
+
+  dataArrayCounts[binX]++;
+
   return 1;
 
 }
@@ -347,25 +354,32 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
 void Mon1D::WriteOut()
 {
 
+  for(int binx = 0; binx < nBinsX; binx++) {    
+  
+    if (dataArrayCounts[binx]>0) 
+      dataArrayError[binx] = dataArray[binx]*sqrt(1./dataArrayCounts[binx]);
+    
   // For polarisation analysis, divide the value in each bin by the sum of spin weights
-  if (analysePol) {
-    for(int binx = 0; binx < nBinsX; binx++) {    
-		if (dataArrayPolWeights[binx] > 0) dataArray[binx]/=dataArrayPolWeights[binx];	     
-    }
+    if (analysePol) 
+      if (dataArrayPolWeights[binx] > 0) dataArray[binx]/=dataArrayPolWeights[binx];	     
+
   }
 
  
-  //  fprintf(fMonitor, "#x  y\n");      
+  fprintf(fMonitor,"#Monitor\n");
+  fprintf(fMonitor, "#x\ty\tDelta_y\tCounts\n");      
   for(int binx = 0; binx < nBinsX; binx++) {
 
-	  fprintf(fMonitor,"%5.3f\t%5.3E\n", ((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0, 
-		dataArray[binx]);     
+	  fprintf(fMonitor,"%5.3f\t%5.3E\t%5.3E\t%d\n", ((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0, 
+		  dataArray[binx], dataArrayError[binx], dataArrayCounts[binx]);     
    
   }
   fclose(fMonitor);
 
   // Give back the memory space
   free (dataArray);
+  free (dataArrayError);
+  free (dataArrayCounts);
 
   if (analysePol) {
     free (dataArrayPolWeights);
