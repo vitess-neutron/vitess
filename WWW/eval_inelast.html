@@ -94,18 +94,18 @@ from sample to detector.</td>
    <td valign="top" width="50%">If nonzero, start time at moderator is shifted:
  TOF' = TOF time offset.</td>
   </tr>
-   <tr>
-  <td valign="top" width="50%">minimal and maximal time&nbsp;        
-      <p>[ms]</p>
-       </td>
-   <td valign="top" width="50%">The TOF range in which the user is interested
- to bin intensities.</td>
+  <tr>
+   <td valign="top" width="50%">minimal and maximal time&nbsp; <p>[ms]</p> </td>
+   <td valign="top" width="50%">The TOF range in which the user is interested to bin intensities.<br/>
+                                If this range is not given it will be calculated from the energy transfer range. </td>
   </tr>
-   <tr>
-  <td valign="top" width="50%">gradient of timebins&nbsp;        
-      <p>[-]&nbsp; <br>
- &nbsp;</p>
-       </td>
+  <tr>
+   <td valign="top" width="50%">minimal and maximal energy transfer&nbsp; <p>[meV]</p> </td>
+   <td valign="top" width="50%">The energy transfer range in which the user is interested to bin intensities.<br/>
+                                If this range is not given it will be calculated from the TOF range. </td>
+  </tr>
+  <tr>
+  <td valign="top" width="50%">gradient of timebins&nbsp; <p>[-]&nbsp; <br> &nbsp;</p> </td>
    <td valign="top" width="50%">Derivative <i>s </i>of the time channel width
  in function of TOF (as described in the help manual, sec. 4) .</td>
   </tr>
