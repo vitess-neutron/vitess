@@ -26,13 +26,14 @@ my $wroot = "$ENV{HOME}/.vitess";
 my $job_fn = 'job_.dat';
 
 # grid engine commands to submit, query, and delete a batch job
-my @SGECom = ('qsub', 'qstat', 'qdel -f');
+my @SGECom = ('qsub', 'qstat -j', 'qdel -f');
 
 # first line contents for SGE and ssh batch jobs
 my $batchhead_sge =<<'EOS';
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
+#$ -l vf=4G
 EOS
 
 my $batchhead_ssh = "\#!/bin/bash\n";
@@ -179,7 +180,7 @@ while ($_ = shift) {
       s/['"]$//;
       my $arg = $_;
       if ($opt =~ /^node/ || $opt eq 'ssh') {
-        $submit_mode = $opt if $opt eq 'ssh';
+        $submit_mode = $opt eq 'ssh' ? 'ssh' : 'sge';
         # silently discard comma separators
         tr/,/ /;
         @Node = split;
@@ -502,13 +503,14 @@ sub abortJob {
     $_ = $Jinfo{qnumbers};
     my @Jobs = split;
     foreach $jnr (@Jobs) {
-      $_ = `$SGECom[1] $jnr`;
-      next if /Following jobs do not exist/;
+      $_ = `$SGECom[1] $jnr 2>&1`;
+      next if /Following jobs do not exist/g;
       push @Jobdelist, $jnr;
     }
+    DeBug("abortlist :@Jobdelist:", 1);
     if (@Jobdelist) {
       # try to abort remaining jobs with qdel -f
-      $_ = `$SGECom[2] @Jobdelist`;
+      $_ = `$SGECom[2] @Jobdelist 2> /dev/null`;
       $anyaction = 1;
     }
 
@@ -624,6 +626,10 @@ EOS
   if ($submit_mode eq 'sge') {
 
     my @SGEJobNr;
+    my $jfn = "$grid_work_dir/$job_fn";
+    open OF, ">$jfn";
+    print OF $jobinfo, "qnumbers=\n";
+    close OF;
     foreach (@Match) {
       my ($node, $first, $last) = split;
       # create a job file for SGE
@@ -631,17 +637,18 @@ EOS
       open OF, ">$fn";
       print OF $batchhead_sge;
       print OF "\#\$ $_ $Batcharg{$_}\n" foreach keys %Batcharg;
-      print OF "$cs -submit $run_nr $first $last\n";
+      print OF "$cs -s $run_nr $first $last\n";
       close OF;
+      chmod 0700, $fn;
       # submit that job
       # we do a cd first to have sge log files there
-      $_ = `cd $grid_work_dir ; $SGECom[0] $fn`;
+      $_ = `cd $grid_work_dir ; $SGECom[0] -q $node $fn`;
       if (/Your job ([0-9]+) .+has been submitted/) {
         push @SGEJobNr, $1;
       }
     }
     # write state file again, now with job numbers appended
-    open OF, ">$grid_work_dir/$job_fn";
+    open OF, ">$jfn";
     print OF $jobinfo, "qnumbers=@SGEJobNr\n";
     close OF;
 
@@ -771,11 +778,11 @@ sub readGrdFile {
   my $firstmod = 1;
   my $i = 1;
 
-  my $t = ' --L$T/gridlog'; # is replacement string for logfile parameters
+  my $t = ' --L$T/g'; # is replacement string for logfile parameters
   foreach $c (@Pipe) {
     $_ = $c;
     @C = split;
-    # correct any log filename spec to be gridlog<i>
+    # correct any log filename spec to be $T/g<i>
     s/ +--L[^ ]+/$t$i/;
     $i++;
     push @NewPipe, $_;
@@ -981,7 +988,7 @@ sub createCommandfiles {
   # @TFile is array of all temp. file names
   $lasti = 0 + @Pipe;
   for ($i=1; $i <= $lasti; $i++) {
-    push @TFile, "\$T/gridlog$i";
+    push @TFile, "\$T/g$i";
   }
   $tstr = "@TFile";
 
@@ -989,26 +996,24 @@ sub createCommandfiles {
     $tdir = "$grid_work_dir/$i";
     $cs = "$tdir/command_";
     open OF, ">$cs";
-    if ( $submit_mode eq 'sge') {
-      print OF $batchhead_sge;
-      print OF "\#\$ $_ $Batcharg{$_}\n" foreach keys %Batcharg;
-    } else {
-      print OF $batchhead_ssh;
-    }
+    print OF "\#!/bin/bash\n";
     print OF "$_\n" foreach @BashOption;
     # replace random seed of source module
     $_ = $pipe_str;
     s/ZZZZZ/--Z$i/;
     # insert reduced number of neutrons
-    s/NNNNN/ -n$pn/;
+    s/NNNNN/-n$pn/;
+
+    # ulimit explitly, because on dirac thread creation fails if unlimited
 
     print OF <<EOS;
 cd $tdir
+ulimit -Ss 8192
 V=$grid_work_dir
 P=$tdir
 export GSL_RNG_TYPE=$gsl_rng_type
-T=`mktemp -d /tmp/vitXXXXXXXXXX` || exit 1
-echo "\$\$ \$HOST" > PIPEPID_
+T=`mktemp -d /tmp/v_$ENV{USER}_XXXXXX` || exit 1
+echo "\$\$ \$HOSTNAME" > PIPEPID_
 $_
 cat -s $tstr > gridlog 2> /dev/null
 rm \$T/*
@@ -1043,9 +1048,26 @@ sub startPipes {
     exit 2 if -f "$grid_work_dir/$i/PIPEPID_";
   }
 
-  for ($i=$first; $i<=$last; $i++) {
-    # call the prepared shell file to invoke the pipe as background job
+  # If we are in ssh mode, all shell files are started in background,
+  # for SGE the last shell works in foreground, so that the job remains active.
+  my $is_ssh = 1;
+  open F, "$grid_work_dir/job_.dat";
+  while (<F>) {
+    if (/^qnumbers=/) {
+      $is_ssh = 0;
+      last;
+    }
+  }
+  close F;
+
+  for ($i=$first; $i<$last; $i++) {
     system "$grid_work_dir/$i/command_ > $grid_work_dir/$i/c_.log 2>&1 &";
+  }
+  if ($is_ssh) {
+    system "$grid_work_dir/$i/command_ > $grid_work_dir/$i/c_.log 2>&1 &";
+  } else {
+    # last shell in foreground for SGE
+    system "$grid_work_dir/$i/command_ > $grid_work_dir/$i/c_.log 2>&1";
   }
 }
 
@@ -1063,7 +1085,7 @@ sub mergeResults {
 
   my @Logline;
 
-  my ($i,$j, $lastj, $tdir, $fn, $lfn, $mfn, $jfn, $tf, $anyerr, @S);
+  my ($i,$j, $lastj, $tdir, $fn, $lfn, $mfn, $jfn, $tf, $anyerr, @S, %UsedResult);
 
   # list of temp. dirs
   for ($j=1; ; $j++) {
@@ -1107,7 +1129,7 @@ sub mergeResults {
           $skiptext .= "$_\n";
           if (/#x +y +z/) {
             $cols = -3;
-          } elsif (/monitor/i) {
+          } elsif (/Monitor/) {
             $ismonitor = 1;
           }
           next;
@@ -1140,6 +1162,7 @@ sub mergeResults {
     }
     close F;
 
+    next unless $ismonitor;
     # skip this file silently, if an error occured, assuming it is no spectrum file
     next if $err || $lines < 2;
 
@@ -1195,6 +1218,7 @@ sub mergeResults {
 
     # print result to work dir
     DeBug("writing $jdir/$mfn");
+    $UsedResult{$mfn} = 1;
     open OF, ">$jdir/$mfn";
     print OF $skiptext if $skiptext;
     for ($i=0; $i<$lines; $i++) {
@@ -1219,6 +1243,25 @@ sub mergeResults {
     }
     close OF;
 
+  }
+
+  if ($verbose > 1) {
+    # see which new files have not been merged
+    my @NotProcessed;
+    opendir D, $S[0];
+    while ($_ = readdir D) {
+      next if /^\./;
+      next if $UsedResult{$_};
+      next if (stat "$S[0]/$_")[9] <= $ftime;
+      push @NotProcessed, $_;
+    }
+    closedir D;
+    print "result files _not_ processed @NotProcessed\n" if @NotProcessed;
+  }
+
+  # move geometry files to the working directory - they are the same in all instance dirs
+  foreach (qw(instrument.inf simulation.inf geometry.inf)) {
+    rename "$S[0]/$_", "$jdir/$_";
   }
 
   return $anyerr unless $ofn;
