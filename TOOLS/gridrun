@@ -542,7 +542,7 @@ sub deleteTempWorkDirs {
   my $i = 1;
   $i++ while delDir("$jdir/$i");
   # get rid of pipe std dummies, the copy of grindrun, and VITESS binaries
-  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{MACHTYPE}");
+  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{CPU}");
   opendir D, $jdir;
   while ($_ = readdir D) {
     my $fn = "$jdir/$_";
@@ -820,7 +820,7 @@ sub readGrdFile {
   @VFile = keys %F;
 
   # Extract binary names from pipe, and replace correct image names if necessary
-  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{MACHTYPE}");
+  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{CPU}");
   @VBinary = keys %V;
   my $rep;
   $_ = $VBinary[0];
