@@ -175,14 +175,14 @@ proc makeModuleSets {} {
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
-	sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
+      sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
     {frame {} frame}
     {external_command}
-    {trajectories {writeout spin_reset} {writeout spin_reset}}
+    {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
@@ -728,19 +728,34 @@ set external_commandESET {
 }
 
 
+### Read_In
+###
+set read_inESET {
+  {fname pareditablefile noutascii.dat {
+    "ASCII\ninput file" "Specifies the name of the ASCII input file containing the trajectories." "" A} w "" 1}
+  {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas MCNPX} {1 2 3}}
+  {inform radio float {"VITESS\ndata format" "format of double values in the input file" "" F} {exp float} {0 1}}
+  {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
+  {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
+  {intfact float 1.0  {"Intensity factor\nfor MCNPX" "Factor to get correct absolute flux values from MCNPX input:\nF = src_intensity [n/s] / number_MCNPX_events (nps)" "" I} ge0}
+}
+
 ### Writeout
 ###
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
-    "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
-  {Active select Col {"Active?" "Writeout is active?" "" a} {{"" 1}}}
-  {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
-  {outSeparator radio Space {"Separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
-  {detectcolor int -1 {
-    "writeout color" "Write only events with given color. A negative number means any color." "" C}
-    }
-  {"filter selection" header}
+    "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} w "" 1}
+  {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
+  {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas MCNPX} {1 2 3}}
   {}
+  {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
+  {}
+  {"VITESS parameters" header}
+  {outform radio float {"data format" "format of float values in writeout file" "" F} {exp float} {0 1}}
+  {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
+  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
+  {}
+  {"Filter selection" header}
   {filtLambdaMin float "-1.0" {
     "filter lambda\nmin [A]" "begin of lambda interval to be filtered, -1.0 means any" "" l}}
   {filtLambdaMax float "-1.0" {
@@ -770,10 +785,6 @@ set writeoutESET {
     "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "-1.0" {
     "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
-  {}
-  {"column selection" header}
-  {}
-  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
 }
 
 ### spin_reset
