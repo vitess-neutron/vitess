@@ -17,17 +17,22 @@
 /* 1.4j Aug  2011  A. Houben       extended divergence filters                               */
 /* 1.5  May  2012  A. Houben       select output columns (reduces file size for long simul.) */
 /*      Aug  2012  M. Fromme       clean up                                                  */
+/* 1.6  Jan  2013  K. Lieutenant   tidy up; McStas and MCNPX format                          */
 /*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "general.h"
 #include "init.h"
+#include "in_out.h"
 #include "softabort.h"
 
-#define SP(var, form) if (csep) strcpy(var,sep); strncat(var, form, 13)
 
-#define FP(s) if (csep++) fputs(sep, AsciiFile); fputs(s, AsciiFile)
+/******************************/
+/** Definitions and Enums    **/
+/******************************/
+#define SP(var, form) if (csep) strcpy(var,sep); strncat(var, form, 13)
+#define FP(s) if (csep++) fputs(sep, pOutFile); fputs(s, pOutFile)
 
 #define cID       0
 #define cTrc      1
@@ -45,68 +50,376 @@
 #define cSpinY   13
 #define cSpinZ   14
 
-FILE *AsciiFile;
-short bF_format=FALSE,
-  bF_Separator=FALSE,
-  bF_cID=TRUE,
-  bF_cTrc=TRUE,
-  bF_cColor=TRUE,
-  bF_cTOF=TRUE,
-  bF_cLambda=TRUE,
-  bF_cCounts=TRUE,
-  bF_cPosition=TRUE,
-  bF_cDirection=TRUE,
-  bF_cSpin=TRUE,
-  bF_Active=TRUE;
 
-short DetectColor = 0; // WriteOut only neutrons with a given color, -1 means any
-double filtLambdaMin=-1.0,          // filter
-  filtLambdaMax=-1.0,
-  filtYMin=-1.0e10,
-  filtYMax=1.0e10,
-  filtZMin=-1.0e10,
-  filtZMax=1.0e10,
-  filtYDivMin=-1.0,
-  filtZDivMin=-1.0,
-  filtDivMin=-1.0,
-  filtYDivMax=-1.0,
-  filtZDivMax=-1.0,
-  filtDivMax=-1.0;
-int  calcDivY = 0,
-  calcDivZ = 0;
-
+/******************************/
+/** Prototypes               **/
+/******************************/
 void OwnInit(int argc, char *argv[]);
 void OwnCleanup();
+void SetFormatsAndHeader(int iSsep, const char *sSep);
+short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv, const VectorType Direction);
+
+short McStasParameters();
+short MCNPXParameters();
+short ConvertVitess2McStas(Neutron* pMcNeutron,   const Neutron* pVitNeutron);
+short ConvertVitess2MCNPX (Neutron* pMcnpNeutron, const Neutron* pVitNeutron);
+
+void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);
 
 
+/******************************/
+/** Global Variables    **/
+/******************************/
+FILE *pOutFile;       // pointer to output file
+char form[15][15];    // formats to print data of the different parameters using VITESS
+char* outform;        // format for the whole line using McStas or MCNPX
+char* header;         // header: parameters of the event file
+char* units;          // header: units used in the event file
+
+VtPrgFormat  ePrgFormat=VT_VITESS_FMT; // output format (VITESS, McStas, MCNPX)
+VtDataFormat eDatFormat=VT_FLOAT;      // output format (exponential, float)
+VtSeparator  eSeparator=VT_BLANK;      // separator between columns (space, tab)
+
+short  DetectColor  = 0;    // WriteOut only neutrons with a given color, -1 means any
+int    calcDivY = 0,        // boolean: calculation of hor. divergence 
+       calcDivZ = 0;        //                      or vert. divergence necessary
+
+short bF_cID=TRUE,
+      bF_cTrc=TRUE,
+      bF_cColor=TRUE,
+      bF_cTOF=TRUE,
+      bF_cLambda=TRUE,
+      bF_cCounts=TRUE,
+      bF_cPosition=TRUE,
+      bF_cDirection=TRUE,
+      bF_cSpin=TRUE,
+      bF_Active=TRUE;
+
+double filtLambdaMin=-1.0,   // filter
+       filtLambdaMax=-1.0,
+       filtYMin     =-1.0e10,
+       filtYMax     = 1.0e10,
+       filtZMin     =-1.0e10,
+       filtZMax     = 1.0e10,
+       filtYDivMin  =-1.0,
+       filtZDivMin  =-1.0,
+       filtDivMin   =-1.0,
+       filtYDivMax  =-1.0,
+       filtZDivMax  =-1.0,
+       filtDivMax   =-1.0;
+
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char **argv)
 {
-  int i, csep;
-  static char form[15][15];
-  const char *sep;
-  double Divy, Divz, Div;
+  int         i,                // index of trajectories
+              csep;             // index of formats (useless)
+  const char *sep;              // separator
+  double      Divy, Divz, Div;  // divergence of actual trajectory
+  Neutron     OutNeutron;
 
-  Divy = Divz = Div = 0;
-  /* Initialize the program according to the parameters given   */
+  Divy = Divz = Div = 0.0;
+
+  // Initialize the program according to the parameters given 
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.5");
+  print_module_name("writeout 1.6b");
 
-  /* module specific initialization */
+  // module specific initialization 
   OwnInit(argc, argv);
- 
-  /* Get the neutrons from the file */
-  DECLARE_ABORT;
   
-  if (bF_Separator) // Tabular
+  if (eSeparator==VT_TABULATOR) 
     sep = "\t"; 
-  else
+  else if (eSeparator==VT_BLANK) 
     sep = " ";
-
+  else
+    Error("Separator has unknown value");
   csep = 0;
-  if (AsciiFile) {
-    fputs("#", AsciiFile);
-    if (bF_Separator) { // Tabular
-      if (bF_format) { // float
+
+  // define format for variables in output file and print headline
+  if (bF_Active)
+  {
+    switch (ePrgFormat)
+    { case VT_MCSTAS_FMT:
+        header  = "#     weight        pos_x     pos_y      pos_z     speed_x   speed_y   speed_z     TOF       S_x  S_y  S_z \n";  
+        units   = "#      [n/s]         [m]       [m]        [m]       [m/s]     [m/s]     [m/s]      [s]       [1]  [1]  [1] \n";  
+        outform = "%15.3f  %9.6f %9.6f %10.6f  %9.5f %9.5f %9.3f  %10.8f  %4.1f %4.1f %4.1f";
+        fprintf(pOutFile, "%s%s", header, units);
+        break;
+      case VT_MCNPX_FMT:
+        header  = "#    pos_x          pos_y          pos_z          dir_x          dir_y          dir_z            E           weight          time  \n";  
+        units   = "#     [cm]           [cm]           [cm]           [1]            [1]            [1]           [MeV]           [1]         [1e-8s] \n";  
+        outform = "%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e";
+        fprintf(pOutFile, "%s%s", header, units);
+        break;
+      default:   // nothing to do for VITESS
+        SetFormatsAndHeader(csep, sep);
+    }
+  }
+ 
+  // Get the neutrons from file
+  DECLARE_ABORT;
+
+  while((ReadNeutrons())!= 0)
+  {
+    CHECK;    
+    for(i=0; i<NumNeutGot; i++) 
+    {
+      CHECK;
+
+      // write all trajectories to pipe
+	    WriteNeutron(&(InputNeutrons[i]));
+
+      // skip the rest if the module is not active 
+	    if (!bF_Active) continue;
+
+	    // Filter wavelength and position
+      if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	    if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+
+	    if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	    if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	    if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	    if (InputNeutrons[i].Position[2] > filtZMax) continue;
+	  
+      // filter divergence
+      CalcDivergence(&Div, &Divy, &Divz, InputNeutrons[i].Vector);
+
+	    if (filtYDivMin >= 0.) if (fabs(Divy) < filtYDivMin) continue;
+      if (filtYDivMax >= 0.) if (fabs(Divy) > filtYDivMax) continue;
+      if (filtZDivMin >= 0.) if (fabs(Divz) < filtZDivMin) continue;
+	    if (filtZDivMax >= 0.) if (fabs(Divz) > filtZDivMax) continue;
+      if (filtDivMin  >= 0.) if (fabs(Div)  < filtDivMin)  continue;
+	    if (filtDivMax  >= 0.) if (fabs(Div)  > filtDivMax)  continue;
+
+      // transform to wanted format
+      switch (ePrgFormat)
+      { case VT_MCSTAS_FMT:
+          ConvertVitess2McStas(&OutNeutron, &InputNeutrons[i]);
+          break;
+        case VT_MCNPX_FMT:
+          ConvertVitess2MCNPX(&OutNeutron, &InputNeutrons[i]);
+          break;
+        default:   // nothing to do for VITESS
+          memcpy(&OutNeutron, &InputNeutrons[i], sizeof(Neutron));
+      }
+
+      // write out neutrons of proper colour
+      if (DetectColor < 0 || OutNeutron.Color == DetectColor) 
+      {
+        switch (ePrgFormat)
+        {
+          case VT_MCSTAS_FMT:
+            fprintf(pOutFile, outform, OutNeutron.Probability, 
+			                                 OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
+			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
+		                                   OutNeutron.Time,        
+			                                 OutNeutron.Spin    [0], OutNeutron.Spin    [1], OutNeutron.Spin    [2]);
+            break;
+
+          case VT_MCNPX_FMT:
+            fprintf(pOutFile, outform, OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
+			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
+		                                   OutNeutron.Wavelength,  OutNeutron.Probability, OutNeutron.Time);
+            break;
+
+          default:    // VITESS
+            if (bF_cID)        { fprintf(pOutFile, form[cID],     OutNeutron.ID.IDGrp[0], OutNeutron.ID.IDGrp[1], OutNeutron.ID.IDNo); }
+            if (bF_cTrc)       { fprintf(pOutFile, form[cTrc],    OutNeutron.Debug); }
+            if (bF_cColor)     { fprintf(pOutFile, form[cColor],  OutNeutron.Color); }
+            if (bF_cTOF)       { fprintf(pOutFile, form[cTOF],    OutNeutron.Time); }
+            if (bF_cLambda)    { fprintf(pOutFile, form[cLambda], OutNeutron.Wavelength); }
+            if (bF_cCounts)    { fprintf(pOutFile, form[cCounts], OutNeutron.Probability); }
+            if (bF_cPosition)  {
+              fprintf(pOutFile, form[cPosX],   OutNeutron.Position[0]);
+              fprintf(pOutFile, form[cPosY],   OutNeutron.Position[1]);
+              fprintf(pOutFile, form[cPosZ],   OutNeutron.Position[2]); }
+            if (bF_cDirection) {
+              fprintf(pOutFile, form[cDirX],   OutNeutron.Vector[0]);
+              fprintf(pOutFile, form[cDirY],   OutNeutron.Vector[1]);
+              fprintf(pOutFile, form[cDirZ],   OutNeutron.Vector[2]); }
+            if (bF_cSpin)      {
+              fprintf(pOutFile, form[cSpinX],  OutNeutron.Spin[0]);
+              fprintf(pOutFile, form[cSpinY],  OutNeutron.Spin[1]);
+              fprintf(pOutFile, form[cSpinZ],  OutNeutron.Spin[2]); }
+        }
+ 
+        fputs("\n", pOutFile);
+      }
+    }
+  }
+  
+  // Do module specific cleanups
+ my_exit:
+  OwnCleanup();
+  
+  // Do the general cleanup
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);
+  
+  return 0;
+}
+
+
+// ------------------------------
+// module specific initialization
+// ------------------------------
+void  OwnInit(int argc, char *argv[]) 
+{
+  char *AsciiFileName=NULL;
+  int i;
+
+  for(i=1; i<argc; i++) 
+  { if(argv[i][0]!='+') 
+    { switch(argv[i][1])
+      { 
+        case 'A':
+          AsciiFileName = &argv[i][2];
+          break;
+        case 'a':
+          sscanf(&(argv[i][2]),"%hd", &bF_Active);
+          break;
+        case 'c':
+          sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
+          break;
+        case 'C':
+          DetectColor = (short) atoi(&argv[i][2]);
+          break;
+
+        case 'f':
+          ePrgFormat = (VtPrgFormat) atoi(&argv[i][2]);
+          break;
+        case 'F':
+          eDatFormat = (VtDataFormat) atoi(&argv[i][2]);
+          break;
+        case 'S':
+          eSeparator = (VtSeparator) atoi(&argv[i][2]);
+          break;
+		
+        case 'l':
+          filtLambdaMin = atof(&argv[i][2]);  /* filter lambda, -1 means any */
+          break;
+        case 'L':
+          filtLambdaMax = atof(&argv[i][2]);  /* filter lambda, -1 means any */
+          break;
+
+        case 'y':
+          filtYMin = atof(&argv[i][2]);       /* filter Y */
+          break;
+        case 'Y':
+          filtYMax = atof(&argv[i][2]);       /* filter Y */
+          break;
+        case 'z':
+          filtZMin = atof(&argv[i][2]);       /* filter Z */
+          break;
+        case 'Z':
+          filtZMax = atof(&argv[i][2]);       /* filter Z */
+          break;
+	    
+        case 'd':
+          filtYDivMax = atof(&argv[i][2]);    /* filter DivYMax, -1 means any */
+          break;
+        case 'D':
+          filtZDivMax = atof(&argv[i][2]);    /* filter DivZMax, -1 means any */
+          break;
+        case 'e':
+          filtYDivMin = atof(&argv[i][2]);    /* filter DivYMin, -1 means any */
+          break;
+        case 'E':
+          filtZDivMin = atof(&argv[i][2]);    /* filter DivZMin, -1 means any */
+          break;
+        case 'g':
+          filtDivMin = atof(&argv[i][2]);     /* filter DivMin,  -1 means any */
+          break;
+        case 'G':
+          filtDivMax = atof(&argv[i][2]);     /* filter DivMax,  -1 means any */
+          break;
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
+          exit(-1);
+      }
+    }
+  }
+
+  calcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+
+  if (AsciiFileName != NULL)
+  { if (bF_Active) 
+      { if ((pOutFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
+        { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
+          exit(-1);
+        }
+      }
+  } 
+  else 
+  { fputs("ERROR: The option -A to give the ascii file name is mandatory!\n", LogFilePtr);
+    exit(-1);
+  }
+}
+
+
+// -----------------------
+// module specific cleanup
+// -----------------------
+void OwnCleanup()
+{
+  if (bF_Active) fclose(pOutFile);
+}
+
+
+// -----------------------------------------------
+// calculation of divergence from flight direction
+// in : Direction: normalized flight direction
+// out: Div    : total divergence
+//    : HorDiv : horizontal divergence
+//    : VrtDiv : vertical divergence
+// return: rc  : TRUE/FALSE
+// -----------------------------------------------
+short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const VectorType Direction)
+{
+  short rc=FALSE;
+
+  if (calcDivY) 
+  { *pHorDiv  = atan2(Direction[1], Direction[0]);
+    *pHorDiv *= 180.0/M_PI;
+    if ((Direction[1]==0.0) && (Direction[0]==0.0))
+      *pHorDiv=0.0;
+    rc=TRUE;
+  }
+  if (calcDivZ) 
+  { *pVrtDiv  = atan2(Direction[2], Direction[0]);
+    *pVrtDiv *= 180.0/M_PI;
+    if ((Direction[2]==0.0) && (Direction[0]==0.0))
+      *pVrtDiv=0.0;
+    if (calcDivY) *pDiv = sqrt(sq(*pHorDiv) + sq(*pVrtDiv));
+    rc=TRUE;
+  }
+
+  return(rc);
+}
+
+
+
+// -------------------------------------------------------------
+// define format for variables in output file and print headline
+// -------------------------------------------------------------
+void SetFormatsAndHeader(int csep, const char *sep)
+{
+  switch (ePrgFormat)
+  { case VT_MCSTAS_FMT: McStasParameters(); break;
+    case VT_MCNPX_FMT : MCNPXParameters();  break;
+    default: ; // nothing to do for VITESS
+  }
+
+  if (pOutFile)
+  {
+    fputs("#", pOutFile);
+    if (eSeparator==VT_TABULATOR) 
+    { // Tabular
+      if (eDatFormat==VT_FLOAT) 
+      { // float
         if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
@@ -125,7 +438,9 @@ int main(int argc, char **argv)
           SP(form[cSpinX],  "%4.1f");     FP("sp_x");
           SP(form[cSpinY],  "%4.1f");     FP("sp_y");
           SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } else { // exp
+      } 
+      else if (eDatFormat==VT_EXPONENTIAL)
+      { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
@@ -145,8 +460,14 @@ int main(int argc, char **argv)
           SP(form[cSpinY],  "% .5e");     FP("spin_y");
           SP(form[cSpinZ],  "% .5e");     FP("spin_z"); }
       }
-    } else { //Space
-      if (bF_format) { // float
+      else
+      { Error("Data format not yet implemented");
+      } // end eDatFormat
+    } 
+    else if (eSeparator==VT_BLANK) 
+    { // Space
+      if (eDatFormat==VT_FLOAT) 
+      { // float
         if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
@@ -162,7 +483,9 @@ int main(int argc, char **argv)
         if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
                              SP(form[cSpinY],  "%4.1f");     FP("sp_y");
                              SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } else { // exp
+      } 
+      else if (eDatFormat==VT_EXPONENTIAL)
+      { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
@@ -179,199 +502,100 @@ int main(int argc, char **argv)
                              SP(form[cSpinY],  "% .5e");     FP("      spin_y");
                              SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
       }
-    }
-  }
-  fputs("\n", AsciiFile);
-
-  while((ReadNeutrons())!= 0)
-    {
-      CHECK;    
-      for(i=0; i<NumNeutGot; i++) 
-        {
-          CHECK;
-
-	  WriteNeutron(&(InputNeutrons[i]));
-	  if (!bF_Active) continue;
-
-	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
-	  if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
-	  
-          if (calcDivY) {
-            Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
-            Divy*=180.0/M_PI;
-            if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-              Divy=0.0;
-          }
-          if (calcDivZ) {
-            Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
-            Divz*=180.0/M_PI;
-            if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-              Divz=0.0;
-            if (calcDivY) Div = sqrt(sq(Divy) + sq(Divz));
-          }
-
-	  if (filtYDivMin >= 0.) {
-            if (fabs(Divy) < filtYDivMin) continue;
-	  }    
-          if (filtYDivMax >= 0.) {
-            if (fabs(Divy) > filtYDivMax) continue;
-	  }
-  
-          if (filtZDivMin >= 0.) {
-            if (fabs(Divz) < filtZDivMin) continue;
-	  }
-	  if (filtZDivMax >= 0.) {
-            if (fabs(Divz) > filtZDivMax) continue;
-	  }
-
-          if (filtDivMin >= 0.) {
-            if (fabs(Div) < filtDivMin) continue;
-	  }
-	  if (filtDivMax >= 0.) {
-            if (fabs(Div) > filtDivMax) continue;
-	  }
-
-          if (DetectColor < 0 || InputNeutrons[i].Color == DetectColor) {
-            if (bF_cID)        { fprintf(AsciiFile, form[cID],     InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo); }
-            if (bF_cTrc)       { fprintf(AsciiFile, form[cTrc],    InputNeutrons[i].Debug); }
-            if (bF_cColor)     { fprintf(AsciiFile, form[cColor],  InputNeutrons[i].Color); }
-            if (bF_cTOF)       { fprintf(AsciiFile, form[cTOF],    InputNeutrons[i].Time); }
-            if (bF_cLambda)    { fprintf(AsciiFile, form[cLambda], InputNeutrons[i].Wavelength); }
-            if (bF_cCounts)    { fprintf(AsciiFile, form[cCounts], InputNeutrons[i].Probability); }
-            if (bF_cPosition)  {
-              fprintf(AsciiFile, form[cPosX],   InputNeutrons[i].Position[0]);
-              fprintf(AsciiFile, form[cPosY],   InputNeutrons[i].Position[1]);
-              fprintf(AsciiFile, form[cPosZ],   InputNeutrons[i].Position[2]); }
-            if (bF_cDirection) {
-              fprintf(AsciiFile, form[cDirX],   InputNeutrons[i].Vector[0]);
-              fprintf(AsciiFile, form[cDirY],   InputNeutrons[i].Vector[1]);
-              fprintf(AsciiFile, form[cDirZ],   InputNeutrons[i].Vector[2]); }
-            if (bF_cSpin)      {
-              fprintf(AsciiFile, form[cSpinX],  InputNeutrons[i].Spin[0]);
-              fprintf(AsciiFile, form[cSpinY],  InputNeutrons[i].Spin[1]);
-              fprintf(AsciiFile, form[cSpinZ],  InputNeutrons[i].Spin[2]); }
-            fputs("\n", AsciiFile);
-          }
-        }
-    }
-  
-  /* Do module specific cleanups */
- my_exit:
-  OwnCleanup();
-  
-  /* Do the general cleanup */
-  Cleanup(0.0,0.0,0.0, 0.0,0.0);
-  
-  return 0;
-}
-
-
-void  OwnInit(int argc, char *argv[]) 
-{
-  char *AsciiFileName=NULL;
-  int i;
-
-  for(i=1; i<argc; i++) 
-    { if(argv[i][0]!='+') 
-        { switch(argv[i][1])
-            { case 'A':
-                AsciiFileName = &argv[i][2];
-                break;
-            case 'F':
-              bF_format = (short) atoi(&argv[i][2]);
-              break;
-            case 'a':
-              sscanf(&(argv[i][2]),"%hd", &bF_Active);
-              break;
-            case 'S':
-              bF_Separator = (short) atoi(&argv[i][2]);
-              break;
-	    case 'C':
-              DetectColor = (short) atoi(&argv[i][2]);
-              break;
-            case 'c':
-              sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
-              break;
-		
-            case 'l':
-              filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
-              break;
-
-	    case 'L':
-              filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
-              break;
-
-            case 'y':
-              filtYMin = atof(&argv[i][2]);   /* filter Y */
-              break;
-
-            case 'Y':
-              filtYMax = atof(&argv[i][2]);   /* filter Y */
-              break;
-
-            case 'z':
-              filtZMin = atof(&argv[i][2]);   /* filter Z */
-              break;
-
-            case 'Z':
-              filtZMax = atof(&argv[i][2]);   /* filter Z */
-              break;
-	    
-            case 'd':
-              filtYDivMax = atof(&argv[i][2]);   /* filter DivYMax, -1 means any */
-              break;
-
-            case 'D':
-              filtZDivMax = atof(&argv[i][2]);   /* filter DivZMax, -1 means any */
-              break;
-
-            case 'e':
-              filtYDivMin = atof(&argv[i][2]);   /* filter DivYMin, -1 means any */
-              break;
-
-            case 'E':
-              filtZDivMin = atof(&argv[i][2]);   /* filter DivZMin, -1 means any */
-              break;
-
-            case 'g':
-              filtDivMin = atof(&argv[i][2]);   /* filter DivMin, -1 means any */
-              break;
-
-            case 'G':
-              filtDivMax = atof(&argv[i][2]);   /* filter DivMax, -1 means any */
-              break;
-
-            default:
-              fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
-              exit(-1);
-              break;
-            }
-        }
-    }
-
-  calcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
-  calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
-
-  if (AsciiFileName != NULL)
-    { if (bF_Active) 
-        { if ((AsciiFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
-            { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
-              exit(-1);
-            }
-        }
+      else
+      { Error("Data format not yet implemented");
+      } // end eDatFormat
     } 
-  else 
-    { fputs("ERROR: The option -A to give the ascii file name is mandatory!\n", LogFilePtr);
-      exit(-1);
-    }
+    else
+    { Error("Separator has unknown value");
+    } // end Separator
+
+    fputs("\n", pOutFile);
+  } // end if (pOutFile)
 }
 
 
-void OwnCleanup()
+short McStasParameters()
 {
-  if (bF_Active) fclose(AsciiFile);
+  bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
+  bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
+
+  return(TRUE);
+}
+
+short MCNPXParameters()
+{
+  bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
+  bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
+
+  return(TRUE);
+}
+
+
+// ------------------------------------
+//  Convert VITESS to McStas trajectory 
+// ------------------------------------
+/*
+short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
+{
+	double  velocity;      // velocity of the neutron  [m/s]
+
+	// initialization			                      
+	memset(pMcNeutron, '\0', sizeof(McNeutron));        
+
+	pMcNeutron->Weight = pVitNeutron->Probability;
+	pMcNeutron->Time   = pVitNeutron->Time/1000.0;            // unit ms -> s
+
+	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
+	RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
+	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
+
+	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
+	MultiplyByScalar(pMcNeutron->Speed, velocity);     
+	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
+
+  return(TRUE);
+}
+*/
+short ConvertVitess2McStas(Neutron* pMcNeutron, const Neutron* pVitNeutron)
+{
+	double  velocity;      // velocity of the neutron  [m/s]
+
+	// initialization			                      
+	memcpy(pMcNeutron, pVitNeutron, sizeof(Neutron));        
+
+	pMcNeutron->Time   /= 1000.0;            // unit ms -> s
+
+	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
+	RotVit2Mc(&pMcNeutron->Vector,   &pVitNeutron->Vector);
+	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
+
+	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
+	MultiplyByScalar(pMcNeutron->Vector, velocity);     
+	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
+
+  return(TRUE);
+}
+
+
+// ------------------------------------------
+// conversion from VITESS to MCNPX parameters
+// ------------------------------------------
+short ConvertVitess2MCNPX (Neutron* pMcnpNeutron, const Neutron* pVitNeutron)
+{
+  memcpy(pMcnpNeutron, pVitNeutron, sizeof(Neutron));
+
+  pMcnpNeutron->Wavelength  =  ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) // lambda -> energy
+                             * 1.0e-12;     // unit µeV -> MeV
+  pMcnpNeutron->Time        *= 1.0e+05;     // unit  ms -> shakes = 1.0e-08 s
+
+  return(TRUE);
+}
+
+
+void RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector)
+{
+	(*pMcVector)[0] = (*pVitVector)[1];
+	(*pMcVector)[1] = (*pVitVector)[2];
+	(*pMcVector)[2] = (*pVitVector)[0];
 }
