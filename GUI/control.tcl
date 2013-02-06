@@ -99,10 +99,12 @@ proc showModulesAgain {{delall 0}} {
   }
   reShowModules $Mlf
   setInstrumentfile $savname
-  # give a hint of the overall geometry, otherwise we see a stamp with Linux
   if {[getSystem] == "unix"} {
-    # this in conjunction with KDE works like "maximize to full window"
-    wm geometry .x 800x600
+    # Give a hint of the overall geometry, otherwise we see a stamp
+    # sized window with Linux. We may not specify the exact size, sorry;
+    # In conjunction with KDE the result is 
+    # "maximize to full window vertically".
+    wm geometry $XRoot 800x600
   }
 }
 
