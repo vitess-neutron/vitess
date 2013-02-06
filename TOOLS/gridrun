@@ -38,6 +38,12 @@ EOS
 
 my $batchhead_ssh = "\#!/bin/bash\n";
 
+$_ = `uname -sm`;
+chomp;
+tr/ /_/;
+my $sysid = $_;
+
+
 ### end configuration
 ###############################################################
 
@@ -542,12 +548,11 @@ sub deleteTempWorkDirs {
   my $i = 1;
   $i++ while delDir("$jdir/$i");
   # get rid of pipe std dummies, the copy of grindrun, and VITESS binaries
-  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{CPU}");
   opendir D, $jdir;
   while ($_ = readdir D) {
     my $fn = "$jdir/$_";
     unlink $fn if /^[0-9]+\.(log|stderr)\.txt$/ || $_ eq 'gridrun_' ||
-        (/_$sys$/ && -x $fn);
+        (/_$sysid$/ && -x $fn);
   }
   closedir D;
 
@@ -820,11 +825,10 @@ sub readGrdFile {
   @VFile = keys %F;
 
   # Extract binary names from pipe, and replace correct image names if necessary
-  my $sys = ucfirst("$ENV{OSTYPE}_$ENV{CPU}");
   @VBinary = keys %V;
   my $rep;
   $_ = $VBinary[0];
-  unless (/$sys$/) {
+  unless (/$sysid$/) {
     # The grd file has been exported under a different OS
     # We need to replace binary names
     if (/\.exe$/) {
@@ -854,7 +858,7 @@ sub readGrdFile {
     do {
       @C = split;
       $_ = shift @C;
-      s/$rep$/$sys/;
+      s/$rep$/$sysid/;
       unshift @C, $_;
       push @Pipe, "@C";
       /^\$V\/(.+)$/;
@@ -1068,6 +1072,17 @@ sub startPipes {
   } else {
     # last shell in foreground for SGE
     system "$grid_work_dir/$i/command_ > $grid_work_dir/$i/c_.log 2>&1";
+    if ($first != $last) {
+      # The last pipe has finished, but those started in background may
+      # be active still. So we wait until PIPEDONE_ is to be seen for each of these.
+      while (1) {
+        for ($i=$first; $i<$last; $i++) {
+          last unless -f "$grid_work_dir/$i/PIPEDONE_";
+        }
+        last if $i == $last;
+        sleep 1;
+      }
+    }
   }
 }
 
