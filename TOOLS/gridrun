@@ -1142,10 +1142,10 @@ sub mergeResults {
         if (/#/) {
           $skiplines++;
           $skiptext .= "$_\n";
-          if (/#x +y +z/) {
-            $cols = -3;
-          } elsif (/Monitor/) {
+          if (/Monitor/) {
             $ismonitor = 1;
+          } elsif (/#x +y +z/) {
+            $cols = -3;
           }
           next;
         }
@@ -1162,17 +1162,22 @@ sub mergeResults {
           last;
         }
       }
-      # normalize numbers, and check if numbers
-      @I = ();
-      foreach (split) {
-        unless (/^[0-9efEF+.-]+$/) {
-          # no number
-          $err =1;
-          last;
+      if ($_ eq '') {
+        # dummy separation line
+        push @L, '';
+      } else {
+        # normalize numbers, and check if numbers
+        @I = ();
+        foreach (split) {
+          unless (/^[0-9efEF+.-]+$/) {
+            # no number
+            $err = 1;
+            last;
+          }
+          push @I, 0+$_;
         }
-        push @I, 0+$_;
+        push @L, "@I";
       }
-      push @L, "@I";
       $lines++;
     }
     close F;
@@ -1194,33 +1199,35 @@ sub mergeResults {
       }
       while (<F>) {
         chomp;
-        @N = split;
-        last if $tline >= $lines;
-        $_ = $L[$tline];
-        @I = split;
-        if ($cols == 2) {
-          $I[1] += $N[1];
-        } elsif ($cols == 4) {
-          # 2. column weighted count
-          $I[1] += $N[1];
-          # 3. column error, to be computed later
-          # 4. column raw count
-          $I[3] += $N[3];
-        } elsif ($cols == -3) {
-          # x y z
-          # ignore x,y
-          $I[2] += $N[2];
-        } elsif ($cols > 16) {
-          # first col monitor, then x * count
-          for ($i=1; $i<=$cols; $i++) {
-            $I[$i] += $N[$i];
+        if ($_ ne '') {
+          @N = split;
+          last if $tline >= $lines;
+          $_ = $L[$tline];
+          @I = split;
+          if ($cols == 2) {
+            $I[1] += $N[1];
+          } elsif ($cols == 4) {
+            # 2. column weighted count
+            $I[1] += $N[1];
+            # 3. column error, to be computed later
+            # 4. column raw count
+            $I[3] += $N[3];
+          } elsif ($cols == -3) {
+            # x y z
+            # ignore x,y
+            $I[2] += $N[2];
+          } elsif ($cols > 16) {
+            # first col monitor, then x * count
+            for ($i=1; $i<=$cols; $i++) {
+              $I[$i] += $N[$i];
+            }
+          } else {
+            # set anyerr too, to indicate something unexpected
+            $err = $anyerr = 1;
+            last;
           }
-        } else {
-          # set anyerr too, to indicate something unexpected
-          $err = $anyerr = 1;
-          last;
+          $L[$tline] = "@I";
         }
-        $L[$tline] = "@I";
         $tline++;
       }
       close F;
