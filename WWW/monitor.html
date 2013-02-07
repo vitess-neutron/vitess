@@ -1,8 +1,8 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <link rel="stylesheet" type="text/css" href="default.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="stylesheet" type="text/css" href="default.css"/>
   <title>Module Monitor</title>
 </head>
   <body>
@@ -47,27 +47,30 @@ There are different kinds of monitors:<br/>
    In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br/>
  <br/>
  <b>colour</b> only for 1-dim monitors <br/>
-   if colour is zero, the intensity of all trajectories is displayed <br/>
-   if colour is positive (1, 2, .....) only the trajectories with that colour are taken into account <br/>
-   if colour is negative (-n, n > 0) the intensity of all trajectories is displayed in the given monitor file and additionally
-   files containing intensities of colour 1, 2, ... n are written.<br/>
+   if colour is -1, the intensity of all trajectories is displayed <br/>
+   if colour is greater equal 0 only the trajectories of that colour are taken into account <br/>
  <br/>
  <b>normalise with binsize</b> only for 1-dim monitors <br/>
    if activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis.<br/>
+ <br/>
+ <b>all files</b> only for 1-dim monitors <br/>
+   if "yes" the intensity of all trajectories is displayed in the given monitor file and additionally
+   files containing intensities of colour 0, 1, 2, ... 'colour' are written.<br/>
+   if "no", only one file containing trajectories of the given colour is generated
  <br/>
  <b>minimal value, maximal value</b> <br/> 
    the values defining the interval of interest.<br/>
  <br/>
  <b>probability weight</b><br/>
    if one deactivates the probability weight each neutron is considered with the weight 1, otherwise (default) the attributed probabilities 
-   (due to the operations of the modules before) are considered.<br>
- <br>
+   (due to the operations of the modules before) are considered.<br/>
+ <br/>
  <b>exclusive counts</b><br/>
    if activated, only those neutrons which have been monitored successfully are transferred to the subsequent module
    (e.g. the wavelength of the neutron lies in the monitored wavelength interval and it is not taken our because of filters - see below) <br/>
  <br/>
  <b>filters</b> like <b> filter lambda, filter Y pos, begin and  end of evaluation</b> varying from monitor to monitor<br/>
-   only neutrons arriving in that time interval are considered in the evaluation<br>
+   only neutrons arriving in that time interval are considered in the evaluation<br/>
  <br/>
  <b>analysis direction</b> only for monitoring polarization<br/> 
    in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br/>
@@ -82,41 +85,54 @@ There are different kinds of monitors:<br/>
 
 The module <b>monitor1D</b> allows to plot any of the following parameters in a 1D plot.
 The module <b>monitor2D</b> allows to plot arbitrary combinations of following parameters against each other in a 2D plot:
-
-<p> <b>position </b> in the y-z plane: <b>pos_y</b> and  <b>pos_z</b>
-
-<p> <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
-
-<p> <b>wavelength</b>
-
-<p> <b>energy</b>
-
-<p> <b>time</b>
-
-<p> <b>wave vector</b> in the y-z plane:  <b>k_y</b> and <b>k_z</b>, defined as k_y(z) = (div_y(z) * 2 * pi) / lambda
-
-<p> <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
-
-<p> <b>Color</b>: This is useful if modules modified the color parameter. In particular, guides can change the color of a trajectory with each reflection. At the same time, the monitor1D and monitor2D modules can distinguish between reflections in the horizontal and vertical plane, if needed.
-
-<p> Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
-filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
-applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
-
-<p> Additional input needed by the module:
-
-<p> <b>Probability weight</b>: if one deactivates the probability weight each neutron<br>
-  is considered with the weight 1, otherwise (default) the attributed<br>
-   probabilities (due to the operations of the modules before) are considered.<br>
-
-<p> <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br>
+<p> 
+  <b>position </b> in the y-z plane: <b>pos_y</b> and  <b>pos_z</b>
+</p>
+<p> 
+  <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
+</p>
+<p> 
+  <b>wavelength</b>
+</p>
+<p> 
+  <b>energy</b>
+</p>
+<p>
+  <b>time</b>
+</p>
+<p>
+  <b>wave vector</b> in the y-z plane:  <b>k_y</b> and <b>k_z</b>, defined as k_y(z) = (div_y(z) * 2 * pi) / lambda
+</p>
+<p>
+  <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
+</p>
+<p>
+  <b>Color</b>: This is useful if modules modified the color parameter. In particular, guides can change the color of a trajectory with each reflection. At the same time, the monitor1D and monitor2D modules can distinguish between reflections in the horizontal and vertical plane, if needed.
+</p>
+<p> 
+  Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
+  filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
+  applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
+</p>
+<p> 
+  Additional input needed by the module:
+</p>
+<p>
+  <b>Probability weight</b>: if one deactivates the probability weight each neutron<br/>
+  is considered with the weight 1, otherwise (default) the attributed<br/>
+  probabilities (due to the operations of the modules before) are considered.<br/>
+</p>
+<p>
+  <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br/>
   successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled )
-  are transferred to the subsequent module. <br>
-
-<p> <b>analysis direction</b> only for monitoring polarization 
-   in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br/>
-
-<p> <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
+  are transferred to the subsequent module. <br/>
+</p>
+<p> 
+  <b>analysis direction</b> only for monitoring polarization 
+  in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br/>
+</p>
+<p> 
+  <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
 </p>
 <br/>
 <br/>
@@ -138,12 +154,12 @@ applied, in which the average neutron spin component parallel to the analysis di
    In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br/>
  <br/>
  <b>colour</b> <br/>
-   if colour is zero, the intensity of all trajectories is displayed <br/>
-   if colour is positive (1, 2, .....) only the trajectories with that colour are taken into account <br/>
+   if colour is -1, the intensity of all trajectories is displayed <br/>
+   if colour is greater or equal 0 only the trajectories of that colour are considered <br/>
  <br/>
  <b>kind</b> <br/>
    kind defines the variable parameter <br/>
- <br>
+ <br/>
  <b>exclusive</b><br/>
    if activated, only those neutrons which have been monitored successfully are transferred to the subsequent module
    (i.e. all properties are within the given ranges) <br/>
@@ -159,13 +175,13 @@ applied, in which the average neutron spin component parallel to the analysis di
 <br/>
 
 
-<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+<hr/><a href="vitess.html">Back to VITESS overview</a> <br/>
   <a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a>
 <p><!-- hhmts start --><font size="-1">Last modified: </font>Mon Jun 30 17:24:23
  MEST 2003 G. Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  --> </font><!-- hhmts end -->
  </p>
-  <br>
-  <br>
- <br>
+  <br/>
+  <br/>
+ <br/>
 </body>
 </html>

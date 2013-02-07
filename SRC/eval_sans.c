@@ -20,9 +20,7 @@
 
 
 /* globale variable */
-int   /* probactiv=TRUE,        probactiv=1 means probabilities activated, 
-                                else neutron weight is set to 1.0         */
-      TOF = FALSE,           /* TRUE : time of flight instrument */
+int   TOF = FALSE,           /* TRUE : time of flight instrument */
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
       /*bExclCount =FALSE,      TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
@@ -30,8 +28,8 @@ int   /* probactiv=TRUE,        probactiv=1 means probabilities activated,
                                 FALSE: linear binning                  */
 
 long  nbins,                 /* number of bins */
-      nColour;               /* colour necessary for the trajectory to be regarded
-                                colour 0 means: all trajectories are regarded  */
+      nColour=ANY_COLOR;     /* colour necessary for the trajectory to be regarded
+                                colour ANY_COLOR (=-1) means: all trajectories are regarded  */
 
 double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
                                   selector) instrument                                                 */
@@ -56,11 +54,12 @@ short ReadRefSpec(double* pRefBin, double* pRefVal);
 int main(int argc, char *argv[])
 {
 	short 
-    bRefFile=FALSE;     /* criterion: reference file available */
+    bWrite=FALSE,       /* criterion: write data point to output  */
+    bRefFile=FALSE;     /* criterion: reference file available    */
 
 	int  
-    ibin,               /* index for the bins                  */
-    nSpec=0;            /* number of calculated S-values       */
+    ibin,               /* index for the bins                     */
+    nSpec=0;            /* number of calculated S-values          */
 
 	long	
     i, 
@@ -147,8 +146,8 @@ int main(int argc, char *argv[])
 			/* traj. out of time of evaluation */
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+			/* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
+			if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
 			/* Writing out the neutrons that comply with the requirements, 
 			   if 'exclusive counts = yes' is set */
@@ -190,12 +189,17 @@ int main(int argc, char *argv[])
       if (!bRefFile)
       { rmid[ibin] = bmid;
         rint[ibin] = 1.0;
+        bWrite     = TRUE;
       } 
+      else
+      {
+        bWrite = (bint[ibin] > 0.0 && rint[ibin] > 0.0);
+      }
 
       if (RoundP(bmid,6)==RoundP(rmid[ibin],6))
       { 
         nSpec++;
-        if (bint[ibin] > 0.0 && rint[ibin] > 0.0)
+        if (bWrite)
         {
           Svalue = bint[ibin]/(rint[ibin]/ProbScat);
     		  fprintf(pSpectrum,"%12g %12g %7ld\n", bmid, Svalue, bcnt[ibin]);
@@ -299,7 +303,7 @@ void OwnInit(int argc, char *argv[])
 
 
 				case 'C':
-					nColour = atol(arg);                  /*  excludes all neutrons with diff. Colour, if nColour > 0 */
+					nColour = atol(arg);                  /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
 					break;
 
 				case 'd':
