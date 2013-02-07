@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
    /* for all moderators in the system */
    for (imod=0; imod < nNumMod; imod++)
    {
-      if (stMod[imod].nColour != 0 || stMod[imod].nBackground!=0)
+      if (stMod[imod].nColour != NO_COLOR || stMod[imod].nBackground!=0)
          fprintf(LogFilePtr, "colour %d   spatial order %d\n", stMod[imod].nColour, stMod[imod].nBackground);
 
       /* load wavelength distribution and time distribution of pulse */

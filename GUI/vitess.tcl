@@ -2129,15 +2129,12 @@ set dA {
 }
 
 set nA {
-  {number_bins int 10 {
-    "number\nof bins"
-    "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
-  {mtrl_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated\nnegative values mean that all files containing colour 0, 1, 2, ... -Input are generated simultaneously"
-	"" C} -10 32768}
+  {number_bins int 100 {"number\nof bins" "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
+  {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -10 32768}
 }
 set nnA {
-  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
+  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {no yes} {0 1}}
+  {all_files radio no {"all files" "if 'yes' files containing all trajectories and those of colour 0, 1, 2, ... 'colour' are generated simultaneously\nif 'no' only one file containing trajectories of colour 'colour' is generated" "" c} {no yes} {0 1}}
 }
 
 set mA {
@@ -3284,7 +3281,7 @@ set eval_elastESET {
     "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"d-spacing [A]" "momentum transfer Q [1/A]" "scattering angle [deg]" "wavelength difference [A]"} {1 2 3 4}}
   {}
   {sfile moneditablefile elast.eva {
-    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
+    "spectrum\nfile" "the spectra file: it contains the scattering results" "" o}}
   {ifile pareditablefile "" {
     "intensity\nfile" "intensity file (optional, see help manual) it contains the integrated intensities with respect to certain ranges of the scattering results (e.g. one is interested in the total intensity within each peak of a powder spectrum ). The ranges of integration have to be defined in the info file" "" O}}
   {infofile pareditablefile "" {
@@ -3318,8 +3315,8 @@ set eval_elastESET {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
-  {eval_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {eval_colour int -1 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 
 proc eval_elastCheckErr {{app _}} {
@@ -3464,8 +3461,8 @@ set eval_sansESET {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {sn_timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
-  {sn_eval_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {sn_eval_colour int -1 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 
 

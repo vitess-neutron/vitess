@@ -41,8 +41,8 @@ int   probactiv=TRUE,        /* probactiv=1 means probabilities activated,
 int scatterAxis = -1;        /* Direction of scattering for correct calculation of scattering parameters */
 
 long  nbins,                 /* number of bins */
-      nColour,               /* colour necessary for the trajectory to be regarded
-                                colour 0 means: all trajectories are regarded  */
+      nColour=ANY_COLOR,     /* colour necessary for the trajectory to be regarded
+                                colour=-1(ANY_COLOR) means: all trajectories are regarded  */
       kind;                  /* 1= d-spacing; 2=momentum transfer q; 3=scattering angle */
 
 double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
@@ -164,8 +164,8 @@ int main(int argc, char *argv[])
 			/* traj. out of time of evaluation */
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+			/* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
+			if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
 			/* Writing out the neutrons that comply with the requirements, 
 			   if 'exclusive counts = yes' is set */
@@ -363,7 +363,7 @@ void OwnInit(int argc, char *argv[])
 
 
 				case 'C':
-					nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour > 0 */
+					nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
 					break;
 
 				case 'd':

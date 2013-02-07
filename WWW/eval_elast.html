@@ -1,20 +1,153 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <link rel="stylesheet" type="text/css" href="default.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="stylesheet" type="text/css" href="default.css"/>
   <title>Module Evaluation</title>
 </head>
   <body>
-<h1> VITESS Module Evaluation</h1>
+<h1> VITESS Module Elastic Evaluation</h1>
 
-<pre>The module <b>evaluation-elast</b> is supposed be used for elastic<br>scattering (e.g. powder diffraction, SANS).<br><br>The spectra file will contain the neutron probabilities counted for each<br>segment of the evaluation interval (with respect to the evaluation parameter<br>of interest).<br><br>The following information has to be given as an input:<br><br>evaluation parameter: choose between d-spacing, momentum transfer Q,&nbsp;<br>&nbsp; scattering angle, and difference between wavelength from TOF and true&nbsp;<br>&nbsp; wavelength.<br><br> In case the elastic sample scatters in one direction only, like, e.g., the surface <br> of a liquid that scatters only in z-direction, please specify <br> this particular scattering axis (y or z).<br><br>spectra file: the name of the spectra file which will contain<br>&nbsp; the evaluated data has to be given.<br><br>number of bins: number of bins determines the segmentation of the d-spacing,<br>&nbsp; momentum transfer, scattering angle, or wavelength difference and therewith<br>&nbsp; the number of values written to the spectra file.<br><br>minimum, maximum: the bounds of the interval for the evaluation parameter.</pre>
-
-<pre>increase to next bin: for a logarithmic binning the percentage has to be given<br>&nbsp; by which the upper limit of each bin exceeds its lower limit.<br>&nbsp; If this value is set, the given 'number of bins' is ignored&nbsp;<br><br>dead-spot: only needed if the direct beam points to the detector<br>&nbsp;&nbsp; (as in the case of SANS).<br>&nbsp;&nbsp; All neutrons with a scattering angle(2 theta) between 0 and dead-spot [deg]<br>&nbsp;&nbsp; will therefore not be considered in the evaluation.<br><br>probability weight: if one deactivates the probability weight each<br>&nbsp;&nbsp; neutron is considered with the weight 1, otherwise (default)<br>&nbsp;&nbsp; the attributed probabilities (due to the operations of the modules before)<br>&nbsp;&nbsp; are considered.<br><br>time of flight:&nbsp; if the wavelength of the neutrons shall be<br>&nbsp;&nbsp; determined by time of flight analysis (i.e. each wavelength is<br>&nbsp;&nbsp; calculated from the flight path and the flight time)<br>&nbsp;&nbsp; this option must be activated.<br><br>flight path [cm]: length of total neutron flight path,<br>&nbsp;&nbsp; needed only for time of flight analysis.<br><br>time offset [ms]: global shift of the neutron time t&nbsp; t-TimeOffset [ms],<br>&nbsp;&nbsp; useful to shift the temporal reference point for the time of flight analysis<br><br>reference wavelength [A]: needed only for conventional evaluation<br>&nbsp; (non-time of flight case), i.e. a crystal monochromator or velocity<br>&nbsp; selector was used. In this case one must know which ideal wavelength<br>&nbsp; should be assumed in the evaluation.</pre>
-
-<pre>begin, end of evaluation: the bounds of the time interval for the evaluation.<br>&nbsp;&nbsp; Only neutrons arriving in that time interval are considered in the<br>&nbsp;&nbsp; evaluation<br><br>The following input parameters refer to a special application which is<br>useful especially for integrating the peak intensities of a powder<br>spectrum within the evaluation interval.<br><br>intensity file: it will contain the integrated intensities for certain<br>&nbsp; ranges within the evaluation interval defined above.<br>&nbsp; The ranges and the range centres have to be defined in the info file.<br>&nbsp; If no intensity file name is given this special application will<br>&nbsp; not be activated.<br><br>info file:<br>&nbsp; it is needed if one wants to generate an intensity file!<br>&nbsp; The info file then has to be defined before running this module<br>&nbsp; simply as a data file as follows:<br>&nbsp; each integration range is defined with two numbers. The first number gives<br>&nbsp; the centre of the integration interval (this corresponds e.g. to a powder<br>&nbsp; peak), the second number defines the width of the integration interval.<br>&nbsp; For each integration range a new line must be used.<br>&nbsp; Example:<br>&nbsp; 0.1&nbsp;&nbsp; 0.2<br>&nbsp; 0.3&nbsp;&nbsp; 0.1<br>&nbsp; First line means: integration between 0.0 and 0.2, the result of the<br>&nbsp; integration refers to the interval centre 0.1.<br>&nbsp; Second line means integration between 0.22 and 0.35, the result of the<br>&nbsp; integration refers to the interval centre 0.3.<br>&nbsp; Maybe one needs information from the spectra file to define the info<br>&nbsp; file appropriately. Then first a run only to generate the spectra<br>&nbsp; file is recommended<br><br><b>!!!! Note: the info file ranges must be defined appropriately<br>&nbsp; that they lie within the evaluation interval !!!!</b></pre>
-
-<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+<p>
+  The module <b>eval_elast</b> is supposed to be used for elastic scattering (e.g. powder diffraction, SANS). 
+  The spectrum file will contain the neutron intensities counted for each channel of the evaluation interval (with respect to the evaluation parameter of interest).
+</p>
+<p>
+ There is an application which is useful especially for integrating the peak intensities of a powder spectrum within the evaluation interval.
+ The integrated intensities are given in the <i>intensity file</i>, the ranges have to be defined in the <i>info file</i>.
+ The info file has to be defined before running this module simply as a data file as follows:<br/>
+ Each integration range is defined with two numbers. The first number gives the centre of the integration interval (this corresponds e.g. to a powder peak), the second number defines the width of the integration interval. For each integration range a new line must be used.<br/>
+ Example:<br/>&nbsp; 0.1&nbsp;&nbsp; 0.2<br/>&nbsp; 0.3&nbsp;&nbsp; 0.1<br/>
+ First line means: integration between 0.0 and 0.2, the result of the integration refers to the interval centre 0.1. 
+ Second line means integration between 0.25 and 0.35, the result of the integration refers to the interval centre 0.3. Maybe one needs information from the spectra file to define the info file appropriately. Then a first run only to generate the spectrum file is recommended. <br/>
+ Note: the info file ranges must be defined appropriately that they lie within the evaluation interval !
+</p>
+<br/>
+<h3><font size="+2"> Parameters for module 'eval_elast' </font></h3>
+<br/>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br/> Unit<br/></b></td>
+       <td valign="top"><b>Description<br/>      </b></td>
+       <td valign="top"><b>Range or Values<br/>  </b></td>
+       <td valign="top"><b>Command Option<br/>   </b></td>
+     </tr>
+     <tr>
+       <td valign="top">evaluation parameter</td>
+       <td valign="top">Choose between 'd-spacing', 'momentum transfer Q', 'scattering angle' and 'difference between wavelength from TOF and true wavelength'.</td>
+       <td valign="top"> -  </td>
+       <td valign="top">-k  </td>
+     </tr>
+     <tr>
+       <td valign="top">spectrum file</td>
+       <td valign="top">The name of the spectrum file, which will contain the evaluated data, has to be given.</td>
+       <td valign="top"> -  </td>
+       <td valign="top">-o  </td>
+     </tr>
+     <tr>
+       <td valign="top">intensity file</td>
+       <td valign="top">It will contain the integrated intensities for certain ranges within the evaluation interval defined above. The ranges and the range centres have to be defined in the info file.</td>
+       <td valign="top"> -  </td>
+       <td valign="top">-O  </td>
+     </tr>
+     <tr>
+       <td valign="top">info file</td>
+       <td valign="top">It is needed to define the integration ranges for an intensity file (see explanation and example in the text above).</td>
+       <td valign="top"> -  </td>
+       <td valign="top">-I  </td>
+     </tr>
+     <tr>
+       <td valign="top">number of bins</td>
+       <td valign="top">The number of bins determines the segmentation of the d-spacing, momentum transfer, scattering angle, or wavelength difference and therewith the number of values written to the spectrum file.</td>
+       <td valign="top">&gt;= 1 </td>
+       <td valign="top">-n      </td>
+     </tr>
+     <tr>
+       <td valign="top">minimum, maximum<br/>[1/&Aring;]</td>
+       <td valign="top">The bounds of the interval for the evaluation parameter. </td>
+       <td valign="top">&gt;=0<br/>max&gt;min</td>
+       <td valign="top">-m<br/>-M  </td>
+     </tr>
+     <tr>
+       <td valign="top">increase to next bin<br/>[%]</td>
+       <td valign="top">For a logarithmic binning the percentage has to be given by which the upper limit of each bin exceeds its lower limit. 
+                        If this value is set, the parameter 'number of bins' is ignored </td>
+       <td valign="top">&gt;0 </td>
+       <td valign="top">-R    </td>
+     </tr>
+     <tr>
+       <td valign="top">dead-spot<br/>[deg]</td>
+       <td valign="top">(optional) All neutrons with a scattering angle(2 &theta;) between 0 and dead-spot will not be considered in the evaluation.<br/>
+                        It is only useful if the direct beam points to the detector (as in the case of SANS) and the module 'beamstop' is not used.</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-d      </td>
+     </tr>
+     <tr>
+       <td valign="top">probability weight</td>
+       <td valign="top">yes: (default) the attributed probabilities (due to the operations of the modules before) are considered<br/>
+                        no : the probability weight of each neutron is considered with the weight 1</td>
+       <td valign="top">'yes', 'no'</td>
+       <td valign="top">-p         </td>
+     </tr>
+     <tr>
+       <td valign="top">scattering axis of the sample</td>
+       <td valign="top">In case the elastic sample scatters in one direction only, like, 
+                        e.g., the surface of a liquid that scatters only in z-direction, please specify this particular scattering axis (y or z)</td>
+       <td valign="top">'none', 'y', 'z'</td>
+       <td valign="top">-A         </td>
+     </tr>
+     <tr>
+       <td valign="top">time of flight</td>
+       <td valign="top">yes: only those neutrons which have been monitored successfully (i.e. all properties are within the given ranges) are transferred to the subsequent module<br/>
+                        no : (default) all trajectories are transferred to the subsequent module</td>
+       <td valign="top">'yes', 'no'</td>
+       <td valign="top">-w         </td>
+     </tr>
+     <tr>
+       <td valign="top">exclusive counts</td>
+       <td valign="top">yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory<br/>
+                        no : the wavelength of all trajectories is supposed to be identical with the reference wavelength</td>
+       <td valign="top">'yes', 'no'</td>
+       <td valign="top">-c         </td>
+     </tr>
+     <tr>
+       <td valign="top">flight path<br/>[cm]</td>
+       <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper)</td>
+       <td valign="top">&gt; 0  </td>
+       <td valign="top">-l      </td>
+     </tr>
+     <tr>
+       <td valign="top">time offset<br/>[ms]</td>
+       <td valign="top">(for option TOF) global shift of the neutron time t ->  t - t_offset. 
+                        It is used to shift the reference point for the time of flight analysis (e.g. by half the length of a long pulse).</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-T      </td>
+     </tr>
+     <tr>
+       <td valign="top">reference wavelength<br/>[&Aring;]</td>
+       <td valign="top">(for option: 'No TOF') The (average) wavelength set by velocity selector or monchromator <br/>  
+                        This module does not use the wavelenghth of the trajectory for data evaluation, but (as in real life) the wavelength given here.</td>
+       <td valign="top">&gt; 0 </td>
+       <td valign="top">-r     </td>
+     </tr>
+     <tr>
+       <td valign="top">time interval begin/end<br/>[ms]</td>
+       <td valign="top">(optional) The bounds of the time interval for the evaluation. Only neutrons arriving in that time interval are considered in the evaluation.</td>
+       <td valign="top">&gt;=0<br/>end&gt;begin</td>
+       <td valign="top">-e<br/>-E </td>
+     </tr>
+     <tr>
+       <td valign="top">colour</td>
+       <td valign="top">Only trajectories of the given color are evaluated. Color -1 or 'nothing' means: all trajectories are evaluated</td>
+       <td valign="top">&gt;= -1</td>
+       <td valign="top">-C      </td>
+     </tr>
+  </tbody> 
+</table>
+<br/> 
+<br/> 
+<hr/><a href="vitess.html">Back to VITESS overview</a> <br/>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 
 </body>

@@ -32,7 +32,7 @@ short  kind=0,                 // defines variable parameter in brilliance monit
   src_type=0,                  // defines source type: 0: constant source  1: pulsed source
   exclusivecount=0;            // criterion: only trajectories within limits are written
 long   nBin=100,               // number of bins in monitor file
-  nColour=0;                   // color of trajectory that is monitored   (0=all)
+  nColour=ANY_COLOR;                   // color of trajectory that is monitored   (0=all)
 double MinY = -10.0,  MaxY  = 10.0, // min. and max. width to be taken into account
   MinZ = -10.0,  MaxZ  = 10.0, // min. and max. height to be taken into account
   MinDivY=-5.0,  MaxDivY= 5.0, // min. and max. hor. div. to be taken into account
@@ -178,8 +178,8 @@ int main(int argc, char *argv[])
           DivZ = 180.0/M_PI * atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
         DivR = sqrt(sq(DivY) + sq(DivZ));
 
-        /* exclude traj. with wrong colours: (nColour=0 means: all colours accepted) */
-        if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+        /* exclude traj. with wrong colours: (nColour=-1 means: all colours accepted) */
+        if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
 		/* exclude traj. outside the given ranges */
         if (Lmbd < MinLmbd || Lmbd > MaxLmbd) continue;
@@ -423,10 +423,10 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'e':
-        if(argv[i][2]=='1') exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
+        if(argv[i][2]=='1') exclusivecount = 1;   // if activated, only neutrons meeting the monitor conditions are considered further on
         break;
       case 'C':
-        nColour = atol(&argv[i][2]);       //  excludes all neutrons with diff. Colour, if nColour > 0
+        nColour = atol(&argv[i][2]);       //  excludes all neutrons with diff. Colour, if nColour >= 0
         break;
 
       case 't':

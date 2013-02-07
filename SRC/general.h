@@ -58,6 +58,9 @@
 
 #define GUIDEFLIGHT 1
 
+#define ANY_COLOR  -1
+#define NO_COLOR    0
+
 #define MAX_COLLISIONS      100
 #define MAX_CHOPPER_WINDOWS  10
 #define LAMBDA_MIN            0.001
