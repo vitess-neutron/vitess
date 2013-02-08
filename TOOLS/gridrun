@@ -1215,7 +1215,9 @@ sub mergeResults {
           } elsif ($cols == -3) {
             # x y z
             # ignore x,y
+            # increment 3. and 5. column, 4. column error value computed later
             $I[2] += $N[2];
+            $I[4] += $N[4];
           } elsif ($cols > 16) {
             # first col monitor, then x * count
             for ($i=1; $i<=$cols; $i++) {
@@ -1257,6 +1259,21 @@ sub mergeResults {
           $C[1] = $m = $_ / $n;
           # 3. column becomes the statistical error
           $C[2] = $m * sqrt(1.0 / $C[3]);
+          print OF "@C\n";
+        }
+      } elsif ($cols == -3) {
+        # x y z 'format'
+        # 1. column (x), 2. column (y) and 5. column (absolute count) remain unchanged
+        # compute 3. and 4. column
+        @C = split;
+        if ($C[4] <= 0) {
+          print OF "$C[0] $C[1] 0 0 0\n";
+        } else {
+          # 3. column becomes the mean value
+          $_ = $C[2];
+          $C[2] = $m = $_ / $n;
+          # 4. column becomes the statistical error
+          $C[3] = $m * sqrt(1.0 / $C[4]);
           print OF "@C\n";
         }
       } else {
