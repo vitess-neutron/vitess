@@ -1261,7 +1261,7 @@ sub mergeResults {
           $C[2] = $m * sqrt(1.0 / $C[3]);
           print OF "@C\n";
         }
-      } elsif ($cols == -3) {
+      } elsif ($cols == -3 && $_ ne '') {
         # x y z 'format'
         # 1. column (x), 2. column (y) and 5. column (absolute count) remain unchanged
         # compute 3. and 4. column
