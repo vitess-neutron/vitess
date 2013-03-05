@@ -1051,12 +1051,12 @@ void geom2X3D(char *fn) {
       rotString(0,1,0, 1,0,0, rots);
       // The desired length fa[6] becomes the scale factor fa[6]/2 for the y axis,
       // width and height are scaled individually by extrusion scale factors.
-      // Remember: an extrusion direction has _4_ parameters, vector + angle.
+      // Remember: an extrusion orientation has _4_ parameters, vector + angle.
 
       fprintf (outf, "<Transform scale='1 %s 1' rotation='%s'>"
                "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
-               "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
+               "spine='0 -1 0 0 1 0' orientation='0 1 0 0 0 1 0 0' "
                "scale='%s %s %s %s'/></Shape></Transform>",
                sS5(fa[6]/2.0f, b1), rots, appearance ? appearance : HULLMAT,
                sS5(fa[9]/2.0f, b2), sS5(fa[7]/2.0f, b3),
