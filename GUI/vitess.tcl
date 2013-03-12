@@ -3164,6 +3164,8 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+  {"Offspecular scattering" header}
+  {useOffspec radio Off {"Offspecular scattering" "Switch on, if the reflectivity file takes into account\n offspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
   {"Incoherent scattering" header}
   {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
   {}
