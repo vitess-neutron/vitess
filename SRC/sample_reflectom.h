@@ -15,7 +15,7 @@ long   NumOut,  i ;
 
 short  g_nNoAngle,       /* number of angles                               */
   useIncoherent,         /* Flag whether to use incoherent scattering: 0 for "not use", 1 "for use" */
-  offspecularScattering,
+  offspecularScattering, /* Flag whether to use offspecular scattering: 0 for "not use", 1 "for use" */
   offSpecularNotDone; 
 long   g_nOption,        /* option: 
                             1: reflection of sample
