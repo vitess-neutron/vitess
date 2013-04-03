@@ -180,6 +180,7 @@ proc makeModuleSets {} {
     {sample_environment {} sample_environment}
     {detector {} detector}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
+    {filter {} filter}
     {frame {} frame}
     {external_command}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -2107,6 +2108,64 @@ set visualESET {
 }
 
 
+### filter module
+###
+set fA {
+  {"filter selection" header}
+}
+
+set fA1 {
+  {filter_param1 radio none {
+    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+}
+set fA2 {
+  {filter_param2 radio none {
+    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+set fA3 {
+  {filter_param3 radio none {
+    "filter\nparameter 3" "choose filter parameter 2 (optional)" "" K}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill all criteria (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
+}
+
+set fPAi {
+  {}
+  {filtIMin float "" {
+    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {
+    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+}
+
+set fPAj {
+  {}
+  {filtJMin float "" {
+    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {
+    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+}
+
+set fPAk {
+  {}
+  {filtKMin float "" {
+    "filter 3\nmin value" "min value of filter parameter 3" "" w}}
+  {filtKMax float "" {
+    "filter 3\nmax value" "max value of filter parameter 3" "" W}}
+}
+
+set filterESET [concat $fA $fA1 $fA2 $fA3 $fComb $fPAi $fPAj $fPAk]
+unset fA fA1 fA2 fA3 fComb fPAi fPAj fPAk
+
+
 ### Monitor many many modules
 
 proc genFE {n} {
@@ -2631,12 +2690,12 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
@@ -2720,12 +2779,12 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
