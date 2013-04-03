@@ -133,6 +133,7 @@ typedef enum
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
+	VT_FILTER      = 105,
 	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_ELAST2 = 222,
