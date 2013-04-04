@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 				{
 					/* First surface or surface between channels, if there is a spacing at the exit */
 					if (nCh==1 || dDistExit > 0.0)
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.2f\n", dHeightEntr, dHeightExit, dRadCenter);
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dHeightEntr, dHeightExit, dRadCenter);
 
 					for (nWa = 1; nWa <= nNoWafers; nWa++) 
 					{
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 						dHeightExit += dWaferThick;
 						if (dRadius != 0 && bConcentric)
 							dRadCenter -= dWaferThick;
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.2f\n", dHeightEntr, dHeightExit, dRadCenter);
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dHeightEntr, dHeightExit, dRadCenter);
 					}
 					dHeightEntr += dDistEntr;
 					dHeightExit += dDistExit;

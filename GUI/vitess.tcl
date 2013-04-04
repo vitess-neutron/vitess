@@ -734,11 +734,10 @@ set external_commandESET {
 set read_inESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\ninput file" "Specifies the name of the ASCII input file containing the trajectories." "" A} w "" 1}
-  {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas MCNPX} {1 2 3}}
+  {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas} {1 2}}
   {inform radio float {"VITESS\ndata format" "format of double values in the input file" "" F} {exp float} {0 1}}
   {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
-  {intfact float 1.0  {"Intensity factor\nfor MCNPX" "Factor to get correct absolute flux values from MCNPX input:\nF = src_intensity [n/s] / number_MCNPX_events (nps)" "" I} ge0}
 }
 
 ### Writeout
@@ -747,7 +746,7 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} w "" 1}
   {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas MCNPX} {1 2 3}}
+  {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
   {}
