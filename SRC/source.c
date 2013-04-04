@@ -38,6 +38,7 @@
 /* 1.16  Jan  2012  K. Lieutenant  visualization                                             */
 /* 1.17  Aug  2012  K. Lieutenant  new characteristics for the ESS cold moderator            */
 /* 1.18  Sep  2012  K. Lieutenant  CSNS source                                               */
+/* 1.19  Mar  2013  K. Lieutenant  correction ISIS source brlliance                          */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -139,6 +140,7 @@ int main(int argc, char *argv[])
      CenterZ, AveTimeOF,/*     at window                                                 */
      SumProb,           /* sum of probabilities (counts) used to calculate average values*/
      dFact   =    1.0,  /* for 'direction by window' */
+     IsisNorm=    1.0,
      PolNorm =    0.0;
      
    // ISIS specific parameter
@@ -199,13 +201,19 @@ int main(int argc, char *argv[])
       { 
         if (stMod[imod].eIsisTS > 0) 
         {
-         // set up ISIS specific parameters and values
-         FILE* IFptr;
-         IFptr = openFile(FullParName(stMod[imod].sLTFileName));
-         ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
-         fclose(IFptr);
-         fprintf(LogFilePtr,"Isis moderator - target station %d \n",stMod[imod].eIsisTS);
-        } 
+          // set up ISIS specific parameters and values
+          FILE* IFptr;
+          IFptr = openFile(FullParName(stMod[imod].sLTFileName));
+          ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
+          fclose(IFptr);
+          fprintf(LogFilePtr,"Isis moderator - target station %d \n", stMod[imod].eIsisTS);
+
+          // normalisation of ISIS data, which are for 60 µA, and division through frequency
+          if (stMod[imod].eIsisTS == 1)
+            IsisNorm = 160.0/60.0/40.0;  // 60 µA -> 160 µA;   40 Hz
+          else
+            IsisNorm =  40.0/60.0/10.0;  // 60 µA ->  40 µA;   10 Hz
+        }
         else 
         {
          LoadWavelengthTimeDistrib(&stMod[imod], &stTraj[imod], &stFluxLT[imod]);
@@ -516,14 +524,10 @@ int main(int argc, char *argv[])
          if(strlen(sM->sLTFileName) > 0) 
          {
             // case: flux(lambda,t) was given in a file
-            // change for 180 uAmp or 60 uAmp..... frequency of source....
             if (sM->eIsisTS > 0) 
-            {
-               prob = TS.Total*3.744905847e14*1.1879451*dSolAngle*WindowWidth*WindowHeight*stSrc.dPulseFreq/NumberOfNeutrons;
-               prob *= sM->eIsisTS == 1 ? 3.0/50 : 0.1;
-            } else {
+               prob = IsisNorm * TS.Total * 3.744905847e14 * 1.1879451 * dSolAngle * WindowWidth * WindowHeight * stSrc.dPulseFreq / NumberOfNeutrons;
+            else
                prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].dInt * sM->dNorm;
-            }
          }
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
          { // case ESS, SNS
