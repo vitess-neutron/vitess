@@ -381,6 +381,8 @@ void OwnInit(int argc, char *argv[])
   mode = 1;
   absCoeff = 0;
 
+   bVisInstalled = TRUE;
+
   while(argc>1)
     {
       switch(argv[1][1])
@@ -624,6 +626,27 @@ void OwnInit(int argc, char *argv[])
      (focus direction) */
 
   FillRotMatrixZY(RotMatrixFoc, AnglFocVert, AnglFocHoriz) ;
+
+  if (bVisInstr)
+    { 
+      // Visualisation of the monochromator geomentry
+      stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
+      stGeometry.nCuboids = 1; 
+      
+      stGeometry.pCuboid[0].Length = DimCE[0]; 
+      stGeometry.pCuboid[0].Width  = DimCE[1];
+      stGeometry.pCuboid[0].Height = DimCE[2];
+      stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
+      stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
+      stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
+      stGeometry.pCuboid[0].vNormal[0]= 1.;
+      stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz*M_PI/180.);
+      stGeometry.pCuboid[0].vNormal[2]= tan(RotVert*M_PI/180.);
+      
+      stGeometry.pDescr  = "monochromator:yellow";
+      stGeometry.eModule = VT_MONOC_ANALY;
+  }
+  
 
 }/* End OwnInit */
 

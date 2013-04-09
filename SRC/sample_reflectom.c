@@ -28,6 +28,7 @@
 #include "sample_reflectom.h"
 #include "matrix.h"
 #include "message.h"
+#include "sample.h"
 
 int main(int argc, char **argv)
 {
@@ -232,6 +233,7 @@ double	ReadReflect(const double p_dQ)
 void OwnInit(int argc, char *argv[])
 {
 	char *arg = NULL;
+	SampleType sample;
 
 	/* Initialize */
 	g_pTabQ         = NULL;
@@ -367,6 +369,25 @@ void OwnInit(int argc, char *argv[])
 		exit(0);
 	}
 
+	
+	
+	sample.Position[0] = PosCE[0];
+	sample.Position[1] = PosCE[1];
+	sample.Position[2] = PosCE[2];
+
+	sample.Direction[0] = 1.;
+	sample.Direction[1] = tan(g_dRotHoriz - M_PI_2);
+	sample.Direction[2] = tan(g_dRotVert - M_PI_2);
+
+	sample.SG.Cube.thickness = DimCE[0];
+	sample.SG.Cube.width = DimCE[1];
+	sample.SG.Cube.height = DimCE[2];
+	sample.Type = VT_CUBE;
+
+	SetSampleGeometry(&sample);
+
+	return;
+
 }/* End OwnInit */
 
 
@@ -401,6 +422,8 @@ void OwnCleanup()
 
 void ReadParameterFile()
 {
+
+  
 	/* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
 	PosCE[0]=ReadParF(Par_Crys); PosCE[1]=ReadParF(Par_Crys); PosCE[2]=ReadParF(Par_Crys); ReadParComment(Par_Crys) ;
 	DimCE[0]=ReadParF(Par_Crys); DimCE[1]=ReadParF(Par_Crys); DimCE[2]=ReadParF(Par_Crys); ReadParComment(Par_Crys) ;
@@ -444,6 +467,7 @@ void ReadParameterFile()
 	{	fprintf(LogFilePtr,"standard frame generation used\n") ;
 	}
 
+	
 
 }/* End ReadParameterFile */
 

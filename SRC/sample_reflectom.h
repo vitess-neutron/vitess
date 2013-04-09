@@ -10,7 +10,7 @@
 /**************************************************/
 
 FILE   *Par_Crys, *Foc_Crys ;
-char   *ParameterFileName;
+char   *ParameterFileName, *SampleFileName;
 long   NumOut,  i ;
 
 short  g_nNoAngle,       /* number of angles                               */

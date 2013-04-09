@@ -16,6 +16,7 @@
 #include "softabort.h"
 #include "matrix.h"
 #include "intersection.h"
+#include "sample.h"
 
 /* START HEADER STORY */
 
@@ -23,7 +24,7 @@
 
 
 	FILE		*Par_Sample, *StructureFactorFile; 
-	char		Option[STRING_BUFFER], *ParameterFileName, *StructureFactorFileName;
+	char		Option[STRING_BUFFER], *ParameterFileName, *StructureFactorFileName, *SampleFileName;
 	long		d_spr_option, datanumbermax = 10000, Repetition, repet, i,j;
 	double		TOF, WL, Prob ;
 	double		A_reciproc[3], B_reciproc[3], C_reciproc[3], Fhkl2[10001], hh[10001], kk[10001], ll[10001], no[10001];
@@ -409,7 +410,8 @@ void OwnInit(int argc, char *argv[])
 void ReadParameterFile()
 {
 
-
+  SampleType sample;
+  
 		/* reads from file by using ReadParF(Par_Sample) and ReadParComment(Par_Sample) */
 
 
@@ -442,12 +444,42 @@ void ReadParameterFile()
 	}
 
 
-		if(Option[1] == 'y') fprintf(LogFilePtr,"\nsample geometry:	'cylinder'") ;
+	sample.Position[0] = PosSample[0];
+	sample.Position[1] = PosSample[1];
+	sample.Position[2] = PosSample[2];
 
-		if(Option[1] == 'u') fprintf(LogFilePtr,"\nsample geometry:	'cuboid'") ;
+ if(Option[1] == 'y') {
 
-		if(Option[1] == 'a') fprintf(LogFilePtr,"\nsample geometry:	'ball'") ;/**/
+    sample.SG.Cyl.r = DimSample[0];
+    sample.SG.Cyl.height = DimSample[1];
+    sample.Type = VT_CYL;
 
+    fprintf(LogFilePtr,"\n             sample geometry:	'cylinder'") ;
+
+  }
+  if(Option[1] == 'u') {
+   
+    sample.SG.Cube.thickness = DimSample[0];
+    sample.SG.Cube.width = DimSample[1];
+    sample.SG.Cube.height = DimSample[2];
+    sample.Type = VT_CUBE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'cuboid'") ;
+
+  }
+  if(Option[1] == 'a') {
+
+    sample.SG.Ball.r = DimSample[0];
+    sample.Type = VT_SPHERE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'sphere'") ;
+
+  }
+
+  SetSampleGeometry(&sample);	
+
+
+		
 		/* converts degs in radian etc. */
 
 		AnglOmega *= M_PI/180.;
