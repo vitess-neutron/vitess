@@ -159,11 +159,11 @@ sub usage {
 
   print <<EOS;
 usage:
-configure \{option\}
+mmake.pl \{option\}
   this script is meant to be run under Unix, to generate two files
   1) Makfile suitable for GNU make
   2) vitess.mak suitable for Windows nmake
-  configure tries to adopt Makefile to the local Unix system.
+  mmake.pl tries to adopt Makefile to the local Unix system.
 
   Options may be
 
@@ -291,19 +291,27 @@ STOOL = sample.o $(MTOOL)
 NTOOL = mathvector.o mathmatrix.o $(TOOL)
 GTOOL = mathvector.o mathfunctions.o $(TOOL)
 
+#Compile
 EOS
 
   # set appropriate make macros
-  print OF 'CFLAGS = -pthread ', $sys eq 'Darwin' ? '' : '-s ';
-  print OF <<'EOS';
--O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-EOS
+  $_ = ($sys eq 'Darwin' ? '' : '-s ') .
+       '-O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng';
 
   print OF <<EOS;
 CCOMP = gcc
-CC = \$(CCOMP) \$(CFLAGS)
 CPLUSCOMP = g++
+CFLAGS = -pthread $_
+
+# alternative intel icc compiler
+# uncomment the appropriate lines to use icc
+#CCOMP = icc
+#CPLUSCOMP = icc -x c++
+#CFLAGS = -pthread -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -fast -w3 -g0 -Wall -Wremarks -Irng -ffreestanding
+
+CC = \$(CCOMP) \$(CFLAGS)
 CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
+
 LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
@@ -517,7 +525,7 @@ EOS
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 EOS
-  print "Gobj:\n@Gobj\n";
+
   subRule($rule, @Gobj);
 
   $rule .= <<'EOS';

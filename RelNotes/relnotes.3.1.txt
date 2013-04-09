@@ -1,0 +1,43 @@
+VITESS 3.1  Release Note
+------------------------
+
+Optimization:
+-------------
+
+Visualization:
+--------------
+All modules generate a geometric representation, where ... got a specific improvement.
+
+Grid runs:
+----------
+Starting with a .grd file of an experiment you may start a parallel simulation on a
+grid of compute nodes. These must be Linux servers, accessed by ssh or the sun grid
+engine, and have a common home directory. See TOOLS/gridrun -h for details.
+
+GUI:
+----
+The GUI silently stores the state of the active session at reasonable times.
+You may recover these snapshots after changing something, e.g. after accidentially
+deleting some modules.
+You may give the actual module a specific name. The actual module in the right frame
+is emphasized in the module list. Name tags help to distinguish modules in a list
+of equal modules, for example monitor series.
+
+New modules:
+------------
+source_csns       :
+readin            : read text and McStas formatted neutron data 
+filter            : Should be used instead of using filters in monitor modules.
+
+New tools:
+----------
+
+
+Bug fixes, improvements:
+-----------------------
+monitor1D         :
+detector          : new constant delta phi mode
+source            : Better moderator descriptions for ISIS and HMI
+spacewindow       : positioning in x-direction
+sample_reflectom  : handles offspecular scattering now
+writeout          : write McStas format
