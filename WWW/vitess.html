@@ -3,6 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Virtual Instrumentation (VITESS) for pulsed and continuous sources</title>
 </head>
 <body>
@@ -19,7 +20,8 @@
 <a href="#pipes">Pipe Execution</a></td><td>
 <a href="#VITESS-GUI">Graphical User Interface</a></td><td>
 <a href="#VITESS-External">External Commands</a></td><td>
-<a href="#threads">Helper Threads</a></td>
+<a href="#threads">Helper Threads</a></td><td>
+<a href="#grid">Grid Runs</a></td>
 </tr></table>
 <p>
 <h2>VITESS modules</h2>
@@ -72,6 +74,7 @@
 <a href="raytracing.html">raytracing</a><br>
 <a href="spin_reset.html">spin reset</a><br>
 </td></tr></table>
+<a href="#comp">Compiling VITESS Modules</a><br>
 <p>
 <h2>VITESS tools</h2>
 <table width="80%"><tr><td width="4%"></td><td>
@@ -89,7 +92,7 @@
 <a href="dist_time.html">Distance-Time Plot</a><br>
 <a href="crysanalyzerspec.html">Crystal Analyzer Spectrometer</a><br>
 </td></tr></table>
-<p>
+
 <h2>VITESS options</h2>
 <table width="80%"><tr><td width="4%"></td><td>
 <a href="sim_series.html">Generate Series</a></td><td>
@@ -98,7 +101,7 @@
 <a href="trajectories.html">Trajectory Visualization</a></td><td>
 <a href="options.html">more options</a></td>
 </tr></table>
-<p>
+
 <h2><a name="VITESS-General">General Information</a></h2>
 VITESS is a virtual instrumentation tool for neutron scattering at pulsed and
 continuous sources.<br>
@@ -349,9 +352,19 @@ Processing of neutron trajectories in suitables modules will be done in parallel
 <p>
 Caveat: Simulations with identical input have the same result statistically,
 when using different numbers of helper threads. The same holds, it you run
-simulations on diffent CPU types, where the result will not be exactly the
+simulations on different CPU types, where the result will not be exactly the
 same. Results are exactly the same, if simulations with equal input run
 on a given CPU / operating system with the same number of helper threads specified.
+<p>
+<h2><a name="grid">Grid Runs</a></h2>
+A simulation with a very big number of e.g. 1e10 trajectories may take a long
+time on a normal PC. If you have access to a computer grid like the dirac cluster at HZB,
+it may be of interest to use many nodes for parallel simulation.<br>
+The first step is to export your instrument as a .grd file. The gridrun script for Linux
+clusters may then be used to start a batch job either per ssh or Sun Grid Engine
+(SGE) commands. For further information do 
+<code>&lt;path-to-installation&gt;/TOOLS/gridrun -h</code>
+and read the <a href="../Concepts/clusterjobs.txt">concept text</a>.
 <p>
 <h2><a name="VITESS-External">External Commands</a></h2>
 The VITESS command pipe may contain commands with external programs.
@@ -390,6 +403,52 @@ typedef struct
 Neutron;
 </code>
 </pre>
+<p>
+<h2><a name="comp">Compiling VITESS Modules</a></h2>
+<p>
+We distribute VITESS sources with compiled binaries for Windows, Linux, and Mac OS.
+With these binaries you may execute VITESS out of the box on most systems.<br>
+You will need to compile sources, when your system is of another Unix flavor
+or some system libraries are not compatible, or you want to use the latest
+compiler's optimization for ultimate speed.
+<p>
+<h3>Compiling the C/C++ Sources on Unix Systems</h3>
+<ol>
+<li><code>cd &lt;path-to-installation&gt;/SRC</code>
+<li><code>./mmake.pl</code>
+<li><code>make</code>
+<li><code>make install</code>
+</ol>
+The mmake.pl script explores your system hardware and given Linux or Mac OS software and
+generates a Makefile.<br>Making depends on compiled GSL PRNG and g2 libraries, to be
+found in the rng and g2/g2-0.72 subdirectory.<br>
+You may provide some parameters for the generation, see <code>mmake.pl -h</code>
+<br>
+If something is missing you may edit Makefile to your needs, please feel free to ask for help at the 
+vitess@helmholtz-berlin.de mailing list.<br>
+mmake.pl also states the given VITESS version and the date of its call in the binaries.
+<br>
+We use the GNU C compiler as default, but you may use the optimizing Intel compiler
+by editing the Makefile at the #Compiler lines.
+<br>
+Installing the binaries means to move the linked files to the MODULES directory,
+with a name extension like _Linux (for 32 bit Intel Linux systems),
+_Linux_x86_64 (64 bit Intel Linux) or _Darwin (32 bit Intel Mac) and _Darwin_x86_64
+(64 bit Intel Mac).
+<h3>Compiling the Sources on Windows systems</h3>
+SRC\vitess.mak in the distribution is a nmake makefile for MS Visual C compilers, to be
+called in a command shell. Both files may be generated with the Unix mmake.pl script.
+<p>
+<ol>
+<li><code>cd &lt;path-to-installation&gt;\SRC</code>
+<li>edit compile.bat and vitess.mak to your needs
+<li><code>compile.bat</code>
+<li><code>copy Release\*.exe ..\MODULES</code>
+</ol>
+You need to edit the path statement of compile.bat, and the CPATH, SROOT, SVNROOT
+and CPATH2 lines of vitess.mak.<br>
+Calling compile.bat should produce .exe binaries
+in SRC\Release. The last step installs these.
 
 <hr>
 <a href="#top">Back to start of page</a><br>
@@ -397,7 +456,7 @@ Neutron;
 <a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a>
 
 <p><!-- hhmts start -->
-Last modified: Fri Mar 30 09:09:15 MEST 2012
+Last modified: Mon Apr  8 18:26:58 MEST 2013
 <!-- hhmts end -->
 
 </body>
