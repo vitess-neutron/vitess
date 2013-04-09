@@ -23,13 +23,14 @@
 #include "softabort.h"
 #include "matrix.h"
 #include "intersection.h"
+#include "sample.h"
 
 /* START HEADER STORY */
 
 #define	STRING_BUFFER 50
 
 FILE        *Par_Sample, *XFILE; 
-char        Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER];
+char        Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER], *SampleFileName;
 long        User, Repetition, BoseF, repet,  i ;
 short       iColor=0;                // if != 0, only neutrons of this colour are treated 
 double      TOF, WL, Prob, MaxPathLength, MaxPathLengthHol=0., PathLength, PathLengthHol=0., scattered_dir[3], l_reference, h_reference, v_reference;
@@ -40,6 +41,7 @@ VectorType  random_main, random_range, k_reference, PosSample, DimSample, DimSam
 VectorType  Pos1f, Pos2f, Pos3f, Pos4f, 
             Pos1v, Pos2v, Pos3v, Pos4v, Pos, Dir ;
 Neutron     Neutrons ;
+
 
 long        S_q_w(double *wl, double *prob, VectorType Dir);
 double      FunctionS_q_w(VectorType q, double energy);
@@ -426,6 +428,9 @@ void OwnCleanup()
 
 void ReadParameterFile()
 {
+
+  SampleType sample;
+
   fprintf(LogFilePtr,"\n	repetition rate		=     %ld", Repetition) ;
   if(Repetition > 20)
     fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics" 
@@ -457,10 +462,48 @@ void ReadParameterFile()
     exit(0) ;
   }
 
-  if(Option[1] == 'y') fprintf(LogFilePtr,"\n             sample geometry:	'cylinder'") ;
-  if(Option[1] == 'o') fprintf(LogFilePtr,"\n             sample geometry:	'hollow cylinder'") ;
-  if(Option[1] == 'u') fprintf(LogFilePtr,"\n             sample geometry:	'cuboid'") ;
-  if(Option[1] == 'a') fprintf(LogFilePtr,"\n             sample geometry:	'sphere'") ;
+  sample.Position[0] = PosSample[0];
+  sample.Position[1] = PosSample[1];
+  sample.Position[2] = PosSample[2];
+  
+
+  if(Option[1] == 'y') {
+
+    sample.SG.Cyl.r = DimSample[0];
+    sample.SG.Cyl.height = DimSample[1];
+    sample.Type = VT_CYL;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'cylinder'") ;
+
+  }
+  if(Option[1] == 'o') {
+    sample.SG.Cyl.r = DimSample[0];
+    sample.SG.Cyl.height = DimSample[1];
+    sample.Type = VT_CYL;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'hollow cylinder'") ;
+
+  }
+  if(Option[1] == 'u') {
+   
+    sample.SG.Cube.thickness = DimSample[0];
+    sample.SG.Cube.width = DimSample[1];
+    sample.SG.Cube.height = DimSample[2];
+    sample.Type = VT_CUBE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'cuboid'") ;
+
+  }
+  if(Option[1] == 'a') {
+
+    sample.SG.Ball.r = DimSample[0];
+    sample.Type = VT_SPHERE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'sphere'") ;
+
+  }
+
+  SetSampleGeometry(&sample);
 
   /* converts degs in radian etc. */
   AnglSampleHoriz *= M_PI/180. ;

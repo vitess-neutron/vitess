@@ -2,11 +2,16 @@
 #define SAMPLE_H
 
 #include "intersection.h"
+#include "general.h"
+
+extern char* SampleFileName;
 
 void InitSample  (SampleType *Sample);
 void ReadCube    (FILE *SampleFile, SampleType *Sample);
 void ReadCylinder(FILE *SampleFile, SampleType *Sample);
 void ReadBall    (FILE *SampleFile, SampleType *Sample);
+
+void SetSampleGeometry(SampleType *Sample);
 
 int  CompPair(const void* p1, const void* p2);
 int  ReadTilComment(char* pBuffer, FILE* pSampleFile);
