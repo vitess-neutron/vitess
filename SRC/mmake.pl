@@ -70,7 +70,7 @@ my @CN = qw(monitor1D monitor2D);
 my @CMG = qw(guide_parallel);
 
 # module which need GTOOL (=TOOL + mathvector mathfunctions)
-my @CG = qw(guide_elliptic);
+my @CG = qw(guide_elliptic filter);
 
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs
