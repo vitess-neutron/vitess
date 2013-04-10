@@ -119,6 +119,7 @@ ALL : \
 	"$(OD)\monitor1D.exe" \
 	"$(OD)\monitor2D.exe" \
 	"$(OD)\guide_elliptic.exe" \
+	"$(OD)\filter.exe" \
 	"$(OD)\guide_parallel.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
@@ -660,6 +661,13 @@ SOURCE=$(SPATH)\guide_elliptic.cpp
 
 "$(OD)\guide_elliptic.exe" : "$(OD)" $(GTOOL) "$(OD)\guide_elliptic.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(GTOOL) 
+
+SOURCE=$(SPATH)\filter.cpp
+"$(IDIR)\filter.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\filter.exe" : "$(OD)" $(GTOOL) "$(OD)\filter.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\filter.pdb" /out:"$(OD)\filter.exe" "$(IDIR)\filter.obj" $(GTOOL) 
 
 SOURCE=$(SPATH)\guide_parallel.c
 "$(IDIR)\guide_parallel.obj" : $(SOURCE)
