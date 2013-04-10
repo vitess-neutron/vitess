@@ -732,7 +732,7 @@ static char *lookForDef(char *name) {
 
 
 int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods, char **appearance) {
-  int vtype, len, slen, nargs, i;
+  int vtype, slen, nargs, i;
   char *rs, *p, *q;
 
  next_line:
@@ -744,7 +744,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   if (!rs) return 0;
 
   *p++ = 0;
-  len = strlen(line);
   vtype = -1;
   switch (*rs++) {
   case 'C':
@@ -1536,7 +1535,7 @@ void writeSVG() {
         char *pa,*pb;
         a = p->u.pos[0];
         b = p->u.pos[1];
-        pa = sS3(p->u.pos[0], ba);
+        pa = sS3(a, ba);
         pb = sS3(b, bb);
         fprintf(outf,"%s,%s", pa, pb);
         if (--count > 0) fputc(',', outf);

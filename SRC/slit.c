@@ -34,13 +34,12 @@ double VelocityReal,            /* velocity of the neutron                    */
 
 int main(int argc, char *argv[])
 {
-	long  i, BufferIndex;
+	long  i;
 
 	double TimeOF,               /* time of flight of the neutron to the window */
 	       NewPosY, NewPosZ;     /* hor. and vert. position of neutron at slit  */
 
 	/* initialisation */
-	BufferIndex   = 0;
         bVisInstalled = TRUE;
 
 	Init(argc, argv, VT_SLIT);
