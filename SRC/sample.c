@@ -88,6 +88,8 @@ void ReadCube(FILE *SampleFile, SampleType *Sample)
 		exit(-1);
 	}
 
+	 Sample->Type=VT_CUBE;
+
 	SetSampleGeometry(Sample);
 
 }
@@ -135,6 +137,8 @@ void ReadCylinder(FILE *SampleFile, SampleType *Sample)
 		exit(-1);
 	}
 
+	Sample->Type=VT_CYL;
+
 	SetSampleGeometry(Sample);
 
 }
@@ -166,6 +170,8 @@ void ReadBall(FILE *SampleFile, SampleType *Sample)
 		Sample->Direction[2] = 1.0;
 	}
 
+	Sample->Type=VT_SPHERE;
+
 	SetSampleGeometry(Sample);
 
 }
@@ -189,9 +195,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCuboid[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCuboid[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCuboid[0].vNormal[0]= 1.;
-      stGeometry.pCuboid[0].vNormal[1]= 0.;
-      stGeometry.pCuboid[0].vNormal[2]= 0.;
+      stGeometry.pCuboid[0].vNormal[0]= Sample->Direction[0];
+      stGeometry.pCuboid[0].vNormal[1]= Sample->Direction[1];
+      stGeometry.pCuboid[0].vNormal[2]= Sample->Direction[2];
       break;
       
     case VT_CYL:

@@ -572,6 +572,7 @@ void  OwnInit(int argc, char *argv[])
           sscanf(&(argv[i][2]),"%hd", &AddColor);
           break;
 
+
         default:
           fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
           exit(-1);
@@ -629,7 +630,7 @@ void  OwnInit(int argc, char *argv[])
 	      
 	      RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
 	      fprintf(LogFilePtr,"For the cylindrical detector ry %f, rz %f", ry, rz);
-	      if (rz < 0) rz += 2.*M_PI;
+	      //  if (rz < 0) rz += 2.*M_PI;
 	      stGeometry.pCylSlice[0].Phi += rz/M_PI*180.;
 
 	      stGeometry.pDescr  = "detector:cyan";
