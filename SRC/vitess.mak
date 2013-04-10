@@ -110,11 +110,7 @@ ALL : \
 	"$(OD)\collimator_radial.exe" \
 	"$(OD)\precessionfield.exe" \
 	"$(OD)\sesans_field.exe" \
-	"$(OD)\sample_elasticisotr.exe" \
-	"$(OD)\sample_inelast.exe" \
-	"$(OD)\sample_reflectom.exe" \
 	"$(OD)\define_direction.exe" \
-	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\flipper_gradient.exe" \
@@ -129,6 +125,10 @@ ALL : \
 	"$(OD)\sample_sans.exe" \
 	"$(OD)\sample_environment.exe" \
 	"$(OD)\sample_nxs.exe" \
+	"$(OD)\sample_elasticisotr.exe" \
+	"$(OD)\sample_inelast.exe" \
+	"$(OD)\sample_reflectom.exe" \
+	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble_parallel.exe" \
@@ -140,7 +140,7 @@ ALL : \
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=0 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=1 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -598,40 +598,12 @@ SOURCE=$(SPATH)\sesans_field.c
 "$(OD)\sesans_field.exe" : "$(OD)" $(MTOOL) "$(OD)\sesans_field.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sesans_field.pdb" /out:"$(OD)\sesans_field.exe" "$(IDIR)\sesans_field.obj" $(MTOOL) 
 
-SOURCE=$(SPATH)\sample_elasticisotr.c
-"$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_elasticisotr.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_elasticisotr.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_elasticisotr.pdb" /out:"$(OD)\sample_elasticisotr.exe" "$(IDIR)\sample_elasticisotr.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_inelast.c
-"$(IDIR)\sample_inelast.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_inelast.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_inelast.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_inelast.pdb" /out:"$(OD)\sample_inelast.exe" "$(IDIR)\sample_inelast.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_reflectom.c
-"$(IDIR)\sample_reflectom.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_reflectom.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_reflectom.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_reflectom.pdb" /out:"$(OD)\sample_reflectom.exe" "$(IDIR)\sample_reflectom.obj" $(MTOOL) 
-
 SOURCE=$(SPATH)\define_direction.c
 "$(IDIR)\define_direction.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\define_direction.exe" : "$(OD)" $(MTOOL) "$(OD)\define_direction.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\define_direction.pdb" /out:"$(OD)\define_direction.exe" "$(IDIR)\define_direction.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_singcryst.c
-"$(IDIR)\sample_singcryst.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_singcryst.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_singcryst.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_singcryst.pdb" /out:"$(OD)\sample_singcryst.exe" "$(IDIR)\sample_singcryst.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\cas_v40.c
 "$(IDIR)\cas_v40.obj" : $(SOURCE)
@@ -728,8 +700,36 @@ SOURCE=$(SPATH)\sample_nxs.c
 "$(IDIR)\sample_nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
+"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj" "$(OD)\sgsi.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj" "$(OD)\sgsi.obj" 
+
+SOURCE=$(SPATH)\sample_elasticisotr.c
+"$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_elasticisotr.exe" : "$(OD)" $(STOOL) "$(OD)\sample_elasticisotr.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_elasticisotr.pdb" /out:"$(OD)\sample_elasticisotr.exe" "$(IDIR)\sample_elasticisotr.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_inelast.c
+"$(IDIR)\sample_inelast.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_inelast.exe" : "$(OD)" $(STOOL) "$(OD)\sample_inelast.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_inelast.pdb" /out:"$(OD)\sample_inelast.exe" "$(IDIR)\sample_inelast.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_reflectom.c
+"$(IDIR)\sample_reflectom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_reflectom.exe" : "$(OD)" $(STOOL) "$(OD)\sample_reflectom.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_reflectom.pdb" /out:"$(OD)\sample_reflectom.exe" "$(IDIR)\sample_reflectom.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_singcryst.c
+"$(IDIR)\sample_singcryst.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_singcryst.exe" : "$(OD)" $(STOOL) "$(OD)\sample_singcryst.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_singcryst.pdb" /out:"$(OD)\sample_singcryst.exe" "$(IDIR)\sample_singcryst.obj" $(STOOL) 
 
 SOURCE=$(SPATH)\chop_phases.c
 "$(IDIR)\chop_phases.obj" : $(SOURCE)
@@ -779,8 +779,8 @@ SOURCE=$(SPATH)\bender.c
 "$(IDIR)\bender.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
+"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj"
+	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj"
 
 SOURCE=$(SPATH)\visual.c
 "$(IDIR)\visual.obj" : $(SOURCE)

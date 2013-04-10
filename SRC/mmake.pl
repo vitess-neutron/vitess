@@ -55,10 +55,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    pol_mirror
 	    collimator_radial
 	    precessionfield sesans_field
-	    sample_elasticisotr sample_inelast
-	    sample_reflectom
 	    define_direction
-	    sample_singcryst
 	    cas_v40
 	    mirror_elliptical
             flipper_gradient
@@ -76,7 +73,9 @@ my @CMG = qw(guide_parallel);
 my @CG = qw(guide_elliptic);
 
 # modules which need STOOL (=MTOOL + sample)
-my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
+my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs
+	    sample_elasticisotr sample_inelast sample_reflectom sample_singcryst
+);
 
 my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
