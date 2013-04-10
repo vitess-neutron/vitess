@@ -376,12 +376,12 @@ void OwnInit(int argc, char *argv[])
 	sample.Position[2] = PosCE[2];
 
 	sample.Direction[0] = 1.;
-	sample.Direction[1] = tan(g_dRotHoriz - M_PI_2);
-	sample.Direction[2] = tan(g_dRotVert - M_PI_2);
+	if (g_dRotHoriz > 0) sample.Direction[1] = tan(g_dRotHoriz - M_PI_2);
+	if (g_dRotVert > 0) sample.Direction[2] = tan(g_dRotVert - M_PI_2);
 
-	sample.SG.Cube.thickness = DimCE[0];
+	sample.SG.Cube.thickness = DimCE[2];
 	sample.SG.Cube.width = DimCE[1];
-	sample.SG.Cube.height = DimCE[2];
+	sample.SG.Cube.height = DimCE[0];
 	sample.Type = VT_CUBE;
 
 	SetSampleGeometry(&sample);
