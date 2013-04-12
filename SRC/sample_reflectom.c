@@ -397,7 +397,9 @@ void OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
 	/* print error that might have occured many times */
-	PrintMessage(SMPL_Q_RANGE_TOO_SMALL, "", ON);
+  int i;
+
+  PrintMessage(SMPL_Q_RANGE_TOO_SMALL, "", ON);
 
 	fprintf(LogFilePtr,"Maximum scattering probability reached: %f \n", maxProb);
 	fprintf(LogFilePtr," \n");
@@ -410,6 +412,14 @@ void OwnCleanup()
 	/* free allocated memory */
 	if (g_pTabQ!=NULL)  free(g_pTabQ);
 	if (g_pTabR!=NULL)  free(g_pTabR);
+
+	if (g_pTab_Qin_Qout[0]!=NULL) free (g_pTab_Qin_Qout[0]);
+	if (g_pTab_Qin_Qout[1]!=NULL) free (g_pTab_Qin_Qout[1]);
+	for (i=0; i < g_nLinesRefl;i++) {
+	  if (g_pTab_Qin_Qout[i+2]!=NULL) free (g_pTab_Qin_Qout[i+2]);
+	  if (g_pTab_RoffSpec[i]!=NULL) free (g_pTab_RoffSpec[i]);
+	}
+
 
 	/* closes reflection coefficient files */
 	if (g_pReflFile != NULL) fclose(g_pReflFile) ;
@@ -511,8 +521,8 @@ void ReadReflectivityFile()
 	    unsigned int innerCounter = 0;
 	    unsigned int outerCounter = 0;
 	    double q_i_prev = 0;
-	    double q_f_array[g_nLinesRefl];
-	    double refl_array[g_nLinesRefl];
+	    double* q_f_array = calloc(g_nLinesRefl, sizeof(double));
+	    double* refl_array = calloc(g_nLinesRefl, sizeof(double));
 	    int i;
 
 	    g_pTab_Qin_Qout = calloc(g_nLinesRefl, sizeof(double*));
@@ -571,6 +581,9 @@ void ReadReflectivityFile()
 	    }
 	    numQinPoints = outerCounter;
 
+	    free (q_f_array);
+	    free (refl_array);
+
 	  }
         }
     }
@@ -579,6 +592,7 @@ void ReadReflectivityFile()
       fprintf(LogFilePtr,"ERROR: no reflection file name given!\n");
       exit(0);
     }
+
 
   return;
   
