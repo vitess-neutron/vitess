@@ -152,13 +152,13 @@ int main(int argc, char* argv[])
 		for (l=0; l < nModuleNo; l++) 
 		{	
 			if (l > 0) fprintf(pExeVFile, " + ");
-			fprintf(pExeVFile, "%svpipelog%d", sPDir, l+1);
+			fprintf(pExeVFile, "%s*pipelog%d", sPDir, l+1);
 		}
 		fprintf(pExeVFile, " %sSim%d.log%c", sPDir, m, cNL);
 #else
     fprintf(pExeVFile, "%s %svpipelog* > %sSim%d.log%c", sType, sPDir, sPDir, m, cNL);
 #endif
-    fprintf(pExeVFile, "%s %svpipelog*%c", sDel, sPDir, cNL);
+    fprintf(pExeVFile, "%s %s*pipelog*%c", sDel, sPDir, cNL);
 	}
 
 	OwnCleanup();
