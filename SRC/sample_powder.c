@@ -34,7 +34,7 @@ double Theta, DelTheta,     /* these angles determine orientation and solid angl
        Phi, DelPhi;
 double MuInc =  0.0,        /* incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] */
        UCV   = 50.0;        /* unit cell volume                                          */
-short  nColor=0,            /* colour of the scattered neutrons                          */
+short  nColor=NO_COLOR,     /* colour of the scattered neutrons                          */
        bIncohScat=FALSE,    /* shall incoherent scattering be done ?                     */
        bTreatAll =FALSE;    /* shall neutrons not hitting the sample be treated ?        */
 long   GenNeutrons=1;       /* how many trajectories to generate per incoming trajectory for each structure factor */
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
   /* get several things done before programme start */
   /* which have actually nothing to do with physics */
   Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_powder 1.6a");
+  print_module_name("sample_powder 1.6b");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of structure factor file */
@@ -184,7 +184,8 @@ int main(int argc, char *argv[])
         /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
         HelpFac = Lbf*pow(InputNeutrons[i].Wavelength,3)/(4.0*UCV*UCV);
 
-        InputNeutrons[i].Color = nColor;
+        if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
+          InputNeutrons[i].Color = nColor;
 
         /* Do the scattering for each StrucFac */
         for(Nth=0; StrucFac[Nth][0] > 0.5*InputNeutrons[i].Wavelength && Nth < NumStrucFac; Nth++)
@@ -226,7 +227,8 @@ int main(int argc, char *argv[])
         /************************************/
         if (bIncohScat)
         { 
-          InputNeutrons[i].Color = (short)(nColor+1);
+          if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
+            InputNeutrons[i].Color = (short)(nColor+1);
 
           for(iGen=0; iGen<GenNeutrons; iGen++) 
           {

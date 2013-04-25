@@ -12,6 +12,7 @@
 /* 1.6  Feb 2004  K. Lieutenant  'FullParName' + ERROR included; check of 'kind' out of loop */
 /* 1.7  Nov 2005  K. Lieutenant  transformation direction -> scattering angles added         */
 /* 1.7a Jun 2009  A. Houben      increased NCENTER from 100 to 200                           */
+/* 1.8  Apr 2013  K. Lieutenant  flight path correction                                      */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -24,7 +25,7 @@
 #include "matrix.h"
 #include "softabort.h"
 
-#define BINS   5000
+#define BINS  10000
 #define NCENTER 200
 
 
@@ -47,9 +48,10 @@ long  nbins,                 /* number of bins */
 
 double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
                                   selector) instrument                                                 */
-       deadspotangle=0,      /* excludes all neutrons with a scattering angle < deadspotangle [deg] */
-       Flightpath=0,         /* length of neutron flight path [cm] */
-       TimeOffset=0,         /* global shift of the neutron time t= t-TimeOffset [ms] */
+       deadspotangle=0.0,    /* excludes all neutrons with a scattering angle < deadspotangle [deg] */
+       Flightpath0=0.0,      /* standard length of neutron flight path [cm] */
+       DetDist=0.0,          /* detector distance             [cm] */
+       TimeOffset=0.0,       /* global shift of the neutron time t= t-TimeOffset [ms] */
        m,M,                  /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
        dLogProz=0.0,         /* percentage of increase to next bin      */
        dDelLambda,           /* difference between wavelength calculated from TOF and true wavelength  */
@@ -76,13 +78,15 @@ int main(int argc, char *argv[])
 	  time, lambda, 
 	  TwoTheta, TwoThetaDeg, Phi, 
 	  qValue, dspacing, 
-	  prob=0;
+	  prob   =0.0,
+    Flightpath=0.0,        // real length of neutron flight path [cm] 
+    DetPath=0.0;           // path length from sample to position of detection
 
 	int ibin;
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast 1.7a");
+	print_module_name("eval_elast 1.8");
 	OwnInit(argc, argv);
 
 	switch (kind) 
@@ -132,40 +136,55 @@ int main(int argc, char *argv[])
 	{	for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
-			  
-
-			  if (scatterAxis == 1) {
-			    /* Neutron temp = InputNeutrons[i]; */
-			    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[2])); */
-			    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
-			    TwoTheta = (double) atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
-			    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
-			  }
-			  else if (scatterAxis == 2) {
-			    /* Neutron temp = InputNeutrons[i]; */
-			    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[1])); */
-			    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
-			    TwoTheta = (double) atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
-			    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
-			  }
-			  else CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
-			time     = InputNeutrons[i].Time - TimeOffset;
-			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
-			// TwoTheta = InputNeutrons[i].Vector[0];
 
 			/* Writing out all neutrons, if 'exclusive counts = no' is set */
 			if (bExclCount==FALSE)		
 				WriteNeutron(&InputNeutrons[i]);
+
+			/* exclusion of traj. with wrong colour: (nColour=-1 means: all colours accepted) */
+			if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
+
+      // determination of scattering angle
+		  if (scatterAxis == 1) {
+		    /* Neutron temp = InputNeutrons[i]; */
+		    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[2])); */
+		    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
+		    TwoTheta = (double) atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+		    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+		  }
+		  else if (scatterAxis == 2) {
+		    /* Neutron temp = InputNeutrons[i]; */
+		    /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[1])); */
+		    /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
+		    TwoTheta = (double) atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+		    Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+		  }
+		  else 
+        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+
+      // flightpath correction if detector distance is given
+      if (DetDist > 0.0)
+      { // if co-ordinate is moved to detector, use detector-sample distance, otherwis x-position 
+        if (InputNeutrons[i].Position[0]==0.0)
+          DetPath  =  sqrt(sq(DetDist) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        else
+          DetPath  =  sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        Flightpath = Flightpath0 + DetPath - DetDist;
+      } 
+      else
+      { Flightpath = Flightpath0 + DetPath - DetDist;
+      }
+
+      // determination of weight and wavelength
+			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
+			time     = InputNeutrons[i].Time - TimeOffset;
+			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
 
 			/* trajectories within deadspot */
 			if (deadspotactive && TwoTheta <= deadspotangle) continue;
 
 			/* traj. out of time of evaluation */
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
-
-			/* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
-			if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
 			/* Writing out the neutrons that comply with the requirements, 
 			   if 'exclusive counts = yes' is set */
@@ -394,9 +413,13 @@ void OwnInit(int argc, char *argv[])
 
 
 				case 'l':
-					Flightpath = atof(arg);  /* length of neutron flight path [cm] */
-					if (Flightpath <= 0.0)
+					Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
+					if (Flightpath0 <= 0.0)
 						Error("you must define a flight path > 0.0");
+					break;
+
+				case 'D':
+					DetDist = atof(arg);  /* length of neutron flight path [cm] */
 					break;
 
 				case 'T':
@@ -408,12 +431,10 @@ void OwnInit(int argc, char *argv[])
 					/* probactiv=1 means probabilities activated, else neutron weight is set to 1.0 */
 					break;
 
-			        case 'A':
+			  case 'A':
 				  scatterAxis = atoi(arg);
-				  if (scatterAxis > 2) {
-				    	fprintf(LogFilePtr,"ERROR: invalid scattering axis!!!");
-					exit(-1);
-				  }
+				  if (scatterAxis > 2) 
+            Error("ERROR: invalid scattering axis!!!");
 				  break;
 					
 				default:
