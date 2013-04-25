@@ -3367,6 +3367,8 @@ set eval_elastESET {
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {ddist float "" {
+    "detector\ndistance [cm]" "assumed distance from sample to detector\nif greater 0, a correction of the flight path will be performed" "" D} ge0}
   {toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
   {refwave float "" {
