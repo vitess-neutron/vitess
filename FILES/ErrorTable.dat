@@ -10,3 +10,4 @@
 802 E %ld trajector%s initially already inside the sample environment
 803 E %ld trajector%s initially already outside the sample environment
 901 E %ld trajector%s initially already inside the detector\nplease increase distance to compensate for the detector thickness
+902 E %ld trajector%s found with a wavelength outside the range given in efficiency file '%s'
