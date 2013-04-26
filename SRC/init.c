@@ -1022,7 +1022,8 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
   // only a limited number of trajectories will be written
   if (eReason==VT_OUTSIDE || eReason==VT_OUT_OF_WND || eReason==VT_ABSORBED || eReason==VT_DETECTED)
     nTraj++;
-  if (nTraj > MAX_TRAJ/(NThreads+1)) return;
+  if ((nTraj > MAX_TRAJ/(NThreads+1)) ||  (floor(pNeutron->Color/10000)==1 && eReason!=VT_DETECTED) ) return;
+  
 
   // Calculate neutron position in the absolute co-ordinate system
   for (l=0; l<3; l++)

@@ -291,24 +291,24 @@ int main(int argc, char* argv[])
   
   if (pFile!=NULL){
     fprintf(pFile,"Input file for sm_ensemble, generated with Tool 'Generate Extraction System': \n\n");
-    fprintf(pFile,"on  y1    z1    y2    z2     y3    z3    y4     z4     X     Y     Z    H/°   V/°   h/°  v/° Up: th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
+    fprintf(pFile,"on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z    H/°   V/°    h/°   v/° Up: th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
     for(int i=0; i<Nmirr; i++){
       const char* ctypeName=Name.at(i).c_str();
       if( !horPlane ){
-	fprintf(pFile, "1  %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f  0.0  %3.2f  0.0  0.0  0.0    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
+	fprintf(pFile, "1  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
       else {
-	fprintf(pFile, "1  %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f  0.0  %3.2f  0.0  %3.2f 0.0  0.0    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
+	fprintf(pFile, "1  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
     }
     for(int i=0; i<Nwalls; i++){
       const char* ctypeName=NameWall.at(i).c_str();
       int k=Nmirr+i;
       if( PlaneWall[i]=="v" ){
-	fprintf(pFile, "1  %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f  0.0  %3.2f  0.0  0.0  0.0    %1.5f %1.5f %1.2f 100.000 100.000   %1.5f %1.5f %1.2f 100.000 100.000  -- %s -- \n", Y1.at(k), Z1.at(k), Y2.at(k), Z2.at(k), Y3.at(k), Z3.at(k), Y4.at(k), Z4.at(k), CenterWall.at(i), CenterYWall.at(i),AngleHV.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ctypeName);
+	fprintf(pFile, "1  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00    %1.5f %1.5f %1.2f 100.000 100.000   %1.5f %1.5f %1.2f 100.000 100.000  -- %s -- \n", Y1.at(k), Z1.at(k), Y2.at(k), Z2.at(k), Y3.at(k), Z3.at(k), Y4.at(k), Z4.at(k), CenterWall.at(i), CenterYWall.at(i),AngleHV.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ctypeName);
       }
       else {
-	fprintf(pFile, "1  %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f %3.2f  0.0  %3.2f  0.0  %3.2f 0.0  0.0    %1.5f %1.5f %1.2f 100.000 100.000   %1.5f %1.5f %1.2f 100.000 100.000  -- %s -- \n", Y1.at(k), Z1.at(k), Y2.at(k), Z2.at(k), Y3.at(k), Z3.at(k), Y4.at(k), Z4.at(k), CenterWall.at(i), CenterYWall.at(i),AngleHV.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ctypeName);
+	fprintf(pFile, "1  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f 100.000 100.000   %1.5f %1.5f %1.2f 100.000 100.000  -- %s -- \n", Y1.at(k), Z1.at(k), Y2.at(k), Z2.at(k), Y3.at(k), Z3.at(k), Y4.at(k), Z4.at(k), CenterWall.at(i), CenterYWall.at(i),AngleHV.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ThetaC,ThetaCSM.at(k),Rcsm.at(k),ctypeName);
       }
     }
     printf("\nOutput file has been generated: (%s)", pFullFileName);

@@ -14,11 +14,15 @@
 /*                               correction: grid for cylindrical geometry              */
 /* 1.6a Dec 2009  A. Houben      Detect only neutrons with a given color and add        */
 /*                               a value to the color property after detection          */
-/* 1.7  Jul 2012  A. Houben      Cylindrical detector with constant angle in phi        */
-/*                               (pixel size will vary with phi)                        */
-/* 1.7a Jul 2012  A. Houben      Wavelength dependant probability is read from file     */
-/* 1.8  Oct 2012  D. Nekrassov                                                          */
+/* 1.7  Oct 2012  D. Nekrassov                                                          */
 /*              & K. Lieutenant  visualization                                          */
+/* 1.8  Jul 2012  A. Houben      Cylindrical detector with constant angle in phi        */
+/*                               (pixel size will vary with phi)                        */
+/* 1.8a Jul 2012  A. Houben      Wavelength dependant probability is read from file     */
+/* 1.9  Apr 2013  C. Zendler     Correct wavelength dependence, removed 'no TOF' option,*/
+/*                               add tube geometry, 3D detector, cyl. axis in y and x,  */
+/*                               detector array, resolution; correct const.phi;         */
+/*                               visual. of SP instead of det. signal                   */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -32,10 +36,6 @@
 #include "intersection.h"
 #include "message.h"
 
-
-#define VT_NO_TOF    0
-#define VT_TOF_CALC  1
-#define VT_TOF_BIN   2
 
 typedef struct
 {
@@ -55,21 +55,32 @@ typedef struct
 
 /* global variables */
 SampleType Detector;
-int        geom=0;           // detector geometry: 1: cylinder   2: flat
-short      phimode=0;      /* 0 = const. pixel size; 1 = const Delta phi */
-long       Columns=1, 		 /* number of columns of the detector*/
-           Rows=1;    		 /* number of rows of the detector*/
-double     Thickness,
-           distance;
-double     MaxEfficiency;   /* Maximal efficieny of the detector */
-long       GenNeutrons=10;
-short      bMonitor,        /* option: only monitoring            */
-           eTOF;            /* option: TOF in detector 0: no 1: calculated 2: binning */
-double     Theta,dTheta,
-           dWidth, 
-           RotMatrix[3][3];
-double     itheta, iphi, constphi;
-short      DetectColor = -1, AddColor = -1; // Detect only neutrons with a given color and assign a new color after detection
+long       GenNeutrons=10;  // repetition: multiply neutrons to get diff. interaction lengths (probability from integration region L/GenNeutrons)
+int        geom=0,          // detector geometry: 1: cylinder   2: flat
+           cyl_axis=2,      // axis of cyl. detector
+           NColumns=1,      // number of rows,
+           NRows=1,         //           columns, 
+           NLayers=1,       //           layers partitioning the detector volume
+           usage,           // 0: normal, 1: monitor only, 2: grid off
+           lost=0;          // give Warning if neutron intersetcs tube detector but tube in which interaction happens is not found
+short      phimode=0,             // 0 = const. pixel size; 1 = const Delta phi 
+           array=0,               // first or intermediate part of detector array 
+           detectColor = -1,      // only detect neutrons of certain color; -1 = all neutrons
+           addColor = -1,         // tag detected neutrons by adding addColor to color
+           type=0,                // tube (0) or area/Volume (1) detector
+           absorbertype=0,        // Boron10 (0,2), He3 (1), Li (3) or other (5)
+           vertTubeOrientation=0, // vertical (1) or horizontal (0) tube axis
+           rectXsec=0,            // circular (0) or rectangular (1) tube cross-section
+           Tubeshift=0;           // tube layers shifted against each other
+
+double     PixelWidth[3]={0}; //pixel size, e.g. tube diameter
+double     Width=0, Height=0, Thickness=0,
+           Theta=0, Phi=0, Distance=0;
+double     RotMatrix[3][3];
+double pressure=0, temperature=273, EfficiencyMod=1, atomicdensity=1, absorberthickness=1;
+double horResolution=0, vertResolution=0, xResolution; //resolution in y,z,x as standard deviation (Gauss)
+
+double wallThickness=0;
 
 EffFile Eff = {0};
 
@@ -77,52 +88,60 @@ EffFile Eff = {0};
 long (*NeutronIntersectsDetector)(Neutron *Nin, SampleType *Detector, VectorType ISP[]);
 void (*DetectorSpot)(VectorType SP, VectorType DetSpot, SampleType *Detector);
 
-
 /* prototypes of local functions */
 long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorType ISP[]);
 long NeutronIntersectsCylDetector (Neutron *Nin, SampleType *Detector, VectorType ISP[]);
+long NeutronIntersectsTube(VectorType direction, VectorType ISP0, int l, VectorType iISP[]);
 
-void NoDetSpot      (VectorType SP, VectorType DetSpot, SampleType *Detector);
 void CubeDetSpot    (VectorType SP, VectorType DetSpot, SampleType *Detector);
 void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector);
 
 void OwnInit   (int argc, char *argv[]);
 void OwnCleanup();
 
-double GetLambdaProbFromEff(const double lambda);
+double GetXsec(int h_absorbertype, double h_lambda);
+double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID);
 static FILE * tryOpen(const char *fn, const char *s);
+
+FILE *outFile;
+const char *MyOutputFile="MyOutputFile.dat";
 
 int main(int argc, char *argv[])
 {
-  double LambdaProb;    /* detecting probability due to the wavelength of the neutron */
-  VectorType ISP[2];    /* intersection points with the detector */
-  double NSigma;        /*neutron crossection times density of scatterers in the detector*/
-  long   NeutCount;
-  double TimeTillScattering, LengthTillScattering;
-  VectorType DetSpot, SP, vDir, vShift;
-  long   i,j;
-  double FullLengthInDetector;
-  double ScatteringProb,
-    dRotY, dRotZ;
-  Neutron OutNeutron;
-  Neutron WorkNeutron;
-  double  norm;  /* intensity norm factor */
+  Neutron WorkNeutron,           // working copy
+    OutNeutron,                  // working copy for WriteNeutron
+    DrawNeutron;                 // working copy for visualization (draws scattering point instead of DetSpot)
+  VectorType ISP[2],iISP[2];     // intersection points with the detector and intermediate intersection points with tubes in tube detector 
+  VectorType DetSpot,            // final detection position given out by detector
+    DetSignal,                   // intermediate detection position (including gaussian smear from resolution)
+    SP,                          // interaction position
+    vShift;                      // for visualization: vector in neutron direction with length equal to distance of (last) detector (part in array) center
+  long   i,j,l;                  // loop counting
+  long   NeutCount;              // count neutron copies for repetition (=GenNeutrons) > 1
+  short FoundTube=0;             // tag for tube in which interaction happens
+  double TimeTillScattering=0,   // neutron flight time until interaction
+    FullLengthInDetector=0,      // length of neutron trajectorie in overall detector volume
+    LengthInAbsorberMaterial=0,  // length of neutron trajectory in active detector volume
+    LengthTillScattering=0,      // length of neutron trajectory in active detector volume until interaction
+    ScatteringProb=0,            // probability of interaction
+    N=0,                         // particle density
+    sigma=0,                     // absorption cross-section
+    NSigma=0;                    // for const. efficieny
+  const double kB=1.3806504E-23; // boltzman constant in [JK-1]
+
+
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_DETECTOR);
-  print_module_name("detector 1.8");
+  print_module_name("detector 1.9");
 
   /* module specific initialization */
   OwnInit(argc, argv);
-  SphericalToCartesian(vDir, &itheta, &iphi);
-  CopyVector(vDir, vShift);
-  MultiplyByScalar(vShift, distance);
+
 
   /* Rotmatrix will rotate a Vector to a frame in which the middle of the */
-  /* Detector sits on the x-axis */
+  /* Detector sits on the x-axis, i.e. Detector.Direction (cyl-axis for cyl. det) defines new x axis*/
   RotMatrixX(Detector.Direction, RotMatrix);
-
-  NSigma=-log(1-MaxEfficiency)/Thickness;
 
   /* Get the neutrons from the file */
   DECLARE_ABORT
@@ -134,57 +153,121 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++) 
     {
       CHECK
+	
+      //drop neutrons that don't pass the color filter
+      if ( (detectColor > -1) && (InputNeutrons[i].Color != detectColor) )  
+	continue;
+
+      //pass on neutrons detected by previous detector parts,
+      //last detector in array removes tag    
+      if( floor(InputNeutrons[i].Color/10000)==1 ){
+	if(!array)
+	  InputNeutrons[i].Color-=10000;
+	WriteNeutron(&InputNeutrons[i]);
+	continue;
+      }
 
       // Use a copy to work on
       WorkNeutron = InputNeutrons[i];
-	      
+
+   
       /* First rotate the position and direction of the neutron to the detector frame */
       RotVector(RotMatrix, WorkNeutron.Position);
       RotVector(RotMatrix, WorkNeutron.Vector);
-	       
+
+      /* absorber/converter particle density in m^-3 */
+      N=(absorbertype<2)?(pressure*1e5/(temperature*kB)):(atomicdensity*1E27);
 
       if(NeutronIntersectsDetector(&(WorkNeutron),&Detector,ISP)) 
       {
-		  
-        /* determine the length of the path through the scintilator */
+
+        /* determine the length of the path through the whole detector volume */
         FullLengthInDetector = DistVector(ISP[0], ISP[1]);
-		  
-        /* intensity norm factor */
-        norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
 
-        /* now the influence of the wavelength*/
-        if (Eff.maxdata > 0) {
-            LambdaProb = GetLambdaProbFromEff(WorkNeutron.Wavelength);
-          } else {
-            if(WorkNeutron.Wavelength < 5.0) {
-                LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
-              } else {
-                LambdaProb = 1.0;
-              }
-          }
+	/* total cross-section (in m^2) */
+	sigma=GetXsec(absorbertype,WorkNeutron.Wavelength);
 
-        for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
-        {
-          if (eTOF==VT_TOF_CALC)
-          {	/* determine the scattering point in the scintilator */
-            LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
-            ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-          }
-          else
-          {
-            LengthTillScattering = 0.0;
-            ScatteringProb = MaxEfficiency * LambdaProb;
-          }
+	if (usage==1)
+	  GenNeutrons=1;
+	//------------------------------------------------------
 
-          if(bMonitor)
-          { ScatteringProb       = 1.0;
-            LengthTillScattering = 0.0;
-          }
+        for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++){
 
-          for(j=0; j<3; j++)
-            SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
+	  /* determine the interaction point in the detector volume and the detector signal point*/
+	  LengthTillScattering = MonteCarlo(0,FullLengthInDetector); 
+	  for(j=0; j<3; j++)
+	    SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
 
-          DetectorSpot(SP, DetSpot, &Detector);
+	  /*correct for dead zones in tube geometry */
+	  if(type==0){ 
+	    LengthTillScattering=0;
+	    FullLengthInDetector=0;
+	    FoundTube=0;
+	    for (l=1; l<=NLayers; l++){
+	      if( NeutronIntersectsTube(WorkNeutron.Vector,ISP[0],l,iISP) ){
+		FullLengthInDetector+=DistVector(iISP[0],iISP[1]);
+	      }
+	    }		
+	    LengthTillScattering=MonteCarlo(0,FullLengthInDetector);
+	    
+	    // find interaction point 
+	    LengthInAbsorberMaterial=0;
+	    for (l=1; l<=NLayers; l++){
+	      if( NeutronIntersectsTube(WorkNeutron.Vector,ISP[0],l,iISP) ){
+		LengthInAbsorberMaterial+=DistVector(iISP[0],iISP[1]);
+		if(LengthInAbsorberMaterial>LengthTillScattering){
+		  FoundTube=1;
+		  for(j=0; j<3; j++){
+		    SP[j]=iISP[1][j]-WorkNeutron.Vector[j]*(LengthInAbsorberMaterial-LengthTillScattering);
+		  }
+		  break;
+		}
+	      }
+	    }
+	  }
+
+	  CopyVector(SP,DetSignal);
+	  
+	  /* resolution */
+	  if(horResolution>0 && (type==1 || !vertTubeOrientation) )
+	    DetSignal[1]=DistrGauss(DetSignal[1],horResolution); 
+	  if(vertResolution>0 && (type==1 || vertTubeOrientation) )
+	    DetSignal[2]=DistrGauss(DetSignal[2],vertResolution);
+	  if(xResolution>0 && type==1 )
+	    DetSignal[0]=DistrGauss(DetSignal[0],xResolution);
+	  
+
+	  /* interaction probability */
+	  if (Eff.maxdata > 0) { //efficiency from file
+	    ScatteringProb = GetLambdaProbFromEff(WorkNeutron.Wavelength,WorkNeutron.ID);
+	  } 
+	  else {
+	    switch(absorbertype){
+	    case 0:  //BF3
+	    case 1:  //He3
+	      ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100 * EfficiencyMod;
+	      break;
+	      //solid layer approximation: scale length in material with layer_thickness/total_thickness
+	    case 2:  //solid B10
+	    case 3:  // Li6
+	      LengthTillScattering*=absorberthickness/Thickness;
+	      FullLengthInDetector*=absorberthickness/Thickness;
+	      ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100* EfficiencyMod;
+	      break; 
+	    case 5:  // other; use wavelength-independent input eff
+	    default:
+	      NSigma=-log(1-EfficiencyMod)/Thickness;
+	      ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * FullLengthInDetector;
+	      break;
+	    }
+	  }
+
+	  if(type==0 && !FoundTube){
+	    ScatteringProb=0;
+	    lost++;
+	  }
+
+	  DetectorSpot(DetSignal, DetSpot, &Detector);  
 
           TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
           V_FROM_LAMBDA(WorkNeutron.Wavelength);
@@ -194,58 +277,63 @@ int main(int argc, char *argv[])
           OutNeutron             = WorkNeutron;
           OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
           OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
-		      		     		      
-          if (bMonitor)
-          {
-            RotBackVector(RotMatrix, SP);
-            CopyVector(SP, OutNeutron.Position);
-          }
-          else
-          {	
-            RotBackVector(RotMatrix,DetSpot);
+
+	  // tag detected neutrons for detector array 
+	  if(array)
+	    OutNeutron.Color+=10000;
+ 
+	  RotBackVector(RotMatrix,SP);
+	  RotBackVector(RotMatrix,DetSignal);
+	  RotBackVector(RotMatrix,DetSpot);	
+	      		      
+          if (usage==1){      //monitor only
+	    OutNeutron.Probability = WorkNeutron.Probability;
+	    CopyVector(SP, OutNeutron.Position);
+	  }
+	  else if (usage==2){ // grid off
+	    CopyVector(DetSignal, OutNeutron.Position);
+            NormVector(DetSignal);
+            CopyVector(DetSignal, OutNeutron.Vector);
+	  }
+          else {              // normal
             CopyVector(DetSpot, OutNeutron.Position);
             NormVector(DetSpot);
             CopyVector(DetSpot, OutNeutron.Vector);
           }
-		      
-          // write interaction point - only once per incoming trajectory
-          if (NeutCount < 1)  
-          { if (AddColor > 0) OutNeutron.Color += AddColor;
-            WriteIAP(&OutNeutron, VT_DETECTED);
-          }
 
-          // write out neutrons that shall be detected
-          if ((DetectColor < 1) || (InputNeutrons[i].Color == DetectColor)) 
-          {
-            // the neutron co-ordinates are adapted to the shift of the co-ordinate for a flat detector (see below)
-            if (geom==2)
-              SubVector(OutNeutron.Position, vShift);
-            if (AddColor > 0) OutNeutron.Color += AddColor;
-              WriteNeutron(&OutNeutron);			  
-          }
+	  // write out neutrons that shall be detected	
+          if ( OutNeutron.Probability>0 )  {
+	    if (addColor > 0) 
+	      OutNeutron.Color += addColor;
+	    WriteNeutron(&OutNeutron);			  
+	  }
+
+         // write interaction point - only once per incoming trajectory
+          if (NeutCount < 1){
+	    DrawNeutron=OutNeutron;
+	    CopyVector(SP, DrawNeutron.Position);
+	    if(!array)
+	      DrawNeutron.Color+=10000;
+            WriteIAP(&DrawNeutron, VT_DETECTED);
+	  }
+
         } /* loop count */
       } 
       else /* if neutron does not intersect detector */ 
       {
-        VectorType Pos1, Pos2;  // intersection points of trajectory with cylinder
- 
-        if (geom==2) // flat
-        { 
-          RotBackVector(RotMatrix, WorkNeutron.Vector);
-          RotBackVector(RotMatrix, WorkNeutron.Position);
-          PlaneLineIntersect(WorkNeutron.Position, WorkNeutron.Vector, vDir, distance, WorkNeutron.Position);
-        }
-        else
-        { 
-          IntersectionWithInfiniteCylinder(distance, WorkNeutron.Position, WorkNeutron.Vector, Pos1, Pos2);
-          if (Pos1[0]*WorkNeutron.Vector[0] > 0)
-            CopyVector(Pos1, WorkNeutron.Position);
-          else
-            CopyVector(Pos2, WorkNeutron.Position);
-          RotBackVector(RotMatrix, WorkNeutron.Vector);
-          RotBackVector(RotMatrix, WorkNeutron.Position);
-        }
-        WriteIAP(&WorkNeutron, VT_OUTSIDE);
+	
+	if(array)
+	  WriteNeutron(&InputNeutrons[i]);
+	else { //draw trajectories of undetected neutrons up to detector distance
+	  DrawNeutron=WorkNeutron;
+	  RotBackVector(RotMatrix, DrawNeutron.Vector);
+	  RotBackVector(RotMatrix, DrawNeutron.Position);
+	  CopyVector(DrawNeutron.Vector, vShift);
+	  MultiplyByScalar(vShift, (Distance+Thickness/2));
+	  AddVector(DrawNeutron.Position,vShift);
+	  WriteIAP(&DrawNeutron, VT_OUTSIDE);
+	}
+	
       }
     } //for(i=0; i<NumNeutGot; i++)
   } //while((ReadNeutrons())!= 0)
@@ -254,32 +342,32 @@ int main(int argc, char *argv[])
   /* Do module specific cleanups */
   OwnCleanup();
 
+  if(outFile)
+    fclose(outFile);
+
   /* Do the general cleanup */
-  // the origin of the co-ordinate system is shifted to the center of a flat detector
-  // for a cylindric detector it remains at the sample  
-  CartesianToEulerZY  (vDir, &dRotY, &dRotZ);
-  if (geom==2)
-    Cleanup(vShift[0], vShift[1], vShift[2], dRotZ, dRotY);
-  else
+  // the origin of the co-ordinate system remains at the sample  
     Cleanup(0.0,0.0,0.0, 0.0,0.0);
+  
 
   return 0;
 }
 
-double GetLambdaProbFromEff(const double lambda) {
+double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID) {
   int i;
 
   if (lambda < Eff.data[0].Lambda) {
-    if (lambda < 5.)
-      return 0.5 + 0.1*lambda;  //What should happen if not Eff.data for given wavelength?
-    else
-      return Eff.data[0].Eff;  //What should happen if not Eff.data for given wavelength?
+    CountMessageID(DET_L_RANGE_TOO_SMALL, NeutronID);
+    return Eff.data[0].Eff;
   } else {
     for (i = 1; i<=Eff.maxdata; i++) {
       if (lambda < Eff.data[i].Lambda)
         return Eff.data[i].Eff + (Eff.data[i].Eff-Eff.data[i-1].Eff)/(Eff.data[i].Lambda-Eff.data[i-1].Lambda) * (lambda-Eff.data[i].Lambda);
     }
-    if (i>Eff.maxdata) return Eff.data[i].Eff;  //What should happen if not Eff.data for given wavelength?
+    if (i>Eff.maxdata) {
+      CountMessageID(DET_L_RANGE_TOO_SMALL, NeutronID);
+      return Eff.data[Eff.maxdata].Eff;
+    }
   }
   return -1.;
 }
@@ -289,14 +377,11 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 	VectorType Position;
 	double t[2];
 	long i;
-	//char* form = "%c%c%09lu %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
 
 	/* move the origin of the coordinate system to the middle of the detector*/
 	CopyVector(Nin->Position,Position);
-	Position[0] -= Detector->Position[0]-Detector->SG.Cube.thickness/2.0;
+	Position[0] -= (Detector->Position[0] + Detector->SG.Cube.thickness/2.0);
 
-	/*if (fabs(Nin->Position[0]) == 0.5 || fabs(Nin->Position[1]) == 0.5 || fabs(Nin->Position[2]) == 0.5)
-		fprintf(LogFilePtr, "", "");*/
 	if(LineIntersectsCube(Position, Nin->Vector, &(Detector->SG.Cube), t)) 
 	{
 		for(i=0; i<3; i++)
@@ -305,8 +390,8 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 		}
 
 		/* transform the ISPs to the old coordinate system*/
-		ISP[0][0] += Detector->Position[0]+Detector->SG.Cube.thickness/2.0;
-		ISP[1][0] += Detector->Position[0]+Detector->SG.Cube.thickness/2.0;
+		ISP[0][0] += (Detector->Position[0]+Detector->SG.Cube.thickness/2.0);
+		ISP[1][0] += (Detector->Position[0]+Detector->SG.Cube.thickness/2.0);
 		if(t[1]>=0.0) 
 		{	
 			return TRUE;
@@ -314,13 +399,6 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 		else 
 		{
 			CountMessageID(DET_TRAJ_INSIDE, Nin->ID);
-			/*fprintf(LogFilePtr, form,
-			  Nin->ID.IDGrp[0], Nin->ID.IDGrp[1], Nin->ID.IDNo,          
-			  Nin->Debug,       Nin->Color,       
-			  Nin->Time,        Nin->Wavelength,  Nin->Probability,
-			  Nin->Position[0], Nin->Position[1], Nin->Position[2], 
-			  Nin->Vector[0],   Nin->Vector[1],   Nin->Vector[2], 
-			  Nin->Spin[0],     Nin->Spin[1],     Nin->Spin[2]);*/
 			return FALSE;
 		}
 	} 
@@ -333,132 +411,225 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 
 long NeutronIntersectsCylDetector(Neutron *Nin, SampleType *Detector, VectorType ISP[])
 {
-	VectorType InISP[2], OutISP[2], Position, cut;
-	double Int[2], Outt[2], ntheta, nphi, CTheta;
-	long   i;
+  VectorType InISP[2], OutISP[2], Position, Direction, cut;
+  double Int[2], Outt[2], ntheta, nphi, CTheta, GTheta;
+  long   i;
+  double dTheta=Width/(2.0*Distance);
 
-	CopyVector(Nin->Position, Position);
-	SubVector (Position, Detector->Position);
+  CopyVector(Nin->Position, Position);
+  CopyVector(Nin->Vector, Direction);
+ 
+  if(LineIntersectsCylinder(Position, Direction, &(Detector->SG.Cyl), Int))  {
+    for(i=0; i<3; i++) {	
+      InISP[1][i] = Position[i]+Int[1]*Direction[i];
+      InISP[0][i] = Position[i]+Int[0]*Direction[i];
+    }
+  }
+  else
+    return FALSE;
+	
+  CopyVector(InISP[1],cut);
+  RotBackVector(RotMatrix,cut);
+  NormVector(cut);
+  CartesianToSpherical(cut, &ntheta, &nphi);
 
-	if(LineIntersectsCylinder(Position, Nin->Vector, &(Detector->SG.Cyl), Int)) 
-	{
-		for(i=0; i<3; i++)
-		{	InISP[1][i] = Position[i]+Int[1]*Nin->Vector[i];
-			InISP[0][i] = Position[i]+Int[0]*Nin->Vector[i];
-		}
-	}
-	else
-	{
-		return FALSE;
-	}
+  CTheta=atan(cos(nphi)*tan(ntheta)); 
+  if(Detector->Direction[0]) CTheta=nphi;
+  else if (Detector->Direction[1]) CTheta=atan(sin(nphi)*tan(ntheta));
 
-	CopyVector(InISP[1],cut);
-	RotBackVector(RotMatrix,cut);
-	NormVector(cut);
-	CartesianToSpherical(cut, &ntheta, &nphi);
+  if(cyl_axis!=0 && ntheta>M_PI_2)
+    CTheta= (CTheta<=0) ? (M_PI + CTheta) : (-M_PI + CTheta);
+	
+  GTheta= Detector->Direction[0] ? Phi : Theta;
+	
+  if( !(fabs(CTheta-GTheta) < dTheta || fabs(CTheta+2*M_PI-GTheta) < dTheta) )
+    return FALSE; 
 
-	/*x=r_kugel*cos(ntheta) = r_cyl*cos(CTheta);
-	  y=r_kugel*sin(ntheta)*cos(nphi) = r_cyl*sin(CTheta);
-	  z=r_kugel*sin(ntheta)*sin(nphi) = z;
-	  ==> ...   */
-	CTheta=atan(cos(nphi)*tan(ntheta));
+  Detector->SG.Cyl.r += Thickness;
+  if(LineIntersectsCylinder(Position, Direction, &(Detector->SG.Cyl), Outt)){
+    for(i=0; i<3; i++){
+      OutISP[1][i] = Position[i]+Outt[1]*Direction[i];
+      OutISP[0][i] = Position[i]+Outt[0]*Direction[i];
+    }
+  }
+  else
+    return FALSE;
+			
+  Detector->SG.Cyl.r-=Thickness;
+  if( (fabs(InISP[1][0]) < Detector->SG.Cyl.height*0.99999/2.0) && (fabs(OutISP[1][0]) <Detector->SG.Cyl.height*0.99999/2.0) ){
+    CopyVector(InISP[1],ISP[0]);
+    CopyVector(OutISP[1],ISP[1]);
+    return TRUE;
+  }
+  return FALSE;
+}
 
-	if ((ntheta>M_PI_2) && (CTheta<=0)) 
-		CTheta= M_PI + CTheta;
-	else if ((ntheta>M_PI_2) && (CTheta>0)) 
-		CTheta= -M_PI + CTheta;
 
-	if(fabs(CTheta-Theta) < dTheta || fabs(CTheta+2*M_PI-Theta) < dTheta) 
-	{
-		Detector->SG.Cyl.r += Thickness;
-		if(LineIntersectsCylinder(Position, Nin->Vector, (CylinderType *)&(Detector->SG), Outt)) 
-		{
-			for(i=0; i<3; i++)
-			{	OutISP[1][i] = Position[i]+Outt[1]*Nin->Vector[i];
-				OutISP[0][i] = Position[i]+Outt[0]*Nin->Vector[i];
-			}
-		}
-		else
-		{
-			return FALSE;
-		}
-		Detector->SG.Cyl.r-=Thickness;
-		if( (fabs(InISP[1][0]) < Detector->SG.Cyl.height*0.99999/2.0) && (fabs(OutISP[1][0]) <Detector->SG.Cyl.height*0.99999/2.0)) 
-		{
-			CopyVector(InISP[1],ISP[0]);
-			CopyVector(OutISP[1],ISP[1]);
-			return TRUE;
-		}
-	}
-	return FALSE;
+long NeutronIntersectsTube(VectorType direction, VectorType Position, int l, VectorType iISP[]){
+  SampleType DetectorTube={0};
+  VectorType temp={0},temp2={0},dir={0};
+  double tISP[2]={0};
+  int i=0,j=0,k=0;
+  double RotMatrixTemp[3][3]={{0}};
+ 
+  if(rectXsec){ 
+    DetectorTube.SG.Cube.thickness=PixelWidth[0]-2*wallThickness;
+    DetectorTube.SG.Cube.height = vertTubeOrientation ? Height : (PixelWidth[2]-2*wallThickness) ;
+    DetectorTube.SG.Cube.width = vertTubeOrientation ? (PixelWidth[1]-2*wallThickness) : Width ;
+  }
+  else {
+    DetectorTube.SG.Cyl.r=PixelWidth[0]/2-wallThickness;
+    DetectorTube.SG.Cyl.height = vertTubeOrientation ? Height : Width;
+  }
+
+  /* search right tube in layer */
+  CopyVector(Position,temp);
+  CopyVector(direction,dir);
+  
+  temp[0]+=(double)(l-0.5)*PixelWidth[0]-Distance-Thickness/2;
+  temp[1]+=(double)(l-0.5)*PixelWidth[0]*( dir[1]/dir[0] );
+  temp[2]+=(double)(l-0.5)*PixelWidth[0]*( dir[2]/dir[0] );
+  
+  j=(int)(floor(fabs(-Width/2-temp[1])/PixelWidth[1])+1);
+  k=(int)(floor(fabs(-Height/2-temp[2])/PixelWidth[2])+1);
+
+  if(vertTubeOrientation){
+    FillRotMatrixY(RotMatrixTemp,M_PI_2);
+    k=NRows/2+1;
+    if(Tubeshift){
+      if(l%2==0)
+	j=(int)(floor(fabs(-Width/2+0.25*PixelWidth[1]-temp[1])/PixelWidth[1])+1);
+      else
+	j=(int)(floor(fabs(-Width/2-0.25*PixelWidth[1]-temp[1])/PixelWidth[1])+1);
+    }
+  }
+  else {
+    FillRotMatrixZ(RotMatrixTemp,M_PI_2);
+    j=NColumns/2+1;
+    if(Tubeshift){
+      if(l%2==0)
+	k=(int)(floor(fabs(-Height/2+0.25*PixelWidth[2]-temp[2])/PixelWidth[2])+1);
+      else
+	k=(int)(floor(fabs(-Height/2-0.25*PixelWidth[2]-temp[2])/PixelWidth[2])+1);
+    }
+  }
+
+  DetectorTube.Position[0]=-Thickness/2+(l-0.5)*PixelWidth[0];
+  DetectorTube.Position[1]= vertTubeOrientation ? -Width/2+(j-0.5)*PixelWidth[1] : 0;
+  DetectorTube.Position[2]= vertTubeOrientation ? 0 : -Height/2+(k-0.5)*PixelWidth[2] ;
+ 
+  if (Tubeshift){
+    if(l%2==0){
+      DetectorTube.Position[1]= vertTubeOrientation ? -Width/2+(j-0.5+0.25)*PixelWidth[1] : 0;
+      DetectorTube.Position[2]= vertTubeOrientation ? 0 : -Height/2+(k-0.5+0.25)*PixelWidth[2] ;
+    }
+    else {
+      DetectorTube.Position[1]= vertTubeOrientation ? -Width/2+(j-0.5-0.25)*PixelWidth[1] : 0;
+      DetectorTube.Position[2]= vertTubeOrientation ? 0 : -Height/2+(k-0.5-0.25)*PixelWidth[2] ;
+    }
+  }
+  
+   /* intersect neutron with that tube */
+  CopyVector(Position,temp2);
+  temp2[0]-=(Distance+Thickness/2);
+  SubVector (temp2, DetectorTube.Position);
+  /*cylinder axis defined to be along x-axis in LineIntersectsCyliner */  
+  if(!rectXsec){  
+    RotVector     (RotMatrixTemp, temp2);
+    RotVector     (RotMatrixTemp, dir);
+  }
+  
+  if( (rectXsec && LineIntersectsCube(temp2, dir, &(DetectorTube.SG.Cube), tISP)) || (!rectXsec && LineIntersectsCylinder(temp2, dir, &(DetectorTube.SG.Cyl), tISP)) ){
+    for(i=0; i<3; i++){
+      iISP[1][i] = temp2[i]+tISP[1]*dir[i];
+      iISP[0][i] = temp2[i]+tISP[0]*dir[i];
+    }
+  
+    /* transform the ISPs to the old coordinate system*/
+    if(!rectXsec){
+      RotBackVector (RotMatrixTemp, iISP[0]);
+      RotBackVector (RotMatrixTemp, iISP[1]);
+    }
+    AddVector (iISP[0], DetectorTube.Position);
+    AddVector (iISP[1], DetectorTube.Position);
+    iISP[0][0]+=(Distance+Thickness/2);
+    iISP[1][0]+=(Distance+Thickness/2);
+     
+    return TRUE;
+  }
+   
+  return FALSE;
 }
 
 
 
-void CubeDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
+
+void CubeDetSpot(VectorType iSP, VectorType DetSpot, SampleType *Detector)
 {
-	double IComp, JComp, I,J;
-
-	/* determine the I and J component of SP */
-	IComp = SP[1]+Detector->SG.Cube.width/2.0;
-	JComp = SP[2]+Detector->SG.Cube.height/2.0;
-	I = floor(IComp*Columns/Detector->SG.Cube.width);
-	J = floor(JComp*Rows/Detector->SG.Cube.height);
-
-	DetSpot[0]=Detector->Position[0];
-	DetSpot[1]=Detector->SG.Cube.width*(I+0.5-0.5*Columns)/Columns;
-	DetSpot[2]=Detector->SG.Cube.height*(J+0.5-0.5*Rows)/Rows;
+  DetSpot[0]=(floor((iSP[0]+Thickness/2)/PixelWidth[0])+0.5)*PixelWidth[0]-Thickness/2;
+  DetSpot[1]=(floor((iSP[1]+Width/2)/PixelWidth[1])+0.5)*PixelWidth[1]-Width/2;
+  DetSpot[2]=(floor((iSP[2]+Height/2)/PixelWidth[2])+0.5)*PixelWidth[2]-Height/2;
+	
 }
 
 
 
 void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 {
-	double     STheta, SPhi, CTheta, SpotTheta,
-	           archpos, JComp, I,J, SPHeight;
-	VectorType nsp;
+  double     STheta, SPhi, CTheta, SpotTheta, SpotR,
+    archpos, I, SPHeight;
+  VectorType nsp;
+  double dTheta=Width/(2.0*Distance);
+  double GTheta=Theta;
+  double constphi = atan(Height/2./Distance)*2./NRows;
+  double PhiDet=constphi*NRows;
 
-	CopyVector(SP,nsp);
-	RotBackVector(RotMatrix,nsp);
-	SPHeight = nsp[2];
+  CopyVector(SP,nsp);
+  RotBackVector(RotMatrix,nsp);
+  SPHeight = nsp[cyl_axis];
 
-	NormVector(nsp);
-	CartesianToSpherical(nsp, &STheta, &SPhi);
-
-	CTheta=atan(cos(SPhi)*tan(STheta));
-
-	if ((STheta>M_PI_2) && (CTheta<=0)) 
-		CTheta =  M_PI + CTheta;
-	else if ((STheta>M_PI_2) && (CTheta>0)) 
-		CTheta = -M_PI + CTheta;
-
-	archpos= fabs(CTheta-(Theta+dTheta));  /*counted from 0 to radians of archlength*/
-	I=floor(Columns*archpos/(2.0*dTheta));
-	SpotTheta=Theta+dTheta -((I+0.5)/Columns)*(2.0*dTheta);
-
-	DetSpot[0]=Detector->SG.Cyl.r*cos(SpotTheta);
-	DetSpot[1]=Detector->SG.Cyl.r*sin(SpotTheta);
-
-	if (phimode == 0) {
-	    JComp = SPHeight + Detector->SG.Cyl.height/2.0;
-	    J = floor(JComp*Rows/Detector->SG.Cyl.height);
-
-	    DetSpot[2]=Detector->SG.Cyl.height*(J+0.5-0.5*Rows)/Rows;
-	  } else {
-	    JComp = atan2(Detector->SG.Cyl.r, SPHeight);
-	    J = floor((JComp-M_PI/2.)/constphi+0.5)*constphi+M_PI/2.;
+  SpotR=sqrt( sq(nsp[0])+sq(nsp[1]) ); 
+  if(cyl_axis==0)	
+    SpotR=sqrt( sq(nsp[1])+sq(nsp[2]) ); 
+  else if(cyl_axis==1)	
+    SpotR=sqrt( sq(nsp[0])+sq(nsp[2]) ); 
+  SpotR= Detector->SG.Cyl.r + (floor((SpotR-Detector->SG.Cyl.r)*NLayers/Thickness)+0.5)*Thickness/NLayers;
 	
-	    DetSpot[2]=tan(M_PI/2.-J)*Detector->SG.Cyl.r;
-	  }
-        
-	RotVector(RotMatrix,DetSpot);
-}
+  NormVector(nsp);
+  CartesianToSpherical(nsp, &STheta, &SPhi);
+	
+  CTheta=atan(cos(SPhi)*tan(STheta)); 
+  if(Detector->Direction[0]) { CTheta=SPhi; GTheta=Phi; }
+  else if (Detector->Direction[1]) CTheta=atan(sin(SPhi)*tan(STheta));
+  
+  if(cyl_axis!=0 && STheta>M_PI_2)
+    CTheta= (CTheta<=0) ? (M_PI + CTheta) : (-M_PI + CTheta);
+  
+  archpos= fabs(CTheta-(GTheta+dTheta));  //counted from 0 to radians of archlength
+  I=floor(NColumns*archpos/(2.0*dTheta));
+  SpotTheta=GTheta+dTheta -((I+0.5)/NColumns)*(2.0*dTheta);
+  
+  switch (cyl_axis){
+  case 0:
+    DetSpot[1]=SpotR*cos(SpotTheta);
+    DetSpot[2]=SpotR*sin(SpotTheta);
+    break;
+  case 1:
+    DetSpot[0]=SpotR*cos(SpotTheta);
+    DetSpot[2]=SpotR*sin(SpotTheta);
+    break;
+  case 2: 
+    DetSpot[0]=SpotR*cos(SpotTheta);
+    DetSpot[1]=SpotR*sin(SpotTheta);
+    break;	
+  }
 
-
-
-void NoDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
-{
-	CopyVector(SP,DetSpot);
+  if (phimode == 0) 
+    DetSpot[cyl_axis]=(floor((SPHeight+Height/2)/PixelWidth[2])+0.5)*PixelWidth[2]-Height/2;
+  else 
+    DetSpot[cyl_axis]=tan( (floor((PhiDet/2+atan2(SPHeight,Distance))/constphi)+0.5)*constphi-PhiDet/2 )*Distance;
+  
+  RotVector(RotMatrix,DetSpot);
 }
 
 
@@ -466,149 +637,247 @@ void NoDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 void  OwnInit(int argc, char *argv[])
 {
   long i;
-  int  optiontest=0, iv;
-  double dHeight=0.0, thickness=0.0;
-  long NoDetGrid=FALSE;
   char sBuffer[512];
   long count = 0;
 
   /* some default values */
   GenNeutrons=10;
-  Columns = 1;
-  Rows = 1;
-  geom=0;
-  bMonitor = FALSE;
-  NoDetGrid= FALSE;
-  eTOF     = VT_TOF_CALC;
+  NColumns = 1;
+  NRows = 1;
+  geom=0; 
+  
   Detector.Direction[0]=0.0;
   Detector.Direction[1]=0.0;
 
-  for(i=1; i<argc; i++) 
-  {
-    if(argv[i][0]!='+')  
-    {
-      switch(argv[i][1]) 
-      { case 'G':
-	        if      (strstr(&(argv[i][2]), "cyl")!=NULL) geom=1; 
-          else if (strstr(&(argv[i][2]), "cub")!=NULL) geom=2;
-	        else    Error("Unknown detector geometry");
-        	break;
+  for(i=1; i<argc; i++) {
+    if(argv[i][0]!='+') {
+      switch(argv[i][1]){ 
+	/* general */
+      case 'B':
+	array=atoi(&argv[i][2]); 
+        break;
 
-        case 'h':
-          sscanf(&(argv[i][2]),"%lf", &dHeight);
-          optiontest |= 0x1;
-          break;
-        case 'w':
-          sscanf(&(argv[i][2]),"%lf", &dWidth);
-          optiontest |= 0x2;
-          break;
+      case 'a':
+	type=atoi(&argv[i][2]); //0=gas tubes, 1=area/volume
+        break;
+	
+      case 'G':
+	geom=atof(&argv[i][2]);
+        break;
 
-        case 't':
-          sscanf(&(argv[i][2]),"%lf", &thickness);
-          if(thickness<=0.0) thickness=1e-4;
-          optiontest |= 0x4;
-          break;
+      case 'E':    /* efficiency file */
+	Eff.pfile = tryOpen( (Eff.filename = &argv[i][2]), "efficiency file");
+	break;
 
-       case 'e':
-          sscanf(&(argv[i][2]),"%lf", &MaxEfficiency);
-          if(MaxEfficiency>=1.0) MaxEfficiency=0.99999;
-          optiontest |= 0x8;
-          break;
+      case 'h':
+	Height=atof(&argv[i][2]);
+	break;
 
-        case 'E':    /* efficiency file */
-           Eff.pfile = tryOpen( (Eff.filename = &argv[i][2]), "efficiency file");
-           break;
+      case 'w':
+	Width=atof(&argv[i][2]);
+	break;
 
-        case 'T':
-          /* Theta is the angle between the +x-axis and the vector*/
-          sscanf(&(argv[i][2]),"%lf", &itheta);
-          itheta*=M_PI/180.0;
-          break;
-        case 'P':
-          /* Phi is the angle of the +y-axis and the projection of the vector to the yz-plane */
-          sscanf(&(argv[i][2]),"%lf", &iphi);
-          iphi*=M_PI/180.0;
-          break;
+      case 't':
+	Thickness=atof(&argv[i][2]);
+	if(Thickness<=0.0) Thickness=1e-4;
+	break;
 
-        case 'p':
-	  /* Delta Phi */
-	  sscanf(&(argv[i][2]),"%hd", &phimode);
-	  break;
+      case 'T':
+	/* Theta is the angle between the +x-axis and the vector*/
+	Theta=atof(&argv[i][2])*M_PI/180;
+	break;
 
-       case 'D':
-          sscanf(&(argv[i][2]),"%lf", &distance);
-          optiontest |= 0x10;
-          break;
+      case 'P':
+	/* Phi is the angle of the +y-axis and the projection of the vector to the yz-plane */
+	Phi=atof(&argv[i][2])*M_PI/180;
+	break;
 
-        case 'c':
-          sscanf(&(argv[i][2]),"%ld", &Columns);
-          break;
-        case 'r':
-          sscanf(&(argv[i][2]),"%ld", &Rows);
-          break;
+      case 'z':
+	/* Delta Phi */
+	phimode=atof(&argv[i][2]);
+	break;
 
-        case 'A':
-          sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
-          break;
+      case 'x':
+	/* cylinder axis orientation */
+	cyl_axis=atof(&argv[i][2]);
+	break;
+	
+      case 'D':
+	Distance=atof(&argv[i][2]);
+	break;
 
-        case 'o':
-          sscanf(&(argv[i][2]),"%d", &iv);
-          eTOF = iv;
-          break;
+      case 'c':
+	NColumns=atoi(&argv[i][2]);
+	break;
 
-        case 'M':
-          if(argv[i][2]=='1') bMonitor=TRUE;
-          break;
+      case 'r':
+	NRows=atoi(&argv[i][2]);
+	break;
+      
+      case 'n':
+	NLayers=atoi(&argv[i][2]);
+	break;
 
-        case 'g':
-          if(argv[i][2]=='0') NoDetGrid=TRUE;
-          break;
+      case 'A':
+	GenNeutrons=atoi(&argv[i][2]);
+	break;
 
-        case 'C':
-          sscanf(&(argv[i][2]),"%hd", &DetectColor);
-          break;
+      case 'U':
+	usage=atoi(&argv[i][2]);
+	break;
+	
+      case 'C':
+	detectColor=atoi(&argv[i][2]);
+	break;
+      
+      case 'S':
+	addColor=atoi(&argv[i][2]);
+	break;
 
-  	    case 'S':
-          sscanf(&(argv[i][2]),"%hd", &AddColor);
-          break;
+      case 'm':
+	absorbertype=atoi(&argv[i][2]);//0=Bf3, 1=He3, 5=other(from file or const.)
+	break;
 
+      case 'e':
+	EfficiencyMod=atof(&argv[i][2]);
+	break;
 
-        default:
-          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-          exit(-1);
-          break;
+      case 'k':
+	temperature=atof(&argv[i][2]);
+	break;
+
+      case 'p':
+	pressure=atof(&argv[i][2]);
+	break;
+
+	/* tube detector */
+
+      case 'o':
+	vertTubeOrientation=atoi(&argv[i][2]);
+	break;
+
+      case 'b':
+	rectXsec=atoi(&argv[i][2]);
+	break;
+
+      case 'f':
+	wallThickness=atof(&argv[i][2])/10;//in cm
+	break;
+
+      case 's':
+	Tubeshift=atoi(&argv[i][2]);
+	break;
+
+	/* resolution: sigma_Gauss=FWHM/2.35482  */
+
+      case 'u':
+	horResolution=atof(&argv[i][2])/2.35482;
+	break;
+
+      case 'v':
+	vertResolution=atof(&argv[i][2])/2.35482;
+	break;
+
+      case 'l':
+	xResolution=atof(&argv[i][2])/2.35482;
+	break;
+
+   
+      default:
+	fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+	exit(-1);
+	break;
       }
     }
+  }
+
+  PixelWidth[0]=Thickness/NLayers;
+  PixelWidth[1]=Width/NColumns;
+  PixelWidth[2]=Height/NRows;
+
+  // input variable recycling:
+  if(absorbertype==2 || absorbertype==3){ //solid layers
+    absorberthickness=pressure;
+    atomicdensity=temperature;
+  }
+
+  // check input parameters
+  if(absorbertype==5 && EfficiencyMod==1)
+    myExit("ERROR: Efficiency modifyer has to be <1 if used as total efficiency (with absorber type \"other\").");
+
+  if(type==0){ //tube detector
+    if(geom==1)
+      myExit("ERROR: tube detector only possible for flat geometry. Use detector array to build cylindrical shape out of flat (sub)detectors.\n");
+    if(xResolution!=0)
+      fprintf(LogFilePtr,"\nWARNING: x-resolution not 0 but has no meaning in tube detector (hence will not be used).");
+
+    if(vertTubeOrientation){
+      if(PixelWidth[0]!=PixelWidth[1])
+	myExit("ERROR: tube detector requires Thickness/number_of_layers=Width/number_of_columns (diameter of tube) for vertical tube orientation \n");
+      if(horResolution!=0)
+	fprintf(LogFilePtr,"\nWARNING: hor. resolution not 0 but has no meaning in vertical tubes (hence will not be used).");
+    }
+    else if(!vertTubeOrientation){
+      if(PixelWidth[0]!=PixelWidth[2])
+	myExit("ERROR: tube detector requires Thickness/number_of_layers=Height/number_of_rows (diameter of tube) for horizontal tube orientation \n");
+      if(vertResolution!=0)
+	fprintf(LogFilePtr,"\nWARNING: vert. resolution not 0 but has no meaning in horizontal tubes (hence will not be used).");
+    }
+
+    /*add tubes if shifted so whole area is covered */
+    if(Tubeshift){
+      if(vertTubeOrientation){
+	NColumns+=2;
+	Width+=2*PixelWidth[1];
+      }
+      else {
+	NRows+=2;
+	Height+=2*PixelWidth[2];
+      }
+    }
+  }
+
+  //extend detector to avoid intensity drop at borders
+  if(vertResolution!=0){
+    Height+=2*(floor(vertResolution/PixelWidth[2])+1)*PixelWidth[2];
+    NRows+=2*(floor(vertResolution/PixelWidth[2])+1);
+  }
+  if(horResolution!=0){
+    Width+=2*(floor(horResolution/PixelWidth[1])+1)*PixelWidth[1];
+    NColumns+=2*(floor(horResolution/PixelWidth[1])+1);
+  }
+   if(xResolution!=0){
+    Thickness+=2*(floor(xResolution/PixelWidth[0])+1)*PixelWidth[0];
+    NLayers+=2*(floor(xResolution/PixelWidth[0])+1);
   }
 
   if(geom!=0)
     {	if(geom==1)
 	{	/* cylinder */
-	  /*if(optiontest != 31) {
-	    fprintf(LogFilePtr,"For the cylindrical detector the -D, -t, -h, -w and -e options are mandatory!\n");
-	    exit(-1);
-	    }*/
-	  
-	  Detector.SG.Cyl.r=distance;
-	  Detector.SG.Cyl.height = dHeight;
-	  Thickness = thickness;
+
+	  if(cyl_axis==0 && fabs(Theta-M_PI/2)>0.0001){
+	    fprintf(LogFilePtr,"\n WARNING: Theta is set to 90° for cylinder in x direction!");
+	    Theta=M_PI/2;
+	  }
+ 
+	  Detector.SG.Cyl.r=Distance;
+	  Detector.SG.Cyl.height = Height;
+	 
 	  Detector.Direction[0]=0.0;
 	  Detector.Direction[1]=0.0;
-	  Detector.Direction[2]=1.0;
+	  Detector.Direction[2]=0.0;
+	  Detector.Direction[cyl_axis]=1.0;
 
 	  Detector.Position[0]=0.0;
 	  Detector.Position[1]=0.0;
 	  Detector.Position[2]=0.0;
 
-	  Theta=itheta;
-	  if (cos(iphi) < 0.0) Theta=-Theta;
-	  dTheta=dWidth/(2.0*distance);
-	  constphi = atan(dHeight/2./distance)*2./Rows;
+	  if (cos(Phi) < 0.0) Theta=-Theta;
 
 	  NeutronIntersectsDetector=NeutronIntersectsCylDetector;
 	  DetectorSpot=CylinderDetSpot;
 
-	  bVisInstalled = TRUE;
+	  bVisInstalled = TRUE; 
 	  // Geometry data
 	  if (bVisInstr)
 	    { 
@@ -616,23 +885,26 @@ void  OwnInit(int argc, char *argv[])
 	      stGeometry.pCylSlice = (VtCylSlice*) calloc(1, sizeof(VtCylSlice));
 	      stGeometry.nCylSlices = 1; 
 	      
-	      stGeometry.pCylSlice[0].Radius = distance; 
-	      stGeometry.pCylSlice[0].Width  = dWidth;
-	      stGeometry.pCylSlice[0].Height = dHeight;
+	      stGeometry.pCylSlice[0].Radius = Distance; 
+	      stGeometry.pCylSlice[0].Width  = Width;
+	      stGeometry.pCylSlice[0].Height = Height;
 	      stGeometry.pCylSlice[0].vCntr[0]  = 0.;
 	      stGeometry.pCylSlice[0].vCntr[1]  = 0.;
 	      stGeometry.pCylSlice[0].vCntr[2]  = 0.;
 	      stGeometry.pCylSlice[0].vSymAxis[0]= 0;
 	      stGeometry.pCylSlice[0].vSymAxis[1]= 0;
-	      stGeometry.pCylSlice[0].vSymAxis[2]= 1;
-	      stGeometry.pCylSlice[0].Phi = (iphi+itheta)/M_PI*180.;
-	      stGeometry.pCylSlice[0].OpenAngle = dWidth/(2.*M_PI*distance)*360.;
+	      stGeometry.pCylSlice[0].vSymAxis[2]= 0;
+	      stGeometry.pCylSlice[0].vSymAxis[cyl_axis]= 1;
+	      stGeometry.pCylSlice[0].Phi = Theta/M_PI*180.;
+	      //coordinates differently defined in visualization:
+	      if(cyl_axis==0)
+		stGeometry.pCylSlice[0].Phi = Phi/M_PI*180.+90.;
+	      else if(cyl_axis==1)
+		stGeometry.pCylSlice[0].Phi = -Theta/M_PI*180.;
 	      
+	      stGeometry.pCylSlice[0].OpenAngle = Width/(2.*M_PI*Distance)*360.;
 	      RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
-	      fprintf(LogFilePtr,"For the cylindrical detector ry %f, rz %f", ry, rz);
-	      //  if (rz < 0) rz += 2.*M_PI;
 	      stGeometry.pCylSlice[0].Phi += rz/M_PI*180.;
-
 	      stGeometry.pDescr  = "detector:cyan";
 	      stGeometry.eModule = VT_DETECTOR;
 	    }
@@ -641,23 +913,19 @@ void  OwnInit(int argc, char *argv[])
       else 
 	{
 	  /* cube */
-	  /*if(optiontest != 31)
-	    { fprintf(LogFilePtr,"For the cube type detector the -h, -w, -t, -e and -D options are mandatory!\n");
-	    exit(-1);
-	    }*/
-	  Detector.SG.Cube.height = dHeight;
-	  Detector.SG.Cube.width =dWidth;
-	  Detector.SG.Cube.thickness = thickness;
-	  Detector.Direction[0]=cos(itheta);
-	  Detector.Direction[1]=sin(itheta)*cos(iphi);
-	  Detector.Direction[2]=sin(itheta)*sin(iphi);
+
+	  Detector.SG.Cube.height = Height;
+	  Detector.SG.Cube.width =Width;
+	  Detector.SG.Cube.thickness = Thickness;
+	  Detector.Direction[0]=cos(Theta);
+	  Detector.Direction[1]=sin(Theta)*cos(Phi);
+	  Detector.Direction[2]=sin(Theta)*sin(Phi);
 	  for(i=0; i<3;i++)
 	    if(fabs(Detector.Direction[i])<1e-5) Detector.Direction[i]=0.0;
 
-	  Detector.Position[0] = distance;
+	  Detector.Position[0] = Distance;
 	  Detector.Position[1] = 0.0;
 	  Detector.Position[2] = 0.0;
-	  Thickness=thickness;
 	  NeutronIntersectsDetector=NeutronIntersectsCubeDetector;
 	  DetectorSpot=CubeDetSpot;
 
@@ -667,19 +935,17 @@ void  OwnInit(int argc, char *argv[])
 	    { 
 	      stGeometry.pCuboid = (VtCuboid*) calloc(1, sizeof(VtCuboid));
 	      stGeometry.nCuboids = 1; 
-	      
-	      
-	      fprintf(LogFilePtr,"For the cylindrical detector iphi %f, itheta %f", iphi, itheta);
 
-	      stGeometry.pCuboid[0].Length = thickness; 
-	      stGeometry.pCuboid[0].Width  = dWidth;
-	      stGeometry.pCuboid[0].Height = dHeight;
-	      stGeometry.pCuboid[0].vCntr[0]  = distance*cos(itheta);
-	      stGeometry.pCuboid[0].vCntr[1]  = distance*sin(itheta);
-	      stGeometry.pCuboid[0].vCntr[2]  = 0;
-	      stGeometry.pCuboid[0].vNormal[0]= cos(itheta);
-	      stGeometry.pCuboid[0].vNormal[1]= sin(itheta)*cos(iphi);
-	      stGeometry.pCuboid[0].vNormal[2]=  sin(itheta)*sin(iphi);
+	      stGeometry.pCuboid[0].Length = Thickness; 
+	      stGeometry.pCuboid[0].Width  = Width;
+	      stGeometry.pCuboid[0].Height = Height;
+
+	      stGeometry.pCuboid[0].vCntr[0]  = (Distance+Thickness/2)*cos(Theta);
+	      stGeometry.pCuboid[0].vCntr[1]  = (Distance+Thickness/2)*sin(Theta)*cos(Phi);
+	      stGeometry.pCuboid[0].vCntr[2]  = (Distance+Thickness/2)*sin(Theta)*sin(Phi);
+	      stGeometry.pCuboid[0].vNormal[0]= cos(Theta);
+	      stGeometry.pCuboid[0].vNormal[1]= sin(Theta)*cos(Phi);
+	      stGeometry.pCuboid[0].vNormal[2]=  sin(Theta)*sin(Phi);
 	      
 	      stGeometry.pDescr  = "detector:cyan";
 	      stGeometry.eModule = VT_DETECTOR;
@@ -688,20 +954,21 @@ void  OwnInit(int argc, char *argv[])
     } 
   else 
     {
-      fprintf(LogFilePtr,"ERROR: You have to supply a detector geometry with -Gcub or -Gcyl!\n");
+      fprintf(LogFilePtr,"ERROR: You have to supply a detector geometry with -G!\n");
       exit(-1);
     }
-  if(NoDetGrid) DetectorSpot=NoDetSpot;
+
   
   if (Eff.pfile!=NULL) {
       Eff.maxdata = LinesInFile(Eff.pfile);
-      Eff.data = calloc(Eff.maxdata-1, sizeof(EffData));
+      Eff.data = calloc(Eff.maxdata+1, sizeof(EffData));
       for(count=0; count < Eff.maxdata; count++) {
         ReadLine(Eff.pfile, sBuffer, sizeof(sBuffer)-1);
         sscanf(sBuffer, "%lf %lf", &Eff.data[count].Lambda, &Eff.data[count].Eff);
       }
       fclose(Eff.pfile);
     }
+
 }
 
 static FILE * tryOpen(const char *fn, const char *s) {
@@ -717,14 +984,40 @@ static FILE * tryOpen(const char *fn, const char *s) {
 void OwnCleanup()
 {
   /* print error that might have occured many times */
-	PrintMessage(DET_TRAJ_INSIDE, "", ON);
+  PrintMessage(DET_TRAJ_INSIDE, "", ON);
+  PrintMessage(DET_L_RANGE_TOO_SMALL,Eff.filename, ON);
 
-	fprintf(LogFilePtr," \n");
+  if(lost>0)
+    fprintf(LogFilePtr,"\nWARNING: %d neutrons lost between tubes",lost);
+ 
+  fprintf(LogFilePtr," \n");
 
-	/* set description for instrument plot */
-	stPicture.dWPar  = dWidth;
-	stPicture.dHPar  = dWidth/Columns;
-	stPicture.dRPar  = distance;
-	stPicture.eType  = (short) geom;
+  /* set description for instrument plot */
+  stPicture.dWPar  = Width;
+  stPicture.dHPar  = Width/NColumns;
+  stPicture.dRPar  = Distance;
+  stPicture.eType  = (short) geom;
+} 
+
+double GetXsec(int h_absorbertype, double h_lambda){
+  double h_sigma=0;
+  switch (h_absorbertype){
+  case 0: //BF3
+  case 2: //solid B
+    h_sigma=3845.241+2139*(h_lambda-1.798);
+    break;
+  case 1: //He3
+    h_sigma=5319.31+2955*(h_lambda-1.798);
+    break;
+  case 3: //Li6
+    h_sigma=939.223+521.62*(h_lambda-1.798);
+    break;
+  default: //other, from file
+    h_sigma=0;
+    break;
+  }
+  h_sigma*=1E-28; //return in SI unit: b -> m^2
+  return h_sigma;
 }
+
 
