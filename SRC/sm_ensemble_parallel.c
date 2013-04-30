@@ -1,5 +1,5 @@
 /************************************************************************************************/
-/*  VITESS module 'chopper_fermi'                                                               */
+/*  VITESS module 'sm_ensemble_parallel'                                                        */
 /*                                                                                              */
 /* The free non-commercial use of these routines is granted providing due credit is given to    */
 /* the authors.                                                                                 */
@@ -73,6 +73,7 @@ double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
   RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
+short int  mirrMaterial=0;
 
 void SetGeometryData();
 	
@@ -232,6 +233,9 @@ void OwnInit(int argc, char *argv[])
       break;
     case 'v':
       sscanf(arg, "%lf", &OutputAngleVert);
+      break;
+    case 'S':
+      sscanf(arg, "%d", &mirrMaterial);
       break;
 
       // Visual data
@@ -707,8 +711,10 @@ static double CollideWall
 
   /* now check for collision; compute  */
   {
-    double the, Choise, Refl[2], expon[2];
-		
+    double the, Refl[2], expon[2];
+    double Choise= MonteCarloPar(0,1, thread_i);
+    double alphaQ=0, betaQ=0, mNumber=4, Q=0, Qc=0, M2=0, W=0, R0=0.99;
+    int index_expon=0, index_mued1=1, index_mued2=2, index_theta=0;
     // Shift vector according to the new offset of the mirror element
     SubVector(rt, vOffsetShift); 
     
@@ -726,57 +732,131 @@ static double CollideWall
 		
     the = M_PI_2 - acos(fabs(dir[0]));
 
-    if (SpinVector[quant_dir] == 1.) {
-
-      /* spin up */
-      if (the <= thetaC[0] * WL) {
-	dir[0] *= -1.;
-      }	else  {	
-	expon[0] = (mued[0] * WL + mued[1]) / sqrt(sq(sin(the)) - sq(sin(thetaC[0] * WL)));
-				
-	if(expon[0] > 500)
-	  expon[0] = 500;
-	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) {
-	  Refl[0] = RthetaCSM[0] +
-	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the);
-	  Choise = MonteCarloPar(0,1, thread_i);
-	  if (Choise < Refl[0])
-	    dir[0] *= -1.;
-	  else
-	    *prob *= exp(- expon[0]);
-	}
-	if (the > thetaCSM[0] * WL)
-	  *prob *= exp(- expon[0]);
-      }
-
-    } else if (SpinVector[quant_dir] == -1.) {
-
-      /* spin down */
-      if(the <= thetaC[1] * WL) {
-	dir[0] *= -1.;
-      }	else {
-	expon[1] = (mued[2] * WL + mued[3]) / sqrt(sq(sin(the)) - sq(sin(thetaC[1] * WL)));
- 				
-	if(expon[1] > 500) expon[1] = 500;
-	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) {
-	  Refl[1] = RthetaCSM[1] +
-	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the);
-	  Choise = MonteCarloPar(0,1, thread_i);
-	  if(Choise < Refl[1])
-	    dir[0] *= -1.;
-	  else
-	    *prob *= exp(- expon[1]);
-	}
-	if(the > thetaCSM[1] * WL)
-	  *prob *= exp(- expon[1]);
-      }
-
+    if (SpinVector[quant_dir] == 1.) {/* spin up */
+      index_expon=0; index_mued1=0; index_mued2=1; index_theta=0;
+    } else if (SpinVector[quant_dir] == -1.) {/* spin down */
+      index_expon=1; index_mued1=2; index_mued2=3; index_theta=1;
     } else {
-
       NumWrong[thread_i]++;
       *prob = 0.;
     }
+
+     
+    if (mirrMaterial == 1) {
+      // Silicon
+      double x =  ENERGY_FROM_LAMBDA(WL)/1000.; //Energy in meV
+      double p0 = -4.25823;
+      double p1 = -0.560678;
+      double p2 = 0.0624372;
+      double p3 = -0.126251;
+      double p4 = 0.0802101;
+      double p5 = 55.8559;
+      double p6 = -0.00880107;
+      double p7 = 0.176497;
+
+      //Fit valid only between 0.3 A and 25 A
+      if (WL < 0.3) x = ENERGY_FROM_LAMBDA(0.3)/1000.;
+      else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
+
+      // Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
+      expon[index_expon] = 0.0499*(p0 + p1*log(x) + p2*pow(log(x+p3), 2) + p4*pow(log(x+p5), 3) + p6*pow(log(x+p7), 4));
+    }
+    //Henriks Attenuation: for Sapphire
+    else if (mirrMaterial == 2) {
+      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2] / WL - 0.00025) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
+    }
+    else {
+      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2]) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
+    }
+
+
+    if (the <= thetaC[index_theta] * WL) {
+      if (Choise < 0.99) 
+	dir[0] *= -1.;
+      else 
+	*prob *= (double) exp(- expon[index_expon]);
+    }	else  {	
+
+      if(expon[index_expon] > 500)
+	expon[index_expon] = 500;
+
+      if (the > thetaC[index_theta] * WL) {
+	//if (the > thetaC[index_theta] * WL && the <= thetaCSM[index_theta] * WL) {
+	  //Refl[index_theta] = RthetaCSM[index_theta] + (1. - RthetaCSM[index_theta])/(thetaCSM[index_theta] * WL - thetaC[index_theta] * WL)*(thetaCSM[index_theta] * WL - the); /* old model */
+	// McStats reflection:
+	mNumber=thetaCSM[index_theta]/thetaC[index_theta];
+	M2 = mNumber*0.9853 + 0.1978;
+	alphaQ=(mNumber>3) ? ( 5.0944 + 0.1204*mNumber) : mNumber;
+	betaQ =(mNumber>3) ? (68.1137 - 7.6251*mNumber) : 0.0;
+	Q = 4*M_PI*sin(the)/ WL;
+	Qc = 4*M_PI*sin(thetaC[index_theta])/ 1;
+	W  = 0.0022 - 0.0002*mNumber;
+	R0 = 0.99;
+
+	Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
+
+	if (Choise < Refl[index_theta])
+	  dir[0] *= -1.;
+	else
+	  *prob *= exp(- expon[index_expon]);
+      }
+      //if (the > thetaCSM[index_theta] * WL){
+      //	*prob *= exp(- expon[index_expon]);}
+    }
+    
   }
+
+    /* if (SpinVector[quant_dir] == 1.) { */
+
+  /*     /\* spin up *\/ */
+  /*     if (the <= thetaC[0] * WL) { */
+  /* 	dir[0] *= -1.; */
+  /*     }	else  {	 */
+  /* 	expon[0] = (mued[0] * WL + mued[1]) / sqrt(sq(sin(the)) - sq(sin(thetaC[0] * WL))); */
+				
+  /* 	if(expon[0] > 500) */
+  /* 	  expon[0] = 500; */
+  /* 	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) { */
+  /* 	  Refl[0] = RthetaCSM[0] + */
+  /* 	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the); */
+  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
+  /* 	  if (Choise < Refl[0]) */
+  /* 	    dir[0] *= -1.; */
+  /* 	  else */
+  /* 	    *prob *= exp(- expon[0]); */
+  /* 	} */
+  /* 	if (the > thetaCSM[0] * WL) */
+  /* 	  *prob *= exp(- expon[0]); */
+  /*     } */
+
+  /*   } else if (SpinVector[quant_dir] == -1.) { */
+
+  /*     /\* spin down *\/ */
+  /*     if(the <= thetaC[1] * WL) { */
+  /* 	dir[0] *= -1.; */
+  /*     }	else { */
+  /* 	expon[1] = (mued[2] * WL + mued[3]) / sqrt(sq(sin(the)) - sq(sin(thetaC[1] * WL))); */
+ 				
+  /* 	if(expon[1] > 500) expon[1] = 500; */
+  /* 	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) { */
+  /* 	  Refl[1] = RthetaCSM[1] + */
+  /* 	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the); */
+  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
+  /* 	  if(Choise < Refl[1]) */
+  /* 	    dir[0] *= -1.; */
+  /* 	  else */
+  /* 	    *prob *= exp(- expon[1]); */
+  /* 	} */
+  /* 	if(the > thetaCSM[1] * WL) */
+  /* 	  *prob *= exp(- expon[1]); */
+  /*     } */
+
+  /*   } else { */
+
+  /*     NumWrong[thread_i]++; */
+  /*     *prob = 0.; */
+  /*   } */
+  /* } */
 
   /* transform back into original frame  */
 	
