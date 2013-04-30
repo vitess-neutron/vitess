@@ -41,6 +41,7 @@ extern short    bOldFrame,      /* criterion: new co-ordinate system set for cur
 
 extern int      NThreads;       /* number of helper threads for execution, set by --T */
 extern double  RotMatrixM[3][3];
+extern double  RotMatrixMX[3][3];
 
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,

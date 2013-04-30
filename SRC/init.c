@@ -90,7 +90,8 @@ short    bTrace=TRUE,        /* criterion: write trace files             */
          bVisTraj =FALSE;    /* criterion: visualization of trajectories */
 double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of this module */
          RotZ=0.0, RotY=0.0, /*      hor. and vert. rotation of the local co-ordinate system relative to the absolute one  */
-         RotMatrixM[3][3],            
+         RotMatrixM[3][3],
+         RotMatrixMX[3][3], 
          RotMatrixS[3][3];   /*      matrix to rotate from abs. co-ordinate system to co-ordinate system of last section   */
 long     nModuleNo=0,        /*      number of the previous module, increased in Cleanup() */
          iModuleNo=0,        //      number of this module determined from parameter for log file
@@ -384,7 +385,7 @@ static void setCompressBufLen() {
 void Init(int argc, char **argv, VtModID eModule)
 {
   char *a, *arg, text[99];
-  short l;
+  short l, ii, jj;
   static char * marg[3];
   const gsl_rng_type * T;
 
@@ -636,6 +637,14 @@ void Init(int argc, char **argv, VtModID eModule)
     else if (nModuleNo > 9 && nModuleNo < 100) powerIDShift -= 1;
     lastIDShift = nModuleNo*pow(10, powerIDShift);
   }
+
+  for (ii = 0; ii < 3; ii++) {
+    for (jj = 0; jj < 3; jj++) {
+      if (ii==jj) RotMatrixMX[ii][jj]=1.;
+      else RotMatrixMX[ii][jj]=0.;
+    }
+  }
+
 }
 
 
@@ -667,13 +676,14 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     }
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
-
+    
     ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
     nModuleNo++;
     Shift[0]= dShiftX;
     Shift[1]= dShiftY;
     Shift[2]= dShiftZ;
     RotBackVector(RotMatrixM, Shift);
+    RotBackVector(RotMatrixMX, Shift);
     for (l=0; l<3; l++)
       EndPos[l] = BegPosM[l] + Shift[l];
     BlnLen += LengthVector(Shift);
