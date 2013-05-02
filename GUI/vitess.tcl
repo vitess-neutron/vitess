@@ -662,15 +662,15 @@ set detectorESET {
     {detectcolor int -1 { "detect color" "Detect only events with given color. A negative number means any color." "" C}  }
     {addcolor int -1 {  "add color" "Add value to color property after detection. A negative number means no change." "" S}  }
     {}
-    {phi float 0 { "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
-    {theta float 0 {  "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
-    {dist float 100 {  "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
+    {phi float 0 { "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
+    {theta float 0 {  "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector surface. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
+    {dist float 100 {  "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the inner cylinder radius." "" D} ge0 "" 1}
     {hei float 10 {"height [cm]" "Total height of the detector in cm. If tube detector, determines tube length (vert.) or diameter=height/rows (hor.)." "" h} gt0 "" 1}
     {wid float 10 { "width [cm]" "Full width of a flat detector in cm. If tube detector, determines tube length (hor.) or diameter=width/columns (vert.). In case of a cylindrical detector it is the length of the cylinder arch under consideration." "" w} gt0 "" 1}
-    {thick float 0.2 { "thickness [cm]" "Total thickness of the detecting material in cm. If tube detector, thickness can only be different from height/rows and width/columns if rectangular cross-section is chosen." "" t}  gt0 "" 1}
+    {thick float 0.2 { "thickness [cm]" "Total thickness of the detecting material in cm." "" t}  gt0 "" 1}
     {nrow int 1 { "number\nof rows" "Number of rows partitioning the detector height (hor. tubes or digitalization bins)." "" r} 1 100000 1}
     {ncol int 1 {  "number\nof columns" "Number of columns partitioning the detector width (vert. tubes or digitalization bins)" "" c} 1 100000 1}
-    {nlay int 1 { "number\nof layers" "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector)." "" n} 1 1000 1}
+    {nlay int 1 { "number\nof layers" "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector). If tube detector, thickness/layers must be equal to either height/rows or width/columns." "" n} 1 1000 1}
     {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 1}
     {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 1}
     {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 1}
@@ -684,16 +684,19 @@ set detectorESET {
     {temperature float 273 {"gas temperature [K] or \n  atom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density. \n solid B10 or Li6: atom density of converter material." "" k} 0 500 1}
     {}
     {"Tube detector" header}
-    {orientation radio horizontal {"tube orientation" "Tube length is total width (height) for hor. (vert.) orientation." "" o} {horizontal vertical} {0 1}}
-    {cs radio circular {"tube cross-section" "...." "" b} {circular rectangular} {0 1}}
+    {orientation radio horizontal {"tube orientation" "Orientation of tubes: horizontal mean the cylinder axis (in case of circular cross-section) is parallel to the y axis or width dimension, vertical to the z axis or height dimension. Tube length is total width (height) for hor. (vert.) orientation." "" o} {horizontal vertical} {0 1}}
+    {cs radio circular {"tube cross-section" "Choose circular or rectangular cross-section for cylindrical or cubic tubes." "" b} {circular rectangular} {0 1}}
     {}
-    {wallt float 0 {"wall thickness [mm]" "only if gas tube or ...: thickness of tube walls" "" f} 0 10 1}
+    {wallt float 0 {"wall thickness [mm]" "Thickness of tube walls. Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering." "" f} 0 10 1}
     {shift select shift {"layers shifted" "tube layers shifted against each other by half the diameter" "" s} {{"" 0}}}
     {}
-    {"cylindrical geometry" header}
+    {"Cylindrical geometry" header}
     {}
-    {phimode select constphi {"const. phi" "use constant phi pixel" "" z} {{"" 0}}}
-    {cylaxis radio "z" {"axis orientation" "...." "" x} {"x" "y" "z"} {0 1 2}}
+    {phimode select constphi {"const. phi" "Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." "" z} {{"" 0}}}
+    {cylaxis radio "z" {"axis orientation" "Orientation of cylinder axis must be parallel to x,y, or z axis." "" x} {"x" "y" "z"} {0 1 2}}
+    {"Output file" header}
+    {}
+    {out_file pareditablefile ""  {"Output filename" "Name of output file, written by last detector in array. If left blank or the array box is ticked, no output file will be written. Default output (and currently only) is event mode (3D position, time, weight)." "" O}}
 }
 
 
