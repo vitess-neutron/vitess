@@ -8,21 +8,28 @@
 Mon1D::Mon1D()
 {
 
-  dataArray = 0;
-  dataArrayPolWeights = 0;
-  dataArrayError = 0;
-  dataArrayCounts = 0;
+  for (int i = 0; i < 3; i++) {
+  
+    dataArray[i] = 0;
+    dataArrayPolWeights[i] = 0;
+    dataArrayError[i] = 0;
+    dataArrayCounts[i] = 0;
+    
+    xMin[i] = -1;
+    xMax[i] = -1;
+    
+    nBinsX[i] = 0;
+    
+    xBinSize[i] = 0;
+  
+    xParam[i] = -1;
 
-  xMin = -1;
-  xMax = -1;
+    monSwitchedOn[i] = 0;
 
-  nBinsX = 0;
+    fMonitor[i] = 0;
 
-  xBinSize = 0;
+  }
 
-  xParam = -1;
-
-  fMonitor = 0;
   fMonitorFilename = "NoFile";
 
   lambdaMin = -1;
@@ -48,6 +55,21 @@ Mon1D::Mon1D()
   pWeight = 1;
   exclCounts = 0;
 
+  sParameterNames[0] = "pos_y";
+  sParameterNames[1] = "pos_z";
+  sParameterNames[2] = "div_y";
+  sParameterNames[3] = "div_z";
+  sParameterNames[4] = "lambda";
+  sParameterNames[5] = "energy"; 
+  sParameterNames[6] = "time"; 
+  sParameterNames[7] = "k_y";
+  sParameterNames[8] = "k_z"; 
+  sParameterNames[9] = "r"; 
+  sParameterNames[10] = "phi";
+  sParameterNames[11] = "col_vert"; 
+  sParameterNames[12] = "col_hor"; 
+  sParameterNames[13] ="color"; 
+
 }
 
 
@@ -59,30 +81,58 @@ void Mon1D::Init(int argc, char* argv[])
       if(argv[i][0]!='+') {
 	switch(argv[i][1])
 	  {
-	  case 'O':
-	    if((fMonitor = fopen(&argv[i][2],"w"))==NULL)
-	      {
-		fprintf(LogFilePtr,"\nFile %s could not be opened for monitor1D output\n",&argv[i][2]);
-		exit(-1);
-	      }
+	  case 'O':	   
 	    fMonitorFilename=&argv[i][2];
 	    break;
 
 	  case 'X':
-	    xParam = atoi(&argv[i][2]); // parameter to be shown on the x axis, input parameter
+	    xParam[0] = atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
 	    break;
 	  
 	  case 'x':
-	     nBinsX = atol(&argv[i][2]); /* number of bins horizontal axis */
+	     nBinsX[0] = atol(&argv[i][2]); /* number of bins for the 1st horizontal axis */
 	    break;
 
 	  case 'w':
-	    xMin = atof(&argv[i][2]);		/* left edge position window */
+	    xMin[0] = atof(&argv[i][2]);		/* left edge position of 1st window */
 	    break;
 
 	  case 'W':
-	    xMax = atof(&argv[i][2]);		/* right edge position window */
+	    xMax[0] = atof(&argv[i][2]);		/* right edge position of 1st window */
 	    break;
+
+	 case 'Y':
+	    xParam[1] = atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
+	    break;
+	  
+	  case 'y':
+	     nBinsX[1] = atol(&argv[i][2]); /* number of bins for the 2nd  horizontal axis */
+	    break;
+
+	  case 'f':
+	    xMin[1] = atof(&argv[i][2]);		/* left edge position of 2nd window */
+	    break;
+
+	  case 'F':
+	    xMax[1] = atof(&argv[i][2]);		/* right edge position of 2nd window */
+	    break;   
+
+	  case 'Z':
+	    xParam[2] = atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
+	    break;
+	  
+	  case 'z':
+	     nBinsX[2] = atol(&argv[i][2]); /* number of bins for the 3rd  horizontal axis */
+	    break;
+
+	  case 'g':
+	    xMin[2] = atof(&argv[i][2]);		/* left edge position of 3rd window */
+	    break;
+
+	  case 'G':
+	    xMax[2] = atof(&argv[i][2]);		/* right edge position of 3rd window */
+	    break;   
+  
 
 	  case 'I':  
 	    filterParam1 = atoi(&argv[i][2]); // filter parameter 1, optional input parameter
@@ -163,46 +213,77 @@ void Mon1D::Init(int argc, char* argv[])
       exit(99);
     }
 
-  // Calculate the bin size for x- and y-axis
-  xBinSize = (xMax - xMin)/nBinsX;
 
-  // Allocate the memory for the monitor data
-  dataArray = (double*) malloc(nBinsX * sizeof(double));
-  dataArrayError = (double*) malloc(nBinsX * sizeof(double));
-  dataArrayCounts = (int*) malloc(nBinsX * sizeof(int));
+  for (int ii = 0; ii < 3; ii++) {
 
-  for (int i = 0; i < nBinsX; i++) {
+    if (xParam[ii] < 0) continue;
 
-	  dataArray[i]=0;
-
-  }
-
-  // If polarisation analysis is desired, here the rotation matrix and the weights container are defined
-  if (analysePol) {
-
-    polAnalysisRotMatrix =  MathMatrix::RotMatrixXFromVector(polAnalysisVector);
+    string fullFileName = fMonitorFilename + "_" + sParameterNames[xParam[ii]-1] + ".mon";
     
-    dataArrayPolWeights = (double*) malloc(nBinsX * sizeof(double));
- 
-    for (int i = 0; i < nBinsX; i++) {
+    if((fMonitor[ii] = fopen(fullFileName.c_str(), "w"))==NULL)
+      {
+	fprintf(LogFilePtr,"\nFile %s could not be opened for monitor1D output\n", fullFileName.c_str());
+	exit(-1);
+      }
+    
+    // Calculate the bin size for x- and y-axis
+    xBinSize[ii] = (xMax[ii] - xMin[ii])/nBinsX[ii];
+    
+    // Allocate the memory for the monitor data
+    dataArray[ii] = (double*) malloc(nBinsX[ii] * sizeof(double));
+    dataArrayError[ii] = (double*) malloc(nBinsX[ii] * sizeof(double));
+    dataArrayCounts[ii] = (int*) malloc(nBinsX[ii] * sizeof(int));
+    
+    for (int i = 0; i < nBinsX[ii]; i++) {
+      
+      dataArray[ii][i]=0;
+      dataArrayCounts[ii][i]=0;
+      
+    }
+    
+    monSwitchedOn[ii] = 1;
+
+    // If polarisation analysis is desired, here the rotation matrix and the weights container are defined
+    if (analysePol) {
+      
+      polAnalysisRotMatrix =  MathMatrix::RotMatrixXFromVector(polAnalysisVector);
+      
+      dataArrayPolWeights[ii] = (double*) malloc(nBinsX[ii] * sizeof(double));
+      
+      for (int i = 0; i < nBinsX[ii]; i++) {
 	
-		dataArrayPolWeights[i]=0;
+	dataArrayPolWeights[ii][i]=0;
 	
+      }
     }
   }
-  
   return;
 
 }
 
+
+int Mon1D::FillMonitorArray(Neutron* n)
+{
+  
+  int passed = 1;
+
+  for (int i = 0; i < 3; i++) {
+
+    if (monSwitchedOn[i]) passed &= FillMonitor(n, i);
+
+  }
+
+  return passed;
+
+}
 // Fill the monitor with the data of the neutron under study
-int Mon1D::FillMonitor(Neutron* n)
+int Mon1D::FillMonitor(Neutron* n, int counter)
 {
   
   // Find or calculate the parameter set for the x-axis, dismiss if outside the range
-  double xValue = DetermineParameter(xParam, n);  
-  int binX = (int)((xValue - xMin)/xBinSize);
-  if (binX < 0 || binX >= nBinsX) return 0;
+  double xValue = DetermineParameter(xParam[counter], n);  
+  int binX = (int)((xValue - xMin[counter])/xBinSize[counter]);
+  if (binX < 0 || binX >= nBinsX[counter]) return 0;
   
 
   // Dismiss if outside the wavelength range, if defined
@@ -231,8 +312,8 @@ int Mon1D::FillMonitor(Neutron* n)
 
   // Fill the monitor data if no polarisation analysis required
   if (!analysePol) {
-    if (pWeight) dataArray[binX] += n->Probability;
-    else dataArray[binX] += 1.0;
+    if (pWeight) dataArray[counter][binX] += n->Probability;
+    else dataArray[counter][binX] += 1.0;
   }
 
   // If polarisation analysis required, include additional weight 
@@ -243,16 +324,16 @@ int Mon1D::FillMonitor(Neutron* n)
     MathVector spinVectorProj = (*polAnalysisRotMatrix)*spinVector;
 
     if (pWeight) {
-      dataArray[binX] += n->Probability*spinVectorProj.x[0];
-      dataArrayPolWeights[binX] += n->Probability;
+      dataArray[counter][binX] += n->Probability*spinVectorProj.x[0];
+      dataArrayPolWeights[counter][binX] += n->Probability;
     }
     else {
-      dataArray[binX] += spinVectorProj.x[0];
-      dataArrayPolWeights[binX] += 1.0;
+      dataArray[counter][binX] += spinVectorProj.x[0];
+      dataArrayPolWeights[counter][binX] += 1.0;
     }
   }
 
-  dataArrayCounts[binX]++;
+  dataArrayCounts[counter][binX]++;
 
   return 1;
 
@@ -354,37 +435,43 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
 void Mon1D::WriteOut()
 {
 
-  for(int binx = 0; binx < nBinsX; binx++) {    
+  for (int ii = 0; ii < 3; ii++) {
+
+    if (!monSwitchedOn[ii]) continue;
+
+    for(int binx = 0; binx < nBinsX[ii]; binx++) {    
   
-    if (dataArrayCounts[binx]>0) 
-      dataArrayError[binx] = dataArray[binx]*sqrt(1./dataArrayCounts[binx]);
+      if (dataArrayCounts[ii][binx]>0) 
+	dataArrayError[ii][binx] = dataArray[ii][binx]*sqrt(1./dataArrayCounts[ii][binx]);
+      
+      // For polarisation analysis, divide the value in each bin by the sum of spin weights
+      if (analysePol) 
+	if (dataArrayPolWeights[ii][binx] > 0) dataArray[ii][binx]/=dataArrayPolWeights[ii][binx];	     
+      
+    }
     
-  // For polarisation analysis, divide the value in each bin by the sum of spin weights
-    if (analysePol) 
-      if (dataArrayPolWeights[binx] > 0) dataArray[binx]/=dataArrayPolWeights[binx];	     
-
-  }
-
  
-  fprintf(fMonitor,"#Monitor\n");
-  fprintf(fMonitor, "#x\ty\tDelta_y\tCounts\n");      
-  for(int binx = 0; binx < nBinsX; binx++) {
-
-	  fprintf(fMonitor,"%5.3f\t%5.3E\t%5.3E\t%d\n", ((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0, 
-		  dataArray[binx], dataArrayError[binx], dataArrayCounts[binx]);     
-   
+    fprintf(fMonitor[ii],"#Monitor\n");
+    fprintf(fMonitor[ii], "#x\ty\tDelta_y\tCounts\n");      
+    for(int binx = 0; binx < nBinsX[ii]; binx++) {
+      
+      fprintf(fMonitor[ii],"%5.3f\t%5.3E\t%5.3E\t%d\n", ((xMin[ii] + xBinSize[ii]*binx) + (xMin[ii] + xBinSize[ii]*(binx+1.)))/2.0, 
+	      dataArray[ii][binx], dataArrayError[ii][binx], dataArrayCounts[ii][binx]);     
+      
+    }
+    fclose(fMonitor[ii]);
+    
+    // Give back the memory space
+    free (dataArray[ii]);
+    free (dataArrayError[ii]);
+    free (dataArrayCounts[ii]);
+    
+    if (analysePol) {
+      free (dataArrayPolWeights[ii]);
+    }
+    
   }
-  fclose(fMonitor);
-
-  // Give back the memory space
-  free (dataArray);
-  free (dataArrayError);
-  free (dataArrayCounts);
-
-  if (analysePol) {
-    free (dataArrayPolWeights);
-  }
-
+  
   return;
   
 }

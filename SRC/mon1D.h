@@ -30,22 +30,25 @@ class Mon1D {
 
  public:
 
-  double* dataArray; // here the monitor data is stored
-  double* dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
-  double* dataArrayError;
-  int* dataArrayCounts;
+  double* dataArray[3]; // here the monitor data is stored
+  double* dataArrayPolWeights[3]; // in case polarisation analysis is desired, here the spin weights are stored
+  double* dataArrayError[3];
+  int* dataArrayCounts[3];
 
-  double xMin;  // minimum x value, input parameter
-  double xMax;  // maximum x value, input parameter
+  double xMin[3];  // minimum x value, input parameter
+  double xMax[3];  // maximum x value, input parameter
 
-  int nBinsX;  // number of x bins, input parameter
+  int nBinsX[3];  // number of x bins, input parameter
 
-  double xBinSize; // size of x bins 
+  double xBinSize[3]; // size of x bins 
 
-  int xParam;  // parameter to be shown on the x axis, input parameter
+  int monSwitchedOn[3]; // Switches are activated if parameter 1, 2 or 3 should be stored.
 
-  FILE* fMonitor; // pointer to output file
+  int xParam[3];  // parameter to be shown on the x axis, input parameter
+
+  FILE* fMonitor[3]; // pointer to output file
   string fMonitorFilename;  // name of the output file, input parameter
+  string sParameterNames[14];
 
   double lambdaMin;  // minimum wavelength, filter for the monitor, optional input parameter
   double lambdaMax;  // maximum wavelength, filter for the monitor, optional input parameter
@@ -78,7 +81,8 @@ class Mon1D {
 
   void Init(int argc, char* argv[]); // Read in the monitor parameters from the command line
   double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
-  int FillMonitor(Neutron* n); // Fill monitor, if the neutron fulfills all constraints
+  int FillMonitorArray(Neutron* n);
+  int FillMonitor(Neutron* n, int counter); // Fill monitor, if the neutron fulfills all constraints
   void WriteOut(); // Write output file
 
 };
