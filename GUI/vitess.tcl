@@ -2278,7 +2278,7 @@ set fPAuv {
 ### monitor
 ###   wavelength
 
-set mon1_lambdaESET [concat [genFE lambda] $nA $mA $pA $tA $fA $fPA]
+set mon1_lambdaESET [concat [genFE lambda] $nA $mA $nnA $pA $tA $fA $fPA]
 proc mon1_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
 }
@@ -2290,7 +2290,7 @@ set tA {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" T}}
 }
 
-set monpol_lambdaESET [concat [genFE p_lambda] $nA $mA $pA $tA $dA]
+set monpol_lambdaESET [concat [genFE p_lambda] $nA $nnA $mA $pA $tA $dA]
 proc monpol_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
 }
@@ -2299,7 +2299,7 @@ proc monpol_lambdaCheckErr {{app _}} {
 ### monitor
 ###   energy
 
-set mon1_energyESET [concat [genFE energy] $nA $eA $pA $tA $fA $fLA $fPA]
+set mon1_energyESET [concat [genFE energy] $nA $nnA $eA $pA $tA $fA $fLA $fPA]
 proc mon1_energyCheckErr {{app _}} {
   return [checkMiMaErr min_e max_e "" $app]
 }
@@ -2315,12 +2315,12 @@ set mA {
     "maximal\ntime [ms]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_timeESET [concat [genFE time] $nA $mA $pA $fA $fLA $fPA]
+set mon1_timeESET [concat [genFE time] $nA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_timeCheckErr {{app _}} {
   return [checkMiMaErr min_time max_time "" $app]
 }
 
-set monpol_timeESET [concat [genFE p_time] $nA $mA $pA $dA]
+set monpol_timeESET [concat [genFE p_time] $nA $nnA $nnA $mA $pA $dA]
 proc monpol_timeCheckErr {{app _}} {
   return [checkMiMaErr min_time max_time "" $app]
 }
@@ -2336,12 +2336,12 @@ set mA {
     "max. div.\nx <-> y [deg]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_divyESET [concat [genFE divy] $nA $mA $pA $fA $fLA $fPA]
+set mon1_divyESET [concat [genFE divy] $nA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_divyCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
 
-set monpol_divyESET [concat [genFE p_divy] $nA $mA $pA $dA]
+set monpol_divyESET [concat [genFE p_divy] $nA $nnA $mA $pA $dA]
 proc monpol_divyCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -2356,12 +2356,12 @@ set mA {
     "max. div.\nx <-> z [deg]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_divzESET [concat [genFE divz] $nA $mA $pA $fA $fLA $fPA]
+set mon1_divzESET [concat [genFE divz] $nA $nnA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
 
-set monpol_divzESET [concat [genFE p_divz] $nA $mA $pA $dA]
+set monpol_divzESET [concat [genFE p_divz] $nA $nnA $mA $pA $dA]
 proc monpol_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -2390,7 +2390,7 @@ set pA2 {
     {yes no} {1 0}}
 }
 
-set mon1_divyzESET [concat [genFE divyz] $nA $mA $pA $pA2 $fA $fLA $fPA]
+set mon1_divyzESET [concat [genFE divyz] $nA $nnA $mA $pA $pA2 $fA $fLA $fPA]
 proc mon1_divyzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -2407,12 +2407,12 @@ set mA {
     "max. y [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_yESET [concat [genFE pos_y] $nA $mA $pA $fA $fPAz $fLA]
+set mon1_yESET [concat [genFE pos_y] $nA $nnA $mA $pA $fA $fPAz $fLA]
 proc mon1_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
 
-set monpol_yESET [concat [genFE p_pos_y] $nA $mA $pA $dA]
+set monpol_yESET [concat [genFE p_pos_y] $nA $nnA $nnA $mA $pA $dA]
 proc monpol_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -2428,12 +2428,12 @@ set mA {
     "max. z [cm]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_zESET [concat [genFE pos_z] $nA $mA $pA $fA $fPAy $fLA]
+set mon1_zESET [concat [genFE pos_z] $nA $nnA $mA $pA $fA $fPAy $fLA]
 proc mon1_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
 
-set monpol_zESET [concat [genFE p_pos_z] $nA $mA $pA $dA]
+set monpol_zESET [concat [genFE p_pos_z] $nA $nnA $mA $pA $dA]
 proc monpol_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -3680,7 +3680,7 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
-    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. In this case, mu*d from file \n is not used. Choose Other for a general approximation" "" S} {Other Silicon Sapphire} {0 1 2}}
+    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. Choose Other for a general approximation. \n " "" S} {Other Silicon Sapphire} {0 1 2}}
     {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
