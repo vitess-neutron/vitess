@@ -2667,22 +2667,48 @@ proc mon2_rdivCheckErr {{app _}} {
 ### monitor1D
 ### generic 1D monitor
 
+proc genFE {n} {
+  set ll {"monitor file"
+    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval. If several parameters should be monitored,  \n then the file name is used as a template and the parameter name and .mon is added to the template name, e.g. TEMPLATENAME_lambda.mon for the wavelength parameter." "" O}
+  return [list [list monitor_file moneditablefile $n.dat $ll "" "" 1]]
+}
+
 set mA1 {
   {parameter1 radio pos_y {
-    "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
+    "1st parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
     {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+  {parameter2 radio none {
+    "2nd parameter\non x-axis" "choose the 2nd parameter to be shown on the x-axis, \n a separate file will be created." "" Y}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+  {parameter3 radio none {
+    "3rd parameter\non x-axis" "choose the 3rd parameter to be shown on the x-axis, \n a separate file will be created." "" Z}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
-set mAV {
+set mAV1 {
   {}
-  {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
-  {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {min_vx1 float 0 {"1st minimal\nx-value" "" "" w} -1E6 1E6 1}
+  {min_vx2 float 0 {"2nd minimal\nx-value" "" "" f} -1E6 1E6 1}
+  {min_vx3 float 0 {"3rd minimal\nx-value" "" "" g} -1E6 1E6 1}
+  
+}
+
+set mAV2 {
+  {}
+  {max_vx1 float 0 {"1st maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {max_vx2 float 0 {"2nd maximal\nx-value" "" "" F} -1E6 1E6 1}
+  {max_vx3 float 0 {"3rd maximal\nx-value" "" "" G} -1E6 1E6 1}
+  
 }
 
 set nA {
   {}	
-  {number_xbins int 100 {
-    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
+  {number_xbins1 int 100 {
+    "1st number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
+  {number_xbins2 int 100 {
+    "2nd number\nof x-bins" "number of bins within the y-axis interval" "" y} 1 1E6}	
+  {number_xbins3 int 100 {
+    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z} 1 1E6} 
 }
 
 set fA1 {
@@ -2735,8 +2761,8 @@ set dA {
   {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
 }
 
-set monitor1DESET [concat [genFE mon1D] $mA1 $mAV $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
-unset mA1 mAV nA fA1 fA2 fComb fPAi fPAj polAH polA dA
+set monitor1DESET [concat [genFE mon1D] $mA1 $mAV1 $mAV2 $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mAV1 mAV2 nA fA1 fA2 fComb fPAi fPAj polAH polA dA
 proc monitor1DCheckErr {{app _}} {
   if [checkMiMaErr min_vx max_vx "" $app] {return 1}
   return {0}
