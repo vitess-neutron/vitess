@@ -104,7 +104,7 @@ double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID);
 static FILE * tryOpen(const char *fn, const char *s);
 
 FILE *outFile;
-const char *MyOutputFile="MyOutputFile.dat";
+char *DetectorOutputFileName;
 
 int main(int argc, char *argv[])
 {
@@ -117,7 +117,8 @@ int main(int argc, char *argv[])
     SP,                          // interaction position
     vShift;                      // for visualization: vector in neutron direction with length equal to distance of (last) detector (part in array) center
   long   i,j,l;                  // loop counting
-  long   NeutCount;              // count neutron copies for repetition (=GenNeutrons) > 1
+  long   NeutCount=10,           // count neutron copies for repetition (=GenNeutrons) > 1
+         NumDetected=0;          // number of detected neutrons
   short FoundTube=0;             // tag for tube in which interaction happens
   double TimeTillScattering=0,   // neutron flight time until interaction
     FullLengthInDetector=0,      // length of neutron trajectorie in overall detector volume
@@ -137,7 +138,6 @@ int main(int argc, char *argv[])
 
   /* module specific initialization */
   OwnInit(argc, argv);
-
 
   /* Rotmatrix will rotate a Vector to a frame in which the middle of the */
   /* Detector sits on the x-axis, i.e. Detector.Direction (cyl-axis for cyl. det) defines new x axis*/
@@ -159,10 +159,13 @@ int main(int argc, char *argv[])
 	continue;
 
       //pass on neutrons detected by previous detector parts,
-      //last detector in array removes tag    
+      //last detector in array removes tag and writes output file
       if( floor(InputNeutrons[i].Color/10000)==1 ){
-	if(!array)
+	if(!array){
 	  InputNeutrons[i].Color-=10000;
+	  if(DetectorOutputFileName)
+	    fprintf(outFile,"\n   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d",InputNeutrons[i].Position[0],InputNeutrons[i].Position[1],InputNeutrons[i].Position[2],InputNeutrons[i].Time,InputNeutrons[i].Probability,InputNeutrons[i].Color);
+	}
 	WriteNeutron(&InputNeutrons[i]);
 	continue;
       }
@@ -170,7 +173,6 @@ int main(int argc, char *argv[])
       // Use a copy to work on
       WorkNeutron = InputNeutrons[i];
 
-   
       /* First rotate the position and direction of the neutron to the detector frame */
       RotVector(RotMatrix, WorkNeutron.Position);
       RotVector(RotMatrix, WorkNeutron.Vector);
@@ -302,10 +304,13 @@ int main(int argc, char *argv[])
           }
 
 	  // write out neutrons that shall be detected	
-          if ( OutNeutron.Probability>0 )  {
+          if ( OutNeutron.Probability>wei_min )  {
 	    if (addColor > 0) 
 	      OutNeutron.Color += addColor;
-	    WriteNeutron(&OutNeutron);			  
+	    WriteNeutron(&OutNeutron);	
+	    NumDetected++;
+	    if(!array && DetectorOutputFileName)
+	      fprintf(outFile,"\n   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color);
 	  }
 
          // write interaction point - only once per incoming trajectory
@@ -337,6 +342,9 @@ int main(int argc, char *argv[])
       }
     } //for(i=0; i<NumNeutGot; i++)
   } //while((ReadNeutrons())!= 0)
+
+
+ fprintf(LogFilePtr,"\n Neutrons detected in this detector: %ld \n",NumDetected);
 
  my_exit:
   /* Do module specific cleanups */
@@ -780,6 +788,16 @@ void  OwnInit(int argc, char *argv[])
 
       case 'l':
 	xResolution=atof(&argv[i][2])/2.35482;
+	break;
+
+	/* output file */
+      case 'O':
+	DetectorOutputFileName=(&argv[i][2]);
+	if(!array){
+	  outFile=fopen(FullParName(DetectorOutputFileName),"w+");
+	  fprintf(outFile,"#    pos_x [cm]   pos_y [cm]   pos_z [cm]  time [ms]    weight     color");
+	  fprintf(outFile,"\n-------------------------------------------------------------------------");
+	}
 	break;
 
    

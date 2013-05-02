@@ -143,6 +143,16 @@ detected by any of the detector parts. <br>
 two <i>flat</i> and two <i>cylindrical</i></caption>
 </p>
 
+<p>
+<u>Output file</u> <br>
+If a filename is given as <i>Output filename</i>, a file containing the 3D
+position, time, probability weight and colour of each neutron will be written (event
+mode output). In a detector array, only the last detector writes this file, which then contains the
+neutrons detected in all sub-detectors. (The sub-detector in which a neutron
+has been detected can be distinguished by use of the <i>add color</i> option in
+each detector module.)
+</p>
+
 <p>-------------------------------------- </p>
 <p><b>!!!!! Please make sure that no neutron from the input stream starts already
 within the detector (having a finite thickness) itself. In case of cylindric geometry:
@@ -286,6 +296,14 @@ efficieny, and has to be between 0 and 0.999999. The efficiency modifyer is
 &nbsp;Tick this box if the pixel size in the cylinder height dimension is not
   uniformely thickness/N<sub>Rows</sub>, but variable such that a constant
 angular width &#948&#966 defines the pixel size. </p>
+<br>
+<p><b>Detector output</b> </p>
+<p><i>Output filename</i> <br>
+&nbsp;Name of file to which detector output is written. Ignored for first or
+  intermediate parts of an detector array, for which the last sub-detector
+  writes the combined detector output. In event mode (default and currently
+  only), the 3D position, time, probability weight and colour of each detected neutron are written.
+ </p>
 
 
 <p> </p>

@@ -31,12 +31,15 @@ filter            : Should be used instead of using filters in monitor modules.
 
 New tools:
 ----------
+Generate Extraction System:  This tool generates an input file for the sm_ensemble module, describing a (e.g. bispectral) extraction system consisting of up to 50 mirrors which can be combined with max. 4 guide walls (intransparent mirrors).
 
+Upgraded detector module:
+-------------------------
+3D volume detector instead of 2D area, tube geometry possible for flat detector, cylindrical detector with axis along x or y added, wavelength dependent efficiency now calculated from material or taken from input file, possibility to add resolution effects, new constant delta phi mode added, detector array can be build with several detector modules, event mode output file can be written
 
 Bug fixes, improvements:
 -----------------------
 monitor1D         :
-detector          : new constant delta phi mode
 source            : Better moderator descriptions for ISIS and HMI
 spacewindow       : positioning in x-direction
 sample_reflectom  : handles offspecular scattering now
