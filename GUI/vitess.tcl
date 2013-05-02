@@ -3469,16 +3469,20 @@ set eval_elast2ESET {
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
-  {toff float 0 {
-    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
-  {tofcorr radio no {
-    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
+  {toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {}
   {timevalbegin float -1.e10 {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {}
+  {tofcorr radio no {
+    "correct\nto distance" "correct to constant sample-detector distance" "" t}  {yes no} {1 0}}
+  {scatang radio direction {
+    "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
   {"color selection" header}
   {eval_colour int 0 {
     "color" "color necessary for the trajectory to be evaluated\ncolor 0 means: all trajectories are evaluated" "" C} 0 32768}
