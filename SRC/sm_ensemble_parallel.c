@@ -754,12 +754,14 @@ static double CollideWall
       double p6 = -0.00880107;
       double p7 = 0.176497;
 
+      double mirrThickness = (mued[index_mued1] + mued[index_mued2]) / 0.037; // Calculate the thickness of the mirror element
+
       //Fit valid only between 0.3 A and 25 A
       if (WL < 0.3) x = ENERGY_FROM_LAMBDA(0.3)/1000.;
       else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
 
       // Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
-      expon[index_expon] = 0.0499*(p0 + p1*log(x) + p2*pow(log(x+p3), 2) + p4*pow(log(x+p5), 3) + p6*pow(log(x+p7), 4));
+      expon[index_expon] = 0.0499*(p0 + p1*log(x) + p2*pow(log(x+p3), 2) + p4*pow(log(x+p5), 3) + p6*pow(log(x+p7), 4))*mirrThickness/ sqrt(sq(sin(the)));
     }
     //Henriks Attenuation: for Sapphire
     else if (mirrMaterial == 2) {
