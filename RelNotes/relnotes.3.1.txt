@@ -3,6 +3,9 @@ VITESS 3.1  Release Note
 
 Optimization:
 -------------
+Numerical optimization is included now. Two gradient methods and a Metropolis algorithm can be used in this first version, others will follow.
+The handling is quite easy. In many cases, it can be used by just editing the ASCII control files that can be found in the folder 'OPTIMIZATION'. 
+Its use is described in detail in the document 'Optimization.pdf' in the folder 'Concepts'. 
 
 Visualization:
 --------------
@@ -23,11 +26,19 @@ You may give the actual module a specific name. The actual module in the right f
 is emphasized in the module list. Name tags help to distinguish modules in a list
 of equal modules, for example monitor series.
 
+General:
+--------
+colour is now uniquely used in the way:
+-1: all colours  (default in monitor and eval)
+ 0: no colour
+Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours greater equal 1 will not be considered  
+
+
 New modules:
 ------------
-source_csns       :
-readin            : read text and McStas formatted neutron data 
-filter            : Should be used instead of using filters in monitor modules.
+filter            : should be used instead of using filters in monitor modules.
+read_in           : reads trajectories in ASCII format as written by writeout in VITESS or McStas format
+source_csns       : moderator characteristics of the 'Chinese Spallation Neutron Source'
 
 New tools:
 ----------
@@ -40,7 +51,8 @@ Upgraded detector module:
 Bug fixes, improvements:
 -----------------------
 monitor1D         :
-source            : Better moderator descriptions for ISIS and HMI
+mon1              : option to write files for all colours simultaneously
+source            : better moderator descriptions for ISIS and HMI
 spacewindow       : positioning in x-direction
 sample_reflectom  : handles offspecular scattering now
-writeout          : write McStas format
+writeout          : writes trajectories now also in McStas format
