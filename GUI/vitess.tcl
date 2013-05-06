@@ -3377,23 +3377,27 @@ set eval_elastESET {
     "minimum\n[A, 1/A, deg]" "lower bound of the evaluation interval" "" m} 1}
   {maxa float 0 {
     "maximum\n[A, 1/A, deg]" "upper bound of the evaluation interval" "" M} 1}
-  {prob_w radio yes {
-    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
-  {sAxis radio none {
-    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	
- {bin_prz float "" {
+  {bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {}
+  {prob_w radio yes {
+    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
   {eval_excl radio no {
     "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {sAxis radio none {
+    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	
+  {}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {tofcor radio no {
+    "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no "yes, origin in sample" "yes, origin at detector"} {0 1 2}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
   {ddist float "" {
-    "detector\ndistance [cm]" "assumed distance from sample to detector\nif greater 0, a correction of the flight path will be performed" "" D} ge0}
+    "sample-detector\ndistance [cm]" "nominal distance from sample to detector" "" D} ge0}
   {toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
   {refwave float "" {
@@ -3460,12 +3464,15 @@ set eval_elast2ESET {
   {}
   {prob_w radio yes {
     "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
-  {dspot float "" {
-    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
   {eval_excl radio no {
     "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {scatang radio direction {
+    "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
+  {}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {tofcorr radio no {
+    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
@@ -3474,15 +3481,13 @@ set eval_elast2ESET {
   {toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
   {}
+  {dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
   {timevalbegin float -1.e10 {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
   {}
-  {tofcorr radio no {
-    "correct\nto distance" "correct to constant sample-detector distance" "" t}  {yes no} {1 0}}
-  {scatang radio direction {
-    "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
   {"color selection" header}
   {eval_colour int 0 {
     "color" "color necessary for the trajectory to be evaluated\ncolor 0 means: all trajectories are evaluated" "" C} 0 32768}

@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 
 		// add commands to copy all files that will be needed for figure of merit
 		for (l=0; l < nFileNo; l++) 
-		{	itoa(m, sNumber, 10);
+		{	sprintf(sNumber, "%d", m);
 			ExtendFilename(sFilename, sFile[l], sNumber);
 			fprintf(pExeVFile, "%s %s%s %s%c", sCopy, sPDir, sFile[l], sFilename, cNL);
 		}
