@@ -216,7 +216,7 @@ void Mon1D::Init(int argc, char* argv[])
 
   for (int ii = 0; ii < 3; ii++) {
 
-    if (xParam[ii] < 0) continue;
+    if (xParam[ii] < 1) continue;
 
     string fullFileName = fMonitorFilename + "_" + sParameterNames[xParam[ii]-1] + ".mon";
     
