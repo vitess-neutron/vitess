@@ -28,12 +28,16 @@
 #define BINS  10000
 #define NCENTER 200
 
+#define VT_SMPL_CNTR 1
+#define VT_DET_CNTR  2
+
 
 /* globale variable */
 int   probactiv=TRUE,        /* probactiv=1 means probabilities activated, 
                                 else neutron weight is set to 1.0         */
       TOF = FALSE,           /* TRUE : time of flight instrument */
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
+			ePathCor   =FALSE,     /* 1 or 2: correct TOF for real flight path from sample to detector */
       bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
@@ -163,16 +167,17 @@ int main(int argc, char *argv[])
         CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 
       // flightpath correction if detector distance is given
-      if (DetDist > 0.0)
-      { // if co-ordinate is moved to detector, use detector-sample distance, otherwis x-position 
-        if (InputNeutrons[i].Position[0]==0.0)
-          DetPath  =  sqrt(sq(DetDist) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-        else
-          DetPath  =  sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-        Flightpath = Flightpath0 + DetPath - DetDist;
-      } 
-      else
-      { Flightpath = Flightpath0 + DetPath - DetDist;
+      switch (ePathCor)
+      { case VT_SMPL_CNTR: // origin of co-ordinate system in sample center
+          DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+          Flightpath = Flightpath0 + DetPath - DetDist;
+          break;
+        case VT_DET_CNTR : // origin of co-ordinate system in detector center
+          DetPath    = sqrt(sq(DetDist) + sq(InputNeutrons[i].Position[0])  + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+          Flightpath = Flightpath0 + DetPath - DetDist;
+          break;
+        default:           // no correction
+          Flightpath = Flightpath0;
       }
 
       // determination of weight and wavelength
@@ -408,9 +413,13 @@ void OwnInit(int argc, char *argv[])
 
 				case 'c':
 					if(atol(arg)==1)        /* if activated, only neutrons complying with the  */
-						bExclCount = TRUE;   /* evaluate requirements are considered further on */
+						bExclCount = TRUE;    /* evaluate requirements are considered further on */
 					break;
 
+
+				case 't':
+					ePathCor = atol(arg);     /*  correct flight path length for location of detection */
+					break;
 
 				case 'l':
 					Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
