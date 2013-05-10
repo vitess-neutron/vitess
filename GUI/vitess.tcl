@@ -655,7 +655,7 @@ set detectorESET {
     {geom radio flat {geometry
 	"The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
 	{flat cylindrical} {2 1}}
-    {type radio "tubes" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
+    {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
     {repr int 10 {  repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron." "" A} 1}
@@ -670,24 +670,24 @@ set detectorESET {
     {thick float 0.2 { "thickness [cm]" "Total thickness of the detecting material in cm." "" t}  gt0 "" 1}
     {nrow int 1 { "number\nof rows" "Number of rows partitioning the detector height (hor. tubes or digitalization bins)." "" r} 1 100000 1}
     {ncol int 1 {  "number\nof columns" "Number of columns partitioning the detector width (vert. tubes or digitalization bins)" "" c} 1 100000 1}
-    {nlay int 1 { "number\nof layers" "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector). If tube detector, thickness/layers must be equal to either height/rows or width/columns." "" n} 1 1000 1}
-    {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 1}
-    {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 1}
-    {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 1}
-    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet constant efficieny. Ignored in case of efficiency file." "" e} 0 1 1}
+    {nlay int 1 { "number\nof layers" "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector). If tube detector, thickness/layers must be equal to either height/rows or width/columns." "" n} 1 1000 0}
+    {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 0}
+    {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 0}
+    {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 0}
+    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet constant efficieny. Ignored in case of efficiency file." "" e} 0 1 0}
     {}
     {eff_file pareditablefile ""  {"lambda\nefficiency" "File containing two columns: wavelength and efficiency. If an efficiency file is given, absorber/converter type is ignored." "" E}}
     {}
-    {absorbertype radio "BF3 gas" {"absorber/converter type" "Material that interacts with neutrons, the total cross-section of which determines the (wavelength-dependent) detection efficiency." "" m} {"BF3 gas" "He3 gas" "solid B10" "solid Li6" "other"}  {0 1 2 3 5}}
+    {absorbertype radio "3He gas" {"absorber/converter type" "Material that interacts with neutrons, the total cross-section of which determines the (wavelength-dependent) detection efficiency." "" m} {"BF3 gas" "3He gas" "solid B10" "solid Li6" "other"}  {0 1 2 3 5}}
     {}
-    {pressure float 0 {"gas pressure [bar] or \n solid layer thickness [cm]" "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component. \n solid B10 or Li6: layer thickness of converter material." "" p} 0 20 1}
-    {temperature float 273 {"gas temperature [K] or \n  atom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density. \n solid B10 or Li6: atom density of converter material." "" k} 0 500 1}
+    {pressure float 4 {"gas pressure [bar] or \n solid layer thickness [cm]" "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component. \n solid B10 or Li6: layer thickness of converter material." "" p} 0 20 0}
+    {temperature float 293 {"gas temperature [K] or \n  atom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density. \n solid B10 or Li6: atom density of converter material." "" k} 0 500 0}
     {}
     {"Tube detector" header}
     {orientation radio horizontal {"tube orientation" "Orientation of tubes: horizontal mean the cylinder axis (in case of circular cross-section) is parallel to the y axis or width dimension, vertical to the z axis or height dimension. Tube length is total width (height) for hor. (vert.) orientation." "" o} {horizontal vertical} {0 1}}
     {cs radio circular {"tube cross-section" "Choose circular or rectangular cross-section for cylindrical or cubic tubes." "" b} {circular rectangular} {0 1}}
     {}
-    {wallt float 0 {"wall thickness [mm]" "Thickness of tube walls. Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering." "" f} 0 10 1}
+    {wallt float 0 {"wall thickness [mm]" "Thickness of tube walls. Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering." "" f} 0 10 0}
     {shift select shift {"layers shifted" "tube layers shifted against each other by half the diameter" "" s} {{"" 0}}}
     {}
     {"Cylindrical geometry" header}

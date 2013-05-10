@@ -67,20 +67,21 @@ short      phimode=0,             // 0 = const. pixel size; 1 = const Delta phi
            array=0,               // first or intermediate part of detector array 
            detectColor = -1,      // only detect neutrons of certain color; -1 = all neutrons
            addColor = -1,         // tag detected neutrons by adding addColor to color
-           type=0,                // tube (0) or area/Volume (1) detector
+           type=1,                // tube (0) or area/Volume (1) detector
            absorbertype=0,        // Boron10 (0,2), He3 (1), Li (3) or other (5)
            vertTubeOrientation=0, // vertical (1) or horizontal (0) tube axis
            rectXsec=0,            // circular (0) or rectangular (1) tube cross-section
            Tubeshift=0;           // tube layers shifted against each other
 
-double     PixelWidth[3]={0}; //pixel size, e.g. tube diameter
-double     Width=0, Height=0, Thickness=0,
-           Theta=0, Phi=0, Distance=0;
-double     RotMatrix[3][3];
-double pressure=0, temperature=273, EfficiencyMod=1, atomicdensity=1, absorberthickness=1;
-double horResolution=0, vertResolution=0, xResolution; //resolution in y,z,x as standard deviation (Gauss)
-
-double wallThickness=0;
+double     RotMatrix[3][3],
+           PixelWidth[3]={0};                                // pixel size, e.g. tube diameter
+double     Width=0, Height=0, Thickness=0,                   // detector extension
+           Theta=0, Phi=0, Distance=0,                       // detector coordinates (center of surface) 
+           wallThickness=0,                                  // only tube det: thickness of tube walls
+           pressure=4, temperature=293,                      // only gas det: gas pressure and temperature
+           atomicdensity=0, absorberthickness=0,             // only solid det: density (N) and thickness of converter layer
+           EfficiencyMod=1,                                  // modify efficiency
+           horResolution=0, vertResolution=0, xResolution=0; // resolution in y,z,x as standard deviation (Gauss)
 
 EffFile Eff = {0};
 
