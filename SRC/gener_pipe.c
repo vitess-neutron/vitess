@@ -41,7 +41,11 @@ char     cSlash       = '/',
          sFitInfo [FN_LEN+1]= "",            // file containing information about operating system, ... files to copied
          sSimPar  [FN_LEN+1]= "sim_param.ini",      // file containing a list of parameters to be varied 
          sPcoFile [FN_LEN+1]= "Pcomm.dat",          // file of the actual parameter set
+#ifdef VT_WINDOWS
          sExeVFile[FN_LEN+1]= "Simulations.bat",    // output file containing all pipe commands
+#else
+         sExeVFile[FN_LEN+1]= "Simulations.sh",     // output file containing all pipe commands
+#endif 
          sLogFile [FN_LEN+1]= "Opt.log",
          sPathSl  [FN_LEN+1]= "",
          sExeDirC [FN_LEN+1]= "",
