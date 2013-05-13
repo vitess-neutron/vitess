@@ -250,11 +250,13 @@ void OwnInit(int argc, char *argv[])
 	maxProb         = 0.;
 	detWidth        = 0.;
 	detHeight       = 0.;
+	detDist         = 1.;
         signalToBkgAreaFactor = 1.;
         minTheta        = 0;
 	maxTheta        = 0;
 	offspecularScattering = 0;
 	numQinPoints    = 0;
+	useIncoherent   = 0;
 
 	  /*    INPUT  */
 	while(argc>1)
@@ -412,14 +414,15 @@ void OwnCleanup()
 	/* free allocated memory */
 	if (g_pTabQ!=NULL)  free(g_pTabQ);
 	if (g_pTabR!=NULL)  free(g_pTabR);
-
-	if (g_pTab_Qin_Qout[0]!=NULL) free (g_pTab_Qin_Qout[0]);
-	if (g_pTab_Qin_Qout[1]!=NULL) free (g_pTab_Qin_Qout[1]);
-	for (i=0; i < g_nLinesRefl;i++) {
-	  if (g_pTab_Qin_Qout[i+2]!=NULL) free (g_pTab_Qin_Qout[i+2]);
-	  if (g_pTab_RoffSpec[i]!=NULL) free (g_pTab_RoffSpec[i]);
+	
+	if (offspecularScattering) {
+	  if (g_pTab_Qin_Qout[0]!=NULL) free (g_pTab_Qin_Qout[0]);
+	  if (g_pTab_Qin_Qout[1]!=NULL) free (g_pTab_Qin_Qout[1]);
+	  for (i=0; i < g_nLinesRefl;i++) {
+	    if (g_pTab_Qin_Qout[i+2]!=NULL) free (g_pTab_Qin_Qout[i+2]);
+	    if (g_pTab_RoffSpec[i]!=NULL) free (g_pTab_RoffSpec[i]);
+	  }
 	}
-
 
 	/* closes reflection coefficient files */
 	if (g_pReflFile != NULL) fclose(g_pReflFile) ;
