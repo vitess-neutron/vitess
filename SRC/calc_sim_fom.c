@@ -4,6 +4,10 @@
 /* 0.9   Apr 2011  Klaus Lieutenant  1st version                                            */
 /********************************************************************************************/
 
+#ifdef _MSC_VER
+ #define VT_WINDOWS
+#endif 
+
 #include "calc_sim_fom.h"
 #include "init.h"
 
@@ -11,12 +15,23 @@ extern
 double arP[MAX_SIM][NMAX+1], // function F to parameter set P 
        arF[MAX_SIM][IMAX+1]; // for sets 0 ... nSim-1 
 
+#ifdef VT_WINDOWS
+ char cSlash = '\\';
+#else
+ char cSlash = '/';
+#endif
+
 
 /*********************************************************************/
 /*  Prototypes                                                       */
 /*********************************************************************/
 static short WriteAllP(const char* sFilename, const short mMin, const short mMax, const short nPar);
 static short ReadAllF (const char* sFilename, const short mMin, const short mMax);
+static short AddPathAndExt(char* sCmdName);
+static void  ChangeSlash(char* pStr);
+
+static char sPipeCmdName[FN_LEN]="gener_pipe",
+            sFomCmdName [FN_LEN]="fom";
 
 
 /*********************************************************************/
@@ -39,15 +54,27 @@ short  ExtFunction (double F[IMAX+1], const double X[IMAX+1], const double P[NMA
 
 short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar)
 {
-  short rc=FALSE, rcp;
+  short rc=FALSE, rcp, rcf;
+
+  if (strlen(sPipeCmdName)==10)
+    AddPathAndExt(sPipeCmdName);
+  if (strlen(sFomCmdName)==3)
+    AddPathAndExt(sFomCmdName);
 
   WriteAllP   ("Pcomm.dat", mMin, mMax, nPar);
-  rcp = system("gener_pipe.exe");
+  rcp = system(sPipeCmdName);
 
   if (rcp > 0)
-  { system("Simulations.bat");
-    system("FigureOfMerit.bat");
-    rc=ReadAllF("Fcomm.dat", mMin, mMax);
+  { 
+#ifdef VT_WINDOWS
+    system("Simulations.bat");
+#else
+    system("Simulations.sh");
+#endif 
+    rcf = system(sFomCmdName);
+
+    if (rcf)
+      rc=ReadAllF("Fcomm.dat", mMin, mMax);
   }
   return rc;
 }
@@ -133,4 +160,70 @@ static short ReadAllF(const char* sFilename, const short mMin, const short mMax)
     exit(-1);
   }
 	return rc;
+}
+
+
+short AddPathAndExt(char* sCmdName)
+{
+  FILE* pFile;
+	char *pBlank, *pExt, *pSlash,
+        sPath  [FN_LEN],        
+        sCmd   [31],        
+        sBuffer[CHAR_BUF_LENGTH];
+	int   kBlank;
+  short rc=FALSE;
+
+  // open file
+	pFile = fopen("std_instr.cmd", "r");
+	if (pFile==NULL)
+	  Error("File 'std_instr.cmd' does not exist");
+
+  // skip 2 header lines and read first command line 
+	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+  fclose(pFile);
+
+  strcpy(sCmd, sCmdName);
+
+  // search for path and extension of executable
+	pBlank = strchr (sBuffer, ' ');
+	kBlank = pBlank-sBuffer;
+  StrgCopy(sPath, sBuffer, kBlank);
+	pSlash = strrchr(sPath, '/');
+
+  pExt = strstr(sPath, "Linux");
+  if (pExt==NULL)
+    pExt = strstr(sPath, "Darwin");
+  if (pExt==NULL)
+    pExt = strstr(sPath, "exe");
+
+  memset(pSlash+1, '\0', 1); 
+
+  // add path and extension to the command name, if the extension is found
+  if (pExt!=NULL)
+  { rc=TRUE;
+    pExt--;
+    sprintf(sCmdName, "%s%s%s", sPath, sCmd, pExt);
+  }
+
+  // set correct slash
+  ChangeSlash(sCmdName);
+
+  return(rc);
+}
+
+
+/**************************************************************/
+/* Change of the Slashes to the right ones, e.g. '\' to '/'   */
+/**************************************************************/
+static void ChangeSlash(char* pStr)
+{
+	int k, klen;
+
+	klen = strlen(pStr);
+	for (k=0; k < klen; k++)
+	{	if (pStr[k]=='/' || pStr[k]=='\\')
+			pStr[k]=cSlash;
+	}
 }
