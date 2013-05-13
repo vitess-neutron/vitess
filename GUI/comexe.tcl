@@ -23,6 +23,7 @@ proc lookWhosConcerned {serrep serpar serno \
 }
 
 proc unzipCom {fname} {
+  global tcl_platform
   if {$fname == ""} {return ""}
   if {[file size $fname] < 512}  {return ""}
   if {![regexp {\.([a-z]+)$} $fname r e]} {return ""}
@@ -30,6 +31,9 @@ proc unzipCom {fname} {
     if {[getSystem] == "windows"} {return "[file join [globVal ExeDirectory] gzip.exe] -cd"}
     catch {exec file $fname} res
     if [string match "*gzip compressed data*" $res] {
+      if {$tcl_platform(os) == "Darwin"} {
+        return "gzcat"
+      }
       # look if zcat is installed
       if [catch {exec which zcat}] {return ""}
       return "zcat"
