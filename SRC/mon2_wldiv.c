@@ -22,7 +22,7 @@
 
 
 static double bdiv_[BINSIZE],bwl_[BINSIZE];
-static double** bin_wldiv;
+//static double** bin_wldiv;
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   long format = 0;
   wl_min = wl_max = constrain_min = constrain_max = div_min = div_max = 0;
 
-  bin_wldiv = binyz;
+  //  bin_wldiv = binyz;
 
   BufferIndex = 0;
   p=0.0;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
       for(ddiv = 0;ddiv<(nbin_div+1); ddiv++)
 	{
 	  bdiv_[ddiv] = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
-	  bin_wldiv[dwl][ddiv] = 0.0;
+	  binyz[dwl][ddiv] = 0.0;
 	  binyzerror[dwl][ddiv]=0.;
 	  binyzcounts[dwl][ddiv]=0;
 	}
@@ -221,7 +221,7 @@ DECLARE_ABORT;
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
 	  if(((dwl>=0)&&(dwl<nbin_wl))&&((ddiv>=0)&&(ddiv<nbin_div))) {	
-	      bin_wldiv[dwl][ddiv] = bin_wldiv[dwl][ddiv] +  p;
+	      binyz[dwl][ddiv] = binyz[dwl][ddiv] +  p;
 	      bintc = bintc + p;
 	      registered=1;
 	      binyzcounts[dwl][ddiv]++;
