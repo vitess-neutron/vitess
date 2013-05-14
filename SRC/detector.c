@@ -292,6 +292,7 @@ int main(int argc, char *argv[])
           if (usage==1){      //monitor only
 	    OutNeutron.Probability = WorkNeutron.Probability;
 	    CopyVector(SP, OutNeutron.Position);
+	    RotBackVector(RotMatrix,OutNeutron.Vector);
 	  }
 	  else if (usage==2){ // grid off
 	    CopyVector(DetSignal, OutNeutron.Position);
