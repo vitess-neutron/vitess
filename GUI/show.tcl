@@ -117,15 +117,22 @@ proc checkPlotfile  {fname} {
     showText "! empty $fname"
     return 0
   }
+  # ftype 1 : x y z
+  # ftype 2 : matrix
+  set ftype 2
   while {[gets $f ins] > 0} {
     if {[string range $ins 0 0] != "#"} break
+    # check if its a "x y z" file
+    if [regexp {x\s+y\s+z} $ins] {
+      set ftype 1
+    }
   }
   close $f
   if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
     showText "! insufficient plot file"
     return 0
   }
-  return 1
+  return $ftype
 }
 
 # show 2d array coded with colors
@@ -142,6 +149,11 @@ proc show2Dfile {fname} {
   set yl {};     # y tic values
 
   gets $f ins
+
+  # skip #Monitor line
+  if [regexp {^#Monitor} $ins] {
+    gets $f ins
+  }
 
   set ll [eval list $ins]
   if [string compare "#x y z" "$ll"] {
@@ -630,13 +642,15 @@ proc plotWithTemplate {fn topt} {
       after 2000 file delete $tfn
     }
   } else {
-    # plot using with gnuplot
+    # plot with gnuplot
     set app [getPreferredPlotCmd]
     if {$app == ""} return
     set gp [getPlotCmdHandle $app]
     if {$gp == ""} return
     foreach s [split $content "\n"] {
       if {$s != ""} {
+        #dmf debug
+        #puts "pro gnu :$s:"
         puts $gp $s
       }
     }
@@ -658,7 +672,11 @@ proc plotMonFile {type v app} {
 ### plotFile
 proc showPlotFile {name {topt 0}} {
 
-  if {! [checkPlotfile $name]} return
+  set ftype [checkPlotfile $name]
+  if {$ftype == 0} return
+
+  #dmf debug
+  #puts "showPlotFile $name :$topt:  fytpe $ftype"
 
   switch $topt {
     "" - "-" - 1 {
@@ -669,7 +687,15 @@ proc showPlotFile {name {topt 0}} {
       }
     }
     2 {show2Dfile $name}
-    default {plotWithTemplate $name $topt}
+    default {
+      if {$topt == "gplot2d" && $ftype == 2} {
+        # if the file is a 2D monitor file in matrix format,
+        # gnuplot may not be used directly to plot
+        show2Dfile $name
+      } else {
+        plotWithTemplate $name $topt
+      }
+    }
   }
 }
 
