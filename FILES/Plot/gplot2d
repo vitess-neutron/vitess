@@ -1,0 +1,5 @@
+set palette defined (0 "black", 1 "red")
+set pm3d map
+splot '$PFILENAME'
+
+
