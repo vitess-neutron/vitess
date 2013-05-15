@@ -1,0 +1,22 @@
+#!/usr/bin/sh
+gnuplot -p -e "plot '$PFILENAME'"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
