@@ -70,6 +70,7 @@ ALL : \
 	"$(OD)\mon2_rdiv.exe" \
 	"$(OD)\mon_brilliance.exe" \
 	"$(OD)\velselect.exe" \
+	"$(OD)\read_in.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
 	"$(OD)\lattice_dist.exe" \
@@ -80,6 +81,9 @@ ALL : \
 	"$(OD)\spin_reset.exe" \
 	"$(OD)\capture_flux.exe" \
 	"$(OD)\runtime.exe" \
+	"$(OD)\fom.exe" \
+	"$(OD)\gener_pipe.exe" \
+	"$(OD)\opt_sim.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\chopper_fermi_parallel.exe" \
@@ -178,8 +182,16 @@ SOURCE=$(SPATH)\mirrrefl.c
 "$(IDIR)\mirrrefl.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_grad.c
+"$(IDIR)\opt_grad.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\lensetr.c
 "$(IDIR)\lensetr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_fct.c
+"$(IDIR)\opt_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\magneticmap.c
@@ -210,20 +222,28 @@ SOURCE=$(SPATH)\nxs.c
 "$(IDIR)\nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\bender_inter_data.c
-"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\sghkl.c
 "$(IDIR)\sghkl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\bender_inter_data.c
+"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\threadHelper.c
 "$(IDIR)\threadHelper.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_metro.c
+"$(IDIR)\opt_metro.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\src_modchar.c
 "$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_grad_mc.c
+"$(IDIR)\opt_grad_mc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\mon2D.cpp
@@ -232,6 +252,14 @@ SOURCE=$(SPATH)\mon2D.cpp
 
 SOURCE=$(SPATH)\sgclib.c
 "$(IDIR)\sgclib.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\pipe_fct.c
+"$(IDIR)\pipe_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\calc_sim_fom.c
+"$(IDIR)\calc_sim_fom.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ma_geom.c
@@ -319,6 +347,13 @@ SOURCE=$(SPATH)\velselect.c
 "$(OD)\velselect.exe" : "$(OD)" $(TOOL) "$(OD)\velselect.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\velselect.pdb" /out:"$(OD)\velselect.exe" "$(IDIR)\velselect.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\read_in.c
+"$(IDIR)\read_in.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\read_in.exe" : "$(OD)" $(TOOL) "$(OD)\read_in.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\read_in.pdb" /out:"$(OD)\read_in.exe" "$(IDIR)\read_in.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\writeout.c
 "$(IDIR)\writeout.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -388,6 +423,27 @@ SOURCE=$(SPATH)\runtime.c
 
 "$(OD)\runtime.exe" : "$(OD)" $(TOOL) "$(OD)\runtime.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\runtime.pdb" /out:"$(OD)\runtime.exe" "$(IDIR)\runtime.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\fom.c
+"$(IDIR)\fom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\fom.exe" : "$(OD)" $(TOOL) "$(OD)\fom.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\fom.pdb" /out:"$(OD)\fom.exe" "$(IDIR)\fom.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\gener_pipe.c
+"$(IDIR)\gener_pipe.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\gener_pipe.exe" : "$(OD)" $(TOOL) "$(OD)\gener_pipe.obj" "$(OD)\pipe_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\gener_pipe.pdb" /out:"$(OD)\gener_pipe.exe" "$(IDIR)\gener_pipe.obj" $(TOOL) "$(OD)\pipe_fct.obj" 
+
+SOURCE=$(SPATH)\opt_sim.c
+"$(IDIR)\opt_sim.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
@@ -708,8 +764,8 @@ SOURCE=$(SPATH)\sample_nxs.c
 "$(IDIR)\sample_nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj" "$(OD)\sgsi.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj" "$(OD)\sgsi.obj" 
+"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
 
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
@@ -787,8 +843,8 @@ SOURCE=$(SPATH)\bender.c
 "$(IDIR)\bender.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\bendertr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj"
+"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
+	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
 
 SOURCE=$(SPATH)\visual.c
 "$(IDIR)\visual.obj" : $(SOURCE)

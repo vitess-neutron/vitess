@@ -110,27 +110,25 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
 proc checkPlotfile  {fname} {
   if [catch {open $fname r} f] {
     showText "! can't open $fname"
-    return 0
+    return ""
   }
   if [eof $f] {
     close $f
     showText "! empty $fname"
-    return 0
+    return ""
   }
-  # ftype 1 : x y z
-  # ftype 2 : matrix
-  set ftype 2
+  set ftype matrix
   while {[gets $f ins] > 0} {
     if {[string range $ins 0 0] != "#"} break
     # check if its a "x y z" file
     if [regexp {x\s+y\s+z} $ins] {
-      set ftype 1
+      set ftype xyz
     }
   }
   close $f
   if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
     showText "! insufficient plot file"
-    return 0
+    return ""
   }
   return $ftype
 }
@@ -532,37 +530,43 @@ proc getFileDimensions {tfn itemarray} {
   upvar $itemarray la
   if [catch {open $tfn r} f] return
   # count skip lines in the beginning
+  set r 0
   set skip 0
   set line ""
   while {[gets $f line] >= 0} {
-    if {[string range $line 0 0] != "\#"} break
+    if {[string range $line 0 0] != "\#"} {
+      set r 1
+      break
+    }
     incr skip
   }
   set la(PSKIP) $skip
-  # find number of items
-  if [regexp "," $line] {
-    set $c [llength [split $line ,]]
-    set la(PSEP) ,
-  } else {
-    set la(PSEP) " "
-    set c 0
-    foreach i [split $line] {
-      if {$i != ""} {incr c}
+  set la(PSEP) " "
+  set c 0
+  if {$r} {
+    # find number of items
+    if [regexp "," $line] {
+      set $c [llength [split $line ,]]
+      set la(PSEP) ,
+    } else {
+      foreach i [split $line] {
+        if {$i != ""} {incr c}
+      }
+    }
+    set r 1
+    while {[gets $f line] >= 0} {
+      incr r
     }
   }
-  set la(PCOLS) $c
-
-  set r 0
-  while {[gets $f line] >= 0} {
-    incr r
-  }
-  set la(PROWS) $r
   close $f
+  set la(PCOLS) $c
+  set la(PROWS) $r
 }
 
 proc macroExpand {contentvar itemsvar fn} {
   upvar $contentvar content
   upvar $itemsvar items
+
   # first find items present in content
   foreach item {PATH FILENAME MODULE SKIP ROWS COLS} {
     set s \\\$
@@ -673,7 +677,7 @@ proc plotMonFile {type v app} {
 proc showPlotFile {name {topt 0}} {
 
   set ftype [checkPlotfile $name]
-  if {$ftype == 0} return
+  if {$ftype == ""} return
 
   #dmf debug
   #puts "showPlotFile $name :$topt:  fytpe $ftype"
@@ -688,7 +692,7 @@ proc showPlotFile {name {topt 0}} {
     }
     2 {show2Dfile $name}
     default {
-      if {$topt == "gplot2d" && $ftype == 2} {
+      if {$topt == "gplot2d" && $ftype == "matrix"} {
         # if the file is a 2D monitor file in matrix format,
         # gnuplot may not be used directly to plot
         show2Dfile $name
