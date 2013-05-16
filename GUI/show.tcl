@@ -152,7 +152,7 @@ proc show2Dfile {fname} {
   if [regexp {^#Monitor} $ins] {
     gets $f ins
   }
-
+  
   set ll [eval list $ins]
   if [string compare "#x y z" "$ll"] {
     set xl $ll;	# first line and first column are tic values
@@ -160,8 +160,12 @@ proc show2Dfile {fname} {
       incr rows
       set ll [eval list $ins]
       lappend yl [lindex $ll 0]
-      lappend a [set inp [lrange $ll 1 end]]
-      if {$rows == 2} {set cols [llength $inp]}
+      if {$rows == 2} {
+        lappend a [set inp [lrange $ll 1 end]]
+        set cols [llength $inp]
+      } else {
+        lappend a [lrange $ll 1 end]
+      }
     }
   } else {
     readXYZFile f rows cols xl yl a
@@ -182,7 +186,7 @@ proc show2Dfile {fname} {
   set canvaswidth 10.0
   set canvasheight [expr $canvaswidth * $rows / $cols]
   catch {destroy $w}
-  global bgColor
+  global bgColor gnuColorTable
   toplevel $w -background $bgColor
   wm title $w [set tit "Y-Z Plot [file tail $fname]"]
   wm iconname $w $tit
@@ -217,11 +221,32 @@ proc show2Dfile {fname} {
   $cc create text $mpos 0.4c -anchor n -text "value range"
   $cc create text $rpos 0.4c -anchor n -text [format %8.3g $max]
 
-  set colist {}
+  # read color table
+  upvar #0 gnuColorTable colist
+  if {! [info exists colist]} {
+    set colist {}
+    # read colors from file
+    set colfn [file join [globVal SourceDirectory] FILES gnucolor.txt]
+    if [catch {open $colfn r} f] {
+       # black to red color table
+      for {set i 0} {$i < 256} {incr i} {
+        lappend colist [format "#%02x0000" $i]
+      }
+    } else {
+      while {[gets $f line] >= 0} {
+        scan $line "%d%d%d" r g b
+        lappend colist [format "#%02x%02x%02x" $r $g $b]
+      }
+      close $f
+    }
+  }
+
+  # plot color bar
   set x1 0
   set x2 [set xdelta [expr $canvaswidth / 256]]
   for {set i 0} {$i < 256} {incr i} {
-    lappend colist [set v [format "#%02x0000" $i]]
+    #lappend colist [set v [format "#%02x0000" $i]]
+    set v [lindex $colist $i]
     $cc create rectangle ${x1}c 0 ${x2}c $hc -fill $v -outline ""
     set x1 $x2
     set x2 [expr $x1 + $xdelta]
