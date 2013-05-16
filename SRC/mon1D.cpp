@@ -214,11 +214,21 @@ void Mon1D::Init(int argc, char* argv[])
     }
 
 
+  bool multipleFiles = false;
+  int numberFiles = 0;
+
+  for (int ii = 0; ii < 3; ii++) {
+    if (xParam[ii] > 0) numberFiles++;
+  }
+
+  if (numberFiles > 1) multipleFiles = true;
+
   for (int ii = 0; ii < 3; ii++) {
 
     if (xParam[ii] < 1) continue;
 
-    string fullFileName = fMonitorFilename + "_" + sParameterNames[xParam[ii]-1] + ".mon";
+    string fullFileName = fMonitorFilename;
+    if (multipleFiles) fullFileName = fullFileName + "_" + sParameterNames[xParam[ii]-1] + ".mon";
     
     if((fMonitor[ii] = fopen(fullFileName.c_str(), "w"))==NULL)
       {
