@@ -370,6 +370,7 @@ static void setCompressBufLen() {
   --G  gravitation
   --J  active trace points
   --L  logfile
+  --N  module number 1,2,...
   --p  progress file
   --P  parameter directory
   --t  test mode
@@ -447,6 +448,10 @@ void Init(int argc, char **argv, VtModID eModule)
     case 'L':                   // output file if other than stderr
       marg[2] = arg;
       iModuleNo = DetModNo(arg);
+      break;
+
+    case 'N':                   // module number
+      iModuleNo = atol(arg);
       break;
 
     case 'p':                   // progress file
@@ -1846,11 +1851,8 @@ void   WriteTraceLine(Neutron* pNeutron)
 static long DetModNo(const char* pArg)
 {
   char* pos;
-  long iMod;
-
-  pos = (char*) strrchr(pArg, 'g');
-  pos++;
-  iMod= atol(pos);
-
-  return iMod;
+  if ((iModuleNo <= 0) && pArg &&
+      (pos = (char*) strrchr(pArg, 'g')))
+    return atol(pos+1);
+  return iModuleNo;
 }
