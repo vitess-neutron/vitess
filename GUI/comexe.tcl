@@ -248,16 +248,17 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
 
     set logopt $logf$i
+    set imore " $insert --N$i --L"
     switch $mode {
       bat {
-        set imore  " $insert --LP:\\$logtmp$i"
+        append imore P:\\$logtmp$i
         lappend usedIdices $i
       }
       sh - tcl - pl - py - grd {
-        set imore  " $insert --L\$\{L\}$i"
+        append imore \$\{L\}$i
         lappend usedIdices $i
       }
-      default {set imore " $insert --L$logopt"}
+      default {append imore $logopt}
     }
     switch $VisState {
       1 - 3 {
