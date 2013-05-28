@@ -674,7 +674,7 @@ set detectorESET {
     {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 0}
     {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 0}
     {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 0}
-    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet constant efficieny. Ignored in case of efficiency file." "" e} 0 1 0}
+    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet probability of detection within [0,thickness], i.e. of neutrons perpendicular to detector surface. Ignored in case of efficiency file." "" e} 0 1 0}
     {}
     {eff_file pareditablefile ""  {"lambda\nefficiency" "File containing two columns: wavelength and efficiency. If an efficiency file is given, absorber/converter type is ignored." "" E}}
     {}
