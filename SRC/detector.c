@@ -128,7 +128,8 @@ int main(int argc, char *argv[])
     ScatteringProb=0,            // probability of interaction
     N=0,                         // particle density
     sigma=0,                     // absorption cross-section
-    NSigma=0;                    // for const. efficieny
+    NSigma=0,                    // for const. efficieny
+    FluxDetected=0;              // detected flux
   const double kB=1.3806504E-23; // boltzman constant in [JK-1]
 
 
@@ -281,6 +282,7 @@ int main(int argc, char *argv[])
           OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
           OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
 
+
 	  // tag detected neutrons for detector array 
 	  if(array)
 	    OutNeutron.Color+=10000;
@@ -311,6 +313,7 @@ int main(int argc, char *argv[])
 	      OutNeutron.Color += addColor;
 	    WriteNeutron(&OutNeutron);	
 	    NumDetected++;
+	    FluxDetected+=OutNeutron.Probability;
 	    if(!array && DetectorOutputFileName)
 	      fprintf(outFile,"\n   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color);
 	  }
@@ -346,7 +349,7 @@ int main(int argc, char *argv[])
   } //while((ReadNeutrons())!= 0)
 
 
- fprintf(LogFilePtr,"\n Neutrons detected in this detector: %ld \n",NumDetected);
+  fprintf(LogFilePtr,"\n Neutrons detected in this detector: %ld trajectories (%11.4e n/s) \n",NumDetected,FluxDetected);
 
  my_exit:
   /* Do module specific cleanups */
