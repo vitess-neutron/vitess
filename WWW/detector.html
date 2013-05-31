@@ -128,7 +128,8 @@ shifted to the 3-dimensional pixel center. Other than with the <i>monitor only</
 mode, the resolution is taken into account; if the resolution is set to 0 in
 all dimensions, the <i>grid off</i> mode yields the same output position as
 the <i>monitor only</i> mode but with the neutron weight changed according to
-the detection probability. </p>
+the detection probability. The neutron direction is set to the normalized
+vector of the written position (like in the <i>usage normal</i> mode). </p>
 
 <p>
 <u>Detector array</u> <br>
@@ -137,7 +138,12 @@ the detector module several times in a row and ticking the <i>array</i> box for
 all but the last detector part. The first and intermediate detector parts will
 then pass neutrons that don't intersect with them on to the next detector
 module. The last part of the detector array discards neutrons that have not been
-detected by any of the detector parts. <br>
+detected by any of the detector parts. Neutrons detected in different
+sub-detectors of an array can be distinguished by usage of
+the <i>add color</i> value. Note that this <b>adds</b> the given value to the color
+property of the neutrons to allow distinction on several levels; if only
+a seperation of different detector parts is needed, make sure the color of
+incoming neutrons is the same (e.g. set it to 0 with the module <i>spin_reset</i>). <br>
 <img src="DetectorArray.png" height="150" width="300">
 <caption>Figure 2: example of an detector array consiting of 4 detector parts,
 two <i>flat</i> and two <i>cylindrical</i></caption>
@@ -194,7 +200,7 @@ aware that these are not independent events. </p>
   detected, other neutrons are discarded. -1 means all neutrons are treated.</p>
 <p><i>add color</i> <br>
 &nbsp;If a value other than -1 is given, the colour of detected neutrons is
-  increased by the given value. -1 means no change to the colour. </p>
+  <b>increased</b> by the given value. -1 means no change to the colour. </p>
 <p><i>phi</i> <br>
 &nbsp;Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle
 between the projection of the position vector to the yz-plane and the +y-axis.
