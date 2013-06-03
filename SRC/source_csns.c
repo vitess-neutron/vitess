@@ -18,16 +18,20 @@ FctTable  stFluxT[NUM_MOD],  /* data of time distr.            */
           stFluxL[NUM_MOD],  /* data of wavelength distr.      */
           stFluxLT[NUM_MOD]; /* data of wavelength-time distr. */
 extern
-short     nNumMod,         /* number of moderators in moderator system */
-          imod;            /* index of moderators in moderator system  */
+short     iDataVsn,          /* version of the data base for the source characteristics */
+          nNumMod,           /* number of moderators in the moderator system            */
+          imod;              /* index of moderators in the moderator system             */
 extern
-Moderator stMod  [NUM_MOD]; /* moderator data            */
+Moderator stMod  [NUM_MOD];  /* moderator data            */
 
-/* global variables */
+/* static variables */
 /* ---------------- */
 static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
               s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
 
+
+/* functions */
+/* --------- */
 
 /* dTemp      : [K]  eff. moderator temperature 
    nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED

@@ -22,7 +22,6 @@
 #define CWS       1
 #define SPSS      2
 #define LPSS      3
-#define LPSS_OPT  4
 
 #define POISONED   1   /* moderator decoupled poisoned        */
 #define DECOUPLED  2   /* moderator decoupled unpoisoned      */
@@ -117,6 +116,7 @@ double TotalFU      (const double dTemp,   const short  eSource,  const short  e
 double EssModFU     (const double dLambda, const double dTime,    const double dLength);
 
 double Maxwellian   (const double dLambda, const double dModTemp);
+double LeakageFct   (const double dLambda);
 double NotMaxwell   (const double dLambda, const double dParam);
 double UserLambdaDis(const double dLambda, const double dModTemp);
 
