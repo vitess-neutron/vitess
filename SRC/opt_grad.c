@@ -256,14 +256,14 @@ short OptGrad()
  
 /***********************************************************/
 /* Function to read optimization control parameters from file 
-/*  Input : sIniFile: Name of the file 
-/*  Output: *pOut  :  control parameter for output
+    Input : sIniFile: Name of the file 
+    Output: *pOut  :  control parameter for output
             *pNZmax:  max. number of fitting steps
             *pNDmax:  max. number of dampings     
             *pDamp :  damping factor              
             *pTfac :  fraction Q-reduction in original to linearized function
             *pQverm:  ratio of Q-reduction within 1 step to stop optimization
-            *pQmin :  Q-value to stop fitting   
+            *pQmin :  Q-value to stop fitting              */
 /***********************************************************/
 short ReadIniFile(short*  pOut,  short*  pNZmax, short*  pNDmax, 
                   double* pDamp, double* pTfac,  double* pQverm,  double* pQmin,  

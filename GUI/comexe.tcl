@@ -219,7 +219,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
       sm_ensemble {set com "sm_ensemble$par$sys"}
-      source_ESS_2012 {set com "source$sys -S4"}
+      source_ESS_2012 {set com "source$sys -S3"}
       source_ESS_LPTS {set com "source$sys -S3"}
       source_HMI  {set com "source$sys -S1"}
       source_FRM2 {set com "source$sys -S1"}

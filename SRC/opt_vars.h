@@ -14,7 +14,7 @@ extern double P00 [NMAX+1],         // initial value of vector P
               X[IMAX+1],            // parameter X_1 ... X_anz (e.g. temperature) 
               Y[IMAX+1],            // measured data Y_1 ... Y_anz
               W[IMAX+1];            // weight of measuring points 
-extern long   nPts,                 // number of measuring points 
+extern int    nPts,                 // number of measuring points 
               iStep;                // actual optimization step
 extern short  nPar,                 // number of fit parameters
               nSim,                 // number of simulation results found in sFCommFilename

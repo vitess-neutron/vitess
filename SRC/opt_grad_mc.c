@@ -313,8 +313,8 @@ short OptGradMC()
  
 /***********************************************************/
 /* Function to read fit control parameters from file 
-/*  Input : sIniFile: Name of the file               
-/*  Output: *pOut  :  control parameter for output
+    Input : sIniFile: Name of the file               
+    Output: *pOut  :  control parameter for output
             *pNZmax:  max. number of fitting steps
             *pNDmax:  max. number of dampings     
             *pTD0  :  initial factor t in optimization step size between lin. and real function
@@ -323,7 +323,7 @@ short OptGradMC()
             *pQverm:  ratio of Q-reduction within 1 step to stop optimization
             *pQmin :  Q-value to stop fitting    
             *pRDelP:  factor by which DelP is reduced in case of deterioration in both directions
-    Return: TRUE/FALSE
+    Return: TRUE/FALSE                                     */
 /***********************************************************/
 short ReadIniFile(short*  pOut, short*  pNZmax, short*  pNDmax, 
                   double* pTD0, double* pDamp,  double* pTfac,  double* pQverm, double* pQmin, double* pRDelP,  
