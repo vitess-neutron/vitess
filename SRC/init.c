@@ -93,8 +93,8 @@ double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of
          RotMatrixM[3][3],
          RotMatrixMX[3][3], 
          RotMatrixS[3][3];   /*      matrix to rotate from abs. co-ordinate system to co-ordinate system of last section   */
-long     nModuleNo=0,        /*      number of the previous module, increased in Cleanup() */
-         iModuleNo=0,        //      number of this module determined from parameter for log file
+long     nModuleNo=0,        /*      number of the actual module, set in Init() or Cleanup() */
+         iModuleId=0,        //      ID of this module
          lastIDShift=0;      // Shift of the ID needed for visualisation in case modules create additional trajectories
 int      powerIDShift=9;     // Needed to include the module number in the overall neutron ID avoiding dublication 
 VectorType vNull={0.0,0.0,0.0},
@@ -133,7 +133,6 @@ static void  WriteTraceLine(Neutron* Neut);
 static int   readCompressedNeutrons();
 static void  writeCompressed();
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
-static long  DetModNo(const char* pArg);
 
 
 /**************************************************************/
@@ -447,11 +446,10 @@ void Init(int argc, char **argv, VtModID eModule)
 
     case 'L':                   // output file if other than stderr
       marg[2] = arg;
-      iModuleNo = DetModNo(arg);
       break;
 
     case 'N':                   // module number
-      iModuleNo = atol(arg);
+      iModuleId = atol(arg);
       break;
 
     case 'p':                   // progress file
@@ -617,14 +615,11 @@ void Init(int argc, char **argv, VtModID eModule)
   /* Read instrument data */
   if (bVisTraj)
   { if (eModule!=VT_SOURCE)
-    { nModuleNo=ReadInstrData(iModuleNo, BegPosM, &BlnLen, &RotZ, &RotY);
-      if (nModuleNo!=(iModuleNo-1))
-      { sprintf(text, "Module %ld could not be found in 'instrument.inf'", iModuleNo);
+    { nModuleNo=ReadInstrData(iModuleId, BegPosM, &BlnLen, &RotZ, &RotY);
+      if (nModuleNo==-1)
+      { sprintf(text, "Module %ld could not be found in 'instrument.inf'", iModuleId);
         Error(text);
       }
-	  else
-	  {  nModuleNo = iModuleNo;
-	  }
       CopyVector(BegPosM, BegPosS);
     }
     else
@@ -670,20 +665,20 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   /* update 'instrument.inf' */
   if (!bVisTraj)
   { if (stPicture.eModule == VT_SOURCE) 
-    { nModuleNo=0;
+    { nModuleNo=1;
       BegPosM[0]=BegPosM[1]=BegPosM[2]=0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
     } 
     else 
-    { if (bTest) Wait(0.75*iModuleNo);
+    { if (bTest) Wait(0.75*iModuleId);
       nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY);
     }
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
     
     ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
-    nModuleNo++;
+    // nModuleNo++;
     Shift[0]= dShiftX;
     Shift[1]= dShiftY;
     Shift[2]= dShiftZ;
@@ -695,11 +690,12 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     RotZ   += dHorizAngle;
     RotY   += dVertAngle;
 
-    fprintf(LogFilePtr, "writing instr data, module %ld\n", nModuleNo);
+    // fprintf(LogFilePtr, "writing instr data, module %ld\n", nModuleNo);
     WriteInstrData(EndPos);
   }
-  if (bVisInstr) {
-    Shift[0]= dShiftX;
+
+  if (bVisInstr) 
+  { Shift[0]= dShiftX;
     Shift[1]= dShiftY;
     Shift[2]= dShiftZ;
     WriteGeomData(BegPosM, LengthVector(Shift));
@@ -734,7 +730,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     dCntRateErr = dProbTotal[0];
 
   fprintf(LogFilePtr, "%2ld number of trajectories read         : %11.0f\n", nModuleNo, NumNeutRead);
-  fprintf(LogFilePtr, "   number of trajectories written      : %11.0f\n", NumNeutWritten);
+  fprintf(LogFilePtr, "%2ld number of trajectories written      : %11.0f\n", iModuleId, NumNeutWritten);
   fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], dCntRateErr);
   for (l=1; l<=MAX_COL; l++)
   { if (dProbTotal[l] > 0)
@@ -947,22 +943,24 @@ void WriteNeutron(Neutron *OutNeutron)
 
 /**********************************************************************************/
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
+/* 'ReadInstrData()'  reads these data                                            */
 /* 'WriteGeomData()   writes data to draw the instrument                          */
 /*  WriteWWP()        writes an intersection point to the trajectory file         */
-/* 'WriteInstrData()' writes data that other modules may need                     */
+/* 'WriteSimData()'   writes data that other modules may need                     */
 /*                    (meas.time, wavelength, frequency)                          */
-/* 'ReadInstrData()'  reads these data                                            */
+/* 'ReadSimData()'    reads these data                                            */
 /**********************************************************************************/
 
 void WriteInstrData(VectorType Pos)
 {
   FILE*  pFile=NULL;
   char   *pBuffer;
+  long   iModId=iModuleId;
 
   if (nModuleNo==0) {
 
-    // source module writes header
-
+    // source module writes header and line number '0'
+    iModId=0;
     pFile = fopen( FullParName(sInstrumentInf), "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
@@ -1009,7 +1007,7 @@ void WriteInstrData(VectorType Pos)
     char cNF=' ';
     if (bOldFrame) cNF='F';
     fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
-                   nModuleNo, stPicture.eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
+                   iModId, stPicture.eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
                    180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
     /* mark end of actual part */
     if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
@@ -1279,7 +1277,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   }
 }
 
-long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRotZ, double* pRotY)
+long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, double* pRotY)
 {
   FILE*  pFile=NULL;
   int    nModuleID;
@@ -1296,45 +1294,52 @@ long ReadInstrData(long iModuleNo, VectorType Pos, double* pLength, double* pRot
 
   if (pFile)  
   {
-    if (iModuleNo > 0) {
-      // module no is given, read its description row
-      int found=0;
-      while (ReadLine(pFile, sLine, sizeof(sLine)-1))
-        if (sscanf(sLine, "%ld", &nModNo)==1 && nModNo==(iModuleNo-1)) 
-          {
-            found = 1;
-            break;
-          }
-      if (!found) {
-        fclose(pFile);
-        return 0;
+    if (iModId > 0) 
+    // module ID is given, search for it and return previous line
+    { short found=FALSE;
+      do
+      { ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+        sscanf(sBuffer, "%ld", &No);
+        if (iModId == No) 
+        {  found = TRUE;
+        }
+        else 
+        {  nModNo++;
+          strcpy(sLine, sBuffer);
+        }
+      }
+      while (!found && strlen(sBuffer) > 0);
+
+      if (!found) 
+      { fclose(pFile);
+        return -1;
       }
       
     } 
-    else if (InputFilePtr==NULL || InputFilePtr==stdin) {
-
-    // otherwise read last line
-
+    else if (InputFilePtr==NULL || InputFilePtr==stdin) 
+    // otherwise: read last line if this is the first part of the instrument (= no input file)
+    {
       /* Read last line and copy content, except: lines containing F in 87. column, they have not a new frame) */
-      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1)) {
-        sscanf(sBuffer, "%ld", &nModNo);
+      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1)) 
+      { nModNo++;
         if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLine, sBuffer);
       }
 
-    } else {
-
-      // read until end of previous part, if input file is used
+    } 
+    else 
+    // read until end of previous part, if input file is used
+    {
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
-      { if (memcmp(sBuffer, "EOP", 3)==0)
-        {  nModNo = No;
-           strcpy(sLine, sLineH);
+      { 
+        if (memcmp(sBuffer, "EOP", 3)==0)
+        {  strcpy(sLine, sLineH);
         }
         else
-        { sscanf(sBuffer, "%ld", &No);
+        { nModNo++;
           if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLineH, sBuffer);
         }
       }
-      if (strlen(sLine)==0) {nModNo = No; strcpy(sLine, sLineH);}
+      if (strlen(sLine)==0) {strcpy(sLine, sLineH);}
     }
 
     // extract data from line and change to radians and cm
@@ -1846,13 +1851,4 @@ void   WriteTraceLine(Neutron* pNeutron)
       fclose (pFile);
     }
   }
-}
-
-static long DetModNo(const char* pArg)
-{
-  char* pos;
-  if ((iModuleNo <= 0) && pArg &&
-      (pos = (char*) strrchr(pArg, 'g')))
-    return atol(pos+1);
-  return iModuleNo;
 }

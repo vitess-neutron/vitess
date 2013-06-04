@@ -235,7 +235,7 @@ void OwnInit(int argc, char *argv[])
       sscanf(arg, "%lf", &OutputAngleVert);
       break;
     case 'S':
-      sscanf(arg, "%d", &mirrMaterial);
+      sscanf(arg, "%hd", &mirrMaterial);
       break;
 
       // Visual data

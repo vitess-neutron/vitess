@@ -102,7 +102,7 @@ short Metropolis()
     case VT_CSTR_STD : strcpy (sConstrText, "standard constraints"); break;
     default   : Error("Wrong parameter for constraints");
   }
-  fprintf(LogFilePtr, "\n%s\nmax. steps :%6ld\nwriteout   :%6ld %5ld\nSigma      =%10.3f\nChi ratio  =%10.3f\nQ_min      =%15.3e\nQ_limit    =%15.3e\n\n",
+  fprintf(LogFilePtr, "\n%s\nmax. steps :%6ld\nwriteout   :%6hd %5hd\nSigma      =%10.3f\nChi ratio  =%10.3f\nQ_min      =%15.3e\nQ_limit    =%15.3e\n\n",
   		                sConstrText, mSteps, nStpOut, nStpMin, Sigma, Qverm, Qmin, Qlimit);
   
   for (j=1; j<=nPar; j++)
@@ -137,7 +137,7 @@ short Metropolis()
       /* calculate chi square of each parameter set and take the set with the lowest chi */
       CalcAllFcts(1, nTstPar);
       ChiQN = 1.0e99;
-      mOpt  = 999999;
+      mOpt  = 9999;
       for (m=1; m<=nTstPar; m++)
       { 
         ChiQT = ChiSquared(arF[m], Sigma, OFF);
@@ -343,7 +343,7 @@ LocalMin(const VtCheckMode eMode, const double  QT, const double Q0, const doubl
   /* calculate average (if leaving local minimum) */
   if (NZloc > 4 && (eMode==VT_ADD && Q0 < Qlimit && QT > Qlimit  ||  eMode==VT_EXIT))
   {	
-    fprintf(LogFilePtr, "\n%d steps within local minimum:\n", NZloc);
+    fprintf(LogFilePtr, "\n%ld steps within local minimum:\n", NZloc);
     for (j=1; j<=nPar; j++)
     { P_ave = SP1[j]/PSum;
       P_var = SP2[j]/PSum - sq(P_ave);
@@ -358,7 +358,7 @@ LocalMin(const VtCheckMode eMode, const double  QT, const double Q0, const doubl
   return;
 }
 
-/***********************************************************/
+/*******************************************************************************************/
 /* Function to read optimization control parameters from file 
    Input : sIniFile:  Name of the file 
    Output: *pOut   :  control parameter for output 
@@ -370,8 +370,8 @@ LocalMin(const VtCheckMode eMode, const double  QT, const double Q0, const doubl
            *pSigma :  standard deviation of a measurement value    
            *pQverm :  ratio of Q-reduction within 1 step to stop optimization
            *pQmin  :  Q-value to stop optimization
-           *pQlimit:  error square sum that determines border of local minimum to be noted
-/***********************************************************/
+           *pQlimit:  error square sum that determines border of local minimum to be noted */
+/*******************************************************************************************/
 short ReadIniFile(short*  pOut,   short*  pTstPar, VtConstr* pConstr, long*   pSteps, short*  pStpOut, short* pStpMin, 
                   double* pSigma, double* pQverm,  double*   pQmin,  double* pQlimit, 
                   const char* sIniFile)
@@ -396,8 +396,8 @@ short ReadIniFile(short*  pOut,   short*  pTstPar, VtConstr* pConstr, long*   pS
 				case 'n': *pTstPar = (short) atoi(sParameter); break;
         case 'c': *pConstr = (VtConstr) atoi(sParameter); break;
 				case 's': *pSteps  = atoi(sParameter); break;
-				case 'o': *pStpOut = atoi(sParameter); break;
-				case 'd': *pStpMin = atoi(sParameter); break;
+				case 'o': *pStpOut = (short) atoi(sParameter); break;
+				case 'd': *pStpMin = (short) atoi(sParameter); break;
 				case 'g': *pSigma  = atof(sParameter); break;
 				case 'r': *pQverm  = atof(sParameter); break;
 				case 'm': *pQmin   = atof(sParameter); break;

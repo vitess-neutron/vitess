@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   int         i,                // index of trajectories
               Irep=0,           // counter for number of repetitions
               rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
-  short       Nt;               // number of trajectories identified
+  short       Nt=0;             // number of trajectories identified
   char        sLine[256];       // one line in input file
   Neutron     InNeutron;
 
@@ -91,7 +91,6 @@ int main(int argc, char **argv)
   }
   
   // Do module specific cleanups
- my_exit:
   OwnCleanup();
   
   // Do the general cleanup
@@ -169,8 +168,8 @@ void OwnCleanup()
 // ----------------------
 short ScanVitessTraj(Neutron* pNeutron, const char* sLine)
 {
-  int rc=0;
-	char*   form;
+  int     rc=0;
+	char*   form=NULL;
 
   switch (eDatFormat)
   {
@@ -228,7 +227,7 @@ short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine)
 	// initialization
   InitNeutron(pNeutron);			                      
 
-  rs=sscanf(sLine, "%le %le %le %le %le %le %le %le %le %le %le", 
+  rs=sscanf(sLine, "%le %le %le %le %le %le %le %le %le", 
                    &pNeutron->Position[0], &pNeutron->Position[1], &pNeutron->Position[2], 
                    &pNeutron->Vector[0],   &pNeutron->Vector[1],   &pNeutron->Vector[2], 
                    &energy,                &pNeutron->Probability, &pNeutron->Time); 
