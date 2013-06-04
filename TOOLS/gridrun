@@ -119,6 +119,8 @@ batchopt batcharg    additional arguments for the SGE batch system like -l cpu=8
 options may be
 -p number            number of parallel pipes to start
 -m                   do not merge neutron trajectory output files
+-r                   repeat random seed of source module to following modules
+                     default: --Z values from grd file
 --v=mode             verbose mode (0:default,silence  1:show some actions 2:DEBUG)
 --nodes=node-list    list of names of queues to be used
                      enclose lists if more than one queue given, like 'all.q@node28 all.q@node29'
@@ -161,7 +163,7 @@ my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_f
     $grid_mod_dir, $grid_work_dir, $submit_mode, $ssh_shell,
     $verbose, $force_delete,
     $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories,
-    $run_nr, $abort_run, $delete_run,
+    $run_nr, $abort_run, $delete_run, $repeatseed,
     $pipe_str,
     @Node,  @Pipe, @VBinary, @VFile, @BashOption,
     %Batcharg);
@@ -214,6 +216,8 @@ while ($_ = shift) {
       } elsif ($opt eq 'merge') {
         $op_mode = 'finalize';
         $run_nr = $arg;
+      } elsif ($opt eq 'r') {
+        $repeatseed = 1;
       } elsif ($opt =~ /^traj/) {
         $trajectories = $arg;
       } elsif ($opt eq 'v') {
@@ -858,28 +862,31 @@ sub readGrdFile {
   # - the PRNG seed of the source module
   # - and may be binaray names
 
-  $_ = shift @Pipe;  # first module command
-
-  # reduced number of neutrons, as we have parallel pipes
-  s/ -n$neutrons/ NNNNN/;
-  # individual PRNG seed, to be filled in later
-  s/ --Z[^ ]+ / ZZZZZ /;
-
-  if ($rep) {
-    my @OPipe = @Pipe; # remember the rest
-    @Pipe = ();  # construct a new array
-    do {
+  my @OPipe = @Pipe; # remember the pipe
+  @Pipe = ();  # to construct a new array
+  my $firstmodule = 1;
+  my (%VB);
+  while ($_ = shift @OPipe) {
+    # reduced number of neutrons, as we have parallel pipes
+    s/ -n$neutrons/ NNNNN/ if $firstmodule;
+    # individual PRNG seed, to be filled in later
+    s/ --Z[^ ]+ / ZZZZZ / if $firstmodule || $repeatseed;
+    $firstmodule = 0;
+    if ($rep) {
       @C = split;
+      # correct sysid in a shift/replace/unshift sequence
       $_ = shift @C;
       s/$rep$/$sysid/;
       unshift @C, $_;
       push @Pipe, "@C";
+      # remember the name of the binary
       /^\$V\/(.+)$/;
-      push @VBinary, $1;
-    } while ($_ = shift @OPipe);
-  } else {
-    unshift @Pipe, $_;
+      $VB{$1} = 1;
+    } else {
+      push @Pipe, $_;
+    }
   }
+  @VBinary = keys %VB if $rep;
 
   $pipe_str = join(' | ', @Pipe);
 
@@ -1017,7 +1024,7 @@ sub createCommandfiles {
     print OF "$_\n" foreach @BashOption;
     # replace random seed of source module
     $_ = $pipe_str;
-    s/ZZZZZ/--Z$i/;
+    s/ZZZZZ/--Z$i/g;
     # insert reduced number of neutrons
     s/NNNNN/-n$pn/;
 
