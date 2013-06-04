@@ -18,11 +18,6 @@
 #include "opt_fct.h"
 #include "opt_vars.h"
 
-/*********************************************/
-/* static variables                          */
-/*********************************************/
-static char   sBuffer[BUF_LEN+1]="";
-
 
 /***********************************************************/
 /* Function to deliver calculated function or derivative   */
