@@ -183,6 +183,7 @@ while ($_ = shift) {
       last;
     }
     if (/^-([a-zA-Z]+)=(.+)/) {
+      # -- options
       my $opt = lc($1);
       &usage if $_ eq 'help' || $_ eq 'h';
       # delete string quotes
@@ -216,8 +217,6 @@ while ($_ = shift) {
       } elsif ($opt eq 'merge') {
         $op_mode = 'finalize';
         $run_nr = $arg;
-      } elsif ($opt eq 'r') {
-        $repeatseed = 1;
       } elsif ($opt =~ /^traj/) {
         $trajectories = $arg;
       } elsif ($opt eq 'v') {
@@ -228,6 +227,7 @@ while ($_ = shift) {
         &usage;
       }
     } else {
+      # - options
       &usage if $_ eq 'help' || $_ eq 'h';
       if ($_ eq 'm') {
         $merge_neutron_trajectories = 0;
@@ -245,6 +245,8 @@ while ($_ = shift) {
         $op_mode = 'finalize';
       } elsif ($_ eq 'p') {
         $n_instances = shift;
+      } elsif ($_ eq 'r') {
+        $repeatseed = 1;
       }
     }
   } elsif ($filename) {
@@ -496,8 +498,7 @@ sub abortJob {
 
   if ($Jinfo{smode} eq 'ssh') {
 
-    $i = 1;
-    while (-d "$jdir/$i") {
+    for ($i = 1; -d "$jdir/$i"; $i++) {
       next if -f "$jdir/$i/PIPEDONE_";
       $pfn = "$jdir/$i/PIPEPID_";
       if (-s $pfn) {
@@ -512,7 +513,6 @@ sub abortJob {
           $anyaction = 1;
         }
       }
-      $i++;
     }
 
   } elsif ($Jinfo{smode} eq 'sge') {
@@ -710,8 +710,8 @@ sub matchPipesToNodes {
   my $node = 0;
 
   if ($n_instances <= $nodes) {
-    # put one pipe on the first nodes
-    for ($i=1; $i < $n_instances; $i++) {
+    # put a pipe on the first nodes each
+    for ($i=1; $i <= $n_instances; $i++) {
       push @Match, "$Node[$node] $i $i";
       $node++;
     }
@@ -866,6 +866,7 @@ sub readGrdFile {
   @Pipe = ();  # to construct a new array
   my $firstmodule = 1;
   my (%VB);
+
   while ($_ = shift @OPipe) {
     # reduced number of neutrons, as we have parallel pipes
     s/ -n$neutrons/ NNNNN/ if $firstmodule;
