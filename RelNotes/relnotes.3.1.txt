@@ -9,7 +9,7 @@ Its use is described in detail in the document 'Optimization.pdf' in the folder 
 
 Visualization:
 --------------
-All modules generate a geometric representation, where ... got a specific improvement.
+All modules generate a geometric representation, some  got a specific improvement.
 
 Grid runs:
 ----------
