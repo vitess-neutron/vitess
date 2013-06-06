@@ -164,6 +164,7 @@ my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_f
     $verbose, $force_delete,
     $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories,
     $run_nr, $abort_run, $delete_run, $repeatseed,
+    $merge_again,
     $pipe_str,
     @Node,  @Pipe, @VBinary, @VFile, @BashOption,
     %Batcharg);
@@ -214,9 +215,10 @@ while ($_ = shift) {
         $delete_run = $arg;
       } elsif ($opt eq 'name') {
         $jobname = $arg;
-      } elsif ($opt eq 'merge') {
+      } elsif ($opt =~ /merge/) {
         $op_mode = 'finalize';
         $run_nr = $arg;
+        $merge_again = 1 if $opt =~ /again/;
       } elsif ($opt =~ /^traj/) {
         $trajectories = $arg;
       } elsif ($opt eq 'v') {
@@ -433,7 +435,7 @@ sub finalizeJob {
   }
 
   # if it's already finalized, show that information and return
-  if ($_ eq 'finalized') {
+  if ($_ eq 'finalized' && !$merge_again) {
     if ($fmode == 2) {
       deleteJob($j);
     } else {
@@ -1152,7 +1154,7 @@ sub mergeResults {
     next unless /ASCII /;             # no text file
 
     # read first file to array @L, and determine the spectrum type
-    my ($cols, $skiptext, $err, $ismonitor, $m, $tline, @I, @L, @N, @C);
+    my ($cols, $skiptext, $err, $ismonitor, $weight, $matrix, $m, $tline, @I, @L, @N, @C);
     my $skiplines = 0;
     my $lines = 0;
 
@@ -1165,6 +1167,12 @@ sub mergeResults {
           $skiptext .= "$_\n";
           if (/Monitor/) {
             $ismonitor = 1;
+            if (/x *y *z/) {
+              $cols = -3;
+            } else {
+              $weight = 1 if /weight|mean/;
+              $matrix = 1 if /matrix/;
+            }
           } elsif (/#x +y +z/) {
             $cols = -3;
           }
@@ -1172,10 +1180,12 @@ sub mergeResults {
         }
         @I = split;
         $cols = 0 + @I;
-        if ($cols > 16) {
+        $matrix = 1 if $cols > 16;
+        if ($matrix) {
           # mon2D format 0
+          # skip this line with $cols x-axis tic values
           $skiptext .= "$_\n";
-          $skiplines = 1;
+          $skiplines++;
           next;
         } elsif ($cols != 2 && $cols != 4) {
           # unknown spectrum type
@@ -1225,7 +1235,12 @@ sub mergeResults {
           last if $tline >= $lines;
           $_ = $L[$tline];
           @I = split;
-          if ($cols == 2) {
+          if ($matrix) {
+            # first column is monitor, followed by $cols counts
+            for ($i=1; $i<=$cols; $i++) {
+              $I[$i] += $N[$i];
+            }
+          } elsif ($cols == 2) {
             $I[1] += $N[1];
           } elsif ($cols == 4) {
             # 2. column weighted count
@@ -1239,11 +1254,6 @@ sub mergeResults {
             # increment 3. and 5. column, 4. column error value computed later
             $I[2] += $N[2];
             $I[4] += $N[4];
-          } elsif ($cols > 16) {
-            # first col monitor, then x * count
-            for ($i=1; $i<=$cols; $i++) {
-              $I[$i] += $N[$i];
-            }
           } else {
             # set anyerr too, to indicate something unexpected
             $err = $anyerr = 1;
@@ -1297,6 +1307,15 @@ sub mergeResults {
           $C[3] = $m * sqrt(1.0 / $C[4]);
           print OF "@C\n";
         }
+      } elsif ($matrix && $weight) {
+        # 2D spectrum, normalize counts to average
+        my $k;
+        @C = split;
+        # again: $C[0] is y axis tic-value, followed by $cols counts
+        for ($k=1; $k<=$cols; $k++) {
+          $C[$k] /= $n;
+        }
+        print OF "@C\n";
       } else {
         print OF "$_\n";
       }
