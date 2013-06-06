@@ -658,9 +658,13 @@ EOS
       print OF "$cs -s $run_nr $first $last\n";
       close OF;
       chmod 0700, $fn;
+      # extract a resonable sge job name
+      $_ = "$node-$jobname";
+      tr/.a-zA-Z0-9_-/_/c;
+      $_ = "$SGECom[0] -N vitess-$_";
       # submit that job
       # we do a cd first to have sge log files there
-      $_ = `cd $grid_work_dir ; $SGECom[0] -q $node $fn`;
+      $_ = `cd $grid_work_dir ; $_ -q $node $fn`;
       if (/Your job ([0-9]+) .+has been submitted/) {
         push @SGEJobNr, $1;
       }
@@ -1178,6 +1182,7 @@ sub mergeResults {
           }
           next;
         }
+        # we found the first non-comment line, and compute the numer of columns from this
         @I = split;
         $cols = 0 + @I;
         $matrix = 1 if $cols > 16;
@@ -1268,7 +1273,7 @@ sub mergeResults {
       last if $err;
     }
 
-    # do not write this file's result, as file formats differed
+    # do not write this file's result on $err, as file formats differed
     next if $err;
 
     # print result to work dir
@@ -1278,54 +1283,61 @@ sub mergeResults {
     print OF $skiptext if $skiptext;
     for ($i=0; $i<$lines; $i++) {
       $_ = $L[$i];
-      if ($cols == 4) {
-        # 1. column (channel) and 4. column (absolute count) remain unchanged
-        # compute 2. and 3. column
-        @C = split;
-        if ($C[3] <= 0) {
-          print OF "$C[0] 0 0 0\n";
-        } else {
-          # 2. column becomes the mean value
-          $_ = $C[1];
-          $C[1] = $m = $_ / $n;
-          # 3. column becomes the statistical error
-          $C[2] = $m * sqrt(1.0 / $C[3]);
-          print OF "@C\n";
-        }
-      } elsif ($cols == -3 && $_ ne '') {
-        # x y z 'format'
-        # 1. column (x), 2. column (y) and 5. column (absolute count) remain unchanged
-        # compute 3. and 4. column
-        @C = split;
-        if ($C[4] <= 0) {
-          print OF "$C[0] $C[1] 0 0 0\n";
-        } else {
-          # 3. column becomes the mean value
-          $_ = $C[2];
-          $C[2] = $m = $_ / $n;
-          # 4. column becomes the statistical error
-          $C[3] = $m * sqrt(1.0 / $C[4]);
-          print OF "@C\n";
-        }
-      } elsif ($matrix && $weight) {
-        # 2D spectrum, normalize counts to average
-        my $k;
-        @C = split;
-        # again: $C[0] is y axis tic-value, followed by $cols counts
-        for ($k=1; $k<=$cols; $k++) {
-          $C[$k] /= $n;
-        }
-        print OF "@C\n";
-      } else {
+      if ($_ eq '' || !($cols == 4 || $cols == -3 || $weight)) {
+        # print line without further processing
         print OF "$_\n";
+        next;
       }
+      # what remains is a   A 1D   B xyz 2D   C to be weighted   spectrum
+      @C = split;
+      if ($cols == 4) {
+        # A      keep 1. column (channel) and 4. column (absolute count)
+        if ($C[3] <= 0) {
+          print OF "$C[0] 0 0 0\n";  # nothing counted
+          next;
+        }
+        # mean value
+        $m = $C[1] / $n;
+        # 2. column = mean value  if weight
+        $C[1] = $m if $weight;
+        # 3. column = statistical error
+        $C[2] = $m * sqrt(1.0 / $C[3]);
+
+      } elsif ($cols == -3) {
+        # B    x y z 'format'
+        # keep 1. column (x), 2. column (y) and 5. column (absolute count)
+        if ($C[4] <= 0) {
+          print OF "$C[0] $C[1] 0 0 0\n";  # nothing counted
+          next;
+        }
+        # mean value
+        $m = $C[2] / $n;
+        # 3. column = mean value   if weight
+        $C[2] = $m if $weight;
+        # 4. column = statistical error
+        $C[3] = $m * sqrt(1.0 / $C[4]);
+
+      } else {
+        # C    normalize counts to average
+        if ($matrix) {
+          # 2D spectrum
+          my $k;
+          # again: $C[0] is y axis tic-value, followed by $cols counts
+          for ($k=1; $k<=$cols; $k++) {
+            $C[$k] /= $n;
+          }
+        } elsif ($cols == 2) {
+           $C[1] /= $n;
+        }
+      }
+      print OF "@C\n";
     }
     close OF;
 
   }
 
   if ($verbose > 1) {
-    # see which new files have not been merged
+    # show which new files have not been merged
     my @NotProcessed;
     opendir D, $S[0];
     while ($_ = readdir D) {
