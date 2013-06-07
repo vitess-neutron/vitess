@@ -50,6 +50,8 @@ class Mon1D {
   string fMonitorFilename;  // name of the output file, input parameter
   string sParameterNames[14];
 
+  string weightTag[2];
+
   double lambdaMin;  // minimum wavelength, filter for the monitor, optional input parameter
   double lambdaMax;  // maximum wavelength, filter for the monitor, optional input parameter
 

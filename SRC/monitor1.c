@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
         sParN[MAX_KIND+1][22]={"", "wavelength", "time",
                                "horizontal divergence", "vertical divergence",
                                "horizontal position",   "vertical position", "energy", "divergence yz"};
+	char  weightTag[2][7] = {"", "weight"};
 
   short  bProbWeight=0,        /* Probability weight yes or no */
          bAllFiles=FALSE,      /* criterion: files for all colors until the given one generated */ 
@@ -198,7 +199,8 @@ int main(int argc, char *argv[])
 
       case 'C':
         nColour = atol(&argv[i][2]);        /*  excludes all neutrons with diff. Colour, if nColour >= 0   */
-        break;                            
+        break;  
+                          
       case 'c':
         bAllFiles = (short)atoi(&argv[i][2]); /*  criterion: files containing all colors until the given one generated   */
         break;
@@ -285,6 +287,8 @@ int main(int argc, char *argv[])
   } else {
     crot = 1;
   }
+
+  if (bProbWeight != 1) bProbWeight = 0;
 
   DECLARE_ABORT;
   while (ReadNeutrons()!= 0)
@@ -411,7 +415,7 @@ my_exit:
   // main monitor
   if (pFileMon != NULL)     
   { 
-    fprintf(pFileMon,"#Monitor1 %s\n", sParN[kind]);
+    fprintf(pFileMon,"#Monitor %s %s\n", weightTag[bProbWeight], sParN[kind]);
     for (iBin = 0; iBin < nBiny; iBin++)
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
@@ -427,7 +431,7 @@ my_exit:
   { for (jMon=0; jMon<nAddMons; jMon++)
     { if (pFileMonC[jMon] != NULL)
       { 
-        fprintf(pFileMonC[jMon],"#Monitor1 %s\n", sParN[kind]);
+        fprintf(pFileMonC[jMon],"#Monitor %s %s\n", weightTag[bProbWeight], sParN[kind]);
         for (iBin = 0; iBin < nBiny; iBin++)
         {
           if(pBinN[iBin+(jMon+1)*(nBiny+1)]!=0) 

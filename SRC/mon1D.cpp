@@ -55,6 +55,9 @@ Mon1D::Mon1D()
   pWeight = 1;
   exclCounts = 0;
 
+  weightTag[0] = "";
+  weightTag[1] = "weight";
+
   sParameterNames[0] = "pos_y";
   sParameterNames[1] = "pos_z";
   sParameterNames[2] = "div_y";
@@ -222,6 +225,8 @@ void Mon1D::Init(int argc, char* argv[])
   }
 
   if (numberFiles > 1) multipleFiles = true;
+
+  if (pWeight != 1) pWeight = 0;
 
   for (int ii = 0; ii < 3; ii++) {
 
@@ -461,7 +466,7 @@ void Mon1D::WriteOut()
     }
     
  
-    fprintf(fMonitor[ii],"#Monitor\n");
+    fprintf(fMonitor[ii],"#Monitor %s\n", weightTag[pWeight].c_str());
     fprintf(fMonitor[ii], "#x\ty\tDelta_y\tCounts\n");      
     for(int binx = 0; binx < nBinsX[ii]; binx++) {
       

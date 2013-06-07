@@ -9,14 +9,17 @@ static int binyzcounts[BINSIZE][BINSIZE];
 
 
 
-int WriteOutput(FILE* fmonitor, int format, int nbiny, int nbinz)
+int WriteOutput(FILE* fmonitor, int format, int pWeight, int nbiny, int nbinz)
 {
 
   int dy, dz;
+  
+  char formatTag[2][7]={"matrix", "xyz"};
+  char weightTag[2][7]={"", "weight"};
 
   switch (format) {
 	case 0:
-	  fprintf(fmonitor,"#Monitor\n");
+	  fprintf(fmonitor,"#Monitor %s %s\n", formatTag[format], weightTag[pWeight]);
 	  for(dy = 0; dy<nbiny; dy++)
 		{
 		  fprintf(fmonitor,"%10.7f\t",(by[dy]+by[dy+1])/2.0);
@@ -31,7 +34,7 @@ int WriteOutput(FILE* fmonitor, int format, int nbiny, int nbinz)
 		}
 	  break;
     case 1:
-      fprintf(fmonitor,"#Monitor\n");
+      fprintf(fmonitor,"#Monitor %s %s\n", formatTag[format], weightTag[pWeight]);
 	  fprintf(fmonitor, "#x  y  z\n");
 	  for(dz = 0; dz<nbinz; dz++) {
 		  for(dy = 0; dy<nbiny; dy++) {

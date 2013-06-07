@@ -25,9 +25,11 @@ int main(int argc, char *argv[])
   int	 dy;
   long	 i, kind, exclusivecount, registered, BufferIndex, nbiny;
   double RotMatrixAnalysis[3][3], bpost[10001], bintc, binpol, analysis_dir[3];
-  double Divy, Divz, bint[10001],bintch[10001], binerror[10001], m,p,M,probactiv;
-  int bincounts[10001];
+  double Divy, Divz, bint[10001],bintch[10001], binerror[10001], m,p,M;
+  int bincounts[10001],probactiv;
 
+  char  weightTag[2][7] = {"", "weight"};
+  
   BufferIndex = 0;
   kind = 1;
   probactiv=1.0;
@@ -139,6 +141,8 @@ int main(int argc, char *argv[])
       bincounts[dy]=0;
     }
          
+  if (probactiv != 1) probactiv = 0;
+
 DECLARE_ABORT;
   while (ReadNeutrons()!= 0)
     {
@@ -253,7 +257,7 @@ CHECK;	  registered=0;
 	}
     }
 my_exit:
-  fprintf(fmonitor,"#Monitor\n");
+  fprintf(fmonitor,"#Monitor %s\n", weightTag[probactiv]);
   for (dy = 0; dy<(nbiny); dy++)
     {
       if(bintch[dy]!=0.) {

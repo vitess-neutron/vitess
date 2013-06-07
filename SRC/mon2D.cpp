@@ -28,6 +28,12 @@ Mon2D::Mon2D()
   fMonitor = 0;
   fMonitorFilename = "NoFile";
 
+  weightTag[0] = "";
+  weightTag[1] = "weight";
+
+  formatTag[0] = "matrix";
+  formatTag[1] = "xyz";
+
   lambdaMin = -1;
   lambdaMax = -1;
 
@@ -409,7 +415,7 @@ void Mon2D::WriteOut()
   }
 
  
-  fprintf(fMonitor, "#Monitor\n");
+  fprintf(fMonitor, "#Monitor %s %s\n", formatTag[format].c_str(), weightTag[pWeight].c_str());
   
   switch (format) {
   case 0: // matrix format
