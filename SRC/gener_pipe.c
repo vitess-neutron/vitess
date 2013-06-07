@@ -123,11 +123,9 @@ int main(int argc, char* argv[])
 
 		
 	// delete old files
-  if (mMin==0)
-	{ for (l=0; l < nFileNo; l++) 
-	  {	ExtendFilename(sFilename, sFile[l], "*");
-		  fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
-	  }
+	for (l=0; l < nFileNo; l++) 
+	{ ExtendFilename(sFilename, sFile[l], "*");
+	  fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
   }
 
   // write command and additional commands for each parameter set
