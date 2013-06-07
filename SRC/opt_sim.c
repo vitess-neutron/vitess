@@ -74,15 +74,21 @@ int main(int argc, char* argv[])
 	switch (eMethod)
 	{	case VT_OPT_GRAD: 
       if (!bIni) strcpy(sIniFile, "opt_grad.ini");    
+      printf("Optimization has started\n");
       bCont = OptGrad();   
+      printf("Optimization has ended\n");
       break;
 		case VT_OPT_GRAD_MC: 
       if (!bIni) strcpy(sIniFile, "opt_grad_mc.ini"); 
+      printf("Optimization has started\n");
       bCont = OptGradMC(); 
+      printf("Optimization has ended\n");
       break;
 		case VT_METROPOLIS: 
       if (!bIni) strcpy(sIniFile, "metro.ini");    
+      printf("Optimization has started\n");
       bCont = Metropolis();   
+      printf("Optimization has ended\n");
       break;
 		default: 
       Error("opt_main: optimization algorithm could not be identified");

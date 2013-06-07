@@ -1,6 +1,8 @@
 #ifndef OPT_VARS_H
 #define OPT_VARS_H
 
+#include "opt_defs.h"
+
 // global variables
 extern FILE*  LogFilePtr;           // Pointer on the log file   (from init.c)
 extern char   sLogFile[FN_LEN],     // name of the log file 

@@ -42,6 +42,7 @@ extern char  cSlash,
              sExeDirN [FN_LEN+1],
              sParDirC [FN_LEN+1],
              sParDirN [FN_LEN+1],
+             sLogName [FN_LEN+1],
              sPDir    [10],
              sCall    [11],
              sType    [11],
@@ -83,7 +84,7 @@ void InitArrays()
 
 	
 /****************************************************************/
-/* 'ReadSimPar': Reading the parameter file 'sim_par.ini'       */
+/* 'ReadSimPar': Reading the parameter file 'sim_param.ini'     */
 /*  output: *pParFct: code for function to transfer 
                       opt. parameters to simulation parameters  */
 /*          *pFileNo: number of files to be copied              */
@@ -228,12 +229,14 @@ short ReadCmdFile(short bPrtCmd)
   // skip 2 header lines
 	ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1);
 	ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1);
+  memset(sBuffer, '\0', sizeof(sBuffer));
 
   // read pipe command of standard instrument line by line, shorten it and store it in array 'sLine'
 	while(ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1) && m < MAX_MOD)
 	{	StripCmdLine(sBuffer, cShort);
 		strcpy      (sLine[m], sBuffer);
 		m++;
+    memset(sBuffer, '\0', sizeof(sBuffer));
 	}
   mMax=m;
 
@@ -330,19 +333,21 @@ StripCmdLine(char* const pLine, char cShort)
 	// change '/' to the right slash
 	ChangeSlash(pLine);
 
-	// delete leading line feeds and " | "
-#ifdef COMPLICATED
-	while (pLine[0]==' ' || pLine[0]=='|')
-	{	StrgLShift(pLine,1);
+	// delete leading line feeds and '|'
+#ifdef SLOW_COMPUTER
+	{
+	  int  k;
+    char v;
+	  for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
+	  if (k > 0)
+	    StrgLShift(pLine, k);
 	}
 #else
-	{
-	  int k,v;
-	  for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
-	  if (k)
-	    strcpy(pLine, pLine+k);
+	while (pLine[0]==' ' || pLine[0]=='|')
+	{	StrgLShift(pLine, 1);
 	}
 #endif
+
 	// extract the PATH directory from the command
 	if (strlen(sExeDirC)==0)
 	{	pBlank = strchr(pLine, ' ');
@@ -357,7 +362,6 @@ StripCmdLine(char* const pLine, char cShort)
 	// extract the DEFAULT directory from the command
 	if (strlen(sParDirC)==0)
 	{	
-		// strcpy(sLocBuf, pLine);
 		pBlank = strchr(pLine, ' ');
 		while (memcmp(pBlank, " --P", 4)!=0)
 		{	strcpy(sLocBuf, pBlank+3);
@@ -368,6 +372,21 @@ StripCmdLine(char* const pLine, char cShort)
 		kBlank = pBlank-sLocBuf;
 		StrgCopy(sPathSl, sLocBuf, kBlank);
 		EraseEndSlash(sParDirC, sPathSl);
+	}
+
+	// extract the LOG directory from the command
+	if (strlen(sLogName)==0)
+	{	
+		pBlank = strchr(pLine, ' ');
+		while (memcmp(pBlank, " --L", 4)!=0)
+		{	strcpy(sLocBuf, pBlank+3);
+			pBlank = strchr(sLocBuf, ' ');
+		}
+		strcpy(sLocBuf, pBlank+4);
+		pBlank = strchr(sLocBuf, ' ');
+		kBlank = pBlank-sLocBuf;
+		StrgCopy(sPathSl, sLocBuf, kBlank-1);
+		EraseEndSlash(sLogName, sPathSl);
 	}
 
 	// substitute PATH and DEFAULT directory by abbrevations
