@@ -153,11 +153,14 @@ static short ReadAllF(const char* sFilename, const short mMin, const short mMax)
 		  {	ReadLine  (pFFile, sLine, CHAR_BUF_LARGE);
 			  StrgScanLF(sLine, &arF[m][1], IMAX, 0);
 		  }
-		  fclose (pFFile); 
 	  }
+    else
+    { fprintf(LogFilePtr, "Error in ReadAllF: number of created files not correct !\n");
+    }
+    fclose (pFFile); 
   }
   else
-  { fprintf(LogFilePtr, "Error: file '%s' could not be opened to read function values !\n", sFilename);
+  { fprintf(LogFilePtr, "Error in ReadAllF: file '%s' could not be opened to read function values !\n", sFilename);
     exit(-1);
   }
 	return rc;
