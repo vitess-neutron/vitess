@@ -116,7 +116,7 @@ static short WriteAllP(const char* sFilename, const short mMin, const short mMax
 		fclose (pXFile);
 	}
   else
-  { fprintf(LogFilePtr, "Error: file '%s' could not be opened to write parameter values !\n", sFilename);
+  { printf("Error in calc_sim_fom::WriteAllP: file '%s' could not be opened to write parameter values !\n", sFilename);
     exit(-1);
   }
 	return rc;
@@ -138,7 +138,7 @@ static short ReadAllF(const char* sFilename, const short mMin, const short mMax)
 	      nSim=0;   // no of lines = number of simulations performed in this step
 	char  sLine[CHAR_BUF_LARGE+1];
 
-	for (m=mMin; m < mMax; m++)
+	for (m=mMin; m <= mMax; m++)
 		for (n=0; n<=IMAX; n++)
 			arF[m][n]=0.0;	
 
@@ -155,12 +155,12 @@ static short ReadAllF(const char* sFilename, const short mMin, const short mMax)
 		  }
 	  }
     else
-    { fprintf(LogFilePtr, "Error in ReadAllF: number of created files not correct !\n");
+    { printf("Error in calc_sim_fom::ReadAllF: number of files created for figure of merit not correct !\n");
     }
     fclose (pFFile); 
   }
   else
-  { fprintf(LogFilePtr, "Error in ReadAllF: file '%s' could not be opened to read function values !\n", sFilename);
+  { printf("Error in calc_sim_fom::ReadAllF: file '%s' could not be opened to read function values !\n", sFilename);
     exit(-1);
   }
 	return rc;

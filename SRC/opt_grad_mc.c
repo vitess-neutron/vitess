@@ -123,7 +123,7 @@ short OptGradMC()
   
   fprintf(LogFilePtr, "\nInitial values:\n---------------\n");
   PrintP  (P0, ON);
-  Calc1Fct(F0, P0, 0);
+  if (Calc1Fct(F0, P0, 0)==FALSE) goto ErrorExit;
   Q0 = SquareSum(F0, ON);
   
   iStep=1;
@@ -135,7 +135,7 @@ short OptGradMC()
     // calculate functions for all derivatives, i.e. P+DelPR and P-DelPR
     fprintf(LogFilePtr, "\n%2d. Step:\n--------\n", iStep);
     fprintf(LogFilePtr, "Derivatives:\n------------\n");
-    if (CalcAllFctsG(P0, DelPR, OFF)==FALSE) goto End;
+    if (CalcAllFctsG(P0, DelPR, OFF)==FALSE) goto ErrorExit;
 
     // compare error square sums
     for (j=0; j<=2*nPar; j++)
@@ -212,7 +212,7 @@ short OptGradMC()
     }
     
     PrintP  (PT, ON);
-    Calc1Fct(FT, PT, 0);
+    if (Calc1Fct(FT, PT, 0)==FALSE) goto ErrorExit;
     QT = SquareSum(FT, ON);
     
     while (bDamp==TRUE)    // damping loop
@@ -269,7 +269,7 @@ short OptGradMC()
       	  if (eOut >= 2) 
       	    fprintf(LogFilePtr, "\nt = %7.5f:\n", TD);
       	  PrintP  (PT, ON);
-      	  Calc1Fct(FT, PT, 0);   
+      	  if (Calc1Fct(FT, PT, 0)==FALSE) goto ErrorExit;   
       	  QT = SquareSum(FT, ON);
         } // end if TD <= ... (max. number of damps)
       }  // end if DT <= ... (parameter set accepted)
@@ -279,9 +279,15 @@ short OptGradMC()
   
   /*     END OF FIT                            */
   /*********************************************/
-  End:  
-  fprintf(LogFilePtr, "\nOptimization was finished after %d steps\n\nFinal values :\n", iStep);
-  
+ End:  
+  fprintf(LogFilePtr, "\nOptimization was finished after %d steps\n", iStep);
+  goto Results;
+ 
+ ErrorExit: 
+  fprintf(LogFilePtr, "\nOptimization was stopped because of error after %d steps\n", iStep);
+
+ Results:
+  fprintf(LogFilePtr, "\nFinal values :\n");
   // print optimized spectrum
   if (eOut>=2)
   { 
