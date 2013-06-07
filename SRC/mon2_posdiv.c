@@ -21,15 +21,14 @@
 #include "mon2_header.h"
 
 static double bdiv_[BINSIZE],bpos_[BINSIZE];
-static double** bin_posdiv;
 
 int main(int argc, char *argv[])
 {
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
-  int		index_yz , dpos,ddiv;
+  int		index_yz , dpos,ddiv, probactiv;
   long	i, exclusivecount, registered, BufferIndex, nbin_pos=0, nbin_div=0 ;
-  double pos_, div_, pos_min, pos_max, div_min, div_max,p, probactiv, bintc;
+  double pos_, div_, pos_min, pos_max, div_min, div_max,p,  bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
 		 filtYMin=-1.0e10,
@@ -38,8 +37,6 @@ int main(int argc, char *argv[])
 		 filtZMax=1.0e10;
   long format = 0;
   pos_min = pos_max = div_min = div_max = 0;
-
-  bin_posdiv = binyz;
 
   BufferIndex = 0;
   p=0.0;
@@ -152,6 +149,7 @@ int main(int argc, char *argv[])
 
 
   /*initialisation */
+  if (probactiv != 1) probactiv = 0;
 
   bintc = 0;
 
@@ -166,7 +164,7 @@ int main(int argc, char *argv[])
       for(ddiv = 0;ddiv<(nbin_div+1); ddiv++)
 	{
 	  bdiv_[ddiv] = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
-	  bin_posdiv[dpos][ddiv] = 0.0;
+	  binyz[dpos][ddiv] = 0.0;
 	  binyzerror[dpos][ddiv]=0.;
 	  binyzcounts[dpos][ddiv]=0;
 	}
@@ -210,7 +208,7 @@ DECLARE_ABORT;
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
 	  if(((dpos>=0)&&(dpos<nbin_pos))&&((ddiv>=0)&&(ddiv<nbin_div))) {	
-	    bin_posdiv[dpos][ddiv] = bin_posdiv[dpos][ddiv] +  p ;
+	    binyz[dpos][ddiv] = binyz[dpos][ddiv] +  p ;
 	    bintc = bintc + p;
 	    registered=1;
 	    binyzcounts[dpos][ddiv]++;
@@ -223,7 +221,7 @@ DECLARE_ABORT;
   }
 my_exit:
  
-  WriteOutput (fmonitor, format, nbin_pos, nbin_div);
+  WriteOutput (fmonitor, format, probactiv, nbin_pos, nbin_div);
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

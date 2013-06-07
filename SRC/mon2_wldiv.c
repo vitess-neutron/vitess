@@ -157,6 +157,8 @@ int main(int argc, char *argv[])
 
   /*initialisation */
 
+  if (probactiv != 1) probactiv = 0;
+  
   bintc = 0;
   
    //New pointers allowing for global write out
@@ -234,7 +236,7 @@ DECLARE_ABORT;
   }
 my_exit:
  
-  WriteOutput (fmonitor, format, nbin_wl, nbin_div);
+  WriteOutput (fmonitor, format, probactiv, nbin_wl, nbin_div);
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

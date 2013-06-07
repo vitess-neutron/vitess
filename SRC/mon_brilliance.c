@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
   char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "cm", "cm", "deg", "deg", "deg"},
     sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
                            "horizontal divergence", "vertical divergence", "radial divergence"};
+
+    char  weightTag[2][7] = {"", "weight"};
     short  registered=0;         // criterion: trajectory is within limits set
     long   iBin,                 // bin number
       i,                    // index of trajectories
@@ -241,7 +243,7 @@ int main(int argc, char *argv[])
 
     if (pFileMon != NULL) 
     {
-      fprintf(pFileMon, "#Monitor\n");
+      fprintf(pFileMon, "#Monitor weight\n");
       for (iBin = 0; iBin < nBin; iBin++) 
       {
         switch(kind)
