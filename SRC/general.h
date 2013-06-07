@@ -502,9 +502,8 @@ int    ReadParI(FILE *fpt);
 void   ReadParComment(FILE *fpt);
 
 void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
-#ifdef VERS26
 void   StrgLShift(char* sStr, int kWidth);
-#endif
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
+
 #endif
 

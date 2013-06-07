@@ -52,6 +52,7 @@ char     cSlash       = '/',
          sExeDirN [FN_LEN+1]= "",
          sParDirC [FN_LEN+1]= "",
          sParDirN [FN_LEN+1]= "",
+         sLogName [FN_LEN+1]= "",
          sPDir    [10]= "",
          sCall    [11]= "",
          sType    [11]= "",
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
 {
 	short               nModuleNo=0,  // number of executables in the pipe (from file xxx.cmd)
 	       l=0,         nFileNo  =0,  // number of files to be copied 
-	                    nFitParNo=0,  // number of fit parameters
+	       n=0,         nFitParNo=0,  // number of fit parameters
 	                    nSimParNo=0,  // number of simulation parameters
 	       m=0, mMin=0, 
               mMax=0, nSimulNo =0,  // number of simulations to perform
@@ -122,14 +123,23 @@ int main(int argc, char* argv[])
 
 		
 	// delete old files
-	for (l=0; l < nFileNo; l++) 
-	{	ExtendFilename(sFilename, sFile[l], "*");
-		fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
-	}
+  if (mMin==0)
+	{ for (l=0; l < nFileNo; l++) 
+	  {	ExtendFilename(sFilename, sFile[l], "*");
+		  fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
+	  }
+  }
 
   // write command and additional commands for each parameter set
 	for (m=mMin; m <= mMax; m++)
 	{	
+    if (m==0)
+    { fprintf(pExeVFile, "echo P: ");
+      for (n=0; n<nFitParNo; n++)
+        fprintf(pExeVFile, "%10.3le ", P[m][n]);
+      fprintf(pExeVFile, "\n");
+    }
+
 		// create pipe commands and write to batch file
 		if (strcmp(sParFct, "STD")==0 || strcmp(sParFct, "Std")==0 || strcmp(sParFct, "std")==0)
 		{	DetSimParamStd(P, m, nSimParNo, nFitParNo);
@@ -151,18 +161,18 @@ int main(int argc, char* argv[])
 		}
 
     // collect and remove pipelogs
-#ifdef VT_WINDOWS
+ #ifdef VT_WINDOWS
     fprintf(pExeVFile, "%s ", sCopy);
 		for (l=0; l < nModuleNo; l++) 
 		{	
 			if (l > 0) fprintf(pExeVFile, " + ");
-			fprintf(pExeVFile, "%s*pipelog%d", sPDir, l+1);
+			fprintf(pExeVFile, "%s%d", sLogName, l+1);
 		}
 		fprintf(pExeVFile, " %sSim%d.log%c", sPDir, m, cNL);
 #else
-    fprintf(pExeVFile, "%s %svpipelog* > %sSim%d.log%c", sType, sPDir, sPDir, m, cNL);
+    fprintf(pExeVFile, "%s %s* > %sSim%d.log%c", sType, sLogName, sPDir, m, cNL);
 #endif
-    fprintf(pExeVFile, "%s %s*pipelog*%c", sDel, sPDir, cNL);
+    fprintf(pExeVFile, "%s %s*%c", sDel, sLogName, cNL);
 	}
 
 	OwnCleanup();

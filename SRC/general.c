@@ -582,7 +582,6 @@ StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 }
 
 
-#ifdef VERS26
 /* Shift string 'sStr' 'kWidth' bytes to the left */
 void
 StrgLShift(char* sStr, int kWidth)
@@ -594,7 +593,7 @@ StrgLShift(char* sStr, int kWidth)
 	for (k=0; k <= ke; k++)
 		sStr[k] = sStr[k+kWidth];
 }
-#endif
+
 
 /* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of double values,  beginning with value number 'nStart'*/
