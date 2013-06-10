@@ -659,7 +659,7 @@ EOS
       close OF;
       chmod 0700, $fn;
       # extract a resonable sge job name
-      $_ = "$node-$jobname";
+      $_ = "$jobname-$node";
       tr/.a-zA-Z0-9_-/_/c;
       $_= "v$_" unless /^[a-zA-Z]/; # sge job name must begin with alpha char
       $_ = "$SGECom[0] -N $_";
@@ -1159,7 +1159,8 @@ sub mergeResults {
     next unless /ASCII /;             # no text file
 
     # read first file to array @L, and determine the spectrum type
-    my ($cols, $skiptext, $err, $ismonitor, $weight, $matrix, $m, $tline, @I, @L, @N, @C);
+    my ($cols, $skiptext, $err, $ismonitor, $is_mergeable_text,
+        $weight, $matrix, $m, $tline, @I, @L, @N, @C);
     my $skiplines = 0;
     my $lines = 0;
 
@@ -1170,7 +1171,9 @@ sub mergeResults {
         if (/#/) {
           $skiplines++;
           $skiptext .= "$_\n";
-          if (/Monitor/) {
+          if (/Trajectories/) {
+            $is_mergeable_text = 1;
+          } elsif (/Monitor/) {
             $ismonitor = 1;
             if (/x *y *z/) {
               $cols = -3;
@@ -1183,6 +1186,8 @@ sub mergeResults {
           }
           next;
         }
+        last if $is_mergeable_text;
+
         # we found the first non-comment line, and compute the numer of columns from this
         @I = split;
         $cols = 0 + @I;
@@ -1218,6 +1223,27 @@ sub mergeResults {
       $lines++;
     }
     close F;
+
+    if ($is_mergeable_text) {
+      # concatenate trajectory files to work dir
+      DeBug("writing $jdir/$mfn");
+      $UsedResult{$mfn} = 1;
+      open OF, ">$jdir/$mfn";
+      # copy first file
+      open F, $tf;
+      print OF $_ while <F>;
+      close F;
+      for ($j=1; $j<$n; $j++) {
+        open F, "$S[$j]/$mfn";
+        for ($i=0; $i<$skiplines; $i++) {
+          <F>;
+        }
+        print OF $_ while <F>;
+        close F;
+      }
+      close OF;
+      next; # file of foreach $mfn loop
+    }
 
     next unless $ismonitor;
     # skip this file silently, if an error occured, assuming it is no spectrum file
