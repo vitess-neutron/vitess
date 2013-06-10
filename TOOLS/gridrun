@@ -661,7 +661,8 @@ EOS
       # extract a resonable sge job name
       $_ = "$node-$jobname";
       tr/.a-zA-Z0-9_-/_/c;
-      $_ = "$SGECom[0] -N vitess-$_";
+      $_= "v$_" unless /^[a-zA-Z]/; # sge job name must begin with alpha char
+      $_ = "$SGECom[0] -N $_";
       # submit that job
       # we do a cd first to have sge log files there
       $_ = `cd $grid_work_dir ; $_ -q $node $fn`;
