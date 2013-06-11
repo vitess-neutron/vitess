@@ -1158,8 +1158,13 @@ sub mergeResults {
     $_ = `file $tf`;
     next unless /ASCII /;             # no text file
 
-    # read first file to array @L, and determine the spectrum type
-    my ($cols, $skiptext, $err, $ismonitor, $is_mergeable_text,
+    # read first file
+    # determine the type spectrum or trajectory file
+    # see how many header lines are to be skipped
+    # read array @L of lines for spectra
+
+    my ($cols, $skiptext, $err,
+        $is_monitor, $is_mergeable_text, $is_xyz, $header_done,
         $weight, $matrix, $m, $tline, @I, @L, @N, @C);
     my $skiplines = 0;
     my $lines = 0;
@@ -1167,41 +1172,41 @@ sub mergeResults {
     open F, $tf;
     while (<F>) {
       chomp;
-      unless ($cols) {
+      unless ($header_done) {
         if (/#/) {
           $skiplines++;
           $skiptext .= "$_\n";
           if (/Trajectories/) {
             $is_mergeable_text = 1;
           } elsif (/Monitor/) {
-            $ismonitor = 1;
-            if (/x *y *z/) {
-              $cols = -3;
-            } else {
-              $weight = 1 if /weight|mean/;
-              $matrix = 1 if /matrix/;
-            }
+            $is_monitor = 1;
+            $is_xyz = 1 if /x *y *z/;
+            $weight = 1 if /weight|mean/;
+            $matrix = 1 if /matrix/;
           } elsif (/#x +y +z/) {
-            $cols = -3;
+            $is_xyz = 1;
           }
           next;
         }
+        # we found the first non-comment line
         last if $is_mergeable_text;
-
-        # we found the first non-comment line, and compute the numer of columns from this
-        @I = split;
-        $cols = 0 + @I;
-        $matrix = 1 if $cols > 16;
-        if ($matrix) {
-          # mon2D format 0
-          # skip this line with $cols x-axis tic values
-          $skiptext .= "$_\n";
-          $skiplines++;
-          next;
-        } elsif ($cols != 2 && $cols != 4) {
-          # unknown spectrum type
-          $err = 1;
-          last;
+        $header_done = 1;
+        unless ($is_xyz) {
+          # compute the number of columns
+          @I = split;
+          $cols = 0 + @I;
+          $matrix = 1 if $cols > 16;
+          if ($matrix) {
+            # mon2D format 0
+            # skip this line with $cols x-axis tic values
+            $skiptext .= "$_\n";
+            $skiplines++;
+            next;
+          } elsif ($cols != 2 && $cols != 4) {
+            # unknown spectrum type
+            $err = 1;
+            last;
+          }
         }
       }
       if ($_ eq '') {
@@ -1245,7 +1250,7 @@ sub mergeResults {
       next; # file of foreach $mfn loop
     }
 
-    next unless $ismonitor;
+    next unless $is_monitor;
     # skip this file silently, if an error occured, assuming it is no spectrum file
     next if $err || $lines < 2;
 
@@ -1272,6 +1277,11 @@ sub mergeResults {
             for ($i=1; $i<=$cols; $i++) {
               $I[$i] += $N[$i];
             }
+          } elsif ($is_xyz) {
+            # ignore x,y
+            # increment 3. and 5. column, 4. column error value computed later
+            $I[2] += $N[2];
+            $I[4] += $N[4];
           } elsif ($cols == 2) {
             $I[1] += $N[1];
           } elsif ($cols == 4) {
@@ -1280,12 +1290,6 @@ sub mergeResults {
             # 3. column error, to be computed later
             # 4. column raw count
             $I[3] += $N[3];
-          } elsif ($cols == -3) {
-            # x y z
-            # ignore x,y
-            # increment 3. and 5. column, 4. column error value computed later
-            $I[2] += $N[2];
-            $I[4] += $N[4];
           } else {
             # set anyerr too, to indicate something unexpected
             $err = $anyerr = 1;
@@ -1310,7 +1314,7 @@ sub mergeResults {
     print OF $skiptext if $skiptext;
     for ($i=0; $i<$lines; $i++) {
       $_ = $L[$i];
-      if ($_ eq '' || !($cols == 4 || $cols == -3 || $weight)) {
+      if ($_ eq '' || !($cols == 4 || $is_xyz || $weight)) {
         # print line without further processing
         print OF "$_\n";
         next;
@@ -1330,7 +1334,7 @@ sub mergeResults {
         # 3. column = statistical error
         $C[2] = $m * sqrt(1.0 / $C[3]);
 
-      } elsif ($cols == -3) {
+      } elsif ($is_xyz) {
         # B    x y z 'format'
         # keep 1. column (x), 2. column (y) and 5. column (absolute count)
         if ($C[4] <= 0) {
