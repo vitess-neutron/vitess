@@ -145,15 +145,18 @@ int main(int argc, char **argv)
         header  = "#     weight        pos_x     pos_y      pos_z     speed_x   speed_y   speed_z     TOF       S_x  S_y  S_z \n";  
         units   = "#      [n/s]         [m]       [m]        [m]       [m/s]     [m/s]     [m/s]      [s]       [1]  [1]  [1] \n";  
         outform = "%15.3f  %9.6f %9.6f %10.6f  %9.5f %9.5f %9.3f  %10.8f  %4.1f %4.1f %4.1f";
+	fprintf(pOutFile,"#Trajectories writeout_McStas \n");
         fprintf(pOutFile, "%s%s", header, units);
         break;
       case VT_MCNPX_FMT:
         header  = "#    pos_x          pos_y          pos_z          dir_x          dir_y          dir_z            E           weight          time  \n";  
         units   = "#     [cm]           [cm]           [cm]           [1]            [1]            [1]           [MeV]           [1]         [1e-8s] \n";  
         outform = "%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e";
+	fprintf(pOutFile,"#Trajectories writeout_MCNPX \n");
         fprintf(pOutFile, "%s%s", header, units);
         break;
       default:   // nothing to do for VITESS
+	fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
         SetFormatsAndHeader(csep, sep);
     }
   }
