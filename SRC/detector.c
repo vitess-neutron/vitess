@@ -800,6 +800,7 @@ void  OwnInit(int argc, char *argv[])
 	DetectorOutputFileName=(&argv[i][2]);
 	if(!array){
 	  outFile=fopen(FullParName(DetectorOutputFileName),"w+");
+	  fprintf(outFile,"#Trajectories detector_eventmode \n");
 	  fprintf(outFile,"#    pos_x [cm]   pos_y [cm]   pos_z [cm]  time [ms]    weight     color \n");
 	  fprintf(outFile,"#-------------------------------------------------------------------------");
 	}
