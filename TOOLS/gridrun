@@ -118,13 +118,14 @@ batchopt batcharg    additional arguments for the SGE batch system like -l cpu=8
                      may be repeated
 options may be
 -p number            number of parallel pipes to start
+-P number            generate a job for each parallel pipe, companion of --nodes=..
 -m                   do not merge neutron trajectory output files
 -r                   repeat random seed of source module to following modules
                      default: --Z values from grd file
 --v=mode             verbose mode (0:default,silence  1:show some actions 2:DEBUG)
---nodes=node-list    list of names of queues to be used
+--nodes=node-list    list of names of SGE queues to be used
                      enclose lists if more than one queue given, like 'all.q@node28 all.q@node29'
---ssh=node-list      use ssh remote execution on these nodes, default is to run SGE jobs
+--ssh=node-list      use ssh remote execution on these nodes
                      enclose lists like above, e.g. 'node28 node29'
 --bin=modules-dir    directory with VITESS binaries, default is to use those used in the grd file
                      or from the script environment as last resort
@@ -164,7 +165,7 @@ my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_f
     $verbose, $force_delete,
     $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories,
     $run_nr, $abort_run, $delete_run, $repeatseed,
-    $merge_again,
+    $merge_again, $ppjob,
     $pipe_str,
     @Node,  @Pipe, @VBinary, @VFile, @BashOption,
     %Batcharg);
@@ -247,6 +248,9 @@ while ($_ = shift) {
         $op_mode = 'finalize';
       } elsif ($_ eq 'p') {
         $n_instances = shift;
+      } elsif ($_ eq 'P') {
+        $n_instances = shift;
+        $ppjob = 1;
       } elsif ($_ eq 'r') {
         $repeatseed = 1;
       }
@@ -721,6 +725,12 @@ sub matchPipesToNodes {
     for ($i=1; $i <= $n_instances; $i++) {
       push @Match, "$Node[$node] $i $i";
       $node++;
+    }
+  } elsif ($submit_mode eq 'sge'  && $ppjob) {
+    # each pipe is done per own sge job
+    for ($i=1; $i <= $n_instances; $i++) {
+      $_ = $node++ % $nodes;
+      push @Match, "$Node[$_] $i $i";
     }
   } else {
     my $inst_per_node = int($n_instances / $nodes);

@@ -956,7 +956,7 @@ proc controlGUI {
   ### with different integer part (versions like 1.0 and 1.10 are
   ### compatible, but versions 1 and 2 are not)
   ###
-  set XcontrolVersion 2
+  set XcontrolVersion 2.1
 
   if {!$restart && $w != "."} {
     ###

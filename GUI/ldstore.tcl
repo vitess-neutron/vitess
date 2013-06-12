@@ -645,11 +645,14 @@ proc importPipe {} {
 }
 
 
-proc openSaveFile {name descs} {
+proc openSaveFile {name descs {versvar ""}} {
   # check if file has been written by a previous storeAll
 
-  if {$name == ""} return ""
+  if {$name == ""} {return ""}
 
+  if {$versvar != ""} {
+    upvar $versvar version
+  }
   set version -1
   if [catch {open $name r} f] {return ""}
   if {[gets $f] == "#$descs"} {
@@ -664,6 +667,7 @@ proc openSaveFile {name descs} {
   }
   set a [globVal XcontrolVersion]
   if {int($version) != int($a)} {
+    # versions with different integer part are incompatible
     close $f
     outProtocol "! version $version of $name doesn't match actual version $a"
     return ""
@@ -762,7 +766,7 @@ proc loadAll {extension {givenname ""}} {
   if [dontDoit "Your changes will be saved to a snapshot only. Continue loading?"] return
   doSnapshot
 
-  set f [openSaveFile $name "experiment description save file"]
+  set f [openSaveFile $name "experiment description save file" version]
   if {$f == ""} return
 
   global defdirectory_ Mlf
@@ -795,6 +799,12 @@ proc loadAll {extension {givenname ""}} {
     if {[lsearch $DoNotSave $e] >= 0} continue
     # match curly brace content
     if {[regexp "\{(.+)\}" $line a v]} {
+      if {$version <= 2 && $v == "0"} {
+        # Hack: some entry values have to be re-mapped 0 -> -1
+        if [regexp {^(eval_color|minColor|maxColor|mtrl_colour|detect_color)_[0-9]+$} $e] {
+          set v -1
+        }
+      }
       gSet $e "$v"
       #puts "gSet $e \"$v\""
     } elseif {[string match "*\{\}" $line]} {
