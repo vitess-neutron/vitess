@@ -2692,16 +2692,16 @@ set mA1 {
 set mAV1 {
   {}
   {min_vx1 float 0 {"1st minimal\nx-value" "" "" w} -1E6 1E6 1}
-  {min_vx2 float 0 {"2nd minimal\nx-value" "" "" f} -1E6 1E6 1}
-  {min_vx3 float 0 {"3rd minimal\nx-value" "" "" g} -1E6 1E6 1}
+  {min_vx2 float 0 {"2nd minimal\nx-value" "" "" f}}
+  {min_vx3 float 0 {"3rd minimal\nx-value" "" "" g}}
   
 }
 
 set mAV2 {
   {}
   {max_vx1 float 0 {"1st maximal\nx-value" "" "" W} -1E6 1E6 1}
-  {max_vx2 float 0 {"2nd maximal\nx-value" "" "" F} -1E6 1E6 1}
-  {max_vx3 float 0 {"3rd maximal\nx-value" "" "" G} -1E6 1E6 1}
+  {max_vx2 float 0 {"2nd maximal\nx-value" "" "" F}}
+  {max_vx3 float 0 {"3rd maximal\nx-value" "" "" G}}
   
 }
 
@@ -2710,9 +2710,9 @@ set nA {
   {number_xbins1 int 100 {
     "1st number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
   {number_xbins2 int 100 {
-    "2nd number\nof x-bins" "number of bins within the y-axis interval" "" y} 1 1E6}	
+    "2nd number\nof x-bins" "number of bins within the y-axis interval" "" y}}	
   {number_xbins3 int 100 {
-    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z} 1 1E6} 
+    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z}} 
 }
 
 set fA1 {
@@ -4161,6 +4161,7 @@ Xcontrol is a generic graphical user interface to control experiments.
 
 First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
+
 
 Contact: fromme@hmi.de
 }
