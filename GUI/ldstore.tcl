@@ -801,7 +801,7 @@ proc loadAll {extension {givenname ""}} {
     if {[regexp "\{(.+)\}" $line a v]} {
       if {$version <= 2 && $v == "0"} {
         # Hack: some entry values have to be re-mapped 0 -> -1
-        if [regexp {^(eval_color|minColor|maxColor|mtrl_colour|detect_color)_[0-9]+$} $e] {
+        if [regexp {^(mtrl_colour|eval_colour|sn_eval_colour|si_color|detectcolor|treatcolor)_[0-9]+$} $e] {
           set v -1
         }
       }
