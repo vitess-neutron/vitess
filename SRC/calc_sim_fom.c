@@ -69,8 +69,8 @@ short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, co
 #ifdef VT_WINDOWS
     system("Simulations.bat");
 #else
-    system("./Simulations.sh");
     system("chmod u+x Simulations.sh");
+    system("./Simulations.sh");
 #endif 
     rcf = system(sFomCmdName);
 
