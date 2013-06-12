@@ -1433,7 +1433,7 @@ set chopper_discESET {
     {yes no} {1 0}}
   {wnd_colour radio no {
     "set colour"
-    "yes: colour of neutrons will be defined by window that they are passing\nno: color set before is kept" "" c}
+    "yes: colour of the neutrons will be defined by the window that they are passing\nno: colour remains unchanged" "" c}
     {yes no} {1 0}}
   {chop_file pareditablefile chop_105.dat {
     "chopper file"
@@ -3294,8 +3294,8 @@ set sample_elasticisotrESET {
   {pf pareditablefile sampleelastizotr_default.iso {"parameter\nfile" "" "" P} r iso 1}
   {"Special Options" header}
   {r int 1 {repetition "" "" A}}
-  {si_color int 0
-    {"colour" "if zero, all neutrons are scattered\nif not, only neutrons of this color are scattered" "" c}}
+  {si_color int -1
+    {"colour" "if -1, all neutrons are scattered\nif not, only neutrons of this color are scattered" "" c}}
 }
 
 ### iso file description
@@ -3493,8 +3493,8 @@ set eval_elast2ESET {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
   {}
   {"color selection" header}
-  {eval_colour int 0 {
-    "color" "color necessary for the trajectory to be evaluated\ncolor 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {eval_colour int -1 {
+    "color" "color necessary for the trajectory to be evaluated\ncolor -1 means: all trajectories are evaluated" "" C} 0 32768}
   {minColor int -1 {
     "minColor" "color necessary for the trajectory to be evaluated\nminColor -1 means: all trajectories are evaluated\notherwise neutron color must be >= minColor" "" a} -1 32768}
   {maxColor int -1 {
