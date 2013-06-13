@@ -32,7 +32,7 @@
 FILE        *Par_Sample, *XFILE; 
 char        Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER], *SampleFileName;
 long        User, Repetition, BoseF, repet,  i ;
-short       iColor=0;                // if != 0, only neutrons of this colour are treated 
+short       iColor=ANY_COLOR;                // if != -1, only neutrons of this colour are treated 
 double      TOF, WL, Prob, MaxPathLength, MaxPathLengthHol=0., PathLength, PathLengthHol=0., scattered_dir[3], l_reference, h_reference, v_reference;
 double      P1, P2, P3, P4, Temperature, D1, D2, D3, AnglSampleHoriz, AnglSampleVert, AnglOutHoriz, AnglOutVert ;
 double      RotMatrixSample[3][3], RotMatrixScatter[3][3], RotMatrixOut[3][3], RotMatrixDelta[3][3];
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     for(i=0;i<NumNeutGot ;i++) {
       CHECK;
 
-      if (iColor==0 || iColor==InputNeutrons[i].Color)
+      if (iColor==ANY_COLOR || iColor==InputNeutrons[i].Color)
       {
         MaxPathLengthHol = PathLengthHol = 0.; 
             
