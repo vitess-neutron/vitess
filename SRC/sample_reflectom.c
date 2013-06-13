@@ -924,13 +924,18 @@ void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutrons, double dQin, double 
   long double vDiff1;
   int i;
   short switchSign = 0;
+  double Q_SC = 0;
 
   //  fprintf(LogFilePtr,"Direction in sample frame: %f %f %f\n", ParentNeutron->Vector[0], ParentNeutron->Vector[1], ParentNeutron->Vector[2]);
 
   for (i=0; i < 3; i++) nDir[i] = ParentNeutron->Vector[i];
 
+  // Change final neutron vector dQf to scattering vector Q_SC
+  Q_SC = dQf + dQin;
+
   vDiff0 = nDir[0];
-  nDir[0] *= dQf/dQin;
+  //  nDir[0] *= dQf/dQin;
+  nDir[0] *= Q_SC/dQin;
   if (fabs(nDir[0]) > fabs(vDiff0)) switchSign = 1;
   vDiff0 = vDiff0 - nDir[0];
   
