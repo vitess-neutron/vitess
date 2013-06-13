@@ -1,6 +1,15 @@
 VITESS 3.1  Release Note
 ------------------------
 
+General:
+--------
+colour is now uniquely used in the way:
+-1: all colours  (default in monitor and eval)
+ 0: no colour
+Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours greater equal 1 will not be considered  
+With the first use of Vitess 3.1, colour=0 will be changed to colour=-1 in the monitor and evaluate modules, where it has been used differently so far. 
+But it is recommended to check it.
+
 Optimization:
 -------------
 Numerical optimization is included now. Two gradient methods and a Metropolis algorithm can be used in this first version, others will follow.
@@ -26,14 +35,6 @@ You may give the actual module a specific name. The actual module in the right f
 is emphasized in the module list. Name tags help to distinguish modules in a list
 of equal modules, for example monitor series.
 
-General:
---------
-colour is now uniquely used in the way:
--1: all colours  (default in monitor and eval)
- 0: no colour
-Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours greater equal 1 will not be considered  
-
-
 New modules:
 ------------
 filter            : should be used instead of using filters in monitor modules.
@@ -56,3 +57,9 @@ source            : better moderator descriptions for ISIS and HMI
 spacewindow       : positioning in x-direction
 sample_reflectom  : handles offspecular scattering now
 writeout          : writes trajectories now also in McStas format
+
+Moderator data:
+--------------
+Moderator characteristics have been updated for ESS, SNS, HZB and ILL and the structure of the FILES folder has been changed.
+For ESS and SNS, a version of the data set has been included to allow using recent or earlier characteristics.
+For the same reason, HZB and ILL  input files exist now with names describing the version.
