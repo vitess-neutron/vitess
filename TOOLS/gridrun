@@ -119,6 +119,7 @@ batchopt batcharg    additional arguments for the SGE batch system like -l cpu=8
 options may be
 -p number            number of parallel pipes to start
 -P number            generate a job for each parallel pipe, companion of --nodes=..
+                     use either -p or -P
 -m                   do not merge neutron trajectory output files
 -r                   repeat random seed of source module to following modules
                      default: --Z values from grd file
@@ -663,7 +664,7 @@ EOS
       close OF;
       chmod 0700, $fn;
       # extract a resonable sge job name
-      $_ = "$jobname-$node";
+      $_ = "$jobname-$node-$first";
       tr/.a-zA-Z0-9_-/_/c;
       $_= "v$_" unless /^[a-zA-Z]/; # sge job name must begin with alpha char
       $_ = "$SGECom[0] -N $_";
@@ -715,7 +716,7 @@ sub matchPipesToNodes {
 
   # match pipe instances to execution nodes / queues
 
-  return ("$Node[0] 1 $n_instances") if $nodes <= 1 || $n_instances <= 1;
+  return ("$Node[0] 1 $n_instances") if ($nodes <= 1 && !$ppjob) || $n_instances <= 1;
 
   my ($firsti, $nexti, $i, @I, @Match);
   my $node = 0;
