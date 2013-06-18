@@ -373,7 +373,17 @@ proc useExtPlotCmd {app fname} {
 }
 
 ###
-### Templates for plotting data
+### Templates to plot monitor spectrum data
+
+# Each file in the template directory FILES/Plot may be used as template to plot spectra.
+# The plain file names are offered in a selection box for monitor file entries.
+# Templates contain plot commands, like
+# gnu1D     gnuplot commands to plot a 1D spectrum
+# gnu2D                    "           2D spectrum
+# If the first line of the file is a bang line, it is a command shell
+# suitable for Linux or Mac OS and may use any program suitable to display a spectrum.
+# Templates may contain macro variables to be expanded:
+# $PPATH $PFILENAME $PMODULE $PSKIP $PROWS $PCOLS
 
 proc saveTemplateFile {w fn} {
   saveTextFile $w $fn "template file"
@@ -412,12 +422,19 @@ proc newTemplate {} {
 proc getPlotTemplates {{withdefault 1}} {
   set li {}
   if {"" == [set tdir [getTemplateDir]]} return $li
-  if [catch {set lsi [glob -nocomplain -type f [file join $tdir *]]}] {
+  if [catch {set lsi [lsort [glob -nocomplain -type f [file join $tdir *]]]}] {
     return $li
   }
   if {$withdefault} {lappend li -}
   foreach fn $lsi {
     if  {[file size $fn] > 0} {
+      if {[getSystem] == "windows"} {
+        # do not offer shell command files
+        if [catch {open $fn r} f] continue
+        gets $f line
+        close $f
+        if {"\#!" == [string range $line 0 1]} continue
+      }
       lappend li [file tail $fn]
     }
   }
@@ -618,7 +635,7 @@ proc plotWithTemplate {fn topt} {
     close $f
     return
   }
-  if {"\#!" == [string range $line 0 1] && [getSystem] == "unix"} {
+  if {"\#!" == [string range $line 0 1]} {
     # bang line of a command file
     set bang "$line\n"
     set content ""
@@ -654,7 +671,7 @@ proc plotWithTemplate {fn topt} {
       after 2000 file delete $tfn
     }
   } else {
-    # plot with gnuplot
+    # plot with gnuplot, by piping commands
     set app [getPreferredPlotCmd]
     if {$app == ""} return
     set gp [getPlotCmdHandle $app]
