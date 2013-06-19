@@ -196,11 +196,11 @@ proc fileEntry {w line labelwidth width {app _}} {
 
   if {$entype == 3} {
     button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
-	  -command [list plotMonFile $dim $variable $app]
+	  -command [list plotMonFile $variable $app]
     # template radio selection
     forceDef [set var ${variable}_o$app] -
     frame $w.u -bg $bgColor
-    optEntry $w.u.r $var [getPlotTemplates]
+    optEntry $w.u.r $var [concat {-} [getPlotTemplates]]
     pack $w.u.r
     label $w.lu -text using -bg $bgColor
     pack $w.l $w.e $w.b $w.p $w.lu $w.u -side left -anchor w
@@ -218,19 +218,20 @@ proc fileEntry {w line labelwidth width {app _}} {
       pack $w.l $w.e $w.b $w.bn $w.x -side left -anchor w
     } else {
       button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
-	  -command [list plotMonFile $dim $variable $app]
+	  -command [list plotMonFile $variable $app]
       # Autoplot selection
+      # toggle has a special _r_app variable name
       forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
       # template radio selection
-      set tlist [getPlotTemplates 0]
+      set tlist [getPlotTemplates]
       if {[llength $tlist] > 0} {
+        # selection has a special _o_app variable name
         set var ${variable}_o$app
-        upvar #0 $var v
-        if {$dim > 1} {set li 1} else {set li 0}
-        set v [lindex $tlist $li]
         frame $w.u -bg $bgColor
-        optEntry $w.u.r $var $tlist
+        # add a default - option as first choice
+        # which means do not select a template as default
+        optEntry $w.u.r $var [concat - $tlist]
         pack $w.u.r
         pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.u $w.r -side left -anchor w
       } else {

@@ -4,7 +4,7 @@ VITESS knows three ways to plot 1D (y values at given x positions) and
 
 A TclTK plot widgets
 B external plot software, especially Gnuplot, integrated to the distribution
-C external plot software, called through command shell execution
+C external plot software, called through command shell execution (Unix only)
 
 A is always present, and used bltwish capabilities when bltwish was used.
 B has better 1D displays, many users are accustomed to Gnuplot. You may zoom plots
@@ -24,12 +24,13 @@ If you select a given template, you override the default plot.
 }
 
 helpItem {Plot template example} {
-If you want to plot 2D data with Gnuplot, you could create a template gnu2d with those 3 lines
+If you want to plot 2D data (xyz format) with Gnuplot, using a simple red color table, you could
+edit the template file gnu2D with those 3 lines
 set palette defined (0 "black", 1 "red")
 set pm3d map
 splot '$PFILENAME'
 
-If you have a perl interface to your plot software, the first 2 lines could look like
+If you have a perl interface to your plot software, the first 2 lines of a template shell1D could look like
 #!/usr/bin/perl
 my $fn = '$PFILENAME';
 
@@ -63,8 +64,8 @@ The p key is bound to printing on the default postscript printer with Linux.
 
 When using TclTK 8.5 error messages from gnuplot are copied to the VITESS output window.
 
-If you need special options to gnuplot, you may use the "Plot Cmd" window, or write
-a plot template.
+If you need special options to gnuplot, you may use the "Plot Cmd" window, or change an existing
+plot template, or just add a file to the FILES/Plot directory for a new plot template.
 }
 
 proc getFreePlot {} {
@@ -108,6 +109,10 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
 }
 
 proc checkPlotfile  {fname} {
+  # return either matrix for 2D matrix files, 
+  # xyz for files with at least 2 columns of numbers,
+  # or "" for insufficient file names/files
+  
   if [catch {open $fname r} f] {
     showText "! can't open $fname"
     return ""
@@ -117,20 +122,26 @@ proc checkPlotfile  {fname} {
     showText "! empty $fname"
     return ""
   }
-  set ftype matrix
+
   while {[gets $f ins] > 0} {
     if {[string range $ins 0 0] != "#"} break
-    # check if its a "x y z" file
-    if [regexp {x\s+y\s+z} $ins] {
-      set ftype xyz
+    # check if its a matrix file
+    if [regexp {matrix} $ins] {
+      close $f
+      return matrix
     }
   }
   close $f
-  if {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
+  # check if it has more than 16 colums
+  eval set ll [list $ins]
+  if {[llength $ll] > 16} {
+    return matrix
+  } elseif {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
+    # min. 2 colums of numbers
     showText "! insufficient plot file"
     return ""
   }
-  return $ftype
+  return xyz
 }
 
 # show 2d array coded with colors
@@ -186,7 +197,7 @@ proc show2Dfile {fname} {
   set canvaswidth 10.0
   set canvasheight [expr $canvaswidth * $rows / $cols]
   catch {destroy $w}
-  global bgColor gnuColorTable
+  global bgColor
   toplevel $w -background $bgColor
   wm title $w [set tit "Y-Z Plot [file tail $fname]"]
   wm iconname $w $tit
@@ -314,7 +325,7 @@ proc doGnuplotCmd {w} {
   global GnuPlotCmd
   set c [string trim $GnuPlotCmd]
   if {$c == ""} return
-  set app [getPreferredPlotCmd]
+  set app [getGnuPlotApp]
   if {$app == ""} return
   flushGnuplotCmd [getPlotCmdHandle $app 0] $c
 }
@@ -326,7 +337,7 @@ proc getGnuplotTerminalType {} {
   }
   # set the prefered gnuplot type wxt
   set GnuPlotTerminal wxt
-  if [catch {set gpt [open "|[getPreferredPlotCmd] 2>@1" r+]}] return
+  if [catch {set gpt [open "|[getGnuPlotApp] 2>@1" r+]}] return
   puts $gpt "set term wxt"
   puts $gpt "print 'YYY'"
   flush $gpt
@@ -343,7 +354,7 @@ proc getGnuplotTerminalType {} {
   return $GnuPlotTerminal
 }
 
-proc useExtPlotCmd {app fname} {
+proc gnuPlotCmd {app fname} {
   global Plotfile GnuPlotCmd WindowIndex tcl_platform
   set wxt [getGnuplotTerminalType]
   set gp [getPlotCmdHandle $app]
@@ -387,7 +398,6 @@ proc useExtPlotCmd {app fname} {
 
 proc saveTemplateFile {w fn} {
   saveTextFile $w $fn "template file"
-  getPlotTemplates
 }
 
 proc getTemplateDir {} {
@@ -419,13 +429,12 @@ proc newTemplate {} {
   .tedit.v.text insert end $Helpitems(Plot template example) 
 }
 
-proc getPlotTemplates {{withdefault 1}} {
+proc getPlotTemplates {} {
   set li {}
   if {"" == [set tdir [getTemplateDir]]} return $li
   if [catch {set lsi [lsort [glob -nocomplain -type f [file join $tdir *]]]}] {
     return $li
   }
-  if {$withdefault} {lappend li -}
   foreach fn $lsi {
     if  {[file size $fn] > 0} {
       if {[getSystem] == "windows"} {
@@ -467,16 +476,17 @@ proc findFile {roota rootb np {maxlevel 4}} {
   return ""
 }
 
-proc getPreferredPlotCmd {} {
-  global PreferredPlotCmd
-  if [info exists PreferredPlotCmd] {return $PreferredPlotCmd}
+proc getGnuPlotApp {} {
+  # locate the executable gnuplot program
+  global FoundGnuplotApp
+  if [info exists FoundGnuplotApp] {return $FoundGnuplotApp}
   switch [getSystem] {
     unix {
 	if [catch {exec which gnuplot} res] {set res ""}
-	return [set PreferredPlotCmd $res]
+	return [set FoundGnuplotApp $res]
     }
-    windows {return [set PreferredPlotCmd [findFile C:/ D:/ binary/gnuplot.exe]]}
-    default {return [set PreferredPlotCmd ""]}
+    windows {return [set FoundGnuplotApp [findFile C:/ D:/ binary/gnuplot.exe]]}
+    default {return [set FoundGnuplotApp ""]}
   }
 }
 
@@ -518,7 +528,7 @@ proc getPreferredX3DCmd {} {
     default { }
   }
   if {$ecmd != ""} { gSet x3dapp_ $ecmd }
-  return [set PreferredPlotCmd $ecmd]
+  return [set PreferredX3DCmd $ecmd]
 }
 
 proc editX3DOptions {} {
@@ -672,13 +682,13 @@ proc plotWithTemplate {fn topt} {
     }
   } else {
     # plot with gnuplot, by piping commands
-    set app [getPreferredPlotCmd]
+    set app [getGnuPlotApp]
     if {$app == ""} return
     set gp [getPlotCmdHandle $app]
     if {$gp == ""} return
     foreach s [split $content "\n"] {
       if {$s != ""} {
-        #dmf debug
+        #dmf:debug
         #puts "pro gnu :$s:"
         puts $gp $s
       }
@@ -689,7 +699,7 @@ proc plotWithTemplate {fn topt} {
 
 ###
 ### plotMonFile
-proc plotMonFile {type v app} {
+proc plotMonFile {v app} {
   set fn [entryVal $v $app]
   if {$app != "_tplot_"} {
     set fn [file join [entryVal defdirectory] $fn]
@@ -702,28 +712,25 @@ proc plotMonFile {type v app} {
 proc showPlotFile {name {topt 0}} {
 
   set ftype [checkPlotfile $name]
-  if {$ftype == ""} return
 
-  #dmf debug
-  #puts "showPlotFile $name :$topt:  fytpe $ftype"
+  if {$ftype == ""} return
+  if {$ftype == "matrix" || $topt == 2} {
+    # if requested, or if the file is a 2D monitor file in matrix format,
+    # gnuplot may not be used to plot, but we use our own Tcl/Tk code
+    show2Dfile $name
+    return
+  }
 
   switch $topt {
     "" - "-" - 1 {
-      if {"" != [set gcmd [getPreferredPlotCmd]]} {
-        useExtPlotCmd $gcmd $name
+      if {"" != [set gcmd [getGnuPlotApp]]} {
+        gnuPlotCmd $gcmd $name
       } else {
         showXYfile $name
       }
     }
-    2 {show2Dfile $name}
     default {
-      if {$topt == "gplot2d" && $ftype == "matrix"} {
-        # if the file is a 2D monitor file in matrix format,
-        # gnuplot may not be used directly to plot
-        show2Dfile $name
-      } else {
-        plotWithTemplate $name $topt
-      }
+      plotWithTemplate $name $topt
     }
   }
 }

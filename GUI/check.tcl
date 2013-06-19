@@ -286,6 +286,7 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	    if {$tt > 0} {
 	      set vv [entryVal ${varname}_r $app]
 	      if {$vv == "1"} {
+                # add variable to autoplot list
 		lappend Plotfile $v
                 set topt [entryVal ${varname}_o $app]
                 if {$topt != "" && $topt != "_"} {set tt $topt}

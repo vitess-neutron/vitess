@@ -32,7 +32,7 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
-set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
 # Some variables for settings begin with a capital letter, or are otherwise rejected by

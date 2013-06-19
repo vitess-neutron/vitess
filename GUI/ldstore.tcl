@@ -483,10 +483,6 @@ proc findModName {n com} {
 }
 
 proc interpretCommand {com mi gsetkey gsetval} {
-  # dmf:debug
-  # uncomment next 2 lines
-  #puts "interpretCommand $mi"
-  #puts $com
   set modname ""
   upvar $gsetkey gkey
   upvar $gsetval gval
@@ -566,9 +562,6 @@ proc interpretCommand {com mi gsetkey gsetval} {
       }
       lappend gkey ${oname}_$mi
       lappend gval $v
-      # dmf:debug
-      #uncomment next line
-      #puts "+ ${oname}_$mi -> $v"
     }
   }
   return 1
@@ -696,25 +689,29 @@ proc cleanupGlobalVariables {} {
       lappend ENames($mod) [lindex $n 0]
     }
     lappend ENames($mod) mmm ; # special module name entry 
-    # puts "$mod ::::"
-    # puts $nlist($mod)
   }
 
-  # Now we examine each <name>_<number> variable.
   foreach e [info globals] {
+    # we examine <name>_<number> variables.
     if {! [regexp {^(.+)_([0-9]+)$} $e a nm n]} continue
-    # puts "lookat $e"
     if [info exists mname($n)] {
+      # module n exists, look if the variable belongs to that module
       set rc [lsearch $ENames($mname($n)) $nm]
       # puts "   $mname($n) exists, $nm has index $rc"
       if {$rc >= 0} continue
+      if  {[regexp {^(.+)_[or]_([0-9]+)$} $e a nm n]} {
+        # do not delete name_o_n or name_r_n variables for known names
+        set rc [lsearch $ENames($mname($n)) $nm]
+        # puts "   $mname($n) exists, $nm has index $rc"
+        if {$rc >= 0} continue
+      }
     }
     # else delete that relict
-    # lappend delist $e
+    #dmf:debug
+    #puts "unset $e"
     global $e
     unset $e
   }
-  # if [info exists delist] {puts "deleted\n$delist"}
 }
 
 proc checkConsistency {} {
@@ -859,7 +856,7 @@ proc deleteAllModules {} {
   setInstrumentfile 1
   gSet LastState ""
   helpFrame $Amf
-  foreach e [stringToSet [info globals]] {
+  foreach e [info globals] {
     if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e] {
       global $e
