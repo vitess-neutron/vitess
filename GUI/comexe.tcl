@@ -784,9 +784,9 @@ proc doGather {gcom geomfile glist} {
   }
 
   set com "$gcom$opt -o $visRes $gl"
-  # dmf:debug uncommnent next line
-  #puts "debug: doing\n$com"
+
   if [catch {eval exec $com}] {
+    #dmf:debug
     # puts "debug: caught exception"
     catch {file delete $visRes}
     return ""
@@ -943,8 +943,7 @@ proc startActionV {} {
     set fullres ""
   }
 
-  # puts "debug: fullres $fullres  trajmode $trajmode"
-  # dmf:debug comment next line
+  # dmf:debug comment next line to keep files
   condDelList VisLogList
   set VisState 0
 
@@ -958,8 +957,6 @@ proc startActionV {} {
       set ecom [getPreferredX3DCmd]
       if {$ecom != ""} {
         # launch external X3D viewer
-        # dmf:debug uncomment next line
-        #puts "doing :$ecom $fullres"
         catch {exec $ecom $fullres &}
       } elseif {[info procs VisViewer] != ""} {
         # launch viewer = browser
@@ -1073,7 +1070,13 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
 
       set PipeActive 0
       if {$sercom == "" && $VisState == 0} {
+        # Autoplot
+        set ploti -1
 	foreach p $Plotfile pt $Plottype {
+          if [incr ploti] {
+            # wait some time
+            after 500
+          }
           showPlotFile $p $pt
 	}
       }

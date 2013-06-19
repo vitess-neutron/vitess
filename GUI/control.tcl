@@ -267,7 +267,7 @@ proc controlMenu {w} {
       {c "Paste Module Parameters" pasteModPars}
 
   set lmenu {{c "Plot File" {plotFile 1}} {c "2D Plot File" {plotFile 2}}}
-  if {"" != [getPreferredPlotCmd]} {
+  if {"" != [getGnuPlotApp]} {
     lappend lmenu \
         {c "Plot Cmd" {plotCmdWindow}}\
         {c "Plot using Template" {plotTemplateCmdWindow}} s\
