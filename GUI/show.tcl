@@ -110,7 +110,8 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
 
 proc checkPlotfile  {fname} {
   # return either matrix for 2D matrix files, 
-  # xyz for files with at least 2 columns of numbers,
+  # xyz for 2D files with x y z values
+  # xz for files with at least 2 columns of numbers,
   # or "" for insufficient file names/files
   
   if [catch {open $fname r} f] {
@@ -130,6 +131,10 @@ proc checkPlotfile  {fname} {
       close $f
       return matrix
     }
+    if [regexp {x  y  z} $ins] {
+      close $f
+      return xyz
+    }
   }
   close $f
   # check if it has more than 16 colums
@@ -141,7 +146,7 @@ proc checkPlotfile  {fname} {
     showText "! insufficient plot file"
     return ""
   }
-  return xyz
+  return xz
 }
 
 # show 2d array coded with colors
@@ -322,8 +327,10 @@ proc flushGnuplotCmd {f cmd} {
 }
 
 proc doGnuplotCmd {w} {
+  #  GnuPlotCmd may be set in the template plot window
   global GnuPlotCmd
   set c [string trim $GnuPlotCmd]
+  # do nothing, if this entry was blank
   if {$c == ""} return
   set app [getGnuPlotApp]
   if {$app == ""} return
@@ -354,8 +361,8 @@ proc getGnuplotTerminalType {} {
   return $GnuPlotTerminal
 }
 
-proc gnuPlotCmd {app fname} {
-  global Plotfile GnuPlotCmd WindowIndex tcl_platform
+proc gnuPlotCmd {app fname ftype} {
+  global Plotfile WindowIndex tcl_platform
   set wxt [getGnuplotTerminalType]
   set gp [getPlotCmdHandle $app]
   set wxtcmd "set term $wxt $WindowIndex"
@@ -380,7 +387,12 @@ proc gnuPlotCmd {app fname} {
     set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
   }
   puts $gp "bind p \"$c\""
-  flushGnuplotCmd $gp [set GnuPlotCmd "plot '$fname'"]
+  if {$ftype == "xz"} {
+    set com "unset pm3d; plot '$fname'"
+  } else {
+    set com "set pm3d map; splot '$fname'"
+  }
+  flushGnuplotCmd $gp $com
 }
 
 ###
@@ -724,7 +736,7 @@ proc showPlotFile {name {topt 0}} {
   switch $topt {
     "" - "-" - 1 {
       if {"" != [set gcmd [getGnuPlotApp]]} {
-        gnuPlotCmd $gcmd $name
+        gnuPlotCmd $gcmd $name $ftype
       } else {
         showXYfile $name
       }
