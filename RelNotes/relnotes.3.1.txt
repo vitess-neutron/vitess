@@ -22,9 +22,11 @@ All modules generate a geometric representation, some  got a specific improvemen
 
 Grid runs:
 ----------
-Starting with a .grd file of an experiment you may start a parallel simulation on a
-grid of compute nodes. These must be Linux servers, accessed by ssh or the sun grid
-engine, and have a common home directory. See TOOLS/gridrun -h for details.
+If you save a .grd file of your instrument, you may start a parallel simulation on a
+grid of computer nodes. These must be Linux servers, accessed by ssh or the sun grid
+engine, and have a common home directory. The framework will split the simulation 
+into n jobs, and the results (monitor files, binary output) can then be combined. 
+See TOOLS/gridrun -h and Concepts/clusterjobs.txt for details.  
 
 GUI:
 ----
@@ -51,11 +53,11 @@ Upgraded detector module:
 
 Bug fixes, improvements:
 -----------------------
-monitor1D         :
+monitor1D         : The generic monitor1D can now write out up to 3 neutron parameters simultaneously in 3 different monitor files with a common filename pattern.
 mon1              : option to write files for all colours simultaneously
 source            : better moderator descriptions for ISIS and HMI
 spacewindow       : positioning in x-direction
-sample_reflectom  : handles offspecular scattering now
+sample_reflectom  : handles offspecular scattering now, see Help file.
 writeout          : writes trajectories now also in McStas format
 
 Moderator data:
