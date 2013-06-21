@@ -66,4 +66,4 @@ Moderator characteristics have been updated for ESS, SNS, HZB and ILL and the st
 For ESS and SNS, a version of the data set has been included to allow using recent or earlier characteristics.
 For the same reason, HZB and ILL  input files exist now with names describing the version.
 
-(June 19 2013, subversion 427)
+(June 21 2013, subversion 430)
