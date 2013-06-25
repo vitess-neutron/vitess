@@ -314,7 +314,7 @@ set inputESET {
 ###
 set xcontrolDefaultsESET {
   {plotapp browsefile gnuplot {"plot application" "Application to be executed when the 'Ext. Plot file' title menu button is pressed. The application becomes called with a file name parameter."} r}
-  {x3dapp browsefile InstantPlayer {"X3D application" "Application to be executed when visualizing X3D trajectories + instrument gemetry. The application becomes called with a file name parameter."} r}
+  {x3dapp browsefile InstantPlayer {"X3D application" "Application to be executed when visualizing X3D trajectories + instrument geometry. The application becomes called with a file name parameter."} r}
 }
 
 
