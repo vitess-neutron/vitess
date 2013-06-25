@@ -484,9 +484,9 @@ proc controlMenu {w} {
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
   # if we have an X3D viewer installed, prefer this over SVG
-  if {[getPreferredX3DCmd] == ""} {set emode X3D} else {set emode "SVG xz"}
+  if {[getPreferredX3DCmd] != ""} {set emode X3D} else {set emode "SVG xz"}
   forceDef trajmode $emode
-  cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
+  cascEntries $wo.trajmode trajmode X3D "SVG xz" "SVG xy" textfile
 
   forceDef browse_ext_mode select
   cascEntries $wo.browse_ext_mode browse_ext_mode all select

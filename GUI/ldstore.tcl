@@ -848,7 +848,6 @@ proc loadAll {extension {givenname ""}} {
 }
 
 proc deleteAllModules {} {
-  # delete all modules
   global Mlf Amf DoNotSaveRegexp
   deleteSomeModules $Mlf 1
   reShowModules $Mlf

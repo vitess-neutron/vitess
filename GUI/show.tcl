@@ -517,12 +517,33 @@ proc getX3DoptfileName {} {
 }
 
 proc getPreferredX3DCmd {} {
-  global PreferredX3DCmd
-  set cmd [entryVal x3dapp]
+  global PreferredX3DCmd UserPrefX3DCmd x3dapp_
+  set newuserpref 0
+  if [info exists x3dapp_] {
+    # we have some preference of the user
+    set cmd $x3dapp_
+    if [info exists UserPrefX3DCmd] {
+      if {$cmd != "$UserPrefX3DCmd"} {
+        set newuserpref 1
+      }
+    } else {
+      set newuserpref 1
+    }
+    set UserPrefX3DCmd $cmd
+  } else {
+    set cmd InstantPlayer
+  }
   if {$cmd != "" && [file exists $cmd]} {
     return [set PreferredX3DCmd $cmd]
   }
-  if [info exists PreferredX3DCmd] {return $PreferredX3DCmd}
+  # if we have no new user preference, and we had already checked
+  # return what we did find lately
+  if [info exists PreferredX3DCmd] {
+    if {$PreferredX3DCmd != "" || $newuserpref == 0} {
+      return $PreferredX3DCmd
+    }
+  }
+  # try to locate the x3d viewer
   set ecmd ""
   switch [getSystem] {
     unix {
@@ -539,7 +560,7 @@ proc getPreferredX3DCmd {} {
     }
     default { }
   }
-  if {$ecmd != ""} { gSet x3dapp_ $ecmd }
+  if {$ecmd != ""} { set x3dapp_ $ecmd }
   return [set PreferredX3DCmd $ecmd]
 }
 
