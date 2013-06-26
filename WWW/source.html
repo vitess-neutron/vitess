@@ -114,6 +114,19 @@ modes of ray-tracing are explained in a special help file called 'Ray-tracing'.<
  implemented    to describe the moderator characteristics</td>
             <td>&nbsp;"ESS", &nbsp;"SNS"</td>
            </tr>
+	<tr>
+           <td width="15%">Data base<br>
+                 <br>
+           </td>
+                  <td valign="middle" align="center">---<br>
+                 </td>
+                 <td valign="middle" align="center">X<br>
+                 </td>
+                 <td valign="middle" align="center">X<br>
+                 </td>
+           <td>Version of moderator descriptions, see the paragraph &nbsp;"ESS and SNS" below.</td>
+            <td>1, 2, 3</td>
+           </tr>
 
 
   </tbody>
@@ -194,6 +207,7 @@ distribution file' is given. Table  1 gives a survey.<br>
           (12x12cm&sup2;)</td>
             <td>calculated</td>
               <td>from input&nbsp; <br>
+
           (50 Hz)</td>
             <td>---</td>
               <td>analytical funct.</td>
@@ -397,10 +411,13 @@ used,   if no 'time  distribution file' is given. </p>
      functions. Moderator type, shape and size , repetition rate, (as well
  as   pulse length in case of the ESS long pulse source) must still be given.
    The  temperature is also taken from the input, it must be 50 K or 325
-K.   The flux  as a function of wavelength and time is calculated according
-to   the functions  published by F. Mezei in Dec. 2000 as an email to the
-members   of the ESS Instrumentation Task Group ('picture gallery' and preceding
-paper).     The analytical functions used are similar to those shown before,
+K.   The flux  as a function of wavelength and time is calculated <b>according
+to the version of the moderator characteristics given by the user. Recent versions of the data base parameter 
+affect the description of the cold and multi-spectral moderator for the ESS (versions 2 and 3) and the poisoned thermal and cold moderator
+for the SNS (version 2) as compared to the functions published by F. Mezei in Dec. 2000 as an email to the
+members of the ESS Instrumentation Task Group ('picture gallery' and preceding
+paper). If you are uncertain which characteristics version to take, you are then better
+off with the most recent ones. </b> The analytical functions used are similar to those shown before,
 but the    time constants as well as the amplitudes are set in the program.
 These amplitudes    are scaled to be used for SNS.&nbsp;  </div>
 
