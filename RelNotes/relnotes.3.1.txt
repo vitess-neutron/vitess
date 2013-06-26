@@ -6,14 +6,17 @@ General:
 colour is now uniquely used in the way:
 -1: all colours  (default in monitor and eval)
  0: no colour
-Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours greater equal 1 will not be considered  
-With the first use of Vitess 3.1, colour=0 will be changed to colour=-1 in the monitor and evaluate modules, where it has been used differently so far. 
-But it is recommended to check it.
+Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours
+greater equal 1 will not be considered  
+With the first use of Vitess 3.1, colour=0 will be changed to colour=-1 in the monitor and evaluate modules,
+where it has been used differently so far. But it is recommended to check it.
 
 Optimization:
 -------------
-Numerical optimization is included now. Two gradient methods and a Metropolis algorithm can be used in this first version, others will follow.
-The handling is quite easy. In many cases, it can be used by just editing the ASCII control files that can be found in the folder 'OPTIMIZATION'. 
+Numerical optimization is included now. Two gradient methods and a Metropolis algorithm can be used
+in this first version, others will follow.
+The handling is quite easy. In many cases, it can be used by just editing the ASCII control files
+that can be found in the folder 'OPTIMIZATION'. 
 Its use is described in detail in the document 'Optimization.pdf' in the folder 'Concepts'. 
 
 Visualization:
@@ -45,15 +48,21 @@ source_csns       : moderator characteristics of the 'Chinese Spallation Neutron
 
 New tools:
 ----------
-Generate Extraction System:  This tool generates an input file for the sm_ensemble module, describing a (e.g. bispectral) extraction system consisting of up to 50 mirrors which can be combined with max. 4 guide walls (intransparent mirrors).
+Generate Extraction System:  This tool generates an input file for the sm_ensemble module, describing
+a (e.g. bispectral) extraction system consisting of up to 50 mirrors which can be combined with
+max. 4 guide walls (intransparent mirrors).
 
 Upgraded detector module:
 -------------------------
-3D volume detector instead of 2D area, tube geometry possible for flat detector, cylindrical detector with axis along x or y added, wavelength dependent efficiency now calculated from material or taken from input file, possibility to add resolution effects, new constant delta phi mode added, detector array can be build with several detector modules, event mode output file can be written
+3D volume detector instead of 2D area, tube geometry possible for flat detector, cylindrical detector
+with axis along x or y added, wavelength dependent efficiency now calculated from material or taken
+from input file, possibility to add resolution effects, new constant delta phi mode added,
+detector array can be build with several detector modules, event mode output file can be written.
 
 Bug fixes, improvements:
 -----------------------
-monitor1D         : The generic monitor1D can now write out up to 3 neutron parameters simultaneously in 3 different monitor files with a common filename pattern.
+monitor1D         : The generic monitor1D can now write out up to 3 neutron parameters simultaneously
+                    in 3 different monitor files with a common filename pattern.
 mon1              : option to write files for all colours simultaneously
 source            : better moderator descriptions for ISIS and HMI
 spacewindow       : positioning in x-direction
@@ -62,8 +71,9 @@ writeout          : writes trajectories now also in McStas format
 
 Moderator data:
 --------------
-Moderator characteristics have been updated for ESS, SNS, HZB and ILL and the structure of the FILES folder has been changed.
+Moderator characteristics have been updated for ESS, SNS, HZB and ILL and the structure
+of the FILES folder has been changed.
 For ESS and SNS, a version of the data set has been included to allow using recent or earlier characteristics.
 For the same reason, HZB and ILL  input files exist now with names describing the version.
 
-(June 21 2013, subversion 430)
+(June 26 2013, subversion 433)
