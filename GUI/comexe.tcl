@@ -524,7 +524,7 @@ proc cleanupPipes {} {
 proc PsCheckUnix {} {
   global PipeIdList
   set rc 0
-  if {"0" == [catch {exec ps -p $PipeIdList} res]} {
+  if {"0" == [catch {exec ps -p $PipeIdList 2>/dev/null} res]} {
     set PipeIdList {}
     foreach line [split $res \n] {
       set fi [lindex [split [string trim $line]] 0]
