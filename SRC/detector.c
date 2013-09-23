@@ -254,8 +254,8 @@ int main(int argc, char *argv[])
 	      //solid layer approximation: scale length in material with layer_thickness/total_thickness
 	    case 2:  //solid B10
 	    case 3:  // Li6
-	      LengthTillScattering*=absorberthickness/Thickness;
-	      FullLengthInDetector*=absorberthickness/Thickness;
+	      LengthTillScattering*=((NLayers*absorberthickness)/Thickness);
+	      FullLengthInDetector*=((NLayers*absorberthickness)/Thickness);
 	      ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100* EfficiencyMod;
 	      break; 
 	    case 5:  // other; use wavelength-independent input eff
@@ -372,14 +372,15 @@ double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID) {
   if (lambda < Eff.data[0].Lambda) {
     CountMessageID(DET_L_RANGE_TOO_SMALL, NeutronID);
     return Eff.data[0].Eff;
-  } else {
+  } 
+  else if (lambda > Eff.data[Eff.maxdata-1].Lambda){ 
+    CountMessageID(DET_L_RANGE_TOO_SMALL, NeutronID);
+    return Eff.data[Eff.maxdata-1].Eff;
+  }
+  else {
     for (i = 1; i<=Eff.maxdata; i++) {
       if (lambda < Eff.data[i].Lambda)
         return Eff.data[i].Eff + (Eff.data[i].Eff-Eff.data[i-1].Eff)/(Eff.data[i].Lambda-Eff.data[i-1].Lambda) * (lambda-Eff.data[i].Lambda);
-    }
-    if (i>Eff.maxdata) {
-      CountMessageID(DET_L_RANGE_TOO_SMALL, NeutronID);
-      return Eff.data[Eff.maxdata].Eff;
     }
   }
   return -1.;
@@ -579,10 +580,27 @@ long NeutronIntersectsTube(VectorType direction, VectorType Position, int l, Vec
 
 void CubeDetSpot(VectorType iSP, VectorType DetSpot, SampleType *Detector)
 {
+  int l=0; //layer
+
   DetSpot[0]=(floor((iSP[0]+Thickness/2)/PixelWidth[0])+0.5)*PixelWidth[0]-Thickness/2;
   DetSpot[1]=(floor((iSP[1]+Width/2)/PixelWidth[1])+0.5)*PixelWidth[1]-Width/2;
   DetSpot[2]=(floor((iSP[2]+Height/2)/PixelWidth[2])+0.5)*PixelWidth[2]-Height/2;
-	
+
+  if(Tubeshift){
+    //get layer
+    l=floor(iSP[0]/PixelWidth[0]);
+    if(vertTubeOrientation){
+      DetSpot[1]= (l%2) ? 
+	(floor((iSP[1]+Width/2)/PixelWidth[1])+0.75)*PixelWidth[1]-Width/2 :
+	(floor((iSP[1]+Width/2)/PixelWidth[1])+0.25)*PixelWidth[1]-Width/2;
+    }
+    else {
+      DetSpot[2]= (l%2)?
+	(floor((iSP[2]+Height/2)/PixelWidth[2])+0.75)*PixelWidth[2]-Height/2 :
+	(floor((iSP[2]+Height/2)/PixelWidth[2])+0.25)*PixelWidth[2]-Height/2;
+    }
+  }
+  
 }
 
 
