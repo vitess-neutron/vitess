@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
       Y1.push_back( Width1Wall.at(j)/2 );
       Z1.push_back( LengthWall.at(j)/(2*cos(AngleWall.at(j)*PI/180)) );
       Y2.push_back( -Y1.at(k) );
-      Z2.push_back( -Z1.at(k) );
+      Z2.push_back( Z1.at(k) );
       Y3.push_back( -Width2Wall.at(j)/2 );
       Z3.push_back( -Z2.at(k) );
       Y4.push_back( -Y3.at(k) );
