@@ -1085,7 +1085,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   { pGeomFile = fopen( FullParName(pGeomFileName), "w");
     if (pGeomFile)
       DefineColors(pGeomFile);
-      fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angels\n#\n"); 
+      fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angles\n#\n"); 
     CopyVector(vNull, vBegPos);
   }
   /* each other module appends a line */
