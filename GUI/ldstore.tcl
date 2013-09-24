@@ -5,6 +5,7 @@
 
 proc reShowModules {w} {
   global maxModule DummyEntry LastWin
+  disableModule ;  # set all modules enabled
   cleanupModView
   set list {}
   for {set i 1} {$i <= $maxModule} {incr i} {

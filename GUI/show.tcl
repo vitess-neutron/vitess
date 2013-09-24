@@ -288,6 +288,7 @@ proc closeCmdHandles {} {
     upvar #0 FH$i gp
     if [info exists gp] {
       catch {close $gp}
+      catch {unset gp}
     }
   }
 }
@@ -369,24 +370,29 @@ proc gnuPlotCmd {app fname ftype} {
   if {$wxt == "wxt"} {append wxtcmd " size 480,360"}
   puts $gp $wxtcmd
 
-  # keyboard bindings to print and generate PDF files:
-  #   keyboard P pressed: generate a PDF file
-  set ofn [tmpFilename plot.pdf]
-  switch [set mysys [getSystem]] {
-    unix {set dummy /dev/null}
-    windows {set dummy nul}
+  # keyboard bindings to print and generate PDF/PostScript files:
+  switch [getSystem] {
+    unix {
+      set dummy /dev/null
+      #   keyboard P pressed: generate a PDF file
+      set ofn [tmpFilename plot.pdf]
+      set c "set term pdf color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      #   second set output command is to close the pdf file
+      #   wxt command in the end, to show further plots
+      puts $gp "bind P \"$c\""
+      #   keyboard p pressed: send postcript output to the default printer
+      set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      puts $gp "bind p \"$c\""
+    }
+    windows {
+      set dummy nul
+      #   keyboard P pressed: generate a postscript file
+      set ofn [tmpFilename plot.ps]
+      set c "set term postscript color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      puts $gp "bind P \"$c\""
+    }
   }
-  #   second set output command is to close the pdf file
-  #   wxt command in the end, to show further plots
-  set c "set term pdf color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
-  puts $gp "bind P \"$c\""
 
-  #   keyboard p pressed: send postcript output to the default printer
-  #                       for other systems just bind p to generating a PDF file, too
-  if {$mysys == "unix"} {
-    set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
-  }
-  puts $gp "bind p \"$c\""
   if {$ftype == "xz"} {
     set com "unset pm3d; plot '$fname'"
   } else {
@@ -561,6 +567,7 @@ proc getPreferredX3DCmd {} {
     default { }
   }
   if {$ecmd != ""} { set x3dapp_ $ecmd }
+
   return [set PreferredX3DCmd $ecmd]
 }
 
