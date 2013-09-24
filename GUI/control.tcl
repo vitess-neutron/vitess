@@ -215,7 +215,7 @@ proc pasteModPars {} {
 ###
 proc controlMenu {w} {
   global neededModulesSET menuColor
-  global AvailableSET SourceDirectory Htmlhelp
+  global AvailableSET SourceDirectory Htmlhelp tcl_platform
 
   mMenu $w.fil File
   mMenu $w.copa Edit
@@ -271,6 +271,7 @@ proc controlMenu {w} {
     lappend lmenu \
         {c "Plot Cmd" {plotCmdWindow}}\
         {c "Plot using Template" {plotTemplateCmdWindow}} s\
+        {c "Close gnuplot Windows" {closeCmdHandles}} s\
         {c "New Template" {newTemplate}}\
         {c "Edit Template" {editTemplate}}
   }
@@ -483,12 +484,16 @@ proc controlMenu {w} {
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
-  # if we have an X3D viewer installed, prefer this over SVG
-  if {[getPreferredX3DCmd] != ""} {set emode X3D} else {set emode "SVG xz"}
-  forceDef trajmode $emode
+  # prefer X3D over SVG
+  forceDef trajmode X3D
   cascEntries $wo.trajmode trajmode X3D "SVG xz" "SVG xy" textfile
 
-  forceDef browse_ext_mode select
+  if {$tcl_platform(os) == "Darwin"} {
+    # Mac Darwin won't let you select files visible, which haven't a given extension
+    forceDef browse_ext_mode all
+  } else {
+    forceDef browse_ext_mode select
+  }
   cascEntries $wo.browse_ext_mode browse_ext_mode all select
 
   forceDef Compmode none

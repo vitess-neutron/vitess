@@ -4344,6 +4344,18 @@ proc checkModVar {i {wishedmode ""}} {
     }
   }
 
+  set w $Mlf.g$i
+  if [winfo exists $w.label.c] {
+    # nothing to do
+  } else {
+    # delete simple label
+    destroy $w.label
+    addModMenu $w.label $i
+    # full line has been packed with
+    #pack $w.cross $w.down $w.label $w.opt $w.top $w.right $w.nlabel -side left -padx 1 -anchor w
+    pack $w.label -after $w.down -before $w.opt -side left -padx 1 -anchor w
+  }
+
   if {$sep == "here"} {highlightSelectedModule $i} else highlightSelectedModule
 
   if {!$needMoreModules} return
@@ -5077,6 +5089,8 @@ proc removeMod {oldi} {
   set allglob [info globals]
   set w $Mlf
   set remains 0
+
+  disableModule ;  # set all modules enabled
   cleanupModView
   # save module names of active modules with index ge $oldi + 1
   for {set i $oldi} {$i <= $maxModule} {incr i} {
@@ -5115,18 +5129,63 @@ proc showModName {{i ""}} {
   global Mlf maxModule DummyEntry
   if {$i != ""} {
     $Mlf.g$i.nlabel configure -text [globVal mmm_$i]
-  } else {
-    for {set i 0} {$i < $maxModule} {incr i} {
-      upvar #0 mmm_$i m
-      set v ""
-      if {[globVal mod$i] == $DummyEntry} {
-        catch {unset m}
-      } else {
-        catch {set v $m}
-      }
-      set w $Mlf.g$i.nlabel
-      if [winfo exists $w] {$w configure -text $v}
+    return
+  }
+  for {set i 0} {$i < $maxModule} {incr i} {
+    upvar #0 mmm_$i m
+    set v ""
+    if {[globVal mod$i] == $DummyEntry} {
+      catch {unset m}
+    } else {
+      catch {set v $m}
     }
+    set w $Mlf.g$i.nlabel
+    if [winfo exists $w] {$w configure -text $v}
+  }
+}
+
+
+proc disableModule {{i ""} {reenable 0}} {
+  global Mlf Disabled maxModule
+  if {$i == ""} {
+    # enable all modules
+    for {set i 1} {$i <= $maxModule} {incr i} {
+      set w $Mlf.g$i.label
+      if {! [winfo exists $w]} return
+      $w configure -fg black
+      set Disabled($i) 0
+    }
+  } else {
+    set w $Mlf.g$i.label
+    if {! [winfo exists $w]} return
+    if {$reenable} {
+      $w configure -fg black
+      set Disabled($i) 0
+    } else {
+      # disable
+      $w configure -fg white
+      set Disabled($i) 1
+    }
+  }
+}
+
+proc addModMenu {w i} {
+  global DummyEntry menuColor labColor
+  set visval [globVal mod$i]
+  set fn [headerFont]
+  if {$i <= 9} {set ti "  $i"} else {set ti $i}
+  if {$visval == "" || $visval == $DummyEntry} {
+    label $w -text "  $ti" -font $fn -bg $labColor
+  } else {
+    # the label now extended to popup menu
+    menubutton $w -text $ti -font $fn -bg $labColor -menu $w.c
+    menu $w.c -bg $menuColor -tearoff 0
+    popMenu $w.c \
+        [list c "Disable Module" [list disableModule $i]] \
+        [list c Enable [list disableModule $i 1]] \
+        {c "Enable all" {disableModule}} s\
+        [list c Info [list helpOnModule $i]] s\
+        [list c "3D Visualisation" [list vis3D $i]]
   }
 }
 
@@ -5168,9 +5227,14 @@ proc moduleMenus {{n 1}} {
     set w $Mlf.g$i
     set cm "checkModVar $i"
     if [winfo exists $w.label] continue
-    if {$i <= 9} {set ti "  $i"} else {set ti $i}
-    label $w.label -text $ti -font $fn -bg $labColor
-    bind $w.label <ButtonPress> "helpOnModule $i"
+    addModMenu $w.label $i
+
+    set varName mod$i
+    upvar #0 $varName var
+    set var $DummyEntry
+    upvar #0 visM$i visible
+    set visible $var
+
     upvar #0 separateW$i sepw
     set sepw ""
     upvar #0 separate$i sepvar
@@ -5184,11 +5248,6 @@ proc moduleMenus {{n 1}} {
 
     label $w.nlabel -font $tfn -bg $bgColor
 
-    set varName mod$i
-    upvar #0 $varName var
-    set var $DummyEntry
-    upvar #0 visM$i visible
-    set visible $var
     set wm $w.opt.menu
     menubutton $w.opt -textvariable $varName -indicatoron 1 \
 	-menu $wm -font $lfn -relief raised -bd 2 -width 18 \
@@ -5226,4 +5285,3 @@ foreach n $TempVars {
 foreach p {sore genFE genFE2} {
   proc $p {} {}
 }
-#puts [info globals]

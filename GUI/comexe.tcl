@@ -97,7 +97,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   set ll [globVal inputESET]
   set wsh 0
-  global Comode Serdefault Plotfile Plottype ProgressFile\
+  global Comode Serdefault Plotfile Plottype ProgressFile Disabled\
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize VisState VisLogList
 
   switch [set Comode $mode] {
@@ -186,6 +186,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set usedIdices {}
 
   for {set i 1} {$i <= $maxModule} {incr i} {
+    if [info exists Disabled($i)] { 
+      if {$Disabled($i)} continue
+    }
     set varName mod$i
     upvar #0 $varName var
     if {![info exists var] || $var == $DummyEntry} continue
@@ -1122,13 +1125,132 @@ proc stopAction {{verbose 1} {kill 0}} {
   set VisState 0
 }
 
+###
+# Visualisation of a single module
+proc prepGeom {fn} {
+
+  # prepend geometry file of a module with definitions
+  # normally written by the first module
+  if [catch {open $fn r} f] {
+    return ""
+  }
+  set ofn [tmpFilename mod.geom]
+  if [catch {open $ofn w} fout] {
+    return ""
+  }
+  puts $fout {DEF red=<Material diffuseColor='.9 .01 .01' emissiveColor='.9 .01 .01' transparency='.4'/>
+DEF green=<Material diffuseColor='.01 .9 .01' emissiveColor='.01 .9 .01' transparency='.4'/>
+DEF blue=<Material diffuseColor='.01 .01 .9' emissiveColor='.01 .01 .9' transparency='.4'/>
+DEF yellow=<Material diffuseColor='.9 .6 .01' emissiveColor='.9 .6 .01' transparency='.3'/>
+DEF orange=<Material diffuseColor='.9 .4 .01' emissiveColor='.9 .4 .01' transparency='.4'/>
+DEF cyan=<Material diffuseColor='.0 .99 .99' emissiveColor='.0 .99 .99' transparency='.4'/>
+DEF magenta=<Material diffuseColor='.9 .01 .6' emissiveColor='.9 .01 .6' transparency='.4'/>
+DEF grey=<Material diffuseColor='.6 .6 .6' emissiveColor='.6 .6 .6' transparency='.4'/>
+DEF black=<Material diffuseColor='.01 .01 .01' emissiveColor='.01 .01 .01' transparency='.4'/>
+DEF white=<Material diffuseColor='.99 .99 .99' emissiveColor='.99 .99 .99' transparency='.4'/>
+#units
+# [m]  position, length, width, height, radius
+# [deg] angles}
+
+  while {[gets $f line] >= 0} {
+    puts $fout $line
+  }
+  close $f
+  close $fout
+
+  file delete $fn
+  file rename $ofn $fn
+  return $fn
+}
+
+proc vis3D {{i ""}} {
+
+  # Generate an X3d visualisation file for a given module.
+
+  if {$i == ""} return
+  if [pipeIsActive] return
+
+  # A trick is to temporarily disable all modules but module i,
+  # then generate + execute a visualisation command.
+
+  global maxModule Disabled trajmode defdirectory_  ProgressFile PipeLogList VisState VisLogList VisMerge trajmode
+
+  # save states
+  if [info exists Disabled] {
+    foreach n [array names Disabled] {
+      set kdisabled($n) $Disabled($n)
+      set Disabled($n) 1
+    }
+  }
+  # disable all modules but module $i
+  for {set j 1} {$j < $maxModule} {incr j} {
+    set Disabled($j) 1
+  }
+  set Disabled($i) 0
+
+  # VisState 1 for --v invocation
+  set VisState 1
+
+  # generate command
+  set c [generateVitessCommand action]
+
+  if {[getSystem] == "unix"} {set dummy /dev/null} else {set dummy nul}
+
+  # append the option to read neutrons from null device - otherwise wait forever
+  append c " --f $dummy"
+
+  # execute this command
+  catch {eval exec >& $dummy $c}
+
+  # delete temporary files
+  catch {file delete $ProgressFile}
+  condDelList PipeLogList
+
+  if [reduceFList VisLogList] {
+    set geom [prepGeom $VisLogList]
+    if {$geom != ""} {
+      set firstText "Find module geometry in $geom"
+      if {$VisMerge != "" && $trajmode = "X3D"} {
+        # convert to X3D
+        set visRes [tmpFilename _geom.x3d]
+        set com "$VisMerge -x -X $geom -o $visRes"
+        if [catch {eval exec $com}] {
+        } else {
+          if [file exists $visRes] {
+            showText "Find X3D file $visRes"
+            # launch external X3D viewer
+            if {"" != [set ecom [getPreferredX3DCmd]]} {
+              catch {exec $ecom $visRes &}
+            }
+          }
+        }
+        #catch {file delete $geom}
+      }
+    } else {
+      condDelList VisLogList
+      showText "could not generate the module geometry"
+    }
+  }
+
+  # reset kept states
+  set VisState 0
+  for {set i 1} {$i < $maxModule} {incr i} {
+    if [info exists kdisabled($i)] {
+      set Disabled($i) $kdisabled($i)
+    } else {
+      set Disabled($i) 0
+    }
+  }
+}
+
+
 ####### Execute / Store Series  ###################
 
 proc dialogSWindow {w {tit "Generate Series"} {where "+100+100"}} {
   catch {destroy $w}
   generateToplevel $w $tit "" $where
   global bgColor
-  $w configure  -bg $bgColor
+  $w configure -bg $bgColor
 }
 
 proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
