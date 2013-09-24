@@ -1210,7 +1210,7 @@ proc vis3D {{i ""}} {
     set geom [prepGeom $VisLogList]
     if {$geom != ""} {
       set firstText "Find module geometry in $geom"
-      if {$VisMerge != "" && $trajmode = "X3D"} {
+      if {$VisMerge != "" && $trajmode == "X3D"} {
         # convert to X3D
         set visRes [tmpFilename _geom.x3d]
         set com "$VisMerge -x -X $geom -o $visRes"
