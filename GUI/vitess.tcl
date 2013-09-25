@@ -4345,16 +4345,8 @@ proc checkModVar {i {wishedmode ""}} {
   }
 
   set w $Mlf.g$i
-  if [winfo exists $w.label.c] {
-    # nothing to do
-  } else {
-    # delete simple label
-    destroy $w.label
-    addModMenu $w.label $i
-    # full line has been packed with
-    #pack $w.cross $w.down $w.label $w.opt $w.top $w.right $w.nlabel -side left -padx 1 -anchor w
-    pack $w.label -after $w.down -before $w.opt -side left -padx 1 -anchor w
-  }
+
+  addModMenu $w.label $i
 
   if {$sep == "here"} {highlightSelectedModule $i} else highlightSelectedModule
 
@@ -5146,17 +5138,19 @@ proc showModName {{i ""}} {
 
 
 proc disableModule {{i ""} {reenable 0}} {
-  global Mlf Disabled maxModule
+  global Mlf Disabled maxModule tcl_platform
+  # depending on Darwin or not we use different labels to show the state
+  if {$tcl_platform(os) == "Darwin"} {set sub right} else {set sub label}
   if {$i == ""} {
     # enable all modules
     for {set i 1} {$i <= $maxModule} {incr i} {
-      set w $Mlf.g$i.label
+      set w $Mlf.g$i.$sub
       if {! [winfo exists $w]} return
       $w configure -fg black
       set Disabled($i) 0
     }
   } else {
-    set w $Mlf.g$i.label
+    set w $Mlf.g$i.$sub
     if {! [winfo exists $w]} return
     if {$reenable} {
       $w configure -fg black
@@ -5170,41 +5164,73 @@ proc disableModule {{i ""} {reenable 0}} {
 }
 
 proc addModMenu {w i} {
-  global DummyEntry menuColor labColor
-  set visval [globVal mod$i]
-  set fn [headerFont]
-  if {$i <= 9} {set ti "  $i"} else {set ti $i}
-  if {$visval == "" || $visval == $DummyEntry} {
-    label $w -text "  $ti" -font $fn -bg $labColor
+  global DummyEntry menuColor labColor maxModule
+
+  # start popup menu with module number title
+  set mlist [list [list S "Module $i"]]
+
+  # somestuff : a real module exists
+  if {$i == 1} {
+    set somestuff 0
+    # check if there are modules
+    for {set j 1} {$j <= $maxModule} {incr j} {
+      upvar #0 visM$i vv
+      if {[info exists vv] && $vv != "" && $vv != $DummyEntry} {
+        set somestuff 1
+        break
+      }
+    }
   } else {
-    # the label now extended to popup menu
-    menubutton $w -text $ti -font $fn -bg $labColor -menu $w.c
-    menu $w.c -bg $menuColor -tearoff 0
-    popMenu $w.c \
+    set somestuff 1
+  }
+
+  if $somestuff {
+    # allow moving this module further down in the list, to insert a new module above,
+    # and allow to remove that module
+    lappend mlist s [list c "Move Down" [list moveDown $i]]\
+        [list c "Remove Module" [list removeMod $i]]
+  }
+
+  # for real modules add some more
+  set visval [globVal mod$i]
+  if {$visval != "" && $visval != $DummyEntry} {
+    lappend mlist s\
+        [list c "Edit here" [list checkModVar $i here]] \
+        [list c "Separate Window" [list checkModVar $i separate]] s\
         [list c "Disable Module" [list disableModule $i]] \
         [list c Enable [list disableModule $i 1]] \
         {c "Enable all" {disableModule}} s\
         [list c Info [list helpOnModule $i]] s\
         [list c "3D Visualisation" [list vis3D $i]]
   }
+
+  if {$i <= 9} {set ti "  $i"} else {set ti $i}
+  # if the menubutton already exists, delete the menu first
+  if [winfo exists $w] {
+    if [winfo exists $w.c] {
+      destroy $w.c
+    }
+  } else {
+    menubutton $w -text $ti -font [headerFont] -bg $labColor -menu $w.c
+  }
+  menu $w.c -bg $menuColor -tearoff 0
+  eval popMenu $w.c $mlist
 }
 
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor
+  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor tcl_platform
   set fn [headerFont]
   set lfn [labelFont]
   set tfn [textFont]
   set maxi $maxModule
   if {$maxi > $n} {set maxi $n}
 
-  if {![regexp fdown [image names]]} {
+  if {![regexp fright [image names]]} {
     # create these images once from bitmap files
     set fpath [file join [globVal SourceDirectory] BITMAPS]
-    image create bitmap fdown -file  [file join $fpath downarr.xbm]
     image create bitmap fright -file [file join $fpath rightarr.xbm]
-    image create bitmap ftop -file [file join $fpath toparr.xbm]
     image create bitmap fcross -file [file join $fpath cross.xbm]
   }
 
@@ -5240,11 +5266,13 @@ proc moduleMenus {{n 1}} {
     upvar #0 separate$i sepvar
     set sepvar here
 
-    if {$i < $maxModule} {set c "moveDown $i"} else {set c ""}
-    button $w.down -image fdown -command $c
-    button $w.right -image fright -command "checkModVar $i here"
-    button $w.top -image ftop -command "checkModVar $i separate"
-    button $w.cross -image fcross -command "removeMod $i"
+    if {$tcl_platform(os) == "Darwin"} {
+      # add a label we will adopt for disabled module
+      label $w.right -text $i -font $fn -bg $labColor
+      bind $w.right <ButtonPress> "checkModVar $i here"
+    } else {
+      button $w.right -image fright -command "checkModVar $i here"
+    }
 
     label $w.nlabel -font $tfn -bg $bgColor
 
@@ -5270,7 +5298,7 @@ proc moduleMenus {{n 1}} {
 	}
       }
     }
-    pack $w.cross $w.down $w.label $w.opt $w.top $w.right $w.nlabel -side left -padx 1 -anchor w
+    pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w
   }
 }
 

@@ -709,7 +709,7 @@ proc tmpFilename {{name temp.tmp}} {
     break
   }
   set s [format %x [clock seconds]]
-  return [getFullTmpFile [regsub -all {[^a-zA-Z0-9_-]} "$n$s$name" _]]
+  return [getFullTmpFile [regsub -all {[^a-zA-Z0-9_.-]} "$n$s$name" ""]]
 }
 
 proc getDirectory {name} {
