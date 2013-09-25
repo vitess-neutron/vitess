@@ -715,7 +715,7 @@ proc cleanupGlobalVariables {} {
   }
 }
 
-proc checkConsistency {} {
+proc assureConsistency {} {
   # As gui input files may contain inconsistent settings for various reasons.
   # We look for global variables which might disturb further work.
   # First we look for variables mod_<number>
@@ -732,7 +732,10 @@ proc checkConsistency {} {
       if {$mod != "$DummyEntry"} {
         # check if it is a valid module name
         upvar #0 ${mod}ESET m
-        if [info exists m] {set validmod($i) 1}
+        if [info exists m] {
+          set validmod($i) 1
+          set activemod($mod) 1
+        }
       }
     }
     if $validmod($i) continue
@@ -749,6 +752,12 @@ proc checkConsistency {} {
     }
     global $e
     unset $e
+  }
+
+  # remember active (known, in this version defined, used here) modules
+  foreach m [array names activemod] {
+    upvar #0 ${m}ESET.active gact
+    set gact 1
   }
 }
 
@@ -813,11 +822,12 @@ proc loadAll {extension {givenname ""}} {
   }
   close $f
 
-  checkConsistency
+  assureConsistency
 
   if {$errs == ""} {
     set errs "control file $name successfully loaded"
   }
+
 
   setAll 0
   conditionalOpenProtfile

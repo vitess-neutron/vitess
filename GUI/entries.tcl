@@ -456,7 +456,7 @@ proc generateEntries {w globalset {delist {}} {app _}} {
   global bgColor
   set gs [string trim $globalset]
   upvar #0 $gs.active gact
-  set gact $w
+  set gact 1
 
   global fileentrywidth itemlabwidth
 
