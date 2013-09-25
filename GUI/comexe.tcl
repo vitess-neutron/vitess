@@ -404,11 +404,11 @@ proc checkAll {} {
       if {! [regexp {^(source_|read_in)} $var]} {
         set infname [entryVal infilename]
         if {"" == $infname} {
-	        showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
-	        set errors 1
+          showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
+          set errors 1
         } elseif {! [file exists $infname]} {
-	        showText "!The given input file does not exist"
-	        set errors 1
+          showText "!The given input file does not exist"
+          set errors 1
         }
       }
     }
