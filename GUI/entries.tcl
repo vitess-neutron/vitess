@@ -115,14 +115,6 @@ proc myEntry {w variable width {app ""} {line ""}} {
   }
 }
 
-proc valEntry {w variable labelwidth width {app _}} {
-  lFrame $w
-  set line [findDescriptionLine $variable]
-  boundLabel $w.l $line $labelwidth
-  myEntry $w.e $variable $width $app $line
-  pack $w.l $w.e -side left -anchor w
-}
-
 proc optEntry {w var items} {
   global bgColor radioColor
   menubutton $w -textvariable $var -indicatoron 1 -menu $w.menu \
@@ -136,14 +128,6 @@ proc optEntry {w var items} {
 
 ### entry with events bound to procedure
 ###
-proc valEntryAndBind {w variable labelwidth width event bind_proc {app _}} {
-  lFrame $w
-  set line [findDescriptionLine $variable]
-  boundLabel $w.l $line $labelwidth
-  myEntry $w.e $variable $width $app $line
-  pack  $w.l $w.e -side left -anchor w
-  bind $w.e <$event> $bind_proc
-}
 
 proc valEntryLabel {w variable label labelwidth width {app _}} {
   lFrame $w
@@ -245,19 +229,7 @@ proc fileEntry {w line labelwidth width {app _}} {
 
 ### two entries in a row
 ###
-proc twovalEntry {w var1 var2 labelwidth ewidth {app _}} {
-  lFrame $w
-  set line [findDescriptionLine $var1]
-  boundLabel $w.l1 $line $labelwidth
-  myEntry $w.sp1 $var1 $ewidth $app $line
 
-  set line [findDescriptionLine $var2]
-  boundLabel $w.l2 $line $labelwidth
-  myEntry $w.sp2 $var2 $ewidth $app $line
-
-  pack  $w.l1 $w.sp1 $w.l2 $w.sp2 \
-      -side left -fill both -anchor w
-}
 proc twovalEntryLabel {w var1 var2 label1 label2 labelwidth ewidth {app _}} {
   lFrame $w
   boundLabelA $w.l1 $label1 $labelwidth
@@ -356,11 +328,6 @@ proc radioRowlpar {w line app {lwidth 12}} {
   }
 }
 
-proc radioRow {w var {app _}} {
-  radioRowlpar $w [findDescriptionLine $var] $app
-}
-
-
 ###
 ###  column of radiobuttons
 ###
@@ -377,10 +344,6 @@ proc radioRowlpar_down {w line app {lwidth 12}} {
     pack $w.b$i -in $w -padx 0.5m -side top -anchor w
     incr i
   }
-}
-
-proc radioRow_down {w var {app _}} {
-  radioRowlpar_down $w [findDescriptionLine $var] $app
 }
 
 ### row of selectbuttons; labels found form argument list
@@ -402,9 +365,6 @@ proc selectRowlpar {w line app {lwidth 12}} {
   }
 }
 
-proc selectRow {w var {app _}} {
-  selectRowlpar $w [findDescriptionLine $var] $app
-}
 
 ### define global variables if required (mode 1) or necessary
 ###   variables are taken from list of variable description lines/lists
@@ -453,13 +413,8 @@ proc generateEntries {w globalset {delist {}} {app _}} {
     global $l
     unset $l;				# unset old entry variables
   }
-  global bgColor
+  global bgColor fileentrywidth itemlabwidth
   set gs [string trim $globalset]
-  upvar #0 $gs.active gact
-  set gact 1
-
-  global fileentrywidth itemlabwidth
-
   set all [globVal $gs]
 
   if {$globalset == "inputESET"} {

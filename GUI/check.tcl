@@ -330,8 +330,6 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 ###
 proc errorWithValues {mod {showok 1} {app _}} {
 
-  if {"" == [globVal ${mod}ESET.active]} {return 0}
-
   showText "\tchecking [string toupper $mod]"
   set errors 0
   foreach l [globVal ${mod}ESET] {
@@ -411,25 +409,6 @@ proc findLineInSet {name globset} {
   foreach g $set {
     if {[lindex $g 0] == "$name"} {
       return $g
-    }
-  }
-  return ""
-}
-
-### find variable description line/list for a given variable
-###   search all definitions of globalDescriptionSET
-###
-proc findDescriptionLine {name} {
-  global globalDescriptionSET
-  set n [string tolower $name]
-  foreach g $globalDescriptionSET {
-    upvar #0 ${n}.active gact
-    if {[info exists gact] && $gact} {
-      foreach l [globVal $g] {
-	if {[lindex $l 0] == "$n"} {
-	  return $l
-	}
-      }
     }
   }
   return ""
