@@ -3279,9 +3279,13 @@ proc sample_reflectomCheckErr {{app _}} {
   upvar #0 step$app s
   upvar #0 minrefl$app mi
   upvar #0 maxrefl$app ma
-  if {$s * ($ma - $mi) < 0} {
-    showText "!Step size and (MaxRefl - MinRefl) must have the same sign."
-    return 1
+  if {[info exists s] && [info exists mi] && [info exists ma]} {
+    if {$s * ($ma - $mi) < 0} {
+      showText "!Step size and (MaxRefl - MinRefl) must have the same sign."
+      return 1
+    }
+  } else {
+    showText "!Please specify step size, MaxRefl, and MinRefl."
   }
 
   return 0
