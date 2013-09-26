@@ -355,6 +355,15 @@ proc deleteSomeModules {w i} {
   }
 }
 
+proc deleteEntryVariables {} {
+  # Delete all global variables which belong to module parameter entries.
+  # These are of the name form <varname>_<number>
+  foreach n [info globals] {
+    if [regexp {[a-zA-Z0-9_]_([0-9]+)$} $n] {
+      catch {unset $n}
+    }
+  }
+}
 
 gSet sInameESET {
   {setiname string "" {instrument "Instrument name: This should be a meaningful name."} "" "" 1}
@@ -781,6 +790,7 @@ proc loadAll {extension {givenname ""}} {
   }
 
   deleteSomeModules $Mlf 1
+  deleteEntryVariables
 
   # If a gui-file becomes loaded, settings for GUI sizes and the default directory
   # could be changed, too. If values come from a different OS, these values would be

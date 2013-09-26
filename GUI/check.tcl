@@ -338,7 +338,7 @@ proc errorWithValues {mod {showok 1} {app _}} {
 
   if {[set tp [info proc ${mod}CheckErr]] != ""} {
     if [catch {eval $tp $app} res] {
-      puts "Error within proc $tp"
+      puts "DEBUG: Error within proc $tp"
     } elseif {$res != "0"} {
       return 1
     }
