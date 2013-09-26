@@ -753,12 +753,6 @@ proc assureConsistency {} {
     global $e
     unset $e
   }
-
-  # remember active (known, in this version defined, used here) modules
-  foreach m [array names activemod] {
-    upvar #0 ${m}ESET.active gact
-    set gact 1
-  }
 }
 
 ###
@@ -786,7 +780,6 @@ proc loadAll {extension {givenname ""}} {
     set nd [file dirname $name]
   }
 
-  # delete all modules
   deleteSomeModules $Mlf 1
 
   # If a gui-file becomes loaded, settings for GUI sizes and the default directory
@@ -827,7 +820,6 @@ proc loadAll {extension {givenname ""}} {
   if {$errs == ""} {
     set errs "control file $name successfully loaded"
   }
-
 
   setAll 0
   conditionalOpenProtfile
