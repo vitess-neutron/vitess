@@ -164,6 +164,8 @@ proc errorInLine {e app {mod ""}} {
           return 1
         } 
       }
+      # allow an empty value unless mandatory
+      if {$v == ""} {return $mandatory}
       if {$type == "int"} {set ff i} else {set ff f}
       return [outofRange $name v "%$ff" $arg4 $arg5 $mandatory]
     }

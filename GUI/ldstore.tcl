@@ -751,13 +751,19 @@ proc assureConsistency {} {
     set mod $DummyEntry
   }
 
-  # Delete global <name>_<number> variables, if they do no belong to a valid module.
+  # Delete global variables of doubious nature
   foreach e [info globals] {
     if {[regexp {^mod([0-9]+)$} $e a n]} {
+      # Delete <name>_<number> variables not belonging to a valid module.
       if {$n >= 0 && $n <= $maxModule} continue
     } else {
-      if {! [regexp {_([0-9]+)$} $e a n]} continue
-      if {$n >= 0 && $n <= $maxModule && $validmod($n)} continue
+      if [regexp {[^a-zA-Z0-9_]} $e] {
+        # allow only series... globals to have special chars like . in name
+        if [regexp {^seriest?[0-9._]+$} $e] continue
+      } else {
+        if {! [regexp {_([0-9]+)$} $e a n]} continue
+        if {$n >= 0 && $n <= $maxModule && $validmod($n)} continue
+      }
     }
     global $e
     unset $e
