@@ -286,7 +286,9 @@ int main(int argc, char *argv[])
   BufferIndex = 0;
   surfacerough = 0.0; /*set by default */
 
+#ifdef VT_GRAPH
   gselec = 1 ; /* Activate visualisation device -screen */
+#endif
 
   /*input*/
   Init(argc, argv, VT_BENDER);
@@ -318,7 +320,7 @@ int main(int argc, char *argv[])
       SurfacesFileName = arg;
       if (AsciiFileName==NULL) {
 	int len = strlen(SurfacesFileName);
-	AsciiFileName = malloc(len+1);
+	AsciiFileName = (char*)malloc(len+1);
 	memcpy(AsciiFileName, SurfacesFileName, len-3);
 	AsciiFileName[len-3] = '\0';
 	strcat(AsciiFileName, "Log");
@@ -482,7 +484,7 @@ if (bAbsTransCrit != 0)
   	if (keymaterial0 == 5)
   	{
 	    fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Silicon \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
+  	    fprintf(LogFilePtr,"Wavelength range must be 0.5 .. 20 A, please correct if nesessary  \n");
   	}
 
   	if (keymaterial0 == 6)

@@ -9,6 +9,7 @@
 /*                               heading                                                   */
 /* 1.3  Nov 2005  K. Lieutenant  parameter W added                                         */
 /* 1.4  May 2012  K. Lieutenant  parameter beta added                                      */
+/* 1.5  Sep 2012  K. Lieutenant  new treatment of case m<1 and correction: output formula  */
 /*******************************************************************************************/
 
 #include <stdlib.h>
@@ -19,8 +20,6 @@
 #define THETA_NI 0.099138
 #define PI       3.1415926535898
 
-// static char sBuffer[128];
-
 double GetDouble(const char* pText);
 void   GetString(char* pString, const char* pText);
 double RoundD   (const double in, const int nDigits);
@@ -28,7 +27,7 @@ double RoundD   (const double in, const int nDigits);
 int main(int argc, char* argv[])
 {
 	double  M,           // m      : official factor of supermirror
-                M2,          // m'     : real SM factor R(Q) profile
+          M2,          // m'     : real SM factor R(Q) profile
 	        Q,           // Q      : momentum transfer of the reflection
 	        Qc,          // Q_c    : crit. momentum transfer  (see figure)
 	        QcNi,        // Q_c(Ni): crit. momentum transfer of nickel
@@ -80,6 +79,7 @@ int main(int argc, char* argv[])
 // read:
 	GetString(sSNPar,"quadratic Swiss Neutronics description  ('yes'/'no') ");
 	M    = GetDouble("m   = Qmax / Qmax(Ni)                  ");
+
   if (strcmp(sSNPar, "yes")==0 || strcmp(sSNPar, "Yes")==0 || strcmp(sSNPar, "Y")==0 || strcmp(sSNPar, "y")==0) bSN=TRUE;
   if (bSN)
   {
@@ -92,17 +92,17 @@ int main(int argc, char* argv[])
 	{ Qc = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.0217   for Ni)                 ");
 	  W  = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	  R0 = GetDouble("reflectivity(Q=0)                      ");
-	  Rm = GetDouble("reflectivity(Q=m*Q_c(Ni))              ");
+	  Rm = GetDouble("reflectivity(Q=m*Q_c(Ni)) for W=0      ");
     M2 = M;
   }
 	GetString(sFileName, "Name of the mirror file                ");
 
 	QcNi = RoundD(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
 
-	if (M*Qc < Qc)
+	if (M < 1.0 && Qc > 0.99*QcNi)
 	{	
 		Qc *= M;
-		printf("\nNOTE: m*Q_c < 1: therefore  Q_c = %7.5f  set \n\n", Qc);
+		printf("\nNOTE: m < 1 and Qc=Qc,Ni: therefore  Q_c = %7.5f  set \n\n", Qc);
 	}
 
 	/* write to parameter directory or to FILES in install directory */
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     if (W==0)
 		  printf ("\nslope in Q: -%5.3f Ang\n", alphaQ);
     else
-		  printf("\nR(Q) = %5.3f * 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f)) * (1 + %5.3f*(Q-Qc) - %6.3f*(Q-Qc)^2, Qc=%7.5f 1/Ang\n", R0, M2, W, alphaQ, betaQ, Qc);
+		  printf("\nR(Q) = %5.3f * 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f)) * (1 - %5.3f*(Q-Qc) + %6.3f*(Q-Qc)^2),   Qc=%7.5f 1/Ang\n", R0, M2, W, alphaQ, betaQ, Qc);
 		printf("\nData written to %s\n", pFullName);
 		fclose(pFile);
 	}
@@ -210,7 +210,7 @@ double RoundD(const double in, const int nDigits)
 {	
 	double out;
 
-	out = floor(in * pow(10, nDigits) + 0.5);
+	out = floor(in * pow(10.0, nDigits) + 0.5);
 
-	return out / pow(10, nDigits);
+	return out / pow(10.0, nDigits);
 }
