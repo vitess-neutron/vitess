@@ -28,16 +28,13 @@
 #define BINS  10000
 #define NCENTER 200
 
-#define VT_SMPL_CNTR 1
-#define VT_DET_CNTR  2
-
 
 /* globale variable */
 int   probactiv=TRUE,        /* probactiv=1 means probabilities activated, 
                                 else neutron weight is set to 1.0         */
       TOF = FALSE,           /* TRUE : time of flight instrument */
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
-			ePathCor   =FALSE,     /* 1 or 2: correct TOF for real flight path from sample to detector */
+			bPathCor   =FALSE,     /* TRUE:  correct TOF for real flight path from sample to detector */
       bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
@@ -167,17 +164,13 @@ int main(int argc, char *argv[])
         CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 
       // flightpath correction if detector distance is given
-      switch (ePathCor)
-      { case VT_SMPL_CNTR: // origin of co-ordinate system in sample center
-          DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-          Flightpath = Flightpath0 + DetPath - DetDist;
-          break;
-        case VT_DET_CNTR : // origin of co-ordinate system in detector center
-          DetPath    = sqrt(sq(DetDist) + sq(InputNeutrons[i].Position[0])  + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-          Flightpath = Flightpath0 + DetPath - DetDist;
-          break;
-        default:           // no correction
-          Flightpath = Flightpath0;
+      if (bPathCor)
+      { // origin of co-ordinate system in sample center
+        DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        Flightpath = Flightpath0 + DetPath - DetDist;
+      }
+      else
+      { Flightpath = Flightpath0;
       }
 
       // determination of weight and wavelength
@@ -418,7 +411,7 @@ void OwnInit(int argc, char *argv[])
 
 
 				case 't':
-					ePathCor = atol(arg);     /*  correct flight path length for location of detection */
+					bPathCor = atol(arg);     /*  correct flight path length for location of detection */
 					break;
 
 				case 'l':
