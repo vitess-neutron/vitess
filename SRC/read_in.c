@@ -3,7 +3,8 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  Jan  2013  K. Lieutenant   initial version                                           */
+/* 0.9  Jan  2013  K. Lieutenant   initial version                                           */
+/* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("read_in 0.9");
+  print_module_name("read_in 1.0");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -173,8 +174,8 @@ short ScanVitessTraj(Neutron* pNeutron, const char* sLine)
 
   switch (eDatFormat)
   {
-    case  VT_EXPONENTIAL: form = "%c%c%9lu %c %hd %le %le %le %le %le %le %le %le %le %le %le %le"; break;
-    case  VT_FLOAT      : form = "%c%c%9lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf"; break;
+    case  VT_EXPONENTIAL: form = "%c%c%lu %c %hd %le %le %le %le %le %le %le %le %le %le %le %le"; break;
+    case  VT_FLOAT      : form = "%c%c%lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf"; break;
     default             : Error("Data format not implemented");
   }
 
