@@ -815,7 +815,7 @@ set frameESET {
     {RTM RMT TRM TMR MTR MRT} {1 2 3 4 5 6}}
   {Rotation header}
   {rotz float 0 {"rot. angle [deg]\naround z axis" "rotation angle around Z FIRST rotation [deg]\nNOTE: 90deg means X+  rotated on Y+" "" H} 1}
-  {roty float 0 {"rot. angle [deg]\naround y axis" "rotation angle around Y SECOND rotation [deg]\nNOTE: 90deg means Z+ rotated on X+" "" V} 1}
+  {roty float 0 {"rot. angle [deg]\naround y axis" "rotation angle around Y SECOND rotation [deg]\nNOTE: 90deg means X+ rotated on Z+" "" V} 1}
   {rotx float 0 {"rot. angle [deg]\naround x axis" "rotation angle around X (beam axis) THIRD rotation [deg]\nNOTE: 90deg means Y+  rotated on Z+" "" A} 1}
   {Translation header}
   {tx float 0 {"x [cm]" "x component of translation vector [cm]" "" x} 1}
@@ -1780,8 +1780,8 @@ gSet pol_mirrorESET {
   {pm_dx float 60 {"length [cm]" "length of the polarising mirror (along beam axis)" "" L} gt0 "" 1}
   {pm_dy float 10 {"width or\nheight [cm]" "width or height of the polarising mirror" "" W} gt0 "" 1}
   {"Mirror position and orientation" header}
-  {pm_ori radio horizontal {"orientation" "choose between vertical and horizontal orientation of the mirror" "" O}
-    {horizontal vertical} {0 1}}
+  {pm_ori radio horizontal {"rotated about" "choose between horizontal - rotation about y-axis - and vertical orientation - rotation about z-axis - of the mirror" "" O}
+    {y-axis z-axis} {0 1}}
   {pm_x float 100 {"position\nX [cm]" "x center position of the polarizing mirror" "" X}}
   {pm_y float 0   {"position\nY [cm]" "y center position of the polarizing mirror" "" Y}}
   {pm_z float 0   {"position\nZ [cm]" "z center position of the polarizing mirror" "" Z}}
@@ -2455,8 +2455,8 @@ set ra {
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
   {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
   {}
-  {mint float "" {"minimal time [ms]" "minimal time for monitoring" "" t}}
-  {maxt float "" {"maximal time [ms]" "maximal time for monitoring" "" T}}
+  {mint float "" {"minimal time [ms]" "minimal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" t}}
+  {maxt float "" {"maximal time [ms]" "maximal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" T}}
   {}
   {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
   {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
@@ -2473,7 +2473,7 @@ set ra {
   {lowrd float "" {"low bound\nradial div [deg]" "lower bound for the radial divergence [deg]" "" r}}
   {uprd float "" {"up bound\nradial div [deg]" "upper bound for the radial divergence [deg]" "" R}}
   {}
-  {freq float "" {"frequency [Hz]" "frequency of the pulsed source" "" f}}
+  {freq float "" {"frequency [Hz]" "frequency of the pulsed source\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" f}}
 }
 
 set mon_brillianceESET [concat [genFE brilliance] $nA $ra]
@@ -3400,7 +3400,7 @@ set eval_elastESET {
   {tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
   {tofcor radio no {
-    "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no "yes, origin in sample" "yes, origin at detector"} {0 1 2}}
+    "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no yes} {0 1}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}

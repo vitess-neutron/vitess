@@ -1694,7 +1694,7 @@ proc genSeries {w} {
   set lfont [labelFont]
 
   set ewid 4
-  label $w.n.l -text Iterations -font $lfont -bg $labColor -pady 0.5c
+  label $w.n.l -text runs -font $lfont -bg $labColor -pady 0.5c
   forceDef numseries_ 2
   entry $w.n.e -width $ewid -relief sunken -textvariable numseries_ -bg $entryColor
 
