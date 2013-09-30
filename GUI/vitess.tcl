@@ -735,10 +735,17 @@ set external_commandESET {
 ### Read_In
 ###
 set read_inESET {
-  {fname pareditablefile noutascii.dat {
-    "ASCII\ninput file" "Specifies the name of the ASCII input file containing the trajectories." "" A} w "" 1}
+  {fname pareditablefile ascii_in1.dat {"ASCII input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
+  {fname2 pareditablefile "" {"ASCII input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories." "" B} r}
+  {fname3 pareditablefile "" {"ASCII input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories." "" D} r}
+  {}
+  {ri_frc1 float "1.0" {"weight of traj.\nin file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
+  {ri_frc2 float "0.0" {"weight of traj.\nin file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
+  {ri_frc3 float "0.0" {"weight of traj.\nin file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
+  {}
   {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas} {1 2}}
   {inform radio float {"VITESS\ndata format" "format of double values in the input file" "" F} {exp float} {0 1}}
+  {}
   {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
 }
@@ -747,7 +754,7 @@ set read_inESET {
 ###
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
-    "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} w "" 1}
+    "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
   {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
   {}
