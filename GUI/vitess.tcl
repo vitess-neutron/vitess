@@ -4311,9 +4311,13 @@ proc checkModVar {i {wishedmode ""}} {
 
 	generateEntries $wm.$var ${var}ESET $delist _$i
 	set needMoreModules 1
-	regsub {.c.f$} $Amf .c sw
-	$sw xview moveto 0;		# scroll to canvas left
-	$sw yview moveto 0;		# scroll to canvas top
+
+        adjustScrollRegion $Amf $wm.$var
+
+        # scroll to canvas window sw left,top
+        set sw [winfo parent $Amf]
+        $sw xview moveto 0
+        $sw yview moveto 0
       }
     }
     separate {
@@ -5278,7 +5282,7 @@ proc moduleMenus {{n 1}} {
     set sepvar here
 
     if {$tcl_platform(os) == "Darwin"} {
-      # add a label we will adopt for disabled module
+      # add a label we will adopt for disabled modules
       label $w.right -text $i -font $fn -bg $labColor
       bind $w.right <ButtonPress> "checkModVar $i here"
     } else {
@@ -5310,6 +5314,9 @@ proc moduleMenus {{n 1}} {
       }
     }
     pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w
+  }
+  if {$n != "" && $n > 1} {
+    adjustScrollRegion $Mlf
   }
 }
 

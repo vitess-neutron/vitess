@@ -140,6 +140,31 @@ proc scrollFrame {w side cw ch sh {sw ""}} {
   return $wmf
 }
 
+proc adjustScrollRegion {w {cw ""}} {
+
+  set sw [winfo parent $w]
+  # Adjust the scroll bar length to the real size of the scrolled window sw
+
+  # find dimensions and sizes: update first
+  update
+
+  # if we do not have a content window cw, look for children's y position
+  if {$cw == ""} {
+    set y -1
+    catch {
+      set y [winfo y [lindex [winfo children $sw.f] end]]
+    }
+    if {$y <= 0} return
+  } else {
+    # find the real height of the content window cw
+    set y  [winfo height $cw]
+  }
+  
+  # configure canvas scroll region height to real value + 40 pixel
+  $sw configure -scrollregion [lreplace [$sw cget -scrollregion] 3 3 [expr 40 + $y]]
+}
+
+
 proc lLabel {w {text ""}} {
   global labColor
   label $w.label -text $text -font [labelFont] -bg $labColor
