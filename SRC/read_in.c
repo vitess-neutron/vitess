@@ -5,6 +5,7 @@
 /*                                                                                           */
 /* 0.9  Jan  2013  K. Lieutenant   initial version                                           */
 /* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
+/* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -14,6 +15,8 @@
 #include "in_out.h"
 #include "softabort.h"
 
+#define NF_MAX 3
+
 
 /******************************/
 /** Prototypes               **/
@@ -21,9 +24,9 @@
 void  OwnInit(int argc, char *argv[]);
 void  OwnCleanup();
 
-short ScanVitessTraj(Neutron* pInNeutron, const char* sLine);
-short ScanMcStasTraj(Neutron* pInNeutron, const char* sLine);
-short ScanMcnpxTraj (Neutron* pInNeutron, const char* sLine);
+short ScanVitessTraj(Neutron* pInNeutron, const char* sLine, double Weight);
+short ScanMcStasTraj(Neutron* pInNeutron, const char* sLine, double Weight);
+short ScanMcnpxTraj (Neutron* pInNeutron, const char* sLine, double Weight);
 
 short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron* pMcNeutron);
 
@@ -35,10 +38,11 @@ void  GetId      (TotalID* pID);
 /******************************/
 /** Global Variables    **/
 /******************************/
-FILE*        pInFile=NULL;              // pointer to input file
+FILE*        pInFile[NF_MAX]={NULL,NULL,NULL};              // pointer to input file
 short        DetectColor=-1;            // ReadInt only neutrons with a given color, -1 means any
 int          Nrep=1;                    // Number of times the input is read
-double       FactInt=1.0;               // Factor to normmalize to the source intensity
+double       FactInt=1.0,               // Factor to normmalize to the source intensity from MCNPX data
+             Weight[NF_MAX];            // Weights of the input files
 VtPrgFormat  ePrgFormat=VT_VITESS_FMT;  // format of data to read (VITESS, McStas, MCNPX)
 VtDataFormat eDatFormat=VT_FLOAT;       // output format (exponential, float)
 
@@ -49,6 +53,7 @@ VtDataFormat eDatFormat=VT_FLOAT;       // output format (exponential, float)
 int main(int argc, char **argv)
 {
   int         i,                // index of trajectories
+              m,                // index of input files
               Irep=0,           // counter for number of repetitions
               rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
   short       Nt=0;             // number of trajectories identified
@@ -57,36 +62,44 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("read_in 1.0");
+  print_module_name("read_in 1.1");
 
   /* module specific initialization */
   OwnInit(argc, argv);
  
-  for(i=0; i<1e14 && rc==TRUE; i++)
-  {
-    rc=ReadLine(pInFile, sLine, sizeof(sLine));
-    if (rc==TRUE)
-    { 
-      switch (ePrgFormat)
+  for (m=0; m < NF_MAX; m++)
+  { 
+    if (pInFile[m])
+    {  
+      rc=TRUE;
+      for(i=0; i<1e14 && rc==TRUE; i++)
       {
-        case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine); break;
-        case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine); break;
-        case VT_MCNPX_FMT : Nt=ScanMcnpxTraj (&InNeutron, sLine); break;
-        default: Error("Data format for this program not (yet) implemented");
-      }
-      if (DetectColor < 0 || InNeutron.Color == DetectColor) 
-      {    
-        NumNeutRead += Nt;       
-        WriteNeutron(&InNeutron);
-      }
-    }
-    else
-    { 
-      Irep++;
-      if (Irep < Nrep)
-      { 
-         rewind(pInFile);
-         rc=TRUE;
+        Irep=0;
+        rc=ReadLine(pInFile[m], sLine, sizeof(sLine));
+        if (rc==TRUE)
+        { 
+          switch (ePrgFormat)
+          {
+            case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); break;
+            case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine, Weight[m]); break;
+            case VT_MCNPX_FMT : Nt=ScanMcnpxTraj (&InNeutron, sLine, Weight[m]); break;
+            default: Error("Data format for this program not (yet) implemented");
+          }
+          if (DetectColor < 0 || InNeutron.Color == DetectColor) 
+          {    
+            NumNeutRead += Nt;       
+            WriteNeutron(&InNeutron);
+          }
+        }
+        else
+        { 
+          Irep++;
+          if (Irep < Nrep)
+          { 
+             rewind(pInFile[m]);
+             rc=TRUE;
+          }
+        }
       }
     }
   }
@@ -106,15 +119,31 @@ int main(int argc, char **argv)
 // ------------------------------
 void  OwnInit(int argc, char *argv[]) 
 {
-  char *AsciiFileName=NULL;
-  int i;
+  char *AsciiFileName[NF_MAX]={NULL,NULL,NULL};
+  int i,m;
 
   for(i=1; i<argc; i++) 
   { if(argv[i][0]!='+') 
     { switch(argv[i][1])
       { 
         case 'A':
-          AsciiFileName = &argv[i][2];
+          AsciiFileName[0] = &argv[i][2];
+          break;
+        case 'B':
+          AsciiFileName[1] = &argv[i][2];
+          break;
+        case 'D':
+          AsciiFileName[2] = &argv[i][2];
+          break;
+
+        case 'a':
+          Weight[0] = (double)atof(&argv[i][2]);
+          break;
+        case 'b':
+          Weight[1] = (double)atof(&argv[i][2]);
+          break;
+        case 'd':
+          Weight[2] = (double)atof(&argv[i][2]);
           break;
 
         case 'f':
@@ -130,10 +159,6 @@ void  OwnInit(int argc, char *argv[])
           Nrep = atoi(&argv[i][2]);
           break;
 
-        case 'I':
-          FactInt = (double)atof(&argv[i][2]);
-          break;
-
         default:
           fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
           exit(-1);
@@ -141,14 +166,16 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
-  if (AsciiFileName != NULL)
-  { if ((pInFile=fopen(FullParName(AsciiFileName),"rt"))==NULL) 
-    { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
-      exit(-1);
-    }
-  } 
-  else 
-  { fputs("ERROR: The option -A to give the ascii file name is mandatory!\n", LogFilePtr);
+  for (m=0; m < NF_MAX; m++)
+  { if (AsciiFileName[m] != NULL)
+    { if ((pInFile[m]=fopen(FullParName(AsciiFileName[m]),"rt"))==NULL) 
+      { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName[m]);
+        exit(-1);
+      }
+    } 
+  }
+  if (pInFile[0]==NULL && pInFile[1]==NULL && pInFile[2]==NULL)
+  { fputs("ERROR: At least one ascii input file name is mandatory!\n", LogFilePtr);
     exit(-1);
   }
 }
@@ -159,15 +186,17 @@ void  OwnInit(int argc, char *argv[])
 // -----------------------
 void OwnCleanup()
 {
-  if (pInFile)
-    fclose(pInFile);
+  int m;
+  for (m=0; m < NF_MAX; m++)
+    if (pInFile[m])
+      fclose(pInFile[m]);
 }
 
 
 // ----------------------
 // Read VITESS trajectory
 // ----------------------
-short ScanVitessTraj(Neutron* pNeutron, const char* sLine)
+short ScanVitessTraj(Neutron* pNeutron, const char* sLine, double Weight)
 {
   int     rc=0;
 	char*   form=NULL;
@@ -185,8 +214,8 @@ short ScanVitessTraj(Neutron* pNeutron, const char* sLine)
                          &pNeutron->Position[0], &pNeutron->Position[1], &pNeutron->Position[2], 
                          &pNeutron->Vector[0],   &pNeutron->Vector[1],   &pNeutron->Vector[2], 
                          &pNeutron->Spin[0],     &pNeutron->Spin[1],     &pNeutron->Spin[2]   ); 
-  if (Nrep > 1)
-    pNeutron->Probability /= (double)Nrep;       // reduction of weight if data are read more than once
+  if (rc)
+    pNeutron->Probability *= Weight/Nrep;        // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
 
   if (rc > 0)
     return(1);
@@ -197,7 +226,7 @@ short ScanVitessTraj(Neutron* pNeutron, const char* sLine)
 // -----------------------
 //  Read McStas trajectory 
 // -----------------------
-short ScanMcStasTraj(Neutron* pNeutron, const char* sLine)
+short ScanMcStasTraj(Neutron* pNeutron, const char* sLine, double Weight)
 {
   McNeutron McNeut;
   short rc=FALSE, rs=0;
@@ -210,8 +239,8 @@ short ScanMcStasTraj(Neutron* pNeutron, const char* sLine)
                    &McNeut.Spin[0],     &McNeut.Spin[1],     &McNeut.Spin[2]    ); 
   if (rs > 0)
     rc= ConvertMcStas2Vitess(pNeutron, &McNeut);
-  if (Nrep > 1)
-    pNeutron->Probability /= (double)Nrep;         // reduction of weight if data are read more than once
+  if (rc)
+     pNeutron->Probability *= Weight/Nrep;       // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
 
   return(rc);
 }
@@ -220,7 +249,7 @@ short ScanMcStasTraj(Neutron* pNeutron, const char* sLine)
 // -----------------------
 //  Read MCNPX trajectory 
 // -----------------------
-short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine)
+short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine, double Weight)
 {
   double energy;
   short rc=FALSE, rs=0;
@@ -236,7 +265,7 @@ short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine)
   { 
     rc=TRUE;
     pNeutron->Wavelength  =  LAMBDA_FROM_ENERGY(1.0e+12*energy); // unit MeV -> µeV,  lambda -> energy
-    pNeutron->Probability *= FactInt/Nrep;                       // normalisation counts -> n/s and reduction of weight if data are read more than once
+    pNeutron->Probability *= FactInt*Weight/Nrep;                // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
     pNeutron->Time        *= 1.0e-05;                            // unit  shakes (=1.0e-08 s) -> ms
   }
   return(rc);
