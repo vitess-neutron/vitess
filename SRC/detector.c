@@ -23,6 +23,8 @@
 /*                               add tube geometry, 3D detector, cyl. axis in y and x,  */
 /*                               detector array, resolution; correct const.phi;         */
 /*                               visual. of SP instead of det. signal                   */
+/* 1.10 Sep 2013  C. Zendler     Correct efficiency when x-resolution>0,                */
+/*                               correct efficiency in solid layers if Nrep>1           */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -125,6 +127,7 @@ int main(int argc, char *argv[])
     FullLengthInDetector=0,      // length of neutron trajectorie in overall detector volume
     LengthInAbsorberMaterial=0,  // length of neutron trajectory in active detector volume
     LengthTillScattering=0,      // length of neutron trajectory in active detector volume until interaction
+    LengthModifyer=0,            // scale lengths in case of thin converter layers
     ScatteringProb=0,            // probability of interaction
     N=0,                         // particle density
     sigma=0,                     // absorption cross-section
@@ -136,7 +139,7 @@ int main(int argc, char *argv[])
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_DETECTOR);
-  print_module_name("detector 1.9");
+  print_module_name("detector 1.10");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -251,12 +254,14 @@ int main(int argc, char *argv[])
 	    case 1:  //He3
 	      ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100 * EfficiencyMod;
 	      break;
-	      //solid layer approximation: scale length in material with layer_thickness/total_thickness
 	    case 2:  //solid B10
 	    case 3:  // Li6
-	      LengthTillScattering*=((NLayers*absorberthickness)/Thickness);
-	      FullLengthInDetector*=((NLayers*absorberthickness)/Thickness);
-	      ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100* EfficiencyMod;
+	      //solid layer approximation: scale length in material with layer_thickness/total_thickness
+	      //2 solid layers per tube layer
+	      LengthModifyer=NLayers*absorberthickness/Thickness;
+	      if(type==0)           
+		LengthModifyer*=2;
+	      ScatteringProb = N*sigma*exp(-N*sigma*(LengthModifyer*LengthTillScattering)/100) * (LengthModifyer*FullLengthInDetector)/100* EfficiencyMod;
 	      break; 
 	    case 5:  // other; use wavelength-independent input eff
 	    default:
@@ -689,7 +694,7 @@ void  OwnInit(int argc, char *argv[])
         break;
 
       case 'a':
-	type=atoi(&argv[i][2]); //0=gas tubes, 1=area/volume
+	type=atoi(&argv[i][2]); //0=tubes, 1=area/volume
         break;
 	
       case 'G':
@@ -880,6 +885,7 @@ void  OwnInit(int argc, char *argv[])
   }
 
   //extend detector to avoid intensity drop at borders
+  // only in y,z: extension in x leads to higher efficiency!
   if(vertResolution!=0){
     Height+=2*(floor(vertResolution/PixelWidth[2])+1)*PixelWidth[2];
     NRows+=2*(floor(vertResolution/PixelWidth[2])+1);
@@ -888,11 +894,7 @@ void  OwnInit(int argc, char *argv[])
     Width+=2*(floor(horResolution/PixelWidth[1])+1)*PixelWidth[1];
     NColumns+=2*(floor(horResolution/PixelWidth[1])+1);
   }
-   if(xResolution!=0){
-    Thickness+=2*(floor(xResolution/PixelWidth[0])+1)*PixelWidth[0];
-    NLayers+=2*(floor(xResolution/PixelWidth[0])+1);
-  }
-
+ 
   if(geom!=0)
     {	if(geom==1)
 	{	/* cylinder */
