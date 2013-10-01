@@ -502,47 +502,39 @@ set smisisASET {
   {" " header}
 }
 
-set traceASET {
-  {poldeg float 0
-    {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
-  {}
-  {polx float 0
-    {"polarisation X\ndirection" "X-component of the polarisation direction" "" X}}
-  {poly float 0
-    {Y "Y-component of the polarisation direction" "" Y}}
-  {polz float 1
-    {Z "Z-component of the polarisation direction" "" V}}
-  {}
-}
 
 ### Source parameters
 ###
 set cwsASET {
   {Propagation header}
-  {dist_mod_prop float 200 {
-    "distance to\nwindow [cm]"
-    "distance between moderator and propagation window in cm.
-    If the moderator is not positioned at the origin (0.0,0.0,0.0), it is the distance from the origin." "" D} ge0 "" 1}
-  {prop_width float 10 {
-    "window\nwidth [cm]"
-    "width of propagation window in cm" "" w} gt0 "" 1}
-  {prop_height float 10 {
-    "window\nheight [cm]"
-    "height of propagation window in cm" "" h} gt0 "" 1}
-  {decl float 0 {"declination\n[deg]"
-    "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {dist_mod_prop float 200 {"distance to\nwindow [cm]" "Usually, distance between moderator and propagation window in cm.\nBut if the moderator is not positioned at the origin (0.0,0.0,0.0), it is the distance origin - propagation window." "" D} ge0 "" 1}
+  {prop_width    float 10 {"window\nwidth [cm]" "width of propagation window in cm" "" w} gt0 "" 1}
+  {prop_height   float 10 {"window\nheight [cm]" "height of propagation window in cm" "" h} gt0 "" 1}
+  {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {}
+  {"Time window" header}
+  {dst_time_foc float 200 {"time window\nin distance [cm]" "Only neutrons arriving between min. and max TOF at this distance from the source will be sent out by the source." "" s} gt0}
+  {min_time_foc float  "" {"min. TOF to\ntime window [ms]" "minimal time of flight for the time focusing" "" f}}
+  {max_time_foc float  "" {"max. TOF to\ntime window [ms]" "minimal time of flight for the time focusing" "" F}}
+  {}
+  {Polarization header}
+  {polx float 0 {"polarisation\ndirection X" "X-component of the polarisation direction" "" X}}
+  {poly float 0 {Y "Y-component of the polarisation direction" "" Y}}
+  {polz float 1 {Z "Z-component of the polarisation direction" "" V}}
+  {}
+  {poldeg float 0 {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
+  {}
   {"Special simulation parameters" header}
   {timemeas float 0
     {"time of\nmeasurement [s]" "not necessary: the number of neutrons for the given time range is calculated in each module, if the time is not zero." "" A} ge0}
   {deswl float "" {"desired\nwavelength [A]" "not necessary: (average) wavelength (at the sample) to be used in the measurement - not necessary, only needed to write optimal chopper phases to 'instrument.inf'" "" W}}
   {}
   {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest.
-For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.
-Option 'only trace trajectories'
-Only those trajectories are started in the second run that are found in the 'raytracing file'.
-(This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" k} {no "write trace files" "only trace trajectories"} {0 1 2}}
-  {utrcfunction editablefile ""
-    {"raytracing file" "Name of the file that contains the ID of the trajectories for tracing." "" r}}
+                   For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.
+                   Option 'only trace trajectories'
+                   Only those trajectories are started in the second run that are found in the 'raytracing file'.
+                   (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" k} {no "write trace files" "only trace trajectories"} {0 1 2}}
+  {utrcfunction editablefile "" {"raytracing file" "Name of the file that contains the ID of the trajectories for tracing." "" r}}
 }
 
 ### source
@@ -553,7 +545,7 @@ set li {"moderator\ndescription file" "Name of the file containing the descripti
 foreach s {const_wave HMI ILL FRM2} \
         m {ReactorCold HmiMS IllColdSrcCold FRM-II_ColdFile} {
   set al [list modfile pareditablefile $m.mod $li w cmo 1]
-  set source_${s}ESET [concat [list $al] $smASET $traceASET $cwsASET]
+  set source_${s}ESET [concat [list $al] $smASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {source_cwsCheckErr $app}
 }
 
@@ -608,7 +600,7 @@ foreach s {short_pulsed SNS J-PARC IPNS CSNS} \
         pow {- 1.0 - - 0.1} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps $vsn $pow]
-  set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
+  set source_${s}ESET [concat $fl [list $al] $smASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
 
@@ -618,7 +610,7 @@ proc sore {f} {
 
 set al [list modfile pareditablefile IsisTS1hydrogen.mod $li w imo 1]
 set fl [sore 50]
-set source_ISISESET [concat $fl [list $al] $smisisASET $traceASET $cwsASET]
+set source_ISISESET [concat $fl [list $al] $smisisASET $cwsASET]
 proc source_ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 
 
@@ -636,7 +628,7 @@ foreach s {ESS_LPTS ESS_2012} {
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
        \tt < p:  1/s*[1-exp(-t/beta)]
        \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
-  } [list $al] $smASET $traceASET $cwsASET]
+  } [list $al] $smASET $cwsASET]
 
   proc source_${s}CheckErr {{app _}} {
     foreach l {tau1 tau2 name}  {
