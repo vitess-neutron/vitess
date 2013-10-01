@@ -3104,14 +3104,11 @@ proc sample_powderCheckErr {{app _}} {
 ### sample
 ###   SANS
 
-set sample_sansESET [concat $sampleASET {
+set sample_sansESET {
   {samplefile pareditablefile sphere.san {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r san 1}
-}]
-
-proc sample_sansCheckErr {{app _}} {
-  if [sampleCheckErr $app] {return 1}
-  return [checkMiMaErr minq maxq Q-interval $app]
+  {sansmax float 10 {"max. theta [deg]" "maximal angle into which neutrons are scattered" "" M} le180}
+  {sansinc radio no {"incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I} {yes no} {1 0}}
 }
 
 ### sample
