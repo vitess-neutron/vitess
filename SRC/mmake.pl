@@ -80,8 +80,8 @@ my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs
 
 my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
-# auxillary programs without further libs
-my @PTool = qw(chop_phases standard_deviation direct_view sortiap);
+# auxillary programs which need no further libs
+my @PTool = qw(chop_phases standard_deviation direct_view sortiap merge_spectra);
 
 # modules with helper thread support
 my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
