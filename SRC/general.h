@@ -470,6 +470,8 @@ long   mini(const long value1, const long value2);
 long   maxi(const long value1, const long value2);
 
 double SolidAngle   (const double dHorAngle, const double dVertAngle);
+double ReflSN       (const double Lambda,    const double Angle,    const double mValue);
+double ReflFile     (const double Lambda,    const double Angle,    const double* Rdata,   long MaxData);
 
 void   CopyVector   (const VectorType Src, VectorType Dest);
 long   MAXV         (const VectorType Vector);

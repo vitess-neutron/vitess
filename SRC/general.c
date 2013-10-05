@@ -178,6 +178,62 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 }
 
 
+// Calculation of reflectivity on supermirrors from wavelength and inclination angle
+// either following quadratic SwissNeutronics description by Henrik Jacobsen (ReflSN)
+// or using any reflectivity file (ReflFile)  
+//
+// Lambda: wavelength        [Ang]
+// Angle : inclination angle [deg]
+// M     : official m value of the supermirror    (ReflSN only)
+// Rdata : pointer to list of reflectivity values (ReflFile only)
+// 
+double ReflSN(const double Lambda,    const double Angle,    const double M)
+{
+	double  M2,          // m'     : 'real' m value
+	        Q,           // Q      : momentum transfer of the reflection
+	        Qc=0.0217,   // Q_c    : crit. momentum transfer  (see figure)
+	        R0=0.99,     // R_0    : reflectivity for 0 <= Q <= Q_c
+	        alphaQ=0.0,  //          slope Delta_R / Delta_Q
+          betaQ =0.0,  //          quadratic term to describe R(q)
+	        W,           // W      : width of the cut-off  [1/Ang]
+          R;           // R      : reflectivity
+ 
+  W  = 0.0022 - 0.0002*M;
+  M2 = M*0.9853 + 0.1978;
+
+  if (M > 3.0)
+  {
+    alphaQ =  5.0944 + 0.1204*M;
+    betaQ  = 68.1137 - 7.6251*M;
+  }
+  else
+  { alphaQ = M;
+    betaQ  = 0.0;
+  }
+
+  Q = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
+	R = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
+
+  return(R);
+}
+
+
+double ReflFile(const double Lambda, const double Angle, const double* Rdata, long MaxData)
+{
+  long   iw1, iw2;     
+  double w,         // angle/wavelength
+         R=0.0;     // reflectivity
+      
+  w   = Angle*1000.0 / Lambda;
+  iw1 = (long) floor(w); 
+  iw2 = (long) ceil(w);
+
+  if (iw2 <= MaxData)
+    R = Rdata[iw1] + (Rdata[iw2] - Rdata[iw1]) * (w - iw1);
+
+  return(R);
+}
+
 
 /****************************************************************************************/
 /*  Vector Functions                                                                    */
