@@ -3494,7 +3494,7 @@ set eval_elast2ESET {
   {}
   {"color selection" header}
   {eval_colour int -1 {
-    "color" "color necessary for the trajectory to be evaluated\ncolor -1 means: all trajectories are evaluated" "" C} 0 32768}
+    "color" "color necessary for the trajectory to be evaluated\ncolor -1 means: all trajectories are evaluated" "" C} -1 32768}
   {minColor int -1 {
     "minColor" "color necessary for the trajectory to be evaluated\nminColor -1 means: all trajectories are evaluated\notherwise neutron color must be >= minColor" "" a} -1 32768}
   {maxColor int -1 {
