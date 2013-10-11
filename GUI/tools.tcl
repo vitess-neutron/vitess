@@ -747,13 +747,13 @@ proc parFileReadable {name app} {
   return [file readable [file join $defdirectory_ [entryVal $name $app]]]
 }
 
-proc browseFile {var access dirtype {ext ""} {mustexist false}} {
+
+proc browseFile {{var dummy} access dirtype {ext ""} {mustexist false}} {
   set err 1
   if {$dirtype == "d"} {
     set err [catch {tk_chooseDirectory -mustexist $mustexist} name]
   }
   if $err {if {[set name [fileDialog $access $ext]] == ""} return}
-  global $var
   switch $dirtype {
     d {
       if {! [file isdirectory $name]} {
@@ -789,6 +789,10 @@ proc browseFile {var access dirtype {ext ""} {mustexist false}} {
       }
     }
   }
+  if {$var == "dummy"} {
+    return $name
+  }
+  global $var
   set $var $name
 }
 
