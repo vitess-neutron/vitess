@@ -237,6 +237,7 @@ proc controlMenu {w} {
     {c "Import Pipe" {importPipe}}
     {m "Export as" mex} s
     {c "Generate Series" {genSeries .gser}} s
+    {c "Merge Results" {mergeRes .mres}} s
     {c "New *.inf File" editInfFile}
     {c "Edit *.inf File" {editInfFile 1}} s
   }

@@ -108,12 +108,14 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   }
 }
 
-proc checkPlotfile  {fname} {
+proc checkPlotfile {fname} {
   # return either matrix for 2D matrix files, 
-  # xyz for 2D files with x y z values
+  # xyz for 2D files with x y z values,
   # xz for files with at least 2 columns of numbers,
   # or "" for insufficient file names/files
-  
+
+  if {[file size $fname] < 100} { return ""} 
+
   if [catch {open $fname r} f] {
     showText "! can't open $fname"
     return ""
@@ -752,6 +754,7 @@ proc plotMonFile {v app} {
 proc showPlotFile {name {topt 0}} {
 
   set ftype [checkPlotfile $name]
+  puts "DEBUG showPlotFile detected type $ftype"
 
   if {$ftype == ""} return
   if {$ftype == "matrix" || $topt == 2} {

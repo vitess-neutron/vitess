@@ -169,16 +169,8 @@ static inline void prettyItem(FILE *fo, double v, int nl) {
 
   if (v == 0)
     fputs(nl ? "0\n" : "0 ", fo);
-  else {
-    int n;
-    sprintf(buffer, "%g %n", v, &n);
-    if (n > 3 && buffer[n-3] == '.' && buffer[n-2] == '0') {
-      buffer[n-3] = nl ? '\n' : ' ';
-      buffer[n-2] = 0; 
-    } else if (nl)
-      buffer[n-1] = '\n'; 
-    fputs(buffer, fo);
-  }
+  else
+    fprintf(fo, nl ? "%g\n" : "%g ", v);
 }
 
 static void prettyPrint(FILE *fo, int c, double *vp) {

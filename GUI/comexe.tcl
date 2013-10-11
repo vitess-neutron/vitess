@@ -1716,3 +1716,256 @@ proc genSeries {w} {
   pack $w.b.c -side left -anchor w
   pack $w.b.n -side right -anchor w
 }
+
+### Merge results of independent simulations
+
+proc browseAddDir {w} {
+
+  set twin $w.p.t
+  if {![winfo exists $twin]} return
+  global mergerootdir_
+  if {![info exists mergerootdir_]} return
+
+  if {"" == [set dname [browseFile dummy open d "" 1]]} return
+
+  # split the path
+  set flist [file split $dname]
+
+  if {$mergerootdir_ != ""} {
+    if {$mergerootdir_ == "$dname"} return
+    # if we have a root path already, look what it has in common with dname
+    set mlist [file split $mergerootdir_]
+    set mlen [llength $mlist]
+    set j -1
+    for {set i 0} {$i < $mlen} {incr i} {
+      if {[lindex $mlist $i] == "[lindex $flist $i]"} {
+        set j $i
+      } else break
+    }
+    if {$j == -1} {
+      # nothing in common
+      set part $dname
+    } elseif {$i >= $mlen} {
+      # all in common
+      set part [join [lrange $flist $i end] /]
+    } else {
+      # parts are common
+      set lres {}
+      for {} {$i < $mlen} {incr i} {
+        lappend lres ..
+      }
+      lappend lres [lrange $flist $j end]
+      set part [join $lres /]
+    }
+  } else {
+    set part [file tail $dname]
+    if {[llength $flist] > 1} {
+      set mergerootdir_ [file dirname $dname]
+    }
+  }
+
+  $twin insert end "$part\n"
+}
+
+proc clearMergeInput {w} {
+  global mergerootdir_ monfiles_
+  set mergerootdir_ ""
+  set monfiles_ ""
+  set twin $w.p.t
+  if [winfo exists $twin] {
+    $twin delete 1.0 end
+  }
+}
+
+proc findInputDirs {w} {
+  global mergerootdir_
+  set twin $w.p.t
+  if {![info exists mergerootdir_] || ![winfo exists $twin]} {
+    return ""
+  }
+  regsub -all {[\s\n]+} [$twin get 1.0 end] " " a
+  regsub { +$} $a "" a
+  set rlist {}
+  foreach n [split $a] {
+    lappend rlist [file normalize [file join $mergerootdir_ $n]]
+  }
+  return $rlist
+}
+
+
+proc extractMonFiles {w} {
+  global monfiles_
+  if {![info exists monfiles_]} return
+  set mdirs [findInputDirs $w]
+  set mdir [lindex $mdirs 0]
+  set restlist [lrange $mdirs 1 end]
+  set rlist {}
+  foreach f [glob $mdir/*] {
+    if [regexp {\.(gui|sh|x3d)+$} $f] continue
+    if {![file isfile $f]} continue
+
+    # is this file in all input directories?
+    set fn [file tail $f]
+    set found 1
+    foreach d $restlist {
+      set tf [file normalize [file join $d $fn]]
+      if [file isfile $tf] continue
+      set found 0
+      break
+    }
+    if {!$found} continue
+    if {[checkPlotfile $f] != ""} {
+      lappend rlist $fn
+    }
+  }
+  if {[llength $rlist] > 0} {
+    set monfiles_ [join $rlist]
+  }
+}
+
+proc plotAResult  {w} {
+  if {[set rdir [entryVal mergeresdir]] == ""} {
+    showText "!no results yet!"
+    return
+  }
+  set fn [tk_getOpenFile -initialdir [file normalize $rdir]]
+  if {[set tc [checkPlotfile $fn]] != ""} {
+    if {$tc == "matrix"} {
+      showPlotFile $fn 2
+    } else {
+      showPlotFile $fn 1
+    }
+  }
+}
+
+proc mergeResults {w} {
+
+  global ExeDirectory ExeSuffix
+  set com [file join $ExeDirectory merge_spectra$ExeSuffix]
+  if {![file executable $com]} {
+    showText "!no merge binary $com found!"
+    return
+  }
+  
+  if {[set rdir [entryVal mergeresdir]] == ""} {
+    showText "!please specify a result directory first!"
+    return
+  }
+  set resdir [file normalize $rdir]
+  if [catch {file mkdir $resdir}] {
+    showText "!unable to create the result directory!"
+    return
+  }
+
+  regsub -all {[\s]+} [entryVal monfiles] " " ms
+  regsub { +$} $ms "" ms
+  if {$ms == ""} {
+    showtext "!no files to be merged specified!"
+    return
+  }
+  set mdirs [findInputDirs $w]
+  if {[llength $mdirs] <= 1} {
+    showText "!no valid input directories specified!"
+    return
+  }
+
+  # make sure the result directory is not among the input directories
+  foreach d $mdirs {
+    if {$d == $resdir} {
+      showText "!the result directory should not be an input directory also!"
+      return
+    }
+  }
+
+  # merge files
+  foreach mfile [split $ms] {
+    set resfile [file join $resdir $mfile]
+    set c "$com -f $resfile"
+    foreach d $mdirs {
+      append c " [file join $d $mfile]"
+    }
+    # merge now, using the merge_spectra binary
+    catch {eval exec $c} res
+  }
+}
+
+
+proc mergeRes {w} {
+  dialogSWindow $w "Merge Result Spectra"
+
+  global entryColor labColor bgColor EntryCharWidth EntryCharHeight
+  foreach f {f p pa me m ms r a} {
+    frame $w.$f -bg $bgColor
+    pack $w.$f -side top -fill x -expand no -padx 3 -pady 0
+  }
+
+  set lfont [labelFont]
+  set fnt [ssbuttonFont]
+  set ewid 64
+  set lwid [expr int(1.5*$ewid)]
+ 
+  set ww $w.f
+  label $ww.l -text "Root\npath" -font $lfont -bg $labColor -pady 0.5c
+  entry $ww.e -width $ewid -relief sunken -textvariable mergerootdir_ -bg $entryColor
+  pack $ww.l $ww.e -side left -anchor w
+
+  set ww $w.p
+  label $ww.l -text "Input\ndirectories" -font $lfont -bg $labColor -pady 0.5c
+  text $ww.t -bg $entryColor -width $lwid -height 6 -yscrollcommand "$ww.s set"
+  scrollbar $ww.s -command "$ww.t yview"
+  pack $ww.s -side right -fill y
+  pack $ww.t -side left
+
+  set ww $w.pa
+  button $ww.bn -text "Browse add" -background $bgColor -font $fnt\
+      -command "browseAddDir $w"
+  button $ww.c -text Clear -background $bgColor -font $fnt\
+      -command "clearMergeInput $w"
+  pack $ww.bn $ww.c -side right -anchor w
+ 
+  set ww $w.me
+  label $ww.l -text "Monitor files" -font $lfont -bg $labColor -pady 0.5c
+  button $ww.bn -text "from first input directory" -background $bgColor -font $fnt\
+      -command "extractMonFiles $w"
+  pack $ww.l $ww.bn -side left -anchor w
+
+  set ww $w.m
+  entry $ww.e -width $lwid -relief sunken -textvariable monfiles_ -bg $entryColor\
+      -xscrollcommand "$w.ms.xscroll set"
+  pack $ww.e -side left -anchor w
+  xscroll $w.ms "$ww.e xview"
+
+  set ww $w.r
+  label $ww.l -text "Result\ndirectory" -font $lfont -bg $labColor -pady 0.5c
+  entry $ww.e -width $ewid -relief sunken -textvariable mergeresdir_ -bg $entryColor
+  button $ww.bn -text Browse -background $bgColor -font $fnt\
+      -command {browseFile mergeresdir_ write d}
+  pack $ww.l $ww.e $ww.bn -side left -anchor w
+
+  set ww $w.a
+  bButton $ww.bn "Merge Results" "mergeResults $w"
+  label  $ww.l -text "    " -font $lfont -bg $labColor -pady 0.5c
+  bButton $ww.p "Plot a Result" "plotAResult $w"
+  bButton $ww.h Help {showHelpItem Merging-Results}
+  pack $ww.bn $ww.l $ww.p $ww.h  -side left -anchor w
+  bButton $ww.c Cancel "destroy $w"
+  pack $ww.c -side right -anchor w
+}
+
+helpItem Merging-Results {
+You may merge monitor spectra from separate simulations of the same instrument.
+These are assumed to be in separate input directories, but with the same file names.
+
+First you add an input directory by clicking "Browse add" which will split it's name
+to the "Root path" path and the specific directory. When adding more input
+directories, their path will be used relative to the root directory, if possible.
+You may of course edit directory names manually.
+
+Next you select monitor files by clicking "from first input directory". VITESS tries
+to identify all monitor spectra files in that directory. Again you may restrict this
+white space separated list manually.
+
+When you did specify a result directory, which may exist or needs to be created,
+you may click "Merge Results" to merge all specified input spectra.
+
+}
