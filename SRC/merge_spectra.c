@@ -24,9 +24,10 @@ static void usage (void) {
 #define NL "\n"
 #define myexit1(s,a) {printf("\n" s "!\n" , a); exit(2); }
 #define myexit2(s,a,b) {printf("\n" s "!\n" , a,b); exit(2); }
+#define myexit4(s,a,b,c,d) {printf("\n" s "!\n" , a,b,c,d); exit(2); }
 
 static char *ofn;    // output file name
-static char **fn;    // array of input file names
+static char **input_filename;    // array of input file names
 
 // MAXS should be big enough to read a full matrix input line with 1+ycount values
 // where ycount normally is <= 1000
@@ -37,21 +38,28 @@ static int skip_lines, rlines, cols, matrix,
   maxcols, number_count, infile_count, verbose,
   is_mergeable_text, is_monitor, is_xyz, weight;
 static char *infilename, *rootdir;
-static long rpos;
 
 static double *linevals, *values;
+
+void resetToData(FILE *f) {
+  int i;
+  fseek(f, 0, SEEK_SET);
+  for (i=0; i<skip_lines; i++)
+    fgets(buffer, MAXS-1, f);
+}
 
 static FILE * openInFile(char *name) {
   FILE *f;
   char *fname = buffer;
+
   if (rootdir) {
-    if (infilename) 
+    if (infilename)
       sprintf(buffer, "%s/%s/%s", rootdir, name, infilename);
-    else 
-      sprintf(buffer, "/%s/%s", rootdir, name);
+    else
+      sprintf(buffer, "%s/%s", rootdir, name);
   } else if (infilename)
-    sprintf(buffer, "/%s/%s", name, infilename);
-  else 
+    sprintf(buffer, "%s/%s", name, infilename);
+  else
     fname = name;
   if (verbose)
     printf("open input file %s\n", fname);
@@ -114,8 +122,6 @@ static int parseHeader(FILE *f) {
       } else if (((c = strstr(s,"x ")) != 0) &&
                  ((c = strstr(c+2,"y ")) != 0) && (strchr(c,'z') != 0))
         is_xyz = 1;
-      // remember the file position, as we read data multiple times
-      rpos = ftell(f);
       continue;
     }
     // we found the first non-comment line
@@ -127,8 +133,6 @@ static int parseHeader(FILE *f) {
         // mon2D format 0
         // skip this line with cols x-axis tic values
         skip_lines++;
-        // rpos should be after this line
-        rpos = ftell(f);
         break;
       } else if (cols != 2 && cols != 4) {
         // unknown spectrum type
@@ -137,7 +141,7 @@ static int parseHeader(FILE *f) {
     }
     break;
   }
-  if (verbose) 
+  if (verbose)
     printf("cols %d  matrix %d  is_xzy %d weight %d\n", cols, matrix, is_xyz, weight);
 
   return 1;
@@ -148,24 +152,24 @@ static void mergeTextFiles(FILE *fo) {
   int i;
 
   // copy first input file contents to output file
-  f = openInFile(fn[0]);
+  f = openInFile(input_filename[0]);
   while (fgets(buffer,MAXS-1, f))
     fputs(buffer, fo);
   fclose(f);
-  
+
   // add other files contents, skipping headers
   for (i=1; i<infile_count; i++) {
-    f = openInFile(fn[i]);
     int j;
+    f = openInFile(input_filename[i]);
     for (j=0; j<skip_lines; j++)
-      if (!fgets(buffer,MAXS-1, f)) myexit1("unable to read %s",fn[i]);
+      if (!fgets(buffer,MAXS-1, f)) myexit1("unable to read %s",input_filename[i]);
     while (fgets(buffer,MAXS-1, f))
       fputs(buffer, fo);
     fclose(f);
   }
 }
 
-static inline void prettyItem(FILE *fo, double v, int nl) {
+static void prettyItem(FILE *fo, double v, int nl) {
 
   if (v == 0)
     fputs(nl ? "0\n" : "0 ", fo);
@@ -184,14 +188,14 @@ static void mergeFormFiles(FILE *fo) {
   // merge other files
   FILE *f;
   int infile, n, i,j;
-  double mean, *vp;
+  double mean, factor, *vp;
 
   for (infile=1; infile < infile_count; infile++) {
-    f = openInFile(fn[infile]);      
+    f = openInFile(input_filename[infile]);
     // skip header lines
     for (i=0; i<skip_lines; i++) {
       if (! fgets(buffer,MAXS-1, f))
-        myexit1("error reading header of %s",fn[infile]);
+        myexit1("error reading header of %s",input_filename[infile]);
       if (infile == 1)
         fputs(buffer, fo);   // copy header lines to outfile
     }
@@ -201,14 +205,13 @@ static void mergeFormFiles(FILE *fo) {
     while (fgets(buffer,MAXS-1, f))
       if (buffer[0] && buffer[0] != '\n') {
         i++;
-
         vp = linevals;
         readValues(maxcols, buffer, &vp);
 
         if (matrix) {
           // first item (y value) will not be changed but checked
           if (values[n] != linevals[0])
-            myexit2("inconsistent matrix x values %g %g", values[n], linevals[0]);
+            myexit4("inconsistent matrix x values %g %g, n %d  i %d", values[n], linevals[0], n,i);
           for (j=1; j<=cols; j++)
             values[n+j] += linevals[j];
         } else if (is_xyz) {
@@ -232,20 +235,20 @@ static void mergeFormFiles(FILE *fo) {
 
     // copy merged data to outfile
 
-    double factor = 1.0d / infile_count;
+    factor = 1.0 / infile_count;
 
     if (matrix) {
 
       for (n=0; n < number_count; n += maxcols) {
         // first value is y axis tic-value, followed by cols counts
-        // normalize counts to average        
+        // normalize counts to average
         for (j=1; j<cols; j++)
           values[n+j] *= factor;
         prettyPrint(fo, maxcols, values + n);
       }
-      
+
     } else if (cols == 2) {
-    
+
       for (n=0; n < number_count; n += 2) {
         values[n+1] *= factor;
         prettyPrint(fo, 2, values + n);
@@ -295,14 +298,14 @@ static void mergeFiles() {
 
   // read first spectrum
 
-  f = openInFile(fn[0]);
-  
+  f = openInFile(input_filename[0]);
+
   if (!parseHeader(f))
-    myexit1("error with header of %s",  fn[0]);
+    myexit1("error with header of %s",  input_filename[0]);
 
   if (verbose)
     printf("%d header lines,  %d lines,  %d cols  of input  %s\n",
-           skip_lines, rlines, cols, fn[0]);
+           skip_lines, rlines, cols, input_filename[0]);
 
   if (!(fo = fopen(ofn, "w"))) myexit1("unable to open output file %s", ofn);
 
@@ -310,39 +313,36 @@ static void mergeFiles() {
 
     fclose(f);
     mergeTextFiles(fo);
-  
+
   } else {
 
     // count rest lines
-    // reset the file position to begin of data
-    fseek(f, rpos, SEEK_SET);
+    resetToData(f);
     rlines = 0;
     while (fgets(buffer,MAXS-1,f))
-      if (buffer[0] && buffer[0] != '\n') 
+      if (buffer[0] && buffer[0] != '\n')
         rlines++;
 
     if (matrix)
-      // We have cols y values as part of the header lines, 
+      // We have cols y values as part of the header lines,
       // following are lines with a x value and cols counts
       maxcols = 1 + cols; // x value + cols counts
     else
       maxcols = cols;
 
     number_count = maxcols * rlines;
-
     vp = values = (double*) malloc(number_count*sizeof(double));
     linevals = (double*) malloc(maxcols*sizeof(double));
 
     // now read numbers
-    // reset the file position to begin of data
-    fseek(f, rpos, SEEK_SET);
-    
+    resetToData(f);
+
     while (fgets(buffer,MAXS-1, f))
       if (buffer[0] && buffer[0] != '\n')
         readValues(maxcols, buffer, &vp);
 
     fclose(f);
-    
+
     mergeFormFiles(fo);
 
   }
@@ -359,7 +359,7 @@ int main (int argc, char **argv) {
 
   if (argc < 4) usage();
 
-  fn = (char **) calloc(argc, sizeof(char*));
+  input_filename = (char **) calloc(argc, sizeof(char*));
 
   argv++;
   while ((arg = *argv++)) {
@@ -380,12 +380,13 @@ int main (int argc, char **argv) {
       slen = strlen(arg);
       if (slen > 1 && arg[slen-1] == '/')
         arg[slen-1] = 0; // no slashes at end of file- or directory-names
-      fn[infile_count++] = arg;
+      input_filename[infile_count++] = arg;
     } else {
       ofn = arg;
     }
   }
   if (!ofn || infile_count < 2) usage();
+
   if (rootdir) {
     slen = strlen(rootdir);
     if (rootdir[0] != '/' || slen < 2)

@@ -117,38 +117,40 @@ proc checkPlotfile {fname} {
   if {[file size $fname] < 100} { return ""} 
 
   if [catch {open $fname r} f] {
-    showText "! can't open $fname"
     return ""
   }
-  if [eof $f] {
+  set ismonitor 0
+  if {[gets $f ins] > 0} {
+    if [regexp {^\#Monitor} $ins] {set ismonitor 1}
+  }
+  if {!$ismonitor} {
     close $f
-    showText "! empty $fname"
     return ""
   }
-
-  while {[gets $f ins] > 0} {
-    if {[string range $ins 0 0] != "#"} break
+  set ftype ""
+  while 1 {
     # check if its a matrix file
-    if [regexp {matrix} $ins] {
-      close $f
-      return matrix
+    if [regexp matrix $ins] {
+      set ftype matrix
     }
     if [regexp {x  y  z} $ins] {
-      close $f
-      return xyz
+      set ftype xyz
     }
+    if {[gets $f ins] <= 0} break
+    if {[string range $ins 0 0] != "#"} break
   }
   close $f
+
   # check if it has more than 16 colums
   eval set ll [list $ins]
   if {[llength $ll] > 16} {
     return matrix
   } elseif {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
     # min. 2 colums of numbers
-    showText "! insufficient plot file"
     return ""
   }
-  return xz
+  if {$ftype == ""} {set ftype xz}
+  return $ftype
 }
 
 # show 2d array coded with colors
@@ -754,7 +756,6 @@ proc plotMonFile {v app} {
 proc showPlotFile {name {topt 0}} {
 
   set ftype [checkPlotfile $name]
-  puts "DEBUG showPlotFile detected type $ftype"
 
   if {$ftype == ""} return
   if {$ftype == "matrix" || $topt == 2} {

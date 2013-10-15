@@ -364,7 +364,7 @@ proc forceDefs {args} {
 }
 ### short form to set global variable
 ###
-proc gSet {a b} {
+proc gSet {a {b ""}} {
   global $a
   set $a $b
 }
