@@ -223,7 +223,7 @@ while ($_ = shift) {
 my ($version, $fullversion);
 open F, '../GUI/control.tcl';
 while (<F>) {
-  if (/set t "VITESS ([0-9.a-z]+)"/) {
+  if (/set t "VITESS ([0-9.a-z]+)/) {
     $version = $fullversion = $1;
     last;
   }

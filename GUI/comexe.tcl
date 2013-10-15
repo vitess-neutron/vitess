@@ -1719,11 +1719,25 @@ proc genSeries {w} {
 
 ### Merge results of independent simulations
 
-proc browseAddDir {w} {
+proc createResDir {w {dname ""}} {
 
-  set twin $w.p.t
-  if {![winfo exists $twin]} return
-  global mergerootdir_
+  global mergeresdir_
+  if {$dname == ""} {
+    browseFile mergeresdir_ write d
+  } else {
+    set mergeresdir_ $dname
+  }
+  set resdir [file normalize $mergeresdir_]
+  if [catch {file mkdir $mergeresdir_}] {
+    showText "!unable to create the result directory!"
+    return
+  }
+}
+
+
+proc addMergeDir {w} {
+
+  global mergerootdir_ mergechildren_
   if {![info exists mergerootdir_]} return
 
   if {"" == [set dname [browseFile dummy open d "" 1]]} return
@@ -1732,30 +1746,34 @@ proc browseAddDir {w} {
   set flist [file split $dname]
 
   if {$mergerootdir_ != ""} {
-    if {$mergerootdir_ == "$dname"} return
     # if we have a root path already, look what it has in common with dname
-    set mlist [file split $mergerootdir_]
-    set mlen [llength $mlist]
-    set j -1
-    for {set i 0} {$i < $mlen} {incr i} {
-      if {[lindex $mlist $i] == "[lindex $flist $i]"} {
-        set j $i
-      } else break
-    }
-    if {$j == -1} {
-      # nothing in common
-      set part $dname
-    } elseif {$i >= $mlen} {
-      # all in common
-      set part [join [lrange $flist $i end] /]
+    if {$mergerootdir_ == "$dname"} {
+      # directory itself
+      set part "./"
     } else {
-      # parts are common
-      set lres {}
-      for {} {$i < $mlen} {incr i} {
-        lappend lres ..
+      set mlist [file split $mergerootdir_]
+      set mlen [llength $mlist]
+      set j -1
+      for {set i 0} {$i < $mlen} {incr i} {
+        if {[lindex $mlist $i] == "[lindex $flist $i]"} {
+          set j $i
+        } else break
       }
-      lappend lres [lrange $flist $j end]
-      set part [join $lres /]
+      if {$j <= 0} {
+        # nothing in common
+        set part $dname
+      } elseif {$i >= $mlen} {
+        # all in common
+        set part [join [lrange $flist $i end] /]
+      } else {
+        # parts are common
+        set lres {}
+        for {} {$i < $mlen} {incr i} {
+          lappend lres ..
+        }
+        set lres [concat $lres [lrange $flist [expr $j + 1] end]]
+        set part [join $lres /]
+      }
     }
   } else {
     set part [file tail $dname]
@@ -1764,38 +1782,30 @@ proc browseAddDir {w} {
     }
   }
 
-  $twin insert end "$part\n"
+  append mergechildren_ " $part"
 }
 
 proc clearMergeInput {w} {
-  global mergerootdir_ monfiles_
-  set mergerootdir_ ""
-  set monfiles_ ""
-  set twin $w.p.t
-  if [winfo exists $twin] {
-    $twin delete 1.0 end
+  foreach n {rootdir monfiles children rootdir} {
+    gSet merge${n}_
   }
 }
 
 proc findInputDirs {w} {
-  global mergerootdir_
-  set twin $w.p.t
-  if {![info exists mergerootdir_] || ![winfo exists $twin]} {
-    return ""
-  }
-  regsub -all {[\s\n]+} [$twin get 1.0 end] " " a
-  regsub { +$} $a "" a
+  global mergerootdir_ mergechildren_
   set rlist {}
-  foreach n [split $a] {
-    lappend rlist [file normalize [file join $mergerootdir_ $n]]
+  if [info exists mergerootdir_] {
+    foreach n [itemize $mergechildren_] {
+      lappend rlist [file normalize [file join $mergerootdir_ $n]]
+    }
   }
   return $rlist
 }
 
 
 proc extractMonFiles {w} {
-  global monfiles_
-  if {![info exists monfiles_]} return
+  global mergemonfiles_
+  if {![info exists mergemonfiles_]} return
   set mdirs [findInputDirs $w]
   set mdir [lindex $mdirs 0]
   set restlist [lrange $mdirs 1 end]
@@ -1814,12 +1824,13 @@ proc extractMonFiles {w} {
       break
     }
     if {!$found} continue
+    set rc [checkPlotfile $f]
     if {[checkPlotfile $f] != ""} {
       lappend rlist $fn
     }
   }
   if {[llength $rlist] > 0} {
-    set monfiles_ [join $rlist]
+    set mergemonfiles_ [join $rlist]
   }
 }
 
@@ -1829,6 +1840,7 @@ proc plotAResult  {w} {
     return
   }
   set fn [tk_getOpenFile -initialdir [file normalize $rdir]]
+  if {$fn == ""} return
   if {[set tc [checkPlotfile $fn]] != ""} {
     if {$tc == "matrix"} {
       showPlotFile $fn 2
@@ -1840,53 +1852,67 @@ proc plotAResult  {w} {
 
 proc mergeResults {w} {
 
-  global ExeDirectory ExeSuffix
+  global ExeDirectory ExeSuffix SourceDirectory mergeresdir_ mergemonfiles_
+  if {![info exists mergeresdir_]} return
   set com [file join $ExeDirectory merge_spectra$ExeSuffix]
   if {![file executable $com]} {
     showText "!no merge binary $com found!"
     return
   }
-  
-  if {[set rdir [entryVal mergeresdir]] == ""} {
-    showText "!please specify a result directory first!"
+
+  set mdirs [findInputDirs $w]
+  if {[llength $mdirs] < 2} {
+    showText "!specify at least two input directories!"
     return
   }
-  set resdir [file normalize $rdir]
-  if [catch {file mkdir $resdir}] {
-    showText "!unable to create the result directory!"
-    return
+  
+  if {$mergeresdir_ == ""} {
+    # create a result directory
+    set n [clock format [clock seconds] -format %Y-%m-%d]
+    set tn res$n
+    while 1 {
+      set fname [file join $SourceDirectory FILES $tn]
+      if {![file isdirectory $fname]} break
+      set tn res$n-[incr i]
+    }
+    createResDir $w $fname
   }
 
-  regsub -all {[\s]+} [entryVal monfiles] " " ms
-  regsub { +$} $ms "" ms
-  if {$ms == ""} {
-    showtext "!no files to be merged specified!"
-    return
+  if {$mergemonfiles_ == ""} {
+    extractMonFiles $w
   }
-  set mdirs [findInputDirs $w]
-  if {[llength $mdirs] <= 1} {
-    showText "!no valid input directories specified!"
+  set mlist [itemize $mergemonfiles_]
+  set mlen [llength $mlist]
+  if {$mlen < 1} {
+    showtext "!no monitor files to be merged found!"
     return
   }
 
   # make sure the result directory is not among the input directories
   foreach d $mdirs {
-    if {$d == $resdir} {
+    if {$d == $mergeresdir_} {
       showText "!the result directory should not be an input directory also!"
       return
     }
   }
 
   # merge files
-  foreach mfile [split $ms] {
-    set resfile [file join $resdir $mfile]
-    set c "$com -f $resfile"
-    foreach d $mdirs {
-      append c " [file join $d $mfile]"
-    }
+  set ok 1
+  
+  foreach mfile $mlist {
+    set c "$com -f -n $mfile [file join $mergeresdir_ $mfile] $mdirs"
     # merge now, using the merge_spectra binary
-    catch {eval exec $c} res
+    if [catch {eval exec $c} res] {
+      set ok 0
+      break
+    }
   }
+  if $ok {
+    showText "successfully merged $mlen result spectra"
+  } else {
+    showText "!problems merging spectra\n$res\n!"
+  }
+
 }
 
 
@@ -1894,7 +1920,7 @@ proc mergeRes {w} {
   dialogSWindow $w "Merge Result Spectra"
 
   global entryColor labColor bgColor EntryCharWidth EntryCharHeight
-  foreach f {f p pa me m ms r a} {
+  foreach f {f p pa ps me m ms r a} {
     frame $w.$f -bg $bgColor
     pack $w.$f -side top -fill x -expand no -padx 3 -pady 0
   }
@@ -1905,32 +1931,35 @@ proc mergeRes {w} {
   set lwid [expr int(1.5*$ewid)]
  
   set ww $w.f
-  label $ww.l -text "Root\npath" -font $lfont -bg $labColor -pady 0.5c
+  label $ww.l -text "Parent\ninput\ndirectory" -font $lfont -bg $labColor -pady 0.5c
   entry $ww.e -width $ewid -relief sunken -textvariable mergerootdir_ -bg $entryColor
+  button $ww.bn -text "Browse add" -background $bgColor -font $fnt\
+      -command "addMergeDir $w"
   pack $ww.l $ww.e -side left -anchor w
+  pack $ww.bn -side right -anchor w
 
   set ww $w.p
-  label $ww.l -text "Input\ndirectories" -font $lfont -bg $labColor -pady 0.5c
-  text $ww.t -bg $entryColor -width $lwid -height 6 -yscrollcommand "$ww.s set"
-  scrollbar $ww.s -command "$ww.t yview"
-  pack $ww.s -side right -fill y
-  pack $ww.t -side left
-
-  set ww $w.pa
-  button $ww.bn -text "Browse add" -background $bgColor -font $fnt\
-      -command "browseAddDir $w"
+  label $ww.l -text "Input directories" -font $lfont -bg $labColor -pady 0.5c
   button $ww.c -text Clear -background $bgColor -font $fnt\
       -command "clearMergeInput $w"
-  pack $ww.bn $ww.c -side right -anchor w
+  pack $ww.l -side left -anchor w
+  pack $ww.c -side right -anchor w
+
+  set ww $w.pa
+  entry $ww.e -width $lwid -relief sunken -textvariable mergechildren_ -bg $entryColor\
+      -xscrollcommand "$w.ps.xscroll set"
+  pack $ww.e -side left -anchor w
+  xscroll $w.ps "$ww.e xview"
  
   set ww $w.me
   label $ww.l -text "Monitor files" -font $lfont -bg $labColor -pady 0.5c
-  button $ww.bn -text "from first input directory" -background $bgColor -font $fnt\
+  button $ww.bn -text "Find from input directories" -background $bgColor -font $fnt\
       -command "extractMonFiles $w"
-  pack $ww.l $ww.bn -side left -anchor w
+  pack $ww.l -side left -anchor w
+  pack $ww.bn -side right -anchor w
 
   set ww $w.m
-  entry $ww.e -width $lwid -relief sunken -textvariable monfiles_ -bg $entryColor\
+  entry $ww.e -width $lwid -relief sunken -textvariable mergemonfiles_ -bg $entryColor\
       -xscrollcommand "$w.ms.xscroll set"
   pack $ww.e -side left -anchor w
   xscroll $w.ms "$ww.e xview"
@@ -1939,8 +1968,9 @@ proc mergeRes {w} {
   label $ww.l -text "Result\ndirectory" -font $lfont -bg $labColor -pady 0.5c
   entry $ww.e -width $ewid -relief sunken -textvariable mergeresdir_ -bg $entryColor
   button $ww.bn -text Browse -background $bgColor -font $fnt\
-      -command {browseFile mergeresdir_ write d}
-  pack $ww.l $ww.e $ww.bn -side left -anchor w
+      -command "createResDir $w"
+  pack $ww.l $ww.e -side left -anchor w
+  pack $ww.bn -side right -anchor w
 
   set ww $w.a
   bButton $ww.bn "Merge Results" "mergeResults $w"
@@ -1956,16 +1986,18 @@ helpItem Merging-Results {
 You may merge monitor spectra from separate simulations of the same instrument.
 These are assumed to be in separate input directories, but with the same file names.
 
-First you add an input directory by clicking "Browse add" which will split it's name
-to the "Root path" path and the specific directory. When adding more input
-directories, their path will be used relative to the root directory, if possible.
+First you add an input directory by clicking "Browse add " which will split it's name
+to the "Parent input directory" path and the specific directory. When adding more input
+directories, their path will be used relative to the parent directory, if possible.
 You may of course edit directory names manually.
 
-Next you select monitor files by clicking "from first input directory". VITESS tries
-to identify all monitor spectra files in that directory. Again you may restrict this
-white space separated list manually.
+Next you select monitor files by clicking "Find from input directories". VITESS tries
+to identify all common monitor spectra files in these directories.
+Again you may restrict this white space separated list manually.
 
 When you did specify a result directory, which may exist or needs to be created,
 you may click "Merge Results" to merge all specified input spectra.
 
+If you leave "Monitor files" and "Result directory" blank when clicking "Merge Results"
+the GUI will do it's best and generate a new result directory name.
 }

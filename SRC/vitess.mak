@@ -141,11 +141,12 @@ ALL : \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
 	"$(OD)\direct_view.exe" \
-	"$(OD)\sortiap.exe"
+	"$(OD)\sortiap.exe" \
+	"$(OD)\merge_spectra.exe"
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=1 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=2 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -822,6 +823,13 @@ SOURCE=$(SPATH)\sortiap.c
 
 "$(OD)\sortiap.exe" : "$(OD)" "$(OD)\sortiap.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sortiap.pdb" /out:"$(OD)\sortiap.exe" "$(IDIR)\sortiap.obj"
+
+SOURCE=$(SPATH)\merge_spectra.c
+"$(IDIR)\merge_spectra.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\merge_spectra.exe" : "$(OD)" "$(OD)\merge_spectra.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\merge_spectra.pdb" /out:"$(OD)\merge_spectra.exe" "$(IDIR)\merge_spectra.obj"
 
 SOURCE=$(SPATH)\bendtest.c
 "$(IDIR)\bendtest.obj" : $(SOURCE)

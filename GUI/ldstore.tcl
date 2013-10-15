@@ -153,7 +153,7 @@ proc fileSettings {{saveit 0}} {
         gSet $e "$v"
         #puts "gSet $e \"$v\""
       } elseif {[string match "*\{\}" $line]} {
-        gSet $e ""
+        gSet $e
       }  else {
         set errs "!dubious input in $name ignored ($line)"
       }
@@ -824,7 +824,7 @@ proc loadAll {extension {givenname ""}} {
       gSet $e "$v"
       #puts "gSet $e \"$v\""
     } elseif {[string match "*\{\}" $line]} {
-      gSet $e ""
+      gSet $e
     }  else {
       set errs "!dubious input in $name ignored ($line)"
     }
@@ -872,7 +872,7 @@ proc deleteAllModules {} {
   reShowModules $Mlf
   removeTrailingDummies
   setInstrumentfile 1
-  gSet LastState ""
+  gSet LastState
   helpFrame $Amf
   foreach e [info globals] {
     if [regexp $DoNotSaveRegexp $e] continue
