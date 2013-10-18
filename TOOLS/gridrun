@@ -216,7 +216,6 @@ while ($_ = shift) {
         # silently discard comma separators
         tr/,/ /;
         @Node = split;
-        print "DEBUG: Node @Node\n";
         myexit("please give a list of $opt nodes") unless @Node;
       } elsif ($opt eq 'bin') {
         $vitess_binaries = $arg;
