@@ -307,10 +307,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   if {$fc != "" && $mode != "kstate" } {
     switch [globVal Compmode] {
-      case nodebug -
-      case nodebug+gzip {set c 1}
-      case float -
-      case float+gzip {set c 2}
+      nodebug - nodebug+gzip {set c 1}
+      float - float+gzip {set c 2}
       default {set c 0}
     }
     if $c {
@@ -318,6 +316,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       set foname [entryVal [lindex [lindex $ll 1] 0]]
       if {$foname != "" && $foname != "no_file"} {
 	append fc " --C$c"
+        puts "DEBUG appended --C$c"
       }
     }
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
