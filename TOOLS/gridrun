@@ -170,8 +170,6 @@ EOS
   exit 0;
 }
 
-  my $now = time();
-
 my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_files,
     $grid_mod_dir, $grid_work_dir, $submit_mode, $ssh_shell,
     $verbose, $force_delete,
@@ -191,6 +189,8 @@ my  $sini_file = 'sim_param.ini';
 my  $sopt_file = 'opt_param.ini';
 my  $instr_file = 'std_instr.cmd';
 my  $opt_dat_default = 'Pcomm.dat';
+
+my $start_time = time;
 
 # parse script arguments
 
@@ -658,7 +658,7 @@ sub startExecution {
   # write state file
   my $jobinfo =<<EOS;
 state=running
-time=$now
+time=$start_time
 smode=$submit_mode
 instances=$n_instances
 nodes=@Node
@@ -723,13 +723,13 @@ EOS
     my ($bc, $logfn);
     foreach (@Match) {
       my ($node, $first, $last) = split;
-      $_ = "$cs -s $run_nr $first $last";
+      my $c = "$cs -s $run_nr $first $last";
       $logfn = "$grid_work_dir/$first.log.txt";
       DeBug("ssh shell is $ssh_shell");
       if ($ssh_shell eq 'tcsh') {
-        $bc = "($_ > $logfn) >& $grid_work_dir/$first.stderr.txt";
+        $bc = "($c > $logfn) >& $grid_work_dir/$first.stderr.txt";
       } else {
-        $bc = "$_ &>$logfn";
+        $bc = "$c &>$logfn";
       }
       DeBug("ssh $node '$bc &'");
       system "ssh $node '$bc &'";
@@ -861,7 +861,14 @@ sub analyzePipe {
     $_ = shift @C;
 
     $V{$1} = 1 if /^\$V\/(.+)$/;
-    myexit('first module should be a source module') if $firstmod && ! /^\$V\/source/;
+    if ($firstmod && ! /^\$V\/source/) {
+      if ($c =~ m@--f([a-zA-Z0-9/._-]+)@) {
+        my $nfile = $1;
+        myexit("can not read input neutron trajectory file $nfile") unless -s $nfile && -r _;
+      } else {
+        myexit('first module should be a source module, or input neutron trajectory file should be given by absolute path');
+      }
+    }
 
     foreach (@C) {
       next unless /^-([a-zA-Z])(.+)/;
@@ -982,7 +989,7 @@ sub checkSSH {
     $_ = `ssh $Node[0] echo \$SHELL`;
     $ssh_shell = /tcsh/ ? 'tcsh' : 'sh';
 
-  } else {
+  } elsif ($submit_mode ne '') {
 
     while ($#Node < 0) {
       last if $n_instances == 1; # use the default queue
@@ -1488,7 +1495,8 @@ sub DeBug {
   if ($verbose < 2) {
     print "$_[0]\n" unless $_[1];
   } else {
-    print "DEBUG: $_[0]\n";
+    $_ = time - $start_time;
+    print "DEBUG $_ s: $_[0]\n";
   }
 }
 
@@ -1622,5 +1630,7 @@ sub doOptimization {
 
   # clean up
   deleteJob($run_nr);
+
+  DeBug('optimization finished');
 
 }
