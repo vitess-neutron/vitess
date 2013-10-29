@@ -907,7 +907,7 @@ void OwnCleanup()
         stGeometry.pCircle[kc].vNormal[2] = 0.0;
         stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
         stGeometry.pCircle[kc].AngleBeg   =   0.0;
-        stGeometry.pCircle[kc].AngleEnd   = 360.0;
+        stGeometry.pCircle[kc].AngleEnd   = 359.99;
         kc++;
       }
       else
