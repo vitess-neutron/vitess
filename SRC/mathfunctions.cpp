@@ -6,9 +6,9 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Daniiel Nekrassov, Carolin Zendler, Michael Fromme, Klaus Lieutenant, Sergey Manoshin    */
+/* Daniiel Nekrassov, Carolin Zendler, Michael Fromme, Klaus Lieutenant, Andreas Houben     */
 /*                                                                                          */
-/* 1.0  D.Nekrassov: Jul 2012,  initial version                                             */
+/* 1.0  D. Nekrassov: Oct 2012,  initial version                                             */
 /********************************************************************************************/
 
 
@@ -489,5 +489,13 @@ double ImprovePrecision(double x, double y, double a, double b, double c, double
 
 }
 
+double RandomLorentzian(double mean, double gamma)
+{
+  double rval, displ;
+  rval = 2.*MonteCarlo(0, 1) - 1;
+  displ = 0.5*gamma*tan(rval*M_PI_2);
+
+  return (mean+displ);
+}
 
 #endif

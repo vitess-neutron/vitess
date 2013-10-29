@@ -50,7 +50,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    monitorpol_1d monitorpol_pos
-	    monochr_analyser
+	    monochromator monochr_analyser
 	    polariser_sm polariser_sm_parallel
 	    polariser_he3 flipper_coil
 	    pol_mirror
@@ -68,7 +68,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 my @CN = qw(monitor1D monitor2D);
 
 # modules which need MGTOOL (=MTOOL + mathfunctions)
-my @CMG = qw(guide_parallel);
+my @CMG = qw(guide_parallel monochromator);
 
 # module which need GTOOL (=TOOL + mathvector mathfunctions)
 my @CG = qw(guide_elliptic filter);
@@ -99,6 +99,7 @@ my %dep = (			# needed objects for a module
 	   source => 'src_modchar source_csns',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
+           monochromator => 'monochrclass',
 	   precessionfield => 'magneticmap',
 	   gener_batch => 'gener_fct',
 	   gener_pipe => 'pipe_fct',

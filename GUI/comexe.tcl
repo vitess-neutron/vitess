@@ -204,6 +204,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
+      ma_flat_new   {set com "monochromator$sys -O1"}	
+      ma_focus_new   {set com "monochromator$sys -O2"}
+      ma_focus_dat_new   {set com "monochromator$sys -O3"}
       mon1_lambda {set com "monitor1$sys -k1"}
       mon1_time   {set com "monitor1$sys -k2"}
       mon1_divy   {set com "monitor1$sys -k3"}

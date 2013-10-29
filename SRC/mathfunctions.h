@@ -13,4 +13,6 @@ short C_CalculateEllipseParameters(double w1, double w2, double length, double d
 double ImprovePrecision(double x, double y, double a, double b, double c, double d);
 double CheckSolution(double x, double a, double b, double c, double d);
 
+double RandomLorentzian(double mean, double gamma);
+
 #endif
