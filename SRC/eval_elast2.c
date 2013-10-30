@@ -49,8 +49,8 @@ int   probactiv=TRUE,        /* probactiv=1 means probabilities activated,
 
 long  nbinsX,                 /* number of bins in X */
       nbinsY,                 /* number of bins in Y */
-      nColour,               /* colour necessary for the trajectory to be regarded
-                                colour 0 means: all trajectories are regarded  */
+      nColour = -1,          /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  */
       minColor = -1,         /* colour necessary for the trajectory to be regarded
                                 colour -1 means: all trajectories are regarded  
                                 use neutrons with color >= minColour */
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
           TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
         /*} else {
           TwoTheta = atan2(sqrt(InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]), sdpath);
-          /*if (!((nColour_v!=0 && nColour_v!=InputNeutrons[i].Color) || 
+          //*if (!((nColour_v!=0 && nColour_v!=InputNeutrons[i].Color) || 
                 (minColor_v >= 0 && InputNeutrons[i].Color < minColor_v) ||
                 (maxColor_v >= 0 && InputNeutrons[i].Color > maxColor_v))) {
           } else {*/
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
 			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+			if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
 			if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
 			if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
 
@@ -586,7 +586,9 @@ void OwnInit(int argc, char *argv[])
 		Error("lower bound value must not be zero for logarithmic binning");
 	if (fspectra == NULL)
 		Error("no spectra file given");
-
+  
+  fprintf(LogFilePtr,"Color: %ld\n",nColour);
+  
   if (scatang==TRUE) {
     if (sdpath<=0.)
       Error("You must provide a minimum source detector distance to evaluate the position.");
