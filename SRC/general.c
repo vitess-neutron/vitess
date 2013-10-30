@@ -24,8 +24,6 @@
  gsl_rng * vit_gsl_rng;
 #endif
 
-#define VERS26 1
-
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
