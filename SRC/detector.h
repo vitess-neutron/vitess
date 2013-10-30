@@ -60,6 +60,12 @@ typedef struct
       Absorbertype; // Boron10 (0,2), He3 (1), Li (3) or other (5)               
   short array,          // first or intermediate part of detector array 
         detectColor,    // only detect neutrons of certain color; -1 = all neutrons
+        minColor,       /* colour necessary for the trajectory to be regarded
+                           colour -1 means: all trajectories are regarded  
+                           use neutrons with color >= minColour */
+        maxColor,       /* colour necessary for the trajectory to be regarded
+                           colour -1 means: all trajectories are regarded  
+                           use neutrons with color <= maxColour */
         addColor;       // tag detected neutrons by adding addColor to color
  }
   DetectorType;

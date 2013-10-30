@@ -25,8 +25,10 @@
 /*                               visual. of SP instead of det. signal                   */
 /* 1.10 Sep 2013  C. Zendler     Correct efficiency when x-resolution>0,                */
 /*                               correct efficiency in solid layers if Nrep>1           */
-/* 1.11 Oct 2013  C. Zendler     Possibility to incline flat detector wrt pos. vector;  */   
-/*                               eff. modifyer can be >1 and also used with input file  */       
+/* 1.11 Oct 2013  C. Zendler     Possibility to incline flat detector wrt pos. vector;  */
+/*                               eff. modifyer can be >1 and also used with input file  */
+/* 1.11a Oct 2013 A. Houben      Detect only neutrons within min and max color and      */
+/*                               option for exclusive counts                            */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -41,8 +43,10 @@
 
 /* global variables */
 DetectorType Detector; 
-long       GenNeutrons=10,   // repetition: multiply neutrons to get diff. interaction lengths (probability from integration region L/GenNeutrons)
-           lost=0;           // give Warning if neutron intersetcs tube detector but tube in which interaction happens is not found
+long       GenNeutrons=10,        // repetition: multiply neutrons to get diff. interaction lengths (probability from integration region L/GenNeutrons)
+           lost=0,                // give Warning if neutron intersetcs tube detector but tube in which interaction happens is not found
+           bExclCount =FALSE;     /* TRUE : only neutrons complying with the evaluate requirements
+                                       are written to the output      */
 double     RotMatrix[3][3],
            RotSurface[3][3]; // matrix rotation coordinate system such that detector surface is perpendicular to x
 
@@ -104,8 +108,13 @@ int main(int argc, char *argv[])
       CHECK
 	
       //drop neutrons that don't pass the color filter
-      if ( (Detector.detectColor > -1) && (InputNeutrons[i].Color != Detector.detectColor) )  
-	continue;
+      if ( ( (Detector.detectColor > -1) && (InputNeutrons[i].Color != Detector.detectColor) ) ||
+        (Detector.minColor >= 0 && InputNeutrons[i].Color < Detector.minColor) ||
+        (Detector.maxColor >= 0 && InputNeutrons[i].Color > Detector.maxColor) ) {
+          if (bExclCount==FALSE)
+            WriteNeutron(&InputNeutrons[i]);
+          continue;
+      }
 
       //pass on neutrons detected by previous detector parts,
       //last detector in array removes tag and writes output file
@@ -796,11 +805,12 @@ void  OwnInit(int argc, char *argv[])
  
   Detector.Width = -1; Detector.Height = -1; Detector.Thickness = -1;
   Detector.NColumns = -1;  Detector.NRows = -1;  Detector.NLayers = -1;
-  Detector.Distance=-1; 
-  Detector.Geom=-1; 
+  Detector.Distance=-1;
+  Detector.Geom=-1;
+  Detector.minColor = -1; Detector.maxColor = -1;
   Detector.Absorbertype=-1;
   Detector.GasPressure=-1; Detector.GasTemperature=-1; Detector.SolidAtomDensity=-1; Detector.SolidAbsorberthickness=-1;
-  Detector.DG.Cyl.axis=-1; 
+  Detector.DG.Cyl.axis=-1;
 
   /* some default values */
   GenNeutrons=10;
@@ -827,6 +837,9 @@ void  OwnInit(int argc, char *argv[])
     if(argv[i][0]!='+') {
       switch(argv[i][1]){ 
 	/* general */
+        // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        // ABCDE-G-------OPQ-STUVW---
+        // abcdef-h--klmnopqrstuvwx-z
       case 'B':
 	Detector.array=atoi(&argv[i][2]); 
         break;
@@ -976,6 +989,17 @@ void  OwnInit(int argc, char *argv[])
 	  fprintf(outFile,"#-------------------------------------------------------------------------");
 	}
 	break;
+      case 'q':
+	Detector.minColor = atol(&argv[i][2]);       /*  use neutrons with color >= minColour */
+	break;
+      case 'Q':
+	Detector.maxColor = atoi(&argv[i][2]);       /*  use neutrons with color <= maxColour */
+	break;
+      case 'd':
+	if(atol(&argv[i][2])==1)        /* if activated, only neutrons complying with the  */
+	bExclCount = TRUE;              /* evaluate requirements are considered further on */
+	break;
+
    
       default:
 	fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
