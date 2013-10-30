@@ -75,7 +75,9 @@ of pieces must be used for a good simulation. Alternatively, the module 'bender'
      [entrance_width - (number_of_channels - 1) * spacer_width] / number_of_channels.
    <p>
 <h3> Reflectivity Files</h3>
-      The reflectivity files describe the reflection properties of the coating:
+      The reflectivity files describe the reflection properties of the
+coating. They can be produced with the tool <i>Generate Mirror
+  Files</i>. Some examples can be found in FILES/reflectivity_files:
 
 <pre>mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0)
 <br> mirr1a.dat: Ni coating&nbsp;&nbsp;  (theta_Ni    = 0.099138 deg/&Aring;*lambda)
@@ -85,9 +87,11 @@ of pieces must be used for a good simulation. Alternatively, the module 'bender'
 <br> mirr30std.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.75 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;
 <br> mirr3sn.dat: supermirror coating of Swiss Neutronics,<br>&nbsp; reflectivity 0.99 -&gt; 0.88 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;
 <br> mirr4.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.80 from theta_Ni to 4 theta_Ni; cutoff at 4 theta_Ni;
-<br> mirr5.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.71 from theta_Ni to 5 theta_Ni; cutoff at 4 theta_Ni;
-<br> mirr6.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.53 from theta_Ni to 6 theta_Ni; cutoff at 4 theta_Ni;
+<br> mirr5.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.71 from theta_Ni to 5 theta_Ni; cutoff at 5 theta_Ni;
+<br> mirr6.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.53 from theta_Ni to 6 theta_Ni; cutoff at 6 theta_Ni;
 <br> mirr23FeCo.dat: supermirror coating of FeCo-Si, <br>&nbsp; reflectivity 0.99 -&gt; 0.77 from theta_Ni to 2.3 theta_Ni; cutoff at 2.3 theta_Ni;
+<br> mirr[m]_quadrSN.dat: supermirror coating, <br>&nbsp; non-linear reflectivity produced with tool <i>Generate Mirror Files</i> using <i>quadratic
+  Swiss Neutronics</i> description (see tool description);
 <br> <br></pre>
 
       The reflectivity file contains the probability of reflection in dependence

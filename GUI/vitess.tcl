@@ -646,11 +646,11 @@ foreach s {ESS_LPTS ESS_2012} {
 ###
 set detectorESET {
    {"General detector geometry" header}
-    {array select array {"array (first or intermediated part)" "select if detector is first or intermediate part of detector array" "" B} {{"" 0}}}
+    {array select array {"array (first or intermediated part)" "Select if detector is first or intermediate part of detector array. Do not select for single detector." "" B} {{"" 0}}}
     {}
     {geom radio flat {geometry
-	"The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
-	{flat cylindrical} {2 1}}
+        "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
+        {flat cylindrical} {2 1}}
     {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
@@ -660,7 +660,7 @@ set detectorESET {
     {}
     {phi float 0 { "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
     {theta float 0 {  "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector surface. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
-    {dist float 100 {  "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the inner cylinder radius." "" D} ge0 "" 1}
+    {dist float 100 {  "distance [cm]" "Distance of the centre of the detector to the origin (0,0,0) in cm. In case of a cylindrical detector this is the inner cylinder radius." "" D} ge0 "" 1}
     {hei float 10 {"height [cm]" "Total height of the detector in cm. If tube detector, determines tube length (vert.) or diameter=height/rows (hor.)." "" h} gt0 "" 1}
     {wid float 10 { "width [cm]" "Full width of a flat detector in cm. If tube detector, determines tube length (hor.) or diameter=width/columns (vert.). In case of a cylindrical detector it is the length of the cylinder arch under consideration." "" w} gt0 "" 1}
     {thick float 0.2 { "thickness [cm]" "Total thickness of the detecting material in cm." "" t}  gt0 "" 1}
@@ -670,7 +670,7 @@ set detectorESET {
     {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 0}
     {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 0}
     {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 0}
-    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet probability of detection within [0,thickness], i.e. of neutrons perpendicular to detector surface. Ignored in case of efficiency file." "" e} 0 1 0}
+    {detgaseff float 1 {"efficiency\nmodifyer" "The efficiency calculated from the interaction cross-section with a chosen material or taken from an efficiency file is multiplied by this factor, to account for e.g. losses due to secondary particle detection etc. It can also be larger than 1 to scale neutron trajectories if only a fraction of the real detector is simulated. However, if \"other\" material is chosen, this value is used as wavelength independet probability of detection within [0,thickness], i.e. of neutrons perpendicular to the detector surface, and has to be within [0;1[." "" e} 0 100 0}
     {}
     {eff_file pareditablefile ""  {"lambda\nefficiency" "File containing two columns: wavelength and efficiency. If an efficiency file is given, absorber/converter type is ignored." "" E}}
     {}
@@ -686,6 +686,10 @@ set detectorESET {
     {wallt float 0 {"wall thickness [mm]" "Thickness of tube walls. Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering." "" f} 0 10 0}
     {shift select shift {"layers shifted" "tube layers shifted against each other by half the diameter" "" s} {{"" 0}}}
     {}
+    {"Flat geometry" header}
+    {}
+    {phi_n float 0 { "phi_n [deg]" "Inclined detector surface: analog to phi, phi_n [0,360] is the angle between the projection of the back surface normal onto (y',z') plane and y' axis, where y' and z' are y and z after rotation of x onto position vector. The back surface normal vector is pointing away from the sample." "" V} 0 360 0}
+    {theta_n float 0 { "theta_n [deg]" "Inclined detector surface: analog to theta, theta_n [0,90] is the angle between back surface normal and position vector. The flat detector surface is perpendicular to the position vector for theta_n=0°. The back surface normal vector is pointing away from the sample." "" W} 0 90 0}
     {"Cylindrical geometry" header}
     {}
     {phimode select constphi {"const. phi" "Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." "" z} {{"" 0}}}
@@ -694,6 +698,7 @@ set detectorESET {
     {}
     {out_file pareditablefile ""  {"Output filename" "Name of output file, written by last detector in array. If left blank or the array box is ticked, no output file will be written. Default output (and currently only) is event mode (3D position, time, weight)." "" O}}
 }
+
 
 
 proc detectorCheckErr {{app _}} {

@@ -10,10 +10,46 @@
   
 <h1>VITESS Tool Generate Mirror Files</h1>
  This tool generates reflectivity files that are used in the modules 'guide' 
-and 'bender'. The parameters m, R<sub>0</sub>, R<sub>m</sub>, Q<sub>c</sub>, W (s. Table)
-and the file name have to be given. 
-If no path is given, the file will be written to the directory .../Vitess/Modules.
-<br> <br> <br>
+and 'bender'. Two options are available: a linear decrease of reflectivity with
+scattering angle, or a description using an additional quadratic term. In both
+cases, an output filename has to be given. If no path is included in that
+filename, the generated reflectivity file will be written to the parameter directory.
+
+<h3>Quadratic Swiss Neutronics description </h3>
+If this option is chosen, the only additional input parameter necessary is the m-value of
+the supermirror coating. The reflectivity is the calculated as
+<p><img src="ReflectivityFormula_quadrSN.png" height="50" width="470"></p>
+where R<sub>0</sub>=0.99 and W, a, b and m<sub>2</sub> are linear functions of
+m: <br>
+W = -0.0002*m + 0.0022 <br>
+a =  0.1204*m + 5.0944   <b>if</b> m>3, else a=m <br>
+b = -7.6251*m + 68.1137  <b>if</b> m>3, else b=0 <br>
+m<sub>2</sub> =  0.9853*m + 0.1978<br>
+The parameters used here are the results of fits to experimental data
+(H. Jacobsen). The reflectivity curve gained for m=4 is shown by the black line in figure 1.
+
+<h3>Linear description </h3> 
+If <i>quadratic Swiss Neutronic description</i> is answered with <i>no</i>, the
+parameters m, R<sub>0</sub>, R<sub>m</sub>, Q<sub>c</sub> and W (s. table) have
+to be given in addition to the filename. <br>
+For W=0 the reflectivity curve consists of linear functions and a sharp cut-off
+at Q = m Q<sub>c,Ni</sub>. The red line in figure 1 shows an example for m=4. <br>
+For W > 0 and Q > Q<sub>c</sub>, the reflectivity R is calculated as
+<p><img src="ReflectivityFormula_linear.png" height="50" width="380"></p>
+using 
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Symbol">a</font> = (R<sub>m</sub> - R<sub>0</sub>) / 
+(m Q<sub>c,Ni</sub> - Q<sub>c</sub>)
+<br> 
+<br>
+The product m Q<sub>c,Ni</sub> must be greater or equal Q<sub>c</sub>, because m is meant to extent the Q range 
+to values greater than Q<sub>c</sub>. <br>
+An example for m=4 and W=0.003 is shown by the green line in figure 1.
+<br> 
+<br>
+<br> 
+
 
 <table border="1" width="90%">
  <tbody>
@@ -46,31 +82,10 @@ If no path is given, the file will be written to the directory .../Vitess/Module
   </tbody>
 </table>
 <br>
-<br>
-For W=0 the reflectivity curve consists of linear functions and a sharp cut-off at Q = m Q<sub>c,Ni</sub>.
-<br> 
-<br>
-For Q > Q<sub>c</sub> and W > 0, the reflectivity R is calculated as
-<br> <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub>(1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
-  (1 - <font face="Symbol">a</font>(Q - Q<sub>c</sub>))
-<br>
-<br>
-using 
-<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Symbol">a</font> = (R<sub>m</sub> - R<sub>0</sub>) / 
-(m Q<sub>c,Ni</sub> - Q<sub>c</sub>)
-<br> 
-<br>
-The product m Q<sub>c,Ni</sub> must be greater or equal Q<sub>c</sub>, because m is meant to extent the Q range 
-to values greater than Q<sub>c</sub>. 
-<br> 
-<br>
-<br> 
-The figure shows the reflecitvity curve for m=2, R<sub>0</sub>=0.98, R<sub>m</sub>=0.85,
-Q<sub>c</sub>=0.021743 Ang<sup>-1</sup>, W=0.025 Ang<sup>-1</sup>
-<p><img src="ReflMirr.png" height="400" width="600">
+
+<p><img src="ReflectivityFilesBspFormulae.png" height="400" width="600">
+<caption align="top" style="font-style: italic;" >Figure 1: Reflectivity curves
+  obtained with the tool for m=4 using different options.</caption>
 </p>
 
 <hr>
