@@ -5,8 +5,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
-/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */ 
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler,                                     */
+/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* 1.0: Jan 2002 K. Lieutenant   routines collected here                                    */
 /********************************************************************************************/
@@ -31,8 +31,8 @@ static char  sOsName      [15]="",
 
 
 extern char  cSlash,
-             cQuot,         
-             cNL,  
+             cQuot,
+             cNL,
              cShort,
              sCommName[50],
              sLogFile [18],
@@ -48,7 +48,7 @@ extern char  cSlash,
              sLine    [MAX_MOD][BUFLEN],/* MAX_MOD strings, each contains 1 exe command (corr. to 1 module)     */
              sFile    [MAX_FIL][50],    /* MAX_FIL strings, each contains 1 name of a file to be copied */
              sSimName [MAX_SIM][50],    /* MAX_SIM strings, each contains 1 name of a single simulations */
-             sParList [MAX_SIM][200],   /* MAX_SIM strings, each contains all parameter values for 1 simulatíon */
+             sParList [MAX_SIM][200],   /* MAX_SIM strings, each contains all parameter values for 1 simulatÃ­on */
              sParId   [MAX_PAR][4],     /* MAX_PAR strings, each contains the ID of 1 parameter, e.g. "-n" */
              sParVal  [MAX_PAR][51];    /* MAX_PAR strings, each contains the value of the param., e.g. "20" */
 extern short    nModNo[MAX_PAR];        /* MAX_PAR integers, each contains the module no, where the parameter can be found */
@@ -90,7 +90,7 @@ short ReadBatchFile()
 	if (pFileR==NULL)
 	{	printf("\nFile '%s' does not exist\n", sFileName);
 		return(-1);
-	} 
+	}
 	GetLine(pFileR, sBuffer);
 	GetLine(pFileR, sBuffer);
 
@@ -121,7 +121,7 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
     printf("\nFile '%s' does not exist\n", sFileName);
     return(-1);
   }
- 
+
   // Operating System
   GetLine(pFileR, sBuffer);
   sscanf(sBuffer, "%s %d", sOsName, &nNoFiles);
@@ -150,7 +150,7 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
     cSlash = '\\';
     cNL    = '\n';
     cQuot  = ' ';
-    if (nNoFiles==2 && eModus == VT_SER_1F) 
+    if (nNoFiles==2 && eModus == VT_SER_1F)
       eModus = VT_SER_2F;
   }
 
@@ -189,19 +189,11 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
   // Extract parameter list (without leading blanks) for each simulation
   while(GetLine(pFileR, sBuffer) && i < MAX_SIM)
     {
-#ifdef VERS26
-      sscanf(sBuffer, "%s", sSimName[i]);
-      strcpy(sParList[i], sBuffer+strlen(sSimName[i]));
-      while (sParList[i][0]==' ')
-	{	StrgLShift(sParList[i], 1);
-	}
-#else
       int n;
       sscanf(sBuffer, "%s%n", sSimName[i], &n);
       while (sBuffer[n] == ' ')
 	n++;
       strcpy(sParList[i], sBuffer+n);
-#endif
       i++;
     }
   fclose(pFileR);
@@ -232,7 +224,7 @@ void WriteCommand(FILE* pFile, short nModNo, short bEcho)
 }
 	
 
-/* Changing the command file xxx.bat to the lower level batch file xxxV.bat (2 files option) or 
+/* Changing the command file xxx.bat to the lower level batch file xxxV.bat (2 files option) or
    to the command with the parameters of the 'iSim'th simulation (1 file option)                 */
 /*************************************************************************************************/
 short ChangeParam(short iSim)
@@ -243,11 +235,11 @@ short ChangeParam(short iSim)
 	      sComp  [4];
 
 	/* for the 1-file-series and the fit option the parameters must be scanned first */
-	if (iSim>=0 && iSim < MAX_SIM)	     
+	if (iSim>=0 && iSim < MAX_SIM)	
 		StrgScanS(sParList[iSim], &sParVal[0][0], MAX_PAR, 51);
 	j=0;
 	while (sParId[j]!=NULL && strlen(sParId[j]) > 0)
-	{	// determine the line number from the module number 
+	{	// determine the line number from the module number
 		m = (short) (nModNo[j]-1);
 		pEnd = NULL;
 		kBeg = 0;
@@ -278,50 +270,12 @@ short ChangeParam(short iSim)
 int
 GetLine(FILE* pFile, char* const pLine)
 {
-#ifdef VERS26
-  char *pComment, sBuffer[BUFLEN];
-  short k, kmax;
-
-  strcpy(sBuffer, "");
-
-  while(strlen(sBuffer)==0  && !feof(pFile))	
-    {	
-      fgets (sBuffer, BUFLEN-1, pFile);
-
-      // delete line feeds, tabs and carriage returns
-      kmax = (short) strlen(sBuffer);
-      for (k=0; k < kmax; k++)
-	{	if (sBuffer[k]=='\n' || sBuffer[k]=='\t' || sBuffer[k]=='\r')
-	    sBuffer[k]=' ';
-	}
-      // strip the comments and leading and succeeding blanks
-      pComment = strchr(sBuffer, '#');
-      if (pComment != NULL)
-	*pComment = '\0';
-      while (sBuffer[0]==' ')
-	{	StrgLShift(sBuffer,1);
-	}
-      while (sBuffer[strlen(sBuffer)-1]==' ')
-	{	sBuffer[strlen(sBuffer)-1]='\0';
-	}
-    }
-  if (strlen(sBuffer) > 0)
-    {	strcpy(pLine, sBuffer);
-      return TRUE;
-    }
-  else
-    {	return FALSE;
-    }
-  
-#else
 
   char sBuffer[BUFLEN];
   int rc;
   if ((rc = ReadLine(pFile, sBuffer, BUFLEN)))
     strcpy(pLine, sBuffer);
   return rc;
-
-#endif
 }
 
 
@@ -338,18 +292,13 @@ StripCmdLine(char* const pLine, char cShort)
 	ChangeSlash(pLine);
 
 	// delete leading line feeds and " | "
-#ifdef COMPLICATED
-	while (pLine[0]==' ' || pLine[0]=='|')
-	{	StrgLShift(pLine,1);
-	}
-#else
 	{
 	  int k,v;
 	  for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
 	  if (k)
 	    strcpy(pLine, pLine+k);
 	}
-#endif
+
 	// extract the PATH directory from the command
 	if (strlen(sPath)==0)
 	{	pBlank = strchr(pLine, ' ');
@@ -366,14 +315,14 @@ StripCmdLine(char* const pLine, char cShort)
 	{	StrgChange(pLine, sPath, "$VIMG");
 		do
 		{ rc=StrgChange(pLine, sDir,  "$PDIR");
-		} 
+		}
 		while (rc==TRUE);
 	}
 	else
 	{	StrgChange(pLine, sPath, "V:");
 		do
 		{ rc=StrgChange(pLine, sDir, "P:");;
-		} 
+		}
 		while (rc==TRUE);
 	}
 
@@ -468,7 +417,7 @@ StrgChange(char* sStr, const char* sOut, const char* sIn)
 
 /* Search for (the first occurence of) string 'sSearch' in String 'sStr' */
 /*************************************************************************/
-char* 
+char*
 StrgFind(char* sStr, const char* sSearch)
 {
 	int   k, ksrch, kmax;
@@ -486,7 +435,7 @@ StrgFind(char* sStr, const char* sSearch)
 		}
 	}
 	return pFind;
-} 
+}
 
 
 /* Building a combined file name of 'sFilename' and 'sAddition' without changing the extension */
@@ -505,7 +454,7 @@ NumerateName (char* sFileLong, char* sFileShort, const short nNumber)
 
 
 
-/* Scan string 'sStr' and copy all values (but maximally 'nMax') 
+/* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of short values,  beginning with value number 'nStart'  */
 /**************************************************************************/
 long
@@ -520,11 +469,11 @@ StrgScanHD(const char* sStr, short* pTab, const int nMax)
 	{	/* search of beginning and end of 1st number of (remaining) string */
 		k=0;
 		/* step forward until first number or control character */
-		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0) 
-			k++; 
+		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
+			k++;
 		/* step forward until space-like or control character */
-		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0) 
-			k++;  
+		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
+			k++;
 
 		/* separating first number and adding it to the list */
 		if (k > 0)
@@ -542,7 +491,7 @@ StrgScanHD(const char* sStr, short* pTab, const int nMax)
 }
 
 
-/* Scan string 'sStr' and copy all values (but maximally 'nMax') 
+/* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of string values,  beginning with value number 'nStart'*/
 /**************************************************************************/
 long
@@ -557,11 +506,11 @@ StrgScanS(const char* sStr, char* pTab, const int nMax, const int nTextLen)
 	{	/* search of beginning and end of 1st number of (remaining) string */
 		i=0;k=0;
 		/* step forward until first alphanumerical character or point-like character */
-		while (isalnum(pStr[i+k])==0 && ispunct(pStr[i+k])==0 && iscntrl(pStr[i+k])==0) 
-			i++; 
+		while (isalnum(pStr[i+k])==0 && ispunct(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
+			i++;
 		/* step forward until space-like or control character */
-		while (isspace(pStr[i+k])==0 && iscntrl(pStr[i+k])==0) 
-			k++;  
+		while (isspace(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
+			k++;
 
 		/* separating first text and adding it to the list */
 		if (k > 0)

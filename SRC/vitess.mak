@@ -105,6 +105,7 @@ ALL : \
 	"$(OD)\frame.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
+	"$(OD)\monochromator.exe" \
 	"$(OD)\monochr_analyser.exe" \
 	"$(OD)\polariser_sm.exe" \
 	"$(OD)\polariser_sm_parallel.exe" \
@@ -125,6 +126,7 @@ ALL : \
 	"$(OD)\guide_elliptic.exe" \
 	"$(OD)\filter.exe" \
 	"$(OD)\guide_parallel.exe" \
+	"$(OD)\monochromator.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
@@ -237,6 +239,10 @@ SOURCE=$(SPATH)\threadHelper.c
 
 SOURCE=$(SPATH)\opt_metro.c
 "$(IDIR)\opt_metro.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\monochrclass.cpp
+"$(IDIR)\monochrclass.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\src_modchar.c
@@ -593,6 +599,13 @@ SOURCE=$(SPATH)\monitorpol_pos.c
 "$(OD)\monitorpol_pos.exe" : "$(OD)" $(MTOOL) "$(OD)\monitorpol_pos.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\monitorpol_pos.pdb" /out:"$(OD)\monitorpol_pos.exe" "$(IDIR)\monitorpol_pos.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\monochromator.cpp
+"$(IDIR)\monochromator.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monochromator.exe" : "$(OD)" $(MTOOL) "$(OD)\monochromator.obj" "$(OD)\monochrclass.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monochromator.pdb" /out:"$(OD)\monochromator.exe" "$(IDIR)\monochromator.obj" $(MTOOL) "$(OD)\monochrclass.obj" 
+
 SOURCE=$(SPATH)\monochr_analyser.c
 "$(IDIR)\monochr_analyser.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -732,6 +745,13 @@ SOURCE=$(SPATH)\guide_parallel.c
 
 "$(OD)\guide_parallel.exe" : "$(OD)" $(MGTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
 	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MGTOOL) "$(OD)\threadHelper.obj" 
+
+SOURCE=$(SPATH)\monochromator.cpp
+"$(IDIR)\monochromator.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monochromator.exe" : "$(OD)" $(MGTOOL) "$(OD)\monochromator.obj" "$(OD)\monochrclass.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monochromator.pdb" /out:"$(OD)\monochromator.exe" "$(IDIR)\monochromator.obj" $(MGTOOL) "$(OD)\monochrclass.obj" 
 
 SOURCE=$(SPATH)\sample_powder.c
 "$(IDIR)\sample_powder.obj" : $(SOURCE)
