@@ -307,7 +307,7 @@ set inputESET {
 
   {helpthreads radio 0 {
     "helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}
-    {0 1 2 3 4 5 6 7 8 9 10 11 12} {0 1 2 3 4 5 6 7 8 9 10 11 12}}
+    {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
 }
 
 ### Xcontrol defaults
@@ -1444,9 +1444,8 @@ set chopper_discESET {
     {yes no} {1 0}}
   {wnd_colour radio no {
     "set colour"
-    "yes: colour of the neutrons will be defined by the window that they are passing\nno: colour remains unchanged\nrotations: color is set according to number of rotatiosn" "" c}
-    {yes no rotations} {1 0 2}}
-  {coloff int 0 {"colour\noffset" "If the trajectories will be marked by a so-called 'colour' this is an additional offset." "" O} 0 32767}
+    "yes: colour of the neutrons will be defined by the window that they are passing\nno: colour remains unchanged" "" c}
+    {yes no} {1 0}}
   {chop_file pareditablefile chop_105.dat {
     "chopper file"
     "file with chopper data\n(position, radius, number of windows, window opening, left and right angular deviation of window)" "" C} r chp 1}
