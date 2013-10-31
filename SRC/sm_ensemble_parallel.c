@@ -53,6 +53,7 @@
 /* START HEADER STORY */
 
 #define MAX_MIRR 50
+#define QcNI 0.0217434
 
 FILE	   *COLLFILE;
 char       *ParameterFileName, *ReflUpFileName, *ReflDownFileName;
@@ -66,14 +67,19 @@ int        mcperneutron = (MAX_MIRR*3);
 int        increaseColor=0;
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
-  r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1], WallOffsetShift[MAX_MIRR+1];
+           r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1], WallOffsetShift[MAX_MIRR+1];
 	
 double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
-  RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
+           RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
+           mNumber[MAX_MIRR+1][2], mirrThickness[MAX_MIRR+1], Qc[MAX_MIRR+1][2],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
-short int  mirrMaterial=0;
+
+short int  mirrMaterial=0, mirrUsage[MAX_MIRR+1];
+short int  fileFormat=0;
+
+int     useQuantDir=1;
 
 void SetGeometryData();
 	
@@ -127,39 +133,95 @@ void ReadParameterFile(FILE *f)
   while (1) {
     int use_this_mirror;
     if (feof(f)) break;
-    r1[l][0] = r2[l][0] = r3[l][0] = r4[l][0] = 0;
-    use_this_mirror = ReadParI(f);
-    r1[l][1]=ReadParF(f); r1[l][2]=ReadParF(f);
-    r2[l][1]=ReadParF(f); r2[l][2]=ReadParF(f);
-    r3[l][1]=ReadParF(f); r3[l][2]=ReadParF(f);
-    r4[l][1]=ReadParF(f); r4[l][2]=ReadParF(f);
-    WallOffset[l][0]=ReadParF(f); WallOffset[l][1]=ReadParF(f); WallOffset[l][2]=ReadParF(f);
-    WallHoriz[l]=ReadParF(f); WallVert[l]=ReadParF(f);
-    mrangh[l]=ReadParF(f); mrangv[l]=ReadParF(f);
-    thetaC[l][0]=ReadParF(f); thetaCSM[l][0]=ReadParF(f); RthetaCSM[l][0]=ReadParF(f);
-    mued[l][0]=ReadParF(f); mued[l][1]=ReadParF(f);
-    thetaC[l][1]=ReadParF(f); thetaCSM[l][1]=ReadParF(f); RthetaCSM[l][1]=ReadParF(f);
-    mued[l][2]=ReadParF(f); mued[l][3]=ReadParF(f);
-    ReadParComment(f);
 
-    if(use_this_mirror) {
-      fprintf(LogFilePtr,
-	      "\n%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  "
-	      "%10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f%10.5f\n",
-	      'A'+l-1,r1[l][1],r1[l][2],r2[l][1],r2[l][2],r3[l][1],r3[l][2],r4[l][1],r4[l][2],
-	      WallOffset[l][0],WallOffset[l][1],WallOffset[l][2], WallHoriz[l],WallVert[l],
-	      mrangh[l], mrangv[l], thetaC[l][0], thetaCSM[l][0], RthetaCSM[l][0],
-	      mued[l][0], mued[l][1], thetaC[l][1], thetaCSM[l][1], RthetaCSM[l][1], mued[l][2], mued[l][3]);
-      WallHoriz[l] *= M_PI/180.;
-      WallVert[l]  *= M_PI/180.;
-      mrangh[l]	 *= M_PI/180.;
-      mrangv[l]	 *= M_PI/180.;
-      FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
-      EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
-      l++;
-      // terminate if we have MAX_MIRR valid mirrors
-      if (l > MAX_MIRR)
-	break;
+    if (fileFormat == 0) {
+
+      r1[l][0] = r2[l][0] = r3[l][0] = r4[l][0] = 0;
+      use_this_mirror = ReadParI(f);
+      r1[l][1]=ReadParF(f); r1[l][2]=ReadParF(f);
+      r2[l][1]=ReadParF(f); r2[l][2]=ReadParF(f);
+      r3[l][1]=ReadParF(f); r3[l][2]=ReadParF(f);
+      r4[l][1]=ReadParF(f); r4[l][2]=ReadParF(f);
+      WallOffset[l][0]=ReadParF(f); WallOffset[l][1]=ReadParF(f); WallOffset[l][2]=ReadParF(f);
+      WallHoriz[l]=ReadParF(f); WallVert[l]=ReadParF(f);
+      mrangh[l]=ReadParF(f); mrangv[l]=ReadParF(f);
+      thetaC[l][0]=ReadParF(f); thetaCSM[l][0]=ReadParF(f); RthetaCSM[l][0]=ReadParF(f);
+      mued[l][0]=ReadParF(f); mued[l][1]=ReadParF(f);
+      thetaC[l][1]=ReadParF(f); thetaCSM[l][1]=ReadParF(f); RthetaCSM[l][1]=ReadParF(f);
+      mued[l][2]=ReadParF(f); mued[l][3]=ReadParF(f);
+      ReadParComment(f);
+      
+      if(use_this_mirror) {
+	mirrUsage[l] = use_this_mirror;
+	fprintf(LogFilePtr,
+		"\n%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  "
+		"%10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f%10.5f\n",
+		'A'+l-1,r1[l][1],r1[l][2],r2[l][1],r2[l][2],r3[l][1],r3[l][2],r4[l][1],r4[l][2],
+		WallOffset[l][0],WallOffset[l][1],WallOffset[l][2], WallHoriz[l],WallVert[l],
+		mrangh[l], mrangv[l], thetaC[l][0], thetaCSM[l][0], RthetaCSM[l][0],
+		mued[l][0], mued[l][1], thetaC[l][1], thetaCSM[l][1], RthetaCSM[l][1], mued[l][2], mued[l][3]);
+	WallHoriz[l] *= M_PI/180.;
+	WallVert[l]  *= M_PI/180.;
+	mrangh[l]	 *= M_PI/180.;
+	mrangv[l]	 *= M_PI/180.;
+	FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
+	EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
+	l++;
+	// terminate if we have MAX_MIRR valid mirrors
+	if (l > MAX_MIRR)
+	  break;
+      }
+      
+    }
+
+    else {
+
+      r1[l][0] = r2[l][0] = r3[l][0] = r4[l][0] = 0;
+      use_this_mirror = ReadParI(f);
+      r1[l][1]=ReadParF(f); r1[l][2]=ReadParF(f);
+      r2[l][1]=ReadParF(f); r2[l][2]=ReadParF(f);
+      r3[l][1]=ReadParF(f); r3[l][2]=ReadParF(f);
+      r4[l][1]=ReadParF(f); r4[l][2]=ReadParF(f);
+      WallOffset[l][0]=ReadParF(f); WallOffset[l][1]=ReadParF(f); WallOffset[l][2]=ReadParF(f);
+      WallHoriz[l]=ReadParF(f); WallVert[l]=ReadParF(f);
+      mrangh[l]=ReadParF(f); mrangv[l]=ReadParF(f);
+      mirrThickness[l] = ReadParF(f); mNumber[l][0]=ReadParF(f); mNumber[l][1]=ReadParF(f);
+      ReadParComment(f);
+            
+
+      if(use_this_mirror) {
+	mirrUsage[l] = use_this_mirror;
+	fprintf(LogFilePtr,
+		"\n%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  "
+		"%10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f %10.5f \n",
+		'A'+l-1,r1[l][1],r1[l][2],r2[l][1],r2[l][2],r3[l][1],r3[l][2],r4[l][1],r4[l][2],
+		WallOffset[l][0],WallOffset[l][1],WallOffset[l][2], WallHoriz[l],WallVert[l],
+		mrangh[l], mrangv[l], mirrThickness[l], mNumber[l][0], mNumber[l][1]);
+	WallHoriz[l] *= M_PI/180.;
+	WallVert[l]  *= M_PI/180.;
+	mrangh[l]	 *= M_PI/180.;
+	mrangv[l]	 *= M_PI/180.;
+	FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
+	EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
+
+	Qc[l][0] = QcNI;
+	Qc[l][1] = QcNI;
+
+	if (mNumber[l][0] < 1.0)
+	  Qc[l][0] *= mNumber[l][0];
+	
+	if (mNumber[l][1] < 1.0)
+	  Qc[l][1] *= mNumber[l][1];
+	
+	thetaC[l][0] = asin(Qc[l][0]/(4*M_PI));
+	thetaC[l][1] = asin(Qc[l][1]/(4*M_PI));
+
+	l++;
+	// terminate if we have MAX_MIRR valid mirrors
+	if (l > MAX_MIRR)
+	  break;
+      } 
+
     }
     // else this mirror is to be skipped
   }
@@ -212,9 +274,12 @@ void OwnInit(int argc, char *argv[])
       break;		
     case 'Q':
       sscanf(arg, "%d", &quant_dir);
-      if (quant_dir < 0 || quant_dir > 2) {
+      if (quant_dir < -1 || quant_dir > 2) {
 	fprintf(LogFilePtr, "\nERROR:  wrong quantization direction definition.\n");
 	exit(0);
+      }
+      else if (quant_dir == -1) {
+	useQuantDir = 0;
       }
       break;
     case 'R':
@@ -237,6 +302,9 @@ void OwnInit(int argc, char *argv[])
     case 'S':
       sscanf(arg, "%hd", &mirrMaterial);
       break;
+    case 'F':
+      sscanf(arg, "%d", &fileFormat);
+    break;
 
       // Visual data
     case 'a':
@@ -270,6 +338,11 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 	
+
+  if (mirrMaterial == 3 && fileFormat == 1) {
+    fprintf(LogFilePtr, "The new file format cannot be used with OTHER mirror material!\n");
+    exit(-1);
+  }
 
   if (p==1)
     fprintf(LogFilePtr, "Prints the coordinates of collisions to '%s'.\n", COLLFILEName);
@@ -665,21 +738,17 @@ int hitwall(const VectorType r1, const VectorType r2, const VectorType r3, const
     hittriangle(r4, r1, rt);
 }
 
-/* CollideWall computes the collision with a wall */
 
+/* CollideWall computes the collision with a wall */
 static double CollideWall
 (const int thread_i, const double WL, const VectorType SpinVector,
- double *prob, VectorType pos, VectorType dir, VectorType spin,
- const VectorType WallOffset, const VectorType WallNormal, double RotMatrixWall[3][3],
- VectorType r1,VectorType r2, VectorType r3,VectorType r4, const VectorType vOffsetShift,
- const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2],
- const double mued[4], const double mrangh, const double mrangv)
+ double *prob, VectorType pos, VectorType dir, VectorType spin, short int l)
 {
   VectorType rt, rt2;
   double path, RotMatrixRang[3][3];
   int angularSpread;
 
-  if (PlaneLineIntersect(pos, dir, WallNormal, ScalarProduct(WallOffset, WallNormal), rt) == 0)
+  if (PlaneLineIntersect(pos, dir, WallNormal[l], ScalarProduct(WallOffset[l], WallNormal[l]), rt) == 0)
     return 99999;
 
   { VectorType replacement;
@@ -693,16 +762,16 @@ static double CollideWall
   if ((angularSpread = mrangh != 0 || mrangv != 0)) {
     // random angular spread
     double rangh, rangv;
-    rangh = mrangh == 0 ? 0 : MonteCarloPar(- mrangh/2., mrangh/2., thread_i);
-    rangv = mrangv == 0 ? 0 : MonteCarloPar(- mrangv/2., mrangv/2., thread_i);
+    rangh = mrangh[l] == 0 ? 0 : MonteCarloPar(- mrangh[l]/2., mrangh[l]/2., thread_i);
+    rangv = mrangv[l] == 0 ? 0 : MonteCarloPar(- mrangv[l]/2., mrangv[l]/2., thread_i);
     FillRotMatrixZY(RotMatrixRang, rangv, rangh);
   }	
 
   /* transform into frame of the wall  */
 	
-  SubVector(rt, WallOffset);
-  RotVector(RotMatrixWall, rt);
-  RotVector(RotMatrixWall, dir);
+  SubVector(rt, WallOffset[l]);
+  RotVector(RotMatrixWall[l], rt);
+  RotVector(RotMatrixWall[l], dir);
 
   if (angularSpread) {
     RotVector(RotMatrixRang, rt);
@@ -712,68 +781,81 @@ static double CollideWall
   /* now check for collision; compute  */
   {
     double the, Refl[2], expon[2];
-    double Choise= MonteCarloPar(0,1, thread_i);
-    double alphaQ=0, betaQ=0, mNumber=4, Q=0, Qc=0, M2=0, W=0, R0=0.99;
+    double Choice= MonteCarloPar(0,1, thread_i);
+    //  double alphaQ=0, betaQ=0, Q=0, M2=0, W=0, R0=0.99;
     int index_expon=0, index_mued1=1, index_mued2=2, index_theta=0;
-    // Shift vector according to the new offset of the mirror element
-    SubVector(rt, vOffsetShift); 
+    double d = 0;
     
-    if (! hitwall(r1, r2, r3, r4, rt)) {		
+    // Shift vector according to the new offset of the mirror element
+    SubVector(rt, WallOffsetShift[l]); 
+    
+    if (! hitwall(r1[l], r2[l], r3[l], r4[l], rt)) {		
 
-      AddVector(rt, vOffsetShift); 
-      RotBackVector(RotMatrixWall, dir);      
+      AddVector(rt, WallOffsetShift[l]); 
+      RotBackVector(RotMatrixWall[l], dir);      
       return 99999;
     }
     
     // Now shift back to the correct frame
-    AddVector(rt, vOffsetShift); 
+    AddVector(rt, WallOffsetShift[l]); 
 
     CopyVector(rt, rt2);
 		
     the = M_PI_2 - acos(fabs(dir[0]));
 
-    if (SpinVector[quant_dir] == 1.) {/* spin up */
+    if (SpinVector[quant_dir] == 1. && useQuantDir) {/* spin up */
       index_expon=0; index_mued1=0; index_mued2=1; index_theta=0;
-    } else if (SpinVector[quant_dir] == -1.) {/* spin down */
+    } else if (SpinVector[quant_dir] == -1. && useQuantDir) {/* spin down */
       index_expon=1; index_mued1=2; index_mued2=3; index_theta=1;
-    } else {
+    } else if (useQuantDir){
       NumWrong[thread_i]++;
       *prob = 0.;
     }
 
      
-    if (mirrMaterial == 1) {
-      // Silicon
-      double x =  ENERGY_FROM_LAMBDA(WL)/1000.; //Energy in meV
-      double p0 = -4.25823;
-      double p1 = -0.560678;
-      double p2 = 0.0624372;
-      double p3 = -0.126251;
-      double p4 = 0.0802101;
-      double p5 = 55.8559;
-      double p6 = -0.00880107;
-      double p7 = 0.176497;
+    if (mirrUsage[l] != 2) { // Mirror works in transmission mode
+      if (mirrMaterial == 1) {
+	// Silicon
+	double x =  ENERGY_FROM_LAMBDA(WL)/1000.; //Energy in meV
+	
+	double p0 = 0.835703;
+	double p1 = 1.05449;
+	double p2 = 0.0418079;
+	double p3 = -5.17319e-06;
+	double p4 = -422.076;  
+	
+	if (fileFormat == 0) d = (mued[l][index_mued1] + mued[l][index_mued2]) / 0.037; // Calculate the thickness of the mirror element
+	else d = mirrThickness[l];
+	
+	//Fit valid only between 0.4 A and 25 A
+	if (WL < 0.4) x = ENERGY_FROM_LAMBDA(0.4)/1000.;
+	else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
+	
+	// Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
+	expon[index_expon] = 0.0499*(p0 + p1*sqrt(1./x) + p2*sqrt(x) + p3*pow(x + p4, 2.))*d/ sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL))); // 0.0499: \sigma --> \mu in 1/cm
+      }
+      
+      else if (mirrMaterial == 2) {
+	//Sapphire
 
-      double mirrThickness = (mued[index_mued1] + mued[index_mued2]) / 0.037; // Calculate the thickness of the mirror element
-
-      //Fit valid only between 0.3 A and 25 A
-      if (WL < 0.3) x = ENERGY_FROM_LAMBDA(0.3)/1000.;
-      else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
-
-      // Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
-      expon[index_expon] = 0.0499*(p0 + p1*log(x) + p2*pow(log(x+p3), 2) + p4*pow(log(x+p5), 3) + p6*pow(log(x+p7), 4))*mirrThickness/ sqrt(sq(sin(the)));
+	double mu1 = 0.0055;
+	double mu2 = -0.005;
+	double mu3 = 0.00159;
+	if (fileFormat == 0) d = mued[l][index_mued1] / mu1; // Calculation of the mirror thickness
+	else d = mirrThickness[l];
+	
+	expon[index_expon] = (mu1* WL + mu2 + mu3/WL) / sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL)));
+      }
+      else {
+	expon[index_expon] = (mued[l][index_mued1] * WL + mued[l][index_mued2]) / sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL)));
+      }
     }
-    //Henriks Attenuation: for Sapphire
-    else if (mirrMaterial == 2) {
-      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2] / WL - 0.00025) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
-    }
-    else {
-      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2]) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
+    else { // Mirror does not transmit, e.g. is a guide wall
+      expon[index_expon] = 500.;
     }
 
-
-    if (the <= thetaC[index_theta] * WL) {
-      if (Choise < 0.99) 
+    if (the <= thetaC[l][index_theta] * WL) {
+      if (Choice < 0.99) 
 	dir[0] *= -1.;
       else 
 	*prob *= (double) exp(- expon[index_expon]);
@@ -782,84 +864,23 @@ static double CollideWall
       if(expon[index_expon] > 500)
 	expon[index_expon] = 500;
 
-      if (the > thetaC[index_theta] * WL) {
-	//if (the > thetaC[index_theta] * WL && the <= thetaCSM[index_theta] * WL) {
-	  //Refl[index_theta] = RthetaCSM[index_theta] + (1. - RthetaCSM[index_theta])/(thetaCSM[index_theta] * WL - thetaC[index_theta] * WL)*(thetaCSM[index_theta] * WL - the); /* old model */
-	// McStats reflection:
-	mNumber=thetaCSM[index_theta]/thetaC[index_theta];
-	M2 = mNumber*0.9853 + 0.1978;
-	alphaQ=(mNumber>3) ? ( 5.0944 + 0.1204*mNumber) : mNumber;
-	betaQ =(mNumber>3) ? (68.1137 - 7.6251*mNumber) : 0.0;
-	Q = 4*M_PI*sin(the)/ WL;
-	Qc = 4*M_PI*sin(thetaC[index_theta])/ 1;
-	W  = 0.0022 - 0.0002*mNumber;
-	R0 = 0.99;
+      if (the > thetaC[l][index_theta] * WL) {
 
-	Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
+	// McStas reflection model:
+	// Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc[l][index_theta])/W)) * (1.0 - alphaQ*(Q-Qc[l][index_theta]) + betaQ*(Q-Qc[l][index_theta])*(Q-Qc[l][index_theta]));
 
-	if (Choise < Refl[index_theta])
+	Refl[index_theta] = ReflSN(WL, the*180./M_PI, mNumber[l][index_theta]);
+
+	if (Choice < Refl[index_theta])
 	  dir[0] *= -1.;
 	else
 	  *prob *= exp(- expon[index_expon]);
       }
-      //if (the > thetaCSM[index_theta] * WL){
-      //	*prob *= exp(- expon[index_expon]);}
+     
     }
     
   }
-
-    /* if (SpinVector[quant_dir] == 1.) { */
-
-  /*     /\* spin up *\/ */
-  /*     if (the <= thetaC[0] * WL) { */
-  /* 	dir[0] *= -1.; */
-  /*     }	else  {	 */
-  /* 	expon[0] = (mued[0] * WL + mued[1]) / sqrt(sq(sin(the)) - sq(sin(thetaC[0] * WL))); */
-				
-  /* 	if(expon[0] > 500) */
-  /* 	  expon[0] = 500; */
-  /* 	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) { */
-  /* 	  Refl[0] = RthetaCSM[0] + */
-  /* 	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the); */
-  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
-  /* 	  if (Choise < Refl[0]) */
-  /* 	    dir[0] *= -1.; */
-  /* 	  else */
-  /* 	    *prob *= exp(- expon[0]); */
-  /* 	} */
-  /* 	if (the > thetaCSM[0] * WL) */
-  /* 	  *prob *= exp(- expon[0]); */
-  /*     } */
-
-  /*   } else if (SpinVector[quant_dir] == -1.) { */
-
-  /*     /\* spin down *\/ */
-  /*     if(the <= thetaC[1] * WL) { */
-  /* 	dir[0] *= -1.; */
-  /*     }	else { */
-  /* 	expon[1] = (mued[2] * WL + mued[3]) / sqrt(sq(sin(the)) - sq(sin(thetaC[1] * WL))); */
- 				
-  /* 	if(expon[1] > 500) expon[1] = 500; */
-  /* 	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) { */
-  /* 	  Refl[1] = RthetaCSM[1] + */
-  /* 	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the); */
-  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
-  /* 	  if(Choise < Refl[1]) */
-  /* 	    dir[0] *= -1.; */
-  /* 	  else */
-  /* 	    *prob *= exp(- expon[1]); */
-  /* 	} */
-  /* 	if(the > thetaCSM[1] * WL) */
-  /* 	  *prob *= exp(- expon[1]); */
-  /*     } */
-
-  /*   } else { */
-
-  /*     NumWrong[thread_i]++; */
-  /*     *prob = 0.; */
-  /*   } */
-  /* } */
-
+  
   /* transform back into original frame  */
 	
   if (angularSpread) {
@@ -867,9 +888,9 @@ static double CollideWall
     RotBackVector(RotMatrixRang, dir);
   }
 
-  RotBackVector(RotMatrixWall, rt);
-  AddVector(rt, WallOffset);
-  RotBackVector(RotMatrixWall, dir);
+  RotBackVector(RotMatrixWall[l], rt);
+  AddVector(rt, WallOffset[l]);
+  RotBackVector(RotMatrixWall[l], dir);
 
   dir[0] = sqrt(1 - sq(dir[1]) - sq(dir[2]));
 
@@ -946,9 +967,7 @@ void processNeutron (int i, int thread_i) {
       prob[l]= Prob;
       if (m != l) {
 	PathA[l] = CollideWall(thread_i, WL, SpinVector,
-			       &prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l],
-			       RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], WallOffsetShift[l], thetaC[l], thetaCSM[l],
-			       RthetaCSM[l], mued[l], mrangh[l], mrangv[l]);
+			       &prob[l], pos[l], dir[l], spin[l], l);
       }
       else
 	PathA[l] = 99999;

@@ -3832,8 +3832,8 @@ set collimator_radialESET {
 set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
-  {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
-    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. Choose Other for a general approximation. \n " "" S} {Other Silicon Sapphire} {0 1 2}}
+    {fFormat radio Old {"File format" "Choose between two file formats: \n The old format has always been used until this version and\n requires the user to provide, apart from geometric properties,\n mirror material properties like mean free path mu, critical angle thetaC etc. \n The new file format only includes the geometry information, the mirror thickness \n and m-numbers for spin-up and down. See the updated help file for details.\n" "" F} {Old New} {0 1}}
+    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. Choose Other for a general approximation. \n Beware that OTHER only works with the old file format! \n" "" S} {Other Silicon Sapphire} {0 1 2}}
     {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
@@ -3854,6 +3854,7 @@ set sm_ensembleESET {
   {v1 float "" {vmin "minimal vertical coordinate of visualisation window" "" a}}
   {v2 float "" {vmax "maximal vertical coordinate of visualisation window" "" A}}
   {cutoff float "" {"cutoff\nprobability" "" "" b}}
+  {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
   {}
   {cfile pareditablefile collision.dat {"collision\nfile" "name of file for collisions output if 'output in collision file' option chosen in 'visualisation'" "" C}}
   {}
