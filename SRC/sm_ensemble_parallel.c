@@ -339,7 +339,7 @@ void OwnInit(int argc, char *argv[])
   }
 	
 
-  if (mirrMaterial == 3 && fileFormat == 1) {
+  if (mirrMaterial == 0 && fileFormat == 1) {
     fprintf(LogFilePtr, "The new file format cannot be used with OTHER mirror material!\n");
     exit(-1);
   }
