@@ -655,10 +655,9 @@ set detectorESET {
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
     {repr int 10 {  repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron." "" A} 1}
-    {detectcolor int -1 { "detect color" "Detect only events with given color. A negative number means any color." "" C}  }
     {addcolor int -1 {  "add color" "Add value to color property after detection. A negative number means no change. Note that a value larger 0 is not set, but ADDED to the value of the incoming neutron; the module spin_reset can be used to reset the color before the detector array if only a distinction between sub-detectors is desired." "" S}  }
     {excl_counts radio no {
-      "exclusive\ncounts" "if \"exclusive counts\" is activated, then only the monitored neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" d}
+      "keep wrong color" "if activated, then neutrons outside the colour selection will be passed on to the next module untouched. Otherwise, these neutrons are discarded (default). Only relevant if minColour and/or maxColour is used." "" d}
       {yes no} {1 0}}
     {minColor int -1 {
       "minColor" "color necessary for the trajectory to be evaluated\nminColor -1 means: all trajectories are evaluated\notherwise neutron color must be >= minColor" "" q} -1 32768}

@@ -45,7 +45,7 @@
 DetectorType Detector; 
 long       GenNeutrons=10,        // repetition: multiply neutrons to get diff. interaction lengths (probability from integration region L/GenNeutrons)
            lost=0,                // give Warning if neutron intersetcs tube detector but tube in which interaction happens is not found
-           bExclCount =FALSE;     /* TRUE : only neutrons complying with the evaluate requirements
+           bKeepWrongColour =FALSE;     /* TRUE: neutrons outside selected color windows are passed on; FALSE (default): only neutrons complying with the evaluate requirements
                                        are written to the output      */
 double     RotMatrix[3][3],
            RotSurface[3][3]; // matrix rotation coordinate system such that detector surface is perpendicular to x
@@ -108,12 +108,11 @@ int main(int argc, char *argv[])
       CHECK
 	
       //drop neutrons that don't pass the color filter
-      if ( ( (Detector.detectColor > -1) && (InputNeutrons[i].Color != Detector.detectColor) ) ||
-        (Detector.minColor >= 0 && InputNeutrons[i].Color < Detector.minColor) ||
-        (Detector.maxColor >= 0 && InputNeutrons[i].Color > Detector.maxColor) ) {
-          if (bExclCount==FALSE)
-            WriteNeutron(&InputNeutrons[i]);
-          continue;
+      if ( (Detector.minColor >= 0 && InputNeutrons[i].Color < Detector.minColor) ||
+           (Detector.maxColor >= 0 && InputNeutrons[i].Color > Detector.maxColor) ) {
+	if (bKeepWrongColour==TRUE)
+	  WriteNeutron(&InputNeutrons[i]);
+	continue;
       }
 
       //pass on neutrons detected by previous detector parts,
@@ -807,7 +806,6 @@ void  OwnInit(int argc, char *argv[])
   Detector.NColumns = -1;  Detector.NRows = -1;  Detector.NLayers = -1;
   Detector.Distance=-1;
   Detector.Geom=-1;
-  Detector.minColor = -1; Detector.maxColor = -1;
   Detector.Absorbertype=-1;
   Detector.GasPressure=-1; Detector.GasTemperature=-1; Detector.SolidAtomDensity=-1; Detector.SolidAbsorberthickness=-1;
   Detector.DG.Cyl.axis=-1;
@@ -829,7 +827,7 @@ void  OwnInit(int argc, char *argv[])
  Detector.EfficiencyMod=1;
      
   Detector.array=0;         
-  Detector.detectColor = -1;  Detector.addColor = -1;
+  Detector.addColor = -1;  Detector.minColor = -1; Detector.maxColor = -1;
   Detector.DG.Tube.vertTubeOrientation=0; Detector.DG.Tube.rectXsec=0;  Detector.DG.Tube.tubeshift=0; Detector.DG.Tube.wallThickness=0;
   Detector.DG.Cyl.phimode=0;Detector.DG.Cyl.r=0;
 
@@ -913,10 +911,6 @@ void  OwnInit(int argc, char *argv[])
 	Detector.usage=atoi(&argv[i][2]);
 	break;
 	
-      case 'C':
-	Detector.detectColor=atoi(&argv[i][2]);
-	break;
-      
       case 'S':
 	Detector.addColor=atoi(&argv[i][2]);
 	break;
@@ -996,8 +990,8 @@ void  OwnInit(int argc, char *argv[])
 	Detector.maxColor = atoi(&argv[i][2]);       /*  use neutrons with color <= maxColour */
 	break;
       case 'd':
-	if(atol(&argv[i][2])==1)        /* if activated, only neutrons complying with the  */
-	bExclCount = TRUE;              /* evaluate requirements are considered further on */
+	if(atol(&argv[i][2])==1)        /* if activated, neutrons outside the colour selection  */
+	bKeepWrongColour = TRUE;              /* are passed to the next module */
 	break;
 
    
