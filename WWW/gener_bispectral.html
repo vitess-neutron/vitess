@@ -10,39 +10,56 @@
   
 <h1>VITESS Tool: Generate Extraction System</h1>
  This tool generates an input file for the sm_ensemble module, describing a
-(e.g. bispectral) extraction system consisting of up to 50 mirrors which can be
-combined with max. 4 guide walls (intransparent mirrors). The
-max. number of mirror plates (i.e. mirrors plus guide walls) the
-sm_ensemble module can process is 50. 
+(e.g. bispectral) extraction system consisting of up to 50 mirrors. Each mirror
+can be either transparent, i.e. taking attenuation of the chosen material into
+account, or intransparent, i.e. non-reflected neutrons are absorbed (guide walls). 
 
 Restrictions like the same shape for all mirrors do not reflect
 restrictions in the sm_ensemble module; if more complicated mirror setups than
 foreseen in this tool are desired, this tool can be used as starting point to
-understand the creation process of a sm_ensemle input file.
+understand the creation process of a sm_ensemle input file, in particular the
+geometry description. For the same reason, reflectivity and and attenuation are set to be equal for up- and
+down-type spins here.
 
 <h2>The following information has to be given as input:</h2>
 
 <p>
- <b>Number of mirrors and walls</b><br/>
-Super-mirror coated plates are referred to as <b>mirrors</b> if they allow for transmission,
- and as <b>walls</b> if they do not.
+ <b>File format old/new</b><br/>
+Old file format means the default format before VITESS 3.2. The only change
+ here is the interpretation of the first number in each row, which has been
+ extended from 0 (turned off) and 1 (turned on) to the additional possibility 2:
+ turned on only for reflection, i.e. intransparent wall.
+The new file format does not include theta<sub>c</sub>, theta<sub>csm</sub>,
+ R<sub>csm</sub>, &#956;*d and &#956;<sub>incoh</sub>*d anymore. Instead, the thickness d and
+ the supermirror coating m are listed. Intransparent walls are marked by
+ setting the first number (on/off switch) to 2.  <br>
+See also <i>sm_ensemble</i> help.
+ <br/>
+
+ <b>Number of mirrors</b><br/>
+Number of super-mirror coated plates. (Note: Differently to VITESS 3.1,
+ transparent and intransparent mirrors (guide walls) are not counted separately anymore.)
  <br/>
 
  <b>Mirror plane</b> <br/>
   refers to the orientation of the mirror plates: vertical (horizontal) means
- the mirror is (approximately) embedded in the x-z (x-y) plane.
+ the mirror is (approximately) embedded in the x-z (x-y) plane. 
  <br/>
 
  <b>Equidistant mirrors of same length and with same inclination?</b> <br/>
-Yes/No: if <i>yes</i>, only a common length and angle to the x-axis has to be
-given, the smallest y or z coordinate (y<sub>1</sub> in fig. 1) and the distance between mirrors define
+Yes/No: if <i>yes</i>, a stack of identical mirror plates is assumed (either transparent or intransparent). Only a
+ common length, angle to the x-axis, substrate thickness and coating has to be
+given. The smallest y or z coordinate (y<sub>1</sub> in fig. 1) and the distance between mirrors define
 the position of each mirror in the system (see figure 1). In this case, x=0 is
- set at the beginning of the mirrors, i.e. guide walls can not
- extent to smaller x than mirrors.
+ set at the beginning of the mirrors. <br>
 
 If <i>no</i>, a seperate angle, length and position (in x and y or z) has to be given for each
- mirror (see fig. 2). 
+ mirror (see fig. 2), and transparent plates can be combined with intransparent
+ (e.g. guide walls) with different mirror coatings.
+ <br/>
 
+<b>Transparent mirror</b> <br/>
+Yes or no: if <i>no</i>, the mirror can only reflect or absorb neutrons.
  <br/>
 
  <b>Mirror inclination w.r.t. x-axis</b> <br/>
@@ -61,9 +78,10 @@ Horizontal (vertical) position of the lowest mirror when viewed in x-y (x-z)
  <br/>
 
  <b>Mirror coating m</b> <br/>
-m-value of supermirror coating as integer between 1 and 7 [&#8594
+m-value of supermirror coating between 1 and 7 [&#8594
  theta_csm=0.00173&#8901m,
- R_csm(m) as given on http://www.swissneutronics.ch/products/coatings.html].
+ R_csm(m) as given on http://www.swissneutronics.ch/products/coatings.html. For
+ non-integer m, R_csm(m) is extrapolated.].
  <br/>
 
  <b>Are the mirrors rectangular? Mirror width</b> <br/>
@@ -76,7 +94,11 @@ Yes/No: if <i>yes</i>, only one width (i.e. length in y or z direction) has to
  <br/>
 
  <b>Mirror substrate thickness d</b> <br/>
-Silicon substrate thickness, determines attenuation [silicon assumed &#8594 &#956*d=0.0048&#8901d, &#956_incoh*d=0.030&#8901d].
+Substrate thickness, determines attenuation: in old file format, silicon is
+ assumed [&#8594 &#956*d=0.0048&#8901d, &#956_incoh*d=0.030&#8901d]. If the new
+ file format has been chosen, the thickness is directly written to the file and
+ is used in the <i>sm_ensemble</i> module with the chosen substrate material to
+ determine the attenuation.
  <br/>
 </p>
 
