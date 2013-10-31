@@ -68,6 +68,7 @@ typedef struct
 }
 ReflFile;
 
+double mNumber[4];
 // 0: left, 1: right, 2: top, 3: bottom
 ReflFile reflContainer[4];
 
@@ -105,6 +106,7 @@ int TestAbsorptionInBeamstop();
 
 void OwnInit(int argc, char *argv[]);
 void LoadReflFile(ReflFile* pReflFile);
+void FillReflContainer(ReflFile* reflStruct, double m);
 void OwnCleanup();
 
 void SetGeometryData();

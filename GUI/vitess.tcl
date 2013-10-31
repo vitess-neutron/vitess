@@ -1218,15 +1218,29 @@ set guide_idealESET {
     "Add to color"
     "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
   {"Guide characteristics" header}
+  {"Reflectivity numbers" header}
+  {mLeft float 0 {
+    "left plane"
+    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" e}}
+  {mRight float 0 {
+    "right plane"
+    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" E}}
+  {}
+  {mTop float 0 {
+    "top plane"
+    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" f}}
+  {mBottom float 0 {
+    "bottom plane"
+    "Reflectivity of the bottom plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" F}}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
-    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
+    {"left plane" "Reflectivity file for left plane (where y>0)" "" i}}
   {rrefl_filename pareditablefile mirr1a.dat
-    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+    {"right plane" "Reflectivity file for right plane (where y<0)" "" I}}
   {tbrefl_filename pareditablefile mirr1a.dat
-    {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
+    {"top plane" "Reflectivity file for top plane" "" j}}
   {brefl_filename pareditablefile mirr1a.dat
-    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+    {"bottom plane" "Reflectivity file for bottom plane" "" J}}
 
 }
 

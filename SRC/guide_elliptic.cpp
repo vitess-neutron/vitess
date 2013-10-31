@@ -11,6 +11,8 @@
 // }
 
 
+#define thetaCNi 0.099138
+
 #include "guide_elliptic.h"
 
 
@@ -153,6 +155,11 @@ void OwnInit(int argc, char *argv[])
 	  LoadReflFile(&reflContainer[0]);
           break;
 
+	  case 'e':  /* left plane */
+	    mNumber[0] = atof(&argv[i][2]);  
+	    FillReflContainer(&reflContainer[0], mNumber[0]);
+	    break;
+
         case 'I':  /* right plane */
           if( (fReflFileRightPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL) //Reflectivity file right plane
           {	fprintf(LogFilePtr,"ERROR: File %s containing coating of right plane could not be opened\n",&argv[i][2]);
@@ -163,8 +170,13 @@ void OwnInit(int argc, char *argv[])
 	  reflContainer[1].filename = reflFileNameRight.c_str();
 	  LoadReflFile(&reflContainer[1]);
           break;
-
-        case 'j':    /* top plane */
+	  
+	  case 'E':  /* right plane */
+	    mNumber[1] = atof(&argv[i][2]);  
+	    FillReflContainer(&reflContainer[1], mNumber[1]);
+	    break;
+	    
+	  case 'j':    /* top plane */
           if( (fReflFileTopPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL) //Reflectivity file top plane
           {
             fprintf(LogFilePtr,"ERROR: File %s containing coating of top plane could not be opened\n",&argv[i][2]);
@@ -176,6 +188,11 @@ void OwnInit(int argc, char *argv[])
 	  LoadReflFile(&reflContainer[2]);
           break;
 
+	  case 'f':  /* top plane */
+	    mNumber[2] = atof(&argv[i][2]);  
+	    FillReflContainer(&reflContainer[2], mNumber[2]);
+	    break;
+	    
         case 'J':    /* bottom plane */
           if( (fReflFileBottomPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL)  //Reflectivity file bottom plane
           {
@@ -187,6 +204,11 @@ void OwnInit(int argc, char *argv[])
 	  reflContainer[3].filename = reflFileNameBottom.c_str();
 	  LoadReflFile(&reflContainer[3]);
           break;
+
+        case 'F':  /* bottom plane */
+	  mNumber[3] = atof(&argv[i][2]);  
+	  FillReflContainer(&reflContainer[3], mNumber[3]);
+	  break;
 
 	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
@@ -327,6 +349,8 @@ void OwnInit(int argc, char *argv[])
 
 void   LoadReflFile(ReflFile *pReflFile)
 {
+  if (pReflFile->maxdata > 0) return;
+  
   long   count = 0, i = 0, nLines = 0;
   char   sBuffer[512]="";
 
@@ -349,6 +373,25 @@ void   LoadReflFile(ReflFile *pReflFile)
   return;
 }
 
+// Fill reflectivity arrays by calculating the reflectivity usind the formula
+// for the Swiss Neutronics supermirrors
+void FillReflContainer(ReflFile* reflStruct, double m)
+{
+
+  if (m < 0) {
+    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!");
+    exit(-1);
+  }
+
+  double lambda = 1./thetaCNi;
+  reflStruct->maxdata = (int) (m*100. + 200);
+  reflStruct->Rdata = (double*) calloc(reflStruct->maxdata, sizeof(double));
+
+  for (int i = 0; i < reflStruct->maxdata; i++) reflStruct->Rdata[i] = ReflSN(lambda, (double)i*0.01, m);
+
+  return;
+
+}
 
 int ProcessNeutron(Neutron* n)
 { 
@@ -1078,7 +1121,12 @@ void OwnCleanup()
   fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f vertOffset %f \n", lengthGuide, startPoint, endPoint, vertOffset);
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
-  for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
+  for (int i = 0; i < 4; i++) {
+    fprintf(LogFilePtr,"mNumber: %f \n", mNumber[i]);
+    for (int j = 0; j < reflContainer[i].maxdata; j++) fprintf(LogFilePtr,"%f ", reflContainer[i].Rdata[j]);
+    fprintf(LogFilePtr,"\n");
+    free(reflContainer[i].Rdata);
+  }
 
   double trueX = startPoint;
   double shiftedX = 0;
@@ -1143,10 +1191,10 @@ void SetGeometryData()
       stGeometry.pHull[0].vNormal[2] = 0.;
       
       stGeometry.pHull[0].Length = lengthGuide*100.;
-      stGeometry.pHull[0].WidthIn = startWidth*100.;
-      stGeometry.pHull[0].WidthOut = endWidth*100.;
-      stGeometry.pHull[0].HeightIn = startHeight*100.;
-      stGeometry.pHull[0].HeightOut = endHeight*100.;
+      stGeometry.pHull[0].WidthIn = startWidth;
+      stGeometry.pHull[0].WidthOut = endWidth;
+      stGeometry.pHull[0].HeightIn = startHeight;
+      stGeometry.pHull[0].HeightOut = endHeight;
 
     }
 
