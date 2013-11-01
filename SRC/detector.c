@@ -1186,9 +1186,9 @@ void CheckAndAdjustDetectorInput(int type){
   if(Detector.NRows<0)
     myExit("\nERROR: You have to specify the number of rows with -r.");
   if(Detector.NColumns<0)
-    myExit("\nERROR: You have to specify the number of rows with -c.");
+    myExit("\nERROR: You have to specify the number of columns with -c.");
   if(Detector.NLayers<0)
-    myExit("\nERROR: You have to specify the number of rows with -n.");
+    myExit("\nERROR: You have to specify the number of layers with -n.");
   Detector.PixelWidth[0]=Detector.Thickness/Detector.NLayers;
   Detector.PixelWidth[1]=Detector.Width/Detector.NColumns;
   Detector.PixelWidth[2]=Detector.Height/Detector.NRows;
