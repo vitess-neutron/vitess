@@ -76,8 +76,8 @@ double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][
            mNumber[MAX_MIRR+1][2], mirrThickness[MAX_MIRR+1], Qc[MAX_MIRR+1][2],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
 
-short int  mirrMaterial=0, mirrUsage[MAX_MIRR+1];
-short int  fileFormat=0;
+static int  mirrMaterial=0, mirrUsage[MAX_MIRR+1];
+static int  fileFormat=0;
 
 int     useQuantDir=1;
 
@@ -300,7 +300,7 @@ void OwnInit(int argc, char *argv[])
       sscanf(arg, "%lf", &OutputAngleVert);
       break;
     case 'S':
-      sscanf(arg, "%hd", &mirrMaterial);
+      sscanf(arg, "%d", &mirrMaterial);
       break;
     case 'F':
       sscanf(arg, "%d", &fileFormat);
