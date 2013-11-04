@@ -476,6 +476,7 @@ int ProcessNeutron(Neutron* n)
 	n->Vector[1] = nTemp1.Vector[1];
 	n->Vector[2] = nTemp2.Vector[2];
 	n->Vector[0] = sqrt(1. - nTemp1.Vector[1]*nTemp1.Vector[1] - nTemp2.Vector[2]*nTemp2.Vector[2]);
+	tof += (nTemp1.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 
 	if (changeColor) n->Color += 101;
 	if (n->Probability <= wei_min)  {
@@ -484,7 +485,7 @@ int ProcessNeutron(Neutron* n)
 	}
 	WriteIAPEllGuide(n, VT_REFLECTED);
 	WriteIAPEllGuide(n, VT_REFLECTED);
-
+	
 	xMin = nTemp1.Position[0];
 	simultaneousCollisions++;
 
