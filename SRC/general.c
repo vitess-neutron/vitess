@@ -190,14 +190,14 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 //
 double ReflSN(const double Lambda,    const double Angle,    const double M)
 {
-	double  M2,          // m'     : 'real' m value
-	        Q,           // Q      : momentum transfer of the reflection
-	        Qc=0.0217,   // Q_c    : crit. momentum transfer  (see figure)
-	        R0=0.99,     // R_0    : reflectivity for 0 <= Q <= Q_c
-	        alphaQ=0.0,  //          slope Delta_R / Delta_Q
-          betaQ =0.0,  //          quadratic term to describe R(q)
-	        W,           // W      : width of the cut-off  [1/Ang]
-          R;           // R      : reflectivity
+  double  M2,    // m'     : 'real' m value
+    Q,           // Q      : momentum transfer of the reflection
+    Qc=0.0217,   // Q_c    : crit. momentum transfer  (see figure)
+    R0=0.99,     // R_0    : reflectivity for 0 <= Q <= Q_c
+    alphaQ=0.0,  //          slope Delta_R / Delta_Q
+    betaQ =0.0,  //          quadratic term to describe R(q)
+    W,           // W      : width of the cut-off  [1/Ang]
+    R;           // R      : reflectivity
 
   W  = 0.0022 - 0.0002*M;
   M2 = M*0.9853 + 0.1978;
@@ -294,11 +294,11 @@ short NormVector(VectorType Vector)
 /*                                                                                     */
 double DistVector(const VectorType Vec1, const VectorType Vec2)
 {
-	VectorType Vhlp;
-
-	CopyVector(Vec1, Vhlp) ;
-	SubVector (Vhlp, Vec2);
-	return LengthVector(Vhlp);
+  VectorType Vhlp;
+  
+  CopyVector(Vec1, Vhlp) ;
+  SubVector (Vhlp, Vec2);
+  return LengthVector(Vhlp);
 }
 
 
@@ -646,4 +646,3 @@ StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 
 	return(n);
 }
-

@@ -690,14 +690,13 @@ int main(int argc, char *argv[])
 /* ----------------------------- */
 void OwnInit(int argc, char **argv)
 {
-   short  i;
+  int  i,j;
    char  *arg=NULL;
 
    /* Initialize */
    stSrc.dPulseLength = 0.002;      /* [s] LPSS pulse length 2 ms            */ 
    stSrc.pSrcName     = "";
 
-   /*  */
    for(i=1; i<argc; i++)
    {
       if(argv[i][0]!='+') 
@@ -718,9 +717,11 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'd':
-            eDirDet = (VtDirect) atol(arg); 
-            if (eDirDet < 0 || eDirDet > 2)
+            j = atol(arg); 
+            if (j < 0 || j > 2)
               Error("Wrong parameter for 'direction determination'");
+            else
+              eDirDet = (VtDirect) j;
             break;
 
           case 'A':

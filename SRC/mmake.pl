@@ -50,7 +50,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    monitorpol_1d monitorpol_pos
-	    monochromator monochr_analyser
+	    monochr_analyser
 	    polariser_sm polariser_sm_parallel
 	    polariser_he3 flipper_coil
 	    pol_mirror

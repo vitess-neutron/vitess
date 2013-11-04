@@ -105,7 +105,6 @@ ALL : \
 	"$(OD)\frame.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
-	"$(OD)\monochromator.exe" \
 	"$(OD)\monochr_analyser.exe" \
 	"$(OD)\polariser_sm.exe" \
 	"$(OD)\polariser_sm_parallel.exe" \
@@ -598,13 +597,6 @@ SOURCE=$(SPATH)\monitorpol_pos.c
 
 "$(OD)\monitorpol_pos.exe" : "$(OD)" $(MTOOL) "$(OD)\monitorpol_pos.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\monitorpol_pos.pdb" /out:"$(OD)\monitorpol_pos.exe" "$(IDIR)\monitorpol_pos.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\monochromator.cpp
-"$(IDIR)\monochromator.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\monochromator.exe" : "$(OD)" $(MTOOL) "$(OD)\monochromator.obj" "$(OD)\monochrclass.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\monochromator.pdb" /out:"$(OD)\monochromator.exe" "$(IDIR)\monochromator.obj" $(MTOOL) "$(OD)\monochrclass.obj" 
 
 SOURCE=$(SPATH)\monochr_analyser.c
 "$(IDIR)\monochr_analyser.obj" : $(SOURCE)
