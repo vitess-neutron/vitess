@@ -359,8 +359,11 @@ proc deleteEntryVariables {} {
   # Delete all global variables which belong to module parameter entries.
   # These are of the name form <varname>_<number>
   foreach n [info globals] {
-    if [regexp {[a-zA-Z0-9_]_([0-9]+)$} $n] {
-      catch {unset $n}
+    if [regexp {^[a-zA-Z0-9_]+_[0-9]+$} $n] {
+      catch {
+        global $n
+        unset $n
+      }
     }
   }
 }
