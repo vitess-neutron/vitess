@@ -409,7 +409,7 @@ proc addToSet {set v} {
 ### 7. are not an array variable
 ###
 proc savableGlobals {} {
-  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp
+  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp SaveInstrmode
   set lasti 0
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -427,6 +427,10 @@ proc savableGlobals {} {
     }
     if {[lsearch $TempVars $e] >= 0} continue
     if {[lsearch $DoNotSave $e] >= 0} continue
+    if {$SaveInstrmode == "normal"} {
+       if [regexp {^series.+_$} $e] continue
+       if [regexp {^(mod|num)series_$} $e] continue
+    }
     global $e
     if {[catch {array size $e} size] || !$size} {
       lappend l $e
