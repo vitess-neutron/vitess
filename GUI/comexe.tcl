@@ -1222,6 +1222,9 @@ proc vis3D {{i ""}} {
             showText "Find X3D file $visRes"
             # launch external X3D viewer
             if {"" != [set ecom [getPreferredX3DCmd]]} {
+              if [regexp InstantPlayer $ecom] {
+                showText "  press key 'a' over InstantPlayer window to view the module (Show all)"
+              }
               catch {exec $ecom $visRes &}
             }
           }

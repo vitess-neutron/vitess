@@ -3375,15 +3375,15 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
   {"Offspecular scattering" header}
-  {useOffspec radio Off {"Offspecular scattering" "Switch on, if the reflectivity file takes into account\n offspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
+  {useOffspec radio Off {"Offspecular\nscattering" "Switch on, if the reflectivity file takes into account\n offspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
   {"Incoherent scattering" header}
-  {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
+  {useInc radio Off {"Incoherent\nscattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
   {}
-  {muInc float 0 {"Incoherent pathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
+  {muInc float 0 {"Incoherent\npathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
   {}
-  {detDist float 0 {"Detector distance" "If incoherent scattering from sample is taken into account, \n specify the distance to the detector. This is needed together with detector \n width and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" d}}	
-  {detW float 0 {"Detector width" "If incoherent scattering from sample is taken into account, \n specify the width the detector. This is needed together with detector \n distance and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" p}}	
-  {detH float 0 {"Detector height" "If incoherent scattering from sample is taken into account, \n specify the height the detector. This is needed together with detector \n distance and detector width to calculate the solid angle \n the incoherent part of the background is scattered to." "" t}}
+  {detDist float 0 {"Detector\ndistance" "If incoherent scattering from sample is taken into account, \n specify the distance to the detector. This is needed together with detector \n width and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" d}}	
+  {detW float 0 {"Detector\nwidth" "If incoherent scattering from sample is taken into account, \n specify the width the detector. This is needed together with detector \n distance and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" p}}	
+  {detH float 0 {"Detector\nheight" "If incoherent scattering from sample is taken into account, \n specify the height the detector. This is needed together with detector \n distance and detector width to calculate the solid angle \n the incoherent part of the background is scattered to." "" t}}
   {}
   {detN float 1 {"Norm factor" "If incoherent scattering from sample is taken into account, \n the norm factor describes the fraction of the detector \n where the specular signal is expected with respect to \n the whole detector area. If it's not specified, the proper normalisation \n should be done in the subsequent analysis." "" S}}
 }

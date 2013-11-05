@@ -402,6 +402,7 @@ proc controlMenu {w} {
       {c "Bigger fonts" biggerFonts} \
       {m Fonts afont} s\
       {m "Check mode" checkmode} \
+      {m "Save Instr. mode" savemode} \
       {m "Output compression" compmode} \
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
@@ -478,6 +479,9 @@ proc controlMenu {w} {
 
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
+
+  forceDef SaveInstrmode normal
+  cascEntries $wo.savemode SaveInstrmode normal "with series"
 
   forceDef Execmode normal
   cascEntries $wo.execmode Execmode normal "save old" "copy results"
