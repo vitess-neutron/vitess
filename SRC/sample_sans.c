@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	double     qValue,      /* absolute value of momentum transfer    */
 	           fThetaMin,   /* minimal and maximal values of the           */
 	           fThetaMax,   /* scattering angle according to Theta, DelTheta */
-	           fVolPtkl=0.0,/* Volume of the particle [cm³] */
+	           fVolPtkl=0.0,/* Volume of the particle [cmÂ³] */
 	           fFacCtrPtkl, /* factor considering contrast and particle size */ 
 	           fFormFac,    /* normalized form factor for the partical shape and size */
 	           fFac, 
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "Particles scattering isotropically\n"); 
 			break;
 	}
-	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cm² (solvent)\n"
+	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cmÂ² (solvent)\n"
 							  "vol.fract. of part. : %8.3f\n"
 							  "macr. cross section : %10.5f,%10.5f;%10.5f  1/cm (incoh, total scat; absorption)\n",
 							  g_fRho1, g_fRho2, g_fFracPtkl, g_fMuInc, g_fMuTot, g_fMuAbs);
@@ -354,8 +354,7 @@ void  OwnInit(int argc, char *argv[])
 	/*********************************************************************/
 	
 	long i;
-	int  detectortest=0;
-  double ThetaMax;
+        double ThetaMax;
 	
 	/* Ok, scan all command line parameters */
 	for(i=1; i<argc; i++)

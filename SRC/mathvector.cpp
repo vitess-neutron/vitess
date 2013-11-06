@@ -24,25 +24,28 @@ MathVector::MathVector(double x0, double y0, double z0)
 MathVector MathVector::Rotate(double alphaX, double alphaY, double alphaZ)
 {
 
-  double X = 0;
-  double Y = 0;
-  double Z = 0;
+  double X, Y, Z, sinV, cosV;
 
   // Rotation around the x-axis
+  sinV = sin(alphaX);
+  cosV = cos(alphaX);
   X = x[0];
-  Y = cos(alphaX)*x[1] - sin(alphaX)*x[2];
-  Z = sin(alphaX)*x[1] + cos(alphaX)*x[2];
+  Y = cosV*x[1] - sinV*x[2];
+  Z = sinV*x[1] + cosV*x[2];
 
   // Rotation around the y-axis
-  X = cos(alphaY)*X + sin(alphaY)*Z;
-  Y = Y;
-  Z = (-1.)*sin(alphaY)*X + cos(alphaY)*Z;
+  sinV = sin(alphaY);
+  cosV = cos(alphaY);
+  X = cosV*X + sinV*Z;
+  // Y = Y;
+  Z = - sinV*X + cosV*Z;
 
    // Rotation around the z-axis
-  X = cos(alphaZ)*X - sin(alphaZ)*Y;
-  Y = sin(alphaZ)*X + cos(alphaZ)*Y;
-  Z = Z;
-
+  sinV = sin(alphaZ);
+  cosV = cos(alphaZ);
+  X = cosV*X - sinV*Y;
+  Y = sinV*X + cosV*Y;
+  // Z = Z;
 
   return MathVector(X, Y, Z);
 

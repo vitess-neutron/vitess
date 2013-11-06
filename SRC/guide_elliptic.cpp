@@ -2,14 +2,6 @@
 #define GUIDE_ELLIPTIC_CPP
 
 #include <math.h>
-//#define isnan(x) ((x) != (x))
-
-// extern "C" {
-// #include "init.h"
-// #include "softabort.h"
-// #include "general.h"
-// }
-
 
 #define thetaCNi 0.099138
 
@@ -497,20 +489,23 @@ int ProcessNeutron(Neutron* n)
 	// Here something went wrong, first reflection takes place in the horizontal plane,
 	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
-	  
+
+#ifdef TESTANDDEBUG	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  if (distTempX1 > 0) {
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
-	    // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	    // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
-	    // ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
-	    // double x = n->Position[0];
-	    // double slope = 0;
-	    // if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
-	    // 	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	    fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
+	    	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
+	     fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
+	     	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
+	     ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
+	     double x = n->Position[0];
+	     double slope = 0;
+	     if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
+	     fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
+	    	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
 	  }
+#endif
+
 	  badNeutrons++;
 	  return 0;
 

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
          sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
                                 "horizontal divergence", "vertical divergence", "radial divergence"};
 
-  char  weightTag[2][7] = {"", "weight"};
+  // char  weightTag[2][7] = {"", "weight"};
   short  registered=0;         // criterion: trajectory is within limits set
   long   iBin,                 // bin number
       i,                    // index of trajectories
