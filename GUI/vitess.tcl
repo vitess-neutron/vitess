@@ -1906,7 +1906,7 @@ gSet pol_mirrorESET {
   {pm_dx float 60 {"length [cm]" "length of the polarising mirror (along beam axis)" "" L} gt0 "" 1}
   {pm_dy float 10 {"width or\nheight [cm]" "width or height of the polarising mirror" "" W} gt0 "" 1}
   {"Mirror position and orientation" header}
-  {pm_ori radio horizontal {"rotated about" "choose between horizontal - rotation about y-axis - and vertical orientation - rotation about z-axis - of the mirror" "" O}
+  {pm_ori radio y-axis {"rotated about" "choose between horizontal - rotation about y-axis - and vertical orientation - rotation about z-axis - of the mirror" "" O}
     {y-axis z-axis} {0 1}}
   {pm_x float 100 {"position\nX [cm]" "x center position of the polarizing mirror" "" X}}
   {pm_y float 0   {"position\nY [cm]" "y center position of the polarizing mirror" "" Y}}
