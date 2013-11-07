@@ -18,13 +18,17 @@ filename, the generated reflectivity file will be written to the parameter direc
 <h3>Quadratic Swiss Neutronics description </h3>
 If this option is chosen, the only additional input parameter necessary is the m-value of
 the supermirror coating. The reflectivity is the calculated as
-<p><img src="ReflectivityFormula_quadrSN.png" height="50" width="470"></p>
-where R<sub>0</sub>=0.99 and W, a, b and m<sub>2</sub> are linear functions of
-m: <br>
-W = -0.0002*m + 0.0022 <br>
-a =  0.1204*m + 5.0944   <b>if</b> m>3, else a=m <br>
-b = -7.6251*m + 68.1137  <b>if</b> m>3, else b=0 <br>
-m<sub>2</sub> =  0.9853*m + 0.1978<br>
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
+  (1 - a(Q - Q<sub>c</sub>) + b(Q - Q<sub>c</sub>)<sup>2</sup>)
+</p>
+where R<sub>0</sub>=0.99 and W, a, b and m<sub>2</sub> are linear functions of m: <br>
+<pre>
+W  = -0.0002*m +  0.0022 
+a  =  0.1204*m +  5.0944  <b>if</b> m>3, else a=m 
+b  = -7.6251*m + 68.1137  <b>if</b> m>3, else b=0 
+m<sub>2</sub> =  0.9853*m +  0.1978
+</pre>
 The parameters used here are the results of fits to experimental data
 (H. Jacobsen). The reflectivity curve gained for m=4 is shown by the black line in figure 1.
 
@@ -35,7 +39,10 @@ to be given in addition to the filename. <br>
 For W=0 the reflectivity curve consists of linear functions and a sharp cut-off
 at Q = m Q<sub>c,Ni</sub>. The red line in figure 1 shows an example for m=4. <br>
 For W > 0 and Q > Q<sub>c</sub>, the reflectivity R is calculated as
-<p><img src="ReflectivityFormula_linear.png" height="50" width="380"></p>
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
+  (1 - a(Q - Q<sub>c</sub>))
+</p>
 using 
 <br>
 <br>
@@ -67,13 +74,13 @@ An example for m=4 and W=0.003 is shown by the green line in figure 1.
  </tr>
   <tr>
  <td>Q<sub>c</sub><br>[Ang<sup>-1</sup>]</td>  <td>crit. momentum transfer</td> 
-  <td>0.02174 </td>
+  <td>0.0217 </td>
  </tr>
   <tr>
- <td>R<sub>m</sub></td>  <td>reflectivity for Q = m Q<sub>c</sub>(Ni)</td>  <td>0.6 .... 0.92</td>
+ <td>R<sub>m</sub></td>  <td>reflectivity for Q = m Q<sub>c</sub>(Ni) for a sharp cut-off (W=0)</td>  <td>0.6 .... 0.95</td>
  </tr>
   <tr>
- <td>W<br>[Ang<sup>-1</sup>]</td>  <td>width of the cut-off tange<br>W=0 causes a sharp cut-off</td>  
+ <td>W<br>[Ang<sup>-1</sup>]</td>  <td>width of the cut-off range<br>W=0 causes a sharp cut-off</td>  
  <td>0 ... 0.004</td>
  </tr>
   <tr>

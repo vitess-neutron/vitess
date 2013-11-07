@@ -51,9 +51,6 @@ typedef struct
 }
 Source;
 
-
-
-
 typedef struct {
   double dModTemp;
   short  nBackground;
@@ -85,6 +82,35 @@ typedef struct {
 Moderator;
 
 typedef struct
+{
+	double dF001;
+	double dF002;
+	double dF003;
+	double dTemp;
+  double alpha_SD;
+  double kappa_SD;
+  double alpha_L;
+  double lambda_L;
+  double alpha_1;
+  double alpha_2;
+}
+ModInfo;
+
+typedef struct 
+{
+  double I_SD;
+  double alpha_SD;
+  double lambda_SD;
+  double alpha_L;
+  double lambda_L;
+  double I1;
+  double alpha_1;
+  double I2;
+  double alpha_2;
+}
+EssModChar;
+
+typedef struct
 {	double dLambdaMin;
 	double dLambdaMax;
 	double dMaxDivY;
@@ -111,18 +137,19 @@ FctTable;
 /***********************************************/
 
 long   IndLT        (const long i, const long j);
-double TotalFU      (const double dTemp,   const short  eSource,  const short  eModType,
+double TotalFU      (const double Temp,    const short  eSource,  const short  eModType,
 					 const double dPower,  const double dPeriod,  const double dPulseLen);
-double EssModFU     (const double dLambda, const double dTime,    const double dLength);
+double EssModFU     (const double Lambda,  const double dTime,    const double dLength);
 
-double Maxwellian   (const double dLambda, const double dModTemp);
-double LeakageFct   (const double dLambda);
-double NotMaxwell   (const double dLambda, const double dParam);
+double Maxwellian   (const double Lambda,  const double dModTemp);
+double LeakageFct   (const double Lambda,  const ModInfo* pInfo);
+double NotMaxwell   (const double Lambda,  const double alpha,   const double kappa);
+short  GetEssModDat (ModInfo*     ModInfo, const double ModTemp, const double ModHeight, const short iVsn);
+
 double UserLambdaDis(const double dLambda, const double dModTemp);
-
 double UserLmbdTimeDis(const double dLambda, const double dTime);
-
 double UserTimeDis  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
+
 double PulseShapeP  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
 double PulseIntEss  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
 double PulseShape   (const double dTime, const double dTauDecay, const double dTauRatio);

@@ -41,6 +41,7 @@
 /* 1.19  Mar  2013  K. Lieutenant  correction ISIS source brlliance                          */
 /* 1.20  May  2013  K. Lieutenant  data base versions for moderator characteristics          */
 /* 1.21  Sep  2013  K. Lieutenant  time focusing                                             */
+/* 1.22  Nov  2013  K. Lieutenant  pancake moderator                                         */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -162,7 +163,7 @@ int main(int argc, char *argv[])
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.21");
+   print_module_name("Source and Window 1.22");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -408,10 +409,13 @@ int main(int argc, char *argv[])
    /* Propagation, Polarisation */
    fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
                        "  in a distance of           : %7.3f m\n"
-                       "  with a declination of      : %7.3f°\n"
-                       "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
-                       (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
-                       WindowWidth, WindowHeight, WindowDist/100., Declination, PolDegree, PolVecX, PolVecY, PolVecZ);
+                       "  with a declination of      : %7.3f°\n",
+                        (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
+                       WindowWidth, WindowHeight, WindowDist/100., Declination);
+   if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
+    fprintf(LogFilePtr, "  time window                : %7.3f - %7.3 ms\n", TofMinWnd, TofMaxWnd);
+   fprintf(LogFilePtr, "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
+                      PolDegree, PolVecX, PolVecY, PolVecZ);
    if (pTraceFileName!=NULL)
       fprintf(LogFilePtr, "trace file used              : %s\n", pTraceFileName);
 
