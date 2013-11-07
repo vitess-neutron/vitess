@@ -649,8 +649,8 @@ set detectorESET {
     {array select array {"array (first or intermediated part)" "Select if detector is first or intermediate part of detector array. Do not select for single detector." "" B} {{"" 0}}}
     {}
     {geom radio flat {geometry
-        "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
-        {flat cylindrical} {2 1}}
+	"The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
+	{flat cylindrical} {2 1}}
     {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
@@ -2317,7 +2317,7 @@ set dA {
 
 set nA {
   {number_bins int 100 {"number\nof bins" "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
-  {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -10 32768}
+  {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 set nnA {
   {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {no yes} {0 1}}
@@ -2575,8 +2575,7 @@ set ra {
   {refile parbrowsefile "" {"reference file" "" "" S}}
   {ffile parbrowsefile "" {"flux file" "" "" F}}
   {}
-  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
-  {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
+  {kind radio lambda {"variable\nparameter" "the brilliance is monitored as a function of this parameter\nthe given range is divided into the given number of bins" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
   {}
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
   {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
@@ -3522,7 +3521,7 @@ set eval_elastESET {
   {}
   {tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
-  {tofcor radio no {
+  {tofcor radio yes {
     "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no yes} {0 1}}
   {}
   {fpath float "" {
@@ -3576,7 +3575,7 @@ set eval_elast2ESET {
   {sfile mon2editablefile elast2.eva {
     "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
   {nbins int 100 {
-    "number\nof bins in X" "number of bins determines the segmentation of the scatt. angle interval and therewith the number of values written to the spectra file" "" n} 1 10000}
+    "number\nof bins in X" "number of bins determines the segmentation of the scatt. angle interval and therewith the number of values written to the spectra file" "" n} 1}
   {minaX float 0 {
     "minimum X\n[deg]" "lower bound of the evaluation interval" "" x} 1}
   {maxaX float 0 {
@@ -3585,7 +3584,7 @@ set eval_elast2ESET {
     "increase to\n next bin X[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {}
   {mbins int 100 {
-    "number\nof bins in Y" "number of bins determines the segmentation of the wavelength/TOF interval and therewith the number of values written to the spectra file" "" m} 1 10000}
+    "number\nof bins in Y" "number of bins determines the segmentation of the wavelength/TOF interval and therewith the number of values written to the spectra file" "" m} 1}
   {minaY float 0 {
     "minimum Y\n[A, ms]" "lower bound of the evaluation interval" "" y} 1}
   {maxaY float 0 {
@@ -3602,8 +3601,8 @@ set eval_elast2ESET {
   {}
   {tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
-  {tofcorr radio no {
-    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
+  {tofcorr radio yes {
+    "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
@@ -3677,9 +3676,13 @@ set eval_sansESET {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
   {sn_tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {sn_tcor radio yes {
+    "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {sn_fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {sdpath float "" {
+    "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {sn_toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
   {sn_refwave float "" {
@@ -3723,15 +3726,15 @@ proc eval_sansCheckErr {{app _}} {
 set eval_inelastESET {
   {tofile moneditablefile tofsp.eva {"TOF\nspectrum file" "Filename for the TOF spectrum datafile." "" E}}
   {efile moneditablefile energysp.eva {"energy\nspectrum file" "Filename for the energy spectrum datafile." "" G}}
-  {diroinv radio "direct geometry" {
-    geometry "Choose geometry type of TOF instrument." "" A}
-    {"direct geometry" "inverted geometry"} {0 1}}
+  {diroinv radio "direct geometry" {geometry "Choose geometry type of TOF instrument." "" A} {"direct geometry" "inverted geometry"} {0 1}}
+  {tof_cor radio yes {"correct tof\nto distance" "direct geometry only: correct TOF for real flight path length from sample to detector" "" t}  {no yes} {0 1}}
   {}
   {pfpath float 10  {"primary\nflight path [cm]"   "Distance from the moderator to sample and from sample to detector." "" a} gt0 "" 1}
   {sfpath float 2   {"secondary\nflight path [cm]" "Distance from the moderator to sample and from sample to detector." "" b} gt0 "" 1}
   {rwlen float 6.27 {"reference\nwavelength [A]" "Initial or final wavelength of the neutrons which is known from the experimental setup." "" c} gt0 "" 1}
-  {toff float 0   {"time\noffset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
-  {nbins int 100  {"number\nof bins" "The number of time and energy channels to be considered.\nOnly 1 range needs to be given, the other range is calculated." "" C} ge1 "" 1}
+  {toff float 0     {"time\noffset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
+  {nbins int 100    {"number\nof bins" "The number of time and energy channels to be considered.\nOnly 1 range needs to be given, the other range is calculated." "" C} ge1 "" 1}
+  {eval_col int -1  {"color" "color necessary for the trajectory to be evaluated\ncolor -1 means: all trajectories are evaluated" "" f} -1 32768}
   {}
   {mine float -2  {"min. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" m} }
   {maxe float  2  {"max. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" M} }
@@ -3740,10 +3743,8 @@ set eval_inelastESET {
   {maxt float  60 {"maximal\ntime [ms]" "The TOF range (reduced by the time offset) in which the user is interested to bin intensities." "" g} }
   {grtbin float 0 {"gradient\nof timebins" "Derivative s of the time channel width in function of TOF (as described in the help manual, sec. 4)." "" h} gt-0.1 lt0.1}
   {}
-  {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j} 1}
-  {angran float 180 {"angle\nrange [deg]" "(see angle description)" "" k} gt0 "" 1}
-  {temp float 300   {"temperature [K]" "Temperature according to the temperature of the sample (only used for the case 'divide by Bose factor')." "" i} gt0}
-  {divbos radio no {"divide by\nBose Factor?" "Choose whether the energy spectrum shall be normalised or not by the Bose Factor." "" D} {yes no} {1 0}}
+  {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j}}
+  {angran float 180 {"angle\nrange [deg]" "(see angle description)" "" k} gt0}
 }
 
 proc eval_inelastCheckErr {{app _}} {

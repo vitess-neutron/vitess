@@ -140,15 +140,31 @@ The module <b>monitor2D</b> allows to plot arbitrary combinations of following p
 
 <h2>VITESS Module Mon_brilliance</h2>
 <p>
+For continuous sources the brilliance calculated is always a time averaged brilliance. 
+Therefore, time interval and frequency have to be left blank. 
+If the time averaged brilliance shall be calculated for pulsed sources, they have to be left blank as well.
+Otherwise, the brilliance is calculated as the brilliance in the given time range and needs to be normalized by the frequency. 
+<br/>
+Depending on the existence of a reference file, the monitor file contains either the brilliance [n/(cm<sup>2</sup> s sterad &Aring]
+or the brilliance transfer, i.e. the fraction of the brilliance that is transferred from source (or another reference point)
+to the position of the actual brilliance monitor. To get correct result, the brilliance monitors should be identical.
+<br/>
+Average and peak brilliance - the maximal value found in the brilliance monitor file and the average value, i.e. the sum divided by the number
+of bins - are written to the log file.
+<p>
  <b>monitor file</b><br/>
    Name of the file containing the brilliance or the brilliance transfer (see below) as a function of the variable parameter <br/>
  <br/>
  <b>reference file</b><br/>
    Name of the file containing the brilliance relative to which the brilliance transfer is calculated. 
-   'Monitor file name' contains the brilliance transfer in this case. <br/>
+   'Monitor file' contains the brilliance transfer in this case. <br/>
  <br/>
  <b>flux file</b><br/>
- Name of the file containing the average and peak brilliance found (as a funtion of the variable parameter) <br/>
+If a file name is given here, one line is written or added to this file, which contains the following numbers:
+mean wavelength (=center of the wavelength range), mean y-position and z-position, mean horizontal, vertical and radial divergence
+and average and peak brilliance (see above).
+This can be used calculate the brilliance as a function of a second parameter in running a series of simulation.
+ <br/>
  <br/>
  <b>number of bins</b> <br/>
    the interval to be considered (e.g. the wavelength range) will be partitioned into number of bins segments of equal size.<br/>
@@ -158,16 +174,12 @@ The module <b>monitor2D</b> allows to plot arbitrary combinations of following p
    if colour is -1, the intensity of all trajectories is displayed <br/>
    if colour is greater or equal 0 only the trajectories of that colour are considered <br/>
  <br/>
- <b>kind</b> <br/>
-   kind defines the variable parameter <br/>
- <br/>
- <b>exclusive</b><br/>
-   if activated, only those neutrons which have been monitored successfully are transferred to the subsequent module
-   (i.e. all properties are within the given ranges) <br/>
+ <b>variable parameter</b> <br/>
+   the brilliance is monitored as a function of this parameter <br/>
  <br/>
  <b>ranges (min_lambda, max_lambda, .... up bound radial div)</b> <br/>
    neutrons are only monitored if their properties are within all given ranges <br/>
-   the parameter defined by '<i>kind</i>' is divided in '<i>number of bins</i> channels <br/>
+   the parameter defined by '<i>var. parameter</i>' is divided in '<i>number of bins</i> channels <br/>
  <br/>
  <b>frequency</b> <br/>
    source frequency in case of a pulsed source (necessary to calculate from time averaged to actual brilliance <br/>

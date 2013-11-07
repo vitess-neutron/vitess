@@ -8,6 +8,7 @@
 /* 1.2  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                           */
 /* 1.3  Nov 2005  K. Lieutenant  transformation scattering angles -> direction removed                  */
 /* 1.4  Aug 2012  K. Lieutenant  calculation of energy transfer and restriction of ang. range corrected */
+/* 1.5  Oct 2013  K. Lieutenant  Bose and transform. factor removed, color and ToF correction included  */
 /********************************************************************************************************/
 
 #include <stdio.h>
@@ -24,20 +25,37 @@
 #define	STRING_BUFFER 50
 #define	BINS_BUFFER 5000
 
-FILE		*FilePtrTOF, *FilePtrEnergy ;
-char		*FileNameTOF, *FileNameEnergy, Option[STRING_BUFFER] ;
-long		GeomOption, NumOut, BoseF,  i, k , nperbint[BINS_BUFFER], nperbine[BINS_BUFFER], NoBins ;
-double		IntegralIntensity, PrimaryFlightPath, SecondaryFlightPath, ReferenceWavelength, 
-            MinTOF=-1.0, MaxTOF=-1.0,    // minimal and maximal time of flight to be monitored
-            MinE=-1.0,  MaxE=-1.0,       // minimal and maximal energy transfer to be monitored
-            TimeOffset, SlopeBins, Temperature, Angle, AngleRange ;
-double      t[BINS_BUFFER], e[BINS_BUFFER], prob_t[BINS_BUFFER], prob_e[BINS_BUFFER]; 
-double		alpha, beta, E, energy, velocity, TOF, TOF_total_e ;
+// global variables
+FILE		*FilePtrTOF=NULL,  *FilePtrEnergy=NULL;
+char		*FileNameTOF=NULL, *FileNameEnergy=NULL;
+short    eGeomOption,      // geometry option:   0: direct geometry   1: indirect geometry
+         bTofCorr= 1,      // criterion: correction to true flight path length from sample to detector:  0: no   1: yes
+         bBoseF  = 0,      // criterion: divide by Bose factor   
+         iColor=ANY_COLOR; // neutron 'color' to evaluate  -1: all neutrons
+long     NoBins,           // number of bins in TOF and energy spectrum
+         i, k , nperbint[BINS_BUFFER], nperbine[BINS_BUFFER];
 
-double		TransformFactor(double E);
-double		BoseFactor(double T, double w);
-void		OwnInit(int argc, char *argv[]) ;
-void		OwnCleanup() ;
+double   PrimaryFlightPath, SecondaryFlightPath, 
+         LambdaRef,                   // reference wavelength 
+         EnergyRef, VelocityRef,      // and corresponding energy and velocity
+         TofRef,                      // TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
+         DelE,                        // energy gain (DelE > 0) or loss
+         MinTOF=-1.0, MaxTOF=-1.0,    // minimal and maximal time of flight to be monitored
+         MinE  = 0.0, MaxE  = 0.0,    // minimal and maximal energy transfer to be monitored
+         TimeOffset,                  // average time of neutrons at start
+         SlopeBins, 
+         Temperature,                 // temperature for Bose factor
+         Angle=0.0, AngleRange=180.0; // horizontal angular range that is processed
+double   t[BINS_BUFFER], e[BINS_BUFFER], 
+         prob_t[BINS_BUFFER], prob_e[BINS_BUFFER]; 
+double   alpha, beta;
+
+
+// prototypes
+double TransformFactor(double DelE);
+double BoseFactor(double T, double w);
+void   OwnInit(int argc, char *argv[]) ;
+void   OwnCleanup() ;
 
 /* FINISH HEADER STORY */
 
@@ -45,11 +63,15 @@ void		OwnCleanup() ;
 
 int main(int argc, char **argv)
 {
-  double Time;       // TOF - TOF offset
+  double PathToDetection,   // real pathlength fro sample to detector for individual trajectory
+         TofToDet,          // TOF til detector - TOF offset
+         rotz, roty,        // hor. and vertical Euler angles to describe flight direction    [rad]
+         TotIntTof=0.0,     // total intensity within TOF and E binning resp.
+         TotIntE=0.0;
 
   /* Initialize the program according to the parameters given  */
   Init   (argc, argv, VT_EVAL_INELAST);
-  print_module_name("eval_inelast 1.4") ;
+  print_module_name("eval_inelast 1.5") ;
   OwnInit(argc, argv);
 
   /* calculates TOF channel boundaries and init p_TOF*/
@@ -73,67 +95,72 @@ int main(int argc, char **argv)
   while((ReadNeutrons())!= 0)
   {
     CHECK;
-    for(i=0;i<NumNeutGot ;i++)
-
-	{
+    for(i=0; i < NumNeutGot; i++)
+    {
       CHECK;
-	/* select angle and angle range */
+	
+      // check color and flight direction
+      if (iColor != ANY_COLOR  &&  iColor != InputNeutrons[i].Color) goto no_match;
 
-	  {
-        double rotz, roty;
+      CartesianToEulerZY(InputNeutrons[i].Vector, &roty, &rotz);
+      if (rotz < (Angle - AngleRange) || rotz > (Angle + AngleRange) ) goto no_match;
 
-        CartesianToEulerZY(InputNeutrons[i].Vector, &roty, &rotz);
+      /* determine estimated TOF from source to detector */
+      TofToDet = InputNeutrons[i].Time - TimeOffset;
 
-        if( (rotz < Angle - AngleRange) || (rotz > Angle + AngleRange)	) goto getlost ;
+      /* energy transfer corresponding to total flight time to detector */
+      if (eGeomOption == 0) 
+      { 
+        if (bTofCorr)       // Flight distance correction
+          PathToDetection = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        else
+          PathToDetection = SecondaryFlightPath;
+        DelE = 0.001*ENERGY_FROM_V(PathToDetection / (TofToDet - TofRef)) - EnergyRef;          // direct geometry
       }
-
-
-      /* shift pulse */
-      Time = InputNeutrons[i].Time - TimeOffset ;
-
-      /* energy transfer corresponding to total flight time */
-      if (GeomOption == 0) E = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (Time - TOF)) - energy;
-      if (GeomOption == 1) E = energy - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (Time - TOF)) ;
-
+      else if (eGeomOption == 1) 
+      { DelE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (TofToDet - TofRef));
+      }
+      else
+      { Error ("Wrong geometry option");
+      }
 
       /* binning process  */
       for(k=0; k<NoBins; k++)
       {
-        if( (Time > t[k]) && (Time <= t[k+1]) )
-        { prob_t[k] += InputNeutrons[i].Probability ; 
-          nperbint[k] += 1 ;}
-
-        if( (E > e[k]) && (E <= e[k+1]) )
-        { prob_e[k] += InputNeutrons[i].Probability * TransformFactor(E) / BoseFactor(Temperature, E) ; 
-          nperbine[k] += 1 ;}
+        if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
+        { prob_t[k] += InputNeutrons[i].Probability; 
+          TotIntTof += InputNeutrons[i].Probability; 
+          nperbint[k] += 1 ;
+        }
+        if( (DelE > e[k]) && (DelE <= e[k+1]) )
+        { prob_e[k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
+          TotIntE   += InputNeutrons[i].Probability; 
+          nperbine[k] += 1 ;
+        }
       }
 
-      IntegralIntensity += InputNeutrons[i].Probability ;
-
-      NumOut++ ;
+      /* continues here if neutron is not considered */
+	   no_match: ;
 
       /* writes output binary file */
       WriteNeutron(&(InputNeutrons[i]));
 
-      /* here continues if neutron gets lost */
-	  getlost: ;
-
-    }
-
+    } // end loop over trajectories
   }
 
+  // write files
   for(k=0;k<NoBins;k++)
   {
     if (nperbint[k]==0) nperbint[k]=1; if(nperbine[k]==0) nperbine[k]=1; 
 		
-    if (FilePtrTOF != NULL) fprintf(FilePtrTOF, "%lf   %le   %le\n", (t[k]+t[k+1])/2.0, prob_t[k], prob_t[k]/sqrt((double)nperbint[k])) ;
-
-    if (FilePtrEnergy != NULL) fprintf(FilePtrEnergy, "%lf   %le   %le\n", (e[k]+e[k+1])/2.0, prob_e[k], prob_e[k]/sqrt((double)nperbine[k])) ;
+    if (FilePtrTOF    != NULL) fprintf(FilePtrTOF,    "%lf   %le   %le   %9ld\n", (t[k]+t[k+1])/2.0, prob_t[k], prob_t[k]/sqrt((double)nperbint[k]), nperbint[k]) ;
+    if (FilePtrEnergy != NULL) fprintf(FilePtrEnergy, "%lf   %le   %le   %9ld\n", (e[k]+e[k+1])/2.0, prob_e[k], prob_e[k]/sqrt((double)nperbine[k]), nperbine[k]) ;
   }
 
-  /* Do the general cleanup */
+  fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTof, TotIntE);
 
-my_exit:
+  /* Do the general cleanup */
+ my_exit:
 	
   OwnCleanup();
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -145,11 +172,10 @@ my_exit:
 
 /* Transform factor */
 
-double TransformFactor(double E)
+double TransformFactor(double DelE)
 {
-	if(GeomOption == 0) return SecondaryFlightPath * sqrt(energy) / sq(energy - E) ;
-
-	if(GeomOption == 1) return PrimaryFlightPath / sqrt(energy) / (energy + E) ;
+	if(eGeomOption == 0) return SecondaryFlightPath * sqrt(EnergyRef) / sq(EnergyRef + DelE) ;
+	if(eGeomOption == 1) return PrimaryFlightPath   / sqrt(EnergyRef) / (EnergyRef - DelE) ;
 
 	else return 0 ;
 }
@@ -177,7 +203,7 @@ double betha;
 
 void OwnInit(int argc, char *argv[])
 {
-	/*    INPUT  */
+  double TOF_total_e=0.0;   // total TOF without energy transfer
 
 	while(argc>1)
 	{
@@ -185,15 +211,20 @@ void OwnInit(int argc, char *argv[])
 		{
 
 			case 'A':
-			sscanf(&argv[1][2], "%ld", &GeomOption) ;
+			sscanf(&argv[1][2], "%ld", &eGeomOption) ;
+			break;
+			case 't':
+			sscanf(&argv[1][2], "%ld", &bTofCorr) ;
+			break;
+			case 'D':
+			sscanf(&argv[1][2], "%ld", &bBoseF) ;
 			break;
 
 			case 'C':
 			sscanf(&argv[1][2], "%ld", &NoBins) ;
 			break;
-
-			case 'D':
-			sscanf(&argv[1][2], "%ld", &BoseF) ;
+			case 'f':
+			sscanf(&argv[1][2], "%ld", &iColor) ;
 			break;
 
 			case 'E':
@@ -217,13 +248,12 @@ void OwnInit(int argc, char *argv[])
 			case 'a':
 			sscanf(&argv[1][2], "%lf", &PrimaryFlightPath) ;
 			break;
-
 			case 'b':
 			sscanf(&argv[1][2], "%lf", &SecondaryFlightPath) ;
 			break;
 
 			case 'c':
-			sscanf(&argv[1][2], "%lf", &ReferenceWavelength) ;
+			sscanf(&argv[1][2], "%lf", &LambdaRef) ;
 			break;
 
 			case 'd':
@@ -260,131 +290,124 @@ void OwnInit(int argc, char *argv[])
 			sscanf(&argv[1][2], "%lf", &AngleRange) ;
 			break;
 
-
 		}
 		argc--;
 		argv++;
 	}
 
 
-	/* check */
+  /* check */
 
-	if((GeomOption != 0) &&	(GeomOption != 1))
-	{
-		fprintf(LogFilePtr,"ERROR: wrong geometry option!\n\n") ;
-		exit(0) ;
-	}
+  if((eGeomOption != 0) &&	(eGeomOption != 1))
+  {
+    fprintf(LogFilePtr,"ERROR: wrong geometry option!\n\n") ;
+    exit(0) ;
+  }
 
-	if((BoseF != 0) &&	(BoseF != 1))
-	{
-		fprintf(LogFilePtr,"ERROR: wrong option for Bose-factor!\n\n") ;
-		exit(0) ;
-	}
+  if((bBoseF != 0) &&	(bBoseF != 1))
+  {
+	  fprintf(LogFilePtr,"ERROR: wrong option for Bose-factor!\n\n") ;
+	  exit(0) ;
+  }
 
-	if(MinTOF > MaxTOF && MinE > MaxE)
-	{
-		fprintf(LogFilePtr,"ERROR: minimal time/energy must be < maximal time/energy !\n\n") ;
-		exit(0) ;
-	}
+  if(MinTOF > MaxTOF && MinE > MaxE)
+  {
+	  fprintf(LogFilePtr,"ERROR: minimal time/energy must be < maximal time/energy !\n\n") ;
+	  exit(0) ;
+  }
 
-    /* computes global reference values */
-	if (ReferenceWavelength > 0.0 && PrimaryFlightPath > 0.0 && SecondaryFlightPath > 0.0)
+  /* computes global reference values */
+  if (LambdaRef > 0.0 && PrimaryFlightPath > 0.0 && SecondaryFlightPath > 0.0)
+  { 
+    EnergyRef   = 0.001*ENERGY_FROM_LAMBDA(LambdaRef) ;
+    VelocityRef = V_FROM_LAMBDA(LambdaRef) ;
+    TOF_total_e = (PrimaryFlightPath + SecondaryFlightPath) / VelocityRef ;
+
+    if(eGeomOption == 0)   // direct geometry
+      TofRef = PrimaryFlightPath / VelocityRef ;
+    else                  // indirect geometry
+      TofRef = SecondaryFlightPath / VelocityRef ;
+  }
+  else
+  { Error("Reference wavelength or flight path missing");
+  }
+
+  if (MinTOF >= 0.0 && MaxTOF >=0.0)  // TOF range given,
+  { 
+    if(MinE == 0.0 || MaxE == 0.0)    // but not energy range
     { 
-      energy      = 0.001*ENERGY_FROM_LAMBDA(ReferenceWavelength) ;
-      velocity    = V_FROM_LAMBDA(ReferenceWavelength) ;
-      TOF_total_e = (PrimaryFlightPath + SecondaryFlightPath) / velocity ;
-
-      if(GeomOption == 0)   // direct geometry
-      { TOF = PrimaryFlightPath / velocity ;
-	  }
+      if(eGeomOption == 0)  // direct geometry
+      {
+        MinE = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (MaxTOF - TofRef)) - EnergyRef;
+        MaxE = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (MinTOF - TofRef)) - EnergyRef ;
+      }
       else                  // indirect geometry
-      { TOF = SecondaryFlightPath / velocity ;
-	  }
-	}
-	else
-    { Error("Reference wavelength or flight path missing");
-	}
+      {
+        MinE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (MinTOF - TofRef)) ;
+        MaxE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (MaxTOF - TofRef)) ;
+      }
+    }
+  }
+  else if(MinE != 0.0 && MaxE != 0.0)    // energy range given
+  {
+    if (MinTOF == -1.0 || MaxE == -1.0)  // but not TOF range
+    { 
+      if(eGeomOption == 0)  // direct geometry
+      {
+        MinTOF = TofRef + SecondaryFlightPath / V_FROM_ENERGY(1000*(EnergyRef + MaxE));
+        MaxTOF = TofRef + SecondaryFlightPath / V_FROM_ENERGY(1000*(Max(0.1,EnergyRef + MinE)));
+      }
+      else                 // indirect geometry
+      {
+        MinTOF = PrimaryFlightPath / V_FROM_ENERGY(1000*(EnergyRef - MinE)) + TofRef;
+        MaxTOF = PrimaryFlightPath / V_FROM_ENERGY(1000*(EnergyRef - MaxE)) + TofRef;
+      }
+    }
+  }
+  else                     // no range given
+  {
+    Error("TOF or energy range has to be given");
+  }
 
-    if (MinTOF >= 0.0 && MaxTOF >=0.0)    // TOF range given,
-	{ 
-      // MinTOF -= TimeOffset ; 	
-	  // MaxTOF -= TimeOffset ;
-
-	  if(MinE == -1.0 || MaxE == -1.0)    // but not energy range
-      { 
-        if(GeomOption == 0)  // direct geometry
-        {
-          MinE = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (MaxTOF - TOF)) - energy;
-          MaxE = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (MinTOF - TOF)) - energy ;
-        }
-        else                // indirect geometry
-        {
-          MinE = energy - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (MinTOF - TOF)) ;
-          MaxE = energy - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (MaxTOF - TOF)) ;
-        }
-	  }
-	}
-	else if(MinE != -1.0 && MaxE != -1.0)   // energy range given
-	{
-	  if(MinTOF == -1.0 || MaxE == -1.0)    // but not TOF range
-      { 
-        if(GeomOption == 0)  // direct geometry
-        {
-		  MinTOF = TOF + SecondaryFlightPath / V_FROM_ENERGY(1000*(energy + MaxE));
-		  MaxTOF = TOF + SecondaryFlightPath / V_FROM_ENERGY(1000*(energy + MinE));
-        }
-        else                 // indirect geometry
-        {
-		  MinTOF = PrimaryFlightPath / V_FROM_ENERGY(1000*(energy - MinE)) + TOF;
-		  MaxTOF = PrimaryFlightPath / V_FROM_ENERGY(1000*(energy - MaxE)) + TOF;
-        }
-	  }
-	}
-	else                                    // no range given
-	{
-      Error("TOF or energy range has to be given");
-	}
+  if(fabs(SlopeBins) > 0.01)
+  {
+    fprintf(LogFilePtr,"ERROR: please set |SlopeBins| < 0.01!\n\n") ;
+    exit(0) ;
+  }
 
 
-	if(fabs(SlopeBins) > 0.01)
-	{
-		fprintf(LogFilePtr,"ERROR: please set |SlopeBins| < 0.01!\n\n") ;
-		exit(0) ;
-	}
+  /* options */
+  if (eGeomOption == 0) fprintf(LogFilePtr,"\noption 'direct geometry'\n") ;
+  if (eGeomOption == 1) fprintf(LogFilePtr,"\noption 'inverted geometry'\n") ;
 
+  if(FilePtrTOF    != NULL) fprintf(LogFilePtr," TOF spectrum file   : '%s'\n", FileNameTOF) ;
+  if(FilePtrEnergy != NULL) fprintf(LogFilePtr," energy spectrum file: '%s'\n", FileNameEnergy) ;
 
-	/* options */
-	if(FilePtrTOF    != NULL) fprintf(LogFilePtr,"	TOF spectrum file: '%s'", FileNameTOF) ;
-	if(FilePtrEnergy != NULL) fprintf(LogFilePtr,"\n	energy spectrum file: '%s'", FileNameEnergy) ;
+  fprintf(LogFilePtr, " number of bins       : %4ld      \n", NoBins);
+  fprintf(LogFilePtr, " primary flight path  : %9.4f m  \n secondary flight path: %9.4f m \n",           PrimaryFlightPath/100.0, SecondaryFlightPath/100.0);
+  fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset, MinTOF, MaxTOF);
+  fprintf(LogFilePtr, " gradient of timebins : %9.4f    \n angular range        : %9.4f +/-%9.4f deg\n", SlopeBins, Angle, AngleRange);
 
-	fprintf(LogFilePtr,"\n	number of bins		=  %ld\n	primary flight path		=  %9.4f\n	secondary flight path	=  %9.4f\n	reference wavelength	=  %9.4f\n	time offset		=  %9.4f\n	minimal time		=  %9.4f\n	maximal time		=  %9.4f\n	gradient of timebins	=  %9.4f\n	temperature		=  %9.4f\n	angle			=  %9.4f\n	angle range		=  %9.4f",
-		NoBins, PrimaryFlightPath, SecondaryFlightPath, ReferenceWavelength, TimeOffset, MinTOF, MaxTOF, SlopeBins, Temperature, Angle, AngleRange) ;
+  if(Temperature == 0.) bBoseF = 0 ;
+  if(bBoseF == 0) Temperature = 0. ;
+  // if(bBoseF == 0) 	fprintf(LogFilePtr,"\nnot divided by Bose-factor") ;
+  // if(bBoseF == 1) 	fprintf(LogFilePtr,"\ndivided by Bose-factor") ;
 
-	if(GeomOption == 0) 	fprintf(LogFilePtr,"\noption 'direct geometry'") ;
-	if(GeomOption == 1) 	fprintf(LogFilePtr,"\noption 'inverted geometry'") ;
+  /* calculates alpha, beta coeff. for TOF boundary calculation */
+  alpha = 1 / (1 - SlopeBins) ;
+  beta = 0. ;
 
-	if(Temperature == 0.) BoseF = 0 ;
+  for(k=0;k<NoBins;k++) beta += pow(alpha, k) ;
+  beta = (MaxTOF - pow(alpha, NoBins) * MinTOF) / beta ;
 
-	if(BoseF == 0) Temperature = 0. ;
-	if(BoseF == 0) 	fprintf(LogFilePtr,"\nnot divided by Bose-factor") ;
-	if(BoseF == 1) 	fprintf(LogFilePtr,"\ndivided by Bose-factor") ;
+  fprintf(LogFilePtr,	"computed reference values:\n");
+  fprintf(LogFilePtr, " reference energy     : %9.4f meV\n velocity             : %9.4f cm/ms\n", EnergyRef, VelocityRef);
+	fprintf(LogFilePtr,	" effective TOF range  : %9.4f  - %9.4f ms\n"                             , MinTOF, MaxTOF);
+	fprintf(LogFilePtr,	" TOF_total_elast      : %9.4f ms \n TOF_fixed_energy_side: %9.4f ms\n"   , TOF_total_e, TofRef);
+  fprintf(LogFilePtr, " energy transfer      : %9.4f  - %9.4f meV\n"                            , MinE,   MaxE) ;
 
-
-	/* calculates alpha, beta coeff. for TOF boundary calculation */
-	alpha = 1 / (1 - SlopeBins) ;
-	beta = 0. ;
-
-	for(k=0;k<NoBins;k++) beta += pow(alpha, k) ;
-	beta = (MaxTOF - pow(alpha, NoBins) * MinTOF) / beta ;
-
-	fprintf(LogFilePtr,	"\ncomputed reference values:\n	energy			=  %9.4f meV\n	velocity			=  %9.4f cm/ms\n	MinTOF_effective		=  %9.4f ms\n	MaxTOF_effective		=  %9.4f ms\n	TOF_total_elast		=  %9.4f ms\n	TOF_fixed_energy_side	=  %9.4f ms\n	minimal energy transfer	=  %9.4f meV\n	maximal energy transfer	=  %9.4f meV\n\n",
-							energy, velocity, MinTOF, MaxTOF, TOF_total_e, TOF, MinE, MaxE) ;
-
-	Angle      *= M_PI / 180. ;
-	AngleRange *= M_PI / 180. ;
-
-	NumOut=0 ;
-	IntegralIntensity = 0. ;
+  Angle      *= M_PI / 180. ;
+  AngleRange *= M_PI / 180. ;
 
 }/* End OwnInit */
 
