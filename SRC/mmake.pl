@@ -9,11 +9,16 @@ use strict;
 ###
 
 # windows pathes for programs and sources, use | for \
-my $vstudio = $_ = 'c:|programme|microsoft visual studio .net 2003';
-my $mscdir  = $_ . '|vc7';
-my $mscpath = $_ . '|vc7|bin;' . $_ . '|common7|IDE';
-my $sroot = 'h:|control';
-my $svnroot = 'd:|vitcsrc';
+# first row for old 2003 version, second for windows7 10.0
+my @Vstudio = ('c:|programme|microsoft visual studio .net 2003',
+               'C:|Program Files (x86)|Microsoft Visual Studio 10.0');
+# 3 subdirectories each, specific for a visual studio version
+my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|PlatformSDK',
+            'VC', 'Common7|IDE', 'C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
+
+
+my $sroot = 'h:|control|g2_win';      # --g2dir parameter
+my $svnroot = 'd:|vitcsrc';           # --src parameter
 
 # unix comment
 my $unixcomment =<<'EOS';
@@ -25,6 +30,8 @@ EOS
 
 ###
 ### end configure ######################################################
+
+my ($vstudio, $mscdir, $mscpath, $win7);
 
 ### define targets #####################################################
 ###
@@ -41,7 +48,7 @@ my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
 	   mirror_coating surface_file gener_bispectral guide_shape spin_reset capture_flux runtime
-     fom gener_pipe opt_sim);
+           fom gener_pipe opt_sim);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
@@ -185,6 +192,7 @@ mmake.pl \{option\}
   --vstudio path        path to visual studio directory, in a form like (default)
                         --vstudio '$vstudio'
                         use | as separator instead of \\ here
+  -win7                generate vitess.mak and compile.bat for windows 7 + vis. studio 10
   --winpath path        path to visual studio binaries, in a form like (default)
                         --winpath '$mscpath'
 EOS
@@ -197,6 +205,10 @@ my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
 
 while ($_ = shift) {
+  if ($_ eq '-win7') {
+    $win7 = 1;
+    next;
+  }
   &usage unless /^--(.+)$/;
   $_ = $1;
   my $arg = shift;
@@ -207,17 +219,27 @@ while ($_ = shift) {
   } elsif ($_ eq 'lpath') {
     $lpath = $arg;
   } elsif ($_ eq 'vstudio') {
-    $mscdir = "$arg|vc7";
+    $vstudio = $arg;
   } elsif ($_ eq 'winpath') {
     $mscpath = $arg;
   } elsif ($_ eq 'src') {
     $svnroot = $arg;
   } elsif ($_ eq 'g2dir') {
     $sroot = $arg;
+  } elsif ($_ eq 'win7') {
+    $win7 = 1;
   } else {
     &usage;
   }
 }
+
+# set path variables use to generate windows makefile
+$vstudio = $Vstudio[$win7] if $vstudio eq '';
+my $i = $win7 ? 3 : 0;
+my $s1 = $VSub[$i];
+my $s2 = $VSub[$i+1];
+$mscdir  = "$vstudio|$s1";
+$mscpath = "$vstudio|$s1|bin;$vstudio|$s2";
 
 # try to read VITESS version from ../GUI/control.tcl
 
@@ -391,22 +413,24 @@ sub prepareNMakefile {
 
   open OF, ">$nmakefile";
 
+  $_ = $win7 ? $VSub[5] : $VSub[2];
+
   $s = <<EOS;
 # Vitess NMAKE File
-CPATH=$mscdir
-SROOT=$sroot
+GROOT=$sroot
 SVNROOT=$svnroot
+CPATH=$mscdir
+CPATH2=$_
 EOS
 
   $s .= <<'EOS';
-CPATH2=$(CPATH)|PlatformSDK
 IPATH=$(CPATH)|include
 LPATH=$(CPATH)|lib
 IPATH2=$(CPATH2)|include
 LPATH2=$(CPATH2)|lib
 
 SPATH=$(SVNROOT)|SRC
-GPATH=$(SROOT)|g2_win
+GPATH=$(GROOT)
 GSLPATH=$(SPATH)|rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -419,9 +443,15 @@ OD=.|Release
 IDIR=.|Release
 
 CPP=cl.exe
-DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
+DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /EHsc /c 
+EOS
+
+  $s .= 'CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /FD /EHsc /c';
+  $s .= ' /Og /YX' unless $win7;
+  $s .= "\n";
+
+  $s .= <<'EOS';
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib

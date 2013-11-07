@@ -1,15 +1,15 @@
 # Vitess NMAKE File
-CPATH=c:\programme\microsoft visual studio .net 2003\vc7
-SROOT=h:\control
+GROOT=h:\control\g2_win
 SVNROOT=d:\vitcsrc
-CPATH2=$(CPATH)\PlatformSDK
+CPATH=c:\programme\microsoft visual studio .net 2003\vc7
+CPATH2=c:\programme\microsoft visual studio .net 2003\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
 IPATH2=$(CPATH2)\include
 LPATH2=$(CPATH2)\lib
 
 SPATH=$(SVNROOT)\SRC
-GPATH=$(SROOT)\g2_win
+GPATH=$(GROOT)
 GSLPATH=$(SPATH)\rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -22,9 +22,9 @@ OD=.\Release
 IDIR=.\Release
 
 CPP=cl.exe
-DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
+DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /EHsc /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c /Og /YX
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
