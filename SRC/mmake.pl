@@ -32,6 +32,7 @@ EOS
 ### end configure ######################################################
 
 my ($vstudio, $mscdir, $mscpath, $win7);
+my $suse = -s '/etc/SuSE-release';
 
 ### define targets #####################################################
 ###
@@ -346,7 +347,7 @@ EOS
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
-  print OF ' -lttf' if $sys ne 'Darwin';
+  print OF ' -lttf' if $suse;
   print OF ' -lm';
 
   print OF <<'EOS';
@@ -656,7 +657,13 @@ sub checkLibs {
   my @Places = (@LPath, $_);
   my $anyerr;
 
-  foreach my $lib (qw(X11 gd png z freetype Xpm)) {
+  my @Needlib = qw(X11 gd png z freetype Xpm);
+  if ($suse) {
+    # we need libttf
+    push  @Needlib, 'ttf';
+  }
+
+  foreach my $lib (@Needlib) {
     my $found = 0;
     my $lname = "lib$lib.$ext";
     foreach (@Places) {
@@ -686,7 +693,7 @@ sub checkLibs {
   if ($sys eq 'Darwin') {
     print STDERR "read gnuplot_darwin.txt for tips to install needed tools\n";
   } elsif ($sys eq 'Linux') {
-    if (-s '/etc/SuSE-release') {
+    if ($suse) {
       print STDERR <<EOS;
 Use yast2 to search & install packages!
 VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
@@ -696,7 +703,7 @@ EOS
     } else {
       print STDERR <<EOS;
 Use your Linux distribution tool to search & install packages!
-VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
+VITESS needs tk, gnuplot, libgd, libfreetype, libzlib, libpng, libXpm.
 If something is missing after installing these, try to add the developer
 packages of libs.
 EOS
