@@ -584,6 +584,25 @@ proc source_cwsCheckErr {{app _}} {
 ### source
 ###   SPSS short pulsed spallation sources
 
+proc sore {f s p} {
+  set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
+  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
+  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
+  return [concat $f $s $p]
+}
+
+foreach s {short_pulsed J-PARC IPNS CSNS} \
+        m {SPTScold J-ParcCold IpnsSPThermPois CsnsH2coupled} \
+        fr  {50 20 50 25} \
+        sps { -  -  - CSNS} \
+        pow { -  -  - 0.1} {
+  set al [list modfile pareditablefile $m.mod $li w smo 1]
+  set fl [sore $fr $sps $pow]
+  set source_${s}ESET [concat $fl [list $al] $smASET $cwsASET]
+  proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
+}
+
+
 proc sore {f s v p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
   set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
@@ -592,17 +611,11 @@ proc sore {f s v p} {
   return [concat $f $s $v $p]
 }
 
-foreach s {short_pulsed SNS J-PARC IPNS CSNS} \
-        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois CsnsH2coupled} \
-        fr {50 60 20 50 25} \
-        sps {- SNS - - CSNS} \
-        vsn {1 2 1 1 1} \
-        pow {- 1.0 - - 0.1} {
-  set al [list modfile pareditablefile $m.mod $li w smo 1]
-  set fl [sore $fr $sps $vsn $pow]
-  set source_${s}ESET [concat $fl [list $al] $smASET $cwsASET]
-  proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
-}
+set al [list modfile pareditablefile SnsColdCpld.mod $li w smo 1]
+set fl [sore 60 SNS 2 1.0]
+set source_SNSESET [concat $fl [list $al] $smASET $cwsASET]
+proc source_SNSCheckErr {{app _}} {return [source_cwsCheckErr $app]}
+
 
 proc sore {f} {
   return [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
@@ -622,7 +635,7 @@ foreach s {ESS_LPTS ESS_2012} {
   set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
   set source_${s}ESET [concat {
     {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt} {1 2 3}}
+    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight} {1 2 3 4}}
     {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
     {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux

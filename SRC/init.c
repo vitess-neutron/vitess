@@ -635,7 +635,7 @@ void Init(int argc, char **argv, VtModID eModule)
     /* Determine new ID scheme for neutrons cloned in the last module */
     if (nModuleNo > 99) powerIDShift -= 2;
     else if (nModuleNo > 9 && nModuleNo < 100) powerIDShift -= 1;
-    lastIDShift = nModuleNo*pow(10, powerIDShift);
+    lastIDShift = nModuleNo*pow(10.0, powerIDShift);
   }
 
   for (ii = 0; ii < 3; ii++) {
