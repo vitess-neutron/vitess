@@ -893,12 +893,7 @@ int ReadNeutrons()
       tempID = InputNeutrons[i].ID;
     }
     else {
-      tempID = InputNeutrons[i].ID;
-      lastIDShift++;
-      // Increase the first letter to indicate the level of cloning of this trajectory
-      InputNeutrons[i].ID.IDGrp[0]++;
-      // Change the neutron ID to avoid dublicity with other trajectories
-      InputNeutrons[i].ID.IDNo += lastIDShift;
+      ChangeNeutronID(&InputNeutrons[i]);
       WriteIAP(&InputNeutrons[i], VT_ENTERED);
     }
     /* normalization of direction vector for modules representing hardware */
@@ -909,6 +904,19 @@ int ReadNeutrons()
   return NumNeutGot;
 }
 
+
+void ChangeNeutronID(Neutron* n)
+{
+  
+  tempID = n->ID;
+  lastIDShift++;
+  // Increase the first letter to indicate the level of cloning of this trajectory
+  n->ID.IDGrp[0]++;
+  // Change the neutron ID to avoid dublicity with other trajectories
+  n->ID.IDNo += lastIDShift;
+  
+  return;
+}
 
 /*******************************************************************/
 /* WriteNeutron writes a neutron to the neutron ouput buffer       */
