@@ -92,7 +92,6 @@ ALL : \
 	"$(OD)\slit.exe" \
 	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
-	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
 	"$(OD)\lenses.exe" \
@@ -118,6 +117,7 @@ ALL : \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\flipper_gradient.exe" \
+	"$(OD)\spacewindow.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\resonator_drabkin.exe" \
 	"$(OD)\monitor1D.exe" \
@@ -507,13 +507,6 @@ SOURCE=$(SPATH)\source.c
 "$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
 
-SOURCE=$(SPATH)\spacewindow.c
-"$(IDIR)\spacewindow.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\spacewindow.exe" : "$(OD)" $(ITOOL) "$(OD)\spacewindow.obj" "$(OD)\bender_inter_data.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\spacewindow.pdb" /out:"$(OD)\spacewindow.exe" "$(IDIR)\spacewindow.obj" $(ITOOL) "$(OD)\bender_inter_data.obj" 
-
 SOURCE=$(SPATH)\spacewindow_multiple.c
 "$(IDIR)\spacewindow_multiple.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -688,6 +681,13 @@ SOURCE=$(SPATH)\flipper_gradient.c
 
 "$(OD)\flipper_gradient.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_gradient.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\spacewindow.c
+"$(IDIR)\spacewindow.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\spacewindow.exe" : "$(OD)" $(MTOOL) "$(OD)\spacewindow.obj" "$(OD)\bender_inter_data.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\spacewindow.pdb" /out:"$(OD)\spacewindow.exe" "$(IDIR)\spacewindow.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" 
 
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)

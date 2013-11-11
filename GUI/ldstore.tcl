@@ -868,6 +868,7 @@ proc loadAll {extension {givenname ""}} {
           file copy $fn $ndir
         }
         gSet defdirectory_ $ndir
+        showText "default directory is $ndir now"
       }
     }
   } else {

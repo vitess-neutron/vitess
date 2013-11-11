@@ -1,0 +1,36 @@
+VITESS on the ESS DMSC Cluster
+------------------------------
+
+Running a job on the cluster comes to mind if a simulation on your laptop
+takes too long.
+
+Follow these steps:
+
+1) Create a .grd file of your virtual instrument.
+2) Tranfer it along with the necessary parameter directory to login.esss.dk .
+3) Start a job on the cluster.
+4) Finalize the job when done.
+
+1) You may call VITESS interactively as before on your laptop or PC, load your
+instrument, and export it as grid file per menu "File / export as / sh grid script".
+You may call VITESS interactively on login.esss.dk, too, but this should only 
+be used to test or modify the instrument description:
+/opt/vitess/3.2/Vitess
+
+3) Assumend your parameter directory is /users/leela/instrument and your grid file
+is /users/leela/instrument/ess.grd. You want to start a batch job in queue long,
+using 2 nodes with overall 8 parallel pipes, and need 1.0e9 neutron trajectories.
+From a shell at login.esss.dk do
+
+cd /users/leela/instrument
+/opt/vitess/3.2/gridrun --slnodes=2 --slpartition=long --traj=1e9 -p 8 ess.grd
+
+This will create a working directory ~/.vitess/w<rnr> for vitess job number <rnr>,
+<rnr> starting with 1, prompt for a name of that batch run, and if everything
+is ok submit a batch job.
+
+4) To see in which state your job is just use
+/opt/vitess/3.2/gridrun
+
+If job <rnr> has finished you may finalize (merge the results of parallel pipes) with
+/opt/vitess/3.2/gridrun -f <rnr>
