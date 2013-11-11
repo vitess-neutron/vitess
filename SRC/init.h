@@ -49,6 +49,7 @@ void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
 void print_module_name(const char *name);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
+void ChangeNeutronID  (Neutron* n);
 
 void WriteWWP(Neutron *pNeutron, VtReason eReason);
 

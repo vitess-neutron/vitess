@@ -44,18 +44,21 @@ class Monochromator{
   int           NumberCE[2]; // Number of horizontal and vertical CE segments
   int           ParGeomN, d_spr_option, geom_option, mode;
   int           mosRndmDir;
+  int           firstElement;
 
   long		NumOut, Repetition;
 
   double        peakWL, braggAngleTot, axisPhi;  //Peak wavelength and total bragg angle (in case braggHor > 0 and braggVer > 0), 
                                                  //spherical angle Phi of the instrument axis in the Bragg frame, needed for the normalisation procedure
-  double	TOF, WL, Prob;
+  double        maxDeviation;
+  double	TOF, Prob;
   double	Index, User, ParGeom[PAR_GEOM], IntegralIntensity ;
   double	d_spacing, d_fwhm, d_sigma, mosaic_fwhm[2], Reflectivity, absCoeff ; // Crystal parameters concerning d-spacing and mosaicity
   double	RotHoriz, RotVert, BraggHoriz, BraggVert;
   double        AnglFocHoriz, AnglFocVert, totalXOffset, rotOffset;
   double        DevH, DevV;              /* horizontal and vertical deviation from correct crystal orientation */
   double        GapH, GapV;              /* horizontal and vertical distance between crystal elements */
+  double        maxDepth;
   double        dSpacingSpreadParams[3], horMosaicSpreadParams[3], vertMosaicSpreadParams[3];
   double        fNorm[3], fRndm[3];
   double	RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3], RotMatrixSurf[3][3];

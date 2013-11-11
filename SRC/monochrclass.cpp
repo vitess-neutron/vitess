@@ -5,7 +5,6 @@
 #include "monochrclass.h"
 
 
-
 Monochromator::Monochromator()
 {
  
@@ -23,6 +22,7 @@ Monochromator::Monochromator()
   geom_option = 0; 
   mode = -1;
   mosRndmDir = 0;
+  firstElement = 1;
 
   for (int i = 0; i < 2; i++) NumberCE [i] = 0;
   
@@ -32,9 +32,9 @@ Monochromator::Monochromator()
   peakWL = 0;
   braggAngleTot = 0;
   axisPhi = 0;
+  maxDeviation = 1.;
 
   TOF = -1; 
-  WL = -1; 
   Prob = -1; 
   
   Index = -1; 
@@ -193,6 +193,10 @@ void Monochromator::Init(int argc, char* argv[])
 	case 's':
 	  sscanf(&argv[1][2], "%lf", &ParGeom[2]) ;
 	  break;
+	  
+	case 'o':
+	  sscanf(&argv[1][2], "%d", &firstElement) ;
+	  break;
 
 	}
       argc--;
@@ -293,8 +297,7 @@ void Monochromator::Init(int argc, char* argv[])
       RotVert_F[0].push_back(RotVert);
 
       FillRotMatrixZY(RotMatrixSurf, RotVert, RotHoriz);
-      rotOffset = CalculateRotationOffset();
-      totalXOffset = PosCE[0] + DimCE[0]/2. + rotOffset;
+     
     }
   
   else if(Option == 2)
@@ -326,6 +329,9 @@ void Monochromator::Init(int argc, char* argv[])
       if(Foc_Crys != NULL)fclose(Foc_Crys) ;
     }
   
+  //  rotOffset = CalculateRotationOffset();
+  totalXOffset = TranslFoc[0] + DimCE[0]/2.*NumberCE[0]*cos(RotHoriz) + DimCE[1]/2.*NumberCE[1]*sin(RotVert);
+
   /* computes rotation matrixes corresponding to CE (i,j) offset angles */
   FillRotMatrixFoc() ;
 
@@ -338,22 +344,64 @@ void Monochromator::Init(int argc, char* argv[])
 
   if (bVisInstr)
     { 
+      if(Option == 1) {
       // Visualisation of the monochromator geomentry
-      stGeometry.pCuboid = (VtCuboid*) calloc(1, sizeof(VtCuboid));
-      stGeometry.nCuboids = 1; 
-      
-      stGeometry.pCuboid[0].Length = DimCE[0]; 
-      stGeometry.pCuboid[0].Width  = DimCE[1];
-      stGeometry.pCuboid[0].Height = DimCE[2];
-      stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
-      stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
-      stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
-      stGeometry.pCuboid[0].vNormal[0]= 1.;
-      stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
-      stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
-      
-      stGeometry.pDescr  = "monochromator:yellow";
-      stGeometry.eModule = VT_MONOC_ANALY;
+	stGeometry.pCuboid = (VtCuboid*) calloc(1, sizeof(VtCuboid));
+	stGeometry.nCuboids = 1; 
+	
+	stGeometry.pCuboid[0].Length = DimCE[0]; 
+	stGeometry.pCuboid[0].Width  = DimCE[1];
+	stGeometry.pCuboid[0].Height = DimCE[2];
+	stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
+	stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
+	stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
+	stGeometry.pCuboid[0].vNormal[0]= 1.;
+	stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
+	stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+	
+	stGeometry.pDescr  = "monochromator:yellow";
+	stGeometry.eModule = VT_MONOC_ANALY;
+      }
+
+      else {
+
+	stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
+	stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+	stGeometry.pDescr  = "monochromator:yellow";
+	stGeometry.eModule = VT_MONOC_ANALY;
+
+	int k = 0;
+	
+	for(int i = 0;i<NumberCE[0];i++) {
+	    for(int j = 0;j<NumberCE[1];j++) {
+	      
+	      VectorType DimCurrCE, PosCurrCE;
+	      double RotMatrixCurrCE[3][3];
+
+	      CopyVectorsToVector(i, j, PosCE_F, PosCurrCE) ;
+	      CopyVectorsToVector(i, j, DimCE_F, DimCurrCE) ;
+	      CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
+
+	      VectorType normal={1, 0, 0};
+	      RotBackVector(RotMatrixCurrCE , normal);
+
+	      stGeometry.pCuboid[k].Length = DimCurrCE[0]; 
+	      stGeometry.pCuboid[k].Width  = DimCurrCE[1];
+	      stGeometry.pCuboid[k].Height = DimCurrCE[2];
+	      stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
+	      stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
+	      stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
+	      stGeometry.pCuboid[k].vNormal[0]= normal[0];
+	      stGeometry.pCuboid[k].vNormal[1]= normal[1];
+	      stGeometry.pCuboid[k].vNormal[2]= normal[2];
+
+	      k++;
+
+	    }
+	}
+	
+      }
+
   }
   
   return; 
@@ -537,9 +585,15 @@ void Monochromator::FindPeakLambdaSortMosaicityDistr(double RotHoriz, double Rot
   braggAngleTot = AngleVectors(n, n2)/180.*M_PI;
   peakWL = cos(braggAngleTot) * 2. * d_spacing;
 
-  double thetaTemp = 0;
-  CartesianToSpherical(n, &thetaTemp, &axisPhi);
-  if (axisPhi > M_PI_2) axisPhi = fabs(M_PI - axisPhi);
+  if (braggAngleTot > 1e-4) {
+    double thetaTemp = 0;
+    CartesianToSpherical(n, &thetaTemp, &axisPhi);
+    if (axisPhi > M_PI_2) axisPhi = fabs(M_PI - axisPhi);
+  }
+  else {
+    braggAngleTot = 1e-4;
+    axisPhi = 0;
+  }
 
   double sinP = sin(axisPhi);
   double cosP = cos(axisPhi);
@@ -577,7 +631,10 @@ void Monochromator::NormFunction()
   double x2_incr = sigma2/100.;
   if (x2_incr == 0) x2_incr = 1.;
 
-  fprintf(LogFilePtr,"\n braggTot =%9.4f, sigma1 =   %f, sigma2 = %f", (M_PI_2 - braggAngleTot)*180./M_PI, sigma1, sigma2);	
+  double minSC = Min(sin(axisPhi), cos(axisPhi));
+  maxDeviation = (1. + 2.*minSC - (minSC/sin(M_PI_2/2.)))*braggAngleTot;
+
+  fprintf(LogFilePtr,"\n braggTot =%9.4f, sigma1 =   %f, sigma2 = %f, maxDev = %f", (M_PI_2 - braggAngleTot)*180./M_PI, sigma1, sigma2, maxDeviation*180./M_PI);
 
   for (double x1 = d_spacing - 2.975*sigma1; x1 <= d_spacing + 2.975*sigma1; x1 += x1_incr) {
 
@@ -588,12 +645,17 @@ void Monochromator::NormFunction()
     }
     double braggAngleDev = acos(peakWL/(2.*x1)) - acos(peakWL/(2.*d_spacing));
 
+    if ((braggAngleTot - braggAngleDev) < 1e-5) continue;
+
     for (double x2 = -4.995*sigma2; x2 <= 4.995*sigma2; x2 += x2_incr) {
+
+      if (fabs(x2) > maxDeviation) continue;
 
       double ytemp = prob_dspacing * fRndm[0]*exp(-sq(x2 - fRndm[1])/(2.*sq(sigma2)));
       double x21 = 0;
-      DetermineMosaicAngle(braggAngleDev, x2, x21);
       
+      DetermineMosaicAngle(braggAngleDev, x2, x21);
+         
       int index = ((int)(fNorm[0]*exp(-sq(x21 - fNorm[1])/(2.*sq(fNorm[2])))*nBins));
       y[index] += ytemp;      
       
@@ -611,8 +673,10 @@ void Monochromator::NormFunction()
 
   }
 
-  double mean = sum/weight;
-  
+  double mean;
+  if (weight > 0) mean = sum/weight;
+  else mean = 1.;
+
   // Here the reflectivity is incorporated into the norm of the 
   // mosaicity Gaussian that is used to look up the absolute weight
   // of a reflected neutron.
@@ -679,6 +743,17 @@ void Monochromator::processNeutron(Neutron* neutron)
 
   Neutron neutronForTrajectories;
   Neutron resultNeutron;
+  Neutron resultNeutron2;
+  
+  if (!firstElement && (mode == 1 || mode == 3)) {
+    if (neutron->Color >= 1) {
+
+      NumOut++;
+      WriteNeutron(neutron);
+      return;
+
+    }
+  }
 
   // Check the vector magnitude for unity
   neutron->Vector[0] = sqrt(1 - sq(neutron->Vector[1]) - sq(neutron->Vector[2])) ;
@@ -686,6 +761,7 @@ void Monochromator::processNeutron(Neutron* neutron)
   /* selects CE on which the neutron is reflected and gives global variables
      in	the frame of CE */
   double startTime = neutron->Time;
+  double WL = neutron->Wavelength;
   VectorType startPosition;
   VectorType startVector;
 
@@ -695,7 +771,29 @@ void Monochromator::processNeutron(Neutron* neutron)
   }
 
   SelectCE(&Index, neutron) ;
-  if (Index == 0./* no CE was found */) return;
+
+  if (Index == 0./* no CE was found */) {
+    // Return if neutron missed the monochromator in "Reflection" mode
+    if (mode == 1)
+      return;
+    // No attenuation if neutron missed the monochromator in "Transmission" mode
+    else if (mode == 2) {
+      CopyVector(startPosition, neutron->Position);
+      neutron->Time = startTime;
+      TransmitNeutron(neutron);
+      NumOut++ ;
+      return;
+    }
+    else {
+      CopyVector(startPosition, neutron->Position);
+      neutron->Time = startTime;
+      neutron->Color = 0;
+      TransmitNeutron(neutron);
+      WriteIAP(neutron, VT_PASSED);
+      NumOut++ ;
+      return;
+    }
+  }
 
   // If a CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
   // in the frame of the reflecting crystal element.
@@ -709,18 +807,17 @@ void Monochromator::processNeutron(Neutron* neutron)
 
   // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
   // in the frame of the reflecting crystal element.
-
   /* for flat option (Option =1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position */
 
-  //RotBackVector(RotMatrixCE, neutron->Vector) ;  // Vector is now back to the original frame
+  RotBackVector(RotMatrixCE, neutron->Vector) ;  // Vector is now back to the original frame
 
   // write intersection point
   neutronForTrajectories = *neutron;
-  //  RotBackVector(RotMatrixCE, neutronForTrajectories.Position) ;  
-  AddVector(neutronForTrajectories.Position, PosCE);
-  
- 
-  //RotVector(RotMatrixBragg, neutron->Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
+  //  AddVector(neutronForTrajectories.Position, PosCE);
+  //  RotBackVector(RotMatrixCE, neutronForTrajectories.Position) ;
+  //  AddVector(neutronForTrajectories.Position, TranslFoc);
+
+  RotVector(RotMatrixBragg, neutron->Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
 
   for(int repet=0; repet<Repetition; repet++) {
   
@@ -735,10 +832,9 @@ void Monochromator::processNeutron(Neutron* neutron)
     }
     
     arg = WL * OrderReflection / 2. / dran ;
-    if (arg > 1.) return;/* wavelength to large */
+    if (arg >= 1.) return;/* wavelength to large */
 
     TOF = neutron->Time ;
-    WL = neutron->Wavelength ;
     Prob = neutron->Probability / Repetition ;
     CopyVector(neutron->Position, Pos) ;
     CopyVector(neutron->Vector, Dir) ;
@@ -751,21 +847,7 @@ void Monochromator::processNeutron(Neutron* neutron)
     // reflection off a mosaic element.
     Prob *= CalculateReflectionProbability(pi2_bragg, Dir);
 
-    if (repet == 0) {
-      if (mode == 1 || mode == 3) {
-	neutronForTrajectories.Probability = Prob * Repetition;
-	WriteIAP(&neutronForTrajectories, VT_REFLECTED);   // Reflectivity fehlt
-      }
-      else if (mode == 2) {
-	neutronForTrajectories.Probability = neutron->Probability - Prob * Repetition;
-	WriteIAP(&neutronForTrajectories, VT_PASSED);
-      }
-      if (mode == 3) {
-	neutronForTrajectories.Probability = neutron->Probability - Prob * Repetition;
-	WriteIAP(&neutronForTrajectories, VT_PASSED);
-      }
-    }
-
+   
     if(Prob <= wei_min && mode==1) return;
     if (Dir[0] != Dir[0] || Dir[1] != Dir[1] || Dir[2] != Dir[2]) return;
     IntegralIntensity += Prob ;
@@ -773,42 +855,67 @@ void Monochromator::processNeutron(Neutron* neutron)
     if (mode == 2) {
       neutron->Probability -= Prob;
       neutron->Time = startTime;
-      for (int ii = 0; ii < 3; ii++) {
-	neutron->Vector[ii] = startVector[ii];
-	neutron->Position[ii] = startPosition[ii];
-      }
+      CopyVector(startVector, neutron->Vector);
+      CopyVector(startPosition, neutron->Position);
       TransmitNeutron(neutron);
+      if (repet == 0) WriteIAP(&neutronForTrajectories, VT_PASSED);
+      NumOut++ ;
       return;
     }
 
     /* computes neutron variables in the initial frame */
-    // RotBackVector(RotMatrixCE, Dir);
-    
-    //double tempTh, tempPh;
-    // CartesianToSpherical(Dir, &tempTh, &tempPh);
-    // fprintf(LogFilePtr,"Direction in the initial frame: neutronTh = %f, neutronPh = %f \n", tempTh*180./M_PI, tempPh*180./M_PI);
-
+    RotBackVector(RotMatrixCE, Dir);
     RotBackVector(RotMatrixCE, Pos) ;
     AddVector(Pos, PosCE) ;
 
     /* makes depth correction to get back to the old frame for Depth != 0 */
     RotBackVector(RotMatrixCE, Depth) ;
     AddVector(Pos, Depth) ;
+   
+    if (!firstElement || mode == 3) neutron->Color = 1;
 
-    /* computes neutron variables in the output frame */
-    SubVector(Pos, TranslFoc) ;
-    RotVector(RotMatrixFoc, Pos) ;
-    RotVector(RotMatrixFoc, Dir) ;
+    if (repet == 0 && Prob > wei_min) {
+      CopyVector(Pos, neutronForTrajectories.Position) ;
+      CopyVector(Dir, neutronForTrajectories.Vector) ;
+      neutronForTrajectories.Color = neutron->Color;
+      neutronForTrajectories.Probability = Prob / neutron->Probability * Repetition;
+      WriteIAP(&neutronForTrajectories, VT_REFLECTED); 
+    }
 
-    // CartesianToSpherical(Dir, &tempTh, &tempPh);
-    // fprintf(LogFilePtr,"Direction in the output frame: neutronTh = %f, neutronPh = %f \n", tempTh*180./M_PI, tempPh*180./M_PI);
+    // Rotate the Vectors to the output frame in the "Reflection" mode
+    if (mode == 1 && firstElement) {     
+      /* computes neutron variables in the output frame */
+      SubVector(Pos, TranslFoc) ;
+      RotVector(RotMatrixFoc, Pos) ;
+      RotVector(RotMatrixFoc, Dir) ;
+    }
+    // Do not rotate vectors, create a new neutron for the "Reflection+Transition" mode
+    else if (mode == 3) {
+      resultNeutron2 = *neutron;
+      resultNeutron2.Probability =  (neutron->Probability - Prob)*exp (-1.*maxDepth*absCoeff);;
+      resultNeutron2.Color = 0;
+      CopyVector(startPosition, resultNeutron2.Position) ;
+      CopyVector(startVector, resultNeutron2.Vector) ;
+
+      // double tempTh, tempPh;
+      // CartesianToSpherical(startVector, &tempTh, &tempPh);
+      //   fprintf(LogFilePtr,"Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
+      //	      tempTh*180./M_PI, tempPh*180./M_PI, Prob, resultNeutron2.Probability);
+      resultNeutron2.Time = startTime;
+      ChangeNeutronID(&resultNeutron2);
+      NumOut++ ;
+      if (repet == 0) WriteIAP(&resultNeutron2, VT_PASSED); 
+      WriteNeutron(&resultNeutron2);     
+    }
 
     /* transmit coordinates which were not changed, the rest overwrite below */
+    if (Prob <= wei_min) return;
+    
     resultNeutron = *neutron;
     resultNeutron.Time = TOF ;
     resultNeutron.Probability = Prob ;
     CopyVector(Pos, resultNeutron.Position) ;
-    CopyVector(Dir, resultNeutron.Vector) ;
+    CopyVector(Dir, resultNeutron.Vector) ;    
 
     /* writes output binary file */
     NumOut++ ;
@@ -827,6 +934,8 @@ void  Monochromator::SelectCE(double *index, Neutron* n)
 {
   int		k, l ;
   double	pos[3], dir[3] ;
+
+  maxDepth = 0;
 
   for(k = 0;k<NumberCE[0];k++) {
     for(l = 0;l<NumberCE[1];l++) {
@@ -852,6 +961,7 @@ void  Monochromator::SelectCE(double *index, Neutron* n)
         if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2) == 0) { goto nextCE ;}
 
         Depth[0] = MonteCarlo(Pos1[0], Pos2[0]) ;
+	maxDepth = Pos2[0];
         Depth[1] = Depth[2] = 0.0 ;
       }
 
@@ -905,187 +1015,215 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
   double x1, x2;
   double angle11, angle12, angle21, angle22;
 
+  double nTries = 1.;
+  double maxNTries = (fRndm[2]/(maxDeviation/braggAngleTot*pi2_braggAngle))*5.;
+
   double x_n = neutronDir[0];
   double y_n = neutronDir[1];
   double z_n = neutronDir[2];
 
   VectorType mosaicVector={1, 0, 0};
 
-  if (mosRndmDir == 1) {
+  while (nTries < maxNTries) {
 
-    mosaicAngle1 = DistrGauss(fRndm[1], fRndm[2]);
+    if (mosRndmDir == 1) {
+
+      mosaicAngle1 = DistrGauss(fRndm[1], fRndm[2]);
 	
-    tanM = tan(mosaicAngle1);
-    tanMtilde = 1 + tanM*tanM;
-    cBragg = cos(pi2_braggAngle);
-    
-    alpha = 2.*tanM*x_n*y_n/(z_n*z_n) + x_n*x_n/(z_n*z_n) + tanM*tanM*y_n*y_n/(z_n*z_n) + tanMtilde;
-    beta = -1.*(cBragg*x_n/(z_n*z_n) + cBragg*tanM*y_n/(z_n*z_n));
-    gamma = cBragg*cBragg/(z_n*z_n) - 1;
-    
-    x1 = (-1.*beta + sqrt(beta*beta - alpha*gamma))/alpha;
-    x2 = (-1.*beta - sqrt(beta*beta - alpha*gamma))/alpha;
+      // if (fabs(mosaicAngle1) >= (maxDeviation/braggAngleTot*pi2_braggAngle)) {
+      // 	nTries++;
+      // 	continue;
+      // }
 
-    double y1 = x1*tanM;
-    double y2 = x2*tanM;
+      tanM = tan(mosaicAngle1);
+      tanMtilde = 1 + tanM*tanM;
+      cBragg = cos(pi2_braggAngle);
+    
+      alpha = 2.*tanM*x_n*y_n/(z_n*z_n) + x_n*x_n/(z_n*z_n) + tanM*tanM*y_n*y_n/(z_n*z_n) + tanMtilde;
+      beta = -1.*(cBragg*x_n/(z_n*z_n) + cBragg*tanM*y_n/(z_n*z_n));
+      gamma = cBragg*cBragg/(z_n*z_n) - 1;
+    
+      x1 = (-1.*beta + sqrt(beta*beta - alpha*gamma))/alpha;
+      x2 = (-1.*beta - sqrt(beta*beta - alpha*gamma))/alpha;
+
+      double y1 = x1*tanM;
+      double y2 = x2*tanM;
       
-    double z11, z12;
-    if (x1*x1 + y1*y1 < 1) {
-      z11 = sqrt(1. - x1*x1 - y1*y1);
-      z12 = -sqrt(1. - x1*x1 - y1*y1);
-    }
-    else {
-      z11 = 0;
-      z12 = 0;
-    }
+      double z11, z12;
+      if (x1*x1 + y1*y1 < 1) {
+	z11 = sqrt(1. - x1*x1 - y1*y1);
+	z12 = -sqrt(1. - x1*x1 - y1*y1);
+      }
+      else {
+	z11 = 0;
+	z12 = 0;
+      }
            
-    VectorType vMos11 = {x1, y1, z11};
-    VectorType vMos12 = {x1, y1, z12};      
-    angle11 = AngleVectors(neutronDir, vMos11)/180.*M_PI;
-    angle12 = AngleVectors(neutronDir, vMos12)/180.*M_PI;
+      VectorType vMos11 = {x1, y1, z11};
+      VectorType vMos12 = {x1, y1, z12};      
+      angle11 = AngleVectors(neutronDir, vMos11)/180.*M_PI;
+      angle12 = AngleVectors(neutronDir, vMos12)/180.*M_PI;
       
-    if (fabs(angle11 - pi2_braggAngle) < 1e-5) {
-      phi = atan2(z11,sqrt(x1*x1 + y1*y1));
-      CopyVector(vMos11, mosaicVector);
+      if (fabs(angle11 - pi2_braggAngle) < 1e-5) {
+	phi = atan2(z11,sqrt(x1*x1 + y1*y1));
+	CopyVector(vMos11, mosaicVector);
+      }
+      else if (fabs(angle12 - pi2_braggAngle) < 1e-5) {
+	phi = atan2(z12,sqrt(x1*x1 + y1*y1));
+	CopyVector(vMos12, mosaicVector);
+      }
+      else {
+	phi = 20.*fNorm[2];
+      }
+
+      // Use another solution if the resulting second mosaic angle
+      // is too large, most probably there is a solution with a 
+      // smaller mosaic angle that leads to a higher weight factor
+      if (fabs(phi) > 10.*fNorm[2]) {
+      
+	double z21, z22;
+	if (x2*x2 + y2*y2 < 1) {
+	  z21 = sqrt(1. - x2*x2 - y2*y2);
+	  z22 = -sqrt(1. - x2*x2 - y2*y2);
+	}
+	else {
+	  z21 = 0;
+	  z22 = 0;
+	}
+      
+	VectorType vMos21 = {x2, y2, z21};
+	VectorType vMos22 = {x2, y2, z22};      
+	angle21 = AngleVectors(neutronDir, vMos21)/180.*M_PI;
+	angle22 = AngleVectors(neutronDir, vMos22)/180.*M_PI;
+      
+	if (fabs(angle21 - pi2_braggAngle) < 1e-5) {
+	  phi = atan2(z21,sqrt(x2*x2 + y2*y2));
+	  CopyVector(vMos21, mosaicVector);
+	}
+	else if (fabs(angle22 - pi2_braggAngle) < 1e-5){
+	  phi = atan2(z22,sqrt(x2*x2 + y2*y2));
+	  CopyVector(vMos22, mosaicVector);
+	}
+	else {
+	  nTries++;
+	  continue;
+	}
+      
+      }
+
+      theta = mosaicAngle1;
+      // Use the normalisation distribution defined in the NormFunction()
+      // method to find a weight for the trajectory taking into account
+      // the reflectivity value provided by the user
+      norm = fNorm[0]*exp(-sq(phi - fNorm[1])/(2.*sq(fNorm[2])));
+      break;
     }
+
     else {
-      phi = atan2(z12,sqrt(x1*x1 + y1*y1));
-      CopyVector(vMos12, mosaicVector);
-    }
 
-    // Use another solution if the resulting second mosaic angle
-    // is too large, most probably there is a solution with a 
-    // smaller mosaic angle that leads to a higher weight factor
-    if (fabs(phi) > 10.*fNorm[2]) {
-      
-      double z21, z22;
-      if (x2*x2 + y2*y2 < 1) {
-	z21 = sqrt(1. - x2*x2 - y2*y2);
-	z22 = -sqrt(1. - x2*x2 - y2*y2);
+      mosaicAngle1 = DistrGauss(fRndm[1], fRndm[2]);
+
+      sinM = sin(mosaicAngle1);
+      cosM = cos(mosaicAngle1);
+      cBragg = cos(pi2_braggAngle);
+    
+      alpha = 1. + x_n*x_n/(y_n*y_n);
+      beta =  sinM*x_n*z_n/(y_n*y_n) - cBragg*x_n/(y_n*y_n);
+      gamma = cBragg*cBragg/(y_n*y_n) - cosM*cosM - 2.*cBragg*sinM*z_n/(y_n*y_n) + sinM*sinM*z_n*z_n/(y_n*y_n);
+    
+      x1 = (-1.*beta + sqrt(beta*beta - alpha*gamma))/alpha;
+      x2 = (-1.*beta - sqrt(beta*beta - alpha*gamma))/alpha;
+
+      double z1 = sinM;
+
+      double y11, y12;
+      if (z1*z1 + x1*x1 < 1) {
+	y11 = sqrt(1 - z1*z1 - x1*x1);
+	y12 = -sqrt(1 - z1*z1 - x1*x1);
       }
       else {
-	z21 = 0;
-	z22 = 0;
+	y11 = 0;
+	y12 = 0;
       }
-      
-      VectorType vMos21 = {x2, y2, z21};
-      VectorType vMos22 = {x2, y2, z22};      
-      angle21 = AngleVectors(neutronDir, vMos21)/180.*M_PI;
-      angle22 = AngleVectors(neutronDir, vMos22)/180.*M_PI;
-      
-      if (fabs(angle21 - pi2_braggAngle) < 1e-5) {
-	phi = atan2(z21,sqrt(x2*x2 + y2*y2));
-	CopyVector(vMos21, mosaicVector);
+    
+      VectorType vMos11 = {x1, y11, z1};
+      VectorType vMos12 = {x1, y12, z1};      
+      angle11 = AngleVectors(neutronDir, vMos11)/180.*M_PI;
+      angle12 = AngleVectors(neutronDir, vMos12)/180.*M_PI;
+
+      if (fabs(angle11 - pi2_braggAngle) < 1e-5) {
+	theta = atan2(y11,x1);
+	CopyVector(vMos11, mosaicVector);
+      }
+      else if (fabs(angle12 - pi2_braggAngle) < 1e-5) {
+	theta = atan2(y12,x1);
+	CopyVector(vMos12, mosaicVector);
       }
       else {
-	phi = atan2(z22,sqrt(x2*x2 + y2*y2));
-	CopyVector(vMos22, mosaicVector);
+	theta = 20.*fNorm[2];
       }
-      
-    }
 
-    theta = mosaicAngle1;
-    // Use the normalisation distribution defined in the NormFunction()
-    // method to find a weight for the trajectory taking into account
-    // the reflectivity value provided by the user
-    norm = fNorm[0]*exp(-sq(phi - fNorm[1])/(2.*sq(fNorm[2])));
+
+      if (fabs(theta) > 10.*fNorm[2]) {
+      
+	double y21, y22;
+	if (z1*z1 + x2*x2 < 1) {
+	  y21 = sqrt(1 - z1*z1 - x2*x2);
+	  y22 = -sqrt(1 - z1*z1 - x2*x2);
+	}
+	else {
+	  y21 = 0;
+	  y22 = 0;
+	}
+      
+	VectorType vMos21 = {x2, y21, z1};
+	VectorType vMos22 = {x2, y22, z1};      
+	angle21 = AngleVectors(neutronDir, vMos21)/180.*M_PI;
+	angle22 = AngleVectors(neutronDir, vMos22)/180.*M_PI;
+
+	if (fabs(angle21 - pi2_braggAngle) < 1e-5) {
+	  theta = atan2(y21,x2);
+	  CopyVector(vMos21, mosaicVector);
+	}
+	else if (fabs(angle22 - pi2_braggAngle) < 1e-5) {
+	  theta = atan2(y22,x2);
+	  CopyVector(vMos22, mosaicVector);
+	}
+	else {
+	  nTries++;
+	  continue;
+	}
+      
+      }
+
+      phi = mosaicAngle1;
+      // Use the normalisation distribution defined in the NormFunction()
+      // method to find a weight for the trajectory taking into account
+      // the reflectivity value provided by the user
+      norm = fNorm[0]*exp(-sq(theta - fNorm[1])/(2.*sq(fNorm[2])));
+      break;
+
+    }
 
   }
 
-  else {
-
-    mosaicAngle1 = DistrGauss(fRndm[1], fRndm[2]);
-    
-    sinM = sin(mosaicAngle1);
-    cosM = cos(mosaicAngle1);
-    cBragg = cos(pi2_braggAngle);
-    
-    alpha = 1. + x_n*x_n/(y_n*y_n);
-    beta =  sinM*x_n*z_n/(y_n*y_n) - cBragg*x_n/(y_n*y_n);
-    gamma = cBragg*cBragg/(y_n*y_n) - cosM*cosM - 2.*cBragg*sinM*z_n/(y_n*y_n) + sinM*sinM*z_n*z_n/(y_n*y_n);
-    
-    x1 = (-1.*beta + sqrt(beta*beta - alpha*gamma))/alpha;
-    x2 = (-1.*beta - sqrt(beta*beta - alpha*gamma))/alpha;
-
-    double z1 = sinM;
-
-    double y11, y12;
-    if (z1*z1 + x1*x1 < 1) {
-      y11 = sqrt(1 - z1*z1 - x1*x1);
-      y12 = -sqrt(1 - z1*z1 - x1*x1);
-    }
-    else {
-      y11 = 0;
-      y12 = 0;
-    }
-    
-    VectorType vMos11 = {x1, y11, z1};
-    VectorType vMos12 = {x1, y12, z1};      
-    angle11 = AngleVectors(neutronDir, vMos11)/180.*M_PI;
-    angle12 = AngleVectors(neutronDir, vMos12)/180.*M_PI;
-
-    if (fabs(angle11 - pi2_braggAngle) < 1e-5) {
-      theta = atan2(y11,x1);
-      CopyVector(vMos11, mosaicVector);
-    }
-    else {
-      theta = atan2(y12,x1);
-      CopyVector(vMos12, mosaicVector);
-    }
-      
-    if (fabs(theta) > 10.*fNorm[2]) {
-      
-      double y21, y22;
-      if (z1*z1 + x2*x2 < 1) {
-	y21 = sqrt(1 - z1*z1 - x2*x2);
-	y22 = -sqrt(1 - z1*z1 - x2*x2);
-      }
-      else {
-	y21 = 0;
-	y22 = 0;
-      }
-      
-      VectorType vMos21 = {x2, y21, z1};
-      VectorType vMos22 = {x2, y22, z1};      
-      angle21 = AngleVectors(neutronDir, vMos21)/180.*M_PI;
-      angle22 = AngleVectors(neutronDir, vMos22)/180.*M_PI;
-
-      if (fabs(angle21 - pi2_braggAngle) < 1e-5) {
-	theta = atan2(y21,x2);
-	CopyVector(vMos21, mosaicVector);
-      }
-      else {
-	theta = atan2(y22,x2);
-	CopyVector(vMos22, mosaicVector);
-      }
-      
-    }
-
-    phi = mosaicAngle1;
-    // Use the normalisation distribution defined in the NormFunction()
-    // method to find a weight for the trajectory taking into account
-    // the reflectivity value provided by the user
-    norm = fNorm[0]*exp(-sq(theta - fNorm[1])/(2.*sq(fNorm[2])));
-   
-  }
-
+ 
   // Here the new neutron direction is determined
   double mosaicMatrix[3][3];
   RotMatrixX(mosaicVector, mosaicMatrix);
   RotVector(mosaicMatrix, neutronDir);
 
-  double neutronTh, neutronPh;
-  CartesianToSpherical(neutronDir, &neutronTh, &neutronPh);
-  neutronTh = M_PI - 2.*neutronTh;
-  neutronPh *= -1.;
-  SphericalToCartesian(neutronDir, &neutronTh, &neutronPh);
+  neutronDir[0] *= -1.;
   RotBackVector(mosaicMatrix, neutronDir);
-  
-  // CartesianToSpherical(neutronDir, &neutronTh, &neutronPh);
-  // fprintf(LogFilePtr,"Direction in CE system: neutronTh = %f, neutronPh = %f \n", neutronTh*180./M_PI, neutronPh*180./M_PI);
-  
 
-  return norm;
+  // double tempTh, tempPh;
+  // CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
+  // fprintf(LogFilePtr,"Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:  %f %f   %f %f %f %f   %f \n", 
+  //  	  tempTh*180./M_PI, tempPh*180./M_PI, neutronTh*180./M_PI, neutronPh*180./M_PI, 
+  // 	  angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries); 
+
+  if (nTries < maxNTries) return norm/nTries;
+  else return 0.;
 
 }
 
@@ -1094,48 +1232,20 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
 void Monochromator::TransmitNeutron(Neutron* n)
 {
  
-  VectorType Pos1, Pos2, dir, pos;
-  double distInCrystal, weightFactor, scalar, ToF;
-  int i = 0;
+  double weightFactor, scalar, ToF;
 
-  for (i = 0; i < 3; i++) {
-    dir[i] = n->Vector[i];
-    pos[i] = n->Position[i];
-  }
-
-  pos[0] -= PosCE[0];
-  pos[1] -= PosCE[1];
-  pos[2] -= PosCE[2];
-
-  RotBackVector(RotMatrixSurf, pos);
-  RotBackVector(RotMatrixSurf, dir);
-
-  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2))
-    {
-      SubVector(Pos2, Pos1);
-      distInCrystal = LengthVector(Pos2);       
-      weightFactor = exp (-1.*distInCrystal*absCoeff);
-      n->Probability *= weightFactor;
-    }
+  weightFactor = exp (-1.*maxDepth*absCoeff);
+  n->Probability *= weightFactor;
   
-  
-  scalar = totalXOffset / n->Vector[0];
-  for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar;
-  
-  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
-  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) {
-    double distInCrystal, weightFactor;
-    SubVector(Pos2, Pos1);
-    distInCrystal = LengthVector(Pos2);
-    weightFactor = exp (-1.*distInCrystal*absCoeff);
-    n->Probability *= weightFactor;
-  }
+  if (mode == 2)
+    scalar = totalXOffset / n->Vector[0];
+  else 
+    scalar = TranslFoc[0] / n->Vector[0];
 
-  scalar = totalXOffset / n->Vector[0];
-  for (i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
     n->Position[i] += n->Vector[i]*scalar;
 
-  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
+  ToF = scalar/V_FROM_LAMBDA(n->Wavelength);
   n->Time += ToF;
 
   WriteNeutron(n);
@@ -1385,8 +1495,9 @@ void Monochromator::crys_geomLambda()
 void Monochromator::OwnCleanup()
 {
 
-  if (mode == 1) Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
-  else  Cleanup(totalXOffset, 0, 0, 0, 0);
+  if (mode == 1 && firstElement) Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
+  else if (mode == 2) Cleanup(totalXOffset, 0, 0, 0, 0);
+  else Cleanup(0, 0, 0, 0, 0);
 
   return;
  
