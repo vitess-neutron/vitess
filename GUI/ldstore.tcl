@@ -852,9 +852,24 @@ proc loadAll {extension {givenname ""}} {
   if {$givenname == ""} {
     setInstrumentfile $name
 
-    # Ask if modified new default directory is ok
-    confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-
+    if [isWritableDirectory $nd] {
+      # Ask if modified new default directory is ok
+      confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
+    } else {
+      showText "directory $nd is not writeable"
+      # try to copy this directory to a new place
+      set ndir [newParamDirectory $nd]
+      if {$nd == ""} {
+        showText "could not create a writeable parameter directory!"
+      } else {
+        # copy files
+        foreach fn [glob -nocomplain -directory $nd *] {
+          if {[file type $fn] != "file"} continue
+          file copy $fn $ndir
+        }
+        gSet defdirectory_ $ndir
+      }
+    }
   } else {
     global instrumentfile
     set oname $instrumentfile

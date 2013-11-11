@@ -912,3 +912,37 @@ proc xscroll {w command {side top}} {
   scrollbar $w -command $command -bg $bgColor -width $scrollWidth -orient horizontal
   pack $w -side $side -fill x
 }
+
+proc isWritableDirectory {d} {
+  if [file isdirectory $d] {
+    # try to create a file in that directory
+    set fn [file join $d dummy[clock seconds]]
+    if [catch {open $fn w} f] {
+      return 0
+    }
+    if [catch {puts $f a}] {
+      close $f
+      return 0
+    }
+    close $f
+    file delete $fn
+    return 1
+  }
+  return 0
+}
+
+proc newParamDirectory {oldname} {
+  # generate a new parameter directory name
+  global env
+  set fn [file tail $oldname]
+  set h $env(HOME)
+  set nd [file join $h $fn]
+  while 1 {
+    if [file exists $nd] {
+      set nd [file join $h ${fn}[incr i]]
+    } else {
+      if [catch {file mkdir $nd}] return ""
+      return $nd
+    }
+  }
+}
