@@ -1669,9 +1669,10 @@ proc refCheckErr {{app _}} {
 
 set ma_flat_newESET {
   {"Monochromator Analyser" header}
-  {parfile pareditablefile crys.par {"parameter file" "" "" P} r crs_new 1}
+  {parfile pareditablefile crys.par {"parameter file" "" "" P} r crs_new 1}	
   {reprate int 1 {"repetition\nrate"
     "If this integer > 1, the neutron is used multiple times for better statistics." "" A} 1 1000000 1}
+  {array select array {"First or only\nused monochromator" "Select if this is the only one or the first\n monochromator in an array of several." "" o} {{"" 1}}}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]"
     "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m}
     ge0 "" 1}
@@ -1682,7 +1683,7 @@ set ma_flat_newESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam. Choose 'Reflection + Transmission' \n for ALL monochromators that are part of an array. Please note that \n in this case the rotation of the main neutron beam axis MUST\n be done by a following frame module." "" X} {Reflection Transmission "Reflection + Transmission"} {1 2 3}}
   {coeff float 0.00005 {"Absorption\n coefficient"
     "Absorption coefficient in the crystal in [1/cm]." "" C}}
   {}
@@ -3813,6 +3814,7 @@ set collimatorESET {
   {sc_ex_height float 10 {
     "exit\nheight [cm]"
     "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+
   {sc_len float "" {
     "length [cm]" "length of the collimator in cm" "" l} ge0 "" 1}
   {sc_channels int "" {
