@@ -529,7 +529,7 @@ sub finalizeJob {
   print OF "$_=$Jinfo{$_}\n" foreach keys %Jinfo;
   close OF;
 
-  deleteTempWorkDirs($jdir) if $force_delete;
+  deleteTempWorkDirs($jdir);
 
   # show final state
   print "$jn has been finalized.\nPlease find the results in directory $jdir .\n";
@@ -611,9 +611,17 @@ sub deleteJob {
 
 sub deleteTempWorkDirs {
   my $jdir = $_[0];
+
+  return unless -d $jdir;
+
+  # delete pipe instance sub dirs
   my $i = 1;
   $i++ while delDir("$jdir/$i");
-  # get rid of pipe std dummies, the copy of grindrun, and VITESS binaries
+
+  # recursively delete FILES sub directory
+  $_ = `rm -r $jdir/FILES`;
+
+  # get rid of pipe std dummies, the copy of gridrun, and VITESS binaries
   opendir D, $jdir;
   while ($_ = readdir D) {
     my $fn = "$jdir/$_";
@@ -621,7 +629,6 @@ sub deleteTempWorkDirs {
       (/_$sysid$/ && -x $fn);
   }
   closedir D;
-
 }
 
 sub delDir {
