@@ -57,6 +57,7 @@
 /* 3.2   Mar 2011  K. Lieutenant  Gaussian waviness distribution, length of abutment loss   */
 /* 3.3   Feb 2012  K. Lieutenant  visualization                                             */
 /* 3.4   Jul 2012  K. Lieutenant  exact ellipse calculations                                */
+/* 3.5   Nov 2013  K. Lieutenant  m-values as input as alternative to reflectivity files    */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -157,6 +158,7 @@ typedef enum
 
 typedef struct
 {
+  double MValue;
   FILE   *pfile;
   char   *filename;
   double *Rdata;
@@ -179,8 +181,9 @@ typedef struct
 
 void   OwnInit   (int argc, char *argv[]);
 void   OwnCleanup();
-ReflFile *GetReflFile(char *Filename, FILE *file);
+ReflFile *GetReflData(double MValue, char *Filename, FILE *file);
 void   LoadReflFile(ReflFile *pReflFile);
+void   CalcReflData(ReflFile* pReflFile);
 double Height    (double length);
 double Width     (double length);
 double PathThroughGuideGravOrder1(int thread_i,
@@ -262,11 +265,14 @@ double
   dDeltaX, dDeltaY,     /* length in x- and y-direction of the total guide  */
   beta, beta_ges,       /* angle of declination between 2 pieces  and of the total guide */
   spacer=0.0,
+  MValGenL =1.0,        /* m-value for left wall */
+  MValGenR =1.0,        /* m-value for right wall */
+  MValGenTB=1.0,        /* m-value for top and bottom wall */
   AbutLen =0.0,         /* area around the connection of guide segments, where neutrons are absorbed */
   surfacerough=0.0,     /* parameter which characterizes the waviness of the guide surface */
   MuScat=0.0,           /* total macroscopic scattering coeff. in 1/cm */
   MuAbs =0.0,           /* macroscopic absorption coeff. in 1/cm */
-  rotplane = 0.0;      /* Additional planes: rotation angle */
+  rotplane = 0.0;       /* Additional planes: rotation angle */
 
 double startPoint=0.;
 double endPoint=0.;
@@ -303,7 +309,7 @@ extern VectorType BegPosS,      /* [cm] end position of prev. section = origin o
 
 /* Extended FROM FILE */
 ReflFile *pReflFiles = {NULL};
-long     cReflFiles  = 0;
+long     cReflFiles  = 0;        // number of reflectivity files read or calculated
 
 // binning keys
 #define KeyNone            0
@@ -868,7 +874,7 @@ static void showAndCompleteSetup() {
       if (pReflFiles[i].pfile) {
         PrintMaximalM(pReflFiles[i].Rdata, pReflFiles[i].maxdata);
       } else {
-        fprintf(LogFilePtr,"WARNING: Case of zero reflectivity for this file! Most probably the file was not found!\n");
+        Error("Reflectivity file was not found!\n");
       }
       fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
     }
@@ -1024,7 +1030,7 @@ static void writeBindata () {
 static Plane * copyWalls (Plane *g) {
   Plane *c;
   int sz = (nPlanes+1) * sizeof(Plane);
-  c = malloc(sz);
+  c = (Plane*) malloc(sz);
   memcpy(c, g, sz);
   return c;
 }
@@ -1043,7 +1049,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 3.4");
+  print_module_name("guide_parallel 3.5");
   OwnInit(argc, argv);
 
   // allocate for planes + exit plane
@@ -1249,7 +1255,7 @@ static FILE * tryOpen(const char *fn, const char *s) {
 static void allocRdata (ReflFile ***p, int c) {
   ReflFile **np;
   if (*p) return;
-  np = calloc(c, sizeof(ReflFile*));
+  np = (ReflFile**) calloc(c, sizeof(ReflFile*));
   if (np)
     *p = np;
   else
@@ -1265,14 +1271,15 @@ void OwnInit   (int argc, char *argv[]) {
   long  i,j;
   char  *arg=NULL, sLine[512];
   FILE* pFile=NULL;
-  char sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
+  char  sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
+  double MValueL=0.0, MValueR=0.0, MValueT=0.0, MValueB=0.0;
   ReflFile *pRefFileLast;
   double bintervalX=1.0, bintervalY=1.0;
   int ibinX, ibinY;
 
   // guide parameter character usage:
-  //free                                         k K   L                    Q
-  //used a A b B c C d D e E f F g G h H i I j J     l   m M n  N o O p P q   r R s S t T u U v V w W x X y Y z Z
+  //free                         g                                          
+  //used a A b B c C d D e E f F   G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X y Y z Z
 
   for (i=1; i<argc; i++) {
 
@@ -1363,6 +1370,16 @@ void OwnInit   (int argc, char *argv[]) {
       break;
     case 'W':
       GuideExitWidth = atof(arg);
+      break;
+      
+    case 'L':
+      MValGenL  = atof(arg);
+      break;
+    case 'Q':
+      MValGenR  = atof(arg);
+      break;
+    case 'G':
+      MValGenTB = atof(arg);
       break;
       
     case 'f':
@@ -1541,19 +1558,20 @@ void OwnInit   (int argc, char *argv[]) {
     myExit("ERROR: Not enough memory for reflecitvity data!\n");
 
   /* left plane */
-  if (pReflL == NULL)
-    fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the left wall \n");
+  // if (pReflL == NULL)
+  //  CalcReflData(pReflL, MValueLeft);
+  //  fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the left wall \n");
 
   /* right plane */
-  if (pReflR == NULL)
-    fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the right wall \n");
+  // if (pReflR == NULL)
+  //  fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the right wall \n");
 
   /* top plane */
-  if (pReflT == NULL)
-    fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the top wall \n");
+  // if (pReflT == NULL)
+  //  fprintf(LogFilePtr,"\nWARNING: Case of zero reflectivity for the top wall \n");
 
   /* bottom plane */
-  if (pReflB == NULL) {
+  if (pReflB == NULL && pReflT != NULL) {
     pReflB = pReflT;
     ReflFileNameB = ReflFileNameT;
     fprintf(LogFilePtr,"\nNOTE: coating of top wall also used for bottom wall \n");
@@ -1584,7 +1602,7 @@ void OwnInit   (int argc, char *argv[]) {
   /* Calculation of height, width and channel-width of beginning and end of pieces */
 
   pPieces = (GuidePiece*) calloc(nPieces+1, sizeof(GuidePiece));
-  pRefFileLast = GetReflFile(ReflFileNameL, pReflL);
+  pRefFileLast = GetReflData(MValGenL, ReflFileNameL, pReflL);
 
   if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE) {
 
@@ -1597,6 +1615,11 @@ void OwnInit   (int argc, char *argv[]) {
       sRefFileL[0] = sRefFileR[0] = sRefFileT[0] = sRefFileB[0] = '\0';
       sscanf(sLine, "%lf %lf %lf %s %s %s %s", &pPieces[j].Xpce, &pPieces[j].Ypce, &pPieces[j].Zpce,
              (char *)&sRefFileL, (char *)&sRefFileR, (char *)&sRefFileT, (char *)&sRefFileB);
+      MValueL = atof(sRefFileL); if (MValueL > 0.0) strcpy(sRefFileL, " "); 
+      MValueR = atof(sRefFileR); if (MValueR > 0.0) strcpy(sRefFileR, " "); 
+      MValueT = atof(sRefFileT); if (MValueT > 0.0) strcpy(sRefFileT, " "); 
+      MValueB = atof(sRefFileB); if (MValueB > 0.0) strcpy(sRefFileB, " "); 
+
       pPieces[j].Xpce *= 100.0;
       if (j==0) XpceZero = pPieces[0].Xpce;
       pPieces[j].Xpce -= XpceZero;
@@ -1628,33 +1651,37 @@ void OwnInit   (int argc, char *argv[]) {
 
       /* Either load standard reflectivity file or use userdefined one */
       switch (sRefFileL[0]) {
-      case ':':  pPieces[j].RData[GW_LEFT]   = pRefFileLast; break;
-      case '\0': pPieces[j].RData[GW_LEFT]   = GetReflFile(ReflFileNameL, pReflL); break;
-      default:   pPieces[j].RData[GW_LEFT]   = GetReflFile(FullParName((char *)&sRefFileL), NULL);
+      case ':':  pPieces[j].RData[GW_LEFT]   = pRefFileLast; break;                                      // "use previous"
+      case '\0': pPieces[j].RData[GW_LEFT]   = GetReflData(MValGenL, ReflFileNameL, pReflL); break;      // standard files
+      case ' ':  pPieces[j].RData[GW_LEFT]   = GetReflData(MValueL, NULL, NULL);             break;      // m-value from file
+      default:   pPieces[j].RData[GW_LEFT]   = GetReflData(0.0, FullParName((char *)&sRefFileL), NULL);  // file from file
         pRefFileLast = pPieces[j].RData[GW_LEFT];
         break;
       }
 
       switch (sRefFileR[0]) {
       case ':':  pPieces[j].RData[GW_RIGHT]  = pRefFileLast; break;
-      case '\0': pPieces[j].RData[GW_RIGHT]  = GetReflFile(ReflFileNameR, pReflR); break;
-      default:   pPieces[j].RData[GW_RIGHT]  = GetReflFile(FullParName((char *)&sRefFileR), NULL);
+      case '\0': pPieces[j].RData[GW_RIGHT]  = GetReflData(MValGenR, ReflFileNameR, pReflR); break;
+      case ' ':  pPieces[j].RData[GW_RIGHT]  = GetReflData(MValueR, NULL, NULL);             break;    
+      default:   pPieces[j].RData[GW_RIGHT]  = GetReflData(0.0, FullParName((char *)&sRefFileR), NULL);
         pRefFileLast = pPieces[j].RData[GW_RIGHT];
         break;
       }
 
       switch (sRefFileT[0]) {
       case ':':  pPieces[j].RData[GW_TOP]    = pRefFileLast; break;
-      case '\0': pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT); break;
-      default:   pPieces[j].RData[GW_TOP]    = GetReflFile(FullParName((char *)&sRefFileT), NULL);
+      case '\0': pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT); break;
+      case ' ':  pPieces[j].RData[GW_TOP]  = GetReflData(MValueR, NULL, NULL);             break;    
+      default:   pPieces[j].RData[GW_TOP]    = GetReflData(0.0, FullParName((char *)&sRefFileT), NULL);
         pRefFileLast = pPieces[j].RData[GW_TOP];
         break;
       }
 
       switch (sRefFileB[0]) {
       case ':':  pPieces[j].RData[GW_BOTTOM] = pRefFileLast; break;
-      case '\0': pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB); break;
-      default:   pPieces[j].RData[GW_BOTTOM] = GetReflFile(FullParName((char *)&sRefFileB), NULL);
+      case '\0': pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB); break;
+      case ' ':  pPieces[j].RData[GW_BOTTOM] = GetReflData(MValueR, NULL, NULL);             break;    
+      default:   pPieces[j].RData[GW_BOTTOM] = GetReflData(0.0, FullParName((char *)&sRefFileB), NULL);
         pRefFileLast = pPieces[j].RData[GW_BOTTOM];
         break;
       }
@@ -1730,10 +1757,10 @@ void OwnInit   (int argc, char *argv[]) {
       }
 
       /* Load reflectivity file or reuse already loaded file */
-      pPieces[j].RData[GW_LEFT]   = GetReflFile(ReflFileNameL, pReflL);
-      pPieces[j].RData[GW_RIGHT]  = GetReflFile(ReflFileNameR, pReflR);
-      pPieces[j].RData[GW_TOP]    = GetReflFile(ReflFileNameT, pReflT);
-      pPieces[j].RData[GW_BOTTOM] = GetReflFile(ReflFileNameB, pReflB);
+      pPieces[j].RData[GW_LEFT]   = GetReflData(MValGenL,  ReflFileNameL, pReflL);
+      pPieces[j].RData[GW_RIGHT]  = GetReflData(MValGenR,  ReflFileNameR, pReflR);
+      pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT);
+      pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB);
     }
   }
   if (pFile)
@@ -1744,33 +1771,49 @@ void OwnInit   (int argc, char *argv[]) {
 /* Read guide data; data are encoded as reflectivities corresponding to 0.000,0.001, 0.002, ... deg,  */
 /* reference wavelength 1 A */
 
-ReflFile *GetReflFile(char *Filename, FILE *file) {
-
+ReflFile* GetReflData(double MValue, char *Filename, FILE *file) 
+{
   long  cFiles = 0;
-  if (Filename == NULL) return NULL;
 
-  for (cFiles = 0; cFiles < cReflFiles; cFiles++) {
-    if (pReflFiles[cFiles].filename == NULL) break;
+  if (Filename==NULL && MValue==0.0)
+    return NULL;
+
+  // check if this coating already exists in the list
+  for (cFiles = 0; cFiles < cReflFiles; cFiles++) 
+  {
+    if (pReflFiles[cFiles].filename == NULL && pReflFiles[cFiles].MValue==0.0) break;
+    if (pReflFiles[cFiles].filename != NULL && Filename != NULL)
 #ifdef _MSC_VER
-    if (_stricmp(pReflFiles[cFiles].filename, Filename)==0)
-      return &pReflFiles[cFiles];
+      if (_stricmp(pReflFiles[cFiles].filename, Filename)==0)
+        return &pReflFiles[cFiles];
 #else
-    if (strcasecmp(pReflFiles[cFiles].filename, Filename)==0)
-      return &pReflFiles[cFiles];
+      if (strcasecmp(pReflFiles[cFiles].filename, Filename)==0)
+        return &pReflFiles[cFiles];
 #endif
+    if (MValue > 0.0 && pReflFiles[cFiles].MValue==MValue)
+      return &pReflFiles[cFiles];
   }
-  if (pReflFiles[cFiles].filename == NULL) {
-    pReflFiles[cFiles].filename = Filename;
-    if (file) pReflFiles[cFiles].pfile = file;
-    LoadReflFile(&pReflFiles[cFiles]);
+
+  // not found
+  if (pReflFiles[cFiles].filename == NULL) 
+  {
+    if (Filename != NULL)
+    { pReflFiles[cFiles].filename = Filename;
+      if (file) pReflFiles[cFiles].pfile = file;
+      LoadReflFile(&pReflFiles[cFiles]);
+    }
+    else
+    { pReflFiles[cFiles].MValue = MValue;
+      CalcReflData(&pReflFiles[cFiles]);
+    }
     return &pReflFiles[cFiles];
   }
   return NULL;
 }
 
 /* Load Reflectivity data from file. Give pReflFile as input */
-void   LoadReflFile(ReflFile *pReflFile) {
-
+void   LoadReflFile(ReflFile* pReflFile) 
+{
   long   count = 0, i = 0, nLines = 0;
   char   sBuffer[512]="";
 
@@ -1780,7 +1823,8 @@ void   LoadReflFile(ReflFile *pReflFile) {
     if (pReflFile->pfile != NULL) {
       nLines = LinesInFile(pReflFile->pfile);
       pReflFile->maxdata = nLines * 10;
-      pReflFile->Rdata = calloc(pReflFile->maxdata, sizeof(double));
+      pReflFile->Rdata = (double*) calloc(pReflFile->maxdata, sizeof(double));
+      pReflFile->MValue=0.0;
       for(count=0; count < nLines; count++) {
         ReadLine(pReflFile->pfile, sBuffer, sizeof(sBuffer)-1);
         i += StrgScanLF(sBuffer, &pReflFile->Rdata[10*count], pReflFile->maxdata-10*count, 0);
@@ -1788,6 +1832,29 @@ void   LoadReflFile(ReflFile *pReflFile) {
       fclose(pReflFile->pfile);
     }
   }
+}
+
+/* calculate reflectivity data from m-value using quadratic SN description */
+void CalcReflData(ReflFile* pReflFile)
+{
+  double Angle, 
+         AngleMax;
+  int    i=0;
+
+  AngleMax = 0.1*(pReflFile->MValue+0.2);
+
+  pReflFile->pfile   = NULL;
+  pReflFile->filename= NULL;
+  pReflFile->maxdata = (long)    ceil(1000*AngleMax)+2;
+  pReflFile->Rdata   = (double*) calloc(pReflFile->maxdata, sizeof(double));
+
+  for (Angle=0.000; Angle <= AngleMax; Angle+=0.001)
+  { 
+    pReflFile->Rdata[i] = ReflSN(1.0, Angle, pReflFile->MValue);
+    i++;
+  }
+    
+  return;
 }
 
 
@@ -2176,7 +2243,7 @@ double PathThroughGuideGravOrder1(int thread_i,
         WriteIAP(&NearestNeutron, VT_ABSORBED);
         return -1.0;
       } else
-        ThisReflectivity = Pce->RData[ThisCollision]->Rdata[datanumber];
+        ThisReflectivity = ReflInterpol(NearestNeutron.Wavelength, degangular, Pce->RData[ThisCollision]->Rdata, Pce->RData[ThisCollision]->maxdata);
     } else {
       CountMessageThread(thread_i, GUID_NO_PLANE, NearestNeutron.ID);
       return -1.0;
