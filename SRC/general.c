@@ -190,36 +190,51 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 //
 double ReflSN(const double Lambda,    const double Angle,    const double M)
 {
-  double  M2,    // m'     : 'real' m value
-    Q,           // Q      : momentum transfer of the reflection
-    Qc=0.0217,   // Q_c    : crit. momentum transfer  (see figure)
-    R0=0.99,     // R_0    : reflectivity for 0 <= Q <= Q_c
-    alphaQ=0.0,  //          slope Delta_R / Delta_Q
-    betaQ =0.0,  //          quadratic term to describe R(q)
-    W,           // W      : width of the cut-off  [1/Ang]
-    R;           // R      : reflectivity
+  double S,T, 
+    M2,            // m'     : 'real' m value
+    Q,             // Q      : momentum transfer of the reflection
+    Qc,            // Q_c    : crit. momentum transfer 
+    QcNi  =0.0217, // Q_c,Ni : crit. momentum transfer of nickel
+    R0    =0.99,   // R_0    : reflectivity for 0 <= Q <= Q_c
+    alphaQ=0.0,    //          slope Delta_R / Delta_Q
+    betaQ =0.0,    //          quadratic term to describe R(q)
+    W,             // W      : width of the cut-off  [1/Ang]
+    R;             // R      : reflectivity
 
-  W  = 0.0022 - 0.0002*M;
-  M2 = M*0.9853 + 0.1978;
+  Qc = QcNi*Min(M, 1.0);
+  Q  = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
 
-  if (M > 3.0)
-  {
-    alphaQ =  5.0944 + 0.1204*M;
-    betaQ  = 68.1137 - 7.6251*M;
+  if (Q <= Qc)
+  { R = R0;
   }
   else
-  { alphaQ = M;
-    betaQ  = 0.0;
+  { 
+    if (M <= 1.0)
+    { R=0.0;
+    }
+    else
+    {
+      W  = 0.0022 - 0.0002*M;
+      M2 = M*0.9853 + 0.1978;
+
+      if (M > 3.0)
+      { alphaQ =  5.0944 + 0.1204*M;
+        betaQ  = 68.1137 - 7.6251*M;
+      }
+      else
+      { alphaQ = M;
+        betaQ  = 0.0;
+      }
+      T = 0.5 * (1.0 - tanh((Q - M2*QcNi) / W));
+      S = (1.0 - alphaQ * (Q-Qc) + betaQ * sq(Q-Qc));
+	    R = R0 * T * S ;
+    }
   }
-
-  Q = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
-	R = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
-
   return(R);
 }
 
 
-double ReflFile(const double Lambda, const double Angle, const double* Rdata, long MaxData)
+double ReflInterpol(const double Lambda, const double Angle, const double* Rdata, long MaxData)
 {
   long   iw1, iw2;
   double w,         // angle/wavelength

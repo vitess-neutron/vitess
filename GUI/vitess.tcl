@@ -1039,56 +1039,43 @@ set guideESET {
   {shape_file mneditablefile guide_shape.dat
     {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
   {}
-  {enter_width float 6 {
-    "entrance\nwidth [cm]"
-    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
-  {enter_height float 10 {
-    "entrance\nheight [cm]"
-    "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {enter_width float 6 {"entrance\nwidth [cm]" "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
+  {enter_height float 10 {"entrance\nheight [cm]" "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
   {}
-  {exit_width float 6 {
-    "exit\nwidth [cm]"
-    "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
-  {exit_height float 10 {
-    "exit\nheight [cm]"
-    "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
+  {exit_width float 6 {"exit\nwidth [cm]" "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
+  {exit_height float 10 {"exit\nheight [cm]" "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
   {"Guide characteristics" header}
-  {len_guide_piece float "" {
-    "piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
-  {number_pieces int 1 {
-    "number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
+  {len_guide_piece float "" {"piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
+  {number_pieces int 1 {"number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
   {}
-  {gd_scat float 0 {
-    "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
-  {gd_abs float 0 {
-    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
-  {"Reflectivity files" header}
-  {lrefl_filename pareditablefile mirr1a.dat
-    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
-  {rrefl_filename pareditablefile mirr1a.dat
-    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
-  {tbrefl_filename pareditablefile mirr1a.dat
-    {"top plane" "Reflectivity file for top (and bottom) plane" "" j} r dat 1}
-  {brefl_filename pareditablefile ""
-    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  {h_focus_pnt float 0 {"hor. focus dist.\nof ellipse [cm]"
+    "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
+  {v_focus_pnt float 0 {"vert. focus dist.\nof ellipse [cm]"
+    "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
+  {"Reflectivity" header}
+  {lrefl_m float 1 {"m-value left\nplane" "m-value for the reflectivity of the left plane (where y>0) using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the left plane is given"  "" L} ge0}
+  {rrefl_m float 1 {"right\nplane"         "m-value for the reflectivity of the right plane (where y<0) using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the right plane is given"  "" Q} ge0}
+  {tbrefl_m float 1 {"top/bottom\nplane"  "m-value for the reflectivity of the top and bottom plane using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the top/bottom plane is given"  "" G} ge0}
+  {}
+  {lrefl_filename pareditablefile mirr1a.dat  {"file\nleft plane" "Reflectivity file for left plane (where y>0)" "" i} r dat}
+  {rrefl_filename pareditablefile mirr1a.dat {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+  {tbrefl_filename pareditablefile mirr1a.dat  {"top plane" "Reflectivity file for top (and bottom) plane" "" j} r dat}
+  {brefl_filename pareditablefile "" {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
   {"Bender option" header}
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
     "blade\nthickness [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
   {rad_curve float 0 {
-    "curvature\n(radius) [m]"
-    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
+    "curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
 }
 # guide needs a scrollable window
 set BigFrameguide 1
 
 set specoptAdd {
   {"Special options" header}
-  {h_focus_pnt float 0 {
-    "hor. focus dist.\nof ellipse [cm]"  "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
-  {v_focus_pnt float 0 {
-    "vert. focus dist.\nof ellipse [cm]" "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
+  {gd_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
+  {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
     "Neutrons hitting the surface close to the connection of guide segment are absorbed." "" a}
