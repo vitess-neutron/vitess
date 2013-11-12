@@ -146,9 +146,20 @@ char* FullInstallName(const char* fileName, const char* sRelPath);
 
 
 static void setInstallDirectory (char *arg) {
-  /* The executable path contains the installation path, which we assume
-     to be that string part before MODULES */
+  // We need the InstallDirectory path for implicitly referenced data files.
+  // For gridrun we take this from the VITESSROOT environment variable.
+  // Normally we use the executable path of the module, which  contains the installation path;
+  // We assume it to be that string part before MODULES .
   char *mp;
+#ifndef WIN32
+  // gridrun works with unix only
+  char *s = getenv("VITESSROOT");
+  if (s) {
+    InstallDirectory = strdup(s);
+    InstallDirectoryLength = strlen(s);
+    return;
+  }
+#endif
   mp = strstr(arg, "MODULES");
   if (! mp) mp = strstr(arg, "Debug");
   if (! mp) return;
@@ -907,15 +918,14 @@ int ReadNeutrons()
 
 void ChangeNeutronID(Neutron* n)
 {
-  
+
   tempID = n->ID;
   lastIDShift++;
   // Increase the first letter to indicate the level of cloning of this trajectory
   n->ID.IDGrp[0]++;
   // Change the neutron ID to avoid dublicity with other trajectories
   n->ID.IDNo += lastIDShift;
-  
-  return;
+
 }
 
 /*******************************************************************/
