@@ -27,7 +27,9 @@
 	char		Option[STRING_BUFFER], *ParameterFileName, *StructureFactorFileName, *SampleFileName;
 	long		d_spr_option, datanumbermax = 10000, Repetition, repet, i,j;
 	double		TOF, WL, Prob ;
-	double		A_reciproc[3], B_reciproc[3], C_reciproc[3], Fhkl2[10001], hh[10001], kk[10001], ll[10001], no[10001];
+        double		A_reciproc[3], B_reciproc[3], C_reciproc[3];
+	double          *Fhkl2, *hh, *kk, *ll;
+        int             *no;
 	double		AnglPhi, AnglOmega, AnglChi, AnglOutHoriz, AnglOutVert ;
 	double		RotMatrixOmega[3][3], RotMatrixChi[3][3], RotMatrixPhi[3][3], RotMatrixOut[3][3], RotMatrixDelta[3][3];
 	double		AbsorptionC, Normalisation, Ddperd;
@@ -324,6 +326,11 @@ void OwnInit(int argc, char *argv[])
 	Ddperd=0.01;
 	d_spr_option = 1 ;
 
+	colh = -1; colk = -1; coll = -1; colD = -1;
+	colF = -1; colF2 = -1; colM = -1; colDW = -1;
+	scaleF2 = 1.;
+	
+
 /*    INPUT  */
 	
 	while(argc>1)
@@ -378,7 +385,19 @@ void OwnInit(int argc, char *argv[])
 
 	FillRotMatrixZY(RotMatrixOmega, 0., AnglOmega); 
 
-    {long count;
+
+	if (strstr(StructureFactorFileName, ".dat") == &StructureFactorFileName[strlen(StructureFactorFileName)-4])
+    {
+      long count;
+      count = LinesInFile(StructureFactorFile);
+      rewind(StructureFactorFile);
+
+      no  = (int*) calloc(count, sizeof(int));
+      hh = (double*) calloc(count, sizeof(double));
+      kk = (double*) calloc(count, sizeof(double));
+      ll = (double*) calloc(count, sizeof(double));
+      Fhkl2 = (double*) calloc(count, sizeof(double));
+      
 		  for(count=0; count<datanumbermax; count++)
 		{
  			no[count] = ReadParF(StructureFactorFile);
@@ -397,7 +416,17 @@ void OwnInit(int argc, char *argv[])
 		}
 			fprintf(LogFilePtr, "\nNumber of reflections: %ld\n", Repetition);
 
-//		  for(count=0; count<Repetition; count++) fprintf(LogFilePtr, "%ld  %lf  %lf  %lf  %lf\n", count, hh[count], kk[count], ll[count],  Fhkl2[count]);
+			//		  for(count=0; count<Repetition; count++) fprintf(LogFilePtr, "%ld  %lf  %lf  %lf  %lf\n", count, hh[count], kk[count], ll[count],  Fhkl2[count]);
+    }
+	else {
+	  int jj;
+	  Repetition = ReadStructureFile(StructureFactorFileName, 2, 0);
+	  no  = (int*) calloc(Repetition, sizeof(int));
+	  for (jj = 0; jj < Repetition; jj++) no[jj] = jj+1;
+	  hh = hVal;
+	  kk = kVal;
+	  ll = lVal;
+	  Fhkl2 = F2Val;
 	}
 
 
@@ -433,7 +462,9 @@ void ReadParameterFile()
 
 		AnglOutHoriz=ReadParF(Par_Sample); AnglOutVert=ReadParF(Par_Sample); ReadParComment(Par_Sample);
 
-
+		colh = ReadParF(Par_Sample); colk = ReadParF(Par_Sample); coll = ReadParF(Par_Sample);
+		colF = ReadParF(Par_Sample); colF2 = ReadParF(Par_Sample); colDW= ReadParF(Par_Sample);
+		
 		
 /*	 checks some values */
 

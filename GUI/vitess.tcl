@@ -3071,12 +3071,18 @@ set nxsESET [concat $samASET {
 ###   pow file description
 
 set powESET [concat $samASET {
-  {sfactfile pareditablefile "" {"structure\nfactor file"} r}
+  {sfactfile pareditablefile "" {"structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau \n or in another format. In the latter case the meaning of individual \n columns must be specified in the parameter file."} r}
   {Scattering header}
   {tscat float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
   {cscat float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
   {absorp float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {vol float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 1}
+  {"Structure file format" header}	
+  {cD int  0 {"d-spacing\n column" "D-spacing column number in the custom structure file."} ge0}
+  {cF int  0 {"Str. factor\n column" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int  0 {"Squared str.\n factor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cM int  0 {"Mult.\n column" "Multiplicity column number in the custom structure file (optional)."} ge0}
+  {cDW int  0 {"Debye-Waller\n factor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }]
 
 ### sample
@@ -3270,7 +3276,7 @@ set sample_singcrystESET {
   {parfile pareditablefile sample_singcryst.par {
     "parameter file" "" "" P} r ssc 1}
   {sfactfile pareditablefile singcryst_structuref.dat {
-    "structure\nfactor file" "" "" S} r}
+    "structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau \n or in another format. In the latter case the meaning of individual \n columns must be specified in the parameter file." "" S} r}
   {spac radio Lorentzian {"d-spacing\ndistribution" "d-spacing probability distribution with maximum at the nominal value" "" o}
     {Lorentzian Gaussian} {1 2}}
   {spread float 0.0001 {"d-spacing\nspread [-]" "FWHM/d-spacing, the relative 'thickness' of the Ewald sphere" "" d}}
@@ -3308,6 +3314,13 @@ set sscESET {
   {wid float "" {"width [cm]" "rectangular sample dimension in Z direction (sample frame)"}}
   {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output"}}
   {ov float "" {"output angle\nvertical [deg]"}}
+  {"Structure file format" header}	
+  {ch int  0 {"h\n column" "H column number in the custom structure file."} ge0}
+  {ck int  0 {"k\n column" "K column number in the custom structure file."} ge0}
+  {cl int  0 {"l\n column" "L column number in the custom structure file."} ge0}
+  {cF int  0 {"Str. factor\n column" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int  0 {"Squared Str.\n factor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cDW int  0 {"Debye-Waller\n factor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }
 
 

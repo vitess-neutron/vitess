@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
   /* Now get the nuclear unit-cell structure factors |f_N(t)|^2.       */
   /* The memory needed will be allocated inside 'GetStructureFactor()'.*/
-  NumStrucFac = GetStructureFactor(StrucFacFileName, &StrucFac);
+  NumStrucFac = ReadStructureFile(StrucFacFileName, 1, &StrucFac);
 
   /* Factors that take care of the detector coverage */
   DetFacCoh = DelPhi/M_PI;
@@ -275,6 +275,10 @@ void  OwnInit(int argc, char *argv[])
   long i;
   int  detectortest=0;
 
+  colh = -1; colk = -1; coll = -1; colD = -1;
+  colF = -1; colF2 = -1; colM = -1; colDW = -1;
+  scaleF2 = 1.;
+  
   /* some default values */
   Theta    = M_PI/2.0;
   DelTheta = M_PI/2.0;
@@ -426,8 +430,11 @@ void GetSample(SampleType *Sample, char *StrFileName)
           if(ReadTilComment(Buffer, SampleFile))
           { 
             sscanf(Buffer,"%lf", &UCV);
-
             /* Seems as everything needed could be read             */
+
+	     if(ReadTilComment(Buffer, SampleFile)) 
+	       sscanf(Buffer,"%d %d %d %d %d", &colD, &colF, &colF2, &colDW, &colM);
+
           } 
           else 
           { fprintf(LogFilePtr, "ERROR: Can't read volume of a unit cell of %s", SampleFileName);

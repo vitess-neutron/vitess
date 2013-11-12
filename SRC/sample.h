@@ -6,6 +6,14 @@
 
 extern char* SampleFileName;
 
+int colD, colF, colF2, colDW, colM, colh, colk, coll;
+double scaleF2;
+
+double* hVal;
+double* kVal;
+double* lVal;
+double* F2Val;
+
 void InitSample  (SampleType *Sample);
 void ReadCube    (FILE *SampleFile, SampleType *Sample);
 void ReadCylinder(FILE *SampleFile, SampleType *Sample);
@@ -24,5 +32,8 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double l1,
 long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
                              long* pNisp, VtDir eDir);
+
+int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactorLookup[]);
+
 
 #endif
