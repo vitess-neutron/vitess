@@ -149,6 +149,7 @@ options may be
                      for generated  bash command files, may be repeated
 --traj=n             explicitly give the number of neutron trajetories to simulated,
                      n overrides value in grd file
+--T=number           override --T parameter in grid file to always use number helper threads
 
 B) inform about jobs
 gridrun option
@@ -179,7 +180,7 @@ EOS
 my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_files,
     $grid_mod_dir, $grid_work_dir, $submit_mode, $ssh_shell,
     $verbose, $force_delete,
-    $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories,
+    $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories, $threads,
     $slnodes, $slpartition, $slpernode,
     $run_nr, $abort_run, $delete_run, $repeatseed,
     $merge_again, $ppjob,
@@ -258,6 +259,8 @@ while ($_ = shift) {
         $sopt_file = $arg;
       } elsif ($opt eq 'instr') {
         $instr_file = $arg;
+      } elsif ($opt eq 't') {
+        $threads = $arg;
       } elsif ($opt eq 'v') {
         $verbose = $arg;
       } elsif ($opt =~ /^opt/) {
@@ -673,6 +676,39 @@ sub startExecution {
     chmod 0700, "$grid_work_dir/$_";
   }
 
+  # copy part of the FILES subtree to the work directory
+  my $vf = abs_path("$vitess_binaries/../FILES");
+  my $fdir = "$grid_work_dir/FILES";
+  mkdir $fdir, 0700;
+  # copy .dat files
+  opendir R, $vf;
+  while ($_ = readdir(R)) {
+    copy("$vf/$_", "$fdir/$_") if /\.dat$/;
+  }
+  closedir R;
+  # copy the moderators sub tree
+  my @D = ("$vf/moderators");
+  mkdir "$fdir/moderators", 0700;
+  my ($d, $fn, $td, $subn);
+  while ($d = shift @D) {
+    opendir R, $d;
+    while ($_ = readdir(R)) {
+      next if /^\./;        # ignore . directories
+      $fn = "$d/$_";
+      next if -l $fn;       # ignore symbolic links
+      $fn =~ m@^$vf/(.+)$@;
+      $subn = $1;
+      $td = "$fdir/$subn";
+      if (-d $fn) {
+        push @D, $fn;
+        mkdir $td, 0700;
+      } else {
+        copy($fn, $td);
+      }
+    }
+    closedir R;
+  }
+
   if ($submit_mode ne 'slurm') {
 
     # copy this script to work directory
@@ -926,6 +962,9 @@ sub analyzePipe {
   my $t = ' --L$T/g';   # is replacement string for logfile parameters
   foreach $c (@Pipe) {
     $_ = $c;
+    # force --T$threads
+    s/--T[0-9]+/--T$threads/ if $threads;
+
     @C = split;
     # correct any log filename spec to be $T/g<i>
     s/ +--L[^ ]+/$t$i/;
@@ -1185,6 +1224,7 @@ cd $tdir
 ulimit -Ss 8192
 V=$grid_work_dir
 P=$tdir
+export VITESSROOT=$grid_work_dir/
 export GSL_RNG_TYPE=$gsl_rng_type
 T=`mktemp -d /tmp/v_$ENV{USER}_XXXXXX` || exit 1
 echo "\$\$ \$HOSTNAME" > PIPEPID_
