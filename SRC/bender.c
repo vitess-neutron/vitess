@@ -69,6 +69,7 @@
 /*				     if visualisation was activated			    */
 /*				     Choose the output device : screen, file or both	    */
 /*				     New external variable gselec 			    */
+/* v1.8      Nov 2013  D. Nekrassov  M-values as input 			                    */
 /********************************************************************************************/
 
 

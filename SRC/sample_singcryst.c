@@ -5,6 +5,7 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0  Apr 2003  Géza Zsigmond  initial version                                            */
 /* 1.1  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced      */
 /********************************************************************************************/
 
 #include <stdio.h>

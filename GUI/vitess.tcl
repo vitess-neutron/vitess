@@ -1791,10 +1791,10 @@ set ma_flatESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
-  {coeff float 0.00005 {"Absorption\n coefficient"
-    "Absorption coefficient in the crystal in [1/cm]." "" C}}
-  {}
+#  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+#  {coeff float 0.00005 {"Absorption\n coefficient"
+#    "Absorption coefficient in the crystal in [1/cm]." "" C}}
+#  {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
 }
 

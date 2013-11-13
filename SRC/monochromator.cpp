@@ -10,6 +10,7 @@
 /* 2.0  Oct 2013  D. Nekrassov    written as a C++ class, included algorithms to determine   */  
 /*                                normalisation without an extra normalisation run           */
 /*                                visualisation improved                                     */
+/*                                Allow for several monochromators after each other          */
 /*********************************************************************************************/
 
 #include <stdio.h>

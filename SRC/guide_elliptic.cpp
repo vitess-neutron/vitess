@@ -1,6 +1,15 @@
 #ifndef GUIDE_ELLIPTIC_CPP
 #define GUIDE_ELLIPTIC_CPP
 
+/********************************************************************************************/
+/*  VITESS module 'guide_elliptic.cpp'                                                      */
+/*                                                                                          */
+/* The free non-commercial use of these routines is granted                                 */
+/* providing due credit is given to the authors.                                            */
+/* 1.0 Oct 2012  D. Nekrassov  initial version                                              */
+/* 1.1 Nov 2013  D. Nekrassov  added m-values as input parameters                           */
+/********************************************************************************************/
+
 #include <math.h>
 
 #define thetaCNi 0.099138
@@ -485,7 +494,7 @@ int ProcessNeutron(Neutron* n)
       
       // Reflection takes place first in horizontal plane
       else if (distTempX1 < distTempX2) {	
-	
+	 
 	// Here something went wrong, first reflection takes place in the horizontal plane,
 	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
