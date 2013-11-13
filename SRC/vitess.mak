@@ -200,6 +200,10 @@ SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_swarm.c
+"$(IDIR)\opt_swarm.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\sq_calc.c
 "$(IDIR)\sq_calc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -448,8 +452,8 @@ SOURCE=$(SPATH)\opt_sim.c
 "$(IDIR)\opt_sim.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
+"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)

@@ -51,6 +51,7 @@ short OptGrad();
 short OptGradMC();
 short Metropolis();
 short Patrol();
+short Swarm();
 
 static void  OwnInit    (int argc, char *argv[]);
 static void  OwnCleanup ();
@@ -85,11 +86,19 @@ int main(int argc, char* argv[])
       printf("Optimization has ended\n");
       break;
 		case VT_METROPOLIS: 
-      if (!bIni) strcpy(sIniFile, "metro.ini");    
-      printf("Optimization has started\n");
+      if (!bIni) strcpy(sIniFile, "metro.ini");    	
+      printf("Optimization has started\n");		
       bCont = Metropolis();   
       printf("Optimization has ended\n");
       break;
+      
+		case VT_SWARM: 
+      if (!bIni) strcpy(sIniFile, "swarm.ini");    
+      printf("Optimization has started\n");
+      bCont = Swarm();   
+      printf("Optimization has ended\n");
+      break;
+      
 		default: 
       Error("opt_main: optimization algorithm could not be identified");
 	}
