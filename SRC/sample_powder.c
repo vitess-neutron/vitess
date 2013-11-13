@@ -15,6 +15,7 @@
 /* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file   */
 /* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended */
 /* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample*/
+/* 1.7  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced          */
 /************************************************************************************************/
 
 #include <string.h>

@@ -4,6 +4,7 @@
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
 /* 1.0 Apr 2013  D. Nekrassov  initial version                                              */
+/* 1.1 Nov 2013  D. Nekrassov  "OR" mode bug fixed                                          */
 /********************************************************************************************/
 
 

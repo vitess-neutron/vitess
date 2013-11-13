@@ -18,7 +18,8 @@
 /* 1.6  Apr 2004  G. Zsigmond	  Visualise only first 1000 neutrons, write sm_ensemble.ps      */
 /* 1.7  Feb 2008  K. Lieutenant extension to MAX_MIRR (=13) mirrors                             */
 /* 1.8  Apr 2008  M. Fromme changeable constant MAX_MIRR                                        */
-/* 1.9  Feb 1010  M. Fromme helper threads                                                      */
+/* 1.9  Feb 2010  M. Fromme helper threads                                                      */
+/* 2.0  Nov 2013  D. Nekrassov Visualisation, absorption in mirror material, m-values as input  */
 /************************************************************************************************/
 
 #include <stdio.h>

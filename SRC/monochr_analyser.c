@@ -33,10 +33,10 @@ int main(int argc, char **argv)
   DECLARE_ABORT;
 
   while (ReadNeutrons())  {
-    int i, ii;
-    double startTime;
-    VectorType startPosition;
-    VectorType startVector;
+    int i;
+    /* double startTime; */
+    /* VectorType startPosition; */
+    /* VectorType startVector; */
 
     CHECK;
     for (i=0; i<NumNeutGot; i++) {
@@ -47,12 +47,12 @@ int main(int argc, char **argv)
       /* selects CE on which the neutron is reflected and gives global variables
 	 in	the frame of CE */
 
-      startTime = InputNeutrons[i].Time;
+      /* startTime = InputNeutrons[i].Time; */
 
-      for (ii = 0; ii < 3; ii++) {
-	startVector[ii] = InputNeutrons[i].Vector[ii];
-	startPosition[ii] = InputNeutrons[i].Position[ii];
-      }
+      /* for (ii = 0; ii < 3; ii++) { */
+      /* 	startVector[ii] = InputNeutrons[i].Vector[ii]; */
+      /* 	startPosition[ii] = InputNeutrons[i].Position[ii]; */
+      /* } */
 
       SelectCE(&Index, i) ;
 
@@ -99,6 +99,7 @@ int main(int argc, char **argv)
 
 
         /* start here if no mosaic */
+	// CAN NEVER OCCUR, mosaic_fwhm[k] is set to 10^-3
         if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
 	
           double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
@@ -203,17 +204,17 @@ int main(int argc, char **argv)
           /** end here if mosaic **/
         }
 
-        if (mode == 2) {
-          InputNeutrons[i].Probability -= Prob;
-          InputNeutrons[i].Time = startTime;
-          ii = 0;
-          for (ii = 0; ii < 3; ii++) {
-            InputNeutrons[i].Vector[ii] = startVector[ii];
-            InputNeutrons[i].Position[ii] = startPosition[ii];
-          }
-          TransmitNeutron(&InputNeutrons[i]);
-          continue;
-        }
+        /* if (mode == 2) { */
+        /*   InputNeutrons[i].Probability -= Prob; */
+        /*   InputNeutrons[i].Time = startTime; */
+        /*   ii = 0; */
+        /*   for (ii = 0; ii < 3; ii++) { */
+        /*     InputNeutrons[i].Vector[ii] = startVector[ii]; */
+        /*     InputNeutrons[i].Position[ii] = startPosition[ii]; */
+        /*   } */
+        /*   TransmitNeutron(&InputNeutrons[i]); */
+        /*   continue; */
+        /* } */
 
         /* computes neutron variables in the initial frame */
 
@@ -378,10 +379,10 @@ void OwnInit(int argc, char *argv[])
   DevV         = 0.0;
   GapH         = 0.0;
   GapV         = 0.0;
-  mode = 1;
+  //  mode = 1;
   absCoeff = 0;
 
-   bVisInstalled = TRUE;
+  bVisInstalled = TRUE;
 
   while(argc>1)
     {
@@ -424,9 +425,9 @@ void OwnInit(int argc, char *argv[])
 	  sscanf(&argv[1][2], "%lf", &DevV) ;
 	  break;
 
-	case 'X':
-	  sscanf(&argv[1][2], "%d", &mode) ;
-	  break;
+	  /* case 'X': */
+	  /*   sscanf(&argv[1][2], "%d", &mode) ; */
+	  /*   break; */
 
 	case 'C':
 	  sscanf(&argv[1][2], "%lf", &absCoeff) ;
@@ -570,8 +571,8 @@ void OwnInit(int argc, char *argv[])
       RotHoriz_F[0][0]= RotHoriz ; RotVert_F[0][0]= RotVert ;
 
       FillRotMatrixZY(RotMatrixSurf, RotVert, RotHoriz);
-      rotOffset = CalculateRotationOffset();
-      totalXOffset = PosCE[0] + DimCE[0]/2. + rotOffset;
+      /* rotOffset = CalculateRotationOffset(); */
+      /* totalXOffset = PosCE[0] + DimCE[0]/2. + rotOffset; */
       goto cont ;
     }
 
@@ -629,23 +630,66 @@ void OwnInit(int argc, char *argv[])
 
   if (bVisInstr)
     { 
-      // Visualisation of the monochromator geomentry
-      stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
-      stGeometry.nCuboids = 1; 
       
-      stGeometry.pCuboid[0].Length = DimCE[0]; 
-      stGeometry.pCuboid[0].Width  = DimCE[1];
-      stGeometry.pCuboid[0].Height = DimCE[2];
-      stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
-      stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
-      stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
-      stGeometry.pCuboid[0].vNormal[0]= 1.;
-      stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
-      stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+      if (Option == 1) {
+	// Visualisation of the monochromator geomentry
+	stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
+	stGeometry.nCuboids = 1; 
       
-      stGeometry.pDescr  = "monochromator:yellow";
-      stGeometry.eModule = VT_MONOC_ANALY;
-  }
+	stGeometry.pCuboid[0].Length = DimCE[0]; 
+	stGeometry.pCuboid[0].Width  = DimCE[1];
+	stGeometry.pCuboid[0].Height = DimCE[2];
+	stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
+	stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
+	stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
+	stGeometry.pCuboid[0].vNormal[0]= 1.;
+	stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
+	stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+      
+	stGeometry.pDescr  = "monochromator:yellow";
+	stGeometry.eModule = VT_MONOC_ANALY;
+
+      }
+      
+      else {
+	int i, j;
+	int k = 0;
+	
+	stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
+	stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+	stGeometry.pDescr  = "monochromator:yellow";
+	stGeometry.eModule = VT_MONOC_ANALY;
+
+	for(i = 0;i<NumberCE[0];i++) {
+	  for(j = 0;j<NumberCE[1];j++) {
+	      
+	    VectorType DimCurrCE, PosCurrCE;
+	    double RotMatrixCurrCE[3][3];
+	    VectorType normal={1, 0, 0};
+
+	    CopyVectorsToVector(i, j, PosCE_F, PosCurrCE) ;
+	    CopyVectorsToVector(i, j, DimCE_F, DimCurrCE) ;
+	    CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
+
+	    RotBackVector(RotMatrixCurrCE , normal);
+
+	    stGeometry.pCuboid[k].Length = DimCurrCE[0]; 
+	    stGeometry.pCuboid[k].Width  = DimCurrCE[1];
+	    stGeometry.pCuboid[k].Height = DimCurrCE[2];
+	    stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
+	    stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
+	    stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
+	    stGeometry.pCuboid[k].vNormal[0]= normal[0];
+	    stGeometry.pCuboid[k].vNormal[1]= normal[1];
+	    stGeometry.pCuboid[k].vNormal[2]= normal[2];
+
+	    k++;
+
+	  }
+	}
+	
+      }
+    }
   
 
 }/* End OwnInit */
@@ -873,74 +917,74 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
 }
 
 
-void TransmitNeutron(Neutron* n)
-{
+/* void TransmitNeutron(Neutron* n) */
+/* { */
  
-  VectorType Pos1, Pos2, dir, pos;
-  double distInCrystal, weightFactor, scalar, ToF;
-  int i = 0;
+/*   VectorType Pos1, Pos2, dir, pos; */
+/*   double distInCrystal, weightFactor, scalar, ToF; */
+/*   int i = 0; */
 
-  for (i = 0; i < 3; i++) {
-    dir[i] = n->Vector[i];
-    pos[i] = n->Position[i];
-  }
+/*   for (i = 0; i < 3; i++) { */
+/*     dir[i] = n->Vector[i]; */
+/*     pos[i] = n->Position[i]; */
+/*   } */
 
-  pos[0] -= PosCE[0];
-  pos[1] -= PosCE[1];
-  pos[2] -= PosCE[2];
+/*   pos[0] -= PosCE[0]; */
+/*   pos[1] -= PosCE[1]; */
+/*   pos[2] -= PosCE[2]; */
 
-  RotBackVector(RotMatrixSurf, pos);
-  RotBackVector(RotMatrixSurf, dir);
+/*   RotBackVector(RotMatrixSurf, pos); */
+/*   RotBackVector(RotMatrixSurf, dir); */
 
-  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2))
-    {
-      SubVector(Pos2, Pos1);
-      distInCrystal = LengthVector(Pos2);       
-      weightFactor = exp (-1.*distInCrystal*absCoeff);
-      n->Probability *= weightFactor;
-    }
+/*   if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) */
+/*     { */
+/*       SubVector(Pos2, Pos1); */
+/*       distInCrystal = LengthVector(Pos2);        */
+/*       weightFactor = exp (-1.*distInCrystal*absCoeff); */
+/*       n->Probability *= weightFactor; */
+/*     } */
   
   
-  scalar = totalXOffset / n->Vector[0];
-  for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar;
+/*   scalar = totalXOffset / n->Vector[0]; */
+/*   for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar; */
   
-  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
-  if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) {
-    double distInCrystal, weightFactor;
-    SubVector(Pos2, Pos1);
-    distInCrystal = LengthVector(Pos2);
-    weightFactor = exp (-1.*distInCrystal*absCoeff);
-    n->Probability *= weightFactor;
-  }
+/*   ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]); */
+/*   if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) { */
+/*     double distInCrystal, weightFactor; */
+/*     SubVector(Pos2, Pos1); */
+/*     distInCrystal = LengthVector(Pos2); */
+/*     weightFactor = exp (-1.*distInCrystal*absCoeff); */
+/*     n->Probability *= weightFactor; */
+/*   } */
 
-  scalar = totalXOffset / n->Vector[0];
-  for (i = 0; i < 3; i++)
-    n->Position[i] += n->Vector[i]*scalar;
+/*   scalar = totalXOffset / n->Vector[0]; */
+/*   for (i = 0; i < 3; i++) */
+/*     n->Position[i] += n->Vector[i]*scalar; */
 
-  ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]);
-  n->Time += ToF;
+/*   ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]); */
+/*   n->Time += ToF; */
 
-  WriteNeutron(n);
-}
+/*   WriteNeutron(n); */
+/* } */
 
-double CalculateRotationOffset()
-{
-  double     xOffset1, xOffset2;
-  VectorType vec1, vec2;
+/* double CalculateRotationOffset() */
+/* { */
+/*   double     xOffset1, xOffset2; */
+/*   VectorType vec1, vec2; */
 
-  vec1[0] = DimCE[0]/2.;
-  vec1[1] = DimCE[1]/2;
-  vec1[2] = DimCE[2]/2.;
+/*   vec1[0] = DimCE[0]/2.; */
+/*   vec1[1] = DimCE[1]/2; */
+/*   vec1[2] = DimCE[2]/2.; */
 
-  vec2[0] = DimCE[0]/2.;
-  vec2[1] = DimCE[1]/2;
-  vec2[2] = -DimCE[2]/2.;
+/*   vec2[0] = DimCE[0]/2.; */
+/*   vec2[1] = DimCE[1]/2; */
+/*   vec2[2] = -DimCE[2]/2.; */
 
-  RotVector(RotMatrixSurf, vec1);
-  RotVector(RotMatrixSurf, vec2);
+/*   RotVector(RotMatrixSurf, vec1); */
+/*   RotVector(RotMatrixSurf, vec2); */
 
-  xOffset1 = fabs(vec1[0]);
-  xOffset2 = fabs(vec2[0]);
+/*   xOffset1 = fabs(vec1[0]); */
+/*   xOffset2 = fabs(vec2[0]); */
 
-  return Max(xOffset1, xOffset2);
-}
+/*   return Max(xOffset1, xOffset2); */
+/* } */

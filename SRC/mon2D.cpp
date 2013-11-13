@@ -173,7 +173,7 @@ void Mon2D::Init(int argc, char* argv[])
         filterVarMax2 = atof(&argv[i][2]);   /* maximum value of filter parameter 2 */
         break;
 	
-	  case 'F':
+       case 'F':
         format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz, gnuplot readable */
         break;
 
