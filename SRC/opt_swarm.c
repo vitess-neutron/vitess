@@ -285,7 +285,7 @@ static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfi
 	  case 'b': *pNbees  = atoi(sParameter); 
 	    if(*pNbees > MAX_BEES){
 	      *pNbees = MAX_BEES;
-	      sprintf(sMessage, "WARNING: swarm size larger than max. size, set to maximum: %d individuals \n", MAX_BEES);
+	      fprintf(LogFilePtr, "\n WARNING: swarm size larger than max. size, set to maximum: %d individuals \n", MAX_BEES);
 	    }
 	    break;
 	  case 's': *pNsteps  = atoi(sParameter); break;
@@ -309,7 +309,14 @@ static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfi
       Warning("WARNING (swarm): file containing control parameters could not be opened, default values are used");
       rc=FALSE;
     }
-  
+
+  if(*pW0min>*pW0max)
+    fprintf(LogFilePtr,"\n WARNING: w0_min > w0_max  ==>  increasing velocity will slow down convergence \n");
+  if(*pW1min>*pW1max)
+    fprintf(LogFilePtr,"\n WARNING: w1_min > w1_max  ==>  cognitive part is increasing with time instead of decreasing! \n");
+  if(*pW2min>*pW2max)
+    fprintf(LogFilePtr,"\n WARNING: w2_min > w2_max  ==>  social part is decreasing with time instead of increasing! \n");
+
   return rc;
   
 }
