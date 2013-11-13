@@ -100,6 +100,8 @@ OTHER FUNCTIONS! */
 #define  N_SURF_M3	1801
 #define  N_SURF_M3_S	1800
 
+#define thetaCNi 0.099138
+
 /****************************************/
 /** Structures (changed in March 2002) **/
 /****************************************/
@@ -168,6 +170,8 @@ void GeometryTestBender(Bender, double *, double *, double *, double *,
 		    	       double, double , double , long);
 
 
+void FillReflContainer(double array[1000], double m);
+
 
 /******************************/
 /**      MAIN Program        **/
@@ -204,8 +208,8 @@ int main(int argc, char *argv[])
   double BenderExitWidth, EntranceHelp,rightend,leftend,spacer,channelwidth;
   double Radius, length, dX, dZ;
   double beta;
-  double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
-  double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
+  static double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
+  static double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
   double TimeOF1;
   double rdate[N_SURF_M3];
   double transm0[1001]; /* file, which describe transmission of material of bender channel */
@@ -222,6 +226,8 @@ int main(int argc, char *argv[])
   double XRR[N_SURF], YRR[N_SURF]; /* for calculating conveging surface */
   double XENR[N_SURF], XEXR[N_SURF], YENR[N_SURF], YEXR[N_SURF], RADR[N_SURF];
   double XCENR[N_SURF], YCENR[N_SURF], XTMPR[N_SURF], YTMPR[N_SURF], ALPHAR[N_SURF];
+
+  double mNumber[2][3];
 
   double TMP1, TMP2, TMP3, TMP4; /* Temporary for surfaces tests variables */
   double temp1, temp2;
@@ -286,6 +292,9 @@ int main(int argc, char *argv[])
   BufferIndex = 0;
   surfacerough = 0.0; /*set by default */
 
+  mNumber[0][0] = -1; mNumber[0][1] = -1; mNumber[0][2] = -1;
+  mNumber[1][0] = -1; mNumber[1][1] = -1; mNumber[1][2] = -1;
+
 #ifdef VT_GRAPH
   gselec = 1 ; /* Activate visualisation device -screen */
 #endif
@@ -299,6 +308,36 @@ int main(int argc, char *argv[])
     if (*a != '-') continue;
     arg = a + 2;
     switch(a[1]) {
+
+    case 'b':  /* up, left plane */
+      mNumber[0][0] = atof(&argv[i][2]);  
+      FillReflContainer(rdatalup, mNumber[0][0]);
+      break; 
+      
+    case 'B':  /* up, right plane */
+      mNumber[0][1] = atof(&argv[i][2]);  
+      FillReflContainer(rdatarup, mNumber[0][1]);
+      break; 
+
+     case 'd':  /* up, top/bottom plane */
+      mNumber[0][2] = atof(&argv[i][2]);  
+      FillReflContainer(rdatatbup, mNumber[0][2]);
+      break;   
+
+    case 'e':  /* up, left plane */
+      mNumber[1][0] = atof(&argv[i][2]);  
+      FillReflContainer(rdataldo, mNumber[1][0]);
+      break; 
+      
+    case 'E':  /* up, right plane */
+      mNumber[1][1] = atof(&argv[i][2]);  
+      FillReflContainer(rdatardo, mNumber[1][1]);
+      break; 
+
+     case 'f':  /* up, top/bottom plane */
+      mNumber[1][2] = atof(&argv[i][2]);  
+      FillReflContainer(rdatatbdo, mNumber[1][2]);
+      break;    
 
     case 'i':
       refl_filelup = openNFile((ReflFileNamelup = arg));
@@ -630,15 +669,15 @@ if (bAbsTransCrit != 0)
 
   /* initial initialization */
 
-  for(i=0;i<1000; i++)
-  {
-    rdatalup[i]=0.0;
-    rdatarup[i]=0.0;
-    rdatatbup[i]=0.0;
-    rdataldo[i]=0.0;
-    rdatardo[i]=0.0;
-    rdatatbdo[i]=0.0;
-  }
+  /* for(i=0;i<1000; i++) */
+  /* { */
+  /*   rdatalup[i]=0.0; */
+  /*   rdatarup[i]=0.0; */
+  /*   rdatatbup[i]=0.0; */
+  /*   rdataldo[i]=0.0; */
+  /*   rdatardo[i]=0.0; */
+  /*   rdatatbdo[i]=0.0; */
+  /* } */
 
 
   for(i=0;i<=1000; i++)
@@ -696,12 +735,12 @@ if (bAbsTransCrit != 0)
 
 
   /* Read reflectivity files for all walls, spin up and down */
-  LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
-  LoadReflFile(refl_filerup,  rdatarup, "right", "up");
-  LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
-  LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
-  LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
-  LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
+  if (mNumber[0][0] < 0) LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
+  if (mNumber[0][1] < 0) LoadReflFile(refl_filerup,  rdatarup, "right", "up");
+  if (mNumber[0][2] < 0) LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
+  if (mNumber[1][0] < 0) LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
+  if (mNumber[1][1] < 0) LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
+  if (mNumber[1][2] < 0) LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
 
 
  if (bAbsTransCrit != 0)
@@ -1762,6 +1801,22 @@ short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin)
 }
 
 
+
+void FillReflContainer(double array[1000], double m)
+{
+  int i;
+  double lambda = 1./thetaCNi;
+
+   if (m < 0) {
+    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!");
+    exit(-1);
+  }
+
+   for (i = 0; i < 1000; i++) array[i] = ReflSN(lambda, (double)i*0.01, m);
+
+  return;
+
+}
 
 
 

@@ -1335,7 +1335,26 @@ set benderESET {
     "length [cm]" "length of a guide [cm]. Specify either length or filename." "" l} gt0 "" 1}
   {curvrad float 0 {"radius of\ncurvature [cm]"
     " radius of curvature of base circle-axis of bender(if zero - straight line)" "" R} ge0 "" 1}
-
+  {"Reflectivity values for spin up" header}
+  {mLeftUp float 0 {
+    "left plane"
+    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" b}}
+  {mRightUp float 0 {
+    "right plane"
+    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" B}}
+  {mTopUp float 0 {
+    "top/bottom plane"
+    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" d}}
+  {"Reflectivity values for spin down" header}
+  {mLeftDo float 0 {
+    "left plane"
+    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" e}}
+  {mRightDo float 0 {
+    "right plane"
+    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" E}}
+  {mTopDo float 0 {
+    "top/bottom plane"
+    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" f}}
   {"Reflectivity files for spin up" header}
   {lrefl_filename pareditablefile mirr0.dat
     {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i} r dat 1}
