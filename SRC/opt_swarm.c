@@ -213,7 +213,7 @@ static double SetStartingPosition(SwarmIndividual *onebee, int BeeNo){
    p_new = p_old + v_new                                                       */
 /*******************************************************************************/
 static double UpdatePosition(SwarmIndividual *onebee, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current){
-  double r1, r2, v_old, p_old, w0_i, w1_i, w2_i;
+  double r1, r2, v_max, v_old, p_old, w0_i, w1_i, w2_i;
   int h, i;
   r1=MonteCarlo(0,1);
   r2=MonteCarlo(0,1);
@@ -227,6 +227,9 @@ static double UpdatePosition(SwarmIndividual *onebee, const double w0_min, const
     v_old=onebee->Velocity[h];
     p_old=onebee->Position[h];
     onebee->Velocity[h] = w0_i*v_old + w1_i*r1*(onebee->localBestPos[h]-p_old) + w2_i*r2*(globalBestPos[h]-p_old); 
+    v_max=0.5*fabs(Pmax[h]-Pmin[h]);
+    if( fabs(onebee->Velocity[h]) > v_max )
+      onebee->Velocity[h] = ((onebee->Velocity[h] > 0) ? v_max : -v_max);
     onebee->Position[h] = p_old + onebee->Velocity[h];
 
     /* Set p to threshold if outside range */
