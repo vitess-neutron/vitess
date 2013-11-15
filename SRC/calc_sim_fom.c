@@ -31,6 +31,7 @@ static short AddPathAndExt(char* sCmdName);
 static void  ChangeSlash(char* pStr);
 
 static char sPipeCmdName[FN_LEN]="gener_pipe",
+            sGridCmdName[FN_LEN]="./gridrun -o",
             sFomCmdName [FN_LEN]="fom";
 
 
@@ -47,12 +48,12 @@ static char sPipeCmdName[FN_LEN]="gener_pipe",
 /*         mPar     : number of parameters per set (P1 ...P_npar)    */
 /* return: TRUE/FALSE                                                */
 /*********************************************************************/
-short  ExtFunction (double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar)
+short  FitFctPc(double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar)
 {
   return FALSE;
 }
 
-short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar)
+short  OptFctPc(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar)
 {
   short rc=FALSE, rcp, rcf;
 
@@ -78,6 +79,35 @@ short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, co
       rc=ReadAllF("Fcomm.dat", mMin, mMax);
   }
   return rc;
+}
+
+
+short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar, char* sGridOpt)
+{
+  short rc=FALSE, rcp, rcf;
+
+#ifdef VT_WINDOWS
+  Error("Optimization on cluster only supported for Unix systems"); 
+  return(FALSE);
+#else
+  char sGridCmd[120];
+
+  if (strlen(sFomCmdName)==3)
+    AddPathAndExt(sFomCmdName);
+
+  WriteAllP("Pcomm.dat", mMin, mMax, nPar);
+
+  sprintf(sGridCmd, "%s %s", sGridCmdName, sGridOpt);
+  system("chmod u+x gridrun");
+  system(sGridCmd);
+
+  rcf = system(sFomCmdName);
+
+  if (rcf)
+    rc=ReadAllF("Fcomm.dat", mMin, mMax);
+  
+  return rc;
+#endif 
 }
 
 

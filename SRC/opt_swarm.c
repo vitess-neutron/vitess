@@ -31,7 +31,7 @@ static short DEBUG = FALSE;
 static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfinish, double *pW0min, double *pW0max, double *pW1min, double *pW1max, double *pW2min, double *pW2max, short *pWrite, const char *sIniFile);
 static double SetStartingPosition(SwarmIndividual *onebee, int BeeNo);
 static double UpdatePosition(SwarmIndividual *onebee, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current);
-inline void CopyPosition(double PosIn[], double PosOut[]);
+static void CopyPosition(double PosIn[], double PosOut[]);
 
 /*****************************************************************************/
 /* Swarm optimization routine                                                */
@@ -325,7 +325,7 @@ static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfi
 }
 
 /*******************************************************************************************/
-inline void CopyPosition(double PosIn[], double PosOut[]){
+void CopyPosition(double PosIn[], double PosOut[]){
   int k;
   for(k=1; k<=nPar; k++){
     PosOut[k]=PosIn[k];

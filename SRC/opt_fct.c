@@ -18,6 +18,8 @@
 #include "opt_fct.h"
 #include "opt_vars.h"
 
+extern char  sGridOpt[99];
+
 
 /***********************************************************/
 /* Function to deliver calculated function or derivative   */
@@ -49,26 +51,37 @@ void FctF(double F[IMAX+1], const int m)
 /*********************************************************************/
 short Calc1Fct(double F[IMAX+1], const double P[NMAX+1], const short m)
 {
-  short rc;
+  short rc=FALSE;
   int   i,j;
   FILE* pFile;	
 
-  // set parameter values  (needed only for bParallel=TRUE) 
+  // set parameter values  (not needed for application 'fit') 
   for (j=1; j<=nPar; j++)
     arP[m][j] = P[j];
 
   // calculate function 
-  if (bParallel)
-  { fclose(LogFilePtr);
-    rc=ExtFunctions(X, nPts, m, m, nPar);    /* uses arP and arF */
-    LogFilePtr = fileOpen(sLogFile, "at");
-    for (i=1; i<=nPts; i++)
-      F[i] = arF[m][i];
-  }
-  else
-  { rc=ExtFunction (F, X, P, nPts, nPar);
-    for (i=1; i<=nPts; i++)
-      arF[m][i] = F[i];
+  switch (eOption)
+  { 
+    case VT_OPT_PC:
+      fclose(LogFilePtr);
+      rc=OptFctPc(X, nPts, m, m, nPar);    /* uses arP and arF */
+      LogFilePtr = fileOpen(sLogFile, "at");
+      for (i=1; i<=nPts; i++)
+        F[i] = arF[m][i];
+      break;
+    case VT_OPT_GRID:
+      fclose(LogFilePtr);
+      rc=OptFctGrid(X, nPts, m, m, nPar, sGridOpt);    /* uses arP and arF */
+      LogFilePtr = fileOpen(sLogFile, "at");
+      for (i=1; i<=nPts; i++)
+        F[i] = arF[m][i];
+      break;
+    case VT_FIT_PC:
+       rc=FitFctPc(F, X, P, nPts, nPar);
+       for (i=1; i<=nPts; i++)
+        arF[m][i] = F[i];
+      break;
+    default: Error("optimization option not (yet) implemented");
   }
 
   if (eOut==3)
@@ -108,16 +121,25 @@ short CalcAllFcts(const short mMin, const short mMax)
       arF[m][i]=0.0;	
 
   // Calculate function for all sets P from mMin to mMax
-  if (bParallel)
-  { fclose(LogFilePtr);
-    rc=ExtFunctions(X, nPts, mMin, mMax, nPar);  
-    LogFilePtr = fileOpen(sLogFile, "at");
-  }
-  else
-  { for (m=mMin; m<=mMax; m++)
-    { rcf=ExtFunction(arF[m], X, arP[m], nPts, nPar);    /* fct(P) */
-      if (rcf==FALSE) rc=FALSE;
-    }
+  switch (eOption)
+  { 
+    case VT_OPT_PC:
+      fclose(LogFilePtr);
+      rc=OptFctPc(X, nPts, mMin, mMax, nPar);  
+      LogFilePtr = fileOpen(sLogFile, "at");
+      break;
+    case VT_OPT_GRID:
+      fclose(LogFilePtr);
+      rc=OptFctGrid(X, nPts, mMin, mMax, nPar, sGridOpt);  
+      LogFilePtr = fileOpen(sLogFile, "at");
+      break;
+    case VT_FIT_PC:
+      for (m=mMin; m<=mMax; m++)
+      { rcf=FitFctPc(arF[m], X, arP[m], nPts, nPar);    /* fct(P) */
+        if (rcf==FALSE) rc=FALSE;
+      }
+      break;
+    default: Error("optimization option not (yet) implemented");
   }
 
   return rc;
