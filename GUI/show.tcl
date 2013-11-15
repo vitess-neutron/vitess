@@ -475,29 +475,6 @@ proc getPlotTemplates {} {
   return $li
 }
 
-proc findFile {roota rootb np {maxlevel 4}} {
-  set dirl [list $roota $rootb]
-  set ff 0
-  for {set i 0} {$i < $maxlevel} {incr i} {
-    set lnew {}
-    foreach d $dirl {
-      set f [file join $d $np]
-      catch {
-        if [file exists $f] {set ff 1}
-      }
-      if {$ff} {return $f}
-      set pat [file join $d *]
-      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
-      foreach dli $ssi {
-        lappend lnew $dli
-      }
-    }
-    if {[llength $lnew] <= 0} break
-    set dirl $lnew
-  }
-  return ""
-}
-
 proc getGnuPlotApp {} {
   # locate the executable gnuplot program
   global FoundGnuplotApp
@@ -507,7 +484,7 @@ proc getGnuPlotApp {} {
 	if [catch {exec which gnuplot} res] {set res ""}
 	return [set FoundGnuplotApp $res]
     }
-    windows {return [set FoundGnuplotApp [findFile C:/ D:/ binary/gnuplot.exe]]}
+    windows {return [set FoundGnuplotApp [findWindowsFile C:/ D:/ binary/gnuplot.exe]]}
     default {return [set FoundGnuplotApp ""]}
   }
 }
@@ -565,7 +542,7 @@ proc getPreferredX3DCmd {} {
     windows {
       if {$cmd != ""} {
         if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
-        set ecmd [findFile C:/ D:/ $cmd]
+        set ecmd [findWindowsFile C:/ D:/ $cmd]
       }
     }
     default { }

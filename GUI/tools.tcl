@@ -946,3 +946,49 @@ proc newParamDirectory {oldname} {
     }
   }
 }
+
+proc findWindowsFile {roota rootb np {maxlevel 4}} {
+  set dirl [list $roota $rootb]
+  set ff 0
+  for {set i 0} {$i < $maxlevel} {incr i} {
+    set lnew {}
+    foreach d $dirl {
+      set f [file join $d $np]
+      catch {
+        if [file exists $f] {set ff 1}
+      }
+      if {$ff} {return $f}
+      set pat [file join $d *]
+      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
+      foreach dli $ssi {
+        lappend lnew $dli
+      }
+    }
+    if {[llength $lnew] <= 0} break
+    set dirl $lnew
+  }
+  return ""
+}
+
+proc findFile {root name} {
+  if {$name == "" || $root == ""} { return ""}
+  set dirl [list $root]
+  while 1 {
+    set lnew {}
+    foreach d $dirl {
+      set f [file join $d $name]
+      #puts "DEBUG look at $f"
+      if [file exists $f] { 
+        return $f
+      }
+      set pat [file join $d *]
+      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
+      foreach dli $ssi {
+        lappend lnew $dli
+      }
+    }
+    if {[llength $lnew] <= 0} break
+    set dirl $lnew
+  }
+  return ""
+}
