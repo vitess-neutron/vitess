@@ -32,16 +32,16 @@ long   nPts = 0,             // number of measuring points
        iStep= 0;             // actual fitting step
 short  nPar = 0,             // number of fit parameters
        nSim = 0,             // number of simultaneously executed simulations
-       eOut = 0,             // parameter to control output
-       bParallel=FALSE;      // criterion: parallel computing
+       eOut = 0;             // parameter to control output
+VtAppl eOption=VT_APPL_NN;   // criterion: parallel computing
       
 char  sIniFile[FN_LEN] = "",                // name of the file containing the control parameters
       sParFile[FN_LEN] = "opt_param.ini",   // name of the file containing intial values etc. of fit parameters
       sDatFile[FN_LEN] = "no_file",         // name of the file of the measured values
       sLogFile[FN_LEN] = "Opt.log";         // name of the log file 
 char  sMethod[10][18]={"not defined", "opt_grad", "opt_grad_mc", "metropolis", "simplex", "swarm", "genetic"};
-char  sParall[ 3][18]={"not defined", "sequential", "parallel"};
-
+char  sParall[ 4][18]={"not defined", "sim_opt_pc", "sim_opt_grid", "fit_pc"};
+char  sGridOpt[99]   ="";
 
 
 /*********************************************/
@@ -55,11 +55,14 @@ short Swarm();
 
 static void  OwnInit    (int argc, char *argv[]);
 static void  OwnCleanup ();
-static short ReadFitParam (VtFitMethod* pMethod, short* pParallel, 
+static short ReadFitParam (VtFitMethod* pMethod, VtAppl* pParallel, 
                            double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFilename);
 static long  ReadData     (double* pX, double* pY, double* pW,  const char* pDatFilename);
 
 
+/*********************************************/
+/* program                                   */
+/*********************************************/
 int main(int argc, char* argv[])
 {
 	short       bCont=0, bIni=FALSE;
@@ -70,7 +73,7 @@ int main(int argc, char* argv[])
 	if (strcmp(sIniFile,"")!=0) bIni=TRUE;		
 
 	nPts = ReadData    (X, Y, W,  sDatFile);
-	nPar = ReadFitParam(&eMethod, &bParallel, P00, Pmin, Pmax, DelP, sParFile);
+	nPar = ReadFitParam(&eMethod, &eOption, P00, Pmin, Pmax, DelP, sParFile);
 
 	switch (eMethod)
 	{	case VT_OPT_GRAD: 
@@ -166,10 +169,10 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 /*          *pDelP  :  step siye for numerical differiation        */
 /*  return: nP      :  number of fit parameters                    */
 /*******************************************************************/
-short ReadFitParam(VtFitMethod* pMethod, short* pParallel, 
+short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption, 
                    double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFilename)
 {	
-	short j, ind,    // indices
+	short i, j, ind,    // indices
 	      nP=0;      // number of fit parameters
 	FILE* pParFile;
 	char  sDash[80]="---------------------------------------------------------------------------",
@@ -188,19 +191,24 @@ short ReadFitParam(VtFitMethod* pMethod, short* pParallel,
 	{	
 		nP = (short) (LinesInFile(pParFile)-3);
 		if (nP > NMAX)
-			Error("fit_main: Number of parameters higher than NMAX"); 
+			Error("opt_sim: Number of parameters higher than NMAX"); 
 
 	  // read name of the optimization
 	  ReadLine(pParFile, sBuffer, BUF_LEN);
     fprintf(LogFilePtr, "%s\n START:  %s\n%s\n\n", sDash, sBuffer, sDash);
 
-		// read method and parallelization option
+		// read method, application and grid option
     ReadLine(pParFile, sBuffer, BUF_LEN);
 		for (j=1; j<=6; j++)
 			if (strcmp(sBuffer, sMethod[j])==0) *pMethod=(VtFitMethod)j;
 
 	  ReadLine(pParFile, sBuffer, BUF_LEN);
-		if (strcmp(sBuffer, sParall[2])==0) *pParallel=TRUE;
+    for (i=1; i<=3; i++)
+		  if (strcmp(sBuffer, sParall[i])==0) *pOption= (VtAppl) i;
+
+	  ReadLine(pParFile, sBuffer, BUF_LEN);
+    if (strlen(sBuffer) > 0) strcpy(sGridOpt, sBuffer);
+    if (strcmp(sGridOpt, "none")==0) strcpy(sGridOpt,"");
 		
     // read parameter list
 		for (j=1; j<=nP; j++)
@@ -211,7 +219,7 @@ short ReadFitParam(VtFitMethod* pMethod, short* pParallel,
 		fclose(pParFile);
 	}
 	else
-	{	Error("fit_main: file containing fit parameters could not be opened");
+	{	Error("opt_sim: file containing fit parameters could not be opened");
 	}
 
 	return nP;
@@ -244,7 +252,7 @@ static void OwnInit(int argc, char *argv[])
 					break;
 
 				default:
-					fprintf(LogFilePtr,"fit_main: unknown commandline option: %s\n", argv[i]);
+					fprintf(LogFilePtr,"opt_sim: unknown commandline option: %s\n", argv[i]);
 					exit(-1);
 			}
 		}

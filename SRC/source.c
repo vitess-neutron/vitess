@@ -972,8 +972,6 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       {
         /* opening distribution file */
         pDisFile = fopen(FullParName(pMod->sLFileName),"rt");
-        if (pDisFile==NULL)
-          pDisFile = fopen(FullInstallName(pMod->sLFileName, "FILES/moderators/"),"rt");
         if (pDisFile!=NULL) 
         {
             /* reading number of lines, allocating memory and reading distribution file */
@@ -1055,8 +1053,6 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     {
       /* opening distribution file */
       pDisFile = fopen(FullParName(pMod->sTFileName),"rt");
-      if (pDisFile==NULL)
-        pDisFile = fopen(FullInstallName(pMod->sTFileName, "FILES/moderators/"),"rt");
       if (pDisFile!=NULL) 
       {
         /* reading number of lines, allocating memory and reading distribution file */
@@ -1159,8 +1155,6 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
   {
     /* openíng distribution file */
     pDisFile = fopen(FullParName(pMod->sLTFileName),"rt");
-    if (pDisFile==NULL)
-      pDisFile = fopen(FullInstallName(pMod->sLTFileName, "FILES/moderators/"),"rt");
     if (pDisFile!=NULL) 
     {
       /* reading number of lines, allocating memory and reading distribution file */

@@ -29,6 +29,15 @@ typedef enum
 }
 VtSystem;
 
+
+typedef enum
+{ VT_APPL_NN   = 0,
+  VT_OPT_PC    = 1,
+  VT_OPT_GRID  = 2,
+  VT_FIT_PC    = 3
+}
+VtAppl;
+
 typedef enum
 { VT_METHOD_NN  = 0,
   VT_OPT_GRAD   = 1,
