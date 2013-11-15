@@ -91,8 +91,8 @@ int main(int argc, char *argv[])
   /* module specific initialization */
   OwnInit(argc, argv);
 
-  /* RotMatrix will rotate a Vector to a frame in which the middle of the */
-  /* Detector sits on the x-axis, i.e. Detector.Direction (cyl-axis for cyl. det) defines new x axis*/
+  /* RotMatrix will rotate a Vector to a frame in which the middle of the detector sits on the x-axis,
+     i.e. Detector.Direction (cyl-axis for cyl. det) defines new x axis*/
   RotMatrixX(Detector.Direction, RotMatrix);
 
 
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
   } //while((ReadNeutrons())!= 0)
 
 
-  fprintf(LogFilePtr,"\n Neutrons detected in this detector: %du trajectories (%11.4e n/s) \n",NumDetected,FluxDetected);
+  fprintf(LogFilePtr,"\n Neutrons detected in this detector: %d trajectories (%11.4e n/s) \n",NumDetected,FluxDetected);
 
  my_exit:
   /* Do module specific cleanups */
@@ -407,7 +407,10 @@ short NeutronIntersectsCubeDetector(Neutron *Nin, VectorType ISP[])
 	} 
       else 
 	{
-	  CountMessageID(DET_TRAJ_INSIDE, Nin->ID);
+	  RotBackVector(RotMatrix,NeutronVector);
+	  if(ScalarProduct(Detector.Direction,NeutronVector)>0)
+	    CountMessageID(DET_TRAJ_INSIDE, Nin->ID);
+	  RotVector(RotMatrix,NeutronVector);
 	  return FALSE;
 	}
     } 
