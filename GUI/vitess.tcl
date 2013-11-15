@@ -343,15 +343,15 @@ Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
   {scale float ""
-    {"total flux\nat moderator\n[n/(cm²s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm²s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+    {"total flux\nat moderator\n[n/(cmÂýs)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cmÂýs)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
 }
 
 set m2 {
   {}
   {wfile pareditablefile "" {"user wavelength\ndist. file" "Name of the file that contains the wavelength distribution function M(lambda) for the moderator used. units:
-\tCW: [Ang], [n/(cm² s str Ang)]
-\tSS: [Ang], M(lambda) * F(t) must have the unit [n/(cm² s str Ang)]
+\tCW: [Ang], [n/(cmÂý s str Ang)]
+\tSS: [Ang], M(lambda) * F(t) must have the unit [n/(cmÂý s str Ang)]
 (cf. user time dist. file)"}}
   {temp float 0 {"moderator\ntemperature [K]" "the temperature is only needed and used, if no wavelength dist. file is given"} ge0}
   {color int "" {colour "The trajectories can be marked by a so-called 'colour' to identify, which moderator they come from."} 0 32767}
@@ -359,14 +359,14 @@ set m2 {
 
 set m3 {
   {}
-  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂý s str Ang)]"}}
   {tau1 float ""
     {"tau_1 [us]" "First time constant of the pulse in microseconds (this is thought to be the smaller one of the two time constants).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
   {tau2 float ""
     {"tau_2 [us]" "Second time constant of the pulse in microseconds (this is thought to be the larger of the two time constants). In this case it describes the decay of the pulse (for t >> tau_1).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
   {}
   {tfile pareditablefile "" {"user time\ndist. file" "Name of the file that contains the time distribution function F(t) for the moderator used.
-  units: [ms], M(lambda) * F(t) must have the unit [n/(cm² s str Ang)]
+  units: [ms], M(lambda) * F(t) must have the unit [n/(cmÂý s str Ang)]
   (cf. user wavelength dist. file)"}}
 }
 
@@ -416,7 +416,7 @@ Deviations of the moderator center from this position must be given here."}}
   {}
   {tstat radio TS1 {"target\nstation"} {TS1 TS2} {1 2}}
   {}
-  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂý s str Ang)]"}}
 }
 
 ### pulsed sources
@@ -549,20 +549,35 @@ foreach s {const_wave HMI ILL FRM2} \
   proc source_${s}CheckErr {{app _}} {source_cwsCheckErr $app}
 }
 
+proc copyMissMod {mfile usefile mdir} {
+  if [file exists $usefile] return
+  # search file in FILES directory tree
+  set modsrc [findFile $mdir $mfile]
+  if [file exists $modsrc] {
+    file copy $modsrc $usefile
+  }
+}
+
 proc copyMissingModfile {app} {
   upvar #0 modfile$app mfile
-  if {$mfile != ""} {
-    upvar #0 defdirectory_ pdir
-    if [file isdirectory $pdir] {
-      set usefile [file join $pdir $mfile]
-      if {! [file exists $usefile]} {
-	set modsrc [file join [globVal SourceDirectory] FILES moderators $mfile]
-	if [file exists $modsrc] {
-	  file copy  $modsrc $usefile
-	}
+  if {$mfile == ""} return
+  upvar #0 defdirectory_ pdir
+  if {![file isdirectory $pdir]} return
+  set usefile [file join $pdir $mfile]
+  set mdir [file join [globVal SourceDirectory] FILES]
+  copyMissMod $mfile $usefile $mdir
+  if {![file exists $usefile]} return
+  # look for indirectly accessed table files
+  if [catch {open $usefile r} f] return
+  while {[gets $f line] >= 0} {
+    if [regexp {\#} $line] continue
+    foreach i [itemize $line] {
+      if [regexp {\.dat$} $i] {
+        copyMissMod $i [file join $pdir $i] $mdir
       }
     }
   }
+  close $f
 }
 
 proc source_cwsCheckErr {{app _}} {
@@ -708,7 +723,7 @@ set detectorESET {
     {"Flat geometry" header}
     {}
     {phi_n float 0 { "phi_n [deg]" "Inclined detector surface: analog to phi, phi_n [0,360] is the angle between the projection of the back surface normal onto (y',z') plane and y' axis, where y' and z' are y and z after rotation of x onto position vector. The back surface normal vector is pointing away from the sample." "" V} 0 360 0}
-    {theta_n float 0 { "theta_n [deg]" "Inclined detector surface: analog to theta, theta_n [0,90] is the angle between back surface normal and position vector. The flat detector surface is perpendicular to the position vector for theta_n=0°. The back surface normal vector is pointing away from the sample." "" W} 0 90 0}
+    {theta_n float 0 { "theta_n [deg]" "Inclined detector surface: analog to theta, theta_n [0,90] is the angle between back surface normal and position vector. The flat detector surface is perpendicular to the position vector for theta_n=0Âø. The back surface normal vector is pointing away from the sample." "" W} 0 90 0}
     {"Cylindrical geometry" header}
     {}
     {phimode select constphi {"const. phi" "Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." "" z} {{"" 0}}}
@@ -885,7 +900,7 @@ set a {
     "max. z [cm]" "maximal z value [cm]" "" H}}
   {}
   {rotang float "0.0" {
-    "rot. angle [°]" "rotate window by [°]" "" A}}
+    "rot. angle [Âø]" "rotate window by [Âø]" "" A}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
     {no yes} {0 1}
@@ -902,9 +917,9 @@ set a {
     {no yes} {0 1}}
   {"Additional window options" header}
   {phimin float -1 {
-    "min. phi [°]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
+    "min. phi [Âø]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
   {phimax float -1 {
-    "max. phi [°]" "Filter for maximum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" P}}
+    "max. phi [Âø]" "Filter for maximum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" P}}
 }
 
 set spacewindowESET [concat $a $winAdd]
@@ -957,7 +972,7 @@ set spaceESET {
   {spc_scat float 0 {
     "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
   {spc_abs float 0 {
-    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ãà [1/cm]" "" m} ge0}
 }
 
 ### Slit
@@ -1075,7 +1090,7 @@ set BigFrameguide 1
 set specoptAdd {
   {"Special options" header}
   {gd_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
-  {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
+  {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ãà [1/cm]" "" m} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
     "Neutrons hitting the surface close to the connection of guide segment are absorbed." "" a}
@@ -2597,8 +2612,8 @@ set ra {
   {}
   {kind radio lambda {"variable\nparameter" "the brilliance is monitored as a function of this parameter\nthe given range is divided into the given number of bins" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
   {}
-  {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
-  {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
+  {minlam float "" {"min lambda [Ãà]" "minimal lambda [Ãà]" "" l}}
+  {maxlam float "" {"max lambda [Ãà]" "maximal lambda [Ãà]" "" L}}
   {}
   {mint float "" {"minimal time [ms]" "minimal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" t}}
   {maxt float "" {"maximal time [ms]" "maximal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" T}}
@@ -3172,8 +3187,8 @@ isotropic scattering: no value needed."}
   {sobv2 float "" {"radius 2 or\nthickness [Ang]"} gt0}
   {sobv3 float "" {"radius 3 or\nheight [Ang]"} gt0}
   {}
-  {rho1 float "" {"scat. len. dens.\nparticl. [1/cm²]" "scattering length density of the soluted particles"} gt0}
-  {rho2 float "" {"scat. len. dens.\nsolvent [1/cm²]" "scattering length density of the solvent"} gt0}
+  {rho1 float "" {"scat. len. dens.\nparticl. [1/cmÂý]" "scattering length density of the soluted particles"} gt0}
+  {rho2 float "" {"scat. len. dens.\nsolvent [1/cmÂý]" "scattering length density of the solvent"} gt0}
   {fpkl float "" {"vol. fraction\nof particles" "volume fraction of the ensemble of particles in solution"} gt0}
   {}
   {miscs float "" {"incoh. scatter.\ncoeff. [1/cm]"} ge0}
@@ -3698,9 +3713,9 @@ set eval_sansESET {
   {sn_nbins int 100 {
     "number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
   {sn_mina float 0.001 {
-    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} ge0}
+    "minimum\n[1/Ãà]" "lower bound of the Q-value interval" "" m} ge0}
   {sn_maxa float 1 {
-    "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
+    "maximum\n[1/Ãà]" "upper bound of the Q-value interval" "" M} gt0}
   {sn_scat float 0.1 {
     "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {sn_bin_prz float "" {
@@ -4119,7 +4134,7 @@ Parameters may be input textually (of type integer, float, string ...) in the li
 entry fields, or by selecting a radio button. Some filenames may be input
 by browsing.
 Without change, the parameter entries appear in the main Xcontrol window 'here'.
-If you like it select the other menu entry 'separate' to edit this modules´
+If you like it select the other menu entry 'separate' to edit this modulesÂ´
 parameters in a separate window, or leave these parameters invisible by now
 by selecting 'hidden'.
 The simulation pipe happens to become longer, if you select a new module

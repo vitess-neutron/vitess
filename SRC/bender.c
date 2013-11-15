@@ -146,7 +146,7 @@ FILE * openNFile (char *name) {return fileOpen (name, "r");}
 /** Prototypes of internal functions **/
 /**************************************/
 
-short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin);
+static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
 
 
 /**************************************/
@@ -1776,7 +1776,7 @@ else
   return(0);
 }
 
-short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin)
+static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin)
 {
   short rc;
   int  nLines, iLine;
