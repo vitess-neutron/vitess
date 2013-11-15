@@ -91,6 +91,7 @@ typedef struct
   double kappa_SD;
   double alpha_L;
   double lambda_L;
+  double expo_L;
   double alpha_1;
   double alpha_2;
 }
@@ -103,10 +104,12 @@ typedef struct
   double lambda_SD;
   double alpha_L;
   double lambda_L;
+  double expo_L;
   double I1;
   double alpha_1;
   double I2;
   double alpha_2;
+  double T_real;
 }
 EssModChar;
 
