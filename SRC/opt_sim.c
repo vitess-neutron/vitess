@@ -189,7 +189,7 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 
 	if (pParFile!=NULL)
 	{	
-		nP = (short) (LinesInFile(pParFile)-3);
+		nP = (short) (LinesInFile(pParFile)-4);
 		if (nP > NMAX)
 			Error("opt_sim: Number of parameters higher than NMAX"); 
 
