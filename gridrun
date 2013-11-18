@@ -691,6 +691,12 @@ sub startExecution {
   foreach (qw(ErrorTable)) {
     copy("$vf/$_.dat", "$fdir/$_.dat");
   }
+  # EssModChar.dat quirks
+  $_ = "$fdir/moderators";
+  mkdir $_, 0700;
+  $_ .= '/ESS';
+  mkdir $_, 0700;
+  copy("$vf/moderators/ESS/EssModChar.dat", "$_/EssModChar.dat");
 
   if ($submit_mode ne 'slurm') {
 
