@@ -687,33 +687,9 @@ sub startExecution {
   my $vf = abs_path("$vitess_binaries/../FILES");
   my $fdir = "$grid_work_dir/FILES";
   mkdir $fdir, 0700;
-  # copy .dat files
-  opendir R, $vf;
-  while ($_ = readdir(R)) {
-    copy("$vf/$_", "$fdir/$_") if /\.dat$/;
-  }
-  closedir R;
-  # copy the moderators sub tree
-  my @D = ("$vf/moderators");
-  mkdir "$fdir/moderators", 0700;
-  my ($d, $fn, $td, $subn);
-  while ($d = shift @D) {
-    opendir R, $d;
-    while ($_ = readdir(R)) {
-      next if /^\./;        # ignore . directories
-      $fn = "$d/$_";
-      next if -l $fn;       # ignore symbolic links
-      $fn =~ m@^$vf/(.+)$@;
-      $subn = $1;
-      $td = "$fdir/$subn";
-      if (-d $fn) {
-        push @D, $fn;
-        mkdir $td, 0700;
-      } else {
-        copy($fn, $td);
-      }
-    }
-    closedir R;
+  # copy some .dat files
+  foreach (qw(ErrorTable)) {
+    copy("$vf/$_.dat", "$fdir/$_.dat");
   }
 
   if ($submit_mode ne 'slurm') {
