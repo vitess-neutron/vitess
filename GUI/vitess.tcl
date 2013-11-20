@@ -710,8 +710,8 @@ set detectorESET {
     {}
     {absorbertype radio "3He gas" {"absorber/converter type" "Material that interacts with neutrons, the total cross-section of which determines the (wavelength-dependent) detection efficiency." "" m} {"BF3 gas" "3He gas" "solid B10" "solid Li6" "other"}  {0 1 2 3 5}}
     {}
-    {pressure float 4 {"gas pressure [bar] or \n solid layer thickness [cm]" "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component. \n solid B10 or Li6: layer thickness of converter material." "" p} 0 20 0}
-    {temperature float 293 {"gas temperature [K] or \n  atom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density. \n solid B10 or Li6: atom density of converter material." "" k} 0 500 0}
+    {pressure float 4 {"gas pressure [bar] or\nsolid layer thickness [cm]" "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component.\nsolid B10 or Li6: layer thickness of converter material." "" p} 0 20 0}
+    {temperature float 293 {"gas temperature [K] or\natom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density.\nsolid B10 or Li6: atom density of converter material." "" k} 0 500 0}
     {}
     {"Tube detector" header}
     {orientation radio horizontal {"tube orientation" "Orientation of tubes: horizontal mean the cylinder axis (in case of circular cross-section) is parallel to the y axis or width dimension, vertical to the z axis or height dimension. Tube length is total width (height) for hor. (vert.) orientation." "" o} {horizontal vertical} {0 1}}
@@ -881,7 +881,7 @@ set winAdd {
 
 set a {
   {dist_orig_window float 0 {
-    "distance orig.\n  <-> win. [cm]"
+    "distance orig.\n<-> win. [cm]"
     "distance from origin to window when projecting along the x axis" "" l}}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
@@ -977,16 +977,16 @@ set spaceESET {
 
 ### Slit
 set slitESET {
-  {dist_slit float "" {"distance\n to slit [cm]" "" "" d} ge0}
+  {dist_slit float "" {"distance\nto slit [cm]" "" "" d} ge0}
   {width_slit float "" {"width [cm]" "width of rectangular slit [cm]" "" W} ge0}
   {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H} ge0}
 }
 
 ### Beamstop
 set beamstopESET {
-  {dist_stop float "" {"distance\n from sample [cm]" "distance between sample and beamstop" "" d} ge0}
+  {dist_stop float "" {"distance\nfrom sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface \n'yes'         : neutrons are propagated to the beamstop" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -1003,15 +1003,15 @@ set gridESET {
   {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}
   {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for the grid." "" t} ge0}
   {outera float 5.0 {
-    "Outer hor size \n or radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}
+    "Outer hor size\nor radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}
   {outerb float 5.0 {
-    "Outer vert size  \n [cm]" "Outer vertical size of the grid" "" b} gt0}
+    "Outer vert size\n[cm]" "Outer vertical size of the grid" "" b} gt0}
   {shiftver float 0.0 {
     "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}
   {shifthor float 0.0 {
     "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}
   {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}
-  {keycolor radio no {"Crosstalk between \n channels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
+  {keycolor radio no {"Crosstalk between\nchannels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
 
   {"Material of a grid" header}
   {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
@@ -1082,7 +1082,7 @@ set guideESET {
   {spacer_width float "" {
     "blade\nthickness [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
   {rad_curve float 0 {
-    "curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
+    "curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
 }
 # guide needs a scrollable window
 set BigFrameguide 1
@@ -1183,9 +1183,9 @@ proc guideCheckErr {{app _}} {
 ###
 set guide_idealESET {
   {"Shape and size of guide" header}
-  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane.\nNote that in constant case entrance and exit width\nmust be the same!" "" H}
     {constant linear elliptic} {0 1 2}}
-  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane.\nNote that in constant case entrance and exit height\nmust be same!" "" V}
     {constant linear elliptic} {0 1 2}}
   {}
   {shape_file mneditablefile guide_shape.dat
@@ -1223,30 +1223,30 @@ set guide_idealESET {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
   {dist_focus_hor float 0 {
-    "Distance from exit to \n focus in hor. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+    "Distance from exit to\nfocus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 "" 1}	
   {dist_focus_ver float 0 {
-    "Distance from exit to \n focus  in ver. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+    "Distance from exit to\nfocus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 "" 1}	
   {}
    {addColor float 0 {
     "Add to color"
-    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
+    "Modify the color of a trajectory every time\na reflection with guide walls occurs." "" C}}		
   {"Guide characteristics" header}
   {"Reflectivity numbers" header}
   {mLeft float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" e}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" e}}
   {mRight float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" E}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" E}}
   {}
   {mTop float 0 {
     "top plane"
-    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" f}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" f}}
   {mBottom float 0 {
     "bottom plane"
-    "Reflectivity of the bottom plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" F}}
+    "Reflectivity of the bottom plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" F}}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i}}
@@ -1265,9 +1265,9 @@ set guide_idealESET [concat $guide_idealESET]
 ###
 set guide_ellipticESET {
   {"Shape and size of guide" header}
-  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane.\nNote that in constant case entrance and exit width\nmust be the same!" "" H}
     {constant linear elliptic} {0 1 2}}
-  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane.\nNote that in constant case entrance and exit height\nmust be same!" "" V}
     {constant linear elliptic} {0 1 2}}
   {}
   {shape_file mneditablefile guide_shape.dat
@@ -1305,15 +1305,15 @@ set guide_ellipticESET {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
   {dist_focus_hor float 0 {
-    "Distance from exit to \n focus in hor. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+    "Distance from exit to\nfocus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 "" 1}	
   {dist_focus_ver float 0 {
-    "Distance from exit to \n focus  in ver. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+    "Distance from exit to\nfocus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 "" 1}	
   {}
    {addColor float 0 {
     "Add to color"
-    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
+    "Modify the color of a trajectory every time\na reflection with guide walls occurs." "" C}}		
   {"Guide characteristics" header}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
@@ -1353,23 +1353,23 @@ set benderESET {
   {"Reflectivity values for spin up" header}
   {mLeftUp float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" b}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" b}}
   {mRightUp float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" B}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" B}}
   {mTopUp float 0 {
     "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" d}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" d}}
   {"Reflectivity values for spin down" header}
   {mLeftDo float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" e}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" e}}
   {mRightDo float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" E}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" E}}
   {mTopDo float 0 {
     "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the \n m-number given using fits to Swiss Neutronics mirror characteristics.\n Overrides a reflectivity file given for the same plane."  "" f}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" f}}
   {"Reflectivity files for spin up" header}
   {lrefl_filename pareditablefile mirr0.dat
     {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i} r dat 1}
@@ -1508,9 +1508,9 @@ set chpESET {
   {radius float "" {"radius [cm]" "radius of chopper"} gt0 "" 1}
   {}
   {distance float "" {
-    "vert. position\n of axle [cm]" "z component of the chopper centre in the coordinate system defined by the previous module (usually the centre of the beamline)"}}
+    "vert. position\nof axle [cm]" "z component of the chopper centre in the coordinate system defined by the previous module (usually the centre of the beamline)"}}
   {hdistance float "" {
-    "horiz. position\n of axle [cm]" "y component of the chopper centre in the coordinate system defined by the previous module (usually the centre of the beamline)"}}
+    "horiz. position\nof axle [cm]" "y component of the chopper centre in the coordinate system defined by the previous module (usually the centre of the beamline)"}}
   {"first window" header}
   {winpos0 float "" {
     "window\nposition [deg]" "angular position of window centre"}}
@@ -1647,7 +1647,7 @@ set refESET {
   {mz float 0 {"main position\nZ [cm]"
     "Generally defines the reference point (origin) of the sample in the frame provided by the former module."} 1}
   {thick float 0.00001 {"thickness\nsample [cm]"
-    "Thickness of the rectangular sample, i.e. perpendicular to refl. surface.\n It determines the range of depth in which the reflection is supposed to take place."} ge0 "" 1}
+    "Thickness of the rectangular sample, i.e. perpendicular to refl. surface.\nIt determines the range of depth in which the reflection is supposed to take place."} ge0 "" 1}
   {wid float 1 {"width\nsample [cm]"
     "Width of the rectangular sample (along y-axis for reflection angle 0)."} ge0 "" 1}
   {hei float 1 {"length\nsample [cm]"
@@ -1693,7 +1693,7 @@ set ma_flat_newESET {
   {parfile pareditablefile crys.par {"parameter file" "" "" P} r crs_new 1}	
   {reprate int 1 {"repetition\nrate"
     "If this integer > 1, the neutron is used multiple times for better statistics." "" A} 1 1000000 1}
-  {array select array {"First or only\nused monochromator" "Select if this is the only one or the first\n monochromator in an array of several." "" o} {{"" 1}}}
+  {array select array {"First or only\nused monochromator" "Select if this is the only one or the first\nmonochromator in an array of several." "" o} {{"" 1}}}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]"
     "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m}
     ge0 "" 1}
@@ -1704,8 +1704,8 @@ set ma_flat_newESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam. Choose 'Reflection + Transmission' \n for ALL monochromators that are part of an array. Please note that \n in this case the rotation of the main neutron beam axis MUST\n be done by a following frame module." "" X} {Reflection Transmission "Reflection + Transmission"} {1 2 3}}
-  {coeff float 0.00005 {"Absorption\n coefficient"
+  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and\n'transmission' of the remaining beam. Choose 'Reflection + Transmission'\nfor ALL monochromators that are part of an array. Please note that\nin this case the rotation of the main neutron beam axis MUST\nbe done by a following frame module." "" X} {Reflection Transmission "Reflection + Transmission"} {1 2 3}}
+  {coeff float 0.00005 {"Absorption\ncoefficient"
     "Absorption coefficient in the crystal in [1/cm]." "" C}}
   {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
@@ -1723,20 +1723,20 @@ set ma_focus_newESET [concat [globVal ma_flat_newESET] {
   {}
   {chradius float 200 {"radius\nhoriz. [cm]"
     "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {cradius float 200 {"radius\n vert. [cm]"
+  {cradius float 200 {"radius\nvert. [cm]"
     "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
   {cangle float 0 {"angle\nvert. [deg]"
     "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
   {}
   {gaphor float 0.0 {"gap between\ncolumns  [cm]"
-    "Horizontal distance between columns of crystal elements\n (in the equatorial plane" "" h} ge0 "" 1}
+    "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
   {gapvert float 0.0 {"gap between\nrows  [cm]"
     "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
   {}
-  {devhor float 0.0 {"orient. dev. \nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev. \nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
+  {devhor float 0.0 {"orient. dev.\nhor. [deg]"
+    "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev.\nvert. [deg]"
+    "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### New monochromator analyser
@@ -1806,8 +1806,8 @@ set ma_flatESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-#  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
-#  {coeff float 0.00005 {"Absorption\n coefficient"
+#  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and\n'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+#  {coeff float 0.00005 {"Absorption\ncoefficient"
 #    "Absorption coefficient in the crystal in [1/cm]." "" C}}
 #  {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
@@ -1825,20 +1825,20 @@ set ma_focusESET [concat [globVal ma_flatESET] {
   {}
   {chradius float 200 {"radius\nhoriz. [cm]"
     "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {cradius float 200 {"radius\n vert. [cm]"
+  {cradius float 200 {"radius\nvert. [cm]"
     "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
   {cangle float 0 {"angle\nvert. [deg]"
     "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
   {}
   {gaphor float 0.0 {"gap between\ncolumns  [cm]"
-    "Horizontal distance between columns of crystal elements\n (in the equatorial plane" "" h} ge0 "" 1}
+    "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
   {gapvert float 0.0 {"gap between\nrows  [cm]"
     "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
   {}
-  {devhor float 0.0 {"orient. dev. \nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev. \nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
+  {devhor float 0.0 {"orient. dev.\nhor. [deg]"
+    "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev.\nvert. [deg]"
+    "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### Monochromator analyser
@@ -2085,7 +2085,7 @@ set flipper_gradientESET {
   {plmy float 0 {"amplitude or\nfinal Y [Oe]" "Amplitude (for cosine law) or final value (for linear law) of the Y component (projection in the axis 0Y) of the guide magnetic field, Oe=Gauss" "" Q}}
   {plmz float 0 {"amplitude or\nfinal Z [Oe]" "Amplitude (for cosine law) or final value (for linear law) of the Z component (projection in the axis 0Z) of the guide magnetic field, Oe=Gauss" "" R}}
 
-  {pmde float 0 {"additional random\n magnetic field, [Oe]" "Amplitude of the additional random magnetic field" "" q} ge0}
+  {pmde float 0 {"additional random\nmagnetic field, [Oe]" "Amplitude of the additional random magnetic field" "" q} ge0}
 
   {"Addition options" header}
   {outkey radio no {"output results" "Output intermediately results of simulations in the file RELATIVE OX axis" "" S} {yes no} {1 0}}
@@ -2122,7 +2122,7 @@ set resonator_drabkinESET {
   {}
   {mfd float 0 {"Deviation of\namplitude [%]" "Deviation of amplitude of the periodical magnetic field in percent" "" a} ge0}
   {distra radio Uniform {"Amplitude distribution" "Distribution of random values: amplitude of the periodical magnetic field" "" e} {Normal Uniform} {0 1}}
-  {mfds float 1 {"Sigma for\n gauss distr. [Oe]" "Sigma for gauss distribution of amplitude of the periodical magnetic field" "" x} gt0}
+  {mfds float 1 {"Sigma for\ngauss distr. [Oe]" "Sigma for gauss distribution of amplitude of the periodical magnetic field" "" x} gt0}
 
   {"Guide Magnetic Field" header}
   {pmx float 0 {"component\nX [Oe]" "X component (projection in the axis 0X) of the permanent magnetic field, Oe=Gauss" "" I}}
@@ -2833,7 +2833,7 @@ proc mon2_rdivCheckErr {{app _}} {
 
 proc genFE {n} {
   set ll {"monitor file"
-    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval. If several parameters should be monitored,  \n then the file name is used as a template and the parameter name and .mon is added to the template name, e.g. TEMPLATENAME_lambda.mon for the wavelength parameter." "" O}
+    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval. If several parameters should be monitored,\nthen the file name is used as a template and the parameter name and .mon is added to the template name, e.g. TEMPLATENAME_lambda.mon for the wavelength parameter." "" O}
   return [list [list monitor_file moneditablefile $n.dat $ll "" "" 1]]
 }
 
@@ -2842,10 +2842,10 @@ set mA1 {
     "1st parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
     {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
   {parameter2 radio none {
-    "2nd parameter\non x-axis" "choose the 2nd parameter to be shown on the x-axis, \n a separate file will be created." "" Y}
+    "2nd parameter\non x-axis" "choose the 2nd parameter to be shown on the x-axis,\na separate file will be created." "" Y}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
   {parameter3 radio none {
-    "3rd parameter\non x-axis" "choose the 3rd parameter to be shown on the x-axis, \n a separate file will be created." "" Z}
+    "3rd parameter\non x-axis" "choose the 3rd parameter to be shown on the x-axis,\na separate file will be created." "" Z}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
@@ -2854,7 +2854,7 @@ set mAV1 {
   {min_vx1 float 0 {"1st minimal\nx-value" "" "" w} -1E6 1E6 1}
   {min_vx2 float 0 {"2nd minimal\nx-value" "" "" f}}
   {min_vx3 float 0 {"3rd minimal\nx-value" "" "" g}}
-  
+
 }
 
 set mAV2 {
@@ -2862,7 +2862,7 @@ set mAV2 {
   {max_vx1 float 0 {"1st maximal\nx-value" "" "" W} -1E6 1E6 1}
   {max_vx2 float 0 {"2nd maximal\nx-value" "" "" F}}
   {max_vx3 float 0 {"3rd maximal\nx-value" "" "" G}}
-  
+
 }
 
 set nA {
@@ -2872,7 +2872,7 @@ set nA {
   {number_xbins2 int 100 {
     "2nd number\nof x-bins" "number of bins within the y-axis interval" "" y}}	
   {number_xbins3 int 100 {
-    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z}} 
+    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z}}
 }
 
 set fA1 {
@@ -3092,18 +3092,18 @@ set nxsESET [concat $samASET {
 ###   pow file description
 
 set powESET [concat $samASET {
-  {sfactfile pareditablefile "" {"structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau \n or in another format. In the latter case the meaning of individual \n columns must be specified in the parameter file."} r}
+  {sfactfile pareditablefile "" {"structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau\nor in another format. In the latter case the meaning of individual\ncolumns must be specified in the parameter file."} r}
   {Scattering header}
   {tscat float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
   {cscat float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
   {absorp float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {vol float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 1}
   {"Structure file format" header}	
-  {cD int  0 {"d-spacing\n column" "D-spacing column number in the custom structure file."} ge0}
-  {cF int  0 {"Str. factor\n column" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int  0 {"Squared str.\n factor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cM int  0 {"Mult.\n column" "Multiplicity column number in the custom structure file (optional)."} ge0}
-  {cDW int  0 {"Debye-Waller\n factor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {cD int  0 {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
+  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int  0 {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
+  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }]
 
 ### sample
@@ -3297,7 +3297,7 @@ set sample_singcrystESET {
   {parfile pareditablefile sample_singcryst.par {
     "parameter file" "" "" P} r ssc 1}
   {sfactfile pareditablefile singcryst_structuref.dat {
-    "structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau \n or in another format. In the latter case the meaning of individual \n columns must be specified in the parameter file." "" S} r}
+    "structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau\nor in another format. In the latter case the meaning of individual\ncolumns must be specified in the parameter file." "" S} r}
   {spac radio Lorentzian {"d-spacing\ndistribution" "d-spacing probability distribution with maximum at the nominal value" "" o}
     {Lorentzian Gaussian} {1 2}}
   {spread float 0.0001 {"d-spacing\nspread [-]" "FWHM/d-spacing, the relative 'thickness' of the Ewald sphere" "" d}}
@@ -3336,12 +3336,12 @@ set sscESET {
   {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output"}}
   {ov float "" {"output angle\nvertical [deg]"}}
   {"Structure file format" header}	
-  {ch int  0 {"h\n column" "H column number in the custom structure file."} ge0}
-  {ck int  0 {"k\n column" "K column number in the custom structure file."} ge0}
-  {cl int  0 {"l\n column" "L column number in the custom structure file."} ge0}
-  {cF int  0 {"Str. factor\n column" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int  0 {"Squared Str.\n factor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cDW int  0 {"Debye-Waller\n factor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {ch int  0 {"h\ncolumn" "H column number in the custom structure file."} ge0}
+  {ck int  0 {"k\ncolumn" "K column number in the custom structure file."} ge0}
+  {cl int  0 {"l\ncolumn" "L column number in the custom structure file."} ge0}
+  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int  0 {"Squared Str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }
 
 
@@ -3420,19 +3420,19 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {axis radio Y {"axis of\nrotation" "Axis around which the sample is rotated." "" R} {Y Z}}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
-zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+zero means: parallel to x-axis,i.e. surface normal in z-direction;\n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
   {"Offspecular scattering" header}
-  {useOffspec radio Off {"Offspecular\nscattering" "Switch on, if the reflectivity file takes into account\n offspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
+  {useOffspec radio Off {"Offspecular\nscattering" "Switch on, if the reflectivity file takes into account\noffspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
   {"Incoherent scattering" header}
   {useInc radio Off {"Incoherent\nscattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
   {}
-  {muInc float 0 {"Incoherent\npathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
+  {muInc float 0 {"Incoherent\npathlength" "If incoherent scattering from sample is taken into account,\nspecify the parameter mu for the scattering probability P=mu*x" "" X}}
   {}
-  {detDist float 0 {"Detector\ndistance" "If incoherent scattering from sample is taken into account, \n specify the distance to the detector. This is needed together with detector \n width and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" d}}	
-  {detW float 0 {"Detector\nwidth" "If incoherent scattering from sample is taken into account, \n specify the width the detector. This is needed together with detector \n distance and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" p}}	
-  {detH float 0 {"Detector\nheight" "If incoherent scattering from sample is taken into account, \n specify the height the detector. This is needed together with detector \n distance and detector width to calculate the solid angle \n the incoherent part of the background is scattered to." "" t}}
+  {detDist float 0 {"Detector\ndistance" "If incoherent scattering from sample is taken into account,\nspecify the distance to the detector. This is needed together with detector\nwidth and detector height to calculate the solid angle\nthe incoherent part of the background is scattered to." "" d}}	
+  {detW float 0 {"Detector\nwidth" "If incoherent scattering from sample is taken into account,\nspecify the width the detector. This is needed together with detector\ndistance and detector height to calculate the solid angle\nthe incoherent part of the background is scattered to." "" p}}	
+  {detH float 0 {"Detector\nheight" "If incoherent scattering from sample is taken into account,\nspecify the height the detector. This is needed together with detector\ndistance and detector width to calculate the solid angle\nthe incoherent part of the background is scattered to." "" t}}
   {}
-  {detN float 1 {"Norm factor" "If incoherent scattering from sample is taken into account, \n the norm factor describes the fraction of the detector \n where the specular signal is expected with respect to \n the whole detector area. If it's not specified, the proper normalisation \n should be done in the subsequent analysis." "" S}}
+  {detN float 1 {"Norm factor" "If incoherent scattering from sample is taken into account,\nthe norm factor describes the fraction of the detector\nwhere the specular signal is expected with respect to\nthe whole detector area. If it's not specified, the proper normalisation\nshould be done in the subsequent analysis." "" S}}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
@@ -3556,7 +3556,7 @@ set eval_elastESET {
   {maxa float 0 {
     "maximum\n[A, 1/A, deg]" "upper bound of the evaluation interval" "" M} 1}
   {bin_prz float "" {
-    "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+    "increase to\nnext bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
   {}
@@ -3629,7 +3629,7 @@ set eval_elast2ESET {
   {maxaX float 0 {
     "maximum X\n[deg]" "upper bound of the evaluation interval" "" X} 1}
   {bin_przX float "" {
-    "increase to\n next bin X[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+    "increase to\nnext bin X[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {}
   {mbins int 100 {
     "number\nof bins in Y" "number of bins determines the segmentation of the wavelength/TOF interval and therewith the number of values written to the spectra file" "" m} 1}
@@ -3638,7 +3638,7 @@ set eval_elast2ESET {
   {maxaY float 0 {
     "maximum Y\n[A, ms]" "upper bound of the evaluation interval" "" Y} 1}
   {bin_przY float "" {
-    "increase to\n next bin Y[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" S} gt0}
+    "increase to\nnext bin Y[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" S} gt0}
   {}
   {prob_w radio yes {
     "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
@@ -3719,7 +3719,7 @@ set eval_sansESET {
   {sn_scat float 0.1 {
     "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {sn_bin_prz float "" {
-    "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+    "increase to\nnext bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {sn_dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
   {sn_tof radio no {
@@ -3862,7 +3862,7 @@ set collimatorESET {
 set collimator_radialESET {
   {rc_angle float 90 {
     "theta [deg]"
-    "hor. direction to the centre of the collimator in deg range: [-180,180]\n 0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
+    "hor. direction to the centre of the collimator in deg range: [-180,180]\n0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
   {rc_en_width float 120 {
     "width [deg]"
     "width of the radial collimator in deg\nedges are supposed to point to the origin, i.e. the centre of the sample"  "" w} gt0 "" 1}
@@ -3895,8 +3895,8 @@ set collimator_radialESET {
 set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
-    {fFormat radio Old {"File format" "Choose between two file formats: \n The old format has always been used until this version and\n requires the user to provide, apart from geometric properties,\n mirror material properties like mean free path mu, critical angle thetaC etc. \n The new file format only includes the geometry information, the mirror thickness \n and m-numbers for spin-up and down. See the updated help file for details.\n" "" F} {Old New} {0 1}}
-    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. Choose Other for a general approximation. \n Beware that OTHER only works with the old file format! \n" "" S} {Other Silicon Sapphire} {0 1 2}}
+    {fFormat radio Old {"File format" "Choose between two file formats:\nThe old format has always been used until this version and\nrequires the user to provide, apart from geometric properties,\nmirror material properties like mean free path mu, critical angle thetaC etc.\nThe new file format only includes the geometry information, the mirror thickness\nand m-numbers for spin-up and down. See the updated help file for details.\n" "" F} {Old New} {0 1}}
+    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\nfor a proper description of neutron absorption. Choose Other for a general approximation.\nBeware that OTHER only works with the old file format!\n" "" S} {Other Silicon Sapphire} {0 1 2}}
     {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
@@ -3963,7 +3963,7 @@ set lenseESET {
   {visuald radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
   {"Ray-tracing after lenses" header}
-  {visurtal radio no {"Visual ray-tracing \n after lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
+  {visurtal radio no {"Visual ray-tracing\nafter lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
   {vrtnum  int 10000 {"Number of trajectories" "Number of trajectories for visualisation after lense" "" x} gt0}
   {vrtalmaxx float 0.0 {"Max X" "Max X value at the ray-tracing picture, 0.0 means autocalculation" "" S} ge0}
   {"Diaphragm after lenses" header}
@@ -3990,7 +3990,7 @@ set mirror_ellipticalESET {
   {py float 0 {"Center position\nmain Y [cm]" "Center position of the elliptic mirror" "" e}}
   {pz float 0 {"Center position\nmain Z [cm]" "Center position of the elliptic mirror" "" k}}
   {ang float 0.0 {"Rotation angle [deg]" "Rotate mirror (ONLY) around the center of the ellipsoide" "" Q}}
-  {ake radio OX {"Rotate around\n the axis" "Choose the axis of the coordinate system (at the center of the ellisoide) and rotate around this axis" "" g} {OX OY OZ} {0 1 2}}
+  {ake radio OX {"Rotate around\nthe axis" "Choose the axis of the coordinate system (at the center of the ellisoide) and rotate around this axis" "" g} {OX OY OZ} {0 1 2}}
   {"X, Y and Z Limits for the elliptic mirror" header}
   {pmx float 0 {"X_MIN [cm]" "X minimum limitation for the elliptic mirror" "" A}}
   {pmy float 300 {"X_MAX [cm]" "X maximum limitation for the elliptic mirror" "" C}}
