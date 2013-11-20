@@ -433,6 +433,8 @@ void  Monochromator::FillRotMatrixFoc()
 void Monochromator::ReadParameterFile()
 {
 
+  double mosaic_range, d_range;
+
   /* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
 
   PosCE[0]=ReadParF(Par_Crys) ; PosCE[1]=ReadParF(Par_Crys) ; PosCE[2]=ReadParF(Par_Crys) ; ReadParComment(Par_Crys) ;
@@ -440,7 +442,7 @@ void Monochromator::ReadParameterFile()
   BraggHoriz=ReadParF(Par_Crys) ; BraggVert=ReadParF(Par_Crys) ; ReadParComment(Par_Crys) ;
   DimCE[0]=ReadParF(Par_Crys) ; DimCE[1]=ReadParF(Par_Crys) ; DimCE[2]=ReadParF(Par_Crys) ; ReadParComment(Par_Crys) ;
   d_spacing=ReadParF(Par_Crys) ; OrderReflection=ReadParI(Par_Crys) ; ReadParComment(Par_Crys) ;
-  // mosaic_range=ReadParF(Par_Crys) ; d_range=ReadParF(Par_Crys) ;  ReadParComment(Par_Crys) ;
+  mosaic_range=ReadParF(Par_Crys) ; d_range=ReadParF(Par_Crys) ;  ReadParComment(Par_Crys) ;
   User = ReadParI(Par_Crys) ; ReadParComment(Par_Crys) ;
 
   if(User == 1)

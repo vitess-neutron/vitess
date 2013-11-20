@@ -4597,13 +4597,17 @@ proc serializeCrsFile {f mode var app} {
     if {$oframedef == "user defined frame"} {set odef 1} else {set odef 0}
     puts $f "$mposx $mposy $mposz\n$offahoriz $offavert"
     puts $f "$bragghoriz $braggvert\n$thick $width $height\n$dspacing $reford"
+    if {![info exists mrange]} {
+            set mrange 0
+            set drange 0
+    }
     puts $f "$mrange $drange\n$odef\n$oframex $oframey $oframez\n$oframehang $oframevang"
   }
 }
 
 proc serializeSampleFile {f mode var app submodule} {
   set nlist {x y z cyl hei thick cx cy cz wid hsrad tscat cscat
-      absorp vol sfac sfactfile sob sobv2 sobv3 rho1 rho2 fpkl miscs mtscs mabcs}
+      absorp vol sfac sfactfile sob sobv2 sobv3 rho1 rho2 fpkl miscs mtscs mabcs cD cF cF2 cM cDW}
   foreach l $nlist {
     upvar #0 $l$app $l
   }
@@ -4652,6 +4656,7 @@ proc serializeSampleFile {f mode var app submodule} {
 	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
 	scan $l1 "%g%g%g" tscat cscat absorp
 	scan $l2 "%g" vol
+        scan $l3 "%d%d%d%d%d" cD cF cF2 cM cDW
       }
       psq {
 	if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
@@ -4680,7 +4685,7 @@ proc serializeSampleFile {f mode var app submodule} {
 	}
 	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
       }
-      pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol"}
+      pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol\n$cD $cF $cF2 $cM $cDW"}
       psq {
 	if {$sfac == "from file"} {set s D} else {set s F}
 	puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
