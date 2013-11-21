@@ -397,14 +397,14 @@ void OwnInit(int argc, char *argv[])
 	if (strstr(StructureFactorFileName, ".dat") == &StructureFactorFileName[strlen(StructureFactorFileName)-4])
     {
       long count;
-      count = LinesInFile(StructureFactorFile);
+      datanumbermax = LinesInFile(StructureFactorFile);
       rewind(StructureFactorFile);
-
-      no  = (int*) calloc(count, sizeof(int));
-      hh = (double*) calloc(count, sizeof(double));
-      kk = (double*) calloc(count, sizeof(double));
-      ll = (double*) calloc(count, sizeof(double));
-      Fhkl2 = (double*) calloc(count, sizeof(double));
+     
+      no  = (int*) calloc(datanumbermax, sizeof(int));
+      hh = (double*) calloc(datanumbermax, sizeof(double));
+      kk = (double*) calloc(datanumbermax, sizeof(double));
+      ll = (double*) calloc(datanumbermax, sizeof(double));
+      Fhkl2 = (double*) calloc(datanumbermax, sizeof(double));
       
 		  for(count=0; count<datanumbermax; count++)
 		{
@@ -436,6 +436,9 @@ void OwnInit(int argc, char *argv[])
 	  ll = lVal;
 	  Fhkl2 = F2Val;
 	}
+
+	fprintf(LogFilePtr, "\nStructure file read!\n");
+      
 
 
 }/* End OwnInit */
