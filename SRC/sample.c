@@ -457,7 +457,8 @@ int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactor
   unsigned int lengthFilename;
   int maxColumn;
   double* parBuffer;
-
+  
+ 
   /* first open the file, add path if missing */
   StrucFacFile=fopen(FullParName(sSampleFile),"rt"); 
   if(StrucFacFile==NULL)
@@ -467,6 +468,7 @@ int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactor
 
   /* count lines in file */
   NumLines = LinesInFile(StrucFacFile);
+
 
   /* get memory for StrucFac */
   if (tag == 1) {
@@ -525,27 +527,38 @@ int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactor
   parBuffer = (double*) calloc(maxColumn, sizeof(double));
 
   /* and read the data */
-  
+     
   for(i=0; i < NumLines; i++)  { 
-    char* sRemainBuffer;
-    ReadLine(StrucFacFile, sBuffer, sizeof(sBuffer)-1);    
-    strcpy(sRemainBuffer, sBuffer);
-    sscanf  (sBuffer, "%lf ", &parBuffer[0]);
+
+    char format[1024] = "%lf ";
+    const char* sRemainBuffer;
+
+    ReadLine(StrucFacFile, sBuffer, sizeof(sBuffer)-1);        
+
+    sscanf  (sBuffer, format, &parBuffer[0]);    
+    sRemainBuffer = sBuffer;         
 
     for (j=1; j < maxColumn; j++) {
-      sRemainBuffer = strstr(&sRemainBuffer[1], " ");
-      sscanf (sRemainBuffer, "%lf ", &parBuffer[j]);
-    }
+   
+      strncpy(&format[strlen(format)-4], "%*lf ", 5);
+      strcat(format, "%lf ");
+      sscanf(sRemainBuffer, format, &parBuffer[j]);
 
+    }
+      
     if (tag == 1) {
-      *structFactorLookup[i][0] = parBuffer[colD-1];
-      if (colF2 > 0) 
-	*structFactorLookup[i][1] = parBuffer[colF2 -1]*scaleF2;
+      (*structFactorLookup)[i][0] = parBuffer[colD-1];      
+      if (colF2 > 0)  {
+	(*structFactorLookup)[i][1] = parBuffer[colF2 -1]*scaleF2;
+      }
       else if (colF > 0)
-	*structFactorLookup[i][1] = sq(parBuffer[colF -1])*scaleF2;
-      if (colDW > 0) *structFactorLookup[i][1] *= parBuffer[colDW -1];
+	(*structFactorLookup)[i][1] = sq(parBuffer[colF -1])*scaleF2;
+      if (colDW > 0) (*structFactorLookup)[i][1] *= parBuffer[colDW -1];
       // powder sample
-      if (colM > 0) *structFactorLookup[i][1] *= parBuffer[colM -1];
+      if (colM > 0) (*structFactorLookup)[i][1] *= parBuffer[colM -1];
+      
+      //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]);
+      
     }
     else {
       hVal[i] = parBuffer[colh -1];
@@ -559,11 +572,12 @@ int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactor
       
       if (colDW > 0) F2Val[i] *= parBuffer[colDW -1];
     }
-
   }
 
  
   fclose(StrucFacFile);
+  fprintf(LogFilePtr,"Read %d lines in the structure file.\n", NumLines);
+
 
   if (tag == 1) {
     qsort((void *)*structFactorLookup, (size_t) NumLines, sizeof(DoublePair), CompPair);

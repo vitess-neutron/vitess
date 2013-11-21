@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
   /* Go and get the sample geometry and name of structure factor file */
   InitSample(&Sample);
   GetSample (&Sample, StrucFacFileName);
+
   switch (Sample.Type)
   { case VT_CUBE: 
       fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
@@ -129,6 +130,8 @@ int main(int argc, char *argv[])
 
   /* Now get the nuclear unit-cell structure factors |f_N(t)|^2.       */
   /* The memory needed will be allocated inside 'GetStructureFactor()'.*/
+
+ 
   NumStrucFac = ReadStructureFile(StrucFacFileName, 1, &StrucFac);
 
   /* Factors that take care of the detector coverage */
@@ -433,8 +436,12 @@ void GetSample(SampleType *Sample, char *StrFileName)
             sscanf(Buffer,"%lf", &UCV);
             /* Seems as everything needed could be read             */
 
-	     if(ReadTilComment(Buffer, SampleFile)) 
-	       sscanf(Buffer,"%d %d %d %d %d", &colD, &colF, &colF2, &colDW, &colM);
+	    if(ReadTilComment(Buffer, SampleFile)) 
+	      sscanf(Buffer,"%d %d %d %d %d", &colD, &colF, &colF2, &colDW, &colM);
+	    else 
+	      { fprintf(LogFilePtr, "WARNING: Can't read the column variables!");
+		//		exit(-1);
+	      }
 
           } 
           else 

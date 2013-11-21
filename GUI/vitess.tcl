@@ -3099,11 +3099,11 @@ set powESET [concat $samASET {
   {absorp float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {vol float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 1}
   {"Structure file format" header}	
-  {cD int  0 {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
-  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int  0 {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
-  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {cD int  "" {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
+  {cF int  "" {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int "" {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cM int  "" {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
+  {cDW int  "" {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }]
 
 ### sample
@@ -4656,7 +4656,7 @@ proc serializeSampleFile {f mode var app submodule} {
 	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
 	scan $l1 "%g%g%g" tscat cscat absorp
 	scan $l2 "%g" vol
-        scan $l3 "%d%d%d%d%d" cD cF cF2 cM cDW
+	if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d" cD cF cF2 cM cDW}
       }
       psq {
 	if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
@@ -4854,7 +4854,8 @@ proc serializeSscFile {f mode var app} {
   set alist {ax ay az bx by bz cx cy cz norm absorb px py pz phi chi omega}
   set blist {geom}
   set clist {thick wid hei oh ov}
-  foreach l [set nlist [concat $alist $blist $clist]] {
+  set dlist {ch ck cl cF cF2 cDW}
+  foreach l [set nlist [concat $alist $blist $clist $dlist]] {
     upvar #0 $l$app $l
   }
   if {$mode == "r"} {
@@ -4868,6 +4869,7 @@ proc serializeSscFile {f mode var app} {
 	default {set geom ball}
       }
       readNumItems $f $clist $app
+      readNumItems $f $dlist $app 	
     }
   } else {
     puts $f "$ax $ay $az\n$bx $by $bz\n$cx $cy $cz\n$norm $absorb\n$px $py $pz\n$phi $chi $omega"
@@ -4877,6 +4879,7 @@ proc serializeSscFile {f mode var app} {
       default {puts $f cyl}
     }
     puts $f "$thick $wid $hei\n$oh $ov"
+    puts $f "\n$ch $ck $cl $cF $cF2 $cDW"
   }
 }
 
