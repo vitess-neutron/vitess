@@ -3099,11 +3099,11 @@ set powESET [concat $samASET {
   {absorp float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {vol float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 1}
   {"Structure file format" header}	
-  {cD int  "" {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
-  {cF int  "" {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int "" {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cM int  "" {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
-  {cDW int  "" {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {cD int  0 {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
+  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
+  {cF2 int 0 {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
+  {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
+  {cDW int 0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
 }]
 
 ### sample
