@@ -98,40 +98,28 @@ modes of ray-tracing are explained in a special help file called 'Ray-tracing'.<
                  <td valign="middle" align="center">X<br>
                  </td>
            <td>proton pulse length of long pulse source</td>
-            <td>&nbsp;&gt; 0.0</td>
-           </tr>
-            <tr>
-           <td width="15%">special source<br>
-                 <br>
-           </td>
-                  <td valign="middle" align="center">---<br>
+           <td>&nbsp;&gt; 0.0</td> </tr>
+         <tr>
+           <td width="15%">name of source<br> </td>
+           <td valign="middle" align="center">---<br>
                  </td>
                  <td valign="middle" align="center">X<br>
                  </td>
                  <td valign="middle" align="center">X<br>
                  </td>
-           <td>Name of a neutron source, for which analytical functions are
- implemented    to describe the moderator characteristics</td>
-            <td>&nbsp;"ESS", &nbsp;"SNS"</td>
-           </tr>
-	<tr>
-           <td width="15%">Data base<br>
-                 <br>
-           </td>
-                  <td valign="middle" align="center">---<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-           <td>Version of moderator descriptions, see the paragraph &nbsp;"ESS and SNS" below.</td>
-            <td>1, 2, 3</td>
-           </tr>
-
-
+            <td>Name of a neutron source, for which analytical functions are implemented to describe the moderator characteristics</td>
+            <td>&nbsp;"ESS", &nbsp;"SNS", &nbsp;"CSNS"</td>
+         </tr>
+	       <tr>
+           <td width="15%">data base<br> </td>
+           <td valign="middle" align="center">---<br> </td>
+           <td valign="middle" align="center">X<br>   </td>
+           <td valign="middle" align="center">X<br>   </td>
+           <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td> <td>1 - 4</td>
+         </tr>
   </tbody>
 </table>
-             <br>
+<br>
 
 <h3><font size="+1"> Moderator parameters</font></h3>
             Moderator parameters are taken from a file that contains information
@@ -770,11 +758,8 @@ if moderator    area, solid angle or wavelength range are zero. <br>
 
   </tbody>
 </table>
-            <br>
-          &nbsp;
-<p><img src="ColourAndOrder.gif" alt="moderator window" width="931"
- height="654">
-          <br>
+<br>
+&nbsp; <p><img src="ColourAndOrder.gif" alt="moderator window" width="931" height="654">  <br>
           &nbsp; </p>
 
 <h3><font size="+2"> Neutron parameters</font></h3>
@@ -798,72 +783,47 @@ if moderator    area, solid angle or wavelength range are zero. <br>
        </b></td>
      </tr>
      <tr>
-       <td valign="top">min. wavelength,&nbsp; max. wavelength<br>
- [&Aring;]<br>
-       </td>
-       <td valign="top">minimal and maximal wavelength used in the simulation
-      <br>
-       </td>
-       <td valign="top">&gt;= 0<br>
-       </td>
-       <td valign="top">-m, -M<br>
-       </td>
+       <td valign="top">min. wavelength,&nbsp; max. wavelength<br> [&Aring;]<br> </td>
+       <td valign="top">minimal and maximal wavelength used in the simulation <br>  </td>
+       <td valign="top">&gt;= 0<br> </td>
+       <td valign="top">-m, -M<br> </td>
      </tr>
      <tr>
-       <td valign="top">                           min. time, &nbsp; <br>
- max. time<br>
- [ms]<br>
-       </td>
-       <td valign="top"><b>pulsed sources</b>: time range of the pulse
-(as  considered in the simulations)<br>
-       <b>continuous source</b>: usually min. time = max. time = 0.0,   i.e.
-  all neutrons starting at the same time. Otherwise a rectangular pulse
- is  generated, which is e.g. necessary for time-of-flight instruments at
-continuous    sources<br>
-       </td>
-       <td valign="top">                           no restriction<br>
-       </td>
-       <td valign="top">-t<br>
- -T<br>
-       </td>
+       <td valign="top">min. time, &nbsp; <br>max. time<br> [ms]<br> </td>
+       <td valign="top"><b>pulsed sources</b>: time range of the pulse (as considered in the simulations)<br>
+                        <b>continuous source</b>: usually min. time = max. time = 0.0, i.e. all neutrons starting at time zero. 
+                        Otherwise a rectangular pulse is  generated, which is e.g. necessary for time-of-flight instruments at continuous sources<br></td>
+       <td valign="top">no restriction<br></td>
+       <td valign="top">-t<br>-T<br>      </td>
      </tr>
      <tr>
-       <td valign="top">max. div.&nbsp; x &lt;-&gt; y max. div.&nbsp;
-&nbsp;x &lt;-&gt; z<br>
- [deg]<br>
-       </td>
-       <td valign="top">The horizontal divergence phi (see figure below)
-is chosen &nbsp;in the interval [-max.div x - y , +max.div x - y] <br>
- The vertical divergence theta (see figure below) is chosen &nbsp;in the
-interval [-max.div x - z , +max.div x -z] <br>
- &nbsp;<br>
-       </td>
-       <td style="width: 120px;" valign="top">0 ... 90<br>
- 0 ... 90<br>
-       </td>
-       <td valign="top">-y &nbsp; <br>
- -z<br>
-       </td>
+       <td valign="top">max. div.&nbsp; x &lt;-&gt; y<br>max. div.&nbsp;&nbsp;x &lt;-&gt; z<br> [deg]<br>  </td>
+       <td valign="top">The horizontal divergence phi (see figure below) is chosen &nbsp;in the interval [-max.div x - y , +max.div x - y] <br>
+                        The vertical divergence theta (see figure below) is chosen &nbsp;in the interval [-max.div x - z , +max.div x -z] <br> &nbsp;<br> </td>
+       <td style="width: 120px;" valign="top">0 ... 90<br> 0 ... 90<br>  </td>
+       <td valign="top">-y &nbsp; <br> -z<br>    </td>
      </tr>
      <tr>
-       <td valign="top">direction defined<br>
-       </td>
-       <td valign="top">The direction is usually determined by a Monte Carlo
-     choice of phi and theta between the maximal values as   given by the
-user. Alternatively, &nbsp;the direction can be determined  by  the starting
-point on the moderator surface and a point on the propagation window (see below),
-which are both determined by MC choices. <br>
-If the option "by virtual window" the 'propagation window' is only used to define
-the flight direction, but the neutrons remain on the moderator surface.
-In both other cases the neutrons are propagate to this window.
-.<br>
-       </td>
-       <td valign="top">"by divergence"<br>
- "by window"<br>
- "by virtual window"<br>
-       </td>
-       <td valign="top">-d<br>
-       </td>
+       <td valign="top">direction defined<br>  </td>
+       <td valign="top">The direction can be determined by a Monte Carlo choice of the horizontal and vertical divergence between the maximal values as given by the user. 
+                        Alternatively, &nbsp;the direction can be determined by the starting point on the moderator surface and a point on 
+                        the propagation window (see below), which are both determined by MC choices. <br>
+                        If the option "by virtual window" the 'propagation window' is only used to define the flight direction, but the neutrons remain 
+                        on the moderator surface. In both other cases the neutrons are propagate to this window. <br> </td>
+       <td valign="top">"by divergence"<br> "by window"<br> "by virtual window"<br> </td>
+       <td valign="top">-d<br>  </td>
+     </tr>
+    <tr>
+       <td valign="top">distance to time window<br> [cm] </td>
+       <td valign="top">distance from source to position of time window</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-s      </td>
+     </tr>
+     <tr>
+       <td valign="top">min. TOF,<br>max. TOF<br>to time window<br> [ms]<br> </td>
+       <td valign="top">only neutrons that arrive at the given position in the specified time range are considered in the simulation<br></td>
+       <td valign="top">no restriction<br></td>
+       <td valign="top">-f<br>-F<br>      </td>
      </tr>
 
   </tbody>

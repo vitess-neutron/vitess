@@ -188,8 +188,16 @@ right, top and bottom plane. <br>
       </tr>
 
       <tr>
-      <td>left, right, top/bottom plane</td>
-      <td>reflectivity file for the coating of the guide on the inner side (left), on the outer side (right), on the top and on the bottom plane.<br>
+      <td>m-value left, right, top/bottom plane</td>
+      <td>m-value of the reflectivity of the guide coating on the inner side (left), on the outer side (right), and on top and bottom plane.<br>
+          The whole reflectivity curve is calculated from this value using the quadratic equation described in <a href="mirror_coating.html">mirror_coating.html</a>
+          It is only used if no file for the particular plane is given.<br> </td>
+      <td>-L, -Q, -G</td>
+      </tr>
+      <tr>
+      <td>left, right, top, bottom plane</td>
+      <td>reflectivity file for the guide coating on the inner side (left), on the outer side (right), on the top and on the bottom plane.<br>
+          Giving a file name here overwrites the correspondent m-value; if you want to use the m-value leave blank the item with the file name.<br>
           If no file for the bottom plane is given, the file of the top plane is used for the bottom.<br> </td>
       <td>-i, -I, -j, -J</td>
       </tr>
@@ -784,7 +792,8 @@ A detailed description of this option will be published in 2012.<br>The followin
   <p align=center style='text-align:center'><span>A</span></p>
   </td>
   <td width=413 valign=top style='width:309.6pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p><span>Neutron wavelength in Ã….</span></p>
+  <p><span>Neutron wavelength in Ã
+.</span></p>
   </td>
  </tr>
  <tr>
