@@ -513,7 +513,7 @@ set cwsASET {
   {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
   {}
   {"Time window" header}
-  {dst_time_foc float 200 {"time window\nin distance [cm]" "Only neutrons arriving between min. and max TOF at this distance from the source will be sent out by the source." "" s} gt0}
+  {dst_time_foc float 200 {"distance to\ntime window [cm]" "Only neutrons arriving between min. and max TOF at this distance from the source will be sent out by the source." "" s} gt0}
   {min_time_foc float  "" {"min. TOF to\ntime window [ms]" "minimal time of flight for the time focusing" "" f}}
   {max_time_foc float  "" {"max. TOF to\ntime window [ms]" "minimal time of flight for the time focusing" "" F}}
   {}
