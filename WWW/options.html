@@ -32,6 +32,10 @@ default is that one which was constant before.
 <p>In <b>strict</b> mode this is an error, in <b>normal</b> mode no value is
 provided in the pipe for that parameter, and in mode <b>set_default</b> this value
 is explicitly set.
+<h4>Save Instr. Mode</h4>
+<p>
+When saving an intstrument settings done in a session for series are normally not
+saved, but you may enable this with the mode <b>with series</b>.
 <h4>Output compression</h4>
 <p>
 If you save the output of the last pipe module to a file, this file may
@@ -54,7 +58,7 @@ execution if you increase the default value of 10000 neutron trajectories per bu
 You may select <b>dots + lines</b> instead of default <b>dots</b> only.
 <h4>Trajectories</h4>
 You may select the output format of geometry information to 
-<b>SVG xy</b>,  <b>SVG yz</b>, <b>X3D</b> or <b>plain text</b>.
+<b>X3D</b> (default), <b>SVG xy</b>,  <b>SVG yz</b>,  or <b>plain text</b>.
 <h4>Browse selection</h4>
 MAC OS X: File selction in an Aqua browser window allows to select files
 of a given extension only.<br>
@@ -79,12 +83,19 @@ If a simulation might take too long, and you want to restrict the execution time
 you might select a timeout period in seconds. After that period a simulation 
 will be ended, like when you click the Stop button. 
 <p>
+<h3>Recovery Snapshots</h3>
+<p>
+VITESS automatically writes snapshots of the GUI state, to be recovered when
+some changes are to be undone.
+Your may set the number of snapshots kept, and the time interval shapshots are
+written.
+
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a><br> 
 <!-- Created: Mon Sep 27 15:36:27 MEST 2010 -->
 <!-- hhmts start -->
-Last modified: Thu Mar 29 16:37:46 MEST 2012
+Last modified: Fri Nov 22 15:31:19 MET 2013
 <!-- hhmts end -->
   </body>
 </html>
