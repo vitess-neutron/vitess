@@ -475,7 +475,7 @@ void ReadParameterFile()
 
 		colh = ReadParF(Par_Sample); colk = ReadParF(Par_Sample); coll = ReadParF(Par_Sample);
 		colF = ReadParF(Par_Sample); colF2 = ReadParF(Par_Sample); colDW= ReadParF(Par_Sample);
-		
+		scaleF2 = ReadParF(Par_Sample);
 		
 /*	 checks some values */
 

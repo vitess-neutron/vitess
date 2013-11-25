@@ -437,7 +437,7 @@ void GetSample(SampleType *Sample, char *StrFileName)
             /* Seems as everything needed could be read             */
 
 	    if(ReadTilComment(Buffer, SampleFile)) 
-	      sscanf(Buffer,"%d %d %d %d %d", &colD, &colF, &colF2, &colDW, &colM);
+	      sscanf(Buffer,"%d %d %d %d %d %f", &colD, &colF, &colF2, &colDW, &colM, &scaleF2);
 	    else 
 	      { fprintf(LogFilePtr, "WARNING: Can't read the column variables!");
 		//		exit(-1);
