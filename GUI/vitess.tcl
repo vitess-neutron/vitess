@@ -3104,6 +3104,7 @@ set powESET [concat $samASET {
   {cF2 int 0 {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
   {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
   {cDW int 0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {sFactor float 1 {"Scale factor" "For a custom file format please specify a scale factor such \nthat the squared structure factor can be calculated in barn. Example: \nIf the (squared) structure factor is in fm (fm^2), then the \nscale factor is 1/100. (optional)."} ge0}
 }]
 
 ### sample
@@ -3341,7 +3342,8 @@ set sscESET {
   {cl int  0 {"l\ncolumn" "L column number in the custom structure file."} ge0}
   {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
   {cF2 int  0 {"Squared Str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}	
+  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}
+  {sFactor float  1 {"Scale factor" "For a custom file format please specify a scale factor such \nthat the squared structure factor can be calculated in barn. Example: \nIf the (squared) structure factor is in fm (fm^2), then the \nscale factor is 1/100. (optional)."} ge0}
 }
 
 
@@ -4607,7 +4609,7 @@ proc serializeCrsFile {f mode var app} {
 
 proc serializeSampleFile {f mode var app submodule} {
   set nlist {x y z cyl hei thick cx cy cz wid hsrad tscat cscat
-      absorp vol sfac sfactfile sob sobv2 sobv3 rho1 rho2 fpkl miscs mtscs mabcs cD cF cF2 cM cDW}
+      absorp vol sfac sfactfile sob sobv2 sobv3 rho1 rho2 fpkl miscs mtscs mabcs cD cF cF2 cM cDW sFactor}
   foreach l $nlist {
     upvar #0 $l$app $l
   }
@@ -4656,7 +4658,7 @@ proc serializeSampleFile {f mode var app submodule} {
 	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
 	scan $l1 "%g%g%g" tscat cscat absorp
 	scan $l2 "%g" vol
-	if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d" cD cF cF2 cM cDW}
+	if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d%f" cD cF cF2 cM cDW sFactor}
       }
       psq {
 	if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
@@ -4685,7 +4687,7 @@ proc serializeSampleFile {f mode var app submodule} {
 	}
 	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
       }
-      pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol\n$cD $cF $cF2 $cM $cDW"}
+      pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol\n$cD $cF $cF2 $cM $cDW $sFactor"}
       psq {
 	if {$sfac == "from file"} {set s D} else {set s F}
 	puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
@@ -4854,7 +4856,7 @@ proc serializeSscFile {f mode var app} {
   set alist {ax ay az bx by bz cx cy cz norm absorb px py pz phi chi omega}
   set blist {geom}
   set clist {thick wid hei oh ov}
-  set dlist {ch ck cl cF cF2 cDW}
+  set dlist {ch ck cl cF cF2 cDW sFactor}
   foreach l [set nlist [concat $alist $blist $clist $dlist]] {
     upvar #0 $l$app $l
   }
@@ -4879,7 +4881,7 @@ proc serializeSscFile {f mode var app} {
       default {puts $f cyl}
     }
     puts $f "$thick $wid $hei\n$oh $ov"
-    puts $f "\n$ch $ck $cl $cF $cF2 $cDW"
+    puts $f "\n$ch $ck $cl $cF $cF2 $cDW $sFactor"
   }
 }
 
