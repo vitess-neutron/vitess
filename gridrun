@@ -1668,7 +1668,7 @@ sub parseOptInput {
   my $count = 0;
   foreach (@SimPars) {
     my ($n, $p) = split;
-    $Pipe[$n-1] =~ s/ $p([^-][^ ]*)/ ${p}VVV${count}VVV/;
+    $Pipe[$n-1] =~ s/ $p[^ ]+/ ${p}VVV${count}VVV/;
     $count++;
   }
 
