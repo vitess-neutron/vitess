@@ -1090,7 +1090,7 @@ sub checkSSH {
     $_ = `ssh $Node[0] echo \$SHELL`;
     $ssh_shell = /tcsh/ ? 'tcsh' : 'sh';
 
-  } elsif ($submit_mode ne '') {
+  } elsif ($submit_mode eq 'sge') {
 
     while ($#Node < 0) {
       last if $n_instances == 1; # use the default queue
