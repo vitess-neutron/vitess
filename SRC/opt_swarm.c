@@ -22,6 +22,7 @@ typedef struct
 /*********************************************/
 /* global variables                          */
 /*********************************************/
+static SwarmIndividual ThisBee[MAX_BEES+1];  // the swarm: array of individuals
 static double globalBestPos[NMAX+1]={0};
 static short DEBUG = FALSE;                      
 
@@ -29,8 +30,8 @@ static short DEBUG = FALSE;
 /* prototypes                                */
 /*********************************************/
 static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfinish, double *pW0min, double *pW0max, double *pW1min, double *pW1max, double *pW2min, double *pW2max, short *pWrite, const char *sIniFile);
-static double SetStartingPosition(SwarmIndividual *onebee, int BeeNo);
-static double UpdatePosition(SwarmIndividual *onebee, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current);
+static void SetStartingPosition(int NBees);
+static void UpdatePosition(int NBees, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current);
 static void CopyPosition(double PosIn[], double PosOut[]);
 
 /*****************************************************************************/
@@ -38,7 +39,7 @@ static void CopyPosition(double PosIn[], double PosOut[]);
 /*****************************************************************************/
 short Swarm(){
 
-  SwarmIndividual ThisBee[MAX_BEES+1];  // the swarm: array of individuals
+
   double globalBestFoM=1e99;            // inverse FoM: Factor/FOM read from Fcomm.dat, global best value
   double currentFoM=1e99;               // inverse FoM: Factor/FOM read from Fcomm.dat, current value
   int i,j,k,                            // counting variables
@@ -71,13 +72,12 @@ short Swarm(){
   
   fprintf(LogFilePtr,"\n swarm algorithm 1.0 \n swarm size: %d individuals \n optimization steps: %d \n time dependent weights modified between (w_start,w_end): \n   w0: (%f,%f),  w1: (%f,%f),  w2: (%f,%f) \n\n",Nbees, Nsteps,wMax_inertia, wMin_inertia, wMax_local, wMin_local, wMin_global, wMax_global);
 
-  for (j=1; j<=Nbees; j++){
-    
-    if(DEBUG)
-      fprintf(LogFilePtr,"\n DEBUG: bee no %d: ",j);
-    
-    currentFoM = SetStartingPosition(&ThisBee[j],j);
-    ThisBee[j].localBestFoM = currentFoM;
+  SetStartingPosition(Nbees);
+
+  for (j=1; j<=Nbees; j++){    
+
+    currentFoM=arF[j][1];
+    ThisBee[j].localBestFoM=currentFoM;
     CopyPosition(ThisBee[j].Position,ThisBee[j].localBestPos);
     if(currentFoM < globalBestFoM){
       globalBestFoM = currentFoM;
@@ -105,16 +105,17 @@ short Swarm(){
     fprintf(LogFilePtr,"\n\n DEBUG: Starting optimization loop ================================");
 
   for (i=1; i<=Nsteps; i++){
+    if(DEBUG)
+      fprintf(LogFilePtr,"\n DEBUG: step %d: ",i);
+
+    UpdatePosition(Nbees,wMin_inertia,wMax_inertia,wMin_local,wMax_local,wMin_global,wMax_global,Nsteps,i);
+
     for (j=1; j<=Nbees; j++){
-      
-      if(DEBUG)
-	fprintf(LogFilePtr,"\n DEBUG: step %d, bee no %d: ",i,j);
-      
-      currentFoM = UpdatePosition(&ThisBee[j],wMin_inertia,wMax_inertia,wMin_local,wMax_local,wMin_global,wMax_global,Nsteps,i);
-      
-      if(DEBUG)
+      if(DEBUG){
 	(j<Nbees) ? fprintf(fBeeMovement,"%10.4f  ",ThisBee[j].Position[1]) : fprintf(fBeeMovement,"%10.4f  \n",ThisBee[j].Position[1]); 
+      }
       
+      currentFoM=arF[j][1];
       if(currentFoM < ThisBee[j].localBestFoM ){
 	ThisBee[j].localBestFoM = currentFoM;
 	CopyPosition(ThisBee[j].Position,ThisBee[j].localBestPos);
@@ -125,7 +126,7 @@ short Swarm(){
 	  fprintf(LogFilePtr,"\n (swarm) new global best: Factor/FoM: %10.4e in step %d \n\n",globalBestFoM,i);
 	  if(eOut>1){
 	    if(DEBUG)
-	      fprintf(LogFilePtr," found by bee %d",j);
+	      fprintf(LogFilePtr," found by bee %d: \n",j);
 	    for(k=1; k<=nPar; k++)
 	      fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
 	    fprintf(LogFilePtr,"\n");
@@ -177,32 +178,35 @@ short Swarm(){
    random position in parameter space, only first bee starts at user given start values (P00) 
    random velocity within +-StepSize (DelP)                                                  */
 /*********************************************************************************************/
-static double SetStartingPosition(SwarmIndividual *onebee, int BeeNo){
+static void SetStartingPosition(int NBees){
   double v_max;
-  int h, i;
-  for (h=1; h<=nPar; h++){
-    if(BeeNo>1)
-      onebee->Position[h]=MonteCarlo(Pmin[h],Pmax[h]);
-    else
-      onebee->Position[h]=P00[h];
-    v_max=DelP[h];
-    onebee->Velocity[h]=MonteCarlo(-v_max,v_max);
-    if(DEBUG)
-      fprintf(LogFilePtr,"\n DEBUG: starting velocity parameter %d: %f  \n        starting position parameter %d: %f ",h,onebee->Velocity[h],h,onebee->Position[h]);
-  }
+  int h, i, BeeNo;
 
-  for(i=1; i<=NMAX; i++){
-    if(i<=nPar)
-      arP[1][i]=onebee->Position[i];
-    else
-      arP[1][i]=0;
+  for (BeeNo=1; BeeNo<=NBees; BeeNo++){
+    for (h=1; h<=nPar; h++){
+
+      if(BeeNo>1)
+	ThisBee[BeeNo].Position[h]=MonteCarlo(Pmin[h],Pmax[h]);
+      else
+	ThisBee[BeeNo].Position[h]=P00[h];
+      v_max=DelP[h];
+      ThisBee[BeeNo].Velocity[h]=MonteCarlo(-v_max,v_max);
+      if(DEBUG)
+	fprintf(LogFilePtr,"\n DEBUG: bee no. %d, starting velocity parameter %d: %f  \n                   starting position parameter %d: %f ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
+    }
+
+    for(i=1; i<=NMAX; i++){
+      if(i<=nPar)
+	arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
+      else
+	arP[BeeNo][i]=0;
+    }
   }
-  CalcAllFcts(1,1);
+  CalcAllFcts(1,NBees);
 
   if(arF[1][1]>1e20) //fom=0
     fprintf(LogFilePtr,"\n WARNING: figure of merit is 0, check optimization parameter range!");
-
-  return arF[1][1];
+  
 }
 
 /*******************************************************************************/
@@ -212,48 +216,49 @@ static double SetStartingPosition(SwarmIndividual *onebee, int BeeNo){
      r1, r2: random numbers in [0,1]
    p_new = p_old + v_new                                                       */
 /*******************************************************************************/
-static double UpdatePosition(SwarmIndividual *onebee, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current){
+static void UpdatePosition(int NBees, const double w0_min, const double w0_max, const double w1_min, const double w1_max, const double w2_min, const double w2_max, const int nSteps, const int current){
   double r1, r2, v_max, v_old, p_old, w0_i, w1_i, w2_i;
-  int h, i;
-  r1=MonteCarlo(0,1);
-  r2=MonteCarlo(0,1);
+  int h, i, BeeNo;
 
   /* time dependence */
   w0_i=(w0_max-w0_min)*(nSteps-current)/nSteps+w0_min;
   w1_i=(w1_min-w1_max)*current/nSteps+w1_max;
   w2_i=(w2_max-w2_min)*current/nSteps+w2_min;
- 
-  for (h=1; h<=nPar; h++){
-    v_old=onebee->Velocity[h];
-    p_old=onebee->Position[h];
-    onebee->Velocity[h] = w0_i*v_old + w1_i*r1*(onebee->localBestPos[h]-p_old) + w2_i*r2*(globalBestPos[h]-p_old); 
-    v_max=0.5*fabs(Pmax[h]-Pmin[h]);
-    if( fabs(onebee->Velocity[h]) > v_max )
-      onebee->Velocity[h] = ((onebee->Velocity[h] > 0) ? v_max : -v_max);
-    onebee->Position[h] = p_old + onebee->Velocity[h];
 
-    /* Set p to threshold if outside range */
-    if(onebee->Position[h]>Pmax[h])
-      onebee->Position[h]=Pmax[h];
-    else if (onebee->Position[h] < Pmin[h])
-      onebee->Position[h]=Pmin[h];
+  for (BeeNo=1; BeeNo<=NBees; BeeNo++){
+    for (h=1; h<=nPar; h++){
+      r1=MonteCarlo(0,1);
+      r2=MonteCarlo(0,1);
+      v_old=ThisBee[BeeNo].Velocity[h];
+      p_old=ThisBee[BeeNo].Position[h];
+      ThisBee[BeeNo].Velocity[h] = w0_i*v_old + w1_i*r1*(ThisBee[BeeNo].localBestPos[h]-p_old) + w2_i*r2*(globalBestPos[h]-p_old); 
+      v_max=0.5*fabs(Pmax[h]-Pmin[h]);
+      if( fabs(ThisBee[BeeNo].Velocity[h]) > v_max )
+	ThisBee[BeeNo].Velocity[h] = ((ThisBee[BeeNo].Velocity[h] > 0) ? v_max : -v_max);
+      ThisBee[BeeNo].Position[h] = p_old + ThisBee[BeeNo].Velocity[h];
 
-    if(DEBUG)
-      fprintf(LogFilePtr,"\n DEBUG: new velocity parameter %d: %f  \n        new position parameter %d: %f          ",h,onebee->Velocity[h],h,onebee->Position[h]);
-  }
+      /* Set p to threshold if outside range */
+      if(ThisBee[BeeNo].Position[h]>Pmax[h])
+	ThisBee[BeeNo].Position[h]=Pmax[h];
+      else if (ThisBee[BeeNo].Position[h] < Pmin[h])
+	ThisBee[BeeNo].Position[h]=Pmin[h];
+      
+      if(DEBUG)
+	fprintf(LogFilePtr,"\n DEBUG: bee no. %d, new velocity parameter %d: %f  \n                   new position parameter %d: %f          ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
+    }
 
-  for(i=1; i<=NMAX; i++){
-    if(i<=nPar)
-      arP[1][i]=onebee->Position[i];
-    else
-      arP[1][i]=0;
+    for(i=1; i<=NMAX; i++){
+      if(i<=nPar)
+	arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
+      else
+	arP[BeeNo][i]=0;
+    }
   }
 
   /* Run simulation with parameters arP, 
      calculate Factor/FOM and write into arF */
-  CalcAllFcts(1,1);
+  CalcAllFcts(1,NBees);
 
-  return arF[1][1];
 }
 
 
