@@ -1174,10 +1174,10 @@ sub createCommandfiles {
   # Create command files for each pipe instance.
   # These are augmented grd files, with specific work directories and PRNG seeds.
 
-  my ($i, $j, $cs, $tdir, $tstr, $lasti, @TFile);
+  my ($i, $j, $cs, $tdir, $tstr, $lasti, $pn, @TFile);
 
-  # reduced number of neutrons, as we have parallel pipes
-  my $pn = int(($trajectories ? $trajectories : $neutrons) / $n_instances);
+  # reduced number of neutrons, as we have parallel pipes (except optimization runs)
+  $pn = int(($trajectories ? $trajectories : $neutrons) / $n_instances) unless $opt_dat;
 
   # @TFile is array of all temp. file names
   $lasti = 0 + @Pipe;
@@ -1684,7 +1684,7 @@ sub pollExecutionState {
   my $tfile = "$grid_work_dir/1/PIPEDONE_";
   while (1) {
     last if -f $tfile;
-    sleep 5;
+    sleep 2;
   }
 
   # poll other pipes, with a higher frequency
@@ -1717,6 +1717,14 @@ sub extractFigureOfMeritFiles {
 
 
 sub doOptimization {
+
+  # set some defaults, if either slnodes or slpartition is given
+  if ($slpartition ne '' && $slnodes eq '') {
+    $slnodes = 1;
+    $submit_mode = 'slurm';
+  } elsif ($slnodes ne '' && $slpartition eq '') {
+    $slpartition = 'long';
+  }
 
   &parseOptInput;
 
