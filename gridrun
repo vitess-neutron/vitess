@@ -1725,6 +1725,7 @@ sub doOptimization {
   } elsif ($slnodes ne '' && $slpartition eq '') {
     $slpartition = 'long';
   }
+  $jobname = 'optrun' if $submit_mode eq 'slurm' && $jobname eq '';
 
   &parseOptInput;
 
