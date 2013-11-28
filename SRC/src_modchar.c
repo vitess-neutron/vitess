@@ -542,7 +542,11 @@ double UserLmbdTimeDis(const double _dLambda, const double _dTime)
 		dLUi    = dLUij  + (dLUij1 - dLUij)  / dDelY * (_dLambda - stFluxLT[imod].pTabY[j]);
 		dLUi1   = dLUi1j + (dLUi1j1- dLUi1j) / dDelY * (_dLambda - stFluxLT[imod].pTabY[j]);
 		dLUd    = dLUi   + (dLUi1  - dLUi)   / dDelX * (dTime     - stFluxLT[imod].pTabX[i]);
-		dUd     = exp(dLUd);
+
+    if (dLUd==-100.0)
+      dUd = 0.0;         // compare LoadWavelengthTimeDistribution() in source.c
+    else
+		  dUd = exp(dLUd);
 	}
 	else
 	/* read error: time or wavelength larger than all values in the distribution file */
@@ -568,7 +572,10 @@ double UserLambdaDis(const double _dLambda, const double _dModTemp)
 		dLUdN1 = stFluxL[imod].pTabF[n+1];
 		dLUd   = dLUdN  +  (dLUdN1-dLUdN ) / (stFluxL[imod].pTabX[n+1] - stFluxL[imod].pTabX[n])
 		                                   * (_dLambda                - stFluxL[imod].pTabX[n]);
-		dUd    = exp(dLUd);
+    if (dLUd==-100.0)
+      dUd = 0.0;         // compare LoadWavelengthDistribution() in source.c
+    else
+		  dUd = exp(dLUd);
 	}
 	else
 	/* read error: wavelength larger than all values in the distribution file */
@@ -595,7 +602,10 @@ double UserTimeDis(const double _dTime, const double _dTau, const double _dTauRa
 		dLUdN1 = stFluxT[imod].pTabF[n+1];
 		dLUd   = dLUdN  +  (dLUdN1 - dLUdN ) / (stFluxT[imod].pTabX[n+1] - stFluxT[imod].pTabX[n])
 		                                     * (dTime                    - stFluxT[imod].pTabX[n]);
-		dUd    = exp(dLUd);
+    if (dLUd==-100.0)
+      dUd = 0.0;         // compare LoadTimeDistribution() in source.c
+    else
+		  dUd = exp(dLUd);
 	}
 	else
 	/* read error: time larger than all values in the distribution file */
