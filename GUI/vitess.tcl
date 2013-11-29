@@ -5495,6 +5495,8 @@ proc moduleMenus {{n 1}} {
   if {$n != "" && $n > 1} {
     adjustScrollRegion $Mlf
   }
+
+  disableModule ;  # set all modules enabled
 }
 
 

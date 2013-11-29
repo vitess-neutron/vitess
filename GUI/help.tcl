@@ -285,6 +285,11 @@ If you click on the module number of a real module in the list, a popup menu off
 - Disable Module : you may deactivate a module, leave it out from execution
 - re-enable this or all disabled modules
 - generate a X3D visualisation of that module alone
+
+Modules may temporarily disabled/deactivated. Those module are shown with white module
+numbers in the module list, and are skipped when executing the simulation.
+If you change the module list (insert or edit or delete a module) all modules
+are activated again.
 }
 
 helpItem {Visualising Results} {
