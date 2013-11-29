@@ -1703,6 +1703,16 @@ sub pollExecutionState {
   }
 }
 
+sub deleteOldFOMFiles {
+  foreach (@FileOfMerit) {
+    # split name to filename + extension
+    # delete <filename>*.<extension>
+    /^(.+)\.([^.]+)$/;
+    my @F = glob "$1*.$2";
+    unlink @F if @F;
+  }
+}
+
 sub extractFigureOfMeritFiles {
   my ($i);
   for ($i=1; $i <= $n_instances; $i++) {
@@ -1732,6 +1742,8 @@ sub doOptimization {
   &createWorkdir;
 
   &checkSSH;
+
+  &deleteOldFOMFiles;
 
   &startExecution;
 
