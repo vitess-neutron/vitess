@@ -1707,7 +1707,7 @@ sub deleteOldFOMFiles {
   foreach (@FileOfMerit) {
     # split name to filename + extension
     # delete <filename>*.<extension>
-    /^(.+)\.([^.]+)$/;
+    next unless /^(.+)\.([^.]+)$/;
     my @F = glob "$1*.$2";
     unlink @F if @F;
   }
@@ -1735,7 +1735,7 @@ sub doOptimization {
   } elsif ($slnodes ne '' && $slpartition eq '') {
     $slpartition = 'long';
   }
-  $jobname = 'optrun' if $submit_mode eq 'slurm' && $jobname eq '';
+  $jobname = 'optrun' if $jobname eq '';
 
   &parseOptInput;
 
