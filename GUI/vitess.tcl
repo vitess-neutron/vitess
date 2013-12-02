@@ -156,35 +156,35 @@ proc makeModuleSets {} {
   # 1 list of submodules; may be empty
   # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
-    {source {source_const_wave source_ILL source_HMI source_FRM2
-      source_short_pulsed source_SNS source_IPNS source_ISIS source_CSNS
-      source_ESS_LPTS source_ESS_2012} source}
-    {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
-    {sm_ensemble {} sm_ensemble}
-    {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
-    {spacewindow {space slit spacewindow spacewindow_multiple grid}
-      {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
-    {velselect {} velselect}
     {collimator {collimator collimator_radial collimator_soller} collimator}
-    {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochr_analyser}
-    {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
-    {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
+    {detector {} detector}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
+    {external_command}
+    {filter {} filter}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
-    {resonator_drabkin {} resonator_drabkin}
+    {frame {} frame}
+    {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
+    {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
+    {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochr_analyser}
+    {optical_elements {lense} {lense}}
+    {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
+    {resonator_drabkin {} resonator_drabkin}
     {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
       sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
-    {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
-    {filter {} filter}
-    {frame {} frame}
-    {external_command}
+    {sm_ensemble {} sm_ensemble}
+    {source {source_const_wave source_ILL source_HMI source_FRM2
+      source_short_pulsed source_SNS source_IPNS source_ISIS source_CSNS
+      source_ESS_LPTS source_ESS_2012} source}
+    {spacewindow {space slit spacewindow spacewindow_multiple grid}
+      {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
+    {velselect {} velselect}
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
