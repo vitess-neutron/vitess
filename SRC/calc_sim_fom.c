@@ -84,7 +84,7 @@ short  OptFctPc(const double X[IMAX+1], const int nPts, const short mMin, const 
 
 short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar, char* sGridOpt)
 {
-  short rc=FALSE, rcp, rcf;
+  short rc=FALSE, rcf;
 
 #ifdef VT_WINDOWS
   Error("Optimization on cluster only supported for Unix systems"); 

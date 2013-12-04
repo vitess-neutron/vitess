@@ -412,9 +412,11 @@ int main(int argc, char *argv[])
                        "  with a declination of      : %7.3f°\n",
                         (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
                        WindowWidth, WindowHeight, WindowDist/100., Declination);
+
    if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
-    fprintf(LogFilePtr, "  time window                : %7.3f - %7.3 ms\n", TofMinWnd, TofMaxWnd);
-   fprintf(LogFilePtr, "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
+    fprintf(LogFilePtr, "  time window                : %7.3f - %7.3f ms\n", TofMinWnd, TofMaxWnd);
+
+   fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
                       PolDegree, PolVecX, PolVecY, PolVecZ);
    if (pTraceFileName!=NULL)
       fprintf(LogFilePtr, "trace file used              : %s\n", pTraceFileName);
