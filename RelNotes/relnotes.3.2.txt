@@ -1,4 +1,4 @@
-VITESS 3.1  Release Note
+VITESS 3.2  Release Note
 ------------------------
 
 Major upgrades:
@@ -55,3 +55,5 @@ Bug fixes:
 Detector: Efficiency of gaseous materials
 Filter: OR mode working again
 Visualization: Circular moderator shape is now visible
+
+(Dez 4 2013, subversion  537)
