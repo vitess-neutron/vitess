@@ -168,7 +168,7 @@ proc makeModuleSets {} {
     {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
-    {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochr_analyser}
+    {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochromator monochromator monochromator monochr_analyser monochr_analyser monochr_analyser}
     {optical_elements {lense} {lense}}
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {resonator_drabkin {} resonator_drabkin}
