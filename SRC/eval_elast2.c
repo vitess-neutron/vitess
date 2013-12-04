@@ -194,31 +194,10 @@ int main(int argc, char *argv[])
       dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
 
       if (scatang==0) { //use direction cosine
-			  CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
       } else {
         /* select traj. according to colour: (nColour=0 means: all colours accepted) */
-        /*if (!((nColour_c!=0 && nColour_c!=InputNeutrons[i].Color) || 
-              (minColor_c >= 0 && InputNeutrons[i].Color < minColor_c) ||
-              (maxColor_c >= 0 && InputNeutrons[i].Color > maxColor_c))) {
-          TwoTheta = M_PI/2.-atan2(InputNeutrons[i].Position[0], sdpath);
-          CopyVector(InputNeutrons[i].Position, Dir);
-          NormVector(Dir);
-          CartesianToSpherical(Dir, &TwoTheta, &Phi);*/
-        //CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-          TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
-        /*} else {
-          TwoTheta = atan2(sqrt(InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]), sdpath);
-          //*if (!((nColour_v!=0 && nColour_v!=InputNeutrons[i].Color) || 
-                (minColor_v >= 0 && InputNeutrons[i].Color < minColor_v) ||
-                (maxColor_v >= 0 && InputNeutrons[i].Color > maxColor_v))) {
-          } else {*/
-           /* if (!((nColour_r!=0 && nColour_r!=InputNeutrons[i].Color) || 
-                (minColor_r >= 0 && InputNeutrons[i].Color < minColor_r) ||
-                (maxColor_r >= 0 && InputNeutrons[i].Color > maxColor_r))) {
-              TwoTheta = 2.*M_PI-TwoTheta;
-            }*/
-          //}
-        //}
+        TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
       }
       
 			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;

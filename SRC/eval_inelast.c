@@ -3,8 +3,8 @@
 /*                                                                                                      */
 /* The free non-commercial use of these routines is granted                                             */
 /* providing due credit is given to the authors.                                                        */
-/* 1.0            Géza Zsigmond                                                                         */
-/* 1.1  Jul 2002  Géza Zsigmond  change                                                                 */
+/* 1.0            GÃ©za Zsigmond                                                                         */
+/* 1.1  Jul 2002  GÃ©za Zsigmond  change                                                                 */
 /* 1.2  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                           */
 /* 1.3  Nov 2005  K. Lieutenant  transformation scattering angles -> direction removed                  */
 /* 1.4  Aug 2012  K. Lieutenant  calculation of energy transfer and restriction of ang. range corrected */
@@ -211,20 +211,20 @@ void OwnInit(int argc, char *argv[])
 		{
 
 			case 'A':
-			sscanf(&argv[1][2], "%ld", &eGeomOption) ;
+			eGeomOption = atoi(&argv[1][2]) ;
 			break;
 			case 't':
-			sscanf(&argv[1][2], "%ld", &bTofCorr) ;
+			bTofCorr = atoi(&argv[1][2]) ;
 			break;
 			case 'D':
-			sscanf(&argv[1][2], "%ld", &bBoseF) ;
+			bBoseF = atoi(&argv[1][2]) ;
 			break;
 
 			case 'C':
 			sscanf(&argv[1][2], "%ld", &NoBins) ;
 			break;
 			case 'f':
-			sscanf(&argv[1][2], "%ld", &iColor) ;
+			iColor = atoi(&argv[1][2]);
 			break;
 
 			case 'E':
@@ -385,7 +385,7 @@ void OwnInit(int argc, char *argv[])
 
   fprintf(LogFilePtr, " number of bins       : %4ld      \n", NoBins);
   fprintf(LogFilePtr, " primary flight path  : %9.4f m  \n secondary flight path: %9.4f m \n",           PrimaryFlightPath/100.0, SecondaryFlightPath/100.0);
-  fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset, MinTOF, MaxTOF);
+  fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset);
   fprintf(LogFilePtr, " gradient of timebins : %9.4f    \n angular range        : %9.4f +/-%9.4f deg\n", SlopeBins, Angle, AngleRange);
 
   if(Temperature == 0.) bBoseF = 0 ;

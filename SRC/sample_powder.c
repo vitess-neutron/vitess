@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
   }
   fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
                       "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
-                      "unit cell volume   : %8.3f Ang³\n"
+                      "unit cell volume   : %8.3f AngÂ³\n"
                       "struct. factor file: %s\n", 
                       Sample.Position [0], Sample.Position [1], Sample.Position [2], 
                       MuInc, g_fMuTot, g_fMuAbs, UCV, StrucFacFileName);
@@ -437,7 +437,7 @@ void GetSample(SampleType *Sample, char *StrFileName)
             /* Seems as everything needed could be read             */
 
 	    if(ReadTilComment(Buffer, SampleFile)) 
-	      sscanf(Buffer,"%d %d %d %d %d %f", &colD, &colF, &colF2, &colDW, &colM, &scaleF2);
+	      sscanf(Buffer,"%d %d %d %d %d %lf", &colD, &colF, &colF2, &colDW, &colM, &scaleF2);
 	    else 
 	      { fprintf(LogFilePtr, "WARNING: Can't read the column variables!");
 		//		exit(-1);

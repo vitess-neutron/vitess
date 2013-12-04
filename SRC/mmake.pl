@@ -13,7 +13,7 @@ use strict;
 my @Vstudio = ('c:|programme|microsoft visual studio .net 2003',
                'C:|Program Files (x86)|Microsoft Visual Studio 10.0');
 # 3 subdirectories each, specific for a visual studio version
-my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|PlatformSDK',
+my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|Vc7|PlatformSDK',
             'VC', 'Common7|IDE', 'C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
 
 
@@ -24,8 +24,8 @@ my $svnroot = 'd:|vitcsrc';           # --src parameter
 my $unixcomment =<<'EOS';
 # compile hosts used at HZB
 # Linux   : dixi3  openSUSE 10.2 (i586)
-# Linux64 : dinux4 openSUSE 10.2 (X86-64)
-# Darwin  : donald.hmi.de 11.2.0 (X86-64)
+# Linux64 : dixi4 openSUSE 11.3 (x86_64)
+# Darwin  : daisy.hmi.de 11.2.0 (X86-64)
 EOS
 
 ###

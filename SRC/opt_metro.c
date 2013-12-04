@@ -188,9 +188,9 @@ short Metropolis()
 
     /* print to log file */    
     if (LogFilePtr!=NULL && iStep/nStpOut*nStpOut == iStep) 
-    {	fprintf(LogFilePtr, "\n%ld. STEP:\n----------\n", iStep);
+    {	fprintf(LogFilePtr, "\n%d. STEP:\n----------\n", iStep);
     	PrintP(P0, ON);
-	  	fprintf(LogFilePtr, " X²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
+	  	fprintf(LogFilePtr, " XÂ²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
     }
     if (LogFilePtr!=NULL && iStep/nStpMin*nStpMin == iStep) 
     {	fprintf(LogFilePtr, "\nActual best values found in step %ld:\n", iStpOpt);
@@ -209,7 +209,7 @@ short Metropolis()
   if (Qlimit > 0.0 && NZloc > 0)
     LocalMin(VT_EXIT, 0.0, 0.0, PM, 0.0);
 
-  fprintf(LogFilePtr, "\nFit was finished after %ld accepted and %ld tried steps\n\nFinal values found in step %ld:\n",
+  fprintf(LogFilePtr, "\nFit was finished after %d accepted and %ld tried steps\n\nFinal values found in step %ld:\n",
                       iStep, iStpTry, iStpOpt);
   
   if (nPts > nPar)

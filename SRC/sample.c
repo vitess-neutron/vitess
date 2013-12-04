@@ -576,7 +576,7 @@ int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactor
 
  
   fclose(StrucFacFile);
-  fprintf(LogFilePtr,"Read %d lines in the structure file.\n", NumLines);
+  fprintf(LogFilePtr,"Read %ld lines in the structure file.\n", NumLines);
 
 
   if (tag == 1) {

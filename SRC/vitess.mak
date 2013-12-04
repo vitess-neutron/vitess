@@ -2,7 +2,7 @@
 GROOT=h:\control\g2_win
 SVNROOT=d:\vitcsrc
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
-CPATH2=c:\programme\microsoft visual studio .net 2003\PlatformSDK
+CPATH2=c:\programme\microsoft visual studio .net 2003\Vc7\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
 IPATH2=$(CPATH2)\include

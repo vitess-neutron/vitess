@@ -37,7 +37,7 @@ ModInfo   stMInfo[NUM_MOD][2]; /* additional moderator data
 
 
 static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
-              s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
+              s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisoned, COUPLED */
 
 
 // double NewMaxwell (const double _lambda, const double _temp);
@@ -114,9 +114,9 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 			if (s_nModType==MULT_SPEC)
 			{	
         dFacM = 2.0;
-        rc=GetEssModDat(&stMInfo[imod][0],   50.0, stMod[imod].dHeight, iDataVsn);  // Phi8, Schönfeldt, pancake
+        rc=GetEssModDat(&stMInfo[imod][0],   50.0, stMod[imod].dHeight, iDataVsn);  // Phi8, SchÃ¶nfeldt, pancake
         if (rc)
-        rc=GetEssModDat(&stMInfo[imod][1],  325.0, stMod[imod].dHeight, iDataVsn);  // Phi7, Schönfeldt
+        rc=GetEssModDat(&stMInfo[imod][1],  325.0, stMod[imod].dHeight, iDataVsn);  // Phi7, SchÃ¶nfeldt
     	}
 			else  // coupled
 			{	
@@ -356,7 +356,7 @@ double Maxwellian(const double _dLambda, const double _dModTemp)
 
 	if (_dModTemp > 0.0  &&  _dLambda > 0.0)
 	{
-		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = h²/(2*k*m_n)  in (1E-10 m)²K */
+		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = hÂ²/(2*k*m_n)  in (1E-10 m)Â²K */
 		dA    = dFakt / _dModTemp;
 		
 		dM      = 2 * pow(dA,2) * exp(-dA / pow(_dLambda,2)) / pow(_dLambda,5) ;
@@ -496,7 +496,7 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
 
     if (bFound) 
     { pModInfo->dTemp    = Info.T_real;
-      pModInfo->dF001    = Info.I1  /50.0/25.0;    // Phi7, Phi8, Schönfeldt
+      pModInfo->dF001    = Info.I1  /50.0/25.0;    // Phi7, Phi8, SchÃ¶nfeldt
       pModInfo->dF002    = Info.I_SD/50.0/25.0;    // divided by SP source freq. and multiplied by duty cycle
       pModInfo->dF003    = Info.I2  /50.0/25.0;
       if (TempT > 200.0)                            
@@ -738,7 +738,7 @@ double f_therm(const double _dLambda)
                                    * [atan((h-z)/D) - atan((-h-z)/D)]
    w: window width, h: window height, D distance moderator - window
 
-   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(D²+x²)/2
+   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(DÂ²+xÂ²)/2
    integration over rectangular moderator area yields
     I_ges = (I1 -I2) * (I3 - I4) with I2 = I1, I4=I3
 
@@ -789,7 +789,7 @@ double AveSolidAngleR(const double dModWidth, const double dModHeight,
 
 /* 'AveWeightC', 'AveWeightR'
 
-   For 'DirectionByWindow' trajectories have to be normalized by f=cos²(phi)*cos²(theta).
+   For 'DirectionByWindow' trajectories have to be normalized by f=cosÂ²(phi)*cosÂ²(theta).
    These functions 'AveWeightC' and 'AveWeightR' calculate the average normalization factors
    by integration over window area and over moderator area.
    The resulting factor F is included in the main program to give correct absolute flux values.
@@ -826,7 +826,7 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 	double dFactY, dFactZ;
 
 	/* integration of 'weight' (see below) over moderator width yields
-	   F1 = dist² / (wnd_width*mod_width)
+	   F1 = distÂ² / (wnd_width*mod_width)
 	              * ( IntAtan(tan(phi_min)...tan(phimax) for wnd_begin)
 	                 -IntAtan(tan(phi_min)...tan(phimax) for wnd_end)       (same for height) */
 	dFactY =  pow(dDist,2) / (dModWidth*dWndWidth)
@@ -840,7 +840,7 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 }
 
 
-/* average of factor cos²(x) integrated over window width for a fixed moderator position
+/* average of factor cosÂ²(x) integrated over window width for a fixed moderator position
    is f1 = dist / wnd_width * (max_angle - min_angle)       (same for height)  */
 double WeightDirByWnd(const double dWndSize, const double dDist, const double dModPos)
 {
