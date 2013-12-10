@@ -1822,13 +1822,13 @@ void   LoadReflFile(ReflFile* pReflFile)
       pReflFile->pfile = fopen(FullParName(pReflFile->filename), "r");
     if (pReflFile->pfile != NULL) {
       nLines = LinesInFile(pReflFile->pfile);
-      pReflFile->maxdata = nLines * 10;
-      pReflFile->Rdata = (double*) calloc(pReflFile->maxdata, sizeof(double));
+      pReflFile->Rdata = (double*) calloc(10*nLines, sizeof(double));
       pReflFile->MValue=0.0;
       for(count=0; count < nLines; count++) {
         ReadLine(pReflFile->pfile, sBuffer, sizeof(sBuffer)-1);
-        i += StrgScanLF(sBuffer, &pReflFile->Rdata[10*count], pReflFile->maxdata-10*count, 0);
+        i += StrgScanLF(sBuffer, &pReflFile->Rdata[10*count], 10*(nLines-count), 0);
       }
+      pReflFile->maxdata = i;
       fclose(pReflFile->pfile);
     }
   }

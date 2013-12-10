@@ -190,7 +190,7 @@ short Metropolis()
     if (LogFilePtr!=NULL && iStep/nStpOut*nStpOut == iStep) 
     {	fprintf(LogFilePtr, "\n%d. STEP:\n----------\n", iStep);
     	PrintP(P0, ON);
-	  	fprintf(LogFilePtr, " XÂ²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
+	  	fprintf(LogFilePtr, " X²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
     }
     if (LogFilePtr!=NULL && iStep/nStpMin*nStpMin == iStep) 
     {	fprintf(LogFilePtr, "\nActual best values found in step %ld:\n", iStpOpt);
@@ -368,7 +368,7 @@ LocalMin(const VtCheckMode eMode, const double  QT, const double Q0, const doubl
            *pStpOut:  each 'nStpOut' step is written to the output 
            *pStpMin:  each 'nStpMin' step the actual minimum is written
            *pSigma :  standard deviation of a measurement value    
-           *pQverm :  ratio of Q-reduction within 1 step to stop optimization
+           *pQverm :  maximal ratio of chi square new : chi square old for best set
            *pQmin  :  Q-value to stop optimization
            *pQlimit:  error square sum that determines border of local minimum to be noted */
 /*******************************************************************************************/
