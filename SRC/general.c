@@ -236,16 +236,15 @@ double ReflSN(const double Lambda,    const double Angle,    const double M)
 
 double ReflInterpol(const double Lambda, const double Angle, const double* Rdata, long MaxData)
 {
-  long   iw1, iw2;
+  long   iw1;
   double w,         // angle/wavelength
          R=0.0;     // reflectivity
 
   w   = Angle*1000.0 / Lambda;
   iw1 = (long) floor(w);
-  iw2 = (long) ceil(w);
 
-  if (iw2 <= MaxData)
-    R = Rdata[iw1] + (Rdata[iw2] - Rdata[iw1]) * (w - iw1);
+  if ((iw1+1) < MaxData)
+    R = Rdata[iw1] + (Rdata[iw1+1] - Rdata[iw1]) * (w - iw1);
 
   return(R);
 }
