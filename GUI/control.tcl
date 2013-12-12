@@ -325,6 +325,7 @@ proc controlMenu {w} {
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
       {c Trajectories {showHelpItem trajectories.html}} \
+      {c Optimization {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
       {m "Modules A - F" m1} \
