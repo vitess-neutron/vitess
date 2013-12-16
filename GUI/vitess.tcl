@@ -5302,10 +5302,8 @@ proc removeMod {oldi} {
       incr newi
     }
   }
-  if {$oldi > 1 || $remains} {
-    lappend deflist [list visM$newi $DummyEntry] [list mod$newi $DummyEntry]
-    trimModules $w $oldi $rmlist $deflist
-  }
+  lappend deflist [list visM$newi $DummyEntry] [list mod$newi $DummyEntry]
+  trimModules $w $oldi $rmlist $deflist
   highlightSelectedModule
 }
 
@@ -5361,26 +5359,15 @@ proc addModMenu {w i} {
   # start popup menu with module number title
   set mlist [list [list S "Module $i"]]
 
-  # somestuff : a real module exists
-  if {$i == 1} {
-    set somestuff 0
-    # check if there are modules
-    for {set j 1} {$j <= $maxModule} {incr j} {
-      upvar #0 visM$i vv
-      if {[info exists vv] && $vv != "" && $vv != $DummyEntry} {
-        set somestuff 1
-        break
-      }
+  # allow to remove this module, or to move this module down in the list,
+  # if it is not the last dummy module
+  for {set j $i} {$j <= $maxModule} {incr j} {
+    set act [globVal mod$j]
+    if {$act != "" && $act != $DummyEntry} {
+      lappend mlist s [list c "Move Down" [list moveDown $i]]\
+          [list c "Remove Module" [list removeMod $i]]
+      break
     }
-  } else {
-    set somestuff 1
-  }
-
-  if $somestuff {
-    # allow moving this module further down in the list, to insert a new module above,
-    # and allow to remove that module
-    lappend mlist s [list c "Move Down" [list moveDown $i]]\
-        [list c "Remove Module" [list removeMod $i]]
   }
 
   # for real modules add some more
