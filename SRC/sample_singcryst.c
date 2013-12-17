@@ -240,7 +240,7 @@ int main(int argc, char **argv)
 
 		CopyVector(Dir, Neutrons.Vector);
 
-		Neutrons.Color = (short) no[repet]; 
+		//		Neutrons.Color = (short) no[repet]; 
 
 
 		/*	 writes output binary file */
