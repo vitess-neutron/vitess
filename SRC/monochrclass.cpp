@@ -776,8 +776,9 @@ void Monochromator::processNeutron(Neutron* neutron)
 
   if (Index == 0./* no CE was found */) {
     // Return if neutron missed the monochromator in "Reflection" mode
-    if (mode == 1)
+    if (mode == 1) {
       return;
+    }
     // No attenuation if neutron missed the monochromator in "Transmission" mode
     else if (mode == 2) {
       CopyVector(startPosition, neutron->Position);
@@ -847,6 +848,7 @@ void Monochromator::processNeutron(Neutron* neutron)
     // Here the reflection probability is calculated
     // and the neutron trajectory changes direction after 
     // reflection off a mosaic element.
+
     Prob *= CalculateReflectionProbability(pi2_bragg, Dir);
 
    
@@ -866,7 +868,7 @@ void Monochromator::processNeutron(Neutron* neutron)
     }
 
     /* computes neutron variables in the initial frame */
-    RotBackVector(RotMatrixCE, Dir);
+    RotBackVector(RotMatrixBragg, Dir);
     RotBackVector(RotMatrixCE, Pos) ;
     AddVector(Pos, PosCE) ;
 
@@ -1020,13 +1022,15 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
   double nTries = 1.;
   double maxNTries = (fRndm[2]/(maxDeviation/braggAngleTot*pi2_braggAngle))*5.;
 
+  if (maxNTries < 1) maxNTries = 2;
+
   double x_n = neutronDir[0];
   double y_n = neutronDir[1];
   double z_n = neutronDir[2];
 
   VectorType mosaicVector={1, 0, 0};
 
-  while (nTries < maxNTries) {
+  while (nTries <= maxNTries) {
 
     if (mosRndmDir == 1) {
 
