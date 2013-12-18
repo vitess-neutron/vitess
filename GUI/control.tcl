@@ -921,6 +921,7 @@ proc doSnapshot {} {
     set fdir [file join [globVal SourceDirectory] FILES .saved]
     file mkdir $fdir
     set fn [file join $fdir $i.gui]
+    # last parameter 0 means we do this in a snap context
     storeAll gui "" $fn 0
   }
 

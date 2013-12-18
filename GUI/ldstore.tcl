@@ -165,6 +165,9 @@ proc fileSettings {{saveit 0}} {
 }
 
 proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
+  # proto == 1 means normal store operation, including a protocol log
+  # proto == 0 is for storage in a snap situation
+
   if $proto conditionalOpenProtfile
   if {$extension == "gui"} {
     if {$as != ""} {
@@ -193,7 +196,7 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
   }
   switch $extension {
     gui {
-      cleanupGlobalVariables
+      if $proto cleanupGlobalVariables
       puts $f "#experiment description save file"
       puts $f "#version [globVal XcontrolVersion]"
       foreach g [savableGlobals] {
@@ -720,8 +723,7 @@ proc cleanupGlobalVariables {} {
       }
     }
     # else delete that relict
-    #dmf:debug
-    #puts "unset $e"
+    #puts "DEBUG unset $e"
     global $e
     unset $e
   }
