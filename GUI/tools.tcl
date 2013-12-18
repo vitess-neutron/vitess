@@ -977,7 +977,7 @@ proc findFile {root name} {
     set lnew {}
     foreach d $dirl {
       set f [file join $d $name]
-      #puts "DEBUG look at $f"
+      # puts "DEBUG look at $f"
       if [file exists $f] { 
         return $f
       }

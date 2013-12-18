@@ -791,8 +791,7 @@ proc doGather {gcom geomfile glist} {
   set com "$gcom$opt -o $visRes $gl"
 
   if [catch {eval exec $com}] {
-    #dmf:debug
-    # puts "debug: caught exception"
+    # puts "DEBUG caught exception"
     catch {file delete $visRes}
     return ""
   }
@@ -915,7 +914,7 @@ proc startActionV {} {
 
   if [pipeIsActive] return
 
-  # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
+  # puts "DEBUG startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
 
   # VisState 1 for first --v invocation
   set VisState 1

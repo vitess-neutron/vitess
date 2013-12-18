@@ -709,8 +709,7 @@ proc plotWithTemplate {fn topt} {
     if {$gp == ""} return
     foreach s [split $content "\n"] {
       if {$s != ""} {
-        #dmf:debug
-        #puts "pro gnu :$s:"
+        # puts "DEBUG pro gnu :$s:"
         puts $gp $s
       }
     }
