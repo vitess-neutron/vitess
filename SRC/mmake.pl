@@ -31,7 +31,7 @@ EOS
 ###
 ### end configure ######################################################
 
-my ($vstudio, $mscdir, $mscpath, $win7);
+my ($vstudio, $mscdir, $mscpath, $win7, $subdir, $g2sub, $g2subsub);
 my $suse = -s '/etc/SuSE-release';
 
 ### define targets #####################################################
@@ -248,7 +248,7 @@ $mscpath = "$vstudio|$s1|bin;$vstudio|$s2";
 my ($version, $fullversion);
 open F, '../GUI/control.tcl';
 while (<F>) {
-  if (/set t "VITESS ([0-9.a-z]+)/) {
+  if (/set t \"VITESS ([0-9.a-z]+)/) {
     $version = $fullversion = $1;
     last;
   }
@@ -266,7 +266,7 @@ close F;
 
 sub prepareMakefile {
 
-  my ($subdir, $xlib);
+  my ($xlib);
 
   $sys = getRes('uname');
 
@@ -291,7 +291,7 @@ sub prepareMakefile {
     push @LPath, $_ if -d $_;
   }
 
-  &checkLibs;
+  return unless &checkLibs;
 
   open OF, ">$makefile";
 
@@ -343,8 +343,7 @@ LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
 
-  my $g2sub = './g2-0.72';
-  $_ = "$g2sub/$subdir";
+  $_ = $g2subsub;
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
@@ -643,7 +642,10 @@ sub checkLibs {
 
   $_ = `which gcc`;
   chomp;
-  print STDERR "could not locate gcc\n" unless -X $_;
+  unless ( -X $_) {
+    print STDERR "could not locate gcc\n";
+    return 0;
+  }
 
   my $ext = 'so';
   $_ = '/usr/lib';
@@ -652,11 +654,21 @@ sub checkLibs {
   } elsif ($sys eq 'Linux') {
     $_ = '/usr/lib64' if $arch eq 'x86_64';
   } else {
-    print STDERR "no checks for libraries, as $sys is not known here\n";
-    return;                    # no further checks for unknown systems
+    print STDERR "$sys is not known here\n";
+    return 0;                    # no further checks for unknown systems
   }
+
   my @Places = (@LPath, $_);
   my $anyerr;
+
+  # look for libg2.a
+  $g2sub = './g2-0.72';
+  $g2subsub = $_ = "$g2sub/$subdir";
+  $_ .= '/libg2.a';
+  unless (-s $_) {
+    print STDERR "no g2 library $_ found. Read $g2sub/Readme.vitess for tipps how to compile it.\n";
+    return 0;
+  }
 
   my @Needlib = qw(X11 gd png z freetype Xpm);
   if ($suse) {
@@ -690,7 +702,7 @@ sub checkLibs {
     print STDERR "could not locate $lname\n";
     $anyerr = 1;
   }
-  return unless $anyerr;
+  return 1 unless $anyerr;
   if ($sys eq 'Darwin') {
     print STDERR "read gnuplot_darwin.txt for tips to install needed tools\n";
   } elsif ($sys eq 'Linux') {
@@ -710,6 +722,7 @@ packages of libs.
 EOS
     }
   }
+  0;
 }
 
 sub translateDep {
