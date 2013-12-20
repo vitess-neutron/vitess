@@ -199,11 +199,15 @@ DECLARE_ABORT;
 
 	  pos_ = InputNeutrons[i].Position[index_yz];
 
-	  div_ = (double)atan2(InputNeutrons[i].Vector[index_yz],InputNeutrons[i].Vector[0]);
+	  if (index_yz == 1) {
+	    if (InputNeutrons[i].Vector[0] >=0) div_ = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	    else div_ = (double) atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
 	  div_*=180.0/M_PI;
-	  if ((InputNeutrons[i].Vector[index_yz]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	    {div_=0.0;}
-
+	  }
+	  else {
+	    div_ = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
+	    div_*=180.0/M_PI;
+	  }
 	  dpos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			

@@ -148,20 +148,11 @@ CHECK;	  registered=0;
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
-	  if (InputNeutrons[i].Vector[1]==0.0)
-            Divy = 0.0;
-          else if (InputNeutrons[i].Vector[0]==0.0)
-	    Divy = 1.0;
-          else
-	    Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+	  if (InputNeutrons[i].Vector[0] >=0) Divy = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	  else Divy = (double) atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	 
 
-	  if (InputNeutrons[i].Vector[2]==0.0)
-            Divz = 0.0;
-          else if (InputNeutrons[i].Vector[0]==0.0)
-	    Divz = 1.0;
-          else
-	    Divz = (double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
- 
+	   Divz = (double) atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));  
+	   
           DivKy = Divy * 2.0 * M_PI / InputNeutrons[i].Wavelength;
 	  DivKz = Divz * 2.0 * M_PI / InputNeutrons[i].Wavelength;
 
