@@ -328,14 +328,13 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     paramValue = n->Position[2]; // z-pos
     break;
     
-  case 3:
-    paramValue = neutronVector.Phi()*180./M_PI; //y divergence
+  case 3:   
+    if ( neutronVector.x[0] >= 0) paramValue = atan2(neutronVector.x[1], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI; //y divergence
+    else paramValue = atan2(neutronVector.x[1], -sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI;
     break;
     
   case 4:
-    neutronVector.x[1] = 0;
-    if (neutronVector.x[2] > 0) paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
-    else paramValue = 90. - (neutronVector.Theta()*180./M_PI +180.);
+    paramValue = atan2(neutronVector.x[2], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[1])))*180./M_PI; //z divergence
     break;
     
   case 5:
@@ -384,6 +383,18 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
     break;
     
+  case 15:  
+    paramValue = neutronVector.Phi()*180./M_PI;
+    break;
+
+   case 16:  
+    paramValue = neutronVector.Theta()*180./M_PI;
+    break;
+  
+    case 17:  
+    paramValue = neutronPosition.x[0];
+    break;   
+
   default:
     fprintf(LogFilePtr,"unknown parameter ID: %d\n", id);
     exit(-1);
