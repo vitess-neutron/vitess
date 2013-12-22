@@ -1845,7 +1845,7 @@ void CalcReflData(ReflFile* pReflFile)
 
   pReflFile->pfile   = NULL;
   pReflFile->filename= NULL;
-  pReflFile->maxdata = (long)    ceil(1000*AngleMax)+2;
+  pReflFile->maxdata = (long)    ceil(1000*AngleMax)+1;
   pReflFile->Rdata   = (double*) calloc(pReflFile->maxdata, sizeof(double));
 
   for (Angle=0.000; Angle <= AngleMax; Angle+=0.001)

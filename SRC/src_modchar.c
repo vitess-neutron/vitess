@@ -83,7 +83,7 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 	char   sBuffer[256];
 
 	/* initialize */
-	memset(stMInfo[imod], '\0', 2*NUM_MOD*sizeof(ModInfo));
+	memset(stMInfo[imod], '\0', 2*sizeof(ModInfo));
 
 	s_nSource     = _nSource;
 	s_nModType    = _nModType;
@@ -487,10 +487,10 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
     {
       rc=ReadLine(pFile, sLine, sizeof(sLine));
       if (rc)
-        sscanf(sLine, "%lf %lf  %lf %lf %lf  %lf %lf %lf  %lf %lf  %lf %lf  %lf", &TempT, &HeightT, 
+      { sscanf(sLine, "%lf %lf  %lf %lf %lf  %lf %lf %lf  %lf %lf  %lf %lf  %lf", &TempT, &HeightT, 
                       &Info.I_SD, &Info.alpha_SD, &Info.lambda_SD, &Info.alpha_L, &Info.lambda_L, &Info.expo_L, &Info.I1, &Info.alpha_1, &Info.I2, &Info.alpha_2, &Info.T_real);
-
-      if (TempT==ModTemp && HeightT==HeightK) bFound=TRUE;
+        if (TempT==ModTemp && HeightT==HeightK) bFound=TRUE;
+      }
     }
     while (bFound==FALSE && rc==TRUE);
 
