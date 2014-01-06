@@ -35,6 +35,21 @@ proc reShowModules {w} {
   }
 }
 
+proc setUndefinedEntryVars {} {
+  global maxModule DummyEntry
+  for {set i 1} {$i <= $maxModule} {incr i} {
+    set m [globVal mod$i]
+    if {$m == "" || $m == $DummyEntry} continue
+
+    upvar #0 ${m}ESET mod
+    catch {
+      foreach line $mod {
+        forceDef [lindex $line 0]_$i [lindex $line 2]
+      }
+    }
+  }
+}
+
 proc removeTrailingDummies {} {
   global maxModule DummyEntry Amf
   set firsti [set lasti 0]
@@ -365,6 +380,8 @@ proc deleteEntryVariables {} {
     if [regexp {^[a-zA-Z0-9_]+_[0-9]+$} $n] {
       catch {
         global $n
+        # setting n UNDEFINED is a hack, as Tcl/Tk does not properly unset entry variables
+        set $n UNDEFINED
         unset $n
       }
     }
@@ -882,6 +899,9 @@ proc loadAll {extension {givenname ""}} {
 
   cleanupGlobalVariables
   showModName
+
+  setUndefinedEntryVars
+
   saveLastState
 
   return 1
