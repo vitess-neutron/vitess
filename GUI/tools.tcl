@@ -347,10 +347,17 @@ proc isNot {v args} {
 }
 
 ### if global variable a is not known, then define a with value val
+# Hack: If the global variable belongs to an entry, we might have tried
+#       to delete that beast earlier, but were able only to set its value
+#       UNDEFINED. We treat these variables as unknown, and set the given
+#       value then. 
 ###
 proc forceDef {a val} {
   upvar #0 $a v
-  if [info exists v] return
+  if [info exists v] {
+    if {$v != "UNDEFINED"} return
+    # puts "DEBUG forceDef of UNDEFINED $a to $val"
+  }
   set v $val
 }
 ### force empty string definitions of global variables, if necessary

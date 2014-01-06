@@ -319,7 +319,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       set foname [entryVal [lindex [lindex $ll 1] 0]]
       if {$foname != "" && $foname != "no_file"} {
 	append fc " --C$c"
-        puts "DEBUG appended --C$c"
+        # puts "DEBUG appended --C$c"
       }
     }
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0

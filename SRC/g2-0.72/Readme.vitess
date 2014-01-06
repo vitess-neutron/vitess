@@ -15,7 +15,3 @@ make, create  <sysarch> subdirectory,
 - copy include files from include subdirectory to <sysarch>
 - move libg2.a to <syarch>
 - cleanup *.o files in src directory
-
-
-
-
