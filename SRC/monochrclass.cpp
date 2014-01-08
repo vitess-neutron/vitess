@@ -904,8 +904,8 @@ void Monochromator::processNeutron(Neutron* neutron)
 #ifdef DEBUG
       double tempTh, tempPh;
       CartesianToSpherical(startVector, &tempTh, &tempPh);
-      DEBUG_OUT(("Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
-		 tempTh*180./M_PI, tempPh*180./M_PI, Prob, resultNeutron2.Probability));
+      DEBUG_OUT("Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
+		 tempTh*180./M_PI, tempPh*180./M_PI, Prob, resultNeutron2.Probability);
 #endif
 
       resultNeutron2.Time = startTime;
@@ -1224,8 +1224,8 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
 #ifdef DEBUG
    double tempTh, tempPh;
    CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
-   DEBUG_OUT(("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
-    	  tempTh*180./M_PI, tempPh*180./M_PI, angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries)); 
+   DEBUG_OUT("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
+    	  tempTh*180./M_PI, tempPh*180./M_PI, angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries); 
 #endif
 
   if (nTries < maxNTries) return norm/nTries;
