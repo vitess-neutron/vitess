@@ -1014,15 +1014,19 @@ void  OwnInit(int argc, char *argv[])
   SurfaceInclination[2]=sin(Detector.Theta_n)*sin(Detector.Phi_n);
   RotMatrixX(SurfaceInclination,RotSurface);
  
+ 
   if(Detector.Geom==1){	/* cylinder */
 
     if(Detector.DG.Cyl.axis==0 && fabs(Detector.Theta-M_PI/2)>0.0001){
       fprintf(LogFilePtr,"\n WARNING: Theta is set to 90° for cylinder in x direction!");
       Detector.Theta=M_PI/2;
     }
- 
+
     Detector.DG.Cyl.r=Detector.Distance;	 	 
     Detector.Direction[Detector.DG.Cyl.axis]=1.0;
+
+    if(Detector.Width > (int) 2*M_PI*Detector.DG.Cyl.r)
+      fprintf(LogFilePtr,"\nWARNING: Visualisation of cylindrical detector only possible for width<2*pi*distance.");
 
     if (cos(Detector.Phi) < 0.0) Detector.Theta=-Detector.Theta;
 
@@ -1088,7 +1092,7 @@ void  OwnInit(int argc, char *argv[])
 	stGeometry.pCuboid[0].vCntr[2]  = (Detector.Distance)*sin(Detector.Theta)*sin(Detector.Phi);
 	stGeometry.pCuboid[0].vNormal[0]= cos(Detector.Theta);
 	stGeometry.pCuboid[0].vNormal[1]= sin(Detector.Theta)*cos(Detector.Phi);
-	stGeometry.pCuboid[0].vNormal[2]=  sin(Detector.Theta)*sin(Detector.Phi);
+	stGeometry.pCuboid[0].vNormal[2]= sin(Detector.Theta)*sin(Detector.Phi);
 	if(Detector.Theta_n!=0){
 	  RotBackVector(RotSurface,stGeometry.pCuboid[0].vNormal);
 	}
