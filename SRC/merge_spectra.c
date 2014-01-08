@@ -126,7 +126,9 @@ static int parseHeader(FILE *f) {
     }
     // we found the first non-comment line
     if (is_mergeable_text) break;
-    if (!is_xyz) {
+    if (is_xyz)
+      cols = 5;
+    else {
       cols = colsInLine(s);
       if (cols > 16) matrix = 1;
       if (matrix) {
