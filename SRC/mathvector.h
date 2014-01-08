@@ -43,6 +43,10 @@ class MathVector {
   double Phi();
   double Theta();
 
+  // Phi and Theta as usually defined for neutron scattering experiment, e.g. diffraction
+  double PhiSc();
+  double ThetaSc();
+
   void Array(double* arr);
 
 

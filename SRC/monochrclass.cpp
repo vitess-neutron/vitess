@@ -901,10 +901,13 @@ void Monochromator::processNeutron(Neutron* neutron)
       CopyVector(startPosition, resultNeutron2.Position) ;
       CopyVector(startVector, resultNeutron2.Vector) ;
 
-      // double tempTh, tempPh;
-      // CartesianToSpherical(startVector, &tempTh, &tempPh);
-      //   fprintf(LogFilePtr,"Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
-      //	      tempTh*180./M_PI, tempPh*180./M_PI, Prob, resultNeutron2.Probability);
+#ifdef DEBUG
+      double tempTh, tempPh;
+      CartesianToSpherical(startVector, &tempTh, &tempPh);
+      DEBUG_OUT(("Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
+		 tempTh*180./M_PI, tempPh*180./M_PI, Prob, resultNeutron2.Probability));
+#endif
+
       resultNeutron2.Time = startTime;
       ChangeNeutronID(&resultNeutron2);
       NumOut++ ;
@@ -1035,11 +1038,7 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
     if (mosRndmDir == 1) {
 
       mosaicAngle1 = DistrGauss(fRndm[1], fRndm[2]);
-	
-      // if (fabs(mosaicAngle1) >= (maxDeviation/braggAngleTot*pi2_braggAngle)) {
-      // 	nTries++;
-      // 	continue;
-      // }
+
 
       tanM = tan(mosaicAngle1);
       tanMtilde = 1 + tanM*tanM;
@@ -1222,11 +1221,12 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
   neutronDir[0] *= -1.;
   RotBackVector(mosaicMatrix, neutronDir);
 
-  // double tempTh, tempPh;
-  // CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
-  // fprintf(LogFilePtr,"Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:  %f %f   %f %f %f %f   %f \n", 
-  //  	  tempTh*180./M_PI, tempPh*180./M_PI, neutronTh*180./M_PI, neutronPh*180./M_PI, 
-  // 	  angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries); 
+#ifdef DEBUG
+   double tempTh, tempPh;
+   CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
+   DEBUG_OUT(("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
+    	  tempTh*180./M_PI, tempPh*180./M_PI, angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries)); 
+#endif
 
   if (nTries < maxNTries) return norm/nTries;
   else return 0.;

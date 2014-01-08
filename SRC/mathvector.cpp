@@ -63,16 +63,28 @@ MathVector MathVector::Unit()
 
 double MathVector::Phi()
 {
-  if (x[0] != 0) return atan(x[1]/x[0]);
-  if (x[1] == 0) return 0;
-  if (x[1] >  0) return M_PI_2;
-  return - M_PI_2;
+
+  return atan2(x[1], x[0]);
+  
 }
 
 double MathVector::Theta()
 {
-  if (x[2] != 0) return atan(sqrt(x[0]*x[0] + x[1]*x[1])/x[2]);
-  return M_PI_2;
+  return atan2(x[2], sqrt(x[0]*x[0] + x[1]*x[1]));
+  
+}
+
+double MathVector::PhiSc()
+{
+
+  return atan2(x[2], x[1]);
+  
+}
+
+double MathVector::ThetaSc()
+{
+  return acos(x[0]);
+  
 }
 
 
