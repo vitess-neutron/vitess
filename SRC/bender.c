@@ -312,48 +312,47 @@ int main(int argc, char *argv[])
 
     case 'b':  /* up, left plane */
       mNumber[0][0] = atof(&argv[i][2]);  
-      FillReflContainer(rdatalup, mNumber[0][0]);
       break; 
       
     case 'B':  /* up, right plane */
       mNumber[0][1] = atof(&argv[i][2]);  
-      FillReflContainer(rdatarup, mNumber[0][1]);
       break; 
 
      case 'd':  /* up, top/bottom plane */
       mNumber[0][2] = atof(&argv[i][2]);  
-      FillReflContainer(rdatatbup, mNumber[0][2]);
+      
       break;   
 
-    case 'e':  /* up, left plane */
+    case 'e':  /* down, left plane */
       mNumber[1][0] = atof(&argv[i][2]);  
-      FillReflContainer(rdataldo, mNumber[1][0]);
       break; 
       
-    case 'E':  /* up, right plane */
+    case 'E':  /* down, right plane */
       mNumber[1][1] = atof(&argv[i][2]);  
-      FillReflContainer(rdatardo, mNumber[1][1]);
       break; 
 
-     case 'f':  /* up, top/bottom plane */
+     case 'f':  /* down, top/bottom plane */
       mNumber[1][2] = atof(&argv[i][2]);  
-      FillReflContainer(rdatatbdo, mNumber[1][2]);
       break;    
 
     case 'i':
       refl_filelup = openNFile((ReflFileNamelup = arg));
+      LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
       break;
 
     case 'I':
       refl_fileldo = openNFile((ReflFileNameldo = arg));
+      LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
       break;
 
     case 'm':
       refl_filerup = openNFile((ReflFileNamerup = arg));
+      LoadReflFile(refl_filerup,  rdatarup, "right", "up");
       break;
 
     case 'M':
       refl_filerdo = openNFile((ReflFileNamerdo = arg));
+      LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
       break;
 
     case 'u':
@@ -369,10 +368,12 @@ int main(int argc, char *argv[])
 
     case 'k':
       refl_filetbup = openNFile((ReflFileNametbup = arg));
+      LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
       break;
 
     case 'K':
       refl_filetbdo = openNFile((ReflFileNametbdo = arg));
+      LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
       break;
 
     case 'T':
@@ -735,13 +736,13 @@ if (bAbsTransCrit != 0)
     BenderExitHeight = BenderEntranceHeight;
 
 
-  /* Read reflectivity files for all walls, spin up and down */
-  if (mNumber[0][0] < 0) LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
-  if (mNumber[0][1] < 0) LoadReflFile(refl_filerup,  rdatarup, "right", "up");
-  if (mNumber[0][2] < 0) LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
-  if (mNumber[1][0] < 0) LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
-  if (mNumber[1][1] < 0) LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
-  if (mNumber[1][2] < 0) LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
+  /* Fill reflectivity values for all walls, spin up and down, if files are not given */
+  if (!refl_filelup) FillReflContainer(rdatalup, mNumber[0][0]);
+  if (!refl_filerup) FillReflContainer(rdatarup, mNumber[0][1]);
+  if (!refl_filetbup) FillReflContainer(rdatatbup, mNumber[0][2]);
+  if (!refl_fileldo) FillReflContainer(rdataldo, mNumber[1][0]);;
+  if (!refl_filerdo)  FillReflContainer(rdatardo, mNumber[1][1]);
+  if (!refl_filetbdo)  FillReflContainer(rdatatbdo, mNumber[1][2]);
 
 
  if (bAbsTransCrit != 0)

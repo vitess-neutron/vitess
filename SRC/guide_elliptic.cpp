@@ -157,8 +157,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
 	  case 'e':  /* left plane */
-	    mNumber[0] = atof(&argv[i][2]);  
-	    FillReflContainer(&reflContainer[0], mNumber[0]);
+	    mNumber[0] = atof(&argv[i][2]);  	    
 	    break;
 
         case 'I':  /* right plane */
@@ -174,7 +173,6 @@ void OwnInit(int argc, char *argv[])
 	  
 	  case 'E':  /* right plane */
 	    mNumber[1] = atof(&argv[i][2]);  
-	    FillReflContainer(&reflContainer[1], mNumber[1]);
 	    break;
 	    
 	  case 'j':    /* top plane */
@@ -191,7 +189,6 @@ void OwnInit(int argc, char *argv[])
 
 	  case 'f':  /* top plane */
 	    mNumber[2] = atof(&argv[i][2]);  
-	    FillReflContainer(&reflContainer[2], mNumber[2]);
 	    break;
 	    
         case 'J':    /* bottom plane */
@@ -208,7 +205,6 @@ void OwnInit(int argc, char *argv[])
 
         case 'F':  /* bottom plane */
 	  mNumber[3] = atof(&argv[i][2]);  
-	  FillReflContainer(&reflContainer[3], mNumber[3]);
 	  break;
 
 	  default:
@@ -219,6 +215,15 @@ void OwnInit(int argc, char *argv[])
       }
     }
 
+   if (!reflContainer[0].pfile)
+     FillReflContainer(&reflContainer[0], mNumber[0]);
+   if (!reflContainer[1].pfile)
+     FillReflContainer(&reflContainer[1], mNumber[1]);
+   if (!reflContainer[2].pfile)
+     FillReflContainer(&reflContainer[2], mNumber[2]);
+   if (!reflContainer[3].pfile)
+     FillReflContainer(&reflContainer[3], mNumber[3]);
+   
 
    if (distToFocusVer < 0) distToFocusVer = distToFocusHor;
 
@@ -350,7 +355,7 @@ void OwnInit(int argc, char *argv[])
 
 void   LoadReflFile(ReflFile *pReflFile)
 {
-  if (pReflFile->maxdata > 0) return;
+  // if (pReflFile->maxdata > 0) return;
   
   long   count = 0, i = 0, nLines = 0;
   char   sBuffer[512]="";

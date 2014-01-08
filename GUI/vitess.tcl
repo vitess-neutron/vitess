@@ -1236,17 +1236,17 @@ set guide_idealESET {
   {"Reflectivity numbers" header}
   {mLeft float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" e}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" e}}
   {mRight float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" E}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" E}}
   {}
   {mTop float 0 {
     "top plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" f}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" f}}
   {mBottom float 0 {
     "bottom plane"
-    "Reflectivity of the bottom plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" F}}
+    "Reflectivity of the bottom plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" F}}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i}}
@@ -1353,38 +1353,38 @@ set benderESET {
   {"Reflectivity values for spin up" header}
   {mLeftUp float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" b}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" b}}
   {mRightUp float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" B}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" B}}
   {mTopUp float 0 {
     "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" d}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" d}}
   {"Reflectivity values for spin down" header}
   {mLeftDo float 0 {
     "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" e}}
+    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" e}}
   {mRightDo float 0 {
     "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" E}}
+    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" E}}
   {mTopDo float 0 {
     "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nOverrides a reflectivity file given for the same plane."  "" f}}
+    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" f}}
   {"Reflectivity files for spin up" header}
   {lrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i} r dat 1}
+    {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i}}
   {rrefl_filename pareditablefile mirr2linear.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is up" "" m} r dat 1}
+    {"right plane" "Reflectivity file for right plane (where y<0) and spin is up" "" m}}
   {tbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is up" "" k} r dat 1}
+    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is up" "" k}}
 
   {"Reflectivity files for spin down" header}
   {dlrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is down" "" I} r dat 1}
+    {"left plane" "Reflectivity file for left plane (where y>0) and spin is down" "" I}}
   {drrefl_filename pareditablefile mirr0.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is down" "" M} r dat 1}
+    {"right plane" "Reflectivity file for right plane (where y<0) and spin is down" "" M}}
   {dtbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is down" "" K} r dat 1}
+    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is down" "" K}}
 
   {"Geometrical description of bender" header}
   {sfile pareditablefile "" {"surface\nfile" " file which describes the bender geometry" "" u} r}
