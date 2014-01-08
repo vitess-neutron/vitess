@@ -3,7 +3,7 @@
 
 // definitions
 // ------------
-#define BUF_LEN 1024  // maximal length of strings read from file
+#define BUF_LEN 4096  // maximal length of strings read from file
 #define FN_LEN    99  // maximal length of a filename (incl. path)
 #define KW_LEN    49  // maximal length of a key word or title
 

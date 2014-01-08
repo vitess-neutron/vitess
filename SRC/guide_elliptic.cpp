@@ -499,19 +499,19 @@ int ProcessNeutron(Neutron* n)
 	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
 
-#ifdef TESTANDDEBUG	  
+#ifdef DEBUG	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  if (distTempX1 > 0) {
-	    fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
-	    	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
-	     fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	     	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
+	    DEBUG_OUT("Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
+		       ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
+	     DEBUG_OUT("Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
+			nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
 	     ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
 	     double x = n->Position[0];
 	     double slope = 0;
 	     if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
-	     fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
-	    	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	     DEBUG_OUT("Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
+			ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
 	  }
 #endif
 
@@ -576,8 +576,8 @@ int ProcessNeutron(Neutron* n)
     }    
 
   }
-  
-  //  fprintf(LogFilePtr,"Neutron fully propagated \n");
+
+
   return 1;
 
 }
@@ -1126,12 +1126,6 @@ void OwnCleanup()
   fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f vertOffset %f \n", lengthGuide, startPoint, endPoint, vertOffset);
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
-  for (int i = 0; i < 4; i++) {
-    fprintf(LogFilePtr,"mNumber: %f \n", mNumber[i]);
-    for (int j = 0; j < reflContainer[i].maxdata; j++) fprintf(LogFilePtr,"%f ", reflContainer[i].Rdata[j]);
-    fprintf(LogFilePtr,"\n");
-    free(reflContainer[i].Rdata);
-  }
 
   double trueX = startPoint;
   double shiftedX = 0;

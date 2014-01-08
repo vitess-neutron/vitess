@@ -630,17 +630,30 @@ void AnglesOutputFrame(double RotHoriz, double RotVert, double *AnglFocHoriz, do
 void CalculateThetaRange()
 {
   // Calculate the theta range covered by the detector
-  double theta = atan(detHeight/2./detDist);
+  double theta;
+
+  theta = atan(sqrt(sq(detWidth/2.) + sq(detHeight/2.))/detDist);
+
   minTheta = 2.*g_dRotAngle - theta;
   maxTheta =  2.*g_dRotAngle + theta;
+  
 }
 
 // For detectors close to the direct beam, deltaPhi is a function of theta
 // Calculate corresponding deltaPhi for each trajectory individually.
 void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switchSign)
 {
-  double h0, h, h0Dist, hDist, largestDist;
+  double h0, h, h0Dist, hDist, largestDist1, largestDist2, det_X, det_Y;
 
+  if (strcmp(g_sRotAxis, "Z") == 0) {
+    det_X = detHeight;
+    det_Y = detWidth;
+  }
+  else {
+    det_X = detWidth;
+    det_Y = detHeight;
+  }
+  
   // Calculate the location at the detector which is hit by the direkt beam
   h0 = -detDist * tan(g_dRotAngle*2.);
 
@@ -648,20 +661,21 @@ void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switch
   h = detDist * tan(theta - g_dRotAngle*2.);
 
   // Distance between end of detector and the direct beam position
-  h0Dist = fabs(fabs(h0) - detHeight/2.);
+  h0Dist = fabs(fabs(h0) - det_Y/2.);
 
   // Distance between direct beam and currect trajectory position
   hDist = fabs(h0 - h);
 
-  largestDist = sqrt(pow(detWidth/2., 2) + pow(h0Dist, 2));
+  largestDist1 = sqrt(pow(det_X/2., 2) + pow(h0Dist, 2));
+  largestDist2 = sqrt(pow(det_X/2., 2) + pow(fabs(fabs(h0) + det_Y/2.), 2));
 
-  if (fabs(h0) >= detHeight/2.) {
-    if (largestDist >= hDist) {
+  if (fabs(h0) >= det_Y/2.) {
+    if (largestDist1 >= hDist) {
       *phiMin = -acos(h0Dist/hDist);
       *phiMax = -*phiMin;
     }
     else {
-      *phiMin = -asin(detWidth/2./hDist);
+      *phiMin = -asin(det_X/2./hDist);
       *phiMax = -*phiMin;
     }
   }
@@ -671,25 +685,43 @@ void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switch
       *phiMin = -M_PI;
       *phiMax = M_PI;
     }
-    else if (hDist > h0Dist && hDist <= detWidth/2.) {
+    else if (hDist > h0Dist && hDist < largestDist1) {
 
-      *phiMin = (-1.)*(M_PI/2. + asin(h0Dist/hDist));
-      *phiMax = -*phiMin;
-
-    }
-    else if (hDist > detWidth/2. && hDist <= (detHeight - h0Dist)) {
-
-      *phiMin = (-1.)*(M_PI/2. - acos(detWidth/(2.*hDist)));
-      *phiMax = -*phiMin;
-
-    }
-    else if (hDist > (detHeight - h0Dist) && hDist <= largestDist) {
-
-      *phiMin = (-1.)*(M_PI/2. - acos(detWidth/(2.*hDist)));
-      *phiMax = (-1.)*(acos((detHeight - h0Dist)/hDist));
-      *switchSign = 1.;
+      //      *phiMin = (-1.)*(M_PI/2. + asin(h0Dist/hDist));
+      // *phiMax = -*phiMin;
+      *phiMin = acos(h0Dist/hDist);
+      *phiMax = M_PI*2 - *phiMin;
+      if (h/h0 < 0) {
+	*phiMin -= M_PI;
+	*phiMax -= M_PI;
+      }
 
     }
+    else if (hDist >=largestDist1 && hDist < largestDist2) { 
+
+       *phiMin = M_PI/2. + acos(det_X/(2.*hDist)); 
+       *phiMax = M_PI*2 -*phiMin; 
+
+       if (h/h0 < 0) {
+	 *phiMin -= M_PI;
+	 *phiMax -= M_PI;
+       }
+       
+    } 
+
+    /* else if (hDist > det_X/2. && hDist <= (det_Y - h0Dist)) { */
+
+    /*   *phiMin = (-1.)*(M_PI/2. - acos(det_X/(2.*hDist))); */
+    /*   *phiMax = -*phiMin; */
+
+    /* } */
+    /* else if (hDist > (det_Y - h0Dist) && hDist <= largestDist2) { */
+
+    /*   *phiMin = (-1.)*(M_PI/2. - acos(det_X/(2.*hDist))); */
+    /*   *phiMax = (-1.)*(acos((det_Y - h0Dist)/hDist)); */
+    /*   *switchSign = 1.; */
+
+    /* } */
     else {
       *phiMin = 0.;
       *phiMax = 0.;
@@ -829,13 +861,16 @@ void ScatterIncoherent(Neutron* outputNeutron)
     
     outputNeutron->Probability *= fabs(sin(theta))*deltaTheta*deltaPhi/M_PI*signalToBkgAreaFactor;
 
-    realPhi = theta*sin(phi);
-    realTheta = theta*cos(phi);
-
-    outputNeutron->Vector[0] = cos(realTheta)*cos(realPhi);
-    outputNeutron->Vector[1] = cos(realTheta)*sin(realPhi);
-    outputNeutron->Vector[2] = sin(realTheta);
-    outputNeutron->Color += 5000;
+    outputNeutron->Vector[0] = cos(theta);
+    if (strcmp(g_sRotAxis, "Y")==0) { 
+      outputNeutron->Vector[1] = sin(theta)*sin(phi);
+      outputNeutron->Vector[2] = sin(theta)*cos(phi);
+    }
+    else {
+      outputNeutron->Vector[1] = sin(theta)*cos(phi);
+      outputNeutron->Vector[2] = sin(theta)*sin(phi);
+    }
+    outputNeutron->Color = 100;
     
         /* makes depth correction to get back to the old frame for Depth != 0 */
     RotBackVector(RotMatrixCE, Depth) ;

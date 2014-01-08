@@ -384,11 +384,11 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     break;
     
   case 15:  
-    paramValue = neutronVector.Phi()*180./M_PI;
+    paramValue = neutronVector.PhiSc()*180./M_PI;
     break;
 
    case 16:  
-    paramValue = neutronVector.Theta()*180./M_PI;
+    paramValue = neutronVector.ThetaSc()*180./M_PI;
     break;
   
     case 17:  
