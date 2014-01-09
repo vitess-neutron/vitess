@@ -497,9 +497,9 @@ void Init(int argc, char **argv, VtModID eModule)
 
     case 'Z':                   // init number for the random number generator
 #if defined(PENV) || defined(_MSC_VER)
-      if (sscanf(arg, "%i", &VRandomSeed)) {
+      if (sscanf(arg, "%li", &VRandomSeed)) {
         char buf[24];	
-        sprintf(buf, "GSL_RNG_SEED=%d", VRandomSeed);
+        sprintf(buf, "GSL_RNG_SEED=%ld", VRandomSeed);
 #      ifdef _MSC_VER
         _putenv(buf);
 #      else
@@ -1101,9 +1101,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
   /* the source module opens the file */
   if (stGeometry.eModule == VT_SOURCE)
   { pGeomFile = fopen( FullParName(pGeomFileName), "w");
-    if (pGeomFile)
+    if (pGeomFile) {
       DefineColors(pGeomFile);
       fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angles\n#\n");
+    }
     CopyVector(vNull, vBegPos);
   }
   /* each other module appends a line */
