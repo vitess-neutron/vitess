@@ -1220,11 +1220,14 @@ proc vis3D {{i ""}} {
           if [file exists $visRes] {
             showText "Find X3D file $visRes"
             # launch external X3D viewer
+            global tcl_platform
             if {"" != [set ecom [getPreferredX3DCmd]]} {
               if [regexp InstantPlayer $ecom] {
                 showText "  press key 'a' over InstantPlayer window to view the module (Show all)"
               }
               catch {exec $ecom $visRes &}
+            } elseif {$tcl_platform(os) == "Darwin"} {
+              catch {exec open file:$visRes &}
             }
           }
         }
