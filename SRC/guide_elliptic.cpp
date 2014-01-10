@@ -274,7 +274,8 @@ void OwnInit(int argc, char *argv[])
        fprintf(LogFilePtr,"Horizontal shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
      }
-
+     startPoint = -1.*lengthGuide/2.;
+     endPoint = lengthGuide/2.;     
    }
 
    //Check if enough parameters were given
@@ -327,11 +328,8 @@ void OwnInit(int argc, char *argv[])
        fprintf(LogFilePtr,"Vertical shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
      }
-     if (shapeHor != 2) { 
-       startPoint = -1.*lengthGuide/2.;
-       endPoint = lengthGuide/2.;
-     }
    }
+  
 
    SetGeometryData(); 
 
@@ -506,6 +504,7 @@ int ProcessNeutron(Neutron* n)
 
 #ifdef DEBUG	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
+	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, vert ellipse at last collision: %f", distTempX1, ellipseAtLastCollision);
 	  if (distTempX1 > 0) {
 	    DEBUG_OUT("Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
 		       ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
@@ -546,6 +545,8 @@ int ProcessNeutron(Neutron* n)
 	// Here something went wrong, first reflection takes place in the vertical plane,
 	// but in horizontal the trajectory already left the guide!
 	if (fabs(nTemp2.Position[1]/100.) > fabs(CalculateGuidePoint(nTemp2.Position[0], 1, 1))) {
+	  double guideAtLastCollision = CalculateGuidePoint(nTemp2.Position[0], 1, 1)*100.;
+	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, dist2 %f, y-position at dist2: %f", distTempX1, distTempX2, nTemp2.Position[1]/100.);
 	  badNeutrons++;
 	  return 0;
 	}
@@ -884,7 +885,10 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
     // Propagate also perpendicular direction    
     int otherplane = 0;
     if (plane == 1) otherplane = 2;
-    else otherplane = 1;
+    else {
+      otherplane = 1;
+      xMin += vertOffset;
+    }
 
     double m = n->Vector[otherplane] / n->Vector[0];
     double b = m*xMin*(-1.) + neutronPosition.x[otherplane];  
