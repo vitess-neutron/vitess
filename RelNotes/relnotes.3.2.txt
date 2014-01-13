@@ -8,8 +8,7 @@ The MONOCHROMATOR module has been upgraded. Choose the modules ma_flat_new, ma_f
 The extra simulation run to determine the correct normalisation has become obsolete. It is now also possible to have a stack of monochromators. 
 The old module is kept in this version for backward-compatibility.
  
-The module SOURCE now includes the ESS pancake moderator. Time focusing is available to improve the efficiency of simulations
-of instruments comprising a pulse shaping chopper that creates one or several short pulse(s).
+The module SOURCE now includes the ESS pancake moderator (only for discrete moderator height values: 0.5cm, 1cm, 1.5cm, 3cm, 5cm, 7cm, 10cm, 12cm). Time focusing is available to improve the efficiency of simulations of instruments comprising a pulse shaping chopper that creates one or several short pulse(s).
 
 
 Further improvements:
@@ -43,8 +42,8 @@ Swarm algorithm added to the optimization framework.
 Files and examples:
 -------------------
 
-There were several example instruments added to the EXAMPLES folder that were used during the Joint Vitess and McStas Workshop in Berlin in September 2013.
-New Vitess files with models of real instruments are also included.
+Example instruments have been updated and are now in the FILES/EXAMPLES folder. New Vitess files with models of real instruments are also included. 
+There were several exercises added to the new FILES/TUTORIALS folder that were used during the Joint Vitess and McStas Workshop in Berlin in September 2013 (including solutions).
 
 Mirror reflectivity files have been reorganized.
 
