@@ -443,6 +443,7 @@ void processNeutron(int neutron_i, int thread_i) {
 
   /* myneutron->Position.X = 0.0;   !!!!!!!! */
   CopyVector(BegPosM, BegPosS);
+  memcpy(RotMatrixS, RotMatrixM, sizeof(RotMatrixS));
 
   /****************************************************************************************/
   /* Check to see if the neutron is initially in the entrance to the guide...             */
@@ -1860,7 +1861,7 @@ void CalcReflData(ReflFile* pReflFile)
 
 void OwnCleanup() {
 
-  double GdLen;   // length from beginning of the guide to the center of the actual element
+  double GdPcePos, GdPcePos0;   // length from beginning of the guide to the center of the actual element, 0. element
   int k;
 
   if (NThreads > 0) {
@@ -1892,15 +1893,17 @@ void OwnCleanup() {
       stGeometry.pHull[k].WidthOut    = 2.0*pPieces[k+1].Ypce;
       stGeometry.pHull[k].HeightOut   = 2.0*pPieces[k+1].Zpce;
 
-      GdLen = 0.5*(pPieces[k].Xpce + pPieces[k+1].Xpce);  
+      GdPcePos = 0.5*(pPieces[k].Xpce + pPieces[k+1].Xpce);  
       if (Radius > 0.0)
-      { stGeometry.pHull[k].vCntr[0] = Radius * sin(GdLen/Radius);
-        stGeometry.pHull[k].vCntr[1] = Radius * (1.0-cos(GdLen/Radius));
-	  }
-	  else
-      { stGeometry.pHull[k].vCntr[0] = GdLen;      
+      { if (k==0)
+          GdPcePos0 = GdPcePos;
+        stGeometry.pHull[k].vCntr[0] = Radius *      sin((GdPcePos-GdPcePos0)/Radius) + GdPcePos0;
+        stGeometry.pHull[k].vCntr[1] = Radius * (1.0-cos((GdPcePos-GdPcePos0)/Radius));
+      }
+      else
+      { stGeometry.pHull[k].vCntr[0] = GdPcePos;      
         stGeometry.pHull[k].vCntr[1] = 0.0;
-	  }
+      }
       stGeometry.pHull[k].vCntr[2]   = 0.0;
     }
 
