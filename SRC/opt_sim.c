@@ -39,9 +39,10 @@ char  sIniFile[FN_LEN] = "",                // name of the file containing the c
       sParFile[FN_LEN] = "opt_param.ini",   // name of the file containing intial values etc. of fit parameters
       sDatFile[FN_LEN] = "no_file",         // name of the file of the measured values
       sLogFile[FN_LEN] = "Opt.log";         // name of the log file 
-char  sMethod[10][18]={"not defined", "opt_grad", "opt_grad_mc", "metropolis", "simplex", "swarm", "genetic"};
-char  sParall[ 4][18]={"not defined", "sim_opt_pc", "sim_opt_grid", "fit_pc"};
-char  sGridOpt[99]   ="";
+char  sMethod[10][18]  ={"not defined", "opt_grad", "opt_grad_mc", "metropolis", "simplex", "swarm", "genetic"};
+char  sParall[ 4][18]  ={"not defined", "sim_opt_pc", "sim_opt_grid", "fit_pc"};
+char  sGridOpt[FN_LEN] = "",                   // parameter to call grid command 
+      sFomPrg [FN_LEN] = "fom";                // name of the program to calculate figure of merit           
 
 
 /*********************************************/
@@ -161,8 +162,9 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 }
 
 /*******************************************************************/
-/* Function to read initial, min, max P-values and DeltaX          */
-/*  input : sParFile:  name of the input file                      */
+/* Function to read control parameters and                         */
+/*          initial, min., max. P-values and DeltaP                */
+/*  input : sParFile:  input file name (default:'opt_param.ini')   */
 /*  output: *pP     :  initial parameter set                       */
 /*          *pPmin  :  minimal values for components of vector P   */
 /*          *pPmax  :  minimal values for components of vector P   */
@@ -170,7 +172,7 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 /*  return: nP      :  number of fit parameters                    */
 /*******************************************************************/
 short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption, 
-                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFilename)
+                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFile)
 {	
 	short i, j, ind,    // indices
 	      nP=0;      // number of fit parameters
@@ -185,11 +187,11 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 		pDelP[j]=0.0;
 	}
 	
-	pParFile = fileOpen(sParFilename, "r");
+	pParFile = fileOpen(sParFile, "r");
 
 	if (pParFile!=NULL)
 	{	
-		nP = (short) (LinesInFile(pParFile)-4);
+		nP = (short) (LinesInFile(pParFile)-5);
 		if (nP > NMAX)
 			Error("opt_sim: Number of parameters higher than NMAX"); 
 
@@ -197,7 +199,7 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 	  ReadLine(pParFile, sBuffer, BUF_LEN);
     fprintf(LogFilePtr, "%s\n START:  %s\n%s\n\n", sDash, sBuffer, sDash);
 
-		// read method, application and grid option
+		// read method, application, program for figure of merit and grid option
     ReadLine(pParFile, sBuffer, BUF_LEN);
 		for (j=1; j<=6; j++)
 			if (strcmp(sBuffer, sMethod[j])==0) *pMethod=(VtFitMethod)j;
@@ -205,6 +207,9 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 	  ReadLine(pParFile, sBuffer, BUF_LEN);
     for (i=1; i<=3; i++)
 		  if (strcmp(sBuffer, sParall[i])==0) *pOption= (VtAppl) i;
+
+	  ReadLine(pParFile, sBuffer, BUF_LEN);
+    if (strlen(sBuffer) > 0) strcpy(sFomPrg, sBuffer);
 
 	  ReadLine(pParFile, sBuffer, BUF_LEN);
     if (strlen(sBuffer) > 0) strcpy(sGridOpt, sBuffer);
