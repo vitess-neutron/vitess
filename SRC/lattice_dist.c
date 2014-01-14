@@ -29,7 +29,7 @@ static short  NextHkl  (short* p_h, short* p_k, short* p_l, const long nSumMax);
 static long   IncHkl   (short* p_h, short* p_k, short* p_l, const short max);
 static short  MultPlane(const short h, const short k, const short l);
 
-static short  PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, double A, double M);
+static short  PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, double A, double M, short bp);
 
 static double GetDouble(const char* pText);
 static long   GetLong  (const char* pText);
@@ -94,14 +94,14 @@ int main(int argc, char* argv[])
 	pPdFile = fopen(FullParName(sPdFileName), "w");
 	pSxFile = fopen(FullParName(sSxFileName), "w");
 	if (pPdFile!=NULL) 
-	{	PrintHeader(pPdFile, sSample, dTd, dT, dA, Mamu, TRUE);
+          {	PrintHeader(pPdFile, sSample, dTd, dT, dA, Mamu, TRUE);
 		fprintf (pPdFile, "# distance   Sigma  ( h  k  l) \n");
 		fprintf (pPdFile, "#   [Ang]    [barn]            \n");
 		fprintf (pPdFile, "# -----------------------------\n");
   }
 	if (pSxFile!=NULL) 
-	{	PrintHeader(pSxFile, sSample, dTd, dT, dA, Mamu, FALSE);
-		fprintf (pSxFile, "# h  k  l  distance    |F|²  DW-factor  Sigma  \n");
+          {	PrintHeader(pSxFile, sSample, dTd, dT, dA, Mamu, FALSE);
+		fprintf (pSxFile, "# h  k  l  distance    |F|Â²  DW-factor  Sigma  \n");
 		fprintf (pSxFile, "#            [Ang]    [barn]            [barn] \n");
 		fprintf (pSxFile, "#----------------------------------------------\n");
   }
@@ -264,10 +264,10 @@ short PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, doubl
   fprintf (pFile, "#\n");
   fprintf (pFile, "# d-spacing and structure factors calculated by means of tool 'LatticeDistances'\n");
   if (bPowder)
-    fprintf (pFile, "# Sigma(hkl) = multiplicity * |F(hkl)|² * F_dw\n");
+    fprintf (pFile, "# Sigma(hkl) = multiplicity * |F(hkl)|Â² * F_dw\n");
   else
-    fprintf (pFile, "# Sigma(hkl) = |F(hkl)|² * F_dw\n");
-  fprintf (pFile, "# F_dw       = exp(-3 Q² (h/2pi)² T_meas / (k_b M_ave T_debye²))\n");
+    fprintf (pFile, "# Sigma(hkl) = |F(hkl)|Â² * F_dw\n");
+  fprintf (pFile, "# F_dw       = exp(-3 QÂ² (h/2pi)Â² T_meas / (k_b M_ave T_debyeÂ²))\n");
   fprintf (pFile, "#\n");
   fprintf (pFile, "# Debye temperature: %8.3f K\n",     Tdebye);
   fprintf (pFile, "# temperature      : %8.3f K\n",     Tmeas);
