@@ -407,11 +407,15 @@ int main(int argc, char *argv[])
    WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
    /* Propagation, Polarisation */
-   fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
-                       "  in a distance of           : %7.3f m\n"
-                       "  with a declination of      : %7.3f°\n",
-                        (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
-                       WindowWidth, WindowHeight, WindowDist/100., Declination);
+   if(eDirDet!=VT_DIVERGENCE){
+     fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
+	                 "  in a distance of           : %7.3f m\n"
+                         "  with a declination of      : %7.3f°\n",
+                         (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
+                         WindowWidth, WindowHeight, WindowDist/100., Declination);
+   }
+   else
+     fprintf(LogFilePtr,"direction by divergence, propagation distance: %7.3f m\n",WindowDist/100.);
 
    if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
     fprintf(LogFilePtr, "  time window                : %7.3f - %7.3f ms\n", TofMinWnd, TofMaxWnd);
@@ -589,7 +593,7 @@ int main(int argc, char *argv[])
       } 
       else  
       {
-         /* defined by divergence */
+	/* defined by divergence */
          Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
          Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
          Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
@@ -643,14 +647,14 @@ int main(int argc, char *argv[])
       // Check passing through slit and write interaction point
 
       if (eDirDet!=VT_VIRT_WND)
-      {	if (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) 
-        { WriteIAP(&Input, VT_OUT_OF_WND);
-          continue;
-        }
-        else
-    		{ WriteIAP(&Input, VT_PASSED);
-        }
-      }
+	{ if (eDirDet==VT_REAL_WND && (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) )
+	    { WriteIAP(&Input, VT_OUT_OF_WND);
+	      continue;
+	    }
+	  else
+	    { WriteIAP(&Input, VT_PASSED);
+	    }
+	}
       Input.Position[0]=0.0;
 
       if (!bTest && (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
