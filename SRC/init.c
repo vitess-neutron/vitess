@@ -1108,8 +1108,11 @@ void WriteGeomData(VectorType vBegPos, double Length)
     CopyVector(vNull, vBegPos);
   }
   /* each other module appends a line */
-  else
+  else if (stGeometry.eModule < VT_MONITOR_1)
   { pGeomFile = fopen(FullParName(pGeomFileName), "a");
+  }
+  else {
+    return;
   }
 
   if (pGeomFile)
