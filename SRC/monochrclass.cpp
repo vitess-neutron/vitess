@@ -1700,9 +1700,9 @@ void   Monochromator::crys_geomDoubleCyl()
 	            Zeta,        /* vertical angle to monochromator slab under consideration */
 	            Phi,         /* horizontal angle to monochromator slab under consideration */
 	            RadV,        /* radius of vertically focussing cylinder   */
-		    RadH,        /* radius of horizontally focussing cylinder */
-	            DelZeta=0.0, /* difference in vert. orientation between neighbouring rows                        */
-	            DelPhi=0.0;  /* difference in hor. orientation between neighbouring columns                      */
+	  RadH;        /* radius of horizontally focussing cylinder */
+	  //        DelZeta=0.0, /* difference in vert. orientation between neighbouring rows                        */
+	  //        DelPhi=0.0;  /* difference in hor. orientation between neighbouring columns                      */
 
 	VectorType  r;
 
@@ -1715,10 +1715,11 @@ void   Monochromator::crys_geomDoubleCyl()
 	SlabHeight =  DimCE[2];
 	RadV       =  ParGeom[0];
 	RadH       =  ParGeom[2];
-	if (RadV > 0.0)
-		DelZeta =  2.0 * asin(0.5*(SlabHeight+GapV) / RadV);
-	if (RadH > 0.0)
-		DelPhi  =  2.0 * asin(0.5*(SlabWidth +GapH) / RadH); 
+
+	// if (RadV > 0.0)
+	// 	DelZeta =  2.0 * asin(0.5*(SlabHeight+GapV) / RadV);
+	// if (RadH > 0.0)
+	// 	DelPhi  =  2.0 * asin(0.5*(SlabWidth +GapH) / RadH); 
 
 	if(RadV == 0.0 && RadH==0.0)
 		Warning("both radii are zero");
