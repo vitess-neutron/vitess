@@ -1462,7 +1462,7 @@ void Monochromator::crys_geomLambda()
 	    } 
 
 	  else {
-	    for(k=0;k<3;k++) DimCE_F[k][m][j] = 0. ;
+	    for(k=0;k<3;k++) DimCE_F[k][m].push_back(0.) ;
 	  }
 
 	  RotHoriz_F[m].push_back( (Phi) * 180. / M_PI            + MonteCarlo(-0.5*DevH, 0.5*DevH));
