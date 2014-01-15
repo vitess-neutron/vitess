@@ -92,11 +92,11 @@ short Calc1Fct(double F[IMAX+1], const double P[NMAX+1], const short m)
     fprintf(LogFilePtr, "\n");
 
     pFile=fileOpen("CalcSpec.dat", "wt");
-    if (pFile)
-    { for (i=1; i<=nPts; i++)
-      fprintf(pFile, "%10.5f  %12.5e\n", X[i],F[i]);
+    if (pFile) {
+      for (i=1; i<=nPts; i++)
+        fprintf(pFile, "%10.5f  %12.5e\n", X[i],F[i]);
+      fclose(pFile);
     }
-    fclose(pFile);
   }
   return rc;
 }
@@ -211,7 +211,7 @@ double SquareSum(const double F[IMAX+1], const short bPrint)
 }
 
 /*******************************************************************/
-/* Calculation of the normalized error X² = Q/(N_pts*sigma^2)      */     
+/* Calculation of the normalized error XÂ² = Q/(N_pts*sigma^2)      */     
 /* input : F    : function to be used                              */
 /*       : nStep: every 'nStep'th step is written to the log file  */
 /* return: chi squared                                             */
@@ -224,7 +224,7 @@ double ChiSquared(const double F[IMAX+1], const double sigma, const short bPrint
   chi2 = Chi2FromQ(Q, sigma);
 
 	if (eOut>=2 && LogFilePtr!=NULL && bPrint==ON) 
-	{	fprintf(LogFilePtr, " X²= %13.5e\n", chi2);
+	{	fprintf(LogFilePtr, " XÂ²= %13.5e\n", chi2);
 	}
 	return chi2;
 }
