@@ -73,7 +73,7 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
-//#define DEBUG 0
+//#define DEBUG 1
 
 #ifdef RND_SIMPLE
 # ifdef WINDOWS

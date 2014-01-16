@@ -502,7 +502,7 @@ int ProcessNeutron(Neutron* n)
 	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
 
-#ifdef DEBUG	  
+#if DEBUG	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
 	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, vert ellipse at last collision: %f", distTempX1, ellipseAtLastCollision);
 	  if (distTempX1 > 0) {

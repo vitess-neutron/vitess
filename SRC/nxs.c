@@ -193,7 +193,7 @@ int initUnitCell( UnitCell *uc )
     default:  break;
   }
 
-#ifdef DEBUG
+#if DEBUG
   printf( "\n# --------------------\n# ");
   PrintFullHM_SgName(tsgn, ' ', stdout);
   printf( "\n# Crystal system: %s\n", XS_Name[uc->crystalSystem] );
@@ -283,7 +283,7 @@ int initHKL( UnitCell *uc )
 
   uc->density = uc->mass / uc->volume / AVOGADRO * 1E24; // [g/cm^3]
 
-#ifdef DEBUG
+#if DEBUG
   {
   int pos;
   printf( "# Generated Positions:\n" );
