@@ -546,7 +546,9 @@ int ProcessNeutron(Neutron* n)
 	// but in horizontal the trajectory already left the guide!
 	if (fabs(nTemp2.Position[1]/100.) > fabs(CalculateGuidePoint(nTemp2.Position[0], 1, 1))) {
 	  double guideAtLastCollision = CalculateGuidePoint(nTemp2.Position[0], 1, 1)*100.;
+#if DEBUG
 	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, dist2 %f, y-position at dist2: %f", distTempX1, distTempX2, nTemp2.Position[1]/100.);
+#endif
 	  badNeutrons++;
 	  return 0;
 	}
