@@ -901,7 +901,7 @@ void Monochromator::processNeutron(Neutron* neutron)
       CopyVector(startPosition, resultNeutron2.Position) ;
       CopyVector(startVector, resultNeutron2.Vector) ;
 
-#ifdef DEBUG
+#if DEBUG
       double tempTh, tempPh;
       CartesianToSpherical(startVector, &tempTh, &tempPh);
       DEBUG_OUT("Direction in the initial frame transition: neutronTh = %f, neutronPh = %f  ProbR: %f  ProbT: %f \n", 
@@ -1212,7 +1212,6 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
 
   }
 
- 
   // Here the new neutron direction is determined
   double mosaicMatrix[3][3];
   RotMatrixX(mosaicVector, mosaicMatrix);
@@ -1221,7 +1220,7 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
   neutronDir[0] *= -1.;
   RotBackVector(mosaicMatrix, neutronDir);
 
-#ifdef DEBUG
+#if DEBUG
    double tempTh, tempPh;
    CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
    DEBUG_OUT("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
