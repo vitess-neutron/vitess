@@ -7,365 +7,631 @@
   <title>Module Source</title>
 </head>
 <body>
+
 <h1> VITESS Module Source</h1>
-The module <b>source</b> initialises neutrons originated at a
-short    pulsed   (SPSS), long pulsed (LPSS), or a continuous source (CWS).
-Their   starting  positions are randomly distributed over a rectangular moderator
-  surface. Further parameters like wavelength, divergence and time at the
-moderator   are determined at random, too.
-<p>This module simulates also subsequent free propagation which can be limited
-     in such a way, that only neutrons reaching a certain region of space
-are    considered further on. The coordinate system is oriented as illustrated
-  in  the figure, it is centered in the middle of the moderator surface and
-  shifted  parallel to the x-axis to the position of the propagation window
-  (i.e.&nbsp;  the&nbsp; x-coordinate of each neutron which hit the propagation
-  window is  zero). </p>
 
-<p><img src="source1.gif">
-           <br>
-          &nbsp; </p>
+The module <b>source</b> initialises neutron rays originated at a short pulsed (SPSS), long pulsed (LPSS), or a continuous source (CWS).
+Their starting positions are randomly distributed over the moderator, which is treated as a 2-dimensinonal surface of rectangular or circular shape. 
+Further parameters like wavelength, divergence and time at the moderator are determined at random, too.
+<br/>
+Up to 3 moderators can be handled. They might be physically different moderators; but it is also possible to describe 1 physical moderator by a sum 
+of 2 or 3 moderators in the simulation, e.g to describe its characteristics as a sum of 3 Maxwellians.
+<br/>
+The source module is responsible for the normalization to get correct absolute intensities.
+(All other modules only treat the reduction of intensity by absorption, reflection or complete loss or bin the intensities into time, wavelength, ... channels.)
+<br/>
+The intensity given in all modules - in neutrons per second - is the (long) time averaged intensity of neutrons arriving at the end of the component (independent of their position).
+For pulsed sources, the repetition <b>frequency</b> is already <b>included</b> assuming that the same neutron pulse arrives as many times per second as given as frequency in the sources module.
+So if 1 pulse is treated, the output is correct, but if e.g. 2 pulsed are treated, the frequency has to be halved to get correct time averaged intensity values.
+<br/>
+Neutron rays can be limited to those reaching a certain region of space and/or a certain distance from the moderatar in a certain time range. 
+This module can also simulates subsequent propagation to the given region of space.
+<br/>
+The coordinate system is oriented as illustrated in the figure, it is centered in the middle of the moderator surface.
+As is all other modules  and shifted  parallel to the x-axis to the position of the propagation window
+(i.e.&nbsp;  the&nbsp; x-coordinate of each neutron which hit the propagation window is  zero). 
+</p>
+<p>
+  <img src="source1.gif">
+</p>
 
-<h3><font size="+2"> Simulation parameters</font></h3>
-           The effect of <b>gravity</b> is considered in this module, if
-this   option  is chosen.  The parameter '<b>minimal weight</b>' is not considered.
 
-<p>Every trajectory represents a package of a certain number of neutrons passing
-per time, i.e. a certain neutron current. The sum over all trajectories gives
-the total neutron count rate. From one module to the following, the '<b>number
-of trajectories</b>' decreases, e.g. if a window or the sample is not hit.
-The intensity further decreases by reflections or absorption inside a material.
- In these cases the number of trajectories is unchanged, but the count rate
-per  trajectory is decreased. So absolute values of the count rate are given
-at any  point of the instrument, if the moderator count rate can be determined.<br>
-          As a consequence, the number of neutrons leaving one module (or
-arriving     on the detector) will be calculated, if the '<b>time of measurement</b>'
-   is given. If the '<b>desired wavelength</b>' is given, the optimal phases
-of the    disc choppers are calculated and written to the file 'instrument.inf'.<br>
- </p>
+<br/>
+<h2>Source parameters:</h2>
 
-<p>To enable ray-tracing, the '<b>ray-tracing file</b>'&nbsp;has to be given
-here and the '<b>kind of ray-tracing</b>' has to be chosen. The ray-tracing
-file contains the IDs of the trajectories     to be traced. The 2 different
-modes of ray-tracing are explained in a special help file called 'Ray-tracing'.<br>
-          <br>
-           </p>
-
-<h3><font size="+2"> Source and moderator parameters</font></h3>
-
-<div align="justify">Source parameters are given on the main window:
-
-<h3><br>
-       </h3>
-
-<div align="justify">
-<h2><font size="+1">Source parameters:</font></h2>
-
+Source parameters describe the neutron source in general; these are given on the main window, while the moderator data are gigen on a separate window (see below).
+<br/>
 <table border="1" width="90%">
-            <tbody>
-              <tr>
-           <td width="15%"><b>Parameter</b> <br>
-                <b>Unit</b></td>
-                  <td valign="top">CWS<br>
-                 </td>
-                 <td valign="top">SPSS<br>
-                 </td>
-                 <td valign="top">LPSS<br>
-                 </td>
-           <td><b>Description</b></td>
-            <td><b>Range or values</b></td>
-           </tr>
-            <tr>
-           <td width="15%">pulse repetition rate<br>
-           [Hz]<br>
-           </td>
-                  <td valign="middle" align="center">---<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-           <td>repetition rate of pulsed sources</td>
-            <td>&nbsp;&gt; 0.0<br>
-           </td>
-           </tr>
-            <tr>
-           <td width="15%">proton pulse length<br>
-          [ms]</td>
-                  <td valign="middle" align="center">---<br>
-                 </td>
-                 <td valign="middle" align="center">---<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-           <td>proton pulse length of long pulse source</td>
-           <td>&nbsp;&gt; 0.0</td> </tr>
-         <tr>
-           <td width="15%">name of source<br> </td>
-           <td valign="middle" align="center">---<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-                 <td valign="middle" align="center">X<br>
-                 </td>
-            <td>Name of a neutron source, for which analytical functions are implemented to describe the moderator characteristics</td>
-            <td>&nbsp;"ESS", &nbsp;"SNS", &nbsp;"CSNS"</td>
-         </tr>
-	       <tr>
-           <td width="15%">data base<br> </td>
-           <td valign="middle" align="center">---<br> </td>
-           <td valign="middle" align="center">X<br>   </td>
-           <td valign="middle" align="center">X<br>   </td>
-           <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td> <td>1 - 4</td>
-         </tr>
+  <tbody>
+    <tr>
+      <td width="15%"><b>Parameter</b> <br><b>Unit</b></td>
+      <td valign="top">CWS<br>              </td>
+      <td valign="top">SPSS<br>             </td>
+      <td valign="top">LPSS<br>             </td>
+      <td><b>Description</b>                </td>
+      <td><b>Range or values</b>            </td>
+      <td valign="top"><b>Command Option</b></td>
+    </tr>
+    <tr>
+      <td width="15%">moderator description file</td>
+      <td valign="middle" align="center"> X </td>
+      <td valign="middle" align="center"> X </td>
+      <td valign="middle" align="center"> X </td>
+      <td>Name of the file describing the moderator characteristics (see below)</td>
+      <td>any</td>
+      <td valign="top">-a</td>
+    </tr>
+    <tr>
+      <td width="15%">source power<br>[MW]</td>
+      <td valign="middle" align="center">---</td>
+      <td valign="middle" align="center"> x </td>
+      <td valign="middle" align="center"> X </td>
+      <td>power of the source to determining the moderator flux<br /> only implemented for ESS and SNS, for all other sources the flux of the moderator has to be given</td>
+      <td>&nbsp;&gt;= 0.0</td>
+      <td valign="top">-L</td>
+    </tr>
+    <tr>
+      <td width="15%">pulse repetition rate<br>[Hz]<br> </td>
+      <td valign="middle" align="center">---</td>
+      <td valign="middle" align="center"> X </td>
+      <td valign="middle" align="center"> X </td>
+      <td>frequency of a pulsed source</td>
+      <td>&nbsp;&gt;= 0.0<br>          </td>
+      <td valign="top">-R</td>
+    </tr>
+    <tr>
+      <td width="15%">proton pulse length<br>[ms]  </td>
+      <td valign="middle" align="center">---</td>
+      <td valign="middle" align="center">---</td>
+      <td valign="middle" align="center"> X </td>
+      <td>proton pulse length of long pulse source </td>
+      <td>&nbsp;&gt;= 0.0  </td> 
+      <td valign="top">-p</td>
+    </tr>
+    <tr>
+      <td width="15%">name of source </td>
+      <td valign="middle" align="center">---</td>
+      <td valign="middle" align="center"> X </td>
+      <td valign="middle" align="center"> X </td>
+      <td>Name of a neutron source, for which analytical functions are implemented to describe the moderator characteristics</td>
+      <td>&nbsp;"ESS", &nbsp;"SNS", &nbsp;"CSNS" </td>
+      <td valign="top">-N</td>
+    </tr>
+	  <tr>
+      <td width="15%">data base </td>
+      <td valign="middle" align="center">---<br> </td>
+      <td valign="middle" align="center"> X <br> </td>
+      <td valign="middle" align="center"> X <br> </td>
+      <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td> <td>1 - 4</td>
+      <td valign="top">-v</td>
+    </tr>
   </tbody>
 </table>
 <br>
 
-<h3><font size="+1"> Moderator parameters</font></h3>
-            Moderator parameters are taken from a file that contains information
-  about  the moderator system, consisting of up to 3 moderators. Data of 2
- moderators  can be given on the moderator window. So each source can be described
- by a file.  The existing files are collected in &lt;VITESS install. directory&gt;/<b>FILES/moderators</b>.
-(Additional files describing beamlines of the ISIS target stations can be
-downloaded from the internet site <a href="http://www.isis.rl.ac.uk/computing/">www.isis.rl.ac.uk/computing</a>). Please
- send us your files that we can distribute them, if possible.<br>
-          </div>
+<h2>Simulation parameters</h2>
+<p>
+Every trajectory represents a package of a certain number of neutrons passing per time, i.e. a certain neutron current. The sum over all trajectories gives
+the total neutron count rate. From one module to the following, the '<b>number of trajectories</b>' decreases, e.g. if a window or the sample is not hit.
+The intensity further decreases by reflections or absorption inside a material. In these cases the number of trajectories is unchanged, but the count rate
+per  trajectory is decreased. So absolute values of the count rate are given at any  point of the instrument, if the moderator count rate can be determined.
+</p>
+<div>
+Trajectories are distributed randomly on the moderator surface, lying within a time, wavelength and divergence range. The divergence range can either be determined by 
+by the propagation window (see below) or by a divergence range.
+</div>
+<p>
+The direction is defined by the angles phi and theta, which define the angular deviation range with respect to the straight flight direction
+(parallel to the x-axis)  as illustrated for special cases below: <br>
+first sketch &nbsp; &nbsp; : div-range illustrated for neutrons having no z-divergence; <br>
+second sketch: div-range for neutrons having no y-divergence<br>
+</p>
+<p>
+<img src="source2.gif">   
+</p>
+<p>
+The effect of <b>gravity</b> is considered in this module, if this option is chosen. The parameter '<b>minimal weight</b>' is not considered.
+</p>
 
-<div align="justify">The moderator characteristics can either be given by
-  distribution    files - intensity as a function of wavelength, of time,
+<br/>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Paramter<br>Unit<br> </b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+     <tr>
+       <td valign="top">number of trajectories</td>
+       <td valign="top">number of rays generated in the source module. This is the number of events simulated. 
+                        The intensity (at any point of the instrument) is independent of this number - except that the deviation from the true value
+                        will decrease with an increasing number of trajectories.</td>
+       <td valign="top">&gt;= 0<br> </td>
+       <td valign="top">-n</td>
+     </tr>
+     <tr>
+       <td valign="top">min. wavelength,&nbsp; max. wavelength<br> [&Aring;]<br> </td>
+       <td valign="top">minimal and maximal wavelength used in the simulation <br>  </td>
+       <td valign="top">&gt;= 0<br> </td>
+       <td valign="top">-m, -M<br> </td>
+     </tr>
+     <tr>
+       <td valign="top">min. time, &nbsp; <br>max. time<br> [ms]<br> </td>
+       <td valign="top"><b>pulsed sources</b>: time range of the pulse (as considered in the simulations)<br>
+                        <b>continuous source</b>: usually min. time = max. time = 0.0, i.e. all neutrons starting at time zero. 
+                        Otherwise a rectangular pulse is  generated, which is e.g. necessary for time-of-flight instruments at continuous sources<br></td>
+       <td valign="top">no restriction<br></td>
+       <td valign="top">-t<br>-T<br>      </td>
+     </tr>
+     <tr>
+       <td valign="top">max. div.&nbsp; x &lt;-&gt; y<br>max. div.&nbsp;&nbsp;x &lt;-&gt; z<br> [deg]<br>  </td>
+       <td valign="top">The horizontal divergence phi (see figure below) is chosen &nbsp;in the interval [-max.div x - y , +max.div x - y] <br>
+                        The vertical divergence theta (see figure below) is chosen &nbsp;in the interval [-max.div x - z , +max.div x -z] <br> &nbsp;<br> </td>
+       <td style="width: 120px;" valign="top">0 ... 90<br> 0 ... 90<br>  </td>
+       <td valign="top">-y &nbsp; <br> -z<br>    </td>
+     </tr>
+     <tr>
+       <td valign="top">direction defined<br>  </td>
+       <td valign="top">The direction can be determined by a Monte Carlo choice of the horizontal and vertical divergence between the maximal values as given by the user. 
+                        Alternatively, &nbsp;the direction can be determined by the starting point on the moderator surface and a point on 
+                        the propagation window (see below), which are both determined by MC choices. <br>
+                        If the option "by virtual window" is chosen, the 'propagation window' is only used to define the flight direction, but the neutrons remain 
+                        on the moderator surface. In both other cases the neutrons are propagated to this window.</td>
+       <td valign="top">"by divergence"<br> "by window"<br> "by virtual window"</td>
+       <td valign="top">-d<br>  </td>
+     </tr>
+  </tbody>
+</table>
+
+
+<br/>
+<h2>Propagation</h2>
+<p>
+Apart from the source itself, there is a aperture included in
+the   source    module (to restrict the amount of data that is transfered
+to the   following    module). Height and width of the aperture as well as
+its distance   to the   source must be given. Additionally an angle can be
+given that describes   the  declination of the aperture center (= beam direction)
+to the normal  of the  moderator surface (in the horizontal plane). The default
+value is  0&deg; meaning beam direction vertical to moderator surface. For
+angles not  equal zero, the moderator surface is rotated around the (positive)
+z-axis  (relative to the beam direction).  <br>
+To omit this propagation, a zero distance and a aperture size exceeding the moderator size can be given.
+Alternatively, the option "direction defined by virtual window" can be chosen.
+In this case, the 'propagation window' is only used to define the flight direction,
+but the neutrons remain on the moderator surface.
+</p>
+
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Paramter<br>Unit<br> </b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+    <tr>
+       <td valign="top">distance to window<br> [cm] </td>
+       <td valign="top">distance from source to position of the (virtual) target window, which the neutron are sent or propagated to </td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-D      </td>
+     </tr>
+     <tr>
+       <td valign="top">window width/height <br>[cm]</td>
+       <td valign="top">width and height of the (virtual) target window, which the neutron are sent or propagated to </td>
+       <td valign="top">&gt;= 0   </td>
+       <td valign="top">-w<br>-h  </td>
+     </tr>
+     <tr>
+       <td valign="top">declination<br>[deg] </td>
+       <td valign="top">angle between beamline direction and normal to the moderator surface <br/>
+                        the intensity is supposed to be isotropic and is thus not influenced by this angle,
+                        but short pulses will be stretched</td>
+       <td valign="top">-90° ... 90° </td>
+       <td valign="top">-i<br>       </td>
+     </tr>
+    <tr>
+       <td valign="top">distance to time window<br> [cm] </td>
+       <td valign="top">distance from source to position of time window</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-s      </td>
+     </tr>
+     <tr>
+       <td valign="top">min. TOF,<br>max. TOF<br>to time window<br> [ms]<br> </td>
+       <td valign="top">only neutrons that arrive at the given position in the specified time range are considered in the simulation<br></td>
+       <td valign="top">no restriction<br></td>
+       <td valign="top">-f<br>-F<br>      </td>
+     </tr>
+  </tbody>
+</table>
+
+
+<br/>
+<h2>Polarisation and special parameters</h2>
+<p>
+The <b>polarization</b> of the neutron beam is needed in some test computations.
+Therefore an "internal" polarizer is defined in the source module. Initial
+values of&nbsp; the percentage and the direction of polarization have
+to be given. The spin vector belonging to each trajectory is represented
+in cartesian coordinates. The output represents an ansamble of "Up" and
+"Down"  neutrons relative to the given direction of polarization. The average
+polarization will be that given by the input parameter "degree of polarization".
+For  non-polarized beam (0%) the numbers of "Up" and "Down" trajectories are the  same. 
+</p>
+<p>
+To enable ray-tracing, the '<b>ray-tracing file</b>'&nbsp;has to be given
+here and the '<b>kind of ray-tracing</b>' has to be chosen. The ray-tracing
+file contains the IDs of the trajectories to be traced. The 2 different
+modes of ray-tracing are explained in a special help file called 'Ray-tracing'.
+</p>
+
+<br/>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Paramter<br>Unit<br> </b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+     <tr>
+       <td valign="top">Polarisation X, Y and Z</td>
+       <td valign="top">X- Y- and Z-component of the polarisation direction</td>
+       <td valign="top">-1 ... 1</td>
+       <td valign="top">-X, -Y, -V</td>
+     </tr>
+     <tr>
+       <td valign="top">degree of polarisation [%]</td>
+       <td valign="top">percentage of the polarized neutrons <br/>
+                        0% degree means 50% of the neutrons in polarisation direction, 100% degree means all neutrons in polarisation direction </td>
+       <td valign="top">0 ... 100</td>
+       <td valign="top">-P</td>
+     </tr>
+     <tr>
+       <td valign="top">time of measurement</td>
+       <td valign="top">the number of neutrons leaving one module (or arriving on the detector) will be calculated, if the time of measurement is given</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-A      </td>
+     </tr>
+     <tr>
+       <td valign="top">desired wavelength</td>
+       <td valign="top">If the desired wavelength is given, the optimal phases of the disc choppers are calculated and written to the file 'instrument.inf' </td>
+       <td valign="top">&gt; 0  </td>
+       <td valign="top">-W      </td>
+     </tr>
+     <tr>
+       <td valign="top">raytracing file</td>
+       <td valign="top">File containing IDs of the trajectories to ray-traced. The output of a writeout module can be used for example.</td>
+       <td valign="top">any </td>
+       <td valign="top">-r  </td>
+     </tr>
+     <tr>
+       <td valign="top">kind of raytracing</td>
+       <td valign="top">defines if raytracing takes places and in which way - see help file called 'Raytracing'.</td>
+       <td valign="top">'no'<br>'write trace files'<br>'only trace trajectories'</td>
+       <td valign="top">-k  </td>
+     </tr>
+  </tbody>
+</table>
+
+
+
+<br/>
+<h2>Moderator parameters</h2>
+<p>
+Moderator parameters are taken from a file that contains information
+about the moderator system, consisting of up to 3 moderators. Data of 2
+moderators can be given on the moderator window. So each source can be described
+by a file. The existing files are collected in &lt;VITESS install. directory&gt;/<b>FILES/moderators</b>.
+(Additional files describing beamlines of the ISIS target stations can be
+downloaded from the internet site <a href="http://www.isis.rl.ac.uk/computing/">www.isis.rl.ac.uk/computing</a>). 
+Please send us your files that we can distribute them, if possible.
+<br>
+The moderator characteristics can either be given by
+distribution files - intensity as a function of wavelength, of time,
 or  of time and wavelength   - or analytical functions are used. Analytical
 functions  are only used in   the simulation, if the corresponing distribution
 file is not given, i.e.  the Maxwellian distribution is calculated &nbsp;from
 the given temperature,  if no 'wavelength distribution file' is given, and
 the pulse shape is calculated   from the given time constants, if no 'time
-distribution file' is given. Table  1 gives a survey.<br>
-          </div>
-          &nbsp;
+distribution file' is given. Table  1 gives a survey.
+</p>
 <p>
 <table border="1" width="100%">
-           <tbody>
-              <tr align="center">
-           <td>source <br>
-          name</td>
-            <td>source <br>
-          name</td>
-            <td>temperature</td>
-            <td valign="middle" align="center">distr. files<br>
-                </td>
-                <td valign="middle" align="center">tau1, tau2<br>
-                </td>
-                <td>width, height</td>
-            <td>total flux</td>
-              <td>pulse rep. rate</td>
-            <td>pulse length <br>
-          of LPSS</td>
-              <td>flux distribution</td>
-           </tr>
-            <tr align="center">
-           <td>ESS</td>
-            <td>ESS</td>
-            <td>from input<br>
-          50 or 325 K</td>
-            <td valign="top" align="center">-<br>
-          -<br>
-                </td>
-                <td valign="middle" align="center">fixed<br>
-                </td>
-                <td align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td>calculated</td>
-              <td align="center">from input&nbsp; <br>
-          (50 Hz)</td>
-            <td>from input&nbsp; <br>
-          (2 ms)</td>
-              <td>analytical funct.</td>
-           </tr>
-                <tr align="center">
-           <td>SNS</td>
-            <td>SNS</td>
-            <td>from input<br>
-          50 or 325 K<br>
-                </td>
-            <td valign="top" align="center">-<br>
-          -<br>
-                </td>
-                <td valign="middle" align="center">fixed<br>
-                </td>
-                <td>from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td>calculated</td>
-              <td>from input&nbsp; <br>
-
-          (50 Hz)</td>
-            <td>---</td>
-              <td>analytical funct.</td>
-           </tr>
-                    <tr>
-           <td align="center">continuous src.</td>
-            <td align="center">-<br>
-                </td>
-            <td align="center">from input</td>
-            <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">---<br>
-                </td>
-                <td align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td align="center">from input</td>
-              <td align="center">---</td>
-            <td align="center">---</td>
-              <td align="center">Maxwell. distr.</td>
-           </tr>
-            <tr>
-           <td align="center">continuous src.</td>
-            <td align="center">-<br>
-                </td>
-            <td align="center">-</td>
-            <td valign="middle" align="center">wavelength<br>
-                </td>
-                <td valign="middle" align="center">---<br>
-                </td>
-                <td align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td align="center">calculated</td>
-              <td align="center">---</td>
-            <td align="center">---</td>
-              <td align="center">wavelength distr. file</td>
-           </tr>
-            <tr>
-           <td align="center">pulsed src</td>
-            <td align="center">-<br>
-                </td>
-            <td align="center">from input</td>
-            <td valign="top" align="center">-<br>
-          -<br>
-                </td>
-                <td valign="middle" align="center">from input <br>
-           (12 us; 60 us)<br>
-                </td>
-                <td align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td align="center">from input<br>
-                </td>
-              <td align="center">from input&nbsp; <br>
-          (50 Hz)</td>
-            <td align="center">from input&nbsp; <br>
-          (2 ms)</td>
-              <td align="center">Maxwell. distr. function
-           <br>
-          time distr. function</td>
-           </tr>
-            <tr>
-                <td valign="middle" align="center">pulsed src<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="top" align="center">wavelength<br>
-          -<br>
-                </td>
-                <td valign="middle" align="center">from input <br>
-           (12 us; 60 us)<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)<br>
-                </td>
-                <td valign="middle" align="center">calculated<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (50 Hz)<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (2 ms)<br>
-                </td>
-                <td valign="middle" align="center">wavelength distr. file
-      <br>
-          time distr. function<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="middle" align="center">pulsed src<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">from input<br>
-                </td>
-                <td valign="top" align="center">-<br>
-          time<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)<br>
-                </td>
-                <td valign="middle" align="center">from input<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (50 Hz)<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (2 ms)<br>
-                </td>
-                <td valign="middle" align="center">Maxwell. distr. function<br>
-          time distr. file<br>
-                </td>
-              </tr>
-              <tr>
-           <td align="center">pulsed src</td>
-            <td align="center">-<br>
-                </td>
-            <td align="center">-</td>
-            <td valign="top" align="center">wavelength<br>
-          time<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)</td>
-            <td align="center">calculated</td>
-              <td align="center">from input&nbsp; <br>
-          (50 Hz)</td>
-            <td align="center">from input&nbsp; <br>
-          (2 ms)</td>
-              <td align="center">wavelength distr. file <br>
-          time distr. file</td>
-           </tr>
-              <tr>
-                <td valign="middle" align="center">pulsed src<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">wavelength-time<br>
-                </td>
-                <td valign="middle" align="center">-<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (12x12cm&sup2;)<br>
-                </td>
-                <td valign="middle" align="center">calculated<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (50 Hz)<br>
-                </td>
-                <td valign="middle" align="center">from input&nbsp; <br>
-          (2 ms)<br>
-                </td>
-                <td valign="middle" align="center">wavelength-time distr.
-fct.<br>
-                </td>
-              </tr>
-
+  <tbody>
+    <tr align="center">
+      <td>source <br> type</td>
+      <td>source <br> name</td>
+      <td>temperature</td>
+      <td valign="middle" align="center">distr. files<br>      </td>
+      <td valign="middle" align="center">tau1, tau2<br>     </td>
+      <td>width, height</td>
+      <td>total flux</td>
+      <td>pulse rep. rate</td>
+      <td>pulse length<br>of LPSS</td>
+      <td>flux distribution</td>
+    </tr>
+    <tr align="center">
+    <td>ESS</td>
+      <td>ESS</td>
+      <td>from input<br> 50 or 325 K</td>
+      <td valign="top" align="center">-<br>-<br>   </td>
+      <td valign="middle" align="center">fixed<br>   </td>
+      <td align="center">from input&nbsp; <br>(12x12cm&sup2;)</td>
+      <td>calculated</td>
+      <td align="center">from input&nbsp; <br> (50 Hz)</td>
+      <td>from input&nbsp; <br>   (2 ms)</td>
+      <td>analytical funct.</td>
+     </tr>
+     <tr align="center">
+       <td>SNS</td>
+       <td>SNS</td>
+       <td>from input<br>50 or 325 K<br> </td>
+       <td valign="top" align="center">-<br>-<br>    </td>
+       <td valign="middle" align="center">fixed<br>   </td>
+       <td>from input&nbsp; <br>(12x12cm&sup2;)</td>
+       <td>calculated</td>
+       <td>from input&nbsp; <br>(50 Hz)</td>
+       <td>---</td>
+       <td>analytical funct.</td>
+    </tr>
+    <tr>
+      <td align="center">continuous src.</td>
+      <td align="center">-<br>       </td>
+      <td align="center">from input</td>
+      <td valign="middle" align="center">-<br>             </td>
+      <td valign="middle" align="center">---<br>           </td>
+      <td align="center">from input&nbsp; <br>(12x12cm&sup2;)</td>
+      <td align="center">from input</td>
+      <td align="center">---</td>
+      <td align="center">---</td>
+      <td align="center">Maxwell. distr.</td>
+    </tr>
+    <tr>
+      <td align="center">continuous src.</td>
+      <td align="center">-<br>          </td>
+      <td align="center">-</td>
+      <td valign="middle" align="center">wavelength<br>  </td>
+      <td valign="middle" align="center">---<br>     </td>
+      <td align="center">from input&nbsp; <br>(12x12cm&sup2;)</td>
+      <td align="center">calculated</td>
+      <td align="center">---</td>
+      <td align="center">---</td>
+      <td align="center">wavelength distr. file</td>
+    </tr>
+    <tr>
+      <td align="center">pulsed src</td>
+      <td align="center">-<br>      </td>
+      <td align="center">from input</td>
+      <td valign="top" align="center">-<br>-<br> </td>
+      <td valign="middle" align="center">from input <br>(12 us; 60 us)<br></td>
+      <td align="center">from input&nbsp; <br>(12x12cm&sup2;)</td>
+      <td align="center">from input<br>   </td>
+      <td align="center">from input&nbsp; <br>(50 Hz)</td>
+      <td align="center">from input&nbsp; <br> (2 ms)</td>
+      <td align="center">Maxwell. distr. function<br>time distr. function</td>
+    </tr>
+    <tr>
+      <td valign="middle" align="center">pulsed src<br> </td>
+      <td valign="middle" align="center">-<br>          </td>
+      <td valign="middle" align="center">-<br>          </td>
+      <td valign="top" align="center">wavelength<br>-<br></td>
+      <td valign="middle" align="center">from input <br>(12 us; 60 us)<br>   </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(12x12cm&sup2;)<br></td>
+      <td valign="middle" align="center">calculated<br>        </td>
+      <td valign="middle" align="center">from input&nbsp; <br> (50 Hz)<br>  </td>
+      <td valign="middle" align="center">from input&nbsp; <br> (2 ms)<br>   </td>
+      <td valign="middle" align="center">wavelength distr. file <br> time distr. function<br></td>
+    </tr>
+    <tr>
+      <td valign="middle" align="center">pulsed src<br> </td>
+      <td valign="middle" align="center">-<br>          </td>
+      <td valign="middle" align="center">from input<br> </td>
+      <td valign="top" align="center">-<br>time<br>     </td>
+      <td valign="middle" align="center">-<br>          </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(12x12cm&sup2;)<br></td>
+      <td valign="middle" align="center">from input<br>                  </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(50 Hz)<br></td>
+      <td valign="middle" align="center">from input&nbsp; <br>(2 ms)<br> </td>
+      <td valign="middle" align="center">Maxwell. distr. function<br>time distr. file<br> </td>
+    </tr>
+    <tr>
+      <td align="center">pulsed src</td>
+      <td align="center">-<br>     </td>
+      <td align="center">-</td>
+      <td valign="top" align="center">wavelength<br>time<br> </td>
+      <td valign="middle" align="center">-<br></td>
+      <td align="center">from input&nbsp; <br> (12x12cm&sup2;)</td>
+      <td align="center">calculated</td>
+      <td align="center">from input&nbsp; <br> (50 Hz)</td>
+      <td align="center">from input&nbsp; <br>  (2 ms)</td>
+      <td align="center">wavelength distr. file <br>time distr. file</td>
+    </tr>
+    <tr>
+      <td valign="middle" align="center">pulsed src<br></td>
+      <td valign="middle" align="center">-<br>         </td>
+      <td valign="middle" align="center">-<br>         </td>
+      <td valign="middle" align="center">wavelength-time<br></td>
+      <td valign="middle" align="center">-<br>         </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(12x12cm&sup2;)<br> </td>
+      <td valign="middle" align="center">calculated<br>                           </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(50 Hz)<br>         </td>
+      <td valign="middle" align="center">from input&nbsp; <br>(2 ms)<br>          </td>
+      <td valign="middle" align="center">wavelength-time distr. fct.<br>    </td>
+    </tr>
   </tbody>
 </table>
-           ---: not existing<br>
-           &nbsp;-&nbsp; : not used <br>
-          ( ) : numbers in brackets give the default values </p>
+<p>
+---: not existing<br>
+&nbsp;-&nbsp; : not used <br>
+( ) : numbers in brackets give the default values 
+</p>
 
-<p><b><br>
-          </b></p>
+
+<br/>
+<h3>Parameters for each moderator: </h3>
+         
+<table border="1" width="90%">
+  <tbody>
+    <tr>
+      <td width="15%"><b>Parameter</b> <br> <b>Unit</b></td>
+      <td valign="top">CWS<br>                </td>
+      <td valign="top">SPSS<br>                </td>
+      <td valign="top">LPSS<br>                </td>
+      <td><b>Description</b></td>
+      <td><b>Range or values</b></td>
+    </tr>
+    <tr>
+      <td width="15%">moderator type<br>   </td>
+      <td valign="middle" align="center">X<br>    </td>
+      <td valign="middle" align="center">X<br></td>
+      <td valign="middle" align="center">X<br></td>
+      <td>type of moderator, important for 'special sources' &nbsp;<br>
+          (0: unknown or not important, 1: decoupled poisoned, 2: decoupled unpoisoned, 3: coupled, 4: multi-spectral)<br>
+          Multi-spectral moderators consist of 2 or more parts, e.g. a cold
+          and   a  thermal moderator, giving an effective flux distribution from
+          the   whole   moderator,  which is achieved by a special beam extraction
+          system   that is   able to add  the short wavelength distribution of the
+          thermal moderator  and  the long wavelength  distribution of the cold moderator
+          (see F. Mezei:  "Instrumentation  Concepts"  in "The ESS project Volume II",
+          ed. D. Richter,  2002).  The effective  flux  distribution was published
+          by F. Mezei in Feb.  2002 as an email to the members  of the ESS Instrumentation
+          Task Group. This  moderator can be used for simulations  of instruments at ESS and SNS. </td>
+      <td>&nbsp;0 &nbsp;- &nbsp;4</td>
+    </tr>
+    <tr>
+      <td valign="top">moderator shape<br>        </td>
+      <td valign="middle" align="center">X<br>    </td>
+      <td valign="middle" align="center">X<br>    </td>
+      <td valign="middle" align="center">X<br>    </td>
+      <td valign="top">shape of the moderator: 0: rectangular,1:  circular<br>  </td>
+      <td valign="middle" align="center">0, 1<br>  </td>
+    </tr>
+    <tr>
+      <td valign="top">wavelength distr. file<br>  </td>
+      <td valign="middle" align="center">X<br>     </td>
+      <td valign="middle" align="center">X<br>     </td>
+      <td valign="middle" align="center">X<br>     </td>
+      <td valign="top">file describing the wavelength dependence of the intensity (see also text)<br>
+                       If the 'wavelength distribution file' is given, the temperature is not used. </td>
+      <td valign="middle" align="center">          </td>
+    </tr>
+    <tr>
+      <td valign="top">time distribution file<br>  </td>
+      <td valign="middle" align="center">---<br>   </td>
+      <td valign="middle" align="center">X<br>     </td>
+      <td valign="middle" align="center">X<br>     </td>
+      <td valign="top">file describing the time dependence of the intensity (see also text)<br>
+                       If the 'time distribution file' is given, the relaxation times and the pulse length are not used<br> </td>
+      <td valign="middle" align="center"><br> </td>
+    </tr>
+    <tr>
+      <td valign="top">wavelength-time distr. file<br></td>
+      <td valign="middle" align="center">---<br>      </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="top">file describing the wavelength and time dependence of the intensity (see also text above)<br>
+                       If the 'wavelength-time distribution file' is given, the relaxation times, the pulse length, and the temperature are not used<br></td>
+      <td valign="middle" align="center"><br>         </td>
+    </tr>
+    <tr>
+      <td valign="top">moder. temperature<br>[K]<br>  </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="top">moderator temperature<br>
+                       only used, if neither&nbsp;'wavelength-time distribution file' nor 'wavelength distribution file' are given.<br> </td>
+      <td valign="middle" align="center">&gt;&nbsp;0.0<br></td>
+    </tr>
+    <tr>
+      <td valign="top">moder. width or diameter<br>[cm]<br> </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="middle" align="center">X<br>        </td>
+      <td valign="top">rectangular moderator: bordered by center_y &plusmn; mod.width/2 in y-direction (see also last row) <br>
+            <div align="justify">circular moderator &nbsp; &nbsp; : diameter of the moderator</div> </td>
+      <td valign="middle" align="center">&gt; 0.0<br>   </td>
+    </tr>
+    <tr>
+      <td valign="top">moderator height<br>[cm]<br>     </td>
+      <td valign="middle" align="center">X<br>          </td>
+      <td valign="middle" align="center">X<br>          </td>
+      <td valign="middle" align="center">X<br>          </td>
+      <td valign="top">rectangular moderator: bordered by center_z &plusmn; mod.height/2&nbsp; in z-direction (see also last row)<br>
+                       circular moderator &nbsp; &nbsp; : not used<br>  </td>
+      <td valign="middle" align="center">&gt; 0.0<br>                   </td>
+    </tr>
+    <tr>
+      <td valign="top">spatial order<br>            </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="top">see following picture<br>    </td>
+      <td valign="middle" align="center"><br>       </td>
+    </tr>
+    <tr>
+      <td valign="top">total flux at moderat.<br>[n/(cm&sup2;s)]<br></td>
+      <td valign="middle" align="center">X<br>                </td>
+      <td valign="middle" align="center">X<br>                </td>
+      <td valign="middle" align="center">X<br>                </td>
+      <td valign="top">Flux on moderator surface into solid angle 2*pi integrated  over the whole wavelength range ([0, infinity] for analytical
+             functions or  total range given in distributions file) assuming an isotropic flux distribution into 2*pi.<br>
+             It is sensible to give this value, if a Maxwellian distribution determined by the temperature is used, 
+             because this distribution is normalized to give an integral of 1.<br>
+             If a 'wavelength distribution file' or a 'wavelength-time distribution file' is used, 
+             it is straightforward to use a file with realistic flux values and to omit this value. 
+             But if it is given, it is assumed to be the correct value and thus the data of the file are normalised to give this total flux value.</td>
+      <td valign="middle" align="center">&gt; 0.0<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">neutron current<br>[n/s]<br> </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="top">Count rate leaving the moderator into the chosen solid angle, integrated over moderator area and chosen wavelength range.<br>
+                       If the 'neutron current' is given, the flux is normalized to that value. 
+                       This is only sensible, if the calculated current is zero, i.e. if moderator area, solid angle or wavelength range are zero.</td>
+      <td valign="middle" align="center">&gt; 0.0   </td>
+    </tr>
+    <tr>
+      <td valign="top">tau_1 <br>tau_2<br>[ms]<br>  </td>
+      <td valign="middle" align="center">---<br>    </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="top">time constant of the pulse shape (of pulsed sources):<br>
+                       tau_2 describes the decay of the pulse, whereas both describe the shape  in the beginning of the pulse  
+                       (see equations for pulsed sources above). </td>
+      <td valign="middle" align="center">&gt; 0.0<br>&gt; 0.0<br></td>
+    </tr>
+     <tr>
+      <td valign="top">colour<br>                </td>
+      <td valign="middle" align="center">X<br>   </td>
+      <td valign="middle" align="center">X<br>   </td>
+      <td valign="middle" align="center">X<br>   </td>
+      <td valign="top" align="left">see following picture </td>
+      <td valign="middle" align="center">0 - 32767        </td>
+    </tr>
+    <tr>
+      <td valign="top">center of moderator<br>X Y Z<br>[cm]<br></td>
+      <td valign="middle" align="center">X<br>                 </td>
+      <td valign="middle" align="center">X<br>                 </td>
+      <td valign="middle" align="center">X<br>                 </td>
+      <td valign="top">position of the moderator center - default: (0.0, 0.0, 0.0)<br>
+                       necessary to describe the arrangement of two or three moderators </td>
+      <td valign="middle" align="center">no restriction        </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+<img src="ColourAndOrder.gif" alt="moderator window" width="931" height="654">
+</p>
+
+
+<br />
+<h2>Moderator Characteristics</h2>
 
 <p><b>1. Moderator Characteristics by Analytical Functions</b> </p>
 
@@ -409,10 +675,9 @@ off with the most recent ones. </b> Note that in case of ESS, moderator
   characteristics for 2013_VarHeight are only defined for the following
   moderator height values: 0.1, 0.5, 1.0, 1.5, 3.0, 5.0, 7.0, 10.0, 12.0 cm. The analytical functions used are similar to those shown before,
 but the    time constants as well as the amplitudes are set in the program.
-These amplitudes    are scaled to be used for SNS.&nbsp;  </div>
+These amplitudes    are scaled to be used for SNS.&nbsp;  
+</div>
 
-<p><br>
-           </p>
 
 <p><b>2. Moderator Characteristics from Files</b> </p>
 
@@ -440,10 +705,12 @@ range     in this file. <br>
  of   the file are normalised to that value. If the 'neutron current' I<sub>mod</sub>
      is given, the flux is normalized to that value. This is only sensible,
   if   the calculated current is zero, i.e. if area A<sub>mod</sub>, solid
- angle   or wavelength range are zero. </p>
+ angle   or wavelength range are zero. 
+</p>
 
-<p>SPSS/LPSS <br>
-          For a pulsed source, the wavelength dependence of the intensity
+<b>SPSS/LPSS </b>
+<p>
+For a pulsed source, the wavelength dependence of the intensity
 can   be  determined  &nbsp;by a given 'wavelength distribution function'
 as in   the  CW case. Additionally,  the time dependence of the flux can be
 determined    by a 'time distribution  function'. It describes the time dependence
@@ -451,448 +718,47 @@ of  the  pulse. In the first column  the time [ms] has to be given, in the
 second   the amplitude of the flux. The  product of the amplitude given in
 the wavelength    distribution and that given  in the time distribution must
 have the unit   n/(cm&sup2; s Ang str). <br>
-          It is also possible to read a 2-dimensional file containing F(<font
- face="Symbol">l</font>,t). In the first row the wavelength values (in Angstroem)
-     are expected. All following have the time (in ms) in the first column
- followed    by flux values (in FU) for all wavelengths - see examples 'FluxLmbdTime.dat'
-     or files in 'IsisModData'. (Comment lines starting with '#' are allowed.)
-      <br>
-          In this approach of F(<font face="Symbol">l</font>,t) being the
-product     of the wavelength and the time distribution function, one gets
-the following      equations to determine the time averaged total flux and
-the time averaged      current into a solid angle <font face="Symbol">W</font>
-is: </p>
+It is also possible to read a 2-dimensional file containing F(<font face="Symbol">l</font>,t). 
+In the first row the wavelength values (in Angstroem) are expected. 
+All following have the time (in ms) in the first column followed by flux values (in FU) for all wavelengths - 
+see examples 'FluxLmbdTime.dat' or files in 'IsisModData'. (Comment lines starting with '#' are allowed.)
+<br>
+In this approach of F(<font face="Symbol">l</font>,t) being the product of the wavelength and the time distribution function, 
+one gets the following equations to determine the time averaged total flux andmthe time averaged current into a solid angle <font face="Symbol">W</font>: 
+</p>
 
 <p><img src="flux_pulse.gif" height="276" width="529">
-           </p>
+</p>
 
-<p><br>
-          A simple rectangular or even instantaneous pulse can be generated
- by  using   the CWS module and restricting the time window (see neutron parameters)
-  to  the according range or to 0, respectively. </p>
-                  <br>
-           &nbsp;<font size="+1"><b>Parameters for each moderator: </b><br>
-          <br>
-          </font></div>
-
-<table border="1" width="90%">
-           <tbody>
-              <tr>
-           <td width="15%"><b>Parameter</b> <br>
-                <b>Unit</b></td>
-            <td valign="top">CWS<br>
-                </td>
-                <td valign="top">SPSS<br>
-                </td>
-                <td valign="top">LPSS<br>
-                </td>
-                <td><b>Description</b></td>
-            <td><b>Range or values</b></td>
-           </tr>
-                  <tr>
-           <td width="15%">moderator type<br>
-                <br>
-                </td>
-            <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td>type of moderator, important for 'special sources' &nbsp;
-         <br>
-          (0: unknown or not important, 1: decoupled poisoned, 2: decoupled
- unpoisoned<br>
-          3: coupled, 4: multi-spectral)<br>
-           Multi-spectral moderators consist of 2 or more parts, e.g. a cold
-  and   a  thermal moderator, giving an effective flux distribution from
-the   whole   moderator,  which is achieved by a special beam extraction
-system   that is   able to add  the short wavelength distribution of the
-thermal moderator  and  the long wavelength  distribution of the cold moderator
-(see F. Mezei:  "Instrumentation  Concepts"  in "The ESS project Volume II",
-ed. D. Richter,  2002).  The effective  flux  distribution was published
-by F. Mezei in Feb.  2002 as an email to the members  of the ESS Instrumentation
-Task Group. This  moderator can be used for simulations  of instruments at
-ESS and SNS.&nbsp;        <br>
-                </td>
-            <td>&nbsp;0 &nbsp;- &nbsp;4</td>
-           </tr>
-              <tr>
-                <td valign="top">moderator shape<br>
-                <br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">shape of the moderator: 0: rectangular,
-1:  circular<br>
-                </td>
-                <td valign="middle" align="center">0, 1<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">wavelength distr. file<br>
-                <br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">file describing the wavelength dependence
- of  the   intensity (see also text)<br>
-          If the 'wavelength distribution file' is given, the temperature
-is  not   used.  . <br>
-                </td>
-                <td valign="middle" align="center"><br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">time distribution file<br>
-                <br>
-                </td>
-                <td valign="middle" align="center">---<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">file describing the time dependence of the
- intensity    (see also text)<br>
-          If the 'time distribution file' is given, the relaxation times
-and   the   pulse  length are not used<br>
-                </td>
-                <td valign="middle" align="center"><br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">wavelength-time distr. file<br>
-                </td>
-                <td valign="middle" align="center">---<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">file describing the wavelength and time
-dependence      of the intensity (see also text above)<br>
-          If the 'wavelength-time distribution file' is given, the relaxation
-  times,   the pulse length, and the temperature are not used<br>
-                </td>
-                <td valign="middle" align="center"><br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">moder. temperature<br>
-          [K]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">moderator temperature<br>
-          only used, if neither&nbsp;'wavelength-time distribution file'
-nor   'wavelength    distribution file' are given.<br>
-                </td>
-                <td valign="middle" align="center">&gt;&nbsp;0.0<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">moder. width or diameter<br>
-           [cm]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">rectangular moderator: bordered by center_y
-  &plusmn;    mod.width/2 in y-direction (see also last row) <br>
+<b>Artificial source</b>
+<p>
+A simple rectangular or even instantaneous pulse can be generated by using the CWS module and restricting the time window (see neutron parameters)
+to the according range or to 0, respectively.
+</p>
 
 
-      <div align="justify">circular moderator &nbsp; &nbsp; : diameter of
-     the moderator<br>
-           </div>
-                </td>
-                <td valign="middle" align="center">&gt; 0.0<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">moderator height<br>
-          [cm]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">rectangular moderator: bordered by center_z
-  &plusmn;    mod.height/2&nbsp; in z-direction (see also last row)<br>
-          circular moderator &nbsp; &nbsp; : not used<br>
-                </td>
-                <td valign="middle" align="center">&gt; 0.0<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">spatial order<br>
-                <br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">see following picture<br>
-                </td>
-                <td valign="middle" align="center"><br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">total flux at moderat.<br>
-          [n/(cm&sup2;s)]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">Flux on moderator surface into solid angle
- 2*pi   integrated  over the whole wavelength range ([0, infinity] for analytical
-    functions or  total range given in distributions file) assuming an isotropic
-    flux distribution  over 2*pi.<br>
-          It is sensible to give this value, if a Maxwellian distribution
-determined     by the temperature is used, because this distribution is normalized
-to  given   an integral of 1.<br>
-          If a 'wavelength distribution file' or a 'wavelength-time distribution
-    file' is used, it is straightforward to use a file with realistic flux
- values   and to omit this value. But if it is given, it is assumed to be
-the correct   value and thus the data of the file are normalised to give
-this total flux   value.<br>
-                </td>
-                <td valign="middle" align="center">&gt; 0.0<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">neutron current<br>
-           [n/s]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">Count rate leaving the moderator into the
- chosen    solid angle, integrated over moderator area and chosen wavelength
- range.<br>
-          If the 'neutron current' is given, the flux is normalized to that
- value.    This is only sensible, if the calculated current is zero, i.e.
-if moderator    area, solid angle or wavelength range are zero. <br>
-                </td>
-                <td valign="middle" align="center">&gt; 0.0<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">tau_1 <br>
-          tau_2<br>
-          [ms]<br>
-                </td>
-                <td valign="middle" align="center">---<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">time constant of the pulse shape (of pulsed
-  sources):<br>
-          tau_2 describes the decay of the pulse, whereas both describe the
- shape    in the beginning of the pulse  (see equations for pulsed sources
- above).<br>
-                </td>
-                <td valign="middle" align="center">&gt; 0.0<br>
-          &gt; 0.0<br>
-                </td>
-              </tr>
-               <tr>
-                <td valign="top">colour<br>
-                <br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top" align="left">see following picture<br>
-                </td>
-                <td valign="middle" align="center">0 - 32767<br>
-                </td>
-              </tr>
-              <tr>
-                <td valign="top">center of moderator<br>
-          X Y Z<br>
-          [cm], [cm], [cm]<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="middle" align="center">X<br>
-                </td>
-                <td valign="top">position of the moderator center - default:
-  (0.0,    0.0, 0.0)<br>
-          necessary to describe the arrangement of two (or three) moderators
-        <br>
-                </td>
-                <td valign="middle" align="center">no restriction<br>
-                </td>
-              </tr>
+<h2>Normalizaton</h2>
 
-  </tbody>
-</table>
-<br>
-&nbsp; <p><img src="ColourAndOrder.gif" alt="moderator window" width="931" height="654">  <br>
-          &nbsp; </p>
-
-<h3><font size="+2"> Neutron parameters</font></h3>
-
-<div align="justify">Trajectories are distributed randomly on the moderator
-     surface, lying within a time, wavelength and divergence range. <br>
-          </div>
-          <br>
-
-<table cellpadding="2" cellspacing="2" border="1" width="100%">
-   <tbody>
-     <tr>
-       <td valign="top"><b>Paramter<br>
- Unit<br>
-       </b></td>
-       <td valign="top"><b>Description<br>
-       </b></td>
-       <td valign="top"><b>Range or Values<br>
-       </b></td>
-       <td valign="top"><b>Command Option<br>
-       </b></td>
-     </tr>
-     <tr>
-       <td valign="top">min. wavelength,&nbsp; max. wavelength<br> [&Aring;]<br> </td>
-       <td valign="top">minimal and maximal wavelength used in the simulation <br>  </td>
-       <td valign="top">&gt;= 0<br> </td>
-       <td valign="top">-m, -M<br> </td>
-     </tr>
-     <tr>
-       <td valign="top">min. time, &nbsp; <br>max. time<br> [ms]<br> </td>
-       <td valign="top"><b>pulsed sources</b>: time range of the pulse (as considered in the simulations)<br>
-                        <b>continuous source</b>: usually min. time = max. time = 0.0, i.e. all neutrons starting at time zero. 
-                        Otherwise a rectangular pulse is  generated, which is e.g. necessary for time-of-flight instruments at continuous sources<br></td>
-       <td valign="top">no restriction<br></td>
-       <td valign="top">-t<br>-T<br>      </td>
-     </tr>
-     <tr>
-       <td valign="top">max. div.&nbsp; x &lt;-&gt; y<br>max. div.&nbsp;&nbsp;x &lt;-&gt; z<br> [deg]<br>  </td>
-       <td valign="top">The horizontal divergence phi (see figure below) is chosen &nbsp;in the interval [-max.div x - y , +max.div x - y] <br>
-                        The vertical divergence theta (see figure below) is chosen &nbsp;in the interval [-max.div x - z , +max.div x -z] <br> &nbsp;<br> </td>
-       <td style="width: 120px;" valign="top">0 ... 90<br> 0 ... 90<br>  </td>
-       <td valign="top">-y &nbsp; <br> -z<br>    </td>
-     </tr>
-     <tr>
-       <td valign="top">direction defined<br>  </td>
-       <td valign="top">The direction can be determined by a Monte Carlo choice of the horizontal and vertical divergence between the maximal values as given by the user. 
-                        Alternatively, &nbsp;the direction can be determined by the starting point on the moderator surface and a point on 
-                        the propagation window (see below), which are both determined by MC choices. <br>
-                        If the option "by virtual window" the 'propagation window' is only used to define the flight direction, but the neutrons remain 
-                        on the moderator surface. In both other cases the neutrons are propagate to this window. <br> </td>
-       <td valign="top">"by divergence"<br> "by window"<br> "by virtual window"<br> </td>
-       <td valign="top">-d<br>  </td>
-     </tr>
-    <tr>
-       <td valign="top">distance to time window<br> [cm] </td>
-       <td valign="top">distance from source to position of time window</td>
-       <td valign="top">&gt;= 0 </td>
-       <td valign="top">-s      </td>
-     </tr>
-     <tr>
-       <td valign="top">min. TOF,<br>max. TOF<br>to time window<br> [ms]<br> </td>
-       <td valign="top">only neutrons that arrive at the given position in the specified time range are considered in the simulation<br></td>
-       <td valign="top">no restriction<br></td>
-       <td valign="top">-f<br>-F<br>      </td>
-     </tr>
-
-  </tbody>
-</table>
- <br>
- <br>
- The direction     is defined by the angles phi and theta, which define the
-angular deviation     range with respect to the straight flight direction
-(parallel to the x-axis)     as illustrated for special cases below: <br>
- first sketch &nbsp; &nbsp; : div-range illustrated for neutrons having
-  no  z-divergence; <br>
-          second sketch: div-range for neutrons having no y-divergence<br>
-
-<div align="justify"><br>
- </div>
-
-<p><img src="source2.gif">
-           </p>
-
-<p><br>
-          </p>
-
-<p><br>
+<p>
  For both ways to restrict the divergence (by window and by max. angles),
 the solid angle corresponding to the divergence window    is  calculated,
 in order to determine absolute flux values.         For every trajectory,
 the count rate that it represents has to be calculated.     If we have chosen
 an analytic function to describe the moderator (e.g.  the  Maxwellian distribution),
-we just use that value of M(<font face="Symbol">l</font>), T(t) or F(<font
- face="Symbol">l</font>,t) in the     equation. </p>
+we just use that value of M(<font face="Symbol">l</font>), T(t) or F(<font face="Symbol">l</font>,t) in the equation. 
+</p>
 
-<p><img src="TrajCur.gif" height="296" width="561">
-           </p>
+<p>
+<img src="TrajCur.gif" height="296" width="561">
+</p>
 
-<p>If the distribution files are used, M(<font face="Symbol">l</font>) or
-     T(t) are interpolated in logarithmic scale, e.g. </p>
+<p>
+If the distribution files are used, M(<font face="Symbol">l</font>) or T(t) are interpolated in logarithmic scale, e.g. 
+</p>
 
-<p><img src="LogInterpol.gif" height="116" width="488">
-           </p>
-
-<p>The <b>polarization</b> of the neutron beam is needed in some test computations.
-     Therefore an "internal" polarizer is defined in the source module. Initial
-     values of&nbsp; the percentage and the direction of polarization have
- to   be given. The spin vector belonging to each trajectory is represented
- in  cartesian coordinates. The output represents an ansamble of "Up" and
-"Down"  neutrons relative to the given direction of polarization. The average
-polarization    will be that given by the input parameter "degree of polarization".
-For  non-polarized beam (0%) the numbers of "Up" and "Down" trajectories are
-the  same. <br>
-          &nbsp; </p>
-
-<h3><font size="+2"> Propagation</font></h3>
-           Apart from the source itself, there is a aperture included in
-the   source    module (to restrict the amount of data that is transfered
-to the   following    module). Height and width of the aperture as well as
-its distance   to the   source must be given. Additionally an angle can be
-given that describes   the  declination of the aperture center (= beam direction)
-to the normal  of the  moderator surface (in the horizontal plane). The default
-value is  0&deg; meaning beam direction vertical to moderator surface. For
-angles not  equal zero, the moderator surface is rotated around the (positive)
-z-axis  (relative to the beam direction).  <br>
-          To omit this propagation, a zero distance and a aperture size exceeding
-    the moderator size can be given.
-    Alternatively, the option "direction defined by virtual window" can be chosen.
-    In this case, the 'propagation window' is only used to define the flight direction,
-    but the neutrons remain on the moderator surface.
-<p> </p>
+<p>
+<img src="LogInterpol.gif" height="116" width="488">
+</p>
 
 <hr>
 <a href="vitess.html">Back to VITESS overview</a><br>
