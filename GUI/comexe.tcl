@@ -1198,7 +1198,7 @@ proc vis3D {{i ""}} {
   if {[getSystem] == "unix"} {set dummy /dev/null} else {set dummy nul}
 
   # append the option to read neutrons from null device - otherwise wait forever
-  append c " --f $dummy"
+  append c " --f$dummy"
 
   # execute this command
   catch {eval exec >& $dummy $c}

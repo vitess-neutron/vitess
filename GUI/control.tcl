@@ -481,7 +481,7 @@ proc controlMenu {w} {
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
 
-  forceDef SaveInstrmode normal
+  forceDef SaveInstrmode "with series"
   cascEntries $wo.savemode SaveInstrmode normal "with series"
 
   forceDef Execmode normal
