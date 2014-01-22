@@ -1023,10 +1023,7 @@ void  OwnInit(int argc, char *argv[])
     }
 
     Detector.DG.Cyl.r=Detector.Distance;	 	 
-    Detector.Direction[Detector.DG.Cyl.axis]=1.0;
-
-    if(Detector.Width > (int) 2*M_PI*Detector.DG.Cyl.r)
-      fprintf(LogFilePtr,"\nWARNING: Visualisation of cylindrical detector only possible for width<2*pi*distance.");
+    Detector.Direction[Detector.DG.Cyl.axis]=1.0;   
 
     if (cos(Detector.Phi) < 0.0) Detector.Theta=-Detector.Theta;
 
@@ -1042,7 +1039,13 @@ void  OwnInit(int argc, char *argv[])
 	stGeometry.nCylSlices = 1; 
 	
 	stGeometry.pCylSlice[0].Radius = Detector.Distance; 
-	stGeometry.pCylSlice[0].Width  = Detector.Width;
+	if(Detector.Width > (int) 2*M_PI*Detector.DG.Cyl.r) {
+	  fprintf(LogFilePtr,"\nWARNING: Width of cylindrical detector > 2*pi*distance. Width is set to 2*pi*distance for visualisation!");
+	  stGeometry.pCylSlice[0].Width  = 2*M_PI*Detector.DG.Cyl.r*0.999;
+	}
+	else {
+	  stGeometry.pCylSlice[0].Width = Detector.Width;
+	}
 	stGeometry.pCylSlice[0].Height = Detector.Height;
 	stGeometry.pCylSlice[0].vCntr[0]  = 0.;
 	stGeometry.pCylSlice[0].vCntr[1]  = 0.;
