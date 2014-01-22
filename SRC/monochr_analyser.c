@@ -274,8 +274,7 @@ int main(int argc, char **argv)
 
   OwnCleanup();
 
-  if (mode == 1) Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
-  else  Cleanup(totalXOffset, 0, 0, 0, 0);
+  Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
 
   return 0;
 }
