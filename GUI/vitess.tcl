@@ -5386,7 +5386,7 @@ proc addModMenu {w i} {
       destroy $w.c
     }
   } else {
-    menubutton $w -text $ti -font [headerFont] -bg $labColor -menu $w.c
+    menubutton $w -text $ti -font [headerFont] -bg $labColor -relief raised -menu $w.c
   }
   menu $w.c -bg $menuColor -tearoff 0
   eval popMenu $w.c $mlist
