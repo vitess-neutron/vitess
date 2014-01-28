@@ -234,61 +234,61 @@ static void mergeFormFiles(FILE *fo) {
       }
 
     fclose(f);
+  }
 
-    // copy merged data to outfile
+  // copy merged data to outfile
 
-    factor = 1.0 / infile_count;
+  factor = 1.0 / infile_count;
 
-    if (matrix) {
+  if (matrix) {
 
-      for (n=0; n < number_count; n += maxcols) {
-        // first value is y axis tic-value, followed by cols counts
-        // normalize counts to average
-        for (j=1; j<cols; j++)
-          values[n+j] *= factor;
-        prettyPrint(fo, maxcols, values + n);
-      }
-
-    } else if (cols == 2) {
-
-      for (n=0; n < number_count; n += 2) {
-        values[n+1] *= factor;
-        prettyPrint(fo, 2, values + n);
-      }
-
-    } else if (cols == 4) {
-
-      for (n=0; n < number_count; n += 4) {
-        if (values[n+3] <= 0)
-          fprintf(fo, "%g 0 0 0\n", values[n]);
-        else {
-          mean = values[n+1] * factor;
-          // 2. column = mean value  if weight
-          if (weight) values[n+1] = mean;
-          // 3. column = statistical error
-          values[n+2] = mean * sqrt(1.0 / values[n+3]);
-          prettyPrint(fo, 4, values + n);
-        }
-      }
-
-    } else if (is_xyz) {
-
-      // keep 1. column (x), 2. column (y) and 5. column (absolute count)
-      for (n=0; n < number_count; n += 5)
-        if (values[n+4] <= 0)
-          fprintf(fo, "%g %g 0 0 0\n", values[n], values[n+1]);
-        else {
-          mean = values[n+2] * factor;
-          // 3. column = mean value  if weight
-          if (weight) values[n+2] = mean;
-          // 4. column = statistical error
-          values[n+3] = mean * sqrt(1.0 / values[n+4]);
-          prettyPrint(fo, 5, values + n);
-        }
-
-    } else {
-      myexit1("unexpected cols %d!", cols);
+    for (n=0; n < number_count; n += maxcols) {
+      // first value is y axis tic-value, followed by cols counts
+      // normalize counts to average
+      for (j=1; j<cols; j++)
+        values[n+j] *= factor;
+      prettyPrint(fo, maxcols, values + n);
     }
+
+  } else if (cols == 2) {
+
+    for (n=0; n < number_count; n += 2) {
+      values[n+1] *= factor;
+      prettyPrint(fo, 2, values + n);
+    }
+
+  } else if (cols == 4) {
+
+    for (n=0; n < number_count; n += 4) {
+      if (values[n+3] <= 0)
+        fprintf(fo, "%g 0 0 0\n", values[n]);
+      else {
+        mean = values[n+1] * factor;
+        // 2. column = mean value  if weight
+        if (weight) values[n+1] = mean;
+        // 3. column = statistical error
+        values[n+2] = mean * sqrt(1.0 / values[n+3]);
+        prettyPrint(fo, 4, values + n);
+      }
+    }
+
+  } else if (is_xyz) {
+
+    // keep 1. column (x), 2. column (y) and 5. column (absolute count)
+    for (n=0; n < number_count; n += 5)
+      if (values[n+4] <= 0)
+        fprintf(fo, "%g %g 0 0 0\n", values[n], values[n+1]);
+      else {
+        mean = values[n+2] * factor;
+        // 3. column = mean value  if weight
+        if (weight) values[n+2] = mean;
+        // 4. column = statistical error
+        values[n+3] = mean * sqrt(1.0 / values[n+4]);
+        prettyPrint(fo, 5, values + n);
+      }
+    
+  } else {
+    myexit1("unexpected cols %d!", cols);
   }
 }
 
@@ -352,10 +352,18 @@ static void mergeFiles() {
   fclose(fo);
 }
 
+static char *noslash(char *a) {
+  int slen;
+  if (!a) 
+    return 0;
+  slen = strlen(a);
+  while (--slen >= 0 && a[slen] == '/')
+    a[slen] = 0; // no slashes at end of file- or directory-names
+  return a;
+}
 
 int main (int argc, char **argv) {
   static int force_overwrite;
-  int slen;
   char *arg;
   FILE *f;
 
@@ -370,32 +378,25 @@ int main (int argc, char **argv) {
       case 'f':
         force_overwrite = 1; break;
       case 'n':
-        infilename = *argv++; break;
+        infilename = noslash(*argv++); break;
       case 'r':
-        rootdir = *argv++; break;
+        rootdir = noslash(*argv++); break;
       case 'v':
         verbose = 1; break;
       default:
         usage();
       }
     } else if (ofn) {
-      slen = strlen(arg);
-      if (slen > 1 && arg[slen-1] == '/')
-        arg[slen-1] = 0; // no slashes at end of file- or directory-names
-      input_filename[infile_count++] = arg;
+      input_filename[infile_count++] = noslash(arg);
     } else {
       ofn = arg;
     }
   }
   if (!ofn || infile_count < 2) usage();
 
-  if (rootdir) {
-    slen = strlen(rootdir);
-    if (rootdir[0] != '/' || slen < 2)
-      myexit1("directory rootdir %s must be given with an absolute Path", rootdir);
-    if (rootdir[slen-1] == '/')
-      rootdir[slen-1] = 0; // remove trailing slash
-  }
+  if (rootdir && rootdir[0] != '/')
+    myexit1("directory rootdir %s must be given with an absolute Path", rootdir);
+
   if (!force_overwrite && (f=fopen(ofn,"r"))) {
     fclose(f);
     printf("output file %s already exists, use -f option!\n", ofn);
