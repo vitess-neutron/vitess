@@ -55,4 +55,4 @@ Detector: Efficiency of gaseous materials
 Filter: OR mode working again
 Visualization: Circular moderator shape is now visible
 
-(Jan 28 2014, subversion  583)
+(Jan 29 2014, subversion  585)
