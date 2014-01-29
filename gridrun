@@ -179,7 +179,7 @@ EOS
 
 my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_files,
     $grid_mod_dir, $grid_work_dir, $submit_mode, $ssh_shell,
-    $verbose, $force_delete,
+    $verbose, $force_delete, $do_not_delete,
     $op_mode, $jobname, $neutron_filename, $neutrons, $trajectories, $threads,
     $slnodes, $slpartition, $slpernode,
     $run_nr, $abort_run, $delete_run, $repeatseed,
@@ -249,6 +249,7 @@ while ($_ = shift) {
         $jobname = $arg;
       } elsif ($opt =~ /merge/) {
         $op_mode = 'finalize';
+        $do_not_delete = 1;
         $run_nr = $arg;
         $merge_again = 1 if $opt =~ /again/;
       } elsif ($opt =~ /^traj/) {
@@ -529,7 +530,7 @@ sub finalizeJob {
   print OF "$_=$Jinfo{$_}\n" foreach keys %Jinfo;
   close OF;
 
-  deleteTempWorkDirs($jdir);
+  deleteTempWorkDirs($jdir) unless $do_not_delete;
 
   # show final state
   print "$jn has been finalized.\nPlease find the results in directory $jdir .\n";
@@ -619,7 +620,7 @@ sub deleteTempWorkDirs {
   $i++ while delDir("$jdir/$i");
 
   # recursively delete FILES sub directory
-  $_ = `rm -r $jdir/FILES`;
+  $_ = `rm -r $jdir/FILES` if -d "$jdir/FILES";
 
   # get rid of pipe std dummies, the copy of gridrun, and VITESS binaries
   opendir D, $jdir;
