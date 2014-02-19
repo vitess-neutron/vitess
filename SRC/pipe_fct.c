@@ -302,6 +302,10 @@ short ChangeParam(short iSim)
 		// searching for the parameter in the line
 		for (k=0; k < kMax; k++)
 		{	StrgCopy(sComp, sLine[m]+k, strlen(sParId[j]));
+		    if( strcmp(sComp, "--")==0){
+		      k+=2;
+		      continue;
+		    }
 			// looking for the beginning and the end of the parameter
 			if (strcmp(sComp, sParId[j])==0)
 			{	kBeg = (short) (k + strlen(sParId[j]));
