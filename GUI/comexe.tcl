@@ -261,7 +261,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         lappend usedIdices $i
       }
       sh - tcl - pl - py - grd {
-        append imore \$\{L\}$i
+        append imore \$\{L\}[format %02d $i]
         lappend usedIdices $i
       }
       default {append imore $logopt}
