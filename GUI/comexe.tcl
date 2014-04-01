@@ -87,6 +87,15 @@ def pwrite(fn,pattern):
 
 ### compose the VITESS command pipe string
 ###
+proc splitPipe {outlist c} {
+  # split command c to a list
+  upvar $outlist ol
+  set ol {}
+  foreach s [split $c |] {
+    lappend ol "'[string trim $s]'"
+  }
+}
+
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # mode may be: action bat sh tcl pl py grd ser kstate
@@ -168,14 +177,6 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 	append fc "set env(GSL_RNG_$vv) $t\n"
       }
       append fc "exec "
-    }
-    pl {
-      set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
-      foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
-      }
-      append fc "system \""
     }
     default {set fc ""}
   }
@@ -341,7 +342,6 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     default {}
   }
-  
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
     sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
@@ -353,17 +353,31 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       append fc "\ncat$s > job`date +%s`.log\nrm -f$s\n"
     }
     tcl {append fc "\npwrite \$P/result.txt \$L"}
-    pl  {append fc "\";\npwrite(\"\$P/result.txt\", \"\$L\");"}
+    pl  {
+      # split module commands to allow  editing
+      splitPipe ol $fc
+      set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
+      }
+      append fc "\$coml=(\n"
+      append fc [join $ol ",\n"]
+      append fc "\n);\nsystem join('|',\$coml);\npwrite(\"\$P/result.txt\", \"\$L\");"
+    }
     py  {
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
 	append oex "GSL_RNG_$vv='$t' "
       }
-      set oc "s=Template('$fc')\n"
-      append oc "r=s.substitute(V='$ExeDirectory',P='$pdir',L='$logf')\n"
+      # split module commands to allow  editing
+      splitPipe ol $fc
       set fc "\#! /usr/bin/env python"
       append fc [globVal PYTHON_TOOL]
-      append fc $oc
+      append fc "coml=(\n"
+      append fc [join $ol ",\n"]
+      append fc "\n)\ns=Template('|'.join(coml))\n"
+      append fc "r=s.substitute(V='$ExeDirectory',P='$pdir',L='$logf')\n"
       append fc "os.system(\"export $oex;\"+r)\n"
       append fc "pwrite('$pdir/result.txt', '$logf')"
     }
