@@ -124,13 +124,10 @@ short Swarm(){
 	  CopyPosition(ThisBee[j].localBestPos,globalBestPos);
 	  last_change=i;
 	  fprintf(LogFilePtr,"\n (swarm) new global best: Factor/FoM: %10.4e in step %d \n\n",globalBestFoM,i);
-	  if(eOut>1){
-	    if(DebugOutputMode)
-	      fprintf(LogFilePtr," found by bee %d: \n",j);
-	    for(k=1; k<=nPar; k++)
-	      fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
-	    fprintf(LogFilePtr,"\n");
-	  }
+	  fprintf(LogFilePtr," found by bee %d: \n",j);
+	  for(k=1; k<=nPar; k++)
+	    fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
+	  fprintf(LogFilePtr,"\n");
 	}
       }
     }
