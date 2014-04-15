@@ -85,6 +85,8 @@ short NeutronIntersectsTube(VectorType dir, VectorType pos, int l, VectorType iI
 
 void CubeDetSpot    (VectorType SP, VectorType DetSpot);
 void CylinderDetSpot(VectorType SP, VectorType DetSpot);
+void CubeDetLayerSpot    (VectorType SP);
+
 
 void OwnInit   (int argc, char *argv[]);
 void OwnCleanup();

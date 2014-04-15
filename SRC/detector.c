@@ -29,6 +29,8 @@
 /*                               eff. modifyer can be >1 and also used with input file  */
 /* 1.11a Oct 2013 A. Houben      Detect only neutrons within min and max color and      */
 /*                               option for exclusive counts                            */
+/* 1.12 Apr 2014  C. Zendler     Solid layer detection time quantized in area detector, */
+/*                               probability for 2 B/Li layers per detector layer       */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_DETECTOR);
-  print_module_name("detector 1.11");
+  print_module_name("detector 1.12");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -162,6 +164,7 @@ int main(int argc, char *argv[])
 	    }		
 	  } 
 	}
+
 	
 	/* total cross-section (in m^2) */
 	sigma=GetXsec(Detector.Absorbertype,WorkNeutron.Wavelength);
@@ -204,6 +207,12 @@ int main(int argc, char *argv[])
 	    } 
 	  }
 
+	  /* solid layers, only in non-tube geometry so far: cast SP onto solid layer for correct time quantization*/
+	  if( (Detector.Absorbertype==2 || Detector.Absorbertype==3) && Detector.usage==0 ){
+	    CubeDetLayerSpot(SP);
+	  }
+
+
 	  CopyVector(SP,DetSignal);
 	  
 	  /* resolution */
@@ -227,10 +236,8 @@ int main(int argc, char *argv[])
 	    case 2:  //solid B10
 	    case 3:  // Li6
 	      // solid layer approximation: scale length in material with layer_thickness/total_thickness
-	      // 2 solid layers per tube layer
-	      LengthModifyer=Detector.NLayers*Detector.SolidAbsorberthickness/Detector.Thickness;
-	      if(Detector.Geom==2)           
-		LengthModifyer*=2;
+	      // 2 solid layers per tube/anode layer
+	      LengthModifyer=2*Detector.NLayers*Detector.SolidAbsorberthickness/Detector.Thickness;
 	      ScatteringProb = N*sigma*exp(-N*sigma*(LengthModifyer*LengthTillScattering)/100) * (LengthModifyer*FullLengthInDetector)/100* Detector.EfficiencyMod;
 	      break; 
 	    case 5:  // other; use wavelength-independent input eff
@@ -247,6 +254,7 @@ int main(int argc, char *argv[])
 	  }
 
 	  DetectorSpot(DetSignal, DetSpot);  
+
 
           TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
           V_FROM_LAMBDA(WorkNeutron.Wavelength);
@@ -694,8 +702,30 @@ short NeutronIntersectsTube(VectorType IncomingNeutronDirection, VectorType Neut
   return FALSE;
 }
 
+/* cast SP on B/Li layer: 2 converter layers per detector layers gives NLayers+1 detection time spots  */
+void CubeDetLayerSpot(VectorType SP)
+{
+  VectorType Spot={0};
+  /* Rotate coord. system around detector center such that coord. axes are parallel to cube axes */
+  SP[0] -= Detector.Distance;
+ 
+  if(Detector.Theta_n!=0){
+    RotVector(RotSurface, SP);
+  }
+  Spot[0]=(SP[0]+Detector.Thickness/2)/Detector.PixelWidth[0]+1;
+  Spot[1]=(SP[1]+Detector.Width/2)/Detector.PixelWidth[1]+1;
+  Spot[2]=(SP[2]+Detector.Height/2)/Detector.PixelWidth[2]+1;
 
+  SP[0]= (Spot[0]-(floor(Spot[0]))>0.5) ?  (floor(Spot[0]))*Detector.PixelWidth[0]-Detector.Thickness/2 : (floor(Spot[0])-1)*Detector.PixelWidth[0]-Detector.Thickness/2 ;
+  SP[1]= (Spot[1]-(floor(Spot[1]))>0.5) ?  (floor(Spot[1]))*Detector.PixelWidth[1]-Detector.Width/2 : (floor(Spot[1])-1)*Detector.PixelWidth[1]-Detector.Width/2 ;
+  SP[2]= (Spot[2]-(floor(Spot[2]))>0.5) ?  (floor(Spot[2]))*Detector.PixelWidth[2]-Detector.Height/2 : (floor(Spot[2])-1)*Detector.PixelWidth[2]-Detector.Height/2 ;
 
+  /*Rotate back to orig. coordinates */
+  if(Detector.Theta_n!=0){
+    RotBackVector(RotSurface, SP);
+  }
+  SP[0] += Detector.Distance;
+}
 
 void CubeDetSpot(VectorType iSP, VectorType DetSpot)
 {
