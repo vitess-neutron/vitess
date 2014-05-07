@@ -74,6 +74,7 @@
 
 
 #include <string.h>
+#include <math.h>
 
 #ifdef VT_GRAPH
 # include "cpgplot.h"
@@ -174,6 +175,16 @@ void GeometryTestBender(Bender, double *, double *, double *, double *,
 void FillReflContainer(double array[1000], double m);
 
 
+const double lengthGeomPiece = 50.; //Length of a geometry element in cm a surface consists of for x3d visualisation
+int numberRectangles;
+int numberTriangles;
+
+void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, double yStart, double yEnd, double dYcirc, double radius, double entranceHeight, double dZ);
+void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ);
+void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y1Start, double y1End, double dY1circ, double radius1,
+					  double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2, 
+					  double entranceHeight, double dZ);
+void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorType v3);
 /******************************/
 /**      MAIN Program        **/
 /******************************/
@@ -995,7 +1006,14 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
   /* Set up the parameters of the surfaces from the InputNeutrons data...                 */
   /****************************************************************************************/
 
-
+  //Number of geometry elements for visualisation
+  numberRectangles = ((int) ((length / lengthGeomPiece)+1.))*NumberOfSurfaces*2; 
+  numberTriangles = ((int) ((length / lengthGeomPiece)+1 + NumberOfSurfaces)*4);
+  
+   if (bVisInstr) {
+     stGeometry.pRectangle = calloc(numberRectangles, sizeof(VtRectangle));
+     stGeometry.pTriangle = calloc(numberTriangles, sizeof(VtTriangle));
+   }
 
   /* Define base circle or line */
   beta = 0.0;
@@ -1152,6 +1170,9 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
           BenderMy.SurfLeft[i].P = 0.0;
           BenderMy.SurfLeft[i].Q = 0.0;
           BenderMy.SurfLeft[i].R = 0.0;
+
+	  CreateVisualisationGeometryCurvedChannels(XENL[i], XEXL[i], YENL[i], YEXL[i], y2 + YENL[i]*(cos(beta) - 1.), RADL[i], BenderEntranceHeight, dZ*2.);
+
       }
       else
       {
@@ -1166,6 +1187,8 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
       	BenderMy.SurfLeft[i].P = 0.0;
       	BenderMy.SurfLeft[i].Q = 0.0;
       	BenderMy.SurfLeft[i].R = 0.0;
+
+	CreateVisualisationGeometryStraightChannels(XENL[i],  XEXL[i],  YENL[i], YEXL[i], BenderEntranceHeight, dZ*2.);
       }
 
       /* FOR RIGHT SURFACES */
@@ -1211,6 +1234,8 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
           TMP3 = sqrt((XRR[i]-XENR[i])*(XRR[i]-XENR[i]) + (YRR[i]-YENR[i])*(YRR[i]-YENR[i]));
           TMP4 = sqrt((XRR[i]-XEXR[i])*(XRR[i]-XEXR[i]) + (YRR[i]-YEXR[i])*(YRR[i]-YEXR[i]));
 
+	  CreateVisualisationGeometryCurvedChannels(XENR[i], XEXR[i], YENR[i], YEXR[i], y2 + YENR[i]*(cos(beta) - 1.), RADR[i], BenderEntranceHeight, dZ*2.);
+
       }
       else
       {
@@ -1225,6 +1250,8 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
           BenderMy.SurfRight[i].P = 0.0;
           BenderMy.SurfRight[i].Q = 0.0;
           BenderMy.SurfRight[i].R = 0.0;
+
+	  CreateVisualisationGeometryStraightChannels(XENR[i], XEXR[i], YENR[i],  YEXR[i], BenderEntranceHeight, dZ*2.);
       }
 
 /*      fprintf(LogFilePtr,"\n LEFT data: XEN = %e  YEN = %e  %e", XENL[i], YENL[i], RADL[i]);
@@ -1251,6 +1278,12 @@ if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
   	  BenderMy.SurfExit[i].R = 0.0;
 
     }
+
+  i = NumberOfSurfaces - 1;
+  CreateVisualisationGeometryTopBottom(XENL[i], XEXL[i], YENL[i], YEXL[i], y2 + YENL[i]*(cos(beta) - 1.), RADL[i],
+				       XENR[1], XEXR[1], YENR[1], YEXR[1], y2 + YENR[1]*(cos(beta) - 1.), RADR[1], 
+				       BenderEntranceHeight, dZ*2.);
+
 
   /* Output in file some of parameters of surfaces */
   fprintf(AsciiFile,"******************* UNIVERSAL BENDER module ************************ \n");
@@ -1641,7 +1674,7 @@ else
       if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
 
       /****************choose the channel******************/
-      /* include a phickness	*/
+      /* include thickness	*/
 
       for (j=1;j<=(NumberOfSurfaces-1);j++)
       {
@@ -1682,7 +1715,7 @@ else
 
       if (bAbsTransCrit == 0)
       {
-        	/* Neutrons are travels WITHOUT crosstalk between channels */
+        	/* Neutrons travel WITHOUT crosstalk between channels */
           TimeOF1 = PathThroughChannelGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
 					    rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
 					    keygrav, keypol, qspin,
@@ -1690,7 +1723,7 @@ else
       }
       else
       {
-         	 /* Neutrons are travels WITH crosstalk between channels */
+         	 /* Neutrons travel WITH crosstalk between channels */
 	  TimeOF1 = PathThroughBenderGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
 					    rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
 					    keygrav, keypol, qspin,
@@ -1726,7 +1759,7 @@ else
             Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
             Output.Position[1] += Radius;  */
 
-        /* SM: Similary */
+        /* SM: Similar */
 
             Output.Position[0] =  (InputNeutrons[i].Position[0]-x2)*COSB + (InputNeutrons[i].Position[1]-y2)*SINB;
             Output.Position[1] = -(InputNeutrons[i].Position[0]-x2)*SINB + (InputNeutrons[i].Position[1]-y2)*COSB;
@@ -1822,6 +1855,399 @@ void FillReflContainer(double array[1000], double m)
 
 
 
+void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, double yStart, double yEnd, double dYcirc, double radius, double entranceHeight, double dZ)
+{
+
+  double angle;
+  double angleNorm;
+  double angleElem;
+  double totalLength;
+  int nElements;
+  int i;
+  double x1, x2, y1, y2;
+  double dY;
+  double deltaY1, deltaY2;
+  double angleTemp;
+
+  if (!bVisInstr) return;
+
+  fprintf(LogFilePtr,"xStart %f, xEnd %f, yStart %f, yEnd %f, radius %f, entrance height %f, dZ %f \n", xStart, xEnd, yStart, yEnd, radius, entranceHeight, dZ);
+
+  bVisInstalled = TRUE;
+
+  angle = asin((xEnd - xStart)/radius);
+  totalLength = radius*angle;
+
+  deltaY1 = fabs(yEnd - yStart);
+  deltaY2 = fabs(1. - cos(angle))*radius;
+
+  fprintf(LogFilePtr,"deltaY1 %f, deltaY2 %f  \n", deltaY1, deltaY2);
+
+  if (deltaY1 >= deltaY2) {
+    totalLength = sqrt(pow(totalLength, 2)  + pow(deltaY1 - deltaY2, 2));
+  }
+  else {
+    totalLength = sqrt(pow(totalLength, 2)  - pow(deltaY1 - deltaY2, 2));
+  }
+
+  nElements = (int) (totalLength/lengthGeomPiece);
+
+  x1 = xStart;
+  y1 = yStart;
+
+  fprintf(LogFilePtr,"dY before %f, total length %f  \n", dYcirc, totalLength);
+
+  // Take into account a possible converging
+  dY = yEnd - (yStart + dYcirc);
+
+  fprintf(LogFilePtr,"dY %f \n", dY);
+
+  angleElem = 0.;
+  angleNorm = 0.;
+
+  for (i = 0; i < nElements; i++) {
+
+    double height;
+
+    angleElem += 2.*asin(lengthGeomPiece/(2.*radius));
+   
+    y2 = yStart + radius*(1. - cos(angleElem)) + ((i + 1.)*lengthGeomPiece)*dY/totalLength;
+    x2 = sqrt(pow(lengthGeomPiece, 2) - pow(y2 - y1, 2)) + x1; //xStart + radius*sin(angleElem);
+    
+
+    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.;
+    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.;
+    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[2] = 0;
+
+    angleNorm = atan(-(y2 - y1)/(x2 - x1));
+
+    stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
+    stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
+    stGeometry.pRectangle[stGeometry.nRectangles].vNormal[2] = 0;
+    
+    stGeometry.pRectangle[stGeometry.nRectangles].Width = lengthGeomPiece;
+
+    height = entranceHeight + ((1.0*i + 0.5)*lengthGeomPiece)*dZ/totalLength; 
+    stGeometry.pRectangle[stGeometry.nRectangles].Height = height;
+    stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
+
+    stGeometry.nRectangles++;
+
+    x1 = x2;
+    y1 = y2;
+
+  }
+
+  //angleElem += 2.*asin((totalLength - nElements*lengthGeomPiece)/(2.*radius));
+
+  x2 = xEnd;
+  y2 = yEnd;
+  
+  stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.;
+  stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.;
+  stGeometry.pRectangle[stGeometry.nRectangles].vCntr[2] = 0;
+    
+  angleNorm = atan(-(y2 - y1)/(x2 - x1));
+  
+  stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
+  stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
+  stGeometry.pRectangle[stGeometry.nRectangles].vNormal[2] = 0;
+  
+  stGeometry.pRectangle[stGeometry.nRectangles].Width = totalLength - nElements*lengthGeomPiece;
+  stGeometry.pRectangle[stGeometry.nRectangles].Height = entranceHeight + dZ;
+  stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
+
+  stGeometry.nRectangles++;
+  
+  return;
+
+}
+
+
+void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ)
+{
+
+  if (!bVisInstr) return;
+
+  bVisInstalled = TRUE;
+
+  VectorType v1 = {xStart, yStart, -entranceHeight/2.};
+  VectorType v2 = {xStart, yStart, entranceHeight/2.};
+  VectorType v3 = {xEnd, yEnd, (entranceHeight + dZ)/2.};
+  
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
+  
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][0] = xStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][1] = yStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][2] = -entranceHeight/2.; */
+
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][0] = xStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][1] = yStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][2] = entranceHeight/2.; */
+
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][0] = xEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][1] = yEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][2] = (entranceHeight + dZ)/2.; */
+
+  stGeometry.nTriangles++;  
+
+  v2[0] = xEnd;
+  v2[1] = xEnd;
+  v2[2] *= -1.;
+
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][0] = xStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][1] = yStart; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][2] = -entranceHeight/2.; */
+
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][0] = xEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][1] = yEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[1][2] = (entranceHeight + dZ)/2.; */
+
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][0] = xEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][1] = yEnd; */
+  /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][2] = -(entranceHeight + dZ)/2.; */
+  
+  stGeometry.nTriangles++;
+
+  return;
+
+}
 
 
 
+void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y1Start, double y1End, double dY1circ, double radius1,
+					  double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2, 
+					  double entranceHeight, double dZ)
+
+{
+
+  double angle1, angle2;
+  double angleElem1, angleElem2;
+  double totalLength1, totalLength2;
+  int nElements1, nElements2;
+  int minElements, maxElements;
+
+  int i, j;
+  double x11, x12, y11, y12, x21, x22, y21, y22;
+  double dY1, dY2;
+  double deltaY1, deltaY2;
+
+  VectorType v[4];
+
+  double height11;
+  double height12;
+  double height21;
+  double height22;
+ 
+  if (!bVisInstr) return;
+
+  bVisInstalled = TRUE;
+
+  // outer left surface
+  angle1 = asin((x1End - x1Start)/radius1);
+  totalLength1 = radius1*angle1;
+  nElements1 = (int) (totalLength1/lengthGeomPiece);
+  x11 = x1Start;
+  y11 = y1Start;
+
+  deltaY1 = fabs(y1End - y1Start);
+  deltaY2 = fabs(1. - cos(angle1))*radius1;
+
+  if (deltaY1 >= deltaY2) {
+    totalLength1 = sqrt(pow(totalLength1, 2)  + pow(deltaY1 - deltaY2, 2));
+  }
+  else {
+    totalLength1 = sqrt(pow(totalLength1, 2)  - pow(deltaY1 - deltaY2, 2));
+  }
+
+  // outer right surface
+  angle2 = asin((x2End - x2Start)/radius2);
+  totalLength2 = radius2*angle2;
+  nElements2 = (int) (totalLength2/lengthGeomPiece);
+  x21 = x2Start;
+  y21 = y2Start; 
+
+  deltaY1 = fabs(y2End - y2Start);
+  deltaY2 = fabs(1. - cos(angle2))*radius2;
+
+  if (deltaY1 >= deltaY2) {
+    totalLength2 = sqrt(pow(totalLength2, 2)  + pow(deltaY1 - deltaY2, 2));
+  }
+  else {
+    totalLength2 = sqrt(pow(totalLength2, 2)  - pow(deltaY1 - deltaY2, 2));
+  }
+
+   // Take into account a possible converging
+  dY1 = y1End - (y1Start + dY1circ);
+  dY2 = y2End - (y2Start + dY2circ);
+
+  angleElem1 = 0.;
+  angleElem2 = 0.;
+
+  minElements = fmin(nElements1, nElements2);
+  maxElements = fmax(nElements1, nElements2);
+
+  for (i = 0; i < minElements; i++) {
+
+    angleElem1 += 2.*asin(lengthGeomPiece/(2.*radius1));
+    angleElem2 += 2.*asin(lengthGeomPiece/(2.*radius2));
+
+    //    x12 = x1Start + radius1*sin(angleElem1);
+    y12 = y1Start + radius1*(1. - cos(angleElem1)) + ((i + 1.)*lengthGeomPiece)*dY1/totalLength1;
+    x12 = sqrt(pow(lengthGeomPiece, 2) - pow(y12 - y11, 2)) + x11;
+    //    x22 = x2Start + radius2*sin(angleElem2);
+    y22 = y2Start + radius2*(1. - cos(angleElem2)) + ((i + 1.)*lengthGeomPiece)*dY2/totalLength2;
+    x22 = sqrt(pow(lengthGeomPiece, 2) - pow(y22 - y21, 2)) + x21;
+
+    height11 = entranceHeight + 1.0*i*lengthGeomPiece*dZ/totalLength1;
+    height12 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength1;
+    height21 = entranceHeight + 1.0*i*lengthGeomPiece*dZ/totalLength2;
+    height22 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength2;
+
+    //bottom
+    v[0][0] = x11; v[0][1] = y11; v[0][2] =  -height11/2.;
+    v[1][0] = x12; v[1][1] = y12; v[1][2] =  -height12/2.;
+    v[2][0] = x21; v[2][1] = y21; v[2][2] =  -height21/2.;
+    v[3][0] = x22; v[3][1] = y22; v[3][2] =  -height22/2.;
+
+    DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+    stGeometry.nTriangles++;    
+
+    DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+    stGeometry.nTriangles++;
+
+    //top
+    for (j=0; j<4; j++) v[j][2] *= -1.;
+
+    DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+    stGeometry.nTriangles++;
+
+    DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+    stGeometry.nTriangles++;
+
+    x11 = x12;
+    y11 = y12;
+
+    x21 = x22;
+    y21 = y22;
+
+  }
+
+  if (minElements != maxElements) {
+
+    for (i = minElements; i < maxElements; i++) {
+           
+      if (nElements1 < nElements2) {
+	
+	angleElem2 += 2.*asin(lengthGeomPiece/(2.*radius2));
+	
+	//	x22 = x2Start + radius2*sin(angleElem2);
+	y22 = y2Start + radius2*(1. - cos(angleElem2)) + ((i + 1.)*lengthGeomPiece)*dY2/totalLength2;
+	x22 = sqrt(pow(lengthGeomPiece, 2) - pow(y22 - y21, 2)) + x21;
+	
+	height11 = entranceHeight + 1.0*(nElements1-1)*lengthGeomPiece*dZ/totalLength1;
+	height12 = entranceHeight + 1.0*nElements1*lengthGeomPiece*dZ/totalLength1;
+	height21 = entranceHeight + 1.0*i*lengthGeomPiece*dZ/totalLength2;
+	height22 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength2;
+	
+      }
+      else {
+
+	angleElem1 += 2.*asin(lengthGeomPiece/(2.*radius1));
+	
+	//	x12 = x1Start + radius1*sin(angleElem1);
+	y12 = y1Start + radius1*(1. - cos(angleElem1)) + ((i + 1.)*lengthGeomPiece)*dY1/totalLength1;
+	x12 = sqrt(pow(lengthGeomPiece, 2) - pow(y12 - y11, 2)) + x11;
+
+	height11 = entranceHeight + 1.0*i*lengthGeomPiece*dZ/totalLength1;
+	height12 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength1;
+	height21 = entranceHeight + 1.0*(nElements2 - 1)*lengthGeomPiece*dZ/totalLength2;
+	height22 = entranceHeight + 1.0*nElements2*lengthGeomPiece*dZ/totalLength2;
+
+      }
+
+      v[0][0] = x11; v[0][1] = y11; v[0][2] =  -height11/2.;
+      v[1][0] = x12; v[1][1] = y12; v[1][2] =  -height12/2.;
+      v[2][0] = x21; v[2][1] = y21; v[2][2] =  -height21/2.;
+      v[3][0] = x22; v[3][1] = y22; v[3][2] =  -height22/2.;
+
+      //bottom
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+      stGeometry.nTriangles++;    
+      
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);  
+      stGeometry.nTriangles++;
+      
+      //top
+      for (j=0; j<4; j++) v[j][2] *= -1.;
+      
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+      stGeometry.nTriangles++;
+      
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+      stGeometry.nTriangles++;
+      
+      if (nElements1 < nElements2) {
+	x21 = x22;
+	y21 = y22;
+      }
+      else {
+	x11 = x12;
+	y11 = y12;
+      }
+      
+    }
+  }
+  
+
+  //Last piece (< 50cm)
+  x12 = x1End;
+  y12 = y1End;
+
+  x22 = x2End;
+  y22 = y2End;
+    
+  height11 = entranceHeight + nElements1*lengthGeomPiece*dZ/totalLength1;
+  height12 = entranceHeight + dZ;
+  height21 = entranceHeight + nElements2*lengthGeomPiece*dZ/totalLength2;
+  height22 = entranceHeight + dZ;
+
+  v[0][0] = x11; v[0][1] = y11; v[0][2] =  -height11/2.;
+  v[1][0] = x12; v[1][1] = y12; v[1][2] =  -height12/2.;
+  v[2][0] = x21; v[2][1] = y21; v[2][2] =  -height21/2.;
+  v[3][0] = x22; v[3][1] = y22; v[3][2] =  -height22/2.;
+  
+  //bottom
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+  stGeometry.nTriangles++;    
+  
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);  
+  stGeometry.nTriangles++;
+  
+  //top
+  for (j=0; j<4; j++) v[j][2] *= -1.;
+  
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+  stGeometry.nTriangles++;
+  
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+  stGeometry.nTriangles++;
+
+  stGeometry.pDescr  = "bender:yellow";
+  stGeometry.eModule = VT_BENDER;
+  
+  return;
+
+}
+
+
+
+void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorType v3)
+{
+
+  CopyVector(v1, triangle->vEdges[0]);
+  CopyVector(v2, triangle->vEdges[1]);
+  CopyVector(v3, triangle->vEdges[2]);
+
+}
