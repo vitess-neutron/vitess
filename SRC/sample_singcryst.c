@@ -159,7 +159,9 @@ int main(int argc, char **argv)
 
 		Prob *= (double) exp( - PathLength * AbsorptionC * WL );
 				
-		Prob *= MaxPathLength * Normalisation * Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
+		// Take into account the number of hkl-entries in the look-up file
+		// for correct normalisation.
+		Prob *= MaxPathLength * Normalisation * (1./((double) Repetition))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
 
 
 		/* scattering: new neutron variables*/ 
