@@ -144,11 +144,13 @@ int CheckFilter(Neutron* n)
   // Dismiss if outside the range of filter parameter i, if defined (independent of other two filters: combined with AND)
   for (i = 0; i < 3; i++) {
     filterValue[i] = 0;
-    if (filterParam[i] > 0 && (filterParam[(i+1)%3] <= 0 || filterComb==1) && (filterParam[(i+2)%3] <= 0 || filterComb==1)) {
+     if (filterParam[i] > 0 && (filterParam[(i+1)%3] <= 0 || filterComb==1) && (filterParam[(i+2)%3] <= 0 || filterComb==1)) {
       filterValue[i] = DetermineParameter(filterParam[i], n);
       if (filterValue[i] < filterVarMin[i] || filterValue[i] > filterVarMax[i]) return 0;  
    }
   }  
+  if(filterComb==1)
+    return 1;
 
  // pass if fulfilled 1 OR 2 OR 3
   if (filterComb==0) {
