@@ -713,7 +713,7 @@ void processNeutron(int neutron_i, int thread_i) {
     }
 
 	/* For curved guide: frame rotated for next piece, but not after last piece */
-    if (Radius > 0.0)
+    if (Radius != 0.0)
     { 
       /* horizontal position and flight direction adjusted */
       if (j < nPieces-1)
