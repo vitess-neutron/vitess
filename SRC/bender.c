@@ -1967,13 +1967,14 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ)
 {
 
+  VectorType v1 = {xStart, yStart, -entranceHeight/2.};
+  VectorType v2 = {xStart, yStart, entranceHeight/2.};
+  VectorType v3 = {xEnd, yEnd, (entranceHeight + dZ)/2.};
+
   if (!bVisInstr) return;
 
   bVisInstalled = TRUE;
 
-  VectorType v1 = {xStart, yStart, -entranceHeight/2.};
-  VectorType v2 = {xStart, yStart, entranceHeight/2.};
-  VectorType v3 = {xEnd, yEnd, (entranceHeight + dZ)/2.};
   
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
   
@@ -2085,8 +2086,13 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   angleElem1 = 0.;
   angleElem2 = 0.;
 
-  minElements = fmin(nElements1, nElements2);
-  maxElements = fmax(nElements1, nElements2);
+  if (nElements1 <= nElements2) {
+	minElements = nElements1;
+	maxElements = nElements2;
+  } else {
+	minElements = nElements2;
+	maxElements = nElements1;  
+  }
 
   for (i = 0; i < minElements; i++) {
 
