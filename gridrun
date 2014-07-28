@@ -898,7 +898,7 @@ sub createWorkdir {
   myexit("unable to create directory $wroot") unless -d $wroot;
 
   # find a free run number
-  if ($dir_pattern eq 'o') {
+  if ($dir_pattern ne 'w') {
       my $now = time;
       for ($run_nr = 1; ; $run_nr++) {
 	  $grid_work_dir = "$wroot/$dir_pattern$run_nr";
@@ -1766,7 +1766,8 @@ sub doOptimization {
     $slpartition = 'long';
   }
   $jobname = 'optrun' if $jobname eq '';
-  $dir_pattern = 'o';
+  $_ = $ENV{GRIDRUNDIR};
+  $dir_pattern = /^[a-v]$/ ? $_ : 'o';
 
   &parseOptInput;
 
