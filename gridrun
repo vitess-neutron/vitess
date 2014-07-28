@@ -89,6 +89,8 @@ my $sysrep = "_$_";
 # which will run two batch jobs with 2 pipes each.
 # The script finds an unused job number <run-nr>, creates ~/.vitess/w<run-nr>
 # and temporary work directories ~/.vitess/w<run-nr>/1 to ~/.vitess/w<run-nr>/4 .
+# For optimization jobs we use ~/.vitess/o<run-nr> as we keep these directories,
+# to be purged only on demand.
 
 # Because /net/home/JOE/vitess/MODULES/ may be invisible for dirac compute nodes (it is invisible),
 # all used *_Linux_x86_64 executables are copied to ~/.vitess/w<run-nr>, plus this
@@ -190,6 +192,9 @@ my ($filename, $n_nodes, $n_instances, $vitess_binaries, $vitess_param, $extra_f
     %Batcharg);
 
 my $merge_neutron_trajectories = 1;
+
+my $dir_pattern = 'w';          # working diretory pattern, may be w for normal grid jobs
+                                # or o for optimization jobs
 
 my $gsl_rng_type = 'ran3';      # default PRNG
 
@@ -329,7 +334,7 @@ sub infoJobs {
   if (-d $wroot) {
 
     if ($run_nr) {
-      $grid_work_dir = "$wroot/w$run_nr";
+      $grid_work_dir = "$wroot/$dir_pattern$run_nr";
       if (-d $grid_work_dir) {
         infoJob($run_nr, $grid_work_dir);
         $anyaction = 1;
@@ -340,13 +345,13 @@ sub infoJobs {
       my @Runs;
       opendir D, $wroot;
       while ($_ = readdir D) {
-        if (/^w([0-9]+)$/) {
+        if (/^$dir_pattern([0-9]+)$/) {
           push @Runs, $1 if -d "$wroot/$_";
         }
       }
       closedir D;
       foreach (sort @Runs) {
-        infoJob($_, "$wroot/w$_");
+        infoJob($_, "$wroot/$dir_pattern$_");
       }
       $anyaction = 1 if @Runs;
     }
@@ -425,7 +430,7 @@ sub finalizeJobs {
     $_ = $run_nr;
   }
   if ($_) {
-    $grid_work_dir = "$wroot/w$_";
+    $grid_work_dir = "$wroot/$dir_pattern$_";
     if (-d $grid_work_dir) {
       finalizeJob($_, $grid_work_dir, $delete_run ? 2 : ($abort_run ? 1 : 0));
     } else {
@@ -435,13 +440,13 @@ sub finalizeJobs {
     my @Runs;
     opendir D, $wroot;
     while ($_ = readdir D) {
-      if (/^w([0-9]+)$/) {
+      if (/^$dir_pattern([0-9]+)$/) {
         push @Runs, $1 if -d "$wroot/$_";
       }
     }
     closedir D;
     foreach (sort @Runs) {
-      finalizeJob($_, "$wroot/w$_", 0);
+      finalizeJob($_, "$wroot/$dir_pattern$_", 0);
     }
   }
 }
@@ -541,7 +546,7 @@ sub abortJob {
 
   my $j = shift;
   my %Jinfo = @_;
-  my $jdir = "$wroot/w$j";
+  my $jdir = "$wroot/$dir_pattern$j";
 
   DeBug("abortJob $j, $jdir", 1);
 
@@ -604,18 +609,18 @@ sub abortJob {
 
 
 sub deleteJob {
-  my $d = "$wroot/w$_[0]";
+  my $d = "$wroot/$dir_pattern$_[0]";
   DeBug("deleteJob $_[0], $d", 1);
   deleteTempWorkDirs($d);
   delDir($d);
 }
 
 sub deleteTempWorkDirs {
-  my $jdir = $_[0];
+  my ($jdir, $delall) = @_;
 
   return unless -d $jdir;
 
-  # delete pipe instance sub dirs
+  # delete pipe instance sub directories
   my $i = 1;
   $i++ while delDir("$jdir/$i");
 
@@ -625,8 +630,9 @@ sub deleteTempWorkDirs {
   # get rid of pipe std dummies, the copy of gridrun, and VITESS binaries
   opendir D, $jdir;
   while ($_ = readdir D) {
+    next if /^\./;
     my $fn = "$jdir/$_";
-    unlink $fn if /^[0-9]+\.(log|stderr)\.txt$/ || $_ eq 'gridrun_' ||
+    unlink $fn if $delall || /^[0-9]+\.(log|stderr)\.txt$/ || $_ eq 'gridrun_' ||
       (/_$sysid$/ && -x $fn);
   }
   closedir D;
@@ -775,7 +781,7 @@ EOS
     $_ = '`expr $SLURM_PROCID + 1`';
     print OF <<EOS;
 #!/bin/bash
-exec $grid_work_dir/$_/command_
+$grid_work_dir/$_/command_
 EOS
     close OF;
     # set executable
@@ -796,14 +802,17 @@ EOS
 #SBATCH --ntasks-per-node=$slpernode
 EOS
     print OF "#SBATCH --partition=$slpartition\n" if $slpartition ne '';
-    print OF "srun w.sh\n";
+    print OF "srun -v -O w.sh\nwait\n";
     close OF;
     chmod 0700, $jobsh;
 
     # submit batch file
     # cd first to have log files in work directory
+    DeBug("cd $grid_work_dir ; $SlurmCom[0] $jobsh", 1);
     $_ = `cd $grid_work_dir ; $SlurmCom[0] $jobsh`;
+    my $answer = $_;
     $_ = /Submitted batch job ([0-9]+)/ ? $1 : '';
+    DeBug($answer, 1);
 
     # attach job number to job dat file
     open OF, ">>$grid_work_dir/$job_fn";
@@ -889,17 +898,30 @@ sub createWorkdir {
   myexit("unable to create directory $wroot") unless -d $wroot;
 
   # find a free run number
-  $run_nr = 1;
-  opendir D, $wroot;
-  while ($_ = readdir D) {
-    if (/^w([0-9]+)$/) {
-      $_ = $1;
-      $run_nr = $_ + 1 if $_ >= $run_nr;
-    }
+  if ($dir_pattern eq 'o') {
+      my $now = time;
+      for ($run_nr = 1; ; $run_nr++) {
+	  $grid_work_dir = "$wroot/$dir_pattern$run_nr";
+	  last unless -d $grid_work_dir;
+	  $_ = "$grid_work_dir/FINISHED_";
+	  next unless -f $_;  # old job not fininished properly
+	  next if $now - (stat($_))[9] < 300; # re-use only after 5 minutes
+	  deleteTempWorkDirs($grid_work_dir, 1);
+	  last;
+      }
+  } else {
+      $run_nr = 1;
+      opendir D, $wroot;
+      while ($_ = readdir D) {
+	  if (/^$dir_pattern([0-9]+)$/) {
+	      $_ = $1;
+	      $run_nr = $_ + 1 if $_ >= $run_nr;
+	  }
+      }
+      closedir D;
+      $grid_work_dir = "$wroot/$dir_pattern$run_nr";
   }
-  closedir D;
-  $grid_work_dir = "$wroot/w$run_nr";
-  mkdir $grid_work_dir, 0700;
+  mkdir $grid_work_dir, 0700 unless -d $grid_work_dir;
   myexit("unable to create directory $grid_work_dir") unless -d $grid_work_dir;
 }
 
@@ -1241,7 +1263,7 @@ sub startPipes {
 
   exit 2 unless $run_nr >= 1 && $first ne '' && $last ne '' && $first >= 1 && $first <= $last;
 
-  $grid_work_dir = "$wroot/w$run_nr";
+  $grid_work_dir = "$wroot/$dir_pattern$run_nr";
   exit 2 unless -d $grid_work_dir;
 
   my ($i, $tdir);
@@ -1705,23 +1727,30 @@ sub pollExecutionState {
 }
 
 sub deleteOldFOMFiles {
-  foreach (@FileOfMerit) {
+  my ($n, @F);
+  foreach $n (@FileOfMerit) {
     # split name to filename + extension
     # delete <filename>*.<extension>
-    next unless /^(.+)\.([^.]+)$/;
-    my @F = glob "$1*.$2";
-    unlink @F if @F;
+    next unless $n =~ /^(.+)\.([^.]+)$/;
+    (@F) = glob "$1*.$2";
+    next unless @F;
+    unlink @F;
+    DeBug("unlink @F", 1);
   }
 }
 
 sub extractFigureOfMeritFiles {
-  my ($i);
+  my ($i, $n, $from, $to);
   for ($i=1; $i <= $n_instances; $i++) {
-    foreach (@FileOfMerit) {
+    foreach $n (@FileOfMerit) {
+      $from = "$grid_work_dir/$i/$n";
+      next unless -f $from;
       # split name to filename + extension
-      /^(.+)\.([^.]+)$/;
+      $n =~ /^(.+)\.([^.]+)$/;
       # example sample.mtl will be sample1.mtl
-      copy("$grid_work_dir/$i/$_", "$1$i.$2");
+      $to = "$1$i.$2";
+      copy($from, $to);
+      DeBug("copy $from, $to", 1);
     }
   }
 }
@@ -1737,6 +1766,7 @@ sub doOptimization {
     $slpartition = 'long';
   }
   $jobname = 'optrun' if $jobname eq '';
+  $dir_pattern = 'o';
 
   &parseOptInput;
 
@@ -1752,9 +1782,10 @@ sub doOptimization {
 
   &extractFigureOfMeritFiles;
 
-  # clean up
-  deleteJob($run_nr);
+  # mark work directory to be re-used later
+  open F, ">$grid_work_dir/FINISHED_";
+  close F;
 
-  DeBug('optimization finished');
+  DeBug('gridrun opt finished');
 
 }
