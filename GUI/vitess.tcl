@@ -786,7 +786,7 @@ set read_inESET {
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
-  {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
+  {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
@@ -3615,8 +3615,11 @@ proc eval_elastCheckErr {{app _}} {
 set eval_elast2ESET {
   {psel radio "Scattering angle [deg] and wavelength [A]" {
       "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+  {}
   {psort radio "Intensity" {
     "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
+  {evzero radio "no" {
+    "Zeros" "Choose if zero entries shall be written to disk. Writing those results is considerably slower and may result in much bigger files. Memory consumption may increase significantly." "" f} {"no" "yes"} {0 1}}
   {}
   {sfile mon2editablefile elast2.eva {
     "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}

@@ -5,7 +5,9 @@
 /*                                                                                           */
 /* 1.0  Jun 2009  A. Houben      Copy of EVAL_ELAST 1.7a in order to do 3D analysis          */
 /* 1.1  May 2013  A. Houben      Sample-Detector distance                                    */
+/* 1.2  Aug 2014  A. Houben      Allow output of zero entries in output (helps with MatLab)  */
 /*********************************************************************************************/
+// --Z1 --U1.0e-25 --G1 --B10000 --PC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector --LC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/vpipelog15 -k1 -oC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.eva -OC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.int -IC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca.inf -n146 -m100 -x0 -X180 -y1.0 -Y4.8 -p1 -w1 -c0 -l4351.4 -T0 -e-1.e10 -E1.e10 -C0 --Fno_file --fC:\Users\ahouben\Documents\POWTEX\Berechnung\mcPOWplot\090113-11_FS_Detector\detector.out -s3 -L80 -D1 -f1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,10 +42,12 @@ int   probactiv=TRUE,        /* probactiv=1 means probabilities activated,
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
       bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
-      bLogBinningX=FALSE,     /* TRUE : binning increases exponentially 
+      bLogBinningX=FALSE,     /* TRUE: binning increases exponentially 
                                 FALSE: linear binning                  */
-      bLogBinningY=FALSE,     /* TRUE : binning increases exponentially 
+      bLogBinningY=FALSE,     /* TRUE: binning increases exponentially 
                                 FALSE: linear binning                  */
+      bFullMatrix=FALSE,      /* TRUE: Also lines with zero intensity/counts are written; needs more memory 
+                                FALSE: Default: only write non-zero lines */
 	  SortMode = 0;			  /* 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse */
 
 
@@ -87,6 +91,7 @@ BINDATA **bin_sorted = {NULL};           /* pointers to BINDATA of bin; array si
 FILE *fspectra=NULL, *ftotcounts=NULL, *finfofile=NULL;
 
 
+void CreateBin(BINDATA **bin, double *bpostX, double *bpostY);
 int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
 void OwnInit   (int argc, char *argv[]);
 int comparebinX(const void *a, const void *b);
@@ -112,7 +117,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST2);
-	print_module_name("eval_elast2 1.0");
+	print_module_name("eval_elast2 1.2");
 	OwnInit(argc, argv);
 	
 	switch (kind) 
@@ -183,6 +188,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
+  if (bFullMatrix) {
+    for(ibinX = 0; ibinX<(nbinsX); ibinX++)
+		{	
+			for(ibinY = 0; ibinY<(nbinsY); ibinY++)
+			{
+				ibinXY = INDEX(ibinX, ibinY);
+				CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
+			}
+		}
+  }
+
 	/* Processing of the Neutrons */
 	DECLARE_ABORT
 
@@ -242,6 +258,7 @@ int main(int argc, char *argv[])
 			{
 				if (bin[ibinXY] == NULL)
 				{
+          /*
 					bin[ibinXY] = (BINDATA *)malloc(sizeof(BINDATA));
 					if (bLogBinningX)
 						bin[ibinXY]->X = sqrt((bpostX[ibinX])*(bpostX[ibinX+1]));
@@ -252,7 +269,8 @@ int main(int argc, char *argv[])
 					else
 						bin[ibinXY]->Y = ((bpostY[ibinY])+(bpostY[ibinY+1]))/2.0;
 					bin[ibinXY]->Counts = 0;
-					bin[ibinXY]->Int = 0.;
+					bin[ibinXY]->Int = 0.;*/
+          CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
 				}
 				bin[ibinXY]->Counts++;
 				bin[ibinXY]->Int += prob;
@@ -280,12 +298,12 @@ int main(int argc, char *argv[])
 			if (bin[ibinXY] != NULL)
 			{
 				bin_sorted[ibinX] = bin[ibinXY];
-				bintc_sorted += bin_sorted[ibinX]->Int;
+				//bintc_sorted += bin_sorted[ibinX]->Int;
 				ibinX++;
 			}
 		}
-		fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
-		bintc_sorted=0.;
+		//fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
+		//bintc_sorted=0.;
 		//Sort
 		if (SortMode != 0) qsort(bin_sorted, ibinX, sizeof(BINDATA*), comparebin);
 		//Print spectrum
@@ -295,7 +313,7 @@ int main(int argc, char *argv[])
 			bintc_sorted += bin_sorted[ibinY]->Int;
 			free(bin_sorted[ibinY]);
 		}
-		fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
+		fprintf(LogFilePtr, "total neutron count rate within binning after sorting: %11.4e n/s \n", bintc_sorted);
 		free(bin_sorted);
 		
 		/*// method 2: takes longer, less memory
@@ -369,6 +387,21 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+void CreateBin(BINDATA **bin, double *bpostX, double *bpostY)
+{
+	*bin = (BINDATA *)malloc(sizeof(BINDATA));
+	if (bLogBinningX)
+		(*bin)->X = sqrt((*bpostX)*(*(bpostX+1)));
+	else
+		(*bin)->X = ((*bpostX)+(*(bpostX+1)))/2.0;
+	if (bLogBinningY)
+		(*bin)->Y = sqrt((*bpostY)*(*(bpostY+1)));
+	else
+		(*bin)->Y = ((*bpostY)+(*(bpostY+1)))/2.0;
+	(*bin)->Counts = 0;
+	(*bin)->Int = 0.;
+}
+
 int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
 {
 	//int ibinX = -1, ibinY = -1;
@@ -381,7 +414,7 @@ int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
 				break;
 		}
 	} else
-		*ibinX = (int)((*Xval - x) / ((X - x) / (double)nbinsX));
+		*ibinX = (int)floor((*Xval - x) / ((X - x) / (double)nbinsX));
 	
 	if (bLogBinningY){
 		for(*ibinY = 0; *ibinY<nbinsY; (*ibinY)++){	
@@ -389,7 +422,7 @@ int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
 				break;
 		}
 	} else
-		*ibinY = (int)((*Yval - y) / ((Y - y) / (double)nbinsY));
+		*ibinY = (int)floor((*Yval - y) / ((Y - y) / (double)nbinsY));
 	
 	if ((*ibinX >= 0) && (*ibinY >= 0) && (*ibinX < nbinsX) && (*ibinY < nbinsY))
 		return INDEX(*ibinX, *ibinY);
@@ -412,8 +445,10 @@ void OwnInit(int argc, char *argv[])
 			switch(arg[-1]) 
 			{
 				case 'o':
-					if ((fspectra = fopen(FullParName(arg),"w")))
+					if ((fspectra = fopen(FullParName(arg),"w"))) {
+						fprintf(LogFilePtr,"\nOutput file: %s\n",arg);
 						break;
+					}
 					fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
 					exit(-1);
 					  
@@ -551,6 +586,11 @@ void OwnInit(int argc, char *argv[])
 					SortMode = atoi(arg);
 					/* 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse */
 					break;
+					
+				case 'f':
+					if(atol(arg)==1)        /* if activated, also non-zero lines are written  */
+						bFullMatrix = TRUE;   
+					break;
 
 				default:
 					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n", argv[i]);
@@ -637,6 +677,8 @@ int comparebinY(const void *a, const void *b)
 		ret = -1*sign(SortMode);
 	else  if (arg1->Y < arg2->Y)
 		ret = -1*sign(SortMode);
+	else if (arg1->Y > arg2->Y)
+		ret = 1*sign(SortMode);
 	else if (SortMode != 0)
 	{
 		int SortModeSave = SortMode;
