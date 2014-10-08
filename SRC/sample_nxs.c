@@ -42,6 +42,7 @@
 /*                           Transmission, absorption, coherent and incoherent scattering       */
 /*                           implemented.                                                       */
 /* 1.0a May 2012  A. Houben  Color is also set for coherently scattered neutrons                */
+/* 1.1  Oct 2014  M. Boin    Updated nxs library and removed dependence from read_table-lib.h   */
 /************************************************************************************************/
 
 #include <string.h>
@@ -54,7 +55,6 @@
 #include "message.h"
 
 #include "nxs.h"             /* from nxs library */
-#include "read_table-lib.h"  /* from McStas (version 1.12) but requires fix for FLT_MAX and va_list */
 
 /******************************/
 /**   Global Variables       **/
@@ -62,7 +62,7 @@
 double Theta, DelTheta,     /* these angles determine orientation and solid angles covered by the detector */
        Phi, DelPhi;
 //double DENSITY;      /* unit cell volume                                          */
-short  MAX_HKL = 6;         /* maximum hkl index value                                   */
+short  MAX_HKL = 8;         /* maximum hkl index value                                   */
 short  nColor=0,            /* colour of the scattered neutrons                          */
        bIncohScat = FALSE,  /* shall incoherent scattering be done ?                     */
        bTreatAll  = FALSE,  /* shall neutrons not hitting the sample be treated ?        */
@@ -86,8 +86,6 @@ void OwnInit           (int argc, char *argv[]);
 void OwnCleanup        (DoublePair *StrucFac);
 void GetSample         (SampleType *Sample, char *StrFileName);
 
-int readParameterFile  (char *fileName, UnitCell *uc);
-
 
 /******************************/
 /**   Program                **/
@@ -96,7 +94,8 @@ int readParameterFile  (char *fileName, UnitCell *uc);
 int main(int argc, char *argv[])
 {
   /* sample */
-  UnitCell   uc;                   /* unit cell definitions (from nxs.h) */
+  NXS_UnitCell   uc;               /* unit cell definitions (from nxs.h) */
+  NXS_AtomInfo   *atomInfoList;    /* list for atom parameters */
   char       nxsFileName[200];     /* nxs parameter file name */
 
   SampleType Sample;               /* sample geometry */
@@ -117,12 +116,14 @@ int main(int argc, char *argv[])
     i,                    /* counting index of the incoming trajectories */
     iGen;                 /* counting index of the generated trajectories (see 'GenNeutrons') */
   DoublePair *StrucFac=NULL;
-  double mu_factor;
-
+  double mu_factor = 0.0;
+  int numAtoms = 0;
+  int nxs_init_success = 0;
+  
   /* get several things done before programme start */
   /* which have actually nothing to do with physics */
   Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_nxs 1.0a");
+  print_module_name("sample_nxs 1.1");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of nxs parameter file */
@@ -151,25 +152,59 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "NXS parameter file: %s\n", nxsFileName);
 
   /* read unit cell parameters from file */
-  readParameterFile( nxsFileName, &uc );
-  fprintf(LogFilePtr, "NXS unit cell definition is:\n"
+  numAtoms = nxs_readParameterFile( FullParName(nxsFileName), &uc, &atomInfoList ); 
+  if( numAtoms < 1 )
+  {
+    NXS_AtomInfo ai;
+    
+    /* fallback solution: if no file exists, use alpha_iron */
+    fprintf(LogFilePtr, "WARNING: nxs parameter file %s NOT found! Using default values...\n", nxsFileName);
+    strncpy(uc.spaceGroup,"229",MAX_CHARS_SPACEGROUP);
+    uc.a = 2.866; uc.alpha = 90.0; uc.debyeTemp = 464.0;
+    strncpy(ai.label,"Fe",MAX_CHARS_ATOMLABEL); ai.b_coherent = 9.45;
+    ai.sigmaIncoherent = 0.4; ai.sigmaAbsorption = 2.56;
+    ai.molarMass = 55.85;
+    ai.x[0] = ai.y[0] = ai.z[0] = 0.0;
+    atomInfoList = (NXS_AtomInfo*)realloc( atomInfoList, sizeof(NXS_AtomInfo) );
+    atomInfoList[0] = ai;
+    numAtoms = 1;
+  }
+  
+  if( NXS_ERROR_OK != nxs_initUnitCell(&uc) )
+  {
+    fprintf(LogFilePtr, "WARNING: No nxs parameters set! Sample will be transparent!\n");
+    nxs_init_success = 0;
+  }
+  else
+  {
+    unsigned int i;
+    uc.temperature = 293.0;
+       
+    fprintf(LogFilePtr, "NXS unit cell definition is:\n"
           "space group number = %s\n"
           "a = %f \t\t alpha = %f\n"
           "b = %f \t\t beta  = %f\n"
           "c = %f \t\t gamma = %f\n"
-          "# label  b_coherent  sigma_inc  sigma_abs  molar_mass  debye_temp  x  y  z\n",
-          uc.spaceGroup, uc.a, uc.alpha, uc.b, uc.beta, uc.c, uc.gamma);
-  for(i=0; i<uc.nAtomInfo; i++) {
-    AtomInfo ai = uc.atomInfoList[i];
-    fprintf(LogFilePtr, "%s  %f  %f  %f  %f  %f  %f  %f  %f\n",
-            ai.label, ai.b_coherent, ai.sigmaIncoherent, ai.sigmaAbsorption, ai.molarMass, ai.debyeTemp, ai.x[0], ai.y[0], ai.z[0]);
+          "debye_temp = %f\n"
+          "# label  b_coherent  sigma_inc  sigma_abs  molar_mass  x  y  z\n",
+          uc.spaceGroup, uc.a, uc.alpha, uc.b, uc.beta, uc.c, uc.gamma, uc.debyeTemp);
+          
+    for( i=0; i<numAtoms; i++ )
+    {
+      NXS_AtomInfo ai = atomInfoList[i];
+      nxs_addAtomInfo( &uc, ai );
+      fprintf(LogFilePtr, "%s  %f  %f  %f  %f  %f  %f  %f\n",
+          ai.label, ai.b_coherent, ai.sigmaIncoherent, ai.sigmaAbsorption, ai.molarMass, ai.x[0], ai.y[0], ai.z[0]);
+    }
+
+    uc.maxHKL_index = MAX_HKL;
+    nxs_initHKL( &uc );
+    
+      /* factor for the calculation of the attenuation */
+    mu_factor = 1.0 / uc.volume;
+  
+    nxs_init_success = 1;
   }
-
-  uc.maxHKL_index = MAX_HKL;
-  initHKL( &uc );
-
-  /* factor for the calculation of the attenuation */
-  mu_factor = 1.0 / uc.volume;
 
   /* Factors that take care of the detector coverage */
   DetFacCoh = DelPhi/M_PI;
@@ -181,149 +216,151 @@ int main(int argc, char *argv[])
   DECLARE_ABORT;
 
   /* Start the main loop getting neutrons         */
-  while(ReadNeutrons()!= 0) {
-    for(i=0; i<NumNeutGot; i++) {
+  while(ReadNeutrons()!= 0)
+  {
+    for(i=0; i<NumNeutGot; i++)
+    {
       CHECK;
       /* First, shift the origin of the system to the middle of the sample   */
       SubVector(InputNeutrons[i].Position, Sample.Position);
 
       /* Do anything to be done for the Scattering */
-      if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN))
+      if( NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN) && nxs_init_success )
+      {
+        double norm, xsect_coherent, xsect_incoherent, xsect_absorption, xsect_total, p_transmit;
+        if (nisp < 2)
+          CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
+
+        /* the neutron may be scattered between InISP[0] and InISP[1] */
+        /* Lfb full path length in the sample before scattering       */
+        Lbf = DistVector(InISP[0], InISP[1]);
+
+        /* MONTE CARLO CHOICE: Where is the neutron scattered         */
+        /* Distance Ls between entrance of the neutron InISP[0] and   */
+        /* the scattering point SP               */
+        Ls = MonteCarlo(0, Lbf);
+
+        /* which is the corresponding scattering point    */
+        /*   SP = InISP[0] + Ls * OutNeutron.Vector       */
+        for(j=0; j<3; j++)
+          SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
+
+        /* Determine the rotation matrix to point the neutron along the +x axis */
+        NormVector(InputNeutrons[i].Vector);
+        RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
+
+        norm = InputNeutrons[i].Wavelength*InputNeutrons[i].Wavelength * 1E-2 / (2.0*uc.volume);
+
+        xsect_coherent = nxs_CoherentElastic(InputNeutrons[i].Wavelength, &uc );
+        xsect_incoherent = nxs_IncoherentElastic(InputNeutrons[i].Wavelength, &uc ) +
+          nxs_IncoherentInelastic(InputNeutrons[i].Wavelength, &uc ) +
+          nxs_CoherentInelastic(InputNeutrons[i].Wavelength, &uc );
+        xsect_absorption = nxs_Absorption(InputNeutrons[i].Wavelength, &uc );
+        xsect_total = xsect_coherent + xsect_incoherent + xsect_absorption;
+  
+
+        /* Lbf is in [cm] already */
+        p_transmit = exp( -xsect_total * mu_factor * Lbf );
+
+        /* Handle transmission only (imaging mode) */
+        if (bTransOnly)
         {
-          double norm, xsect_coherent, xsect_incoherent, xsect_absorption, xsect_total, p_transmit;
-          if (nisp < 2)
-            CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
+          /* make mu = 0 and prob = p_transmit to make sure that ProcessNeutronToEnd function works properly */
+          g_fMuTot = g_fMuAbs = 0.0;
+          ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, p_transmit, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+        }
 
-          /* the neutron may be scattered between InISP[0] and InISP[1] */
-          /* Lfb full path length in the sample before scattering       */
-          Lbf = DistVector(InISP[0], InISP[1]);
+        /* ...also handle scattering events */
+        else
+        {
+          /* check if neutron transmits through or interacts with the sample */
+          if( p_transmit > MonteCarlo(0, 1) )
+          {
+            /* TRANSMIT (no scattering) */
+            /* make mu = 0 and prob = 1 to make sure that ProcessNeutronToEnd function works properly */
+            g_fMuTot = g_fMuAbs = 0.0;
+            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, 1, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+          }
+          else
+          {
+            double roulette_ball = MonteCarlo(0, xsect_total);
 
-          /* MONTE CARLO CHOICE: Where is the neutron scattered         */
-          /* Distance Ls between entrance of the neutron InISP[0] and   */
-          /* the scattering point SP               */
-          Ls = MonteCarlo(0, Lbf);
-
-          /* which is the corresponding scattering point    */
-          /*   SP = InISP[0] + Ls * OutNeutron.Vector       */
-          for(j=0; j<3; j++)
-            SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
-
-          /* Determine the rotation matrix to point the neutron along the +x axis */
-          NormVector(InputNeutrons[i].Vector);
-          RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
-
-          norm = InputNeutrons[i].Wavelength*InputNeutrons[i].Wavelength * 1E-2 / (2.0*uc.volume);
-
-          xsect_coherent = nxsCoherentElastic(InputNeutrons[i].Wavelength, &uc ) +
-            nxsCoherentInelastic(InputNeutrons[i].Wavelength, &uc );
-          xsect_incoherent = nxsIncoherentElastic(InputNeutrons[i].Wavelength, &uc ) +
-            nxsIncoherentInelastic(InputNeutrons[i].Wavelength, &uc );
-          xsect_absorption = nxsAbsorption(InputNeutrons[i].Wavelength, &uc );
-          xsect_total = xsect_coherent + xsect_incoherent + xsect_absorption;
-		
-
-          /* Lbf is in [cm] already */
-          p_transmit = exp( -xsect_total * mu_factor * Lbf );
-
-          /* Handle transmission only (imaging mode) */
-          if (bTransOnly)
+            /**********************/
+            /* SCATTER coherently */
+            /**********************/
+            if (roulette_ball <= xsect_coherent)
             {
-              /* make mu = 0 and prob = p_transmit to make sure that ProcessNeutronToEnd function works properly */
-              g_fMuTot = g_fMuAbs = 0.0;
-              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, p_transmit, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+              double contrib;
+              /* determine lattice plane (for scattering) */
+              roulette_ball = MonteCarlo(0, xsect_coherent / norm);
+              contrib = 0.0;
+              for( j=0; j<uc.nHKL; j++ )
+              {
+                contrib += uc.hklList[j].FSquare * uc.hklList[j].multiplicity * uc.hklList[j].dhkl;
+                if( roulette_ball < contrib )
+                  break;
+              }
+
+              /* get scattering angle */
+              ScTheta = 2.0*asin( InputNeutrons[i].Wavelength / 2.0 / uc.hklList[j].dhkl );
+              if( ISNAN(ScTheta) )
+                ScTheta = M_PI;
+
+              if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta)
+              {
+                InputNeutrons[i].Color = (short)(nColor);
+                /* Bring the neutron several times on the cone */
+                for(iGen=0; iGen<GenNeutrons; iGen++)
+                {
+                  /* ScPhi is the angle of the scattered neutron with the +y-axis */
+                  ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+
+                  /* Ok, now everything needed is known, put it together */
+                  /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
+                  g_fMuTot = xsect_total * mu_factor;
+                  g_fMuAbs = 0.0;
+                  ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, 1.0, ScTheta, ScPhi,
+                                      &Sample, RotMatrixNeut, RotMatrixSmpl);
+                }
+              } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
             }
 
-          /* ...also handle scattering events */
-          else
+            /************************/
+            /* SCATTER incoherently */
+            /************************/
+            else if (roulette_ball <= xsect_coherent+xsect_incoherent)
             {
-              /* check if neutron transmits through or interacts with the sample */
-              if( p_transmit > MonteCarlo(0, 1) )
+              /* check the incoherent switch */
+              if (bIncohScat)
+              {
+                InputNeutrons[i].Color = (short)(nColor+1);
+                for(iGen=0; iGen<GenNeutrons; iGen++)
                 {
-                  /* TRANSMIT (no scattering) */
-                  /* make mu = 0 and prob = 1 to make sure that ProcessNeutronToEnd function works properly */
-                  g_fMuTot = g_fMuAbs = 0.0;
-                  ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, 1, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+                  /* Determine the scattering angle */
+                  ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+                  ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+
+                  /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
+                  g_fMuTot = xsect_total * mu_factor;
+                  g_fMuAbs = 0.0;
+                  ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, 1.0/GenNeutrons,
+                                      ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
                 }
-              else
-                {
-                  double roulette_ball = MonteCarlo(0, xsect_coherent+xsect_incoherent+xsect_absorption);
+              } /* end of if (bIncohScat) */
 
-                  /**********************/
-                  /* SCATTER coherently */
-                  /**********************/
-                  if (roulette_ball <= xsect_coherent)
-                    {
-                      double contrib;
-                      /* determine lattice plane (for scattering) */
-                      roulette_ball = MonteCarlo(0, xsect_coherent / norm);
-                      contrib = 0.0;
-                      for( j=0; j<uc.nHKL; j++ )
-                        {
-                          contrib += uc.hklList[j].FSquare * uc.hklList[j].multiplicity * uc.hklList[j].dhkl;
-                          if( roulette_ball < contrib )
-                            break;
-                        }
-			
-                      /* get scattering angle */
-                      ScTheta = 2.0*asin( InputNeutrons[i].Wavelength / 2.0 / uc.hklList[j].dhkl );
-                      if( ISNAN(ScTheta) )
-                        ScTheta = M_PI;
+            } /* end of if( roulette_ball <= xsect_coherent ) */
 
-                      if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta)
-                        {
-                          InputNeutrons[i].Color = (short)(nColor);
-                          /* Bring the neutron several times on the cone */
-                          for(iGen=0; iGen<GenNeutrons; iGen++)
-                            {
-                              /* ScPhi is the angle of the scattered neutron with the +y-axis */
-                              ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+            // else /* ABSORPTION & and do not call WriteNeutron(&OutNeut) */
 
-                              /* Ok, now everything needed is known, put it together */
-                              /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
-                              g_fMuTot = xsect_total * mu_factor;
-                              g_fMuAbs = 0.0;
-                              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, 1.0, ScTheta, ScPhi,
-                                                  &Sample, RotMatrixNeut, RotMatrixSmpl);
-                            }
-                        } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
-                    }
+          } /* end of if( p_transmit < MonteCarlo(0, 1) ) */
 
-                  /************************/
-                  /* SCATTER incoherently */
-                  /************************/
-                  else if (roulette_ball <= xsect_coherent+xsect_incoherent)
-                    {
-                      /* check the incoherent switch */
-                      if (bIncohScat)
-                        {
-                          InputNeutrons[i].Color = (short)(nColor+1);
-                          for(iGen=0; iGen<GenNeutrons; iGen++)
-                            {
-                              /* Determine the scattering angle */
-                              ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-                              ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
-
-                              /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
-                              g_fMuTot = xsect_total * mu_factor;
-                              g_fMuAbs = 0.0;
-                              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, 1.0/GenNeutrons,
-                                                  ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
-                            }
-                        } /* end of if (bIncohScat) */
-
-                    } /* end of if( roulette_ball <= xsect_coherent ) */
-
-                  // else /* ABSORPTION & and do not call WriteNeutron(&OutNeut) */
-
-                } /* end of if( p_transmit < MonteCarlo(0, 1) ) */
-
-            } /* end of if (bTransOnly) */
-        }
+        } /* end of if (bTransOnly) */
+      }
       /* check if neutron passing the sample shall be treated */
       else if (bTreatAll==TRUE)
-        {
-          WriteNeutron(&InputNeutrons[i]);
-        }
+      {
+        WriteNeutron(&InputNeutrons[i]);
+      }
     }
   }
 
@@ -446,137 +483,6 @@ void OwnCleanup(DoublePair *StrucFac)
     free(StrucFac);
 }
 /* End OwnCleanup */
-
-
-
-int readParameterFile( char *fileName, UnitCell *uc )
-{
-  t_Table dataTable;
-  int i;
-  char **parsing;
-
-  int column_label = 1;
-  int column_b_coherent = 2;
-  int column_sigma_inc = 3;
-  int column_sigma_abs = 4;
-  int column_molar_mass = 5;
-  int column_debye_temp = 6;
-  int column_x = 7;
-  int column_y = 8;
-  int column_z = 9;
-
-  AtomInfo ai;
-  /* setup a default Fe unit cell */
-  uc->spaceGroup = "229";
-  uc->a = uc->b = uc->c = 2.866;
-  uc->alpha = uc->beta = uc->gamma = 90.0;
-
-  /* read the file */
-  Table_Read(&dataTable, FullParName(fileName), 1); /* read 1st block data from file into table */
-
-  /* parsing of header for sample parameters */
-  parsing = Table_ParseHeader(dataTable.header,
-    "space_group","lattice_a","lattice_b","lattice_c","lattice_alpha","lattice_beta","lattice_gamma",NULL);
-		
-  if (parsing)
-  {
-    if (parsing[0]) uc->spaceGroup = &parsing[0][strspn(parsing[0], " ")];
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'space_group' found in file %s\n", fileName);
-        return -1;
-      }
-    if (parsing[1]) uc->a = atof(parsing[1]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_a' found in file %s\n", fileName);
-        return -1;
-      }
-    if (parsing[2]) uc->b = atof(parsing[2]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_b' found in file %s\n", fileName);
-      }
-    if (parsing[3]) uc->c = atof(parsing[3]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_c' found in file %s\n", fileName);
-      }
-    if (parsing[4]) uc->alpha = atof(parsing[4]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_alpha' found in file %s\n", fileName);
-      }
-    if (parsing[5]) uc->beta = atof(parsing[5]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_beta' found in file %s\n", fileName);
-      }
-    if (parsing[6]) uc->gamma = atof(parsing[6]);
-      else {
-        fprintf(LogFilePtr, "Error: No value for 'lattice_gamma' found in file %s\n", fileName);
-      }
-
-  } else {
-    fprintf(LogFilePtr, "Error: parsing file %s - using default values\n", fileName);
-  }
-
-  initUnitCell( uc );
-
-  /* check if data exist (at least 9 columns) */
-  if (dataTable.columns < 9)
-  {
-
-    fprintf(LogFilePtr, "Error: The number of columns in %s should be at least %d for "
-            "[label,b_coherent,sigma_inc,sigma_abs,molar_mass,debye_temp,x,y,z] - using default values\n", fileName, 9);
-
-    ai.label = "Fe";
-    ai.b_coherent = 9.45;
-    ai.sigmaIncoherent = 0.4;
-    ai.sigmaAbsorption = 2.56;
-    ai.molarMass = 55.85;
-    ai.debyeTemp = 464.0;
-    ai.x[0] = 0.0;
-    ai.y[0] = 0.0;
-    ai.z[0] = 0.0;
-    addAtomInfo( uc, ai );
-  }
-  else
-  {
-    /* parsing of header for column assignment */
-    parsing = Table_ParseHeader(dataTable.header,
-                                "column_label","column_b_coherent","column_sigma_inc","column_sigma_abs",
-                                "column_molar_mass","column_debye_temp",
-                                "column_x","column_y","column_z",NULL);
-
-    /* assign columns */
-    if (parsing)
-    {
-      if (parsing[0]) column_label = atoi(parsing[0]);
-      if (parsing[1]) column_b_coherent = atoi(parsing[1]);
-      if (parsing[2]) column_sigma_inc = atoi(parsing[2]);
-      if (parsing[3]) column_sigma_abs = atoi(parsing[3]);
-      if (parsing[4]) column_molar_mass = atoi(parsing[4]);
-      if (parsing[5]) column_debye_temp = atoi(parsing[5]);
-      if (parsing[6]) column_x = atoi(parsing[6]);
-      if (parsing[7]) column_y = atoi(parsing[7]);
-      if (parsing[8]) column_z = atoi(parsing[8]);
-      for (i=0; i<9; i++)
-        if (parsing[i])
-          free(parsing[i]);
-      free(parsing);
-    }
-
-    for( i=0; i<dataTable.rows; i++ )
-    {
-      ai.label = "unknown";//Table_Index( dataTable, i, column_label-1 );
-      ai.b_coherent = Table_Index( dataTable, i, column_b_coherent-1 );
-      ai.sigmaIncoherent = Table_Index( dataTable, i, column_sigma_inc-1 );
-      ai.sigmaAbsorption = Table_Index( dataTable, i, column_sigma_abs-1 );
-      ai.molarMass = Table_Index( dataTable, i, column_molar_mass-1 );
-      ai.debyeTemp = Table_Index( dataTable, i, column_debye_temp-1 );
-      ai.x[0] = Table_Index( dataTable, i, column_x-1 );
-      ai.y[0] = Table_Index( dataTable, i, column_y-1 );
-      ai.z[0] = Table_Index( dataTable, i, column_z-1 );
-      addAtomInfo( uc, ai );
-    }
-  }
-  return 0;
-}
 
 
 

@@ -784,8 +784,8 @@ int ParseSymXYZ(const char *SymXYZ, T_RTMx *SeitzMx, int FacTr)
         if (GotXYZ == 0)             return -1;
         if (P_mode & P_Slash) Value += Value1;
         Value *= FacTr;
-        if (Value < 0.) i = Value - .5;
-        else            i = Value + .5;
+        if (Value < 0.) i = (int)(Value - .5);
+        else            i = (int)(Value + .5);
         Delta = Value - i;
         if (Delta < 0.) Delta = -Delta;
         if (Delta > .01 * FacTr) return -1;
@@ -1455,10 +1455,11 @@ static void SimplifyFraction(int nume, int deno, int *o_nume, int *o_deno)
 const char *FormatFraction(int nume, int deno, int Decimal,
                            char *Buffer, int SizeBuffer)
 {
-  int          n, d;
+  int          n=0;
+  int          d=0;
   char         *cp, *cpp;
   static char  StaticBuffer[40];
-  n = d = 0;
+
 
   if (NULL == Buffer) {
               Buffer =        StaticBuffer;

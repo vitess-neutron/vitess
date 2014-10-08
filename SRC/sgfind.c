@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <string.h>
 
 #define SGCOREDEF__
 #include "sginfo.h"
@@ -606,8 +605,8 @@ static int FixAxes(const T_SgInfo *SgInfo,
   int        nTrV, iTrV;
   const int  *TrV;
 
-  memset(irActive, 0, 3*sizeof(irActive[0]));
-  memset(icActive, 0, 3*sizeof(icActive[0]));
+  icActive[0]=icActive[1]=icActive[2]=0;
+  irActive[0]=irActive[1]=irActive[2]=0;
 
   if (FreeMx == NULL) {
     for (i = 0; i < 3; i++) {

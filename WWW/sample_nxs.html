@@ -151,14 +151,14 @@ population on the detector and gives therefore better statistics in the spectrum
 
 
 <h4><a name="section3.1"> 3.1 Sample geometry file</a></h4>
-The sample geometry, placement within the instrument and orientation are summarised by an input file. An example:
-<pre width="110" style="background-color:#ddd;">
+The sample geometry, placement within the instrument and orientation are summarised by an input file. An example:<BR><BR>
+<table border="1"><tr align="center"><td><B>nxs_sample.par</B></td></tr><tr><td><pre>
 10.0 0.0 0.0    # sample position relative in [cm] to the coordinate system defined by the preceding module
 cub             # sample geometry (cyl, bal or cub)
 2.0 1.0	2.3     # thickness or radius, width and height of the sample in [cm]
 1.0 0.0 0.0     # orientation of the cylinder (does not need not be normalised)
 Fe.nxs          # nxs parameter file to describe the unit cell composition
-</pre>
+</pre></td></tr></table><BR>
 The sample_nxs module provides three geometry to be simulated (cylinder, sphere (ball), cuboid). Depending on the selected shape, thickness, height and width and/or radius need to be defined. The sample orientation is given by vector components:<br>
 <UL>
 <LI>Cylinder: the vector is always perpendicular to the top of the cylinder (standard cyl. position (001), height along the z-axis).
@@ -171,53 +171,57 @@ The sample geometry file is assigned by the command line parameter -S. This opti
 </p>
 
 <h4><a name="section3.2"> 3.2 NXS parameter file</a></h4>
-The parameters to define a unit cell are assigned by means of another input file, whose structure is as follows:
-<pre width="80" style="background-color:#ddd;">
-# alpha_Fe
-# space_group    229
-# lattice_a      2.866
-# lattice_b      2.866
-# lattice_c      2.866
-# lattice_alpha  90
-# lattice_beta   90
-# lattice_gamma  90
-#
-# column_label      1
-# column_b_coherent 2
-# column_sigma_inc  3
-# column_sigma_abs  4
-# column_molar_mass 5
-# column_debye_temp 6
-# column_x          7
-# column_y          8
-# column_z          9
-#
-# label  b_coherent  sigma_inc  sigma_abs  molar_mass  debye_temp  x  y  z
-1     9.45     0.4     2.56    55.85    464.0    0    0    0
-</pre>
-The sample_nxs module was originally developed for McStas neutron simulations. Hence, the input file structure to define unit cells follows the principle of the table_read routines provided by the McStas framework (see McStas manual). Future releases of nxs will provide own file reading routines in order to unify the input file mechanism for all programs using the nxs library. However, the current structure is shown above. The first part defines the unit cell (space group number) and therefore the crystal system including the lattice parameters. The first line (# alpha_Fe) is a simple comment which is not handled internally. The second part (# column_*) assigns the intended purpose to column numbers of the following table, such that the listed atomic properties are assigned properly. In contrast to the declarations above, the table rows do not begin with a # character. The example uses the following specification:
-<UL>
-<LI>Column 1 provides a label for the specified atom, but is not used within the computation. 
-<LI>Column 2 requires a value for the coherent scattering length <em>b<sub>coh</sub></em> in [fm].
-<LI>Column 3 requires a value for the incoherent scattering cross section <em><span style="text-decoration: overline">&sigma;</span><sub>inc</sub></em> in [barns].
-<LI>Column 4 requires a value for the absorption cross section <em>&sigma;<sub>abs</sub></em> in [barns] at a neutron velocity of v=2200 m/s and a wavelength of &lambda;=1.798 &Aring; respectively.
-<LI>Column 5 requires a value for molar mass <em>M</em> in [g/mol].
-<LI>Column 6 requires a value for Debye temperature <em>&theta;<sub>D</sub></em> in [K].
-<LI>Columns 7,8 and 9 define the Wyckoff position (x,y,z) of the atom inside the unit cell.
-</UL>
-However, depending on the assignment above the table (# column_*), the ordering can vary. Using this structure multiple rows can easily be added to the table in order to fill the unit cell with more atoms and simulate complex structures.
+The parameters to define a unit cell are assigned by means of another input file, whose structure is as follows:<BR><BR>
+<table border="1"><tr align="center"><td><B>Al.nxs</B></td></tr><tr><td><pre># define the unit cell parameters:
+#   space_group                      - the space group number or Hermann or Hall symbol [string]
+#   lattice_a, ...b, ...c            - the lattice spacings a,b,c [angstrom]
+#   lattice_alpha, ...beta, ...gamma - the lattice angles alpha,beta,gamma [degree]
+#   debye_temp                       - the Debye temperature [K]
+
+space_group    = -F 4 2 3 # space group number is also allowed (= 225)
+lattice_a = 4.049
+lattice_b = 4.049
+lattice_c = 4.049
+lattice_alpha = 90
+lattice_beta = 90
+lattice_gamma = 90
+debye_temp = 429.0
+
+# add atoms to the unit cell:
+# notation is "atom_number = name b_coh sigma_inc sigma_abs_2200 molar_mass x y z"
+#   name           - labels the current atom/isotope  [string]
+#   b_coh          - the coherent scattering length [fm]
+#   sigma_inc      - the incoherent scattering cross section [barns]
+#   sigma_abs_2200 - the absorption cross sect. at 2200 m/s [barns]
+#   molar_mass     - the Molar mass [g/mol]
+#   debye_temp     - the Debye temperature [K]
+#   x y z          - the Wyckoff postion of the atom inside the unit cell
+
+[atoms]
+add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
+</pre></td></tr></table><BR>
 
 <h3><a name="development">4. Further developments</a></h3>
-This is the first official release of the sample_nxs module. It is further planned to continue the development of the module to provide additional capabilities such as strain, texture and multiple scattering as it has been done for McStas [e.g. <a href="#boin2011">Boin et al., 2011</a>].
+The first official sample_nxs module was release with Vitess 2.11. This sample_nxs version 1.1 was created to take advantage of an updated nxs library. Besides the implementation into Vitess, a sample module for McStas has been realised and is available from the <a href="http://www.mcstas.org/">McStas repository</a>. Furthermore, a <a href="http://geant4.cern.ch/">Geant4</a> module, called <a href="http://nxsg4.web.cern.ch/nxsg4/">NXSG4</a>, for proper simulations of thermal and cold neutrons through crystalline matter was developed. Last but not least, a number of users have successfully applied the nxs routines for their research activities. The list below references publications about the development and applications of nxs: <BR><BR>
+<UL>
+<LI><a name="boin2011">M. Boin, A. Hilger, N. Kardjilov, S.Y. Zhang, E.C. Oliver, J.A. James, C. Randau &amp; R.C. Wimpory (2011)</a>, <em>J. Appl. Cryst.</em> <b>44</b>(5), 1040-1046, <a href="http://dx.doi.org/10.1107/S0021889811025970">doi:10.1107/S0021889811025970</a>
+<LI><a name="strobl2011">Strobl, M.; Hilger, A.; Boin, M.; Kardjilov, N.; Wimpory, R.; Clemens, D.; Mühlbauer, M.; Schillinger, B.; Wilpert, T.; Schulz, C.; Rolfs, K.; Davies, C. M.; O'Dowd, N.; Tiernan, P. & Manke, I. (2011)</a>, <em>Nucl. Instrum. Methods Phys. Res., Sect. A</em> <b>651</b>, 149-155, <a href="http://dx.doi.org/10.1016/j.nima.2010.12.121">doi:10.1016/j.nima.2010.12.121</a>
+<LI><a name="boin2012a">M. Boin (2012)</a>, <em>J. Appl. Cryst.</em> <b>45</b>, 603-607, <a href="http://dx.doi.org/10.1107/S0021889812016056">doi:10.1107/S0021889812016056</a>
+<LI><a name="boin2012b">M. Boin, R.C. Wimpory, A. Hilger, N. Kardjilov, S.Y. Zhang, M. Strobl (2012)</a>, <em>J. Phys.: Conf. Ser.</em> <b>340</b>, 012022, <a href="http://dx.doi.org/10.1088/1742-6596/340/1/012022">doi:10.1088/1742-6596/340/1/012022</a>
+<LI><a name="kittelmann2014">Kittelmann, T.; Stefanescu, I.; Kanaki, K.; Boin, M.; Hall-Wilton, R. & Zeitelhack, K. (2014)</a>, <em>J. Phys.: Conf. Ser.</em> <b>513</b>, 022017, <a href="http://dx.doi.org/10.1088/1742-6596/513/2/022017">doi:10.1088/1742-6596/513/2/022017</a>
+<LI><a name="peetermans2014">Peetermans, S.; Tamaki, M.; Hartmann, S.; Kaestner, A.; Morgano, M. & Lehmann, E. H. (2014)</a>, <em>Nucl. Instrum. Methods Phys. Res., Sect. A</em> <b>757</b>, 28-32, <a href="http://dx.doi.org/10.1016/j.nima.2014.04.033">doi:10.1016/j.nima.2014.04.033</a>
+</UL>
+
+It is further planned to continue the development of the Vitess module to provide additional capabilities such as strain, texture and multiple scattering as it has been done for McStas [e.g. <a href="#boin2011">Boin et al., 2011</a>]. More up-to-date information is posted on <a href="http://www.helmholtz-berlin.de/people/boin/nxs_en.html">http://www.helmholtz-berlin.de/people/boin/nxs_en.html</a>.
 
 
 <h3><a name="references">5. References</a></h3>
 <UL>
-<LI><a name="binder1970">K. Binder (1970)</a>, <em>Phys. Status Solidi B</em> <b>41</b>(5), 767Â–779, [<a href="http://dx.doi.org/10.1002/pssb.19700410233">doi:10.1002/pssb.19700410233</a>]
-<LI><a name="boin2011">M. Boin, A. Hilger, N. Kardjilov, S.Y. Zhang, E.C. Oliver, J.A. James, C. Randau &amp; R.C. Wimpory (2011)</a>, <em>J. Appl. Cryst.</em> <b>44</b>(5), 1040-1046, [<a href="http://dx.doi.org/10.1107/S0021889811025970">doi:10.1107/S0021889811025970</a>]
-<LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160Â–1167.
-<LI><a name="grosse1995"> R.W. Grosse-Kunstleve (1995)</a>, <em>SgInfo - a Comprehensive Collection of ANSI C Routines for the Handling of Space Groups</em>, [<a href="http://cci.lbl.gov/sginfo/">http://cci.lbl.gov/sginfo/</a>]
+<LI><a name="binder1970">K. Binder (1970)</a>, <em>Phys. Stat. Sol. B</em> <b>41</b>(5), 767-779, <a href="http://dx.doi.org/10.1002/pssb.19700410233">doi:10.1002/pssb.19700410233</a>
+<LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160-–1167.
+<LI><a name="grosse1995"> R.W. Grosse-Kunstleve (1995)</a>, <em>SgInfo - a Comprehensive Collection of ANSI C Routines for the Handling of Space Groups</em>, <a href="http://cci.lbl.gov/sginfo/">http://cci.lbl.gov/sginfo/</a>
 <LI><a name="vogel2000">S.C. Vogel (2000)</a>, PhD thesis, Christian-Albrecht University, Kiel, Germany.
+<LI><a name="freund1983">A.K. Freund (1983)</a>, <em>Nucl. Instr. Meth.</em> <b>213</b>, 495-501.
 
 
 </UL>
