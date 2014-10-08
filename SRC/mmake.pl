@@ -120,7 +120,7 @@ my %dep = (			# needed objects for a module
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl',
-           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib',
+           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi',
            monitor1D => 'mon1D',
            monitor2D => 'mon2D'
 	  );

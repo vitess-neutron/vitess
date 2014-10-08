@@ -8,14 +8,13 @@
 #   lattice_alpha, ...beta, ...gamma - the lattice angles alpha,beta,gamma [degree]
 #   debye_temp                       - the Debye temperature [K]
 
-space_group    = 229 # this is a comment
-
-lattice_a = 2.866
-lattice_b = 2.866
-lattice_c = 2.866
-lattice_alpha  =   90
+space_group=139
+lattice_a=2.856
+lattice_b=2.856
+lattice_c=2.96
+lattice_alpha=90
 lattice_beta=90
-lattice_gamma = 90
+lattice_gamma=90
 debye_temp=464.0
 
 # add atoms to the unit cell:
@@ -30,7 +29,4 @@ debye_temp=464.0
 # e.g.: add_atom = Fe 9.45 0.4 2.56 55.85 0.0 0.0 0.0
 
 [atoms]
-add_atom = Fe 9.45 0.4 2.56 55.85 0.0 0.0 0.0
-
-
-
+add_atom=Fe 9.45 0.4 2.56 55.85 0.0 0.0 0.0
