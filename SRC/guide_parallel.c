@@ -1894,7 +1894,7 @@ void OwnCleanup() {
       stGeometry.pHull[k].HeightOut   = 2.0*pPieces[k+1].Zpce;
 
       GdPcePos = 0.5*(pPieces[k].Xpce + pPieces[k+1].Xpce);  
-      if (Radius > 0.0)
+      if (Radius != 0.0)
       { if (k==0)
           GdPcePos0 = GdPcePos;
         stGeometry.pHull[k].vCntr[0] = Radius *      sin((GdPcePos-GdPcePos0)/Radius) + GdPcePos0;
