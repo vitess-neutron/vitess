@@ -123,10 +123,7 @@ proc checkPlotfile {fname} {
   if {[gets $f ins] > 0} {
     if [regexp {^\#Monitor} $ins] {set ismonitor 1}
   }
-  if {!$ismonitor} {
-    close $f
-    return ""
-  }
+
   set ftype ""
   while 1 {
     # check if its a matrix file
@@ -143,11 +140,15 @@ proc checkPlotfile {fname} {
 
   # check if it has more than 16 colums
   eval set ll [list $ins]
+
   if {[llength $ll] > 16} {
     return matrix
-  } elseif {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
-    # min. 2 colums of numbers
-    return ""
+  } else {
+    set rc [scan $ins "%f%f%f%f" x y xe ye]
+    if {$rc < 2} {
+      # min. 2 colums of numbers
+      return ""
+    }
   }
   if {$ftype == ""} {set ftype xz}
   return $ftype
