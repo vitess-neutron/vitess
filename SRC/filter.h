@@ -12,11 +12,16 @@
 
 #include "mathvector.h"
 
+#define UNUSED -1
 
-int filterParam[3];
-double filterVarMin[3];
-double filterVarMax[3];
-int filterComb;
+#define OR_OR_OR    0
+#define AND_AND_AND 1
+#define AND_OR_AND  2
+
+int    filterParam [4];
+double filterVarMin[4];
+double filterVarMax[4];
+int    filterComb;
 
 void OwnInit(int argc, char *argv[]);
 int CheckFilter(Neutron* n);

@@ -2283,18 +2283,22 @@ set fA2 {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
-
 set fA3 {
   {filter_param3 radio none {
-    "filter\nparameter 3" "choose filter parameter 2 (optional)" "" K}
+    "filter\nparameter 3" "choose filter parameter 3 (optional)" "" K}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+set fA4 {
+  {filter_param4 radio none {
+    "filter\nparameter 4" "choose filter parameter 4 (optional)" "" L}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 
 set fComb {
   {filter_comb radio OR {
-      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill all criteria (AND) or at least one (OR)" "" C}
-    {OR AND} {0 1}}
+      "filter\ncombination" "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)" "" C}
+    {OR AND AND_OR_AND} {0 1 2}}
 }
 
 set fPAi {
@@ -2304,7 +2308,6 @@ set fPAi {
   {filtIMax float "" {
     "filter 1\nmax value" "max value of filter parameter 1" "" U}}
 }
-
 set fPAj {
   {}
   {filtJMin float "" {
@@ -2312,7 +2315,6 @@ set fPAj {
   {filtJMax float "" {
     "filter 2\nmax value" "max value of filter parameter 2" "" V}}
 }
-
 set fPAk {
   {}
   {filtKMin float "" {
@@ -2320,9 +2322,16 @@ set fPAk {
   {filtKMax float "" {
     "filter 3\nmax value" "max value of filter parameter 3" "" W}}
 }
+set fPAl {
+  {}
+  {filtLMin float "" {
+    "filter 4\nmin value" "min value of filter parameter 4" "" x}}
+  {filtLMax float "" {
+    "filter 4\nmax value" "max value of filter parameter 4" "" X}}
+}
 
-set filterESET [concat $fA $fA1 $fA2 $fA3 $fComb $fPAi $fPAj $fPAk]
-unset fA fA1 fA2 fA3 fComb fPAi fPAj fPAk
+set filterESET [concat $fA $fA1 $fA2 $fA3 $fA4 $fComb $fPAi $fPAj $fPAk $fPAl]
+unset fA fA1 fA2 fA3 fA4 fComb fPAi fPAj fPAk fPAl
 
 
 ### Monitor many many modules

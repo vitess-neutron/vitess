@@ -5,6 +5,7 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0 Apr 2013  D. Nekrassov  initial version                                              */
 /* 1.1 Nov 2013  D. Nekrassov  "OR" mode bug fixed                                          */
+/* 1.2 Feb 2015  K. Lieutenant "AND OR AND" added                                           */
 /********************************************************************************************/
 
 
@@ -20,7 +21,6 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
- 
   long	i , registered, BufferIndex;
   
   BufferIndex = 0;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_FILTER);
-  print_module_name("filter 1.0");
+  print_module_name("filter 1.2");
 
   
   OwnInit(argc, argv);
@@ -52,7 +52,6 @@ DECLARE_ABORT;
   }
 my_exit:
 
-
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return(0);
@@ -65,13 +64,16 @@ void OwnInit(int argc, char *argv[])
   filterVarMin[0] = -1;
   filterVarMin[1] = -1;
   filterVarMin[2] = -1;
+  filterVarMin[3] = -1;
   filterVarMax[0] = -1;
   filterVarMax[1] = -1;
   filterVarMax[2] = -1;
+  filterVarMax[3] = -1;
 
   filterParam[0] = -1;
   filterParam[1] = -1;
   filterParam[2] = -1;
+  filterParam[3] = -1;
   filterComb = -1;
 
   // Read the command line arguments
@@ -83,13 +85,14 @@ void OwnInit(int argc, char *argv[])
 	  case 'I':  
 	    filterParam[0] = atoi(&argv[i][2]); // filter parameter 1, input parameter
 	    break;
-
 	  case 'J':  
 	    filterParam[1] = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	    break;
-
 	  case 'K':  
 	    filterParam[2] = atoi(&argv[i][2]); // filter parameter 3, optional input parameter
+	    break; 
+	  case 'L':  
+	    filterParam[3] = atoi(&argv[i][2]); // filter parameter 4, optional input parameter
 	    break; 
 
 	  case 'C':  
@@ -99,15 +102,13 @@ void OwnInit(int argc, char *argv[])
 	  case 'u':
 	    filterVarMin[0] = atof(&argv[i][2]);   /* minimum value of filter parameter 1 */
 	    break;
-	    
-	  case 'U':
+    case 'U':
 	    filterVarMax[0] = atof(&argv[i][2]);   /* maximum value of filter parameter 1 */
 	    break;
 	    
 	  case 'v':
 	    filterVarMin[1] = atof(&argv[i][2]);   /* minimum value of filter parameter 2 */
 	    break;
-	    
 	  case 'V':
 	    filterVarMax[1] = atof(&argv[i][2]);   /* maximum value of filter parameter 2 */
 	    break;
@@ -115,9 +116,15 @@ void OwnInit(int argc, char *argv[])
 	  case 'w':
 	    filterVarMin[2] = atof(&argv[i][2]);   /* minimum value of filter parameter 3 */
 	    break;
-	    
 	  case 'W':
 	    filterVarMax[2] = atof(&argv[i][2]);   /* maximum value of filter parameter 3 */
+	    break;
+
+	  case 'x':
+	    filterVarMin[3] = atof(&argv[i][2]);   /* minimum value of filter parameter 4 */
+	    break;
+	  case 'X':
+	    filterVarMax[3] = atof(&argv[i][2]);   /* maximum value of filter parameter 4 */
 	    break;
 
 	  default:
@@ -133,38 +140,48 @@ void OwnInit(int argc, char *argv[])
 }
 
 
-
 int CheckFilter(Neutron* n)
 {
 
-  double filterValue[3];
+  double filterValue[4]={0.0,0.0,0.0,0.0};
+  short  bPass[4]={UNUSED,UNUSED,UNUSED,UNUSED},
+         rc=FALSE;
   int i;
-  
-  
-  // Dismiss if outside the range of filter parameter i, if defined (independent of other two filters: combined with AND)
-  for (i = 0; i < 3; i++) {
-    filterValue[i] = 0;
-     if (filterParam[i] > 0 && (filterParam[(i+1)%3] <= 0 || filterComb==1) && (filterParam[(i+2)%3] <= 0 || filterComb==1)) {
-      filterValue[i] = DetermineParameter(filterParam[i], n);
-      if (filterValue[i] < filterVarMin[i] || filterValue[i] > filterVarMax[i]) return 0;  
-   }
-  }  
-  if(filterComb==1)
-    return 1;
 
- // pass if fulfilled 1 OR 2 OR 3
-  if (filterComb==0) {
-    for (i = 0; i < 3; i++) {
-      if (filterParam[i] > 0) {
-	filterValue[i] = DetermineParameter(filterParam[i], n);
-	if  (filterValue[i] >= filterVarMin[i] && filterValue[i] < filterVarMax[i]) return 1;
-      }
+  // Determine individual pass conditions
+  for (i = 0; i < 4; i++) 
+  {
+    if (filterParam[i] > 0) 
+    { filterValue[i] = DetermineParameter(filterParam[i], n);
+      if (filterValue[i] >= filterVarMin[i] && filterValue[i] <= filterVarMax[i]) 
+        bPass[i]=TRUE;  
+      else
+        bPass[i]=FALSE;
     }
-  }
-  
-  if (filterParam[0] > 0 || filterParam[1] > 0 || filterParam[2] > 0) return 0;
-  else return 1;
+  }  
 
+ // check combination
+  switch (filterComb) 
+  {
+    case OR_OR_OR:    if (bPass[0]==TRUE  || bPass[1]==TRUE  || bPass[2]==TRUE  || bPass[3]==TRUE)  
+                        rc=TRUE;
+                      else 
+                        rc=FALSE;
+                      break;
+    case AND_AND_AND: if (bPass[0]==FALSE || bPass[1]==FALSE || bPass[2]==FALSE || bPass[3]==FALSE)
+                        rc=FALSE;
+                      else
+                        rc=TRUE;
+                      break;
+    case AND_OR_AND:  if (bPass[0]==TRUE && bPass[1]==TRUE  ||  bPass[2]==TRUE  && bPass[3]==TRUE)
+                        rc=TRUE;
+                      else
+                        rc=FALSE;
+                      break;
+    default      : Error("Filter combination not defined");
+  }
+
+  return rc;
 }
 
 
