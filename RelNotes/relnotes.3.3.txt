@@ -16,7 +16,7 @@ SAMPLE_NXS library updated, example instrument added: FILES/EXAMPLES/SampleNXS
 Bug fixes:
 ----------
 eval_elast2      : sorting in y value corrected
-filter           : AND mode corrected
+filter           : AND mode corrected and AND OR AND added
 guide            : Curvature in opposite direction for R<0 fixed
 monitor2D        : allow negative filter values when monitored range used as filter (exclusive counts mode)
 mon2_posdiv      : fix divz calculation

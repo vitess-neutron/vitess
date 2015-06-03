@@ -43,7 +43,7 @@
 /* 1.21  Sep  2013  K. Lieutenant  time focusing                                             */
 /* 1.22  Nov  2013  K. Lieutenant  pancake moderator                                         */
 /* 1.23  Mar  2015  K. Lieutenant  correction of solid angle for large declination angles    */
-/* 1.24  Mar  2015  K. Lieutenant  new ESS moderator data                                    */
+/* 1.24  May  2015  Lieutenant/Zendler  new ESS moderator data (Butterfly)                   */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -560,10 +560,10 @@ int main(int argc, char *argv[])
         { // case ESS, SNS
           if (stSrc.nSource==ESS && iDataVsn >= 5){
             prob = EssModFU2015(stMod[imod].dHeight, stSrc.dPower, stSrc.dPulseFreq, Declination, &Input) / sM->dFUAmpl * sM->dNorm;
-	    Input.Color=GetColour_ESSbutterfly2015(Input.Position[1],Declination);
-	  }
-	  else
-	    prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+            Input.Color=GetColour_ESSbutterfly2015(Input.Position[1],Declination);
+          }
+          else
+            prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
         }
         else if (stSrc.nSource==CSNS)
         { // case CSNS
@@ -598,22 +598,22 @@ int main(int argc, char *argv[])
 
          /* correcting count rate for an equal distribution in solid angle 
             factor: tan'(theta)*tan'(phi) = cos²(theta)*cos²(phi)          */
-	 Phi   = atan(Input.Vector[1]/Input.Vector[0]);
-	 Theta = atan(Input.Vector[2]/Input.Vector[0]);
+         Phi   = atan(Input.Vector[1]/Input.Vector[0]);
+         Theta = atan(Input.Vector[2]/Input.Vector[0]);
 
-	 dFact = sq(cos(Theta)*cos(Phi)) / sM->dWndFact;
-	 prob *= dFact; 
-	 prob /= sq(dFP/sM->dDistModWnd); //  correction for solid angles in case of different distances from source to (virtual) window 
-      }
+         dFact = sq(cos(Theta)*cos(Phi)) / sM->dWndFact;
+         prob *= dFact; 
+         prob /= sq(dFP/sM->dDistModWnd); //  correction for solid angles in case of different distances from source to (virtual) window 
+      } 
       else  
       {
-	/* defined by divergence */
+         /* defined by divergence */
          Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
          Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
          Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
          Input.Vector[1] = Input.Vector[0] * tan(Phi);
          Input.Vector[2] = Input.Vector[0] * tan(Theta);
-	   }
+      }
 
       /* Time fosusing */
       if (TofWndDist > 0.0)
@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
            TimeAtWnd = TestNeutron.Time + NeutronPlaneIntersection1   (&TestNeutron,TofWnd);
         if (TimeAtWnd < TofMinWnd || TimeAtWnd > TofMaxWnd) continue;
       }
-             
+            
       /* Polarization - spin vectors selected for each trajectory 
          from one of the eigenvectors  in the polarisation direction */
       if (Vran() <= FracPolDir) {

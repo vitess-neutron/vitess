@@ -1062,6 +1062,7 @@ set guideESET {
   {"Guide characteristics" header}
   {len_guide_piece float "" {"piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
   {number_pieces int 1 {"number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
+  {rad_curve float 0 {"curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
   {}
   {h_focus_pnt float 0 {"hor. focus dist.\nof ellipse [cm]"
     "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
@@ -1076,13 +1077,11 @@ set guideESET {
   {rrefl_filename pareditablefile mirr1a.dat {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
   {tbrefl_filename pareditablefile mirr1a.dat  {"top plane" "Reflectivity file for top (and bottom) plane" "" j} r dat}
   {brefl_filename pareditablefile "" {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  {"Bender option" header}
+  {"Channel option" header}
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
     "blade\nthickness [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
-  {rad_curve float 0 {
-    "curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
 }
 # guide needs a scrollable window
 set BigFrameguide 1

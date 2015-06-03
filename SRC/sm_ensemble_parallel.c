@@ -244,7 +244,7 @@ void OwnInit(int argc, char *argv[])
   int j;
 
   fprintf(LogFilePtr, "\n");
-  print_module_name("supermirror_ensemble_parallel 1.9");
+  print_module_name("supermirror_ensemble_parallel 2.0");
 
   for(j=0; j<3; j++)
     TranslOutput[j] = 0.;
