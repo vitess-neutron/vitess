@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  sprintf(sModuleName, "monitor1_%s 1.9", sParN[kind] );
+  sprintf(sModuleName, "monitor1_%s 1.9a", sParN[kind] );
   print_module_name(sModuleName);
   memset(pFileMonC, '\0', sizeof (FILE*));
 
@@ -421,10 +421,10 @@ my_exit:
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
       if(pNorm[iBin]!=0)
-	fprintf(pFileMon,"%12.4e %14.7e   %14.7e %12.2f \n",
+	fprintf(pFileMon,"%12.5e %14.7e   %14.7e %12.2f \n",
                        (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
       else
-	fprintf(pFileMon,"%12.4e   0.0000000   0.0000000  0.0000000\n",
+	fprintf(pFileMon,"%12.5e   0.0000000   0.0000000  0.0000000\n",
                        (pPosT[iBin]+pPosT[iBin+1])/2.0);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
@@ -441,7 +441,7 @@ my_exit:
         {
           if(pBinN[iBin+(jMon+1)*(nBiny+1)]!=0) 
             pSD[iBin+(jMon+1)*(nBiny+1)] = pInt[iBin+(jMon+1)*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+(jMon+1)*(nBiny+1)]));
-          fprintf(pFileMonC[(jMon+1)-1],"%12.4e   %14.7e   %14.7e   %10ld\n",
+          fprintf(pFileMonC[(jMon+1)-1],"%12.5e   %14.7e   %14.7e   %10ld\n",
                   (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+(jMon+1)*(nBiny+1)]/pNorm[iBin]), pSD[iBin+(jMon+1)*(nBiny+1)]/pNorm[iBin], 
                   pBinN[iBin+(jMon+1)*(nBiny+1)]);
         }
