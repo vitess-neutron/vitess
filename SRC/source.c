@@ -503,7 +503,7 @@ int main(int argc, char *argv[])
       else 
       {
          Y0                = sM->dCntrY + sM->dWidth /2.0 - sM->dWidth  * Vran();
-         Input.Position[2] = sM->dCntrZ + sM->dHeight/2.0 - sM->dHeight * Vran();
+	 Input.Position[2] = sM->dCntrZ + sM->dHeight/2.0 - sM->dHeight * Vran();
       }
 
       /* check if another moderator is in front of the actual one */
@@ -519,9 +519,16 @@ int main(int argc, char *argv[])
          if (im < 0) continue; 
       }
 
-      /* Declination */
-      Input.Position[1] = Y0 * dDecCos;
-      Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+
+	/* Declination */
+	/* for ESS butterfly: do this after prob is calculated*/
+	if(stSrc.nSource!=ESS || iDataVsn < 5){
+	  Input.Position[1] = Y0 * dDecCos;
+	  Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+	  }
+	else {
+	  Input.Position[1] = Y0;
+	}
 
       /* MC choice of wavelength and starting time */
       if (sM->eIsisTS > 0)
@@ -551,7 +558,7 @@ int main(int argc, char *argv[])
         if(strlen(sM->sLTFileName) > 0) 
         {
            // case: flux(lambda,t) was given in a file
-           if (sM->eIsisTS > 0) 
+	  if (sM->eIsisTS > 0) 
               prob = IsisNorm * TS.Total * 3.744905847e14 * 1.1879451 * dSolAngle * WindowWidth * WindowHeight * stSrc.dPulseFreq / NumberOfNeutrons;
            else
               prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].dInt * sM->dNorm;
@@ -577,6 +584,12 @@ int main(int argc, char *argv[])
       }
 
       if(prob <= 0.0) continue; 
+
+      /* Declination for ESS butterfly (others: has been done already)*/
+      if(stSrc.nSource==ESS && iDataVsn >= 5){
+	Input.Position[1] = Y0 * dDecCos;
+	Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+      }
 
       /* direction of flight */
       /* defined by starting position on moderator and position on propagation window */
