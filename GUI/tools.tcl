@@ -875,6 +875,14 @@ proc fDialog {operation ext ifile def} {
   return [tk_getSaveFile -initialfile $ifile -defaultextension .$ext]
 }
 
+proc deLall {fn} {
+  # cut off double extensions, like a.txt.txt -> a.txt
+  if [regexp {\.([^\.]+)$} $fn a n] {
+    return [eval regsub {\.$n\.$n$} $fn .$n]
+  }
+  return $fn
+}
+
 proc fDialogTypes {operation ext ifile def types} {
   if {$operation == "open"} {
     if {$def != ""} {
@@ -885,8 +893,9 @@ proc fDialogTypes {operation ext ifile def types} {
   if {$ext == ""} {set ext txt}
   set ifile [file tail $ifile]
   if {$def != ""} {
-    return [tk_getSaveFile -filetypes $types  \
+    set rc [tk_getSaveFile -filetypes $types  \
 		-initialfile $ifile -defaultextension .$ext -initialdir $def]
+    return [deLall $rc]
   }
   return [tk_getSaveFile -filetypes $types  \
 	      -initialfile $ifile -defaultextension .$ext]
