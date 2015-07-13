@@ -31,3 +31,5 @@ Visualization:
 --------------
 Bender module added
 Fixed curved guide for R<0
+
+(Jul 13 2015, subversion 625)
