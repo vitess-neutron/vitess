@@ -166,7 +166,7 @@ double	PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
 	    }
 	    else
 	    {
-		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY, contact with manochine@hmi.de! \n");
+		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY! \n");
 		return(-1);
 	    }
 	    

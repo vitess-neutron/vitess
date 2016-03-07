@@ -26,7 +26,7 @@ my $unixcomment =<<'EOS';
 # compile hosts used at HZB
 # Linux   : dixi3  openSUSE 10.2 (i586)
 # Linux64 : dixi4 openSUSE 11.3 (x86_64)
-# Darwin  : daisy.hmi.de 11.2.0 (X86-64)
+# Darwin  : daisy.helmholtz-berlin.de 11.2.0 (X86-64)
 EOS
 
 ###

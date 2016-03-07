@@ -1,22 +1,23 @@
-/************************************************************************************************/
-/*  VITESS module sample_powder                                                                 */
-/*                                                                                              */
-/* This program simulates the elastic coherent diffraction and incoherent scattering            */
-/* of neutrons at a powder sample.                                                              */
-/*                                                                                              */
-/* The free non-commercial use of these routines is granted providing due credit is given to    */
-/* the authors.                                                                                 */
-/*                                                                                              */
-/* 1.0  Jan 1999  F. Streffer                                                                   */
-/* 1.1  Nov 2001  K. Lieutenant  absolute current values, SOFTABORT, corrections in             */
-/*                               NeutronIntersectsSphere                                        */
-/* 1.2  Jan 2002  K. Lieutenant  reorganisation                                                 */
-/* 1.3  Jul 2002  K. Lieutenant  corr.: UCV reading; check: output dir. in [theta_min,theta_max]*/
-/* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file   */
-/* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended */
-/* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample*/
-/* 1.7  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced          */
-/************************************************************************************************/
+/*************************************************************************************************/
+/*  VITESS module sample_powder                                                                  */
+/*                                                                                               */
+/* This program simulates the elastic coherent diffraction and incoherent scattering             */
+/* of neutrons at a powder sample.                                                               */
+/*                                                                                               */
+/* The free non-commercial use of these routines is granted providing due credit is given to     */
+/* the authors.                                                                                  */
+/*                                                                                               */
+/* 1.0  Jan 1999  F. Streffer                                                                    */
+/* 1.1  Nov 2001  K. Lieutenant  absolute current values, SOFTABORT, corrections in              */
+/*                               NeutronIntersectsSphere                                         */
+/* 1.2  Jan 2002  K. Lieutenant  reorganisation                                                  */
+/* 1.3  Jul 2002  K. Lieutenant  corr.: UCV reading; check: output dir. in [theta_min,theta_max] */
+/* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file    */
+/* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended  */
+/* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample */
+/* 1.7  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced           */
+/* 1.8  Nov 2015  K. Lieutenant  phi angle of cone separated from phi detector angle */
+/*************************************************************************************************/
 
 #include <string.h>
 
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
   /* get several things done before programme start */
   /* which have actually nothing to do with physics */
   Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_powder 1.6b");
+  print_module_name("sample_powder 1.8");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of structure factor file */
@@ -277,7 +278,6 @@ void  OwnInit(int argc, char *argv[])
   /*********************************************************************/
 
   long i;
-  int  detectortest=0;
 
   colh = -1; colk = -1; coll = -1; colD = -1;
   colF = -1; colF2 = -1; colM = -1; colDW = -1;
@@ -308,12 +308,12 @@ void  OwnInit(int argc, char *argv[])
         /* Theta has to be in the range of [0;PI] */
         if (Theta < 0.0 || Theta > M_PI)
           Error("Theta has to be in the range of [0;PI] ");
-        detectortest &= 1000L;
         break;
       case 'd':
         sscanf(&(argv[i][2]),"%lf", &DelTheta);
         DelTheta*=M_PI/180.0;
-        detectortest &= 0100L;
+        if (DelTheta < 0.0 || DelTheta > 0.5*M_PI)
+          Error("DelTheta has to be in the range of [0;PI/2] ");
         break;
       case 'P':
         sscanf(&(argv[i][2]),"%lf", &Phi);
@@ -321,12 +321,12 @@ void  OwnInit(int argc, char *argv[])
         /* Phi has to be in the range of [0;2*PI] */
         if (Phi < 0.0 || Phi > 2.0*M_PI)
           Error("Phi has to be in the range of [0;2*PI] ");
-        detectortest &= 0010L;
         break;
       case 'p':
         sscanf(&(argv[i][2]),"%lf", &DelPhi);
         DelPhi*=M_PI/180.0;
-        detectortest &= 0001L;
+        if (DelPhi < 0.0 || DelPhi > M_PI)
+          Error("DelPhi has to be in the range of [0, PI] ");
         break;
 
       case 'A':
@@ -349,13 +349,9 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
-  if( (detectortest != 0) && (detectortest != 15))
-  { Warning("You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI ");
-    Theta    = M_PI/2.0;
-    DelTheta = M_PI/2.0;
-    Phi      = M_PI;
-    DelPhi   = M_PI;
-  }
+  // check of theta and phi range
+  if (Theta-DelTheta < 0.0 || Theta+DelTheta > M_PI)
+    Error("wrong theta range: [Theta-DelTheta, Theta+DelThet] has to be in the range of [0, PI] ");
 
   return;
 }

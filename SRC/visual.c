@@ -3,23 +3,23 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/*                 Visulalise beam module via PGPLOT GRAPHIK LIBRARY (version 1.1) 	     */
-/*                 Writed by Manoshin Sergey manoshin@hmi.de Jan-Feb-Mar 2001		     */
-/*                    1. Include cpgplot visualisation  Jan 2001  			     */
-/*                    2. Include adjustement of visualisation 01.02.01 [MSA]		     */
+/*                 Visulalise beam module via PGPLOT GRAPHIK LIBRARY (version 1.1)           */
+/*                 Written by Manoshin Sergey  Jan-Feb-Mar 2001	                             */
+/*                    1. Include cpgplot visualisation  Jan 2001                             */
+/*                    2. Include adjustement of visualisation 01.02.01 [MSA]                 */
 /*                    3. Include visualisation only given wavelength range 02.02.01 [MSA]    */
-/*                    4. Include calculation center of beam 02.02.01 [MSA]  		     */
+/*                    4. Include calculation center of beam 02.02.01 [MSA]                   */
 /*                    5. Include visualisation time of arrival(wavelength) 07.02.01 [Zsi]    */
 /*                    6. Include visualisation wavelength(time of flight) 02.03.01 [MSA]     */
-/*                  circular or rectangle, wavelength, width, heigth			     */    
-/* 1.01             Tested on the Linux OS 						     */    
+/*                  circular or rectangle, wavelength, width, heigth                         */    
+/* 1.01             Tested on the Linux OS                                                   */    
 /*                                                                                           */
 /* 1.02  June 2001  G. Zsigmond    SOFTABORT                                                 */
-/* 1.03  April 2002 S. Manoshin	   Correct scale for time, wavelength visualization	     */
-/* 1.04	 Feb.  2004 S. Manoshin    Visualise only first 10000 trajectories		     */
-/*				   Choose the output device : screen, file or both	     */				
-/*				   New external variable gselec 			     */
-/*				   Default values for some variables			     */
+/* 1.03  April 2002 S. Manoshin	   Correct scale for time, wavelength visualization	         */
+/* 1.04	 Feb.  2004 S. Manoshin    Visualise only first 10000 trajectories                   */
+/*				   Choose the output device : screen, file or both                           */				
+/*				   New external variable gselec                                              */
+/*				   Default values for some variables                                         */
 /*********************************************************************************************/
 
 

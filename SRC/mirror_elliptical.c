@@ -1,15 +1,15 @@
 /********************************************************************************************/
-/*  VITESS MODULE ELLIPTIC MIRROR				                            */
-/*											    */
+/*  VITESS MODULE ELLIPTIC MIRROR				                                            */
+/*											                                                */
 /* The free non-commercial use of these routines is granted providing due credit is given to*/
 /* the authors.                                                                             */
 /*                                                                                          */
 /* Written by Manoshin Sergey, start project May 2003 without GRAVITY                       */
-/* Hahn-Meitner-Institut, Berlin: manochine@hmi.de                   			    */
-/*											    */
-/* Brief history:									    */
+/* Hahn-Meitner-Institut, Berlin:                                           			    */
+/*											                                                */
+/* Brief history:									                                        */
 /* 1.00  Jun 2003  S. Manoshin    initial version                                           */
-/* 1.22  Dec 2007  S. Manoshin     Add air attenuation of flux for travel before collimator */
+/* 1.22  Dec 2007  S. Manoshin    Add air attenuation of flux for travel before collimator  */
 /********************************************************************************************/
 
 #include <string.h>

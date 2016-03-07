@@ -124,12 +124,12 @@ So don't worry about obtaining more output than input trajectories.
 
  <tr>
    <td>&theta;, &Delta;&theta;<br> &phi;, &Delta;&phi;<br>[deg]</td>
-   <td>These parameters describe the solid angle covered by the detector. The direction (&theta;,&phi;) points to the middle of the covered area, 
+   <td>These parameters describe the solid angle into which scattering occurs. The direction (&theta;,&phi;) points to the middle of the covered range, 
        which extends from [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;] and [&phi;-&Delta;&phi;, &phi;+&Delta;&phi;].<br>
-       &theta; is defined as the angle between +x-axis (main flight direction of the neutrons) and the vector <b>R</b> describing the flight direction. 
-       &phi; is the angle between the +y-axis and the projection of R to the yz-plane. x,y and z form a right-handed system. <br>
-       !!!Note: If you specify any parameter of &theta;, &Delta;&theta;, &phi;, &Delta;&phi;, you must specify all of them.!!! 
-       The default is a coverage of 4&pi;.</td>
+       &theta; is the scattering angle defined as the angle between +x-axis (main flight direction of the neutrons) and the vector <b>R</b> describing the flight direction after scattering. 
+       &phi; is the direction on the cone defined as the angle between the +y-axis and the projection of R to the yz-plane. (x,y and z form a right-handed system.)<br>
+       The default is Theta=DelTheta=90°, Phi=DelPhi=180° corresponding to a coverage of 4&pi;.<br />
+       Example: 20° to 160° scattering only to the right: &theta;=90°, &Delta;&theta;=70°, &phi;=180° &Delta;&phi;=90°</td>
    <td>&nbsp;-D, -d,<br>-P, -p</td>
  </tr>
 
