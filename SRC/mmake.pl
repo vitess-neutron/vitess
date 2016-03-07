@@ -182,7 +182,7 @@ mmake.pl \{option\}
   mmake.pl tries to adopt Makefile to the local Unix system.
 
   Options may be
-
+  -v                    be more verbose
        concering Unix make
   --mfile filename      generate makefile filename, default $makefile
   --lpath path          Unix: additional path to look for libraries, especially libgd, libz, libfreetype
@@ -207,7 +207,7 @@ EOS
   exit;
 }
 
-my ($lpath, $sys, $arch, $s, @LPath, %LPath);
+my ($lpath, $sys, $arch, $s, $verbose, @LPath, %LPath);
 my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
 
@@ -216,6 +216,9 @@ $win7 = 1;  # new default
 while ($_ = shift) {
   if ($_ eq '-win7') {
     $win7 = 1;
+    next;
+  } elsif ($_ eq '-v') {
+    $verbose = 1;
     next;
   }
   &usage unless /^--(.+)$/;
@@ -295,7 +298,7 @@ sub prepareMakefile {
   }
 
   # candidates for libraries are
-  $LPath{$_} = 1 foreach ('/usr/local/lib', '/usr/X11/lib', "/usr/X11R6/$xlib");
+  $LPath{$_} = 1 foreach ('/usr/local/lib', '/usr/X11/lib', '/lib64', "/usr/X11R6/$xlib");
 
   $LPath{$_} = 1 foreach split ':', $lpath;
   # gather pathes which do exist
@@ -349,7 +352,7 @@ CFLAGS = -pthread $_
 # uncomment the appropriate lines to use icc
 #CCOMP = icc
 #CPLUSCOMP = icc -x c++
-#CFLAGS = -pthread -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -fast -w3 -g0 -Wall -Wremarks -Irng -ffreestanding
+#CFLAGS = -pthread -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -w3 -g0 -Wall -Wremarks -Irng -ffreestanding
 
 CC = \$(CCOMP) \$(CFLAGS)
 CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
@@ -362,7 +365,7 @@ EOS
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
-  print OF ' -lttf' if $suse_version < 13;
+  print OF ' -lttf' if $sys ne 'Darwin' && $suse_version < 13;
   print OF ' -lm';
 
   print OF <<'EOS';
@@ -663,17 +666,22 @@ sub checkLibs {
   }
 
   my $ext = 'so';
+  my @Places = @LPath;
   $_ = '/usr/lib';
   if ($sys eq 'Darwin') {
     $ext = 'dylib';
+    push @Places, '/usr/lib';
   } elsif ($sys eq 'Linux') {
-    $_ = '/usr/lib64' if $arch eq 'x86_64';
+    if ($arch eq 'x86_64') {
+      push @Places, '/usr/lib64', '/lib64';
+    } else {
+      push @Places, '/usr/lib';
+    }
   } else {
     print STDERR "$sys is not known here\n";
     return 0;                    # no further checks for unknown systems
   }
 
-  my @Places = (@LPath, $_);
   my $anyerr;
 
   # look for libg2.a
@@ -688,13 +696,15 @@ sub checkLibs {
   my @Needlib = qw(X11 gd png z freetype Xpm);
 
   # we need libttf for SuSE versions older than 13
-  push  @Needlib, 'ttf' if $suse_version ne '' && $suse_version < 13;
+  push  @Needlib, 'ttf' if $sys ne 'Darwin' && $suse_version ne '' && $suse_version < 13;
 
   foreach my $lib (@Needlib) {
     my $found = 0;
     my $lname = "lib$lib.$ext";
     foreach (@Places) {
-      if (-s "$_/$lname") {
+      my $n = "$_/$lname";
+      print "look for $n\n" if $verbose;
+      if (-e $n) {
         $found = 1;
         last;
       }
