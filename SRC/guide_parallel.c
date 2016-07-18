@@ -59,6 +59,7 @@
 /* 3.4   Jul 2012  K. Lieutenant  exact ellipse calculations                                */
 /* 3.5   Nov 2013  K. Lieutenant  m-values as input as alternative to reflectivity files    */
 /* 3.6   Nov 2013  K. Lieutenant  corrections for R < 0                                     */
+/* 3.7   Jun 2016  A. Houben      Reflection plot options: statistics per plane             */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -74,7 +75,7 @@
 
 #include "mathfunctions.h"
 
-#define INDEX(x,y) (x*(nbinsY)+y)
+#define INDEX(x,y,p) (x*(nbinsY)+y   +  (p+1)*nbinsX*nbinsY )
 
 /******************************/
 /** Structures and Enums     **/
@@ -193,7 +194,7 @@ double PathThroughGuideGravOrder1(int thread_i,
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, GuidePiece *Pce,
                       eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
-int    FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY);
+int    FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane);
 void   DoBin(ReflCond *RefOut, int thread_i);
 double GetLengthFromFile(FILE *file);
 
@@ -994,39 +995,47 @@ static int writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 =
 
 static void writeBindata () {
 
-  int ibinXY, ibinX, ibinY, cout;
+  int ibinXY, ibinX, ibinY, iplane, cout;
   BINDATA *pix;
-  char buf[3][40];
+  char buf[4][40];
 
-  memset(buf, 0, 3*40); // clean initialisation
+  memset(buf, 0, 4*40); // clean initialisation
 
   GetKeyName(KeyX, buf[0]);
   GetKeyName(KeyY, buf[1]);
   GetKeyName(KeyProb, buf[2]);
+  
   fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n#==Data==\n", buf[0], buf[1], buf[2]);
-
-  for (ibinX = 0; ibinX < nbinsX; ibinX++)
+  for (iplane = -1; iplane < nPlanes; iplane++)
   {
-    cout = 0;
-    for (ibinY = 0; ibinY < nbinsY; ibinY++)
+    if (iplane!=-1) fprintf(pReflPlot, "\n#==Data%d==\n", iplane+1);
+    for (ibinX = 0; ibinX < nbinsX; ibinX++)
     {
-      ibinXY = INDEX(ibinX, ibinY);
-      if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
+      cout = 0;
+      for (ibinY = 0; ibinY < nbinsY; ibinY++)
+      {
+        ibinXY = INDEX(ibinX, ibinY, iplane);
+        if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
+      }
+      if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
     }
-    if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+
+    if (iplane==-1) { fprintf(pReflPlot, "\n#==XData==\n");
+      } else { fprintf(pReflPlot, "\n#==XData%d==\n", iplane+1); }
+    for (ibinX=0; ibinX < nbinsX; ibinX++)
+      if ((pix = binX[ibinX + nbinsX*(iplane+1)]))
+        writeReflPix(pix, 1);
+
+    if (keyReflParam<0) fprintf(pReflPlot,"\n");
+    
+    if (iplane==-1) { fprintf(pReflPlot, "\n#==YData==\n");
+      } else { fprintf(pReflPlot, "\n#==YData%d==\n", iplane+1); }
+    for (ibinY=0; ibinY < nbinsY; ibinY++)
+      if ((pix = binY[ibinY + nbinsY*(iplane+1)]))
+        writeReflPix(pix, 2);
+
+    if (keyReflParam<0) fprintf(pReflPlot,"\n");
   }
-
-  fprintf(pReflPlot, "\n#==XData==\n");
-  for (ibinX=0; ibinX < nbinsX; ibinX++)
-    if ((pix = binX[ibinX]))
-      writeReflPix(pix, 1);
-
-  if (keyReflParam<0) fprintf(pReflPlot,"\n");
-  fprintf(pReflPlot, "\n#==YData==\n");
-  for (ibinY=0; ibinY < nbinsY; ibinY++)
-    if ((pix = binY[ibinY]))
-      writeReflPix(pix, 2);
-
 }
 
 static Plane * copyWalls (Plane *g) {
@@ -1051,7 +1060,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 3.6");
+  print_module_name("guide_parallel 3.7");
   OwnInit(argc, argv);
 
   // allocate for planes + exit plane
@@ -1200,18 +1209,28 @@ void DoBin(ReflCond *RefOut, int thread_i)
   for (cNeut = 0; cNeut < RefOut->cneutrons; cNeut++) {
     ValX = GetValueX(RefOut, cNeut);
     ValY = GetValueY(RefOut, cNeut);
-    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY);
+    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, -1);
     if (ibinXY < 0) continue;
     ValProb = GetProb(RefOut, cNeut);
 
     rp = &(RefOut->neutrons[cNeut]);
 
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
-                binX  + ibinX  + thread_i*nbinsX);
+                binX  + ibinX  + thread_i*nbinsX*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
-                binY  + ibinY  + thread_i*nbinsY);
+                binY  + ibinY  + thread_i*nbinsY*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
-                binXY + ibinXY + thread_i*nbinsX*nbinsY);
+                binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
+    //if (rp->ThisCollision < GW_EXIT) {
+    
+    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, rp->ThisCollision);
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+                binX  + ibinX  + (rp->ThisCollision+1)*nbinsX + thread_i*nbinsX*(nPlanes+1));
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+                binY  + ibinY  + (rp->ThisCollision+1)*nbinsY + thread_i*nbinsY*(nPlanes+1));
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
+                binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
+    //}
   }
 }
 
@@ -1239,9 +1258,9 @@ static void MergeThreadBins (BINDATA **bin, int pixcount) {
 }
 
 static void MergeBins () {
-  MergeThreadBins(binX, nbinsX);
-  MergeThreadBins(binY, nbinsY);
-  MergeThreadBins(binXY, nbinsX*nbinsY);
+  MergeThreadBins(binX, nbinsX*(nPlanes+1));
+  MergeThreadBins(binY, nbinsY*(nPlanes+1));
+  MergeThreadBins(binXY, nbinsX*nbinsY*(nPlanes+1));  //should better use INDEX!
 }
 
 static FILE * tryOpen(const char *fn, const char *s) {
@@ -1331,7 +1350,8 @@ void OwnInit   (int argc, char *argv[]) {
         fprintf(pReflPlot,
                 "#   X          Y        counts   Mode    0       5       10    RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z   WeightSum\n"
                 "#   1          2         3=C     4=S    5=C     6=C     7=C    8=A      9=A 10=A  11=1N     12=1N 13=A      14=A  15=A           16=A     17=A  18=1N  19=A   20=A   21=A     22=S           23=A       24=A       25=A       26=A      27=A      28=A      29=A 30=A 31=A     32=S   \n"
-                "#1N = defined by first neutron in bin; A = avaraged; S = summed up; C = events counted; Mode: 0=Scattered, 5=No interaction, 10=Died\n");        
+                "#1N = defined by first neutron in bin; A = avaraged; S = summed up; C = events counted; Mode: 0=Scattered, 5=No interaction, 10=Died\n"
+                "#Data blocks: ==Data== holds 2D binning, ==DataX== and ==DataY== are 1D binnings, ==Data<Number>==, ==DataX<Number>==, ==DataY<Number>== the same analysis, but done seperately per guide plane with 1 = top, 2 = bottom, 3 = left, 4 = right, >=5 same order for each plane created by the additional planes option\n");
         ReflPlotFileName=arg;
       }
       break;
@@ -1588,9 +1608,9 @@ void OwnInit   (int argc, char *argv[]) {
     bpostX = (double*) calloc(nbinsX+1, sizeof(double));
     bpostY = (double*) calloc(nbinsY+1, sizeof(double));
     // allocate storage for each thread
-    binX    = (BINDATA**) calloc((NThreads+1)*(nbinsX+1), sizeof(BINDATA*));
-    binY    = (BINDATA**) calloc((NThreads+1)*(nbinsY+1), sizeof(BINDATA*));
-    binXY   = (BINDATA**) calloc((NThreads+1)*(INDEX(nbinsX, nbinsY)+1), sizeof(BINDATA*));
+    binX    = (BINDATA**) calloc((NThreads+1)*(nbinsX+1)*(nPlanes+1), sizeof(BINDATA*));
+    binY    = (BINDATA**) calloc((NThreads+1)*(nbinsY+1)*(nPlanes+1), sizeof(BINDATA*));
+    binXY   = (BINDATA**) calloc((NThreads+1)*(INDEX(nbinsX, nbinsY, nPlanes)+1), sizeof(BINDATA*));
 
     bintervalX = (MaxX - MinX) / (double)nbinsX;
     bintervalY = (MaxY - MinY) / (double)nbinsY;
@@ -2248,6 +2268,7 @@ double PathThroughGuideGravOrder1(int thread_i,
         return -1.0;
       } else
         ThisReflectivity = ReflInterpol(NearestNeutron.Wavelength, degangular, Pce->RData[ThisCollision]->Rdata, Pce->RData[ThisCollision]->maxdata);
+        //ThisReflectivity = Pce->RData[ThisCollision]->Rdata[datanumber];
     } else {
       CountMessageThread(thread_i, GUID_NO_PLANE, NearestNeutron.ID);
       return -1.0;
@@ -2426,7 +2447,7 @@ void PrintMaximalM(double *RData, long i) {
     fprintf(LogFilePtr," maximal defined m : absorber\n");
 }
 
-int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY)
+int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane)
 {
   int ix, iy;
   *ibinX = ix = (int)((Xval - MinX) / ((MaxX - MinX) / (double)nbinsX));
@@ -2436,7 +2457,7 @@ int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY)
   if (iy >= nbinsY)
     return -1;
 
-  return INDEX(ix, iy);
+  return INDEX(ix, iy, iplane);
 }
 
 double GetValueNone            (ReflCond *RefOut, int cNeut) { return (double)1.0; }
