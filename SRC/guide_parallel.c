@@ -607,7 +607,7 @@ void processNeutron(int neutron_i, int thread_i) {
       long cPlane;
       rot = rotplane;
       cPlane = GW_RIGHT;
-      while (rot < 90.0 && cPlane < eGwExit) {
+      while (fabs(rot) < 90.0 && cPlane < eGwExit) {
         cx = cos(rot/180.*M_PI);
         sx = sin(rot/180.*M_PI);
         switch (keyAddPlane) {
@@ -1427,7 +1427,7 @@ void OwnInit   (int argc, char *argv[]) {
         double rot;
         keyAddPlane = rotplane > 0.0 ? 1 : 2;
         rot = rotplane;
-        while (rot < 90.0) {
+        while (fabs(rot) < 90.0) {
           rot += rotplane;
           nPlanes += 4;
         }
@@ -1712,7 +1712,7 @@ void OwnInit   (int argc, char *argv[]) {
       if (nPlanes > 4) {
         double rot = rotplane;
         int cPlane = GW_RIGHT;
-        while (rot < 90.0 && cPlane < eGwExit) {
+        while (fabs(rot) < 90.0 && cPlane < eGwExit) {
           switch (keyAddPlane) {
           case 1:
             pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];

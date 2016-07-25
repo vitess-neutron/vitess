@@ -686,7 +686,7 @@ int main(int argc, char *argv[])
         if (nPlanes > 4) {
           rot = rotplane;
           cPlane = GW_RIGHT;
-          while (rot < 90.0 && cPlane < GW_EXIT) {
+          while (fabs(rot) < 90.0 && cPlane < GW_EXIT) {
             cx = cos(rot/180.*M_PI);
             sx = sin(rot/180.*M_PI);
             switch (keyAddPlane) {
@@ -1426,7 +1426,7 @@ void OwnInit   (int argc, char *argv[])
           } else if (fabs(rotplane) > 0.0) {
             if (rotplane > 0.0) keyAddPlane = 1; else keyAddPlane = 2;
             rot = rotplane;
-            while (rot < 90.0) {
+            while (fabs(rot) < 90.0) {
               rot += rotplane;
               nPlanes += 4;
             }
@@ -1753,7 +1753,7 @@ void OwnInit   (int argc, char *argv[])
       if (nPlanes > 4) {
         rot = rotplane;
         cPlane = GW_RIGHT;
-        while (rot < 90.0 && cPlane < GW_EXIT) {
+        while (fabs(rot) < 90.0 && cPlane < GW_EXIT) {
           switch (keyAddPlane) {
             case 1:
               cPlane++;
