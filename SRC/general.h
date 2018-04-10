@@ -41,7 +41,7 @@
 #define G           9.80665
 #define K           1.380662E-23
 #define NA          6.022137E23
-#define H           6.6260696E-34
+#define H_P         6.6260696E-34
 #define L_2_E       81805.048
 #define E_C         1.6021773E-19
 
@@ -62,6 +62,9 @@
 
 #define ANY_COLOR  -1
 #define NO_COLOR    0
+
+#define MOD_THML 1
+#define MOD_COLD 2
 
 #define MAX_COLLISIONS      100
 #define MAX_CHOPPER_WINDOWS  10

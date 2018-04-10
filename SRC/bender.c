@@ -64,12 +64,13 @@
 /*				     order planes					    */
 /*				     Number of channels (or planes) now defing, not fixed!  */
 /* v1.6	     Oct 2003  S. Manoshin   Corrected some mistakes with output: Interpolation     */
-/*				     func. Improve checking of input datas for interpolation*/
+/*				     func. Improve checking of input datas for interpolation                      */
 /* v1.7	     Feb 2004  S. Manoshin   Visualise only first 10000 trajectories,               */
-/*				     if visualisation was activated			    */
-/*				     Choose the output device : screen, file or both	    */
-/*				     New external variable gselec 			    */
-/* v1.8      Nov 2013  D. Nekrassov  M-values as input 			                    */
+/*				     if visualisation was activated                                               */
+/*				     Choose the output device : screen, file or both                              */
+/*				     New external variable gselec                                                 */
+/* v1.8      Nov 2013  D. Nekrassov:   M-values as input 			                              */
+/* v1.8a     Feb 2018  K. Lieutenant:  silicon data for 0.4 Ang added                       */
 /********************************************************************************************/
 
 
@@ -499,7 +500,7 @@ int main(int argc, char *argv[])
   }
 
 
-  print_module_name("Bender 1.6");
+  print_module_name("Bender 1.8a");
 
 
 if (bAbsTransCrit != 0)

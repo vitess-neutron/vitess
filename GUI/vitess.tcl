@@ -343,8 +343,9 @@ Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
   {scale float ""
-    {"total flux\nat moderator\n[n/(cmÂýs)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cmÂýs)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+    {"total flux\nat moderator\n[n/(cm^2s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cmÂýs)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
+  {perform float "" {"performance\nfactor" "Factor allowing for losses by aging or engineering design details not included in the model"}}
 }
 
 set m2 {
@@ -510,7 +511,9 @@ set cwsASET {
   {dist_mod_prop float 200 {"distance to\nwindow [cm]" "Usually, distance between moderator and propagation window in cm.\nBut if the moderator is not positioned at the origin (0.0,0.0,0.0), it is the distance origin - propagation window." "" D} ge0 "" 1}
   {prop_width    float 10 {"window\nwidth [cm]" "width of propagation window in cm" "" w} gt0 "" 1}
   {prop_height   float 10 {"window\nheight [cm]" "height of propagation window in cm" "" h} gt0 "" 1}
+  {}
   {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {beamline string "" {"beamline" "name of the beamline\nFor ESS it is used to calculate the declination" "" B}}
   {}
   {"Time window" header}
   {dst_time_foc float 200 {"distance to\ntime window [cm]" "Only neutrons arriving between min. and max TOF at this distance from the source will be sent out by the source." "" s} gt0}
@@ -650,7 +653,7 @@ foreach s {ESS_LPTS ESS_2012} {
   set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
   set source_${s}ESET [concat {
     {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly} {1 2 3 4 5}}
+    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly 2016_Butterfly} {1 2 3 4 5 6}}
     {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
     {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
@@ -2649,9 +2652,9 @@ unset ra
 
 set nA {
   {number_ybins int 100 {
-    "number\nof y-bins" "number of bins within the y-axis interval" "" y} 1 200}
+    "number\nof y-bins" "number of bins within the horizontal range, max. 1000" "" y} 1 1000}
   {number_zbins int 100 {
-    "number\nof z-bins" "number of bins within the z-axis interval" "" z} 1 200 1}
+    "number\nof z-bins" "number of bins within the vertical range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
@@ -2677,17 +2680,13 @@ proc monitorpol_posCheckErr {{app _}} {
 ### mon2
 ###   div
 
-set nA {
-  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 100 {"number\nof z-bins" "" "" z} 1 200 1}
-}
 set mA {
   {}
-  {min_y float -3 {"minimal\ny-value [deg]" "" "" w} -180 180 1}
-  {max_y float 3 {"maximal\ny-value [deg]" "" "" W} -180 180 1}
+  {min_y float -3 {"minimal\ndivy-value [deg]" "" "" w} -180 180 1}
+  {max_y float 3 {"maximal\ndivy-value [deg]" "" "" W} -180 180 1}
   {}
-  {min_z float -3 {"minimal\nz-value [deg]" "" "" h} -180 180 1}
-  {max_z float 3 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
+  {min_z float -3 {"minimal\ndivz-value [deg]" "" "" h} -180 180 1}
+  {max_z float 3 {"maximal\ndivz-value [deg]" "" "" H} -180 180 1}
 }
 
 set mon2_divESET [concat [genFE2 div] $nA $mA $pA $FA $fA $fLA $fPAuv]
@@ -2718,8 +2717,8 @@ proc mon2_kdivCheckErr {{app _}} {
 ###   y_divy
 
 set nA {
-  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 100 {"number\nof divy-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof y-bins" "number of bins within the horizontal position range, max. 1000" "" y} 1 1000}
+  {number_zbins int 100 {"number\nof divy-bins" "number of bins within the horizontal divergence range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
@@ -2740,8 +2739,8 @@ proc mon2_y_divyCheckErr {{app _}} {
 ###   z_divz
 
 set nA {
-  {number_ybins int 100 {"number\nof z-bins" "" "" y} 1 200}
-  {number_zbins int 100 {"number\nof divz-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof z-bins" "number of bins within the vertical position range, max. 1000" "" y} 1 1000}
+  {number_zbins int 100 {"number\nof divz-bins" "number of bins within the vertical divergence range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
@@ -2761,8 +2760,8 @@ proc mon2_z_divzCheckErr {{app _}} {
 ###   tof
 
 set nA {
-  {number_ybins int 100 {"number of\nTOF-bins" "" "" y} 1 200}
-  {number_zbins int 100 {"number of\nwavelength-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number of\nTOF-bins" "number of bins within the TOF range, max. 1000" "" y} 1 1000}
+  {number_zbins int 100 {"number of\nwavelength-bins" "number of bins within the lambda range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
@@ -2785,8 +2784,8 @@ proc mon2_tofwlCheckErr {{app _}} {
 ###   wldiv
 
 set nA {
-  {number_ybins int 10 {"number of\nwavelength-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number of\ndivergence-bins" "" "" z} 1 200 1}
+  {number_ybins int 10 {"number of\nwavelength-bins" "number of bins within the lambda range, max. 1000" "" y} 1 1000}
+  {number_zbins int 10 {"number of\ndivergence-bins" "number of bins within the divergence range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
@@ -2814,16 +2813,16 @@ proc mon2_tofwlCheckErr {{app _}} {
 ###   rdiv
 
 set nA {
-  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 100 {"number\nof z-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof r-bins" "number of bins within the  radius range, max. 1000" "" y} 1 1000}
+  {number_zbins int 100 {"number\nof rdiv-bins" "number of bins within the radial divergence range, max. 1000" "" z} 1 1000 1}
 }
 set mA {
   {}
-  {min_y float 0.0 {"minimal\ny-value [cm]" "" "" w} ge0}
-  {max_y float 2.0 {"maximal\ny-value [cm]" "" "" W} ge0}
+  {min_y float 0.0 {"minimal\nradius [cm]" "" "" w} ge0}
+  {max_y float 2.0 {"maximal\nradius [cm]" "" "" W} ge0}
   {}
-  {min_z float 0.0 {"minimal\nz-value [deg]" "" "" h} 0 180 1}
-  {max_z float 1.0 {"maximal\nz-value [deg]" "" "" H} 0 180 1}
+  {min_z float 0.0 {"minimal\nrdiv-value[deg]" "" "" h} 0 180 1}
+  {max_z float 1.0 {"maximal\nrdiv-value[deg]" "" "" H} 0 180 1}
 }
 
 set mon2_rdivESET [concat [genFE2 rdiv] $nA $mA $pA $FA $fA $fLA $fPAuv]
@@ -3280,6 +3279,7 @@ set sample_sansESET {
   {samplefile pareditablefile sphere.san {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r san 1}
   {sansmax float 10 {"max. theta [deg]" "maximal angle into which neutrons are scattered" "" M} le180}
+  {sansrep int 1 {repetition "'repetitions' specifies the number of trajectories generated for each scattered trajectory. A larger number of repetitions enriches the population on the detector and gives therefore better statistics in the spectrum." "" A} ge1 "" 1}
   {sansinc radio no {"incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I} {yes no} {1 0}}
 }
 
@@ -4960,28 +4960,27 @@ proc convert2String {ll} {
 }
 
 proc convert2Code {ll app} {
+#0:temp 1:color 2:shape 3:cx 4:cy 5:cz 6:width 7:height 8:spaord 9:scale 10:current
+#11:wfile 12:tfile 13:wtfile 14:modtype 15:tau1 16:tau2 17:perform
   set s ""
   set i -1
   foreach e $ll {
     set v [entryVal $e $app]
     if {[incr i] == 2} {
+	  #2:shape
       if {$v == "circular"} {set v C} else {set v R}
     } elseif {$i >= 11 && $i <= 13} {
+	  #11:wfile..13:wtfile
       if {$v == "" || $v == "0"} {set v none}
     } elseif {$i == 14} {
+	  #14:modtype
       # be careful: v might have - as value
       switch -- $v {
-	"decoupled poisoned" {set v 1}
-	"decoupled unpoisoned" {set v 2}
-	coupled {set v 3}
-	multi-spectral {set v 4}
-	default {set v 0}
-      }
-    } elseif {$i == 17} {
-      switch -- $v {
-	TS1 {set v 1}
-	TS2 {set v 2}
-	default {set v 0}
+		"decoupled poisoned" {set v 1}
+		"decoupled unpoisoned" {set v 2}
+		coupled {set v 3}
+		multi-spectral {set v 4}
+		default {set v 0}
       }
     } elseif {$v == ""} {
       set v 0
@@ -4995,7 +4994,7 @@ proc convert2Code {ll app} {
 
 proc serializeModFile {f mode var app} {
   set al {temp color shape cx cy cz width height spaord scale current
-    wfile tfile wtfile modtype tau1 tau2}
+    wfile tfile wtfile modtype tau1 tau2 perform}
   set il1 [prepList $al 1]
   set il2 [prepList $al 2]
   set il3 [prepList $al 3]
@@ -5019,19 +5018,19 @@ proc serializeModFile {f mode var app} {
       if {$fi == ""} continue
       if {[string index $fi 0] == "#"} continue
       switch [incr imode] {
-	0 {set tl $il1}
-	1 {set tl $il2
-	  set umod2 used
-	}
-	2 {set tl $il3
-	  set umod3 used
-	}
+		0 {set tl $il1}
+		1 {set tl $il2
+			set umod2 used
+		}
+		2 {set tl $il3
+		set umod3 used
+		}
       }
       if {[llength $ll] != [llength $tl]} continue
       set ll [convert2String $ll]
       foreach item $tl i $ll {
-	set r $i
-	catch {eval "set $item \$r"}
+		set r $i
+		catch {eval "set $item \$r"}
       }
     }
   } else {
@@ -5042,7 +5041,7 @@ proc serializeModFile {f mode var app} {
     }
     puts $f "# Source
 # Moderators:  center size  distribution files  time
-# Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d"
+# Temp. col shape  x    y    z  wid|dia height order tot_flux curr w-file t-file wt-file  Mod tau_a tau_d   pfmc"
     puts $f [convert2Code $il1 $app]
     if {$umod2 == "used"} {
       puts $f [convert2Code $il2 $app]
@@ -5088,8 +5087,8 @@ proc serializeImoFile {f mode var app} {
       set width [lindex $ll 6]
       set wtfile [lindex $ll 13]
       switch [lindex $ll 17] {
-	2 {set tstat TS2}
-	default {set tstat TS1}
+		2 {set tstat TS2}
+		default {set tstat TS1}
       }
     }
   } else {

@@ -3,6 +3,7 @@
 100 E %ld trajector%s found with a wavelength larger than all values in the distribution file '%s'
 101 E %ld trajector%s found with an inital time larger than all values in the distribution file '%s'
 102 E %ld trajector%s found with a wavelength or an inital time larger than all values in the distribution file '%s'
+110 E %ld trajector%s found with a horizontal position outside the range given in the distribution file '%s'
 200 E %ld trajector%s out of guide exit area
 300 E %ld trajector%s passed outside the chopper
 800 E for %ld trajector%s the calculated Q-value is higher (or smaller) than all values in the file %s 
