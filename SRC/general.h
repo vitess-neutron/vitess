@@ -44,6 +44,7 @@
 #define H_P         6.6260696E-34
 #define L_2_E       81805.048
 #define E_C         1.6021773E-19
+#define NEUTRON_ID  2112
 
 #define TRUE 		1
 #define FALSE 		0

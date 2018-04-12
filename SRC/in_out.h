@@ -27,10 +27,13 @@ McNeutron;
 /** Enums             **/
 /***********************/
 
+#define VT_EOF -1
+
 typedef enum
 { VT_VITESS_FMT = 1,
   VT_MCSTAS_FMT = 2,
-  VT_MCNPX_FMT  = 3
+  VT_MCPL_FMT   = 3,
+  VT_MCNPX_FMT  = 4
 }
 VtPrgFormat;
 
