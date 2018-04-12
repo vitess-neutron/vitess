@@ -513,7 +513,7 @@ set cwsASET {
   {prop_height   float 10 {"window\nheight [cm]" "height of propagation window in cm" "" h} gt0 "" 1}
   {}
   {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
-  {beamline string "" {"beamline" "name of the beamline\nFor ESS it is used to calculate the declination" "" B}}
+  {beamline string "" {"beamline" "name of the beamline\nFor the ESS Butterfly 1 moderator, it is used to determine the moderator characteristics and the declination; for other sources there is no effect" "" B}}
   {}
   {"Time window" header}
   {dst_time_foc float 200 {"distance to\ntime window [cm]" "Only neutrons arriving between min. and max TOF at this distance from the source will be sent out by the source." "" s} gt0}
@@ -652,8 +652,8 @@ foreach s {ESS_LPTS ESS_2012} {
 
   set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
   set source_${s}ESET [concat {
-    {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly 2016_Butterfly} {1 2 3 4 5 6}}
+    {name radio ESS {"source name" "" "" N} {- ESS} {- ESS}}
+    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
     {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
     {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
@@ -776,9 +776,10 @@ set read_inESET {
   {ri_frc1 float "1.0" {"weight of traj.\nin file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
   {ri_frc2 float "0.0" {"weight of traj.\nin file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
   {ri_frc3 float "0.0" {"weight of traj.\nin file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
+  {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {}
-  {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas} {1 2}}
-  {inform radio float {"VITESS\ndata format" "format of double values in the input file" "" F} {exp float} {0 1}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
+  {inform radio float {"VITESS\nstorage format" "format of double values in the input file" "" F} {exp float} {0 1}}
   {}
   {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
@@ -790,12 +791,12 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
   {}
   {"VITESS parameters" header}
-  {outform radio float {"data format" "format of float values in writeout file" "" F} {exp float} {0 1}}
+  {outform radio float {"storage format" "format of float values in writeout file" "" F} {exp float} {0 1}}
   {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
   {}
@@ -1193,43 +1194,43 @@ set guide_idealESET {
   {shape_file mneditablefile guide_shape.dat
     {"guide shape" "File containing ellipse parameters" "" O}}
   {}
-  {axis_long_hor float 0 {
+  {axis_long_hor float 13 {
     "Major ellipse\naxis in x-y plane [m]"
-    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
-  {axis_short_hor float 0 {
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 ""}
+  {axis_short_hor float 0.04 {
     "Minor ellipse\naxis in x-y plane [m]"
-    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 ""}
   {}
-  {axis_long_ver float 0 {
+  {axis_long_ver float 13 {
     "Major ellipse\naxis in x-z plane [m]"
-    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
-  {axis_short_ver float 0 {
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 ""}
+  {axis_short_ver float 0.06 {
     "Minor ellipse\naxis in x-z plane [m]"
-    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 ""}
   {}	 		
   {enter_width float 6 {
     "entrance\nwidth [cm]"
-    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 ""}
   {enter_height float 10 {
     "entrance\nheight [cm]"
-    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 ""}
   {}
   {exit_width float 6 {
     "exit\nwidth [cm]"
-    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 ""}
   {exit_height float 10 {
     "exit\nheight [cm]"
-    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 ""}
   {}
-  {length_guide float 0 {
+  {length_guide float 25 {
     "Guide length [m]"
-    "Length of guide in m"  "" l} ge0 "" 1}	
+    "Length of guide in meter"  "" l} ge0 "" 1}	
   {dist_focus_hor float 0 {
     "Distance from exit to\nfocus in hor. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 "" 1}	
+    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 ""}	
   {dist_focus_ver float 0 {
     "Distance from exit to\nfocus  in ver. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 "" 1}	
+    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 ""}	
   {}
    {addColor float 0 {
     "Add to color"
@@ -1275,43 +1276,43 @@ set guide_ellipticESET {
   {shape_file mneditablefile guide_shape.dat
     {"guide shape" "File containing ellipse parameters" "" O}}
   {}
-  {axis_long_hor float 0 {
+  {axis_long_hor float {
     "Major ellipse\naxis in x-y plane [m]"
-    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
-  {axis_short_hor float 0 {
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 ""}
+  {axis_short_hor float {
     "Minor ellipse\naxis in x-y plane [m]"
-    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 ""}
   {}
   {axis_long_ver float 0 {
     "Major ellipse\naxis in x-z plane [m]"
-    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 ""}
   {axis_short_ver float 0 {
     "Minor ellipse\naxis in x-z plane [m]"
-    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 ""}
   {}	 		
   {enter_width float 6 {
     "entrance\nwidth [cm]"
-    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 ""}
   {enter_height float 10 {
     "entrance\nheight [cm]"
-    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 ""}
   {}
   {exit_width float 6 {
     "exit\nwidth [cm]"
-    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 ""}
   {exit_height float 10 {
     "exit\nheight [cm]"
-    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 ""}
   {}
-  {length_guide float 0 {
+  {length_guide float 25 {
     "Guide length [m]"
     "Length of guide in m"  "" l} ge0 "" 1}	
-  {dist_focus_hor float 0 {
+  {dist_focus_hor float {
     "Distance from exit to\nfocus in hor. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 "" 1}	
-  {dist_focus_ver float 0 {
+    "Distance from guide exit to focal point of the ellipse.\nin horizontal plane."  "" d} ge0 ""}	
+  {dist_focus_ver float {
     "Distance from exit to\nfocus  in ver. plane [m]"
-    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 "" 1}	
+    "Distance from guide exit to focal point of the ellipse.\nin vertical plane."  "" D} ge0 ""}	
   {}
    {addColor float 0 {
     "Add to color"
