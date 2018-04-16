@@ -52,8 +52,8 @@ my @Obj = qw(general intersection matrix sample softabort);
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
-	   mirror_coating surface_file gener_bispectral guide_shape spin_reset capture_flux runtime
-           fom gener_pipe opt_sim);
+	   mirror_coating surface_file gener_bispectral guide_shape spin_reset
+           capture_flux runtime fom gener_pipe opt_sim);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
@@ -125,7 +125,9 @@ my %dep = (			# needed objects for a module
 	   mirror_elliptical => 'mirrrefl',
            sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi',
            monitor1D => 'mon1D',
-           monitor2D => 'mon2D'
+           monitor2D => 'mon2D',
+           read_in => 'mcpl',
+           writeout => 'mcpl'
 	  );
 $dep{$_} = 'threadHelper' foreach (@ParMod);
 

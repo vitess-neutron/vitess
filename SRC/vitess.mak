@@ -147,7 +147,7 @@ ALL : \
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=3 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=4 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -168,116 +168,120 @@ SOURCE=$(SPATH)\softabort.c
 "$(IDIR)\softabort.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\opt_swarm.c
-"$(IDIR)\opt_swarm.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\source_csns.c
-"$(IDIR)\source_csns.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\opt_grad_mc.c
-"$(IDIR)\opt_grad_mc.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\sgsi.c
-"$(IDIR)\sgsi.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\pipe_fct.c
-"$(IDIR)\pipe_fct.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\opt_metro.c
-"$(IDIR)\opt_metro.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\bender_inter_data.c
-"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\nxs.c
-"$(IDIR)\nxs.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\calc_sim_fom.c
-"$(IDIR)\calc_sim_fom.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\source_ess.c
-"$(IDIR)\source_ess.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\ma_geom.c
 "$(IDIR)\ma_geom.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\sq_calc.c
-"$(IDIR)\sq_calc.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\sgio.c
-"$(IDIR)\sgio.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\lensetr.c
-"$(IDIR)\lensetr.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\magneticmap.c
-"$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\mon2D.cpp
 "$(IDIR)\mon2D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\mon1D.cpp
-"$(IDIR)\mon1D.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\threadHelper.c
 "$(IDIR)\threadHelper.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\mirrrefl.c
-"$(IDIR)\mirrrefl.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\src_modchar.c
-"$(IDIR)\src_modchar.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\opt_fct.c
-"$(IDIR)\opt_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\opt_grad.c
 "$(IDIR)\opt_grad.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_swarm.c
+"$(IDIR)\opt_swarm.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\sgclib.c
 "$(IDIR)\sgclib.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\sgfind.c
-"$(IDIR)\sgfind.obj" : $(SOURCE)
+SOURCE=$(SPATH)\calc_sim_fom.c
+"$(IDIR)\calc_sim_fom.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\sghkl.c
-"$(IDIR)\sghkl.obj" : $(SOURCE)
+SOURCE=$(SPATH)\opt_metro.c
+"$(IDIR)\opt_metro.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\lensetr.c
+"$(IDIR)\lensetr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_fct.c
+"$(IDIR)\opt_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mirrrefl.c
+"$(IDIR)\mirrrefl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\magneticmap.c
+"$(IDIR)\magneticmap.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\nxs.c
+"$(IDIR)\nxs.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\bender_inter_data.c
+"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\monochrclass.cpp
 "$(IDIR)\monochrclass.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\sgio.c
+"$(IDIR)\sgio.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\src_modchar.c
+"$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mon1D.cpp
+"$(IDIR)\mon1D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sq_calc.c
+"$(IDIR)\sq_calc.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\source_ess.c
+"$(IDIR)\source_ess.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgfind.c
+"$(IDIR)\sgfind.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\pipe_fct.c
+"$(IDIR)\pipe_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sgsi.c
+"$(IDIR)\sgsi.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\ma_functions.c
 "$(IDIR)\ma_functions.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\mcpl.c
+"$(IDIR)\mcpl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\source_csns.c
+"$(IDIR)\source_csns.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\gener_fct.c
 "$(IDIR)\gener_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\sghkl.c
+"$(IDIR)\sghkl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_grad_mc.c
+"$(IDIR)\opt_grad_mc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ascii2bin.c
@@ -361,15 +365,15 @@ SOURCE=$(SPATH)\read_in.c
 "$(IDIR)\read_in.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\read_in.exe" : "$(OD)" $(TOOL) "$(OD)\read_in.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\read_in.pdb" /out:"$(OD)\read_in.exe" "$(IDIR)\read_in.obj" $(TOOL) 
+"$(OD)\read_in.exe" : "$(OD)" $(TOOL) "$(OD)\read_in.obj" "$(OD)\mcpl.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\read_in.pdb" /out:"$(OD)\read_in.exe" "$(IDIR)\read_in.obj" $(TOOL) "$(OD)\mcpl.obj" 
 
 SOURCE=$(SPATH)\writeout.c
 "$(IDIR)\writeout.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\writeout.exe" : "$(OD)" $(TOOL) "$(OD)\writeout.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\writeout.pdb" /out:"$(OD)\writeout.exe" "$(IDIR)\writeout.obj" $(TOOL) 
+"$(OD)\writeout.exe" : "$(OD)" $(TOOL) "$(OD)\writeout.obj" "$(OD)\mcpl.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\writeout.pdb" /out:"$(OD)\writeout.exe" "$(IDIR)\writeout.obj" $(TOOL) "$(OD)\mcpl.obj" 
 
 SOURCE=$(SPATH)\gener_batch.c
 "$(IDIR)\gener_batch.obj" : $(SOURCE)
@@ -452,8 +456,8 @@ SOURCE=$(SPATH)\opt_sim.c
 "$(IDIR)\opt_sim.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\opt_fct.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_grad_mc.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\opt_fct.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_grad_mc.obj" 
+"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_fct.obj" "$(OD)\opt_swarm.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_fct.obj" "$(OD)\opt_swarm.obj" 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
@@ -508,8 +512,8 @@ SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\source_csns.obj" "$(OD)\src_modchar.obj" "$(OD)\source_ess.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\source_csns.obj" "$(OD)\src_modchar.obj" "$(OD)\source_ess.obj" 
+"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\source_ess.obj" "$(OD)\source_csns.obj" "$(OD)\src_modchar.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\source_ess.obj" "$(OD)\source_csns.obj" "$(OD)\src_modchar.obj" 
 
 SOURCE=$(SPATH)\spacewindow_multiple.c
 "$(IDIR)\spacewindow_multiple.obj" : $(SOURCE)
@@ -781,8 +785,8 @@ SOURCE=$(SPATH)\sample_nxs.c
 "$(IDIR)\sample_nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sghkl.obj" "$(OD)\sgsi.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sgclib.obj" "$(OD)\sgfind.obj" "$(OD)\sghkl.obj" "$(OD)\sgsi.obj" "$(OD)\sgio.obj" "$(OD)\nxs.obj" 
+"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\nxs.obj" "$(OD)\sgio.obj" "$(OD)\sgclib.obj" "$(OD)\sghkl.obj" "$(OD)\sgfind.obj" "$(OD)\sgsi.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\nxs.obj" "$(OD)\sgio.obj" "$(OD)\sgclib.obj" "$(OD)\sghkl.obj" "$(OD)\sgfind.obj" "$(OD)\sgsi.obj" 
 
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
@@ -867,8 +871,8 @@ SOURCE=$(SPATH)\bender.c
 "$(IDIR)\bender.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\bender_inter_data.obj" "$(OD)\bendchtr.obj" "$(OD)\cpgplot.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj"
+"$(OD)\bender.exe" : "$(OD)" "$(OD)\bender.obj" $(MTOOL) "$(OD)\cpgplot.obj" "$(OD)\bendchtr.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj" "$(OD)\bender_inter_data.obj"
+	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\bender.pdb" /out:"$(OD)\bender.exe" "$(IDIR)\bender.obj" "$(OD)\cpgplot.obj" "$(OD)\bendchtr.obj" "$(OD)\bendtest.obj" "$(OD)\bendertr.obj" "$(OD)\bender_inter_data.obj"
 
 SOURCE=$(SPATH)\visual.c
 "$(IDIR)\visual.obj" : $(SOURCE)
@@ -881,8 +885,8 @@ SOURCE=$(SPATH)\sm_ensemble_parallel.c
 "$(IDIR)\sm_ensemble_parallel.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\sm_ensemble_parallel.exe" : "$(OD)" "$(OD)\sm_ensemble_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
-	$(LINK32) $(ML_T) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
+"$(OD)\sm_ensemble_parallel.exe" : "$(OD)" "$(OD)\sm_ensemble_parallel.obj" $(MTOOL) "$(OD)\cpgplot.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\cpgplot.obj" "$(OD)\threadHelper.obj"
 
 SOURCE=$(SPATH)\dist_time.c
 "$(IDIR)\dist_time.obj" : $(SOURCE)
