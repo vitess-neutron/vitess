@@ -1,29 +1,18 @@
 # Vitess NMAKE File
-SROOT=C:\Users\dmf
-SVNROOT=C:\Users\dmf\vitess
-CPATH=C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC
-CPATH2=C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A
-IPATH=$(CPATH)\include
-LPATH=$(CPATH)\lib
-IPATH2=$(CPATH2)\include
-LPATH2=$(CPATH2)\lib
-
-SPATH=$(SVNROOT)\SRC
-GPATH=$(SROOT)\g2_win
-GSLPATH=$(SPATH)\rng
-
-!IF "$(OS)" == "Windows_NT"
-NULL=
-!ELSE
-NULL=nul
-!ENDIF
+# to be used as
+# nmake /f vitess.mak
+# after cd to the SRC directory of the Vitess tree
+# from a Microsoft VS 2017 cmd.exe
+SPATH=.
+GPATH=.\g2-0.72
+GSLPATH=.\rng
 
 OD=.\Release
 IDIR=.\Release
 
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
-INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
+INC=/I "$(SPATH)" /I "$(GSLPATH)"
 CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
@@ -32,7 +21,7 @@ LIBGSL=libgsl.lib
 LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
- /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
+ /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
 TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
@@ -40,10 +29,10 @@ NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(TO
 GTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathfunctions.obj" $(TOOL)
 MGTOOL="$(IDIR)\mathfunctions.obj" $(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
-GRALIB=g2.lib
+GRALIB=libg2.lib
 
-ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
-ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
+ML= /NODEFAULTLIB:libc.lib $(WINLIBS) $(LIBGSL) $(LINK32_FLAGS)
+ML_T= /NODEFAULTLIB:libc.lib $(WINLIBS) $(LIBGSL) $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
  $(CPP) @<<
@@ -266,7 +255,7 @@ SOURCE=$(SPATH)\ma_functions.c
 
 SOURCE=$(SPATH)\mcpl.c
 "$(IDIR)\mcpl.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DSILLYWINDOWS $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\source_csns.c
 "$(IDIR)\source_csns.obj" : $(SOURCE)

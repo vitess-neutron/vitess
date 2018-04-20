@@ -15,3 +15,10 @@ make, create  <sysarch> subdirectory,
 - copy include files from include subdirectory to <sysarch>
 - move libg2.a to <syarch>
 - cleanup *.o files in src directory
+
+Windows:
+use cmd.exe for VS 2017
+cd to src directory
+nmake /f g2.mak
+
+
