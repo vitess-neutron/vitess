@@ -8,19 +8,6 @@ use strict;
 ### configure here ####################################################
 ###
 
-# windows pathes for programs and sources, use | for \
-# first row for old 2003 version, second for windows7 10.0
-my @Vstudio = ('c:|programme|microsoft visual studio .net 2003',
-               'C:|Program Files (x86)|Microsoft Visual Studio 10.0');
-# 3 subdirectories each, specific for a visual studio version
-# first 2 for path in compile.bat, 3. CPATH2 in vitess.mak
-my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|Vc7|PlatformSDK',
-             'VC', 'Common7|IDE','C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
-
-
-my $sroot = 'C:|Users|dmf';
-my $svnroot = 'C:|Users|dmf|vitess';  # --src parameter
-
 # unix comment
 my $unixcomment =<<'EOS';
 # compile hosts used at HZB
@@ -32,7 +19,7 @@ EOS
 ###
 ### end configure ######################################################
 
-my ($vstudio, $mscdir, $mscpath, $win7, $subdir, $g2sub, $g2subsub, $suse_version);
+my ($subdir, $g2sub, $g2subsub, $suse_version);
 
 $_ = `grep VERSION /etc/SuSE-release 2>/dev/null`;
 $suse_version = $1 if / = (.+)/;
@@ -171,7 +158,6 @@ my @All = (@C, @CI, @CM, @CN, @CG, @CMG, @CS, @Gexe, @PTool);
 
 my $makefile = 'Makefile';
 my $nmakefile = 'vitess.mak';
-my $wcomp = 'compile.bat';
 
 sub usage {
 
@@ -192,18 +178,7 @@ mmake.pl \{option\}
 
        concerning Windows nmake
   --nfile filename      generate nmake filename, default $nmakefile, use /dev/null to ignore
-  --src path            directory with sources, like (default)
-                        --src '$svnroot'
                         if you do not give a path here, no nmake file will be generated
-  --g2dir               directory with g2 sources, like (default)
-                        --g2dir '$sroot'
-  --vstudio path        path to visual studio directory, in a form like (default)
-                        --vstudio '$vstudio'
-                        use | as separator instead of \\ here
-  -winXP                generate vitess.mak and compile.bat for old windows xp,
-                        default for windows 7 + vis. studio 10
-  --winpath path        path to visual studio binaries, in a form like (default)
-                        --winpath '$mscpath'
 EOS
 
   exit;
@@ -213,13 +188,8 @@ my ($lpath, $sys, $arch, $s, $verbose, @LPath, %LPath);
 my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
 
-$win7 = 1;  # new default
-
 while ($_ = shift) {
-  if ($_ eq '-win7') {
-    $win7 = 1;
-    next;
-  } elsif ($_ eq '-v') {
+  if ($_ eq '-v') {
     $verbose = 1;
     next;
   }
@@ -232,32 +202,11 @@ while ($_ = shift) {
     $nmakefile = $arg;
   } elsif ($_ eq 'lpath') {
     $lpath = $arg;
-  } elsif ($_ eq 'vstudio') {
-    $vstudio = $arg;
-  } elsif ($_ eq 'winpath') {
-    $mscpath = $arg;
-  } elsif ($_ eq 'src') {
-    $svnroot = $arg;
-  } elsif ($_ eq 'g2dir') {
-    $sroot = $arg;
-  } elsif ($_ eq 'winXP') {
-    $win7 = 0;
   } else {
     &usage;
   }
 }
 
-# set path variables use to generate windows makefile
-$vstudio = $Vstudio[$win7] if $vstudio eq '';
-my $i = $win7 ? 3 : 0;
-my $s1 = $VSub[$i];
-my $s2 = $VSub[$i+1];
-$mscdir  = "$vstudio|$s1";
-if ($win7) {
-  $mscpath = "$vstudio|$s2;$vstudio|$s1|BIN";
-} else {
-  $mscpath = "$vstudio|$s1;$vstudio|$s2";
-}
 # try to read VITESS version from ../GUI/control.tcl
 
 my ($version, $fullversion);
@@ -269,10 +218,6 @@ while (<F>) {
   }
 }
 close F;
-#if ($version ne '') {
-#  $_ = $ENV{ORGANIZATION};
-#  $fullversion .= " $_" if $_;
-#}
 
 
 &prepareMakefile if $makefile ne '';
@@ -434,77 +379,55 @@ sub prepareNMakefile {
 
   open OF, ">$nmakefile";
 
-  $_ = $win7 ? $VSub[5] : $VSub[2];
-
-  $s = <<EOS;
+  $s = <<'EOS';
 # Vitess NMAKE File
-SROOT=$sroot
-SVNROOT=$svnroot
-CPATH=$mscdir
-CPATH2=$_
-EOS
+# to be used as
+# nmake /f vitess.mak all
+# after cd to the SRC directory of the Vitess tree
+# from a Microsoft VS 2017 cmd.exe
+SPATH=.
+GPATH=.\g2-0.72
+GSLPATH=.\rng
 
-  $s .= <<'EOS';
-IPATH=$(CPATH)|include
-LPATH=$(CPATH)|lib
-IPATH2=$(CPATH2)|include
-LPATH2=$(CPATH2)|lib
-
-SPATH=$(SVNROOT)|SRC
-GPATH=$(SROOT)\g2_win
-GSLPATH=$(SPATH)|rng
-
-!IF "$(OS)" == "Windows_NT"
-NULL=
-!ELSE
-NULL=nul
-!ENDIF
-
-OD=.|Release
-IDIR=.|Release
+OD=.\Release
+IDIR=.\Release
 
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
-INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-EOS
-
-  $s .= 'CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /FD /EHsc /c';
-  $s .= ' /Og /YX' unless $win7;
-  $s .= "\n";
-
-  $s .= <<'EOS';
-CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
+INC=/I "$(SPATH)" /I "$(GSLPATH)"
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c
+CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
 
 LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
-LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 |
- /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
-ITOOL="$(IDIR)|intersection.obj" $(TOOL)
-MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
-NTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathmatrix.obj" "$(IDIR)|mon2D.obj" $(TOOL)
-GTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathfunctions.obj" $(TOOL)
-MGTOOL="$(IDIR)|mathfunctions.obj" $(MTOOL)
-STOOL="$(IDIR)|sample.obj" $(MTOOL)
-GRALIB=g2.lib
+LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
+ /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
+TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
+ITOOL="$(IDIR)\intersection.obj" $(TOOL)
+MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
+NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(TOOL)
+GTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathfunctions.obj" $(TOOL)
+MGTOOL="$(IDIR)\mathfunctions.obj" $(MTOOL)
+STOOL="$(IDIR)\sample.obj" $(MTOOL)
+GRALIB=libg2.lib
 
-ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
-ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
+ML= /NODEFAULTLIB:libc.lib $(WINLIBS) $(LIBGSL) $(LINK32_FLAGS)
+ML_T= /NODEFAULTLIB:libc.lib $(WINLIBS) $(LIBGSL) $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
+	$(CPP) @<<
+	$(CPP_PROJ) $<
 <<
 
 .cpp{$(IDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
+	$(CPP) @<<
+	$(CPP_PROJ) $<
 <<
 
 "$(OD)" :
-    if not exist "$(OD)|$(NULL)" mkdir "$(OD)"
+	if not exist "$(OD)\$(NULL)" mkdir "$(OD)"
 
 EOS
 
@@ -598,22 +521,14 @@ EOS
   }
   close OF;
 
-  open OF, ">compile.bat";
-  $_ = $mscpath;
-  tr/|/\\/;
-  print OF <<EOS;
-Path=$_\r
-nmake /f vitess.mak all\r
-EOS
-  close OF;
-
   print STDERR <<EOS;
 
-generated $nmakefile and compile.bat
+generated $nmakefile
     to compile VITESS sources under Windows,
-         copy $nmakefile and compile.bat to your windows host SRC directory,
-         start a command shell there, 
-         cd to the SRC directory, and type compile
+         copy $nmakefile to your windows host SRC directory,
+         start a Visual Studio 2017 command shell there,
+         cd to the SRC directory, and type
+         nmake /f $nmakefile all
 EOS
 }
 
