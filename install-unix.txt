@@ -146,3 +146,25 @@ guide_Darwin_x86_64      Darwin 64 bit
 and in the past
 guide_SunOS		 Solaris sparc
 guide_OSF		 Tru64 alpha
+
+Installing Vitess for a multi user enviroment under Linux
+---------------------------------------------------------
+
+If you plan to install Vitess as root to a system directory like /opt
+for all users, you may face the problem that they are not allowed to write files
+in that directory.
+They need to use a copied own directory with vitess files for that purpose.
+
+It's easy to provide this. Let us assume root unzipped the latest version
+to /opt/vitess3.4, she or he may provide a call script like 
+/usr/local/bin/vitess3.4 for users in the default PATH.
+
+Do as root then
+/opt/vitess3.4/TOOLS/make_callscript.pl /usr/local/bin/vitess3.4
+
+If users invoke Vitess via
+vitess3.4
+the first time, an own directory ~/vitess3.4 will be created, where all
+sub directories will be symbolic links to the installed Vitess version,
+except ~/vitess3.4/FILES which is a true recursive copy. Snapshots,
+modified parameter files and .gui files will be individual then.
