@@ -60,6 +60,9 @@
 /* 3.5   Nov 2013  K. Lieutenant  m-values as input as alternative to reflectivity files    */
 /* 3.6   Nov 2013  K. Lieutenant  corrections for R < 0                                     */
 /* 3.7   Jun 2016  A. Houben      Reflection plot options: statistics per plane             */
+/* 3.7a  Mar 2017  A. Houben      color filter                                              */
+/* 3.7b  May 2018  A. Houben      Correct assignment of reflectivity files for              */
+/*                                non-shape-by-file geometries used with add. plane angles  */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -220,6 +223,8 @@ long   nPieces   = 1,
        nChannels = 1,
        nSpacers  = 0,
        nPlanes   = 4;
+long   nColour = -1;          /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  */
 short  AddToColor = 0;
 int    keyReflParam = -1;     /* Trajectories to be written out:
                                  1 = only those leaving the guide;
@@ -442,6 +447,7 @@ void processNeutron(int neutron_i, int thread_i) {
   double dDelZ = GdDelZ;
 
   myneutron = InputNeutrons + neutron_i;
+  if (nColour!=-1 && nColour!=myneutron->Color) goto dump; //Wrong color neutrons will be written!
 
   /* myneutron->Position.X = 0.0;   !!!!!!!! */
   CopyVector(BegPosM, BegPosS);
@@ -790,6 +796,12 @@ void processNeutron(int neutron_i, int thread_i) {
 
     WriteNeutronParallel(&Output, thread_i);
   }
+  goto my_exit;
+ dump:
+ {
+    Neutron Output = *myneutron;
+    WriteNeutronParallel(&Output, thread_i);
+ }
  my_exit:;
 }
 
@@ -1060,7 +1072,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 3.7");
+  print_module_name("guide_parallel 3.7b");
   OwnInit(argc, argv);
 
   // allocate for planes + exit plane
@@ -1299,8 +1311,8 @@ void OwnInit   (int argc, char *argv[]) {
   int ibinX, ibinY;
 
   // guide parameter character usage:
-  //free                         g                                          
-  //used a A b B c C d D e E f F   G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X y Y z Z
+  //free                                                                    
+  //used a A b B c C d D e E f F g G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X y Y z Z
 
   for (i=1; i<argc; i++) {
 
@@ -1517,6 +1529,10 @@ void OwnInit   (int argc, char *argv[]) {
       KeyProb = atoi(arg);
       break;
       
+    case 'g':
+      nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
+      break;
+
     default:
       myExit1("ERROR: Unknown command option: %s\n",argv[i]);
     }
@@ -1659,7 +1675,7 @@ void OwnInit   (int argc, char *argv[]) {
 
       allocRdata(&(pPieces[j].RData), nPlanes);
 
-      /* Calculate Area for this reflectivity file */
+      /* Calculate Area for this reflectivity file; only valid for squared guide */
       if (j > 0) {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -1766,7 +1782,7 @@ void OwnInit   (int argc, char *argv[]) {
 
       allocRdata(&(pPieces[j].RData), nPlanes);
 
-      /* Calculate Area for this reflectivity file */
+      /* Calculate Area for this reflectivity file; only valid for squared guide */
       if (j > 0) {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -1783,6 +1799,28 @@ void OwnInit   (int argc, char *argv[]) {
       pPieces[j].RData[GW_RIGHT]  = GetReflData(MValGenR,  ReflFileNameR, pReflR);
       pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT);
       pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB);
+
+      if (nPlanes > 4) {
+        double rot = rotplane;
+        int cPlane = GW_RIGHT;
+        while (fabs(rot) < 90.0 && cPlane < eGwExit) {
+          switch (keyAddPlane) {
+          case 1:
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_BOTTOM];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_BOTTOM];
+            break;
+          case 2:
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_LEFT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_LEFT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_RIGHT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_RIGHT];
+            break;
+          }
+          rot += rotplane;
+        }
+      }
     }
   }
   if (pFile)
