@@ -1101,15 +1101,18 @@ set specoptAdd {
   {wavi_dis radio rectangular {"waviness\ndistr."
     "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
     {rectangular Gaussian} {1 2}}
+  {eval_colour int -1 {
+    "color" "color necessary for the trajectory to be treated\ncolor -1 means: all trajectories are treated.\nNot machting neutrons will stay unchanged and passed to the next module." "" g} -1 32768}
   {addtocolor int 0 {
     "add to\ncolor" "Add value to neutron color on each reflection." "" A} ""}
-  {addplane float 0 {
-    "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
   {abutlen float 0
     {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}
+  {}
+  {addplane float 0 {
+    "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
   {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
@@ -4977,11 +4980,11 @@ proc convert2Code {ll app} {
 	  #14:modtype
       # be careful: v might have - as value
       switch -- $v {
-		"decoupled poisoned" {set v 1}
-		"decoupled unpoisoned" {set v 2}
-		coupled {set v 3}
-		multi-spectral {set v 4}
-		default {set v 0}
+	"decoupled poisoned" {set v 1}
+	"decoupled unpoisoned" {set v 2}
+	coupled {set v 3}
+	multi-spectral {set v 4}
+	default {set v 0}
       }
     } elseif {$v == ""} {
       set v 0
@@ -5019,19 +5022,19 @@ proc serializeModFile {f mode var app} {
       if {$fi == ""} continue
       if {[string index $fi 0] == "#"} continue
       switch [incr imode] {
-		0 {set tl $il1}
-		1 {set tl $il2
-			set umod2 used
-		}
-		2 {set tl $il3
-		set umod3 used
-		}
+	0 {set tl $il1}
+	1 {set tl $il2
+	  set umod2 used
+	}
+	2 {set tl $il3
+	  set umod3 used
+	}
       }
       if {[llength $ll] != [llength $tl]} continue
       set ll [convert2String $ll]
       foreach item $tl i $ll {
-		set r $i
-		catch {eval "set $item \$r"}
+	set r $i
+	catch {eval "set $item \$r"}
       }
     }
   } else {
@@ -5088,8 +5091,8 @@ proc serializeImoFile {f mode var app} {
       set width [lindex $ll 6]
       set wtfile [lindex $ll 13]
       switch [lindex $ll 17] {
-		2 {set tstat TS2}
-		default {set tstat TS1}
+	2 {set tstat TS2}
+	default {set tstat TS1}
       }
     }
   } else {
