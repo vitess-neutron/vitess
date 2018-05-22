@@ -148,9 +148,9 @@ int main(int argc, char **argv)
   {
     switch (ePrgFormat)
     { case VT_MCSTAS_FMT:
-        header  = "#     weight        pos_x     pos_y      pos_z     speed_x   speed_y   speed_z     TOF       S_x  S_y  S_z \n";  
-        units   = "#      [n/s]         [m]       [m]        [m]       [m/s]     [m/s]     [m/s]      [s]       [1]  [1]  [1] \n";  
-        outform = "%15.3f  %9.6f %9.6f %10.6f  %9.2f %9.2f %9.2f  %10.8f  %4.1f %4.1f %4.1f";
+        header  = "#     weight        pos_x     pos_y      pos_z      speed_x      speed_y      speed_z        TOF       S_x  S_y  S_z \n";  
+        units   = "#      [n/s]         [m]       [m]        [m]        [m/s]        [m/s]        [m/s]         [s]       [1]  [1]  [1] \n";  
+        outform = "%15.3f  %9.6f %9.6f %10.6f  %12.2f %12.2f %12.2f  %11.9f  %4.1f %4.1f %4.1f";
 	      fprintf(pOutFile,"#Trajectories writeout_McStas \n");
         fprintf(pOutFile, "%s%s", header, units);
         break;
