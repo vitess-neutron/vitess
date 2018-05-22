@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "Particles scattering isotropically\n"); 
 			break;
 	}
-	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cm² (solvent)\n"
+	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cm^2 (solvent)\n"
 							  "vol.fract. of part. : %8.3f\n"
 							  "macr. cross section : %10.5f,%10.5f;%10.5f  1/cm (incoh, total scat; absorption)\n",
 							  g_fRho1, g_fRho2, g_fFracPtkl, g_fMuInc, g_fMuTot, g_fMuAbs);

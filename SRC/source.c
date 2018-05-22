@@ -396,7 +396,7 @@ int main(int argc, char *argv[])
       }
       fprintf(LogFilePtr,   "performance factor           : %7.3f \n",                   stMod[imod].dPfmcFact);
       if (stMod[imod].dTotalFlux > 0)
-         fprintf(LogFilePtr,"total neutron flux (in 2*pi) :%14.4e n/(cm²s) \n",          stMod[imod].dTotalFlux);
+         fprintf(LogFilePtr,"total neutron flux (in 2*pi) :%14.4e n/(cm^2s) \n",          stMod[imod].dTotalFlux);
       fprintf(LogFilePtr,   "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", stMod[imod].dCntrX, stMod[imod].dCntrY, stMod[imod].dCntrZ);
       if (stMod[imod].bCircle)
         fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",                stMod[imod].dDiameter);
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
       if (stMod[imod].dCurrent*(stTraj[imod].dLambdaMax-stTraj[imod].dLambdaMin)==0.0)
          Warning("The calculated absolute neutron flux for the given parameter set is zero,\n"
                  "probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)\n"
-                 "the simulation is performed with a flux normalized to a max. value of 1 n/(cm²s) \n\n");
+                 "the simulation is performed with a flux normalized to a max. value of 1 n/(cm^2s) \n\n");
       fprintf(LogFilePtr, "\n");
    }  // end loop over moderators
 

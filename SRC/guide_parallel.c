@@ -813,9 +813,9 @@ static void showAndCompleteSetup() {
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.4f  x %7.4f cm", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.4f  x %7.4f cm^2", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.4f x %7.4f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.4f x %7.4f cm^2", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
 
   switch (eGuideShapeY) {
@@ -843,7 +843,7 @@ static void showAndCompleteSetup() {
     else    fprintf(LogFilePtr, "constant width\n");
     break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m^2\n", AreaY*2./1e4);
 
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ) {
@@ -872,7 +872,7 @@ static void showAndCompleteSetup() {
     break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f m^2\n", AreaZ*2./1e4);
 
   if (Radius != 0.0) { // curved guide
     beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -891,7 +891,7 @@ static void showAndCompleteSetup() {
       } else {
         Error("Reflectivity file was not found!\n");
       }
-      fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+      fprintf(LogFilePtr,  " surface area      :%8.3f m^2\n", pReflFiles[i].area/1.e4);
     }
 
   if (keyAddPlane != 0)

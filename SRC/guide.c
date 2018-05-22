@@ -376,9 +376,9 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm^2", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.3f x %7.3f cm^2", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
   switch (eGuideShapeY)
   { case VT_ELLIPTIC:
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
       else    fprintf(LogFilePtr, "constant width\n");
       break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m^2\n", AreaY*2./1e4);
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ)
   { case VT_ELLIPTIC:
@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
       break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f m^2\n", AreaZ*2./1e4);
 
   if (Radius != 0.0)  /* curved guide */
   {	beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -455,7 +455,7 @@ int main(int argc, char *argv[])
       } else {
         fprintf(LogFilePtr,"WARNING: Case of zero reflectivity for this file! Most probably the file was not found!\n");
       }
-      fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+      fprintf(LogFilePtr,  " surface area      :%8.3f m^2\n", pReflFiles[i].area/1.e4);
     } else {
       break;
     }

@@ -224,7 +224,7 @@ double ChiSquared(const double F[IMAX+1], const double sigma, const short bPrint
   chi2 = Chi2FromQ(Q, sigma);
 
 	if (eOut>=2 && LogFilePtr!=NULL && bPrint==ON) 
-	{	fprintf(LogFilePtr, " X²= %13.5e\n", chi2);
+	{	fprintf(LogFilePtr, " X^2= %13.5e\n", chi2);
 	}
 	return chi2;
 }
