@@ -2,7 +2,9 @@ VITESS 3.4  Release Note
 ------------------------
 The main achievements in VITESS 3.4 arer the inclusion of the new ESS Butterfly 1 moderator and the option to read and write files in MCPL and MCNPX format.
 Additionally, there are a few new minor features:
-- The flux can be adjusted by a so-called performance factor, e.g. to adapt it to new measurement results.
+- The flux can be adjusted by a so-called performance factor in the 'source' module, e.g. to adapt it to new measurement results.
 - A beamline or beamport can be given; for the ESS Butterfly 1 source it defines the flux distribution, for other sources this is not yet installed.
-- In the guide module, reflection plot statistics are available for each plane now.  
-- The color of a neutron can be set in the source according to its wavelength, (in addition to setting it according to the moderator of origin). So far, this is only effective for the Butterfly 1 moderator.
+- The color of a neutron can be set in the source module according to its wavelength, (in addition to setting it according to the moderator of origin). So far, this is only effective for the Butterfly 1 moderator.
+
+- A bug in the filter module prevented the use of the horizontal divergence. This is corrected now.
+- In the 'guide' module, reflection plot statistics are available for each plane now. 
