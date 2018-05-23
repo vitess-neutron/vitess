@@ -7,4 +7,6 @@ Additionally, there are a few new minor features:
 - The color of a neutron can be set in the source module according to its wavelength, (in addition to setting it according to the moderator of origin). So far, this is only effective for the Butterfly 1 moderator.
 
 - A bug in the filter module prevented the use of the horizontal divergence. This is corrected now.
+
 - In the 'guide' module, reflection plot statistics are available for each plane now. 
+- The 'guide' module has a filter by color option, allowing to transport only one color (e.g. cold, but not thermal). All other neutrons are written but not propagted in any way.
