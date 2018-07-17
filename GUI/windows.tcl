@@ -284,7 +284,7 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
   if {$geo != "" && $FontSizeIndex >= 1} {
     # adjust windows to be higher: 90 % margin to top
     if {4 == [scan $geo "%dx%d+%d+%d" width height gx gy]} {
-      set geo ${width}x${height}+${gx}+[expr int(0.9*$gy)]
+    set geo ${width}x${height}+${gx}+[expr int(0.9*$gy)]
     } elseif {2 == [scan $geo "+%d+%d" gx gy]} {
       set geo +${gx}+[expr int(0.9*$gy)]
     }
