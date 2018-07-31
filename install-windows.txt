@@ -56,10 +56,6 @@ CAVEAT:
 | parts to be separated by blanks.                                            |
 +-----------------------------------------------------------------------------+
 
-VITESS uses gnuplot for plots of monitor modules if available. If gnuplot is
-installed somewhere on drive C: or D:, VITESS will find and use it.
-Otherwise some plain Tcl plot routines will do the job.
-
 To uninstall VITESS you might use the uninstall item in the command (sub-) menu
 (like START/VITESS/uninstall)
 or the windows uninstall procedure for software
@@ -81,49 +77,32 @@ Solution:
    Start a separate wish (C:\Programs\tcl\bin\tclsh.exe)
    and source C:\c.tcl there.
 
+Gnuplot
+VITESS uses gnuplot for plots of monitor modules if available.
+The official binaray release comes with gnuplot binaries included.
+
+If gnuplot is installed somewhere on drive C: or D:, VITESS will find and use it.
+If you have problems with gnuplot, fetch a new versions elsewhere, install it,
+and make it known to Vitess with the 'plot application' entry in the
+Options/Helper application menu of the GUI.
+
+
 Compilation from Sources
 ------------------------
 
 VITESS comes with compiled binary images for all modules, compiled with
-Microsoft Visual Studio 2003 under Windows XP so far.
+Microsoft Visual Studio 2017 under Windows 7, to be used with Windows 10, too.
 The 32 bit binary images work fine on Windows 7 64 bit systems, too.
 (Binaries compiled natively for 64 bit _might_ be more performant on
 64 bit CPUs, but for some modules may have the opposite effect, and results
 in bigger image files in any case.)
 
-You may compile new own modules without touching old binaries, and 
-recompile everything with newer versions of Visual Studio. 
+You may compile new own modules without touching old binaries,
+and recompile everything with newer versions of Visual Studio. 
 
-You may download the latest version of Microsoft Visual Studio Express 10.0
-at http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+After installing Visual Studio, use the "Developer Command Prompt for VS 2017",
+cd to the SRC directory in that window, and do
+nmake /f vitess.mak all
 
-After installing this with the Windows software developer kit SDK, you may adopt 2 files
-in the SRC directory:
-compile.bat 
-  The first line of this batch command file defines pathes of compiler binary files, like
-  path c:\program files (x86)\microsoft visual studio 10.0\vc\bin;c:\program files (x86)\microsoft visual studio 10.0\common7\IDE
-
-vitess.mak
-  PATH is the directory of compiler binaries, for Visual Studio 2010 this migth be
-  CPATH=c:\program files (x86)\microsoft visual studio 10.0\vc
-
-  CPATH2 is the directory with the Windows SDK files, e.g.
-  CPATH2=c:\program files (x86)\microsoft sdks\windows\v7.0a
- 
-  GPATH and GSLPATH are the directories where you compiled the libraries g2 and rng. 
-  We provide sources for g2 and GNU pseudo random number generators in the g2 and rng
-  subdirectories of SRC. You need to compile these first.
-
-  Used compiler flags:
-  /GF  eliminate duplicate strings
-  /MT  multi threaded windows libary
-  /Ox  omit frame pointer
-  /Oy  general optimization
-  /Og  global optimization, obsolete for VS 10.0
-  /W3  compiler warning level 3
-
-This should be sufficient to compiles sources from the command line.
-1. Open a cmd shell like on Windows 7 : search cmd, execute.
-2. Within the shell cd to the SRC directory.
-3. compile 
-4. copy release\*.exe ..\MODULES
+At last you may copy the compiled files like
+copy release\*.exe ..\MODULES

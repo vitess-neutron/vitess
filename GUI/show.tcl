@@ -491,6 +491,8 @@ proc getGnuPlotApp {} {
       set fn [file join C:/ "Program Files" gnuplot bin gnuplot.exe]
       if [file exists $fn] {return [set FoundGnuplotApp $fn]}
       # has gnuplot been installed alongside?
+      set fn [file join [globVal SourceDirectory] gnuplot bin gnuplot.exe]
+      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
       set fn [file join [globVal SourceDirectory] bin gnuplot.exe]
       if [file exists $fn] {return [set FoundGnuplotApp $fn]}
       # at last resort do a search which might take long
