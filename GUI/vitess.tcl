@@ -5035,8 +5035,8 @@ proc serializeModFile {f mode var app} {
       set ll [convert2String $ll]
       if {$len1 != $len2} {
         if {$len1 + 1 == $len2} {
-           # last variable perform has not been given
-          lappend ll 0
+           # last variable perform has not been given, take 1 as default
+          lappend ll 1
         } else {
           # silently ignore this line
           continue
