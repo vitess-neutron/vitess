@@ -637,7 +637,7 @@ proc macroExpand {contentvar itemsvar fn} {
   upvar $itemsvar items
 
   # first find items present in content
-  foreach item {PATH FILENAME MODULE SKIP ROWS COLS} {
+  foreach item {PATH FILENAME MODULE SKIP ROWS COLS PWD} {
     set s \\\$
     append s P$item
     if [regexp $s $content] {set la(P$item) 1}
@@ -651,6 +651,7 @@ proc macroExpand {contentvar itemsvar fn} {
       break
     }
   }
+  set la(PPWD) [globVal SourceDirectory]
   set la(PPATH) [entryVal defdirectory]
   set la(PFILENAME) $fn
   set la(PMODULE) mymodule
@@ -747,9 +748,10 @@ proc showPlotFile {name {topt 0}} {
   set ftype [checkPlotfile $name]
 
   if {$ftype == ""} return
-  if {$ftype == "matrix" || $topt == 2} {
-    # if requested, or if the file is a 2D monitor file in matrix format,
-    # gnuplot may not be used to plot, but we use our own Tcl/Tk code
+  if {($ftype == "matrix" && $topt != "shell2D") || $topt == 2} {
+    # If requested, or if the file is a 2D monitor file in matrix format,
+    # and no shell2D template is present, gnuplot may not be used. 
+    # We use our own Tcl/Tk code here.
     show2Dfile $name
     return
   }
