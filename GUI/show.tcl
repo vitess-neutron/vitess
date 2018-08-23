@@ -24,7 +24,7 @@ If you select a given template, you override the default plot.
 }
 
 helpItem {Plot template example} {
-If you want to plot 2D data (xyz format) with Gnuplot, using a simple red color table, you could
+If you want to plot 2D data (xyz format only!) with Gnuplot, using a simple red color table, you could
 edit the template file gnu2D with those 3 lines
 set palette defined (0 "black", 1 "red")
 set pm3d map
@@ -42,11 +42,13 @@ or, if the gnuplot process may silently vanish after 10 minutes
 #!/usr/bin/sh
 gnuplot -e "plot '$PFILENAME'; pause 600"
 
-
+If you have Python + Matplotlib installed, you may use the shell2D template provided.
+Python code to read monitor Matrix 2D files may be found in FILES/Scripts/rshow.py . 
 
 Those variables are substituted before execution of a template:
 $PFILENAME  is the name of the file to be plotted
-$PPATH      is the parameter directory 
+$PPATH      is the parameter directory
+$PPWD       directory where Vitess is installed
 $PMODULE    name of the pipe module, for autoplots after pipe execution  
 $PSKIP      number of lines starting with \# in the beginning of the file
 $PROWS      number of rows with data in the file

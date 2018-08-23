@@ -27,25 +27,23 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int		index_yz , dpos,ddiv, probactiv;
-  long	i, exclusivecount, registered, BufferIndex, nbin_pos=0, nbin_div=0 ;
+  long	i, exclusivecount, registered, nbin_pos=0, nbin_div=0 ;
   double pos_, div_, pos_min, pos_max, div_min, div_max,p,  bintc;
   double filtLambdaMin=-1.0,          /* filter      */
-		 filtLambdaMax=-1.0,
-		 filtYMin=-1.0e10,
-         filtYMax=1.0e10,
-		 filtZMin=-1.0e10,
-		 filtZMax=1.0e10;
+    filtLambdaMax=-1.0,
+    filtYMin=-1.0e10,
+    filtYMax=1.0e10,
+    filtZMin=-1.0e10,
+    filtZMax=1.0e10;
   long format = 0;
   pos_min = pos_max = div_min = div_max = 0;
 
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
   index_yz=1;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_posdiv 1.2a");
 
@@ -225,7 +223,12 @@ DECLARE_ABORT;
   }
 my_exit:
  
-  WriteOutput (fmonitor, format, probactiv, nbin_pos, nbin_div);
+  if (index_yz==1)
+    WriteOutput (fmonitor, format, probactiv, nbin_pos, nbin_div,
+                 " Y [cm]", "divergence Y [deg]");
+  else
+    WriteOutput (fmonitor, format, probactiv, nbin_pos, nbin_div,
+                 " Z [cm]", "divergence Z [deg]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

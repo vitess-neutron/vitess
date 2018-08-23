@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	index_yz, index_c, dwl,ddiv;
-  long	i, exclusivecount, registered, BufferIndex, nbin_wl=0, nbin_div=0;
+  long	i, exclusivecount, registered, nbin_wl=0, nbin_div=0;
   double wl_, div_, wl_min, wl_max, constrain_min, constrain_max, div_min, div_max,p, probactiv, bintc;
   double filtYMin=-1.0e10,
     filtYMax=1.0e10,
@@ -41,14 +41,12 @@ int main(int argc, char *argv[])
 
   //  bin_wldiv = binyz;
 
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
   index_yz=1;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_wldiv 1.2b");
 
@@ -241,7 +239,8 @@ DECLARE_ABORT;
   }
 my_exit:
  
-  WriteOutput (fmonitor, format, probactiv, nbin_wl, nbin_div);
+  WriteOutput (fmonitor, format, probactiv, nbin_wl, nbin_div,
+               "wavelength [A]", "divergence [deg]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

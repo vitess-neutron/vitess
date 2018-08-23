@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0;
+  long	i, exclusivecount, registered, nbiny=0, nbinz=0;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
   long format = 0;
 
@@ -35,13 +35,11 @@ int main(int argc, char *argv[])
 
   /* vertical: lambda, horizontal: tof   */
 
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_tofwl 1.2a");
 
@@ -169,7 +167,8 @@ CHECK;
 
 my_exit:
  
-  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz,
+               "tof [ms]", "wavelength [A]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

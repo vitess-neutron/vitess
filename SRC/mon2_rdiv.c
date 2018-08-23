@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0 ;
+  long	i, exclusivecount, registered, nbiny=0, nbinz=0 ;
   double radius, phi;
   VectorType xvec = {1, 0, 0}, kvec;
   double rmin, rmax, phimin, phimax,p, probactiv, bintc;
@@ -39,13 +39,11 @@ int main(int argc, char *argv[])
   long format = 0;
   rmin = rmax = phimin = phimax = 0;
 
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_rdiv 1.0a");
 
@@ -211,7 +209,8 @@ DECLARE_ABORT;
   }
 my_exit:
 
-  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz,
+               "radius [cm]", "divergence radius [deg]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

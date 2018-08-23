@@ -47,7 +47,8 @@ def read_mfile(fn):
 def contshow(fn, x, y, counts, xlabel,ylabel):
     a,b = plt.subplots()
     z = ma.masked_where(counts <= 0, counts)
-    cs = b.contourf(x, y, z, locator=ticker.LogLocator(), cmap=cm.PuBu_r)
+    # hot colormap, reverse; means 0 = white, high count = dark red
+    cs = b.contourf(x, y, z, locator=ticker.LogLocator(), cmap=cm.hot_r)
     a.suptitle(fn)
     if xlabel != "": b.set_xlabel(xlabel)
     if ylabel != "": b.set_ylabel(ylabel)

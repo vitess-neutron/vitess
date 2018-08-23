@@ -28,20 +28,17 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny=20, nbinz=20;
+  long	i, exclusivecount, registered, nbiny=20, nbinz=20;
   double Divy, Divz, DivKy, DivKz, 
          DivYmin=0.0, DivYmax=0.0, DivZmin=0.0, DivZmax=0.0,
          p, probactiv, bintc;
   long format = 0;
 
-
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_kdiv 1.0a");
 
@@ -175,7 +172,8 @@ CHECK;	  registered=0;
     }
 my_exit:
  
-  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz,
+               "kY [1/Ang]", "kZ [1/Ang]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

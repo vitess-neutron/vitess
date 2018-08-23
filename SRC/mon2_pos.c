@@ -27,19 +27,17 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0 ;
+  long	i, exclusivecount, registered, nbiny=0, nbinz=0 ;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0;
   long format = 0;
   widthmin = widthmax = heightmin = heightmax = 0;
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
 
-  /*input*/
   Init(argc, argv, VT_MONITOR_2);
   print_module_name("mon2_pos 1.2b");
 
@@ -178,7 +176,8 @@ DECLARE_ABORT;
 
 my_exit:
  
-  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz,
+               "Y [cm]", "Z [cm]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0 ;
+  long	i, exclusivecount, registered, nbiny=0, nbinz=0 ;
   double Divy, Divz, DivYmin, DivYmax, DivZmin, DivZmax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
   long format = 0;
   DivYmin = DivYmax = DivZmin = DivZmax = 0;
 
-  BufferIndex = 0;
   p=0.0;
   probactiv=1.0;
   exclusivecount=0;
@@ -218,7 +217,8 @@ DECLARE_ABORT;
 
 my_exit:
 
-  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz, 
+               "divergence Y [deg]", "divergence Z [deg]");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
