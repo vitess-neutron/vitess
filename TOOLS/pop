@@ -1,0 +1,190 @@
+#!/usr/bin/perl
+# compress / decompress files
+# Directories become tar balls in their parent directory.
+# tar-ed, compress-tar-ed and zip-ed directories are
+# restored beyond the file´s directory.
+
+use Cwd 'abs_path';
+use File::Basename 'fileparse';
+use strict;
+
+my $filecom = 'file';
+
+
+sub usage {
+  print <<EOF;
+usage of pop extractor / compressor:
+pop <compressed file> | <directory> [option]
+  pop inflates (pops) a compressed archive to a directory tree, or
+  reduces / shrinks a directory tree to an archive.
+
+  If the argument is a compressed file, pop tries to decompress
+  according to the compression type, which might be tar, tar.gz, tar.bz2
+  z (ZIP), tar.7z or 7z.
+  The directory will be uncompressed in the directory of the compressed file.
+
+  If the argument is a directory, pop compresses to a file of the same name
+  with the type as extension. By default pop produces gzipped tar balls,
+  options
+  b        bz2 compression
+  7        7z compression
+  7tar     make a tar archive, then 7z compressed
+EOF
+  exit(1);
+}
+
+sub what {
+  $_ = $_[0];
+  chomp;
+  /^[^:]+: +(.+)/;
+  $1;
+
+}
+
+sub yes {
+  print "$_[0] ?  ";
+  $_ = <STDIN>;
+  chomp;
+  /^(ja*|y(es)*)$/i;
+}
+
+my $netvers;
+$_ = `uname`;
+if (/SunOS/) {
+  $_ = '/net/bin/g';
+  $netvers = 1;
+  $filecom = '/net/bin/file';
+} else {
+  $_ = '/bin/';
+}
+
+my $tc = $_ . 'tar';
+my $command = "$tc ";
+
+$_ = $ARGV[0];
+&usage unless $_;
+s@/+$@@;			# cut off trailing slashes
+my ($file, $path) = fileparse($_);
+my $opt = $ARGV[1];
+
+$path = abs_path($path);
+my $fullname = "$path/$file";
+
+if (-d $fullname) {		# directory
+  my $ext;
+  if ($opt eq '7tar') {
+    $ext = 'tar.7z';
+  } elsif ($opt eq '7') {
+    $ext = '7z';
+  } elsif ($opt eq 'b') {
+    ($opt, $ext) = ('I', 'tar.bz2');
+  } else {
+    ($opt, $ext) = ('z', 'tar.gz');
+  }
+  my $tball = "$fullname.$ext";
+  if (-s $tball) {
+    exit(-1) unless yes("overwrite existing $tball");
+  }
+  if ($opt eq '7tar') {
+    $_ = "tar cf - $file | 7z a -si -t7z $tball";
+  } elsif ($opt eq '7') {
+    $_ = "7za a $tball $file";
+  } else {
+    $_ = "$tc ${opt}cvf $file.$ext $file";
+  }
+  system "cd $path; $_";
+  exit(-1) unless -s $tball;
+
+  system "rm -rf $fullname" if
+    yes("pop made tarball $tball\n\ndelete directory $fullname");
+
+} elsif (-s $fullname) {	# files with beef
+  my ($cdcom, $zcat, $excom, $full_command, $compress_me);
+  my $tar = 1;
+  $cdcom = "cd $path;" if $path;
+  if (-B $fullname) {		# binary data
+    $_ = what(`$filecom $fullname`);
+    if (/7-zip archive/) {
+      # may be 7z archive, or a 7z compressed tar file
+      if ($fullname =~ /\.tar\.7z$/) {
+        $full_command = "${cdcom}7z x -so $fullname | tar xvf -";
+      } else {
+        $command = '7za x';
+      }
+    } elsif (/compress/) {
+      if (/bzip2/) {
+	$zcat   = 'bunzip2 -c -k';
+	$excom  = 'bunzip2';
+	$command .= ($netvers ? 'I' : 'j') . 'xvf';
+      } else {
+	$zcat   = 'zcat';
+	$excom  = 'gunzip';
+	$command .= 'zxvf';
+      }
+      $_ = what(`$zcat $fullname | /net/bin/file -`);
+      unless (/tar archive/) {
+	$command = $excom;	# no tar, normal compressed file
+	$tar = 0;
+      }
+    } elsif(/tar archive/) {
+      $command .= 'xvf';
+    } elsif(/Zip archive/) {
+      $command = 'unzip';
+      # If all files in the archive have a relative path like subdir/name.ext
+      # to the same sub directory subdir, we extract to that place.
+      # But if some do not, or are in separate subdirs, we extract to a
+      # subdirectory with the name of the archive, minus .zip extension
+      if ($file =~ /(.*)\.[^\.]+$/) {
+        # we could extract a subdir name
+        my $sdir = $1;
+        my ($use_sdir, $subdir);
+        # now check file names
+        open F, "unzip -qq -l $file|";
+        while (<F>) {
+          $_ = (split)[3];
+          if (m@^[/.]@) {
+            # use a given subdirectory in any case, disallow . file names and absolute pathes
+            $use_sdir = 1;
+            last;
+          }
+          if (m@^(.+)/([^/]+)$@) {
+            $_ = $1;
+            if ($subdir eq '') {
+              $subdir = $_;
+            } elsif ($_ ne $subdir) {
+              $use_sdir = 1;
+              last;
+            }
+          } else {
+            $use_sdir = 1;
+            last;
+          }
+        }
+        close F;
+        $command .= " -d $sdir" if $use_sdir;
+      }
+    } else {			# unknown type binary data
+      $compress_me = 1;
+    }
+  } else {			# general text file
+    $compress_me = 1;
+  }
+
+  if ($compress_me) {
+    if ($opt eq 'b') {
+       $command = 'bzip2';
+     } elsif ($opt eq '7') {
+       $full_command = "${cdcom}7z a $file.7z $file";
+     } else {
+       $command = 'gzip';
+     }
+    $tar = 0;
+  }
+
+  $full_command = "${cdcom}$command $file" unless $full_command;
+  print "doing: $full_command\n";
+  system $full_command;
+  unlink $fullname if (($tar || $opt eq '7') && yes("delete $fullname"));
+} else {
+  usage;
+}
