@@ -50,6 +50,8 @@ tar zxvf ~/Downloads/vitess.tar.gz
 
 If you want to install system wide, /usr/opt may be a good idea for root.
 
+For system installation in multi user enviroment of VITESS see below.
+
 We assume you have installed Tcl/Tk, and libgd using libz, libpng, and libttf (libfreetype)
 from your distribution. Compiled binaries are for SuSE 10.2 (32 bit) and 11.3 (64 bit).
 
@@ -62,6 +64,9 @@ Move it to a place more appropriate, if you like.
 The binaries will work on Darwin 10.6 (snow leopard) and 10.7 (lion) Mac, if you install gnuplot,
 because VITESS and gnuplot share some tool libraries like libgd.
 
+Later Darwin installations have been reported to cause troubles with Tcl/Tk,
+but for 2019 Mojave an embedded wish (Tcl & Tk 8.6.9) works.
+
 You will need administrator privileges to install gnuplot, but it will be
 a short time to do, if you follow the instructions in darwin_gnuplot.txt
 on a Darwin 10.6 (snow leopard) or 10.7 (lion) Mac.
@@ -69,7 +74,7 @@ on a Darwin 10.6 (snow leopard) or 10.7 (lion) Mac.
 All Unix systems, compilation from sources
 ------------------------------------------
 We assume Tcl/Tk software with a version 8.2 or higher is installed separately.
-VITESS version 2.11 has been tested with Tcl/Tk 8.5 .
+VITESS version 2.11 has been tested with Tcl/Tk 8.5, VITESS 3.4 with Tcl/Tk 8.6 .
 If you miss information, try
 http://www.tcl.tk/
 
@@ -151,9 +156,9 @@ Installing Vitess for a multi user enviroment under Linux
 ---------------------------------------------------------
 
 If you plan to install Vitess as root to a system directory like /opt
-for all users, you may face the problem that they are not allowed to write files
+for all users, you may face the problem that users are not allowed to write files
 in that directory.
-They need to use a copied own directory with vitess files for that purpose.
+They need a copied own directory with vitess files for that purpose.
 
 It's easy to provide this. Let us assume root unzipped the latest version
 to /opt/vitess3.4, she or he may provide a call script like 
