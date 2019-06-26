@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 		bConcentric = TRUE;
 
 	if (sFileName)
-	{	if (nNoChannels > 0  &&  dRadius >= 0.0  &&  dWaferThick > 0.0  &&  strlen(sFileName) > 0) 
+	{	if (nNoChannels > 0  &&  dRadius != 0.0  &&  dWaferThick > 0.0  &&  strlen(sFileName) > 0) 
 		{	
 			double dHeightEntr, dHeightExit,      /* Border of wafer at entrance and exit */
 					 dHeightE0=0.0,                 /* Exit height for angle 0°   */
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 				dHeightEntr = -0.5*(nNoChannels*nNoWafers*dWaferThick + (nNoChannels-1)*dDistEntr);
 				dHeightExit = -0.5*(nNoChannels*nNoWafers*dWaferThick + (nNoChannels-1)*dDistExit)
 								 + dHeightE0 + dLength*tan(dAngle*PI/180.);
-				if (dRadius > 0 && bConcentric)
+				if (dRadius != 0 && bConcentric)
 					dRadCenter  = dRadius + 0.5*nNoChannels*nNoWafers*dWaferThick;
 
 				for (nCh = 1; nCh <= nNoChannels; nCh++) 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 					{
 						dHeightEntr += dWaferThick;
 						dHeightExit += dWaferThick;
-						if (dRadius > 0 && bConcentric)
+						if (dRadius != 0 && bConcentric)
 							dRadCenter -= dWaferThick;
 						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.2f\n", dHeightEntr, dHeightExit, dRadCenter);
 					}

@@ -1,0 +1,52 @@
+VITESS 2.9  Release Note
+-------------------------
+
+New modules:
+-----------
+
+collimator_radial:
+-----------------
+This modules is meant to simulate radial collimators into a certain theta range of distinct length, 
+distance from center, entrance and exit height. Number of channels and blade width are further input 
+parameters. The oscillation width is considered, but the blade position is defined by a random
+number, not by the actual time of flight.
+
+collimator:
+----------
+This module can be used to simulate straight, converging or diverging soller collimators with 
+perfectly absorbing walls that may be divided into vertical channels. (Blade width can be given.)
+In contrast to 'collimator_soller', the trajectories through the collimator are calculated.
+
+sample_environment:
+------------------
+Bragg scattering from material surrounding the sample can now be treated. Position, dimensions, 
+cross-section and the structure factor have to be given. Usually 2 modules are necessary to treat
+neutron entering (option 'in') and leaving ('out') the sample environment with the sample (and
+maybe another sample environment) in between.
+
+eval_elast2:
+-----------
+As the 2-dimensional monitors, this module shows the intensity as a function of 2 parameters, 
+i.e. I(theta, wavelength) or I(theta, TOF).
+
+sesans_field:
+------------
+Triangular shaped magnetic fields as used for SESANS instruments can be simulated using the new
+module 'sesans_field'.
+
+
+
+
+New features in existing modules:
+--------------------------------
+
+Guide:
+-----
+- the trajectories of the neutrons inside the guide can be followed now
+ (the properties of the neutron at each reflection are written into a file)
+- any symmetric guide shape consisting of several pieces can now be treated using a shape definition file
+- calculation of the guide surface area
+
+Monochromator:
+-------------
+- Gaps between elements and deviations from ideal orientation can be simulated

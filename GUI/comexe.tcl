@@ -360,19 +360,23 @@ proc startAction {{sercom ""} {simu simulation}} {
   set wsecs 1
   set wmsecs [expr 1000 * $wsecs]
   if {$timeout == "unlimited"} {
-    set ctout -1
+    set wsecs 0
   } else {
     set ctout [expr $timeout / $wsecs]
   }
   set i 0
   while {1} {
-    if {$i == $ctout} {
-      outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
-      stopAction
+    if {$wsecs != 0} {
+      if {$i == $ctout} {
+	outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
+	stopAction
+      } else {
+	showText . ""
+      }
+      incr i
     } else {
       showText . ""
     }
-    incr i
     if {$PipeActive && [$PsCheck]} {
       after $wmsecs;			# wait for completion,
       update;				# but allow other window events

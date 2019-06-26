@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 			SubVector(InputNeutrons[i].Position, Sample.Position);
 
 			/* Test if the Neutron hits the Sample */
-			if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp))
+			if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN))
 			{
 				if (nisp < 2)
 					CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);

@@ -24,19 +24,21 @@ lattice_dist \
 mirror_coating \
 surface_file \
 guide_shape \
-grid \
 spin_reset \
 capture_flux \
 chopper_disc \
 chopper_fermi \
 collimator_soller \
+collimator \
 slit \
+grid \
 source \
 spacewindow \
 spacewindow_multiple \
 space \
 detector \
 eval_elast \
+eval_elast2 \
 eval_inelast \
 frame \
 guide \
@@ -47,7 +49,9 @@ polariser_sm \
 polariser_he3 \
 flipper_coil \
 pol_mirror \
+collimator_radial \
 precessionfield \
+sesans_field \
 sample_elasticisotr \
 sample_inelast \
 sample_reflectom \
@@ -60,6 +64,7 @@ resonator_drabkin \
 sample_powder \
 sample_s_q \
 sample_sans \
+sample_environment \
 bender \
 visual \
 sm_ensemble \
@@ -173,6 +178,9 @@ standard_deviation : standard_deviation.c
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+collimator_radial : collimator_radial.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c $(ITOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
@@ -200,6 +208,9 @@ precessionfield : precessionfield.c magneticmap.c $(MTOOL)
 capture_flux : capture_flux.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+collimator : collimator.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 collimator_soller : collimator_soller.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -225,6 +236,9 @@ mon2_pos : mon2_pos.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_elasticisotr : sample_elasticisotr.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+eval_elast2 : eval_elast2.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
@@ -270,6 +284,12 @@ monitorpol_1d : monitorpol_1d.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 guide_shape : guide_shape.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sesans_field : sesans_field.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_environment : sample_environment.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 define_direction : define_direction.c $(MTOOL)

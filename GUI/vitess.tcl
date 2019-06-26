@@ -28,6 +28,7 @@ set fileDialogSET {
   {"moderator (cws source)"  {.mod .cmo .src}}
   {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
+  {"sample environment" {.env .par .dat}}
   {"powder sample" {.pow .par .dat}}
   {"sample s(q)" {.psq .par .dat}}
   {"sans sample" {.san .par .dat}}
@@ -66,18 +67,19 @@ proc makeModuleSets {} {
       {space slit spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {velselect {} velselect}
-    {collimator_soller {} collimator}
+    {collimator {collimator collimator_radial collimator_soller} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
-    {magnetic_field {precessionfield rotating_field} {precessionfield rotating_field}}
+    {magnetic_field {precessionfield rotating_field sesans_field} {precessionfield rotating_field sesans_field}}
     {sample {sample_elasticisotr sample_inelast sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
+    {sample_environment {} sample_environment}
     {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_inelast} {capture_flux eval_elast eval_inelast}}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast} {capture_flux eval_elast eval_elast2 eval_inelast}}
     {frame {} frame}
     {external_command}
     {trajectories {writeout spin_reset} {writeout spin_reset}}
@@ -691,7 +693,7 @@ set spacewindow_multipleESET [concat $a $winAdd]
 
 ### Space
 set spaceESET {
-  {dist float "" {"distance [cm]" "" "" d} gt0}
+  {dist float "" {"distance [cm]" "" "" d} ge0}
 }
 
 ### Slit
@@ -754,18 +756,21 @@ set gridESET {
 set guideESET {
   {"Shape and size of guide" header}
   {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane" "" Y}
-    {constant linear curved parabolic elliptic} {0 1 2 3 4}}
+    {constant linear curved parabolic elliptic "from file"} {0 1 2 3 4 5}}
   {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane" "" Z}
-    {constant linear parabolic elliptic} {0 1 3 4}}
+    {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
   {}
-  {enter_width float 10 {
+  {shape_file moneditablefile guide_shape.dat
+    {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
+  {}
+  {enter_width float 6 {
     "entrance\nwidth [cm]"
     "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
   {enter_height float 10 {
     "entrance\nheight [cm]"
     "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
   {}
-  {exit_width float 10 {
+  {exit_width float 6 {
     "exit\nwidth [cm]"
     "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
   {exit_height float 10 {
@@ -776,9 +781,11 @@ set guideESET {
     "piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
   {number_pieces int 1 {
     "number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
-  {rad_curve float 0 {
-    "curvature\n(radius) [m]"
-    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
+  {}
+  {gd_scat float 0 {
+    "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
+  {gd_abs float 0 {
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Å [1/cm]" "" m} ge0}
   {"Reflectivity files" header}
   {lrefl_filename pareditablefile mirr1a.dat
     {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
@@ -793,6 +800,9 @@ set guideESET {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
     "blade\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
+  {rad_curve float 0 {
+    "curvature\n(radius) [m]"
+    "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
 }
 
 
@@ -808,6 +818,31 @@ set specoptAdd {
   {keyabut radio no {"abutment\nloss"
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
     {yes no} {1 0}}
+  {}
+  {"Reflection list options" header}
+  {reflparam_filename pareditablefile ""
+    {"filename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
+  {keyreflparam radio "Trajectories passing the guide end (with linefeed)" {"format"
+    "Choose which trajectories will be printed.\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
+    {"Trajectories passing the guide end" "Trajectories passing the guide end (with linefeed)" "Only successful reflections" "Only successful reflections (with linefeed)" "Trajectories with at least one successful reflection" "Trajectories with at least one successful reflection (with linefeed)" "All trajectories" "All trajectories (with linefeed)"} {1 -1 2 -2 3 -3 4 -4}}
+  {keyreflverbose radio no {"verbose\nlist"
+    "Trajectories are written for each reflection and at the end of each guide piece." "" v}
+    {yes no} {1 0}}
+  {}
+  {keyreflmin int 0 {
+    "minimum number\nof reflections" "Minimum number of reflections." "" e} ge0 "" 0}
+  {keyreflmax int 0 {
+    "maximum number\nof reflections" "Maximum number of reflections. Use 0 for infinity." "" E} ge0 "" 0}
+  {}
+  {keyreflminY int 0 {
+    "minimum number\nof horiz. refl." "Minimum number of reflections on the horizontal guides." "" c} ge0 "" 0}
+  {keyreflmaxY int 0 {
+    "maximum number\nof horiz. refl." "Maximum number of reflections on the horizontal guides. Use 0 for infinity." "" C} ge0 "" 0}
+  {}
+  {keyreflminZ int 0 {
+    "minimum number\nof vert. refl." "Minimum number of reflections on the vertical guides." "" d} ge0 "" 0}
+  {keyreflmaxZ int 0 {
+    "maximum number\nof vert. refl." "Maximum number of reflections on the vertical guides. Use 0 for infinity." "" D} ge0 "" 0}
 }
 
 set guideESET [concat $guideESET $specoptAdd]
@@ -1596,6 +1631,22 @@ set rotating_fieldESET {
   {btrap radio no {bootstrap "Use or do not use a bootstrap configuration" "" T} {yes no} {1 0}}
 }
 
+### sesans_field
+###
+set sesans_fieldESET {
+  {"Field range and strength" header}
+  {sf_bf pareditablefile field.dat {"field range file" "data file (which is read) giving the range of the magnetic field" "" P}}
+  {}
+  {sf_mx float 0 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" F}}
+  {sf_my float 0 {"magnetic\nfield Y [Oe]" "y component of the magnetic field in Oe" "" G}}
+  {sf_mz float 100 {"magnetic\nfield Z [Oe]" "z component of the magnetic field in Oe" "" H}}
+  {"Output frame" header}
+  {sf_ox float 50 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" q}}
+  {sf_oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
+  {sf_oz float 0  {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
+}
+
+
 ### visual
 ###
 set visualESET {
@@ -1829,18 +1880,18 @@ proc monpol_zCheckErr {{app _}} {
 ###   position
 
 set nA {
-  {number_ybins int 10 {
+  {number_ybins int 100 {
     "number\nof y-bins" "number of bins within the y-axis interval" "" y} 1 200}
-  {number_zbins int 10 {
+  {number_zbins int 100 {
     "number\nof z-bins" "number of bins within the z-axis interval" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\ny-value [cm]" "" "" w} -10000 10000 1}
-  {max_y float 1000 {"maximal\ny-value [cm]" "" "" W} -10000 10000 1}
+  {min_y float -6 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 6 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -1000 {"minimal\nz-value [cm]" "" "" h} -10000 10000 1}
-  {max_z float 1000 {"maximal\nz-value [cm]" "" "" H} -10000 10000 1}
+  {min_z float -6 {"minimal\nz-value [cm]" "" "" h} -1000 1000 1}
+  {max_z float 6 {"maximal\nz-value [cm]" "" "" H} -1000 1000 1}
 }
 
 set mon2_posESET [concat [genFE2 pos] $nA $mA $pA]
@@ -1859,16 +1910,16 @@ proc monitorpol_posCheckErr {{app _}} {
 ###   div
 
 set nA {
-  {number_ybins int 10 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof z-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof z-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -90 {"minimal\ny-value [deg]" "" "" w} -180 180 1}
-  {max_y float 90 {"maximal\ny-value [deg]" "" "" W} -180 180 1}
+  {min_y float -3 {"minimal\ny-value [deg]" "" "" w} -180 180 1}
+  {max_y float 3 {"maximal\ny-value [deg]" "" "" W} -180 180 1}
   {}
-  {min_z float -90 {"minimal\nz-value [deg]" "" "" h} -180 180 1}
-  {max_z float 90 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
+  {min_z float -3 {"minimal\nz-value [deg]" "" "" h} -180 180 1}
+  {max_z float 3 {"maximal\nz-value [deg]" "" "" H} -180 180 1}
 }
 
 set mon2_divESET [concat [genFE2 div] $nA $mA $pA]
@@ -1899,16 +1950,16 @@ proc mon2_kdivCheckErr {{app _}} {
 ###   y_divy
 
 set nA {
-  {number_ybins int 10 {"number\nof y-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof divy-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof y-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof divy-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
-  {max_y float 1000 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
+  {min_y float -10 {"minimal\ny-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 10 {"maximal\ny-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -10 {"minimal\ndivy-value [deg]" "" "" h} -90 90 1}
-  {max_z float 10 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
+  {min_z float -3 {"minimal\ndivy-value [deg]" "" "" h} -90 90 1}
+  {max_z float 3 {"maximal\ndivy-value [deg]" "" "" H} -90 90 1}
 }
 
 set mon2_y_divyESET [concat [genFE2 y_divy] $nA $mA $pA]
@@ -1921,16 +1972,16 @@ proc mon2_y_divyCheckErr {{app _}} {
 ###   z_divz
 
 set nA {
-  {number_ybins int 10 {"number\nof z-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number\nof divz-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number\nof z-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number\nof divz-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_y float -1000 {"minimal\nz-value [cm]" "" "" w} -1000 1000 1}
-  {max_y float 1000 {"maximal\nz-value [cm]" "" "" W} -1000 1000 1}
+  {min_y float -10 {"minimal\nz-value [cm]" "" "" w} -1000 1000 1}
+  {max_y float 10 {"maximal\nz-value [cm]" "" "" W} -1000 1000 1}
   {}
-  {min_z float -10 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
-  {max_z float 10 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
+  {min_z float -3 {"minimal\ndivz-value [deg]" "" "" h} -90 90 1}
+  {max_z float 3 {"maximal\ndivz-value [deg]" "" "" H} -90 90 1}
 }
 set mon2_z_divzESET [concat [genFE2 z_divz] $nA $mA $pA]
 proc mon2_z_divzCheckErr {{app _}} {
@@ -1942,13 +1993,13 @@ proc mon2_z_divzCheckErr {{app _}} {
 ###   tof
 
 set nA {
-  {number_ybins int 10 {"number of\nTOF-bins" "" "" y} 1 200}
-  {number_zbins int 10 {"number of\nwavelength-bins" "" "" z} 1 200 1}
+  {number_ybins int 100 {"number of\nTOF-bins" "" "" y} 1 200}
+  {number_zbins int 100 {"number of\nwavelength-bins" "" "" z} 1 200 1}
 }
 set mA {
   {}
-  {min_tof float -1000 {"minimal\ntof-value [ms]" "" "" w} -10000 10000 1}
-  {max_tof float 1000 {"maximal\ntof-value [ms]" "" "" W} -10000 10000 1}
+  {min_tof float 0 {"minimal\ntof-value [ms]" "" "" w} -10000 10000 1}
+  {max_tof float 20 {"maximal\ntof-value [ms]" "" "" W} -10000 10000 1}
   {}
   {min_wl float 0.1 {
     "minimal\nwavelength [A]" "lower bound of the monitored interval" "" m} ge0 "" 1}
@@ -1974,8 +2025,8 @@ set mA {
   {min_wl float 0.1 {"minimal\nwavelength [A]" "" "" w} -10000 10000 1}
   {max_wl float 20 {"maximal\nwavelength [A]" "" "" W} -10000 10000 1}
   {}
-  {min_div float -10 {"minimal\ndivergence [deg]" "lower bound of the monitored interval" "" h}}
-  {max_div float 10 {"maximal\ndivergence [deg]" "upper bound of the monitored interval" "" H}}
+  {min_div float -3 {"minimal\ndivergence [deg]" "lower bound of the monitored interval" "" h}}
+  {max_div float 3 {"maximal\ndivergence [deg]" "upper bound of the monitored interval" "" H}}
   {}
   {conmin float -90 {"constrain\nmin [deg]"
     "this defines a constraint in the divergence perpendicular to the selected one" "" c}}
@@ -2003,14 +2054,29 @@ set sampleASET [list \
   [list bphi float ""    [list "Phi \[deg]"    $Refa "" P] 0 360] \
   [list bdphi float ""   [list "dPhi \[deg]"   $Refa "" p] 0 180] \
   [list reprate int 1 [list repetitions $Refb "" A] 0 1000000 1] \
-  {incoscat radio no {
-    "incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I}
+  {incoscat radio no {"incoherent\nscattering" "'yes' activates calculation of incoherent scattering" "" I}
     {yes no} {1 0}} \
 ]
 
 
 ### sample
-###   file description for different sample types
+###   file description for sample environment and different sample types
+
+### sample environment
+###   env file description
+
+set envESET {
+  {env_thick float "" {"thickness [cm]" "thickness of the hollow cylinder surrounding the sample"} gt0}
+  {env_wid float "" {"diameter [cm]" "outer width of the hollow cylinder"} gt0}
+  {env_hei float "" {"height [cm]" "outer height of the cylinder"} gt0}
+  {env_sffile pareditablefile "" {"structure\nfactor file"} r}
+  {Scattering header}
+  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
+  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
+  {env_abs float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
+  {env_ucv float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 50}
+}
+
 
 set Refa "Position of the sample centre relative to the coordinate system defined by the preceding module."
 set Refb "Component of the vector describing the orientation of the sample.
@@ -2155,11 +2221,32 @@ proc sampleCheckErr {{app _}} {
   return 0
 }
 
+
+### sample
+###   environment
+
+set sample_environmentESET {
+  {ev_x float "" {"x [cm]" "x-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" x}}
+  {ev_y float 0.0 {"y [cm]" "y-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" y}}
+  {ev_z float 0.0 {"z [cm]" "z-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" z}}
+  {ev_file pareditablefile environ.env {"parameter file" 
+    "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
+  {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment before sample" "" r} {in out} {1 2}}
+}
+
+### proc sample_environmentCheckErr {{app _}} {
+###   return [sampleCheckErr $app]
+### }
+
 ### sample
 ###   powder
 set sample_powderESET [concat $sampleASET {
   {samplefile pareditablefile psample.par {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r pow 1}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
+    {yes no} {1 0}}
 }]
 
 proc sample_powderCheckErr {{app _}} {
@@ -2458,6 +2545,84 @@ proc eval_elastCheckErr {{app _}} {
 }
 
 ### eval
+###   elast2
+set eval_elast2ESET {
+  {psel radio "Scattering angle [deg] and wavelength [A]" {
+    "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+  {psort radio "Intensity" {
+    "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
+  {}
+  {sfile mon2editablefile elast2.eva {
+    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
+  {nbins int 100 {
+    "number\nof bins in X" "number of bins determines the segmentation of the scatt. angle interval and therewith the number of values written to the spectra file" "" n} 1 10000}
+  {minaX float 0 {
+    "minimum X\n[deg]" "lower bound of the evaluation interval" "" x} 1}
+  {maxaX float 0 {
+    "maximum X\n[deg]" "upper bound of the evaluation interval" "" X} 1}
+  {bin_przX float "" {
+    "increase to\n next bin X[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+  {}
+  {mbins int 100 {
+    "number\nof bins in Y" "number of bins determines the segmentation of the wavelength/TOF interval and therewith the number of values written to the spectra file" "" m} 1 10000}
+  {minaY float 0 {
+    "minimum Y\n[A, ms]" "lower bound of the evaluation interval" "" y} 1}
+  {maxaY float 0 {
+    "maximum Y\n[A, ms]" "upper bound of the evaluation interval" "" Y} 1}
+  {bin_przY float "" {
+    "increase to\n next bin Y[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" S} gt0}
+  {}
+  {prob_w radio yes {
+    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
+  {dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {eval_excl radio no {
+    "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {}
+  {fpath float "" {
+    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {}
+  {timevalbegin float -1.e10 {
+    "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
+  {timevalend float 1.e10 {
+    "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {eval_colour int 0 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+}
+
+proc eval_elast2CheckErr {{app _}} {
+  foreach l {tof fpath toff refwave bin_prz nbins mbins}  {
+    upvar #0 $l$app $l
+  }
+  set rc 0
+  if {$nbins == "" && $bin_przX == ""} {
+    showText "!Please specify either the number of bins in X, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$mbins == "" && $bin_przY == ""} {
+    showText "!Please specify either the number of bins in Y, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$tof == "yes"} {
+    if {$fpath == "" || $toff == ""} {
+      showText "!Please specify flight path and time offset"
+      set rc 1
+    }
+  }
+  if [checkMiMaErr minaX maxaX "" $app] {
+    set rc 1
+  }
+  if [checkMiMaErr minaY maxaY "" $app] {
+    set rc 1
+  }
+  return $rc
+}
+
+### eval
 ###   inelast
 
 set eval_inelastESET {
@@ -2486,7 +2651,7 @@ proc eval_inelastCheckErr {{app _}} {
   return [checkMiMaErr mint maxt "" $app]
 }
 
-### collimator
+### collimator_soller
 ###
 set collimator_sollerESET {
   {"averaged soller collimation" header}
@@ -2517,6 +2682,61 @@ proc collimator_sollerCheckErr {{app _}} {
     return 1
   }
   return 0
+}
+
+### collimator
+###
+set collimatorESET {
+  {sc_en_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of the soller collimator: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
+  {sc_en_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {}
+  {sc_ex_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of the soller collimator:: width in cm"  "" W} gt0 "" 1}
+  {sc_ex_height float 10 {
+    "exit\nheight [cm]"
+    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+  {sc_len float "" {
+    "length [cm]" "length of the collimator in cm" "" l} ge0 "" 1}
+  {sc_channels int "" {
+    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge0}
+  {sc_sp_width float "" {
+    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
+}
+
+### collimator_radial
+###
+set collimator_radialESET {
+  {rc_angle float 90 {
+    "theta [deg]"
+    "hor. direction to the centre of the collimator in deg range: [-180,180]\n 0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
+  {rc_en_width float 120 {
+    "width [deg]"
+    "width of the radial collimator in deg\nedges are supposed to point to the origin, i.e. the centre of the sample"  "" w} gt0 "" 1}
+  {rc_osc_width float 9 {
+    "oscillation\nwidth [deg]"
+    "full width amplitude of oscillation of the radial collimator in deg\nactual angle is randomly chosen\nosc.width = 0 means: no oscillation regarded"  "" o} ge0 "" 1}
+  {}
+  {rc_en_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {rc_ex_height float 10 {
+    "exit\nheight [cm]"
+    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+  {}
+  {rc_dist float 20 {
+    "distance [cm]" "distance of the collimator entrance from the origin (i.e. the centre of the sample) in cm" "" d} ge0 "" 1}
+  {rc_len float 10 {
+    "length [cm]" "length of the collimator in cm, i.e. distance between entrance and exit of a channel" "" l} gt0 "" 1}
+  {}
+  {rc_channels int "" {
+    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge1}
+  {rc_sp_width float "" {
+    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
 }
 
 
@@ -3129,6 +3349,25 @@ proc serializePowFile {f mode var app} {
 
 proc serializePsqFile {f mode var app} {
   serializeSampleFile $f $mode $var $app psq
+}
+
+proc serializeEnvFile {f mode var app} {
+  set nlist {env_thick env_wid env_hei env_sffile env_inc env_sca env_abs env_ucv}
+  foreach l $nlist {
+    upvar #0 $l$app $l
+  }
+  if {$mode == "r"} {
+    foreach l $nlist {catch {unset $l}}
+    if {$f == "0"} return
+    if {[gets $f l0] < 0 || [gets $f l1] < 0 || \
+	    [gets $f l2] < 0 || [gets $f l3] < 0 } return
+    scan $l0 "%g%g%g" env_thick env_wid env_hei
+    set env_sffile $l1
+    scan $l2 "%g%g%g" env_inc env_sca env_abs
+    scan $l3 "%g" env_ucv
+  } else {
+    puts $f "$env_thick $env_wid $env_hei\n$env_sffile\n$env_inc $env_sca $env_abs\n$env_ucv"
+  }
 }
 
 proc serializePolFile {f mode var app} {

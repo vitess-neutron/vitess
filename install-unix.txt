@@ -2,7 +2,8 @@
 	for pulsed and continuous sources
 
 
-Hahn-Meitner-Institut Berlin
+Hahn-Meitner-Institut Berlin, now
+Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
 
 Modules:
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
@@ -12,13 +13,13 @@ Modules:
 	Friedrich Streffer
 
 GUI Software:
-	Michael Fromme     (fromme@hmi.de)
+	Michael Fromme     (fromme@helmholtz-berlin.de)
 
 
 README
 
-This program has been developed on Unix systems, but runs
-on windows systems, too.
+This program has been developed on Unix and Windows, 
+and runs fine on both operating systems.
 
 Installation under Unix
 
@@ -89,6 +90,9 @@ We send you a patch on request, or you may produce the patched file by
        installAndTest -p tkfbox.tcl
 )
 
+If you want to install Vitess for others, you might adopt the
+perl script callVitess to your needs.
+
 4. try it
 ---------
 	<vitess parent directory>/vitess/Vitess
@@ -104,8 +108,8 @@ Compilation from sources
 The Tcl/Tk code should work with little or no modification
 for all Unix derivates.
 
-C sources have been compiled for Linux,
-Solaris and Tru64.
+C sources have been compiled for Linux, elder versions for
+Solaris and Tru64, too.
 
 Difference to the Windows version
 ---------------------------------
@@ -116,8 +120,9 @@ images. The MODULES directory contains those files, you
 need the right ones for your operating system. 
 For module guide (from guide.c) we find
 
+guide.exe		 Windows 32 bit
 guide_Linux		 Linux i386
 guide_Linux_x86_64       Linux x86 64 architecture
+and in the past
 guide_SunOS		 Solaris sparc
 guide_OSF		 Tru64 alpha
-guide.exe		 Windows 32 bit
