@@ -1,28 +1,22 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-    
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
-    
-  <meta name="GENERATOR"
- content="Mozilla/4.75 [de] (WinNT; U) [Netscape]">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module Flipper Coil</title>
 </head>
   <body>
-  
 <h1> VITESS Module Flipper Coil</h1>
-  
-<p><br>
+<p>
 This module simulates a rectangular coil flipper. Inside the coil the field
 component is homogeneous and in the walls increases/decreases from 0 Oe to
 the value of the coil field component given as input. The guide field is
 added to the total field. This module only rotates the spin vectors belonging
 to trajectories which pass through the rectangular geometry. No attenuation
-is considered in the walls. <br>
-&nbsp; </p>
-<p>Module parameters: <br>
-&nbsp; 
+is considered in the walls. 
+<p>
+<h3>Module parameters</h3>
+<p>
 <table border="1" width="81%">
  <tbody>
     <tr>
@@ -93,15 +87,13 @@ the coil axes</td>
 <p>Important note: In case of serious memory limits (mainly older computers) 
 it is possible to get "couldn't execute "...\MODULES\flipper_coil.exe": invalid
 argument". This is because the field resolution has to be high enough. Set
-"#define FIELD_SIZE 75" smaller and recompile. <br>
-&nbsp; </p>
-<p> </p>
+"#define FIELD_SIZE 75" smaller and recompile.
+<p>
 <hr> 
 <p><a href="vitess.html">Back to VITESS overview</a> <br>
 <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> </p>
 <p><!-- hhmts start --><font size="-1">Last modified: Tue Jul 23 17:55:56 
 MEST 2002, G. Zs.</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> 
-</p>
-<br>
+<p>
 </body>
 </html>

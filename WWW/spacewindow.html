@@ -1,13 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module Collimator</title>
 </head>
  <body>
- 
 <h1>VITESS Modules Space, Slit and Spacewindow</h1>
 <p> There are 3 modules that can be used for propagation of the neutrons to a certain area.
 They all take into account gravity (if this option is chosen).
@@ -17,21 +15,21 @@ They all take into account gravity (if this option is chosen).
 It can consider attenuation inside the window and non-perfect absorption outside the window.
 Their x-coordinates are reset to 0 (as in most others modules) after finishing the propagation treatment.
 </p>
-<img SRC="windows1.gif" height=259 width=575></pre> <br>
-<br>
+<img SRC="windows1.gif" height=259 width=575></pre>
+<p>
 <h3>VITESS Module Space</h3>
+<p>
 The module <b>space</b> simply simulates the propagation over a certain distance. But an attenuation inside the medium can be considered by
 giving the macrosopic absorption and total scattering cross-section. The macroscopic cross-section can be calculated from the microscopic 
 cross-section by multipyling with the particle density.
-<br>
-<br>
+<p>
 <h3>VITESS Module Slit</h3>
 The module <b>slit</b> simulates the propagation to a rectangular window in a certain distance, which is centered around a beam axis and 
 has its normal vector along the x-axis. Only those neutrons hitting the window are considered further.
 This common case can be easily handled using this simple module. In all othe cases the module <b>spacewindow</b> has to be used.  
-<br>
-<br>
+<p>
 <h3>VITESS Module Spacewindow</h3> 
+<p>
 The module <b>spacewindow</b> simulates free propagation of neutrons from (x=0) to a rectangular or circular window.
 This window may have a thickness, an inner and/or an outer material.
 In case of ideal transmission inside and ideal absorption outside, only those hitting the window are considered further on.
@@ -52,7 +50,7 @@ If the file is given, the exp. transmission is activated automatically, otherwis
 <br>
 <pre>
 The file format describing the transmission is:
-Wavelength [Å]           attenuation µ [1/cm] 
+Wavelength [Ã…]           attenuation Âµ [1/cm] 
 Note: the wavelength range must be from shortest to longest wavelength in the table
 
 For the outer materials, the following options exist
@@ -66,10 +64,9 @@ Value 6 - Ideal absorption
 For materials 1 - 4, the maximal wavelength range is 0.3 ... 28 A 
 For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Krist, HZB, Berlin)
 </pre>
-<br>
-<br>
-<h3><font size="+2"> Parameters for module 'Space' </font></h3>
-<br>
+<p>
+<h3>Parameters for module 'Space'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -96,7 +93,7 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
 
      <tr>
        <td valign="top">absorption<br>[1/cm]</td>
-       <td valign="top">macroscopic absorption cross-section for 1.798 Ã<br />
+       <td valign="top">macroscopic absorption cross-section for 1.798 Ãƒ<br />
                         The absorption cross-section for the wavelength under consideration is calculated in the module from this value. </td>
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-m      </td>
@@ -105,10 +102,9 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
    
   </tbody> 
 </table>
-<br> 
-<br>
-<h3><font size="+2"> Parameters for module 'Slit' </font></h3>
-<br>
+<p>
+<h3>Parameters for module 'Slit'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -141,11 +137,9 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
      </tr>
   </tbody> 
 </table>
-<br> 
-<br>
-<br>
-<h3><font size="+2"> Parameters for module 'Spacewindow' </font></h3>
-<br>
+<p>
+<h3>Parameters for module 'Spacewindow'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -206,7 +200,7 @@ For silicon, the maximal wavelength range is 1 .. 20 A    (Data from Thomas Kris
        <td valign="top">orientation of the normal vector of the window  <br/>
 	                       0 deg: direction along the x-axis              <br/>
 	                      90 deg: to the left (= y-axis)                  </td>
-       <td valign="top">[-180°,180°] </td>
+       <td valign="top">[-180Â°,180Â°] </td>
        <td valign="top">-A           </td>
      </tr>
 

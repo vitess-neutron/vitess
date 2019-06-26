@@ -16,9 +16,11 @@
 /* 1.5b K. Lieutenant MAR 2005 correction peak flux                                          */
 /* 1.6  K. Lieutenant FEB 2005 intensity as a function of energy                             */
 /* 1.6a A. Houben     JAN 2010 filter for wavelength and yz position (only if applicable)    */
-/* 1.7  A. Houben     MAY 2010 monitor for div on x-axis rotated by rot angel                */
+/* 1.7  A. Houben     MAY 2010 monitor for div on x-axis rotated by rot angle                */
+/* 1.8  A. Lieutenant Aug 2012 multiple file output                                          */
 /*********************************************************************************************/
 
+// includes and definitions
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,12 +30,20 @@
 #include "softabort.h"
 #include "general.h"
 
-#define MAX_KIND 8
+#define MAX_KIND  8
+#define MAX_COLS 25
+
+
+// Prototypes
+void NumerateName (char* sFileLong, char* sFileShort, const short nNumber);
+
 
 int main(int argc, char *argv[])
 {
   FILE	*pFileMon=NULL,       /* monitor output file */
          *pFileRef=NULL;       /* reference file      */
+//  FILE   fFileMonC[MAX_FILES];
+  FILE*  pFileMonC[MAX_COLS]={NULL, NULL, NULL, NULL,NULL, NULL,NULL, NULL};
   char	*MonitorFileName=NULL,
          *RefFileName=NULL,
          sNewName[99]="", sModuleName[41],
@@ -44,12 +54,26 @@ int main(int argc, char *argv[])
                                 "horizontal position",   "vertical position", "energy", "divergence yz"};
 
   short  bProbWeight=0,        /* Probability weight yes or no */
+         iCol,                 /* colour of the trajectory */
          bSplitWeight=1;       /* Split weight in case of yz: yes or no */
   long   iBin,                 /* bin number */
-         i, kind, exclusivecount, registered, normalise, BufferIndex, nBiny=10, nColour=0,
+         jMon,                 /* monitor number */
+         i, 
+		 kind=1, 
+		 exclusivecount=0, 
+		 registered=0, 
+		 normalise=0, 
+		 nBiny=10, 
+		 nColour=0,
+		 nAddMons=0,          /* number of additional output files (for separate colours  */                
          nTrjTot=0, crot = 0;  /* total number of traj. within binning and eval. time; number of rot angles for yz */
   double dIntTot=0.0,          /* total count rate within binning and eval. time      */
-         Miny=0.0,p,Maxy=1.0, time, rotang_min=0.0, rotang_max=0.0, rotang_step=0.0;
+         Miny=0.0,Maxy=1.0, 
+         prob=0.0,                /* neutron weight */
+		 time, 
+         rotang_min=0.0, 
+         rotang_max=0.0,
+         rotang_step=0.0;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
 		 filtYMin=-1.0e10,
@@ -71,18 +95,10 @@ int main(int argc, char *argv[])
   long   *pBinN=NULL;          /* number of trajectories per bin   */
 
 
-  /*initialisation*/
-  BufferIndex = 0;
-  kind = 1;
-  normalise = 0;
-  p=0.0;
-  exclusivecount=0;
-  registered=0;
-
-
-  /* input */
+  /* init */
   Init(argc, argv, VT_MONITOR_1);
 
+  /* own init */
   for(i=1; i<argc; i++)
   {
     if(argv[i][0]!='+')
@@ -91,7 +107,7 @@ int main(int argc, char *argv[])
       {
       case 'O':
         MonitorFileName=&argv[i][2];
-        pFileMon = fopen(FullParName(MonitorFileName),"wt");
+        pFileMon = fileOpen(FullParName(MonitorFileName),"wt");
         if (pFileMon==NULL)
         {
           char* p1=NULL, *p2=NULL;
@@ -118,20 +134,12 @@ int main(int argc, char *argv[])
         break;
 
       case 'k':
-        kind = atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 
+        kind = atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz,
                                      5=monitory,      6=monitorz     7=energy       8=divyz */
         break;
 
       case 'n':
         nBiny = atol(&argv[i][2]); /* number of bins */
-
-        pPosT = (double*) calloc(nBiny+1,sizeof(double));
-        pInt  = (double*) calloc(nBiny+1,sizeof(double));
-        pSD   = (double*) calloc(nBiny+1,sizeof(double));
-        pNorm = (double*) calloc(nBiny+1,sizeof(double));
-        pBinN = (long*)   calloc(nBiny+1,sizeof(long));
-
-        //if (nbiny>10000) {fprintf(LogFilePtr,"\n number of bins must be <= 10000"); exit(99);}
         break;
 
       case 'm':
@@ -142,13 +150,13 @@ int main(int argc, char *argv[])
         Maxy = atof(&argv[i][2]);   /* upper bound lambda, time or div. window [A], [ms], [deg]*/
         break;
 
-	  case 'a':
+      case 'a':
         rotang_min = atof(&argv[i][2])*M_PI/180.;   /* lower bound rot projection angle [deg]*/
         break;
-	  case 'A':
+      case 'A':
         rotang_max = atof(&argv[i][2])*M_PI/180.;   /* upper bound rot projection angle [deg]*/
         break;
-	  case 's':
+      case 's':
         rotang_step = atof(&argv[i][2])*M_PI/180.;   /* rot projection angle step [deg]*/
         break;
 
@@ -180,7 +188,7 @@ int main(int argc, char *argv[])
         bProbWeight = (short) atol(&argv[i][2]); /* p=1 means probability weight activated, */
         break;                                   /* else neutron weight is set to 1.0       */
 
-	  case 'P':
+      case 'P':
         bSplitWeight = (short) atol(&argv[i][2]); /* p=1 means split weight activated for each angle, */
         break;                                   /* else neutron weight is multiplied by number of detection angles */
 
@@ -193,7 +201,11 @@ int main(int argc, char *argv[])
         break;                             /* if 2, each channel normalised reference file */
 
       case 'C':
-        nColour = atol(&argv[i][2]);       /*  excludes all neutrons with diff. Colour, if nColour > 0 */
+        nColour = atol(&argv[i][2]);       /*  excludes all neutrons with diff. Colour, if nColour > 0   */
+		if (nColour < 0)                   /*  writes separate files from colour=0, 1, ...,-nColour      */
+		{ nAddMons  = mini(MAX_COLS,-nColour);
+		  nColour = 0;
+		}
         break;
 
       case 't':
@@ -212,25 +224,39 @@ int main(int argc, char *argv[])
     }
   }
 
-
-  if (MonitorFileName==NULL)
-    {fprintf(LogFilePtr,"\n you must define a MonitorOutputFile"); exit(99);}
-
-  sprintf(sModuleName, "monitor1_%s 1.7", sParN[kind] );
+  sprintf(sModuleName, "monitor1_%s 1.8", sParN[kind] );
   print_module_name(sModuleName);
+
+  if (nAddMons > 0)
+  { 
+	for (jMon=1; jMon<=nAddMons; jMon++)
+	{ 
+      NumerateName (sNewName, MonitorFileName, jMon);
+      pFileMonC[jMon-1] = fopen(FullParName(sNewName),"wt");
+	} 
+  }
+
+  pPosT = (double*) calloc(nBiny+1, sizeof(double));
+  pNorm = (double*) calloc(nBiny+1, sizeof(double));
+  pInt  = (double*) calloc((nBiny+1)*(nAddMons+1), sizeof(double));
+  pSD   = (double*) calloc((nBiny+1)*(nAddMons+1), sizeof(double));
+  pBinN = (long*)   calloc((nBiny+1)*(nAddMons+1), sizeof(long));
 
   if (pFileRef!=NULL)
     normalise=2;
 
   /*initialisation*/
   dBinSize = (Maxy-Miny)/(double)nBiny;
+
   for (iBin=0; iBin<=nBiny; iBin++)
   {
     pPosT[iBin]=Miny+(dBinSize*iBin);
-    pInt [iBin]=0.0;
-    pSD  [iBin]=0.0;
-    pBinN[iBin]=0;
-
+    for (jMon=0; jMon<=nAddMons; jMon++)
+    { 
+      pInt [iBin+jMon*(nBiny+1)]=0.0;
+      pSD  [iBin+jMon*(nBiny+1)]=0.0;
+      pBinN[iBin+jMon*(nBiny+1)]=0;
+	}
     if(normalise==1)
     { pNorm[iBin] =(Maxy-Miny)/(double)nBiny;
     }
@@ -250,15 +276,15 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nBiny, Miny, Maxy, sUnit[kind]);
   fprintf(LogFilePtr, "File     : %s\n", MonitorFileName);
 
-  
+
   if (kind == 8 && bSplitWeight == 1) {
-	rotang = rotang_min;
-	do {
-		rotang += rotang_step;
-		crot++;
-	} while (rotang_step > 0.0 && rotang <= rotang_max && rotang_max > rotang_min);
+    rotang = rotang_min;
+    do {
+      rotang += rotang_step;
+      crot++;
+    } while (rotang_step > 0.0 && rotang <= rotang_max && rotang_max > rotang_min);
   } else {
-	crot = 1;
+    crot = 1;
   }
 
   DECLARE_ABORT;
@@ -270,153 +296,109 @@ int main(int argc, char *argv[])
       CHECK;
       registered=0;
 
-      if(bProbWeight==1.0) {p = InputNeutrons[i].Probability;}
-      else p=1.0;
+      if(bProbWeight==1) 
+        prob = InputNeutrons[i].Probability;
+      else
+        prob = 1.0;
 
       time = InputNeutrons[i].Time;
+      iCol = InputNeutrons[i].Color;
 
       /* write out all neutrons, if 'exclusive counts = no' is set */
       if (exclusivecount==0)
-      {
         WriteNeutron(&(InputNeutrons[i]));
-      }
 
       /* exclude traj. with wrong colours: (nColour=0 means: all colours accepted) */
-      if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
-	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
-	  if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
+      if (nColour > 0 && nColour!=InputNeutrons[i].Color) continue;
+      if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+      if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+      if (InputNeutrons[i].Position[1] < filtYMin) continue;
+      if (InputNeutrons[i].Position[1] > filtYMax) continue;
+      if (InputNeutrons[i].Position[2] < filtZMin) continue;
+      if (InputNeutrons[i].Position[2] > filtZMax) continue;
 
       switch (kind)
       {
-      case 1: //monitorlambda
-        iBin=(int)floor((double)nBiny*(InputNeutrons[i].Wavelength - Miny)/(Maxy-Miny));
-
-        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
+      case 1: // monitor lambda
+        iBin = (int)floor((double)nBiny*(InputNeutrons[i].Wavelength - Miny)/(Maxy-Miny));
         break;
 
-      case 2: //monitortime
+      case 2: // monitor time
         iBin = (int)floor(nBiny*(InputNeutrons[i].Time - Miny)/(Maxy-Miny));
-        if((iBin>=0)&&(iBin<nBiny))
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 
-      case 3: //monitordivy
+      case 3: // monitor div_y
         Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
         Divy*=180.0/M_PI;
         if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          {Divy=0.0;}
-
+          Divy=0.0;
         iBin = (int)floor(nBiny*(Divy - Miny)/(Maxy-Miny));
-        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 
-      case 4: //monitordivz
+      case 4: // monitor div_z
         Divz=(double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
         Divz*=180.0/M_PI;
         if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
           {Divy=0.0;}
-
         iBin = (int)floor(nBiny*(Divz - Miny)/(Maxy-Miny));
-
-        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 
-      case 5: //monitory
+      case 5: // monitor y
         iBin = (int)floor(nBiny*(InputNeutrons[i].Position[1] - Miny)/(Maxy-Miny));
-        if(iBin>=0 && iBin<nBiny  && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 
-      case 6: //monitorz
+      case 6: // monitor z
         iBin = (int)floor(nBiny*(InputNeutrons[i].Position[2] - Miny)/(Maxy-Miny));
-        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 
-      case 7: //monitorenergy
+      case 7: // monitor energy
         iBin=(int)floor((double)nBiny*(0.001*ENERGY_FROM_LAMBDA(InputNeutrons[i].Wavelength) - Miny)/(Maxy-Miny));
-
-        if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-        {
-           pInt [iBin] += p;
-           pBinN[iBin] += 1;
-           dIntTot   += p;
-           nTrjTot   += 1;
-           registered=1;
-        }
         break;
 		
-      case 8: //monitordivyz_angle
+      case 8: // monitor div_yz_angle
         Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
         Divy*=180.0/M_PI;
         if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          {Divy=0.0;}
-		Divz=(double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+          Divy=0.0;
+        Divz=(double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
         Divz*=180.0/M_PI;
         if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          {Divy=0.0;}
-		//x' = x cos f - y sin f
+          Divy=0.0;
+        //x' = x cos f - y sin f
 		
-		rotang = rotang_min;
-		do {
-			Div = Divy * cos(-rotang) - Divz * sin(-rotang);
+        rotang = rotang_min;
+        do {
+          Div = Divy * cos(-rotang) - Divz * sin(-rotang);
 
-			iBin = (int)floor(nBiny*(Div - Miny)/(Maxy-Miny));
-			if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
-			{
-			   pInt [iBin] += p/crot;
-			   pBinN[iBin] += 1;
-			   dIntTot   += p/crot;
-			   nTrjTot   += 1;
-			   registered=1;
-			}
-			rotang += rotang_step;
-		} while (rotang_step > 0.0 && rotang <= rotang_max && rotang_max > rotang_min);
+          iBin = (int)floor(nBiny*(Div - Miny)/(Maxy-Miny));
+          if(iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
+            {
+              pInt [iBin] += prob/crot;
+              pBinN[iBin] += 1;
+              dIntTot     += prob/crot;
+              nTrjTot     += 1;
+              registered = 1;
+            }
+          rotang += rotang_step;
+        } while (rotang_step > 0.0 && rotang <= rotang_max && rotang_max > rotang_min);
         break;
       }
+
+      if (kind != 8)
+      { if (iBin>=0 && iBin<nBiny && time>=dEvalTimeMin && time<=dEvalTimeMax)
+        {
+          pInt [iBin] += prob;
+          pBinN[iBin] += 1;
+          dIntTot     += prob;
+          nTrjTot     += 1;
+          registered = 1;
+          if (nAddMons > 0 && iCol > 0 && iCol <= nAddMons)
+          { 
+            pInt [iBin + iCol*(nBiny+1)] += prob;
+            pBinN[iBin + iCol*(nBiny+1)] += 1;
+          }
+        }
+	  }
 
       /* write out registered neutrons, if 'exclusive counts = yes' is set */
       if((exclusivecount==1) && (registered==1))
@@ -427,26 +409,44 @@ int main(int argc, char *argv[])
   }
 
 my_exit:
+  // main monitor
   if (pFileMon != NULL)
   { for (iBin = 0; iBin < nBiny; iBin++)
-    {
-      if(pBinN[iBin]!=0) //pBinN[iBin]=1;
-		pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
+    { if(pBinN[iBin]!=0) 
+	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
       fprintf(pFileMon,"% 7.7E\t% 11.7E \t% 11.7E \t% 11.7E \n",
-                       (pPosT[iBin]+pPosT[iBin+1])/2.0,(pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/pNorm[iBin]/(double)crot);
+                       (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
-
     fclose(pFileMon);
   }
 
-  if (kind==2) /* monitor TOF */
-  { ReadSimData(&dTimeMeas, &dLmbdWant, &dFreq);
+  // additional monitors
+  if (nAddMons > 0) 
+  { for (jMon=1; jMon<=nAddMons; jMon++)
+    { if (pFileMonC[jMon-1] != NULL)
+      { for (iBin = 0; iBin < nBiny; iBin++)
+        {
+          if(pBinN[iBin+jMon*(nBiny+1)]!=0) 
+		    pSD[iBin+jMon*(nBiny+1)] = pInt[iBin+jMon*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+jMon*(nBiny+1)]));
+          fprintf(pFileMonC[jMon-1],"%12.4e   %14.7e   %14.7e   %10ld\n",
+                  (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+jMon*(nBiny+1)]/pNorm[iBin]), pSD[iBin+jMon*(nBiny+1)]/pNorm[iBin], 
+                  pBinN[iBin+jMon*(nBiny+1)]);
+        }
+        fclose(pFileMonC[jMon-1]);
+      }
+    }
+  }
+
+    if (kind==2) /* monitor TOF */
+  { 
+    ReadSimData(&dTimeMeas, &dLmbdWant, &dFreq);
     if (dFreq > 0.0)
       fprintf(LogFilePtr, "Peak flux: %11.4e n/s \n", 1000*dIntMax/dBinSize/dFreq);
     else
       fprintf(LogFilePtr, "Peak flux: %11.4e n/s (* 1/rep_rate for TOF instruments) \n", 1000*dIntMax/dBinSize);
   }
+
   if (bProbWeight)
     fprintf(LogFilePtr, "total neutron count rate within binning and eval. time: %11.4e n/s \n\n", dIntTot);
   else
@@ -465,3 +465,18 @@ my_exit:
 
   return(0);
 }
+
+/* Building a combined file name of 'sFilename' and 'sAddition' without changing the extension */
+/***********************************************************************************************/
+void
+NumerateName (char* sFileLong, char* sFileShort, const short nNumber)
+
+{
+   char sParExt [4],      // extension of file names (with simulation results)
+        sParName[99];     // name (without extension) of those files
+
+	strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
+	StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);
+	sprintf (sFileLong, "%s%hd.%s", sParName, nNumber, sParExt);
+}
+

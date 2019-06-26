@@ -36,8 +36,9 @@ LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /
 TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
-NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(ITOOL)
-MGTOOL=$(MTOOL)
+NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(TOOL)
+GTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathfunctions.obj" $(TOOL)
+MGTOOL="$(IDIR)\mathfunctions.obj" $(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
 
@@ -67,6 +68,7 @@ ALL : \
 	"$(OD)\mon2_wldiv.exe" \
 	"$(OD)\mon2_kdiv.exe" \
 	"$(OD)\mon2_rdiv.exe" \
+	"$(OD)\mon_brilliance.exe" \
 	"$(OD)\velselect.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
@@ -96,8 +98,6 @@ ALL : \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\eval_sans.exe" \
 	"$(OD)\frame.exe" \
-	"$(OD)\guide.exe" \
-	"$(OD)\guide_parallel.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
@@ -116,10 +116,13 @@ ALL : \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
-	"$(OD)\monitor2D.exe" \
-	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
+	"$(OD)\rotating_field.exe" \
 	"$(OD)\resonator_drabkin.exe" \
+	"$(OD)\monitor1D.exe" \
+	"$(OD)\monitor2D.exe" \
+	"$(OD)\guide_elliptic.exe" \
+	"$(OD)\guide_parallel.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
@@ -127,16 +130,16 @@ ALL : \
 	"$(OD)\sample_nxs.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
-	"$(OD)\sm_ensemble.exe" \
 	"$(OD)\sm_ensemble_parallel.exe" \
 	"$(OD)\dist_time.exe" \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
-	"$(OD)\direct_view.exe"
+	"$(OD)\direct_view.exe" \
+	"$(OD)\sortiap.exe"
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=2 /DVMINOR=11 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=0 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -155,6 +158,10 @@ SOURCE=$(SPATH)\sample.c
 
 SOURCE=$(SPATH)\softabort.c
 "$(IDIR)\softabort.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mon1D.cpp
+"$(IDIR)\mon1D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\gener_fct.c
@@ -177,16 +184,16 @@ SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\sq_calc.c
+"$(IDIR)\sq_calc.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\sgio.c
 "$(IDIR)\sgio.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sgfind.c
 "$(IDIR)\sgfind.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\sq_calc.c
-"$(IDIR)\sq_calc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ma_functions.c
@@ -215,6 +222,10 @@ SOURCE=$(SPATH)\threadHelper.c
 
 SOURCE=$(SPATH)\src_modchar.c
 "$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mon2D.cpp
+"$(IDIR)\mon2D.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sgclib.c
@@ -287,6 +298,13 @@ SOURCE=$(SPATH)\mon2_rdiv.c
 
 "$(OD)\mon2_rdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_rdiv.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mon2_rdiv.pdb" /out:"$(OD)\mon2_rdiv.exe" "$(IDIR)\mon2_rdiv.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\mon_brilliance.c
+"$(IDIR)\mon_brilliance.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon_brilliance.exe" : "$(OD)" $(TOOL) "$(OD)\mon_brilliance.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon_brilliance.pdb" /out:"$(OD)\mon_brilliance.exe" "$(IDIR)\mon_brilliance.obj" $(TOOL) 
 
 SOURCE=$(SPATH)\velselect.c
 "$(IDIR)\velselect.obj" : $(SOURCE)
@@ -491,20 +509,6 @@ SOURCE=$(SPATH)\frame.c
 "$(OD)\frame.exe" : "$(OD)" $(MTOOL) "$(OD)\frame.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\frame.pdb" /out:"$(OD)\frame.exe" "$(IDIR)\frame.obj" $(MTOOL) 
 
-SOURCE=$(SPATH)\guide.c
-"$(IDIR)\guide.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\guide.exe" : "$(OD)" $(MTOOL) "$(OD)\guide.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\guide.pdb" /out:"$(OD)\guide.exe" "$(IDIR)\guide.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\guide_parallel.c
-"$(IDIR)\guide_parallel.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\guide_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
-	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
-
 SOURCE=$(SPATH)\monitorpol_1d.c
 "$(IDIR)\monitorpol_1d.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -631,33 +635,54 @@ SOURCE=$(SPATH)\mirror_elliptical.c
 "$(OD)\mirror_elliptical.exe" : "$(OD)" $(MTOOL) "$(OD)\mirror_elliptical.obj" "$(OD)\mirrrefl.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mirror_elliptical.pdb" /out:"$(OD)\mirror_elliptical.exe" "$(IDIR)\mirror_elliptical.obj" $(MTOOL) "$(OD)\mirrrefl.obj" 
 
-SOURCE=$(SPATH)\monitor2D.cpp
-"$(IDIR)\monitor2D.obj" : $(SOURCE)
+SOURCE=$(SPATH)\flipper_gradient.c
+"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) 
+"$(OD)\flipper_gradient.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_gradient.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\rotating_field.exe" : "$(OD)" $(MGTOOL) "$(OD)\rotating_field.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MGTOOL) 
-
-SOURCE=$(SPATH)\flipper_gradient.c
-"$(IDIR)\flipper_gradient.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\flipper_gradient.exe" : "$(OD)" $(MGTOOL) "$(OD)\flipper_gradient.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MGTOOL) 
+"$(OD)\rotating_field.exe" : "$(OD)" $(MTOOL) "$(OD)\rotating_field.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\rotating_field.pdb" /out:"$(OD)\rotating_field.exe" "$(IDIR)\rotating_field.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\resonator_drabkin.c
 "$(IDIR)\resonator_drabkin.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MGTOOL) "$(OD)\resonator_drabkin.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MGTOOL) 
+"$(OD)\resonator_drabkin.exe" : "$(OD)" $(MTOOL) "$(OD)\resonator_drabkin.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\resonator_drabkin.pdb" /out:"$(OD)\resonator_drabkin.exe" "$(IDIR)\resonator_drabkin.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\monitor1D.cpp
+"$(IDIR)\monitor1D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monitor1D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor1D.obj" "$(OD)\mon1D.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monitor1D.pdb" /out:"$(OD)\monitor1D.exe" "$(IDIR)\monitor1D.obj" $(NTOOL) "$(OD)\mon1D.obj" 
+
+SOURCE=$(SPATH)\monitor2D.cpp
+"$(IDIR)\monitor2D.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monitor2D.exe" : "$(OD)" $(NTOOL) "$(OD)\monitor2D.obj" "$(OD)\mon2D.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monitor2D.pdb" /out:"$(OD)\monitor2D.exe" "$(IDIR)\monitor2D.obj" $(NTOOL) "$(OD)\mon2D.obj" 
+
+SOURCE=$(SPATH)\guide_elliptic.cpp
+"$(IDIR)\guide_elliptic.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_elliptic.exe" : "$(OD)" $(GTOOL) "$(OD)\guide_elliptic.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(GTOOL) 
+
+SOURCE=$(SPATH)\guide_parallel.c
+"$(IDIR)\guide_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_parallel.exe" : "$(OD)" $(MGTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MGTOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\sample_powder.c
 "$(IDIR)\sample_powder.obj" : $(SOURCE)
@@ -715,6 +740,13 @@ SOURCE=$(SPATH)\direct_view.c
 "$(OD)\direct_view.exe" : "$(OD)" "$(OD)\direct_view.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\direct_view.pdb" /out:"$(OD)\direct_view.exe" "$(IDIR)\direct_view.obj"
 
+SOURCE=$(SPATH)\sortiap.c
+"$(IDIR)\sortiap.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sortiap.exe" : "$(OD)" "$(OD)\sortiap.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sortiap.pdb" /out:"$(OD)\sortiap.exe" "$(IDIR)\sortiap.obj"
+
 SOURCE=$(SPATH)\bendtest.c
 "$(IDIR)\bendtest.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
@@ -744,13 +776,6 @@ SOURCE=$(SPATH)\visual.c
 
 "$(OD)\visual.exe" : "$(OD)" "$(OD)\visual.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\visual.pdb" /out:"$(OD)\visual.exe" "$(IDIR)\visual.obj" "$(OD)\cpgplot.obj"
-
-SOURCE=$(SPATH)\sm_ensemble.c
-"$(IDIR)\sm_ensemble.obj" : $(SOURCE)
-	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sm_ensemble.exe" : "$(OD)" "$(OD)\sm_ensemble.obj" $(MTOOL) "$(OD)\cpgplot.obj"
-	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble.pdb" /out:"$(OD)\sm_ensemble.exe" "$(IDIR)\sm_ensemble.obj" "$(OD)\cpgplot.obj"
 
 SOURCE=$(SPATH)\sm_ensemble_parallel.c
 "$(IDIR)\sm_ensemble_parallel.obj" : $(SOURCE)

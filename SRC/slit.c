@@ -4,6 +4,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  Dec 2006  K. Lieutenant   initial version                                            */
+/* 1.1  Jan 2012  K. Lieutenant   visualization                                              */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -27,7 +28,6 @@ double VelocityReal,            /* velocity of the neutron                    */
        Width=0.0, Height=0.0,   /* width and Height of the (rectangular) slit */
        DistMove;                /* distance between starting point and slit   */
 
-
 /******************************/
 /** Program                  **/
 /******************************/
@@ -40,10 +40,11 @@ int main(int argc, char *argv[])
 	       NewPosY, NewPosZ;     /* hor. and vert. position of neutron at slit  */
 
 	/* initialisation */
-	BufferIndex     = 0;
+	BufferIndex   = 0;
+        bVisInstalled = TRUE;
 
 	Init(argc, argv, VT_SLIT);
-	print_module_name("Slit 1.0");
+	print_module_name("Slit 1.1");
 	OwnInit(argc, argv);
 
 	DECLARE_ABORT
@@ -82,17 +83,41 @@ int main(int argc, char *argv[])
 			
 			if (fabs(NewPosY) < 0.5*Width  &&  fabs(NewPosZ) < 0.5*Height)
 			{	
+        WriteIAP(&InputNeutrons[i], VT_PASSED);
+
 				InputNeutrons[i].Time += (double)TimeOF;
 				InputNeutrons[i].Position[0]=0.0;
 
 				WriteNeutron(&InputNeutrons[i]);
 			}
+      else
+      { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+      }
 		}
 	}	
 
  my_exit:
 	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
 	                    Width, Height, DistMove);
+
+  // Geometry data
+  if (bVisInstr)
+  { stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
+    stGeometry.nRectangles=1; 
+
+    stGeometry.pRectangle[0].Width     = Width;
+    stGeometry.pRectangle[0].Height    = Height;
+    stGeometry.pRectangle[0].vCntr[0]  = DistMove;
+    stGeometry.pRectangle[0].vCntr[1]  = 0.0;
+    stGeometry.pRectangle[0].vCntr[2]  = 0.0;
+    stGeometry.pRectangle[0].vNormal[0]= 1.0;
+    stGeometry.pRectangle[0].vNormal[1]= 0.0;
+    stGeometry.pRectangle[0].vNormal[2]= 0.0;
+
+    stGeometry.pDescr  = "slit:cyan";
+    stGeometry.eModule = VT_SLIT;
+  }
+
 	Cleanup(DistMove,0.0,0.0, 0.0,0.0);	
 
 	return(0);

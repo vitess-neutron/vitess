@@ -11,9 +11,10 @@
 /*	                                 collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, */
 /*                                  3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber        */
 /* 2.10  Mar  2004  S. Manoshin     Add "choosing" of material for inner part of collimator  */
-/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick collimator	             */
+/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick collimator                 */
 /* 2.22  Jan  2002  K. Lieutenant   correction:  position after beamstop                     */
 /* 2.23  May  2010  A. Houben       "Rotation" of square window by counter rot of neutron pos*/
+/* 2.24  Apr  2012  A. Houben       Treat only neutrons with a given color and phi angle     */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -27,7 +28,7 @@
 /******************************/
 
 void  OwnInit(int argc, char *argv[]);
-
+void  SetGeometryData();
 
 /******************************/
 /** Global Variables         **/
@@ -65,7 +66,8 @@ double  heightmin,       /* z-coordinate: bottom of rectangular window          
   double Thicknesscoll=0.0;
   double Thicknesscolli=0.0;
   double DistMove=0.0;
-
+  short  TreatColor = -1; // Treat only neutrons with a given color
+  double minPhi=-1.0, maxPhi=-1.0;  //Angle in xz plane
 
 
 /******************************/
@@ -80,7 +82,7 @@ int main(int argc, char *argv[])
 
 	double tempdistsquared;
 	double TimeOF;
-	double NewPositionY, NewPositionZ;
+	double NewPositionY, NewPositionZ, Phi;
 	double CenterX, CenterY, CenterZ, SumProb, TOF3 ;
 
 	Neutron Output;
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
 	Init(argc, argv, VT_WINDOW);
 	OwnInit(argc, argv);
 
-	print_module_name("Space and Window 2.23");
+	print_module_name("Space and Window 2.24");
 
 	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
 
@@ -113,7 +115,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	if (DistMove < 0.0)
+	if (DistMove < 0.0 && bOldFrame == FALSE)
 	{
 		fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
 		exit(-1);
@@ -328,7 +330,7 @@ int main(int argc, char *argv[])
 	EndPoint2.D = -1.0*(Thicknesscoll+DistMove);
 
 
-
+	SetGeometryData();
 
 	/*if(keygrav == 1)
 	{
@@ -356,16 +358,31 @@ int main(int argc, char *argv[])
 			/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
 			/****************************************************************************************/
 
-			if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			if (InputNeutrons[i].Wavelength == 0.0) continue;
-			VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
-			if (VelocityReal <= 0.0) continue;
+			  if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
+			    Output = InputNeutrons[i];
+			    WriteIAP(&Output, VT_EXITED);
+			    WriteNeutron(&Output);
+			    continue;
+			  }
+			
+			if (bOldFrame==FALSE) {
+			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+			  if (InputNeutrons[i].Wavelength == 0.0) continue;
+			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
+			  if (VelocityReal <= 0.0) continue;
+			} 
+			else {
 
+			  Output = InputNeutrons[i];			
+
+			}
+			
+			WriteIAP(&InputNeutrons[i], VT_ENTERED);
 
 			if (keygrav == 1)
-			{
-				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			}
+			  {
+			    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+			  }
 			else
 			{
 				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
@@ -395,6 +412,16 @@ int main(int argc, char *argv[])
 				NewPositionY = InputNeutrons[i].Position[1];
 				NewPositionZ = InputNeutrons[i].Position[2];
 			}
+
+      if (minPhi >= 0 && maxPhi <= 360) {
+        //CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+        //Phi = Phi*180.0/M_PI;
+        Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
+        if (Phi < minPhi || Phi > maxPhi) {
+	  WriteIAP(&Output, VT_ABSORBED);
+	  continue;
+	}
+      }
 
 			if(bCircularWindow==TRUE)
 			{	tempdistsquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
@@ -446,15 +473,19 @@ int main(int argc, char *argv[])
 				 }
 
 
-				if (bOldFrame==FALSE)
-					InputNeutrons[i].Position[0]=0.0;
-
-
-				InputNeutrons[i].Time += (double)TOF3 ;
-				Output = InputNeutrons[i];
+        if (bOldFrame==FALSE) {
+	  WriteIAP(&InputNeutrons[i], VT_EXITED);
+	  InputNeutrons[i].Position[0]=0.0;
+          InputNeutrons[i].Time += (double)TOF3 ;
+	  Output = InputNeutrons[i];
+        } 
+	else {
+           InputNeutrons[i]=Output;
+	   WriteIAP(&InputNeutrons[i], VT_EXITED);
+	}
 				WriteNeutron(&Output);
-			}
-			else
+      }
+			else /* else, if hitting beamstop or out of window */
 			{
 
 				if (keymaterial0 != 6)
@@ -482,10 +513,30 @@ int main(int argc, char *argv[])
 //	 				 fprintf(LogFilePtr,"surf prob = %f mu = %f \n",prob,mu);
 	 				 InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
 	 				 InputNeutrons[i].Time += (double)TOF3;
-	 				 InputNeutrons[i].Position[0]=0.0;
+	 				 InputNeutrons[i].Position[0]=DistMove;
 					 Output = InputNeutrons[i];
-				 	 WriteNeutron(&Output);
+				 	 if (InputNeutrons[i].Probability <= wei_min) {
+					   WriteIAP(&Output, VT_ABSORBED);
+					 }
+					 else {
+					   WriteIAP(&Output, VT_EXITED);
+					   WriteNeutron(&Output);
+					 }
 				 }
+				else {
+				  if (keygrav == 1)
+				    {
+				      TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPoint2);
+				    }
+				  else
+				    {
+				      TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPoint2);
+				    }
+				   InputNeutrons[i].Probability = 0.;
+				   InputNeutrons[i].Position[0]=DistMove;
+				   InputNeutrons[i].Time += (double)TOF3;
+				   WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+				}
 			}
 		}
 	}
@@ -508,6 +559,7 @@ int main(int argc, char *argv[])
 	{
 		fprintf(LogFilePtr,"No neutrons at the exit of this module \n");
 	}
+  if (TreatColor >= 0) fprintf(LogFilePtr,"Only neutrons with color %hd are treated \n", TreatColor);
 
 	fprintf(LogFilePtr," \n");
 
@@ -604,6 +656,17 @@ void  OwnInit(int argc, char *argv[])
 				Thicknesscolli = atof(&argv[i][2]);
 				/* in cm, inner material */
 				break;
+      case 'f':
+				sscanf(&(argv[i][2]),"%hd", &TreatColor);
+				break;
+      case 'p':
+				minPhi = atof(&argv[i][2]);
+				/* in deg, min angle in yz plane */
+				break;
+      case 'P':
+				maxPhi = atof(&argv[i][2]);
+				/* in deg, max angle in yz plane */
+				break;
 
 			default:
 				fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
@@ -624,7 +687,51 @@ void  OwnInit(int argc, char *argv[])
 
 
 
+void SetGeometryData()
+{
 
 
+  bVisInstalled = TRUE;
+ // Geometry data
+  if (bVisInstr)
+  { 
 
+    if (bCircularWindow) {
+      
+      stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
+      stGeometry.nCylinders = 1;
 
+      stGeometry.pCylinder[0].Radius = winradius;
+      stGeometry.pCylinder[0].Length = Max(Thicknesscoll, Thicknesscolli);
+      stGeometry.pCylinder[0].vCntr[0]  = DistMove + stGeometry.pCylinder[0].Length/2.;
+      stGeometry.pCylinder[0].vCntr[1]  = ywincenter;
+      stGeometry.pCylinder[0].vCntr[2]  = zwincenter;
+      stGeometry.pCylinder[0].vSymAxis[0] = 1.;
+      stGeometry.pCylinder[0].vSymAxis[1] = 0.;
+      stGeometry.pCylinder[0].vSymAxis[2] = 0.;
+      
+      stGeometry.pDescr  = "space window";
+      stGeometry.eModule = VT_WINDOW;
+
+    }
+    else {
+
+    stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
+    stGeometry.nCuboids = 1; 
+
+    stGeometry.pCuboid[0].Length = widthmax - widthmin; 
+    stGeometry.pCuboid[0].Width  = heightmax - heightmin;
+    stGeometry.pCuboid[0].Height = Max(Thicknesscoll, Thicknesscolli);
+    stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Height/2.;
+    stGeometry.pCuboid[0].vCntr[1]  = ywincenter;
+    stGeometry.pCuboid[0].vCntr[2]  = zwincenter;
+    stGeometry.pCuboid[0].vNormal[0]= 0.0;
+    stGeometry.pCuboid[0].vNormal[1]= cos(rotang);
+    stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
+
+    stGeometry.pDescr  = "space window:cyan";
+    stGeometry.eModule = VT_WINDOW;
+
+    }
+  }
+}

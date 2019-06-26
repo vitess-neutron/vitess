@@ -49,7 +49,7 @@
 
 /* START HEADER STORY */
 
-#define MAX_MIRR 16
+#define MAX_MIRR 25
 
 #define	STRING_BUFFER 1000
 

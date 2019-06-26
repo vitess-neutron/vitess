@@ -15,12 +15,14 @@
 #define ESS       1
 #define SNS       2
 #define ISIS      3
+#define CSNS      4
 #define ILL      10
 #define HMI      11
 
 #define CWS       1
 #define SPSS      2
 #define LPSS      3
+#define LPSS_OPT  4
 
 #define POISONED   1   /* moderator decoupled poisoned        */
 #define DECOUPLED  2   /* moderator decoupled unpoisoned      */
@@ -110,9 +112,11 @@ FctTable;
 /***********************************************/
 
 long   IndLT        (const long i, const long j);
-double TotalFU      (const double dTemp,   const short  eSource,  const short   eModType,
-					 const double _dPower, const double _dPeriod, const double _dPulseLen);
-double EssModFU     (const double dLambda, const double dTime,    const double _dLength);
+double TotalFU      (const double dTemp,   const short  eSource,  const short  eModType,
+					 const double dPower,  const double dPeriod,  const double dPulseLen);
+double CsnsTotalFU  (const double dTemp,   const short  eModType, const double dPower);
+double EssModFU     (const double dLambda, const double dTime,    const double dLength);
+double CsnsModFU    (const double dLambda, const double dTime,    const double dPosY,    const double dPosZ);
 
 double Maxwellian   (const double dLambda, const double dModTemp);
 double NotMaxwell   (const double dLambda, const double dParam);

@@ -445,6 +445,76 @@ proc getPreferredPlotCmd {} {
   }
 }
 
+proc getX3DoptfileName {} {
+  upvar #0 X3DoptfileName fn
+  if [info exists fn] {return $fn}
+  if { [getSystem] == "unix"} {
+    set fn [globVal env(X3DOPT)]
+    if {$fn == ""} {
+      set fn [file join [globVal env(HOME)] .x3dopt]
+    }
+  } else {
+    set fn [file join [globVal SourceDirectory] FILES x3d.opt]
+  }
+  return $fn
+}
+
+proc getPreferredX3DCmd {} {
+  global PreferredX3DCmd
+  set cmd [entryVal x3dapp]
+  if {$cmd != "" && [file exists $cmd]} {
+    return [set PreferredX3DCmd $cmd]
+  }
+  if [info exists PreferredX3DCmd] {return $PreferredX3DCmd}
+  set ecmd ""
+  switch [getSystem] {
+    unix {
+      set ecmd [globVal env(X3DAPP)]
+      if {$ecmd == "" && $cmd != ""} {
+	if [catch {exec which $cmd} ecmd] {set ecmd ""}
+      }
+    }
+    windows {
+      if {$cmd != ""} {
+        if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
+        set ecmd [findFile C:/ D:/ $cmd]
+      }
+    }
+    default { }
+  }
+  if {$ecmd != ""} { gSet x3dapp_ $ecmd }
+  return [set PreferredPlotCmd $ecmd]
+}
+
+proc editX3DOptions {} {
+  set fn [getX3DoptfileName]
+  if {! [file exists $fn]} {
+    if [catch {open $fn w} f] {
+      showText "!Could not write x3d option file $fn"
+      return
+    }
+    puts $f {# X3D options
+# uncomment and edit lines
+# viewport restriction
+#xlow=-1
+#xhigh=100
+#ylow=-1
+#yhigh=100
+#zlow=-1
+#zhigh=100
+# material definitions like 
+#hullmat=<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>
+# for cubemat rectmat trianglemat cylmat spheremat ellipsmat ellips2mat labelmat
+# annotation labels
+#fontstyle=<FontStyle DEF='label_font' family='"SANS"' justify='"MIDDLE" "MIDDLE"' size='.1'/>
+#labels=0
+    }
+    close $f
+  }
+
+  showTextEditWindow .x3dedit $fn "X3D Options" 16 0 100
+}
+
 proc getFileDimensions {tfn itemarray} {
   upvar $itemarray la
   if [catch {open $tfn r} f] return
@@ -634,7 +704,7 @@ proc plotTemplateCmdWindow {} {
 
 proc VisViewer {fn} {
   # visualise neutron trajectories
-  global Browser tcl_platform
+  global Browser tcl_platform trajmode
   if {$Browser == ""} return
   switch $tcl_platform(platform) {
     unix {

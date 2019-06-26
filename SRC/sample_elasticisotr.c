@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   /* Initialize the program according to the parameters given  */ 
   
   Init(argc, argv, VT_SMPL_EL_ISO); 
-  print_module_name("sample_elasticisotr 1.6") ;
+  print_module_name("sample_elasticisotr 1.6a") ;
   OwnInit(argc, argv);
 
   DECLARE_ABORT;
@@ -388,7 +388,7 @@ void OwnInit(int argc, char *argv[])
 
   if(Repetition == 0)
   {
-    fprintf(LogFilePtr,"Repetition rate must be > 0 !") ;  
+    fprintf(LogFilePtr,"Repetition rate must be > 0 !\n") ;  
     exit(0) ;
   }
 
@@ -447,9 +447,7 @@ void ReadParameterFile()
 
 
   if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
-  { fprintf(LogFilePtr,"\nERROR: Distance to sample must be larger than sample dimensions!\n"); 
-    exit(0);
-  }
+    fprintf(LogFilePtr,"\nWarning:Distance to sample is smaller than at least one sample dimension!"); 
 		
 		
   /*	 checks some values */

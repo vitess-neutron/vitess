@@ -26,8 +26,13 @@ proc setAll {{mode 0}} {
 }
 
 proc finalExit {} {
-  global tcl_platform
+  global tcl_platform FilesToDeleteList
   if {$tcl_platform(os) == "Darwin"} {destroy .}
+  if [info exists FilesToDeleteList] {
+    foreach f $FilesToDeleteList {
+      catch {file delete $f}
+    }
+  }
   exit
 }
 
@@ -223,6 +228,7 @@ proc controlMenu {w} {
     {c "INSERT Packet" {insertPacketWindow}}
     {c "SAVE Packet" {savePacketWindow}} s
     {c "SAVE to Directory" saveDirectory} s
+    {c "Import Pipe" {importPipe}}
     {m "Export as" mex} s
     {c "Generate Series" {genSeries .gser}} s
     {c "New *.inf File" editInfFile}
@@ -232,14 +238,21 @@ proc controlMenu {w} {
   eval popMenu $w.fil.menu $lmenu
 
   menu $w.fil.menu.mex -bg $menuColor -tearoff 0
-  popMenu $w.fil.menu.mex \
-      {c "bat shell script" {storeAll bat}}\
-      {c "sh shell script" {storeAll sh}}\
-      {c "tcl script" {storeAll tcl}}\
-      {c "sh grid script" {storeAll grd}}\
-      {c "pl perl script" {storeAll pl}}\
-      {c "py python script" {storeAll py}} 
-
+  set flist {
+    {c "tcl script" {storeAll tcl}}
+    {c "pl perl script" {storeAll pl}}
+    {c "py python script" {storeAll py}}
+  } 
+  if {[getSystem] == "unix"} {
+    lappend flist \
+      {c "sh shell script" {storeAll sh}} \
+      {c "sh grid script" {storeAll grd}}
+  } else {
+    lappend flist \
+      {c "bat shell script" {storeAll bat}}
+  }
+  eval popMenu $w.fil.menu.mex $flist
+  unset flist
 
   popMenu $w.copa.menu \
       {c "Copy  Module Parameters" copyModPars} \
@@ -301,6 +314,7 @@ proc controlMenu {w} {
       {c "Instrument Digest" {showHelpItem digest.html}} \
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
+      {c Trajectories {showHelpItem trajectories.html}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
       {m "Modules A - F" m1} \
@@ -382,9 +396,11 @@ proc controlMenu {w} {
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
+      {m Trajectories trajmode} \
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
+      {c "X3D options" editX3DOptions} \
       {c "Helper applications" editDefaults}
 
   set ww $wo.afont
@@ -421,8 +437,7 @@ proc controlMenu {w} {
   forceDef tcl_precision 12
   cascEntries $ww.prec tcl_precision 8 9 10 11 12 13 14 15 16 17
 
-  set gval [expr {[getSystem] == "unix"}]
-  forceDef tk_strictMotif $gval
+  forceDef tk_strictMotif [expr {[getSystem] == "unix"}]
   cascEntries $ww.tk_strictMotif tk_strictMotif 1 0
 
   forceDef audible_bell on
@@ -450,6 +465,11 @@ proc controlMenu {w} {
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
+
+  # if we have an X3D viewer installed, prefer this over SVG
+  if {[getPreferredX3DCmd] == ""} {set emode X3D} else {set emode "SVG xz"}
+  forceDef trajmode $emode
+  cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
 
   forceDef browse_ext_mode select
   cascEntries $wo.browse_ext_mode browse_ext_mode all select
@@ -491,6 +511,10 @@ proc ssbuttonFont {} {
 proc labelFont {} {
   global lfontfamily lfontsize lfonttype
   return [list $lfontfamily $lfontsize $lfonttype]
+}
+proc stextFont {} {
+  global tfontfamily tfontsize tfonttype
+  return [list $tfontfamily [expr $tfontsize - 2] $tfonttype]
 }
 proc textFont {} {
   global tfontfamily tfontsize tfonttype
@@ -655,11 +679,12 @@ proc doGUICommand {prog mod {big ""}} {
 }
 
 proc trVar {n e op} {
-  global Progress ProgressTextL
-  if {$Progress == 0} {
+  global ProgressS ProgressTextL
+  # ProgressS is in the range 0-99
+  if {$ProgressS == 0} {
      set ProgressTextL ""
   } else {
-    set ProgressTextL "$Progress %"
+    set ProgressTextL "$ProgressS %"
   }
 }
 
@@ -671,8 +696,10 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.11"
-  set maxModule 50
+  # This is the place where main GUI elements are created.
+  # Global setups like sizes and limits are set here.
+  set t "VITESS 3.0"
+  set maxModule 100
   set DummyEntry "--inactive--"
 
   frame $w.bm -bg $bgColor; # top header
@@ -732,7 +759,7 @@ proc showBeef {w} {
       set vbh 0.8c
     }
   }
-  set sh 50c;				# scrolled list virtual height
+  set sh ${maxModule}c;				# scrolled list virtual height
   frame $Root.l -relief sunken -bd 2
   frame $Root.r -relief sunken -bd 2
   pack $Root.l -side left -fill both
@@ -782,7 +809,7 @@ proc showBeef {w} {
   helpFrame $Amf
 
   ### action buttons
-  global fileentrywidth LastWin LastState Progress ProgressTextL
+  global fileentrywidth LastWin LastState Progress ProgressS ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -790,17 +817,21 @@ proc showBeef {w} {
   set fileentrywidth $savw
 
   set wb $w.h.b
-  bButton $wb.check Check checkAction
+  frame $wb.check
+  bsButton $wb.check.c1 Check checkAction
+  bsButton $wb.check.c2 "Dryrun" startActionD
+  pack $wb.check -anchor w -fill x
+  pack $wb.check.c1 $wb.check.c2 -side left -ipadx 1m
   bButton $wb.start Start startAction
   bButton $wb.startv Trajectories startActionV
   frame $wb.meter
   frame $wb.stop
-  bsButton $wb.stop.kill Kill "stopAction 1 1"
-  bsButton $wb.stop.stop Stop stopAction
-  pack $wb.check $wb.start $wb.startv -fill x
+  bsButton $wb.stop.kill "  Kill  " "stopAction 1 1"
+  bsButton $wb.stop.stop "  Stop   " stopAction
+  pack $wb.start $wb.startv -fill x
 
   pack $wb.meter -fill x -anchor w
-  set Progress 0
+  set Progress [set ProgressS 0]
   if {"" == [info command ttk::progressbar]} {
     set ProgressTextL ""
     set wl $wb.meter.l
@@ -808,8 +839,8 @@ proc showBeef {w} {
     pack $wl
     trace variable Progress w trVar
   } else {
-    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable Progress
-    pack $wb.meter.progress  -fill x
+    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable ProgressS
+    pack $wb.meter.progress -fill x
   }
   pack $wb.stop -anchor w -fill x
   pack $wb.stop.stop $wb.stop.kill -side left -ipadx 1m

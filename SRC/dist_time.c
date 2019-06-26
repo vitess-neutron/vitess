@@ -30,7 +30,7 @@
 # define SLEEPSECONDS(a) sleep(a)
 #endif
 
-static void  DrawLine   (const float fVeloc,  float fTime);
+static void  PlotLine   (const float fVeloc,  float fTime);
 static float fMin       (float value1,  float value2);
 static float fMax       (float value1,  float value2);
 static short ReadChopper(int argc, char *argv[]);
@@ -201,10 +201,10 @@ int main(int argc, char* argv[])
 
       cpgsci(4);
       for (t=fT0fast; t < fTmax; t+=fTrep)	
-        DrawLine(fVfast, t);
+        PlotLine(fVfast, t);
 
       for (t=fT0slow; t < fTmax; t+=fTrep)
-        DrawLine(fVslow, t);
+        PlotLine(fVslow, t);
     }
   }
 
@@ -350,7 +350,7 @@ float fMax(float value1, float value2)
 
 
 static
-void DrawLine(const float fVeloc, float t)
+void PlotLine(const float fVeloc, float t)
 {
 
   float fSmin, fSmax, // position for t=0, t=fTmax

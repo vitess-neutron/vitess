@@ -39,7 +39,7 @@ my @Obj = qw(general intersection matrix sample softabort);
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
-	   velselect writeout gener_batch lattice_dist
+	   mon_brilliance velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 
 # modules which need ITOOL (=TOOL + intersection)
@@ -47,7 +47,7 @@ my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller 
 	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide guide_parallel
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_sm_parallel
@@ -61,21 +61,27 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame guide g
 	    sample_singcryst
 	    cas_v40
 	    mirror_elliptical
+            flipper_gradient
+            rotating_field
+            resonator_drabkin
           );
 
-# modules NTOOL (= TOOL + mathvector mathmatrix mon2D)
-my @CN = qw(monitor2D);
+# modules NTOOL (= TOOL + mathvector mathmatrix)
+my @CN = qw(monitor1D monitor2D);
 
-# modules which need MGTOOL (=MTOOL)
-my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
+# modules which need MGTOOL (=MTOOL + mathfunctions)
+my @CMG = qw(guide_parallel);
+
+# module which need GTOOL (=TOOL + mathvector mathfunctions)
+my @CG = qw(guide_elliptic);
 
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
 
-my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
+my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
 # auxillary programs without further libs
-my @PTool = qw(chop_phases standard_deviation direct_view);
+my @PTool = qw(chop_phases standard_deviation direct_view sortiap);
 
 # modules with helper thread support
 my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
@@ -83,8 +89,9 @@ my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parall
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
-$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
+$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble_parallel', @CM);
 $Macro{$_} = '$(NTOOL)' foreach (@CN);
+$Macro{$_} = '$(GTOOL)' foreach (@CG);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
@@ -100,7 +107,9 @@ my %dep = (			# needed objects for a module
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl',
-           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib'
+           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib',
+           monitor1D => 'mon1D',
+           monitor2D => 'mon2D'
 	  );
 $dep{$_} = 'threadHelper' foreach (@ParMod);
 
@@ -124,10 +133,10 @@ foreach (split) {
   push @Gobj, $_ unless $K{$_};
 }
 
-$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble sm_ensemble_parallel);
+$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble_parallel);
 
 my (%sopt, %lib);
-foreach (qw(visual bender dist_time sm_ensemble sm_ensemble_parallel lenses)) {
+foreach (qw(visual bender dist_time sm_ensemble_parallel lenses)) {
   $sopt{$_} = '$(GRAOPT)';      # special compile options for a module
   $lib{$_} = '$(GRALIB)';       # needed libs for a module
 }
@@ -137,7 +146,7 @@ my %Thread;
 $Thread{$_} = 1 foreach @ParMod;
 
 
-my @All = (@C, @CI, @CM, @CN, @CMG, @CS, @Gexe, @PTool);
+my @All = (@C, @CI, @CM, @CN, @CG, @CMG, @CS, @Gexe, @PTool);
 
 ###
 ### end define targets #####################################################################
@@ -212,7 +221,7 @@ while ($_ = shift) {
 my ($version, $fullversion);
 open F, '../GUI/control.tcl';
 while (<F>) {
-  if (/set t "VITESS ([0-9.]+)"/) {
+  if (/set t "VITESS ([0-9.a-z]+)"/) {
     $version = $fullversion = $1;
     last;
   }
@@ -277,9 +286,10 @@ EOS
 TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL)
+MGTOOL = mathfunctions.o $(MTOOL)
 STOOL = sample.o $(MTOOL)
-NTOOL = mathvector.o mathmatrix.o mon2D.o $(TOOL)
+NTOOL = mathvector.o mathmatrix.o $(TOOL)
+GTOOL = mathvector.o mathfunctions.o $(TOOL)
 
 EOS
 
@@ -294,7 +304,7 @@ CCOMP = gcc
 CC = \$(CCOMP) \$(CFLAGS)
 CPLUSCOMP = g++
 CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
-LIBS = -Lrng/$subdir -lgslran -lm
+LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
 
@@ -412,8 +422,9 @@ LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /
 TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
-NTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathmatrix.obj" "$(IDIR)|mon2D.obj" $(ITOOL)
-MGTOOL=$(MTOOL)
+NTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathmatrix.obj" "$(IDIR)|mon2D.obj" $(TOOL)
+GTOOL="$(IDIR)|mathvector.obj" "$(IDIR)|mathfunctions.obj" $(TOOL)
+MGTOOL="$(IDIR)|mathfunctions.obj" $(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
 
@@ -480,8 +491,12 @@ EOS
   $rule =~ s/MTOOL/NTOOL/g;
   subRule($rule, @CN);
 
+  # GTool, @CG
+  $rule =~ s/NTOOL/GTOOL/g;
+  subRule($rule, @CG);
+
   # MGTool, @CMG
-  $rule =~ s/NTOOL/MGTOOL/g;
+  $rule =~ s/GTOOL/MGTOOL/g;
   subRule($rule, @CMG);
 
   # STool, @CS

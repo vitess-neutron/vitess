@@ -6,6 +6,7 @@
 /* 1.0  Mar 2002  K. Lieutenant   initial version                                            */
 /* 1.1  May 2008  K. Lieutenant   improvements for length = 0.0                              */
 /* 1.2  Sep 2009  K. Lieutenant   attenuation included                                       */
+/* 1.3  Aug 2012  K. Lieutenant   visualization included                                     */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -45,8 +46,9 @@ int main(int argc, char *argv[])
 	double CenterX, CenterY, CenterZ, SumProb;
 
 	/* initialisation */
+	bVisInstalled = TRUE;
 	Init(argc, argv, VT_SPACE);
-	print_module_name("Space 1.2");
+	print_module_name("Space 1.3");
 	OwnInit(argc, argv);
 	
 	CenterX   = 0.0; 
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
 
 			if (fabs(Length) > 0.0)
 			{	
-				VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+				VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
 				
 				if (keygrav == 1)
 				{
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
 				{
 					TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
 				}
-				InputNeutrons[i].Time += (double)TimeOF;
+				InputNeutrons[i].Time += TimeOF;
 			}
 
 			/*************************************************************************/
@@ -97,6 +99,7 @@ int main(int argc, char *argv[])
 			CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
 			SumProb   += InputNeutrons[i].Probability;
 			
+			WriteIAP(&InputNeutrons[i], VT_EXITED);
 			InputNeutrons[i].Position[0]=0.0;
 
 			WriteNeutron(&InputNeutrons[i]);
@@ -111,7 +114,7 @@ int main(int argc, char *argv[])
 		CenterZ   = CenterZ/SumProb; 
 		AveTimeOF = AveTimeOF/SumProb;
 		
-		fprintf(LogFilePtr,"Center of beam at exit:  (%8.3f,%7.3f,%7.3f) cm, TOF = %8.4f ms \n",CenterX, CenterY, CenterZ, AveTimeOF);
+		fprintf(LogFilePtr,"Center of beam at exit:  (%8.3f,%7.3f,%7.3f) cm, TOF = %8.4f ms \n", CenterX, CenterY, CenterZ, AveTimeOF);
 	}
 	else
 	{
@@ -119,7 +122,9 @@ int main(int argc, char *argv[])
 	}
 
 	fprintf(LogFilePtr," \n");
+	stGeometry.pDescr = "space";
 
+        // stPicture.pDescr = "space";
 	Cleanup(Length,0.0,0.0, 0.0,0.0);
 	
 	return(0);

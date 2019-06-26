@@ -44,7 +44,7 @@ ModInfo   stMInfo[NUM_MOD][2]; /* additional moderator data
 
 
 
-static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS                               */
+static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
               s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
 
 
@@ -74,7 +74,7 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 	   _nModType   :      decoupled POISONED, DECOUPLED unpoisened, COUPLED
 	   _dPower     : [W]  average source power                             
 	   _dPeriod    : [ms] time between 2 pulses                             
-	   _dPulseLen  : [s]  average source power                             */
+	   _dPulseLen  : [s]  pulse length                             */
 
 	double dFUAmpl= 0.0,
 	       dFacM  = 1.0,     //     integral of fct. M(lambda) = number of Maxwellian functions 
@@ -111,7 +111,7 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 		case ESS:
 			/* maximal accelerator current */
 			dCurrMax   = dEpulse / _dPulseLen / U0;
-			if (dCurrMax > 0.050)
+			if (dCurrMax > 0.05001)
 			{	sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of %4.1f mA", 1000.0*dCurrMax, 1000.0*dCurrLimit);
 				Warning(sBuffer);
 			}
@@ -234,6 +234,54 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 	return(dFUAmpl);
 }
 
+/* dTemp      : [K]  eff. moderator temperature 
+   nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED
+   dPower     : [W]  average source power                    */          
+double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPower)
+{
+  double dFUAmpl=0.0;;
+
+  s_nSource = CSNS; 
+
+  if (dTemp < 100.0)
+  { 
+    if (eModType==POISONED)
+      dFUAmpl = dPower * 2.7e10/5.0e06/(25.0/50.0);
+	else
+      dFUAmpl = dPower * 2.3e11/5.0e06/(25.0/50.0);
+  }
+  else
+  { 
+    dFUAmpl = dPower * 1.8e11/5.0e06/(25.0/50.0);
+  }
+  return dFUAmpl;
+}
+
+
+/* dLambda: [Ang]  wavelength                          [Ang]
+   dTime  :  [s]   time (after beginning of pulse)     [s]          
+   dPosY  :  [cm]  horinzontal position on the source  [cm]
+   dPosY  :  [cm]  vertical position on the source     [cm]   */
+
+double CsnsModFU(const double dLambda, const double dTime, const double dPosY, const double dPosZ)
+{
+  double dFuA,         // amplitude of the flux    [n/(cm²  sterad Ang]
+         dFu=0.0;      // actualflux value         [n/(cm²s sterad Ang]
+
+  dFuA = stMod[imod].dFUAmpl * Maxwellian(dLambda, stMod[imod].dModTemp);
+
+  if      (stMod[imod].eModType==COUPLED   && stMod[imod].dModTemp < 100.0)
+    dFu = dFuA * PulseShape(dTime, 2.9e-04, 20.0);
+  else if (stMod[imod].eModType==DECOUPLED && stMod[imod].dModTemp > 100.0)
+    dFu = dFuA * PulseShape(dTime, 3.5e-05,  5.0);
+  else if (stMod[imod].eModType==POISONED  && stMod[imod].dModTemp < 100.0)
+    dFu = dFuA * PulseShape(dTime, 4.9e-05,  5.0);
+  else
+    Error("data for chosen CSNS moderator not available");
+
+  return dFu;
+}
+  
 
 double EssModFU(const double _dLambda, const double _dTime, const double _dLength)
 {
@@ -377,7 +425,7 @@ double Maxwellian(const double _dLambda, const double _dModTemp)
 
 	if (_dModTemp > 0.0  &&  _dLambda > 0.0)
 	{
-		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = hÂ²/(2*k*m_n)  in (1E-10 m)Â²/K */
+		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = h²/(2*k*m_n)  in (1E-10 m)²K */
 		dA    = dFakt / _dModTemp;
 		
 		dM      = 2 * pow(dA,2) * exp(-dA / pow(_dLambda,2)) / pow(_dLambda,5) ;
@@ -628,7 +676,7 @@ double f_therm(const double _dLambda)
                                    * [atan((h-z)/D) - atan((-h-z)/D)]
    w: window width, h: window height, D distance moderator - window
 
-   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(DÂ²+xÂ²)/2
+   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(D²+x²)/2
    integration over rectangular moderator area yields
     I_ges = (I1 -I2) * (I3 - I4) with I2 = I1, I4=I3
 
@@ -679,7 +727,7 @@ double AveSolidAngleR(const double dModWidth, const double dModHeight,
 
 /* 'AveWeightC', 'AveWeightR'
 
-   For 'DirectionByWindow' trajectories have to be normalized by f=cosÂ²(phi)*cosÂ²(theta).
+   For 'DirectionByWindow' trajectories have to be normalized by f=cos²(phi)*cos²(theta).
    These functions 'AveWeightC' and 'AveWeightR' calculate the average normalization factors
    by integration over window area and over moderator area.
    The resulting factor F is included in the main program to give correct absolute flux values.
@@ -716,7 +764,7 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 	double dFactY, dFactZ;
 
 	/* integration of 'weight' (see below) over moderator width yields
-	   F1 = distÂ² / (wnd_width*mod_width)
+	   F1 = dist² / (wnd_width*mod_width)
 	              * ( IntAtan(tan(phi_min)...tan(phimax) for wnd_begin)
 	                 -IntAtan(tan(phi_min)...tan(phimax) for wnd_end)       (same for height) */
 	dFactY =  pow(dDist,2) / (dModWidth*dWndWidth)
@@ -730,7 +778,7 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 }
 
 
-/* average of factor cosÂ²(x) integrated over window width for a fixed moderator position
+/* average of factor cos²(x) integrated over window width for a fixed moderator position
    is f1 = dist / wnd_width * (max_angle - min_angle)       (same for height)  */
 double WeightDirByWnd(const double dWndSize, const double dDist, const double dModPos)
 {

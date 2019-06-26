@@ -17,6 +17,7 @@
 
 #include "general.h"
 #include "ctype.h"
+#include "time.h"
 
 #ifndef RND_SIMPLE
  #include "gsl/gsl_rng.h"
@@ -37,14 +38,24 @@ double ENERGY_FROM_LAMBDA(const double x)
 	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
-double LAMBDA_FROM_ENERGY(const double x)
+double LAMBDA_FROM_ENERGY(const double e)
 {
-	return(sqrt(81805.048 / x)); /* [ueV]   -> [Ang] */
+	return(sqrt(81805.048 / e)); /* [ueV]   -> [Ang] */
 }
 
-double ENERGY_FROM_V(const double x)
+double ENERGY_FROM_V(const double v)
 {
-	return(0.5227033 * x * x);   /* [cm/ms] -> [ueV] */
+	return(0.5227033 * v * v);   /* [cm/ms] -> [ueV] */
+}
+
+double V_FROM_ENERGY(const double e)
+{
+	return(sqrt(e / 0.5227033)); /* [ueV] -> [cm/ms] */
+}
+
+double LAMBDA_FROM_V(const double x)
+{
+	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
 }
 
 double V_FROM_LAMBDA(const double x)
@@ -52,10 +63,6 @@ double V_FROM_LAMBDA(const double x)
 	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
-double LAMBDA_FROM_V(const double x)
-{
-	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
-}
 
 /****************************************************************************************/
 /*  Random Functions                                                                    */
@@ -109,7 +116,7 @@ double Round(const double value)
 
 double RoundP(const double value, const int decimal)
 {
-	double f = pow(10, decimal);
+	double f = pow(10.0, decimal);
 	return Round(value * f) / f;
 }
 
@@ -361,6 +368,30 @@ void FillRMatrixZY(double RotMatrix[3][3], const double roty, const double rotz)
 }
 
 
+/* 'CartesianToEulerZY' calculates Euler angles 'rotz' and 'roty'         */
+/* to transfer the x-axis to 'Vector' by rotation around y- and z-axis ZY */
+/* (cf. FillRotMatrixZY)                                                  */
+/*  Author: G. Zsigmond                                                   */
+void CartesianToEulerZY(VectorType Vector, double *roty, double *rotz)
+{
+	*rotz = (double) atan2( Vector[1] , Vector[0] ) ;
+
+	*roty = (double) atan2( Vector[2] , ((double) cos(*rotz) * Vector[0] + (double) sin(*rotz) * Vector[1]) ) ;
+}
+
+/* Euler to cartesian - invers of previous                            */
+/*  Author: G. Zsigmond                                               */
+
+void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
+{
+
+	Vector[0]= (double) cos(*roty) * (double) cos(*rotz) ;
+	Vector[1]= (double) cos(*roty) * (double) sin(*rotz) ;
+	Vector[2]= (double) sin(*roty) ;
+
+}
+
+
 /****************************************************************************************/
 /*  General I/O Functions                                                               */
 /****************************************************************************************/
@@ -399,6 +430,25 @@ void Abort()
 	exit(-1);
 }
 
+
+/* Wait(time)
+   remains 'time' sec in this function  
+*/
+void Wait(float WaitTime)
+{
+  int   c1, c2;
+  float DelT;  // time in sec
+
+  c1=clock();
+
+  do
+  { c2=clock();
+    DelT = ((float)(c2-c1))/CLOCKS_PER_SEC;
+  }
+  while (DelT < WaitTime);  
+
+  return;
+}
 
 
 /****************************************************************************************/

@@ -108,6 +108,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     set logf l
   } else {
     set logf [tmpFilename vpipelog]
+    set logtmp [file tail $logf]
   }
   set PipeLogList {}
   set VisLogList {}
@@ -125,14 +126,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     writeCommandOption [lindex $ll 7] _ "" $spar0 $srep0 $serno0
   }
 
-  set par ""
   # select parallel image versions for batch processing, ignore this for kstate,
   # and use parallel image version if helper threads have been demanded otherwise
-  switch $mode {
-    bat - sh - tcl - pl - py - grd - ser {set par _parallel}
-    kstate { }
-    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
-  }
+  if {$mode == "kstate"} {set par ""} else {set par _parallel}
+
+  #    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
 
   set pdir [entryVal defdirectory]
   set insert "$fc --B$buffersize --P";	# general command options
@@ -143,7 +141,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # restart construction of fc, general options have been saved to variable insert
   switch $mode {
-    bat {set fc "V=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    bat {
+      regsub -all / $ExeDirectory \\ winexdir
+      regsub -all / $pdir \\ winpdir
+      set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
+    }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}
     tcl {
@@ -178,38 +180,41 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     lookWhosConcerned serrep serpar serno $i $mode $serll sermol serpal
 
     switch $var {
-      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
+      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
       guide       {set com "guide$par$sys"}
+      guide_ideal {set com "guide_elliptic$sys"}
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
-      mon1_divy   {set com "monitor1$sys -k3"}
-      mon1_divyz  {set com "monitor1$sys -k8"}
-      mon1_divz   {set com "monitor1$sys -k4"}
-      mon1_energy {set com "monitor1$sys -k7"}
       mon1_lambda {set com "monitor1$sys -k1"}
       mon1_time   {set com "monitor1$sys -k2"}
+      mon1_divy   {set com "monitor1$sys -k3"}
+      mon1_divz   {set com "monitor1$sys -k4"}
       mon1_y      {set com "monitor1$sys -k5"}
       mon1_z      {set com "monitor1$sys -k6"}
+      mon1_energy {set com "monitor1$sys -k7"}
+      mon1_divyz  {set com "monitor1$sys -k8"}
       mon2_y_divy  {set com "mon2_posdiv$sys -q1"}
       mon2_z_divz  {set com "mon2_posdiv$sys -q2"}
-      monpol_divy   {set com "monitorpol_1d$sys -k3"}
-      monpol_divz   {set com "monitorpol_1d$sys -k4"}
       monpol_lambda {set com "monitorpol_1d$sys -k1"}
       monpol_time   {set com "monitorpol_1d$sys -k2"}
+      monpol_divy   {set com "monitorpol_1d$sys -k3"}
+      monpol_divz   {set com "monitorpol_1d$sys -k4"}
       monpol_y      {set com "monitorpol_1d$sys -k5"}
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
       sm_ensemble {set com "sm_ensemble$par$sys"}
-      source_ESS {set com "source$sys -S2"}
+      source_ESS_2012 {set com "source$sys -S4"}
       source_ESS_LPTS {set com "source$sys -S3"}
       source_HMI  {set com "source$sys -S1"}
+      source_FRM2 {set com "source$sys -S1"}
       source_ILL  {set com "source$sys -S1"}
       source_IPNS {set com "source$sys -S2"}
       source_ISIS {set com "source$sys -S2"}
-      source_SNS {set com "source$sys -S2"}
+      source_SNS  {set com "source$sys -S2"}
+      source_CSNS {set com "source$sys -S2"}
       source_const_wave  {set com "source$sys -S1"}
       source_short_pulsed {set com "source$sys -S2"}
       external_command {
@@ -231,7 +236,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
     set logopt $logf$i
     switch $mode {
-      bat - sh - tcl - pl - py - grd {
+      bat {
+        set imore  " $insert --LP:\\$logtmp$i"
+        lappend usedIdices $i
+      }
+      sh - tcl - pl - py - grd {
         set imore  " $insert --L\$\{L\}$i"
         lappend usedIdices $i
       }
@@ -246,7 +255,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       default {}
     }
     if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
-    
+
     lappend PipeLogList $logopt
     if $intcom {
       set com [file join $prefi $com]
@@ -302,15 +311,21 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # for script file output replace parameter directory strings by $P
   switch $mode {
-   bat - sh - tcl - pl - py {
-     regsub -all "$pdir/" $fc "\$P/" fc
-   }
-   default {}
+    bat {
+      regsub -all {\$V/} $fc V:\\ fc
+      regsub -all {\$P/} $fc P:\\ fc
+      regsub -all {\$P} $fc P:\\ fc
+      regsub -all {$pdir/} $fc P:\\ fc
+    }
+    sh - tcl - pl - py {
+      regsub -all "$pdir/" $fc "\$P/" fc
+    }
+    default {}
   }
-
+  
   switch $mode {
-    bat {append fc "\ntype $logf* > \$P/result.txt\ndel $logf*"}
-    sh  {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*"}
+    bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
+    sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
     grd {
       set s ""
       foreach v $usedIdices {
@@ -523,7 +538,7 @@ proc PsCheckWindows {} {
 
 proc saveEnvironment  {} {
   global FilesBefore TimesBefore Execmode defdirectory_
-  if {$Execmode != "save old"} { return "" }
+  if {$Execmode != "save old"  && $Execmode != "restore old"} { return "" }
   catch {unset TimesBefore}
   set FilesBefore {}
   set clist {}
@@ -562,93 +577,133 @@ proc sameMD5Hash {a b} {
   return 0
 }
 
-### compare contents of envDir with files in the parameter directory
-### exchange modified files with old files, and have new files
+### Compare contents of envDir with files in the parameter directory.
+### In mode "save old" exchange modified files with old files, and have new files
 ### in the subdirectory; delete identical copies in the subdirectory;
-### delete the subdirectory if empty
+### delete the subdirectory if empty.
+### In mode "restore old" try to restore the situation before.
 
 proc cleanupEnvDir {{envDir ""}} {
-  global FilesBefore TimesBefore defdirectory_
+  global FilesBefore TimesBefore Execmode defdirectory_
   if {$envDir == ""} return
-  if {! [file exists $envDir]} return
+  if {! [file isdirectory $envDir]} return
   set someremain 0
   set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
   catch {
     foreach fn [glob -directory $defdirectory_ *] {
       if [file isdirectory $fn] continue
-      if {[lsearch $FilesBefore $fn] != -1} {
-	file stat $fn fst
-	set tn [file tail $fn]
-	set ofn [file join $envDir $tn]
-	set remain 0
-	if {$fst(mtime) > $TimesBefore($fn)} {
-	  # Changed file found, mtime change;
-	  # If it is just today's log file: forget about it.
-	  if {$tn != $dayname} {
-	    # Have contents been changed, too ?
-	    # If not, we delete the saved version.
-	    if {! [sameMD5Hash $fn $ofn]} {
-	      set remain [set someremain 1]
-	    }
-	  }
-	}
-	if {$remain == 0} {
-	  # file has not been changed, delete the saved version
-	  file delete $ofn
-	} else {
-	  outProtocol "saved old file to $ofn"
-	}
+      set tn [file tail $fn]
+      # If it is just today's log file: forget about it.
+      if {$tn == "$dayname"} continue
+      set ofn [file join $envDir $tn]
+      set fni [lsearch $FilesBefore $fn]
+      if {$Execmode == "restore old"} {
+        if {$fni < 0} {
+          # delete the new file, which did not exist before
+          file delete $fn
+        } else {
+          # file existed before
+          file stat $fn fst
+          if {$fst(mtime) > $TimesBefore($fn)} {
+            # changed mtime
+            # rename the old file, to keep the old modification date
+            file rename -force $ofn $fn
+          }
+        }
+      } else if {$fni >= 0} {
+        file stat $fn fst
+        set remain 0
+        if {$fst(mtime) > $TimesBefore($fn)} {
+          # File has a change mtime, have contents been changed, too ?
+          if [sameMD5Hash $fn $ofn] {
+            set remain 2
+          } else {
+            set remain [set someremain 1]
+          }
+        }
+        if {$remain == 0} {
+          # file has not been changed, delete the copy
+          file delete $ofn
+        } elseif {$remain == 2} {
+          # file has a new modification date, but the same contents
+          # rename it, to keep the old modification date
+          file rename -force $ofn $fn
+        } else {
+          outProtocol "saved old file to $ofn"
+        }
       }
     }
   }
+  if {$Execmode == "restore old"} {
+    # some old files may have been deleted, restore them
+    foreach ofn [glob -directory $envDir *] {
+      if [file isdirectory $ofn] continue
+      set tn [file tail $ofn]
+      if {$tn == "$dayname"} continue
+      set fn [file join $defdirectory_ $tn]
+      if [file exists $fn] continue
+      file rename -force $ofn $fn
+    }
+  }
   if {$someremain == 0} {
-    file delete $envDir
+    file delete -force $envDir
   }
   catch {unset FilesBefore TimesBefore}
 }
 
 proc zeroProgress  {} {
-  global Progress ProgressFile ProgressTimeStart ProgressLastTic
-  set Progress 0
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLT ProcessLastTic
+  set Progress [set ProgressS 0]
+  set ProcessLastTic 0
   set ProgressTimeStart [clock seconds]
-  set ProgressLastTic $ProgressTimeStart
+  set ProgressLT ""
   catch {file delete $ProgressFile}
 }
 
 proc showProgress {} {
-  global Progress ProgressFile ProgressTimeStart ProgressLastTic  
+  global Progress ProgressS ProgressFile ProgressTimeStart ProgressLT ProcessLastTic
   set now [clock seconds]
   if [catch {open $ProgressFile r} f] {
     showText . ""
-    set Progress 0
-    set ProgressLastTic $now
+    set Progress [set ProgressS 0]
     return
   }
-  if {[gets $f ins] > 0} {
-    if {$ins <= 100 && $Progress != $ins} {
-      set Progress $ins
-      if {$Progress > 0 && $Progress < 100} {
-        if {($now - $ProgressLastTic) > 20} {
-          set expectedtime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
-          if {$expectedtime > 3600} {
-            showText [format "%02d:%02d hours to finish simulation" [expr int($expectedtime/3600)] [expr int(($expectedtime/60)%60)]]
-          } else {
-            if {$expectedtime > 60} {
-              showText [format "%02d:%02d minutes to finish simulation" [expr int($expectedtime/60)] [expr int($expectedtime%60)]]
-            } else {
-              showText "$expectedtime seconds to finish simulation"
-            }
-          }
-          set ProgressLastTic $now
-        } else {
-          showText . ""
-        }
-      }
-    }
-  } else {
-    showText . ""
-  }
+  set rc [gets $f ins]
   close $f
+  if {$rc <= 0 || $ins > 100 || $Progress == $ins} {
+    showText . ""
+    return
+  }
+
+  set Progress $ins
+  set ProgressS [expr $ins > 96 ? 97 : $ins]
+  if {$Progress <= 0} {
+    showText . ""
+    return
+  }
+  set resttime [expr int(($now - $ProgressTimeStart) * (100.0 - $Progress) / $Progress)]
+  if {$Progress == 100 || $resttime <= 10} {
+    if {"pipe is finishing" == $ProgressLT} {
+      showText . ""
+    } else {
+      showText [set ProgressLT "pipe is finishing"]
+    }
+    return
+  }
+
+  if {[incr ProcessLastTic] < 20} {
+    showText . ""
+  } else {
+    set ProcessLastTic 0
+    if {$resttime > 3600} {
+      set ProgressLT [format "%02d:%02d hours to finish simulation" [expr int($resttime/3600)] [expr int(($resttime/60)%60)]]
+    } elseif {$resttime > 60} {
+      set ProgressLT [format "%02d:%02d minutes to finish simulation" [expr int($resttime/60)] [expr int($resttime%60)]]
+    } else {
+      set ProgressLT "$resttime seconds to finish first module"
+    }
+    showText $ProgressLT
+  }
 }
 
 proc reduceFList {ln} {
@@ -673,71 +728,256 @@ proc condDelList {ln} {
   set glist {}
 }
 
-proc doGather {gcom glist} {
+proc doGather {gcom geomfile glist} {
+  global defdirectory_
   upvar $glist gl
-  if {$gcom == ""} {return ''}
-  set visRes [tmpFilename vgather]
-  set com "$gcom $visRes $gl"
+  if {$gcom == ""} {return ""}
+  switch [globVal trajmode] {
+    "SVG xz" {set m 1}
+    "SVG xy" {set m 2}
+    X3D      {set m 3}
+    default  {set m 0}
+  }
+
+  if {$geomfile != "" && [file exists $geomfile]} {set gex 1} else {set gex 0}
+  switch $m {
+    0 {set opt ""
+      set ext txt
+    }
+    1 - 2 {
+      if {$m == 1} {set opt " -s"} else {set opt " -z"}
+      if {$gex} {append opt " -S $geomfile"}
+      set ext svg
+    }
+    3 { if {$gex} {set opt " -X $geomfile"} else {set opt " -x"}
+      set optfilename [getX3DoptfileName]
+      if [file exists $optfilename] {append opt " -f $optfilename"}
+      set ext x3d
+    }
+  }
+
+  if {$geomfile == ""} {
+    set visRes [tmpFilename _geom.$ext]
+  } else {
+    # generate a new file name in the parameter directory
+    for {set i 1} {$i < 1000} {incr i} {
+      set visRes [file join $defdirectory_ geom_$i.$ext]
+      if {! [file exists $visRes]} break
+    }
+  }
+
+  set com "$gcom$opt -o $visRes $gl"
+  # dmf:debug uncommnent next line
+  #puts "debug: doing\n$com"
   if [catch {eval exec $com}] {
+    # puts "debug: caught exception"
     catch {file delete $visRes}
-    return ''
+    return ""
   }
-  if {$visRes != "" &&! [file exists $visRes]} {
-    return ''
+  if [file exists $visRes] {
+    return $visRes
   }
-  return $visRes
+  return ""
 }
- 
-proc startActionV {} {
-  # start a visualisation run
-  global PipeActive VisState VisGather VisMerge VisLogList
-  if {$VisMerge == ""} {
-    showText "!Not yet implemented"
-    return
-  }
+
+proc pipeIsActive {} {
+  global PipeActive VisState
   if {$VisState != 0 || ([info exists PipeActive] && $PipeActive)} {
     showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
+    return 1
+  }
+  return 0
+}
+
+proc startActionD {} {
+  # Start a dry run.
+  # A dry run is a pipe execution with few neutron trajectories.
+  # If modules miss something, they will bark.
+  # Result files in the parameter directory become deleted.
+
+  if [pipeIsActive] return
+
+  if {![checkAll]} return
+
+  global PipeActive PipeIds FilesToDeleteList PipeIdList PsCheck PipeLogList PipeIdsAtStart
+
+  set c [generateVitessCommand action]
+
+  # first module should be a source module
+  set coms [split $c |]
+  set fparts [split [lindex $coms 0]]
+  if {! [regexp {MODULES/source} [lindex $fparts 0]]} {
+    showText "!First module should be a source module for a dry run."
     return
   }
-  set VisState 1
-  startAction "" "" 1
-  if {$VisState == 2 && [reduceFList VisLogList]} {
-    # gather results of first run
-    set partres [doGather $VisGather VisLogList]
-    incr VisState
-  } else {
-    set VisState 0
+  # generate 100 trajectories only
+  # change parameter -n to 100000
+  set lnew {}
+  foreach i $fparts {
+    if [regexp {^-n} $i] {
+      lappend lnew "-n100000"
+    } else {
+      lappend lnew $i
+    }
   }
-  condDelList VisLogList
-  if {$VisState != 3} {
-    stopAction
+  set fcnew [join $lnew]
+  set c [join [lreplace $coms 0 0 $fcnew] |]
+
+  set pname [tmpFilename pipstd.err]
+  lappend PipeLogList $pname
+  conditionalOpenProtfile
+
+  update
+  stopAction 0
+  global env Execmode
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    set env(GSL_RNG_$vv) $t
+  }
+
+  # force "restore old" execution mode
+  set savmode $Execmode
+  set Execmode "restore old"
+  set sEnvDir [saveEnvironment]
+
+  if [catch {eval exec 2> $pname $c &} PipeIds] {
+    showText "!could not start simulation\n\t$PipeIds"
+    cleanupEnvDir $sEnvDir
+    conditionalCloseProtfile
+    set Execmode $savmode
     return
   }
-  startAction "" "" 1
-  if {$VisState == 4 && [reduceFList VisLogList]} {
-    # merge visualisation trajectories
-    set fullres [doGather $VisMerge VisLogList]
-  } else {
-    set fullres ''
+
+  set PipeActive 1
+  set PipeIdList [split $PipeIds]
+  set PipeIds ""
+  foreach p $PipeIdList {
+    append PipeIds [format "%x " $p]
   }
-  lappend VisLogList $partres
+  set PipeIdsAtStart $PipeIdList
+  outProtocol "dry run ($PipeIds) ($PipeIdList) is active"
+  set wsecs 1
+  set wmsecs [expr 1000 * $wsecs]
+  set i 0
+  while {1} {
+    if {$i == 10} {
+      outProtocol "!\ndry run took more than 10 seconds,\n\tstopping pipe"
+      stopAction
+    } else {
+      showProgress
+    }
+    incr i
+    if {$PipeActive && [$PsCheck]} {
+      after $wmsecs;			# wait for completion,
+      update;				# but allow other window events
+    } else {
+      update
+      if {!$PipeActive} {
+	showText "doing cleanup"
+      }
+      cleanupPipes
+      set PipeActive 0
+      cleanupEnvDir $sEnvDir
+      conditionalCloseProtfile
+      zeroProgress
+      set Execmode $savmode
+      return
+    }
+  }
+}
+
+
+proc startActionV {} {
+  # start a visualisation run
+  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode
+
+  if [pipeIsActive] return
+
+  # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
+  set firstText ""
+  set visRes ""
+  if  {$VisGather != ""} {
+    # VisState 1 for first --v invocation
+    set VisState 1
+    startAction "" "" 1
+    if [reduceFList VisLogList] {
+      # puts "debug: reduceFList VisLogList $VisLogList"
+      # gather results of first run
+      if {$VisGather == "just-concatenate"} {
+        set visRes [tmpFilename _3dvis]
+        if {"0" == [catch {open $visRes w} outf]} {
+          foreach fname $VisLogList {
+            if {"0" != [catch {open $fname r} f]} continue
+            while {[gets $f line] >= 0} {
+              puts $outf $line
+            }
+            close $f
+          }
+          close $outf
+        }
+      } else {
+        set visRes [doGather $VisGather "" VisLogList]
+      }
+      # result file is to be deleted when VITESS finishes
+      lappend FilesToDeleteList $visRes
+      set firstText "Find 3D geometry in $visRes"
+    }
+  }
+
   condDelList VisLogList
 
+  if {$VisMerge == ""} {
+    if {$firstText != ""} {showText $firstText}
+    set VisState 0
+    showText "!Computation of trajectories not yet implemented"
+    return
+  }
+
+  # VisState 3 for --V invocation
+  set VisState 3
+  startAction "" "" 1
+
+  if [reduceFList VisLogList] {
+    # merge visualisation trajectories
+    set fullres [doGather $VisMerge $visRes VisLogList]
+  } else {
+    set fullres ""
+  }
+
+  # puts "debug: fullres $fullres  trajmode $trajmode"
+  # dmf:debug comment next line
+  condDelList VisLogList
   set VisState 0
 
-  # launch viewer
-  if {[info procs VisViewer] != '' && $fullres != ''} {
-    VisViewer $fullres
+  if {$fullres != ""} {
+    if [regexp SVG $trajmode] {
+      if {[info procs VisViewer] != ""} {
+        # launch SVG viewer = browser
+        VisViewer $fullres
+      }
+    } elseif [regexp X3D $trajmode] {
+      set ecom [getPreferredX3DCmd]
+      if {$ecom != ""} {
+        # launch external X3D viewer
+        # dmf:debug uncomment next line
+        #puts "doing :$ecom $fullres"
+        catch {exec $ecom $fullres &}
+      } elseif {[info procs VisViewer] != ""} {
+        # launch viewer = browser
+        VisViewer $fullres
+      }
+    }
+    showText "Find trajectories in $fullres"
   }
+  if {$firstText != ""} {showText $firstText}
 }
 
 proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime VisState
-  if {($VisState != 0 && $visrun == 0) || ([info exists PipeActive] && $PipeActive)} {
-    showText "!A pipe is still active.\nUse Stop / Kill to finish the running pipe first."
-    return
-  }
+
+  if [pipeIsActive] return
+
   set c $sercom
   set tool 0
   if {$simu == "tool"} {

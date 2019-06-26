@@ -43,6 +43,7 @@ Mon2D::Mon2D()
 
   filterParam1 = -1;
   filterParam2 = -1;
+  filterComb = -1;
 
   format = -1;
   normalise = -1;
@@ -107,6 +108,10 @@ void Mon2D::Init(int argc, char* argv[])
 
 	  case 'J':  
 	    filterParam2 = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+	    break;
+
+	  case 'C':  
+	    filterComb = atoi(&argv[i][2]); // filter combination (AND,OR)
 	    break;
 
 	  case 'p':
@@ -236,17 +241,24 @@ int Mon2D::FillMonitor(Neutron* n)
     if (n->Wavelength < lambdaMin || n->Wavelength > lambdaMax) return 0;
   }
 
-  // Dismiss if outside the range of filter parameter 1, if defined
-  if (filterParam1 > 0) {
+  // Dismiss if outside the range of filter parameter 1, if defined (independent of filter 2: combined with AND)
+  if (filterParam1 > 0 && (filterParam2 <= 0 || filterComb==1)) {
     double filterValue1 = DetermineParameter(filterParam1, n);
     if (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) return 0;  
 }
 
-  // Dismiss if outside the range of filter parameter 2, if defined
-  if (filterParam2 > 0) {
+  // Dismiss if outside the range of filter parameter 2, if defined (independent of filter 1: combined with AND)
+  if (filterParam2 > 0 && (filterParam1 <= 0 || filterComb==1)) {
     double filterValue2 = DetermineParameter(filterParam2, n);
     if (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2) return 0;
   }
+
+  // Dismiss if outside the range of filter parameter 1 and 2 (pass if fulfilled 1 OR 2)
+  if (filterComb==0 && filterParam1 > 0 && filterParam2 > 0) {
+    double filterValue1 = DetermineParameter(filterParam1, n);
+    double filterValue2 = DetermineParameter(filterParam2, n);
+    if ( (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) && (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2)) return 0;  
+}
 
   // Fill the monitor data if no polarisation analysis required
   if (!analysePol) {
@@ -305,7 +317,8 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     
   case 4:
     neutronVector.x[1] = 0;
-    paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
+    if (neutronVector.x[2] > 0) paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
+    else paramValue = 90. - (neutronVector.Theta()*180./M_PI +180.);
     break;
     
   case 5:
@@ -327,7 +340,8 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
     
   case 9:
     neutronVector.x[1] = 0;
-    divz = (M_PI / 2.0) - neutronVector.Theta();
+    if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
+    else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
     paramValue = divz * 2. * M_PI / n->Wavelength;  // kz: z component of the wave vector
     break;
     
@@ -339,6 +353,18 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
   case 11:
     // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
     paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+    break;
+
+  case 12:
+    paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
+    break;
+
+  case 13:
+    paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
+    break;
+
+  case 14:
+    paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
     break;
     
   default:
