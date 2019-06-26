@@ -1,0 +1,18 @@
+3.135						: d_spacing
+
+0		0		0		: R_M[0]  R_M[1]  R_M[2]
+5000		0		0		: R_S[0]  R_S[1]  R_S[2]
+5099.999990   	172.825666   	11.458238	: R_X[0]  R_X[1]  R_X[2]
+5028.407017   	23.135910   	-58.308682	: R_D[0]  R_D[1]  R_D[2]
+
+10		10				: Height_M  Width_M
+10		10				: Height_S  Width_S
+10		10				: Height_X  Width_X
+10		10				: Height_D  Width_D
+
+0		0				: Euler_M_aroundZ  Euler_M_aroundY
+-45		-59.191847			: Euler_S_aroundZ  Euler_S_aroundY
+60.963075	7.953105			: Euler_X_aroundZ  Euler_X_aroundY
+-133.020338	44.547082			: Euler_D_aroundZ  Euler_D_aroundY
+   
+

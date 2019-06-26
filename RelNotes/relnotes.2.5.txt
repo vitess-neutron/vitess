@@ -1,0 +1,216 @@
+==================
+VITESS Version 2.5
+==================
+
+
+=====================
+I  Necessary Changes  
+=====================
+
+Instruments designed with Vitess 2.4 may give no or different results due to the 
+following changes (for details see chapter III):
+ - GUI of the 'source' module has been changed
+ - 'spacewindow(_multiple)' and 'chopper_disc' need more parameters
+ - definition of the axle position of the 'chopper disc' was changed
+ - sign of the angle of rotation was changed in 'sample_reflectom'
+
+
+
+====================
+II  General Features   
+====================
+
+Number of trajectories
+----------------------
+The limitation of the number of trajectories has been removed.
+
+Parameter directory
+-------------------
+The log file is to be found in the parameter directory. Modules and
+tools are more aware of this directory, so that all output of a simulation
+should be found there.
+
+Plot of result files
+--------------------
+From this version it is possible to plot results automaticly after the simulation 
+by setting the corresponding option in the monitor and evaluate modules.
+
+Instrument file
+---------------
+If the simulation is finished normally, i.e. without error, 'kill', or 'stop', a file 
+called 'instrument.inf' is written to the parameter directory. It contains the end 
+position of each module and the starting position of the module source in a fixed 
+co-ordinate system, let's say the 'instrument hall system'. It shall be the basis of 
+an instrument drawing, which will (hopefully) be delivered with the next version.
+
+Series of simulations
+---------------------
+A series of simulations can now be started from the GUI (File -> GenerateSeries). 
+After defining the parameters to be changed and giving their values the series can
+be started and saved (for details see help file).
+There are no restrictions concerning command length any more, as it was with the old 
+version on the Windows platform. For those who like to continue to work with the old
+version the executable gener_batch is still delivered (including correction of the 
+header generation in Windows).
+
+Colour
+------
+The use of colour is extended. Apart from the source, the colour can now be set by
+the chopper window that the trajectory has passed. If a colour is set, the count rate of 
+the existing colours (max. 3 colours) appears in the output in addition to the total 
+count rate. The module 'monitor1' can display the count rate of a special colour.  
+Notes: 
+All settings of the colour by previous modules are forgotten, if it is set. 
+Colour 0 means that it is not set by any module.
+
+Examples of simulations
+-----------------------
+Some new examples of simulations were added:
+
+    a) NRSE - resonance spin-echo instrument
+    b) NSE with foils - spin-echo instrument with rotating fields
+    c) resonance flipper
+    d) gradient flipper
+    d) two kinds of Drabkin resonator - meander and sin_distribution
+
+
+
+=======================
+III  Modules and Tools
+=======================
+
+New modules:
+============
+
+resonator_drabkin
+-----------------
+This module simulates a system, which is called "Drabkin resonator". This is a spin-flipper, 
+which works in a narrow wavelength interval and can be used as a monochromator. Three kinds 
+of distributions of the periodical magnetic field amplitude are used: permanent(meander), 
+sinus and gauss distributions. Useful for TOF instruments.
+
+flipper_gradient
+----------------
+This module simulates a gradient flipper, which can handle wide wavelength intervals.
+It performs flipping of neutrons starting from about 2-4 Angs, depending on the flipper 
+parameters. Very useful for TOF instruments .
+
+space
+-----
+This module simulates a free flight path to the next module without anything in between.
+
+
+New tools:
+==========
+Crystal Analyser Spectrometer:
+-----------------------------
+This tool calculates geometric details of a schematic crystal analyser spectrometer following
+the theory (for details see J. M. Carpenter et al in NIMPR A483 (2002) 784-806). 
+This tool can be used to obtain the input parameters for a complete VITESS simulation.
+An example of such calculation can be found in FILES/CAS_DIR.
+
+LatticeDistances
+----------------
+This tool generates files containing distances of lattice plains as used in the module 
+'sample_powder'. (Up to now, only FCC lattices can be treated.)
+
+DistTimePlot
+------------
+This tool generates a ps-file containing a distance-time-plot to check and visualize 
+the designed chopper system
+
+
+
+Improvements and changes in existing modules
+============================================
+
+source
+------
+1) Due to some complaints, we have put back part of changes in the source module. We promise: 
+This is the last change.
+In the module list, you can already choose a target station giving you a suggestion for the 
+moderator file. This file contains only moderator data; (they can be changed on the moderator 
+window). Simulation data (and target station data for pulsed sources) are all given on the 
+main window. 
+The data in the moderator description file can be seen as fixed for a special moderator on a 
+source. The files containing these data are collected in <Vitess_dir>/FILES/moderators. 
+(If you provide us with a moderator description file of your source, we can add it to the 
+list.) The simulation data have to be set for each simulation.
+HELP: We recommend to delete the first row of data and the last 2 columns of the other data 
+row(s) using a normal editor, in order to restore the moderator data (rows beginning with '#' 
+are only comments).
+2) Calculation of absolute flux values has been corrected for flux distributions from files 
+using non-equidistant wavelength or time spacing.
+
+of the old moderator 
+
+spacewindow  and  spacewindow_multiple
+--------------------------------------
+
+Two materials (and options) were added: outer and inner material. The shape of 
+inner material is desribed by the option "window shape". Each material can be 
+characterized by a file. The outer material can be chosen from the GUI list. 
+This is useful for the simulations of general collimators.
+
+
+
+chopper_disc
+------------
+1) The definition of the chopper position has been changed (see also help file): 
+Instead of giving the vert. distance to the beamline, the z-position of the chopper
+axle (in the co-ordinate system of the beam) is now required. For a chopper below the
+beam, a negative value for 'vert. position' and a 'window position' of 0 deg is required;
+for a chopper above the beam the 'vert. position' is positive, but a 'window position' 
+of 180 deg (or -180 deg) is necessary. ('window position' is the angle relative to the 
+direction of the positive z-axis, see also examples chop_10xyz.dat)
+2) The option 'absorption' is renamed for the sake of clarity, i.e. 'ideal' has to be 
+given instead of 'off'. The module has 2 new options: 'treat neutrons passing by' (see 
+help file) and 'set colour'; they have to be set. If 'set colour' is chosen, the colour 
+of the trajectory is defined by the window that the trajectory has passed. 
+3) If 'desired wavelength' is given in the source module, initial phases are calculated 
+(for all apertures) and written to 'instrument.inf'
+
+sample_reflectom
+----------------
+Another change is the opposite sign in the reflection angle of the reflectometer sample. 
+Now it fits to the rotation convention used in other modules.
+Another change is that only one angle of rotation is still allowed. For several angles, 
+the option 'series of simulations' (see above) must be used.
+
+guide
+-----
+It is now possible to set the coatings of top and bottom planes differently. If no 
+coating for the bottom is given, the top coating is used. 
+The pieces of the guide may form a parabolic or elliptic shape now. As for the curved 
+guide, each piece is still straight.
+The loss of trajectories by waviness is corrected for all kinds of guides.
+
+rotating_field
+--------------
+Module rotating_field was rewritten and improoved. It is possible now to use rotating
+field with non-permanent amplitude. Also you can use internal calculator for calculation
+of amplitude of rotating magnetic field for PI-flip condition. Also you can add permanent
+magnetic field as additional component.
+
+
+
+================
+IV  GUI Changes
+================
+
+You may copy all parameter values of a visible module by " Edit | Copy Module Parameters "
+and paste these values to another module of the same kind in the pipe with
+" Edit | Paste Module Parameters ".
+
+Tools like "Crystal Analyzer Spectrometer" and "Design Chopper System" have GUI-support 
+now.
+
+Vitess warns you before loading a new instrument or exiting, if the actual instrument
+setting has not been saved.
+
+For better plots Vitess uses the BLT enhanced Tcl/Tk Version, which is included in the 
+Windows install executable (either TclTk 8.3 or 8.4.5, plus BLT 2.4z). 1-dimensionsal
+plots can have 2 different modes (see " Options | Plotmode ")
+
+Simulation can automatically be copied in a subdirectory of the parameter directory 
+to avoid deleting by the following simulation (" Options | Copy results ").

@@ -1,0 +1,171 @@
+==================
+VITESS Version 2.2
+==================
+
+---------------
+General Changes
+---------------
+
+ Stop
+------
+Now all modules enable stopping a simulation without
+loss of data. But we cannot guarantee for the correctness of partial
+results at the moment. We will use this version to check it. If
+you use this feature, please tell us about your experience.
+
+
+ Fresh
+-------
+The new function 'Fresh' removes the current instrument from the
+screen, so that you can start to build a new instrument.  Attention:
+The function is executed at once. There is no question, if you have
+already saved the instrument.
+
+
+Instrument Parameters
+---------------------
+The consideration of 'Gravity' and a 'minimal weight' (= minimal
+current = cutoff probability) is now a parameter of the whole
+simulation. This value is given to all modules. These global
+parameters are represented in the parameter list by --X instead of -X
+(X for f, F, ...)
+
+At the moment, Gravity is considered in the following modules: all
+Sources, Chopper_disc, Spacewindow, Spacewindow_multiple, Guide, and
+Bender.  Minimal weight is considered in all sample modules, Guide,
+and Bender.
+
+The 'Buffer size' that is changed quite seldom is moved to the menu 'Options'.
+
+
+Small Changes
+-------------
+- Using the 'Save' function, the original name is suggested.
+- The modules in the Log-File are numbered.
+- Some explanations are improved (input and output file, abutment loss)
+- The function counting the number of lines is improved.
+  (That caused problems, if there was no CR at the end of the file or too many of them.)
+- It is possible now to prevent the writing of an output file by giving "no_file"
+  as the name of the file.
+  "no_file" can also be given as the name of the input file (instead of giving nothing.)
+- The number of default files is increased so that there is an example available for
+  every kind of input file.
+- The default extensions in the 'open file' and 'save file' procedures are improved.
+
+
+Examples
+--------
+There is 1 new example of an instruments and 3 others are changed
+to achieve that most of the modules can be found in any of the
+instruments.
+The results of a run at one of our computers are saved in a directory
+'reference' for each example. So it is possible for every user to check
+the installation on his computer.
+
+
+ Tools
+-------
+We have added a small program for calculating chopper phases and
+appropriate aperture angles in a system of disc choppers. The idea is
+to calculate the data that have to be given in the module
+Chopper_disc. (See also 'ChopPhases.txt' in the directory 'TOOLS'.) It
+can be started separately or from the Tools menu.
+If you have also written tools that might be helpful for other to do
+their simulation, please send it to us.
+(email: vitess@hmi.de or email-list: vitess-l@hmi.de,
+ see http://www.hmi.de/people/fromme/mojo.html)
+
+
+---------------
+  New Modules
+---------------
+
+Version 2.2 contains 2 new modules, the module 'Bender' and 'Monitor2_y_divy'
+
+Bender
+------
+The Bender module is similar to the Guide module using the bender
+option. The main difference is that the 'bended guide' consists of
+several straight parts that form a polygon section. In contrast, the
+bender surfaces are circles.
+The entrance and exit position of each surface and its radius have to
+be given in file, called 'surface file'. The lengths of the channels are
+constant at the moment. All benders that can be described in that way
+can be simulated.
+As it is a lot of work to write and to change this file, there is a possibility
+to generate it. The model for that is:
+The bender consists of channels. Each channel consists of so-called layers.
+The layers are parallel. The channels need not be parallel; a distance
+between the entrance and/or the exit of the channels can be given.
+In the future, a cross-over between the layers and a variation of the channel
+lengths will be realized. (Unfortunately this is already included in the GUI.)
+
+Visualisation of the bender refers to the G2 graphic library and may
+be viewed during simulation and as graphics file (bender.ps / bender.png) afterwards.
+
+
+Monitor2_y_divy / Monitor2_y_divy
+---------------------------------
+This is another possibility to look at the properties of the neutron beam.
+The divergence in one direction is plotted against its position in the same direction.
+This is possible for the vertical direction (Monitor2_z_divz) and the
+horizontal perpendicular to the beam direction (y_divy).
+
+
+Visual
+------
+The module 'Visual' can now also be used on the Windows platform.
+All versions now use the G2 graphic library. In contrast to earlier versions,
+a picture file  (visual.ps for Windows, visual.png for Unix)
+is stored during the simulation and can be viewed afterwards.
+
+
+
+---------------------------
+Changes in Existing Modules
+---------------------------
+
+Source:
+------
+- The number of neutron sources that can be given in the item 'name of
+source' has been extended. (See list by clicking to the item label.)
+It is now possible (and normal) to choose the moderator by giving the
+appropriate name instead of giving the temperature. The temperature
+needs not be given any more, if the 'name of source' or the 'wavelength
+distribution file' is given.
+
+- In the 'user time distribution function' the time values are
+expected to be in millisec (instead of sec) as in the rest of the
+package. A reading error is corrected. (See also example:
+backscattering instrument at ISIS, directory IRIS_DIR.)
+
+- The former 'scaling factor' is now renamed to 'total flux at
+moderator' for all sources. This is also given as an output value for
+all sources.
+
+- The calculation of the solid angle for large divergences is improved.
+
+
+sample_inelast / sample_elasticisotr / sample_powder
+----------------------------------------------------
+The calculation of the current behind the sample was corrected.
+
+
+Sample_powder / Sample_sans
+---------------------------
+For a spherical powder-sample and a cylindrical SANS-sample, the path
+through the sample was not calculated correctly for some sample
+orientations. This is corrected.
+
+
+Sample_powder:
+-------------
+The structure factor file could not be read because of a wrong
+path. This is finally corrected.  (This should already have been
+corrected in the last version. But something went wrong. We want to
+apologise for that.)
+
+Detector:
+--------
+Correction: Choice detector grid ON - OFF was mismatched.
+

@@ -1,0 +1,63 @@
+# Example of a user module named "special"
+# 
+# If a file usermodule.tcl exist in the VITESS source directory
+# it is executed as part of the VITESS GUI.
+
+# declare module special
+global AvailableSET
+lappend AvailableSET {special}
+
+# tell VITESS file browser about pop file extension
+global fileDialogSET
+lappend fileDialogSET {"pop special event description" {.pop .dat}}
+
+
+# define parameters of module special
+gSet specialESET {
+  {special_filename pareditablefile special.dat
+    {"pop file" "Special pop file with super natural event data." "" i} r pop 1}
+  {length float 3 {
+    "length of\nspecial E [s]" "length of super natural event [s]" "" l} gt0}
+  {rotations float 5 {
+    "rotations\nper sec." "number of thought spins per second" "" s} 1}
+  {drug radio beer {"additional\ndrugs" "drugs to be taken to see supernatural effects" "" d}
+    {"no drugs" speed beer} {0 1 2}}
+  {gravity radio on
+    {gravity "Parameter to enable or disable the gravity effect.." "" G}
+    {on off} {1 0}}
+}
+
+# add a check routine for module special
+proc specialCheckErr {{app _}} {
+  set l [entryVal length $app]
+  set r [entryVal rotations $app]
+  if {$l > $r} {
+    showText "!Impossible! The number of rotations must be increased for that purpose"
+    return 1
+  }
+  return 0
+}
+
+# define what is in pop parameter files
+gSet popESET {
+  {bred float 0   {"background\nred" "red color portion of background color"} 0 1}
+  {bgreen float 0 {"background\ngreen" "green color portion of background color"} 0 1}
+  {bblue float 0  {"background\nblue" "blue color portion of background color"} 0 1}
+  {mpeg browsefile lucy.mpg {"mpeg file" "mpeg file for complex color relevations"} r "" 1}
+}
+
+# serialize pop parameter files
+proc serializePopFile {f mode var app} {
+  set alist {bred bgreen bblue}
+  foreach l [set nlist [concat mpeg $alist]] {
+    upvar #0 $l$app $l
+  }
+  if {$mode == "r"} {
+    foreach l $nlist { catch {unset $l}}
+    if {$f == "0"} return
+    gets $f mpeg
+    readNumItems $f $alist $app
+  } else {
+    puts $f "$mpeg\n$bred $bgreen $bblue"
+  }
+}

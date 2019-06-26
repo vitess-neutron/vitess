@@ -1,0 +1,244 @@
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<title>ShelExec v1.14</title>
+</head>
+
+<body>
+
+<p align="left"><strong><font color="#000000" size="6" face="Arial"><img border="0" src="shelexec.gif" width="41" height="33">ShelExec 
+v1.14</font></strong></p>
+
+<p><font color="#000000" face="Arial" size="3">Welcome to ShelExec, A very
+simple utility to allow you to call the ShellExecute API from the command line. </font></p>
+
+<p>&nbsp;</p>
+
+<table border="0">
+  <tr>
+    <td><font size="3" face="Arial"><strong>Contents</strong></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#History">History</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Copyright">Copyright</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Installation">Installation Requirements</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Usage">Usage</a></font></td>
+  </tr>
+  <tr>
+    <td><font face="Arial"><a href="#Contact">Contacting the Author</a></font></td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><a name="History"></a><strong><font color="#000000" size="5">History</font></strong></font></p>
+
+<p><font face="Arial"><font size="3"><font color="#000000"><strong>V1.01 (16
+July 1999)</strong></font></font>
+</font>
+
+<ul>
+  <li><font color="#000000" face="Arial" size="3">First public release.</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.02 (9 April 2000)</strong></font>
+
+<ul>
+  <li><font face="Arial">Fixed a bug where the verb &quot;Open&quot; was always
+    used.</font></li>
+  <li><font face="Arial">Program now understands a /Verb:Value command line
+    which allows the verb to be specified as used in the ShellExecute call. Not specifying
+    a verb will use the default value for the file as setup in the registry.</font></li>
+  <li><font face="Arial">Program now understands a /ShowCmd:Value command line
+    which allows the <i>&quot;nShowCmd&quot;</i> value to be specified as used
+    in the ShellExecute call. Not specifying a value will use the value SW_SHOW.</font></li>
+  <li><font color="#000000" face="Arial" size="3">Code now uses MFC internally.</font></li>
+  <li><font color="#000000" face="Arial" size="3">Code now supports UNICODE and
+    build configurations are provided</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.1 (10 February 2001)</strong></font>
+
+<ul>
+  <li><font face="Arial">Program now understands a /EXE command line
+    which allows the a specific command line to be specified: e.g ShelExec.exe /EXE mplayer2.exe "/PARAMS:/play E:\WINNT\Media\canyon.mid".</font></li>
+  <li><font face="Arial">Program now understands a /DIR:Value command line
+    which allows the startup directory for an application to be specified.</font></li>
+  <li><font face="Arial">Updated copyright information.</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.11 (1 October 2001)</strong></font>
+
+<ul>
+  <li><font face="Arial">Fixed a bug which was causing ShelExec to fail on some
+    versions of Windows with the error code 1155.</font></li>
+  <li><font face="Arial">Updated version infos of the exectuable.</font></li>
+  <li><font face="Arial">Code now uses ShellExecuteEx instead of ShellExecute
+    internally.</font></li>
+  <li><font face="Arial">A hidden window is now created when ShelExec starts.
+    This allows verbs such as &quot;properties&quot; to now work correctly.
+    Thanks to Santosh Rao for suggesting this addition.</font></li>
+  <li><font face="Arial">Icon used for ShellExec is now consistent with the new
+    icon styles used by Windows XP.</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>29 July 2002</strong></font>
+<ul>
+  <li><font face="Arial" size="3">Updated documentation which comes with
+    ShelExec to explain how to work with filenames which contain embedded
+    spaces.</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.12 (17 October 2002)</strong></font>
+
+<ul>
+  <li><font face="Arial">ShelExec is now compiled with Visual C++ 6 instead of
+    Visual C++ 5.</font></li>
+  <li><font face="Arial">Removed an unreferrenced variable in CShelExecApp::InitInstance.</font></li>
+  <li><font face="Arial">Program now supports two parameters in the
+    &quot;/DIR&quot;, &quot;/PARAMS&quot; and filename command line values.
+    These are: %EXEDRV% which gets replaced with the drive letter path where
+    AutoPlay is run from. the other variable is %EXEDIR%. For example:<br>
+    <br>
+    </font><font face="Arial"> ShelExec.exe "/PARAMS:/play
+    %EXEDRV%\data\myfile.xyz&quot; /EXE %EXEDIR%\Prog\MyProg.exe<br>
+    <br>
+    What this command line would achieve is to run a program called MyProg.exe
+    located in the &quot;D:\Prog&quot; directory on the root of your CD
+    (assuming your CD drive is D:) using the command line &quot;/play
+    D:\data\myfile.xyz&quot;.&nbsp;<br>
+    <br>
+    Thanks to Ted Tsoutsas for this nice update.</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.13 (18 October 2002)</strong></font>
+
+<ul>
+  <li><font face="Arial">Changed the format of replacable parameters from using
+    a &quot;%&quot; to now use a &quot;@&quot;. This is to avoid problems with
+    replaceable environment parameters in the OS. Thanks to Ted Tsoutsas for
+    reporting this problem. This means that the previous example in the v1.12
+    notes should now be used as:<br>
+    <br>
+ ShelExec.exe "/PARAMS:/play @EXEDRV@\data\myfile.xyz&quot; /EXE
+    @EXEDIR@\Prog\MyProg.exe<br>
+    </font></li>
+  <li><font face="Arial">Added a new replaceable parameter &quot;@QUOTE&quot;
+    which puts a Quote character i.e. &quot; into the string when the program is
+    called. For example to call Notepad with the file &quot;c:\A directory with
+    spaces\file.txt&quot; and ensure that the filename is embedded with quotes,
+    you would use the following command line:<br>
+    <br>
+    ShelExec.exe &quot;/PARAMS:@QUOTE@c:\directory with
+    spaces\file.txt@QUOTE@&quot; /EXE notepad.exe</font></li>
+</ul>
+
+<p><font color="#000000" face="Arial"><strong>V1.14 (24 January 2003)</strong></font>
+
+<ul>
+  <li><font face="Arial">Now provides a /WAIT command line parameter. This 
+  allows the ShelExec application to only return when the application it starts 
+  has exited. Thanks to Igor Rabinovich for this suggestion.</font></li>
+</ul>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><b><font face="Arial" size="5"><a name="Copyright"></a>Copyright</font></b></p>
+<p><font face="Arial">You are allowed to include the source code in any product
+(commercial, shareware, freeware or otherwise) when your product is released in
+binary form. You are allowed to modify the source code in any way you want
+except you cannot modify the copyright details at the top of each module. If you
+want to distribute source code with your application, then you are only allowed
+to distribute versions released by the author. This is to maintain a single
+distribution point for the source code.&nbsp;</font></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><a name="Installation"></a><font color="#000000" size="5"><b>Installation
+Requirements</b></font></font>
+
+<ul>
+  <li><font color="#000000" face="Arial" size="3">The program is for Win32 only
+    and has no external requirements on dlls other than the ones shipped as
+    standard with any Win32 platform.</font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial" size="5"><a name="Usage"></a><font color="#000000"><b>Usage</b></font></font>
+
+<ul>
+  <li><font face="Arial" size="3">Places where you might find ShelExec useful
+    are in adding an Autorun.inf file to your CD-R / CD-RW Discs. For example
+    suppose you have a HTML page called index.htm on the root of your CD which
+    you would like to run automatically whenever the user inserts the CD. All
+    you need to do is put ShelExec.exe, some ico file and the index.htm files
+    into the root directory and create a autorun.inf file with the following
+    contents:</font></li>
+</ul>
+
+<blockquote>
+  <p><font face="Arial" size="3">[autorun]<br>
+  open=ShelExec.exe index.html<br>
+  icon=youricon.ico</font></p>
+</blockquote>
+<ul>
+  <li><font face="Arial" size="3">Items that ShelExec can handle include any
+    file which is registered with the shell e.g. Word .Doc files, Text Files,
+    batch files etc etc. It can also handle URLS such as <i>&quot;http://somesite.com&quot;</i>,
+    <i>&quot;ftp://www.microsoft.com&quot;</i> and <i>&quot;mailto:pjna@naughter.com&quot;</i>.</font></li>
+  <li><font face="Arial">The more technically minded of you may say why is there
+    a need to have this program since you can use &quot;start filename&quot; on
+    autorun CD's without any apparent problems. The problem with this approach
+    is that it does not work on NT because on NT &quot;start&quot; is
+    implemented as an <i>&quot;Internal&quot;</i> command in cmd.exe (as opposed
+    to a standard exe on 95/98) with the upshot that your CD's will not AutoRun
+    on NT 4 or Windows 2000. Using ShelExec will mean that your CD's will
+    autorun on all OS's which support it.</font></li>
+  <li><font face="Arial">Also remember that if the file you are calling contains
+    spaces then you should include it in quotes. For example:</font></li>
+</ul>
+
+<blockquote>
+  <p><font face="Arial" size="3">[autorun]<br>
+  open=ShelExec.exe &quot;a long filename.html&quot;<br>
+  icon=youricon.ico</font></p>
+</blockquote>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><a name="Contact"></a><font color="#000000" size="3"><strong>CONTACTING
+THE AUTHOR</strong></font></font></p>
+
+<p><font color="#000000" face="Arial" size="3">PJ Naughter<br>
+Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>
+24 January 2003</font></p>
+</body>
+</html>

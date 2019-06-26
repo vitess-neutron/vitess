@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+           
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+           
+  <meta name="author" content="Geza Zsigmond">
+  <title>VITESS Single Crystal Sample</title>
+</head>
+  <body>
+     
+<h1>Single crystal sample</h1>
+     
+<pre wrap=""><br></pre>
+   The integrated intensity I of a particular reflection measured in a TOF
+ neutron diffraction experiment can be written as a function of the wavelength
+ and the Bragg angle:<br>
+     
+<pre wrap=""><br><img src="I_hkl_formula.gif" alt="I_hkl_formula"
+ width="693" height="103"><br><br></pre>
+   where h, k, l are the Miller indices designating the Bragg peaks, and
+the  wavelength dependent correction factors are in the order given above:
+the  incident<br>
+   spectral neutron flux, the detector efficiency, the absorption correction, 
+ the extinction correction, and alfa= I_TDS/I_Bragg, the thermal diffuse scattering
+ (TDS) correction. <br>
+   ( J. Peters and W. Jauch, Science Progress (2002), 85 (4), 297&#8211;317).<br>
+   In this module we can treat the extinction, TDS correction by combining
+ a normalisation factor, d-spacing spread or by a reflection dependent coefficient 
+ multiplying Fhkl<sup class="moz-txt-sup">2</sup> in the structure factor 
+file.<br>
+     
+<h2><b>Parameter descriptions</b></h2>
+     
+<table border="1" cols="3" width="84%">
+     <tbody>
+       <tr>
+         <td>Parameter</td>
+         <td>Description</td>
+         <td>Command Option</td>
+       </tr>
+       <tr>
+         <td>parameter file</td>
+         <td>in this file are given: reciprocal unit vectors, normalisation, 
+ absorption, sample position, etc (see below)</td>
+         <td>-P</td>
+       </tr>
+       <tr>
+         <td>structure factor file</td>
+         <td>each line contains: h   k l  Fhkl<sup class="moz-txt-sup">2</sup> 
+   (see below)<br>
+         </td>
+         <td>-S</td>
+       </tr>
+       <tr>
+         <td>d-spacing distribution<br>
+         </td>
+         <td>options 1: Lorentzian, 2: Gaussian distributions, functions
+describing  the d-spacing probability distribution with<br>
+    maximum at the nominal value (for the exact nominal value ideal reflectivity 
+ = 1., see also normalisation)<br>
+         </td>
+         <td>-o</td>
+       </tr>
+       <tr>
+         <td>                     
+      <p>d-spacing spread&nbsp;</p>
+         </td>
+         <td>gives FWHM/d-spacing, the relative 'thickness' of the Ewald
+sphere  i.e. a small variation of the lattice constant which is same in each
+direction,  silicon ~ 0.0001=0.01%<br>
+         </td>
+         <td>-d</td>
+       </tr>
+       <tr>
+         <td valign="top">reciprocal unit vectors A, B, C<br>
+   [1/A]<br>
+         </td>
+         <td valign="top">x,y,z components of the reciprocal unit vectors 
+A, B, C defined in the sample frame<br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">normalisation<br>
+   [arb.u.]<br>
+         </td>
+         <td valign="top">normalisation factor containing for example the 
+number  density <br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">absorption<br>
+   &nbsp;[1/cm/A]<br>
+         </td>
+         <td valign="top">attenuation due to absorption within the sample 
+per wavelength<br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">position X,Y,Z<br>
+   [cm]<br>
+         </td>
+         <td valign="top">coordinates of the sample centre<br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">phi(Z), chi(X), omega(again Z)<br>
+   [deg]<br>
+         </td>
+         <td valign="top">rotation angles of sample i.e. the reciprocal unit 
+ vectors around the&nbsp; Z, X and again Z axes<br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">sample geometry<br>
+         </td>
+         <td valign="top">sample shape options: 'cub', 'cyl'inder (vertical), 
+ 'ball' <br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">thickness or diameter, height, width<br>
+   [cm]<br>
+         </td>
+         <td valign="top">rectangular sample dimensions in x,y,z directions 
+ (sample frame)<br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top"><font color="#000000">output angle&nbsp;</font><br>
+         <font color="#000000">horizontal, vertical</font><br>
+         <font color="#000000">[deg]</font></td>
+         <td valign="top"><font color="#000000">a frame rotation about the
+ Z axis and then a rotation about the (new)Y axis defines a new orientation 
+ for the neutrons written to the output</font><br>
+         </td>
+         <td valign="top">parameter file<br>
+         </td>
+       </tr>
+           
+  </tbody>   
+</table>
+   <br>
+   <br>
+   <b>The parameter file</b> contains in the first 3 lines the<br>
+   reciprocal lattice vectors, and you can give a normalisation containing
+ the<br>
+   number denstity or other factors. <br>
+   <br>
+   <i>Example</i>:<br>
+   <br>
+  1.2892&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;
+ &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; recipr. unit v. A X [1/A], recipr. unit
+v.  A&nbsp; Y [1/A], recipr. unit v. A&nbsp; Z [1/A]<br>
+  0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.2892&nbsp; 0&nbsp;
+ &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; recipr. unit v. B X [1/A], recipr. unit
+v.  B&nbsp; Y [1/A], recipr. unit v. B&nbsp; Z [1/A]<br>
+  0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 1.8982&nbsp; &nbsp; recipr. unit v. C X [1/A], recipr. unit v. c&nbsp; Y
+[1/A], recipr. unit v. C&nbsp; Z [1/A]<br>
+  1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.01&nbsp;&nbsp;&nbsp;
+ &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; normalisation [a.u.],
+ absorbtion [1/cm/A]<br>
+  900&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 0&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; position X [cm],&nbsp; position
+ Y [cm], position Z [cm],<br>
+  30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 0&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; phi(Z) [deg], chi(X) [deg],
+ omega(Z) [deg]<br>
+  cub&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sample geometry: 'cub',
+'cyl'inder,  'ball'<br>
+  1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 1&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp;thickness or diameter
+ [cm], height [cm], width [cm]<br>
+  109.3&nbsp;&nbsp;&nbsp;&nbsp; 20.7&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp; output angle horiz. [deg], output angle vert. [deg]<br>
+  <br>
+   VITESS rotation convention: Smaller index axis rotated towards higher
+index  axis is positive!<br>
+   <br>
+   <br>
+   <b>The structure factor file</b> contains <br>
+   <br>
+ no. refl &nbsp;&nbsp; h   &nbsp;&nbsp;&nbsp; k &nbsp;&nbsp;&nbsp; l  &nbsp;&nbsp;&nbsp; 
+Fhkl<sup class="moz-txt-sup">2</sup> <br>
+   <br>
+   in each line (Debay-Waller factor can be included here). <br>
+   All incoming trajectories will sample each reflection and the successful 
+ones are written out i.e. number of incoming trajectories will be larger than
+the number of incoming trajectories. <br>
+ The third coordinate 'colour' will contain which reflection has happened 
+(no.refl), this can be seen if you use 'writeout' to view the ASCII output 
+(as in the example, but for longer runs do not forget<br>
+   to cancel 'writeout' to save memory and computing time).<br>
+   <br>
+   <i>Example</i>:<br>
+   <br>
+ 1 14 -11 -1 0.08057<br>
+ 2 15 -11 -1 0.00616<br>
+ 3 16 -11 -1 0.02162<br>
+ 4 17 -11 -1 0.01906<br>
+ 5 18 -11 -1 5.35824E-5<br>
+ 6 12 -10 -1 5.929E-7<br>
+ 7 13 -10 -1 0.00652<br>
+ 8 14 -10 -1 0.00228<br>
+ 9 15 -10 -1 0.49332<br>
+ 10 17 -10 -1 7.66736E-4<br>
+ 11 18 -10 -1 0.00165<br>
+ 12 19 -10 -1 5.67392E-4<br>
+   <br>
+     
+<hr width="100%" size="2"><a href="vitess.html">   Back to VITESS overview</a> 
+  <br>
+   <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>     
+<p><!-- hhmts start --><font size="-1">Last modified: Wed Apr&nbsp; 2 18:53:44 
+ MEST 2003</font><font size="-1">, G. Zs.</font><!-- hhmts end --><br>
+   &nbsp; </p>
+   <br>
+     <br>
+</body>
+</html>

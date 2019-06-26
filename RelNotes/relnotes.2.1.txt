@@ -1,0 +1,77 @@
+Version 2.1
+-----------
+
+Version 2.1 is mainly a correction of version 2.0.
+
+
+Velocity selector:
+ - an error is corrected that occurred, if a very large number of 
+   channels (> 500) was used.
+
+Sample_powder:
+ - The structure factor file could not be read because of a wrong path.
+   This is corrected.
+
+Source:
+ - A similar error as in Sample_powder existed for user time/wavelength
+   distribution files. Files could not be read after the use of 'Edit'.
+   This works now.
+
+ - It is now possible to give parameters that would give a zero neutron current in reality:
+   - no divergence
+   - one single wavelength
+   - moderator of size zero
+   - no time interval for pulses
+   in these cases the 'current per trajectory' (or probability) is normalized: 
+   p = flux/flux_amplitude/number_of_trajectories 
+   To get realistic values for the neutron current it can be given now 
+   (Parameter -c MeanModCurr_n/s)
+   (Not included in the GUI)
+
+ - the total neutron current is now seen as the flux integrated
+   over a spherical angle of 2*pi (not 4*pi)
+
+
+Spacewindow:
+ - The Spacewindow module can now be used as a Beamstop:
+   If the new parameter S is set to 1 (-S1), the window works in the opposite way.
+   That means that the trajectory is lost, if it hits the window.
+   Default is of course S=0, normal window.
+
+
+Sample_sans:
+ - the possibility to use scattering objects of different shapes is added.
+   In addition to spheres, ellipsoids, cylinders and parallelepipeds can be used now.
+   Therefore a capital letter for the shape must be added in the sample file:
+   5th line '500.0' -> 'S 500.0' 
+   - S: spheres        followed by the radius (in Angstroem)
+   - E: ellipsoid      followed by 3 radii
+   - P: parallelepiped followed by 3 numbers for length, width, height
+   - C: cylinder       followed by 3 numbers radius 1, radius 2, height
+   - I: isotropic scattering (no numbers necessary)
+
+ - After the 'Sample_sans'-module absolute flux values are calculated now
+
+ - The given Q-values that can be given are ignored: the given angular range
+  (and the wavelength range) determines the Q-range now.
+
+
+First steps are done to enable controlled interrupts to the simulation.
+Pressing the Stop button means a controlled interrupt without loss of data,
+pressing the Kill button means hard termination of processes.
+This improvement is included in all modules mentioned above and 
+'Guide', 'Chopper_disc' and 'Sample_reflectom'.
+We expect it to work under both Unix and Windows, if only these modules are used
+in the simulation. We are still testing it. But you can also try, if yoou like.
+
+Changes to the VITESS GUI
+
+- Adding your own module(s) to the VITESS GUI is very easy now. See usermodule.txt.
+- You may tear off the output window to a separate window with a bigger font setting
+  (BIG button) and re-fix it to the main VITESS window (SMALL button).
+- Specify the width of scroll bars in the options menu.
+- The Options/Apply settings menu re-builds the GUI with choosen settings. This
+  is especially useful if you loaded some old gui file with strange settings, and
+  want to change them. Windows caveat: if the window is too small after that,
+  just resize it to the size you like.
+- With the windows selfextracting file now comes Tcl/TK version 8.3.3.

@@ -1,0 +1,233 @@
+01.04.2004 16:11:30 file stored
+01.04.2004 16:11:48 Parameter directory is G:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR
+Starting simulation
+G:/Vitess2_5beta4/MODULES/source.exe -S2 --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog1 -R50 -N- -aG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/IsisTS1hydrogen.mod -n1000000 -m6.55 -t0 -y0.5 -M6.75 -T0.48 -z0.5 -d1 -P0 -X1 -Y0 -V0 -D158.3 -w4.5 -h6.7 -i0 -A0 -k0 
+| G:/Vitess2_5beta4/MODULES/guide.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog2 -Y1 -Z1 -w4.5 -h6.7 -W4.3 -H6.5 -p449.8 -N1 -R0 -iG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -IG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -jG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -JG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -a0 
+| G:/Vitess2_5beta4/MODULES/chopper_disc.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog3 -s3000 -o-192.186 -g0 -z0 -p0 -c0 -CG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/chop6_3.chp -l19.8 
+| G:/Vitess2_5beta4/MODULES/guide.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog4 -Y2 -Z0 -w4.3 -h6.5 -W4.3 -H6.5 -p84.825 -N4 -R2350 -iG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -IG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -jG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -JG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -a0 
+| G:/Vitess2_5beta4/MODULES/chopper_disc.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog5 -s3000 -o-300 -g0 -z0 -p0 -c0 -CG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/chop10.chp -l19.8 
+| G:/Vitess2_5beta4/MODULES/guide.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog6 -Y2 -Z0 -w4.3 -h6.5 -W4.3 -H6.5 -p98.33 -N24 -R2350 -iG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -IG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -jG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -JG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -r0 -a0 
+| G:/Vitess2_5beta4/MODULES/guide.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog7 -Y1 -Z1 -w4.3 -h6.5 -W2.2 -H3.2 -p250 -N1 -R0 -iG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr2linear.dat -IG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr2linear.dat -jG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr2linear.dat -JG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/mirr1b.dat -a0 
+| G:/Vitess2_5beta4/MODULES/sample_elasticisotr.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog8 -PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/sample_iris.iso -A1 
+| G:/Vitess2_5beta4/MODULES/monochr_analyser.exe -O2 --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog9 -PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/analyser_iris.crs -A1 -m0.8 -M0.8 -D0.0021 -R100 -d1 -GG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/lamb_foc.dat -H10 -V6 -r85 -a0 -g1 
+| G:/Vitess2_5beta4/MODULES/detector.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog10 -Gcub -h15 -w6 -t1 -e1 -T0 -P0 -D67 -c1 -r1 -A1 -M0 -g1 
+| G:/Vitess2_5beta4/MODULES/eval_inelast.exe --Z2 --G1 --U1.0e-25 --B10000 --PG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR --LG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/vpipelog11 -EG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/iristofsp.dat -GG:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/irisergsp.dat -A1 -c6.66 -a3641 -b152 -C50 -e61.99 -g65.99 -d0.06 -h0 -j0 -k180 -i100 -D0 --Fno_file
+01.04.2004 16:11:49 simulation (da8 3ec 848 d08 a8c bf8 860 4e4 b2c bc8 c54 ) (3496 1004 2120 3336 2700 3064 2144 1252 2860 3016 3156) is active
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module Source and Window 1.10
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 > Simulation of short pulsed spallation source - <
+01.04.2004 16:12:08 pulse frequency              :  50.000 Hz 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 wavelength-time distr. file  : Vit.Iris 
+01.04.2004 16:12:08 total neutron flux (in 2*pi) : 1.1000e+013 n/(cm²s) 
+01.04.2004 16:12:08 moderator position           :(  0.000    0.000    0.000) cm 
+01.04.2004 16:12:08 moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+01.04.2004 16:12:08 divergence defined by propagation window 
+01.04.2004 16:12:08 time averaged neutron current: 2.1045e+011 n/s in 0.001202 str
+01.04.2004 16:12:08 wavelength band used         :   6.550 Ang -   6.750 Ang
+01.04.2004 16:12:08 time interval used           :   0.000 ms  -   0.480 ms 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 window (W x H)               :   4.500 cm  x   6.700 cm 
+01.04.2004 16:12:08   in a distance of           :   1.583 m   
+01.04.2004 16:12:08   with a declination of      :   0.000°    
+01.04.2004 16:12:08 polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 Gravity is enabled 
+01.04.2004 16:12:08 Cutoff probability for one trajectory 1.000e-025 
+01.04.2004 16:12:08 Center of beam at window     :(158.300   -0.002    0.004) cm 
+01.04.2004 16:12:08 Average TOF                  :   2.791 ms 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 number of trajectories started     :        1000000
+01.04.2004 16:12:08  1 number of trajectories read         :          0
+01.04.2004 16:12:08    number of trajectories written      :    1000000
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 2.5360e+008 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module guide 2.10
+01.04.2004 16:12:08 Horizontal: linearly converging
+01.04.2004 16:12:08 Vertical  : linearly converging
+01.04.2004 16:12:08 Guide consists of 1 piece(s)
+01.04.2004 16:12:08 Total length of guide   :    4.498 m
+01.04.2004 16:12:08 Width x Height          :    4.500 x   6.700 cm² ->   4.300 x   6.500 cm²
+01.04.2004 16:12:08 Inside guide abutment loss is disabled 
+01.04.2004 16:12:08 The walls have no waviness 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  2 number of trajectories read         :    1000000
+01.04.2004 16:12:08    number of trajectories written      :     160282
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 4.2544e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module Space and Chopper 1.8
+01.04.2004 16:12:08 Ideal absorption in chopper disk assumed
+01.04.2004 16:12:08 Neutrons passing outside the chopper are removed
+01.04.2004 16:12:08 Radius of chopper           :   40.00         cm
+01.04.2004 16:12:08 Center of chopper axle (Z,Y): (-36.75, +0.00) cm
+01.04.2004 16:12:08 Chopper open at t=0 (without offset) for a window at 0.0   deg
+01.04.2004 16:12:08 Window 1:
+01.04.2004 16:12:08   Position :   0.00 deg
+01.04.2004 16:12:08   Aperture :  60.00 deg
+01.04.2004 16:12:08   Height   :   6.50 cm
+01.04.2004 16:12:08 Center of beam before the chopper: X = 19.800000 cm Y = 0.000657 cm Z = -0.009850 cm TOF = 10.683648 ms 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  3 number of trajectories read         :     160282
+01.04.2004 16:12:08    number of trajectories written      :     157002
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 4.1699e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module guide 2.10
+01.04.2004 16:12:08 Horizontal: curved, radius: 2350.000 m
+01.04.2004 16:12:08 Vertical  : constant height
+01.04.2004 16:12:08 Guide consists of 4 piece(s)
+01.04.2004 16:12:08 Total length of guide   :    3.393 m
+01.04.2004 16:12:08 Width x Height          :    4.300 x   6.500 cm²
+01.04.2004 16:12:08 Inside guide abutment loss is disabled 
+01.04.2004 16:12:08 The walls have no waviness 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  4 number of trajectories read         :     157002
+01.04.2004 16:12:08    number of trajectories written      :     145646
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 3.8281e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module Space and Chopper 1.8
+01.04.2004 16:12:08 Ideal absorption in chopper disk assumed
+01.04.2004 16:12:08 Neutrons passing outside the chopper are removed
+01.04.2004 16:12:08 Radius of chopper           :   40.00         cm
+01.04.2004 16:12:08 Center of chopper axle (Z,Y): (-36.75, +0.00) cm
+01.04.2004 16:12:08 Chopper open at t=0 (without offset) for a window at 0.0   deg
+01.04.2004 16:12:08 Window 1:
+01.04.2004 16:12:08   Position :   0.00 deg
+01.04.2004 16:12:08   Aperture : 100.00 deg
+01.04.2004 16:12:08   Height   :   6.50 cm
+01.04.2004 16:12:08 Center of beam before the chopper: X = 19.800000 cm Y = -0.059831 cm Z = -0.019713 cm TOF = 16.719397 ms 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  5 number of trajectories read         :     145646
+01.04.2004 16:12:08    number of trajectories written      :     142510
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 3.7479e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module guide 2.10
+01.04.2004 16:12:08 Horizontal: curved, radius: 2350.000 m
+01.04.2004 16:12:08 Vertical  : constant height
+01.04.2004 16:12:08 Guide consists of 24 piece(s)
+01.04.2004 16:12:08 Total length of guide   :   23.599 m
+01.04.2004 16:12:08 Width x Height          :    4.300 x   6.500 cm²
+01.04.2004 16:12:08 Inside guide abutment loss is disabled 
+01.04.2004 16:12:08 The walls have no waviness 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  6 number of trajectories read         :     142510
+01.04.2004 16:12:08    number of trajectories written      :     128039
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 3.1900e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module guide 2.10
+01.04.2004 16:12:08 Horizontal: linearly converging
+01.04.2004 16:12:08 Vertical  : linearly converging
+01.04.2004 16:12:08 Guide consists of 1 piece(s)
+01.04.2004 16:12:08 Total length of guide   :    2.500 m
+01.04.2004 16:12:08 Width x Height          :    4.300 x   6.500 cm² ->   2.200 x   3.200 cm²
+01.04.2004 16:12:08 Inside guide abutment loss is disabled 
+01.04.2004 16:12:08 The walls have no waviness 
+01.04.2004 16:12:08  
+01.04.2004 16:12:08  7 number of trajectories read         :     128039
+01.04.2004 16:12:08    number of trajectories written      :      98617
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 2.4033e+007 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08  
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module sample_elasticisotr 1.2
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 	repetition rate		=     1
+01.04.2004 16:12:08              sample geometry:	'cylinder'
+01.04.2004 16:12:08 	scattered dir.		:     0.999391    0.000000    0.034899 
+01.04.2004 16:12:08  8 number of trajectories read         :      98617
+01.04.2004 16:12:08    number of trajectories written      :      63548
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 2.9220e+002 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08  
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module monochr_analyser 1.5
+01.04.2004 16:12:08 	mosaic spread horiz, vert	=   0.8000,    0.8000
+01.04.2004 16:12:08 	d spread			=   2.1000e-003
+01.04.2004 16:12:08 	reflectivity		=   100.0000
+01.04.2004 16:12:08 	repetition rate		=   1
+01.04.2004 16:12:08 initialised option: 	'crystal_focus'
+01.04.2004 16:12:08 	number of CE		=   10, 6 (h.,v.)
+01.04.2004 16:12:08 	radius			=   85.000000
+01.04.2004 16:12:08 	angle vertical		=   0.000000
+01.04.2004 16:12:08 	focus file: 'G:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/lamb_foc.dat'
+01.04.2004 16:12:08 data from parameter file: 'G:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/analyser_iris.crs'
+01.04.2004 16:12:08 	d-spacing		=   3.3323
+01.04.2004 16:12:08 	mosaic range factor	=   1.0000e+003
+01.04.2004 16:12:08 	d range factor		=   5.0000e+000
+01.04.2004 16:12:08 	order of reflection		=   1
+01.04.2004 16:12:08 	main position X, Y, Z	=    85.0000,    0.0000,    0.0000
+01.04.2004 16:12:08 	thickness, width, height	=    0.2000,    1.0000,    1.0000
+01.04.2004 16:12:08 	horizontal offset		=     0.0000
+01.04.2004 16:12:08 	vertical offset		=    3.0000
+01.04.2004 16:12:08 	horizontal Bragg		=     0.0000
+01.04.2004 16:12:08 	vertical Bragg		=    3.0000
+01.04.2004 16:12:08 	cutoff probability		=    1.0e-025
+01.04.2004 16:12:08 standard frame generation:
+01.04.2004 16:12:08 	horizontal angle		=   180.0000
+01.04.2004 16:12:08 	vertical angle		=   -6.0000
+01.04.2004 16:12:08 	X',Y',Z'			=    85.0000,    0.0000,    0.0000
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 geometry: vertical lambda focussing
+01.04.2004 16:12:08 
+01.04.2004 16:12:08  9 number of trajectories read         :      63548
+01.04.2004 16:12:08    number of trajectories written      :       3607
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 1.0102e+001 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module detector 1.4
+01.04.2004 16:12:08  
+01.04.2004 16:12:08 10 number of trajectories read         :       3607
+01.04.2004 16:12:08    number of trajectories written      :       1517
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 1.4256e+001 n/s 
+01.04.2004 16:12:08 ------------------------------
+01.04.2004 16:12:08  
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 VITESS version 2.5 module eval_inelast 1.2
+01.04.2004 16:12:08 	TOF spectrum file: 'G:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/iristofsp.dat'
+01.04.2004 16:12:08 	energy spectrum file: 'G:/Vitess2_5beta4/FILES/IRIS_DIRold/IRIS_DIR/irisergsp.dat'
+01.04.2004 16:12:08 	number of bins		=  50
+01.04.2004 16:12:08 	primary flight path		=  3641.0000
+01.04.2004 16:12:08 	secondary flight path	=   152.0000
+01.04.2004 16:12:08 	reference wavelength	=     6.6600
+01.04.2004 16:12:08 	time offset		=     0.0600
+01.04.2004 16:12:08 	minimal time		=    61.9900
+01.04.2004 16:12:08 	maximal time		=    65.9900
+01.04.2004 16:12:08 	gradient of timebins	=     0.0000
+01.04.2004 16:12:08 	temperature		=   100.0000
+01.04.2004 16:12:08 	angle			=     0.0000
+01.04.2004 16:12:08 	angle range		=   180.0000
+01.04.2004 16:12:08 option 'inverted geometry'
+01.04.2004 16:12:08 not divided by Bose-factor
+01.04.2004 16:12:08 computed reference values:
+01.04.2004 16:12:08 	energy			=     1.8443 meV
+01.04.2004 16:12:08 	velocity			=    59.3999 cm/ms
+01.04.2004 16:12:08 	MinTOF_effective		=    61.9300 ms
+01.04.2004 16:12:08 	MaxTOF_effective		=    65.9300 ms
+01.04.2004 16:12:08 	TOF_total_elast		=    63.8553 ms
+01.04.2004 16:12:08 	TOF_fixed_energy_side	=     2.5589 ms
+01.04.2004 16:12:08 	minimal energy transfer	=    -0.1188 meV
+01.04.2004 16:12:08 	maximal energy transfer	=     0.1215 meV
+01.04.2004 16:12:08 
+01.04.2004 16:12:08 11 number of trajectories read         :       1517
+01.04.2004 16:12:08    number of trajectories written      :       1517
+01.04.2004 16:12:08 (time averaged) neutron count rate     : 1.4256e+001 n/s 
+01.04.2004 16:12:08 ------------------------------

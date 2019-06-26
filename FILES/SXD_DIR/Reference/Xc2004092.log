@@ -1,0 +1,159 @@
+01.04.2004 16:18:57 Parameter directory is G:/Vitess2_5beta4/FILES/SXD_DIR
+Starting simulation
+G:/Vitess2_5beta4/MODULES/source.exe -S2 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog1 -R50 -N- -aG:/Vitess2_5beta4/FILES/SXD_DIR/IpnsThermPois.mod -n1000000 -m0.38 -t0.001 -y1 -M0.8 -T0.05 -z1 -d0 -P0 -X0 -Y0 -V-1 -D0 -w6 -h10 -i0 -A0 -k0 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k2 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog2 -OG:/Vitess2_5beta4/FILES/SXD_DIR/time_source.dat -n50 -m0.001 -M0.05 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/sample_singcryst.exe --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog3 -PG:/Vitess2_5beta4/FILES/SXD_DIR/sample_singcryst.par -SG:/Vitess2_5beta4/FILES/SXD_DIR/singcryst_structuref.dat -o1 -d0.0005 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k3 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog4 -OG:/Vitess2_5beta4/FILES/SXD_DIR/divy.dat -n299 -C0 -m-25 -M25 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k4 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog5 -OG:/Vitess2_5beta4/FILES/SXD_DIR/divz.dat -n10 -C0 -m-25 -M25 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/mon2_div.exe --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog6 -OG:/Vitess2_5beta4/FILES/SXD_DIR/div.dat -y100 -z100 -w-90 -W90 -h-90 -H90 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/spacewindow.exe --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog7 -l32 -R0 -r10 -y0 -z0 -h-16 -H16 -w-16 -W16 -S0 -t0.1 -c6 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k2 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog8 -OG:/Vitess2_5beta4/FILES/SXD_DIR/times.dat -n299 -C0 -m1.55 -M1.555 -p1 -e1 
+| G:/Vitess2_5beta4/MODULES/mon2_pos.exe --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog9 -OG:/Vitess2_5beta4/FILES/SXD_DIR/pos.dat -y100 -z100 -w-16 -W16 -h-16 -H16 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k1 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog10 -OG:/Vitess2_5beta4/FILES/SXD_DIR/lambda_s.dat -n25 -C0 -m0.38 -M0.8 -p1 -e0 -t-1.e10 -T1.e10 
+| G:/Vitess2_5beta4/MODULES/monitor1.exe -k2 --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog11 -OG:/Vitess2_5beta4/FILES/SXD_DIR/time_det.dat -n25 -C0 -m1 -M2 -p1 -e0 
+| G:/Vitess2_5beta4/MODULES/detector.exe --Z21 --G0 --U1.0e-26 --B10000 --PG:/Vitess2_5beta4/FILES/SXD_DIR --LG:/Vitess2_5beta4/FILES/SXD_DIR/vpipelog12 -Gcub -h32 -w32 -t0.1 -e0.95 -T0 -P0 -D0.2 -c1 -r1 -A1 -M1 -g0 --Fno_file
+01.04.2004 16:18:57 simulation (1bc d94 ab4 9a0 eac 768 bf4 aa0 1dc 984 d70 a10 ) (444 3476 2740 2464 3756 1896 3060 2720 476 2436 3440 2576) is active
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module Source and Window 1.10
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 > Simulation of short pulsed spallation source - <
+01.04.2004 16:19:18 pulse frequency              :  50.000 Hz 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 decoupled poisoned moderator
+01.04.2004 16:19:18 time distribution file       : IpnsThermPulse0_7.dat 
+01.04.2004 16:19:18 wavelength distribution file : IpnsThermWavel.dat 
+01.04.2004 16:19:18 total neutron flux (in 2*pi) : 1.0000e+013 n/(cm²s) 
+01.04.2004 16:19:18 moderator position           :(  0.000    0.000    0.000) cm 
+01.04.2004 16:19:18 moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+01.04.2004 16:19:18 angle of opening used        :   2.000°    x   2.000°   
+01.04.2004 16:19:18 time averaged neutron current: 1.9393e+011 n/s in 0.001218 str
+01.04.2004 16:19:18 wavelength band used         :   0.380 Ang -   0.800 Ang
+01.04.2004 16:19:18 time interval used           :   0.001 ms  -   0.050 ms 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 window (W x H)               :   6.000 cm  x  10.000 cm 
+01.04.2004 16:19:18   in a distance of           :   0.000 m   
+01.04.2004 16:19:18   with a declination of      :   0.000°    
+01.04.2004 16:19:18 polarization                 :   0.000 %  X: 0.000 Y: 0.000 Z: -1.000
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 Gravity is disabled 
+01.04.2004 16:19:18 Cutoff probability for one trajectory 1.000e-026 
+01.04.2004 16:19:18 Center of beam at window     :(  0.000   -0.004   -0.005) cm 
+01.04.2004 16:19:18 Average TOF                  :   0.010 ms 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 number of trajectories started     :        1000000
+01.04.2004 16:19:18  1 number of trajectories read         :          0
+01.04.2004 16:19:18    number of trajectories written      :     600606
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.5149e+010 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:18 Norm:  1.000000
+01.04.2004 16:19:18  2 number of trajectories read         :     600606
+01.04.2004 16:19:18    number of trajectories written      :     600606
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.5149e+010 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18  
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module sample_singcryst 1.1
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 sample geometry:	'cylinder'
+01.04.2004 16:19:18 Number of reflections: 6246
+01.04.2004 16:19:18  
+01.04.2004 16:19:18  3 number of trajectories read         :     600606
+01.04.2004 16:19:18    number of trajectories written      :    1856479
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.2417e+005 n/s 
+01.04.2004 16:19:18  count rate of colour 1                : 9.4076e-006 n/s 
+01.04.2004 16:19:18  count rate of colour 2                : 6.1125e-005 n/s 
+01.04.2004 16:19:18  count rate of colour 3                : 1.1066e-004 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:18 Norm:  1.000000
+01.04.2004 16:19:18  4 number of trajectories read         :    1856479
+01.04.2004 16:19:18    number of trajectories written      :    1856479
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.2417e+005 n/s 
+01.04.2004 16:19:18  count rate of colour 1                : 9.4076e-006 n/s 
+01.04.2004 16:19:18  count rate of colour 2                : 6.1125e-005 n/s 
+01.04.2004 16:19:18  count rate of colour 3                : 1.1066e-004 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:18 Norm:  1.000000
+01.04.2004 16:19:18  5 number of trajectories read         :    1856479
+01.04.2004 16:19:18    number of trajectories written      :    1856479
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.2417e+005 n/s 
+01.04.2004 16:19:18  count rate of colour 1                : 9.4076e-006 n/s 
+01.04.2004 16:19:18  count rate of colour 2                : 6.1125e-005 n/s 
+01.04.2004 16:19:18  count rate of colour 3                : 1.1066e-004 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module mon2_div 1.2
+01.04.2004 16:19:18  6 number of trajectories read         :    1856479
+01.04.2004 16:19:18    number of trajectories written      :    1856479
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 1.2417e+005 n/s 
+01.04.2004 16:19:18  count rate of colour 1                : 9.4076e-006 n/s 
+01.04.2004 16:19:18  count rate of colour 2                : 6.1125e-005 n/s 
+01.04.2004 16:19:18  count rate of colour 3                : 1.1066e-004 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module Space and Window 2.10
+01.04.2004 16:19:18 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+01.04.2004 16:19:18 Thickness of outer material of collimator 0.100000 cm 
+01.04.2004 16:19:18 Gravity is disabled 
+01.04.2004 16:19:18 Distance between plane x=0 and window plane  32.000000 cm 
+01.04.2004 16:19:18 Center of beam: X = 32.000000 cm Y = 79.092389 cm Z = -10.032865 cm TOF = 1.517461 ms  
+01.04.2004 16:19:18  
+01.04.2004 16:19:18  7 number of trajectories read         :    1856479
+01.04.2004 16:19:18    number of trajectories written      :     237580
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 2.4092e+004 n/s 
+01.04.2004 16:19:18  count rate of colour 1                : 9.4076e-006 n/s 
+01.04.2004 16:19:18  count rate of colour 2                : 6.1125e-005 n/s 
+01.04.2004 16:19:18  count rate of colour 3                : 1.1066e-004 n/s 
+01.04.2004 16:19:18 ------------------------------
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 
+01.04.2004 16:19:18 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:18 Norm:  1.000000
+01.04.2004 16:19:18  8 number of trajectories read         :     237580
+01.04.2004 16:19:18    number of trajectories written      :        679
+01.04.2004 16:19:18 (time averaged) neutron count rate     : 9.2694e+000 n/s 
+01.04.2004 16:19:19 ------------------------------
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 VITESS version 2.5 module mon2_pos 1.2
+01.04.2004 16:19:19  9 number of trajectories read         :        679
+01.04.2004 16:19:19    number of trajectories written      :        679
+01.04.2004 16:19:19 (time averaged) neutron count rate     : 9.2694e+000 n/s 
+01.04.2004 16:19:19 ------------------------------
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:19 Norm:  1.000000
+01.04.2004 16:19:19 10 number of trajectories read         :        679
+01.04.2004 16:19:19    number of trajectories written      :        679
+01.04.2004 16:19:19 (time averaged) neutron count rate     : 9.2694e+000 n/s 
+01.04.2004 16:19:19 ------------------------------
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 VITESS version 2.5 module monitor1 1.4
+01.04.2004 16:19:19 Norm:  1.000000
+01.04.2004 16:19:19 11 number of trajectories read         :        679
+01.04.2004 16:19:19    number of trajectories written      :        679
+01.04.2004 16:19:19 (time averaged) neutron count rate     : 9.2694e+000 n/s 
+01.04.2004 16:19:19 ------------------------------
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 
+01.04.2004 16:19:19 VITESS version 2.5 module detector 1.4
+01.04.2004 16:19:19  
+01.04.2004 16:19:19 12 number of trajectories read         :        679
+01.04.2004 16:19:19    number of trajectories written      :        673
+01.04.2004 16:19:19 (time averaged) neutron count rate     : 9.2091e+000 n/s 
+01.04.2004 16:19:19 ------------------------------

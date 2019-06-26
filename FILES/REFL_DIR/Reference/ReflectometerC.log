@@ -1,0 +1,214 @@
+description O.K.
+
+Parameter directory is C:/Programme/VITESS_2_5_1/FILES/REFL_DIR
+Starting simulation
+C:/Programme/VITESS_2_5_1/MODULES/source.exe -S3 --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog1 -NESS -R16.667 -p2.0 -aC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/EssLPTherm.mod -n12000000 -m1.8 -t0.0 -y2.1 -M6.5 -T4.7 -z0.065 -d0 -P0 -X1 -Y0 -V0 -D600 -w6 -h10 -i0 -k0 
+| C:/Programme/VITESS_2_5_1/MODULES/chopper_disc.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog2 -s1000 -o-43.9 -g1 -z0 -p1 -c0 -CC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/chop_045.dat -l0 
+| C:/Programme/VITESS_2_5_1/MODULES/guide.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog3 -Y2 -Z0 -w6 -h10 -W6 -H10 -p100 -N27 -R1000 -iC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -IC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr2linear.dat -jC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -JC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -b3 -s0.05 -r0.0 -a1 
+| C:/Programme/VITESS_2_5_1/MODULES/chopper_disc.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog4 -s1000 -o152.3 -g1 -z0 -p1 -c0 -CC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/chop_180.dat -l0 
+| C:/Programme/VITESS_2_5_1/MODULES/guide.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog5 -Y0 -Z0 -w6 -h10 -W6 -H10 -p2974 -N1 -R0 -iC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -IC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -jC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -JC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/mirr1b.dat -r0.005 -a1 
+| C:/Programme/VITESS_2_5_1/MODULES/spacewindow.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog6 -l0 -R0 -h-0.1 -H0.1 -w-2 -W2 -S0 -t0.01 -c6 -T0 
+| C:/Programme/VITESS_2_5_1/MODULES/spacewindow.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog7 -l94 -R0 -h-0.1 -H0.1 -w-2 -W2 -S0 -t0.01 -c6 -T0 
+| C:/Programme/VITESS_2_5_1/MODULES/monitor1.exe -k1 --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog8 -OC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/lambda.dat -n100 -C0 -f1 -m0 -M10 -p1 -e0 
+| C:/Programme/Vitess_2_5_1/MODULES/sample_reflectom.exe -O1 -RY -a-2 -Irefl_Si-50Au.dat -Prefl.ref --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog9 
+| C:/Programme/VITESS_2_5_1/MODULES/frame.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog10 -S1 -H0 -V0 -A90 -x0 -y0 -z0 -i0 -j0 -k0 
+| C:/Programme/VITESS_2_5_1/MODULES/detector.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog11 -Gcyl -h25 -w80 -t2 -e0.9 -T0 -P0 -D200 -c48 -r1 -A1 -M1 -g0 
+| C:/Programme/VITESS_2_5_1/MODULES/monitor1.exe -k2 --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog12 -OC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/time.dat -n120 -f1 -m0 -M120 -p1 -e0 
+| C:/Programme/VITESS_2_5_1/MODULES/eval_elast.exe --Z1 --G1 --U1.0e-7 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/REFL_DIR --LC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/vpipelog13 -k2 -oC:/Programme/VITESS_2_5_1/FILES/REFL_DIR/eval_q.dat -n100 -m0 -M0.25 -p1 -w1 -l6600 -T0 -e41.53 -E92.24 --Fno_file
+simulation (dec d04 154 f78 188 9a8 174 6d4 49c a5c 64c c64 edc ) (3564 3332 340 3960 392 2472 372 1748 1180 2652 1612 3172 3804) is active
+................................................................................................------------------------------
+
+
+VITESS version 2.5 module Source and Window 1.11
+
+> Simulation of long pulsed spallation source ESS <
+pulse length                 :   2.000 ms 
+pulse frequency              :  16.667 Hz 
+
+coupled moderator
+moderator temperature        : 325.000 K
+total neutron flux (in 2*pi) : 3.3778e+014 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :  12.000 cm  x  12.000 cm 
+angle of opening used        :   4.200°    x   0.130°   
+time averaged neutron current: 1.2876e+012 n/s in 0.000166 str
+wavelength band used         :   1.800 Ang -   6.500 Ang
+time interval used           :   0.000 ms  -   4.700 ms 
+
+window (W x H)               :   6.000 cm  x  10.000 cm 
+  in a distance of           :   6.000 m   
+  with a declination of      :   0.000°    
+polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+Center of beam at window     :(600.000   -0.014   -0.007) cm 
+Average TOF                  :   5.037 ms 
+
+Gravity is enabled 
+Cutoff probability per traj. : 1.000e-007 
+
+number of trajectories started         :    12000000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :     1362272
+(time averaged) neutron count rate     : 2.7903e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Chopper 1.8
+Absorption of Gd in chopper disk assumed
+Radius of chopper           :   31.00         cm
+Center of chopper axle (Z,Y): (-25.00, +0.00) cm
+Chopper open at t=0 (without offset) for a window at 0.0   deg
+Window 1:
+  Position :   0.00 deg
+  Aperture :  45.00 deg
+  Height   :  15.00 cm
+Center of beam before the chopper: X = 0.000000 cm Y = 0.000372 cm Z = -0.007502 cm TOF = 5.035914 ms 
+ 
+ 2 number of trajectories read         :     1362272
+   number of trajectories written      :     1081342
+(time averaged) neutron count rate     : 2.3882e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module guide 2.10d
+Horizontal: curved, radius: 1000.000 m
+Vertical  : constant height
+Guide consists of 27 piece(s) with 3 channels
+26 kink(s) with an angle of   0.0573 deg  each
+Total length of guide   :   27.000  m
+Width x Height          :    6.000  x  10.000 cm²
+Inside guide abutment loss is enabled 
+The walls have no waviness 
+ 
+ 3 number of trajectories read         :     1081342
+   number of trajectories written      :      750927
+(time averaged) neutron count rate     : 1.1754e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Chopper 1.8
+Absorption of Gd in chopper disk assumed
+Radius of chopper           :   31.00         cm
+Center of chopper axle (Z,Y): (-25.00, +0.00) cm
+Chopper open at t=0 (without offset) for a window at 0.0   deg
+Window 1:
+  Position :   0.00 deg
+  Aperture : 180.00 deg
+  Height   :  15.00 cm
+Center of beam before the chopper: X = 0.000000 cm Y = -0.308508 cm Z = -0.182654 cm TOF = 23.969206 ms 
+ 
+ 4 number of trajectories read         :      750927
+   number of trajectories written      :      660442
+(time averaged) neutron count rate     : 8.0659e+009 n/s 
+------------------------------
+
+
+VITESS version 2.5 module guide 2.10d
+Horizontal: constant width
+Vertical  : constant height
+Guide consists of 1 piece(s)
+Total length of guide   :   29.740  m
+Width x Height          :    6.000  x  10.000 cm²
+Inside guide abutment loss is enabled 
+The walls have a waviness of 5.000e-003° 
+ 
+ 5 number of trajectories read         :      660442
+   number of trajectories written      :      599606
+(time averaged) neutron count rate     : 6.8246e+009 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.21
+WARNING: It is recommeded to have outer and inner thickness EQUAL! 
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.010000 cm 
+Gravity is enabled 
+Distance between plane x=0 and window plane  0.000000 cm 
+Center of beam: X = 0.000000 cm Y = -0.017060 cm Z = -0.633248 cm 
+ 
+ 6 number of trajectories read         :      599606
+   number of trajectories written      :        6903
+(time averaged) neutron count rate     : 8.8020e+007 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.21
+WARNING: It is recommeded to have outer and inner thickness EQUAL! 
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.010000 cm 
+Gravity is enabled 
+Distance between plane x=0 and window plane  94.000000 cm 
+Center of beam: X = 94.000000 cm Y = -0.011003 cm Z = -0.018514 cm 
+ 
+ 7 number of trajectories read         :        6903
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 6.1847e+007 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  0.100000
+ 8 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 6.1847e+007 n/s 
+------------------------------
+
+
+VITESS version 2.5 module sample_reflectom 2.4
+initialised option: 	'sample'
+data from parameter file: 'refl.ref'
+  main position X, Y, Z    =   32.0000,    0.0000,    0.0000
+  thickness, width, height =    0.0000,    5.0000,    9.0000
+  angle                    =   -2.0000 around Y-Axis 
+user defined frame:
+  horizontal angle =    0.0000
+  vertical angle   =    0.0000
+  X',Y',Z'         =   32.0000,    0.0000,    0.0000
+ 
+ 9 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 7.6828e+002 n/s 
+------------------------------
+
+
+VITESS version 2.5 module frame 1.2a
+	sequence		R T M
+	angle around  Z, Y, X	0.000000  0.000000  90.000000
+	translate        x, y, z	0.000000  0.000000  0.000000
+	mirror	     YZ,ZX,XY	0 0 0
+
+Euler frame rotations: Positive rotation of frame means rotation of one positive 
+axis towards a higher index positive axis : +X->+Y, +Y->+Z, +X->+Z 
+
+10 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 7.6828e+002 n/s 
+------------------------------
+
+
+VITESS version 2.5 module detector 1.5
+ 
+11 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 7.6828e+002 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+12 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 7.6828e+002 n/s 
+------------------------------
+
+
+VITESS version 2.5 module eval_elast 1.6b
+Option: momentum transfer Q
+total neutron count rate within binning: 7.0368e+002 n/s 
+
+13 number of trajectories read         :        4507
+   number of trajectories written      :        4507
+(time averaged) neutron count rate     : 7.6828e+002 n/s 
+------------------------------
+simulation finished
+
+

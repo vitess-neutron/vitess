@@ -1,0 +1,32 @@
+CrysAnalyzerSpec
+================
+
+
+-tool-
+
+
+by activating this module a window should emerge with a "start" button and the command options (eventually as default option string and no separate fields):
+
+--Z "random seed" (default: 1)
+
+--L "log filename"(default: CAS_log60arm10.dat)
+
+-P "Parameter filename" (default: CAS_par60arm10.dat)
+
+-S "Statistics filename" (default: CAS_S60arm10.dat)
+
+-T "Trajectory data filename" (default: CAS_D60arm10.dat)
+
+-l "lambda medium" (default: 6.174745)
+
+-w "lambda range" (default: 0.03)
+
+-k "zeta" (default: 0.0)
+
+
+thus the generated command will be for example:
+L:\SRC\Release\CAS_v40.exe --Z2 --LCAS_log60arm10.dat -PCAS_par60arm10.dat -SCAS_S60arm10.dat -TCAS_D60arm10.dat -l6.174745 -w0.03 -k0
+
+the input & output files are found in the "Parameter Directory"
+
+

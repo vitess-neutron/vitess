@@ -1,0 +1,177 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.75 [de] (WinNT; U) [Netscape]">
+  <title>Module Resonator Drabkin</title>
+</head>
+  <body>
+  
+<h1> VITESS Module Resonator Drabkin</h1>
+  
+<p><br>
+This module simulates a system which was called "Drabkin resonator". 
+The main field is a periodical magnetic field with permanent amplitude or 
+with some  amplitude distribution. The amplitude distribution should has
+a gauss or sinus law. This is gives a possibilities to improve the peak of 
+neutrons, which was flipped.
+The permanent magnetic field should be added to the periodic magnetic field. 
+This field must be situated in the perpendicular plane relativly the periodical
+magnetic field.
+Such field is calling "guide magnetic field". If we apply these two fields, we 
+must got a flipper, which is working in the narrow wavelength range. The full 
+width on the half height is depending from number of periods of the periodical magnetic 
+field. Also let me remind, incoming neutron beam should contain a some range of 
+wavelength. No monohromator should be installed before resonator!<br>
+The random magnetic field can be added also. <br>
+The axis OX has the direction of neutron flight. <br>
+The spin precessions are treated classically i.e. this module only rotates the spin
+vectors belonging to trajectories which pass through the rectangular geometry.<br>
+No attenuation is considered during the flight.  <br>
+
+&nbsp; </p>
+<p><u>Module parameters:</u> <br>
+&nbsp; 
+<table border="1" width="90%">
+ <tbody>
+    <tr>
+ <td><b>Parameter</b> <br>
+      <b>Unit</b></td>
+  <td><b>Description</b></td>
+  <td><b>Command option</b></td>
+ </tr>
+ 
+ <tr>
+ <td>dimensions of field volume X,Y,Z<br>
+[cm]</td>
+ <td>Dimension of the common precession volume X,Y,Z</td>
+ <td>-X, -Y, -V</td>
+ </tr>
+ 
+  <tr>
+ <td>position main X,Y,Z <br>
+[cm]</td>
+  <td>Center position of the field volume.</td>
+  <td>-k, -l, -m</td>
+ </tr>
+
+
+  <tr>
+ <td>output X,Y,Z <br>
+[cm]</td>
+  <td>Position of the output frame (in the input frame).</td>
+  <td>-p, -r, -s</td>
+ </tr>
+
+  <tr>
+ <td>Number of domains in the X direction</td>
+  <td>Number of domains in the X direction (flight direction)</td>
+  <td>-C</td>
+ </tr>
+  <tr>
+ <td>Number of domains in the Y direction</td>
+  <td>Number of domains in the Y direction</td>
+  <td>-D</td>
+ </tr>
+  <tr>
+ <td>Number of domains in the Z direction</td>
+  <td>Number of domains in the Z direction</td>
+  <td>-E</td>
+ </tr>
+
+  <tr>
+ <td>Periodical field parallel to the axis</td>
+  <td>Periodical field is parallelling to the axis OX, OY or OZ, values 0,1,2 </td>
+  <td>-M</td>
+ </tr>
+
+  <tr>
+ <td>Strength of magnetic field  <br>
+[Oe=gauss]</td>
+  <td>Strength(Amplitude) of the periodical magnetic field.</td>
+  <td>-d</td>
+ </tr>
+
+
+  <tr>
+ <td>Periodical field chaning law</td>
+  <td>The laws of changing of amplitude of the periodical magnetic field: 
+	uniform(0), sinus(1), gauss(2)</td>
+  <td>-v</td>
+ </tr>
+
+
+
+<tr>
+<td>Deviation of amplitude [%]</td>
+<td>Deviation of amplitude of the periodical magnetic field in percent</td>
+<td>-a</td>
+</tr>
+
+<tr>
+<td>Amplitude distribution</td>
+<td>Distribution of random values: amplitude of 
+    the periodical magnetic field: Normal(0), Uniform(1)</td>
+<td>-e</td>
+</tr>
+
+
+<tr>
+<td>Sigma for  gauss distr. [Oe]</td>
+<td>Sigma for gauss distribution of amplitude of periodical magnetic field</td>
+<td>-x</td>
+</tr>
+
+
+  <tr>
+ <td>Permanent magnetic field components X, Y and Z <br>
+[Oe]</td>
+  <td>Components X, Y, Z of permanent magnetic field, which can be added to
+the components of the periodical magnetic field (projection in the axis).</td>
+  <td>-I, -A, -K</td>
+ </tr>
+
+
+<tr>
+<td>Additional random\n magnetic field <br> [Oe]</td>
+<td>Amplitude of additional random magnetic field</td>
+<td>-q</td>
+</tr>
+
+<tr>
+<td> Output results  </td>
+<td> Output intermediately results of simulations(spin and total magnetic
+field during flight) in the file  {yes no} {1 0} </td>
+<td>-S</td>
+</tr>
+
+<tr>
+<td>Output file:  polarisation </td>
+<td>Name of file for: results - polarisation, spin components   </td>
+<td>-O</td>
+</tr>
+
+<tr>
+<td>Output file: magneticfield  </td>
+<td>Name of file for output results - total magnetic field components </td>
+<td>-N</td>
+</tr>
+
+
+  </tbody>
+</table>
+<p><a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> </p>
+<p><!-- hhmts start --><font size="-1">Last modified: Sep 30 19:07:01 
+MEST 2003</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> </p>
+<br>
+</body>
+</html>
+
+
+    
+  

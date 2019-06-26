@@ -1,0 +1,164 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.75 [de] (WinNT; U) [Netscape]">
+  <title>Module Precession Field</title>
+</head>
+  <body>
+  
+<h1> VITESS Module Precession Field</h1>
+  
+<p><br>
+This module simulates spin precessions in an imhomogeneous field given by
+an external field map file or in a homogeneous field defined by its size
+and the magnetic strength vectors.&nbsp; The spin precessions are treated
+classically i.e. this module only rotates the spin vectors belonging to trajectories
+which pass through the rectangular geometry. No attenuation is considered
+during the flight. <br>
+&nbsp; </p>
+<p><u>Module parameters:</u> <br>
+&nbsp; 
+<table border="1" width="90%">
+ <tbody>
+    <tr>
+ <td><b>Parameter</b> <br>
+      <b>Unit</b></td>
+  <td><b>Description</b></td>
+  <td><b>Command option</b></td>
+ </tr>
+  <tr>
+ <td>field map file</td>
+  <td>data file giving the field map which is read in externally</td>
+  <td>-P</td>
+ </tr>
+  <tr>
+ <td>Field options</td>
+  <td>option of magnetic field (1:inhomogeneous, 'else': homogeneous)</td>
+  <td>&nbsp;-O</td>
+ </tr>
+  <tr>
+ <td>position main X,Y,Z <br>
+[cm]</td>
+  <td>center position of the field map</td>
+  <td>-k, -l, -m</td>
+ </tr>
+  <tr>
+ <td>offset horiz./vert. <br>
+[deg]</td>
+  <td>horizontal (first rotation) and vertical rotation angles of the field 
+map</td>
+  <td>-i, -j</td>
+ </tr>
+  <tr>
+ <td>output X,Y,Z <br>
+[cm]</td>
+  <td>position of the output frame (in the input frame)</td>
+  <td>-p, -r, -s</td>
+ </tr>
+  <tr>
+ <td>dimension field X,Y,Z <br>
+[cm]</td>
+  <td>dimension of the precession volume</td>
+  <td>-X, -Y, -V</td>
+ </tr>
+  <tr>
+ <td>magnetic field X,Y,Z <br>
+[Oe]</td>
+  <td>components of the magnetic field in Oe</td>
+  <td>-T, -G, -H</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Important note: In case of serious memory limits (mainly older computers) 
+it is possible to get "couldn't execute "...\MODULES\precessionfield.exe": 
+invalid argument". This is because the field resolution has to be high enough.
+Set "#define FIELD_SIZE 75" smaller and recompile. <br>
+&nbsp; </p>
+<p><u>Module file input:</u> </p>
+<p>The field map file has to be defined as below in order to obtain the proper
+format: </p>
+<p><font color="#000000">(...)</font> <br>
+<font color="#000000">&nbsp;/* print number of matrix lines, columns */</font> 
+</p>
+<p><font color="#000000">&nbsp; fprintf(FieldMapFile, " %d&nbsp;&nbsp;&nbsp; 
+%d&nbsp;&nbsp;&nbsp; %d\n", i_x_max, i_y_max, i_z_max) ;</font> </p>
+<p><font color="#000000">(...)</font> <br>
+<font color="#000000">&nbsp;/* inhomogeneous fieldsph */</font> </p>
+<p><font color="#000000">&nbsp; {</font> </p>
+<p><font color="#000000">&nbsp; for(i_x=1;i_x&lt;(i_x_max+1);i_x++) { for(i_y=1;i_y&lt;(i_y_max+1);i_y++) 
+{ for(i_z=1;i_z&lt;(i_z_max+1);i_z++) {</font> <br>
+&nbsp; </p>
+<p><font color="#000000">&nbsp; (...)</font> <br>
+<font color="#000000">&nbsp; /* generate field vectors in spherical representation
+*/</font> </p>
+<p><font color="#000000">&nbsp; (...)</font> <br>
+<font color="#000000">&nbsp;&nbsp; /* print out to file */</font> </p>
+<p><font color="#000000">&nbsp;&nbsp; fprintf(FieldMapFile, " %f&nbsp;&nbsp;&nbsp; 
+%f&nbsp;&nbsp;&nbsp; %f&nbsp;&nbsp;&nbsp; %f&nbsp;&nbsp;&nbsp; %f&nbsp;&nbsp;&nbsp; 
+%f&nbsp;&nbsp;&nbsp; %f&nbsp;&nbsp;&nbsp; %f&nbsp;&nbsp;&nbsp; %f \n",</font> 
+</p>
+<p><font color="#000000">&nbsp;&nbsp;&nbsp; Posit[0], Posit[1], Posit[2],</font> 
+</p>
+<p><font color="#000000">&nbsp;&nbsp;&nbsp; Dim[0], Dim[1], Dim[2],</font> 
+</p>
+<p><font color="#000000">&nbsp;&nbsp;&nbsp; fieldsph[0], fieldsph[1], fieldsph[2]);</font> 
+<br>
+<font color="#000000">&nbsp; }}}</font> </p>
+<p><font color="#000000">&nbsp; }</font> </p>
+<p><font color="#000000">That is, in a simplest example, a 2x2x2 homogeneous 
+field map file could look like:</font> </p>
+<p><font color="#000000">2&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; 2</font> 
+<br>
+<font color="#000000">&nbsp;-2.500000&nbsp;&nbsp;&nbsp; -2.500000&nbsp;&nbsp;&nbsp; 
+-2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;-2.500000&nbsp;&nbsp;&nbsp; -2.500000&nbsp;&nbsp;&nbsp; 
+2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;-2.500000&nbsp;&nbsp;&nbsp; 2.500000&nbsp;&nbsp;&nbsp; 
+-2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;-2.500000&nbsp;&nbsp;&nbsp; 2.500000&nbsp;&nbsp;&nbsp; 
+2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;2.500000&nbsp;&nbsp;&nbsp; -2.500000&nbsp;&nbsp;&nbsp; 
+-2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;2.500000&nbsp;&nbsp;&nbsp; -2.500000&nbsp;&nbsp;&nbsp; 
+2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;2.500000&nbsp;&nbsp;&nbsp; 2.500000&nbsp;&nbsp;&nbsp; 
+-2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+<font color="#000000">&nbsp;2.500000&nbsp;&nbsp;&nbsp; 2.500000&nbsp;&nbsp;&nbsp; 
+2.500000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 5.000000&nbsp;&nbsp;&nbsp; 
+5.000000&nbsp;&nbsp;&nbsp; 1.000000&nbsp;&nbsp;&nbsp; 0.000000&nbsp;&nbsp;&nbsp; 
+0.000000</font> <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; </p>
+<p> </p>
+<hr> 
+<p><a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> </p>
+<p><!-- hhmts start --><font size="-1">Last modified: Mon Jul 22 15:36:29 
+MEST 2002, G. Zs.</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> 
+</p>
+<br>
+</body>
+</html>

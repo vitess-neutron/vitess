@@ -1,0 +1,18 @@
+WinNT 1           # Operating system (WinNT, Win98, Unix, Linux)
+S                 # Shortening option, N: normal, S: short, V: very short
+I:\FILES\Test     # parameter directory
+Series-Name       # name of the series
+# files that shall be copied (max. 5)
+lambda.dat pos_y.dat
+# List of variable parameters
+#      no. traj.   sample              
+            1        16
+           -n        -S
+run_1    9000000  I:\FILES\Test\isotropic.san   # test
+run_2  249000000  I:\FILES\Test\sphere500.san
+
+
+
+
+
+

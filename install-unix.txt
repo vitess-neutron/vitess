@@ -1,0 +1,74 @@
+        Virtual Instrumentation (VITESS)
+	for pulsed and continuous sources
+
+
+Hahn-Meitner-Institut Berlin
+Modules:
+	Géza Zsigmond (zsigmond@hmi.de)
+	Klaus Lieutenant (lieutenant@hmi.de)
+	Sergey Manoshin
+	Dietmar Wechsler
+	Friedrich Streffer
+
+GUI Software:
+	Michael Fromme     (fromme@hmi.de)
+
+
+README
+
+This program has been developed on Unix systems, but runs
+on windows systems, too.
+
+Installation under Unix
+
+1. check
+--------
+Your operating system should be Linux (versions from 2.0.35),
+SunOS (versions from 5.6), or OSF1(V4.0).
+
+We assume Tcl/Tk software with a version 8 or higher
+is installed separately. If you miss information, try
+http://www.scriptics.com/software/
+
+The VITESS software comes to you as a gzipped tar file.
+When your browser asks for a file name to store the tar file,
+it might suggest
+	vitess_download
+without any .tar.gz extension. We assume you change that default
+to a name with .tar.gz ending like vitess.tar.gz .
+
+You may compare the CRC32 or MD5 checksums of the downloaded
+vitess.tar.gz with those stated at
+https://www.hmi.de/projects/ess/vitess/checksums.txt
+
+The file vitess.tar.gz might be de-tared in whatever
+<vitess parent directory> you want, like /usr/bin for root installation
+or $HOME for personal installation.
+
+2. do
+-----
+	cd <vitess parent directory>
+	gtar -zxvf vitess.tar.gz
+
+	(if you do not have gtar, try
+		gunzip vitess.tar.gz
+		tar -xvf vitess.tar
+	)	
+
+3. edit script
+--------------
+Please change the first line of the vitess start script
+	<vitess parent directory>/vitess/Vitess
+from
+	#!/usr/local/bin/bltwish
+to the correct path of the bltwish image.
+If you do not have a bltwish installed, just take the normal wish.
+We used vitess with different versions of wish and bltwish, but
+recommend the latest versions 8.4 / 2.4.
+
+(Due to a bug in /usr/local/lib/tk8.4/tkfbox.tcl browsing
+directories and files fails. We send you a patch on request.)
+
+4. try it
+---------
+	<vitess parent directory>/vitess/Vitess

@@ -1,0 +1,10 @@
+1.2892     0       0  		recipr. unit v. A X [1/A], recipr. unit v. A  Y [1/A], recipr. unit v. A  Z [1/A]
+0          1.2892  0  		recipr. unit v. B X [1/A], recipr. unit v. B  Y [1/A], recipr. unit v. B  Z [1/A]
+0          0       1.8982  	recipr. unit v. C X [1/A], recipr. unit v. c  Y [1/A], recipr. unit v. C  Z [1/A]
+1          0.01			normalisation [a.u.], absorbtion [1/cm/A]
+900        0       0		position X [cm],  position Y [cm], position Z [cm],
+30       -15       0		phi(Z) [deg], chi(X) [deg], omega(Z) [deg]
+cub				sample geometry: 'cub', 'cyl'inder, 'ball'
+1          1       1		thickness or diameter [cm], height [cm], width [cm]
+171     0			output angle horiz. [deg], output angle vert. [deg]
+

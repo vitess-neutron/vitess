@@ -1,0 +1,7 @@
+.*
+.o
+.a
+.dylib
+.so
+.pyc
+__pycache__/

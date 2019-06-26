@@ -1,0 +1,330 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>Virtual Instrumentation (VITESS) for pulsed and continuous sources</title>
+</head>
+  <body>
+  
+<center> 
+<h1> Virtual Instrumentation (VITESS)<br>
+  for pulsed and continuous sources</h1>
+ </center>
+  
+<h2> Introduction</h2>
+  
+<ul>
+  <li> <a href="#VITESS-General">General Information</a></li>
+   <li> <a href="#VITESS-GUI">Graphical User Interface</a></li>
+   <li> <a href="#VITESS-External">External Command</a></li>
+</ul>
+  
+<h2> VITESS modules</h2>
+<table><tr><td> 
+<ul>
+  <li> <a href="source.html">source</a></li>
+   <li> <a href="guide.html">guide</a></li>
+   <li> <a href="bender.html">bender</a></li>
+   <li> <a href="spacewindow.html">spacewindow</a></li>
+   <li> <a href="spacewindow_multiple.html">spacewindow_multiple</a></li>
+   <li> <a href="chopper_disc.html">chopper_disc</a></li>
+   <li> <a href="chopper_fermi_str.html">chopper_fermi_str</a></li>
+   <li> <a href="chopper_fermi_cur.html">chopper_fermi_cur</a></li>
+   <li> <a href="velselect.html">velselect</a></li>
+   <li> <a href="collimator.html">collimator</a></li>
+   <li> <a href="monochr_analyser.html">monochr_analyser</a></li>
+</ul>
+</td><td>
+<ul>
+   <li> <a href="polariser_he3.html">polariser_he3</a></li>
+   <li> <a href="polariser_sm.html">polariser_sm</a></li>
+   <li> <a href="sm_ensemble.html">sm_ensemble</a></li>
+   <li> <a href="flipper_coil.html">flipper_coil</a></li>
+   <li> <a href="flipper_gradient.html">flipper_gradient</a></li>
+   <li> <a href="resonator_drabkin.html">resonator_drabkin</a></li>
+   <li> <a href="precessionfield.html">precessionfield</a></li>
+   <li> <a href="rotating_field.html">rotating_field</a></li>
+</ul>
+</td><td>
+<ul>
+   <li> <a href="sample_elasticisotr.html">sample_elasticisotr</a></li>
+   <li> <a href="sample_inelast.html">sample_inelast</a></li>
+   <li> <a href="sample_powder.html">sample_powder</a></li>
+   <li> <a href="sample_reflectom.html">sample_reflectom</a></li>
+   <li> <a href="sample_sans.html">sample_sans</a></li>
+   <li> <a href="sample_singcryst.html">sample_singcryst</a></li>
+   <li> <a href="sample_s_q.html">sample_s_q</a></li>
+</ul>
+</td><td>
+<ul>
+   <li> <a href="detector.html">detector</a></li>
+   <li> <a href="eval_elast.html">eval_elast</a></li>
+   <li> <a href="eval_inelast.html">eval_inelast</a></li>
+   <li> <a href="frame.html">frame</a></li>
+   <li> <a href="monitor.html">monitor</a></li>
+   <li> <a href="visual.html">visual</a></li>
+   <li> <a href="writeout.html">writeout</a></li>
+</ul>
+</td></tr></table>
+  <br>
+<h2> VITESS tools</h2>
+<table><tr><td>   
+<ul>
+  <li><a href="sim_series.html">Generate Series</a></li>  
+  <li><a href="chop_phases.html">Compute Chopper Phases</a></li>
+  <li><a href="ascii2bin.html">Convert ASCII to binary</a></li>
+  <li><a href="define_direction.html">Define Direction</a></li>
+  <li><a href="direct_view.html">Direct View</a></li>
+</ul>
+</td><td>
+<ul>
+  <li><a href="mirror_coating.html">Generate Mirror Files</a></li>
+  <li><a href="surface_file.html">Generate Surface Files</A></li>
+  <li><a href="standard_deviation.html">Standard Deviation</a></li>
+  <li><a href="rvitess.html">Read ad Visualise Output</a></li>
+  <li><a href="crysanalyzerspec.html">Crystal Analyzer Spectrometer</a><br>
+  </li>
+</ul>
+</td></tr></table>
+<p>
+
+<h2> <a name="VITESS-General"></a>General Infomation</h2>
+  
+<pre>VITESS is a virtual instrumentation tool for neutron scattering at pulsed and
+continuous sources. Please have a look on our web-site
+<a href="http://www.hmi.de/projects/ess/vitess/">www.hmi.de/projects/ess/vitess/</a>
+for more and updated information.
+<p>
+VITESS is supported by a graphical user interface (GUI) which generates and
+controls command lines according to the given input.
+
+A simulation comprises one or more modules co-working sequentially
+in a so called 'pipe':
+-&nbsp; Each module passes its neutron data to the following one, without storing
+&nbsp;&nbsp; the intermediate results to a file.
+-&nbsp; The first module should be a neutron source module, or read an old output file.
+-&nbsp; The last module should be initialised to generate an output file,
+&nbsp;&nbsp; if simulation results are not shown otherwise.
+
+If you are interested in intermediate results without disturbing the pipe
+stream you can insert the modules <b>monitor</b> or <b>writeout</b> (see help descriptions).
+Each module refers to the coordinate system provided by the preceding module.
+For composing a virtual&nbsp; instrument by coupling different modules it is appropriate&nbsp;
+to work with local reference frames. Their (automatic) generation and orientation is
+described in the help manual for each VITESS module.
+
+
+The GUI can control up to 15 modules. Nevertheless it is recommended for the
+sake of clarity to work with less than 10 modules per pipe. A second pipe
+which continues e.g. a very detailed instrument description) can then simply
+be initiated by taking the output file from the preceding one as an input.
+
+This GUI allows to enter, edit, and check the various parameters of
+VITESS modules. You may save these parameters to a text file and load them
+later from that file. Upon entering the parameters, you may start the command
+under the control of the VITESS GUI, or generate a batch (or Tcl) command file
+to be executed in a command shell.
+
+---------------------&nbsp;&nbsp; behind the GUI-curtain...-----------------------------
+
+The pipe command looks as follows (the experienced user might tune this
+directly without using the GUI):
+
+module1 -f&lt;inputfilename&gt; -a&lt;value&gt; ... | module2 -a&lt;value&gt; ... |
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; moduleN -a&lt;value&gt; ... -F&lt;outputfilename&gt;
+
+The 'pipe' ('|') command is part of the command shell and is common in Unix
+and Windows NT/95/98/2000 systems.
+(For Windows9x systems please refer to the hints given in the install.txt file.)
+In effect the above example couples the standard output stream 'stdout'
+of module1 with the standard input stream 'stdin' of module2. The same
+is true for subsequent modules. Finally the last one, moduleN, writes
+its data to the file "outputfilename".
+
+Several command line options are common for all modules in the program
+package VITESS, i.e they have a common meaning. They can be given only once
+on the GUI. These options are
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>option</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>default
+</b>1. neutron input filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --f&lt;filename&gt;&nbsp;&nbsp;&nbsp; stdin
+2. neutron output filename&nbsp;&nbsp;&nbsp;&nbsp; --F&lt;filename&gt;&nbsp;&nbsp;&nbsp; stdout, no_file for the last module
+3. rng init&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --Z&lt;value&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1
+4. neutron buffer size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --B&lt;value&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10000
+5. logfilename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --L&lt;filename&gt;&nbsp;&nbsp;&nbsp; stderr
+6. dotter&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --J
+7. min. neutron weight&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --U&lt;value&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1e-25
+8. Gravity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --G{0;1}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; (Gravity on)
+9. Parameter directory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --P
+
+1. neutron input filename (--f&lt;filename&gt;)
+&nbsp; This option is necessary for the first VITESS module of a pipe,
+&nbsp; if it is not a source module!
+&nbsp; &lt;filename&gt; denotes the file from which the VITESS module will read
+&nbsp; the incoming neutrons in batches of the neutron buffer size, as indicated
+&nbsp; by the -B option (e.g. 10000 neutrons). The file &lt;filename&gt; must have been
+&nbsp; written earlier by another VITESS module.
+&nbsp; In principle you are free to choose the filename &lt;filename&gt;, but for the sake
+&nbsp; of simplification one should keep a common extension of the filename, e.g. '.dat'.
+
+2. neutron output filename (--F&lt;filename&gt;)
+&nbsp; This option is used to write the neutron data to a file. This option is only
+&nbsp; relevant for the last module of a pipe.
+&nbsp; &lt;filename&gt; denotes the file to which the processed neutron data are written in
+&nbsp; batches of the neutron buffer size. For filename restrictions see point 1.
+
+3. rng init (--Z&lt;value&gt;)
+&nbsp; The --Z option initialises the random number generator (rng) of the VITESS modules.
+&nbsp; A portable random number generator is used, as described in the standard reference
+&nbsp; 'Numerical Recipes'. The routine implementing this random number generator is
+&nbsp; called ran3(). &lt;value&gt; has to be a positive integer number.
+
+4. neutron buffer size (--B&lt;value&gt;)
+&nbsp; The --B&lt;value&gt; option determines the size of the neutron input and output buffers
+&nbsp; of the VITESS modules, in terms of the 'Neutron' structure storing the vital
+&nbsp; information of a neutron, i.e. position, direction, wave length etc.. The 'Neutron'
+&nbsp; structure consists of 12 'double' variables, 1 'long', 1 'short', and 3 characters
+&nbsp; (see below); thus it has a length of 105 bytes on most computer architectures.
+&nbsp; The optimal value of the neutron buffer size depends on the computer the VITESS
+&nbsp; modules runs on, but 10000 is a good choice for a range of computers.
+
+5. logfilename (--L&lt;filename&gt;)
+&nbsp; The GUI automatically generates temporary log-files, which are displayed in
+&nbsp; the output window in correct sequence after a pipe is finished providing some
+&nbsp; usable control information.
+&nbsp; Running VITESS without the GUI a logfile can be generated for each module by
+&nbsp; the command option --L&lt;filename&gt;. Omitting this option means that the
+&nbsp; information is written to 'stderr'.
+
+6. dotter (--J)
+&nbsp; Only useful for operating without GUI: If --J appears in the command line of
+&nbsp; a module, dots are written to the logfile (or stderr) giving an impression of
+&nbsp; the computation speed (one dot corresponds to the size of the neutron
+&nbsp; output buffer).</p></pre>
+  
+<pre>7. min. neutron weight (--U&lt;value&gt;)
+&nbsp; The --U&lt;value&gt; determines which trajectories are discarded. If the probability
+&nbsp; weight of a trajectory is less than the given --U&lt;value&gt;, it is removed.</pre>
+  
+<pre>8. Gravity (--G&lt;value&gt;)&nbsp;
+&nbsp; With this parameter it can be determined, whether the influence of gravity shall
+&nbsp; be considered in the simulation (--G1) or not (--G0).</pre>
+  
+<pre>9. Parameter directory (--P&lt;value&gt;)
+&nbsp;  Some modules need to know where they may read and store files not stated with
+&nbsp;  parameters. The natural place for these files is the parameter directory.</pre>
+  
+<pre>The specific input parameters for each module naturally must not be
+controlled by the general command options --f, --F, --B, --Z, --L, --J, --U, --G.</pre>
+  
+<h2> <a name="VITESS-GUI"></a>Graphical User Interface</h2>
+  
+<pre>This graphical user interface (GUI) helps to input and edit
+the parameters of a VITESS simulation.
+
+Starting from scratch you select modules of the simulation pipe,
+beginning with the first module. Upon selection the input parameters
+of that module appear.
+Each parameter has a <b>label</b> in bold characters. If you click (left mouse button)
+on that label you might get some lengthier explanation for that parameter
+in the output window. If you need even more information you might select a module
+from the Help / Modules menu. HTML text becomes shown from your browser (communicator), 
+which becomes started automatically.
+
+Parameters may be input textually (of type integer, float, string ...) in the light blue
+entry fields, or by selecting a radio button. Some filenames may be input
+by browsing.
+Without change, the parameter entries appear in the main Xcontrol window 'here'.
+If you like it select the other menu entry 'separate' to edit this modules
+parameters in a separate window, or leave these parameters invisible by now
+by selecting 'hidden'.
+The simulation pipe happens to become longer, if you select a new module
+for the last entry, which by default is the dummy entry indicated with '-----'.
+If you need to insert a new module e.g. between the first and the
+second module, press the button labelled with a down array left to
+Module 1. If you do not need a module, press the button labelled with
+a big X beneath.
+
+In any situation you may check if your inputs are formally correct by
+pressing the <b>Check</b>-button. The Xcontrol message window will explain 
+any errors, and your computer will beep, if something is unacceptable.
+Otherwise the pipe command is to be seen.
+By pressing the <b>Start</b>-button you actually start the simulation.
+The pipe is active how long it takes to complete the programs.
+Stop the simulation prematurely with the <b>Stop</b>-button. A timeout
+(changable by option menu, default 28800 seconds or 8 hours)
+sets an upper limit for the execution time.
+
+To simulate an instrument with some few parameters changed you may
+File / "Generate Series"
+1. specify the number of iterations and which parameters to change;
+   this is most easily done by clicking on labels of parameters;
+2. input values; the first iteration has default values as set
+   in modules; if you input a delta value and press RETURN all n-th
+   values will be v1 + n*delta, v1 being the first value, n >= 2,
+3. execute that series or save a tcl command file to be executed
+   without GUI support.
+
+With the <b>Exit</b>-button you terminate VITESS.
+
+If you save all GUI settings with the 'Save instrument' button of the
+'File' title menu to a file, you may re-use these parameters later with
+the 'Load instrument' action.
+'Save as Command' stores the pipe command to a text file.
+
+1d or 2d plots of simulation results come with the 'Plot file'
+and '2d Plot file' buttons of the 'File' title menu.
+Monitor output files may be plotted at the end of a simulation,
+if this has been chosen by a select button.
+
+
+Help on modules comes with the corresponding buttons of the 'Help' menu.
+The help system allows to search for keywords.</blabel></pre>
+  
+<h2> <a name="VITESS-External"></a>External Command</h2>
+  
+<pre>The VITESS command pipe may contain external commands resp. programs.
+
+These programs must read neutron data from standard input and write&nbsp;
+resulting neutron data to standard output.
+
+The external command may be supplied with (argc, argv)-style options,
+which are specified by option string. This option string is given
+as the contents of a text file.
+
+Neutron data have the following C structure type:</pre>
+  
+<pre>typedef double VectorType[3];
+
+typedef struct
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IDGrp[2];
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unsigned long&nbsp; IDNo;
+}
+TotalID;
+
+typedef struct&nbsp;
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TotalID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Debug;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; short&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Color;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Time;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Wavelength;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Probability;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VectorType&nbsp;&nbsp;&nbsp;&nbsp; Position;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VectorType&nbsp;&nbsp;&nbsp;&nbsp; Vector;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VectorType&nbsp;&nbsp;&nbsp;&nbsp; Spin;
+}&nbsp;
+Neutron;</pre>
+  
+<hr><b><a href="#top">Back to start of page</a></b> 
+<p><b>&nbsp;<a href="http://www.hmi.de/projects/ess/vitess/">VITESS homepage 
+<hr></a><a href="mailto:vitess@hmi.de">Email vitess@hmi.de</a></b> </p>
+ 
+<p><!-- hhmts start --><font size="-1">Last modified: Tue Jul 23 18:15:22 
+MEST 2002</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> </p>
+ 
+</body>
+</html>
+

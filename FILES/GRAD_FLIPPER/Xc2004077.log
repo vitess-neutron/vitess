@@ -1,0 +1,118 @@
+17.03.2004 19:46:31 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog1 -n20000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/s.dat -y0.5 -z0.5 -m1 -M20 -t0 -T0 -d0 -P100 -X0 -Y0 -V1 -D0 -w10 -h10 -i0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pin_lambdax.dat -n100 -m0 -M20 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pin_lambday.dat -n100 -m0 -M20 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pin_lambdaz.dat -n100 -m0 -M20 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/flipper_gradient_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog5 -X10 -Y10 -V10 -k5 -l0 -m0 -i0 -p10 -r0 -s0 -C1000 -D500 -E500 -M2 -d15 -w-288723.6 -h0 -z0 -y0 -a0 -e0 -b0 -v0 -n1 -u1 -t0 -I0 -A0 -K84 -P0 -Q0 -R114 -q0 -S0 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/revp.dat -N/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/revm.dat 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog6 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pex_lambdax.dat -n100 -m0 -M20 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog7 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pex_lambday.dat -n100 -m0 -M20 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER --L/tmp/cqevpipelog8 -O/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/pex_lambdaz.dat -n100 -m0 -M20 -p1 -e0 -a0 -b0 -c1 --F/hmi/hmicuser/cqe/Vitess252/FILES/GRAD_FLIPPER/noutput.dat
+17.03.2004 19:46:31 simulation (6e7 6e8 6e9 6ea 6eb 6ec 6ed 6ee ) (1767 1768 1769 1770 1771 1772 1773 1774) is active
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module Source and Window 1.9c
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 > Simulation of constant wave source  <
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 wavelength distribution file : constant_source.dat 
+17.03.2004 19:49:30 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+17.03.2004 19:49:30 moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+17.03.2004 19:49:30 moderator position           :(  0.000    0.000    0.000) cm 
+17.03.2004 19:49:30 angle of opening used        :   1.000°    x   1.000°   
+17.03.2004 19:49:30 time averaged neutron current:  4.8481e+05 n/s in 0.000305 str
+17.03.2004 19:49:30 wavelength band used         :   1.000 Ang -  20.000 Ang
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 window (W x H)               :  10.000 cm  x  10.000 cm 
+17.03.2004 19:49:30   in a distance of           :   0.000 m   
+17.03.2004 19:49:30   with a declination of      :   0.000°    
+17.03.2004 19:49:30 polarization                 : 100.000 %  X: 0.000 Y: 0.000 Z: 1.000
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 Gravity is enabled 
+17.03.2004 19:49:30 Cutoff probability for one trajectory  1.000e-25 
+17.03.2004 19:49:30 Center of beam at window     :(  0.000    0.047   -0.031) cm 
+17.03.2004 19:49:30 Average TOF                  :   0.000 ms 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 number of trajectories started     :          20000
+17.03.2004 19:49:30  1 number of trajectories read         :          0
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: 0.00000 
+17.03.2004 19:49:30  2 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: 0.00000 
+17.03.2004 19:49:30  3 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: 1.00000 
+17.03.2004 19:49:30  4 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30  
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module Gradient flipper v1.1
+17.03.2004 19:49:30 Rotating magnetic field activated around Z axis H =  0.000000 *sin( -1814.103881 * Time +  0.000000 )
+17.03.2004 19:49:30 Amplitude of rotating field have a   Sinus Distribution 
+17.03.2004 19:49:30 Amplitude = 15.000000 Oe 
+17.03.2004 19:49:30 Sinus semi-period along axis X = 10.000000 cm 
+17.03.2004 19:49:30 --------------------------------------------------
+17.03.2004 19:49:30 Guide field have a   Linear Distribution 
+17.03.2004 19:49:30 Initial values components X = 0.000000 Oe,  Y = 0.000000 Oe,  Z = 84.000000 Oe 
+17.03.2004 19:49:30 Final values components  X = 0.000000 Oe,  Y = 0.000000 Oe,  Z = 114.000000 Oe 
+17.03.2004 19:49:30 In lengths along axis:  X = 10.000000 cm 
+17.03.2004 19:49:30 Average magnetic field module =  99.000000  
+17.03.2004 19:49:30 NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 288723.605832 Hz 
+17.03.2004 19:49:30 Neutron TOF from preceding modules is use for rotating field phase
+17.03.2004 19:49:30 Full Number of precessions  : 39.949190
+17.03.2004 19:49:30 Ave Number of precessions  : 0.039750
+17.03.2004 19:49:30 All Number of precessions  : 76.493355
+17.03.2004 19:49:30 Average number of precession per domains : 0.076460
+17.03.2004 19:49:30  5 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: -0.00113 
+17.03.2004 19:49:30  6 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: -0.00026 
+17.03.2004 19:49:30  7 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 19:49:30 
+17.03.2004 19:49:30 polarization: -0.96090 
+17.03.2004 19:49:30  8 number of trajectories read         :      20000
+17.03.2004 19:49:30    number of trajectories written      :      20000
+17.03.2004 19:49:30 (time averaged) neutron count rate     :  6.1410e+04 n/s 
+17.03.2004 19:49:30 ------------------------------

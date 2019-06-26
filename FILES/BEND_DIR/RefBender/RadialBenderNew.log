@@ -1,0 +1,117 @@
+description O.K.
+
+Parameter directory is C:/Programme/VITESS_2_5_1/FILES/BEND_DIR
+Starting simulation
+C:/Programme/VITESS_2_5_1/MODULES/source.exe -S2 --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog1 -R60.0 -NSNS -aC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/SnsColdCpld.mod -n1000 -m0.1 -t0 -M5 -T1.2 -d1 -P0 -X0 -Y0 -V1 -D1000 -w2.8 -h5 -k1 -rfermi.out 
+| C:/Programme/VITESS_2_5_1/MODULES/bender.exe --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog2 -o3 -h5 -H5 -s0.0001 -l229 -R16400 -iC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr0.dat -mC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr2linear.dat -kC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr1b.dat -IC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr0.dat -MC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr2linear.dat -KC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mirr1b.dat -uC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/SurfaceT9.dat -g0 -c6 -z1 -w1 -r0.005 -a0 -y1 -p0 -V2 -t0 
+| C:/Programme/VITESS_2_5_1/MODULES/monitor1.exe -k5 --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog3 -OC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mon_pos_y.dat -n23 -m-0.2875 -M0.2875 -p1 -e0 
+| C:/Programme/VITESS_2_5_1/MODULES/monitor1.exe -k3 --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog4 -OC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/mon_div_y.dat -n40 -m-2 -M2 -p1 -e0 
+| C:/Programme/VITESS_2_5_1/MODULES/chopper_fermi.exe -O1 --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog5 -X10 -Y0 -V0 -a5 -b4 -c3 -l16 -m0.02 -r8 -n30 -q-55.5 
+| C:/Programme/VITESS_2_5_1/MODULES/space.exe --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog6 -d200 
+| C:/Programme/VITESS_2_5_1/MODULES/writeout.exe --Z1 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/BEND_DIR --LC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/vpipelog7 -AC:/Programme/VITESS_2_5_1/FILES/BEND_DIR/fermi.out -F1 --Fno_file
+simulation (774 fc4 e14 198 ebc fc0 a54 ) (1908 4036 3604 408 3772 4032 2644) is active
+....------------------------------
+
+
+VITESS version 2.5 module Source and Window 1.11
+
+> Simulation of short pulsed spallation source SNS <
+pulse frequency              :  60.000 Hz 
+
+coupled moderator
+moderator temperature        :  50.000 K
+total neutron flux (in 2*pi) : 4.7205e+013 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :  10.000 cm  x  12.000 cm 
+divergence defined by propagation window 
+time averaged neutron current: 1.2621e+010 n/s in 0.000014 str
+wavelength band used         :   0.100 Ang -   5.000 Ang
+time interval used           :   0.000 ms  -   1.200 ms 
+
+window (W x H)               :   2.800 cm  x   5.000 cm 
+  in a distance of           :  10.000 m   
+  with a declination of      :   0.000°    
+polarization                 :   0.000 %  X: 0.000 Y: 0.000 Z: 1.000
+trace file used              : fermi.out
+Center of beam at window     :(1000.000    0.260    0.238) cm 
+Average TOF                  :   5.133 ms 
+
+Gravity is enabled 
+Cutoff probability per traj. : 1.000e-006 
+
+number of trajectories started         :        1000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :        1000
+(time averaged) neutron count rate     : 9.8739e+009 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Bender 1.6
+Inside bender abutment loss is disabled 
+The dependance of reflectivity from polarization of neutron is disabled 
+The reflected surface is rough 
+Minimal weight for tracing neutron   1.000000e-006 
+Number of surfaces: 14
+entrance: max = 1.400000  min = -1.400000 
+exit    : max = 2.000000  min = -2.000000 
+BENW= 2.800000  BEXW= 4.000000 
+Open visual output device - display+file 
+Number of visualised neutrons = 10000 
+Magnetic field direction - AXIS OZ 
+Inside bender gravity is disabled 
+Close graphical window
+ 2 number of trajectories read         :        1000
+   number of trajectories written      :         533
+(time averaged) neutron count rate     : 4.0575e+009 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 3 number of trajectories read         :         533
+   number of trajectories written      :         533
+(time averaged) neutron count rate     : 4.0575e+009 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 4 number of trajectories read         :         533
+   number of trajectories written      :         533
+(time averaged) neutron count rate     : 4.0575e+009 n/s 
+------------------------------
+ 
+
+
+VITESS version 2.5 module Fermi-Chopper 1.14
+
+Straight Fermi chopper option activated
+Channel width: 0.228750 cm
+Phase set is -55.500000°.
+ 
+ 5 number of trajectories read         :         533
+   number of trajectories written      :           4
+(time averaged) neutron count rate     : 9.0399e+005 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space 1.0a
+Distance between entrance and exit plane:  200.000  cm 
+Center of beam at exit:  ( 200.000,  1.223, -1.334) cm, TOF =   5.8634 ms 
+ 
+ 6 number of trajectories read         :           4
+   number of trajectories written      :           4
+(time averaged) neutron count rate     : 9.0399e+005 n/s 
+------------------------------
+
+
+VITESS version 2.5 module writeout 1.4d
+ 7 number of trajectories read         :           4
+   number of trajectories written      :           4
+(time averaged) neutron count rate     : 9.0399e+005 n/s 
+------------------------------
+Warning: Could not load g2 resource DLL
+ Menu and Icon are disabled
+simulation finished
+
+

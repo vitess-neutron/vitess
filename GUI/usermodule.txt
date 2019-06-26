@@ -1,0 +1,9 @@
+Adding a special user module to VITESS
+
+For a general description see InsertModulePolarizer.pdf 
+in the WWW subdirectory.
+
+Starting from version 2.1 it´s even simpler for the GUI part.
+Just add a file usermodule.tcl in the Vitess directory
+to add some module(s) to the VITESS GUI. As a starting
+point you may begin with the example file usermodule.tcl.txt.
