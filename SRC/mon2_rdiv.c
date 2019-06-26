@@ -26,18 +26,18 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
+  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0 ;
   double radius, phi;
   VectorType xvec = {1, 0, 0}, kvec;
   double rmin, rmax, phimin, phimax,p, probactiv, bintc;
   double filtLambdaMin=-1.0,          /* filter      */
-		 filtLambdaMax=-1.0,
-		 filtYMin=-1.0e10,
-         filtYMax=1.0e10,
-		 filtZMin=-1.0e10,
-		 filtZMax=1.0e10;
+    filtLambdaMax=-1.0,
+    filtYMin=-1.0e10,
+    filtYMax=1.0e10,
+    filtZMin=-1.0e10,
+    filtZMax=1.0e10;
   long format = 0;
-
+  rmin = rmax = phimin = phimax = 0;
 
   BufferIndex = 0;
   p=0.0;

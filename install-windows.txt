@@ -2,13 +2,15 @@
 	for pulsed and continuous sources
 
 
-Hahn-Meitner-Institut Berlin, now
-Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
+former Hahn-Meitner-Institut Berlin
 
 Modules:
 	Klaus Lieutenant (klaus.lieutenant@helmholtz-berlin.de)
-	Géza Zsigmond    (geza.zsigmond@psi.ch)
+        Andreas Houben
+	Geza Zsigmond    (geza.zsigmond@psi.ch)
 	Sergey Manoshin
+        Daniil Nekrassov (daniil.nekrassov@helmholtz-berlin.de)
 	Dietmar Wechsler
 	Friedrich Streffer
 
@@ -23,22 +25,23 @@ and runs fine on both operating systems.
 
 Installation under Windows
 
-This version came to you as a selfextracting file, which has been produced with Inno Setup
+This version came to you as a self extracting file, which has been produced with Inno Setup
 (by Jordan Russell http://www.jrsoftware.org/isinfo.htm).
 
-You may compare the CRC32 or MD5 checksums of the downloaded
-vitess.exe install program with those stated at the web site
+You may compare the checksums of the downloaded vitess.exe install program with those stated
+at the web site
 https://www.helmholtz-berlin.de/vitess
 
-The installation does not need administrator privileges, all files are install under
+The installation does not need administrator privileges, all files are installed under
 one directory the installer has access to.
 
-If you install the full version with Tcl/Tk + BLT files included, double-clicking the VITESS
-icon on your desktop should start the application.
+If you install the full version with Tcl/Tk + Gnuplot files included, double-clicking
+the VITESS icon on your desktop should start the application.
 
-If you install the minimal version, the desktop symbol might not link to your installed tcl software.
-Let us assume you installed tcl at C:\Programs\tcl
-and VITESS to C:\Programs\vitess.
+If you install the minimal version, the desktop symbol might not link to your installed
+Tcl software.
+
+Let us assume you installed Tcl at C:\Programs\tcl and VITESS to C:\Programs\vitess.
 Please change the program shortcut (link) on your desktop accordingly:
 VITESS start command
   C:\Programs\tcl\bin\wish.exe -f Vitess
@@ -46,18 +49,19 @@ working directory
   C:\Programs\vitess
 
 CAVEAT: 
-+---------------------------------------------------------------------+
-| Do not use folder names with blanks and other                       |
-| non-alphanumeric characters! DO NOT USE C:\Program Files\           |
-| Pipes and commands will fail, because they assume command           |
-| parts to be separated by blanks.                                    |
-+---------------------------------------------------------------------+
++-----------------------------------------------------------------------------+
+| Do not use folder names with blanks and other non-alphanumeric characters!  |
+| DO NOT USE C:\Program Files\                                                |
+| Pipes and commands will fail, because they assume command                   |
+| parts to be separated by blanks.                                            |
++-----------------------------------------------------------------------------+
 
-VITESS may use BLTwish extensions to Tcl/TK for plots of monitor modules.
-Newer versions of Tcl/TK are not compatible with BLT, but VITESS works fine
-with these versions where simpler plot widgets replace BLT widgets automatically.
+VITESS uses gnuplot for plots of monitor modules if available. If gnuplot is
+installed somewhere on drive C: or D:, VITESS will find and use it.
+Otherwise some plain Tcl plot routines will do the job.
 
-To uninstall VITESS you might use the uninstall item in the command (sub-) menu (like START/VITESS/uninstall)
+To uninstall VITESS you might use the uninstall item in the command (sub-) menu
+(like START/VITESS/uninstall)
 or the windows uninstall procedure for software
 (START/settings/system/software or German 
  START/Einstellungen../Systemsteuerung/Software). 
@@ -76,3 +80,50 @@ Solution:
 2) Save the GUI setting with "save tcl" to a file e.g. C:\c.tcl
    Start a separate wish (C:\Programs\tcl\bin\tclsh.exe)
    and source C:\c.tcl there.
+
+Compilation from Sources
+------------------------
+
+VITESS comes with compiled binary images for all modules, compiled with
+Microsoft Visual Studio 2003 under Windows XP so far.
+The 32 bit binary images work fine on Windows 7 64 bit systems, too.
+(Binaries compiled natively for 64 bit _might_ be more performant on
+64 bit CPUs, but for some modules may have the opposite effect, and results
+in bigger image files in any case.)
+
+You may compile new own modules without touching old binaries, and 
+recompile everything with newer versions of Visual Studio. 
+
+You may download the latest version of Microsoft Visual Studio Express 10.0
+at http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+
+After installing this with the Windows software developer kit SDK, you may adopt 2 files
+in the SRC directory:
+compile.bat 
+  The first line of this batch command file defines pathes of compiler binary files, like
+  path c:\program files (x86)\microsoft visual studio 10.0\vc\bin;c:\program files (x86)\microsoft visual studio 10.0\common7\IDE
+
+vitess.mak
+  PATH is the directory of compiler binaries, for Visual Studio 2010 this migth be
+  CPATH=c:\program files (x86)\microsoft visual studio 10.0\vc
+
+  CPATH2 is the directory with the Windows SDK files, e.g.
+  CPATH2=c:\program files (x86)\microsoft sdks\windows\v7.0a
+ 
+  GPATH and GSLPATH are the directories where you compiled the libraries g2 and rng. 
+  We provide sources for g2 and GNU pseudo random number generators in the g2 and rng
+  subdirectories of SRC. You need to compile these first.
+
+  Used compiler flags:
+  /GF  eliminate duplicate strings
+  /MT  multi threaded windows libary
+  /Ox  omit frame pointer
+  /Oy  general optimization
+  /Og  global optimization, obsolete for VS 10.0
+  /W3  compiler warning level 3
+
+This should be sufficient to compiles sources from the command line.
+1. Open a cmd shell like on Windows 7 : search cmd, execute.
+2. Within the shell cd to the SRC directory.
+3. compile 
+4. copy release\*.exe ..\MODULES

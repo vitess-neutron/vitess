@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            GÃ©za Zsigmond                                                             */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2a JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
@@ -27,9 +27,11 @@ int main(int argc, char *argv[])
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
   int	dy,dz;
-  long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz;
+  long	i, exclusivecount, registered, BufferIndex, nbiny=0, nbinz=0;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
   long format = 0;
+
+  widthmin = widthmax = heightmin = heightmax = 0;
 
   /* vertical: lambda, horizontal: tof   */
 

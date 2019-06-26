@@ -70,15 +70,8 @@ proc prettyNumber {t} {
 }
 
 proc showXYfile {fname} {
-  if [catch {open $fname r} f] {
-    showText "! can't open $fname"
-    return
-  }
-  if [eof $f] {
-    close $f
-    showText "! empty $fname"
-    return
-  }
+
+  set f [open $fname r]
 
   set i [getFreePlot]
   set w .plot$i
@@ -99,7 +92,7 @@ proc showXYfile {fname} {
   }
   close $f
 
-  # input data may not have ordered x values: 
+  # input data may not have ordered x values:
   # sort them so that we may connect them by a graph line
   set p [lsort -command pCompare $p]
 
@@ -137,8 +130,8 @@ proc showXYfile {fname} {
   set Egr($graph,yref) [set ymargin 30]
   # ytop is the top margin
   set Egr($graph,ytop) [set ytop 8]
-  
-  # y0 is the canvas y coordinate of the x axis 
+
+  # y0 is the canvas y coordinate of the x axis
   set y0 [expr $canvasheight - $ymargin + $ytop]
 
   # value ranges of data
@@ -179,7 +172,10 @@ proc showXYfile {fname} {
       # add the label
       $c create text [x2canvas $graph $t] $texty -text [prettyNumber $t] -font $xfont -anchor n
     }
+    # at least one tic text, even if all values are 0, but stop the loop in this case!
+    if {$delta_x <= 0} break
   }
+
 
   # y axis
   $c create line $x0 $y0 $x0 $ytop -width 1
@@ -202,6 +198,8 @@ proc showXYfile {fname} {
       # add the label
       $c create text $textx $y -text [prettyNumber $f] -anchor e -font $yfont
     }
+    # at least one tic text, even if all values are 0, but stop the loop in this case!
+    if {$delta_y <= 0} break
   }
 
   # draw data points

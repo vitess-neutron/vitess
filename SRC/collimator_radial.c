@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
  my_exit:
 	if (eOscColl==VT_RND_PHASE)
 		fprintf(LogFilePtr, "oscillating amplitude %6.2f deg (phase chosen randomly) \n", OscWidth);
-	fprintf(LogFilePtr, "%d channels from %6.2f to %6.2f deg     \n", nChannels, AngMin, AngMax);
+	fprintf(LogFilePtr, "%ld channels from %6.2f to %6.2f deg     \n", nChannels, AngMin, AngMax);
 	fprintf(LogFilePtr, "%6.2f cm long, %7.2f cm from the sample \n", Length, Distance);
 
 	/* Do module specific cleanups */

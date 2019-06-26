@@ -224,8 +224,11 @@ proc headLine {w text} {
 }
 proc bButton {w text command} {
   global buttonColor
-  button $w  -font [buttonFont] -text $text -command $command\
-      -background $buttonColor
+  button $w -font [buttonFont] -text $text -command $command -background $buttonColor
+}
+proc bsButton {w text command} {
+  global buttonColor
+  button $w -font [sbuttonFont] -text $text -command $command -background $buttonColor
 }
 proc bPack {args} {
   foreach but $args {
@@ -405,6 +408,39 @@ proc savableGlobals {} {
   return $l
 }
 
+### return list of all globals which
+### 1. are not defined internally by Tcl/Tk (may change)
+### 2. do not start with an uppercase letter or .
+### 3. do not end with SET or Add
+### 4. do not belong to modules
+### 5. are not in a list of temporary variables
+### 6. are not in a list of of taboo variables
+### 7. are not an array variable
+###
+
+proc isSavableSetting {e} {
+  global TempVars DoSaveSetting DoNotSaveSetting DoNotSaveSettingRegexp
+  if {[lsearch $DoSaveSetting $e] >= 0} {return 1}
+  if [regexp $DoNotSaveSettingRegexp $e] {return 0}
+  if [regexp {_([0-9]+)$} $e a n] {return 0}
+  if {[lsearch $TempVars $e] >= 0} {return 0}
+  if {[lsearch $DoNotSaveSetting $e] >= 0} {return 0}
+  return 1
+}
+
+proc savableSettings {} {
+  set l {}
+  foreach e [stringToSet [info globals]] {
+    if [isSavableSetting $e] {
+      global $e
+      if {[catch {array size $e} size] || !$size} {
+        lappend l $e
+      }
+    }
+  }
+  return $l
+}
+
 
 proc nextNumItems {f n result} {
   upvar $result ores
@@ -443,6 +479,7 @@ proc nextNumItems {f n result} {
 proc readNumItems {f alist app} {
   foreach l $alist {
     upvar #0 $l$app $l
+
   }
   set l [llength $alist]
   if {[nextNumItems $f $l ni] >= $l} {
@@ -647,14 +684,7 @@ proc getSystem {} {
   return $tcl_platform(platform)
 }
 
-proc tmpFilename {{name temp.tmp}} {
-  global env
-  set n USER
-  foreach w {LOGNAME USERNAME} {
-    if [catch {set n $env($w)}] continue
-    break
-  }
-  set fn "$n[clock seconds]$name"
+proc getFullTmpFile {fn} {
   if {[getSystem] != "windows"} {
     return "/tmp/$fn"
   }
@@ -667,6 +697,16 @@ proc tmpFilename {{name temp.tmp}} {
     }
   }
   return [file join $d $fn]
+}
+
+proc tmpFilename {{name temp.tmp}} {
+  global env
+  set n USER
+  foreach w {LOGNAME USERNAME} {
+    if [catch {set n $env($w)}] continue
+    break
+  }
+  return [getFullTmpFile "$n[clock seconds]$name"]
 }
 
 proc getDirectory {name} {
@@ -757,7 +797,7 @@ proc openWriteFile {ext {sugg ""} {fname ""}} {
 
 proc getFileDialogTypes {ext} {
   global fileDialogSET
-  if {$fileDialogSET == ""} {set fileDialogSET {{"All files" {*}}}}
+  if {$fileDialogSET == ""} {set fileDialogSET {{"All files" *}}}
   if {$ext != ""} {
     # reorder types to have the selected type first
     set count [llength $fileDialogSET]
@@ -777,9 +817,22 @@ proc getFileDialogTypes {ext} {
   return $fileDialogSET
 }
 
-proc fileDialog {operation {ext ""} {ifile Untitled}} {
-  set types [getFileDialogTypes $ext]
-  set def [entryVal defdirectory]
+proc fDialog {operation ext ifile def} {
+  if {$operation == "open"} {
+    if {$def != ""} {
+      return [tk_getOpenFile -initialdir $def]
+    }
+    return [tk_getOpenFile]
+  }
+  if {$ext == ""} {set ext txt}
+  set ifile [file tail $ifile]
+  if {$def != ""} {
+    return [tk_getSaveFile -initialfile $ifile -defaultextension .$ext -initialdir $def]
+  }
+  return [tk_getSaveFile -initialfile $ifile -defaultextension .$ext]
+}
+
+proc fDialogTypes {operation ext ifile def types} {
   if {$operation == "open"} {
     if {$def != ""} {
       return [tk_getOpenFile -filetypes $types -initialdir $def]
@@ -790,11 +843,19 @@ proc fileDialog {operation {ext ""} {ifile Untitled}} {
   set ifile [file tail $ifile]
   if {$def != ""} {
     return [tk_getSaveFile -filetypes $types  \
-		-initialfile $ifile \
-		-defaultextension .$ext -initialdir $def]
+		-initialfile $ifile -defaultextension .$ext -initialdir $def]
   }
   return [tk_getSaveFile -filetypes $types  \
 	      -initialfile $ifile -defaultextension .$ext]
+}
+
+proc fileDialog {operation {ext ""} {ifile Untitled}} {
+  global browse_ext_mode tcl_platform
+  set def [entryVal defdirectory]
+  if {$tcl_platform(os) == "Darwin" && $browse_ext_mode == "all"} {
+    return [fDialog $operation $ext $ifile $def]
+  }
+  return [fDialogTypes $operation $ext $ifile $def [getFileDialogTypes $ext]]
 }
 
 proc getSerializeProc {ext} {

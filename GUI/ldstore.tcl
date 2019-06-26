@@ -129,6 +129,40 @@ proc savePacketWindow {} {
   pack $w.b.save -side right
 }
 
+proc fileSettings {{saveit 0}} {
+  set descs "settings save file"
+  if {$saveit} {
+    if {[set f [openWriteFile gui "" name]] == 0} return
+    puts $f "#$descs"
+    puts $f "#version [globVal XcontrolVersion]"
+    foreach g [savableSettings] {
+      puts $f "gSet $g \{[globVal $g]\}"
+    }
+  } else {
+    set name [fileDialog open gui]
+    if {"" == [set f [openSaveFile $name $descs]]} return
+    set errs ""
+    while {[gets $f line] >= 0} {
+      set sp [split $line]
+      if {"gSet" != [lindex $sp 0]} continue
+      set e [lindex $sp 1]
+      if {! [isSavableSetting $e]} continue
+      # match curly brace content
+      if {[regexp "\{(.+)\}" $line a v]} {
+        gSet $e "$v"
+        #puts "gSet $e \"$v\""
+      } elseif {[string match "*\{\}" $line]} {
+        gSet $e ""
+      }  else {
+        set errs "!dubious input in $name ignored ($line)"
+      }
+    }
+    if {$errs == ""} {set errs "control file $name successfully loaded"}
+    applySettings
+  }
+  close $f
+}
+
 proc storeAll {extension {prosal ""} {as ""}} {
   conditionalOpenProtfile
   if {$extension == "gui"} {
@@ -152,7 +186,7 @@ proc storeAll {extension {prosal ""} {as ""}} {
     if {$la > 0} {set n [string range $n 0 [incr la -1]]}
     setInstrumentfile $n
   } else {
-    if {[set f [openWriteFile $extension]] == 0} return
+    if {[set f [openWriteFile $extension "" fname]] == 0} return
   }
   switch $extension {
     gui {
@@ -172,7 +206,7 @@ proc storeAll {extension {prosal ""} {as ""}} {
     }
   }
   close $f
-  outProtocol "file stored"
+  outProtocol "stored file $fname"
   conditionalCloseProtfile
   gSet LastState [generateVitessCommand kstate]
 }
@@ -352,18 +386,14 @@ proc setInstrumentfile {name} {
   .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
 }
 
-
-###
-proc loadAll {extension} {
-  if [dontDoit "You have unsaved changes. Forget them?"] return
-
-  set name [fileDialog open $extension]
-  if {$name == ""} return
-
+proc openSaveFile {name descs} {
   # check if file has been written by a previous storeAll
+
+  if {$name == ""} return ""
+
   set version -1
-  if [catch {open $name r} f] { return 0}
-  if {[gets $f] == "#experiment description save file"} {
+  if [catch {open $name r} f] {return ""}
+  if {[gets $f] == "#$descs"} {
     if {1 != [scan [gets $f] "#version %d" version]} {
       set version 0
     }
@@ -371,14 +401,25 @@ proc loadAll {extension} {
   if {$version == -1} {
     close $f
     outProtocol "! file $name is no instrument file"
-    return 0
+    return ""
   }
   set a [globVal XcontrolVersion]
   if {int($version) != int($a)} {
+    close $f
     outProtocol "! version $version of $name doesn't match actual version $a"
-    return 0
+    return ""
   }
+  return $f
+}
 
+###
+proc loadAll {extension} {
+  if [dontDoit "You have unsaved changes. Forget them?"] return
+
+  set name [fileDialog open $extension]
+  set f [openSaveFile $name "experiment description save file"]
+  if {$f == ""} return
+ 
   # remember old default directory
   global defdirectory_ Mlf
   set olddef $defdirectory_
@@ -416,7 +457,7 @@ proc loadAll {extension} {
   }
   close $f
   if {$errs == ""} {
-    append errs "control file $name successfully loaded"
+    set errs "control file $name successfully loaded"
   }
 
   setAll 0
@@ -539,39 +580,43 @@ proc saveDirectory {} {
   pack $w.b.save -side right
 }
 
-proc saveInfFile {w fn} {
+proc saveTextFile {w fn kind} {
   if [catch {open $fn w} f] {
-    showText "!!could not rewrite instrument file $fn"
+    showText "!!could not write $kind $fn"
   } else {
     puts $f [$w.v.text get 1.0 end]
     close $f
-    showText "Instrument file $fn written"
+    showText "$kind $fn written"
   }
   destroy $w
 }
 
-proc editInfFile {{mode 0}} {
-  global defdirectory_ bgColor monospaced
-  if $mode {set ft open} else {set ft write}
-  if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
-  set w .editinf
+proc showTextEditWindow {w fn kind height {dowarn 0}} {
+  global monospaced bgColor
   catch {destroy $w}
-  generateToplevel $w "Edit Instrument File"
+  generateToplevel $w "Edit $kind"
   fGroup $w.v $w.b
   text $w.v.text -relief raised -bd 2 \
-      -height 32 -width 150\
+      -height $height -width 150\
       -font [list $monospaced 8 normal] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
   yscroll $w.v "$w.v.text yview"
   pack $w.v.text -side left -fill both -expand yes
   if [catch {open $fn r} f] {
-    showText "old file $fn did not exist"
+    if {$dowarn} {showText "old file $fn did not exist"}
   } else {
     while {[gets $f line] >= 0} {$w.v.text insert end "$line\n"}
     close $f
   }
-  bButton $w.b.save Save+Close "saveInfFile $w $fn"
+  bButton $w.b.save Save+Close [list saveTextFile $w $fn "$kind "]
+  bButton $w.b.delcan Delete+Close "file delete $fn; destroy $w"
   bButton $w.b.cancel Cancel "destroy $w"
-  pack $w.b.save $w.b.cancel -side left -expand 1
+  pack $w.b.save $w.b.delcan $w.b.cancel -side left -expand 1
+}
+
+proc editInfFile {{mode 0}} {
+  if $mode {set ft open} else {set ft write}
+  if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
+  showTextEditWindow .editinf $fn "Instrument File" 32 1
 }

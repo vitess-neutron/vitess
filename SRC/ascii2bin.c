@@ -1,6 +1,6 @@
 /* The free non-commercial use of these routines is granted          */
 /* providing due credit is given to the authors.                     */
-/* Author: Géza Zsigmond, last change JUL 2002                       */
+/* Author: GÃ©za Zsigmond, last change JUL 2002                       */
 /* Change: Klaus Lieutenant, JUL 2002, trace coordinates added       */
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ FILE *AsciiFile;
 char skipcomment[1000];
 
 
-short OwnInit() 
+short OwnInit(void) 
 {
   char  AsciiFileName [80];
   char  BinaryFileName[80];
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   print_module_name("ASCII2BIN");
 
   /* module specific initialization */
-  bFiles=OwnInit(argc, argv);
+  bFiles = OwnInit();
 
   if (bFiles)
   { 

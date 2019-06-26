@@ -1,0 +1,23 @@
+# sample definition file for Bragg edge McStas simulation
+#
+# Cu
+# space_group    225
+# lattice_a      3.61
+# lattice_b      3.61
+# lattice_c      3.61
+# lattice_alpha  90
+# lattice_beta   90
+# lattice_gamma  90
+#
+# column_label      1
+# column_b_coherent 2
+# column_sigma_inc  3
+# column_sigma_abs  4
+# column_molar_mass 5
+# column_debye_temp 6
+# column_x          7
+# column_y          8
+# column_z          9
+#
+# label  b_coherent  sigma_inc  sigma_abs  molar_mass  debye_temp  x  y  z
+1   7.718   0.55   3.769   63.55   344.5   0.0   0.0   0.0

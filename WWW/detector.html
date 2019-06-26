@@ -1,29 +1,29 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-    
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
   <title>Module Detector</title>
 </head>
   <body>
- 
+
 <h1>VITESS Module Detector</h1>
- 
-<p>The detector module simulates a basic 2D detector array, which may have 
+
+<p>The detector module simulates a basic 2D detector array, which may have
 a rectangular or cylindrical geometry. The coordinate system (x,y,z) is defined
 by the preceding module (the origin being e.g. the centre of a sample) and
 is <u>not</u> altered by the detector module. The centre of the detector
 is given in spherical coordinates, with<font face="Symbol"> q</font> [0;180&deg;]
 the angle between the position vector and the +x-axis and <font
  face="Symbol">f</font> [0;360&deg;] the angle between the projection of
-the position vector to the yz-plane and the +y-axis (<font face="Symbol">q&gt;0;f=0 
-</font>points along the +y-axis,&nbsp; <font face="Symbol">q&gt;0;f=90&deg; 
+the position vector to the yz-plane and the +y-axis (<font face="Symbol">q&gt;0;f=0
+</font>points along the +y-axis,&nbsp; <font face="Symbol">q&gt;0;f=90&deg;
 </font>along the +z-axis, a.s.o.). The distance (length of the position vector
 pointing from the origin to the detector surface centre)&nbsp; has also to
 be specified as well as the total height, width and thickness of the detector
 and the&nbsp; rows and columns defining the size and number of the position
-sensitive areas. 
+sensitive areas.
 &nbsp; </p>
 <p>Due to this definitions the centre of the rectangular detector can be every
 point in space, while the surface is always perpendicular to the position
@@ -51,20 +51,20 @@ and the efficiency of the detector. In addition a wavelength dependent factor
 F is multiplied (it will be treated more differentiated for different types
 of detectors in future VITESS versions): <br>
 F= min(0.5 + 0.1*wavelength;1.0) </p>
-<p>All this may be deactivated by the "monitor only"-option, i.e. the probability 
+<p>All this may be deactivated by the "monitor only"-option, i.e. the probability
 weight of the neutron is not altered by the detector module <br>
 and the neutrons are registered always with Efficiency 1 and each point of&nbsp;
 the flightpath within the detector is considered with equal chance to be
-the point of detection. The monitor option might lead to better statistics 
-because of the deactivation of the realistic detector thickness MonteCarlo 
+the point of detection. The monitor option might lead to better statistics
+because of the deactivation of the realistic detector thickness MonteCarlo
 procedure).</p>
 <p>
 From version 1.7 on, the detector writes the same parameter set for the trajectories
 as all the other modules. The transformation to scattering angles is performed
 in the 'eval' modules now. <br>
-In the "monitor only"-option, the incoming flight direction and the intersection 
+In the "monitor only"-option, the incoming flight direction and the intersection
 point with the detector surface are written to the output.<br>
-In the "usage normal" mode, the position of detection and the direction between 
+In the "usage normal" mode, the position of detection and the direction between
 the centre of the sample and the point of detection are written. The position of
 detection (and thus the direction) maybe altered by switching the 'grid' on.
 In this case, each trajectority is treated as having hit the centre of the detector
@@ -77,7 +77,7 @@ is set to zero, but the efficiency of detection is nevertheless treated.
 &nbsp; </p>
 <p><b>Input parameters:</b> </p>
 <p><i>geometry</i> <br>
-&nbsp;The geometry parameter specifies the&nbsp; geometry of the detector. 
+&nbsp;The geometry parameter specifies the&nbsp; geometry of the detector.
 <br>
 &nbsp;There are rectangular or cylindrical detectors. </p>
 <p><i>height </i>[cm] <br>
@@ -106,36 +106,36 @@ in cm. In case of a cylindrical detector this is the cylinder radius. </p>
 &nbsp;Number of rows partitioning the detector height. </p>
 <p><i>repetition</i> <br>
 &nbsp;'repetition' specifies the number of neutron data sets
-generated for each trajectory arriving at the detector, i.e. the detection 
+generated for each trajectory arriving at the detector, i.e. the detection
 process is repeated 'repetition' times. This can improve statistics, but be
 aware that these are not independent events. </p>
 <p><i>usage</i> <br>
-&nbsp;If the 'usage' option 'monitor only' is selected, the detector geometry 
-is only used as a monitor, i.e. the weight of the trajectory and the flight 
-direction are unchanged, the intersection point with the detector surface is 
-written to the output. Otherwise thickness, efficiency and wavelength are used 
+&nbsp;If the 'usage' option 'monitor only' is selected, the detector geometry
+is only used as a monitor, i.e. the weight of the trajectory and the flight
+direction are unchanged, the intersection point with the detector surface is
+written to the output. Otherwise thickness, efficiency and wavelength are used
 to calculate a count rate that can be expected in experiments.</p>
-<p><i>detector grid</i> 
+<p><i>detector grid</i>
 <br>
-&nbsp;If the detector grid is switched off, the exact position of neutron 
-detection and the direction from the centre of the sample to this point are 
-written to the output file; otherwise the centre of the cell and the direction 
+&nbsp;If the detector grid is switched off, the exact position of neutron
+detection and the direction from the centre of the sample to this point are
+written to the output file; otherwise the centre of the cell and the direction
 to this point are written (provided usage is set to 'normal'.)
-<p><i>TOF option</i> 
+<p><i>TOF option</i>
 <br>
-&nbsp;By setting the 'TOF option' to 'no', a zero flight path from the detector 
-surface to the point of detection is assumed. The detector efficiency is 
-considered. 
+&nbsp;By setting the 'TOF option' to 'no', a zero flight path from the detector
+surface to the point of detection is assumed. The detector efficiency is
+considered.
 </p>
 <p>-------------------------------------- </p>
 <p>!!!!! Please make sure that no neutron from the input stream starts already
-within the detector (having a finite thickness) itself. In case of cylindric geometry: 
+within the detector (having a finite thickness) itself. In case of cylindric geometry:
 All neutrons initially have to lie within the cylinder of radius = distance to
 detector. !!!!!! <br>
 -------------------------------------- </p>
 <p> </p>
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
- <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 <p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
 MET DST 2001 <!-- hhmts end --></font> </p>
 <br>

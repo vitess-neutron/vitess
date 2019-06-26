@@ -27,6 +27,7 @@
                               shadowing cylinder opening activated 
  1.17  MAY 2005  G. Zsigmond  new option choice of 4, 6(better,slower) or 8(much better, very slow) gates, 4 gates option adjusted
  1.18  SEP 2005  G. Zsigmond  optimisations to speed up the algorithm
+       Nov 2011  M. Fromem    local declarations of single letter variables
 *******************************************************************************************************************************************************/
 
 #include <stdio.h>
@@ -43,11 +44,12 @@
 #define	STRING_BUFFER 100
 
 int			Option, CurvGeomOption, GatesNumber, zerotime=0;
-long		NumOut, Nchannels, i, k, j, m;
+long		NumOut, Nchannels;
 double		TOF, TOF_zero, WL, omega, height, width, depth, optimal_wl, radius_of_curv, main_depth, 
 			diameter, Phase, shift_y=0., angle_channel, phase0, wallwidth, expon, pos[3], n[3],
 			IntegralIntensity, y_ch[10][2000], x_ch[10][2000], phase[10][2000], coef_pi;
-char		*GeomFileName, XFILEName[STRING_BUFFER];
+const char	*GeomFileName;
+char            XFILEName[STRING_BUFFER];
 FILE		*GeomFilePtr, *GatesFilePtr;
 VectorType	Pos, Dir, pos_ch, Path;
 Neutron		Neutrons;
@@ -62,158 +64,157 @@ void		OwnCleanup();
 
 double phase_k_j(double x_ch_k_j, double y_ch_k_j)
 {
+  double sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j ;
 
-		  double sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j ;
-
-		  double sq_D_0_1, sq_term, omega_fact, dirpos, vz_pos;
+  double sq_D_0_1, sq_term, omega_fact, dirpos, vz_pos;
  
-		  sq_D_0_1 = sq(Dir[0]) + sq(Dir[1]);
-		  dirpos = Dir[0]*Pos[1] - Dir[1]*Pos[0];
-		  sq_term  = sq(dirpos) / sq_D_0_1;
-		  omega_fact = omega / (V_FROM_LAMBDA(WL) * Dir[0]);
-		  vz_pos = Pos[1] > 0.0 ? 1.0 : -1.0;
+  sq_D_0_1 = sq(Dir[0]) + sq(Dir[1]);
+  dirpos = Dir[0]*Pos[1] - Dir[1]*Pos[0];
+  sq_term  = sq(dirpos) / sq_D_0_1;
+  omega_fact = omega / (V_FROM_LAMBDA(WL) * Dir[0]);
+  vz_pos = Pos[1] > 0.0 ? 1.0 : -1.0;
 
-		  sq_x_ch_k_j = sq(x_ch_k_j);
-		  Denom_k     = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_k_j)) );
+  sq_x_ch_k_j = sq(x_ch_k_j);
+  Denom_k     = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_k_j)) );
 
-		  Arg_k = dirpos / Denom_k;
+  Arg_k = dirpos / Denom_k;
 
-		  if (fabs(Arg_k) > 1.) {
-			Arg_k = vz_pos;
-			y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
-		  } else
-			y_ch_new_k_j = y_ch_k_j; /* no intersection with trajectory */
+  if (fabs(Arg_k) > 1.) {
+    Arg_k = vz_pos;
+    y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
+  } else
+    y_ch_new_k_j = y_ch_k_j; /* no intersection with trajectory */
 
-		  Denom_k = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_new_k_j)) );
+  Denom_k = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_new_k_j)) );
 
-		  arg_k = (Dir[0]*y_ch_new_k_j - Dir[1]*x_ch_k_j) / Denom_k;
+  arg_k = (Dir[0]*y_ch_new_k_j - Dir[1]*x_ch_k_j) / Denom_k;
 
-		  if (fabs(arg_k) > 1.) return  777;
+  if (fabs(arg_k) > 1.) return  777;
 			  
-		  else {
-			pha_k_j = asin(Arg_k) - asin(arg_k); 
+  else {
+    pha_k_j = asin(Arg_k) - asin(arg_k); 
 
-			if(x_ch_k_j < 0.) pha_k_j = - pha_k_j; 
+    if(x_ch_k_j < 0.) pha_k_j = - pha_k_j; 
 								
-			return  pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
-		  }
+    return  pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
+  }
 }
 
 int searchgates(int gates, double phase0)
-{ int scs=0;
-		  m = -1; 
+{ 
+  int j, scs=0;
+  int m = -1; 
 
-		  phase[0][0] = phase_k_j(x_ch[0][0], y_ch[0][0]);
+  phase[0][0] = phase_k_j(x_ch[0][0], y_ch[0][0]);
 
-		  for(j=1;j<2*Nchannels+2; j++) 
-		  {
-					phase[0][j] = phase_k_j(x_ch[0][j], y_ch[0][j]);
+  for(j=1;j<2*Nchannels+2; j++) {
+    phase[0][j] = phase_k_j(x_ch[0][j], y_ch[0][j]);
 
-					if(gates==4){
+    if(gates==4){
 
-						if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
-						{					  
-							phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
-							phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
+      if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
+        {					  
+          phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
+          phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
 
-							if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
-							{
-								phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
-								phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
+          if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
+            {
+              phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
+              phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
 
-								if((phase[2][j-1] > phase0 )&&(phase0 > phase[2][j]))
-								{
-									phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
-									phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
+              if((phase[2][j-1] > phase0 )&&(phase0 > phase[2][j]))
+                {
+                  phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
+                  phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
 
-									if((phase[3][j-1] > phase0 )&&(phase0 > phase[3][j])) scs = 1;
-								}
-							}
-						} 			
-					}
-					if(gates==6){
+                  if((phase[3][j-1] > phase0 )&&(phase0 > phase[3][j])) scs = 1;
+                }
+            }
+        } 			
+    }
+    if(gates==6){
 
-						if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
-						{					  
-							phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
-							phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
+      if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
+        {					  
+          phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
+          phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
 
-							if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
-							{
-								phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
-								phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
+          if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
+            {
+              phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
+              phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
 
-								if((phase[2][j-1] < phase0 )&&(phase0 < phase[2][j]))
-								{
-									phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
-									phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
+              if((phase[2][j-1] < phase0 )&&(phase0 < phase[2][j]))
+                {
+                  phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
+                  phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
 
-									if((phase[3][j-1] > phase0 )&&(phase0 > phase[3][j]))
-									{
-										phase[4][j-1] = phase_k_j(x_ch[4][j-1], y_ch[4][j-1]); 
-										phase[4][j] = phase_k_j(x_ch[4][j], y_ch[4][j]);
+                  if((phase[3][j-1] > phase0 )&&(phase0 > phase[3][j]))
+                    {
+                      phase[4][j-1] = phase_k_j(x_ch[4][j-1], y_ch[4][j-1]); 
+                      phase[4][j] = phase_k_j(x_ch[4][j], y_ch[4][j]);
 
-										if((phase[4][j-1] > phase0 )&&(phase0 > phase[4][j]))
-										{
-											phase[5][j-1] = phase_k_j(x_ch[5][j-1], y_ch[5][j-1]); 
-											phase[5][j] = phase_k_j(x_ch[5][j], y_ch[5][j]);
+                      if((phase[4][j-1] > phase0 )&&(phase0 > phase[4][j]))
+                        {
+                          phase[5][j-1] = phase_k_j(x_ch[5][j-1], y_ch[5][j-1]); 
+                          phase[5][j] = phase_k_j(x_ch[5][j], y_ch[5][j]);
 
-											if((phase[5][j-1] > phase0 )&&(phase0 > phase[5][j])) scs = 1;
-										}
-									}
-								}
-							}
-						} 			
-					}
-					if(gates==8){
+                          if((phase[5][j-1] > phase0 )&&(phase0 > phase[5][j])) scs = 1;
+                        }
+                    }
+                }
+            }
+        } 			
+    }
+    if(gates==8){
 
-						if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
-						{					  
-							phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
-							phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
+      if((m == 1)&&(phase[0][j-1] < phase0 )&&(phase0 < phase[0][j]))
+        {					  
+          phase[1][j-1] = phase_k_j(x_ch[1][j-1], y_ch[1][j-1]); 
+          phase[1][j] = phase_k_j(x_ch[1][j], y_ch[1][j]);
 
-							if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
-							{
-								phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
-								phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
+          if((phase[1][j-1] < phase0 )&&(phase0 < phase[1][j]))
+            {
+              phase[2][j-1] = phase_k_j(x_ch[2][j-1], y_ch[2][j-1]); 
+              phase[2][j] = phase_k_j(x_ch[2][j], y_ch[2][j]);
 
-								if((phase[2][j-1] < phase0 )&&(phase0 < phase[2][j]))
-								{
-									phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
-									phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
+              if((phase[2][j-1] < phase0 )&&(phase0 < phase[2][j]))
+                {
+                  phase[3][j-1] = phase_k_j(x_ch[3][j-1], y_ch[3][j-1]); 
+                  phase[3][j] = phase_k_j(x_ch[3][j], y_ch[3][j]);
 
-									if((phase[3][j-1] < phase0 )&&(phase0 < phase[3][j]))
-									{
-										phase[4][j-1] = phase_k_j(x_ch[4][j-1], y_ch[4][j-1]); 
-										phase[4][j] = phase_k_j(x_ch[4][j], y_ch[4][j]);
+                  if((phase[3][j-1] < phase0 )&&(phase0 < phase[3][j]))
+                    {
+                      phase[4][j-1] = phase_k_j(x_ch[4][j-1], y_ch[4][j-1]); 
+                      phase[4][j] = phase_k_j(x_ch[4][j], y_ch[4][j]);
 
-										if((phase[4][j-1] > phase0 )&&(phase0 > phase[4][j]))
-										{
-											phase[5][j-1] = phase_k_j(x_ch[5][j-1], y_ch[5][j-1]); 
-											phase[5][j] = phase_k_j(x_ch[5][j], y_ch[5][j]);
+                      if((phase[4][j-1] > phase0 )&&(phase0 > phase[4][j]))
+                        {
+                          phase[5][j-1] = phase_k_j(x_ch[5][j-1], y_ch[5][j-1]); 
+                          phase[5][j] = phase_k_j(x_ch[5][j], y_ch[5][j]);
 
-											if((phase[5][j-1] > phase0 )&&(phase0 > phase[5][j]))
-											{
-												phase[6][j-1] = phase_k_j(x_ch[6][j-1], y_ch[6][j-1]); 
-												phase[6][j] = phase_k_j(x_ch[6][j], y_ch[6][j]);
+                          if((phase[5][j-1] > phase0 )&&(phase0 > phase[5][j]))
+                            {
+                              phase[6][j-1] = phase_k_j(x_ch[6][j-1], y_ch[6][j-1]); 
+                              phase[6][j] = phase_k_j(x_ch[6][j], y_ch[6][j]);
 
-												if((phase[6][j-1] > phase0 )&&(phase0 > phase[6][j]))
-												{
-													phase[7][j-1] = phase_k_j(x_ch[7][j-1], y_ch[7][j-1]); 
-													phase[7][j] = phase_k_j(x_ch[7][j], y_ch[7][j]);
+                              if((phase[6][j-1] > phase0 )&&(phase0 > phase[6][j]))
+                                {
+                                  phase[7][j-1] = phase_k_j(x_ch[7][j-1], y_ch[7][j-1]); 
+                                  phase[7][j] = phase_k_j(x_ch[7][j], y_ch[7][j]);
 
-													if((phase[7][j-1] > phase0 )&&(phase0 > phase[7][j])) scs = 1;
-												}
-											}
-										}
-									}
-								}
-							}
-						} 			
-					}
-					m = m * (-1); 
-		  }
-		  return scs;
+                                  if((phase[7][j-1] > phase0 )&&(phase0 > phase[7][j])) scs = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } 			
+    }
+    m = m * (-1); 
+  }
+  return scs;
 }
 
 
@@ -229,119 +230,120 @@ int main(int argc, char **argv)
   /* Get the neutrons from the file */
   DECLARE_ABORT;
 
-  while((ReadNeutrons())!= 0)
-    {
-      CHECK;	/* here is what happens to the neutron */
+  while((ReadNeutrons())!= 0) {
+    int i;
+    /* here is what happens to the neutron */
 
-      for(i=0;i<NumNeutGot;i++)
+    for(i=0;i<NumNeutGot;i++)	{
 
-	{
-	  CHECK;
+      CHECK;
 
-	  TOF = InputNeutrons[i].Time;
+      TOF = InputNeutrons[i].Time;
 
-	  WL = InputNeutrons[i].Wavelength;
+      WL = InputNeutrons[i].Wavelength;
 
-	  CopyVector(InputNeutrons[i].Position, Pos); 
+      CopyVector(InputNeutrons[i].Position, Pos); 
 
-	  CopyVector(InputNeutrons[i].Vector, Dir); 
+      CopyVector(InputNeutrons[i].Vector, Dir); 
 
-	  Dir[0]	= (double)sqrt(1 - sq(Dir[1]) - sq(Dir[2])); 
-
-
-	  /* shift to center of Fermi-Chopper */
-
-	  SubVector(Pos, pos_ch);
+      Dir[0]	= (double)sqrt(1 - sq(Dir[1]) - sq(Dir[2])); 
 
 
-	  /*trajectories which do not intersect the entrance and exit window */
+      /* shift to center of Fermi-Chopper */
+
+      SubVector(Pos, pos_ch);
 
 
-	  n[1]=n[2]=0.; n[0]=1.;
-	  if((PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos))==1)
-	    {
-	      if((pos[2]>=height/2.)||(pos[2]<= - height/2.)||(pos[1]>=diameter/2.)||(pos[1]<= - diameter/2.)) goto getlost;
-	    }
-	  else goto getlost;
+      /*trajectories which do not intersect the entrance and exit window */
 
-	  if((PlaneLineIntersect(Pos, Dir, n, diameter/2., pos))==1)
-	    {
-	      if((pos[2]>=height/2.)||(pos[2]<= - height/2.)||(pos[1]>=diameter/2.)||(pos[1]<= - diameter/2.)) goto getlost;
-	    }
-	  else goto getlost;
+
+      n[1]=n[2]=0.; n[0]=1.;
+      if((PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos))==1)
+        {
+          if((pos[2]>=height/2.)||(pos[2]<= - height/2.)||(pos[1]>=diameter/2.)||(pos[1]<= - diameter/2.)) goto getlost;
+        }
+      else goto getlost;
+
+      if((PlaneLineIntersect(Pos, Dir, n, diameter/2., pos))==1)
+        {
+          if((pos[2]>=height/2.)||(pos[2]<= - height/2.)||(pos[1]>=diameter/2.)||(pos[1]<= - diameter/2.)) goto getlost;
+        }
+      else goto getlost;
 	
 
-	  /* translates neutron variables for X'= - diameter/2.  */
+      /* translates neutron variables for X'= - diameter/2.  */
 
-	  TOF = TOF + (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
+      TOF = TOF + (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
 			
-	  if((TOF<0)&&(Nchannels==1)){fprintf(LogFilePtr,"\nERROR: Single-slit Fermi chopper needs positive flight time at the chopper position! \n"); exit(-1); }
+      if (TOF<0 && Nchannels==1) {
+        fprintf(LogFilePtr,"\nERROR: Single-slit Fermi chopper needs positive flight time at the chopper position! \n");
+        goto my_exit;
+      }
 				
-	  CopyVector(Dir, Path);
+      CopyVector(Dir, Path);
 
-	  MultiplyByScalar(Path, (- diameter/2. - Pos[0])/ Dir[0] );
+      MultiplyByScalar(Path, (- diameter/2. - Pos[0])/ Dir[0] );
 
-	  AddVector(Pos, Path);  /*	 Path = displacement vector */
+      AddVector(Pos, Path);  /*	 Path = displacement vector */
 							
 	
-	  /* calculate time entering-edge and exiting-edge of gates along the channels */
+      /* calculate time entering-edge and exiting-edge of gates along the channels */
 
+      phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI); 
 
-	  phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI); 
+      if(searchgates(GatesNumber, phase0)==1) goto happyend;
 
-	  if(searchgates(GatesNumber, phase0)==1) goto happyend;
-
-	  /* also tries one turn earlier  */
+      /* also tries one turn earlier  */
 		  
-	  if((phase0 > 0)&&(omega > 0)){ 
+      if((phase0 > 0)&&(omega > 0)){ 
 			  
-	    phase0 +=  - coef_pi*M_PI;
+        phase0 +=  - coef_pi*M_PI;
 
-	    if(searchgates(GatesNumber, phase0)==1) goto happyend;
-	  }
+        if(searchgates(GatesNumber, phase0)==1) goto happyend;
+      }
 
-	  if((phase0 < 0)&&(omega < 0)){
+      if((phase0 < 0)&&(omega < 0)){
 			  
-	    phase0 +=  coef_pi*M_PI;
+        phase0 +=  coef_pi*M_PI;
 
-	    if(searchgates(GatesNumber, phase0)==1) goto happyend;
-	  }
+        if(searchgates(GatesNumber, phase0)==1) goto happyend;
+      }
 
-	  goto getlost;
+      goto getlost;
 
-	happyend:;
+    happyend:;
 
-	  /* Output matters */
+      /* Output matters */
 
-	  /* transmit coordinates which were not changed, the rest overwrite below */
+      /* transmit coordinates which were not changed, the rest overwrite below */
 
-	  Neutrons = InputNeutrons[i]; 
+      Neutrons = InputNeutrons[i]; 
 
-	  /* translates neutron variables for output - X'= 0. . */
+      /* translates neutron variables for output - X'= 0. . */
 
-	  Neutrons.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL); 
+      Neutrons.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL); 
 			
-	  if(zerotime==1)
-	    { 
-	      Neutrons.Time = fabs(fmod(Neutrons.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega)) - coef_pi*M_PI/2./omega ;
-	    }
+      if(zerotime==1)
+        { 
+          Neutrons.Time = fabs(fmod(Neutrons.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega)) - coef_pi*M_PI/2./omega ;
+        }
 
-	  CopyVector(Dir, Path);
+      CopyVector(Dir, Path);
 
-	  MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
+      MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
 
-	  AddVector(Pos, Path);  /*Path = displacement vector */
+      AddVector(Pos, Path);  /*Path = displacement vector */
 		
-	  CopyVector(Pos, Neutrons.Position);
+      CopyVector(Pos, Neutrons.Position);
 
 
-	  /* writes output binary file */
+      /* writes output binary file */
 
-	  WriteNeutron(&Neutrons);
+      WriteNeutron(&Neutrons);
 
-	getlost:;
-	}
+    getlost:;
     }
+  }
 
   /* Do the general cleanup */
 
@@ -356,6 +358,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
+
 /* own initialization of the module */
 
 void OwnInit(int argc, char *argv[])
@@ -367,7 +370,7 @@ void OwnInit(int argc, char *argv[])
 
   /*    INPUT  */
 
-  GeomFileName="chopper_fermi_g.dat";
+  GeomFileName = "chopper_fermi_g.dat";
 
   CurvGeomOption = 1;
 
@@ -683,7 +686,7 @@ void OwnInit(int argc, char *argv[])
 	}
     }
 		
-  if(Option==1) coef_pi=1.; else coef_pi=2.;  fprintf(LogFilePtr,"Phase set is %f°.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI));   
+  if(Option==1) coef_pi=1.; else coef_pi=2.;  fprintf(LogFilePtr,"Phase set is %fÂ°.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI));   
 
 
   /*	 init for ASCII output */
@@ -695,14 +698,9 @@ void OwnInit(int argc, char *argv[])
 }/* End OwnInit */
 
 
-/* own cleanup of the monochromator/analyser module */
 
 void OwnCleanup()
 {
   if (GeomFilePtr) fclose(GeomFilePtr);
   if (GatesFilePtr) fclose(GatesFilePtr);
 }/* End OwnCleanup */
-
-
-
-
