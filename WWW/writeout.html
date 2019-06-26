@@ -90,43 +90,52 @@ This can be normalised to [n/s] by the corresponding input parameter (s. table <
        <td valign="top"><b>Command Option<br/>   </b></td>
      </tr>
      <tr>
-       <td valign="top">ASCII input file</td>
-       <td valign="top">Name of the input file containing the neutron trajectories</td>
+       <td valign="top">ASCII input file 1, 2, 3</td>
+       <td valign="top">Names of the input files containing the neutron trajectories <br/>
+                        for MCPL format only input file 1 is handled                 </td>
        <td valign="top"> -  </td>
-       <td valign="top">-A  </td>
+       <td valign="top">-A -B -D </td>
      </tr>
      <tr>
-       <td valign="top">read in color</td>
-       <td valign="top">(optional) Only trajectories of the given color are read.<br/>Color -1 means: all trajectories are read</td>
-       <td valign="top">&gt;= -1 (int)<br/>default: -1</td>
-       <td valign="top">-C  </td>
-     </tr>
-     <tr>
-       <td valign="top">repetition</td>
-       <td valign="top">(optional) The trajectories will be written 'repetition' times to yield 'repetition' times as many neutrons for the simulations.<br/> 
-                        The intensity of each trajectory will be reduced by the same factorl.</td>
-       <td valign="top">&gt;= 1 (int)<br/>default: 1</td>
-       <td valign="top">-R  </td>
+       <td valign="top">Weight of the trajectories in file 1, 2, 3</td>
+       <td valign="top">If there is only one input file, then this should get the weight 1.0. <br />
+                        If 2 input files resulting from simulation with 1 Mio. and 3 Mio. trajectories are combined, 
+                        then 0.25 for the 1st and 0.75 for the 2nd would be the proper choice to get the correct flux  </td>
+       <td valign="top">0.0 - 1.0  </td>
+       <td valign="top">-a -b -c</td>
      </tr>
      <tr>
        <td valign="top">Intensity factor for MCNPX<br/>[n/s]</td>
        <td valign="top">The weight of each neutron trajectory from the MCNPX simulation will be multiplied by this factor to yield correct absolute source flux values.<br/>
-                        The factor is: 
-                        F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub></td>
+                        The factor is: F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub></td>
        <td valign="top">&gt;0 <br/>typical 1.0e11<br/>default: 1.0</td>
        <td valign="top">-I  </td>
      </tr>
      <tr>
-       <td valign="top">program</td>
-       <td valign="top">Program by which the input was written </td>
-       <td valign="top">"VITESS"<br/>"McStas"<br/>"MCNPX"</td>
+       <td valign="top">format</td>
+       <td valign="top">Format in which the input was written </td>
+       <td valign="top">"VITESS"<br/>"McStas"<br/>"MCPL"<br />"MCNPX"</td>
        <td valign="top">-f  </td>
      </tr>
      <tr>
-       <td valign="top">VITESS data format</td>
-       <td valign="top">Data format in which VITESS trajectories were written into the input file</td>
+       <td valign="top">VITESS storage format</td>
+       <td valign="top">Format in which VITESS trajectories were written into the input file:          <br/>
+                        in scientific/exponential form (e.g. 5.4321E03) or usual float format (5432.1) </td>
        <td valign="top">"exp"<br/>"float" </td>
        <td valign="top">-F  </td>
+     </tr>
+     <tr>
+       <td valign="top">read in color</td>
+       <td valign="top">(optional) Only trajectories of the given color are read.<br />Color -1 means: all trajectories are read</td>
+       <td valign="top">&gt;= -1 (int)<br />default: -1</td>
+       <td valign="top">-C  </td>
+     </tr>
+     <tr>
+       <td valign="top">repetition</td>
+       <td valign="top">(optional) The trajectories will be written 'repetition' times to yield 'repetition' times as many neutrons for the simulations.<br />
+                         The weight of each trajectory will be reduced by the same factor.   </td>
+       <td valign="top">&gt;= 1 (int)<br />default: 1</td>
+       <td valign="top">-R  </td>
      </tr>
   </tbody> 
 </table>
@@ -156,9 +165,9 @@ This can be normalised to [n/s] by the corresponding input parameter (s. table <
        <td valign="top">-a    </td>
      </tr>
      <tr>
-       <td valign="top">program</td>
-       <td valign="top">The format of this program is used in the output file</td>
-       <td valign="top">"VITESS"<br/>"McStas"<br/>"MCNPX"</td>
+       <td valign="top">format</td>
+       <td valign="top">The format in which the output file will be written</td>
+       <td valign="top">"VITESS"<br/>"McStas"<br/>"MCPL"<br />"MCNPX"</td>
        <td valign="top">-f    </td>
      </tr>
      <tr>

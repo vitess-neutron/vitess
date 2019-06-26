@@ -237,6 +237,14 @@ right, top and bottom plane. <br>
       </tr>
       
       <tr>
+      <td>color</td>
+      <td>Propagate only neutrons with the given color. All other neutrons are written but stay untouched. 
+          This allows to have different guides for, e.g., thermal and cold neutrons (bispectral extraction). 
+          With color equal to -1 (default) all neutrons are propagated. </td>
+      <td>-g</td>
+      </tr>
+      
+      <tr>
       <td valign="top">Additional plane angle<br>[deg]</td>
       <td>Adds additional planes by rotating the top/bottom or left/right planes 
 	        by the given angle around the x axis. If the angle is positive the 
@@ -495,7 +503,14 @@ A detailed description of this option will be published in 2012.<br>The followin
 
 <h2>Output of reflection plot option</h2>
 <p>
-A detailed description of this option will be published in 2012.<br>The following table is taken from this publication and shows the colums of the output file:
+A detailed description of this option will be published in 2012.<br>
+The output file contains several data blocks introduced in comment lines using the following keywords:<br>
+<ul>
+  <li><b>#==Data==</b> holds a 2D binning</li>
+  <li><b>#==DataX==</b> and <b>#==DataY==</b> are 1D binnings</li>
+  <li><b>#==Data<Number>==</b>, <b>#==DataX<Number>==</b> and <b>#==DataY<Number>==</b>: the same analysis, but done seperately for each guide plane with 1 = top, 2 = bottom, 3 = left, 4 = right, >=5 same order for each plane created by the additional planes option.</li>
+</ul>
+The following table is taken from this publication and shows the colums of the output file:<br>
 <p>
 <table border=1 cellspacing=0 cellpadding=0 width=619
  style='width:464.3pt;border-collapse:collapse;border:none'>

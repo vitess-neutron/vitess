@@ -572,7 +572,7 @@ long
 StrgScanS(const char* sStr, char* pTab, const int nMax, const int nTextLen)
 {
   const char   *pStr;
-  char sNumber[31];
+  char sNumber[50];
   long   i, k, n=0;
 
 	pStr = (const char*) sStr;

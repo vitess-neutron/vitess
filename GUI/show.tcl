@@ -344,6 +344,7 @@ proc doGnuplotCmd {w} {
 }
 
 proc getGnuplotTerminalType {} {
+  if {[getSystem] == "windows"} {return wxt}
   global GnuPlotTerminal
   if [info exists GnuPlotTerminal] {
     return $GnuPlotTerminal
@@ -482,10 +483,21 @@ proc getGnuPlotApp {} {
   if [info exists FoundGnuplotApp] {return $FoundGnuplotApp}
   switch [getSystem] {
     unix {
-	if [catch {exec which gnuplot} res] {set res ""}
-	return [set FoundGnuplotApp $res]
+      if [catch {exec which gnuplot} res] {set res ""}
+      return [set FoundGnuplotApp $res]
     }
-    windows {return [set FoundGnuplotApp [findWindowsFile C:/ D:/ binary/gnuplot.exe]]}
+    windows {
+      # first look at special places to prevent long startup times
+      set fn [file join C:/ "Program Files" gnuplot bin gnuplot.exe]
+      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
+      # has gnuplot been installed alongside?
+      set fn [file join [globVal SourceDirectory] gnuplot bin gnuplot.exe]
+      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
+      set fn [file join [globVal SourceDirectory] bin gnuplot.exe]
+      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
+      # at last resort do a search which might take long
+      return [set FoundGnuplotApp [findWindowsFile C:/ D:/ gnuplot.exe]]
+    }
     default {return [set FoundGnuplotApp ""]}
   }
 }

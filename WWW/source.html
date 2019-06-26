@@ -102,7 +102,7 @@ Source parameters describe the neutron source in general; these are given on the
       <td valign="middle" align="center">---<br> </td>
       <td valign="middle" align="center"> X <br> </td>
       <td valign="middle" align="center"> X <br> </td>
-      <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td> <td>1 - 4</td>
+      <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td> <td>6 choices for ESS</td>
       <td valign="top">-v</td>
     </tr>
   </tbody>
@@ -213,33 +213,41 @@ but the neutrons remain on the moderator surface.
      </tr>
     <tr>
        <td valign="top">distance to window<br> [cm] </td>
-       <td valign="top">distance from source to position of the (virtual) target window, which the neutron are sent or propagated to </td>
+       <td valign="top">Distance from source to position of the (virtual) target window, which the neutron are sent or propagated to </td>
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-D      </td>
      </tr>
      <tr>
        <td valign="top">window width/height <br>[cm]</td>
-       <td valign="top">width and height of the (virtual) target window, which the neutron are sent or propagated to </td>
+       <td valign="top">Width and height of the (virtual) target window, which the neutron are sent or propagated to </td>
        <td valign="top">&gt;= 0   </td>
        <td valign="top">-w<br>-h  </td>
      </tr>
      <tr>
+       <td valign="top">beamline<br> </td>
+       <td valign="top">Name of the beamline or beam-port <br/>
+                        For the ESS Butterfly 1 moderator, it is used to define the moderator characteristics and to calculate the declination.
+                        For all other sources, this is not yet implemented.</td>
+       <td valign="top"> </td>
+       <td valign="top">-B<br>       </td>
+     </tr>
+     <tr>
        <td valign="top">declination<br>[deg] </td>
-       <td valign="top">angle between beamline direction and normal to the moderator surface <br/>
+       <td valign="top">Angle between beamline direction and normal to the moderator surface <br />
                         the intensity is supposed to be isotropic and is thus not influenced by this angle,
                         but short pulses will be stretched</td>
        <td valign="top">-90° ... 90° </td>
        <td valign="top">-i<br>       </td>
      </tr>
-    <tr>
+     <tr>
        <td valign="top">distance to time window<br> [cm] </td>
-       <td valign="top">distance from source to position of time window</td>
+       <td valign="top">Distance from source to position of time window</td>
        <td valign="top">&gt;= 0 </td>
        <td valign="top">-s      </td>
      </tr>
      <tr>
        <td valign="top">min. TOF,<br>max. TOF<br>to time window<br> [ms]<br> </td>
-       <td valign="top">only neutrons that arrive at the given position in the specified time range are considered in the simulation<br></td>
+       <td valign="top">Only neutrons that arrive at the given position in the specified time range are considered in the simulation<br></td>
        <td valign="top">no restriction<br></td>
        <td valign="top">-f<br>-F<br>      </td>
      </tr>
@@ -594,6 +602,16 @@ distribution file' is given. Table  1 gives a survey.
                        If the 'neutron current' is given, the flux is normalized to that value. 
                        This is only sensible, if the calculated current is zero, i.e. if moderator area, solid angle or wavelength range are zero.</td>
       <td valign="middle" align="center">&gt; 0.0   </td>
+    </tr>
+    <tr>
+      <td valign="top">performance factor<br>       </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="middle" align="center">X<br>      </td>
+      <td valign="top">
+          Factor allowing for losses by aging or engineering design details not included in the model.
+      </td>
+      <td valign="middle" align="center">0.0 - 1.0 </td>
     </tr>
     <tr>
       <td valign="top">tau_1 <br>tau_2<br>[ms]<br>  </td>

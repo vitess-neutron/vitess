@@ -209,13 +209,11 @@ double DetermineParameter(int id, Neutron* n)
     break;
     
   case 3:
-    paramValue = neutronVector.Phi()*180./M_PI; //y divergence
+    paramValue = neutronVector.Phi()*180./M_PI; // y divergence
     break;
     
   case 4:
-    neutronVector.x[1] = 0;
-    if (neutronVector.x[2] > 0) paramValue = 90. - (neutronVector.Theta()*180./M_PI); //z divergence
-    else paramValue = 90. - (neutronVector.Theta()*180./M_PI +180.);
+    paramValue = atan(neutronVector.x[2]/neutronVector.x[0])*180./M_PI;     // z divergence
     break;
     
   case 5:

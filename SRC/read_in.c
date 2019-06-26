@@ -7,6 +7,7 @@
 /* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
 /* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
 /* 1.1a Apr  2014  K. Lieutenant   repetition corrected                                      */
+/* 1.2  Apr  2018  K. Lieutenant   MCPL format                                               */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -15,6 +16,7 @@
 #include "init.h"
 #include "in_out.h"
 #include "softabort.h"
+#include "mcpl.h"
 
 #define NF_MAX 3
 
@@ -29,7 +31,10 @@ short ScanVitessTraj(Neutron* pInNeutron, const char* sLine, double Weight);
 short ScanMcStasTraj(Neutron* pInNeutron, const char* sLine, double Weight);
 short ScanMcnpxTraj (Neutron* pInNeutron, const char* sLine, double Weight);
 
-short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron* pMcNeutron);
+short ReadMcplTraj  (Neutron* pInNeutron, double Weight);
+
+short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron*       pMcNeutron);
+short ConvertMcpl2Vitess  (Neutron* pVitNeutron, const mcpl_particle_t* pMcplParticle);
 
 void  RotMc2Vit  (VectorType* pVitVector, const VectorType* pMcVector);
 void  InitNeutron(Neutron* pNeutron);
@@ -39,7 +44,8 @@ void  GetId      (TotalID* pID);
 /******************************/
 /** Global Variables    **/
 /******************************/
-FILE*        pInFile[NF_MAX]={NULL,NULL,NULL};              // pointer to input file
+FILE*        pInFile[NF_MAX]={NULL,NULL,NULL}; // pointer to input file
+mcpl_file_t  hInFile;                          // handle to input file
 short        DetectColor=-1;            // ReadInt only neutrons with a given color, -1 means any
 int          Nrep=1;                    // Number of times the input is read
 double       FactInt=1.0,               // Factor to normmalize to the source intensity from MCNPX data
@@ -53,58 +59,84 @@ VtDataFormat eDatFormat=VT_FLOAT;       // output format (exponential, float)
 /******************************/
 int main(int argc, char **argv)
 {
-  int         i,                // index of trajectories
-              m,                // index of input files
-              Irep=0,           // counter for number of repetitions
-              rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
-  short       Nt=0;             // number of trajectories identified
-  char        sLine[256];       // one line in input file
-  Neutron     InNeutron;
+  int             i,                // index of trajectories
+                  m,                // index of input files
+                  Irep=0,           // counter for number of repetitions
+                  rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
+  short           Nt=0;             // number of trajectories identified
+  char            sLine[256];       // one line in input file
+  Neutron         InNeutron;
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("read_in 1.1a");
+  print_module_name("read_in 1.2");
 
   /* module specific initialization */
   OwnInit(argc, argv);
- 
-  for (m=0; m < NF_MAX; m++)
-  { 
-    Irep=0;
-    if (pInFile[m])
+
+  if (ePrgFormat==VT_MCPL_FMT)
+  {
+    if (hInFile.internal)
     {  
+      Irep=0;
       rc=TRUE;
-      for(i=0; i<1e14 && rc==TRUE; i++)
+      while (rc != VT_EOF)
       {
-        rc=ReadLine(pInFile[m], sLine, sizeof(sLine));
-        if (rc==TRUE)
-        { 
-          switch (ePrgFormat)
-          {
-            case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); break;
-            case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine, Weight[m]); break;
-            case VT_MCNPX_FMT : Nt=ScanMcnpxTraj (&InNeutron, sLine, Weight[m]); break;
-            default: Error("Data format for this program not (yet) implemented");
-          }
-          if (DetectColor < 0 || InNeutron.Color == DetectColor) 
-          {    
-            NumNeutRead += Nt;       
-            WriteNeutron(&InNeutron);
-          }
+        rc=ReadMcplTraj(&InNeutron, 1.0);
+        if (rc==TRUE && (DetectColor < 0 || InNeutron.Color == DetectColor)) 
+        {    
+          NumNeutRead += rc;       
+          WriteNeutron(&InNeutron);
         }
-        else
-        { 
+        else if (rc==VT_EOF)
+        {
           Irep++;
           if (Irep < Nrep)
-          { 
-             rewind(pInFile[m]);
-             rc=TRUE;
+          { mcpl_rewind(hInFile);
+            rc=TRUE;
           }
         }
       }
     }
   }
-  
+  else 
+  { for (m=0; m < NF_MAX; m++)
+    { 
+      if (pInFile[m])
+      {  
+        Irep=0;
+        rc=TRUE;
+        for(i=0; i<1e14 && rc==TRUE; i++)
+        {
+          rc=ReadLine(pInFile[m], sLine, sizeof(sLine));
+          if (rc==TRUE)
+          { 
+            switch (ePrgFormat)
+            {
+              case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); break;
+              case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine, Weight[m]); break;
+              case VT_MCNPX_FMT : Nt=ScanMcnpxTraj (&InNeutron, sLine, Weight[m]); break;
+              default: Error("Data format for this program not (yet) implemented");
+            }
+            if (Nt==TRUE && (DetectColor < 0 || InNeutron.Color == DetectColor)) 
+            {    
+              NumNeutRead += Nt;       
+              WriteNeutron(&InNeutron);
+            }
+          }
+          else
+          { 
+            Irep++;
+            if (Irep < Nrep)
+            { rewind(pInFile[m]);
+              rc=TRUE;
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Do module specific cleanups
   OwnCleanup();
   
@@ -146,6 +178,9 @@ void  OwnInit(int argc, char *argv[])
         case 'd':
           Weight[2] = (double)atof(&argv[i][2]);
           break;
+        case 'I':
+          FactInt =   (double)atof(&argv[i][2]);
+          break;
 
         case 'f':
           ePrgFormat = (VtPrgFormat) atoi(&argv[i][2]);
@@ -167,17 +202,32 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
-  for (m=0; m < NF_MAX; m++)
-  { if (AsciiFileName[m] != NULL)
-    { if ((pInFile[m]=fopen(FullParName(AsciiFileName[m]),"rt"))==NULL) 
-      { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName[m]);
-        exit(-1);
-      }
-    } 
-  }
-  if (pInFile[0]==NULL && pInFile[1]==NULL && pInFile[2]==NULL)
-  { fputs("ERROR: At least one ascii input file name is mandatory!\n", LogFilePtr);
-    exit(-1);
+  if (ePrgFormat== VT_MCPL_FMT)
+  { 
+    if (AsciiFileName[0] != NULL)
+    { hInFile = mcpl_open_file(FullParName(AsciiFileName[0]));
+      fprintf(LogFilePtr, mcpl_hdr_srcname(hInFile));       // Name of the generating application 
+    }
+    else 
+    { Error("Input file 1 not given");
+    }
+    if (AsciiFileName[1] != NULL || AsciiFileName[2] != NULL)
+      Warning("Input file 2 and 3 cannot be treated.");
+   }
+  else  
+  { 
+    for (m=0; m < NF_MAX; m++)
+    { if (AsciiFileName[m] != NULL)
+      { if ((pInFile[m]=fopen(FullParName(AsciiFileName[m]),"rt"))==NULL) 
+        { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName[m]);
+          exit(-1);
+        }
+      } 
+    }
+    if (pInFile[0]==NULL && pInFile[1]==NULL && pInFile[2]==NULL)
+    { fputs("ERROR: At least one ascii input file name is mandatory!\n", LogFilePtr);
+      exit(-1);
+    }
   }
 }
 
@@ -188,9 +238,17 @@ void  OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
   int m;
-  for (m=0; m < NF_MAX; m++)
-    if (pInFile[m])
-      fclose(pInFile[m]);
+
+  if (ePrgFormat== VT_MCPL_FMT)
+  { // Deallocate memory and release file-handle
+    mcpl_close_file(hInFile);
+  }
+  else  
+  { // Close all files
+    for (m=0; m < NF_MAX; m++)
+      if (pInFile[m])
+        fclose(pInFile[m]);
+  }
 }
 
 
@@ -248,6 +306,32 @@ short ScanMcStasTraj(Neutron* pNeutron, const char* sLine, double Weight)
 
 
 // -----------------------
+//  Read MCPL trajectory 
+// -----------------------
+// rc: 1: neutron found
+//     0: other particle
+//    -1: EOF
+short ReadMcplTraj(Neutron* pNeutron, double Weight)
+{
+  const mcpl_particle_t* pMcplPtcl;
+  short rc=FALSE;
+
+  pMcplPtcl = mcpl_read(hInFile);
+
+  if (pMcplPtcl==NULL)
+  { return VT_EOF;
+  }
+  else
+  { rc= ConvertMcpl2Vitess(pNeutron, pMcplPtcl);
+    if (rc)
+      pNeutron->Probability *= Weight/Nrep;       // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
+  }
+
+  return(rc);
+}
+
+
+// -----------------------
 //  Read MCNPX trajectory 
 // -----------------------
 short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine, double Weight)
@@ -298,6 +382,31 @@ short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron* pMcNeutron)
 	NormVector      (pVitNeutron->Vector);               // velocity -> direction
 
   return(TRUE);
+}
+
+// ------------------------------------
+//  Convert MCPL to VITESS trajectory 
+// ------------------------------------
+short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParticle)
+{
+  if (pMcplParticle->pdgcode==NEUTRON_ID)                    
+  {
+  	// initialization
+    InitNeutron(pVitNeutron);			  
+
+	  pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> µeV   
+	  pVitNeutron->Time        = pMcplParticle->time; 
+	  pVitNeutron->Probability = pMcplParticle->weight;
+
+	  RotMc2Vit(&pVitNeutron->Position, &pMcplParticle->position);
+	  RotMc2Vit(&pVitNeutron->Vector,   &pMcplParticle->direction);
+	  RotMc2Vit(&pVitNeutron->Spin,     &pMcplParticle->polarisation);
+
+    return(TRUE);
+  }
+  else
+  { return(FALSE);
+  }
 }
 
 

@@ -35,4 +35,8 @@ Solaris
 
 and mv libgslran.a to that subdirectory.
 
+Windows:
+use cmd.exe for VS 2017
+nmake /f gsl.mak
+
 

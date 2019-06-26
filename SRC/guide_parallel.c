@@ -59,6 +59,10 @@
 /* 3.4   Jul 2012  K. Lieutenant  exact ellipse calculations                                */
 /* 3.5   Nov 2013  K. Lieutenant  m-values as input as alternative to reflectivity files    */
 /* 3.6   Nov 2013  K. Lieutenant  corrections for R < 0                                     */
+/* 3.7   Jun 2016  A. Houben      Reflection plot options: statistics per plane             */
+/* 3.7a  Mar 2017  A. Houben      color filter                                              */
+/* 3.7b  May 2018  A. Houben      Correct assignment of reflectivity files for              */
+/*                                non-shape-by-file geometries used with add. plane angles  */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -74,7 +78,7 @@
 
 #include "mathfunctions.h"
 
-#define INDEX(x,y) (x*(nbinsY)+y)
+#define INDEX(x,y,p) (x*(nbinsY)+y   +  (p+1)*nbinsX*nbinsY )
 
 /******************************/
 /** Structures and Enums     **/
@@ -193,7 +197,7 @@ double PathThroughGuideGravOrder1(int thread_i,
 void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, GuidePiece *Pce,
                       eGuideWall ThisCollision, double degangular, double reflectivity);
 void   PrintMaximalM(double *RData, long i);
-int    FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY);
+int    FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane);
 void   DoBin(ReflCond *RefOut, int thread_i);
 double GetLengthFromFile(FILE *file);
 
@@ -219,6 +223,8 @@ long   nPieces   = 1,
        nChannels = 1,
        nSpacers  = 0,
        nPlanes   = 4;
+long   nColour = -1;          /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  */
 short  AddToColor = 0;
 int    keyReflParam = -1;     /* Trajectories to be written out:
                                  1 = only those leaving the guide;
@@ -441,6 +447,7 @@ void processNeutron(int neutron_i, int thread_i) {
   double dDelZ = GdDelZ;
 
   myneutron = InputNeutrons + neutron_i;
+  if (nColour!=-1 && nColour!=myneutron->Color) goto dump; //Wrong color neutrons will be written!
 
   /* myneutron->Position.X = 0.0;   !!!!!!!! */
   CopyVector(BegPosM, BegPosS);
@@ -606,7 +613,7 @@ void processNeutron(int neutron_i, int thread_i) {
       long cPlane;
       rot = rotplane;
       cPlane = GW_RIGHT;
-      while (rot < 90.0 && cPlane < eGwExit) {
+      while (fabs(rot) < 90.0 && cPlane < eGwExit) {
         cx = cos(rot/180.*M_PI);
         sx = sin(rot/180.*M_PI);
         switch (keyAddPlane) {
@@ -789,6 +796,12 @@ void processNeutron(int neutron_i, int thread_i) {
 
     WriteNeutronParallel(&Output, thread_i);
   }
+  goto my_exit;
+ dump:
+ {
+    Neutron Output = *myneutron;
+    WriteNeutronParallel(&Output, thread_i);
+ }
  my_exit:;
 }
 
@@ -800,9 +813,9 @@ static void showAndCompleteSetup() {
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.4f  x %7.4f cm", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.4f  x %7.4f cm^2", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.4f x %7.4f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.4f x %7.4f cm^2", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
 
   switch (eGuideShapeY) {
@@ -830,7 +843,7 @@ static void showAndCompleteSetup() {
     else    fprintf(LogFilePtr, "constant width\n");
     break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m^2\n", AreaY*2./1e4);
 
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ) {
@@ -859,7 +872,7 @@ static void showAndCompleteSetup() {
     break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f m^2\n", AreaZ*2./1e4);
 
   if (Radius != 0.0) { // curved guide
     beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -878,7 +891,7 @@ static void showAndCompleteSetup() {
       } else {
         Error("Reflectivity file was not found!\n");
       }
-      fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+      fprintf(LogFilePtr,  " surface area      :%8.3f m^2\n", pReflFiles[i].area/1.e4);
     }
 
   if (keyAddPlane != 0)
@@ -994,39 +1007,47 @@ static int writeReflPix (BINDATA *pix, int datarange) { //datarange: 0 = XY; 1 =
 
 static void writeBindata () {
 
-  int ibinXY, ibinX, ibinY, cout;
+  int ibinXY, ibinX, ibinY, iplane, cout;
   BINDATA *pix;
-  char buf[3][40];
+  char buf[4][40];
 
-  memset(buf, 0, 3*40); // clean initialisation
+  memset(buf, 0, 4*40); // clean initialisation
 
   GetKeyName(KeyX, buf[0]);
   GetKeyName(KeyY, buf[1]);
   GetKeyName(KeyProb, buf[2]);
+  
   fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n#==Data==\n", buf[0], buf[1], buf[2]);
-
-  for (ibinX = 0; ibinX < nbinsX; ibinX++)
+  for (iplane = -1; iplane < nPlanes; iplane++)
   {
-    cout = 0;
-    for (ibinY = 0; ibinY < nbinsY; ibinY++)
+    if (iplane!=-1) fprintf(pReflPlot, "\n#==Data%d==\n", iplane+1);
+    for (ibinX = 0; ibinX < nbinsX; ibinX++)
     {
-      ibinXY = INDEX(ibinX, ibinY);
-      if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
+      cout = 0;
+      for (ibinY = 0; ibinY < nbinsY; ibinY++)
+      {
+        ibinXY = INDEX(ibinX, ibinY, iplane);
+        if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
+      }
+      if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
     }
-    if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+
+    if (iplane==-1) { fprintf(pReflPlot, "\n#==XData==\n");
+      } else { fprintf(pReflPlot, "\n#==XData%d==\n", iplane+1); }
+    for (ibinX=0; ibinX < nbinsX; ibinX++)
+      if ((pix = binX[ibinX + nbinsX*(iplane+1)]))
+        writeReflPix(pix, 1);
+
+    if (keyReflParam<0) fprintf(pReflPlot,"\n");
+    
+    if (iplane==-1) { fprintf(pReflPlot, "\n#==YData==\n");
+      } else { fprintf(pReflPlot, "\n#==YData%d==\n", iplane+1); }
+    for (ibinY=0; ibinY < nbinsY; ibinY++)
+      if ((pix = binY[ibinY + nbinsY*(iplane+1)]))
+        writeReflPix(pix, 2);
+
+    if (keyReflParam<0) fprintf(pReflPlot,"\n");
   }
-
-  fprintf(pReflPlot, "\n#==XData==\n");
-  for (ibinX=0; ibinX < nbinsX; ibinX++)
-    if ((pix = binX[ibinX]))
-      writeReflPix(pix, 1);
-
-  if (keyReflParam<0) fprintf(pReflPlot,"\n");
-  fprintf(pReflPlot, "\n#==YData==\n");
-  for (ibinY=0; ibinY < nbinsY; ibinY++)
-    if ((pix = binY[ibinY]))
-      writeReflPix(pix, 2);
-
 }
 
 static Plane * copyWalls (Plane *g) {
@@ -1051,7 +1072,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 3.6");
+  print_module_name("guide_parallel 3.7b");
   OwnInit(argc, argv);
 
   // allocate for planes + exit plane
@@ -1200,18 +1221,28 @@ void DoBin(ReflCond *RefOut, int thread_i)
   for (cNeut = 0; cNeut < RefOut->cneutrons; cNeut++) {
     ValX = GetValueX(RefOut, cNeut);
     ValY = GetValueY(RefOut, cNeut);
-    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY);
+    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, -1);
     if (ibinXY < 0) continue;
     ValProb = GetProb(RefOut, cNeut);
 
     rp = &(RefOut->neutrons[cNeut]);
 
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
-                binX  + ibinX  + thread_i*nbinsX);
+                binX  + ibinX  + thread_i*nbinsX*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
-                binY  + ibinY  + thread_i*nbinsY);
+                binY  + ibinY  + thread_i*nbinsY*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
-                binXY + ibinXY + thread_i*nbinsX*nbinsY);
+                binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
+    //if (rp->ThisCollision < GW_EXIT) {
+    
+    ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, rp->ThisCollision);
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+                binX  + ibinX  + (rp->ThisCollision+1)*nbinsX + thread_i*nbinsX*(nPlanes+1));
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+                binY  + ibinY  + (rp->ThisCollision+1)*nbinsY + thread_i*nbinsY*(nPlanes+1));
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
+                binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
+    //}
   }
 }
 
@@ -1239,9 +1270,9 @@ static void MergeThreadBins (BINDATA **bin, int pixcount) {
 }
 
 static void MergeBins () {
-  MergeThreadBins(binX, nbinsX);
-  MergeThreadBins(binY, nbinsY);
-  MergeThreadBins(binXY, nbinsX*nbinsY);
+  MergeThreadBins(binX, nbinsX*(nPlanes+1));
+  MergeThreadBins(binY, nbinsY*(nPlanes+1));
+  MergeThreadBins(binXY, nbinsX*nbinsY*(nPlanes+1));  //should better use INDEX!
 }
 
 static FILE * tryOpen(const char *fn, const char *s) {
@@ -1280,8 +1311,8 @@ void OwnInit   (int argc, char *argv[]) {
   int ibinX, ibinY;
 
   // guide parameter character usage:
-  //free                         g                                          
-  //used a A b B c C d D e E f F   G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X y Y z Z
+  //free                                                                    
+  //used a A b B c C d D e E f F g G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X y Y z Z
 
   for (i=1; i<argc; i++) {
 
@@ -1331,7 +1362,8 @@ void OwnInit   (int argc, char *argv[]) {
         fprintf(pReflPlot,
                 "#   X          Y        counts   Mode    0       5       10    RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z   WeightSum\n"
                 "#   1          2         3=C     4=S    5=C     6=C     7=C    8=A      9=A 10=A  11=1N     12=1N 13=A      14=A  15=A           16=A     17=A  18=1N  19=A   20=A   21=A     22=S           23=A       24=A       25=A       26=A      27=A      28=A      29=A 30=A 31=A     32=S   \n"
-                "#1N = defined by first neutron in bin; A = avaraged; S = summed up; C = events counted; Mode: 0=Scattered, 5=No interaction, 10=Died\n");        
+                "#1N = defined by first neutron in bin; A = avaraged; S = summed up; C = events counted; Mode: 0=Scattered, 5=No interaction, 10=Died\n"
+                "#Data blocks: ==Data== holds 2D binning, ==DataX== and ==DataY== are 1D binnings, ==Data<Number>==, ==DataX<Number>==, ==DataY<Number>== the same analysis, but done seperately per guide plane with 1 = top, 2 = bottom, 3 = left, 4 = right, >=5 same order for each plane created by the additional planes option\n");
         ReflPlotFileName=arg;
       }
       break;
@@ -1407,7 +1439,7 @@ void OwnInit   (int argc, char *argv[]) {
         double rot;
         keyAddPlane = rotplane > 0.0 ? 1 : 2;
         rot = rotplane;
-        while (rot < 90.0) {
+        while (fabs(rot) < 90.0) {
           rot += rotplane;
           nPlanes += 4;
         }
@@ -1497,6 +1529,10 @@ void OwnInit   (int argc, char *argv[]) {
       KeyProb = atoi(arg);
       break;
       
+    case 'g':
+      nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
+      break;
+
     default:
       myExit1("ERROR: Unknown command option: %s\n",argv[i]);
     }
@@ -1588,9 +1624,9 @@ void OwnInit   (int argc, char *argv[]) {
     bpostX = (double*) calloc(nbinsX+1, sizeof(double));
     bpostY = (double*) calloc(nbinsY+1, sizeof(double));
     // allocate storage for each thread
-    binX    = (BINDATA**) calloc((NThreads+1)*(nbinsX+1), sizeof(BINDATA*));
-    binY    = (BINDATA**) calloc((NThreads+1)*(nbinsY+1), sizeof(BINDATA*));
-    binXY   = (BINDATA**) calloc((NThreads+1)*(INDEX(nbinsX, nbinsY)+1), sizeof(BINDATA*));
+    binX    = (BINDATA**) calloc((NThreads+1)*(nbinsX+1)*(nPlanes+1), sizeof(BINDATA*));
+    binY    = (BINDATA**) calloc((NThreads+1)*(nbinsY+1)*(nPlanes+1), sizeof(BINDATA*));
+    binXY   = (BINDATA**) calloc((NThreads+1)*(INDEX(nbinsX, nbinsY, nPlanes)+1), sizeof(BINDATA*));
 
     bintervalX = (MaxX - MinX) / (double)nbinsX;
     bintervalY = (MaxY - MinY) / (double)nbinsY;
@@ -1639,7 +1675,7 @@ void OwnInit   (int argc, char *argv[]) {
 
       allocRdata(&(pPieces[j].RData), nPlanes);
 
-      /* Calculate Area for this reflectivity file */
+      /* Calculate Area for this reflectivity file; only valid for squared guide */
       if (j > 0) {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -1692,7 +1728,7 @@ void OwnInit   (int argc, char *argv[]) {
       if (nPlanes > 4) {
         double rot = rotplane;
         int cPlane = GW_RIGHT;
-        while (rot < 90.0 && cPlane < eGwExit) {
+        while (fabs(rot) < 90.0 && cPlane < eGwExit) {
           switch (keyAddPlane) {
           case 1:
             pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
@@ -1746,7 +1782,7 @@ void OwnInit   (int argc, char *argv[]) {
 
       allocRdata(&(pPieces[j].RData), nPlanes);
 
-      /* Calculate Area for this reflectivity file */
+      /* Calculate Area for this reflectivity file; only valid for squared guide */
       if (j > 0) {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -1763,6 +1799,28 @@ void OwnInit   (int argc, char *argv[]) {
       pPieces[j].RData[GW_RIGHT]  = GetReflData(MValGenR,  ReflFileNameR, pReflR);
       pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT);
       pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB);
+
+      if (nPlanes > 4) {
+        double rot = rotplane;
+        int cPlane = GW_RIGHT;
+        while (fabs(rot) < 90.0 && cPlane < eGwExit) {
+          switch (keyAddPlane) {
+          case 1:
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_BOTTOM];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_BOTTOM];
+            break;
+          case 2:
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_LEFT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_LEFT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_RIGHT];
+            pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_RIGHT];
+            break;
+          }
+          rot += rotplane;
+        }
+      }
     }
   }
   if (pFile)
@@ -2248,6 +2306,7 @@ double PathThroughGuideGravOrder1(int thread_i,
         return -1.0;
       } else
         ThisReflectivity = ReflInterpol(NearestNeutron.Wavelength, degangular, Pce->RData[ThisCollision]->Rdata, Pce->RData[ThisCollision]->maxdata);
+        //ThisReflectivity = Pce->RData[ThisCollision]->Rdata[datanumber];
     } else {
       CountMessageThread(thread_i, GUID_NO_PLANE, NearestNeutron.ID);
       return -1.0;
@@ -2426,7 +2485,7 @@ void PrintMaximalM(double *RData, long i) {
     fprintf(LogFilePtr," maximal defined m : absorber\n");
 }
 
-int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY)
+int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane)
 {
   int ix, iy;
   *ibinX = ix = (int)((Xval - MinX) / ((MaxX - MinX) / (double)nbinsX));
@@ -2436,7 +2495,7 @@ int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY)
   if (iy >= nbinsY)
     return -1;
 
-  return INDEX(ix, iy);
+  return INDEX(ix, iy, iplane);
 }
 
 double GetValueNone            (ReflCond *RefOut, int cNeut) { return (double)1.0; }

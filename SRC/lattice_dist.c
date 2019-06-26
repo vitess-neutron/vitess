@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
   }
 	if (pSxFile!=NULL) 
           {	PrintHeader(pSxFile, sSample, dTd, dT, dA, Mamu, FALSE);
-		fprintf (pSxFile, "# h  k  l  distance    |F|²  DW-factor  Sigma  \n");
+		fprintf (pSxFile, "# h  k  l  distance    |F|^2  DW-factor  Sigma  \n");
 		fprintf (pSxFile, "#            [Ang]    [barn]            [barn] \n");
 		fprintf (pSxFile, "#----------------------------------------------\n");
   }
@@ -264,10 +264,10 @@ short PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, doubl
   fprintf (pFile, "#\n");
   fprintf (pFile, "# d-spacing and structure factors calculated by means of tool 'LatticeDistances'\n");
   if (bPowder)
-    fprintf (pFile, "# Sigma(hkl) = multiplicity * |F(hkl)|² * F_dw\n");
+    fprintf (pFile, "# Sigma(hkl) = multiplicity * |F(hkl)|^2 * F_dw\n");
   else
-    fprintf (pFile, "# Sigma(hkl) = |F(hkl)|² * F_dw\n");
-  fprintf (pFile, "# F_dw       = exp(-3 Q² (h/2pi)² T_meas / (k_b M_ave T_debye²))\n");
+    fprintf (pFile, "# Sigma(hkl) = |F(hkl)|^2 * F_dw\n");
+  fprintf (pFile, "# F_dw       = exp(-3 Q^2 (h/2pi)^2 T_meas / (k_b M_ave T_debye^2))\n");
   fprintf (pFile, "#\n");
   fprintf (pFile, "# Debye temperature: %8.3f K\n",     Tdebye);
   fprintf (pFile, "# temperature      : %8.3f K\n",     Tmeas);

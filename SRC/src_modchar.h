@@ -68,6 +68,7 @@ typedef struct {
   double dCurrent;      /* mean neutron current leaving the moderator [n/s] */
   double dNorm;         /* mean neutron current per traj. normalized by wavelength [n*Ang/s]
 			   (and for spallation sources) by time interval         [n*Ang]   */
+  double dPfmcFact;     /* performance factor considering losses by the technical realization */
   char   sLFileName[FNL];
   char   sTFileName[FNL];
   char   sLTFileName[FNL];

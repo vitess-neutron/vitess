@@ -190,7 +190,7 @@ short Metropolis()
     if (LogFilePtr!=NULL && iStep/nStpOut*nStpOut == iStep) 
     {	fprintf(LogFilePtr, "\n%d. STEP:\n----------\n", iStep);
     	PrintP(P0, ON);
-	  	fprintf(LogFilePtr, " X²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
+	  	fprintf(LogFilePtr, " X^2= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
     }
     if (LogFilePtr!=NULL && iStep/nStpMin*nStpMin == iStep) 
     {	fprintf(LogFilePtr, "\nActual best values found in step %ld:\n", iStpOpt);

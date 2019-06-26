@@ -356,7 +356,7 @@ double Maxwellian(const double _dLambda, const double _dModTemp)
 
 	if (_dModTemp > 0.0  &&  _dLambda > 0.0)
 	{
-		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = h²/(2*k*m_n)  in (1E-10 m)²K */
+		dFakt = pow(1e10*H_P, 2) / (2*K*MN);            /* Fakt = h²/(2*k*m_n)  in (1E-10 m)²K */
 		dA    = dFakt / _dModTemp;
 		
 		dM      = 2 * pow(dA,2) * exp(-dA / pow(_dLambda,2)) / pow(_dLambda,5) ;

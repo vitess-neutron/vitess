@@ -87,9 +87,9 @@ int main(int argc, char *argv[])
   /* Writing to log file */
   fprintf(LogFilePtr, "\nLinear collimator of %ld channels\n", nChannels);
   fprintf(LogFilePtr, "length         : %6.3f m\n",  Length/100.);
-  fprintf(LogFilePtr, "width x height : %6.3f x %6.3f cm²", CollEntrWidth, CollEntrHeight);
+  fprintf(LogFilePtr, "width x height : %6.3f x %6.3f cm^2", CollEntrWidth, CollEntrHeight);
   if (CollExitWidth != CollEntrWidth || CollExitHeight != CollEntrHeight)
-    fprintf(LogFilePtr, " -> %6.3f x %6.3f cm²", CollExitWidth, CollExitHeight);
+    fprintf(LogFilePtr, " -> %6.3f x %6.3f cm^2", CollExitWidth, CollExitHeight);
   fprintf(LogFilePtr, "\n");
 
   DECLARE_ABORT;
