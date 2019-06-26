@@ -9,12 +9,7 @@
 /* 1.0 Jul 2011  D. Nekrassov  initial version                                              */
 /********************************************************************************************/
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
+#include "general.h"
 
 // This class describes a mathematical three component vector
 class MathVector {
@@ -47,6 +42,10 @@ class MathVector {
   MathVector Unit();
   double Phi();
   double Theta();
+
+  // Phi and Theta as usually defined for neutron scattering experiment, e.g. diffraction
+  double PhiSc();
+  double ThetaSc();
 
   void Array(double* arr);
 

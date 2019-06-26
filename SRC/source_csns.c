@@ -26,8 +26,7 @@ Moderator stMod  [NUM_MOD];  /* moderator data            */
 
 /* static variables */
 /* ---------------- */
-static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
-              s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
+static short  s_nSource=ANYSOURCE; /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
 
 
 /* functions */
@@ -46,7 +45,7 @@ double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPo
   { 
     if (eModType==POISONED)
       dFUAmpl = dPower * 2.7e10/5.0e06/(25.0/50.0);
-	else
+    else
       dFUAmpl = dPower * 2.3e11/5.0e06/(25.0/50.0);
   }
   else
@@ -64,8 +63,8 @@ double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPo
 
 double CsnsModFU(const double dLambda, const double dTime, const double dPosY, const double dPosZ)
 {
-  double dFuA,         // amplitude of the flux    [n/(cm²  sterad Ang]
-         dFu=0.0;      // actualflux value         [n/(cm²s sterad Ang]
+  double dFuA,         // amplitude of the flux    [n/(cmÂ²  sterad Ang]
+         dFu=0.0;      // actualflux value         [n/(cmÂ²s sterad Ang]
 
   dFuA = stMod[imod].dFUAmpl * Maxwellian(dLambda, stMod[imod].dModTemp);
 

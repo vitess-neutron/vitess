@@ -273,10 +273,23 @@ For your own simulation you will probably either have to choose another descript
 }
 
 helpItem {Inserting/Deleting a Module} {
-The 'X' button on the left side of the big 'module'-button deletes this module.
-The 'arrow-down' button moves the rest of the instrument down to allow insertion of a module.
-The 'arrow-up' button shows the module in a separate window.
-The 'arrow-right' button shows the module parameters here, replacing this introduction.
+To insert a new module just select a real module from the list of all modules,
+a popup menu shows up when clicking on the --inactive-- button.
+
+If you click on the module number of a real module in the list, a popup menu offers to
+- Move Down : move rest of the instrument down to allow insertion of a module above
+- Remove Module : delete this module from the list
+- Edit here : edit the module parameters in the frame to the right of the module list
+  (same action clicking right arrow (Windows+Linux) or module number (Mac) 
+- Separate Window : edit the module parameters in a separate window
+- Disable Module : you may deactivate a module, leave it out from execution
+- re-enable this or all disabled modules
+- generate a X3D visualisation of that module alone
+
+Modules may temporarily disabled/deactivated. Those module are shown with white module
+numbers in the module list, and are skipped when executing the simulation.
+If you change the module list (insert or edit or delete a module) all modules
+are activated again.
 }
 
 helpItem {Visualising Results} {

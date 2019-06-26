@@ -9,22 +9,30 @@ use strict;
 ###
 
 # windows pathes for programs and sources, use | for \
-my $vstudio = $_ = 'c:|programme|microsoft visual studio .net 2003';
-my $mscdir  = $_ . '|vc7';
-my $mscpath = $_ . '|vc7|bin;' . $_ . '|common7|IDE';
-my $sroot = 'h:|control';
-my $svnroot = 'd:|vitcsrc';
+# first row for old 2003 version, second for windows7 10.0
+my @Vstudio = ('c:|programme|microsoft visual studio .net 2003',
+               'C:|Program Files (x86)|Microsoft Visual Studio 10.0');
+# 3 subdirectories each, specific for a visual studio version
+my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|Vc7|PlatformSDK',
+            'VC', 'Common7|IDE', 'C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
+
+
+my $sroot = 'h:|control|g2_win';      # --g2dir parameter
+my $svnroot = 'd:|vitcsrc';           # --src parameter
 
 # unix comment
 my $unixcomment =<<'EOS';
 # compile hosts used at HZB
 # Linux   : dixi3  openSUSE 10.2 (i586)
-# Linux64 : dinux4 openSUSE 10.2 (X86-64)
-# Darwin  : donald.hmi.de 11.2.0 (X86-64)
+# Linux64 : dixi4 openSUSE 11.3 (x86_64)
+# Darwin  : daisy.hmi.de 11.2.0 (X86-64)
 EOS
 
 ###
 ### end configure ######################################################
+
+my ($vstudio, $mscdir, $mscpath, $win7, $subdir, $g2sub, $g2subsub);
+my $suse = -s '/etc/SuSE-release';
 
 ### define targets #####################################################
 ###
@@ -41,11 +49,11 @@ my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
 	   mirror_coating surface_file gener_bispectral guide_shape spin_reset capture_flux runtime
-     fom gener_pipe opt_sim);
+           fom gener_pipe opt_sim);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
-	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
+	    slit grid source spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
@@ -60,6 +68,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    cas_v40
 	    mirror_elliptical
             flipper_gradient
+            spacewindow
             rotating_field
             resonator_drabkin
           );
@@ -68,7 +77,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 my @CN = qw(monitor1D monitor2D);
 
 # modules which need MGTOOL (=MTOOL + mathfunctions)
-my @CMG = qw(guide_parallel);
+my @CMG = qw(guide_parallel monochromator);
 
 # module which need GTOOL (=TOOL + mathvector mathfunctions)
 my @CG = qw(guide_elliptic filter);
@@ -80,8 +89,8 @@ my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs
 
 my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
-# auxillary programs without further libs
-my @PTool = qw(chop_phases standard_deviation direct_view sortiap);
+# auxillary programs which need no further libs
+my @PTool = qw(chop_phases standard_deviation direct_view sortiap merge_spectra);
 
 # modules with helper thread support
 my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
@@ -99,10 +108,11 @@ my %dep = (			# needed objects for a module
 	   source => 'src_modchar source_csns',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
+           monochromator => 'monochrclass',
 	   precessionfield => 'magneticmap',
 	   gener_batch => 'gener_fct',
 	   gener_pipe => 'pipe_fct',
-	   opt_sim => 'opt_grad opt_grad_mc opt_metro opt_fct calc_sim_fom',
+	   opt_sim => 'opt_grad opt_grad_mc opt_metro opt_swarm opt_fct calc_sim_fom',
 	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
@@ -184,6 +194,7 @@ mmake.pl \{option\}
   --vstudio path        path to visual studio directory, in a form like (default)
                         --vstudio '$vstudio'
                         use | as separator instead of \\ here
+  -win7                generate vitess.mak and compile.bat for windows 7 + vis. studio 10
   --winpath path        path to visual studio binaries, in a form like (default)
                         --winpath '$mscpath'
 EOS
@@ -196,6 +207,10 @@ my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
 
 while ($_ = shift) {
+  if ($_ eq '-win7') {
+    $win7 = 1;
+    next;
+  }
   &usage unless /^--(.+)$/;
   $_ = $1;
   my $arg = shift;
@@ -206,24 +221,34 @@ while ($_ = shift) {
   } elsif ($_ eq 'lpath') {
     $lpath = $arg;
   } elsif ($_ eq 'vstudio') {
-    $mscdir = "$arg|vc7";
+    $vstudio = $arg;
   } elsif ($_ eq 'winpath') {
     $mscpath = $arg;
   } elsif ($_ eq 'src') {
     $svnroot = $arg;
   } elsif ($_ eq 'g2dir') {
     $sroot = $arg;
+  } elsif ($_ eq 'win7') {
+    $win7 = 1;
   } else {
     &usage;
   }
 }
+
+# set path variables use to generate windows makefile
+$vstudio = $Vstudio[$win7] if $vstudio eq '';
+my $i = $win7 ? 3 : 0;
+my $s1 = $VSub[$i];
+my $s2 = $VSub[$i+1];
+$mscdir  = "$vstudio|$s1";
+$mscpath = "$vstudio|$s1|bin;$vstudio|$s2";
 
 # try to read VITESS version from ../GUI/control.tcl
 
 my ($version, $fullversion);
 open F, '../GUI/control.tcl';
 while (<F>) {
-  if (/set t "VITESS ([0-9.a-z]+)"/) {
+  if (/set t \"VITESS ([0-9.a-z]+)/) {
     $version = $fullversion = $1;
     last;
   }
@@ -241,7 +266,7 @@ close F;
 
 sub prepareMakefile {
 
-  my ($subdir, $xlib);
+  my ($xlib);
 
   $sys = getRes('uname');
 
@@ -266,7 +291,7 @@ sub prepareMakefile {
     push @LPath, $_ if -d $_;
   }
 
-  &checkLibs;
+  return unless &checkLibs;
 
   open OF, ">$makefile";
 
@@ -318,12 +343,11 @@ LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
 
-  my $g2sub = './g2-0.72';
-  $_ = "$g2sub/$subdir";
+  $_ = $g2subsub;
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
-  print OF ' -lttf' if $sys ne 'Darwin';
+  print OF ' -lttf' if $suse;
   print OF ' -lm';
 
   print OF <<'EOS';
@@ -390,22 +414,24 @@ sub prepareNMakefile {
 
   open OF, ">$nmakefile";
 
+  $_ = $win7 ? $VSub[5] : $VSub[2];
+
   $s = <<EOS;
 # Vitess NMAKE File
-CPATH=$mscdir
-SROOT=$sroot
+GROOT=$sroot
 SVNROOT=$svnroot
+CPATH=$mscdir
+CPATH2=$_
 EOS
 
   $s .= <<'EOS';
-CPATH2=$(CPATH)|PlatformSDK
 IPATH=$(CPATH)|include
 LPATH=$(CPATH)|lib
 IPATH2=$(CPATH2)|include
 LPATH2=$(CPATH2)|lib
 
 SPATH=$(SVNROOT)|SRC
-GPATH=$(SROOT)|g2_win
+GPATH=$(GROOT)
 GSLPATH=$(SPATH)|rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -418,9 +444,15 @@ OD=.|Release
 IDIR=.|Release
 
 CPP=cl.exe
-DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
+DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /EHsc /c 
+EOS
+
+  $s .= 'CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /FD /EHsc /c';
+  $s .= ' /Og /YX' unless $win7;
+  $s .= "\n";
+
+  $s .= <<'EOS';
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
@@ -610,7 +642,10 @@ sub checkLibs {
 
   $_ = `which gcc`;
   chomp;
-  print STDERR "could not locate gcc\n" unless -X $_;
+  unless ( -X $_) {
+    print STDERR "could not locate gcc\n";
+    return 0;
+  }
 
   my $ext = 'so';
   $_ = '/usr/lib';
@@ -619,13 +654,29 @@ sub checkLibs {
   } elsif ($sys eq 'Linux') {
     $_ = '/usr/lib64' if $arch eq 'x86_64';
   } else {
-    print STDERR "no checks for libraries, as $sys is not known here\n";
-    return;                    # no further checks for unknown systems
+    print STDERR "$sys is not known here\n";
+    return 0;                    # no further checks for unknown systems
   }
+
   my @Places = (@LPath, $_);
   my $anyerr;
 
-  foreach my $lib (qw(X11 gd png z freetype Xpm)) {
+  # look for libg2.a
+  $g2sub = './g2-0.72';
+  $g2subsub = $_ = "$g2sub/$subdir";
+  $_ .= '/libg2.a';
+  unless (-s $_) {
+    print STDERR "no g2 library $_ found. Read $g2sub/Readme.vitess for tipps how to compile it.\n";
+    return 0;
+  }
+
+  my @Needlib = qw(X11 gd png z freetype Xpm);
+  if ($suse) {
+    # we need libttf
+    push  @Needlib, 'ttf';
+  }
+
+  foreach my $lib (@Needlib) {
     my $found = 0;
     my $lname = "lib$lib.$ext";
     foreach (@Places) {
@@ -651,11 +702,11 @@ sub checkLibs {
     print STDERR "could not locate $lname\n";
     $anyerr = 1;
   }
-  return unless $anyerr;
+  return 1 unless $anyerr;
   if ($sys eq 'Darwin') {
     print STDERR "read gnuplot_darwin.txt for tips to install needed tools\n";
   } elsif ($sys eq 'Linux') {
-    if (-s '/etc/SuSE-release') {
+    if ($suse) {
       print STDERR <<EOS;
 Use yast2 to search & install packages!
 VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
@@ -665,12 +716,13 @@ EOS
     } else {
       print STDERR <<EOS;
 Use your Linux distribution tool to search & install packages!
-VITESS needs tk, gnuplot, libgd, libfreetype, libttf, libzlib, libpng, libXpm.
+VITESS needs tk, gnuplot, libgd, libfreetype, libzlib, libpng, libXpm.
 If something is missing after installing these, try to add the developer
 packages of libs.
 EOS
     }
   }
+  0;
 }
 
 sub translateDep {

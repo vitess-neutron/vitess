@@ -149,19 +149,26 @@ proc errorInLine {e app {mod ""}} {
   regsub -all {[^].a-zA-Z0-9()[_-]} $name " " name
   upvar #0 $var$app v
   if [info exists v] {set v [string trim $v]} else {set v ""}
-  if {$v == ""} {			# blank input
-    if $mandatory {			# on necessary item
-      showText "!Please specify $name as $type"
-      return 1
-    }
-    if {$type != "radio"} {
-      return 0;				# on unchecked item
-    }
-  }
 
   switch $type {
-    int   {return [outofRange $name v "%i" $arg4 $arg5 $mandatory]}
-    float {return [outofRange $name v "%f" $arg4 $arg5 $mandatory]}
+    int - float {
+      if {$v == ""} {
+        if {$Checkmode == "set_default"} {
+          set vdefault [lindex $e 2]
+          set v $vdefault
+          showText "!did set $name to default value '$vdefault'"
+          gSet Showinfo 1
+          return 0
+        } elseif {$mandatory} {
+          showText "!Please specify $name as $type"
+          return 1
+        } 
+      }
+      # allow an empty value unless mandatory
+      if {$v == ""} {return $mandatory}
+      if {$type == "int"} {set ff i} else {set ff f}
+      return [outofRange $name v "%$ff" $arg4 $arg5 $mandatory]
+    }
     radio {
       if {$v == ""} {
 	# empty strings might be the result of loading elder *.gui files
@@ -186,6 +193,14 @@ proc errorInLine {e app {mod ""}} {
     }
     filename - editablefile - browsefile - browsedir - parfilename - pareditablefile - parbrowsefile -\
 	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
+
+          if {$v == ""} {			# blank input
+            if $mandatory {			# on necessary item
+              showText "!Please specify $name as $type"
+              return 1
+            }
+            return 0;				# on unchecked item
+          }
 	  switch $type {
 	    filename - editablefile - browsefile - browsedir {
 	      set dir [getDirectory $v]
@@ -313,18 +328,10 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 }
 
 
-### decide if a module is active
-###
-proc activeModule {mod} {
-  upvar #0 ${mod}ESET.active gact
-  if [info exists gact] {return $mod}
-  return ""
-}
-
 ### check all variables given by global list list
 ###
 proc errorWithValues {mod {showok 1} {app _}} {
-  if {[activeModule $mod] == ""} {return 0}
+
   showText "\tchecking [string toupper $mod]"
   set errors 0
   foreach l [globVal ${mod}ESET] {
@@ -333,7 +340,7 @@ proc errorWithValues {mod {showok 1} {app _}} {
 
   if {[set tp [info proc ${mod}CheckErr]] != ""} {
     if [catch {eval $tp $app} res] {
-      puts "Error within proc $tp"
+      puts "DEBUG: Error within proc $tp"
     } elseif {$res != "0"} {
       return 1
     }
@@ -404,25 +411,6 @@ proc findLineInSet {name globset} {
   foreach g $set {
     if {[lindex $g 0] == "$name"} {
       return $g
-    }
-  }
-  return ""
-}
-
-### find variable description line/list for a given variable
-###   search all defintions of globalDescriptionSET
-###
-proc findDescriptionLine {name} {
-  global globalDescriptionSET
-  set n [string tolower $name]
-  foreach g $globalDescriptionSET {
-    upvar #0 ${n}.active gact
-    if {[info exists gact] && [winfo exists $gact]} {
-      foreach l [globVal $g] {
-	if {[lindex $l 0] == "$n"} {
-	  return $l
-	}
-      }
     }
   }
   return ""

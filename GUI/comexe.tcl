@@ -97,7 +97,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   set ll [globVal inputESET]
   set wsh 0
-  global Comode Serdefault Plotfile Plottype ProgressFile\
+  global Comode Serdefault Plotfile Plottype ProgressFile Disabled\
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize VisState VisLogList
 
   switch [set Comode $mode] {
@@ -186,6 +186,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set usedIdices {}
 
   for {set i 1} {$i <= $maxModule} {incr i} {
+    if [info exists Disabled($i)] { 
+      if {$Disabled($i)} continue
+    }
     set varName mod$i
     upvar #0 $varName var
     if {![info exists var] || $var == $DummyEntry} continue
@@ -201,6 +204,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
+      ma_flat_new   {set com "monochromator$sys -O1"}	
+      ma_focus_new   {set com "monochromator$sys -O2"}
+      ma_focus_dat_new   {set com "monochromator$sys -O3"}
       mon1_lambda {set com "monitor1$sys -k1"}
       mon1_time   {set com "monitor1$sys -k2"}
       mon1_divy   {set com "monitor1$sys -k3"}
@@ -304,10 +310,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   if {$fc != "" && $mode != "kstate" } {
     switch [globVal Compmode] {
-      case nodebug -
-      case nodebug+gzip {set c 1}
-      case float -
-      case float+gzip {set c 2}
+      nodebug - nodebug+gzip {set c 1}
+      float - float+gzip {set c 2}
       default {set c 0}
     }
     if $c {
@@ -315,6 +319,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       set foname [entryVal [lindex [lindex $ll 1] 0]]
       if {$foname != "" && $foname != "no_file"} {
 	append fc " --C$c"
+        # puts "DEBUG appended --C$c"
       }
     }
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
@@ -401,11 +406,11 @@ proc checkAll {} {
       if {! [regexp {^(source_|read_in)} $var]} {
         set infname [entryVal infilename]
         if {"" == $infname} {
-	        showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
-	        set errors 1
+          showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
+          set errors 1
         } elseif {! [file exists $infname]} {
-	        showText "!The given input file does not exist"
-	        set errors 1
+          showText "!The given input file does not exist"
+          set errors 1
         }
       }
     }
@@ -524,7 +529,7 @@ proc cleanupPipes {} {
 proc PsCheckUnix {} {
   global PipeIdList
   set rc 0
-  if {"0" == [catch {exec ps -p $PipeIdList} res]} {
+  if {"0" == [catch {exec ps -p $PipeIdList 2>/dev/null} res]} {
     set PipeIdList {}
     foreach line [split $res \n] {
       set fi [lindex [split [string trim $line]] 0]
@@ -786,8 +791,7 @@ proc doGather {gcom geomfile glist} {
   set com "$gcom$opt -o $visRes $gl"
 
   if [catch {eval exec $com}] {
-    #dmf:debug
-    # puts "debug: caught exception"
+    # puts "DEBUG caught exception"
     catch {file delete $visRes}
     return ""
   }
@@ -910,7 +914,7 @@ proc startActionV {} {
 
   if [pipeIsActive] return
 
-  # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
+  # puts "DEBUG startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
 
   # VisState 1 for first --v invocation
   set VisState 1
@@ -1122,13 +1126,138 @@ proc stopAction {{verbose 1} {kill 0}} {
   set VisState 0
 }
 
+###
+# Visualisation of a single module
+proc prepGeom {fn} {
+
+  # prepend geometry file of a module with definitions
+  # normally written by the first module
+  if [catch {open $fn r} f] {
+    return ""
+  }
+  set ofn [tmpFilename mod.geom]
+  if [catch {open $ofn w} fout] {
+    return ""
+  }
+  puts $fout {DEF red=<Material diffuseColor='.9 .01 .01' emissiveColor='.9 .01 .01' transparency='.4'/>
+DEF green=<Material diffuseColor='.01 .9 .01' emissiveColor='.01 .9 .01' transparency='.4'/>
+DEF blue=<Material diffuseColor='.01 .01 .9' emissiveColor='.01 .01 .9' transparency='.4'/>
+DEF yellow=<Material diffuseColor='.9 .6 .01' emissiveColor='.9 .6 .01' transparency='.3'/>
+DEF orange=<Material diffuseColor='.9 .4 .01' emissiveColor='.9 .4 .01' transparency='.4'/>
+DEF cyan=<Material diffuseColor='.0 .99 .99' emissiveColor='.0 .99 .99' transparency='.4'/>
+DEF magenta=<Material diffuseColor='.9 .01 .6' emissiveColor='.9 .01 .6' transparency='.4'/>
+DEF grey=<Material diffuseColor='.6 .6 .6' emissiveColor='.6 .6 .6' transparency='.4'/>
+DEF black=<Material diffuseColor='.01 .01 .01' emissiveColor='.01 .01 .01' transparency='.4'/>
+DEF white=<Material diffuseColor='.99 .99 .99' emissiveColor='.99 .99 .99' transparency='.4'/>
+#units
+# [m]  position, length, width, height, radius
+# [deg] angles}
+
+  while {[gets $f line] >= 0} {
+    puts $fout $line
+  }
+  close $f
+  close $fout
+
+  file delete $fn
+  file rename $ofn $fn
+  return $fn
+}
+
+proc vis3D {{i ""}} {
+
+  # Generate an X3d visualisation file for a given module.
+
+  if {$i == ""} return
+  if [pipeIsActive] return
+
+  # A trick is to temporarily disable all modules but module i,
+  # then generate + execute a visualisation command.
+
+  global maxModule Disabled trajmode defdirectory_  ProgressFile PipeLogList VisState VisLogList VisMerge trajmode
+
+  # save states
+  if [info exists Disabled] {
+    foreach n [array names Disabled] {
+      set kdisabled($n) $Disabled($n)
+      set Disabled($n) 1
+    }
+  }
+  # disable all modules but module $i
+  for {set j 1} {$j < $maxModule} {incr j} {
+    set Disabled($j) 1
+  }
+  set Disabled($i) 0
+
+  # VisState 1 for --v invocation
+  set VisState 1
+
+  # generate command
+  set c [generateVitessCommand action]
+
+  if {[getSystem] == "unix"} {set dummy /dev/null} else {set dummy nul}
+
+  # append the option to read neutrons from null device - otherwise wait forever
+  append c " --f$dummy"
+
+  # execute this command
+  catch {eval exec >& $dummy $c}
+
+  # delete temporary files
+  catch {file delete $ProgressFile}
+  condDelList PipeLogList
+
+  if [reduceFList VisLogList] {
+    set geom [prepGeom $VisLogList]
+    if {$geom != ""} {
+      set firstText "Find module geometry in $geom"
+      if {$VisMerge != "" && $trajmode == "X3D"} {
+        # convert to X3D
+        set visRes [tmpFilename _geom.x3d]
+        set com "$VisMerge -x -X $geom -o $visRes"
+        if [catch {eval exec $com}] {
+        } else {
+          if [file exists $visRes] {
+            showText "Find X3D file $visRes"
+            # launch external X3D viewer
+            global tcl_platform
+            if {"" != [set ecom [getPreferredX3DCmd]]} {
+              if [regexp InstantPlayer $ecom] {
+                showText "  press key 'a' over InstantPlayer window to view the module (Show all)"
+              }
+              catch {exec $ecom $visRes &}
+            } elseif {$tcl_platform(os) == "Darwin"} {
+              catch {exec open file:$visRes &}
+            }
+          }
+        }
+        #catch {file delete $geom}
+      }
+    } else {
+      condDelList VisLogList
+      showText "could not generate the module geometry"
+    }
+  }
+
+  # reset kept states
+  set VisState 0
+  for {set i 1} {$i < $maxModule} {incr i} {
+    if [info exists kdisabled($i)] {
+      set Disabled($i) $kdisabled($i)
+    } else {
+      set Disabled($i) 0
+    }
+  }
+}
+
+
 ####### Execute / Store Series  ###################
 
 proc dialogSWindow {w {tit "Generate Series"} {where "+100+100"}} {
   catch {destroy $w}
   generateToplevel $w $tit "" $where
   global bgColor
-  $w configure  -bg $bgColor
+  $w configure -bg $bgColor
 }
 
 proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
@@ -1572,7 +1701,7 @@ proc genSeries {w} {
   set lfont [labelFont]
 
   set ewid 4
-  label $w.n.l -text Iterations -font $lfont -bg $labColor -pady 0.5c
+  label $w.n.l -text runs -font $lfont -bg $labColor -pady 0.5c
   forceDef numseries_ 2
   entry $w.n.e -width $ewid -relief sunken -textvariable numseries_ -bg $entryColor
 
@@ -1593,4 +1722,289 @@ proc genSeries {w} {
   bButton $w.b.n >> "inputSeries $w"
   pack $w.b.c -side left -anchor w
   pack $w.b.n -side right -anchor w
+}
+
+### Merge results of independent simulations
+
+proc createResDir {w {dname ""}} {
+
+  global mergeresdir_
+  if {$dname == ""} {
+    browseFile mergeresdir_ write d
+  } else {
+    set mergeresdir_ $dname
+  }
+  set resdir [file normalize $mergeresdir_]
+  if [catch {file mkdir $mergeresdir_}] {
+    showText "!unable to create the result directory!"
+    return
+  }
+}
+
+
+proc addMergeDir {w} {
+
+  global mergerootdir_ mergechildren_
+  if {![info exists mergerootdir_]} return
+
+  if {"" == [set dname [browseFile dummy open d "" 1]]} return
+
+  # split the path
+  set flist [file split $dname]
+
+  if {$mergerootdir_ != ""} {
+    # if we have a root path already, look what it has in common with dname
+    if {$mergerootdir_ == "$dname"} {
+      # directory itself
+      set part "./"
+    } else {
+      set mlist [file split $mergerootdir_]
+      set mlen [llength $mlist]
+      set j -1
+      for {set i 0} {$i < $mlen} {incr i} {
+        if {[lindex $mlist $i] == "[lindex $flist $i]"} {
+          set j $i
+        } else break
+      }
+      if {$j <= 0} {
+        # nothing in common
+        set part $dname
+      } elseif {$i >= $mlen} {
+        # all in common
+        set part [join [lrange $flist $i end] /]
+      } else {
+        # parts are common
+        set lres {}
+        for {} {$i < $mlen} {incr i} {
+          lappend lres ..
+        }
+        set lres [concat $lres [lrange $flist [expr $j + 1] end]]
+        set part [join $lres /]
+      }
+    }
+  } else {
+    set part [file tail $dname]
+    if {[llength $flist] > 1} {
+      set mergerootdir_ [file dirname $dname]
+    }
+  }
+
+  append mergechildren_ " $part"
+}
+
+proc clearMergeInput {w} {
+  foreach n {rootdir monfiles children rootdir} {
+    gSet merge${n}_
+  }
+}
+
+proc findInputDirs {w} {
+  global mergerootdir_ mergechildren_
+  set rlist {}
+  if [info exists mergerootdir_] {
+    foreach n [itemize $mergechildren_] {
+      lappend rlist [file normalize [file join $mergerootdir_ $n]]
+    }
+  }
+  return $rlist
+}
+
+
+proc extractMonFiles {w} {
+  global mergemonfiles_
+  if {![info exists mergemonfiles_]} return
+  set mdirs [findInputDirs $w]
+  set mdir [lindex $mdirs 0]
+  set restlist [lrange $mdirs 1 end]
+  set rlist {}
+  foreach f [glob $mdir/*] {
+    if [regexp {\.(gui|sh|x3d)+$} $f] continue
+    if {![file isfile $f]} continue
+
+    # is this file in all input directories?
+    set fn [file tail $f]
+    set found 1
+    foreach d $restlist {
+      set tf [file normalize [file join $d $fn]]
+      if [file isfile $tf] continue
+      set found 0
+      break
+    }
+    if {!$found} continue
+    set rc [checkPlotfile $f]
+    if {[checkPlotfile $f] != ""} {
+      lappend rlist $fn
+    }
+  }
+  if {[llength $rlist] > 0} {
+    set mergemonfiles_ [join $rlist]
+  }
+}
+
+proc plotAResult  {w} {
+  if {[set rdir [entryVal mergeresdir]] == ""} {
+    showText "!no results yet!"
+    return
+  }
+  set fn [tk_getOpenFile -initialdir [file normalize $rdir]]
+  if {$fn == ""} return
+  if {[set tc [checkPlotfile $fn]] != ""} {
+    if {$tc == "matrix"} {
+      showPlotFile $fn 2
+    } else {
+      showPlotFile $fn 1
+    }
+  }
+}
+
+proc mergeResults {w} {
+
+  global ExeDirectory ExeSuffix SourceDirectory mergeresdir_ mergemonfiles_
+  if {![info exists mergeresdir_]} return
+  set com [file join $ExeDirectory merge_spectra$ExeSuffix]
+  if {![file executable $com]} {
+    showText "!no merge binary $com found!"
+    return
+  }
+
+  set mdirs [findInputDirs $w]
+  if {[llength $mdirs] < 2} {
+    showText "!specify at least two input directories!"
+    return
+  }
+  
+  if {$mergeresdir_ == ""} {
+    # create a result directory
+    set n [clock format [clock seconds] -format %Y-%m-%d]
+    set tn res$n
+    while 1 {
+      set fname [file join $SourceDirectory FILES $tn]
+      if {![file isdirectory $fname]} break
+      set tn res$n-[incr i]
+    }
+    createResDir $w $fname
+  }
+
+  if {$mergemonfiles_ == ""} {
+    extractMonFiles $w
+  }
+  set mlist [itemize $mergemonfiles_]
+  set mlen [llength $mlist]
+  if {$mlen < 1} {
+    showtext "!no monitor files to be merged found!"
+    return
+  }
+
+  # make sure the result directory is not among the input directories
+  foreach d $mdirs {
+    if {$d == $mergeresdir_} {
+      showText "!the result directory should not be an input directory also!"
+      return
+    }
+  }
+
+  # merge files
+  set ok 1
+  
+  foreach mfile $mlist {
+    set c "$com -f -n $mfile [file join $mergeresdir_ $mfile] $mdirs"
+    # merge now, using the merge_spectra binary
+    if [catch {eval exec $c} res] {
+      set ok 0
+      break
+    }
+  }
+  if $ok {
+    showText "successfully merged $mlen result spectra"
+  } else {
+    showText "!problems merging spectra\n$res\n!"
+  }
+
+}
+
+
+proc mergeRes {w} {
+  dialogSWindow $w "Merge Result Spectra"
+
+  global entryColor labColor bgColor EntryCharWidth EntryCharHeight
+  foreach f {f p pa ps me m ms r a} {
+    frame $w.$f -bg $bgColor
+    pack $w.$f -side top -fill x -expand no -padx 3 -pady 0
+  }
+
+  set lfont [labelFont]
+  set fnt [ssbuttonFont]
+  set ewid 64
+  set lwid [expr int(1.5*$ewid)]
+ 
+  set ww $w.f
+  label $ww.l -text "Parent\ninput\ndirectory" -font $lfont -bg $labColor -pady 0.5c
+  entry $ww.e -width $ewid -relief sunken -textvariable mergerootdir_ -bg $entryColor
+  button $ww.bn -text "Browse add" -background $bgColor -font $fnt\
+      -command "addMergeDir $w"
+  pack $ww.l $ww.e -side left -anchor w
+  pack $ww.bn -side right -anchor w
+
+  set ww $w.p
+  label $ww.l -text "Input directories" -font $lfont -bg $labColor -pady 0.5c
+  button $ww.c -text Clear -background $bgColor -font $fnt\
+      -command "clearMergeInput $w"
+  pack $ww.l -side left -anchor w
+  pack $ww.c -side right -anchor w
+
+  set ww $w.pa
+  entry $ww.e -width $lwid -relief sunken -textvariable mergechildren_ -bg $entryColor\
+      -xscrollcommand "$w.ps.xscroll set"
+  pack $ww.e -side left -anchor w
+  xscroll $w.ps "$ww.e xview"
+ 
+  set ww $w.me
+  label $ww.l -text "Monitor files" -font $lfont -bg $labColor -pady 0.5c
+  button $ww.bn -text "Find from input directories" -background $bgColor -font $fnt\
+      -command "extractMonFiles $w"
+  pack $ww.l -side left -anchor w
+  pack $ww.bn -side right -anchor w
+
+  set ww $w.m
+  entry $ww.e -width $lwid -relief sunken -textvariable mergemonfiles_ -bg $entryColor\
+      -xscrollcommand "$w.ms.xscroll set"
+  pack $ww.e -side left -anchor w
+  xscroll $w.ms "$ww.e xview"
+
+  set ww $w.r
+  label $ww.l -text "Result\ndirectory" -font $lfont -bg $labColor -pady 0.5c
+  entry $ww.e -width $ewid -relief sunken -textvariable mergeresdir_ -bg $entryColor
+  button $ww.bn -text Browse -background $bgColor -font $fnt\
+      -command "createResDir $w"
+  pack $ww.l $ww.e -side left -anchor w
+  pack $ww.bn -side right -anchor w
+
+  set ww $w.a
+  bButton $ww.bn "Merge Results" "mergeResults $w"
+  label  $ww.l -text "    " -font $lfont -bg $labColor -pady 0.5c
+  bButton $ww.p "Plot a Result" "plotAResult $w"
+  bButton $ww.h Help {showHelpItem Merging-Results}
+  pack $ww.bn $ww.l $ww.p $ww.h  -side left -anchor w
+  bButton $ww.c Cancel "destroy $w"
+  pack $ww.c -side right -anchor w
+}
+
+helpItem Merging-Results {
+You may merge monitor spectra from separate simulations of the same instrument.
+These are assumed to be in separate input directories, but with the same file names.
+
+First you add an input directory by clicking "Browse add " which will split it's name
+to the "Parent input directory" path and the specific directory. When adding more input
+directories, their path will be used relative to the parent directory, if possible.
+You may of course edit directory names manually.
+
+Next you select monitor files by clicking "Find from input directories". VITESS tries
+to identify all common monitor spectra files in these directories.
+Again you may restrict this white space separated list manually.
+
+When you did specify a result directory, which may exist or needs to be created,
+you may click "Merge Results" to merge all specified input spectra.
+
+If you leave "Monitor files" and "Result directory" blank when clicking "Merge Results"
+the GUI will do it's best and generate a new result directory name.
 }

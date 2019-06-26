@@ -46,8 +46,9 @@ file.<br>
        </tr>
        <tr>
          <td>structure factor file</td>
-         <td>each line contains: h   k l  Fhkl<sup class="moz-txt-sup">2</sup>
-   (see below)<br>
+         <td>If in VITESS format .dat, each line contains: h   k l  Fhkl<sup class="moz-txt-sup">2</sup>
+   (see below). If in .lau format, each line contains:  h   k   l Mult. d-space 2Theta Fhkl<sup>2</sup>. <br> 
+	Please specify the meaning of the columns, if the structure factor file is in a different format.
          </td>
          <td>-S</td>
        </tr>
@@ -150,6 +151,20 @@ per wavelength<br>
          <td valign="top">parameter file<br>
          </td>
        </tr>
+
+     <tr>
+    <td> Column numbers for individual parameters of the look-up table</td>
+    <td> In case the structure factor file has neither the .dat (VITESS) nor .lau format, the meaning of individual columns needs to be specified so that the file can be used as structure file.</td>
+       <td valign="top">parameter file<br>
+         </td>
+  </tr>
+
+  <tr>
+    <td> Scale factor</td>
+    <td> In case the structure factor file has neither the .dat (VITESS) nor .lau format, this scale factor is needed, if the (squared) structure factor is not given in barn^0.5 (barn).</td>
+      <td valign="top">parameter file<br>
+         </td>
+  </tr>
 
   </tbody>
 </table>

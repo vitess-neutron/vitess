@@ -5,6 +5,7 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0  Apr 2003  Géza Zsigmond  initial version                                            */
 /* 1.1  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced      */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -27,7 +28,9 @@
 	char		Option[STRING_BUFFER], *ParameterFileName, *StructureFactorFileName, *SampleFileName;
 	long		d_spr_option, datanumbermax = 10000, Repetition, repet, i,j;
 	double		TOF, WL, Prob ;
-	double		A_reciproc[3], B_reciproc[3], C_reciproc[3], Fhkl2[10001], hh[10001], kk[10001], ll[10001], no[10001];
+        double		A_reciproc[3], B_reciproc[3], C_reciproc[3];
+	double          *Fhkl2, *hh, *kk, *ll;
+        int             *no;
 	double		AnglPhi, AnglOmega, AnglChi, AnglOutHoriz, AnglOutVert ;
 	double		RotMatrixOmega[3][3], RotMatrixChi[3][3], RotMatrixPhi[3][3], RotMatrixOut[3][3], RotMatrixDelta[3][3];
 	double		AbsorptionC, Normalisation, Ddperd;
@@ -51,216 +54,223 @@
 
 int main(int argc, char **argv)
 {
-	VectorType	Pos1f, Pos2f,
-	            Pos1v, Pos2v;
+  VectorType	Pos1f, Pos2f,
+    Pos1v, Pos2v;
 
- /* Initialize the program according to the parameters given  */ 
+  /* Initialize the program according to the parameters given  */ 
 
-	Init(argc, argv, VT_SMPL_EL_ISO); 
+  Init(argc, argv, VT_SMPL_EL_ISO); 
 
-	OwnInit(argc, argv);
+  OwnInit(argc, argv);
 
 
- /* Get the neutrons from the file */ 
+  /* Get the neutrons from the file */ 
 
   DECLARE_ABORT;
 
   while((ReadNeutrons())!= 0)
-  {
-	  CHECK;
+    {
+      CHECK;
 
-	/* here is what happens to the neutron */
+      /* here is what happens to the neutron */
 
-{
+      {
 
-double	MaxPathLength, PathLength;
+	double	MaxPathLength, PathLength;
 
-for(i=0;i<NumNeutGot ;i++)
+	for(i=0;i<NumNeutGot ;i++)
 
-{ 
-	 CHECK;
+	  { 
+	    CHECK;
 
-	InputNeutrons[i].Vector[0]		= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+	    InputNeutrons[i].Vector[0]		= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
-	if(InputNeutrons[i].Probability <= wei_min) goto getlost ;
+	    if(InputNeutrons[i].Probability <= wei_min) goto getlost ;
 
-	/* translates and rotates into frame of the sample, where phi-khi-omega are consecutive rotations of the sample(!) in the initial frame */
+	    /* translates and rotates into frame of the sample, where phi-khi-omega are consecutive rotations of the sample(!) in the initial frame */
 
-	SubVector(InputNeutrons[i].Position, PosSample);
+	    SubVector(InputNeutrons[i].Position, PosSample);
 
-	RotBackVector(RotMatrixOmega, InputNeutrons[i].Position);
-	RotBackVector(RotMatrixChi, InputNeutrons[i].Position);
-	RotBackVector(RotMatrixPhi, InputNeutrons[i].Position);
+	    RotBackVector(RotMatrixOmega, InputNeutrons[i].Position);
+	    RotBackVector(RotMatrixChi, InputNeutrons[i].Position);
+	    RotBackVector(RotMatrixPhi, InputNeutrons[i].Position);
 	
-	RotBackVector(RotMatrixOmega, InputNeutrons[i].Vector);
-	RotBackVector(RotMatrixChi, InputNeutrons[i].Vector);
-	RotBackVector(RotMatrixPhi, InputNeutrons[i].Vector);
+	    RotBackVector(RotMatrixOmega, InputNeutrons[i].Vector);
+	    RotBackVector(RotMatrixChi, InputNeutrons[i].Vector);
+	    RotBackVector(RotMatrixPhi, InputNeutrons[i].Vector);
 
 	
-	/* gives intersection positions with sample */
+	    /* gives intersection positions with sample */
 
-	if(Option[1] == 'y')
-	{
+	    if(Option[1] == 'y')
+	      {
 		if(IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
-	}
+	      }
 
-	if(Option[1] == 'u')
-	{
+	    if(Option[1] == 'u')
+	      {
 		if(IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
-	}
+	      }
 
-	if(Option[1] == 'a')
-	{
+	    if(Option[1] == 'a')
+	      {
 		if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
-	}
+	      }
 
 	
-	for(repet=0;repet<Repetition;repet++)
-	{
-	  CHECK;
-				CopyVector(Pos1f, Pos1v) ;
-				CopyVector(Pos2f, Pos2v) ;
+	    for(repet=0;repet<Repetition;repet++)
+	      {
+		CHECK;
+		CopyVector(Pos1f, Pos1v) ;
+		CopyVector(Pos2f, Pos2v) ;
 									
-				GG[0] = hh[repet] * A_reciproc[0] + kk[repet] * B_reciproc[0] + ll[repet] * C_reciproc[0];
-				GG[1] = hh[repet] * A_reciproc[1] + kk[repet] * B_reciproc[1] + ll[repet] * C_reciproc[1];
-				GG[2] = hh[repet] * A_reciproc[2] + kk[repet] * B_reciproc[2] + ll[repet] * C_reciproc[2];
+		GG[0] = hh[repet] * A_reciproc[0] + kk[repet] * B_reciproc[0] + ll[repet] * C_reciproc[0];
+		GG[1] = hh[repet] * A_reciproc[1] + kk[repet] * B_reciproc[1] + ll[repet] * C_reciproc[1];
+		GG[2] = hh[repet] * A_reciproc[2] + kk[repet] * B_reciproc[2] + ll[repet] * C_reciproc[2];
 			
-				TOF  = InputNeutrons[i].Time ;
-				WL   = InputNeutrons[i].Wavelength ;
-				Prob = InputNeutrons[i].Probability ;
+		TOF  = InputNeutrons[i].Time ;
+		WL   = InputNeutrons[i].Wavelength ;
+		Prob = InputNeutrons[i].Probability ;
 
-				CopyVector(InputNeutrons[i].Position, Pos);
-				CopyVector(InputNeutrons[i].Vector, Dir);
+		CopyVector(InputNeutrons[i].Position, Pos);
+		CopyVector(InputNeutrons[i].Vector, Dir);
 
 
-				/* scattering position and TOF untill scattering */	
+		/* scattering position and TOF untill scattering */	
 				
-				SubVector(Pos2v, Pos1v);					/*maximal path vector*/ 
+		SubVector(Pos2v, Pos1v);					/*maximal path vector*/ 
 
-				MaxPathLength = LengthVector(Pos2v); 
+		MaxPathLength = LengthVector(Pos2v); 
 
-				MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	 /*random path vector untill scattering */
+		MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	 /*random path vector untill scattering */
 
-				PathLength = LengthVector(Pos2v);
+		PathLength = LengthVector(Pos2v);
 
-				AddVector(Pos1v, Pos2v);	
+		AddVector(Pos1v, Pos2v);	
 					
-				TOF += (Pos1v[0] - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+		TOF += (Pos1v[0] - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-				CopyVector(Pos1v, Pos);						/*scattering position */
+		CopyVector(Pos1v, Pos);						/*scattering position */
 
 
-				if((WL*LengthVector(GG)/4./M_PI)>1) Prob = 0.; 
+		if((WL*LengthVector(GG)/4./M_PI)>1) Prob = 0.; 
 
-				/* attenuation untill scattering normalized to maximal path and probability */
+		/* attenuation untill scattering normalized to maximal path and probability */
 
-				Prob *= (double) exp( - PathLength * AbsorptionC * WL );
+		Prob *= (double) exp( - PathLength * AbsorptionC * WL );
 				
-					Prob *= MaxPathLength * Normalisation * Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
+		Prob *= MaxPathLength * Normalisation * Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
 
 
-					/* scattering: new neutron variables*/ 
+		/* scattering: new neutron variables*/ 
 					
-				{
-				double	k_inc[3], GGact[3]; 
+		{
+		  double	k_inc[3], GGact[3]; 
 
-						CopyVector(Dir, k_inc);
-						MultiplyByScalar(k_inc, 2 * M_PI / WL);
-						CopyVector(GG, GGact); 
-						MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_inc)/ScalarProduct(GG,GG)));
+		  CopyVector(Dir, k_inc);
+		  MultiplyByScalar(k_inc, 2 * M_PI / WL);
+		  CopyVector(GG, GGact); 
+		  MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_inc)/ScalarProduct(GG,GG)));
 
-  						if(d_spr_option == 1) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
-						if(d_spr_option == 2) Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
+		  if(d_spr_option == 1) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
+		  if(d_spr_option == 2) Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
 
-						/* defines now outgoing k direction */
-						AddVector(k_inc, GGact); 
-						MultiplyByScalar(k_inc, 1./LengthVector(k_inc));
-						CopyVector(k_inc, Dir);
-				}
-
-
-					/* attenuation succeeding scattering */
+		  /* defines now outgoing k direction */
+		  AddVector(k_inc, GGact); 
+		  MultiplyByScalar(k_inc, 1./LengthVector(k_inc));
+		  CopyVector(k_inc, Dir);
+		}
 
 
-						if(Option[1] == 'y')
-						{
-							if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
-						}
-
-						if(Option[1] == 'u')
-						{
-							if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;  
-						}
-
-						if(Option[1] == 'a')
-						{
-							if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
-						}
+		/* attenuation succeeding scattering */
 
 
-					/* path in the sample after scattering */
+		if(Option[1] == 'y')
+		  {
+		    if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+		  }
 
-					{
-						VectorType Pos_final ;
+		if(Option[1] == 'u')
+		  {
+		    if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;  
+		  }
 
-					
-						CopyVector(Pos2v, Pos_final);
+		if(Option[1] == 'a')
+		  {
+		    if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+		  }
+
+
+		/* path in the sample after scattering */
+
+		{
+		  VectorType Pos_final ;
 
 					
-						SubVector(Pos_final, Pos);
+		  CopyVector(Pos2v, Pos_final);
 
 					
-						PathLength = LengthVector(Pos_final);  
-					}
+		  SubVector(Pos_final, Pos);
+
+					
+		  PathLength = LengthVector(Pos_final);  
+		}
 
 
-					Prob *= (double) exp( - PathLength * AbsorptionC * WL );
+		Prob *= (double) exp( - PathLength * AbsorptionC * WL );
 
 
-					 /* Output matters */
+		/* Output matters */
 
-					TOF +=  PathLength / V_FROM_LAMBDA(WL);
+		TOF +=  PathLength / V_FROM_LAMBDA(WL);
 
 
-					OutputTransformations(&TOF, &WL, &Prob, Pos2v, Dir);
+		OutputTransformations(&TOF, &WL, &Prob, Pos2v, Dir);
 					
 
-					/* transmit coordinates which were not changed, the rest overwrite below */
-					Neutrons = InputNeutrons[i]; 
+		/* transmit coordinates which were not changed, the rest overwrite below */
+		Neutrons = InputNeutrons[i]; 
 
 
-					Neutrons.Time = TOF ;
+		Neutrons.Time = TOF ;
 
-					Neutrons.Probability = Prob ;
+		Neutrons.Probability = Prob ;
 
-					CopyVector(Pos2v, Neutrons.Position);
+		CopyVector(Pos2v, Neutrons.Position);
 
-					CopyVector(Dir, Neutrons.Vector);
+		CopyVector(Dir, Neutrons.Vector);
 
-					Neutrons.Color = (short) no[repet]; 
-
-
-				/*	 writes output binary file */
-
-					if(Prob > wei_min) WriteNeutron(&Neutrons);
+		//		Neutrons.Color = (short) no[repet]; 
 
 
-}/*repetition*/
-	/* here continues if neutron gets lost */
+		/*	 writes output binary file */
 
-	getlost:;
-}
-}  
-  }
+		if(Prob > wei_min) WriteNeutron(&Neutrons);
+
+					
+	      }/*repetition*/
+	    /* here continues if neutron gets lost */
+
+	  getlost:;
+	  }
+      }  
+    }
    
- /* Do the general cleanup */
+  /* Do the general cleanup */
 
 
-my_exit:
+ my_exit:
 
-	fprintf(LogFilePtr," \n");
+  fprintf(LogFilePtr," \n");
 
-	Cleanup(PosSample[0], PosSample[1], PosSample[2], AnglOutHoriz, AnglOutVert);
+  if (no!=NULL) {
+    free(no); 
+    free(hh);
+    free(kk);
+    free(ll);
+    free(Fhkl2);
+  }
+  Cleanup(PosSample[0], PosSample[1], PosSample[2], AnglOutHoriz, AnglOutVert);
 
   return 0;
 }
@@ -324,6 +334,11 @@ void OwnInit(int argc, char *argv[])
 	Ddperd=0.01;
 	d_spr_option = 1 ;
 
+	colh = -1; colk = -1; coll = -1; colD = -1;
+	colF = -1; colF2 = -1; colM = -1; colDW = -1;
+	scaleF2 = 1.;
+	
+
 /*    INPUT  */
 	
 	while(argc>1)
@@ -378,7 +393,19 @@ void OwnInit(int argc, char *argv[])
 
 	FillRotMatrixZY(RotMatrixOmega, 0., AnglOmega); 
 
-    {long count;
+
+	if (strstr(StructureFactorFileName, ".dat") == &StructureFactorFileName[strlen(StructureFactorFileName)-4])
+    {
+      long count;
+      datanumbermax = LinesInFile(StructureFactorFile);
+      rewind(StructureFactorFile);
+     
+      no  = (int*) calloc(datanumbermax, sizeof(int));
+      hh = (double*) calloc(datanumbermax, sizeof(double));
+      kk = (double*) calloc(datanumbermax, sizeof(double));
+      ll = (double*) calloc(datanumbermax, sizeof(double));
+      Fhkl2 = (double*) calloc(datanumbermax, sizeof(double));
+      
 		  for(count=0; count<datanumbermax; count++)
 		{
  			no[count] = ReadParF(StructureFactorFile);
@@ -397,8 +424,21 @@ void OwnInit(int argc, char *argv[])
 		}
 			fprintf(LogFilePtr, "\nNumber of reflections: %ld\n", Repetition);
 
-//		  for(count=0; count<Repetition; count++) fprintf(LogFilePtr, "%ld  %lf  %lf  %lf  %lf\n", count, hh[count], kk[count], ll[count],  Fhkl2[count]);
+			//		  for(count=0; count<Repetition; count++) fprintf(LogFilePtr, "%ld  %lf  %lf  %lf  %lf\n", count, hh[count], kk[count], ll[count],  Fhkl2[count]);
+    }
+	else {
+	  int jj;
+	  Repetition = ReadStructureFile(StructureFactorFileName, 2, 0);
+	  no  = (int*) calloc(Repetition, sizeof(int));
+	  for (jj = 0; jj < Repetition; jj++) no[jj] = jj+1;
+	  hh = hVal;
+	  kk = kVal;
+	  ll = lVal;
+	  Fhkl2 = F2Val;
 	}
+
+	fprintf(LogFilePtr, "\nStructure file read!\n");
+      
 
 
 }/* End OwnInit */
@@ -433,7 +473,9 @@ void ReadParameterFile()
 
 		AnglOutHoriz=ReadParF(Par_Sample); AnglOutVert=ReadParF(Par_Sample); ReadParComment(Par_Sample);
 
-
+		colh = ReadParF(Par_Sample); colk = ReadParF(Par_Sample); coll = ReadParF(Par_Sample);
+		colF = ReadParF(Par_Sample); colF2 = ReadParF(Par_Sample); colDW= ReadParF(Par_Sample);
+		scaleF2 = ReadParF(Par_Sample);
 		
 /*	 checks some values */
 

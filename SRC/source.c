@@ -40,6 +40,8 @@
 /* 1.18  Sep  2012  K. Lieutenant  CSNS source                                               */
 /* 1.19  Mar  2013  K. Lieutenant  correction ISIS source brlliance                          */
 /* 1.20  May  2013  K. Lieutenant  data base versions for moderator characteristics          */
+/* 1.21  Sep  2013  K. Lieutenant  time focusing                                             */
+/* 1.22  Nov  2013  K. Lieutenant  pancake moderator                                         */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -72,6 +74,7 @@ char*     pModFileName=NULL;
 short     iDataVsn=1,          /* version of the data base for the source characteristics */
           nNumMod=0,           /* number of moderators in moderator system        */
           imod=0;              /* index of moderators in moderator system         */
+
 double    NumberOfNeutrons=0,
           dTimeMeas   =  0.0,  /* time of measurement in seconds                  */
           dLmbdWant   =  0.0,  /* desired wavelength                              */
@@ -86,9 +89,14 @@ double    NumberOfNeutrons=0,
           dDecCos,             /* cosinus and sinus of the declination of the moderator         */
           dDecSin,             /* to the instrument direction                                   */
           WindowDist  =  0.0,  /* distance moderator - (virtual) window                          */
-          WindowHeight= 10.0, 
-          WindowWidth = 10.0;
-Plane     Endpoint;
+          WindowHeight= 10.0,  // width of the propagation window
+          WindowWidth = 10.0,  // height of the propagation window
+          TofWndDist  =  0.0,  // distance moderator - position of time window   
+          TofMinWnd  =-1.0e10, // min and 
+          TofMaxWnd  = 1.0e10; // max TOF allowed in time window 
+
+Plane     Endpoint,            // structure describing (virtual) window position
+          TofWnd;              // structure describing time window position
 VtDirect  eDirDet=VT_REAL_WND; /* enum 'modus to determine neutron flight direction' */
 
 Source    stSrc;             /* source data               */
@@ -123,38 +131,39 @@ void adjustProgress(int spercent);
 
 int main(int argc, char *argv[])
 {
-   unsigned 
-     long	  i=0;
+   unsigned long i=0;
    char    ig1='A', ig2='A',
-     sText[50]="";
+           sText[50]="";
    long    TransmittedNeutrons=0,
-     BufferIndex;
+           BufferIndex;
    double  TimeAtModerator,
-     No,
-     dSolAngle=0,       /* solid angle of the neutron beam at the moderator              */
-     Phi, Theta,        /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
-     dWndY, dWndZ,      /* position where trajectory passes window 
-					      (MC choice for option eDirDet = VT_REAL_WND or VT_VIRT_WND)   */
-     Y0,                /* y-position of the starting point of the neutron in the frame of the moderator */
-     dFP,               /* flight path between moderator and window                      */
-     TimeOF,            /* time of flight from moderator to window                       */
-     CenterX, CenterY,  /* averaged values                                               */
-     CenterZ, AveTimeOF,/*     at window                                                 */
-     SumProb,           /* sum of probabilities (counts) used to calculate average values*/
-     dFact   =    1.0,  /* for 'direction by window' */
-     IsisNorm=    1.0,
-     PolNorm =    0.0;
+           TimeAtWnd,         /* time of arrival a time window  */
+           No,
+           dSolAngle=0,       /* solid angle of the neutron beam at the moderator              */
+           Phi, Theta,        /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
+           dWndY, dWndZ,      /* position where trajectory passes window 
+                                 (MC choice for option eDirDet = VT_REAL_WND or VT_VIRT_WND)   */
+           Y0,                /* y-position of the starting point of the neutron in the frame of the moderator */
+           dFP,               /* flight path between moderator and window                      */
+           TimeOF,            /* time of flight from moderator to window                       */
+           CenterX, CenterY,  /* averaged values                                               */
+           CenterZ, AveTimeOF,/*     at window                                                 */
+           SumProb,           /* sum of probabilities (counts) used to calculate average values*/
+           dFact   =    1.0,  /* for 'direction by window' */
+           IsisNorm=    1.0,
+           PolNorm =    0.0;
+
+   VectorType NullPos={0.0,0.0,0.0};
+   Neutron    Input, 
+              TestNeutron;
      
    // ISIS specific parameter
    double ISISflux=0.0;
 
-   VectorType NullPos={0.0,0.0,0.0};
-   Neutron Input;
-
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.20");
+   print_module_name("Source and Window 1.22");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -398,12 +407,21 @@ int main(int argc, char *argv[])
    WriteSimData  (dTimeMeas, dLmbdWant, stSrc.dPulseFreq);
 
    /* Propagation, Polarisation */
-   fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
-                       "  in a distance of           : %7.3f m\n"
-                       "  with a declination of      : %7.3f°\n"
-                       "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
-                       (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
-                       WindowWidth, WindowHeight, WindowDist/100., Declination, PolDegree, PolVecX, PolVecY, PolVecZ);
+   if(eDirDet!=VT_DIVERGENCE){
+     fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n"
+	                 "  in a distance of           : %7.3f m\n"
+                         "  with a declination of      : %7.3f°\n",
+                         (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), 
+                         WindowWidth, WindowHeight, WindowDist/100., Declination);
+   }
+   else
+     fprintf(LogFilePtr,"direction by divergence, propagation distance: %7.3f m\n",WindowDist/100.);
+
+   if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
+    fprintf(LogFilePtr, "  time window                : %7.3f - %7.3f ms\n", TofMinWnd, TofMaxWnd);
+
+   fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
+                      PolDegree, PolVecX, PolVecY, PolVecZ);
    if (pTraceFileName!=NULL)
       fprintf(LogFilePtr, "trace file used              : %s\n", pTraceFileName);
 
@@ -572,15 +590,25 @@ int main(int argc, char *argv[])
 
          dFact = sq(cos(Theta)*cos(Phi)) / sM->dWndFact;
          prob *= dFact; 
-
-      } else  {
-
-         /* defined by divergence */
+      } 
+      else  
+      {
+	/* defined by divergence */
          Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
          Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
          Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
          Input.Vector[1] = Input.Vector[0] * tan(Phi);
          Input.Vector[2] = Input.Vector[0] * tan(Theta);
+      }
+
+      /* Time fosusing */
+      if (TofWndDist > 0.0)
+      { CopyNeutron(&Input, &TestNeutron);
+        if (keygrav==ON)
+           TimeAtWnd = TestNeutron.Time + NeutronPlaneIntersectionGrav(&TestNeutron,TofWnd);
+        else
+           TimeAtWnd = TestNeutron.Time + NeutronPlaneIntersection1   (&TestNeutron,TofWnd);
+        if (TimeAtWnd < TofMinWnd || TimeAtWnd > TofMaxWnd) continue;
       }
             
       /* Polarization - spin vectors selected for each trajectory 
@@ -619,14 +647,14 @@ int main(int argc, char *argv[])
       // Check passing through slit and write interaction point
 
       if (eDirDet!=VT_VIRT_WND)
-      {	if (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) 
-        { WriteIAP(&Input, VT_OUT_OF_WND);
-          continue;
-        }
-        else
-    		{ WriteIAP(&Input, VT_PASSED);
-        }
-      }
+	{ if (eDirDet==VT_REAL_WND && (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) )
+	    { WriteIAP(&Input, VT_OUT_OF_WND);
+	      continue;
+	    }
+	  else
+	    { WriteIAP(&Input, VT_PASSED);
+	    }
+	}
       Input.Position[0]=0.0;
 
       if (!bTest && (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
@@ -672,20 +700,19 @@ int main(int argc, char *argv[])
 /* ----------------------------- */
 void OwnInit(int argc, char **argv)
 {
-   short  i;
+  int  i,j;
    char  *arg=NULL;
 
    /* Initialize */
    stSrc.dPulseLength = 0.002;      /* [s] LPSS pulse length 2 ms            */ 
    stSrc.pSrcName     = "";
 
-   /*  */
    for(i=1; i<argc; i++)
    {
       if(argv[i][0]!='+') 
       {
-        arg=&argv[i][2];   //free a   b B c C     e E f F g G   H   I j J   K l           o O     q Q     s       u U v V     x         Z
-        switch(argv[i][1]) //used   A         d D             h   i       k     L m M n N     p P     r R   S t T         w W   X y Y z  
+        arg=&argv[i][2];   //free a   b B c C     e E     g G   H   I j J   K l           o O     q Q             u U v V     x         Z
+        switch(argv[i][1]) //used   A         d D     f F     h   i       k     L m M n N     p P     r R s S t T         w W   X y Y z  
         {
             /* Simulation */
           case 'n':
@@ -700,9 +727,11 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'd':
-            eDirDet = (VtDirect) atol(arg); 
-            if (eDirDet < 0 || eDirDet > 2)
+            j = atol(arg); 
+            if (j < 0 || j > 2)
               Error("Wrong parameter for 'direction determination'");
+            else
+              eDirDet = (VtDirect) j;
             break;
 
           case 'A':
@@ -790,20 +819,33 @@ void OwnInit(int argc, char **argv)
             Error("polarization degree must be <= 100 ");
             break;
 
-            /* propagation */
-          case 'D':									/*  distance moderator propagation window [cm]*/
+          /* propagation */
+          case 'D':									           //  distance moderator propagation window [cm]
             WindowDist = (double) atof(arg);
             if (WindowDist < 0.0)
-              Error("Distance moderator to window must have be greater equal zero");
+              Error("Distance from moderator to window must have be greater equal zero");
             break;
           case 'i':
-            Declination = (double)atof(arg);  /* angle between moderator surface normal and beamline [deg]*/
+            Declination = (double)atof(arg);   // angle between moderator surface normal and beamline [deg]
             break;
           case 'w':
-            WindowWidth = (double)atof(arg); /*width of propagation window [cm]*/
+            WindowWidth = (double)atof(arg);   // width of propagation window [cm]
             break;
           case 'h':
-            WindowHeight = (double)atof(arg);  /* height of propagation window [cm]*/
+            WindowHeight = (double)atof(arg);  // height of propagation window [cm]
+            break;
+
+          /* time focusing */
+          case 's':									           //  distance from moderator to position of time window [cm]
+            TofWndDist = (double) atof(arg);
+            if (TofWndDist < 0.0)
+              Error("Distance from moderator to position of time window must have be greater equal zero");
+            break;
+          case 'f':
+            TofMinWnd = (double)atof(arg);     // min. TOF to position to time window [cm]
+            break;
+          case 'F':
+            TofMaxWnd = (double)atof(arg);     // max. TOF to position to time window [cm]
             break;
 
           default:
@@ -826,6 +868,9 @@ void OwnInit(int argc, char **argv)
       Endpoint.D = 0.0;
    else
       Endpoint.D = -WindowDist;
+
+    memcpy(&TofWnd, &Endpoint, sizeof(Endpoint));
+    TofWnd.D = -TofWndDist;
 }
 /* End OwnInit */
  
@@ -873,7 +918,7 @@ void OwnCleanup()
         stGeometry.pCircle[kc].vNormal[2] = 0.0;
         stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
         stGeometry.pCircle[kc].AngleBeg   =   0.0;
-        stGeometry.pCircle[kc].AngleEnd   = 360.0;
+        stGeometry.pCircle[kc].AngleEnd   = 359.99;
         kc++;
       }
       else
@@ -933,8 +978,6 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       {
         /* opening distribution file */
         pDisFile = fopen(FullParName(pMod->sLFileName),"rt");
-        if (pDisFile==NULL)
-          pDisFile = fopen(FullInstallName(pMod->sLFileName, "FILES/moderators/"),"rt");
         if (pDisFile!=NULL) 
         {
             /* reading number of lines, allocating memory and reading distribution file */
@@ -1016,8 +1059,6 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     {
       /* opening distribution file */
       pDisFile = fopen(FullParName(pMod->sTFileName),"rt");
-      if (pDisFile==NULL)
-        pDisFile = fopen(FullInstallName(pMod->sTFileName, "FILES/moderators/"),"rt");
       if (pDisFile!=NULL) 
       {
         /* reading number of lines, allocating memory and reading distribution file */
@@ -1120,8 +1161,6 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
   {
     /* openíng distribution file */
     pDisFile = fopen(FullParName(pMod->sLTFileName),"rt");
-    if (pDisFile==NULL)
-      pDisFile = fopen(FullInstallName(pMod->sLTFileName, "FILES/moderators/"),"rt");
     if (pDisFile!=NULL) 
     {
       /* reading number of lines, allocating memory and reading distribution file */

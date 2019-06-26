@@ -23,54 +23,54 @@ void OwnInit(int argc, char *argv[]);
 // Global variables
 // ----------------
 FILE	*pFileMon=NULL,        // pointer to monitor output file
-  *pFileRef=NULL,              // pointer to reference file
-  *pFileFlux=NULL;             // pointer to flux file
+      *pFileRef=NULL,              // pointer to reference file
+      *pFileFlux=NULL;             // pointer to flux file
 char  *MonitorFileName=NULL,   // name of monitor output file
-  *RefFileName=NULL,           // name of reference file
-  *FluxFileName=NULL;          // name of flux file
+      *RefFileName=NULL,           // name of reference file
+      *FluxFileName=NULL;          // name of flux file
 short  kind=0,                 // defines variable parameter in brilliance monitoring
-  src_type=0,                  // defines source type: 0: constant source  1: pulsed source
-  exclusivecount=0;            // criterion: only trajectories within limits are written
+       src_type=0,                  // defines source type: 0: constant source  1: pulsed source
+       exclusivecount=0;            // criterion: only trajectories within limits are written
 long   nBin=100,               // number of bins in monitor file
-  nColour=ANY_COLOR;                   // color of trajectory that is monitored   (0=all)
+       nColour=ANY_COLOR;                   // color of trajectory that is monitored   (0=all)
 double MinY = -10.0,  MaxY  = 10.0, // min. and max. width to be taken into account
-  MinZ = -10.0,  MaxZ  = 10.0, // min. and max. height to be taken into account
-  MinDivY=-5.0,  MaxDivY= 5.0, // min. and max. hor. div. to be taken into account
-  MinDivZ=-5.0,  MaxDivZ= 5.0, // min. and max. vert. div. to be taken into account
-  MinDivR= 0.0,  MaxDivR=10.0, // min. and max. radial div. to be taken into account
-  MinLmbd= 0.0,  MaxLmbd=20.0, // min. and max. width to be taken into account
-  MinTime=-1.0e9,MaxTime=1.0e9,// min. and max. TOF to be taken into account
-  MinRange,      MaxRange;     // min. and max. value of the variable parameter
+       MinZ = -10.0,  MaxZ  = 10.0, // min. and max. height to be taken into account
+       MinDivY=-5.0,  MaxDivY= 5.0, // min. and max. hor. div. to be taken into account
+       MinDivZ=-5.0,  MaxDivZ= 5.0, // min. and max. vert. div. to be taken into account
+       MinDivR= 0.0,  MaxDivR=10.0, // min. and max. radial div. to be taken into account
+       MinLmbd= 0.0,  MaxLmbd=20.0, // min. and max. width to be taken into account
+       MinTime=-1.0e9,MaxTime=1.0e9,// min. and max. TOF to be taken into account
+       MinRange,      MaxRange;     // min. and max. value of the variable parameter
 double DelLmbd,                // width of wavelength band used to calculate the brilliance (transfer)
-  DelTime,                     // space of time used to calculate the brilliance (transfer); only used for time dependent brilliance
-  DelY, DelZ,                  // spatial width and height used to calculate the brilliance (transfer)
-  DelDivY, DelDivZ,            // hor. and vert. divergence range used to calculate the brilliance (transfer)
-  DelDivR,                     // radial divergence range used to calculate the brilliance (transfer)
-  Freq=0.0;                    // source frequency   (from simulation.inf)
+       DelTime=0.0,                     // space of time used to calculate the brilliance (transfer); only used for pulsed sources
+       DelY, DelZ,                  // spatial width and height used to calculate the brilliance (transfer)
+       DelDivY, DelDivZ,            // hor. and vert. divergence range used to calculate the brilliance (transfer)
+       DelDivR,                     // radial divergence range used to calculate the brilliance (transfer)
+       Freq=0.0;                    // source frequency   (from simulation.inf)
 
 
 int main(int argc, char *argv[])
 {
   char	 sBuffer[512];
   char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "cm", "cm", "deg", "deg", "deg"},
-    sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
-                           "horizontal divergence", "vertical divergence", "radial divergence"};
+         sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
+                                "horizontal divergence", "vertical divergence", "radial divergence"};
 
-    char  weightTag[2][7] = {"", "weight"};
-    short  registered=0;         // criterion: trajectory is within limits set
-    long   iBin,                 // bin number
+  // char  weightTag[2][7] = {"", "weight"};
+  short  registered=0;         // criterion: trajectory is within limits set
+  long   iBin,                 // bin number
       i,                    // index of trajectories
       normalise,            // 1: absolute brilliance value   2: relative brilliance
       // crot = 0,          // number of rot angles for yz
       nTrjTot=0;            // total number of traj. within binning and eval. time
-    double dIntTot=0.0,     // total count rate within binning and eval. time
+  double dIntTot=0.0,     // total count rate within binning and eval. time
       P,                    // weight,
       Lmbd,                 // wavelength,
       Time,                 // time of flight,
       Y, Z;                 // hor. and vert. position of the neutron under consideration
-    double dBinSize,        // size of each bin
-      MonData[3];           // data in one monitor row
-    double DivY, DivZ=0, DivR,   // hor., vert. and radial divergence of the trajectory
+  double dBinSize,        // size of each bin
+         MonData[3];           // data in one monitor row
+  double DivY, DivZ=0, DivR,   // hor., vert. and radial divergence of the trajectory
       *pPosT=NULL,          /* limits of bin (minimal and maximal value)  */
       *pInt=NULL,           /* intensity (=count rate) per bin  */
       *pNorm=NULL,          /* normalisation value for each bin */
@@ -268,9 +268,9 @@ int main(int argc, char *argv[])
         else
           Brilliance = pInt[iBin] / PhaseSpaceVol / Freq / DelTime;
         
-		if (pNorm[iBin] > 0.0)
-		  Transmission = Brilliance / pNorm[iBin];
-		else
+		    if (pNorm[iBin] > 0.0)
+		      Transmission = Brilliance / pNorm[iBin];
+		    else
           Transmission = 1.0;
 
         if(pBinN[iBin]!=0)
@@ -449,20 +449,25 @@ void OwnInit(int argc, char *argv[])
     }
   }
 
+  // pulsed source assumed if time is variable parameter or frequency > 0
+  if (kind==2  || Freq > 0.0) src_type=1;
+
+  if (src_type==1 && Freq==0.0)
+    ReadSimData(&TimeMeas, &LmbdWant, &Freq);
+
   // ranges of phase space
-  DelTime = (MaxTime - MinTime)/1000.0;   // ms -> s;  only used for time dependent brilliance
+  if (src_type==1)
+  {  if (MinTime==-1.0e9 || MaxTime==1.0e9)
+      DelTime = 1.0/Freq;
+    else
+      DelTime = (MaxTime - MinTime)/1000.0;   // ms -> s;  only used for time dependent brilliance
+  }
   DelLmbd =  MaxLmbd - MinLmbd;
   DelY    =  MaxY - MinY;
   DelZ    =  MaxZ - MinZ;
   DelDivY = (MaxDivY - MinDivY) * M_PI/180.0; // deg -> rad
   DelDivZ = (MaxDivZ - MinDivZ) * M_PI/180.0; // deg -> rad
   DelDivR = (MaxDivR - MinDivR) * M_PI/180.0; // deg -> rad
-
-  // pulsed source assumed if time is variable parameter or frequency > 0
-  if (kind==2  || Freq > 0.0) src_type=1;
-
-  if (src_type==1 && Freq==0.0)
-    ReadSimData(&TimeMeas, &LmbdWant, &Freq);
 
   if (MonitorFileName==NULL) {
     fprintf(LogFilePtr,"you must define a MonitorOutputFile\n");

@@ -1,98 +1,94 @@
 /* The free non-commercial use of these routines is granted */
 /* providing due credit is given to the authors.            */
-/* Author: Géza Zsigmond, last change JUL 2002              */
+/* Author: GÃ©za Zsigmond, last change JUL 2002              */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#define	STRING_BUFFER 50
+#define STRING_BUFFER 50
 
 
-FILE *InputFilePtr;	
-FILE *OutputFilePtr;	
-char InputFileName[129], OutputFileName[129], yesno[2];    
+FILE *InputFilePtr;
+FILE *OutputFilePtr;
+char InputFileName[129], OutputFileName[129], yesno[2];
 
-void	ReadString(FILE *fpt, char stringvar[STRING_BUFFER]);
-double	ReadF(FILE *fpt);
-double	ReadE(FILE *fpt);
-int		ReadI(FILE *fpt);
-void	ReadComment(FILE *fpt);
-double	sq(double Value);
+void ReadString(FILE *fpt, char stringvar[STRING_BUFFER]);
+double ReadF(FILE *fpt);
+double ReadE(FILE *fpt);
+int ReadI(FILE *fpt);
+void ReadComment(FILE *fpt);
+double sq(double Value);
 
 long i, imax;
 double xx[1000], yc[1000], xmean, x2mean, IntegralInt, sd, SD;
 
 
-
 int main(int argc, char **argv)
 {
 
-	printf("Give output filename: \n"); scanf("%s", OutputFileName ) ; 
+  printf("Give output filename: \n"); scanf("%s", OutputFileName ) ;
 
-newcal:;
+ newcal:;
 
-	if((OutputFilePtr = fopen(OutputFileName,"a"))==NULL) 
-		{
-		printf("Can't open %s for output!\n", OutputFileName);
-		exit(-1);
-		}
+  if((OutputFilePtr = fopen(OutputFileName,"a"))==NULL)
+    {
+      printf("Can't open %s for output!\n", OutputFileName);
+      exit(-1);
+    }
 
-again:;
-	printf("Give  input filename: \n"); scanf("%s", InputFileName ) ; 
+ again:;
+  printf("Give  input filename: \n"); scanf("%s", InputFileName ) ;
 
-	if((InputFilePtr=fopen(InputFileName,"r"))==NULL) 
-		{
-		printf("Can't open %s for input!\n", InputFileName);
-		goto again;
-		}/**/
+  if((InputFilePtr=fopen(InputFileName,"r"))==NULL)
+    {
+      printf("Can't open %s for input!\n", InputFileName);
+      goto again;
+    }
 
+  IntegralInt = 0.;
+  xmean = 0. ;
+  SD = 0;
 
-	IntegralInt = 0.;
-	xmean = 0. ;
-	SD = 0;
+  for(i=0;i<1000;i++)
+    {
 
-	for(i=0;i<1001;i++)
-	{
-	
-		if((xx[i] = ReadF(InputFilePtr))==0) goto stop_it1/**/; 
+      if((xx[i] = ReadF(InputFilePtr))==0) goto stop_it1/**/;
 
-		imax = i;
+      imax = i;
 
-		yc[i] = ReadE(InputFilePtr); 	ReadComment(InputFilePtr);
-	
-		xmean += xx[i] * yc[i] ; 
+      yc[i] = ReadE(InputFilePtr);  ReadComment(InputFilePtr);
 
-		IntegralInt += yc[i];
+      xmean += xx[i] * yc[i] ;
 
-	}
-	
+      IntegralInt += yc[i];
 
-stop_it1: ; printf(" \n");
+    }
 
-		xmean *= 1./IntegralInt;
+ stop_it1: ; printf(" \n");
 
-		for(i=0;i<(imax+1);i++)
-		{
-		
-			
-				SD += sq(xx[i] - xmean)* yc[i]/IntegralInt ; 
+  xmean *= 1./IntegralInt;
 
-		}
-		
-			SD = (double) sqrt(SD);
+  for(i=0;i<(imax+1);i++)
+    {
 
-			fprintf(OutputFilePtr, "%f   %f   %f\n", xmean, SD, IntegralInt);
+      SD += sq(xx[i] - xmean)* yc[i]/IntegralInt ;
 
-		printf("mean,           SD,             SD^2,           integral\n%e   %e   %e   %e\n", xmean, SD, SD*SD, IntegralInt);
+    }
 
-		fclose(InputFilePtr);
-		fclose(OutputFilePtr);
+  SD = (double) sqrt(SD);
 
-		printf("\nNew calculation? [y/n]  \n"); scanf("%s", yesno ) ; 
-		if(*yesno == 'y') goto newcal ;
-		return 0;
+  fprintf(OutputFilePtr, "%f   %f   %f\n", xmean, SD, IntegralInt);
+
+  printf("mean,           SD,             SD^2,           integral\n%e   %e   %e   %e\n", xmean, SD, SD*SD, IntegralInt);
+
+  fclose(InputFilePtr);
+  fclose(OutputFilePtr);
+
+  printf("\nNew calculation? [y/n]  \n"); scanf("%s", yesno ) ;
+  if(*yesno == 'y') goto newcal ;
+  return 0;
 }
 
 /***********************************************************************/
@@ -103,9 +99,7 @@ stop_it1: ; printf(" \n");
 
 void ReadString(FILE *fpt, char stringvar[STRING_BUFFER])
 {
-	fscanf(fpt,"%s", stringvar ) ; 
-	
-	return ;
+  fscanf(fpt,"%s", stringvar ) ;
 }
 
 
@@ -113,20 +107,20 @@ void ReadString(FILE *fpt, char stringvar[STRING_BUFFER])
 
 double ReadF(FILE *fpt)
 {
-double value ;
-		value=0. ;
-		fscanf(fpt,"%lf", &value ) ; 
-		return value;
+  double value ;
+  value=0. ;
+  fscanf(fpt,"%lf", &value ) ;
+  return value;
 }
 
 /*  ReadE(FILE *fpt) reads one double value from parameter file */
 
 double ReadE(FILE *fpt)
 {
-double value ;
-		value=0. ;
-		fscanf(fpt,"%le", &value ) ; 
-		return value;
+  double value ;
+  value=0. ;
+  fscanf(fpt,"%le", &value ) ;
+  return value;
 }
 
 
@@ -134,10 +128,10 @@ double value ;
 
 int ReadI(FILE *fpt)
 {
-int value ;
-		value=0 ;
-		fscanf(fpt,"%d", &value ) ; 
-		return value;
+  int value ;
+  value=0 ;
+  fscanf(fpt,"%d", &value ) ;
+  return value;
 }
 
 
@@ -145,8 +139,8 @@ int value ;
 
 void ReadComment(FILE *fpt)
 {
-char comment[100], *c ;
-c=fgets(comment, 100, fpt) ;
+  char comment[100];
+  fgets(comment, 100, fpt) ;
 }
 
 
@@ -154,8 +148,5 @@ c=fgets(comment, 100, fpt) ;
 
 double sq(double Value)
 {
-	return Value * Value ;
+  return Value * Value ;
 }
-
-
-

@@ -26,7 +26,6 @@ double g_fMuTot=0.0, /* total macroscopic scattering cross-section (= sigma_tot/
   /* pointer to the parameter file name (located in argv) */
 
 
-
 /******************************/
 /**   Program                **/
 /******************************/
@@ -448,3 +447,155 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 	}
 }
 
+
+int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactorLookup[])
+{
+
+  FILE  *StrucFacFile;
+  long  NumLines, i, j;
+  char  sBuffer[CHAR_BUF_LENGTH];
+  unsigned int lengthFilename;
+  int maxColumn;
+  double* parBuffer;
+  
+ 
+  /* first open the file, add path if missing */
+  StrucFacFile=fopen(FullParName(sSampleFile),"rt"); 
+  if(StrucFacFile==NULL)
+  { fprintf(LogFilePtr,"ERROR: Can't read the structure factor data from %s\n", sSampleFile);
+    exit(-1);
+  }
+
+  /* count lines in file */
+  NumLines = LinesInFile(StrucFacFile);
+
+
+  /* get memory for StrucFac */
+  if (tag == 1) {
+    if((*structFactorLookup = (DoublePair*) calloc(NumLines, sizeof(DoublePair)))==NULL)
+      { fprintf(LogFilePtr,"ERROR: Can't allocate memory for structure factor data\n");
+	exit(-1);
+      }
+  }
+  else if (tag == 2) {
+    hVal = (double*) calloc(NumLines, sizeof(double));
+    kVal = (double*) calloc(NumLines, sizeof(double));
+    lVal = (double*) calloc(NumLines, sizeof(double));
+    F2Val = (double*) calloc(NumLines, sizeof(double));
+  }
+  else 
+    { 
+      fprintf(LogFilePtr,"ERROR: Unknown sample type!\n");
+      exit(-1);
+    }
+  /* get back to the start of the File */
+  rewind(StrucFacFile);
+  
+  lengthFilename = strlen(sSampleFile);
+
+  if (strstr(sSampleFile, ".str") == &sSampleFile[strlen(sSampleFile)-4]) {
+    colD = 1;
+    colF2 = 2;
+    maxColumn = 2;
+  }
+  else if (strstr(sSampleFile, ".laz") == &sSampleFile[strlen(sSampleFile)-4]) {
+    colh = 1;
+    colk = 2;
+    coll = 3;
+    colD = 6;
+    colF = 13;
+    colM = 17;
+    maxColumn = 18;
+  }
+  else if (strstr(sSampleFile, ".lau") == &sSampleFile[strlen(sSampleFile)-4]) {
+    colh = 1;
+    colk = 2;
+    coll = 3;
+    colM = 4;
+    colD = 5;
+    colF2 = 7 ;
+    scaleF2 = 1./100.; // conversion from fm^2 to barn
+    maxColumn = 7;
+  }
+  else if (((colD > 0 && tag==1) || (colh > 0 && colk > 0 && coll > 0 && tag == 2))  && (colF > 0 || colF2 > 0)) 
+    maxColumn = Max(Max(Max(Max(Max(colD, colF), colF2), colM), colDW), Max(colh, Max(colk, coll)));
+  else {
+    fprintf(LogFilePtr,"ERROR: Unknown structure file format! Use .dat, .str, .laz, .lau or specify the meaning of the individual columns!\n");
+    exit(-1);
+  }
+
+  parBuffer = (double*) calloc(maxColumn, sizeof(double));
+
+  /* and read the data */
+     
+  for(i=0; i < NumLines; i++)  { 
+
+    char format[1024] = "%lf ";
+    const char* sRemainBuffer;
+
+    ReadLine(StrucFacFile, sBuffer, sizeof(sBuffer)-1);        
+
+    sscanf  (sBuffer, format, &parBuffer[0]);    
+    sRemainBuffer = sBuffer;         
+
+    for (j=1; j < maxColumn; j++) {
+   
+      strncpy(&format[strlen(format)-4], "%*lf ", 5);
+      strcat(format, "%lf ");
+      sscanf(sRemainBuffer, format, &parBuffer[j]);
+
+    }
+      
+    if (tag == 1) {
+      (*structFactorLookup)[i][0] = parBuffer[colD-1];      
+      if (colF2 > 0)  {
+	(*structFactorLookup)[i][1] = parBuffer[colF2 -1]*scaleF2;
+      }
+      else if (colF > 0)
+	(*structFactorLookup)[i][1] = sq(parBuffer[colF -1])*scaleF2;
+      if (colDW > 0) (*structFactorLookup)[i][1] *= parBuffer[colDW -1];
+      // powder sample
+      if (colM > 0) (*structFactorLookup)[i][1] *= parBuffer[colM -1];
+      
+      //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]);
+      
+    }
+    else {
+      hVal[i] = parBuffer[colh -1];
+      kVal[i] = parBuffer[colk -1];
+      lVal[i] = parBuffer[coll -1];
+      
+      if (colF2 > 0) 
+	F2Val[i] = parBuffer[colF2 -1]*scaleF2;
+      else 
+	F2Val[i] = sq(parBuffer[colF -1])*scaleF2;
+      
+      if (colDW > 0) F2Val[i] *= parBuffer[colDW -1];
+    }
+  }
+
+ 
+  fclose(StrucFacFile);
+  fprintf(LogFilePtr,"Read %ld lines in the structure file.\n", NumLines);
+
+
+  if (tag == 1) {
+    qsort((void *)*structFactorLookup, (size_t) NumLines, sizeof(DoublePair), CompPair);
+    /* Sum up all equal d-spacings */
+    i=0;
+    for(j=1; j<NumLines; j++)
+      if((*structFactorLookup)[j][0]!=(*structFactorLookup)[j-1][0])
+	{ i++;
+	  (*structFactorLookup)[i][0]=(*structFactorLookup)[j][0];
+	  (*structFactorLookup)[i][1]=(*structFactorLookup)[j][1];
+	} 
+      else
+	{ (*structFactorLookup)[i][1]+= (*structFactorLookup)[j][1];
+	}
+    NumLines = i+1;
+  }
+
+  return NumLines;
+
+
+}

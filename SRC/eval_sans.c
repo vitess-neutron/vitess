@@ -3,7 +3,8 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  Nov 2011  K. Lieutenant   initial version                                            */
+/* 1.0  Nov 2011  K. Lieutenant  initial version                                             */
+/* 1.1  Nov 2013  K. Lieutenant  flight path correction                                      */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -22,6 +23,7 @@
 /* globale variable */
 int   TOF = FALSE,           /* TRUE : time of flight instrument */
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
+			bPathCor      =FALSE,  /* TRUE : correct TOF for real flight path from sample to detector */
       /*bExclCount =FALSE,      TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
@@ -34,7 +36,8 @@ long  nbins,                 /* number of bins */
 double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
                                   selector) instrument                                                 */
        deadspotangle=0,      /* excludes all neutrons with a scattering angle < deadspotangle [deg] */
-       Flightpath=0,         /* length of neutron flight path [cm] */
+       Flightpath0=0.0,      /* standard length of neutron flight path [cm] */
+       DetDist=0.0,          /* detector distance             [cm] */
        TimeOffset=0,         /* global shift of the neutron time t= t-TimeOffset [ms] */
        Qmin,Qmax,            /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
 			 ProbScat,             /* scattering probability of the isotropic scatterer */
@@ -78,12 +81,14 @@ int main(int argc, char *argv[])
     Phi,                /* scattering direction phi               */
     Q,                  /* Q value of the scattering              */
     Svalue,             /* value S(Q)                             */
-	  prob=0;             /* weight of the trajectory               */
+	  prob=0,             /* weight of the trajectory               */
+    Flightpath=0.0,     // real length of neutron flight path [cm] 
+    DetPath=0.0;        // path length from sample to position of detection
 
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast_sans 1.0");
+	print_module_name("eval_elast_sans 1.1");
 	OwnInit(argc, argv);
 
   bRefFile=ReadRefSpec(rmid, rint);
@@ -131,10 +136,20 @@ int main(int argc, char *argv[])
 			CHECK
 
 			CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+
+      // flightpath correction if detector distance is given
+      if (bPathCor)
+      { // origin of co-ordinate system in sample center
+        DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        Flightpath = Flightpath0 + DetPath - DetDist;
+      }
+      else
+      { Flightpath = Flightpath0;
+      }
+
 			prob     = InputNeutrons[i].Probability;
 			time     = InputNeutrons[i].Time - TimeOffset;
 			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
-			// TwoTheta = InputNeutrons[i].Vector[0];
 
 			/* Writing out all neutrons, if 'exclusive counts = no' is set */
 			// if (bExclCount==FALSE)		
@@ -338,9 +353,17 @@ void OwnInit(int argc, char *argv[])
         */
 
 				case 'l':
-					Flightpath = atof(arg);  /* length of neutron flight path [cm] */
-					if (Flightpath <= 0.0)
+					Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
+					if (Flightpath0 <= 0.0)
 						Error("you must define a flight path > 0.0");
+					break;
+
+				case 'L':
+					DetDist = atof(arg);  /* length of neutron flight path [cm] */
+					break;
+
+				case 't':
+					bPathCor = atol(arg);     /*  correct flight path length for location of detection */
 					break;
 
 				case 'T':

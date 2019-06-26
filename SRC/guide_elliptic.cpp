@@ -1,15 +1,18 @@
 #ifndef GUIDE_ELLIPTIC_CPP
 #define GUIDE_ELLIPTIC_CPP
 
+/********************************************************************************************/
+/*  VITESS module 'guide_elliptic.cpp'                                                      */
+/*                                                                                          */
+/* The free non-commercial use of these routines is granted                                 */
+/* providing due credit is given to the authors.                                            */
+/* 1.0 Oct 2012  D. Nekrassov  initial version                                              */
+/* 1.1 Nov 2013  D. Nekrassov  added m-values as input parameters                           */
+/********************************************************************************************/
+
 #include <math.h>
-//#define isnan(x) ((x) != (x))
 
-// extern "C" {
-// #include "init.h"
-// #include "softabort.h"
-// #include "general.h"
-// }
-
+#define thetaCNi 0.099138
 
 #include "guide_elliptic.h"
 
@@ -153,6 +156,10 @@ void OwnInit(int argc, char *argv[])
 	  LoadReflFile(&reflContainer[0]);
           break;
 
+	  case 'e':  /* left plane */
+	    mNumber[0] = atof(&argv[i][2]);  	    
+	    break;
+
         case 'I':  /* right plane */
           if( (fReflFileRightPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL) //Reflectivity file right plane
           {	fprintf(LogFilePtr,"ERROR: File %s containing coating of right plane could not be opened\n",&argv[i][2]);
@@ -163,8 +170,12 @@ void OwnInit(int argc, char *argv[])
 	  reflContainer[1].filename = reflFileNameRight.c_str();
 	  LoadReflFile(&reflContainer[1]);
           break;
-
-        case 'j':    /* top plane */
+	  
+	  case 'E':  /* right plane */
+	    mNumber[1] = atof(&argv[i][2]);  
+	    break;
+	    
+	  case 'j':    /* top plane */
           if( (fReflFileTopPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL) //Reflectivity file top plane
           {
             fprintf(LogFilePtr,"ERROR: File %s containing coating of top plane could not be opened\n",&argv[i][2]);
@@ -176,6 +187,10 @@ void OwnInit(int argc, char *argv[])
 	  LoadReflFile(&reflContainer[2]);
           break;
 
+	  case 'f':  /* top plane */
+	    mNumber[2] = atof(&argv[i][2]);  
+	    break;
+	    
         case 'J':    /* bottom plane */
           if( (fReflFileBottomPointer = fopen(FullParName(&argv[i][2]),"r"))==NULL)  //Reflectivity file bottom plane
           {
@@ -188,6 +203,10 @@ void OwnInit(int argc, char *argv[])
 	  LoadReflFile(&reflContainer[3]);
           break;
 
+        case 'F':  /* bottom plane */
+	  mNumber[3] = atof(&argv[i][2]);  
+	  break;
+
 	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
 	    exit(-1);
@@ -196,6 +215,15 @@ void OwnInit(int argc, char *argv[])
       }
     }
 
+   if (!reflContainer[0].pfile)
+     FillReflContainer(&reflContainer[0], mNumber[0]);
+   if (!reflContainer[1].pfile)
+     FillReflContainer(&reflContainer[1], mNumber[1]);
+   if (!reflContainer[2].pfile)
+     FillReflContainer(&reflContainer[2], mNumber[2]);
+   if (!reflContainer[3].pfile)
+     FillReflContainer(&reflContainer[3], mNumber[3]);
+   
 
    if (distToFocusVer < 0) distToFocusVer = distToFocusHor;
 
@@ -246,7 +274,8 @@ void OwnInit(int argc, char *argv[])
        fprintf(LogFilePtr,"Horizontal shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
      }
-
+     startPoint = -1.*lengthGuide/2.;
+     endPoint = lengthGuide/2.;     
    }
 
    //Check if enough parameters were given
@@ -299,11 +328,8 @@ void OwnInit(int argc, char *argv[])
        fprintf(LogFilePtr,"Vertical shape is supposed to be constant but entrance and exit widths differ!");
        exit(-1);
      }
-     if (shapeHor != 2) { 
-       startPoint = -1.*lengthGuide/2.;
-       endPoint = lengthGuide/2.;
-     }
    }
+  
 
    SetGeometryData(); 
 
@@ -327,6 +353,8 @@ void OwnInit(int argc, char *argv[])
 
 void   LoadReflFile(ReflFile *pReflFile)
 {
+  // if (pReflFile->maxdata > 0) return;
+  
   long   count = 0, i = 0, nLines = 0;
   char   sBuffer[512]="";
 
@@ -349,6 +377,25 @@ void   LoadReflFile(ReflFile *pReflFile)
   return;
 }
 
+// Fill reflectivity arrays by calculating the reflectivity usind the formula
+// for the Swiss Neutronics supermirrors
+void FillReflContainer(ReflFile* reflStruct, double m)
+{
+
+  if (m < 0) {
+    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!");
+    exit(-1);
+  }
+
+  double lambda = 1./thetaCNi;
+  reflStruct->maxdata = (int) (m*100. + 200);
+  reflStruct->Rdata = (double*) calloc(reflStruct->maxdata, sizeof(double));
+
+  for (int i = 0; i < reflStruct->maxdata; i++) reflStruct->Rdata[i] = ReflSN(lambda, (double)i*0.01, m);
+
+  return;
+
+}
 
 int ProcessNeutron(Neutron* n)
 { 
@@ -433,6 +480,7 @@ int ProcessNeutron(Neutron* n)
 	n->Vector[1] = nTemp1.Vector[1];
 	n->Vector[2] = nTemp2.Vector[2];
 	n->Vector[0] = sqrt(1. - nTemp1.Vector[1]*nTemp1.Vector[1] - nTemp2.Vector[2]*nTemp2.Vector[2]);
+	tof += (nTemp1.Position[0] - xMin)*100./(n->Vector[0]*V_FROM_LAMBDA(n->Wavelength));
 
 	if (changeColor) n->Color += 101;
 	if (n->Probability <= wei_min)  {
@@ -441,7 +489,7 @@ int ProcessNeutron(Neutron* n)
 	}
 	WriteIAPEllGuide(n, VT_REFLECTED);
 	WriteIAPEllGuide(n, VT_REFLECTED);
-
+	
 	xMin = nTemp1.Position[0];
 	simultaneousCollisions++;
 
@@ -449,24 +497,28 @@ int ProcessNeutron(Neutron* n)
       
       // Reflection takes place first in horizontal plane
       else if (distTempX1 < distTempX2) {	
-	
+	 
 	// Here something went wrong, first reflection takes place in the horizontal plane,
 	// but in vertical the trajectory already left the guide!
 	if (fabs(nTemp1.Position[2]/100.) > fabs(CalculateGuidePoint(nTemp1.Position[0], 2, 1))) {
-	  
+
+#if DEBUG	  
 	  double ellipseAtLastCollision = CalculateGuidePoint(nTemp1.Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;
+	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, vert ellipse at last collision: %f", distTempX1, ellipseAtLastCollision);
 	  if (distTempX1 > 0) {
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
-	    // 	  ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
-	    // 	  nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
-	    // ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
-	    // double x = n->Position[0];
-	    // double slope = 0;
-	    // if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
-	    // fprintf(LogFilePtr,"Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
-	    // 	  ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
+	    DEBUG_OUT("Coordinates for bad neutrons from y-reflection: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f \n",  nTemp1.Position[0], nTemp1.Position[1], nTemp1.Position[2],
+		       ellipseAtLastCollision, nTemp1.Vector[0], nTemp1.Vector[1], nTemp1.Vector[2]);
+	     DEBUG_OUT("Coordinates for bad neutrons from z-reflection: x %f, y %f, z %f, dir_x %f, dir_y %f, dir_z %f \n", nTemp2.Position[0], nTemp2.Position[1], nTemp2.Position[2],
+			nTemp2.Vector[0], nTemp2.Vector[1], nTemp2.Vector[2]);	  
+	     ellipseAtLastCollision = CalculateGuidePoint(n->Position[0], 2, fabs( n->Position[2])/ n->Position[2])*100.;	  
+	     double x = n->Position[0];
+	     double slope = 0;
+	     if (shapeVer == 2 ) slope = (-1.)*fabs(n->Position[2])/n->Position[2]*shortAxisVer/(longAxisVer*longAxisVer)*x/sqrt(1. - x*x/(longAxisVer*longAxisVer))*n->Vector[0];	  
+	     DEBUG_OUT("Coordinates for bad neutrons before: x %f, y %f, z %f, z from ellipse %f, dir_x %f, dir_y %f, dir_z %f, slope of ellipse %f \n", n->Position[0], n->Position[1], n->Position[2],
+			ellipseAtLastCollision, n->Vector[0], n->Vector[1], n->Vector[2], slope);
 	  }
+#endif
+
 	  badNeutrons++;
 	  return 0;
 
@@ -493,6 +545,10 @@ int ProcessNeutron(Neutron* n)
 	// Here something went wrong, first reflection takes place in the vertical plane,
 	// but in horizontal the trajectory already left the guide!
 	if (fabs(nTemp2.Position[1]/100.) > fabs(CalculateGuidePoint(nTemp2.Position[0], 1, 1))) {
+	  double guideAtLastCollision = CalculateGuidePoint(nTemp2.Position[0], 1, 1)*100.;
+#if DEBUG
+	  DEBUG_OUT("Bad neutrons from y-reflection: dist1 %f, dist2 %f, y-position at dist2: %f", distTempX1, distTempX2, nTemp2.Position[1]/100.);
+#endif
 	  badNeutrons++;
 	  return 0;
 	}
@@ -528,8 +584,8 @@ int ProcessNeutron(Neutron* n)
     }    
 
   }
-  
-  //  fprintf(LogFilePtr,"Neutron fully propagated \n");
+
+
   return 1;
 
 }
@@ -831,7 +887,10 @@ bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int pla
     // Propagate also perpendicular direction    
     int otherplane = 0;
     if (plane == 1) otherplane = 2;
-    else otherplane = 1;
+    else {
+      otherplane = 1;
+      xMin += vertOffset;
+    }
 
     double m = n->Vector[otherplane] / n->Vector[0];
     double b = m*xMin*(-1.) + neutronPosition.x[otherplane];  
@@ -1078,7 +1137,6 @@ void OwnCleanup()
   fprintf(LogFilePtr,"Length of guide: %f , xLow: %f , xHigh: %f vertOffset %f \n", lengthGuide, startPoint, endPoint, vertOffset);
   fprintf(LogFilePtr,"Start width: %f cm, start height %f cm, end width %f cm, end height %f cm\n", startWidth, startHeight, endWidth, endHeight);
 
-  for (int i = 0; i < 4; i++) free(reflContainer[i].Rdata);
 
   double trueX = startPoint;
   double shiftedX = 0;
@@ -1143,10 +1201,10 @@ void SetGeometryData()
       stGeometry.pHull[0].vNormal[2] = 0.;
       
       stGeometry.pHull[0].Length = lengthGuide*100.;
-      stGeometry.pHull[0].WidthIn = startWidth*100.;
-      stGeometry.pHull[0].WidthOut = endWidth*100.;
-      stGeometry.pHull[0].HeightIn = startHeight*100.;
-      stGeometry.pHull[0].HeightOut = endHeight*100.;
+      stGeometry.pHull[0].WidthIn = startWidth;
+      stGeometry.pHull[0].WidthOut = endWidth;
+      stGeometry.pHull[0].HeightIn = startHeight;
+      stGeometry.pHull[0].HeightOut = endHeight;
 
     }
 

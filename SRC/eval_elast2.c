@@ -49,8 +49,8 @@ int   probactiv=TRUE,        /* probactiv=1 means probabilities activated,
 
 long  nbinsX,                 /* number of bins in X */
       nbinsY,                 /* number of bins in Y */
-      nColour,               /* colour necessary for the trajectory to be regarded
-                                colour 0 means: all trajectories are regarded  */
+      nColour = -1,          /* colour necessary for the trajectory to be regarded
+                                colour -1 means: all trajectories are regarded  */
       minColor = -1,         /* colour necessary for the trajectory to be regarded
                                 colour -1 means: all trajectories are regarded  
                                 use neutrons with color >= minColour */
@@ -194,31 +194,10 @@ int main(int argc, char *argv[])
       dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
 
       if (scatang==0) { //use direction cosine
-			  CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
       } else {
         /* select traj. according to colour: (nColour=0 means: all colours accepted) */
-        /*if (!((nColour_c!=0 && nColour_c!=InputNeutrons[i].Color) || 
-              (minColor_c >= 0 && InputNeutrons[i].Color < minColor_c) ||
-              (maxColor_c >= 0 && InputNeutrons[i].Color > maxColor_c))) {
-          TwoTheta = M_PI/2.-atan2(InputNeutrons[i].Position[0], sdpath);
-          CopyVector(InputNeutrons[i].Position, Dir);
-          NormVector(Dir);
-          CartesianToSpherical(Dir, &TwoTheta, &Phi);*/
-        //CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-          TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
-        /*} else {
-          TwoTheta = atan2(sqrt(InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]), sdpath);
-          /*if (!((nColour_v!=0 && nColour_v!=InputNeutrons[i].Color) || 
-                (minColor_v >= 0 && InputNeutrons[i].Color < minColor_v) ||
-                (maxColor_v >= 0 && InputNeutrons[i].Color > maxColor_v))) {
-          } else {*/
-           /* if (!((nColour_r!=0 && nColour_r!=InputNeutrons[i].Color) || 
-                (minColor_r >= 0 && InputNeutrons[i].Color < minColor_r) ||
-                (maxColor_r >= 0 && InputNeutrons[i].Color > maxColor_r))) {
-              TwoTheta = 2.*M_PI-TwoTheta;
-            }*/
-          //}
-        //}
+        TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
       }
       
 			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
@@ -239,7 +218,7 @@ int main(int argc, char *argv[])
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
 			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=0 && nColour!=InputNeutrons[i].Color) continue;
+			if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
 			if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
 			if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
 
@@ -586,7 +565,9 @@ void OwnInit(int argc, char *argv[])
 		Error("lower bound value must not be zero for logarithmic binning");
 	if (fspectra == NULL)
 		Error("no spectra file given");
-
+  
+  fprintf(LogFilePtr,"Color: %ld\n",nColour);
+  
   if (scatang==TRUE) {
     if (sdpath<=0.)
       Error("You must provide a minimum source detector distance to evaluate the position.");

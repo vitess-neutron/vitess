@@ -15,11 +15,16 @@ extern
 double arP[MAX_SIM][NMAX+1], // function F to parameter set P 
        arF[MAX_SIM][IMAX+1]; // for sets 0 ... nSim-1 
 
+extern char sFomPrg[FN_LEN];
+
 #ifdef VT_WINDOWS
  char cSlash = '\\';
 #else
  char cSlash = '/';
 #endif
+
+static char sPipePrg[FN_LEN]="gener_pipe",
+            sGridPrg[FN_LEN]="./gridrun -o";
 
 
 /*********************************************************************/
@@ -29,9 +34,6 @@ static short WriteAllP(const char* sFilename, const short mMin, const short mMax
 static short ReadAllF (const char* sFilename, const short mMin, const short mMax);
 static short AddPathAndExt(char* sCmdName);
 static void  ChangeSlash(char* pStr);
-
-static char sPipeCmdName[FN_LEN]="gener_pipe",
-            sFomCmdName [FN_LEN]="fom";
 
 
 /*********************************************************************/
@@ -47,22 +49,24 @@ static char sPipeCmdName[FN_LEN]="gener_pipe",
 /*         mPar     : number of parameters per set (P1 ...P_npar)    */
 /* return: TRUE/FALSE                                                */
 /*********************************************************************/
-short  ExtFunction (double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar)
+short  FitFctPc(double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar)
 {
   return FALSE;
 }
 
-short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar)
+short  OptFctPc(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar)
 {
+  static short bPath=FALSE;
   short rc=FALSE, rcp, rcf;
 
-  if (strlen(sPipeCmdName)==10)
-    AddPathAndExt(sPipeCmdName);
-  if (strlen(sFomCmdName)==3)
-    AddPathAndExt(sFomCmdName);
+  if (!bPath)
+  { AddPathAndExt(sPipePrg);
+    AddPathAndExt(sFomPrg);
+    bPath = TRUE;
+  }
 
   WriteAllP   ("Pcomm.dat", mMin, mMax, nPar);
-  rcp = system(sPipeCmdName);
+  rcp = system(sPipePrg);
 
   if (rcp > 0)
   { 
@@ -72,12 +76,44 @@ short  ExtFunctions(const double X[IMAX+1], const int nPts, const short mMin, co
     system("chmod u+x Simulations.sh");
     system("./Simulations.sh");
 #endif 
-    rcf = system(sFomCmdName);
+    rcf = system(sFomPrg);
 
     if (rcf)
       rc=ReadAllF("Fcomm.dat", mMin, mMax);
   }
   return rc;
+}
+
+
+short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, const short mMax, const short nPar, char* sGridOpt)
+{
+  static short bPath=FALSE;
+  short rc=FALSE, rcf;
+
+#ifdef VT_WINDOWS
+  Error("Optimization on cluster only supported for Unix systems"); 
+  return(FALSE);
+#else
+  char sGridCmd[120];
+
+  if (!bPath)
+  { AddPathAndExt(sFomPrg);
+    bPath = TRUE;
+  }
+
+  WriteAllP("Pcomm.dat", mMin, mMax, nPar);
+
+  sprintf(sGridCmd, "%s %s", sGridPrg, sGridOpt);
+  system("chmod u+x gridrun");
+  system(sGridCmd);
+
+  rcf = system(sFomPrg);
+
+  if (rcf)
+    rc=ReadAllF("Fcomm.dat", mMin, mMax);
+  
+  return rc;
+#endif 
 }
 
 

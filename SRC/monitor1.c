@@ -87,7 +87,9 @@ int main(int argc, char *argv[])
          dEvalTimeMin=-1.0e10, /* min. and max. TOF to be taken into account */
          dEvalTimeMax=1.0e10,
          dIntMax=-1.0e10,      /* maximal count rate found in one bin        */
-         dBinSize;             /* size of each bin                           */
+         dBinSize,             /* size of each bin                           */
+         MonData;              /* reference data                             */
+
   double dTimeMeas,            /* measuring time     (from simulation.inf, not needed) */
          dLmbdWant,            /* desired wavelength (from simulation.inf, not needed) */
          dFreq;                /* source frequency   (from simulation.inf)   */
@@ -262,7 +264,9 @@ int main(int argc, char *argv[])
     { pNorm[iBin] =(Maxy-Miny)/(double)nBiny;
     }
     else if (normalise==2 && ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1))
-      { sscanf(sBuffer, "%lf", &(pNorm[iBin]));
+      { 
+	StrgScanLF(sBuffer, &MonData, 1, 1);
+	pNorm[iBin] = MonData;  
     }
     else
     { pNorm[iBin] = 1.0;
@@ -331,18 +335,15 @@ int main(int argc, char *argv[])
         break;
 
       case 3: // monitor div_y
-        Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+        if (InputNeutrons[i].Vector[0] >=0) Divy = (double)atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	else Divy = (double)atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
         Divy*=180.0/M_PI;
-        if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          Divy=0.0;
         iBin = (int)floor(nBiny*(Divy - Miny)/(Maxy-Miny));
         break;
 
       case 4: // monitor div_z
-        Divz=(double)atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+        Divz=(double)atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));
         Divz*=180.0/M_PI;
-        if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          {Divy=0.0;}
         iBin = (int)floor(nBiny*(Divz - Miny)/(Maxy-Miny));
         break;
 
@@ -419,8 +420,12 @@ my_exit:
     for (iBin = 0; iBin < nBiny; iBin++)
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
-      fprintf(pFileMon,"%12.4e   %14.7e   %14.7e %12.2f\n",
+      if(pNorm[iBin]!=0)
+	fprintf(pFileMon,"%12.4e %14.7e   %14.7e %12.2f \n",
                        (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
+      else
+	fprintf(pFileMon,"%12.4e   0.0000000   0.0000000  0.0000000\n",
+                       (pPosT[iBin]+pPosT[iBin+1])/2.0);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
     fclose(pFileMon);

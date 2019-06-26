@@ -9,6 +9,7 @@
 /* 1.2  Jul 2004  K. Lieutenant  feature 'space between channels at exit' reactivated;     */
 /*                               correction for radius=0;                                  */
 /* 1.3  Mar 2004  K. Lieutenant  files written to parameter directory or install_dir/FILES */
+/* 1.4  Jun 2013  K. Lieutenant  conical shape of channels allowed                         */
 /*******************************************************************************************/
 
 #include <stdlib.h>
@@ -30,15 +31,17 @@ void   GetString(char* pString, const char* pText);
 
 int main(int argc, char* argv[])
 {
-	double dRadius,            /* radius of the bender    */
-	       dWaferThick,        /* thickness of each wafer */ 
-	       dLength     = 0.0,  /* length of the bender    */
-	       dDistEntr   = 0.0,  /* distance between channels at the entrance */
-	       dDistExit   = 0.0,  /* distance between channels at the exit */
-	       dAngle      = 0.0;  /* bender angle relativ to x-axis */
-	long   nNoChannels = 0,    /* Number of channels        */
-	       nNoWafers   = 0;    /* Number wafers per channel */			
-	short  bConcentric = FALSE;/* criterion: concentric circles */
+	double dRadius,             // radius of the bender 
+	       dWaferThkIn,         // thickness of each wafer at entrance 
+	       dWaferThkOut,        // thickness of each wafer at exit 
+         dWaferThkAvrg,       // average wafer thickness
+	       dLength     = 0.0,   // length of the bender 
+	       dDistEntr   = 0.0,   // distance between channels at the entrance
+	       dDistExit   = 0.0,   // distance between channels at the exit 
+	       dAngle      = 0.0;   // bender angle relativ to x-axis 
+	long   nNoChannels = 0,     // Number of channels 
+	       nNoWafers   = 0;     // Number wafers per channel		
+	short  bConcentric = FALSE; // criterion: concentric circles
 	char   sFileName[50], sConcentr[9],
 	      *pFullName;
 	FILE*  pSurfaceFile;
@@ -52,7 +55,8 @@ int main(int argc, char* argv[])
 	        "is no difference between N channels of 1 wafer and 1 channel of N wafers.\n\n");
 	nNoChannels = GetLong  ("\nNumber of channels                       ");
 	nNoWafers   = GetLong  ("Number wafers per channel                ");
-	dWaferThick = GetDouble("Thickness of wafer                  [cm] ");
+	dWaferThkIn = GetDouble("Thickness of wafer at entrance      [cm] ");
+	dWaferThkOut= GetDouble("Thickness of wafer at exit          [cm] ");
 	dDistExit   = GetDouble("Space between channels at exit      [cm] ");
 	dRadius     = GetDouble("Radius of the bender (0 = straight) [cm] ");
 	// dAngle   = GetDouble("Bender angle relativ to x-axis     [deg] ");
@@ -63,14 +67,15 @@ int main(int argc, char* argv[])
 		bConcentric = TRUE;
 
 	if (strlen(sFileName) > 0)
-	{	if (nNoChannels > 0  &&  dRadius != 0.0  &&  dWaferThick > 0.0  &&  strlen(sFileName) > 0) 
+	{	if (nNoChannels > 0  &&  dRadius != 0.0  &&  dWaferThkIn > 0.0  &&  dWaferThkOut > 0.0  &&  strlen(sFileName) > 0) 
 		{	
-			double dHeightEntr, dHeightExit,      /* Border of wafer at entrance and exit */
-					 dHeightE0=0.0,                 /* Exit height for angle 0°   */
-					 dRadCenter=0.0;                /* Radius of centered circles */
+			double dYEntr, dYExit,      /* Border of wafer at entrance and exit */
+			       dYE0=0.0,                 /* Exit height for angle 0°   */
+			       dRadCenter=0.0;                /* Radius of centered circles */
 			long   nCh, nWa;
 
-			dRadCenter = dRadius;
+			dRadCenter   = dRadius;
+      dWaferThkAvrg= (dWaferThkIn+dWaferThkOut)/2.0;
 
 			// GenerateSurfaceFile
 			pFullName = FullParName(sFileName);
@@ -79,29 +84,29 @@ int main(int argc, char* argv[])
 			pSurfaceFile = fopen(pFullName, "w");
 
 			if (pSurfaceFile)
-			{	/* dHeightE0  = dRadius - sqrt(dRadius*dRadius - length*length); */
-				dHeightEntr = -0.5*(nNoChannels*nNoWafers*dWaferThick + (nNoChannels-1)*dDistEntr);
-				dHeightExit = -0.5*(nNoChannels*nNoWafers*dWaferThick + (nNoChannels-1)*dDistExit)
-								 + dHeightE0 + dLength*tan(dAngle*PI/180.);
+			{	/* dYE0  = dRadius - sqrt(dRadius*dRadius - length*length); */
+				dYEntr = -0.5*(nNoChannels*nNoWafers*dWaferThkIn  + (nNoChannels-1)*dDistEntr);
+				dYExit = -0.5*(nNoChannels*nNoWafers*dWaferThkOut + (nNoChannels-1)*dDistExit)
+								     + dYE0 + dLength*tan(dAngle*PI/180.);
 				if (dRadius != 0 && bConcentric)
-					dRadCenter  = dRadius + 0.5*nNoChannels*nNoWafers*dWaferThick;
+					dRadCenter  = dRadius + 0.5*nNoChannels*nNoWafers*dWaferThkAvrg;
 
 				for (nCh = 1; nCh <= nNoChannels; nCh++) 
 				{
 					/* First surface or surface between channels, if there is a spacing at the exit */
 					if (nCh==1 || dDistExit > 0.0)
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dHeightEntr, dHeightExit, dRadCenter);
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dYEntr, dYExit, dRadCenter);
 
 					for (nWa = 1; nWa <= nNoWafers; nWa++) 
 					{
-						dHeightEntr += dWaferThick;
-						dHeightExit += dWaferThick;
+						dYEntr += dWaferThkIn;
+						dYExit += dWaferThkOut;
 						if (dRadius != 0 && bConcentric)
-							dRadCenter -= dWaferThick;
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dHeightEntr, dHeightExit, dRadCenter);
+							dRadCenter -= dWaferThkAvrg;
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dYEntr, dYExit, dRadCenter);
 					}
-					dHeightEntr += dDistEntr;
-					dHeightExit += dDistExit;
+					dYEntr += dDistEntr;
+					dYExit += dDistExit;
 				}
 
 				printf ("\nData written to %s\n", pFullName);

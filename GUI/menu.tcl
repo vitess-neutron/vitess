@@ -72,6 +72,7 @@ proc popMenu {w args} {
     switch [lindex $a 0] {
       c {$w add command -font $f -label $l -command $m}
       s {eval $w add $c}
+      S {$w add command -label $l -font $f }
       m {$w add cascade -font $f -label $l -menu $w.$m}
     }
   }

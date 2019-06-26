@@ -215,7 +215,7 @@ proc pasteModPars {} {
 ###
 proc controlMenu {w} {
   global neededModulesSET menuColor
-  global AvailableSET SourceDirectory Htmlhelp
+  global AvailableSET SourceDirectory Htmlhelp tcl_platform
 
   mMenu $w.fil File
   mMenu $w.copa Edit
@@ -237,6 +237,7 @@ proc controlMenu {w} {
     {c "Import Pipe" {importPipe}}
     {m "Export as" mex} s
     {c "Generate Series" {genSeries .gser}} s
+    {c "Merge Results" {mergeRes .mres}} s
     {c "New *.inf File" editInfFile}
     {c "Edit *.inf File" {editInfFile 1}} s
   }
@@ -271,6 +272,7 @@ proc controlMenu {w} {
     lappend lmenu \
         {c "Plot Cmd" {plotCmdWindow}}\
         {c "Plot using Template" {plotTemplateCmdWindow}} s\
+        {c "Close gnuplot Windows" {closeCmdHandles}} s\
         {c "New Template" {newTemplate}}\
         {c "Edit Template" {editTemplate}}
   }
@@ -323,6 +325,7 @@ proc controlMenu {w} {
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
       {c Trajectories {showHelpItem trajectories.html}} \
+      {c Optimization {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
       {m "Modules A - F" m1} \
@@ -400,6 +403,7 @@ proc controlMenu {w} {
       {c "Bigger fonts" biggerFonts} \
       {m Fonts afont} s\
       {m "Check mode" checkmode} \
+      {m "Save Instr. mode" savemode} \
       {m "Output compression" compmode} \
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
@@ -477,18 +481,25 @@ proc controlMenu {w} {
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
 
+  forceDef SaveInstrmode "with series"
+  cascEntries $wo.savemode SaveInstrmode normal "with series"
+
   forceDef Execmode normal
   cascEntries $wo.execmode Execmode normal "save old" "copy results"
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
-  # if we have an X3D viewer installed, prefer this over SVG
-  if {[getPreferredX3DCmd] != ""} {set emode X3D} else {set emode "SVG xz"}
-  forceDef trajmode $emode
+  # prefer X3D over SVG
+  forceDef trajmode X3D
   cascEntries $wo.trajmode trajmode X3D "SVG xz" "SVG xy" textfile
 
-  forceDef browse_ext_mode select
+  if {$tcl_platform(os) == "Darwin"} {
+    # Mac Darwin won't let you select files visible, which haven't a given extension
+    forceDef browse_ext_mode all
+  } else {
+    forceDef browse_ext_mode select
+  }
   cascEntries $wo.browse_ext_mode browse_ext_mode all select
 
   forceDef Compmode none
@@ -715,7 +726,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.1"
+  set t "VITESS 3.2"
   set maxModule 100
   set DummyEntry "--inactive--"
 
@@ -910,6 +921,7 @@ proc doSnapshot {} {
     set fdir [file join [globVal SourceDirectory] FILES .saved]
     file mkdir $fdir
     set fn [file join $fdir $i.gui]
+    # last parameter 0 means we do this in a snap context
     storeAll gui "" $fn 0
   }
 

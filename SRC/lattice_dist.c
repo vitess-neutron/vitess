@@ -28,6 +28,9 @@ static long   SquareSum(const short h, const short k, const short l);
 static short  NextHkl  (short* p_h, short* p_k, short* p_l, const long nSumMax);
 static long   IncHkl   (short* p_h, short* p_k, short* p_l, const short max);
 static short  MultPlane(const short h, const short k, const short l);
+
+static short  PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, double A, double M, short bp);
+
 static double GetDouble(const char* pText);
 static long   GetLong  (const char* pText);
 static void   GetString(char* pString, const char* pText);
@@ -40,66 +43,80 @@ int main(int argc, char* argv[])
 	       dB1, dB2,       // Scattering lengths of Atom 1 and 2 
 	       dStrFac,        // Structure Factor without Debye-Waller-faktor
 	       dStrFacDw,
+	       dStrFacDwS,
 	       dStrFacSum,     // Structure Factors incl. Debye-Waller-faktor
 	       dDist,dDistOld, // Distance of planes
 	       dFdw,           // Debye-Waller-faktor
 	       dT,             // sample temperature
 	       dTd,            // Debye temperature
-	       dMav,           // average mass of an atom
+	       Mamu,           // average mass of an atom [amu]
+	       Mav,            // average mass of an atom [kg]
+         rho,            // density          [kg/l]
+         ucv,            // unit cell volume [Ang^3]
 	       dQ;             // momentum transfer
 	short  h=0, k=0, l=0, nHaeuf, rc;
 	long   nSumMax;
 	char   cGitter='A',
-	       sFileName[50], 
-	      *pFullName;
-	FILE*  pFile=NULL;
+         sSample   [256],
+	       sPdFileName[50], 
+	       sSxFileName[50];
+	FILE  *pPdFile=NULL,
+        *pSxFile=NULL;
 
 	Init(argc, argv, VT_TOOL);
 
-	printf("---------------------------------------------------------------------------\n");
-	printf("Generation of a file containing lattice distances as used in 'SamplePowder'\n");
-	printf("---------------------------------------------------------------------------\n");
-	printf("\nWarning: program can only treat the FCC lattice up to now !\n\n");
+	printf("-------------------------------------------------------------------------------\n");
+	printf("Generation of structure factor files for 'sample_powder' and 'sample_singcryst'\n");
+	printf("-------------------------------------------------------------------------------\n");
+	printf("\nWarning: up to now, program can only treat FCC lattice!\n\n");
 
-	// reading of input data
-	dA      =  GetDouble("Lattice constant   [Ang]: ");
-	dB1     =  GetDouble("scattering length 1 [fm]: ");
-	dB2     =  GetDouble("scattering length 2 [fm]: ");
-	nSumMax =  GetLong  ("max. h*h + k*k + l*l    : ");
-	dTd     =  GetDouble("Debye temperature    [K]: ");
-	dT      =  GetDouble("temperature          [K]: ");
-	dMav    =  GetDouble("average atomic mass [mu]: ");
-	GetString (sFileName,"Name of file            : ");
+	// reading input data
+	GetString(sSample,    "sample                    : ");
+	rho      =  GetDouble("material density    [kg/l]: ");
+	dB1      =  GetDouble("scattering length 1   [fm]: ");
+	dB2      =  GetDouble("scattering length 2   [fm]: ");
+	nSumMax  =  GetLong  ("max. h*h + k*k + l*l      : ");
+	dTd      =  GetDouble("Debye temperature      [K]: ");
+	dT       =  GetDouble("temperature            [K]: ");
+	Mamu     =  GetDouble("average atomic mass   [mu]: ");
+	GetString(sPdFileName,"name of the powder file   : ");
+	GetString(sSxFileName,"name of the sngl Xtal file: ");
 
 	dB1  /= 10;  // Umrechnung in 1E-14 m
 	dB2  /= 10;
-	dMav *= MU;
+	Mav = MU*Mamu;
 	dStrFacSum = 0.0;
 	dDistOld   = 0.0;
+  ucv = 4*Mav/rho*1.0e27;
+  dA  = pow(ucv, 1.0/3.0);
 
-	/* write to parameter directory or to FILES in install directory */
-	pFullName = FullParName(sFileName);
-	if (strcmp(pFullName, sFileName)==0)
-		pFullName = FullInstallName(sFileName, "FILES/");
-	pFile = fopen(pFullName, "w");
-	if (pFile==NULL) 
-	{	printf("\nERROR: Output file %s could not be generated\n", pFullName);
+	/* write to parameter directory */
+	pPdFile = fopen(FullParName(sPdFileName), "w");
+	pSxFile = fopen(FullParName(sSxFileName), "w");
+	if (pPdFile!=NULL) 
+          {	PrintHeader(pPdFile, sSample, dTd, dT, dA, Mamu, TRUE);
+		fprintf (pPdFile, "# distance   Sigma  ( h  k  l) \n");
+		fprintf (pPdFile, "#   [Ang]    [barn]            \n");
+		fprintf (pPdFile, "# -----------------------------\n");
+  }
+	if (pSxFile!=NULL) 
+          {	PrintHeader(pSxFile, sSample, dTd, dT, dA, Mamu, FALSE);
+		fprintf (pSxFile, "# h  k  l  distance    |F|²  DW-factor  Sigma  \n");
+		fprintf (pSxFile, "#            [Ang]    [barn]            [barn] \n");
+		fprintf (pSxFile, "#----------------------------------------------\n");
+  }
+
+	if (pPdFile==NULL && pSxFile==NULL) 
+	{	printf("\nERROR: Output files %s and %s could both not be generated\n", sPdFileName, sSxFileName);
 		goto exit;
 	}
-
-	/* choice of lattice
-	c=getchar();
-	do
-	{	cGitter = GetChar("Gitter  fcc [A]         : ");
-	} 
-	while (cGitter!='A'); */
 
 	while ((rc=NextHkl(&h, &k, &l, nSumMax)))
 	{	nHaeuf = MultPlane(h,k,l);
 		switch (cGitter)
 		{
 			case FCC:
-				dDist   = dA/sqrt(SquareSum(h,k,l));
+				dDist   = dA/sqrt((double)SquareSum(h,k,l));
 				dQ      = 2*PI*1.0E10/dDist;  
 				dStrFac = StrFacFcc(h,k,l, dB1, dB2);
 				break;
@@ -107,12 +124,14 @@ int main(int argc, char* argv[])
 				break;
 		}
 		if (dStrFac > 0.0)
-		{	dFdw     = 1.5 * dQ*dQ * H_Q*H_Q * dT / (dMav * KB * dTd*dTd); 
-			dStrFacDw = nHaeuf * dStrFac * exp(-2*dFdw);
+		{	dFdw     = 1.5 * dQ*dQ * H_Q*H_Q * dT / (Mav * KB * dTd*dTd); 
+			dStrFacDw  = dStrFac * exp(-2*dFdw) * nHaeuf;
+			dStrFacDwS = dStrFac * exp(-2*dFdw);
 			printf ("(%2d %2d %2d)  %8.6lf  %2d *%8.4lf * %7.5lf\n", h,k,l, dDist, nHaeuf, dStrFac, exp(-2*dFdw));
+			fprintf(pSxFile, " %2d %2d %2d  %8.6lf %8.4lf  %7.5lf %9.4lf\n", h, k, l, dDist, dStrFac, exp(-2*dFdw), dStrFacDwS);
 			if (rc==NEW)
 			{	if (dStrFacSum > 0.0) 
-					fprintf (pFile, "%8.6lf %8.3lf (%2d %2d %2d)\n", dDistOld, dStrFacSum, h,k,l);
+					fprintf (pPdFile, "  %8.6lf %8.3lf (%2d %2d %2d)\n", dDistOld, dStrFacSum, h,k,l);
 				dDistOld    = dDist;
 				dStrFacSum  = dStrFacDw;
 			}
@@ -122,10 +141,11 @@ int main(int argc, char* argv[])
 		}
 	}
 	if (dStrFacSum > 0.0) 
-		fprintf (pFile, "%8.6lf %8.3lf\n", dDistOld, dStrFacSum);
+		fprintf (pPdFile, "%8.6lf %8.3lf\n", dDistOld, dStrFacSum);
 
-	fclose(pFile);
-	printf ("\nData written to %s\n", pFullName);
+	if(pPdFile) fclose(pPdFile);
+	if(pSxFile) fclose(pSxFile);
+	printf ("\nData written to %s and %s\n", sPdFileName, sSxFileName);
 
 exit:
 	printf("\n Hit any key to terminate ! \n");
@@ -237,6 +257,25 @@ short MultPlane(const short h, const short k, const short l)
 	return mult;
 }
 
+
+short PrintHeader(FILE* pFile, char* sSample, double Tdebye, double Tmeas, double A, double M, short bPowder)
+{
+  fprintf (pFile, "# sample: %s\n", sSample);
+  fprintf (pFile, "#\n");
+  fprintf (pFile, "# d-spacing and structure factors calculated by means of tool 'LatticeDistances'\n");
+  if (bPowder)
+    fprintf (pFile, "# Sigma(hkl) = multiplicity * |F(hkl)|² * F_dw\n");
+  else
+    fprintf (pFile, "# Sigma(hkl) = |F(hkl)|² * F_dw\n");
+  fprintf (pFile, "# F_dw       = exp(-3 Q² (h/2pi)² T_meas / (k_b M_ave T_debye²))\n");
+  fprintf (pFile, "#\n");
+  fprintf (pFile, "# Debye temperature: %8.3f K\n",     Tdebye);
+  fprintf (pFile, "# temperature      : %8.3f K\n",     Tmeas);
+  fprintf (pFile, "# lattice constant : %8.3f Ang\n",   A);
+  fprintf (pFile, "# avrg atomic mass : %8.3f amu\n#\n", M);
+
+  return(TRUE);
+}		
 
 static
 double GetDouble(const char* pText)

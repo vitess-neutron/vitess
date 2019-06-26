@@ -1,0 +1,228 @@
+17.03.2004 19:59:23 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog1 -n20000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/s.dat -y0.5 -z0.5 -m1 -M6 -t0 -T0 -d0 -P100 -X0 -Y0 -V1 -D0 -w10 -h10 -i0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambdax.dat -n1000 -m1 -M6 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambday.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambdaz.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/resonator_drabkin_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog5 -X40 -Y10 -V10 -k20 -l0 -m0 -p40 -r0 -s0 -C400 -D20 -E20 -M0 -d1.05 -v1 -a0 -e1 -x1 -I0 -A0 -K170 -q0 -S0 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/revp.dat -N/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/revm.dat 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog6 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambdax.dat -n1000 -m1 -M6 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog7 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambday.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog8 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambdaz.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b0 -c1 --F/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/noutput.dat
+17.03.2004 19:59:24 simulation (811 812 813 814 815 816 817 818 ) (2065 2066 2067 2068 2069 2070 2071 2072) is active
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module Source and Window 1.9c
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 > Simulation of constant wave source  <
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 wavelength distribution file : constant_source.dat 
+17.03.2004 20:00:17 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+17.03.2004 20:00:17 moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+17.03.2004 20:00:17 moderator position           :(  0.000    0.000    0.000) cm 
+17.03.2004 20:00:17 angle of opening used        :   1.000°    x   1.000°   
+17.03.2004 20:00:17 time averaged neutron current:  4.8481e+05 n/s in 0.000305 str
+17.03.2004 20:00:17 wavelength band used         :   1.000 Ang -   6.000 Ang
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 window (W x H)               :  10.000 cm  x  10.000 cm 
+17.03.2004 20:00:17   in a distance of           :   0.000 m   
+17.03.2004 20:00:17   with a declination of      :   0.000°    
+17.03.2004 20:00:17 polarization                 : 100.000 %  X: 0.000 Y: 0.000 Z: 1.000
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 Gravity is enabled 
+17.03.2004 20:00:17 Cutoff probability for one trajectory  1.000e-25 
+17.03.2004 20:00:17 Center of beam at window     :(  0.000    0.047   -0.031) cm 
+17.03.2004 20:00:17 Average TOF                  :   0.000 ms 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 number of trajectories started     :          20000
+17.03.2004 20:00:17  1 number of trajectories read         :          0
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: 0.00000 
+17.03.2004 20:00:17  2 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: 0.00000 
+17.03.2004 20:00:17  3 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: 1.00000 
+17.03.2004 20:00:17  4 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17  
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module Resonator of Drabkin v1.0
+17.03.2004 20:00:17 Sinus Distribution of amplitude of periodical magnetic field. 
+17.03.2004 20:00:17 Periodical magnetic field parallel of axis 0X 
+17.03.2004 20:00:17 Drabkin RF flipper: Permanent magnetic field with values: Xo = 0.000000 Oe , Yo = 0.000000 Oe , Zo = 170.000000 Oe 
+17.03.2004 20:00:17 Permanent magnetic field module =  170.000000  
+17.03.2004 20:00:17 First resonance condition: Resonanse wavelength is expected = 3.989643 Ang 
+17.03.2004 20:00:17 ----------------------------------------------------------------------------------------
+17.03.2004 20:00:17 Full Number of precessions  : 108.749425
+17.03.2004 20:00:17 Ave Number of precessions  : 0.271874
+17.03.2004 20:00:17 All Number of precessions  : 171.998320
+17.03.2004 20:00:17 Average number of precession per domains : 0.436845
+17.03.2004 20:00:17  5 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: 0.00707 
+17.03.2004 20:00:17  6 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: -0.00029 
+17.03.2004 20:00:17  7 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:00:17 
+17.03.2004 20:00:17 polarization: 0.99130 
+17.03.2004 20:00:17  8 number of trajectories read         :      20000
+17.03.2004 20:00:17    number of trajectories written      :      20000
+17.03.2004 20:00:17 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:00:17 ------------------------------
+17.03.2004 20:00:34 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog1 -n50000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/s.dat -y0.5 -z0.5 -m1 -M6 -t0 -T0 -d0 -P100 -X0 -Y0 -V1 -D0 -w10 -h10 -i0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambdax1.dat -n1000 -m1 -M6 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambday1.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pin_lambdaz1.dat -n1000 -m1 -M6 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/resonator_drabkin_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog5 -X40 -Y10 -V10 -k20 -l0 -m0 -p40 -r0 -s0 -C400 -D20 -E20 -M0 -d0.66 -v0 -a0 -e1 -x1 -I0 -A0 -K170 -q0 -S1 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/revp.dat -N/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/revm.dat 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog6 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambdax1.dat -n5000 -m1 -M6 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog7 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambday1.dat -n5000 -m1 -M6 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN --L/tmp/cqevpipelog8 -O/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/pex_lambdaz1.dat -n5000 -m1 -M6 -p1 -e0 -a0 -b0 -c1 --F/hmi/hmicuser/cqe/Vitess252/FILES/RESONATOR_DRABKIN/noutput.dat
+17.03.2004 20:00:34 simulation (86c 86d 86e 86f 870 871 872 873 ) (2156 2157 2158 2159 2160 2161 2162 2163) is active
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module Source and Window 1.9c
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 > Simulation of constant wave source  <
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 wavelength distribution file : constant_source.dat 
+17.03.2004 20:02:38 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+17.03.2004 20:02:38 moderator size (W x H)       :  10.000 cm  x  10.000 cm 
+17.03.2004 20:02:38 moderator position           :(  0.000    0.000    0.000) cm 
+17.03.2004 20:02:38 angle of opening used        :   1.000°    x   1.000°   
+17.03.2004 20:02:38 time averaged neutron current:  4.8481e+05 n/s in 0.000305 str
+17.03.2004 20:02:38 wavelength band used         :   1.000 Ang -   6.000 Ang
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 window (W x H)               :  10.000 cm  x  10.000 cm 
+17.03.2004 20:02:38   in a distance of           :   0.000 m   
+17.03.2004 20:02:38   with a declination of      :   0.000°    
+17.03.2004 20:02:38 polarization                 : 100.000 %  X: 0.000 Y: 0.000 Z: 1.000
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 Gravity is enabled 
+17.03.2004 20:02:38 Cutoff probability for one trajectory  1.000e-25 
+17.03.2004 20:02:38 Center of beam at window     :(  0.000    0.018   -0.022) cm 
+17.03.2004 20:02:38 Average TOF                  :   0.000 ms 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 number of trajectories started     :          50000
+17.03.2004 20:02:38  1 number of trajectories read         :          0
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: 0.00000 
+17.03.2004 20:02:38  2 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: 0.00000 
+17.03.2004 20:02:38  3 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: 1.00000 
+17.03.2004 20:02:38  4 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38  
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module Resonator of Drabkin v1.0
+17.03.2004 20:02:38 Activate output in the file the components of polarisation 
+17.03.2004 20:02:38 Uniform Distribution of amplitude of periodical magnetic field. 
+17.03.2004 20:02:38 Periodical magnetic field parallel of axis 0X 
+17.03.2004 20:02:38 Drabkin RF flipper: Permanent magnetic field with values: Xo = 0.000000 Oe , Yo = 0.000000 Oe , Zo = 170.000000 Oe 
+17.03.2004 20:02:38 Permanent magnetic field module =  170.000000  
+17.03.2004 20:02:38 First resonance condition: Resonanse wavelength is expected = 3.989643 Ang 
+17.03.2004 20:02:38 ----------------------------------------------------------------------------------------
+17.03.2004 20:02:38 Second resonance condition ONLY FOR Uniform Distribution of amplitude of periodical magnetic field.
+17.03.2004 20:02:38 Amplitude of the periodical magnetic field  =  0.667588 Oe
+17.03.2004 20:02:38 ---------------------------------------------------------------------------------------------------
+17.03.2004 20:02:38 Full Number of precessions  : 278.015878
+17.03.2004 20:02:38 Ave Number of precessions  : 0.693306
+17.03.2004 20:02:38 All Number of precessions  : 172.412510
+17.03.2004 20:02:38 Average number of precession per domains : 0.438021
+17.03.2004 20:02:38  5 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: 0.00163 
+17.03.2004 20:02:38  6 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: -0.00095 
+17.03.2004 20:02:38  7 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 VITESS version 2.5 module monitorpol1 1.2
+17.03.2004 20:02:38 
+17.03.2004 20:02:38 polarization: 0.99168 
+17.03.2004 20:02:38  8 number of trajectories read         :      50000
+17.03.2004 20:02:38    number of trajectories written      :      50000
+17.03.2004 20:02:38 (time averaged) neutron count rate     :  1.6160e+04 n/s 
+17.03.2004 20:02:38 ------------------------------

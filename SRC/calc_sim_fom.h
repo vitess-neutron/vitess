@@ -14,7 +14,8 @@
 /*********************************************/
 /* prototypes                                */
 /*********************************************/
-short  ExtFunction (double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar);
-short  ExtFunctions(const double X[IMAX+1], const int nPts, const short  mMin, const short mMax, const short nPar);
+short  FitFctPc  (double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar);
+short  OptFctPc  (const double X[IMAX+1], const int nPts, const short  mMin, const short mMax, const short nPar);
+short  OptFctGrid(const double X[IMAX+1], const int nPts, const short  mMin, const short mMax, const short nPar, char* sGridOpt);
 
 #endif

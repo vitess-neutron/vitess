@@ -29,9 +29,6 @@ void   OwnCleanup    ();
 /*********************************************/
 extern FILE*  LogFilePtr=NULL;  // Pointer on file for output of the progress of the fit
 
-static
-char     sBuffer[BUF_LEN+1]="";
-
 FILE    *pExeVFile=NULL;
 char     cSlash       = '/',
          cQuot        = ' ',         
@@ -61,7 +58,7 @@ char     cSlash       = '/',
          sLine    [MAX_MOD][BUF_LEN],/* MAX_MOD strings, each contains 1 exe command (corr. to 1 module)     */
          sFile    [MAX_FIL][50],     /* MAX_FIL strings, each contains 1 name of a file to be copied */
          sSimName [MAX_SIM][50],     /* MAX_SIM strings, each contains 1 name of a single simulations */
-         sParList [MAX_SIM][200],    /* MAX_SIM strings, each contains all parameter values for 1 simulatíon */
+         sParList [MAX_SIM][200],    /* MAX_SIM strings, each contains all parameter values for 1 simulatÃ­on */
          sParId   [MAX_PAR][4],      /* MAX_PAR strings, each contains the ID of 1 parameter, e.g. "-n" */
          sParVal  [MAX_PAR][51];     /* MAX_PAR strings, each contains the value of the param., e.g. "20" */
 short    nModNo   [MAX_PAR];         /* MAX_PAR integers, each contains the module no, where the parameter can be found */

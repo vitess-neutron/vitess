@@ -3,7 +3,7 @@
 
 // definitions
 // ------------
-#define BUF_LEN 1024  // maximal length of strings read from file
+#define BUF_LEN 4096  // maximal length of strings read from file
 #define FN_LEN    99  // maximal length of a filename (incl. path)
 #define KW_LEN    49  // maximal length of a key word or title
 
@@ -28,6 +28,15 @@ typedef enum
 	VT_LINUX  = 4
 }
 VtSystem;
+
+
+typedef enum
+{ VT_APPL_NN   = 0,
+  VT_OPT_PC    = 1,
+  VT_OPT_GRID  = 2,
+  VT_FIT_PC    = 3
+}
+VtAppl;
 
 typedef enum
 { VT_METHOD_NN  = 0,

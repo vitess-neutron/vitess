@@ -1,0 +1,58 @@
+VITESS 3.2  Release Note
+------------------------
+
+Major upgrades:
+---------------
+
+The MONOCHROMATOR module has been upgraded. Choose the modules ma_flat_new, ma_focus_new and ma_focus_dat_new to use the new module.
+The extra simulation run to determine the correct normalisation has become obsolete. It is now also possible to have a stack of monochromators. 
+The old module is kept in this version for backward-compatibility.
+ 
+The module SOURCE now includes the ESS pancake moderator (only for discrete moderator height values: 0.5cm, 1cm, 1.5cm, 3cm, 5cm, 7cm, 10cm, 12cm). Time focusing is available to improve the efficiency of simulations of instruments comprising a pulse shaping chopper that creates one or several short pulse(s).
+
+
+Further improvements:
+--------------------
+
+The modules GUIDE, GUIDE_IDEAL and BENDER now accept m-numbers as input in addition to the mirror reflectivity files.
+
+The module SM_ENSEMBLE accepts a new simplier input file format. Attenuation in Silicon or Sapphire substrate is described by
+empirical functions derived from real data.
+
+The module DETECTOR can handle flat detector elements with a normal to the surface that does not point to the sample position.
+
+The modules SAMPLE_Powder and SAMPLE_SINGCRYST can now support custom structure files as long as the format is specified.
+
+GUI:
+----
+
+Context menu of the component list changed. Now it is possible to disable modules for the current simulation run. 
+Visualisation is now available for individual modules without the need of visualising the whole instrument.
+Output files created in different simulations by the same monitor modules can now be merged including error propagation.
+Gnuplot window can now be killed in case of incorrect plots to allow Gnuplot a fresh restart.
+
+
+Optimization:
+-------------
+
+The optimization framework now works with gridrun to run the optimization simulations on a Linux cluster.
+Swarm algorithm added to the optimization framework. 
+
+
+Files and examples:
+-------------------
+
+Example instruments have been updated and are now in the FILES/EXAMPLES folder. New Vitess files with models of real instruments are also included. 
+There were several exercises added to the new FILES/TUTORIALS folder that were used during the Joint Vitess and McStas Workshop in Berlin in September 2013 (including solutions).
+
+Mirror reflectivity files have been reorganized.
+
+
+Bug fixes:
+----------
+
+Detector: Efficiency of gaseous materials
+Filter: OR mode working again
+Visualization: Circular moderator shape is now visible
+
+(Feb 24 2014, subversion  589)

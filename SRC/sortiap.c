@@ -324,12 +324,12 @@ char * sS(float v, char *s, const char *format);
 
 char * sS(float v, char *s, const char *format) {
   // convert a float value to text, without superfluous leading or trailing characters
-  int i;
   char *q, *p = s;
   sprintf(s, format, v);
   while (isspace(*p))
     ++p;
   if ((q = strchr(p, '.'))) {
+    int i;
     // remove trailing zeroes
     for (i = strlen(q)-1; i>0; i--)
       if (q[i] == '0')

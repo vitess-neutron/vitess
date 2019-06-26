@@ -212,14 +212,19 @@ DECLARE_ABORT;
 	  div_other_direction = 180.0/M_PI * (double)atan2(InputNeutrons[i].Vector[index_c],InputNeutrons[i].Vector[0]);
 	  if((div_other_direction <= constrain_min)||(div_other_direction >= constrain_max)) continue;
       
-      wl_ = InputNeutrons[i].Wavelength;
+	  wl_ = InputNeutrons[i].Wavelength;
 
-	  div_ = (double)atan2(InputNeutrons[i].Vector[index_yz],InputNeutrons[i].Vector[0]);
-	  div_ *=180.0/M_PI;
-	  if ((InputNeutrons[i].Vector[index_yz]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	    {div_=0.0;}
+	   if (index_yz == 1) {
+	    if (InputNeutrons[i].Vector[0] >=0) div_ = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	    else div_ = (double) atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
+	  div_*=180.0/M_PI;
+	  }
+	  else {
+	    div_ = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
+	    div_*=180.0/M_PI;
+	  }
 
-	  dwl = (int)floor(nbin_wl*(wl_-wl_min)/(wl_max-wl_min));
+	   dwl = (int)floor(nbin_wl*(wl_-wl_min)/(wl_max-wl_min));
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
 	  if(((dwl>=0)&&(dwl<nbin_wl))&&((ddiv>=0)&&(ddiv<nbin_div))) {	

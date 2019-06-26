@@ -4,6 +4,7 @@
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
 /* 1.0 Apr 2013  D. Nekrassov  initial version                                              */
+/* 1.1 Nov 2013  D. Nekrassov  "OR" mode bug fixed                                          */
 /********************************************************************************************/
 
 
@@ -152,15 +153,15 @@ int CheckFilter(Neutron* n)
  // pass if fulfilled 1 OR 2 OR 3
   if (filterComb==0) {
     for (i = 0; i < 3; i++) {
-      if (filterParam[0] > 0) {
-	filterValue[0] = DetermineParameter(filterParam[0], n);
-	if  (filterValue[0] >= filterVarMin[0] && filterValue[0] < filterVarMax[0]) break;
+      if (filterParam[i] > 0) {
+	filterValue[i] = DetermineParameter(filterParam[i], n);
+	if  (filterValue[i] >= filterVarMin[i] && filterValue[i] < filterVarMax[i]) return 1;
       }
     }
-    return 0;
   }
   
-  return 1;
+  if (filterParam[0] > 0 || filterParam[1] > 0 || filterParam[2] > 0) return 0;
+  else return 1;
 
 }
 

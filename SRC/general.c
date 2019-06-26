@@ -24,6 +24,7 @@
  gsl_rng * vit_gsl_rng;
 #endif
 
+
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
@@ -178,6 +179,76 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 }
 
 
+// Calculation of reflectivity on supermirrors from wavelength and inclination angle
+// either following quadratic SwissNeutronics description by Henrik Jacobsen (ReflSN)
+// or using any reflectivity file (ReflFile)
+//
+// Lambda: wavelength        [Ang]
+// Angle : inclination angle [deg]
+// M     : official m value of the supermirror    (ReflSN only)
+// Rdata : pointer to list of reflectivity values (ReflFile only)
+//
+double ReflSN(const double Lambda,    const double Angle,    const double M)
+{
+  double S,T, 
+    M2,            // m'     : 'real' m value
+    Q,             // Q      : momentum transfer of the reflection
+    Qc,            // Q_c    : crit. momentum transfer 
+    QcNi  =0.0217, // Q_c,Ni : crit. momentum transfer of nickel
+    R0    =0.99,   // R_0    : reflectivity for 0 <= Q <= Q_c
+    alphaQ=0.0,    //          slope Delta_R / Delta_Q
+    betaQ =0.0,    //          quadratic term to describe R(q)
+    W,             // W      : width of the cut-off  [1/Ang]
+    R;             // R      : reflectivity
+
+  Qc = QcNi*Min(M, 1.0);
+  Q  = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
+
+  if (Q <= Qc)
+  { R = R0;
+  }
+  else
+  { 
+    if (M <= 1.0)
+    { R=0.0;
+    }
+    else
+    {
+      W  = 0.0022 - 0.0002*M;
+      M2 = M*0.9853 + 0.1978;
+
+      if (M > 3.0)
+      { alphaQ =  5.0944 + 0.1204*M;
+        betaQ  = 68.1137 - 7.6251*M;
+      }
+      else
+      { alphaQ = M;
+        betaQ  = 0.0;
+      }
+      T = 0.5 * (1.0 - tanh((Q - M2*QcNi) / W));
+      S = (1.0 - alphaQ * (Q-Qc) + betaQ * sq(Q-Qc));
+	    R = R0 * T * S ;
+    }
+  }
+  return(R);
+}
+
+
+double ReflInterpol(const double Lambda, const double Angle, const double* Rdata, long MaxData)
+{
+  long   iw1;
+  double w,         // angle/wavelength
+         R=0.0;     // reflectivity
+
+  w   = Angle*1000.0 / Lambda;
+  iw1 = (long) floor(w);
+
+  if ((iw1+1) < MaxData)
+    R = Rdata[iw1] + (Rdata[iw1+1] - Rdata[iw1]) * (w - iw1);
+
+  return(R);
+}
+
 
 /****************************************************************************************/
 /*  Vector Functions                                                                    */
@@ -225,7 +296,7 @@ short NormVector(VectorType Vector)
 
   if (dLen==0.0)
     return FALSE;
-       
+
   for(i=0;i<3;i++)
     Vector[i] /= dLen;
 
@@ -237,11 +308,11 @@ short NormVector(VectorType Vector)
 /*                                                                                     */
 double DistVector(const VectorType Vec1, const VectorType Vec2)
 {
-	VectorType Vhlp;
-
-	CopyVector(Vec1, Vhlp) ;
-	SubVector (Vhlp, Vec2);
-	return LengthVector(Vhlp);
+  VectorType Vhlp;
+  
+  CopyVector(Vec1, Vhlp) ;
+  SubVector (Vhlp, Vec2);
+  return LengthVector(Vhlp);
 }
 
 
@@ -314,7 +385,7 @@ void RotVector(double RotMatrix[3][3], VectorType Vector)
 {
   VectorType TempVec;
   int        i;
-  
+
   for(i=0;i<3;i++)
     TempVec[i] = ScalarProduct(RotMatrix[i],Vector);
   CopyVector(TempVec, Vector);
@@ -374,9 +445,9 @@ void FillRMatrixZY(double RotMatrix[3][3], const double roty, const double rotz)
 /*  Author: G. Zsigmond                                                   */
 void CartesianToEulerZY(VectorType Vector, double *roty, double *rotz)
 {
-	*rotz = (double) atan2( Vector[1] , Vector[0] ) ;
+  *rotz = (double) atan2( Vector[1] , Vector[0] ) ;
 
-	*roty = (double) atan2( Vector[2] , ((double) cos(*rotz) * Vector[0] + (double) sin(*rotz) * Vector[1]) ) ;
+  *roty = (double) atan2( Vector[2] , ((double) cos(*rotz) * Vector[0] + (double) sin(*rotz) * Vector[1]) ) ;
 }
 
 /* Euler to cartesian - invers of previous                            */
@@ -384,11 +455,10 @@ void CartesianToEulerZY(VectorType Vector, double *roty, double *rotz)
 
 void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 {
-
-	Vector[0]= (double) cos(*roty) * (double) cos(*rotz) ;
-	Vector[1]= (double) cos(*roty) * (double) sin(*rotz) ;
-	Vector[2]= (double) sin(*roty) ;
-
+  double cos_roty = cos(*roty);
+  Vector[0]= (double) cos_roty * (double) cos(*rotz) ;
+  Vector[1]= (double) cos_roty * (double) sin(*rotz) ;
+  Vector[2]= (double) sin(*roty) ;
 }
 
 
@@ -401,38 +471,37 @@ void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 
 FILE * fileOpen(const char *name, const char *mode)
 {
-	FILE *f=NULL;
+  FILE *f;
 
-	f = fopen(name, mode);
-	if (f==NULL)
-	{	fprintf(LogFilePtr, "ERROR: Can't open %s!\n", name);
-		exit(-1);
-	}
-	return f;
+  if (! (f = fopen(name, mode))) {
+    fprintf(LogFilePtr, "ERROR: Can't open %s!\n", name);
+    exit(-1);
+  }
+  return f;
 }
 
 
 void Error(const char *text)
 {
-	fprintf(LogFilePtr,"ERROR: %s!\n", text);
-	exit(-1);
+  fprintf(LogFilePtr,"ERROR: %s!\n", text);
+  exit(-1);
 }
 
 
 void Warning(const char *text)
 {
-	fprintf(LogFilePtr,"Warning: %s!\n", text);
+  fprintf(LogFilePtr,"Warning: %s!\n", text);
 }
 
 
 void Abort()
 {
-	exit(-1);
+  exit(-1);
 }
 
 
 /* Wait(time)
-   remains 'time' sec in this function  
+   remains 'time' sec in this function
 */
 void Wait(float WaitTime)
 {
@@ -445,7 +514,7 @@ void Wait(float WaitTime)
   { c2=clock();
     DelT = ((float)(c2-c1))/CLOCKS_PER_SEC;
   }
-  while (DelT < WaitTime);  
+  while (DelT < WaitTime);
 
   return;
 }
@@ -461,44 +530,7 @@ void Wait(float WaitTime)
    it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr
    the maximal number of characters in the string must be given in 'nStrLen'
 */
-#ifdef VERS26
-int
-ReadLine(FILE* pFile, char* pLine, int nStrLen)
-{
-	char *pComment;
-	short k, kmax;
 
-	strcpy(pLine, "");
-	if (pFile!=NULL)
-	{
-		while(strlen(pLine)==0  && !feof(pFile))
-		{
-			fgets (pLine, nStrLen, pFile);
-
-			/* delete line feeds, tabs and carriage returns */
-			kmax = (short) strlen(pLine);
-			for (k=0; k < kmax; k++)
-			{	if (pLine[k]=='\n' || pLine[k]=='\t' || pLine[k]=='\r')
-					pLine[k]=' ';
-			}
-			/* strip the comments and leading and succeeding blanks */
-			pComment = strchr(pLine, '#');
-			if (pComment != NULL)
-				*pComment = '\0';
-			while (pLine[0]==' ')
-			{	StrgLShift(pLine,1);
-			}
-			while (pLine[strlen(pLine)-1]==' ')
-			{	pLine[strlen(pLine)-1]='\0';
-			}
-		}
-	}
-	if (strlen(pLine) > 0)
-		return TRUE;
-	else
-		return FALSE;
-}
-#else
 int
 ReadLine(FILE* pFile, char* pLine, int nStrLen) {
 
@@ -530,8 +562,6 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen) {
   *pLine = 0;
   return FALSE;
 }
-
-#endif
 
 
 /*  ReadParString(FILE *fpt) reads one string value from parameter file */
@@ -630,4 +660,3 @@ StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 
 	return(n);
 }
-

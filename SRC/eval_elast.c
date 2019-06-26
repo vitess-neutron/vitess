@@ -28,18 +28,16 @@
 #define BINS  10000
 #define NCENTER 200
 
-#define VT_SMPL_CNTR 1
-#define VT_DET_CNTR  2
-
 
 /* globale variable */
 int   probactiv=TRUE,        /* probactiv=1 means probabilities activated, 
                                 else neutron weight is set to 1.0         */
       TOF = FALSE,           /* TRUE : time of flight instrument */
       deadspotactive=FALSE,  /* TRUE : deadspot exists */
-			ePathCor   =FALSE,     /* 1 or 2: correct TOF for real flight path from sample to detector */
+			bPathCor   =FALSE,     /* TRUE : correct TOF for real flight path from sample to detector */
       bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements
                                        are written to the output      */
+      bCounted =FALSE,       /* TRUE : neutron is counted, intensity added to channel and total intensity */
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
                                 FALSE: linear binning                  */
 
@@ -139,6 +137,7 @@ int main(int argc, char *argv[])
 	while (ReadNeutrons())
 	{	for(i=0; i<NumNeutGot; i++)
 		{
+      bCounted=FALSE;
 			CHECK
 
 			/* Writing out all neutrons, if 'exclusive counts = no' is set */
@@ -167,17 +166,13 @@ int main(int argc, char *argv[])
         CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 
       // flightpath correction if detector distance is given
-      switch (ePathCor)
-      { case VT_SMPL_CNTR: // origin of co-ordinate system in sample center
-          DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-          Flightpath = Flightpath0 + DetPath - DetDist;
-          break;
-        case VT_DET_CNTR : // origin of co-ordinate system in detector center
-          DetPath    = sqrt(sq(DetDist) + sq(InputNeutrons[i].Position[0])  + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-          Flightpath = Flightpath0 + DetPath - DetDist;
-          break;
-        default:           // no correction
-          Flightpath = Flightpath0;
+      if (bPathCor)
+      { // origin of co-ordinate system in sample center
+        DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+        Flightpath = Flightpath0 + DetPath - DetDist;
+      }
+      else
+      { Flightpath = Flightpath0;
       }
 
       // determination of weight and wavelength
@@ -191,11 +186,6 @@ int main(int argc, char *argv[])
 			/* traj. out of time of evaluation */
 			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-			/* Writing out the neutrons that comply with the requirements, 
-			   if 'exclusive counts = yes' is set */
-			if (bExclCount==TRUE)		
-				WriteNeutron(&InputNeutrons[i]);
-
 			switch (kind) 
 			{
 				case 1: /* dspacing */
@@ -206,6 +196,7 @@ int main(int argc, char *argv[])
 							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+              bCounted=TRUE;
 							break;
 						}
 					}
@@ -219,6 +210,7 @@ int main(int argc, char *argv[])
 							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+              bCounted=TRUE;
 							break;
 						}
 					}
@@ -232,6 +224,7 @@ int main(int argc, char *argv[])
 							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+              bCounted=TRUE;
 							break;
 						}
 					}
@@ -245,11 +238,18 @@ int main(int argc, char *argv[])
 							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+              bCounted=TRUE;
 							break;
 						}
 					}
 					break;
 			}
+
+			/* Writing out the neutrons that comply with the requirements and are within evaluation range, 
+			   if 'exclusive counts = yes' is set */
+			if (bExclCount==TRUE  && bCounted==TRUE)		
+				WriteNeutron(&InputNeutrons[i]);
+
 		}
 	}
 
@@ -418,7 +418,7 @@ void OwnInit(int argc, char *argv[])
 
 
 				case 't':
-					ePathCor = atol(arg);     /*  correct flight path length for location of detection */
+					bPathCor = atol(arg);     /*  correct flight path length for location of detection */
 					break;
 
 				case 'l':
