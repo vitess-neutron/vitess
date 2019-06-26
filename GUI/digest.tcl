@@ -287,11 +287,11 @@ proc finalizeDigest {w} {
 
     incr i
   }
-  #debug puts "digestDefList $digestDefList"
-  #debug puts "digestSource $digestSource"
-  #debug puts "digestTarget $digestTarget"
-  #debug puts "digestFormula $digestFormula"
-  #debug puts "digestIndepVarname $digestIndepVarname"
+  # puts "DEBUG digestDefList $digestDefList"
+  # puts "DEBUG digestSource $digestSource"
+  # puts "DEBUG digestTarget $digestTarget"
+  # puts "DEBUG digestFormula $digestFormula"
+  # puts "DEBUG digestIndepVarname $digestIndepVarname"
 
   showDigest;			# digest in actual module frame
   destroy $w;		        # destroy definiton window

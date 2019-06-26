@@ -423,7 +423,7 @@ void SetFormatsAndHeader(int csep, const char *sep)
     { // Tabular
       if (eDatFormat==VT_FLOAT) 
       { // float
-        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
         if (bF_cTOF)       { SP(form[cTOF],    "%7.3f");     FP("TOF"); }
@@ -444,7 +444,7 @@ void SetFormatsAndHeader(int csep, const char *sep)
       } 
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
-        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
         if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("TOF"); }
@@ -471,7 +471,7 @@ void SetFormatsAndHeader(int csep, const char *sep)
     { // Space
       if (eDatFormat==VT_FLOAT) 
       { // float
-        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
         if (bF_cTOF)       { SP(form[cTOF],    " %7.3f");    FP("    TOF"); }
@@ -489,7 +489,7 @@ void SetFormatsAndHeader(int csep, const char *sep)
       } 
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
-        if (bF_cID)        { SP(form[cID],     "%c%c%09lu"); FP("___ID___ "); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
         if (bF_cTOF)       { SP(form[cTOF],    " %.5e");     FP("     TOF"); }

@@ -28,10 +28,12 @@
 #ifdef  _MSC_VER
 /* The Microsoft visual C++ compiler spews about 1000 warnings during */
 /* compilation of gnuplot. The following lines disable most of them.  */
-#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
-#define _CRT_SECURE_NO_WARNINGS
+# pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+# ifndef _CRT_SECURE_NO_WARNINGS
+#  define _CRT_SECURE_NO_WARNINGS
+# endif
 # if _MSC_VER <= 1200
-    typedef unsigned int uintptr_t; 
+    typedef unsigned int uintptr_t;
 # endif
 #endif
 
@@ -71,13 +73,15 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
+//#define DEBUG 1
+
 #ifdef RND_SIMPLE
 # ifdef WINDOWS
 #  define Vran() rand()
 # else
 #  define Vran() random()
 # endif
-#else  
+#else
 # define Vran() gsl_rng_uniform (vit_gsl_rng)
 #endif
 
@@ -157,7 +161,7 @@ VtDistr;
 typedef enum
 {	
 	VT_CREATED   = 0,    // source
-	VT_OUTSIDE   = 1,    // guide 
+	VT_OUTSIDE   = 1,    // guide
 	VT_OUT_OF_WND= 2,    // slit
 	VT_PASSED    = 3,    // chopper, slit
 	VT_ENTERED   = 4,    // guide
@@ -285,7 +289,7 @@ typedef struct
 {
   VectorType vPosBeg;
   VectorType vPosEnd;
-}  
+}
 VtLine;
 
 typedef struct
@@ -295,13 +299,13 @@ typedef struct
   double     Width;
   double     Height;
   double     rotAngle;
-}  
+}
 VtRectangle;
 
 typedef struct
 {
   VectorType vEdges[3];
-}  
+}
 VtTriangle;
 
 typedef struct
@@ -312,7 +316,7 @@ typedef struct
   double     Height;
   double     InnerWidth;
   double     InnerHeight;
-}  
+}
 VtOpenRect;
 
 typedef struct
@@ -322,7 +326,7 @@ typedef struct
   double     Radius;
   double     AngleBeg;
   double     AngleEnd;
-}  
+}
 VtCircle;
 
 typedef struct
@@ -333,7 +337,7 @@ typedef struct
   double     Width;
   double     Height;
   double     rotAngle;
-}  
+}
 VtCuboid;
 
 typedef struct
@@ -346,7 +350,7 @@ typedef struct
   double     HeightIn;
   double     HeightOut;
   double     rotAngle;
-}  
+}
 VtHull;
 
 typedef struct
@@ -355,7 +359,7 @@ typedef struct
   VectorType vSymAxis;
   double     Length;
   double     Radius;
-}  
+}
 VtCylinder;
 
 typedef struct
@@ -365,14 +369,14 @@ typedef struct
   double     Length;
   double     Radius;
   double     InnerRadius;
-}  
+}
 VtHolCyl;
 
 typedef struct
 {
   VectorType vCntr;
   double     Radius;
-}  
+}
 VtSphere;
 
 typedef struct
@@ -384,7 +388,7 @@ typedef struct
   double     Height;
   double     Xlow;
   double     Xhigh;
-}  
+}
 VtEllipsoid;
 
 typedef struct
@@ -397,8 +401,8 @@ typedef struct
   double     Phi;
   double     OpenAngle;
 }
-VtCylSlice;  
-  
+VtCylSlice;
+
 
 typedef struct
 {
@@ -406,13 +410,13 @@ typedef struct
   VtLine*      pLine;
   int          nLines;
   VtRectangle* pRectangle;
-  int          nRectangles; 
+  int          nRectangles;
   VtTriangle*  pTriangle;
-  int          nTriangles; 
+  int          nTriangles;
   VtOpenRect*  pOpenRect;
-  int          nOpenRects; 
+  int          nOpenRects;
   VtCircle*    pCircle;
-  int          nCircles; 
+  int          nCircles;
   VtCuboid*    pCuboid;
   int          nCuboids;
   VtHull*      pHull;
@@ -470,6 +474,8 @@ long   mini(const long value1, const long value2);
 long   maxi(const long value1, const long value2);
 
 double SolidAngle   (const double dHorAngle, const double dVertAngle);
+double ReflSN       (const double Lambda,    const double Angle,    const double mValue);
+double ReflInterpol (const double Lambda,    const double Angle,    const double* Rdata,   long MaxData);
 
 void   CopyVector   (const VectorType Src, VectorType Dest);
 long   MAXV         (const VectorType Vector);

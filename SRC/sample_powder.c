@@ -15,6 +15,7 @@
 /* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file   */
 /* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended */
 /* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample*/
+/* 1.7  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced          */
 /************************************************************************************************/
 
 #include <string.h>
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
   /* Go and get the sample geometry and name of structure factor file */
   InitSample(&Sample);
   GetSample (&Sample, StrucFacFileName);
+
   switch (Sample.Type)
   { case VT_CUBE: 
       fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
@@ -121,14 +123,16 @@ int main(int argc, char *argv[])
   }
   fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
                       "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
-                      "unit cell volume   : %8.3f Ang³\n"
+                      "unit cell volume   : %8.3f AngÂ³\n"
                       "struct. factor file: %s\n", 
                       Sample.Position [0], Sample.Position [1], Sample.Position [2], 
                       MuInc, g_fMuTot, g_fMuAbs, UCV, StrucFacFileName);
 
   /* Now get the nuclear unit-cell structure factors |f_N(t)|^2.       */
   /* The memory needed will be allocated inside 'GetStructureFactor()'.*/
-  NumStrucFac = GetStructureFactor(StrucFacFileName, &StrucFac);
+
+ 
+  NumStrucFac = ReadStructureFile(StrucFacFileName, 1, &StrucFac);
 
   /* Factors that take care of the detector coverage */
   DetFacCoh = DelPhi/M_PI;
@@ -275,6 +279,10 @@ void  OwnInit(int argc, char *argv[])
   long i;
   int  detectortest=0;
 
+  colh = -1; colk = -1; coll = -1; colD = -1;
+  colF = -1; colF2 = -1; colM = -1; colDW = -1;
+  scaleF2 = 1.;
+  
   /* some default values */
   Theta    = M_PI/2.0;
   DelTheta = M_PI/2.0;
@@ -426,8 +434,15 @@ void GetSample(SampleType *Sample, char *StrFileName)
           if(ReadTilComment(Buffer, SampleFile))
           { 
             sscanf(Buffer,"%lf", &UCV);
-
             /* Seems as everything needed could be read             */
+
+	    if(ReadTilComment(Buffer, SampleFile)) 
+	      sscanf(Buffer,"%d %d %d %d %d %lf", &colD, &colF, &colF2, &colDW, &colM, &scaleF2);
+	    else 
+	      { fprintf(LogFilePtr, "WARNING: Can't read the column variables!");
+		//		exit(-1);
+	      }
+
           } 
           else 
           { fprintf(LogFilePtr, "ERROR: Can't read volume of a unit cell of %s", SampleFileName);

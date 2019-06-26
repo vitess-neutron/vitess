@@ -16,6 +16,7 @@
 /* 1.6  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                 */
 /* 1.7  Feb 2004  K. Lieutenant  'FullParName', 'message' & 'ERROR' included; output extended */
 /* 1.8  Nov 2012  K. Lieutenant  size distribution of spheres                                 */
+/* 1.9  Oct 2013  K. Lieutenant  only theta_max variable                                      */
 /**********************************************************************************************/
 
 #include <string.h>
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
 	double     qValue,      /* absolute value of momentum transfer    */
 	           fThetaMin,   /* minimal and maximal values of the           */
 	           fThetaMax,   /* scattering angle according to Theta, DelTheta */
-	           fVolPtkl=0.0,/* Volume of the particle [cm³] */
+	           fVolPtkl=0.0,/* Volume of the particle [cmÂ³] */
 	           fFacCtrPtkl, /* factor considering contrast and particle size */ 
 	           fFormFac,    /* normalized form factor for the partical shape and size */
 	           fFac, 
@@ -129,7 +130,7 @@ int main(int argc, char *argv[])
 
 	/* Initialization */
 	Init(argc, argv, VT_SMPL_SANS);
-	print_module_name("sample_sans 1.8");
+	print_module_name("sample_sans 1.9");
 	OwnInit(argc, argv);
 
 	/* Go and get the geometry of the sample and the scattering objects */
@@ -179,7 +180,7 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "Particles scattering isotropically\n"); 
 			break;
 	}
-	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cm² (solvent)\n"
+	fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cmÂ² (solvent)\n"
 							  "vol.fract. of part. : %8.3f\n"
 							  "macr. cross section : %10.5f,%10.5f;%10.5f  1/cm (incoh, total scat; absorption)\n",
 							  g_fRho1, g_fRho2, g_fFracPtkl, g_fMuInc, g_fMuTot, g_fMuAbs);
@@ -353,7 +354,7 @@ void  OwnInit(int argc, char *argv[])
 	/*********************************************************************/
 	
 	long i;
-	int  detectortest=0;
+        double ThetaMax;
 	
 	/* Ok, scan all command line parameters */
 	for(i=1; i<argc; i++)
@@ -372,32 +373,12 @@ void  OwnInit(int argc, char *argv[])
 					sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
 					break;
 
-				/* get the solid angle covered by the detectors if other than 4*PI */
-				/* read four numbers                                               */
-				case 'D':
-					sscanf(&(argv[i][2]),"%lf", &Theta);
-					Theta*=M_PI/180.0;
-					detectortest &= 1000L;
+				/* get the solid angle covered by the detector */
+				case 'M':
+					sscanf(&(argv[i][2]),"%lf", &ThetaMax);
+					Theta   =0.5*ThetaMax*M_PI/180.0;
+					DelTheta=Theta;
 					break;
-
-				case 'd':
-					sscanf(&(argv[i][2]),"%lf", &DelTheta);
-					DelTheta*=M_PI/180.0;
-					detectortest &= 0100L;
-					break;
-				
-				case 'P':
-					sscanf(&(argv[i][2]),"%lf", &Phi);
-					Phi*=M_PI/180.0;
-					detectortest &= 0010L;
-					break;
-
-				case 'p':
-					sscanf(&(argv[i][2]),"%lf", &DelPhi);
-					DelPhi*=M_PI/180.0;
-					detectortest &= 0001L;
-					break;
-
 
 				case 'S':
 					/* what is the sample file called? */
@@ -411,23 +392,9 @@ void  OwnInit(int argc, char *argv[])
 		}
 	}
 
-	/* Check, whether all 4 angles are given; if not, initial values are set again */	
-	if( detectortest!=0 && detectortest!=15) 
-	{
-		fprintf(LogFilePtr,"ERROR: You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI!\n");
-		Theta = M_PI/2.0;
-		DelTheta= M_PI/2.0;
-		Phi   = M_PI;
-		DelPhi  = M_PI;
-	}
-
 	/* Theta has to be in the range of [0;PI] */
-	if((Theta-DelTheta < 0.0) || (Theta+DelTheta > M_PI)) 
+	if(Theta+DelTheta > M_PI) 
 		Error("Theta has to be in the range of [0;PI]");
-
-	/* Phi has to be in the range of [0;2*PI] */
-	if((Phi-DelPhi < 0.0) || (Phi+DelPhi > 2.0*M_PI)) 
-		Error("Phi has to be in the range of [0;2*PI]");
 }
 
 

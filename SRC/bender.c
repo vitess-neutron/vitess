@@ -69,6 +69,7 @@
 /*				     if visualisation was activated			    */
 /*				     Choose the output device : screen, file or both	    */
 /*				     New external variable gselec 			    */
+/* v1.8      Nov 2013  D. Nekrassov  M-values as input 			                    */
 /********************************************************************************************/
 
 
@@ -99,6 +100,8 @@ OTHER FUNCTIONS! */
 #define  N_SURF_S	600
 #define  N_SURF_M3	1801
 #define  N_SURF_M3_S	1800
+
+#define thetaCNi 0.099138
 
 /****************************************/
 /** Structures (changed in March 2002) **/
@@ -143,7 +146,7 @@ FILE * openNFile (char *name) {return fileOpen (name, "r");}
 /** Prototypes of internal functions **/
 /**************************************/
 
-short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin);
+static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
 
 
 /**************************************/
@@ -167,6 +170,8 @@ void GeometryTestBender(Bender, double *, double *, double *, double *,
 			       double *, double *, double *, double *,
 		    	       double, double , double , long);
 
+
+void FillReflContainer(double array[1000], double m);
 
 
 /******************************/
@@ -204,8 +209,8 @@ int main(int argc, char *argv[])
   double BenderExitWidth, EntranceHelp,rightend,leftend,spacer,channelwidth;
   double Radius, length, dX, dZ;
   double beta;
-  double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
-  double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
+  static double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
+  static double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
   double TimeOF1;
   double rdate[N_SURF_M3];
   double transm0[1001]; /* file, which describe transmission of material of bender channel */
@@ -222,6 +227,8 @@ int main(int argc, char *argv[])
   double XRR[N_SURF], YRR[N_SURF]; /* for calculating conveging surface */
   double XENR[N_SURF], XEXR[N_SURF], YENR[N_SURF], YEXR[N_SURF], RADR[N_SURF];
   double XCENR[N_SURF], YCENR[N_SURF], XTMPR[N_SURF], YTMPR[N_SURF], ALPHAR[N_SURF];
+
+  double mNumber[2][3];
 
   double TMP1, TMP2, TMP3, TMP4; /* Temporary for surfaces tests variables */
   double temp1, temp2;
@@ -286,7 +293,12 @@ int main(int argc, char *argv[])
   BufferIndex = 0;
   surfacerough = 0.0; /*set by default */
 
+  mNumber[0][0] = -1; mNumber[0][1] = -1; mNumber[0][2] = -1;
+  mNumber[1][0] = -1; mNumber[1][1] = -1; mNumber[1][2] = -1;
+
+#ifdef VT_GRAPH
   gselec = 1 ; /* Activate visualisation device -screen */
+#endif
 
   /*input*/
   Init(argc, argv, VT_BENDER);
@@ -298,27 +310,56 @@ int main(int argc, char *argv[])
     arg = a + 2;
     switch(a[1]) {
 
+    case 'b':  /* up, left plane */
+      mNumber[0][0] = atof(&argv[i][2]);  
+      break; 
+      
+    case 'B':  /* up, right plane */
+      mNumber[0][1] = atof(&argv[i][2]);  
+      break; 
+
+     case 'd':  /* up, top/bottom plane */
+      mNumber[0][2] = atof(&argv[i][2]);  
+      
+      break;   
+
+    case 'e':  /* down, left plane */
+      mNumber[1][0] = atof(&argv[i][2]);  
+      break; 
+      
+    case 'E':  /* down, right plane */
+      mNumber[1][1] = atof(&argv[i][2]);  
+      break; 
+
+     case 'f':  /* down, top/bottom plane */
+      mNumber[1][2] = atof(&argv[i][2]);  
+      break;    
+
     case 'i':
       refl_filelup = openNFile((ReflFileNamelup = arg));
+      LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
       break;
 
     case 'I':
       refl_fileldo = openNFile((ReflFileNameldo = arg));
+      LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
       break;
 
     case 'm':
       refl_filerup = openNFile((ReflFileNamerup = arg));
+      LoadReflFile(refl_filerup,  rdatarup, "right", "up");
       break;
 
     case 'M':
       refl_filerdo = openNFile((ReflFileNamerdo = arg));
+      LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
       break;
 
     case 'u':
       SurfacesFileName = arg;
       if (AsciiFileName==NULL) {
 	int len = strlen(SurfacesFileName);
-	AsciiFileName = malloc(len+1);
+	AsciiFileName = (char*)malloc(len+1);
 	memcpy(AsciiFileName, SurfacesFileName, len-3);
 	AsciiFileName[len-3] = '\0';
 	strcat(AsciiFileName, "Log");
@@ -327,10 +368,12 @@ int main(int argc, char *argv[])
 
     case 'k':
       refl_filetbup = openNFile((ReflFileNametbup = arg));
+      LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
       break;
 
     case 'K':
       refl_filetbdo = openNFile((ReflFileNametbdo = arg));
+      LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
       break;
 
     case 'T':
@@ -482,7 +525,7 @@ if (bAbsTransCrit != 0)
   	if (keymaterial0 == 5)
   	{
 	    fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Silicon \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
+  	    fprintf(LogFilePtr,"Wavelength range must be 0.5 .. 20 A, please correct if nesessary  \n");
   	}
 
   	if (keymaterial0 == 6)
@@ -628,15 +671,15 @@ if (bAbsTransCrit != 0)
 
   /* initial initialization */
 
-  for(i=0;i<1000; i++)
-  {
-    rdatalup[i]=0.0;
-    rdatarup[i]=0.0;
-    rdatatbup[i]=0.0;
-    rdataldo[i]=0.0;
-    rdatardo[i]=0.0;
-    rdatatbdo[i]=0.0;
-  }
+  /* for(i=0;i<1000; i++) */
+  /* { */
+  /*   rdatalup[i]=0.0; */
+  /*   rdatarup[i]=0.0; */
+  /*   rdatatbup[i]=0.0; */
+  /*   rdataldo[i]=0.0; */
+  /*   rdatardo[i]=0.0; */
+  /*   rdatatbdo[i]=0.0; */
+  /* } */
 
 
   for(i=0;i<=1000; i++)
@@ -693,13 +736,13 @@ if (bAbsTransCrit != 0)
     BenderExitHeight = BenderEntranceHeight;
 
 
-  /* Read reflectivity files for all walls, spin up and down */
-  LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
-  LoadReflFile(refl_filerup,  rdatarup, "right", "up");
-  LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
-  LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
-  LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
-  LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
+  /* Fill reflectivity values for all walls, spin up and down, if files are not given */
+  if (!refl_filelup) FillReflContainer(rdatalup, mNumber[0][0]);
+  if (!refl_filerup) FillReflContainer(rdatarup, mNumber[0][1]);
+  if (!refl_filetbup) FillReflContainer(rdatatbup, mNumber[0][2]);
+  if (!refl_fileldo) FillReflContainer(rdataldo, mNumber[1][0]);;
+  if (!refl_filerdo)  FillReflContainer(rdatardo, mNumber[1][1]);
+  if (!refl_filetbdo)  FillReflContainer(rdatatbdo, mNumber[1][2]);
 
 
  if (bAbsTransCrit != 0)
@@ -1734,7 +1777,7 @@ else
   return(0);
 }
 
-short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin)
+static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin)
 {
   short rc;
   int  nLines, iLine;
@@ -1760,6 +1803,22 @@ short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin)
 }
 
 
+
+void FillReflContainer(double array[1000], double m)
+{
+  int i;
+  double lambda = 1./thetaCNi;
+
+   if (m < 0) {
+    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!");
+    exit(-1);
+  }
+
+   for (i = 0; i < 1000; i++) array[i] = ReflSN(lambda, (double)i*0.01, m);
+
+  return;
+
+}
 
 
 

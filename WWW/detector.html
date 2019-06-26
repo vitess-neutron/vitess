@@ -27,9 +27,13 @@ sensitive areas.
 
 <p>
 <u>Overall detector geometry</u> <br>
-Due to this definitions, the centre of the rectangular (<i><u>flat</i></u>) detector can be every
-point in space, while the surface is always perpendicular to the position
-vector mentioned above. <br>
+The centre of a rectangular (<i><u>flat</i></u>) detector can be every
+point in space and is defined by the <i>distance</i> and the
+angles <i>&#977</i> and <i>&#966</i>. The surface can be incline w.r.t. the
+position vector by the angles <i>&#977_n</i> and <i>&#966_n</i> defining the
+direction of the surface normal in the coordinate system which has the detector
+position as x-axis. The surface is perpendicular to the position
+vector for &#977=0&deg;. <br>
 The <i><u>cylindrical</i></u> detector is restricted to three orientations (the cylinder axis
 will always point along one of the axes of the coordinate system) and the centre (=middle of the cylinder arch) of this detector type always
 lies in the 0-plane perpendicular to the cylinder axis (i.e. z=0 for a cylinder
@@ -172,7 +176,7 @@ detector. !!!!!!</b> <br>
 <p><i>array (first or intermediate part)</i> <br>
 &nbsp;Tick this box if other detector modules follow. All neutrons are then passed to
   the following module, otherwise neutrons not intersecting this detector part
-  will be discarded. </p>
+  will be discarded. Hence don't tick this box when using a single detector module.</p>
 <p><i>geometry</i> <br>
 &nbsp;The geometry parameter specifies the overall geometry of the detector,
   which can either be <i>flat</i> (i.e. rectangular)
@@ -198,9 +202,17 @@ aware that these are not independent events. </p>
 <p><i>detect color</i> <br>
 &nbsp;If a value other than -1 is given, only neutrons with that color can be
   detected, other neutrons are discarded. -1 means all neutrons are treated.</p>
+<p><i>minColor</i> <br>
+&nbsp;If a value other than -1 is given, only neutrons with a color greater or equal can be
+  detected, other neutrons are discarded. -1 means all neutrons are treated.</p>
+<p><i>maxColor</i> <br>
+&nbsp;If a value other than -1 is given, only neutrons with a color less or equal can be
+  detected, other neutrons are discarded. -1 means all neutrons are treated.</p>
 <p><i>add color</i> <br>
 &nbsp;If a value other than -1 is given, the colour of detected neutrons is
   <b>increased</b> by the given value. -1 means no change to the colour. </p>
+<p><i>exclsuive counts</i> <br>
+&nbsp;If activated, only those neutrons which have been detected are transferred to the subsequent modules.</p>
 <p><i>phi</i> <br>
 &nbsp;Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle
 between the projection of the position vector to the yz-plane and the +y-axis.
@@ -211,7 +223,7 @@ is defined as the angle between the position vector (pointing from the origin to
   geometry and a cylinder axis along the x axis, theta is set to 90&deg;
   (i.e. the position of the cylinder arch is solely defined by phi).</p>
 <p><i>distance</i> [cm] <br>
-&nbsp;Distance of the centre of the detector surface to the origin (0,0,0)
+&nbsp;Distance of the centre of the detector to the origin (0,0,0)
 in cm. In case of a cylindrical detector this is the inner cylinder radius. </p>
 <p><i>height </i>[cm] <br>
 &nbsp;Height of the detector in cm. In cylindical geometry, the height is
@@ -243,12 +255,13 @@ it is the length of the cylinder arch under consideration. </p>
   uncertainties caused by pixel size and parallax effect). 0 means no
   uncertainty (i.e. perfect resolution).  </p>
 <p><i>efficiency modifyer</i> <br>
-&nbsp;Modifies the efficiency calculated from the interaction cross-section
-  with the chosen material, e.g. for losses due to secondary particle detection etc. If 
-'other' material is chosen, this value is used as wavelength independet constant 
-efficieny, and has to be between 0 and 0.999999. The efficiency modifyer is
-  ignored in case an efficiency file is used. A value of 1 means no
-  modification to the efficiency calculated from a chosen material. </p>
+&nbsp;Factor to modify the efficiency calculated from the interaction cross-section
+  with the chosen material, e.g. for losses due to secondary particle detection
+  etc. If 'other' material is chosen, this value is used as wavelength independet constant 
+efficiency and has to be within [0;1[. Otherwise, this factor can be
+  larger than 1 (since VITESS 3.2) to account
+  for cases in which only a fraction of the real detector is simulated, and it
+  is also taken account if the efficiency is read from an input file. A value of 1 means no modification to the efficiency. </p>
 <p><i>lambda efficiency file</i> <br>
 &nbsp;Input file containing two columns with wavelength and efficiency. If
   such a file is given, the effieciency will be taken from there independently
@@ -293,7 +306,28 @@ efficieny, and has to be between 0 and 0.999999. The efficiency modifyer is
   ensure the whole intended area is still covered.</p>
 <br>
 </p>
-<p><b>Special input parameters for cylindrical detector:</b> </p>
+<p><b>Special input parameters for a flat detector:</b> </p>
+<p><i>phi_n</i> <br>
+&nbsp;Angle phi [0;360 deg] of the detector back surface normal (pointing away
+  from the sample) defined analog to the angle phi
+  of the detector position. Phi_n is defined in a coordinate system with
+  origin at the center of the detector and axes parallel to the detector axes,
+  obtained from the original coordinate system by rotating the x-axis onto the
+  detector position vector. Phi_n is then the angle between projection of
+  surface normal onto (y',z') plane and +y' axis, where y' and z' are y and z
+  after rotation of x onto the position vector.</p>
+<p><i>theta_n</i> <br>
+&nbsp;Angle theta [0;90 deg] of the detector back surface normal (pointing away
+  from the sample) defined analog to the angle theta
+  of the detector position (but constrained to 90&deg; such that detector front and back
+  side cannot be interchanged). Theta_n is defined in a coordinate system with
+  origin at the center of the detector and axes parallel to the detector axes,
+  obtained from the original coordinate system by rotating the x-axis onto the
+  detector position vector. Theta_n is the angle between the surface normal and
+  the new +x axis (i.e. between surface normal and position vector). Hence the surface is perpendicular to the position vector for theta_n=0&deg; (default).</p>
+<br>
+</p>
+<p><b>Special input parameters for a cylindrical detector:</b> </p>
 <p><i>axis orientation</i> <br>
 &nbsp;Choose the orientation of the cylinder axis as z, y or x
   axis. Constraints on theta and phi following from this choice are explained
@@ -302,6 +336,11 @@ efficieny, and has to be between 0 and 0.999999. The efficiency modifyer is
 &nbsp;Tick this box if the pixel size in the cylinder height dimension is not
   uniformely thickness/N<sub>Rows</sub>, but variable such that a constant
 angular width &#948&#966 defines the pixel size. </p>
+<br>
+<br>
+<i>note: Visualization of a cylindrical detector is only possible for width <
+ 2 &#960 distance (round down amply)</i> 
+<br>
 <br>
 <p><b>Detector output</b> </p>
 <p><i>Output filename</i> <br>

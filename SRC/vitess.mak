@@ -1,15 +1,15 @@
 # Vitess NMAKE File
-CPATH=c:\programme\microsoft visual studio .net 2003\vc7
-SROOT=h:\control
+GROOT=h:\control\g2_win
 SVNROOT=d:\vitcsrc
-CPATH2=$(CPATH)\PlatformSDK
+CPATH=c:\programme\microsoft visual studio .net 2003\vc7
+CPATH2=c:\programme\microsoft visual studio .net 2003\Vc7\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
 IPATH2=$(CPATH2)\include
 LPATH2=$(CPATH2)\lib
 
 SPATH=$(SVNROOT)\SRC
-GPATH=$(SROOT)\g2_win
+GPATH=$(GROOT)
 GSLPATH=$(SPATH)\rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -22,9 +22,9 @@ OD=.\Release
 IDIR=.\Release
 
 CPP=cl.exe
-DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
+DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /EHsc /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c /Og /YX
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
@@ -92,7 +92,6 @@ ALL : \
 	"$(OD)\slit.exe" \
 	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
-	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
 	"$(OD)\lenses.exe" \
@@ -118,6 +117,7 @@ ALL : \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\flipper_gradient.exe" \
+	"$(OD)\spacewindow.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\resonator_drabkin.exe" \
 	"$(OD)\monitor1D.exe" \
@@ -125,6 +125,7 @@ ALL : \
 	"$(OD)\guide_elliptic.exe" \
 	"$(OD)\filter.exe" \
 	"$(OD)\guide_parallel.exe" \
+	"$(OD)\monochromator.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
@@ -141,11 +142,12 @@ ALL : \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
 	"$(OD)\direct_view.exe" \
-	"$(OD)\sortiap.exe"
+	"$(OD)\sortiap.exe" \
+	"$(OD)\merge_spectra.exe"
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=1 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=2 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -198,6 +200,10 @@ SOURCE=$(SPATH)\magneticmap.c
 "$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_swarm.c
+"$(IDIR)\opt_swarm.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\sq_calc.c
 "$(IDIR)\sq_calc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -236,6 +242,10 @@ SOURCE=$(SPATH)\threadHelper.c
 
 SOURCE=$(SPATH)\opt_metro.c
 "$(IDIR)\opt_metro.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\monochrclass.cpp
+"$(IDIR)\monochrclass.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\src_modchar.c
@@ -442,8 +452,8 @@ SOURCE=$(SPATH)\opt_sim.c
 "$(IDIR)\opt_sim.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
+"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_swarm.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
@@ -500,13 +510,6 @@ SOURCE=$(SPATH)\source.c
 
 "$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
-
-SOURCE=$(SPATH)\spacewindow.c
-"$(IDIR)\spacewindow.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\spacewindow.exe" : "$(OD)" $(ITOOL) "$(OD)\spacewindow.obj" "$(OD)\bender_inter_data.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\spacewindow.pdb" /out:"$(OD)\spacewindow.exe" "$(IDIR)\spacewindow.obj" $(ITOOL) "$(OD)\bender_inter_data.obj" 
 
 SOURCE=$(SPATH)\spacewindow_multiple.c
 "$(IDIR)\spacewindow_multiple.obj" : $(SOURCE)
@@ -683,6 +686,13 @@ SOURCE=$(SPATH)\flipper_gradient.c
 "$(OD)\flipper_gradient.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_gradient.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\flipper_gradient.pdb" /out:"$(OD)\flipper_gradient.exe" "$(IDIR)\flipper_gradient.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\spacewindow.c
+"$(IDIR)\spacewindow.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\spacewindow.exe" : "$(OD)" $(MTOOL) "$(OD)\spacewindow.obj" "$(OD)\bender_inter_data.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\spacewindow.pdb" /out:"$(OD)\spacewindow.exe" "$(IDIR)\spacewindow.obj" $(MTOOL) "$(OD)\bender_inter_data.obj" 
+
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -731,6 +741,13 @@ SOURCE=$(SPATH)\guide_parallel.c
 
 "$(OD)\guide_parallel.exe" : "$(OD)" $(MGTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
 	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MGTOOL) "$(OD)\threadHelper.obj" 
+
+SOURCE=$(SPATH)\monochromator.cpp
+"$(IDIR)\monochromator.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\monochromator.exe" : "$(OD)" $(MGTOOL) "$(OD)\monochromator.obj" "$(OD)\monochrclass.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\monochromator.pdb" /out:"$(OD)\monochromator.exe" "$(IDIR)\monochromator.obj" $(MGTOOL) "$(OD)\monochrclass.obj" 
 
 SOURCE=$(SPATH)\sample_powder.c
 "$(IDIR)\sample_powder.obj" : $(SOURCE)
@@ -822,6 +839,13 @@ SOURCE=$(SPATH)\sortiap.c
 
 "$(OD)\sortiap.exe" : "$(OD)" "$(OD)\sortiap.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sortiap.pdb" /out:"$(OD)\sortiap.exe" "$(IDIR)\sortiap.obj"
+
+SOURCE=$(SPATH)\merge_spectra.c
+"$(IDIR)\merge_spectra.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\merge_spectra.exe" : "$(OD)" "$(OD)\merge_spectra.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\merge_spectra.pdb" /out:"$(OD)\merge_spectra.exe" "$(IDIR)\merge_spectra.obj"
 
 SOURCE=$(SPATH)\bendtest.c
 "$(IDIR)\bendtest.obj" : $(SOURCE)

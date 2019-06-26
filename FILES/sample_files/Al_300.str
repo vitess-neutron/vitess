@@ -1,3 +1,16 @@
+# Aluminium
+#
+# d-spacing and sigma calculated by means of tool 'LatticeDistances'
+#
+#   Sigma(hkl) = multiplicity * |F(hkl)|² * F_dw
+#   F_dw   = exp(-3 Q² (h/2pi)² T_meas / (k_b M_ave T_debye²))
+#   T_meas = 300 K
+#   T_debye= 394 K
+#   M_ave  =  26.982 amu  
+#  
+#  d     Sigma(hkl)
+#[Ang]     [barn]
+# ------------------
 2.337691   14.122
 2.024500   10.329
 1.431538   18.684

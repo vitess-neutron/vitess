@@ -48,8 +48,8 @@ void		CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_
 double		Mosaicity(VectorType Mosaic) ;
 double		dSpreadLorentzian(double d_spacing) ;
 double		dSpreadGaussian(double d_spacing) ;
-void            TransmitNeutron(Neutron* n);
-double          CalculateRotationOffset();
+//void            TransmitNeutron(Neutron* n);
+//double          CalculateRotationOffset();
 
 /********************************************************************/
 

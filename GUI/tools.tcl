@@ -140,6 +140,31 @@ proc scrollFrame {w side cw ch sh {sw ""}} {
   return $wmf
 }
 
+proc adjustScrollRegion {w {cw ""}} {
+
+  set sw [winfo parent $w]
+  # Adjust the scroll bar length to the real size of the scrolled window sw
+
+  # find dimensions and sizes: update first
+  update
+
+  # if we do not have a content window cw, look for children's y position
+  if {$cw == ""} {
+    set y -1
+    catch {
+      set y [winfo y [lindex [winfo children $sw.f] end]]
+    }
+    if {$y <= 0} return
+  } else {
+    # find the real height of the content window cw
+    set y  [winfo height $cw]
+  }
+  
+  # configure canvas scroll region height to real value + 40 pixel
+  $sw configure -scrollregion [lreplace [$sw cget -scrollregion] 3 3 [expr 40 + $y]]
+}
+
+
 proc lLabel {w {text ""}} {
   global labColor
   label $w.label -text $text -font [labelFont] -bg $labColor
@@ -322,10 +347,17 @@ proc isNot {v args} {
 }
 
 ### if global variable a is not known, then define a with value val
+# Hack: If the global variable belongs to an entry, we might have tried
+#       to delete that beast earlier, but were able only to set its value
+#       UNDEFINED. We treat these variables as unknown, and set the given
+#       value then. 
 ###
 proc forceDef {a val} {
   upvar #0 $a v
-  if [info exists v] return
+  if [info exists v] {
+    if {$v != "UNDEFINED"} return
+    # puts "DEBUG forceDef of UNDEFINED $a to $val"
+  }
   set v $val
 }
 ### force empty string definitions of global variables, if necessary
@@ -339,7 +371,7 @@ proc forceDefs {args} {
 }
 ### short form to set global variable
 ###
-proc gSet {a b} {
+proc gSet {a {b ""}} {
   global $a
   set $a $b
 }
@@ -384,7 +416,7 @@ proc addToSet {set v} {
 ### 7. are not an array variable
 ###
 proc savableGlobals {} {
-  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp
+  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp SaveInstrmode
   set lasti 0
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -402,6 +434,10 @@ proc savableGlobals {} {
     }
     if {[lsearch $TempVars $e] >= 0} continue
     if {[lsearch $DoNotSave $e] >= 0} continue
+    if {$SaveInstrmode == "normal"} {
+       if [regexp {^series.+_$} $e] continue
+       if [regexp {^(mod|num)series_$} $e] continue
+    }
     global $e
     if {[catch {array size $e} size] || !$size} {
       lappend l $e
@@ -709,7 +745,7 @@ proc tmpFilename {{name temp.tmp}} {
     break
   }
   set s [format %x [clock seconds]]
-  return [getFullTmpFile "$n$s$name"]
+  return [getFullTmpFile [regsub -all {[^a-zA-Z0-9_.-]} "$n$s$name" ""]]
 }
 
 proc getDirectory {name} {
@@ -722,13 +758,13 @@ proc parFileReadable {name app} {
   return [file readable [file join $defdirectory_ [entryVal $name $app]]]
 }
 
-proc browseFile {var access dirtype {ext ""} {mustexist false}} {
+
+proc browseFile {{var dummy} access dirtype {ext ""} {mustexist false}} {
   set err 1
   if {$dirtype == "d"} {
     set err [catch {tk_chooseDirectory -mustexist $mustexist} name]
   }
   if $err {if {[set name [fileDialog $access $ext]] == ""} return}
-  global $var
   switch $dirtype {
     d {
       if {! [file isdirectory $name]} {
@@ -764,6 +800,10 @@ proc browseFile {var access dirtype {ext ""} {mustexist false}} {
       }
     }
   }
+  if {$var == "dummy"} {
+    return $name
+  }
+  global $var
   set $var $name
 }
 
@@ -878,4 +918,84 @@ proc xscroll {w command {side top}} {
   append w ".xscroll"
   scrollbar $w -command $command -bg $bgColor -width $scrollWidth -orient horizontal
   pack $w -side $side -fill x
+}
+
+proc isWritableDirectory {d} {
+  if [file isdirectory $d] {
+    # try to create a file in that directory
+    set fn [file join $d dummy[clock seconds]]
+    if [catch {open $fn w} f] {
+      return 0
+    }
+    if [catch {puts $f a}] {
+      close $f
+      return 0
+    }
+    close $f
+    file delete $fn
+    return 1
+  }
+  return 0
+}
+
+proc newParamDirectory {oldname} {
+  # generate a new parameter directory name
+  global env
+  set fn [file tail $oldname]
+  set h $env(HOME)
+  set nd [file join $h $fn]
+  while 1 {
+    if [file exists $nd] {
+      set nd [file join $h ${fn}[incr i]]
+    } else {
+      if [catch {file mkdir $nd}] return ""
+      return $nd
+    }
+  }
+}
+
+proc findWindowsFile {roota rootb np {maxlevel 4}} {
+  set dirl [list $roota $rootb]
+  set ff 0
+  for {set i 0} {$i < $maxlevel} {incr i} {
+    set lnew {}
+    foreach d $dirl {
+      set f [file join $d $np]
+      catch {
+        if [file exists $f] {set ff 1}
+      }
+      if {$ff} {return $f}
+      set pat [file join $d *]
+      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
+      foreach dli $ssi {
+        lappend lnew $dli
+      }
+    }
+    if {[llength $lnew] <= 0} break
+    set dirl $lnew
+  }
+  return ""
+}
+
+proc findFile {root name} {
+  if {$name == "" || $root == ""} { return ""}
+  set dirl [list $root]
+  while 1 {
+    set lnew {}
+    foreach d $dirl {
+      set f [file join $d $name]
+      # puts "DEBUG look at $f"
+      if [file exists $f] { 
+        return $f
+      }
+      set pat [file join $d *]
+      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
+      foreach dli $ssi {
+        lappend lnew $dli
+      }
+    }
+    if {[llength $lnew] <= 0} break
+    set dirl $lnew
+  }
+  return ""
 }

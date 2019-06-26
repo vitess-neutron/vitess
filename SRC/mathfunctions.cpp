@@ -6,9 +6,9 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Daniiel Nekrassov, Carolin Zendler, Michael Fromme, Klaus Lieutenant, Sergey Manoshin    */
+/* Daniiel Nekrassov, Carolin Zendler, Michael Fromme, Klaus Lieutenant, Andreas Houben     */
 /*                                                                                          */
-/* 1.0  D.Nekrassov: Jul 2012,  initial version                                             */
+/* 1.0  D. Nekrassov: Oct 2012,  initial version                                             */
 /********************************************************************************************/
 
 
@@ -204,7 +204,7 @@ void SolveQuarticEquation(double a, double b, double c, double d, double* soluti
   double y2_i = 0;
   double y3_i = 0;
 
-  bool Rpositive = true;
+  //  bool Rpositive = true;
 
   // If Rvalue > 0 --> 1 real and 2 complex solutions
   // If Tvalue == 0 --> 2 real solutions
@@ -235,7 +235,7 @@ void SolveQuarticEquation(double a, double b, double c, double d, double* soluti
   // "casus irreducibilis"
   else {
     
-    Rpositive = false;
+    //    Rpositive = false;
 
     double u = sqrt((-1.)*pow(p/3., 3));
     double w = acos((-1.)*q/(2.*u));
@@ -368,28 +368,28 @@ void SolveQuarticEquation(double a, double b, double c, double d, double* soluti
   // if ( y3_tilde_i == 0) CheckSolution(x3, a, b, c, d);
   // if ( y4_tilde_i == 0) CheckSolution(x4, a, b, c, d);
 
-  bool solutionFound = false;
+  //  bool solutionFound = false;
 
   if (solutions != 0) {
 
     if ( fabs(y1_tilde_i) < precision) {
       solutions[0] = x1;
-      solutionFound = true;
+      //      solutionFound = true;
     }
     else solutions[0] = -6666;
     if ( fabs(y2_tilde_i) < precision) {
       solutions[1] = x2;
-      solutionFound = true;
+      //      solutionFound = true;
     }
     else solutions[1] = -6666;
     if ( fabs(y3_tilde_i) < precision) {
       solutions[2] = x3;
-       solutionFound = true;
+      //       solutionFound = true;
     }
     else solutions[2] = -6666;
     if ( fabs(y4_tilde_i) < precision) {
       solutions[3] = x4;
-       solutionFound = true;
+      //       solutionFound = true;
     }
     else solutions[3] = -6666;
     
@@ -409,7 +409,7 @@ double CheckSolution(double x, double a, double b, double c, double d)
   if (fabs(y) > 1e-4) {
 
     double newX = ImprovePrecision(x, y, a, b, c, d);
-    y = pow(newX, 4) + a*pow(newX, 3) + b*pow(newX, 2) + c*newX + d;
+    //    y = pow(newX, 4) + a*pow(newX, 3) + b*pow(newX, 2) + c*newX + d;
     return newX;
   }
   else {
@@ -489,5 +489,13 @@ double ImprovePrecision(double x, double y, double a, double b, double c, double
 
 }
 
+double RandomLorentzian(double mean, double gamma)
+{
+  double rval, displ;
+  rval = 2.*MonteCarlo(0, 1) - 1;
+  displ = 0.5*gamma*tan(rval*M_PI_2);
+
+  return (mean+displ);
+}
 
 #endif

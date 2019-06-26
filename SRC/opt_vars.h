@@ -20,6 +20,8 @@ extern int    nPts,                 // number of measuring points
               iStep;                // actual optimization step
 extern short  nPar,                 // number of fit parameters
               nSim,                 // number of simulation results found in sFCommFilename
-              eOut,                 // parameter to control output
-              bParallel;            // criterion: parallel computing
+              eOut;                 // parameter to control output
+extern VtAppl eOption;              // application option  '1': 'sim_opt_pc'    MC sim. optimization
+                                    //                     '2': 'sim_opt_grid'  MC sim. optimization on cluster
+                                    //                     '3': 'fit'           fit
 #endif

@@ -5,6 +5,7 @@
 
 proc reShowModules {w} {
   global maxModule DummyEntry LastWin
+  disableModule ;  # set all modules enabled
   cleanupModView
   set list {}
   for {set i 1} {$i <= $maxModule} {incr i} {
@@ -31,6 +32,21 @@ proc reShowModules {w} {
     upvar #0 separate$j sep
     set sep hidden;			# set mode hidden
     incr j
+  }
+}
+
+proc setUndefinedEntryVars {} {
+  global maxModule DummyEntry
+  for {set i 1} {$i <= $maxModule} {incr i} {
+    set m [globVal mod$i]
+    if {$m == "" || $m == $DummyEntry} continue
+
+    upvar #0 ${m}ESET mod
+    catch {
+      foreach line $mod {
+        forceDef [lindex $line 0]_$i [lindex $line 2]
+      }
+    }
   }
 }
 
@@ -152,7 +168,7 @@ proc fileSettings {{saveit 0}} {
         gSet $e "$v"
         #puts "gSet $e \"$v\""
       } elseif {[string match "*\{\}" $line]} {
-        gSet $e ""
+        gSet $e
       }  else {
         set errs "!dubious input in $name ignored ($line)"
       }
@@ -164,6 +180,9 @@ proc fileSettings {{saveit 0}} {
 }
 
 proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
+  # proto == 1 means normal store operation, including a protocol log
+  # proto == 0 is for storage in a snap situation
+
   if $proto conditionalOpenProtfile
   if {$extension == "gui"} {
     if {$as != ""} {
@@ -192,7 +211,7 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
   }
   switch $extension {
     gui {
-      cleanupGlobalVariables
+      if $proto cleanupGlobalVariables
       puts $f "#experiment description save file"
       puts $f "#version [globVal XcontrolVersion]"
       foreach g [savableGlobals] {
@@ -354,6 +373,20 @@ proc deleteSomeModules {w i} {
   }
 }
 
+proc deleteEntryVariables {} {
+  # Delete all global variables which belong to module parameter entries.
+  # These are of the name form <varname>_<number>
+  foreach n [info globals] {
+    if [regexp {^[a-zA-Z0-9_]+_[0-9]+$} $n] {
+      catch {
+        global $n
+        # setting n UNDEFINED is a hack, as Tcl/Tk does not properly unset entry variables
+        set $n UNDEFINED
+        unset $n
+      }
+    }
+  }
+}
 
 gSet sInameESET {
   {setiname string "" {instrument "Instrument name: This should be a meaningful name."} "" "" 1}
@@ -707,14 +740,13 @@ proc cleanupGlobalVariables {} {
       }
     }
     # else delete that relict
-    #dmf:debug
-    #puts "unset $e"
+    #puts "DEBUG unset $e"
     global $e
     unset $e
   }
 }
 
-proc checkConsistency {} {
+proc assureConsistency {} {
   # As gui input files may contain inconsistent settings for various reasons.
   # We look for global variables which might disturb further work.
   # First we look for variables mod_<number>
@@ -731,20 +763,29 @@ proc checkConsistency {} {
       if {$mod != "$DummyEntry"} {
         # check if it is a valid module name
         upvar #0 ${mod}ESET m
-        if [info exists m] {set validmod($i) 1}
+        if [info exists m] {
+          set validmod($i) 1
+          set activemod($mod) 1
+        }
       }
     }
     if $validmod($i) continue
     set mod $DummyEntry
   }
 
-  # Delete global <name>_<number> variables, if they do no belong to a valid module.
+  # Delete global variables of doubious nature
   foreach e [info globals] {
     if {[regexp {^mod([0-9]+)$} $e a n]} {
+      # Delete <name>_<number> variables not belonging to a valid module.
       if {$n >= 0 && $n <= $maxModule} continue
     } else {
-      if {! [regexp {_([0-9]+)$} $e a n]} continue
-      if {$n >= 0 && $n <= $maxModule && $validmod($n)} continue
+      if [regexp {[^a-zA-Z0-9_]} $e] {
+        # allow only series... globals to have special chars like . in name
+        if [regexp {^seriest?[0-9._]+$} $e] continue
+      } else {
+        if {! [regexp {_([0-9]+)$} $e a n]} continue
+        if {$n >= 0 && $n <= $maxModule && $validmod($n)} continue
+      }
     }
     global $e
     unset $e
@@ -776,8 +817,8 @@ proc loadAll {extension {givenname ""}} {
     set nd [file dirname $name]
   }
 
-  # delete all modules
   deleteSomeModules $Mlf 1
+  deleteEntryVariables
 
   # If a gui-file becomes loaded, settings for GUI sizes and the default directory
   # could be changed, too. If values come from a different OS, these values would be
@@ -805,14 +846,14 @@ proc loadAll {extension {givenname ""}} {
       gSet $e "$v"
       #puts "gSet $e \"$v\""
     } elseif {[string match "*\{\}" $line]} {
-      gSet $e ""
+      gSet $e
     }  else {
       set errs "!dubious input in $name ignored ($line)"
     }
   }
   close $f
 
-  checkConsistency
+  assureConsistency
 
   if {$errs == ""} {
     set errs "control file $name successfully loaded"
@@ -830,9 +871,25 @@ proc loadAll {extension {givenname ""}} {
   if {$givenname == ""} {
     setInstrumentfile $name
 
-    # Ask if modified new default directory is ok
-    confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-
+    if [isWritableDirectory $nd] {
+      # Ask if modified new default directory is ok
+      confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
+    } else {
+      showText "directory $nd is not writeable"
+      # try to copy this directory to a new place
+      set ndir [newParamDirectory $nd]
+      if {$nd == ""} {
+        showText "could not create a writeable parameter directory!"
+      } else {
+        # copy files
+        foreach fn [glob -nocomplain -directory $nd *] {
+          if {[file type $fn] != "file"} continue
+          file copy $fn $ndir
+        }
+        gSet defdirectory_ $ndir
+        showText "default directory is $ndir now"
+      }
+    }
   } else {
     global instrumentfile
     set oname $instrumentfile
@@ -842,6 +899,9 @@ proc loadAll {extension {givenname ""}} {
 
   cleanupGlobalVariables
   showModName
+
+  setUndefinedEntryVars
+
   saveLastState
 
   return 1
@@ -853,7 +913,7 @@ proc deleteAllModules {} {
   reShowModules $Mlf
   removeTrailingDummies
   setInstrumentfile 1
-  gSet LastState ""
+  gSet LastState
   helpFrame $Amf
   foreach e [info globals] {
     if [regexp $DoNotSaveRegexp $e] continue

@@ -21,6 +21,7 @@
 #include "softabort.h"
 #include "intersection.h"
 #include "bender_inter_data.h"
+#include "matrix.h"
 
 
 /******************************/
@@ -696,7 +697,8 @@ void  OwnInit(int argc, char *argv[])
 void SetGeometryData()
 {
 
-
+  double rotMatrixPi2[3][3];
+  
   bVisInstalled = TRUE;
  // Geometry data
   if (bVisInstr)
@@ -725,15 +727,18 @@ void SetGeometryData()
     stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
     stGeometry.nCuboids = 1; 
 
-    stGeometry.pCuboid[0].Length = Max(Thicknesscoll, Thicknesscolli); 
-    stGeometry.pCuboid[0].Width  = widthmax - widthmin;
+    stGeometry.pCuboid[0].Length = widthmax - widthmin;
+    stGeometry.pCuboid[0].Width  =  Max(Thicknesscoll, Thicknesscolli);
     stGeometry.pCuboid[0].Height = heightmax - heightmin;
-    stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Height/2.;
+    stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Width/2.;
     stGeometry.pCuboid[0].vCntr[1]  = ywincenter;
     stGeometry.pCuboid[0].vCntr[2]  = zwincenter;
-    stGeometry.pCuboid[0].vNormal[0]= 1.0;
-    stGeometry.pCuboid[0].vNormal[1]= cos(rotang);
+    stGeometry.pCuboid[0].vNormal[0]= cos(rotang);
+    stGeometry.pCuboid[0].vNormal[1]= 0.;
     stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
+
+    FillRotMatrixZY(rotMatrixPi2, 0, M_PI_2);
+    RotVector(rotMatrixPi2, stGeometry.pCuboid[0].vNormal);
 
     stGeometry.pDescr  = "space window:cyan";
     stGeometry.eModule = VT_WINDOW;

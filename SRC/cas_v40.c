@@ -111,28 +111,28 @@ void OwnInit(int argc, char *argv[])
 	{
 				
 	case 'P':
-	  if((Par_CAS = fopen(&argv[1][2],"r"))==NULL)
+	  if((Par_CAS = fopen(FullParName(&argv[1][2]),"rt"))==NULL)
 	    {
 	      fprintf(LogFilePtr,"\nParameter file '%s' not found\n",&argv[1][2]);
 	      exit(0);
 	    }
-	  ParameterFileName=&argv[1][2];
+	  ParameterFileName=FullParName(&argv[1][2]);
 	  break;
 
 	case 'S':
-	  StatisticsFileName=&argv[1][2];
+	  StatisticsFileName=FullParName(&argv[1][2]);
 	  break;
 
 	case 'T':
-	  TrajDataFileName=&argv[1][2];
+	  TrajDataFileName=FullParName(&argv[1][2]);
 	  break;
 
 	case 't':
-	  TrajPointsFileName=&argv[1][2];
+	  TrajPointsFileName=FullParName(&argv[1][2]);
 	  break;
 
 	case 'D':
-	  DetPointsFileName=&argv[1][2];
+	  DetPointsFileName=FullParName(&argv[1][2]);
 	  break;
 
 	case 'O':

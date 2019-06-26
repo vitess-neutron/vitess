@@ -49,6 +49,7 @@ void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
 void print_module_name(const char *name);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
+void ChangeNeutronID  (Neutron* n);
 
 void WriteWWP(Neutron *pNeutron, VtReason eReason);
 
@@ -92,5 +93,22 @@ extern gsl_rng * vit_gsl_rng;
 #define myExit(s) {fprintf (LogFilePtr,s); exit(-1);}
 #define myExit1(s,a) {fprintf (LogFilePtr,s,a); exit(-1);}
 #define myExit2(s,a,b) {fprintf (LogFilePtr,s,a,b); exit(-1);}
+
+#ifdef _MSC_VER
+#  if _MSC_VER >= 1700
+#    define DODEBMACRO
+#  endif
+#else
+#  define DODEBMACRO
+#endif
+
+#ifdef DODEBMACRO
+# if DEBUG
+#  define DEBUG_OUT(...) {fprintf(LogFilePtr, "%s, line %d :", __FILE__, __LINE__); fprintf(LogFilePtr, __VA_ARGS__); fprintf(LogFilePtr, "\n");}
+# else 
+#  define DEBUG_OUT(...) (void)0
+# endif
+# undef DODEBMACRO
+#endif
 
 #endif

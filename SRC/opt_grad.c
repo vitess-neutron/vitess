@@ -84,7 +84,7 @@ short OptGrad()
 		                  (2): (1) + Ergebnisse nach jedem Fitschritt
 		                  (3): (2) + einige Funktionswerte nach Fit
 		P0[1] .... P0[nPar]   die Startwerte der Fitparameter
-		DELX[1] .. DELX[nPar] die Werte von DeltaX für die numerische Differentiation
+		DELX[1] .. DELX[nPar] die Werte von DeltaX fÃ¼r die numerische Differentiation
 		Y[1] ..... Y[nPts]    die (Mess-)Werte
 		und im allgemeinen
 		X[1] ..... X[nPts]    ein Parameter, von dem die Funktionswerte
@@ -228,11 +228,11 @@ short OptGrad()
   if (eOut>=2)
   { 
     pFile=fileOpen("CalcSpec.dat", "wt");
-    if (pFile)
-    { for (i=1; i<=nPts; i++)
-      fprintf(pFile, "%10.5f  %12.5e\n", X[i],FT[i]);
+    if (pFile) {
+      for (i=1; i<=nPts; i++)
+        fprintf(pFile, "%10.5f  %12.5e\n", X[i],FT[i]);
+      fclose(pFile);
     }
-    fclose(pFile);
   }
 
 	if (nPts > nPar)
@@ -269,41 +269,39 @@ short ReadIniFile(short*  pOut,  short*  pNZmax, short*  pNDmax,
                   double* pDamp, double* pTfac,  double* pQverm,  double* pQmin,  
                   const char* sIniFile)
 {	
-	short rc=TRUE,
+  short rc=TRUE,
         rp=TRUE;               // return code from 'ReadParameter'
-	FILE* pIniFile;
-	char  sParameter[BUF_LEN+1], // content of the parameter
-	      cId,                   // character defining the parameter
+  FILE* pIniFile;
+  char  sParameter[BUF_LEN+1], // content of the parameter
+        cId,                   // character defining the parameter
         sMessage[50];
-	
-	pIniFile = fileOpen(sIniFile, "r");
+  
+  pIniFile = fileOpen(sIniFile, "r");
 
-	if (pIniFile!=NULL)
-	{	
-		// read file, set parameters and check input
-		rp = ReadParameter(&cId, sParameter,  pIniFile);
-		while (rp)
-		{
-			switch (cId)
-			{	case 'a': *pOut   = (short) atoi(sParameter); break;
-				case 's': *pNZmax = (short) atoi(sParameter); break;
-				case 'n': *pNDmax = (short) atoi(sParameter); break;
-				case 'd': *pDamp  = atof(sParameter); break;
-				case 't': *pTfac  = atof(sParameter); break;
-				case 'r': *pQverm = atof(sParameter); break;
-				case 'm': *pQmin  = atof(sParameter); break;
-				default : sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
-                  Warning(sMessage);
-			}
-			rp = ReadParameter(&cId, sParameter,  pIniFile);
-		}
-		fclose(pIniFile);
-	}
-	else
-	{	Warning("opt_grad: file containing control parameters could not be opened, default values are used");
+  if (pIniFile!=NULL)  {	
+    // read file, set parameters and check input
+    rp = ReadParameter(&cId, sParameter,  pIniFile);
+    while (rp) {
+      switch (cId) {
+      case 'a': *pOut   = (short) atoi(sParameter); break;
+      case 's': *pNZmax = (short) atoi(sParameter); break;
+      case 'n': *pNDmax = (short) atoi(sParameter); break;
+      case 'd': *pDamp  = atof(sParameter); break;
+      case 't': *pTfac  = atof(sParameter); break;
+      case 'r': *pQverm = atof(sParameter); break;
+      case 'm': *pQmin  = atof(sParameter); break;
+      default :
+        sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
+        Warning(sMessage);
+      }
+      rp = ReadParameter(&cId, sParameter,  pIniFile);
+    }
+    fclose(pIniFile);
+  } else {
+    Warning("opt_grad: file containing control parameters could not be opened, default values are used");
     rc=FALSE;
-	}
-
-	return (rc);
+  }
+  
+  return (rc);
 }
 

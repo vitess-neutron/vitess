@@ -166,11 +166,14 @@ cyl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 1.0 0.0 0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 # orientation of the cylinder; need not be normalised <br>
 Al_300.str&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-# file containing the structure factor data for the unit cell <br>
+# file containing the structure factor data for the unit cell. If the format is neither .str nor .laz, the meaning of individual
+columns needs to be specified (see below). <br>
 0.000494 0.09057 0.01392 # macroscopic cross sections: incoherent, total
 and absorption <br>
 66.38&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-# unit cell volume in cubic Angstrom </p>
+# unit cell volume in cubic Angstrom <br>
+6 13 0 17 0 1 # Structure file format, if the file is not given as .str or .laz. The last number is the scale factor that is needed to 
+express the squared structure factor in barn, if it is given in a different unit in the used structure factor file. </p>
 <p>Anything after the # character is interpreted as a comment. <br>
 &nbsp; <br>
 &nbsp;
@@ -234,6 +237,16 @@ i.e. the planes separated by 'thickness' remain perpendicular to this vector.
   <tr>
     <td> unit cell volume <br>[&Aring;&sup3;]</td>
     <td> volume of the unit cell</td>
+  </tr>
+
+   <tr>
+    <td> Column numbers for individual parameters of the look-up table</td>
+    <td> In case the structure factor file has neither the .str (VITESS) nor .laz format, the meaning of individual columns needs to be specified so that the file can be used as structure file.</td>
+  </tr>
+
+  <tr>
+    <td> Scale factor</td>
+    <td> In case the structure factor file has neither the .str (VITESS) nor .laz format, this scale factor is needed, if the (squared) structure factor is not given in barn^0.5 (barn).</td>
   </tr>
 
  </tbody>

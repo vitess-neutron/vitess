@@ -108,45 +108,49 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
   }
 }
 
-proc checkPlotfile  {fname} {
+proc checkPlotfile {fname} {
   # return either matrix for 2D matrix files, 
-  # xyz for 2D files with x y z values
+  # xyz for 2D files with x y z values,
   # xz for files with at least 2 columns of numbers,
   # or "" for insufficient file names/files
-  
-  if [catch {open $fname r} f] {
-    showText "! can't open $fname"
-    return ""
-  }
-  if [eof $f] {
-    close $f
-    showText "! empty $fname"
-    return ""
-  }
 
-  while {[gets $f ins] > 0} {
-    if {[string range $ins 0 0] != "#"} break
+  if {[file size $fname] < 100} { return ""} 
+
+  if [catch {open $fname r} f] {
+    return ""
+  }
+  set ismonitor 0
+  if {[gets $f ins] > 0} {
+    if [regexp {^\#Monitor} $ins] {set ismonitor 1}
+  }
+  if {!$ismonitor} {
+    close $f
+    return ""
+  }
+  set ftype ""
+  while 1 {
     # check if its a matrix file
-    if [regexp {matrix} $ins] {
-      close $f
-      return matrix
+    if [regexp matrix $ins] {
+      set ftype matrix
     }
     if [regexp {x  y  z} $ins] {
-      close $f
-      return xyz
+      set ftype xyz
     }
+    if {[gets $f ins] <= 0} break
+    if {[string range $ins 0 0] != "#"} break
   }
   close $f
+
   # check if it has more than 16 colums
   eval set ll [list $ins]
   if {[llength $ll] > 16} {
     return matrix
   } elseif {2 > [scan $ins "%f%f%f%f" x y xe ye]} {
     # min. 2 colums of numbers
-    showText "! insufficient plot file"
     return ""
   }
-  return xz
+  if {$ftype == ""} {set ftype xz}
+  return $ftype
 }
 
 # show 2d array coded with colors
@@ -288,6 +292,7 @@ proc closeCmdHandles {} {
     upvar #0 FH$i gp
     if [info exists gp] {
       catch {close $gp}
+      catch {unset gp}
     }
   }
 }
@@ -369,24 +374,29 @@ proc gnuPlotCmd {app fname ftype} {
   if {$wxt == "wxt"} {append wxtcmd " size 480,360"}
   puts $gp $wxtcmd
 
-  # keyboard bindings to print and generate PDF files:
-  #   keyboard P pressed: generate a PDF file
-  set ofn [tmpFilename plot.pdf]
-  switch [set mysys [getSystem]] {
-    unix {set dummy /dev/null}
-    windows {set dummy nul}
+  # keyboard bindings to print and generate PDF/PostScript files:
+  switch [getSystem] {
+    unix {
+      set dummy /dev/null
+      #   keyboard P pressed: generate a PDF file
+      set ofn [tmpFilename plot.pdf]
+      set c "set term pdf color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      #   second set output command is to close the pdf file
+      #   wxt command in the end, to show further plots
+      puts $gp "bind P \"$c\""
+      #   keyboard p pressed: send postcript output to the default printer
+      set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      puts $gp "bind p \"$c\""
+    }
+    windows {
+      set dummy nul
+      #   keyboard P pressed: generate a postscript file
+      set ofn [tmpFilename plot.ps]
+      set c "set term postscript color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
+      puts $gp "bind P \"$c\""
+    }
   }
-  #   second set output command is to close the pdf file
-  #   wxt command in the end, to show further plots
-  set c "set term pdf color; set o \\\"$ofn\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
-  puts $gp "bind P \"$c\""
 
-  #   keyboard p pressed: send postcript output to the default printer
-  #                       for other systems just bind p to generating a PDF file, too
-  if {$mysys == "unix"} {
-    set c "set term postscript color; set o \\\"|lpr\\\"; plot '$fname'; set o \\\"$dummy\\\"; $wxtcmd"
-  }
-  puts $gp "bind p \"$c\""
   if {$ftype == "xz"} {
     set com "unset pm3d; plot '$fname'"
   } else {
@@ -465,29 +475,6 @@ proc getPlotTemplates {} {
   return $li
 }
 
-proc findFile {roota rootb np {maxlevel 4}} {
-  set dirl [list $roota $rootb]
-  set ff 0
-  for {set i 0} {$i < $maxlevel} {incr i} {
-    set lnew {}
-    foreach d $dirl {
-      set f [file join $d $np]
-      catch {
-        if [file exists $f] {set ff 1}
-      }
-      if {$ff} {return $f}
-      set pat [file join $d *]
-      if [catch {set ssi [glob -nocomplain -type d $pat]}] continue
-      foreach dli $ssi {
-        lappend lnew $dli
-      }
-    }
-    if {[llength $lnew] <= 0} break
-    set dirl $lnew
-  }
-  return ""
-}
-
 proc getGnuPlotApp {} {
   # locate the executable gnuplot program
   global FoundGnuplotApp
@@ -497,7 +484,7 @@ proc getGnuPlotApp {} {
 	if [catch {exec which gnuplot} res] {set res ""}
 	return [set FoundGnuplotApp $res]
     }
-    windows {return [set FoundGnuplotApp [findFile C:/ D:/ binary/gnuplot.exe]]}
+    windows {return [set FoundGnuplotApp [findWindowsFile C:/ D:/ binary/gnuplot.exe]]}
     default {return [set FoundGnuplotApp ""]}
   }
 }
@@ -555,12 +542,13 @@ proc getPreferredX3DCmd {} {
     windows {
       if {$cmd != ""} {
         if {! [regexp \.(exe|EXE)$ $cmd]} { append cmd .exe }
-        set ecmd [findFile C:/ D:/ $cmd]
+        set ecmd [findWindowsFile C:/ D:/ $cmd]
       }
     }
     default { }
   }
   if {$ecmd != ""} { set x3dapp_ $ecmd }
+
   return [set PreferredX3DCmd $ecmd]
 }
 
@@ -721,8 +709,7 @@ proc plotWithTemplate {fn topt} {
     if {$gp == ""} return
     foreach s [split $content "\n"] {
       if {$s != ""} {
-        #dmf:debug
-        #puts "pro gnu :$s:"
+        # puts "DEBUG pro gnu :$s:"
         puts $gp $s
       }
     }

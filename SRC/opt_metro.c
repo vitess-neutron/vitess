@@ -188,9 +188,9 @@ short Metropolis()
 
     /* print to log file */    
     if (LogFilePtr!=NULL && iStep/nStpOut*nStpOut == iStep) 
-    {	fprintf(LogFilePtr, "\n%ld. STEP:\n----------\n", iStep);
+    {	fprintf(LogFilePtr, "\n%d. STEP:\n----------\n", iStep);
     	PrintP(P0, ON);
-	  	fprintf(LogFilePtr, " X²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
+	  	fprintf(LogFilePtr, " XÂ²= %13.5e\n Q = %13.5e\n", ChiQ0, QFromChi2(ChiQ0, Sigma));
     }
     if (LogFilePtr!=NULL && iStep/nStpMin*nStpMin == iStep) 
     {	fprintf(LogFilePtr, "\nActual best values found in step %ld:\n", iStpOpt);
@@ -209,7 +209,7 @@ short Metropolis()
   if (Qlimit > 0.0 && NZloc > 0)
     LocalMin(VT_EXIT, 0.0, 0.0, PM, 0.0);
 
-  fprintf(LogFilePtr, "\nFit was finished after %ld accepted and %ld tried steps\n\nFinal values found in step %ld:\n",
+  fprintf(LogFilePtr, "\nFit was finished after %d accepted and %ld tried steps\n\nFinal values found in step %ld:\n",
                       iStep, iStpTry, iStpOpt);
   
   if (nPts > nPar)
@@ -231,11 +231,11 @@ short Metropolis()
   if (eOut>=2)
   { 
     pFile=fileOpen("CalcSpec.dat", "wt");
-    if (pFile)
-    { for (i=1; i<=nPts; i++)
-      fprintf(pFile, "%10.5f  %12.5e\n", X[i],FM[i]);
+    if (pFile) {
+      for (i=1; i<=nPts; i++)
+        fprintf(pFile, "%10.5f  %12.5e\n", X[i],FM[i]);
+      fclose(pFile);
     }
-    fclose(pFile);
   }
   
   return READY;
@@ -288,10 +288,7 @@ ChangePar(const short m,  const double DelP[NMAX+1],  const VtConstr eConstr)
 static short
 Constraints(const double P[NMAX+1], const short jPar)
 {
-  short bTest=TRUE;
-  
-  if (P[jPar] < Pmin[jPar] || P[jPar] < Pmin[jPar]) bTest=FALSE;
-  
+  short bTest = P[jPar] >= Pmin[jPar] && P[jPar] <= Pmax[jPar];
   return bTest;
 }
 
@@ -368,7 +365,7 @@ LocalMin(const VtCheckMode eMode, const double  QT, const double Q0, const doubl
            *pStpOut:  each 'nStpOut' step is written to the output 
            *pStpMin:  each 'nStpMin' step the actual minimum is written
            *pSigma :  standard deviation of a measurement value    
-           *pQverm :  ratio of Q-reduction within 1 step to stop optimization
+           *pQverm :  maximal ratio of chi square new : chi square old for best set
            *pQmin  :  Q-value to stop optimization
            *pQlimit:  error square sum that determines border of local minimum to be noted */
 /*******************************************************************************************/
@@ -376,44 +373,44 @@ short ReadIniFile(short*  pOut,   short*  pTstPar, VtConstr* pConstr, long*   pS
                   double* pSigma, double* pQverm,  double*   pQmin,  double* pQlimit, 
                   const char* sIniFile)
 {	
-	short rc=TRUE,
+  short rc=TRUE,
         rp=TRUE;               // return code from 'ReadParameter'
-	FILE* pIniFile;
-	char  sParameter[BUF_LEN+1], // content of the parameter
-	      cId,                   // character defining the parameter
+  FILE* pIniFile;
+  char  sParameter[BUF_LEN+1], // content of the parameter
+        cId,                   // character defining the parameter
         sMessage[50];
-	
-	pIniFile = fileOpen(sIniFile, "r");
 
-	if (pIniFile!=NULL)
-	{	
-		// read file, set parameters and check input
-		rp = ReadParameter(&cId, sParameter,  pIniFile);
-		while (rp)
-		{
-			switch (cId)
-			{	case 'a': *pOut    = (short) atoi(sParameter); break;
-				case 'n': *pTstPar = (short) atoi(sParameter); break;
-        case 'c': *pConstr = (VtConstr) atoi(sParameter); break;
-				case 's': *pSteps  = atoi(sParameter); break;
-				case 'o': *pStpOut = (short) atoi(sParameter); break;
-				case 'd': *pStpMin = (short) atoi(sParameter); break;
-				case 'g': *pSigma  = atof(sParameter); break;
-				case 'r': *pQverm  = atof(sParameter); break;
-				case 'm': *pQmin   = atof(sParameter); break;
-				case 'l': *pQlimit = atof(sParameter); break;
-				default : sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
-                  Warning(sMessage);
-			}
-			rp = ReadParameter(&cId, sParameter,  pIniFile);
-		}
-		fclose(pIniFile);
-	}
-	else
-	{	Warning("metropolis: file containing control parameters could not be opened, default values are used");
-    rc=FALSE;
-	}
+  pIniFile = fileOpen(sIniFile, "r");
 
-	return rc;
+  if (pIniFile!=NULL)
+    {	
+      // read file, set parameters and check input
+      rp = ReadParameter(&cId, sParameter,  pIniFile);
+      while (rp)
+        {
+          switch (cId) {
+          case 'a': *pOut    = (short) atoi(sParameter); break;
+          case 'n': *pTstPar = (short) atoi(sParameter); break;
+          case 'c': *pConstr = (VtConstr) atoi(sParameter); break;
+          case 's': *pSteps  = atoi(sParameter); break;
+          case 'o': *pStpOut = (short) atoi(sParameter); break;
+          case 'd': *pStpMin = (short) atoi(sParameter); break;
+          case 'g': *pSigma  = atof(sParameter); break;
+          case 'r': *pQverm  = atof(sParameter); break;
+          case 'm': *pQmin   = atof(sParameter); break;
+          case 'l': *pQlimit = atof(sParameter); break;
+          default : sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
+            Warning(sMessage);
+          }
+          rp = ReadParameter(&cId, sParameter, pIniFile);
+        }
+      fclose(pIniFile);
+    }
+  else
+    {	Warning("metropolis: file containing control parameters could not be opened, default values are used");
+        rc=FALSE;
+    }
+  
+  return rc;
 }
 

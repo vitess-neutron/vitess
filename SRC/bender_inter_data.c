@@ -377,23 +377,22 @@ WAV[43] = 28.59;	MU[43] = 2284.7;
 
 
 /* For silicon, 
-Total cross section A.K. Freund, NIM 213(1983) 495-501 */
+Total cross section A.K. Freund, NIM 213 (1983) 495-501 */
 
 void Silicon(double WAV[44], double MU[44], long *NUM)
 {
-*NUM = 9;
+*NUM = 10;
 /* Wavelength A;   Attenuation, cm^-1 */
-WAV[0] = 0.5;	MU[0] = 0.085;
-WAV[1] = 1.0;	MU[0] = 0.0375;
-WAV[2] = 1.3;	MU[1] = 0.03;
-WAV[3] = 1.5;	MU[2] = 0.025;
-WAV[4] = 3.0;	MU[3] = 0.025;
-WAV[5] = 4.5;	MU[4] = 0.03;
-WAV[6] = 6.0;	MU[5] = 0.0375;
-WAV[7] = 8.0;	MU[6] = 0.05;
-WAV[8] = 10.0;	MU[7] = 0.06;
-WAV[9] = 20.0;	MU[8] = 0.11;
-
+WAV[0] =  0.5;	MU[0] = 0.085;
+WAV[1] =  1.0;	MU[1] = 0.0375;
+WAV[2] =  1.3;	MU[2] = 0.03;
+WAV[3] =  1.5;	MU[3] = 0.025;
+WAV[4] =  3.0;	MU[4] = 0.025;
+WAV[5] =  4.5;	MU[5] = 0.03;
+WAV[6] =  6.0;	MU[6] = 0.0375;
+WAV[7] =  8.0;	MU[7] = 0.05;
+WAV[8] = 10.0;	MU[8] = 0.06;
+WAV[9] = 20.0;	MU[9] = 0.11;
 
 }
 
