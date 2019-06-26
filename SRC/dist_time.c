@@ -277,8 +277,8 @@ void OwnInit   (int argc, char *argv[])
 					/* First desired frame */
 					nFrameMin = (short) atoi(arg);
 					argv[i][0]='+';
-					if (nFrameMin < 1)
-						Error("Frames that can be displayed are 1, 2, 3, ....");
+					if (nFrameMin < 0)
+						Error("Frames that can be displayed are 0, 1, 2, ....");
 					break;
 
 				case 'T':

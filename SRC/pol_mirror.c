@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 			CartesianToSpherical(Spin, &the, &phi);
 
 			/* calculate intersection point with mirror plane, 
-			/* check if mirror is hit and transfer neutron to intersection point */
+			   check if mirror is hit and transfer neutron to intersection point */
 			bIS = (short) PlaneLineIntersect(Pos, Dir, vMirrNormal, 0.0, vItsPnt);
 			if (bIS==TRUE && (fabs(vItsPnt[nD]) < DimSM[nD]/2.) 
 			              && (fabs(vItsPnt[ 0]) < DimSM[ 0]/2.) && (Dir[0] > 0.))

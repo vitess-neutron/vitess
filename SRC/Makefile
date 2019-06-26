@@ -4,7 +4,8 @@
 #
 #
 # compile hosts to use
-# Linux : dixi3
+# Linux   : dixi3   SuSE 9.3
+# Linux64 : fix1    SuSE 10.1
 # SunOS : dsapp3
 # OSF1  : darling
 
@@ -45,15 +46,15 @@ polariser_he3 \
 flipper_coil \
 pol_mirror \
 precessionfield \
-rotating_field \
-flipper_gradient \
-resonator_drabkin \
 sample_elasticisotr \
 sample_inelast \
 sample_reflectom \
 define_direction \
 sample_singcryst \
 cas_v40 \
+rotating_field \
+flipper_gradient \
+resonator_drabkin \
 sample_powder \
 sample_s_q \
 sample_sans \
@@ -68,46 +69,59 @@ direct_view
 TOOL = init.o general.o message.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
+MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+ARCH = $(shell uname -i)
 
-GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
+GDOPEN = g2_open_gd
+
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) -DOSF $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
+GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
+SUBDIR = $(SYS)
+XLIBL = lib
 ifeq ($(SYS),Linux)
-CCOMP = gcc
-CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+ CCOMP = gcc
+ CC = $(CCOMP) $(CFLAGS)
+ GRAOPT2 = -DDO_PNG
+ ifeq ($(ARCH),x86_64)
+  SUBDIR = $(SYS)_$(ARCH)
+  SUBDIR = Linux_x86_64
+  XLIBL = lib64
+ endif
 endif
 
-LIBS = -lm
+GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
+LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
 .KEEP_STATE :
 
 all: $(ALL)
-	strip $^
+
 spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_reflectom : sample_reflectom.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-rotating_field : rotating_field.c $(MTOOL)
+rotating_field : rotating_field.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-resonator_drabkin : resonator_drabkin.c $(MTOOL)
+resonator_drabkin : resonator_drabkin.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 chop_phases : chop_phases.c 
@@ -134,7 +148,7 @@ mon2_tofwl : mon2_tofwl.c $(TOOL)
 monitorpol_pos : monitorpol_pos.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-eval_elast : eval_elast.c $(TOOL)
+eval_elast : eval_elast.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 velselect : velselect.c $(TOOL)
@@ -170,8 +184,8 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c src_modchar.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
+source : source.c source_isis.c src_modchar.c $(ITOOL)
+	$(CC) -o $@ source.c src_modchar.c $(ITOOL) $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
@@ -209,7 +223,7 @@ monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
 mon2_div : mon2_div.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-flipper_gradient : flipper_gradient.c $(MTOOL)
+flipper_gradient : flipper_gradient.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 pol_mirror : pol_mirror.c $(MTOOL)
@@ -257,11 +271,18 @@ mon2_posdiv : mon2_posdiv.c $(TOOL)
 chopper_fermi : chopper_fermi.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+.c.o:
+	$(CC) -c $<
+
+Unix:
+	-mkdir Unix
+	a=_$(SUBDIR) ; h='Unix/' ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	-rm -f *.o
 Move:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
-	rm *.o
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	-rm -f *.o
 Copy:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
-	rm *.o $(ALL)
+	-rm -f *.o $(ALL)

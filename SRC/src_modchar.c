@@ -39,10 +39,10 @@ Moderator stMod  [NUM_MOD]; /* moderator data            */
 /* ---------------- */
 static
 ModInfo   stMInfo[NUM_MOD][2]; /* additional moderator data
-                                  multispec. moder.: index 0 for cold part, 1 for thermal part 
+                                  multispec. moder.: index 0 for cold part, 1 for thermal part
                                   otherwise        : only index 0 used */
-       
-       
+
+
 
 static short  s_nSourceType=CWS,   /* s_nSourceType: CWS, SPSS, LPSS                                   */
               s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS                               */
@@ -65,17 +65,17 @@ long IndLT(const long i, const long j)
 }
 
 
-/* TotalFU() : returns amplitude of a pulsed source in FluxUnits 
+/* TotalFU() : returns amplitude of a pulsed source in FluxUnits
  */
-double TotalFU(const double p_dTemp,  
+double TotalFU(const double p_dTemp,
                const short  p_nSourceType, const short  p_nSource, const short  p_nModType)
 {
-	/* p_dTemp      : eff. moderator temperature      in Kelvin    
-	   p_nSourceType: CWS, SPSS, LPSS                              
-	   p_nSource    : ESS, SNS,                                          
+	/* p_dTemp      : eff. moderator temperature      in Kelvin
+	   p_nSourceType: CWS, SPSS, LPSS
+	   p_nSource    : ESS, SNS,
 	   p_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
 
-	double dFUAmpl=0.0, 
+	double dFUAmpl=0.0,
 	       dFacM=1.0,      /* number of time dist. functions */
 			 dFacN=1.904;    /* integral of fct. N(lambda) in 0.1 Ang .... 20 Ang */
 
@@ -86,15 +86,15 @@ double TotalFU(const double p_dTemp,
 	s_nSource     = p_nSource;
 	s_nModType    = p_nModType;
 	if (s_nModType!=MULT_SPEC)
-		stMInfo[imod][0].dTemp = p_dTemp;   
+		stMInfo[imod][0].dTemp = p_dTemp;
 
 	if (p_dTemp==50.0)
-		dFacN=2.808; 
+		dFacN=2.808;
 
 	switch(s_nSource)
 	{
-		case ESS: 
-		case SNS: 
+		case ESS:
+		case SNS:
 			switch(s_nSourceType)
 			{
 				case LPSS:
@@ -122,15 +122,15 @@ double TotalFU(const double p_dTemp,
 							stMInfo[imod][0].dF002 = 3.0*9.2e10;
 						}
 						else
-						{  Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-						}   
+						{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+						}
 					}
 					break;
 
-				case SPSS: 
+				case SPSS:
 					switch(s_nModType)
 					{
-						case POISONED: 
+						case POISONED:
 							if      (p_dTemp== 50.0)
 							{  /* Phi4 */
 								stMInfo[imod][0].dF001 = 2.7e10;
@@ -142,11 +142,11 @@ double TotalFU(const double p_dTemp,
 								stMInfo[imod][0].dF002 = 4.6e10;
 							}
 							else
-							{  Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case DECOUPLED: 
+						case DECOUPLED:
 							if      (p_dTemp== 50.0)
 							{  /* Phi5 */
 								stMInfo[imod][0].dF001 = 5.4e10;
@@ -158,11 +158,11 @@ double TotalFU(const double p_dTemp,
 								stMInfo[imod][0].dF002 = 9.2e10;
 							}
 							else
-							{  Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case COUPLED: 
+						case COUPLED:
 							if      (p_dTemp== 50.0)
 							{  /* Phi6*/
 								stMInfo[imod][0].dF001 = 2.3e11;
@@ -175,11 +175,11 @@ double TotalFU(const double p_dTemp,
 								stMInfo[imod][0].dF002 = 9.2e10;
 							}
 							else
-							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case MULT_SPEC: 
+						case MULT_SPEC:
 							/* left side cold; Phi4 */
 							stMInfo[imod][0].dF001 = 2.3e11;
 							stMInfo[imod][0].dF002 = 9.2e10;
@@ -192,18 +192,18 @@ double TotalFU(const double p_dTemp,
 							break;
 
 						default:
-							Error("Internal error: wrong moderator type in 'TotalFU'"); 
-					}   
+							Error("Internal error: wrong moderator type in 'TotalFU'");
+					}
 					break;
-			}  
- 
+			}
+
 			if (s_nSource==SNS)
 			{	/* SNS power is a factor 2.5 less than that of ESS, giving a factor of 3 per pulse.
-				   The cold moderator of the ESS is situated in the favourite upstream position, 
+				   The cold moderator of the ESS is situated in the favourite upstream position,
 				   the thermal moderator in downstream position; at SNS this is vice versa     */
 				if (s_nModType==MULT_SPEC)
 				{	stMInfo[imod][0].dF001 = stMInfo[imod][0].dF001/3.0/1.3; /* cold part */
-					stMInfo[imod][0].dF002 = stMInfo[imod][0].dF002/3.0/1.3; 
+					stMInfo[imod][0].dF002 = stMInfo[imod][0].dF002/3.0/1.3;
 					stMInfo[imod][1].dF001 = stMInfo[imod][1].dF001/3.0*1.3; /* thermal part */
 					stMInfo[imod][1].dF002 = stMInfo[imod][1].dF002/3.0*1.3;
 				}
@@ -228,7 +228,7 @@ double TotalFU(const double p_dTemp,
 			break;
 
 		default:
-			Error("Internal error: source unknown in 'TotalFU'"); 
+			Error("Internal error: source unknown in 'TotalFU'");
 	}
 
 	return(dFUAmpl);
@@ -237,15 +237,15 @@ double TotalFU(const double p_dTemp,
 
 double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLength)
 {
-	/* p_dLambda    : wavelength                      in Angstroem 
-	   p_dTime      : time (after beginning of pulse) in s       
-	   p_dLength    : pulse length of LPSS            in s    
+	/* p_dLambda    : wavelength                      in Angstroem
+	   p_dTime      : time (after beginning of pulse) in s
+	   p_dLength    : pulse length of LPSS            in s
 	   p_eSide      : side  (left or right) */
 
 	double dFU    =0.0,
 	       dPSM=0.0, dPSMC=0.0, dPSMT=0.0, dPSN=0.0,
-	       dM  =0.0, dN   =0.0, 
-	       dTemp;
+	       dM  =0.0, dN   =0.0,
+	       dTemp=0;
 
 	if (s_nModType!=MULT_SPEC)
 		dTemp = stMInfo[imod][0].dTemp;
@@ -256,11 +256,11 @@ double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLe
 			switch(s_nSource)
 			{
 				case ESS:
-				case SNS: 
-					if (s_nModType == MULT_SPEC) 
+				case SNS:
+					if (s_nModType == MULT_SPEC)
 					{	dPSMC =  PulseIntEss(p_dTime,287e-6          ,20, p_dLength);
 						dPSMT =  PulseIntEss(p_dTime, 80e-6          ,20, p_dLength)
-						        +PulseIntEss(p_dTime,400e-6          ,20, p_dLength); 
+						        +PulseIntEss(p_dTime,400e-6          ,20, p_dLength);
 						dPSN  =  PulseIntEss(p_dTime, 12e-6*p_dLambda, 5, p_dLength);
 					}
 					else
@@ -273,29 +273,29 @@ double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLe
 						else if (dTemp==325.0)
 						{	/* Phi7 = integration of 3*Phi3 */
 							dPSM =  PulseIntEss(p_dTime, 80e-6          ,20, p_dLength)
-									 +PulseIntEss(p_dTime,400e-6          ,20, p_dLength); 
+									 +PulseIntEss(p_dTime,400e-6          ,20, p_dLength);
 							dPSN =  PulseIntEss(p_dTime, 12e-6*p_dLambda, 5, p_dLength);
-							dN   =  NotMaxwell(p_dLambda, 2.5); 
+							dN   =  NotMaxwell(p_dLambda, 2.5);
 						}
 						else
-						{	Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-						}   
+						{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+						}
 					}
 					break;
 
 				default:
-					Error("Internal ERROR: wrong source in ModFU()"); 
-			}   
+					Error("Internal ERROR: wrong source in ModFU()");
+			}
 			break;
 
-		case SPSS: 
+		case SPSS:
 			switch(s_nSource)
 			{
-				case ESS: 
-				case SNS: 
+				case ESS:
+				case SNS:
 					switch(s_nModType)
 					{
-						case POISONED: 
+						case POISONED:
 							if      (dTemp== 50.0)
 							{	/* Phi4 */
 								dPSM =  PulseShapeEss(p_dTime, 49e-6          , 5);
@@ -309,11 +309,11 @@ double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLe
 								dN   =  NotMaxwell(p_dLambda, 2.5);
 							}
 							else
-							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case DECOUPLED: 
+						case DECOUPLED:
 							if      (dTemp== 50.0)
 							{	/* Phi5 */
 								dPSM =  PulseShapeEss(p_dTime, 78e-6          , 5);
@@ -327,11 +327,11 @@ double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLe
 								dN   =  NotMaxwell(p_dLambda, 2.5);
 							}
 							else
-							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case COUPLED: 
+						case COUPLED:
 							if      (dTemp== 50.0)
 							{	/* Phi6*/
 								dPSM =  PulseShapeEss(p_dTime,287e-6          ,20);
@@ -341,34 +341,34 @@ double EssModFU(const double p_dLambda, const double p_dTime, const double p_dLe
 							else if (dTemp==325.0)
 							{	/* Phi3*/
 								dPSM =  PulseShapeEss(p_dTime, 80e-6          ,20)
-								       +PulseShapeEss(p_dTime,400e-6          ,20); 
+								       +PulseShapeEss(p_dTime,400e-6          ,20);
 								dPSN =  PulseShapeEss(p_dTime, 12e-6*p_dLambda, 5);
-								dN   =  NotMaxwell(p_dLambda, 2.5); 
+								dN   =  NotMaxwell(p_dLambda, 2.5);
 							}
 							else
-							{	Error("ERROR: moderator temperature for ESS/SNS must be 50 or 325 K"); 
-							}   
+							{	Error("ERROR: moderator temperature for ESS/SNS must be 50 or 325 K");
+							}
 							break;
 
-						case MULT_SPEC: 
+						case MULT_SPEC:
 							dPSMC =  PulseShapeEss(p_dTime,287e-6          ,20);
 							dPSMT =  PulseShapeEss(p_dTime, 80e-6          ,20)
-								    + PulseShapeEss(p_dTime,400e-6          ,20); 
+								    + PulseShapeEss(p_dTime,400e-6          ,20);
 							dPSN  =  PulseShapeEss(p_dTime, 12e-6*p_dLambda, 5);
 							break;
 
 						default:
-							Error("Internal ERROR: wrong moderator type in ModFU()"); 
-					}   
+							Error("Internal ERROR: wrong moderator type in ModFU()");
+					}
 					break;
-      
+
 				default:
-					Error("Internal ERROR: wrong source in ModFU()"); 
-			}   
+					Error("Internal ERROR: wrong source in ModFU()");
+			}
 			break;
 
 		default:
-			Error("Internal ERROR: wrong source type in ModFU()"); 
+			Error("Internal ERROR: wrong source type in ModFU()");
 	}
 
 	if (s_nModType==MULT_SPEC)
@@ -398,7 +398,7 @@ double UserLambdaDis(const double p_dLambda, const double p_dModTemp)
 	double dUd=0.0, dLUd, dLUdN, dLUdN1;
 	short  n=0;
 
-	while (n+1 < stFluxL[imod].nLines  &&  stFluxL[imod].pTabX[n+1] < p_dLambda) 
+	while (n+1 < stFluxL[imod].nLines  &&  stFluxL[imod].pTabX[n+1] < p_dLambda)
 	{	n++;
 	}
 
@@ -406,7 +406,7 @@ double UserLambdaDis(const double p_dLambda, const double p_dModTemp)
 	{	/* linear  extrapolation in logarithmic scale */
 		dLUdN  = stFluxL[imod].pTabF[n];
 		dLUdN1 = stFluxL[imod].pTabF[n+1];
-		dLUd   = dLUdN  +  (dLUdN1-dLUdN ) / (stFluxL[imod].pTabX[n+1] - stFluxL[imod].pTabX[n]) 
+		dLUd   = dLUdN  +  (dLUdN1-dLUdN ) / (stFluxL[imod].pTabX[n+1] - stFluxL[imod].pTabX[n])
 		                                   * (p_dLambda                - stFluxL[imod].pTabX[n]);
 		dUd    = exp(dLUd);
 	}
@@ -430,14 +430,14 @@ double Maxwellian(const double p_dLambda, const double p_dModTemp)
 	{
 		dFakt = pow(1e10*H, 2) / (2*K*MN);            /* Fakt = h²/(2*k*m_n)  in (1E-10 m)²/K */
 		dA    = dFakt / p_dModTemp;
-		   
+		
 		dM      = 2 * pow(dA,2) * exp(-dA / pow(p_dLambda,2)) / pow(p_dLambda,5) ;
 	}
 	else
 	{	fprintf(LogFilePtr,"ERROR: wrong parameter in Maxwellian(): Lambda = %10.4e Ang, Temp = %9.3e K\n",
-		                   p_dLambda, p_dModTemp); 
+		                   p_dLambda, p_dModTemp);
 		exit(99);
-	}   
+	}
 
 	return dM;
 }
@@ -449,16 +449,16 @@ double NotMaxwell(const double p_dLambda, const double p_dParam)
 	/* p_dParam  : line shape parameter in 1/Angstroem  */
 
 	double dN=0.0;
-	   
+	
 	if (p_dLambda > 0.0)
 	{
 		dN = 1.0 / (1.0 + exp(p_dParam*p_dLambda-2.2)) / p_dLambda ;
 	}
 	else
 	{	fprintf(LogFilePtr,"ERROR: wrong parameter in NotMaxwell(): Lambda = %10.4e Ang\n",
-		                   p_dLambda); 
+		                   p_dLambda);
 		exit(99);
-	}   
+	}
 
 	return dN;
 }
@@ -472,10 +472,10 @@ double UserLmbdTimeDis(const double p_dLambda, const double p_dTime)
 
 	dTime = p_dTime*1000;   /*  time in milliseconds  */
 
-	while (i+1 < stFluxLT[imod].nLines  &&  stFluxLT[imod].pTabX[i+1] < dTime) 
+	while (i+1 < stFluxLT[imod].nLines  &&  stFluxLT[imod].pTabX[i+1] < dTime)
 	{	i++;
 	}
-	while (j+1 < stFluxLT[imod].nColumns && stFluxLT[imod].pTabY[j+1] < p_dLambda) 
+	while (j+1 < stFluxLT[imod].nColumns && stFluxLT[imod].pTabY[j+1] < p_dLambda)
 	{	j++;
 	}
 
@@ -511,7 +511,7 @@ double UserTimeDis(const double p_dTime, const double p_dTauDecay, const double 
 
 	dTime = p_dTime*1000;   /*  time in milliseconds  */
 
-	while (n+1 < stFluxT[imod].nLines  &&  stFluxT[imod].pTabX[n+1] < dTime) 
+	while (n+1 < stFluxT[imod].nLines  &&  stFluxT[imod].pTabX[n+1] < dTime)
 	{	n++;
 	}
 
@@ -519,7 +519,7 @@ double UserTimeDis(const double p_dTime, const double p_dTauDecay, const double 
 	{	/* linear  extrapolation in logarithmic scale */
 		dLUdN  = stFluxT[imod].pTabF[n];
 		dLUdN1 = stFluxT[imod].pTabF[n+1];
-		dLUd   = dLUdN  +  (dLUdN1 - dLUdN ) / (stFluxT[imod].pTabX[n+1] - stFluxT[imod].pTabX[n]) 
+		dLUd   = dLUdN  +  (dLUdN1 - dLUdN ) / (stFluxT[imod].pTabX[n+1] - stFluxT[imod].pTabX[n])
 		                                     * (dTime                    - stFluxT[imod].pTabX[n]);
 		dUd    = exp(dLUd);
 	}
@@ -539,18 +539,18 @@ double PulseShape(const double p_dTime, const double p_dTauDecay, const double p
 	/* p_dTauDecay  : time constant for decay of pulse  in sec */
 	/* p_dTauAscent : time constant for ascent of pulse in sec */
 
-	double dF = 0.0; 
+	double dF = 0.0;
 
 	if (p_dTauAscent > 0.0  &&  p_dTauDecay > p_dTauAscent  &&  p_dTime >= 0.0)
 	{
 		dF = (exp(-p_dTime/p_dTauDecay) - exp(-p_dTime/p_dTauAscent)) / (p_dTauDecay - p_dTauAscent);
 	}
 	else
-	{  
+	{
 		fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShape(): Time = %10.4e s,  TauDecay = %10.4e s,  TauAscent = %10.4e s\n",
-		                   p_dTime, p_dTauDecay, p_dTauAscent); 
+		                   p_dTime, p_dTauDecay, p_dTauAscent);
 		exit(99);
-	}   
+	}
 
 	return dF;
 }
@@ -564,25 +564,25 @@ double PulseInt(const double p_dTime, const double p_dTauDecay, const double p_d
 	/* p_dTauAscent : ascent time constant            in sec */
 	/* p_dPLength   : pulse length                    in sec */
 
-	double dInt = 0.0; 
+	double dInt = 0.0;
 
 	if (p_dTauAscent > 0.0  &&  p_dTauDecay > p_dTauAscent  &&  p_dTime >= 0.0  &&  p_dLength >= 0.0)
 	{
 		if (p_dTime <= p_dLength)
-		{  
+		{
 			dInt = (  PulseShapeInt(p_dTime,           p_dTauDecay, p_dTauAscent) + 1.0) / p_dLength;
 		}
 		else
-		{  
+		{
 			dInt = (  PulseShapeInt(p_dTime,           p_dTauDecay, p_dTauAscent)
 			        - PulseShapeInt(p_dTime-p_dLength, p_dTauDecay, p_dTauAscent) ) / p_dLength;
 		}
 	}
 	else
 	{  fprintf(LogFilePtr,"ERROR: wrong parameter in PulseInt(): Time = %10.4e s,  Tau_d = %10.4e s,  Tau_a = %10.4e s,  Pulse = %10.4e s\n",
-		                   p_dTime, p_dTauDecay, p_dTauAscent, p_dLength); 
+		                   p_dTime, p_dTauDecay, p_dTauAscent, p_dLength);
 	   exit(99);
-	}   
+	}
 
 	return dInt;
 }
@@ -594,8 +594,8 @@ double PulseShapeInt(const double p_dTime, const double p_dTauDecay, const doubl
 	/* p_dTauDecayS : decay time constant             in sec */
 	/* p_dTauAscent : ascent time constant            in sec */
 
-	double dF = 0.0, 
-	       dN; 
+	double dF = 0.0,
+	       dN;
 
 	if (p_dTauAscent > 0.0  &&  p_dTauDecay > p_dTauAscent  &&  p_dTime >= 0.0)
 	{
@@ -605,9 +605,9 @@ double PulseShapeInt(const double p_dTime, const double p_dTauDecay, const doubl
 	}
 	else
 	{	fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShapeInt(): Time = %10.4e s,  Tau_d = %10.4e s,  Tau_a = %10.4e s \n",
-		                   p_dTime, p_dTauDecay, p_dTauAscent); 
+		                   p_dTime, p_dTauDecay, p_dTauAscent);
 		exit(99);
-	}   
+	}
 
 	return dF;
 }
@@ -620,8 +620,8 @@ double PulseShapeEss(const double p_dTime, const double p_dTau, const short p_nT
 	/* p_dTau      : decay time constant             in sec */
 	/* p_dTauRatio : ratio decay of pulse : ascent of pulse   */
 
-	double dF = 0.0, 
-	       dN; 
+	double dF = 0.0,
+	       dN;
 
 	if (p_nTauRatio>=2)
 	{
@@ -630,7 +630,7 @@ double PulseShapeEss(const double p_dTime, const double p_dTau, const short p_nT
 		dF = PulseShape(p_dTime, p_dTau, p_dTau/dN, 0.0) ;
 	}
 	else
-	{	fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShapeEss(): n = %d\n", p_nTauRatio); 
+	{	fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShapeEss(): n = %d\n", p_nTauRatio);
 		exit(99);
 	}
 
@@ -646,8 +646,8 @@ double PulseIntEss(const double p_dTime, const double p_dTauD, const short p_nTa
 	/* p_dTauRatio : ratio decay of pulse : ascent of pulse */
 	/* p_dPLength  : pulse length                    in sec */
 
-	double dInt = 0.0, 
-	       dN; 
+	double dInt = 0.0,
+	       dN;
 
 	if (p_nTauRatio>=2)
 	{
@@ -656,7 +656,7 @@ double PulseIntEss(const double p_dTime, const double p_dTauD, const short p_nTa
 		dInt = PulseInt(p_dTime, p_dTauD, p_dTauD/dN,  p_dLength) ;
 	}
 	else
-	{	fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShapeEss(): n = %d\n", p_nTauRatio); 
+	{	fprintf(LogFilePtr,"ERROR: wrong parameter in PulseShapeEss(): n = %d\n", p_nTauRatio);
 		exit(99);
 	}
 
@@ -694,29 +694,29 @@ double f_therm(const double dLambda)
 
 /* 'AveSolidAngleC',	'AveSolidAngleR'
 	
-   These functions calculate the average solid angle of the window 
-   seen from the moderator area: 
+   These functions calculate the average solid angle of the window
+   seen from the moderator area:
    The solid angle is: Omega(y,z) =  [atan((w-y)/D) - atan((-w-y)/D)]
                                    * [atan((h-z)/D) - atan((-h-z)/D)]
    w: window width, h: window height, D distance moderator - window
 
-   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(D²+x²)/2 
-   integration over rectangular moderator area yields 
+   integration of  atan(x/D)  yields  x*atan(x/D) - D*ln(D²+x²)/2
+   integration over rectangular moderator area yields
     I_ges = (I1 -I2) * (I3 - I4) with I2 = I1, I4=I3
 
    for the circular moderator only an approximation is calculated  */
- 
-double AveSolidAngleC(const double dModDiameter, 
+
+double AveSolidAngleC(const double dModDiameter,
                       const double dWndWidth, const double dWndHeight, const double dDist)
 {
-	double dOmAr  =0.0, 
+	double dOmAr  =0.0,
 	       dOmega =0.0,
 	       dModY0, dModZ0, dWndY0, dWndZ0, I1, I3;
 
-	dModY0 = 0.25*dModDiameter*sqrt(M_PI); 
-	dModZ0 = dModY0; 
-	dWndY0 = 0.5* dWndWidth; 
-	dWndZ0 = 0.5* dWndHeight; 
+	dModY0 = 0.25*dModDiameter*sqrt(M_PI);
+	dModZ0 = dModY0;
+	dWndY0 = 0.5* dWndWidth;
+	dWndZ0 = 0.5* dWndHeight;
 
 	I1 = IntAtan( dWndY0-dModY0,  dWndY0+dModY0, dDist);
 	I3 = IntAtan( dWndZ0-dModZ0,  dWndZ0+dModZ0, dDist);
@@ -727,17 +727,17 @@ double AveSolidAngleC(const double dModDiameter,
 	return dOmega;
 }
 
-double AveSolidAngleR(const double dModWidth, const double dModHeight, 
+double AveSolidAngleR(const double dModWidth, const double dModHeight,
                       const double dWndWidth, const double dWndHeight, const double dDist)
 {
-	double dOmAr  =0.0, 
+	double dOmAr  =0.0,
 	       dOmegaQ=0.0,
 	       dModY0, dModZ0, dWndY0, dWndZ0, I1, I3;
 
-	dModY0 = 0.5* dModWidth; 
-	dModZ0 = 0.5* dModHeight; 
-	dWndY0 = 0.5* dWndWidth; 
-	dWndZ0 = 0.5* dWndHeight; 
+	dModY0 = 0.5* dModWidth;
+	dModZ0 = 0.5* dModHeight;
+	dWndY0 = 0.5* dWndWidth;
+	dWndZ0 = 0.5* dWndHeight;
 
 	I1 = IntAtan( dWndY0-dModY0,  dWndY0+dModY0, dDist);
 	I3 = IntAtan( dWndZ0-dModZ0,  dWndZ0+dModZ0, dDist);
@@ -753,7 +753,7 @@ double AveSolidAngleR(const double dModWidth, const double dModHeight,
 
    For 'DirectionByWindow' trajectories have to be normalized by f=cos²(phi)*cos²(theta).
    These functions 'AveWeightC' and 'AveWeightR' calculate the average normalization factors
-   by integration over window area and over moderator area. 
+   by integration over window area and over moderator area.
    The resulting factor F is included in the main program to give correct absolute flux values.
 */
 double AveWeightC(const double dModCntrY, const double dModCntrZ,  const double dModDiam,
@@ -763,10 +763,10 @@ double AveWeightC(const double dModCntrY, const double dModCntrZ,  const double 
 	long   num=0;
 
 	/* numerical integration of 'weight' (see below) over moderator area */
-	for (y=dModCntrY-0.495*dModDiam; y<=dModCntrY+0.5*dModDiam; y+= dModDiam/100.0) 
+	for (y=dModCntrY-0.495*dModDiam; y<=dModCntrY+0.5*dModDiam; y+= dModDiam/100.0)
 	{	dWy = WeightDirByWnd(dWndWidth, dDist, y);
 		
-		for (z=dModCntrZ-0.495*dModDiam; z<=dModCntrZ+0.5*dModDiam; z+= dModDiam/100.0) 
+		for (z=dModCntrZ-0.495*dModDiam; z<=dModCntrZ+0.5*dModDiam; z+= dModDiam/100.0)
 		{	
 			/* count if (y,z) within moderator */
 			if (sq(y-dModCntrY) + sq(z-dModCntrZ) <= sq(0.5*dModDiam))
@@ -788,8 +788,8 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 	double dFactY, dFactZ;
 
 	/* integration of 'weight' (see below) over moderator width yields
-	   F1 = dist² / (wnd_width*mod_width) 
-	              * ( IntAtan(tan(phi_min)...tan(phimax) for wnd_begin) 
+	   F1 = dist² / (wnd_width*mod_width)
+	              * ( IntAtan(tan(phi_min)...tan(phimax) for wnd_begin)
 	                 -IntAtan(tan(phi_min)...tan(phimax) for wnd_end)       (same for height) */
 	dFactY =  pow(dDist,2) / (dModWidth*dWndWidth)
 	       * ( IntAtan((-0.5*dWndWidth -(dModCntrY-0.5*dModWidth ))/dDist, (-0.5*dWndWidth -(dModCntrY+0.5*dModWidth ))/dDist, 1)
@@ -802,7 +802,7 @@ double AveWeightR(const double dModCntrY, const double dModCntrZ,
 }
 
 
-/* average of factor cos²(x) integrated over window width for a fixed moderator position 
+/* average of factor cos²(x) integrated over window width for a fixed moderator position
    is f1 = dist / wnd_width * (max_angle - min_angle)       (same for height)  */
 double WeightDirByWnd(const double dWndSize, const double dDist, const double dModPos)
 {

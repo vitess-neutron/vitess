@@ -528,9 +528,10 @@ void OutputTransformations(double *tof, double *wl, double *prob, VectorType Pos
 
 	AddVector(Pos, Path) ;  
 	
-	}			/* Path = displacement vector */
+	}		     Path = displacement vector
+	*/
 
-}/* End OutputTransformations()*/
+} /* End OutputTransformations()*/
 
 
 /* own initialization of the monochromator/analyser module */
@@ -846,6 +847,6 @@ void ReadParameterFile()
   CopyVector(DimSample, DimSampleHol); DimSampleHol[0] = DimSample[1];
 
   
-}/* End ReadParameterFile */
+} /* End ReadParameterFile */
 
 

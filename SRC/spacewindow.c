@@ -100,14 +100,14 @@ int main(int argc, char *argv[])
 	Init(argc, argv, VT_WINDOW);
 	OwnInit(argc, argv);
 
-	print_module_name("Space and Window 2.22");
+	print_module_name("Space and Window 2.22a");
 
 	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
 
 	if (TransFileName1 != NULL)
 	{
 	    trans_file1 = fopen(TransFileName1,"r");
-	    fprintf(LogFilePtr,"MATERIAL OF OPEN PART OF COLLIMATOR IS DESCRIBING BY FILE:  %s \n", TransFileName1);
+	    fprintf(LogFilePtr,"MATERIAL OF OPEN PART OF COLLIMATOR IS DESCRIBED BY FILE:  %s \n", TransFileName1);
 	    keymaterial1 = 0; /* activate this material */
 	}
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
 	if (keymaterial0 == 0)
   	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Material transmission characteristics reading from file\n");
+	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Material transmission characteristics read from file\n");
   	}
 
   	if (keymaterial0 == 1)
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
   	if (keymaterial0 == 6)
   	{
-	    fprintf(LogFilePtr,"Outer material of  collimator: ideal absorber \n");
+	    // fprintf(LogFilePtr,"Outer material of  collimator: ideal absorber \n");
   	}
 
 	if ((keymaterial0 != 0)&&(keymaterial0 != 1)&&(keymaterial0 != 2)&&(keymaterial0 != 3)&&(keymaterial0 != 4)&&(keymaterial0 != 5)&&(keymaterial0 != 6))
@@ -196,9 +196,10 @@ int main(int argc, char *argv[])
   	}
 
 
-	fprintf(LogFilePtr,"Thickness of outer material of collimator %f cm \n", Thicknesscoll);
-	if (keymaterial1 == 0)
-	fprintf(LogFilePtr,"Thickness of inner material of collimator %f cm \n", Thicknesscolli);
+	if (Thicknesscoll > 0)
+     fprintf(LogFilePtr,"Thickness of outer material of collimator %f cm \n", Thicknesscoll);
+	if (Thicknesscolli > 0)
+	  fprintf(LogFilePtr,"Thickness of inner material of collimator %f cm \n", Thicknesscolli);
 
 
 
@@ -261,7 +262,7 @@ int main(int argc, char *argv[])
 
       }
       else
-	fprintf(LogFilePtr,"No file, which description transmission of collimator \n");
+	fprintf(LogFilePtr,"No file, which describes transmission of collimator \n");
     }
 /////////////////
 
@@ -328,14 +329,14 @@ int main(int argc, char *argv[])
 
 
 
-	if(keygrav == 1)
+	/*if(keygrav == 1)
 	{
 		fprintf(LogFilePtr,"Gravity is enabled \n");
 	}
 	else
 	{
 		fprintf(LogFilePtr,"Gravity is disabled \n");
-	}
+	}*/
 
 	CenterX   = 0.0;
 	CenterY   = 0.0;
@@ -482,8 +483,11 @@ int main(int argc, char *argv[])
 	}
 
  my_exit:
-
-	fprintf(LogFilePtr,"Distance between plane x=0 and window plane  %f cm \n", DistMove);
+	if (bCircularWindow)
+	  fprintf(LogFilePtr,"Window of %6.2f cm diameter in a distance of %7.2f cm \n", 2.0*winradius, DistMove);
+	else
+	  fprintf(LogFilePtr,"Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
+	                     widthmax-widthmin, heightmax-heightmin, DistMove);
 
 	if (SumProb != 0.0)
 	{

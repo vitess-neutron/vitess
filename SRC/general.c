@@ -12,17 +12,12 @@
 /* Change: K.L.  2003 JAN, new functions 'ReadLine', 'StrgLShift', and 'StrgCopy'           */
 /* Change: K.L.  2003 FEB, definitions of 'idum' and 'LogFilePtr' from init to general      */
 /* Change: K.L.  2003 MAR, new function 'StrgScanLF', additional parameter in 'ReadLine'    */
+/* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
 
 #include "general.h"
+#include "init.h"
 #include "ctype.h"
 
-
-#define MBIG 1000000000
-#define MSEED 161803398
-#define MZ 0
-#define FAC (1.0/(double)MBIG)
-
-long  idum;              /* parameter for the random number generation  */
 FILE* LogFilePtr;        /* pointer to the log file stream              */
 
 
@@ -59,80 +54,10 @@ double LAMBDA_FROM_V(double x)
 /*  Random Functions                                                                    */
 /****************************************************************************************/
 
-/* 'ran3' computes next random variable in [0,1[         */
-/* (C) Copr. 1986-92 Numerical Recipes Software #>,1'59. */
-
-double ran3(long *idum)
-{
-	static int inext,inextp;
-	static long ma[56];
-	static int iff=0;
-	long mj,mk;
-	int i,ii,k;
-
-	if (*idum < 0 || iff == 0) {
-		iff=1;
-		mj=MSEED-(*idum < 0 ? -*idum : *idum);
-		mj %= MBIG;
-		ma[55]=mj;
-		mk=1;
-		for (i=1;i<=54;i++) {
-			ii=(21*i) % 55;
-			ma[ii]=mk;
-			mk=mj-mk;
-			while (mk < MZ) mk += MBIG;
-			mj=ma[ii];
-		}
-		for (k=1;k<=4;k++)
-			for (i=1;i<=55;i++) {
-				ma[i] -= ma[1+(i+30) % 55];
-				 while (ma[i] < MZ) ma[i] += MBIG;
-			}
-		inext=0;
-		inextp=31;
-		*idum=1;
-	}
-	if (++inext == 56) inext=1;
-	if (++inextp == 56) inextp=1;
-	mj=ma[inext]-ma[inextp];
-	while (mj < MZ) mj += MBIG;  /*modification */
-	ma[inext]=mj;
-	return FAC*(double)mj;
-}
-#undef MBIG
-#undef MSEED
-#undef MZ
-#undef FAC
 
 double MonteCarlo(double x, double y)
 {
-   return((y-x)*ran3(&idum) + x);
-}
-
-/* 'vector3rand' simulates randomly orientied vector with unit lenght */
-/*  (Manoshin Sergey 28.02.01)                                        */
-
-double vector3rand(double *vx, double *vy, double *vz)
-{
-  double len;
-  len = 0.0;
-
-  while ((len == 0.0)||(len > 1.0))
-    {
-      *vx = 2.0*ran3(&idum) - 1.0;
-      *vy = 2.0*ran3(&idum) - 1.0;
-      *vz = 2.0*ran3(&idum) - 1.0;
-      len = (*vx)*(*vx) + (*vy)*(*vy) + (*vz)*(*vz);
-    }
-
-  /*     Normalising  */
-  len = sqrt(len);
-
-  *vx = *vx/len;
-  *vy = *vy/len;
-  *vz = *vz/len;
-
-  return(len);
+   return (y - x)*Vran() + x;
 }
 
 
@@ -213,15 +138,17 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 {
 	double dSolAngle=0.0;
 
-	if (dHorAngle < 0.55 && dVertAngle < 0.55)
-	{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2(tan(theta)-tan³(theta)/3) */
-		dSolAngle = 4 * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0)
-				        * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	if (dVertAngle < 0.55)
+	{	/* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
+		dSolAngle = 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	}
+	else if (dHorAngle < 0.55)
+	{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2 theta */
+		dSolAngle = 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
 	}
 	else
 	{	/* empirical approximation for large angles */
-		dSolAngle = 4 * sqrt(dHorAngle  * sin(dHorAngle)
-				             * dVertAngle * sin(dVertAngle));
+		dSolAngle = 4 * sqrt(dHorAngle * sin(dHorAngle) * dVertAngle * sin(dVertAngle));
 	}
 
 	return dSolAngle;
@@ -485,6 +412,7 @@ void Abort()
    it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr
    the maximal number of characters in the string must be given in 'nStrLen'
 */
+#ifdef VERS26
 int
 ReadLine(FILE* pFile, char* pLine, int nStrLen)
 {
@@ -521,6 +449,40 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen)
 	else
 		return FALSE;
 }
+#else
+int
+ReadLine(FILE* pFile, char* pLine, int nStrLen) {
+
+  if (pFile)
+    while (fgets (pLine, nStrLen, pFile)) {
+      int v, k, kanf, kmax;
+
+      /* substitute line feeds, tabs and carriage returns with blanks */
+      for (k=0; (v = pLine[k]) && v != '#'; k++) {
+	if (v=='\n' || v=='\t' || v=='\r')
+	  pLine[k] = ' ';
+      }
+      if (k <= 0) continue;
+
+      /* strip the comments and leading and succeeding blanks */
+      for (kanf = 0; pLine[kanf] == ' '; kanf++) ;
+      for (kmax = k-1; kmax >= kanf && pLine[kmax] == ' '; kmax--) ;
+      if (kmax < kanf) continue;
+      if (kanf == 0) {
+	pLine[kmax+1] = 0;
+      } else {
+	for (k = 0; kanf <= kmax; k++, kanf++)
+	  pLine[k] = pLine[kanf];
+	pLine[k] = 0;
+      }
+      return TRUE;
+    }
+
+  *pLine = 0;
+  return FALSE;
+}
+
+#endif
 
 
 /*  ReadParString(FILE *fpt) reads one string value from parameter file */
@@ -577,6 +539,7 @@ StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 }
 
 
+#ifdef VERS26
 /* Shift string 'sStr' 'kWidth' bytes to the left */
 void
 StrgLShift(char* sStr, int kWidth)
@@ -588,7 +551,7 @@ StrgLShift(char* sStr, int kWidth)
 	for (k=0; k <= ke; k++)
 		sStr[k] = sStr[k+kWidth];
 }
-
+#endif
 
 /* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of double values,  beginning with value number 'nStart'*/

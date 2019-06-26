@@ -22,7 +22,7 @@ switch $tcl_platform(platform) {
     # mozilla -remote openURL(file:vitess.html)
     # otherwise change help.tcl accordingly
     set Browser ""
-    foreach b {mozilla netscape communicator} {
+    foreach b {mozilla netscape communicator konqueror} {
       catch {
 	catch {exec sh -c "which $b"} bb
 	if {$bb != "" && [file exists $bb]} {
@@ -38,7 +38,7 @@ switch $tcl_platform(platform) {
     set serif Courier
     set sserif Helvetica
 
-    set s [glob [info script]]
+    regsub ^./ [glob [info script]] "" s
     set i [string last / $s]
     incr i -1
     if {$i >= 0} {
@@ -52,7 +52,9 @@ switch $tcl_platform(platform) {
       set SourceDirectory [pwd]
     }
     set ExeDirectory [file join $SourceDirectory MODULES]
-    set ExeSuffix "_$tcl_platform(os)"
+    set ExeSuffix _[set s $tcl_platform(os)]
+    set m $tcl_platform(machine)
+    if {$s == "Linux" && $m == "x86_64"} {append ExeSuffix _$m}
     set KillProg kill
     set PsCheck PsCheckUnix
     set WinPos +50+0
@@ -84,7 +86,7 @@ switch $tcl_platform(platform) {
     exit
   }
 }
-catch {unset ld place resname s i}
+catch {unset ld place resname s i m}
 set monospaced $serif
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]

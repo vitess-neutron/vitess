@@ -7,7 +7,7 @@
 # include <stdio.h>
   static const char *hName = "VitessStopHandle";
   static HANDLE hS;
-  static sCount;
+  static int sCount;
 # define CHECK if (++sCount > 8) { sCount=0; if (stopEvent()) {goto my_exit;}}
 # define DECLARE_ABORT enableHandler();
   void enableHandler() {

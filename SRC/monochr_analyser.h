@@ -29,6 +29,7 @@ Neutron		Neutrons ;
 void		crys_geomLambda() ;
 void		crys_geomSphere() ;
 void		crys_geomVertCyl() ;
+void		crys_geomDoubleCyl() ;
 void		OwnInit(int argc, char *argv[]) ;
 void		OwnCleanup() ;
 void		ReadParameterFile() ;

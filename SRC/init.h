@@ -45,6 +45,7 @@ long ColumnsInFile    (FILE* pFile);
 char* FullParName     (char* filename);
 char* FullInstallName (char* filename, char* sRelPath);
 
+#include <gsl/gsl_rng.h>
+extern gsl_rng * vit_gsl_rng;
+
 #endif
-
-

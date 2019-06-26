@@ -253,7 +253,7 @@ distribution file' is given. Table  1 gives a survey.<br>
           (50 Hz)</td>
             <td align="center">from input&nbsp; <br>
           (2 ms)</td>
-              <td align="center">Maxwell. distr. <font face="Symbol">function</font> 
+              <td align="center">Maxwell. distr. function
            <br>
           time distr. function</td>
            </tr>
@@ -309,8 +309,7 @@ distribution file' is given. Table  1 gives a survey.<br>
                 <td valign="middle" align="center">from input&nbsp; <br>
           (2 ms)<br>
                 </td>
-                <td valign="middle" align="center">Maxwell. distr. <font
- face="Symbol">function</font><br>
+                <td valign="middle" align="center">Maxwell. distr. function<br>
           time distr. file<br>
                 </td>
               </tr>
@@ -816,7 +815,7 @@ continuous    sources<br>
        </td>
      </tr>
      <tr>
-       <td valign="top">max. diverg.&nbsp; x &lt;-&gt; y max. diverg&nbsp; 
+       <td valign="top">max. div.&nbsp; x &lt;-&gt; y max. div.&nbsp; 
 &nbsp;x &lt;-&gt; z<br>
  [deg]<br>
        </td>
@@ -826,7 +825,7 @@ is chosen &nbsp;in the interval [-max.div x - y , +max.div x - y] <br>
 interval [-max.div x - z , +max.div x -z] <br>
  &nbsp;<br>
        </td>
-       <td valign="top">0 ... 90<br>
+       <td style="width: 120px;" valign="top">0 ... 90<br>
  0 ... 90<br>
        </td>
        <td valign="top">-y &nbsp; <br>
@@ -839,11 +838,16 @@ interval [-max.div x - z , +max.div x -z] <br>
        <td valign="top">The direction is usually determined by a Monte Carlo
      choice of phi and theta between the maximal values as   given by the 
 user. Alternatively, &nbsp;the direction can be determined  by  the starting 
-point on the moderator surface, which is determined by other    MC choices, 
-and a point on the propagation window (see below).<br>
+point on the moderator surface and a point on the propagation window (see below),
+which are both determined by MC choices. <br>
+If the option "by virtual window" the 'propagation window' is only used to define 
+the flight direction, but the neutrons remain on the moderator surface.
+In both other cases the neutrons are propagate to this window.
+.<br>
        </td>
-       <td valign="top">by divergence<br>
- by window<br>
+       <td valign="top">"by divergence"<br>
+ "by window"<br>
+ "by virtual window"<br>
        </td>
        <td valign="top">-d<br>
        </td>
@@ -909,7 +913,10 @@ value is  0&deg; meaning beam direction vertical to moderator surface. For
 angles not  equal zero, the moderator surface is rotated around the (positive)
 z-axis  (relative to the beam direction).  <br>
           To omit this propagation, a zero distance and a aperture size exceeding 
-    the moderator size can be given.           
+    the moderator size can be given.  
+    Alternatively, the option "direction defined by virtual window" can be chosen. 
+    In this case, the 'propagation window' is only used to define the flight direction,
+    but the neutrons remain on the moderator surface.
 <p> </p>
                    
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>

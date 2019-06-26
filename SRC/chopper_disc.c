@@ -15,6 +15,7 @@
 /*                                new: absorption by Bor-10, absorption by Gd changed        */
 /* 1.08  Feb 2004  K. Lieutenant  'message.h', 'ERROR' and 'FullParName' included; output of */
 /*                                parameter file data; optimal phase into 'instrument.inf'   */
+/* 1.09  Nov 2005  K. Lieutenant  option: equivalent windows added                           */
 /*********************************************************************************************/
 
 #include "intersection.h"
@@ -59,8 +60,8 @@ void           OwnInit         (int argc, char *argv[]);
 void           OwnCleanup      ();
 void           ReadChopperData ();
 double         RedAngle        (double angle, short dir);
+double         ModPhase        (double phase, int nSect);
 unsigned short BlockedByChopper(Chopper, Neutron*);
-
 
 
 /***********************************/
@@ -73,7 +74,8 @@ short  eAbsMaterial = FALSE,   /* absorption in chopper: 0: ideal  1:Gadolinium 
        bPassOutside = TRUE,    /* criterion: neutrons can pass outside the chopper      */
        bSetColour   = TRUE,    /* criterion: chopper sets colour to window number       */
        bZeroTime    = FALSE,   /* criterion: chopper sets neutron time to zero          */
-		 bPhase       = FALSE;   /* criterion: write opt. chopper phases to instrument.inf*/
+		 bPhase       = FALSE,   /* criterion: write opt. chopper phases to instrument.inf*/
+       NumEquWnds   = 1;       /* number of equivalent windows used to generate pulses  */
 FILE	*ChopperFile=NULL;
 char	*ChopperFileName=NULL;
 Chopper ThisChopper;
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
 	Endpoint.D           = 0.0;
 
 	Init(argc, argv, VT_CHOP_DISC);
-	print_module_name("Space and Chopper 1.8b");
+	print_module_name("Space and Chopper 1.9");
 	OwnInit(argc, argv);
 
 	CenterX   = 0.0;
@@ -309,6 +311,10 @@ void OwnInit   (int argc, char *argv[])
 
 				break;
 
+			case 'n':										/* no of windows for pulse generation */
+				NumEquWnds = (short) atol(&argv[i][2]);
+				break;
+
 			case 'o':										/*Offset [deg] */
 				ChopperInitialOffset = atof(&argv[i][2]);
 				ChopperInitialOffset = 2.0*M_PI*ChopperInitialOffset/360.0;
@@ -391,6 +397,10 @@ void OwnCleanup()
 }
 /* End OwnCleanup */
 
+
+/* RedAngle: reducing the angle to [0, 360] deg   
+                                or [-360,0] deg (dir = -1)
+*/
 double RedAngle(double angle, short dir)
 {
 	double red_angle;
@@ -400,6 +410,22 @@ double RedAngle(double angle, short dir)
 		red_angle -= 360.0;
 
 	return(red_angle);
+}
+
+/* ModPhase: reducing the phase from a full circle to a section of a circle,
+             i.e. from [-pi,pi] to [-pi/n, pi/n]
+   phi_in: intial angle        [rad]
+   nSect : number of sections
+*/
+double ModPhase(double phase, int nSect)
+{
+	double ph_mod, al, k;
+
+	al     = 2*M_PI/nSect;
+	k      = floor(phase/al + 0.5);
+	ph_mod = phase - k * al;
+
+	return ph_mod;
 }
 
 
@@ -495,7 +521,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 	/*and returns FALSE if the neutron is incident on a window.                        */
 	/***********************************************************************************/
 
-	double ChopperOffset=0.0, OriginNeutronDistance, Time;
+	double ChopperOffset=0.0, ChopperOffsetRed=0.0, OriginNeutronDistance, Time;
 	double Left, Right, WindowAngle=0.0, NeutronAngle, dY, dZ;
 	short  i;
 	int    RightTurns=0;
@@ -617,7 +643,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 	return TRUE;
 
 passed_outside:
-	/* for perfect absorption no treatment of neutrons outside the chopper */
+	/* depending on criterion: treatment of neutrons outside the chopper or not */
 	if (bPassOutside==FALSE)
 	{	return TRUE;    /* treated as blocked though it passed outside the chopper */
 	}
@@ -629,7 +655,9 @@ passed:
 	/* set time (close to) zero, if demanded */
 	if (bZeroTime)
 	{
-		ThisNeutron->Time = 1000.0 * ChopperOffset / ThisChopper.Frequency;
+		// ChopperOffsetRed  = ModPhase(ChopperOffset+ThisChopper.Window[0].Angle, NumEquWnds) ;
+		ChopperOffsetRed  = ModPhase(ChopperOffset, NumEquWnds) ;
+		ThisNeutron->Time = 1000.0 * ChopperOffsetRed / ThisChopper.Frequency;
 	}
 	return FALSE;
 }

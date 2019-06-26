@@ -10,6 +10,8 @@
 /* 1.4  Feb 2004  K. Lieutenant  'message' and 'ERROR' included                         */
 /* 1.5  Apr 2004  K. Lieutenant  probability divided by repetition                      */
 /* 1.5a Dec 2004  K. Lieutenant  option 'no TOF' added                                  */
+/* 1.6  Nov 2005  K. Lieutenant  direction instead of scattering angles written         */
+/*                               correction: grid for cylindrical geometry              */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -24,12 +26,6 @@
 #include "message.h"
 
 
-typedef enum 
-{	VT_NO_TOF   = 0,
-	VT_TOF_CALC = 1,
-	VT_TOF_BIN  = 2
-}
-VtTofOpt;
 #define VT_NO_TOF    0
 #define VT_TOF_CALC  1
 #define VT_TOF_BIN   2
@@ -90,7 +86,7 @@ int main(int argc, char *argv[])
 	/* module specific initialization */
 	OwnInit(argc, argv);
 
-	print_module_name("detector 1.5a");
+	print_module_name("detector 1.6");
 
 	/* Rotmatrix will rotate a Vector to a frame in which the middle of the */
 	/* Detector sits on the x-axis */
@@ -133,39 +129,47 @@ int main(int argc, char *argv[])
 					{	/* determine the scattering point in the scintilator */
 						LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
 						ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-
-						for(j=0; j<3; j++)
-							SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
-
-						DetectorSpot(SP, DetSpot, &Detector);
-
-						TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
-												 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 					}
 					else
 					{
+						LengthTillScattering = 0.0;
 						ScatteringProb = MaxEfficiency * LambdaProb;
-						DetectorSpot(ISP[0], DetSpot, &Detector);
-						TimeTillScattering = DistVector(ISP[0],InputNeutrons[i].Position)/
-						                     V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 					}
+
 					if(bMonitor)
-					{	ScatteringProb=1.0;
+					{	ScatteringProb       = 1.0;
+						LengthTillScattering = 0.0;
 					}
 
-					/* everythings done, so rot back the vectors and put all together */
-					RotBackVector(RotMatrix,DetSpot);
-					RotBackVector(RotMatrix,SP);
+					for(j=0; j<3; j++)
+						SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
 
-					/* set output data of the neutron */
+					DetectorSpot(SP, DetSpot, &Detector);
+
+					TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
+											 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+
+					/* everythings done, so rot back the vectors and put all together 
+					   and set output data of the neutron */
 					OutNeutron             = InputNeutrons[i];
 					OutNeutron.Time        = InputNeutrons[i].Time + TimeTillScattering;
 					OutNeutron.Probability = InputNeutrons[i].Probability * ScatteringProb / GenNeutrons;
-					CopyVector(SP, OutNeutron.Position);
-					NormVector(DetSpot);
-					CartesianToSpherical(DetSpot, &(OutNeutron.Vector[0]), &(OutNeutron.Vector[1]));
 
-					OutNeutron.Vector[2] = LengthVector(DetSpot);
+					if (bMonitor)
+					{	
+						RotBackVector(RotMatrix, OutNeutron.Vector);
+						RotBackVector(RotMatrix, SP);
+						CopyVector(SP, OutNeutron.Position);
+					}
+					else
+					{	
+						RotBackVector(RotMatrix,DetSpot);
+						CopyVector(DetSpot, OutNeutron.Position);
+						NormVector(DetSpot);
+						CopyVector(DetSpot, OutNeutron.Vector);
+					}
+					// CartesianToSpherical(DetSpot, &(OutNeutron.Vector[0]), &(OutNeutron.Vector[1]));
+					// OutNeutron.Vector[2] = LengthVector(DetSpot);
 
 					WriteNeutron(&OutNeutron);
 				} /* for */
@@ -308,11 +312,12 @@ void CubeDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 {
 	double     STheta, SPhi, CTheta, SpotTheta,
-	           archpos, JComp, I,J;
+	           archpos, JComp, I,J, SPHeight;
 	VectorType nsp;
 
 	CopyVector(SP,nsp);
 	RotBackVector(RotMatrix,nsp);
+	SPHeight = nsp[2];
 
 	NormVector(nsp);
 	CartesianToSpherical(nsp, &STheta, &SPhi);
@@ -328,7 +333,7 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 	I=floor(Columns*archpos/(2.0*dTheta));
 	SpotTheta=Theta+dTheta -((I+0.5)/Columns)*(2.0*dTheta);
 
-	JComp = nsp[2]+Detector->SG.Cyl.height/2.0;
+	JComp = SPHeight + Detector->SG.Cyl.height/2.0;
 	J = floor(JComp*Rows/Detector->SG.Cyl.height);
 
 	DetSpot[0]=Detector->SG.Cyl.r*cos(SpotTheta);
