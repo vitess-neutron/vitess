@@ -1,0 +1,35 @@
+VITESS 3.3  Release Note
+------------------------
+
+Major upgrades:
+---------------
+The module SOURCE now includes the ESS butterfly moderator (3 cm top moderator, 6 cm bottom moderator). Read help file for usage details.
+
+
+Further improvements:
+--------------------
+More realistic detection time in DETECTOR module for solid layer area detectors.
+Option to write zero entries in the matrix output of EVAL_ELAST2 for easier handling with Matlab.
+SAMPLE_NXS library updated, example instrument added: FILES/EXAMPLES/SampleNXS
+
+
+Bug fixes:
+----------
+eval_elast2      : sorting in y value corrected
+filter           : AND mode corrected and AND OR AND added
+guide            : Curvature in opposite direction for R<0 fixed
+monitor2D        : allow negative filter values when monitored range used as filter (exclusive counts mode)
+mon2_posdiv      : fix divz calculation
+mon2_wldiv       : fix divz calculation
+mon_brilliance   : uncertainty calculation corrected
+read_in          : repeated reading of input files corrected
+sample_singcryst : fixed normalization
+sm_ensemble      : reflectivity calculation in case of "other" file format corrected
+monochromator:   : the issue with the increased intensity after reflection off the monochromator for a (nearly) ideal crystal is addressed. Some explanations are now provided in the help file.
+
+Visualization:
+--------------
+Bender module added
+Fixed curved guide for R<0
+
+(Jul 13 2015, subversion 625)

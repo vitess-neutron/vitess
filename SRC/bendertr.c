@@ -370,6 +370,8 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
 	 ThisNeutron->Probability = ThisNeutron->Probability*prob;
       
  
+	WriteIAP(ThisNeutron, VT_REFLECTED); 
+
 #ifdef VT_GRAPH 
       if (do_visualise) 
       { 
@@ -719,6 +721,8 @@ if (datanumber <= 999)
 
 	 /* visualisation */
 
+	    WriteIAP(&NearestNeutron, VT_REFLECTED);
+
 	 
 #ifdef VT_GRAPH 
       if (do_visualise) 
@@ -938,6 +942,8 @@ if (datanumber <= 999)
  
           if ((signt*signb) > 0.0) return(-1.0); 
  
+	  
+	  WriteIAP(ThisNeutron, VT_EXITED);
  
 #ifdef VT_GRAPH 
       if (do_visualise) 
@@ -965,6 +971,8 @@ if (datanumber <= 999)
       	ThisNeutron->Probability = NearestNeutron.Probability;
       	ThisNeutron->Wavelength = NearestNeutron.Wavelength; 
 	
+	WriteIAP(ThisNeutron, VT_REFLECTED);
+
 	/* losses via pass surface */
 	
 	VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength)); 
@@ -1141,6 +1149,7 @@ if (datanumber <= 999)
             if ((signt*signb) > 0.0) return(-1.0); 
      } 
 
+    WriteIAP(ThisNeutron, VT_REFLECTED);
 
 	keytemp++;
     /* Continue moving in the next channel */
@@ -1180,6 +1189,8 @@ if (datanumber <= 999)
     ThisNeutron->Wavelength = NearestNeutron.Wavelength;	 
     ThisNeutron->Probability = NearestNeutron.Probability; 
  
+    WriteIAP(ThisNeutron, VT_REFLECTED);
+
  
     TimeOFTotal =  TimeOFTotal + TimeOFmin ; 
    
@@ -1330,7 +1341,10 @@ if (datanumber <= 999)
       cpgsci(7); 
     } 
 #endif
+
+    WriteIAP(ThisNeutron, VT_REFLECTED);
     
+
         /* particle outside channel*/ 
         /* KL: Warning: neutron must move from the surface, otherwise sign is a very low value, 
 	       that can be above or below zero. Therefore, comparison: > 1e-x may be better than > 0.0 */ 

@@ -626,7 +626,7 @@ void Monochromator::NormFunction()
   for (int i = 0; i < nBins; i++) y[i] = 0;
 
   double sigma1 = dSpacingSpreadParams[2];
-  double x1_incr = sigma1/20.;
+  double x1_incr = sigma1/100.;
   if (x1_incr == 0) x1_incr = 1.;
 
   double sigma2 = fRndm[2];
@@ -1223,8 +1223,8 @@ double Monochromator::CalculateReflectionProbability(double pi2_braggAngle, Vect
 #if DEBUG
    double tempTh, tempPh;
    CartesianToSpherical(mosaicVector, &tempTh, &tempPh);
-   DEBUG_OUT("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
-    	  tempTh*180./M_PI, tempPh*180./M_PI, angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries); 
+//  DEBUG_OUT("Direction of the mosaic vector: tempTh = %f, tempPh = %f, neutronVec:    %f %f %f %f   %f \n", 
+ //   	  tempTh*180./M_PI, tempPh*180./M_PI, angle11*180./M_PI, angle12*180./M_PI, angle21*180./M_PI, angle22*180./M_PI, nTries); 
 #endif
 
   if (nTries < maxNTries) return norm/nTries;

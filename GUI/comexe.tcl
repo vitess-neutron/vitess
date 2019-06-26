@@ -46,9 +46,9 @@ proc unzipCom {fname} {
 set TCL_TOOL {
 proc pwrite {fnw pattern} {
   set fo [open $fnw w]
-  foreach fn [glob $pattern*] {
+  foreach fn [lsort [glob $pattern*]] {
     set f [open $fn r]
-    while {[gets $f ins] > 0} {puts $fo $ins}
+    while {[gets $f ins] >= 0} {puts $fo $ins}
     close $f
     file delete $fn
   }
@@ -78,7 +78,7 @@ import glob
 from string import Template
 def pwrite(fn,pattern):
  f=open(fn, 'w')
- for name in glob.glob(pattern+'*'):
+ for name in sorted(glob.glob(pattern+'*')):
   for line in open(name):
    f.write(line)
   os.remove(name)
@@ -87,6 +87,15 @@ def pwrite(fn,pattern):
 
 ### compose the VITESS command pipe string
 ###
+proc splitPipe {outlist c {d \'}} {
+  # split command c to a list
+  upvar $outlist ol
+  set ol {}
+  foreach s [split $c |] {
+    lappend ol "$d[string trim $s]$d"
+  }
+}
+
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 
   # mode may be: action bat sh tcl pl py grd ser kstate
@@ -160,22 +169,6 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       if {"" != [set v [entryVal random_gen]]} {
         append fc "G=$v\n"
       }
-    }
-    tcl {
-      set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
-      foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "set env(GSL_RNG_$vv) $t\n"
-      }
-      append fc "exec "
-    }
-    pl {
-      set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
-      foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
-      }
-      append fc "system \""
     }
     default {set fc ""}
   }
@@ -261,7 +254,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         lappend usedIdices $i
       }
       sh - tcl - pl - py - grd {
-        append imore \$\{L\}$i
+        append imore \$\{L\}[format %02d $i]
         lappend usedIdices $i
       }
       default {append imore $logopt}
@@ -341,7 +334,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     default {}
   }
-  
+
+  # split module commands to allow  editing for modes tcl, pl, and py
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
     sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
@@ -352,18 +346,40 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       }
       append fc "\ncat$s > job`date +%s`.log\nrm -f$s\n"
     }
-    tcl {append fc "\npwrite \$P/result.txt \$L"}
-    pl  {append fc "\";\npwrite(\"\$P/result.txt\", \"\$L\");"}
+    tcl {
+      splitPipe ol $fc \"
+      set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "set env(GSL_RNG_$vv) $t\n"
+      }
+      append fc "set coml \{\n"
+      append fc [join $ol "\n"]
+      append fc "\n\}\nset c \[subst \[join \$coml \" | \"\]\]\neval exec \$c\npwrite \$P/result.txt \$L"
+    }
+    pl  {
+      splitPipe ol $fc \"
+      set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
+      }
+      append fc "\@coml=(\n"
+      append fc [join $ol ",\n"]
+      append fc "\n);\nsystem join('|',\@coml);\npwrite(\"\$P/result.txt\", \"\$L\");"
+    }
     py  {
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
 	append oex "GSL_RNG_$vv='$t' "
       }
-      set oc "s=Template('$fc')\n"
-      append oc "r=s.substitute(V='$ExeDirectory',P='$pdir',L='$logf')\n"
+      splitPipe ol $fc
       set fc "\#! /usr/bin/env python"
       append fc [globVal PYTHON_TOOL]
-      append fc $oc
+      append fc "coml=\[\n"
+      append fc [join $ol ",\n"]
+      append fc "\n\]\ns=Template('|'.join(coml))\n"
+      append fc "r=s.substitute(V='$ExeDirectory',P='$pdir',L='$logf')\n"
       append fc "os.system(\"export $oex;\"+r)\n"
       append fc "pwrite('$pdir/result.txt', '$logf')"
     }

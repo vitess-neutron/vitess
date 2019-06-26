@@ -244,7 +244,7 @@ void OwnInit(int argc, char *argv[])
   int j;
 
   fprintf(LogFilePtr, "\n");
-  print_module_name("supermirror_ensemble_parallel 1.9");
+  print_module_name("supermirror_ensemble_parallel 2.0");
 
   for(j=0; j<3; j++)
     TranslOutput[j] = 0.;
@@ -870,7 +870,11 @@ static double CollideWall
 	// McStas reflection model:
 	// Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc[l][index_theta])/W)) * (1.0 - alphaQ*(Q-Qc[l][index_theta]) + betaQ*(Q-Qc[l][index_theta])*(Q-Qc[l][index_theta]));
 
+	if (fileFormat == 0) mNumber[l][index_theta] = thetaCSM[l][index_theta]/thetaC[l][index_theta];
+
 	Refl[index_theta] = ReflSN(WL, the*180./M_PI, mNumber[l][index_theta]);
+
+	//	if (fileFormat == 0) Refl[index_theta] = RthetaCSM[l][index_theta] + (1. - RthetaCSM[l][index_theta])/(thetaCSM[l][index_theta] * WL - thetaC[l][index_theta] * WL)*(thetaCSM[l][index_theta] * WL - the);
 
 	if (Choice < Refl[index_theta])
 	  dir[0] *= -1.;

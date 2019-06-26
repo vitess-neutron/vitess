@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
       *pPosT=NULL,          /* limits of bin (minimal and maximal value)  */
       *pInt=NULL,           /* intensity (=count rate) per bin  */
       *pNorm=NULL,          /* normalisation value for each bin */
+      *pNormSD=NULL,        /* standard deviation of normalisation value for each bin */
       *pSD=NULL,            /* standard deviation per bin       */
       ParCntr,              // center of a bin of the variable parameter
       PhaseSpaceVol,        // phase space volume of a bin
@@ -98,11 +99,12 @@ int main(int argc, char *argv[])
     else
       normalise = 1;
 
-    pPosT = (double*) calloc(nBin+1,sizeof(double));
-    pInt  = (double*) calloc(nBin+1,sizeof(double));
-    pSD   = (double*) calloc(nBin+1,sizeof(double));
-    pNorm = (double*) calloc(nBin+1,sizeof(double));
-    pBinN = (long*)   calloc(nBin+1,sizeof(long));
+    pPosT   = (double*) calloc(nBin+1,sizeof(double));
+    pInt    = (double*) calloc(nBin+1,sizeof(double));
+    pSD     = (double*) calloc(nBin+1,sizeof(double));
+    pNorm   = (double*) calloc(nBin+1,sizeof(double));
+    pNormSD = (double*) calloc(nBin+1,sizeof(double));
+    pBinN   = (long*)   calloc(nBin+1,sizeof(long));
 
     switch (kind)
       {
@@ -128,10 +130,12 @@ int main(int argc, char *argv[])
           { ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1);
             StrgScanLF(sBuffer, MonData, 3, 0);
             pNorm[iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
+	    pNormSD[iBin] = MonData[2];         // uncertainty is the third value in brilliance monitor
             BrillAveIn += MonData[1]/nBin;
           }
         else                                    // absolute brilliance
           { pNorm[iBin] = 1.0;
+	    pNormSD[iBin] = 0.0;
           }
       }
 
@@ -274,7 +278,7 @@ int main(int argc, char *argv[])
           Transmission = 1.0;
 
         if(pBinN[iBin]!=0)
-          pSD[iBin] = Transmission / sqrt((double)pBinN[iBin]);
+          pSD[iBin] = Transmission * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
         else
           pSD[iBin] = 0.0;
 
@@ -313,11 +317,12 @@ int main(int argc, char *argv[])
 
     stPicture.eType  = (short) kind;
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
-    if (pPosT!=NULL) free(pPosT);
-    if (pInt !=NULL) free(pInt);
-    if (pNorm!=NULL) free(pNorm);
-    if (pSD  !=NULL) free(pSD);
-    if (pBinN!=NULL) free(pBinN);
+    if (pPosT!=NULL)   free(pPosT);
+    if (pInt !=NULL)   free(pInt);
+    if (pNorm!=NULL)   free(pNorm);
+    if (pNormSD!=NULL) free(pNormSD);
+    if (pSD  !=NULL)   free(pSD);
+    if (pBinN!=NULL)   free(pBinN);
 #endif
 
     Cleanup(0.0,0.0,0.0, 0.0,0.0);

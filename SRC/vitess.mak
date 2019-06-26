@@ -1,15 +1,15 @@
 # Vitess NMAKE File
-GROOT=h:\control\g2_win
-SVNROOT=d:\vitcsrc
-CPATH=c:\programme\microsoft visual studio .net 2003\vc7
-CPATH2=c:\programme\microsoft visual studio .net 2003\Vc7\PlatformSDK
+SROOT=C:\Users\dmf
+SVNROOT=C:\Users\dmf\vitess
+CPATH=C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC
+CPATH2=C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib
 IPATH2=$(CPATH2)\include
 LPATH2=$(CPATH2)\lib
 
 SPATH=$(SVNROOT)\SRC
-GPATH=$(GROOT)
+GPATH=$(SROOT)\g2_win
 GSLPATH=$(SPATH)\rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -24,7 +24,7 @@ IDIR=.\Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c /Og /YX
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /FD /EHsc /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
@@ -147,7 +147,7 @@ ALL : \
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=2 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=3 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -176,10 +176,6 @@ SOURCE=$(SPATH)\gener_fct.c
 "$(IDIR)\gener_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\read_table-lib.c
-"$(IDIR)\read_table-lib.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\mirrrefl.c
 "$(IDIR)\mirrrefl.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -202,6 +198,10 @@ SOURCE=$(SPATH)\magneticmap.c
 
 SOURCE=$(SPATH)\opt_swarm.c
 "$(IDIR)\opt_swarm.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\source_ess.c
+"$(IDIR)\source_ess.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sq_calc.c
@@ -508,8 +508,8 @@ SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
+"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\source_ess.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\source_ess.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
 
 SOURCE=$(SPATH)\spacewindow_multiple.c
 "$(IDIR)\spacewindow_multiple.obj" : $(SOURCE)
@@ -781,8 +781,8 @@ SOURCE=$(SPATH)\sample_nxs.c
 "$(IDIR)\sample_nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
+"$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
 
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)

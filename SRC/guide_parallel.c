@@ -58,6 +58,7 @@
 /* 3.3   Feb 2012  K. Lieutenant  visualization                                             */
 /* 3.4   Jul 2012  K. Lieutenant  exact ellipse calculations                                */
 /* 3.5   Nov 2013  K. Lieutenant  m-values as input as alternative to reflectivity files    */
+/* 3.6   Nov 2013  K. Lieutenant  corrections for R < 0                                     */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -713,7 +714,7 @@ void processNeutron(int neutron_i, int thread_i) {
     }
 
 	/* For curved guide: frame rotated for next piece, but not after last piece */
-    if (Radius > 0.0)
+    if (Radius != 0.0)
     { 
       /* horizontal position and flight direction adjusted */
       if (j < nPieces-1)
@@ -1050,7 +1051,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   Init(argc, argv, VT_GUIDE);
-  print_module_name("guide_parallel 3.5");
+  print_module_name("guide_parallel 3.6");
   OwnInit(argc, argv);
 
   // allocate for planes + exit plane
@@ -1894,7 +1895,7 @@ void OwnCleanup() {
       stGeometry.pHull[k].HeightOut   = 2.0*pPieces[k+1].Zpce;
 
       GdPcePos = 0.5*(pPieces[k].Xpce + pPieces[k+1].Xpce);  
-      if (Radius > 0.0)
+      if (Radius != 0.0)
       { if (k==0)
           GdPcePos0 = GdPcePos;
         stGeometry.pHull[k].vCntr[0] = Radius *      sin((GdPcePos-GdPcePos0)/Radius) + GdPcePos0;

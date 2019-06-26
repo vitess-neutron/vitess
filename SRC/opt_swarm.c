@@ -72,7 +72,11 @@ short Swarm(){
   
   fprintf(LogFilePtr,"\n swarm algorithm 1.0 \n swarm size: %d individuals \n optimization steps: %d \n time dependent weights modified between (w_start,w_end): \n   w0: (%f,%f),  w1: (%f,%f),  w2: (%f,%f) \n\n",Nbees, Nsteps,wMax_inertia, wMin_inertia, wMax_local, wMin_local, wMin_global, wMax_global);
 
+ 
+  fclose(fBeeMovement);
   SetStartingPosition(Nbees);
+  fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at"); 
+ 
 
   for (j=1; j<=Nbees; j++){    
 
@@ -108,7 +112,11 @@ short Swarm(){
     if(DebugOutputMode)
       fprintf(LogFilePtr,"\n DEBUG: step %d: ",i);
 
+    fclose(fSearchProgress);
+    fclose(fBeeMovement);
     UpdatePosition(Nbees,wMin_inertia,wMax_inertia,wMin_local,wMax_local,wMin_global,wMax_global,Nsteps,i);
+    fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at"); 
+    fSearchProgress=fileOpen("Swarm_GlobalBestValues.dat","at");
 
     for (j=1; j<=Nbees; j++){
       if(DebugOutputMode){
@@ -124,13 +132,10 @@ short Swarm(){
 	  CopyPosition(ThisBee[j].localBestPos,globalBestPos);
 	  last_change=i;
 	  fprintf(LogFilePtr,"\n (swarm) new global best: Factor/FoM: %10.4e in step %d \n\n",globalBestFoM,i);
-	  if(eOut>1){
-	    if(DebugOutputMode)
-	      fprintf(LogFilePtr," found by bee %d: \n",j);
-	    for(k=1; k<=nPar; k++)
-	      fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
-	    fprintf(LogFilePtr,"\n");
-	  }
+	  fprintf(LogFilePtr," found by bee %d: \n",j);
+	  for(k=1; k<=nPar; k++)
+	    fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
+	  fprintf(LogFilePtr,"\n");
 	}
       }
     }
@@ -202,7 +207,9 @@ static void SetStartingPosition(int NBees){
 	arP[BeeNo][i]=0;
     }
   }
+
   CalcAllFcts(1,NBees);
+
 
   if(arF[1][1]>1e20) //fom=0
     fprintf(LogFilePtr,"\n WARNING: figure of merit is 0, check optimization parameter range!");
@@ -258,7 +265,6 @@ static void UpdatePosition(int NBees, const double w0_min, const double w0_max, 
   /* Run simulation with parameters arP, 
      calculate Factor/FOM and write into arF */
   CalcAllFcts(1,NBees);
-
 }
 
 

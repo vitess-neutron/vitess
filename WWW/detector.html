@@ -93,7 +93,7 @@ linear approximation from the tables at NNDC
 implemented are <sup>3</sup>He, <sup>10</sup>B
 and <sup>6</sup>Li. The particle density N is calculated from either gas
 pressure and temperature in case of <sup>3</sup>He and BF<sub>3</sub>, or
-directly given as input variable <i>atom density</i> for solid materials. <br>
+directly given as input variable <i>atom density</i> for solid materials. The latter case assumes two converter layers per detector layer, i.e. the absolute converter thickness is 2 &#8901 <i>number of layers</i> &#8901 <i>solid lauer thickness</i>.<br>
 If <i>other</i> is chosen as absorber/converter material, a wavelength
 independent interaction probability is calculated from &#949<sub>mod</sub>,
 which then serves not as a modifyer but gives the overall efficiency. <br>
@@ -110,7 +110,7 @@ the centre of the sample and the point of detection are written. This point of
   determined by the number of rows, columns and layers in combination with the detector
   height, width and thickness. These "pixels" can represent either a physical
   pixel size (e.g. a tube diameter) or a digital pixel size caused by the
-  readout. <br>
+  readout. Note that for detection with solid B or Li, two converter layers per detector layer are assumed, so each detection position (layer center) has two possible detection times (layer borders) for monochromatic neutrons with equal time-of-flight zero point.<br>
 If a non-zero <u><i>resolution</i></u> is given in either dimension, the
 interaction point of the neutron with the detector is smeared by a gaussian
 function before being shifted to the pixel center. (The standard deviation of

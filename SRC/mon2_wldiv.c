@@ -220,7 +220,7 @@ DECLARE_ABORT;
 	  div_*=180.0/M_PI;
 	  }
 	  else {
-	    div_ = (double) atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
+	    div_ = (double) atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
 	    div_*=180.0/M_PI;
 	  }
 

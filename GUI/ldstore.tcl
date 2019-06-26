@@ -441,6 +441,7 @@ proc findModName {n com} {
         default {return $n}
       }
     }
+    guide_elliptic {return guide_ideal}
     lenses {return lense}
     monochr_analyser {
       switch [optVal $com O] {
