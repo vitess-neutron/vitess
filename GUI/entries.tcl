@@ -15,7 +15,7 @@ proc showRange {name e op} {
 proc generateExplanation {w list {descr ""}} {
   regsub -all {[^].a-zA-Z0-9()[_-]} [lindex $list 0] " " explanation
   set more [lindex $list 1]
-  global MaxOutstringLength
+  global MaxOutstringLength Infolevel VisibleModule
   set mlen [expr $MaxOutstringLength - 8]
   if {$more != ""} {
     foreach s [split $more "\n"] {
@@ -32,10 +32,8 @@ proc generateExplanation {w list {descr ""}} {
       append explanation "\n\t$s"
     }
   }
-  if {$explanation == ""} return
 
-  global infolevel VisibleModule
-  if {$infolevel == "expert"} {
+  if {$Infolevel == "expert"} {
     append explanation "\n\tinternal variable name : [lindex $descr 0]"
     switch [lindex $descr 1] {
       int - float {
@@ -56,6 +54,7 @@ proc generateExplanation {w list {descr ""}} {
       }
     }
   }
+  if {$explanation == ""} return
   if {[set opt [lindex $list 3]] != ""} {
     append explanation "\n\tcommand option -$opt"
   }
@@ -154,7 +153,7 @@ proc valEntryLabel {w variable label labelwidth width {app _}} {
 }
 
 proc fileEntry {w line labelwidth width {app _}} {
-  global bgColor radioColor
+  global bgColor radioColor FontSizeIndex
   lFrame $w
   set variable [lindex $line 0]
   forceDef $variable$app [lindex $line 2]
@@ -164,30 +163,48 @@ proc fileEntry {w line labelwidth width {app _}} {
   set dirtype [lindex $line 7]
   if {$dirtype != "d"} {set dirtype f}
   set entype ""
+  set mondefault 1
   switch [lindex $line 1] {
     browsedir       {set dirtype d}
     editablefile    {set entype 0}
     parbrowsefile   {set dirtype p}
     pareditablefile {set entype 1 ; set dirtype p}
     moneditablefile {set entype 2 ; set dirtype p; set dim 1}
+    mneditablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 1}
     mon2editablefile {set entype 2 ; set dirtype p; set dim 2}
+    mn2editablefile {set mondefault 0; set entype 2 ; set dirtype p; set dim 2}
   }
 
-  button $w.b -text Browse -background $bgColor -width 3\
+  # selectable monitor output
+  if {$entype == 2} {
+    set el [lindex [lindex $line 3] 2]
+    if {$el == "n"} {set fel 0} else {set fel 1}
+  }
+    
+  # reduced width to save place, use text length - 2
+  if {$FontSizeIndex >= 1} {
+    set ww1 7
+    set ww2 4
+  } else {
+    set ww1 4
+    set ww2 2
+  }
+  set fnt [ssbuttonFont]
+  button $w.b -text Browse -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app open $dirtype $ext 1]
   if {$dirtype == "d"} {set tt NewDir} {set tt BrowseN}
-  button $w.bn -text $tt -background $bgColor -width 4\
+  button $w.bn -text $tt -background $bgColor -width $ww1 -font $fnt\
       -command [list browseFile $variable$app write $dirtype $ext]
 
   if {$entype != ""} {
-    button $w.x -text Edit -background $bgColor -width 1\
+    button $w.x -text Edit -background $bgColor -width $ww2 -font $fnt\
 	-command "editFile $variable $entype $ext $app"
     if {$entype < 2} {
       pack $w.l $w.e $w.b $w.bn $w.x -side left -anchor w
     } else {
-      button $w.p -text Plot -background $bgColor -width 1\
+      button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
 	  -command [list plotMonFile $dim $variable $app]
-      forceDef [set var ${variable}_r$app] 1
+      forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
       pack $w.l $w.e $w.b $w.bn $w.x $w.p $w.r -side left -anchor w
     }
@@ -260,7 +277,8 @@ proc strEntryVal {v {app _}} {
   }
   switch [lindex $line 1] {
     string - longstring - filename - parfilename - editablefile - browsefile - browsedir -\
-	pareditablefile - parbrowsefile - moneditablefile - mon2editablefile { return "\"$locv\""}
+	pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile { return "\"$locv\""}
     default { return $locv}
   }
 }
@@ -428,7 +446,8 @@ proc generateEntries {w globalset {delist {}} {app _}} {
     foreach i {3 4} o {"" opt} {
       nvalEntryLabel $w.3.e$o [list [lindex $all $i]] 1 8 $app $o
     }
-    foreach i {5 6} o {"" opt} {
+
+    foreach i {5 6 7} o {"" opt t} {
       nvalEntryLabel $w.4.e$o [list [lindex $all $i]] 1 8 $app $o
     }
     return
@@ -444,8 +463,8 @@ proc generateEntries {w globalset {delist {}} {app _}} {
 
     for {set k $item} {$k < $allitems} {incr k} {
       switch [lindex [set line [lindex $all $k]] 1] {
-	editablefile - browsefile - browsedir - pareditablefile - parbrowsefile\
-	- moneditablefile - mon2editablefile {
+	editablefile - browsefile - browsedir - pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	                   incr editfile;    lappend leditfile $line}
 	string - filename {incr filestring;  lappend lfilestring $line}
 	longstring        {incr longstring;  lappend llongstring $line}

@@ -48,7 +48,7 @@ proc textWindow {w th tfont {series 0}} {
 # separate window(big).
 #
 proc sizeTextWindow {{bigwin 0} {series 0}} {
-  global Textw Bigw Tth bgColor tfontfamily tfontsize tfonttype scrollWidth LastMarker
+  global Textw Bigw Tth bgColor tfontfamily tfontsize tfonttype scrollWidth LastMarker FontSizeIndex
   upvar #0 Messagew w
   set fontsize $tfontsize
   set scrollWidth 8
@@ -58,7 +58,7 @@ proc sizeTextWindow {{bigwin 0} {series 0}} {
     set Bigw .message
     generateToplevel $Bigw "VITESS Output"
     set w $Bigw.t
-    if {"windows" == [getSystem]} {
+    if {$FontSizeIndex >= 1} {
       set th 30
       incr fontsize 1
     } else {
@@ -131,6 +131,7 @@ proc showText {s {newl \n} {errchar "!"}} {
 }
 
 proc clearText {{s ""}} {
+  zeroProgress
   upvar #0 Messagew w
   if {$w == ""} return
   set wt $w.a.t;		# $w.a.t is text area
@@ -279,7 +280,8 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
   if {$set != ""} {
     setGlobals 0 $set $app
   }
-  if {$geo != "" && [getSystem] == "windows"} {
+  global FontSizeIndex
+  if {$geo != "" && $FontSizeIndex >= 1} {
     # adjust windows to be higher: 90 % margin to top
     if {4 == [scan $geo "%dx%d+%d+%d" width height gx gy]} {
       set geo ${width}x${height}+${gx}+[expr int(0.9*$gy)]
@@ -311,15 +313,21 @@ proc generateToplevel {w title {set ""} {geo ""} {app _}} {
 
 
 proc giveRoom {w c} {
+  # use a scroll frame, if global variable c is set
   if {[info globals $c] == ""} {
     return $w
   }
-  if {[getSystem] == "windows"} {
+  global FontSizeIndex
+  if {$FontSizeIndex >= 1} {
     set ew 16c;  # edit frame width
-    set eh 18c;  # edit frame height
+    set eh 18;  # edit frame height
   } else {
     set ew 18c
-    set eh 20c
+    set eh 20
   }
-  return [scrollFrame $w right $ew $eh 30c]
+
+  # maxh: maximal height in cm, 70 % of display_pix_height / pix_per_cm
+  set maxh [expr 0.7 * [winfo screenheight .] / [winfo fpixels . 1c]]
+  if {$eh > $maxh}  {set eh $maxh}
+  return [scrollFrame $w right $ew ${eh}c 30c]
 }

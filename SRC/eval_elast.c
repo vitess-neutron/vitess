@@ -299,23 +299,23 @@ void OwnInit(int argc, char *argv[])
 			switch(arg[-1]) 
 			{
 				case 'o':
-					if(fspectra = fopen(FullParName(arg),"w"))
-						break;
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
-					exit(-1);
+				  if ((fspectra = fopen(FullParName(arg),"w")))
+				    break;
+				  fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
+				  exit(-1);
 					  
 				case 'O':
-					if (ftotcounts = fopen(FullParName(arg),"w"))
-						break;
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened for integrated output\n",arg);
-					exit(-1);
+				  if ((ftotcounts = fopen(FullParName(arg),"w")))
+				    break;
+				  fprintf(LogFilePtr,"\nERROR: File %s could not be opened for integrated output\n",arg);
+				  exit(-1);
 
 				case 'I':
-					/* info file for generating integrated output */
-					if (finfofile = fopen(FullParName(arg),"r"))
-						break;
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened \n",arg);
-					exit(-1);
+				  /* info file for generating integrated output */
+				  if ((finfofile = fopen(FullParName(arg),"r")))
+				    break;
+				  fprintf(LogFilePtr,"\nERROR: File %s could not be opened \n",arg);
+				  exit(-1);
 
 				case 'n':
 					nbins = atol(arg); /* number of bins */

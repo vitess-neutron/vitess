@@ -32,7 +32,7 @@ proc setAll {{mode 0}} {
 proc windowManagerExit {} {
   global KillMe
   if {[info exists KillMe] && $KillMe} exit
-  if [dontDoit "Exit Vitess\nchanges not saved yet"] {
+  if [dontDoit "Exit VITESS\nchanges not saved yet"] {
     # restore withdrawn last chance window
     wm deiconify .
   } else {
@@ -59,7 +59,7 @@ proc confirmedExit {} {
   } elseif {$nt - $ov < 5} {
     return
   }
-  if [dontDoit "Exit Vitess\nchanges not saved yet"] return
+  if [dontDoit "Exit VITESS\nchanges not saved yet"] return
   set KillMe 1
   finalCheck
   exit
@@ -89,6 +89,50 @@ proc showModulesAgain {{delall 0}} {
 }
 
 proc applySettings {} {
+  showModulesAgain 1
+}
+
+# possible sizes of truetype fonts, first elements are default
+# for for displays > 1024x780,
+# second used for windows per default, third smallest possible
+set HFontSizes {12 9 7}
+set BFontSizes {12 9 7}
+set LFontSizes {11 8 6}
+set TFontSizes {10 8 6}
+
+set FontSizeMinIndex 0
+# check the maximal window size
+if {[winfo screenwidth .] <= 1024 ||
+    [winfo screenheight .] <= 780 ||
+    [getSystem] == "windows"} {
+  set FontSizeMinIndex 1
+}
+set FontSizeIndex $FontSizeMinIndex
+
+proc setFontSizes {} {
+  global HFontSizes BFontSizes LFontSizes TFontSizes
+  global FontSizeIndex hfontsize lfontsize bfontsize tfontsize mfontsize monofontsize
+  set hfontsize [lindex $HFontSizes $FontSizeIndex]
+  set lfontsize [lindex $LFontSizes $FontSizeIndex]
+  set bfontsize [lindex $BFontSizes $FontSizeIndex]
+  set tfontsize [lindex $TFontSizes $FontSizeIndex]
+  set mfontsize $bfontsize
+  set monofontsize $tfontsize
+}
+
+proc smallerFonts {} {
+  global FontSizeIndex
+  if {$FontSizeIndex >= 2} return
+  incr FontSizeIndex
+  setFontSizes
+  showModulesAgain 1
+}
+
+proc biggerFonts {} {
+  global FontSizeIndex FontSizeMinIndex
+  if {$FontSizeIndex <= $FontSizeMinIndex} return
+  incr FontSizeIndex -1
+  setFontSizes
   showModulesAgain 1
 }
 
@@ -166,6 +210,9 @@ proc controlMenu {w} {
       {c "LOAD Instrument" {loadAll gui}}\
       {c "SAVE Instrument" {storeAll gui}} \
       {c "SAVE As" {storeAll gui newfile.gui}} s\
+      {c "ADD Packet" {addPacket}}\
+      {c "INSERT Packet" {insertPacketWindow}}\
+      {c "SAVE Packet" {savePacketWindow}} s\
       {c "SAVE to Directory" saveDirectory} s\
       {c "SAVE as Command" {storeAll bat}}\
       {c "SAVE as Grid Command" {storeAll grd}}\
@@ -301,10 +348,14 @@ proc controlMenu {w} {
   set wo $w.opt.menu
   popMenu $wo \
       {c "Apply settings" applySettings} s\
+      {c "Smaller fonts" smallerFonts} \
+      {c "Bigger fonts" biggerFonts} s\
       {m Color color} s\
       {m "Info level" infolevel} \
-      {m "Copy results" copresults} \
-      {m Plotmode plotmode} \
+      {m "Check mode" checkmode} \
+      {m "Output compression" compmode} \
+      {m "Execution mode" execmode} \
+      {m "Plot mode" plotmode} \
       {m Timeout timeout} s\
       {m "Fonts: text" tfont}\
       {m "monospaced text" monofont}\
@@ -349,14 +400,20 @@ proc controlMenu {w} {
   cascEntries $wo.timeout timeout 10 100 500 1000 3600\
       5400 10000 20000 28800 57600 172800 unlimited
 
-  forceDef infolevel user
-  cascEntries $wo.infolevel infolevel user expert
+  forceDef Infolevel user
+  cascEntries $wo.infolevel Infolevel user expert
 
-  forceDef copresults no
-  cascEntries $wo.copresults copresults no "per simulation"
+  forceDef Checkmode normal
+  cascEntries $wo.checkmode Checkmode normal set_default strict
+
+  forceDef Execmode normal
+  cascEntries $wo.execmode Execmode normal "save old" "copy results" 
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
+
+  forceDef Compmode none
+  cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip
 
   fontMenu $wo mfont
   fontMenu $wo hfont
@@ -390,6 +447,10 @@ proc sbuttonFont {} {
   global bfontfamily lfontsize bfonttype
   return [list $bfontfamily $lfontsize $bfonttype]
 }
+proc ssbuttonFont {} {
+  global tfontfamily lfontsize tfonttype
+  return [list $tfontfamily [expr $lfontsize - 1]  $tfonttype]
+}
 proc labelFont {} {
   global lfontfamily lfontsize lfonttype
   return [list $lfontfamily $lfontsize $lfonttype]
@@ -402,44 +463,40 @@ proc monoFont {} {
   global monofontfamily monofontsize monofonttype
   return [list $monofontfamily $monofontsize $monofonttype]
 }
-
+proc bigLabelFont {{a ""}} {
+  global sserif FontSizeIndex
+  set ls [lindex {18 14 12} $FontSizeIndex]
+  if {$a != ""} {incr ls $a}
+  if {$ls >= 16 && [winfo screenwidth .] <= 1024} {set ls 12}
+  return [list $sserif $ls bold]
+}
 
 proc setOptions {} {
   global serif sserif monospaced \
-      mfontfamily mfontsize mfonttype \
-      hfontfamily hfontsize hfonttype bfontfamily bfontsize bfonttype \
-      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype \
+      mfontfamily mfonttype \
+      hfontfamily hfonttype bfontfamily bfonttype \
+      lfontfamily lfonttype tfontfamily tfonttype \
       monofontfamily monofontsize monofonttype
   if [info exists hfontfamily] return
 
+  setFontSizes
+
   set hfontfamily $sserif
-  set hfontsize 13
   set hfonttype bold
 
   set bfontfamily $sserif
-  set bfontsize 12
   set bfonttype bold
 
   set lfontfamily $serif
-  set lfontsize 11
   set lfonttype bold
 
   set tfontfamily $sserif
-  set tfontsize 10
   set tfonttype normal
 
   set monofontfamily $monospaced
-  set monofontsize $tfontsize
   set monofonttype $tfonttype
 
-  if {[getSystem] == "windows"} {
-    incr hfontsize -4
-    incr lfontsize -3
-    incr bfontsize -3
-    incr tfontsize -2
-  }
   set mfontfamily $bfontfamily
-  set mfontsize $bfontsize
   set mfonttype $bfonttype
 
   set mf [menubarFont]
@@ -519,7 +576,7 @@ proc performCommand {prog mod {tw ""} {ts ""}} {
 }
 
 proc doGUICommand {prog mod {big ""}} {
-  global bgColor
+  global bgColor FontSizeIndex
   set w .guitool
   catch {destroy $w}
   generateToplevel $w "Tool Module $mod"
@@ -527,7 +584,7 @@ proc doGUICommand {prog mod {big ""}} {
   if {$big != ""} {
     set ew 16
     set eh 12
-    if {[getSystem] != "windows"} {
+    if {$FontSizeIndex == 0} {
       incr ew 2
       incr eh 2
     }
@@ -555,16 +612,25 @@ proc doGUICommand {prog mod {big ""}} {
   pack $w.b.do $w.b.canc -side left
 }
 
+proc trVar {n e op} {
+  global Progress ProgressTextL
+  if {$Progress == 0} {
+     set ProgressTextL ""
+  } else {
+    set ProgressTextL "$Progress %"
+  }
+}
+
 proc showBeef {w} {
   global bgColor canvasColor buttonColor xcontrolDefaultsESET \
-      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot
+      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot FontSizeIndex
 
   set XRoot $w
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.9"
-  set maxModule 40
+  set t "VITESS 2.10"
+  set maxModule 50
   set DummyEntry "--inactive--"
 
   frame $w.bm -bg $bgColor; # top header
@@ -584,20 +650,45 @@ proc showBeef {w} {
   frame $w.h.input -bg $bgColor -relief sunken -bd 2
   pack $w.h.input -fill both
 
-  if {[getSystem] == "windows"} {
-    set cw 8c;				# list canvas width
-    set ch 7.3c;			# list canvas height
-    set amw 17c;			# actual module frame width
-    set Tth 10;				# text window height
-    set cmw 11c;                        # header canvas width
-    set hcs 20;                         # VITESS header text size
-  } else {
-    set cw 9c
-    set ch 10c
-    set amw 19c
-    set Tth 12
-    set cmw 12c
-    set hcs 24
+  # the FontSizeIndex select the size of GUI canvas sizes
+  # 0 for relative big workstation displays
+  # 1,2.. smaller displays, like VGA resolution
+
+  # pcm: pixel per cm
+  set pcm [winfo fpixels . 1c]
+
+  # hpx available whole window height in pixel
+  set hpx [winfo screenheight .]
+
+  # ch: fixed height of module list and visible module window, in cm
+  # 0.8 means the VITESS window should not take more than 80 % of the display height
+  # 12/28 is the ratio of module list window per total height we want to obtain
+  
+  set ch [expr $hpx * 0.8 * 12.0/28.0 / $pcm]c
+  
+  # length and width of window components given in cm
+  # cw    list canvas width
+  # ch    list canvas height
+  # amw   actual module frame width
+  # cmw   header canvas width
+  # vbh   vitess banner height
+
+  # Tth   text window height, in characters of given font, means visible text lines
+  set Tth 10
+  
+  switch $FontSizeIndex {
+    0 {
+      set cw 9c
+      set amw 19c
+      set cmw 12c
+      set vbh 1.0c
+    }
+    default {
+      set cw 8c
+      set amw 17c
+      set cmw 11c
+      set vbh 0.8c
+    }
   }
   set sh 50c;				# scrolled list virtual height
   frame $Root.l -relief sunken -bd 2
@@ -624,22 +715,21 @@ proc showBeef {w} {
   setInstrumentfile 1
   bind $w.bm.hlab <ButtonPress> setInstrumentName
 
+  set blf [bigLabelFont]
   upvar #0 MainBitmap bitm
   if {[info exists bitm] && $bitm != "" && ![catch {glob $bitm}]} {
     image create photo image1 -file $bitm
     label $w.bm.c -image image1 -bd 1 -relief sunken
     pack $w.bm.c $w.bm.hlab -padx .5m -pady .5m
   } else {
-    canvas $w.bm.c -width $cmw -height 1.2c -bg $canvasColor \
+    canvas $w.bm.c -width $cmw -height $vbh -bg $canvasColor \
 	-highlightbackground $canvasColor
-    $w.bm.c create text 7c 5 -fill steelblue \
-	-font [list $sserif $hcs bold] -anchor n -text $t
+    $w.bm.c create text 7c 5 -fill steelblue -font $blf -anchor n -text $t
     pack $w.bm.hlab $w.bm.c -side left
   }
-  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
-  label $w.bm.notice -bg $bgColor -fg steelblue \
-      -text "Click parameter names for help!"\
-      -font [list $sserif $ls bold]
+
+  set blf [bigLabelFont -3]
+  label $w.bm.notice -bg $bgColor -fg steelblue -font $blf -text "Click parameter names for help!"
   pack $w.bm.notice -side right
   bind $w.bm.notice <ButtonPress> {showHelpItem VITESS-GUI}
 
@@ -649,8 +739,8 @@ proc showBeef {w} {
 
   helpFrame $Amf
 
-### action buttons
-  global fileentrywidth LastWin LastState
+  ### action buttons
+  global fileentrywidth LastWin LastState Progress ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -665,6 +755,17 @@ proc showBeef {w} {
   bButton $wb.stop Stop stopAction
   pack $wb.check $wb.start -fill x
   pack $wb.dummy -fill x -anchor w -pady 3m
+  set Progress 0
+  if {"" == [info command ttk::progressbar]} {
+    set ProgressTextL ""
+    set wl $wb.dummy.l
+    label $wl -textvariable ProgressTextL
+    pack $wl
+    trace variable Progress w trVar
+  } else {
+    ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
+    pack $wb.dummy.progress
+  }
   pack $wb.kill $wb.stop -fill x
 
   set wb $w.h.r
@@ -674,7 +775,7 @@ proc showBeef {w} {
   pack $wb.del -fill x
   pack $wb.dummy -fill x -anchor w -pady 12m
   pack $wb.del $wb.exit -fill x
-  set LastState [generateVitessCommand action]
+  set LastState [generateVitessCommand kstate]
   set LastWin $wb.exit
   bind $LastWin <Destroy> windowManagerExit
 }
@@ -717,8 +818,7 @@ proc controlGUI {
     setOptions
     wm title . "Last chance"
     wm geometry . +400+400
-    if {[getSystem] == "windows"} {set bs 12} else {set bs 14}
-    set font [list $sserif $bs bold]
+    set font [buttonFont]
     button .sos -text "Restore Xcontrol" \
 	-command [list controlGUI $defaultdirectory $edescription $w $geo 1] \
 	-font $font -bg $buttonColor

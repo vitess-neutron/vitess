@@ -1,0 +1,18 @@
+Helper thread for module source
+===============================
+
+init.c
+------
+
+OutputBufferFlush(0) now does a fwritePar instead of fwrite.
+fwritePar hands over to fwrite directly, if the global temporary
+buffer TWdata has not been allocated, and otherwise copies data
+to that buffer, waits for a mutex, and lets a freshly created
+thread do the fwrite.
+The last call to OutputBufferFlush(1) in cleanup makes sure that the helper
+thread has finished, and does a normal fwrite.
+TWdata will be allocated, when setDetachedWrite() from init.c is 
+called once in a module's main, like
+if (NThreads > 0)
+    setDetachedWrite();
+in source.c

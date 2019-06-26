@@ -3,7 +3,7 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
+/* 1.0            GÃ©za Zsigmond                                                             */
 /* 1.1  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /********************************************************************************************/
 
@@ -37,6 +37,9 @@ int main(int argc, char *argv[])
   probactiv=1.0;
   exclusivecount=0;
   registered=0;
+
+  nbiny=nbinz=0;
+  widthmin=widthmax=heightmin=heightmax=0;
 
   /*input*/
   Init(argc, argv, VT_MON_POL_POS);

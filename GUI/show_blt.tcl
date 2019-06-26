@@ -1,4 +1,4 @@
-### Project Vitess
+### Project VITESS
 ### plot graphs using the BLT::graph widget
 
 package require BLT

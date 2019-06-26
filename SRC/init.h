@@ -5,10 +5,14 @@
 
 #include "general.h"
 
+// maximum number of helper threads
+#define MAXWORKER 32
+
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
 extern long     OutNeutPtr;     /* points to the next free position in OutputNeutrons */
+extern long     CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
 extern ModProp  stPicture;      /* data needed to draw a picture of the component represented by the module */
 
 extern long     NumNeutGot;     /* number of neutrons read in the current batch */
@@ -28,11 +32,12 @@ extern long     keygrav;
 extern long     idum;           /* random number specific */
 extern short    bOldFrame;      /* criterion: new co-ordinate system set for current module */
 
+extern int      NThreads;      /* number of helper threads for execution, set by --T */
 
 void Init             (int argc, char **argv, VtModID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
                        double dHorizAngle, double dVertAngle);
-void print_module_name(char name[]);
+void print_module_name(const char *name);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
 void WriteInstrData   (long    nModuleNo, VectorType EndPos, double  dLength, double  dRotZ, double  dRotY);
@@ -42,10 +47,23 @@ void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);
 long ColumnsInFile    (FILE* pFile);
-char* FullParName     (char* filename);
-char* FullInstallName (char* filename, char* sRelPath);
+char* FullParName     (const char* filename);
+char* FullInstallName (const char* filename, const char* sRelPath);
+
+void setDetachedWrite();
 
 #include <gsl/gsl_rng.h>
 extern gsl_rng * vit_gsl_rng;
+
+#define myExit(s) {fprintf (LogFilePtr,s); exit(-1);}
+#define myExit1(s,a) {fprintf (LogFilePtr,s,a); exit(-1);}
+#define myExit2(s,a,b) {fprintf (LogFilePtr,s,a,b); exit(-1);}
+
+#ifdef  _MSC_VER
+/* The Microsoft visual C++ compiler spews about 1000 warnings during */
+/* compilation of gnuplot. The following lines disable most of them.  */
+#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #endif

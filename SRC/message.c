@@ -4,7 +4,7 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler, Michael Fromme, Klaus Lieutenant,   */
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler, Michael Fromme, Klaus Lieutenant,   */
 /* , Sergey Manoshin                                                                        */ 
 /*                                                                                          */
 /* Jan 2004  K. Lieutenant  initial version                                                 */
@@ -43,7 +43,7 @@ char      sMsgText[MESSAGE_LEN+1]=""; /* message text build of table text and da
 
 void MsgInit()
 {
-	memset(stMessage, '\0', 10*sizeof(VtMessage));
+  memset(stMessage, 0, 10*sizeof(VtMessage));
 }
 
 
@@ -79,6 +79,17 @@ void CountMessageID(VtMsgID eErrID, TotalID eTrajID)
 	}
 }
 
+void CountMessageID_C(VtMsgID eErrID, TotalID eTrajID, int count)
+{
+  short n = LfdNo(eErrID);
+  if (0 == stMessage[n].nNumber) {
+    stMessage[n].eID = eErrID;
+    stMessage[n].TrajID.IDNo = eTrajID.IDNo;
+    strcpy(stMessage[n].TrajID.IDGrp, eTrajID.IDGrp);
+  }
+  stMessage[n].nNumber += count;
+}
+
 
 /********************************************************************************************/
 /*  function 'PrintMessage'                                                                 */
@@ -100,7 +111,7 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 		{	case 'E': sprintf(sMsgText, "\nError: %s.\n", sText); break;
 		 	case 'W': sprintf(sMsgText, "\nWarning: %s.\n", sText); break;
 			case 'N': sprintf(sMsgText, "\nNote: %s.\n", sText); break;
-			case '-': sprintf(sMsgText, "\nError %d occured in %ld trajectories.\n", 
+			case '-': sprintf(sMsgText, "\nError %d occurred in %ld trajectories.\n", 
 			                              eErrID, stMessage[n].nNumber); break;
 			default : sprintf(sMsgText, "\n%s.\n", sText);
 		}

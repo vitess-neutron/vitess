@@ -8,11 +8,12 @@
 /* 1.01  June 2001  K. Lieutenant   parameter S to simulate a beamstop + SOFTABORT           */
 /* 1.02  Jan  2002  K. Lieutenant   reorganisation                                           */
 /* 2.00  Jun  2003  S. Manoshin     Add possibility for simulations of outer material of     */
-/*	                                 collimator: 0 - from file, 1 - gadolinium, 2 - cadmium,  */
+/*	                                 collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, */
 /*                                  3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber        */
 /* 2.10  Mar  2004  S. Manoshin     Add "choosing" of material for inner part of collimator  */
-/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick collimator	               */
+/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick collimator	             */
 /* 2.22  Jan  2002  K. Lieutenant   correction:  position after beamstop                     */
+/* 2.23  May  2010  A. Houben       "Rotation" of square window by counter rot of neutron pos*/
 /*********************************************************************************************/
 
 #include "init.h"
@@ -43,7 +44,8 @@ double  heightmin,       /* z-coordinate: bottom of rectangular window          
         widthmax,        /* y-coordinate: higher frame value of rectangular window [cm] */
         winradius,       /* radius of circular window                              [cm] */
         ywincenter,      /* y coordinate: center of circular window                [cm] */
-        zwincenter;      /* y coordinate: center of circular window                [cm] */
+        zwincenter,      /* y coordinate: center of circular window                [cm] */
+        rotang = 0.0;    /* Rotation angle (neutron pos is counter rot to window)   [°] */
 
 
   long  keymaterial0=6; /*Material of collimator: 0 - from file, 1 - gadolinium, 2 - cadmium,
@@ -63,7 +65,6 @@ double  heightmin,       /* z-coordinate: bottom of rectangular window          
   double Thicknesscoll=0.0;
   double Thicknesscolli=0.0;
   double DistMove=0.0;
-
 
 
 
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
 	Init(argc, argv, VT_WINDOW);
 	OwnInit(argc, argv);
 
-	print_module_name("Space and Window 2.22a");
+	print_module_name("Space and Window 2.23");
 
 	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
 
@@ -385,8 +386,15 @@ int main(int argc, char *argv[])
 
 			/* window test */
 
-			NewPositionY = InputNeutrons[i].Position[1];
-			NewPositionZ = InputNeutrons[i].Position[2];
+			if (rotang != 0.0) {
+				/*x' = x cos f - y sin f
+			      y' = y cos f + x sin f */
+				NewPositionY = InputNeutrons[i].Position[1] * cos(-rotang) - InputNeutrons[i].Position[2] * sin(-rotang);
+				NewPositionZ = InputNeutrons[i].Position[2] * cos(-rotang) + InputNeutrons[i].Position[1] * sin(-rotang);
+			} else {
+				NewPositionY = InputNeutrons[i].Position[1];
+				NewPositionZ = InputNeutrons[i].Position[2];
+			}
 
 			if(bCircularWindow==TRUE)
 			{	tempdistsquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
@@ -562,6 +570,9 @@ void  OwnInit(int argc, char *argv[])
 				break;
 			case 'W':
 				widthmax = atof(&argv[i][2]);
+				break;
+			case 'A':
+				rotang = atof(&argv[i][2])*M_PI/180.;
 				break;
 
 			case 'r':

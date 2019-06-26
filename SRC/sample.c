@@ -170,14 +170,13 @@ void ReadBall(FILE *SampleFile, SampleType *Sample)
 /*                                                              */
 int CompPair(const void* p1, const void* p2)
 {
-	DoublePair* pOne = (DoublePair *)p1;
-	DoublePair* pTwo = (DoublePair *)p2;
+  DoublePair* pOne = (DoublePair *)p1;
+  DoublePair* pTwo = (DoublePair *)p2;
 
-	if(*pOne[0] <  *pTwo[0]) return +1;
-	if(*pOne[0] == *pTwo[0]) return  0;
-	if(*pOne[0] >  *pTwo[0]) return -1;
-	/* this should never be reached */
-	return -99;
+  if(*pOne[0] <  *pTwo[0]) return +1;
+  if(*pOne[0] == *pTwo[0]) return  0;
+  return -1; // *pOne[0] >  *pTwo[0]
+
 }
 
 

@@ -6,6 +6,8 @@
 /* 1.0            Géza Zsigmond                                                             */
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2a JAN 2010  A. Houben      Added yz position filter                                   */
+/* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,7 +30,12 @@ int main(int argc, char *argv[])
   int	index_yz, index_c, dwl,ddiv;
   long	i, exclusivecount, registered, BufferIndex, nbin_wl, nbin_div;
   double wl_, div_, wl_min, wl_max, constrain_min, constrain_max, div_min, div_max,p, probactiv, bintc;
-
+  double filtYMin=-1.0e10,
+         filtYMax=1.0e10,
+		 filtZMin=-1.0e10,
+		 filtZMax=1.0e10;
+  double div_other_direction;
+  long format = 0;
 
 
   BufferIndex = 0;
@@ -40,7 +47,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_wldiv 1.2");
+  print_module_name("mon2_wldiv 1.2b");
 
 
   for(i=1; i<argc; i++)
@@ -110,6 +117,26 @@ int main(int argc, char *argv[])
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
 
+      case 'u':
+        filtYMin = atof(&argv[i][2]);   /* filter Y */
+        break;
+
+      case 'U':
+        filtYMax = atof(&argv[i][2]);   /* filter Y */
+        break;
+
+      case 'v':
+        filtZMin = atof(&argv[i][2]);   /* filter Z */
+        break;
+
+      case 'V':
+        filtZMax = atof(&argv[i][2]);   /* filter Z */
+        break;
+
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
+        break;
+
 /*	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
 	    exit(-1);
@@ -148,67 +175,77 @@ int main(int argc, char *argv[])
 DECLARE_ABORT;
   
   while(ReadNeutrons()!= 0)
-    {
-CHECK;
-      
-	  for(i=0; i<NumNeutGot; i++)
+  {
+  CHECK;
+    
+    for(i=0; i<NumNeutGot; i++)
 	{
-CHECK;
-		  
-		  registered=0;
+      CHECK;
+	  registered=0;
+
+	  if(exclusivecount==0) {
+		WriteNeutron(&(InputNeutrons[i]));
+	  }
+
+	  if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	  if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	  if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	  if (InputNeutrons[i].Position[2] > filtZMax) continue;
 
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
+	  /* selects only trajectories in the given interval: constrain_min, constrain_max for the other direction */
+	  div_other_direction = 180.0/M_PI * (double)atan2(InputNeutrons[i].Vector[index_c],InputNeutrons[i].Vector[0]);
+	  if((div_other_direction <= constrain_min)||(div_other_direction >= constrain_max)) continue;
+      
+      wl_ = InputNeutrons[i].Wavelength;
 
-	  {	  double div_other_direction = 180.0/M_PI * (double)atan2(InputNeutrons[i].Vector[index_c],InputNeutrons[i].Vector[0]) ;
-
-		if((div_other_direction <= constrain_min)||(div_other_direction >= constrain_max)) goto getlost;
-
-	  }/* selects only trajectories in the given interval: constrain_min, constrain_max for the other direction */
-
-
-
-	    wl_ = InputNeutrons[i].Wavelength;
-
-	    div_ = (double)atan2(InputNeutrons[i].Vector[index_yz],InputNeutrons[i].Vector[0]);
-	    div_*=180.0/M_PI;
-	    if ((InputNeutrons[i].Vector[index_yz]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	      {div_=0.0;}
-
+	  div_ = (double)atan2(InputNeutrons[i].Vector[index_yz],InputNeutrons[i].Vector[0]);
+	  div_ *=180.0/M_PI;
+	  if ((InputNeutrons[i].Vector[index_yz]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+	    {div_=0.0;}
 
 	  dwl = (int)floor(nbin_wl*(wl_-wl_min)/(wl_max-wl_min));
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
-	  if(((dwl>=0)&&(dwl<nbin_wl))&&((ddiv>=0)&&(ddiv<nbin_div)))
-	    {	
-	      bin_wldiv[dwl][ddiv] = bin_wldiv[dwl][ddiv] +  p ;
+	  if(((dwl>=0)&&(dwl<nbin_wl))&&((ddiv>=0)&&(ddiv<nbin_div))) {	
+	      bin_wldiv[dwl][ddiv] = bin_wldiv[dwl][ddiv] +  p;
 	      bintc = bintc + p;
 	      registered=1;
-	    }
-	  
-getlost:;
+	  }
 
-	  if((exclusivecount==0)||(registered==1))
-	    {
+	  if((exclusivecount==1) && (registered==1)) {
 	      WriteNeutron(&(InputNeutrons[i]));
-	    }
+	  }
 	}
-    }
+  }
 my_exit:
-
-  for(dwl = 0; dwl<nbin_wl; dwl++)
-    {
-      fprintf(fmonitor,"%10.7f\t",(bwl_[dwl]+bwl_[dwl+1])/2.0);
-    }
-  for(ddiv = 0; ddiv<nbin_div; ddiv++)
-    {
-      fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-      for(dwl = 0; dwl<nbin_wl; dwl++)
-	{
-	  fprintf(fmonitor,"%5.3E\t",bin_wldiv[dwl][ddiv]);
-	}
-    }
+  switch (format) {
+	case 0:
+	  for(dwl = 0; dwl<nbin_wl; dwl++)
+		{
+		  fprintf(fmonitor,"%10.7f\t",(bwl_[dwl]+bwl_[dwl+1])/2.0);
+		}
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++)
+		{
+		  fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
+		  for(dwl = 0; dwl<nbin_wl; dwl++)
+		{
+		  fprintf(fmonitor,"%5.3E\t",bin_wldiv[dwl][ddiv]);
+		}
+		}
+	  break;
+    case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(ddiv = 0; ddiv<nbin_div; ddiv++) {
+		   for(dwl = 0; dwl<nbin_wl; dwl++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bwl_[dwl]+bwl_[dwl+1])/2.0, (bdiv_[ddiv]+bdiv_[ddiv+1])/2.0, bin_wldiv[dwl][ddiv]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 

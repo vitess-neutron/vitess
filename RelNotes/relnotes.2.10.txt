@@ -1,0 +1,61 @@
+VITESS 2.10  Release Note
+-------------------------
+
+Helper threads:
+---------------
+
+Some modules may use helper threads to speed up simulations on system with multi
+core CPUs. If you select 1 to 8 helper threads in the main GUI window, these
+modules will start helper threads:
+source, chopper_fermi, polariser_sm, guide, and sm_ensemble.
+
+Packages:
+---------
+
+Composing instruments is made easier with packages. You may store parts of an
+instrument, like a series of complicated guides, to a package, to be re-used
+later.
+The maximum number of modules is set to 40 now.
+
+Execution Modes:
+----------------
+
+When you simulate an instrument with slightly different parameters you may use
+two execution modes which help to compare results:
+"save old"
+In that mode every plain file of the parameter directory is saved to a save_<n> subdirectory
+before execution of the command pipe. After pipe execution VITESS tells which files have been
+changed in contents and lists those files in the save_<n> subdirectory;
+duplicates in the subdirectory are removed.
+"copy results"
+All files except the log file in the parameter directory, which have a modification date later
+than the simulation start time, are copied to the Results subdirectory after finishing the simulation,
+the file name prepended with the creation data like
+Results/20100927-160057.a.dat for a file a.dat created on the 27 th of September in 2010.
+
+Compression:
+------------
+A general menu bar option "Output compression" allows to compress data
+
+none          120 byte per neutron trajectory, default, 100%
+nodebug       strips trace information normally not used, reducing size to 63%
+float         additionally reduces double values to float, with almost no effect
+              on the further outcome; the binary file size shrinks to approx. 40%
+gzip          lossless, but more CPU intense compression, approx. 55%
+nodebug+gzip  reduction to approx. 45.8%
+float+gzip    reduction to approx. 29%
+
+VITESS modules read data files of nodebug or float compression directly, compressed
+input files with a .z or .gz extension are read with the help of the program gzip.
+gzip.exe is provided with the VITESS distribution for Windows, and gzip is assumed
+to be installed under Linux.
+
+
+New modules:
+------------
+lenses
+mirror_elliptical
+mon2_kdiv
+mon2_rdiv
+runtime
+beamstop

@@ -1,0 +1,78 @@
+chopper_fermi.c -> chopper_fermi_parallel.c
+===========================================
+
+Starting from main we need to encapsulate what is done on each neutron to
+a routine processNeutron, which is a callback parameter in
+
+processPipedNeutrons(NThreads, processNeutron, 1, 0);
+
+NThreads is set in init.c with the --T option, with default 0 for serial execution.
+The parameter 1 here means that at most one neutron is written per input neutron, neutrons are
+either skipped or written modified in chopper_fermi.
+The parameter 0 indicates we do not need random numbers. 
+
+Within processNeutron the variables 
+double WL, TOF, phase0, pos[3], n[3];
+VectorType Pos, Dir, Path;
+Neutron neutron;
+should be local variables to faciliate parallel execution,
+and they have to be passed as parameters when needed in helper routines.
+
+The "goto getlost;" logic translates to a simple return in processNeutron,
+"goto happyend;" is not necessary then any more.
+
+The final WriteNeutron(&Neutrons) in processNeutron becomes  WriteNeutronParallel(&neutron, thread_i);
+
+The compute intensive work has been done in the routine searchgates, and called from there, phase_k_j.
+
+searchgates uses a global variable phase[10][2000] which would be costly if really needed.
+A closer look reveals: 
+- The toggling of m between -1 / 1 in the for (j=1; j<2*Nchannels+2; j++) loop
+  combined with the if (m==1) checks has the same effect as a
+  for(j=2; j<2*Nchannels+2; j += 2) loop with no m==1 check.
+- That given, no phase[][] value has to be kept for different indices j
+  and we could use plain variables to reflect the values computed by calls of phase_k_j,
+  or better use the values directly.
+- The explicit logic for gates 4,6,8 cases may be deflated to a single loop, 
+  where we bail out if gates checks have been done.
+- Albeit the only consequence to call phase() is the return value, the for j loop
+  did not stop when the return value is known.
+
+With that knowledge we may replace phase() by a routine inPhase(), and rename phase_k_j() to phase().
+Parameters WL, Dir, and Pos are passed through:
+
+static int outOfPhase(int i, int j, int gates, 
+		      const double phase0, const double WL, const VectorType Dir, const VectorType Pos) {
+  if (i <= (gates-1) / 2)
+     return phase0 <= phase(x_ch[i][j-1], y_ch[i][j-1], WL, Dir, Pos) ||
+            phase0 >= phase(x_ch[i][j],   y_ch[i][j],   WL, Dir, Pos);
+  return phase0 >= phase(x_ch[i][j-1], y_ch[i][j-1], WL, Dir, Pos) ||
+         phase0 <= phase(x_ch[i][j],   y_ch[i][j],   WL, Dir, Pos);
+}
+
+static int inPhase(int gates, double phase0, 
+		   const double WL, const VectorType Dir, const VectorType Pos) {
+  int i,j;
+  for (j=2; j < 2*Nchannels+2; j += 2) {
+    for (i=0; i < gates; i++)
+      if (outOfPhase(i, j, gates, phase0, WL, Dir, Pos)) {
+	i = -1;
+	break;  // go for next j
+      }
+    // if all tests were successful the neutron is in phase
+    if (i == gates) return 1;
+  }
+  return 0;
+}
+
+
+Linux Makefile:
+chopper_fermi_parallel needs threadHelper.o, and -pthread as link option.
+
+Windows vitess.mak:
+To link with thread support against kernel32.dll, we have to replace the
+compile option /ML by /MT, and specify linkage against libcmt.lib instead
+of libc.lib, which is default. We do so be definition and usage of the
+macro ML_T:
+ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
+

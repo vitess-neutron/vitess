@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n", 
                           Sample.SG.Ball.r);
       break;
+    default :;
   }
   fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
                       "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
@@ -150,7 +151,7 @@ int main(int argc, char *argv[])
       /* Do anything to be done for the Scattering */
       if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN))
       {
-        if (nisp < 2)
+        if (nisp == 1)
           CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
 
         /* the neutron may be scattered between InISP[0] and InISP[1] */

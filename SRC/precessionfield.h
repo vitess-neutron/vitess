@@ -10,8 +10,8 @@
 	long		Option, User, coildir, NumOut, Repetition, repet,  i, wall_1, wall_2, ind_x, ind_y, ind_z, ind_x_max, ind_y_max, ind_z_max ;
 	double		field_guide[3], field_parameter, field_precession, TOF, TOF1, TOF2, TOF3, WL, Prob, phi, the, PhaseShift, NumberPrecessions ;
 	double		width, height, depth, field_hom[3], AnglMainHoriz, AnglMainVert, ProbCutoff, IntegralIntensity ;
-	static double		RotMatrixMain[3][3], RotMatrixOut[3][3], domain_field_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], 
-				PosDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], DimDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], RotMatrixField[3][3], LarmorMatrix[3][3];
+	static double	domain_field_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], 
+			PosDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], DimDomain_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], RotMatrixField[3][3], LarmorMatrix[3][3];
 	VectorType	 Pos, Dir, SpinVector, Path, Pos1, Pos2, domain_field, PosDomain, PosMain, DimDomain, TranslOut, FWHM ;
 	Neutron		Neutrons ;
 

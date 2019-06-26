@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "Spherical sample    : %8.2f cm radius\n", 
 			                    Sample.SG.Ball.r);
 			break;
+	default: ;
 	}
 	fprintf(LogFilePtr, "  position          :(%8.2f,%8.2f,%8.2f ) cm\n",
 							  Sample.Position [0], Sample.Position [1], Sample.Position [2]);

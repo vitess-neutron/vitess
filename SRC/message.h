@@ -45,6 +45,7 @@ VtMessage;
 void MsgInit       ();
 void CountMessage  (VtMsgID eErrID);
 void CountMessageID(VtMsgID eErrID, TotalID eTrajID);
+void CountMessageID_C(VtMsgID eErrID, TotalID eTrajID, int count);
 void PrintMessage  (VtMsgID eErrID, const char* pText, short bID);
 
 

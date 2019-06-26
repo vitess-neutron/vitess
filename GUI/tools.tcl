@@ -110,7 +110,7 @@ proc mGroup {dy args} {
     frame $g -bg $bgColor
     pack  $g -side top -fill both -pady $dy
   }
-}
+} 
 
 proc scrollFrame {w side cw ch sh {sw ""}} {
   global bgColor
@@ -191,13 +191,13 @@ You can get help about every
   helpLink $w Help t10
   $w insert end {
 
-Alternativly, you can use the help system in the internet:
+Alternativly, you can visit web pages at
 }
 
-  helpLink $w http://www.hmi.de/projects/ess/vitess/DOC/index.html t11
+  helpLink $w http://www.helmholtz-berlin.de/vitess t11
   $w insert end {
 
-For further questions, please send an email to vitess@hmi.de
+For further questions, please send an email to vitess@helmholtz-berlin.de
 
 }
 
@@ -205,7 +205,7 @@ For further questions, please send an email to vitess@hmi.de
   helpButton $w Tutorial t24 tutorial.pdf
   $w insert end \n
   helpButton $w {Inserting/Deleting a Module} t21
-  helpButton $w {Visualsing Results} t22
+  helpButton $w {Visualising Results} t22
   $w insert end \n
   helpButton $w Troubleshooting t23
 }
@@ -239,6 +239,22 @@ proc dismissFrame {w {d dism}} {
   pack $w.$d -side bottom -fill x -pady 2m
   bButton $w.$d.dismiss Dismiss "destroy $w"
   pack $w.$d.dismiss -side left
+}
+
+proc printFrame {w} {
+  global tcl_version
+  if {$tcl_version < 8.5} {
+    dismissFrame $w
+    return
+  }
+  set f $w.dism
+  frame $f
+  pack $f -side bottom -fill x -pady 2m
+  bButton $f.dismiss Dismiss "destroy $w"
+  bButton $f.print Print "$w.c postscript -file xy.ps"
+  label $f.l -text "to file xy.ps"
+  pack $f.dismiss -side left
+  pack $f.l $f.print -side right
 }
 
 ###
@@ -302,7 +318,7 @@ proc isNot {v args} {
   return 1
 }
 
-### if global variable a is not known, then define a with value
+### if global variable a is not known, then define a with value val
 ###
 proc forceDef {a val} {
   upvar #0 $a v
@@ -359,11 +375,13 @@ proc addToSet {set v} {
 ### 1. are not defined internally by Tcl/Tk (may change)
 ### 2. do not start with an uppercase letter or .
 ### 3. do not end with SET or Add
-### 4. are not an array variable
-### 5. do not belong to inactive modules after the last active one
+### 4. do not belong to inactive modules after the last active one
+### 5. are not in a list of temporary variables
+### 6. are not in a list of of taboo variables
+### 7. are not an array variable
 ###
 proc savableGlobals {} {
-  global maxModule DummyEntry TempVars
+  global maxModule DummyEntry TempVars DoNotSave DoNotSaveRegexp
   set lasti 0
   for {set i 1} {$i <= $maxModule} {incr i} {
     set varName mod$i
@@ -373,11 +391,12 @@ proc savableGlobals {} {
   }
   set l {}
   foreach e [stringToSet [info globals]] {
-    if [regexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$} $e] continue
+    if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e a n] {
       if {$n > $lasti} continue
     }
     if {[lsearch $TempVars $e] >= 0} continue
+    if {[lsearch $DoNotSave $e] >= 0} continue
     global $e
     if {[catch {array size $e} size] || !$size} {
       lappend l $e
@@ -525,10 +544,10 @@ proc conditionalCloseProtfile {} {
 
 proc dontDoit text {
   global LastState
-  set newState [generateVitessCommand action]
+  set newState [generateVitessCommand kstate]
   if {$newState == "" || $LastState == $newState} {return 0}
-  set rc [tk_messageBox -icon question -type yesno\
-	      -title "confirmed command" -message $text]
+  # puts "compare states\n$LastState\n and\n$newState"
+  set rc [tk_messageBox -icon question -type yesno -title "confirmed command" -message $text]
   if {$rc == "no"} {return 1}
   return 0
 }
@@ -629,19 +648,25 @@ proc getSystem {} {
 }
 
 proc tmpFilename {{name temp.tmp}} {
-  if {[getSystem] != "windows"} {
-    return "/tmp/[exec whoami]$name"
+  global env
+  set n USER
+  foreach w {LOGNAME USERNAME} {
+    if [catch {set n $env($w)}] continue
+    break
   }
-  global defdirectory_
-  set d $defdirectory_
+  set fn "$n[clock seconds]$name"
+  if {[getSystem] != "windows"} {
+    return "/tmp/$fn"
+  }
+  set d [globVal defdirectory_]
   if {$d == "" || ! [file isdirectory $d]} {
     set d C:/temp
     # create C:/temp if not existing
     if [catch {file mkdir $d}] {
-      return $name
+      return $fn
     }
   }
-  return [file join $d $name]
+  return [file join $d $fn]
 }
 
 proc getDirectory {name} {
@@ -671,7 +696,10 @@ proc browseFile {var access dirtype {ext ""} {mustexist false}} {
 	  set name [file dirname $name]
 	} else {
 	  # uses tries to create directory a/b/c/
-	  file mkdir $name
+	  if [catch {file mkdir $name}] {
+	    showText "unable to create directory $name"
+	    return
+	  }
 	}
       }
     }
@@ -784,7 +812,6 @@ proc yscroll {w command {side right}} {
 proc xscroll {w command {side top}} {
   global bgColor scrollWidth
   append w ".xscroll"
-  scrollbar $w -command $command -bg $bgColor\
-      -width $scrollWidth -orient horizontal
+  scrollbar $w -command $command -bg $bgColor -width $scrollWidth -orient horizontal
   pack $w -side $side -fill x
 }

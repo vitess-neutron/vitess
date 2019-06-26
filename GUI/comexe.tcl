@@ -1,4 +1,4 @@
-### project Vitess
+### project VITESS
 ### HMI DN
 ### M. Fromme fromme@hmi.de
 ###
@@ -22,12 +22,51 @@ proc lookWhosConcerned {serrep serpar serno \
   }
 }
 
+proc unzipCom {fname} {
+  if {$fname == ""} {return ""}
+  if {[file size $fname] < 512}  {return ""}
+  if {![regexp {\.([a-z]+)$} $fname r e]} {return ""}
+  if {$e == "gz" || $e == "z"} {
+    if {[getSystem] == "windows"} {return "[file join [globVal ExeDirectory] gzip.exe] -cd"}
+    catch {exec file $fname} res
+    if [string match "*gzip compressed data*" $res] {
+      # look if zcat is installed
+      if [catch {exec which zcat}] {return ""}
+      return "zcat"
+    }
+  }
+  return ""
+}
+
+set COPYCOM {
+proc pcom {fn res} {
+  upvar $res r
+  set f [open $fn r]
+  while {[gets $f ins] > 0} {append r $ins}
+  close $f
+  file delete $fn
+}
+proc pwrite {fn res} {
+  set f [open $fn w]
+  puts $f $res
+  close $f
+}
+}
+
+
 ### compose the VITESS command pipe string
 ###
 proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
+
+  # mode may be: action bat tcl grd ser kstate
+
+  # kstate is used to generate a hash of all settings, and the output should ignore
+  # things like the input, output file and overall options, because these are not saved
+  # when saving an instrument either.
+
   set ll [globVal inputESET]
   set wsh 0
-  global Comode Serdefault Plotfile Plottype\
+  global Comode Serdefault Plotfile Plottype ProgressFile\
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize
 
   switch [set Comode $mode] {
@@ -38,27 +77,45 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
   }
   upvar #0 ExeSuffix sys
-  set logf [tmpFilename vpipelog]
+  if {$mode == "kstate"} {
+    set logf l
+  } else {
+    set logf [tmpFilename vpipelog]
+  }
   set PipeLogList {}
   # fc will be the full command
   upvar #0 FullCommand fc
   set fc ""
-  lookWhosConcerned srep0 spar0 serno0 0 $Comode $serll sermol serpal
-  #  3..6: random seed, random_gen, neutron weight, gravitation effect
-  foreach {i} [lrange $ll 3 6] {
+  lookWhosConcerned srep0 spar0 serno0 0 $mode $serll sermol serpal
+  #  3..7: random seed, random_gen, neutron weight, gravitation effect, helper threads
+  foreach {i} [lrange $ll 3 7] {
     # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
+
+  set par ""
+  # select parallel image versions for batch processing, ignore this for kstate,
+  # and use parallel image version if helper threads have been demanded otherwise
+  switch $mode {
+    bat - tcl - grd - ser {set par _parallel}
+    kstate { }
+    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
+  }
+
   set pdir [entryVal defdirectory]
-  set insert "$fc --B$buffersize --P";	# general command options  
-  if {$Comode == "grd"} {append insert \$P} else {append insert $pdir}
+  set insert "$fc --B$buffersize --P";	# general command options
+  switch $mode {
+    bat - tcl - grd {append insert \$P}
+    default {append insert $pdir}
+  }
 
   # restart construction of fc, general options have been saved to variable insert
-  switch $Comode {
-    bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
+  switch $mode {
+    bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
     grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
     tcl {
-      set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\n"
+      global COPYCOM
+      set fc "\#!/usr/bin/tclsh$COPYCOM\nset V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
 	if {"" == [set t [entryVal random_$v]]} continue
 	append fc "set env(GSL_RNG_$vv) $t\n"
@@ -76,38 +133,43 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     upvar #0 $varName var
     if {![info exists var] || $var == $DummyEntry} continue
     set intcom 1
-    lookWhosConcerned serrep serpar serno $i $Comode $serll sermol serpal
+    lookWhosConcerned serrep serpar serno $i $mode $serll sermol serpal
 
     switch $var {
-      source_const_wave  {set com "source$sys -S1"}
-      source_HMI  {set com "source$sys -S1"}
-      source_ILL  {set com "source$sys -S1"}
-      source_short_pulsed {set com "source$sys -S2"}
-      source_ESS {set com "source$sys -S2"}
-      source_IPNS {set com "source$sys -S2"}
-      source_ISIS {set com "source$sys -S2"}
-      source_SNS {set com "source$sys -S2"}
-      source_ESS_LPTS {set com "source$sys -S3"}
-      chopper_fermi_str {set com "chopper_fermi$sys -O1"}
-      chopper_fermi_cur {set com "chopper_fermi$sys -O2"}
+      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
+      chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
+      guide       {set com "guide$par$sys"}
+      lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
+      mon1_divy   {set com "monitor1$sys -k3"}
+      mon1_divyz  {set com "monitor1$sys -k8"}
+      mon1_divz   {set com "monitor1$sys -k4"}
+      mon1_energy {set com "monitor1$sys -k7"}
       mon1_lambda {set com "monitor1$sys -k1"}
       mon1_time   {set com "monitor1$sys -k2"}
-      mon1_divy   {set com "monitor1$sys -k3"}
-      mon1_divz   {set com "monitor1$sys -k4"}
       mon1_y      {set com "monitor1$sys -k5"}
       mon1_z      {set com "monitor1$sys -k6"}
-      mon1_energy {set com "monitor1$sys -k7"}
-      monpol_lambda {set com "monitorpol_1d$sys -k1"}
-      monpol_time   {set com "monitorpol_1d$sys -k2"}
-      monpol_divy   {set com "monitorpol_1d$sys -k3"}
-      monpol_divz   {set com "monitorpol_1d$sys -k4"}
-      monpol_y      {set com "monitorpol_1d$sys -k5"}
-      monpol_z      {set com "monitorpol_1d$sys -k6"}
       mon2_y_divy  {set com "mon2_posdiv$sys -q1"}
       mon2_z_divz  {set com "mon2_posdiv$sys -q2"}
+      monpol_divy   {set com "monitorpol_1d$sys -k3"}
+      monpol_divz   {set com "monitorpol_1d$sys -k4"}
+      monpol_lambda {set com "monitorpol_1d$sys -k1"}
+      monpol_time   {set com "monitorpol_1d$sys -k2"}
+      monpol_y      {set com "monitorpol_1d$sys -k5"}
+      monpol_z      {set com "monitorpol_1d$sys -k6"}
+      quadr_field  {set com "sesans_field$sys"}
+      sm_ensemble {set com "sm_ensemble$par$sys"}
+      source_ESS {set com "source$sys -S2"}
+      source_ESS_LPTS {set com "source$sys -S3"}
+      source_HMI  {set com "source$sys -S1"}
+      source_ILL  {set com "source$sys -S1"}
+      source_IPNS {set com "source$sys -S2"}
+      source_ISIS {set com "source$sys -S2"}
+      source_SNS {set com "source$sys -S2"}
+      source_const_wave  {set com "source$sys -S1"}
+      source_short_pulsed {set com "source$sys -S2"}
       external_command {
 	set intcom 0
 	set com "[globVal extern_com_$i] [globVal extern_shortopt_$i]"
@@ -124,15 +186,30 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       }
       default    {set com $var$sys}
     }
+
     set logopt $logf$i
-    set imore " $insert --L$logopt"
+    switch $mode {
+      bat - tcl - grd {set imore  " $insert --L\$\{L\}$i"}
+      default {set imore " $insert --L$logopt"}
+    }
+    if {$mode == "action"} {set ppadd  " --p$ProgressFile"} else {set ppadd  ""}
+    
     lappend PipeLogList $logopt
     if $intcom {
       set com [file join $prefi $com]
       if $first {
+	append com $ppadd
 	append fc "$com$imore"
-	#  input file
-	writeCommandOption [lindex $ll 0] _ "" $spar0 $srep0 $serno0
+	if {$mode != "kstate"} {
+	  # get name of input file
+	  set l [lindex $ll 0]
+	  set finame [entryVal [lindex $l 0]]
+	  if {"" != [set unzip [unzipCom $finame]]} {
+	    set fc "$unzip $finame | $fc --c[file size $finame]"
+	  } else {
+	    writeCommandOption $l _ "" $spar0 $srep0 $serno0
+	  }
+	}
 	set first 0
       } else {
 	append fc " | $com$imore"
@@ -141,24 +218,40 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
 	writeCommandOption $l _$i "" $serpar $serrep $serno
       }
     } elseif {$first} {
+      append com $ppadd
       append fc "$com$imore"
       set first 0
     } else {
       append fc " | $com$imore"
     }
   }
-  if {$fc != ""} {
-    #  output file
+
+  if {$fc != "" && $mode != "kstate" } {
+    switch [globVal Compmode] {
+      case nodebug -
+      case nodebug+gzip {set c 1}
+      case float -
+      case float+gzip {set c 2}
+      default {set c 0}
+    }
+    if $c {
+      # get name of output file
+      set foname [entryVal [lindex [lindex $ll 1] 0]]
+      if {$foname != "" && $foname != "no_file"} {
+	append fc " --C$c"
+      }
+    }
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
   }
-  if {$Comode == "grd"} {
-    # a shell environment will substitute $P
-    regsub -all "$pdir/" $fc "\$P/" fc
-  }
+
   # get rid of superfluous blanks
   regsub -all "  " $fc " " fc
-  if {$Comode == "bat"} {append fc "\nmv $logf* \$P"}
 
+  switch $mode {
+    bat {append fc "\ncat $logf* > \$P/result.txt\nrm $logf*\n"}
+    tcl {append fc "\n\nforeach fn \[glob \$L*\] \{pcom \$fn res\}\npwrite \$P/result.txt \$res\n"}
+    default {}
+  }
   return $fc
 }
 
@@ -167,6 +260,8 @@ proc checkAll {} {
   propagateDigestValues
   set errors [forceParamDir]
   if {$errors} {return 0}
+  global Showinfo
+  set Showinfo 0
   if [errorWithValues input] {set errors 1}
   global DummyEntry maxModule
   set firstmod ""
@@ -177,8 +272,12 @@ proc checkAll {} {
     if {$firstmod == ""} {
       set firstmod $var
       if {! [regexp {^source_} $var]} {
-	if {"" == [entryVal infilename]} {
+	set infname [entryVal infilename]
+	if {"" == $infname} {
 	  showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
+	  set errors 1
+	} elseif {! [file exists $infname]} {
+	  showText "!The given input file does not exist"
 	  set errors 1
 	}
       }
@@ -191,7 +290,11 @@ proc checkAll {} {
     return 0
   }
 
-  clearText "description O.K.\n"
+  if {$Showinfo} {
+    showText "description O.K.\n"
+  } else {
+    clearText "description O.K.\n"
+  }
   return 1
 }
 
@@ -200,11 +303,11 @@ proc checkAll {} {
 ### newer than the simulation start time
 
 proc copyResults {} {
-  global copresults StartTime defdirectory_
-  if {$copresults == "no"} return
+  global Execmode StartTime defdirectory_
+  if {$Execmode != "copy results"} return
   set clist {}
   catch {
-    foreach fn [glob $defdirectory_/*] {
+    foreach fn [glob -directory $defdirectory_ *] {
       if [file isdirectory $fn] continue
       set e [file extension $fn]
       if {$e == ".log"} continue
@@ -264,6 +367,28 @@ proc cleanupPipes {} {
   if $errfound {
     outProtocol "RRRERRORS OCCURED: Read error messages of the modules concerned"
   }
+  if [string match *gzip* [globVal Compmode]] {
+    # get name of output file
+    set foname [entryVal [lindex [lindex [globVal inputESET] 1] 0]]
+    if {$foname != "" && $foname != "no_file"} {
+      set foname [file join [entryVal defdirectory] $foname]
+      if {[file size $foname] > 512} {
+	# compress that file
+	outProtocol "try to compress $foname"
+	if {[getSystem] == "windows"} {
+	  set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
+	} else {
+	  set rc [catch {exec gzip -f $foname} res]
+	}
+	set fzname $foname.gz
+	if {$rc == 0 && [file exists $fzname]} {
+	  outProtocol "compressed to $fzname"
+	} else {
+	  outProtocol "did not compress, $res"
+	}
+      }
+    }
+  }
   conditionalCloseProtfile
   catch {eval file delete $PipeLogList}
 }
@@ -300,9 +425,120 @@ proc PsCheckWindows {} {
   return 0
 }
 
+
+### save all (flat) files in the parameter directory to a new temporary directory
+### within the parameter directory
+
+proc saveEnvironment  {} {
+  global FilesBefore TimesBefore Execmode defdirectory_
+  if {$Execmode != "save old"} { return "" }
+  catch {unset TimesBefore}
+  set FilesBefore {}
+  set clist {}
+  catch {
+    foreach fn [glob -directory $defdirectory_ *] {
+      set ft [file type $fn]
+      if {$ft != "file"} continue
+      lappend FilesBefore $fn
+      file stat $fn fst
+      set TimesBefore($fn) $fst(mtime)
+    }
+  }
+  set tdir ""
+  # create a subdirectory of saved files
+  for {set i 1} {$i < 1000} {incr i} {
+    set tdir [file join  $defdirectory_ "saved_$i"]
+    if [file exists $tdir] continue
+    file mkdir $tdir
+    break
+  }
+  if {$i >= 1000} {
+    # no free slot
+    return ""
+  }
+  foreach fn $FilesBefore {
+    file copy $fn $tdir
+  }
+  return $tdir
+}
+
+proc sameMD5Hash {a b} {
+  if [catch {package require md5}] {return 0}
+  set ahash [md5::md5 -file $a]
+  set bhash [md5::md5 -file $b]
+  if {"$ahash" == "$bhash"} {return 1}
+  return 0
+}
+
+### compare contents of envDir with files in the parameter directory
+### exchange modified files with old files, and have new files
+### in the subdirectory; delete identical copies in the subdirectory;
+### delete the subdirectory if empty
+
+proc cleanupEnvDir {{envDir ""}} {
+  global FilesBefore TimesBefore defdirectory_
+  if {$envDir == ""} return
+  if {! [file exists $envDir]} return
+  set someremain 0
+  set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
+  catch {
+    foreach fn [glob -directory $defdirectory_ *] {
+      if [file isdirectory $fn] continue
+      if {[lsearch $FilesBefore $fn] != -1} {
+	file stat $fn fst
+	set tn [file tail $fn]
+	set ofn [file join $envDir $tn]
+	set remain 0
+	if {$fst(mtime) > $TimesBefore($fn)} {
+	  # Changed file found, mtime change;
+	  # If it is just today's log file: forget about it.
+	  if {$tn != $dayname} {
+	    # Have contents been changed, too ?
+	    # If not, we delete the saved version.
+	    if {! [sameMD5Hash $fn $ofn]} {
+	      set remain [set someremain 1]
+	    }
+	  }
+	}
+	if {$remain == 0} {
+	  # file has not been changed, delete the saved version
+	  file delete $ofn
+	} else {
+	  outProtocol "saved old file to $ofn"
+	}
+      }
+    }
+  }
+  if {$someremain == 0} {
+    file delete $envDir
+  }
+  catch {unset FilesBefore TimesBefore}
+}
+
+proc zeroProgress  {} {
+  global Progress ProgressFile
+  set Progress 0
+  catch {file delete $ProgressFile}
+}
+
+proc showProgress {} {
+  global Progress ProgressFile
+  showText . ""
+  if [catch {open $ProgressFile r} f] {
+    set Progress 0
+    return
+  }
+  if {[gets $f ins] > 0} {
+    if {$ins <= 100 && $Progress != $ins} {
+      set Progress $ins
+    }
+  }
+  close $f
+}
+
 proc startAction {{sercom ""} {simu simulation}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
-      SourceDirectory PsCheck Plotfile Plottype infolevel timeout StartTime
+      SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime
   set c $sercom
   set tool 0
   if {$simu == "tool"} {
@@ -331,24 +567,30 @@ proc startAction {{sercom ""} {simu simulation}} {
     if {"" == [set t [entryVal random_$v]]} continue
     set env(GSL_RNG_$vv) $t
   }
+
+  set sEnvDir [saveEnvironment]
+
   if $tool {
     regsub -all \n $c "" c
     set p [pardirPar]
     if {[getSystem] == "windows"} {
-      # ein \ für Stringersetzung, ein weiterer für exec !
+      # ein \ fÃ¼r Stringersetzung, ein weiterer fÃ¼r exec !
       # regsub -all / $p {\\\\} p
     }
     append c " --P$p"
     if [catch {eval exec >& $pname $c &} PipeIds] {
       showText "!could not execute tool command\n\t$PipeIds"
+      cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
       return
     }
   } elseif [catch {eval exec 2> $pname $c &} PipeIds] {
     showText "!could not start $simu\n\t$PipeIds"
+    cleanupEnvDir $sEnvDir
     conditionalCloseProtfile
     return
   }
+  set startTime [clock seconds]
   set PipeActive 1
   set PipeIdList [split $PipeIds]
   set PipeIds ""
@@ -371,11 +613,11 @@ proc startAction {{sercom ""} {simu simulation}} {
 	outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
 	stopAction
       } else {
-	showText . ""
+	showProgress
       }
       incr i
     } else {
-      showText . ""
+      showProgress
     }
     if {$PipeActive && [$PsCheck]} {
       after $wmsecs;			# wait for completion,
@@ -386,7 +628,8 @@ proc startAction {{sercom ""} {simu simulation}} {
 	showText "doing cleanup"
       }
       cleanupPipes
-      outProtocol "!$simu finished"
+      set dtime [expr [clock seconds] - $startTime]
+      outProtocol "!$simu finished after $dtime s"
 
       set PipeActive 0
       if {$sercom == ""} {
@@ -400,7 +643,9 @@ proc startAction {{sercom ""} {simu simulation}} {
 	  incr i
 	}
       }
+      cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
+      zeroProgress
       return
     }
   }
@@ -408,6 +653,9 @@ proc startAction {{sercom ""} {simu simulation}} {
 
 proc stopAction {{verbose 1} {kill 0}} {
   global PipeActive PipeIds PipeIdList PipeIdsAtStart PipeErr KillProg
+
+  zeroProgress
+
   if {[info exists PipeActive] && $PipeActive} {
     if {$kill} {set PipeActive 0}
     switch [getSystem] {
@@ -430,7 +678,7 @@ proc stopAction {{verbose 1} {kill 0}} {
 	if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
       }
       default {
-	if {$verbose} {showText "!don´t know how to stop processes"}
+	if {$verbose} {showText "!donÂ´t know how to stop processes"}
       }
     }
   }
@@ -458,7 +706,7 @@ proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
     set com $c
     # substitute special options by list values
     for {set i 0} {$i < $ll} {incr i} {
-      regsub \#$i\# $com [lindex $v $i] com
+      regsub -all \#$i\# $com [lindex $v $i] com
     }
     set pre s[lindex $tindl $step]_
     incr step
@@ -503,9 +751,12 @@ proc lPack2 {w t tvar f tw} {
 }
 
 proc storeSeriesFile {w} {
-  if {[set f [openWriteFile tcl]] == 0} return
+  if {[set f [openWriteFile tcl "" fname]] == 0} return
   puts $f [$w.v.text get 1.0 end]
   close $f
+  if {[getSystem] == "unix"}  {
+    catch {exec chmod +x $fname}
+  }
   destroy $w
 }
 
@@ -641,6 +892,7 @@ proc saveSeries {w {act tofile}} {
       if {"no" == [tk_messageBox -icon question -type yesno -title "confirmed command"\
 		  -message "This simulation has been done at\n$r\nReally do it again?"]} return
     }
+    # now execute the series
     exeSeries $pdir $copy $cfiles $cdir $c $ll $vl $tindl
     storeMd5 $smd5
     return
@@ -668,7 +920,7 @@ set COM {$c}
 set PipeLogList {$PipeLogList}
 set pname $pname
 "
-  
+
   foreach v {seed gen} vv {SEED TYPE} {
     if {"" == [set t [entryVal random_$v]]} continue
     append fc "set env(GSL_RNG_$vv) $t\n"
@@ -683,7 +935,7 @@ foreach v $VL {
   set com $COM
   # substitute special options by list values
   for {set i 0} {$i < $LL} {incr i} {
-    regsub \#$i\# $com [lindex $v $i] com
+    regsub -all \#$i\# $com [lindex $v $i] com
   }
   # execute pipe
   catch {eval exec 2> $pname $com}
@@ -735,11 +987,17 @@ exit
 
 proc setSeriesColumn {j n} {
   if {$n < 2} return
-  set delta [entryVal series0.$j]
-  if {$delta == ""} return
-  if [catch {set delta [expr $delta + 0]}] return
   set v [entryVal series1.$j]
+  set delta [entryVal series0.$j]
+  if {$delta == ""} {
+    # repeat value
+    for {set i 2} {$i <= $n} {incr i} {
+      gSet series$i.${j}_ $v
+    }
+    return
+  }
   if {$v == ""} return
+  if [catch {set delta [expr $delta + 0]}] return
   if [catch {set h [expr $v + 0]}] return
   for {set i 2} {$i <= $n} {incr i} {
     gSet series$i.${j}_ [expr $v + ($i - 1) * $delta]

@@ -12,6 +12,8 @@
 /* 1.5a Dec 2004  K. Lieutenant  option 'no TOF' added                                  */
 /* 1.6  Nov 2005  K. Lieutenant  direction instead of scattering angles written         */
 /*                               correction: grid for cylindrical geometry              */
+/* 1.6a Dec 2009  A. Houben      Detect only neutrons with a given color and add a      */
+/*                               a value to the color property after detection          */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -46,7 +48,7 @@ double     Theta,dTheta,
            dWidth, 
            RotMatrix[3][3];
 double     itheta, iphi;
-
+short      DetectColor = -1, AddColor = -1; // Detect only neutrons with a given color and assign a new color after detection
 
 /* function pointers */
 long (*NeutronIntersectsDetector)(Neutron *Nin, SampleType *Detector, VectorType ISP[]);
@@ -78,15 +80,15 @@ int main(int argc, char *argv[])
 	double ScatteringProb,
 	       dRotY, dRotZ;
 	Neutron OutNeutron;
+	Neutron WorkNeutron;
 	double  norm;  /* intensity norm factor */
 
 	/* Initialize the program according to the parameters given   */
 	Init(argc, argv, VT_DETECTOR);
+	print_module_name("detector 1.6a");
 
 	/* module specific initialization */
 	OwnInit(argc, argv);
-
-	print_module_name("detector 1.6");
 
 	/* Rotmatrix will rotate a Vector to a frame in which the middle of the */
 	/* Detector sits on the x-axis */
@@ -105,77 +107,89 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
-			/* First rotate the position and direction of the neutron to the detector frame */
-			RotVector(RotMatrix, InputNeutrons[i].Position);
-			RotVector(RotMatrix, InputNeutrons[i].Vector);
+			if ((DetectColor < 0) || (InputNeutrons[i].Color == DetectColor)) {
+				// Use a copy to work on
+				WorkNeutron = InputNeutrons[i];
 
-			if(NeutronIntersectsDetector(&(InputNeutrons[i]),&Detector,ISP)) 
-			{
-				/* determine the length of the path through the scintilator */
-				FullLengthInDetector = DistVector(ISP[0], ISP[1]);
+				/* First rotate the position and direction of the neutron to the detector frame */
+				RotVector(RotMatrix, WorkNeutron.Position);
+				RotVector(RotMatrix, WorkNeutron.Vector);
 
-				/* intensity norm factor */
-				norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
-
-				/* now the influence of the wavelength*/
-				if(InputNeutrons[i].Wavelength < 5.0)
-					LambdaProb = 0.5 + 0.1*InputNeutrons[i].Wavelength;
-				else
-					LambdaProb = 1.0;
-
-				for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
+				if(NeutronIntersectsDetector(&(WorkNeutron),&Detector,ISP)) 
 				{
-					if (eTOF==VT_TOF_CALC)
-					{	/* determine the scattering point in the scintilator */
-						LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
-						ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
-					}
+					/* determine the length of the path through the scintilator */
+					FullLengthInDetector = DistVector(ISP[0], ISP[1]);
+
+					/* intensity norm factor */
+					norm = Thickness; //MaxEfficiency*FullLengthInDetector/(1-exp(-NSigma*Thickness));
+
+					/* now the influence of the wavelength*/
+					if(WorkNeutron.Wavelength < 5.0)
+						LambdaProb = 0.5 + 0.1*WorkNeutron.Wavelength;
 					else
+						LambdaProb = 1.0;
+
+					for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
 					{
-						LengthTillScattering = 0.0;
-						ScatteringProb = MaxEfficiency * LambdaProb;
-					}
+						if (eTOF==VT_TOF_CALC)
+						{	/* determine the scattering point in the scintilator */
+							LengthTillScattering = MonteCarlo(0,FullLengthInDetector);
+							ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * norm * LambdaProb;
+						}
+						else
+						{
+							LengthTillScattering = 0.0;
+							ScatteringProb = MaxEfficiency * LambdaProb;
+						}
 
-					if(bMonitor)
-					{	ScatteringProb       = 1.0;
-						LengthTillScattering = 0.0;
-					}
+						if(bMonitor)
+						{	ScatteringProb       = 1.0;
+							LengthTillScattering = 0.0;
+						}
 
-					for(j=0; j<3; j++)
-						SP[j]= ISP[0][j] +LengthTillScattering*InputNeutrons[i].Vector[j];
+						for(j=0; j<3; j++)
+							SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
 
-					DetectorSpot(SP, DetSpot, &Detector);
+						DetectorSpot(SP, DetSpot, &Detector);
 
-					TimeTillScattering=DistVector(SP,InputNeutrons[i].Position)/
-											 V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+						TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
+												 V_FROM_LAMBDA(WorkNeutron.Wavelength);
 
-					/* everythings done, so rot back the vectors and put all together 
-					   and set output data of the neutron */
-					OutNeutron             = InputNeutrons[i];
-					OutNeutron.Time        = InputNeutrons[i].Time + TimeTillScattering;
-					OutNeutron.Probability = InputNeutrons[i].Probability * ScatteringProb / GenNeutrons;
+						/* everythings done, so rot back the vectors and put all together 
+						   and set output data of the neutron */
+						OutNeutron             = WorkNeutron;
+						OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
+						OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
 
-					if (bMonitor)
-					{	
-						RotBackVector(RotMatrix, OutNeutron.Vector);
-						RotBackVector(RotMatrix, SP);
-						CopyVector(SP, OutNeutron.Position);
-					}
-					else
-					{	
-						RotBackVector(RotMatrix,DetSpot);
-						CopyVector(DetSpot, OutNeutron.Position);
-						NormVector(DetSpot);
-						CopyVector(DetSpot, OutNeutron.Vector);
-					}
-					// CartesianToSpherical(DetSpot, &(OutNeutron.Vector[0]), &(OutNeutron.Vector[1]));
-					// OutNeutron.Vector[2] = LengthVector(DetSpot);
+						if (bMonitor)
+						{	
+							RotBackVector(RotMatrix, OutNeutron.Vector);
+							RotBackVector(RotMatrix, SP);
+							CopyVector(SP, OutNeutron.Position);
+						}
+						else
+						{	
+							RotBackVector(RotMatrix,DetSpot);
+							CopyVector(DetSpot, OutNeutron.Position);
+							NormVector(DetSpot);
+							CopyVector(DetSpot, OutNeutron.Vector);
+						}
+						// CartesianToSpherical(DetSpot, &(OutNeutron.Vector[0]), &(OutNeutron.Vector[1]));
+						// OutNeutron.Vector[2] = LengthVector(DetSpot);
 
-					WriteNeutron(&OutNeutron);
-				} /* for */
-			} /* if */
-		}
-	}
+						if (AddColor > 0) OutNeutron.Color += AddColor;
+						WriteNeutron(&OutNeutron);
+					} /* for */
+				} /* if intersects detector */
+				else {
+					WriteNeutron(&InputNeutrons[i]);
+				}
+			} /* if color */
+			else {
+				WriteNeutron(&InputNeutrons[i]);
+			}
+		} //for(i=0; i<NumNeutGot; i++)
+	} //while((ReadNeutrons())!= 0)
 
   my_exit:
 	/* Do module specific cleanups */
@@ -196,11 +210,14 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 	VectorType Position;
 	double t[2];
 	long i;
+	//char* form = "%c%c%09lu %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
 
 	/* move the origin of the coordinate system to the middle of the detector*/
 	CopyVector(Nin->Position,Position);
 	Position[0] -= Detector->Position[0]-Detector->SG.Cube.thickness/2.0;
 
+	/*if (fabs(Nin->Position[0]) == 0.5 || fabs(Nin->Position[1]) == 0.5 || fabs(Nin->Position[2]) == 0.5)
+		fprintf(LogFilePtr, "", "");*/
 	if(LineIntersectsCube(Position, Nin->Vector, &(Detector->SG.Cube), t)) 
 	{
 		for(i=0; i<3; i++)
@@ -218,6 +235,13 @@ long NeutronIntersectsCubeDetector(Neutron *Nin, SampleType *Detector, VectorTyp
 		else 
 		{
 			CountMessageID(DET_TRAJ_INSIDE, Nin->ID);
+			/*fprintf(LogFilePtr, form,
+			  Nin->ID.IDGrp[0], Nin->ID.IDGrp[1], Nin->ID.IDNo,          
+			  Nin->Debug,       Nin->Color,       
+			  Nin->Time,        Nin->Wavelength,  Nin->Probability,
+			  Nin->Position[0], Nin->Position[1], Nin->Position[2], 
+			  Nin->Vector[0],   Nin->Vector[1],   Nin->Vector[2], 
+			  Nin->Spin[0],     Nin->Spin[1],     Nin->Spin[2]);*/
 			return FALSE;
 		}
 	} 
@@ -435,6 +459,12 @@ void  OwnInit(int argc, char *argv[])
 	break;
       case 'g':
 	if(argv[i][2]=='0') NoDetGrid=TRUE;
+	break;
+	  case 'C':
+	sscanf(&(argv[i][2]),"%hd", &DetectColor);
+	break;
+	  case 'S':
+	sscanf(&(argv[i][2]),"%hd", &AddColor);
 	break;
       default:
 	fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);

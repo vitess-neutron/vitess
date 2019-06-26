@@ -18,7 +18,7 @@ enabled or disabled of polarising neutrons. The 2-D visualization of surfaces
 and trace of neutrons path are included (using PGPLOT and G2 graphic libraries).
 Only first 10000 trajectories will be visualised. Also you can choose the device
 for visualisation: display, file or both.<br>
-Additionally there is a possibility to have spacing inside the bender.
+Additionally there is a possibility to have spacing inside the bender.
 
 <br>THE SURFACES IS SITUATED IN  XZ PLANE.
 
@@ -58,9 +58,9 @@ and so angle beta is zero. The parameters which are describing arrangement of ve
 horizontal plane (XY - plane) are reading from the parameter file, which have name - surface file.
 
 <p>Please NOTE! Subsequent modules always refer to the new origin, which 
-is defined as the middle of the exit window. It is generated automatically 
-by the program, also in the case of curvature (the orientation of the 
-frame follows the curvature).
+is defined as the middle of the exit window. It is generated automatically 
+by the program, also in the case of curvature (the orientation of the 
+frame follows the curvature).
 <br>&nbsp;
 <h3>
 Reflectivity Files</h3>
@@ -84,14 +84,14 @@ absorption mode, i.e. each neutron is hitting a guide wall is lost or transmited
 in the next channel (depending from mode).
 <br>There are files for the left (= inner) side, for the right (= outer
 side) and for the top and bottom of the bender (channels); in each case
-there is one for spin-up and one for spin-down neutrons. This is necessary for
+there is one for spin-up and one for spin-down neutrons. This is necessary for
 simulation of polarizing devices.
 <br>&nbsp;
 <h3>
 Surface File </h3>
 The entrance and exit position of each surface and its radius have to be
 given in a file, called surface file. All benders that can be described 
-in that way can be simulated. Surface file must be written by user and to input 
+in that way can be simulated. Surface file must be written by user and to input 
 with option -u. 
 
 The format of parameter file, which describing surfaces is:
@@ -169,7 +169,7 @@ Module parameters:</h3>
 </tr>
 
 <tr>
-<td><b>entrance height</b>
+<td><b>entrance height</b>
 <br>[cm]</td>
 
 <td>size of the guide entrance (in z-direction)</td>
@@ -178,7 +178,7 @@ Module parameters:</h3>
 </tr>
 
 <tr>
-<td><b>exit height</b>
+<td><b>exit height</b>
 <br>[cm]</td>
 
 <td>size of the guide exit (in z-direction)</td>
@@ -187,7 +187,7 @@ Module parameters:</h3>
 </tr>
 
 <tr>
-<td><b>substrate width</b>
+<td><b>substrate width</b>
 <br>[cm]</td>
 
 <td>thickness of the material that separates two neighbouring channels,
@@ -198,7 +198,7 @@ Module parameters:</h3>
 </tr>
 
 <tr>
-<td><b>length</b>
+<td><b>length</b>
 <br>[cm]</td>
 
 <td>length of the bender</td>
@@ -207,7 +207,7 @@ Module parameters:</h3>
 </tr>
 
 <tr>
-<td><b>spin up:</b>
+<td><b>spin up:</b>
 <br>left, right, top/bottom plane</td>
 
 <td>reflectivity file for the coating of the guide on the inner side (left),
@@ -218,7 +218,7 @@ on the
 </tr>
 
 <tr>
-<td><b>spin down:</b>
+<td><b>spin down:</b>
 <br>left, right, top/bottom plane</td>
 
 <td>reflectivity file for the coating of the guide on the inner side (left),
@@ -239,7 +239,7 @@ and
 </tr>
 
 <tr>
-<td><b>surface waviness</b>
+<td><b>surface waviness</b>
 <br>[deg]</td>
 
 <td>waviness of the inner guide surface, i.e. deviations from a perfectly
@@ -252,7 +252,7 @@ and
 <td><b>abutment loss length</b></td>
 
 <td>neutrons that hit the surface close to one of the ends of the
-guide(<= length) is rejected.
+guide(<= length) is rejected.
 </td>
 
 <td>-a</td>
@@ -291,7 +291,7 @@ all neutrons</td>
 <tr>
 <td><b>unreflected neutrons</b></td>
 
-<td>Value 0(No) : neutrons that are not reflected are absorbed.
+<td>Value 0(No) : neutrons that are not reflected are absorbed.
 <br>Value 1(Yes):  neutrons that are not reflected are transmitted with attenuation
 <br>according absorption material (see options -z and -w), neutrons 
 <br>which transmitted via extreme surfaces (left and right) are absorbed.
@@ -433,4 +433,5 @@ cancelled automaticly.
 <p><!-- hhmts start -->Last modified: 30.09.2003 &nbsp;<!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
 </body>
 </html>
+
 	

@@ -17,6 +17,8 @@ mon2_pos \
 mon2_posdiv \
 mon2_tofwl \
 mon2_wldiv \
+mon2_kdiv \
+mon2_rdiv \
 velselect \
 writeout \
 gener_batch \
@@ -26,8 +28,10 @@ surface_file \
 guide_shape \
 spin_reset \
 capture_flux \
+runtime \
 chopper_disc \
 chopper_fermi \
+chopper_fermi_parallel \
 collimator_soller \
 collimator \
 slit \
@@ -36,16 +40,20 @@ source \
 spacewindow \
 spacewindow_multiple \
 space \
+lenses \
+beamstop \
 detector \
 eval_elast \
 eval_elast2 \
 eval_inelast \
 frame \
 guide \
+guide_parallel \
 monitorpol_1d \
 monitorpol_pos \
 monochr_analyser \
 polariser_sm \
+polariser_sm_parallel \
 polariser_he3 \
 flipper_coil \
 pol_mirror \
@@ -58,6 +66,7 @@ sample_reflectom \
 define_direction \
 sample_singcryst \
 cas_v40 \
+mirror_elliptical \
 rotating_field \
 flipper_gradient \
 resonator_drabkin \
@@ -68,21 +77,22 @@ sample_environment \
 bender \
 visual \
 sm_ensemble \
+sm_ensemble_parallel \
 dist_time \
 chop_phases \
 standard_deviation \
 direct_view
 
-TOOL = init.o general.o message.o
+TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL) distrgauss.o
+MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -121,34 +131,13 @@ LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
 all: $(ALL)
 
-spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sample_reflectom : sample_reflectom.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 rotating_field : rotating_field.c $(MGTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-resonator_drabkin : resonator_drabkin.c $(MGTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 chop_phases : chop_phases.c 
 	$(CC) -o $@ $^ $(LIBS)
 
-spacewindow : spacewindow.c bender_inter_data.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sample_inelast : sample_inelast.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-polariser_he3 : polariser_he3.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 flipper_coil : flipper_coil.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-lattice_dist : lattice_dist.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_tofwl : mon2_tofwl.c $(TOOL)
@@ -157,25 +146,7 @@ mon2_tofwl : mon2_tofwl.c $(TOOL)
 spin_reset : spin_reset.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-monitorpol_pos : monitorpol_pos.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-eval_elast : eval_elast.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 velselect : velselect.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-visual : visual.c cpgplot.c $(TOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
-eval_inelast : eval_inelast.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-standard_deviation : standard_deviation.c 
-	$(CC) -o $@ $^ $(LIBS)
-
-guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 collimator_radial : collimator_radial.c $(MTOOL)
@@ -184,13 +155,7 @@ collimator_radial : collimator_radial.c $(MTOOL)
 bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c $(ITOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
-sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
 sample_sans : sample_sans.c $(STOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-writeout : writeout.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 detector : detector.c $(MTOOL)
@@ -199,26 +164,17 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c src_modchar.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-precessionfield : precessionfield.c magneticmap.c $(MTOOL)
+collimator : collimator.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 capture_flux : capture_flux.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-collimator : collimator.c $(ITOOL)
+source : source.c src_modchar.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-collimator_soller : collimator_soller.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-gener_batch : gener_batch.c gener_fct.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sample_singcryst : sample_singcryst.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
+guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
 
 frame : frame.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
@@ -229,19 +185,7 @@ chopper_disc : chopper_disc.c bender_inter_data.c $(ITOOL)
 ascii2bin : ascii2bin.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-dist_time : dist_time.c cpgplot.c $(TOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
-mon2_pos : mon2_pos.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sample_elasticisotr : sample_elasticisotr.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-eval_elast2 : eval_elast2.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
+mirror_elliptical : mirror_elliptical.c mirrrefl.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_div : mon2_div.c $(TOOL)
@@ -253,16 +197,133 @@ flipper_gradient : flipper_gradient.c $(MGTOOL)
 pol_mirror : pol_mirror.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-mirror_coating : mirror_coating.c $(TOOL)
+direct_view : direct_view.c 
 	$(CC) -o $@ $^ $(LIBS)
 
-direct_view : direct_view.c 
+mon2_rdiv : mon2_rdiv.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+polariser_sm : polariser_sm.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+monitorpol_1d : monitorpol_1d.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sesans_field : sesans_field.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_environment : sample_environment.c $(STOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+slit : slit.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sm_ensemble_parallel : sm_ensemble_parallel.c threadHelper.c cpgplot.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(GRALIB)
+
+chopper_fermi : chopper_fermi.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mon2_posdiv : mon2_posdiv.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+spacewindow_multiple : spacewindow_multiple.c bender_inter_data.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_reflectom : sample_reflectom.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+resonator_drabkin : resonator_drabkin.c $(MGTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+spacewindow : spacewindow.c bender_inter_data.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+chopper_fermi_parallel : chopper_fermi_parallel.c threadHelper.c $(ITOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
+
+sample_inelast : sample_inelast.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+polariser_he3 : polariser_he3.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+lattice_dist : lattice_dist.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+eval_elast : eval_elast.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+monitorpol_pos : monitorpol_pos.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+visual : visual.c cpgplot.c $(TOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
+lenses : lenses.c lensetr.c cpgplot.c $(ITOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
+eval_inelast : eval_inelast.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+standard_deviation : standard_deviation.c 
+	$(CC) -o $@ $^ $(LIBS)
+
+guide : guide.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
+writeout : writeout.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+runtime : runtime.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+polariser_sm_parallel : polariser_sm_parallel.c threadHelper.c $(MTOOL)
+	$(CC) -pthread -o $@ $^ $(LIBS)
+
+precessionfield : precessionfield.c magneticmap.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+collimator_soller : collimator_soller.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+gener_batch : gener_batch.c gener_fct.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_singcryst : sample_singcryst.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mon2_pos : mon2_pos.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+dist_time : dist_time.c cpgplot.c $(TOOL)
+	$(CC) -o $@ $^ $(GRALIB)
+
+beamstop : beamstop.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+eval_elast2 : eval_elast2.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_elasticisotr : sample_elasticisotr.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mirror_coating : mirror_coating.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_powder : sample_powder.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 grid : grid.c bender_inter_data.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+mon2_kdiv : mon2_kdiv.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_wldiv : mon2_wldiv.c $(TOOL)
@@ -274,37 +335,16 @@ space : space.c $(ITOOL)
 surface_file : surface_file.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-polariser_sm : polariser_sm.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 cas_v40 : cas_v40.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-monitorpol_1d : monitorpol_1d.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 guide_shape : guide_shape.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-sesans_field : sesans_field.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sample_environment : sample_environment.c $(STOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 define_direction : define_direction.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-slit : slit.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 monitor1 : monitor1.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-mon2_posdiv : mon2_posdiv.c $(TOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-chopper_fermi : chopper_fermi.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 .c.o:

@@ -24,31 +24,38 @@ VtDir;
 
 /* for function 'PathThroughBenderGravOrder2' in module bender */
 /* ----------------------------------------------------------- */
-double NeutronPlaneAngle2             (Neutron *, double, double, double);
-double NeutronSurfaceSecIntersectionGr(Neutron *, SurfaceSecond, long);
+double NeutronPlaneAngle2             (const Neutron *, const double, const double, const double);
+double NeutronSurfaceSecIntersectionGr(Neutron *, const SurfaceSecond, const long);
 
 /* for several modules */
 /* ------------------- */
-double NeutronPlaneIntersectionGrav(Neutron *, Plane);
-double NeutronPlaneIntersection1   (Neutron *, Plane);
+double NeutronPlaneIntersectionGrav(Neutron *, const Plane);
+double NeutronPlaneIntersection1   (Neutron *, const Plane);
 
 /* for modules 'sample_sans', 'sample_powder', 'monochr_analyser' etc. */
 /* ------------------------------------------------------------------- */
-int  PlaneLineIntersect (VectorType LineOffset, VectorType LineDir, VectorType PlaneNormalVector, double PlaneDistane, VectorType Result);
-int  PlaneLineIntersect2(VectorType LineOffset, VectorType LineDir, VectorType PlaneNormalVector, double PlaneDistane, VectorType Result);
-long IntersectionWithHorizontalPlane(double Z , VectorType PosVect , VectorType Dir, VectorType Result);
-int  OrderPositions(VectorType Dir, VectorType Pos1, VectorType Pos2);
+int  PlaneLineIntersect (const VectorType LineOffset, const VectorType LineDir, const VectorType PlaneNormalVector, const double PlaneDistane,
+			 VectorType Result);
+int  PlaneLineIntersect2(const VectorType LineOffset, const VectorType LineDir, const VectorType PlaneNormalVector, const double PlaneDistane,
+			 VectorType Result);
+long IntersectionWithHorizontalPlane(const double Z, const VectorType PosVect, const VectorType Dir, VectorType Result);
+int  OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2);
 
-long IntersectionWithRectangular(VectorType DimSample, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2);
+long IntersectionWithRectangular(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
+				 VectorType Pos1, VectorType Pos2);
 
-long LineIntersectsCube     (VectorType Offset, VectorType Direction, CubeType    *Cube, double t[2]);
-long LineIntersectsHollowCyl(VectorType Offset, VectorType Direction, HolCylType  *HCyl, double t[2], VtDir eDir);
-long LineIntersectsCylinder (VectorType Offset, VectorType Direction, CylinderType *Cyl, double t[2]);
-long LineIntersectsSphere   (VectorType Offset, VectorType Direction, BallType  *Sphere, double t[2]);
+long LineIntersectsCube     (const VectorType Offset, const VectorType Direction, const CubeType *Cube, double t[2]);
+long LineIntersectsHollowCyl(const VectorType Offset, const VectorType Direction, const HolCylType *HCyl, 
+			     double t[2], const VtDir eDir);
+long LineIntersectsCylinder (const VectorType Offset, const VectorType Direction, const CylinderType *Cyl, double t[2]);
+long LineIntersectsSphere   (const VectorType Offset, const VectorType Direction, const BallType *Sphere, double t[2]);
 
-long IntersectionWithInfiniteCylinder(double DiameterCyl, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2);
+long IntersectionWithInfiniteCylinder(const double DiameterCyl, const VectorType Pos, const VectorType Dir,
+				      VectorType Pos1, VectorType Pos2);
 
-long IntersectionWithCylinder(VectorType DimSample, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2);
-long IntersectionWithSphere  (VectorType DimSample, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2);
+long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
+			      VectorType Pos1, VectorType Pos2);
+long IntersectionWithSphere  (const VectorType DimSample, const VectorType Pos, const VectorType Dir,
+			      VectorType Pos1, VectorType Pos2);
 
 #endif

@@ -128,6 +128,7 @@ proc outofRange {name var format l u mandatory} {
 ###   (see description in e.g. vitess.tcl)
 ###
 proc errorInLine {e app {mod ""}} {
+  global Checkmode
   set var [lindex $e 0]
   if {$var == ""} {return 0};		# just separator item
   set type [lindex $e 1]
@@ -162,16 +163,29 @@ proc errorInLine {e app {mod ""}} {
     int   {return [outofRange $name v "%i" $arg4 $arg5 $mandatory]}
     float {return [outofRange $name v "%f" $arg4 $arg5 $mandatory]}
     radio {
-      # empty strings come from elder *.gui files here, just accept
-      if {$v == ""} {return 0}
-      foreach it $arg4 {
-	if {$v == $it} {return 0}
+      if {$v == ""} {
+	# empty strings might be the result of loading elder *.gui files
+	# accept this in normal check mode, warn in mode strict, set default else
+	switch $Checkmode {
+	  normal {return 0}
+	  set_default {
+	    set vdefault [lindex $e 2]
+	    set v $vdefault
+	    showText "!did set $name to default value '$vdefault'"
+	    gSet Showinfo 1
+	    return 0
+	  }
+	}
+      } else {
+	foreach it $arg4 {
+	  if {$v == $it} {return 0}
+	}
       }
       showText "!Please select an option for $name"
       return 1
     }
-    filename - editablefile - browsefile - browsedir - \
-	parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+    filename - editablefile - browsefile - browsedir - parfilename - pareditablefile - parbrowsefile -\
+	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	  switch $type {
 	    filename - editablefile - browsefile - browsedir {
 	      set dir [getDirectory $v]
@@ -239,7 +253,7 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	}
       }
     }
-    parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+    parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
       if {$special == "" || $v != $special} {
 	set ptail [file tail $v]
 	switch $Comode {
@@ -254,8 +268,8 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
 	  default   {
 	    set v [file join [getDirectory [entryVal defdirectory]] $ptail]
 	    switch $rt {
-	      moneditablefile {set tt 1}
-	      mon2editablefile {set tt 2}
+	      moneditablefile - mneditablefile {set tt 1}
+	      mon2editablefile - mn2editablefile {set tt 2}
 	      default {set tt 0}
 	    }
 	    if {$tt > 0} {
@@ -302,6 +316,7 @@ proc errorWithValues {mod {showok 1} {app _}} {
   foreach l [globVal ${mod}ESET] {
     if [errorInLine $l $app $mod] {set errors 1}
   }
+
   if {[set tp [info proc ${mod}CheckErr]] != ""} {
     if [catch {eval $tp $app} res] {
       puts "Error within proc $tp"
