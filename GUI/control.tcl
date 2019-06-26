@@ -168,6 +168,7 @@ proc controlMenu {w} {
       {c "SAVE As" {storeAll gui newfile.gui}} s\
       {c "SAVE to Directory" saveDirectory} s\
       {c "SAVE as Command" {storeAll bat}}\
+      {c "SAVE as Grid Command" {storeAll grd}}\
       {c "SAVE tcl" {storeAll tcl}} s\
       {c "Generate Series" {genSeries .gser}} s\
       {c "New *.inf File" editInfFile} \
@@ -562,7 +563,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.7"
+  set t "VITESS 2.9"
   set maxModule 40
   set DummyEntry "--inactive--"
 

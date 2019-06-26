@@ -14,6 +14,7 @@
 /* 1.3  Jul 2002  K. Lieutenant  corr.: UCV reading; check: output dir. in [theta_min,theta_max]*/
 /* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file   */
 /* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended */
+/* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample*/
 /************************************************************************************************/
 
 #include <string.h>
@@ -29,15 +30,15 @@
 /**   Global Variables       **/
 /******************************/
 
-double DelTheta=M_PI/2.0;            /* solid angles covered by */
-double Theta   =M_PI/2.0;            /* the detectors	          */
-double DelPhi  =M_PI;
-double Phi     =M_PI;
-long   IncoherentScattering=FALSE; /* should incoherent scattering be done */
-long   GenNeutrons=10;             /* How Many Neutron to generate */
-char   *SampleFileName;            /* pointer to the parameter file name (located in argv) */
-double g_fMuInc    =0.0,    /* incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] */
-       UCV;                 /* UCV */
+double Theta, DelTheta,     /* these angles determine orientation and solid angles covered by the detector */
+       Phi, DelPhi;
+double MuInc =  0.0,        /* incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] */
+       UCV   = 50.0;        /* unit cell volume                                          */
+short  nColor=0,            /* colour of the scattered neutrons                          */
+       bIncohScat=FALSE,    /* shall incoherent scattering be done ?                     */
+       bTreatAll =FALSE;    /* shall neutrons not hitting the sample be treated ?        */
+long   GenNeutrons=1;       /* how many trajectories to generate per incoming trajectory for each structure factor */
+char   *SampleFileName;     /* pointer to the parameter file name (located in argv)      */
 double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
@@ -67,37 +68,33 @@ long GetStructureFactor(char *StrFileName,  DoublePair *StrucFac[]);
 
 int main(int argc, char *argv[])
 {
-  SampleType Sample;      /* sample geometry */
-  char       StrucFacFileName[200];      /* structure factor file name     */
-  long       NumStrucFac; /* number of reflections in the structure factor */
-  VectorType InISP[2];    /* neutron intersection before scattering */
-  double     neutTheta,
-             neutPhi;
-  double     DetFacCoh,   /* cares about the detector coverage      */
-             DetFacInc;   /* for coherent and incoherent scattering */
-  double     Lbf;         /* full path length of the neutron in the sample */
-                          /* with its initial direction */
-  double     Ls;          /* distance of the neutron in the sample before sc. */
-  long       j;           /* counting variable */
-  VectorType SP;          /* position of scattering event */
-  double     HelpFac;     /* contains k independent term of the scattering */
-  long       Nth;         /* counting variable of structure factor */
-  double     ScTheta;     /* angle of coherent Scattering */
-  double     ScProb;      /* scattering probability */
-  double     OutTheta,    /* Final angles of the neutron in the sample system */
-             OutPhi;
-  double     RotMatrixSmpl[3][3]; /* Rotation matrix that transforms a Vector to the */
+  SampleType Sample;               /* sample geometry */
+  char       StrucFacFileName[200];/* structure factor file name     */
+  long       NumStrucFac;          /* number of reflections in the structure factor */
+  VectorType InISP[2];             /* neutron intersection before scattering */
+  double     DetFacCoh,            /* cares about the detector coverage      */
+             DetFacInc;            /* for coherent and incoherent scattering */
+  double     Lbf;                  /* full path length of the neutron in the sample */
+                                   /* with its initial direction */
+  double     Ls;                   /* distance of the neutron in the sample before sc. */
+  long       j;                    /* counting variable */
+  VectorType SP;                   /* position of scattering event */
+  double     HelpFac;              /* contains k independent term of the scattering */
+  long       Nth;                  /* counting variable of structure factor */
+  double     ScProb,               /* scattering probability */
+             ScTheta,              /* scattering angles (in neutron coordinate system) */
+             ScPhi;
+  double     RotMatrixSmpl[3][3];  /* Rotation matrix that transforms a Vector to the sample coordinate system */
   double     RotMatrixNeut[3][3];
-                          /* sample coordinate system */
-  long       i,           /* counting variable of the neutrons */
-             nisp,        /* number of intersection points to come */
-             NeutCount;
+  long       nisp,                 /* number of intersection points to come       */
+             i,                    /* counting index of the incoming trajectories */
+             iGen;                 /* counting index of the generated trajectories (see 'GenNeutrons') */
   DoublePair *StrucFac=NULL;
 
   /* get several things done before programme start */
   /* which have actually nothing to do with physics */
   Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_powder 1.5");
+  print_module_name("sample_powder 1.6a");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of structure factor file */
@@ -126,7 +123,7 @@ int main(int argc, char *argv[])
                       "unit cell volume   : %8.3f Ang³\n"
                       "struct. factor file: %s\n", 
                       Sample.Position [0], Sample.Position [1], Sample.Position [2], 
-                      g_fMuInc, g_fMuTot, g_fMuAbs, UCV, StrucFacFileName);
+                      MuInc, g_fMuTot, g_fMuAbs, UCV, StrucFacFileName);
 
   /* Now get the nuclear unit-cell structure factors |f_N(t)|^2.       */
   /* The memory needed will be allocated inside 'GetStructureFactor()'.*/
@@ -151,7 +148,7 @@ int main(int argc, char *argv[])
       SubVector(InputNeutrons[i].Position, Sample.Position);
 
       /* Do anything to be done for the Scattering */
-      if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp))
+      if (NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN))
       {
         if (nisp < 2)
           CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
@@ -165,48 +162,41 @@ int main(int argc, char *argv[])
         /* the scattering point SP 				      */
         Ls = MonteCarlo(0, Lbf);
 
-        /* which is the corresponding scattering point  	      */
-        /* SP=InISP[0]+Ls*InputNeutrons[i].Vector		      */
+        /* which is the corresponding scattering point  	   */
+        /*   SP = InISP[0] + Ls * OutNeutron.Vector		   */
         for(j=0; j<3; j++)
           SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
 
-        /* Now the actual scattering */
+        /* Determine the rotation matrix to point the neutron along the +x axis				      		    */
+        NormVector(InputNeutrons[i].Vector);
+        RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
 
-        /**********************************************/
-        /* First take care of the coherent scattering */
-        /* Scatter at each suitable |F(k)|           */
-        /**********************************************/
 
-        /* This will not be very fast but for now ok  */
+        /************************************************/
+        /* Now the actual scattering                    */
+        /*   First take care of the coherent scattering */
+        /*   Scatter at each suitable |F(k)|            */
+        /************************************************/
 
         /* Helpfac contains the non direction dependent term                         */
         /* G.L. Squires, "Introduction to the theory of thermal neutron scattering", */
         /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
         HelpFac = Lbf*pow(InputNeutrons[i].Wavelength,3)/(4.0*UCV*UCV);
 
-        /* determine Theta and Phi of the neutrons direction */
-        /* Theta should be small */
-        NormVector(InputNeutrons[i].Vector);
-        CartesianToSpherical(InputNeutrons[i].Vector, &neutTheta, &neutPhi);
-
-        /* Determine the rotation matrix to point the neutron along */
-        /* the +x axis				      		    */
-        RotMatrixX(InputNeutrons[i].Vector,RotMatrixNeut);
+        InputNeutrons[i].Color = nColor;
 
         /* Do the scattering for each StrucFac */
         for(Nth=0; StrucFac[Nth][0] > 0.5*InputNeutrons[i].Wavelength && Nth < NumStrucFac; Nth++)
         { 
           CHECK
 
+          /* ScTheta is the angle of the scattered neutron with its original flight path */
           ScTheta = 2.0*asin(InputNeutrons[i].Wavelength/(2.0*StrucFac[Nth][0]));
-
-          /* OutTheta is the angle of the scattered neutron with its original flight path */
-          OutTheta = ScTheta;
 
           /* Only trajectoris between Theta-DelTheta and Theta+DelTheta are regarded. 
              The deviation from straight direction (neutTheta) of the incoming neutrons
              is supposed to be neglectible                            */
-          if (OutTheta > Theta-DelTheta && OutTheta < Theta+DelTheta) 
+          if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
           {
             /* ScProb is the scattering-cross section (Squires 3.103) */
             /*  devided by the sample area                            */
@@ -216,16 +206,16 @@ int main(int argc, char *argv[])
             ScProb = HelpFac / sin(0.5*ScTheta) * StrucFac[Nth][1] / GenNeutrons;
 
             /* Bring the neutron several times on the cone           */
-            for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
+            for(iGen=0; iGen<GenNeutrons; iGen++)
             { 
-              /* OutPhi is the angle of the scattered neutron with the +y-axis */
-              /* The expression for the focussin is not staight forward,       */
+              /* ScPhi is the angle of the scattered neutron with the +y-axis */
+              /* The expression for the focussing is not staight forward,       */
               /* rather lengthy (and probably buggy) it may take a while       */
-              OutPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+              ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
 
               /* Ok, now everthing needed is known, put it together */
               ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb,
-                                  OutTheta, OutPhi, &Sample, RotMatrixNeut, RotMatrixSmpl);
+                                  ScTheta, ScPhi, &Sample, RotMatrixNeut, RotMatrixSmpl);
             }
           } 
         }  
@@ -233,22 +223,28 @@ int main(int argc, char *argv[])
         /************************************/
         /* Second the incoherent scattering */
         /************************************/
-        if (IncoherentScattering)
+        if (bIncohScat)
         { 
-          for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
+          InputNeutrons[i].Color = (short)(nColor+1);
+
+          for(iGen=0; iGen<GenNeutrons; iGen++) 
           {
             /* Determine the scattering angle */
-            OutPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-            OutTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+            ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+            ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
 
             /* Scattering probability */
-            ScProb = Lbf*g_fMuInc * sin(OutTheta) / GenNeutrons;
+            ScProb = Lbf*MuInc * sin(ScTheta) / GenNeutrons;
 
             ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
-                                OutTheta, OutPhi, &Sample, OneMatrix,  RotMatrixSmpl);
+                                ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
           }
         }
-      }
+      } // end 'NeutronIntersect...
+		else if (bTreatAll==TRUE)
+		{	
+			WriteNeutron(&InputNeutrons[i]);
+		}
     }
   }
 
@@ -281,8 +277,6 @@ void  OwnInit(int argc, char *argv[])
   DelTheta = M_PI/2.0;
   Phi      = M_PI;
   DelPhi   = M_PI;
-  GenNeutrons          = 10;
-  IncoherentScattering = FALSE;
 
   /* Ok, scan all command line parameters */
   for(i=1; i<argc; i++)
@@ -327,24 +321,32 @@ void  OwnInit(int argc, char *argv[])
       case 'A':
         sscanf(&(argv[i][2]),"%ld",&GenNeutrons);
         break;
-      case 'I':
-        if(argv[i][2]=='1') IncoherentScattering=TRUE;
+      case 'c':
+        nColor = (short) atoi(&argv[i][2]);
         break;
+      case 'I':
+        if(argv[i][2]=='1') bIncohScat=TRUE;
+        break;
+      case 'a':
+        if(argv[i][2]=='1') bTreatAll=TRUE;
+        break;
+
       default:
         fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
         exit(-1);
-        break;
       }
     }
   }
+
   if( (detectortest != 0) && (detectortest != 15))
-  { Error("You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI ");
+  { Warning("You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI ");
     Theta    = M_PI/2.0;
     DelTheta = M_PI/2.0;
     Phi      = M_PI;
     DelPhi   = M_PI;
   }
 
+  return;
 }
 
 
@@ -415,7 +417,7 @@ void GetSample(SampleType *Sample, char *StrFileName)
 
         if(ReadTilComment(Buffer, SampleFile))
         { 
-          sscanf(Buffer,"%lf %lf %lf", &g_fMuInc, &g_fMuTot, &g_fMuAbs);
+          sscanf(Buffer,"%lf %lf %lf", &MuInc, &g_fMuTot, &g_fMuAbs);
           /* Mua remains to be scaled by the neutron velocity     */
 
           if(ReadTilComment(Buffer, SampleFile))

@@ -18,11 +18,11 @@
 #define THETA_NI 0.099138
 #define PI       3.1415926535898 
 
-static char sBuffer[128];
+// static char sBuffer[128];
 
 double GetDouble(char* pText);
 void   GetString(char* pString, char* pText);
-double Round    (const double in, const int nDigits);
+double RoundD   (const double in, const int nDigits);
 
 int main(int argc, char* argv[])
 {
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 	        dAlphaQ=0.0;  // slope Delta_R / Delta_Q
 	long    i, nLen;
 	FILE*   pFile;
-	char    sFileName[50], 
+	char    sFileName[50]="", 
 	       *pFullName;
 
 	Init(argc, argv, VT_TOOL);
@@ -80,12 +80,12 @@ read:
 	dW       = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	GetString(sFileName, "Name of the mirror file                ");
 
-	dQcNi    = Round(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
+	dQcNi    = RoundD(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
 
 	if (dM*dQc < dQc)
-	{	printf("\nERROR: m*Q_c must not be less than Q_c \nm is meant to extent the Q range to values greater than Q_c \n"); 
-		printf("Please repeat the input\n\n");
-		goto read; 
+	{	
+		dQc *= dM;
+		printf("\nNOTE: m*Q_c < 1: therefore  Q_c = %7.5f  set \n\n", dQc); 
 	}
 
 	/* write to parameter directory or to FILES in install directory */
@@ -173,7 +173,7 @@ void GetString(char* pString, char* pText)
 	scanf ("%s", pString);
 }
 
-double Round(const double in, const int nDigits)
+double RoundD(const double in, const int nDigits)
 {	
 	double out;
 

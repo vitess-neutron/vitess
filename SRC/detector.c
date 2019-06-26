@@ -354,154 +354,151 @@ void NoDetSpot(VectorType SP, VectorType DetSpot, SampleType *Detector)
 
 void  OwnInit(int argc, char *argv[])
 {
-	long i;
-	int  optiontest=0;
-	double dHeight=0.0, thickness=0.0;
-	long NoDetGrid=FALSE;
+  long i;
+  int  optiontest=0, iv;
+  double dHeight=0.0, thickness=0.0;
+  long NoDetGrid=FALSE;
 
-	/* some default values */
-	GenNeutrons=10;
-	Columns = 1;
-	Rows = 1;
-	geom=0;
-	bMonitor = FALSE;
-	NoDetGrid= FALSE;
-	eTOF     = VT_TOF_CALC;
-	Detector.Direction[0]=0.0;
-	Detector.Direction[1]=0.0;
+  /* some default values */
+  GenNeutrons=10;
+  Columns = 1;
+  Rows = 1;
+  geom=0;
+  bMonitor = FALSE;
+  NoDetGrid= FALSE;
+  eTOF     = VT_TOF_CALC;
+  Detector.Direction[0]=0.0;
+  Detector.Direction[1]=0.0;
 
-	for(i=1; i<argc; i++)
-	{
-		if(argv[i][0]!='+')
-		{	switch(argv[i][1])
-			{	case 'G':
-					if(strstr(&(argv[i][2]), "cyl")!=NULL) 
-					{ geom=1;
-					} 
-					else 
-					{
-						if(strstr(&(argv[i][2]), "cub")!=NULL) 
-						{ geom=2;
-						} 
-						else 
-						{ Error("Unknown detector geometry");
-						}
-					}
-					break;
-				case 'h':
-					sscanf(&(argv[i][2]),"%lf", &dHeight);
-					optiontest |= 0x1;
-					break;
-				case 'w':
-					sscanf(&(argv[i][2]),"%lf", &dWidth);
-					optiontest |= 0x2;
-					break;
-				case 't':
-					sscanf(&(argv[i][2]),"%lf", &thickness);
-					if(thickness<=0.0) thickness=1e-4;
-					optiontest |= 0x4;
-					break;
-				case 'e':
-					sscanf(&(argv[i][2]),"%lf", &MaxEfficiency);
-					if(MaxEfficiency>=1.0) MaxEfficiency=0.99999;
-					optiontest |= 0x8;
-					break;
-				case 'T':
-					/* Theta is the angle between the +x-axis and the vector*/
-					sscanf(&(argv[i][2]),"%lf", &itheta);
-					itheta*=M_PI/180.0;
-					break;
-				case 'P':
-					/* Phi is the angle of the +y-axis and the projection of the vector to the yz-plane */
-					sscanf(&(argv[i][2]),"%lf", &iphi);
-					iphi*=M_PI/180.0;
-					break;
-				case 'D':
-					sscanf(&(argv[i][2]),"%lf", &distance);
-					optiontest |= 0x10;
-					break;
-				case 'c':
-					sscanf(&(argv[i][2]),"%ld", &Columns);
-					break;
-				case 'r':
-					sscanf(&(argv[i][2]),"%ld", &Rows);
-					break;
-				case 'A':
-					sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
-					break;
-				case 'o':
-					sscanf(&(argv[i][2]),"%d", &eTOF);
-					break;
-
-				case 'M':
-					if(argv[i][2]=='1') bMonitor=TRUE;
-					break;
-				case 'g':
-					if(argv[i][2]=='0') NoDetGrid=TRUE;
-					break;
-				default:
-					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-					exit(-1);
-					break;
-			}
-		}
+  for(i=1; i<argc; i++) {
+    if(argv[i][0]!='+')  {
+      switch(argv[i][1]) {
+      case 'G':
+	if(strstr(&(argv[i][2]), "cyl")!=NULL) {
+	  geom=1;
+	} else {
+	  if(strstr(&(argv[i][2]), "cub")!=NULL) {
+	    geom=2;
+	  } else {
+	    Error("Unknown detector geometry");
+	  }
 	}
+	break;
+      case 'h':
+	sscanf(&(argv[i][2]),"%lf", &dHeight);
+	optiontest |= 0x1;
+	break;
+      case 'w':
+	sscanf(&(argv[i][2]),"%lf", &dWidth);
+	optiontest |= 0x2;
+	break;
+      case 't':
+	sscanf(&(argv[i][2]),"%lf", &thickness);
+	if(thickness<=0.0) thickness=1e-4;
+	optiontest |= 0x4;
+	break;
+      case 'e':
+	sscanf(&(argv[i][2]),"%lf", &MaxEfficiency);
+	if(MaxEfficiency>=1.0) MaxEfficiency=0.99999;
+	optiontest |= 0x8;
+	break;
+      case 'T':
+	/* Theta is the angle between the +x-axis and the vector*/
+	sscanf(&(argv[i][2]),"%lf", &itheta);
+	itheta*=M_PI/180.0;
+	break;
+      case 'P':
+	/* Phi is the angle of the +y-axis and the projection of the vector to the yz-plane */
+	sscanf(&(argv[i][2]),"%lf", &iphi);
+	iphi*=M_PI/180.0;
+	break;
+      case 'D':
+	sscanf(&(argv[i][2]),"%lf", &distance);
+	optiontest |= 0x10;
+	break;
+      case 'c':
+	sscanf(&(argv[i][2]),"%ld", &Columns);
+	break;
+      case 'r':
+	sscanf(&(argv[i][2]),"%ld", &Rows);
+	break;
+      case 'A':
+	sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
+	break;
+      case 'o':
+	sscanf(&(argv[i][2]),"%d", &iv);
+	eTOF = iv;
+	break;
 
-	if(geom!=0)
-	{	if(geom==1)
-		{	/* cylinder */
-			/*if(optiontest != 31) {
-			  fprintf(LogFilePtr,"For the cylindrical detector the -D, -t, -h, -w and -e options are mandatory!\n");
-			  exit(-1);
-			}*/
-			Detector.SG.Cyl.r=distance;
-			Detector.SG.Cyl.height = dHeight;
-			Thickness = thickness;
-			Detector.Direction[0]=0.0;
-			Detector.Direction[1]=0.0;
-			Detector.Direction[2]=1.0;
+      case 'M':
+	if(argv[i][2]=='1') bMonitor=TRUE;
+	break;
+      case 'g':
+	if(argv[i][2]=='0') NoDetGrid=TRUE;
+	break;
+      default:
+	fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+	exit(-1);
+	break;
+      }
+    }
+  }
 
-			Detector.Position[0]=0.0;
-			Detector.Position[1]=0.0;
-			Detector.Position[2]=0.0;
+  if(geom!=0)
+    {	if(geom==1)
+	{	/* cylinder */
+	  /*if(optiontest != 31) {
+	    fprintf(LogFilePtr,"For the cylindrical detector the -D, -t, -h, -w and -e options are mandatory!\n");
+	    exit(-1);
+	    }*/
+	  Detector.SG.Cyl.r=distance;
+	  Detector.SG.Cyl.height = dHeight;
+	  Thickness = thickness;
+	  Detector.Direction[0]=0.0;
+	  Detector.Direction[1]=0.0;
+	  Detector.Direction[2]=1.0;
 
-			Theta=itheta;
-			if (cos(iphi) < 0.0) Theta=-Theta;
-			dTheta=dWidth/(2.0*distance);
+	  Detector.Position[0]=0.0;
+	  Detector.Position[1]=0.0;
+	  Detector.Position[2]=0.0;
 
-			NeutronIntersectsDetector=NeutronIntersectsCylDetector;
-			DetectorSpot=CylinderDetSpot;
-		} 
-		else 
-		{
-			/* cube */
-			/*if(optiontest != 31)
-			{ fprintf(LogFilePtr,"For the cube type detector the -h, -w, -t, -e and -D options are mandatory!\n");
-			  exit(-1);
-			}*/
-			Detector.SG.Cube.height = dHeight;
-			Detector.SG.Cube.width =dWidth;
-			Detector.SG.Cube.thickness = thickness;
-			Detector.Direction[0]=cos(itheta);
-			Detector.Direction[1]=sin(itheta)*cos(iphi);
-			Detector.Direction[2]=sin(itheta)*sin(iphi);
-			for(i=0; i<3;i++)
-				if(fabs(Detector.Direction[i])<1e-5) Detector.Direction[i]=0.0;
+	  Theta=itheta;
+	  if (cos(iphi) < 0.0) Theta=-Theta;
+	  dTheta=dWidth/(2.0*distance);
 
-			Detector.Position[0] = distance;
-			Detector.Position[1] = 0.0;
-			Detector.Position[2] = 0.0;
-			Thickness=thickness;
-			NeutronIntersectsDetector=NeutronIntersectsCubeDetector;
-			DetectorSpot=CubeDetSpot;
-		}
+	  NeutronIntersectsDetector=NeutronIntersectsCylDetector;
+	  DetectorSpot=CylinderDetSpot;
 	} 
-	else 
+      else 
 	{
-		fprintf(LogFilePtr,"ERROR: You have to supply a detector geometry with -Gcub or -Gcyl!\n");
-		exit(-1);
+	  /* cube */
+	  /*if(optiontest != 31)
+	    { fprintf(LogFilePtr,"For the cube type detector the -h, -w, -t, -e and -D options are mandatory!\n");
+	    exit(-1);
+	    }*/
+	  Detector.SG.Cube.height = dHeight;
+	  Detector.SG.Cube.width =dWidth;
+	  Detector.SG.Cube.thickness = thickness;
+	  Detector.Direction[0]=cos(itheta);
+	  Detector.Direction[1]=sin(itheta)*cos(iphi);
+	  Detector.Direction[2]=sin(itheta)*sin(iphi);
+	  for(i=0; i<3;i++)
+	    if(fabs(Detector.Direction[i])<1e-5) Detector.Direction[i]=0.0;
+
+	  Detector.Position[0] = distance;
+	  Detector.Position[1] = 0.0;
+	  Detector.Position[2] = 0.0;
+	  Thickness=thickness;
+	  NeutronIntersectsDetector=NeutronIntersectsCubeDetector;
+	  DetectorSpot=CubeDetSpot;
 	}
-	if(NoDetGrid) DetectorSpot=NoDetSpot;
+    } 
+  else 
+    {
+      fprintf(LogFilePtr,"ERROR: You have to supply a detector geometry with -Gcub or -Gcyl!\n");
+      exit(-1);
+    }
+  if(NoDetGrid) DetectorSpot=NoDetSpot;
 }
 
 

@@ -4,15 +4,13 @@
 #
 #
 # compile hosts to use
-# Linux   : dixi3   SuSE 9.2
-# Linux64 : dirac oder fix1    SuSE 10.1
-# SunOS : dsapp3
-# OSF1  : darling
+# Linux   : dixi3  openSUSE 10.2 (i586)
+# Linux64 : dinux4 openSUSE 10.2 (X86-64)
+
 
 INSTDIR = ../MODULES/
 
 ALL = ascii2bin \
-eval_elast \
 monitor1 \
 mon2_div \
 mon2_pos \
@@ -26,14 +24,21 @@ lattice_dist \
 mirror_coating \
 surface_file \
 guide_shape \
+spin_reset \
+capture_flux \
 chopper_disc \
 chopper_fermi \
 collimator_soller \
+collimator \
+slit \
+grid \
 source \
 spacewindow \
 spacewindow_multiple \
 space \
 detector \
+eval_elast \
+eval_elast2 \
 eval_inelast \
 frame \
 guide \
@@ -44,7 +49,9 @@ polariser_sm \
 polariser_he3 \
 flipper_coil \
 pol_mirror \
+collimator_radial \
 precessionfield \
+sesans_field \
 sample_elasticisotr \
 sample_inelast \
 sample_reflectom \
@@ -57,6 +64,7 @@ resonator_drabkin \
 sample_powder \
 sample_s_q \
 sample_sans \
+sample_environment \
 bender \
 visual \
 sm_ensemble \
@@ -75,6 +83,7 @@ SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
 CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
 
@@ -103,6 +112,7 @@ ifeq ($(SYS),Linux)
  endif
  GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
+
 
 GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
 LIBS = -Lrng/$(SUBDIR) -lgslran -lm
@@ -144,6 +154,9 @@ lattice_dist : lattice_dist.c $(TOOL)
 mon2_tofwl : mon2_tofwl.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+spin_reset : spin_reset.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 monitorpol_pos : monitorpol_pos.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -165,6 +178,9 @@ standard_deviation : standard_deviation.c
 guide : guide.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+collimator_radial : collimator_radial.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 bender : bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c cpgplot.c $(ITOOL)
 	$(CC) -o $@ $^ $(GRALIB)
 
@@ -183,10 +199,16 @@ detector : detector.c $(MTOOL)
 sample_s_q : sample_s_q.c sq_calc.c $(STOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c source_isis.c src_modchar.c $(ITOOL)
-	$(CC) -o $@ source.c src_modchar.c $(ITOOL) $(LIBS)
+source : source.c src_modchar.c $(ITOOL)
+	$(CC) -o $@ $^ $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+capture_flux : capture_flux.c $(TOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+collimator : collimator.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 collimator_soller : collimator_soller.c $(ITOOL)
@@ -216,6 +238,9 @@ mon2_pos : mon2_pos.c $(TOOL)
 sample_elasticisotr : sample_elasticisotr.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+eval_elast2 : eval_elast2.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 monochr_analyser : monochr_analyser.c ma_functions.c ma_geom.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -235,6 +260,9 @@ direct_view : direct_view.c
 	$(CC) -o $@ $^ $(LIBS)
 
 sample_powder : sample_powder.c $(STOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+grid : grid.c bender_inter_data.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 mon2_wldiv : mon2_wldiv.c $(TOOL)
@@ -258,7 +286,16 @@ monitorpol_1d : monitorpol_1d.c $(MTOOL)
 guide_shape : guide_shape.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
+sesans_field : sesans_field.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+sample_environment : sample_environment.c $(STOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 define_direction : define_direction.c $(MTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
+slit : slit.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 monitor1 : monitor1.c $(TOOL)

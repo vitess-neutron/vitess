@@ -1,8 +1,6 @@
 # Vitess NMAKE File
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
 SROOT=h:\control
-#SVNROOT=h:\V
-#SVNROOT=h:\control\vitess\trunk
 SVNROOT=d:\vitcsrc
 CPATH2=$(CPATH)\PlatformSDK
 IPATH=$(CPATH)\include
@@ -26,7 +24,6 @@ IDIR=.\Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-#CPP_OPT=/nologo /ML /W3 /Ox $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
@@ -55,7 +52,6 @@ ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
 
 ALL : \
 	"$(OD)\ascii2bin.exe" \
-	"$(OD)\eval_elast.exe" \
 	"$(OD)\monitor1.exe" \
 	"$(OD)\mon2_div.exe" \
 	"$(OD)\mon2_pos.exe" \
@@ -69,14 +65,21 @@ ALL : \
 	"$(OD)\mirror_coating.exe" \
 	"$(OD)\surface_file.exe" \
 	"$(OD)\guide_shape.exe" \
+	"$(OD)\spin_reset.exe" \
+	"$(OD)\capture_flux.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\collimator_soller.exe" \
+	"$(OD)\collimator.exe" \
+	"$(OD)\slit.exe" \
+	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
 	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
 	"$(OD)\detector.exe" \
+	"$(OD)\eval_elast.exe" \
+	"$(OD)\eval_elast2.exe" \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
@@ -87,7 +90,9 @@ ALL : \
 	"$(OD)\polariser_he3.exe" \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
+	"$(OD)\collimator_radial.exe" \
 	"$(OD)\precessionfield.exe" \
+	"$(OD)\sesans_field.exe" \
 	"$(OD)\sample_elasticisotr.exe" \
 	"$(OD)\sample_inelast.exe" \
 	"$(OD)\sample_reflectom.exe" \
@@ -100,6 +105,7 @@ ALL : \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
+	"$(OD)\sample_environment.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble.exe" \
@@ -162,13 +168,6 @@ SOURCE=$(SPATH)\ascii2bin.c
 
 "$(OD)\ascii2bin.exe" : "$(OD)" $(TOOL) "$(OD)\ascii2bin.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\ascii2bin.pdb" /out:"$(OD)\ascii2bin.exe" "$(IDIR)\ascii2bin.obj" $(TOOL) 
-
-SOURCE=$(SPATH)\eval_elast.c
-"$(IDIR)\eval_elast.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\monitor1.c
 "$(IDIR)\monitor1.obj" : $(SOURCE)
@@ -261,6 +260,20 @@ SOURCE=$(SPATH)\guide_shape.c
 "$(OD)\guide_shape.exe" : "$(OD)" $(TOOL) "$(OD)\guide_shape.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide_shape.pdb" /out:"$(OD)\guide_shape.exe" "$(IDIR)\guide_shape.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\spin_reset.c
+"$(IDIR)\spin_reset.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\spin_reset.exe" : "$(OD)" $(TOOL) "$(OD)\spin_reset.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\spin_reset.pdb" /out:"$(OD)\spin_reset.exe" "$(IDIR)\spin_reset.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\capture_flux.c
+"$(IDIR)\capture_flux.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\capture_flux.exe" : "$(OD)" $(TOOL) "$(OD)\capture_flux.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\capture_flux.pdb" /out:"$(OD)\capture_flux.exe" "$(IDIR)\capture_flux.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -281,6 +294,27 @@ SOURCE=$(SPATH)\collimator_soller.c
 
 "$(OD)\collimator_soller.exe" : "$(OD)" $(ITOOL) "$(OD)\collimator_soller.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\collimator_soller.pdb" /out:"$(OD)\collimator_soller.exe" "$(IDIR)\collimator_soller.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\collimator.c
+"$(IDIR)\collimator.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\collimator.exe" : "$(OD)" $(ITOOL) "$(OD)\collimator.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\collimator.pdb" /out:"$(OD)\collimator.exe" "$(IDIR)\collimator.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\slit.c
+"$(IDIR)\slit.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\slit.exe" : "$(OD)" $(ITOOL) "$(OD)\slit.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\slit.pdb" /out:"$(OD)\slit.exe" "$(IDIR)\slit.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\grid.c
+"$(IDIR)\grid.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\grid.exe" : "$(OD)" $(ITOOL) "$(OD)\grid.obj" "$(OD)\bender_inter_data.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\grid.pdb" /out:"$(OD)\grid.exe" "$(IDIR)\grid.obj" $(ITOOL) "$(OD)\bender_inter_data.obj" 
 
 SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
@@ -316,6 +350,20 @@ SOURCE=$(SPATH)\detector.c
 
 "$(OD)\detector.exe" : "$(OD)" $(MTOOL) "$(OD)\detector.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\detector.pdb" /out:"$(OD)\detector.exe" "$(IDIR)\detector.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\eval_elast.c
+"$(IDIR)\eval_elast.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\eval_elast2.c
+"$(IDIR)\eval_elast2.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\eval_elast2.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast2.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast2.pdb" /out:"$(OD)\eval_elast2.exe" "$(IDIR)\eval_elast2.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\eval_inelast.c
 "$(IDIR)\eval_inelast.obj" : $(SOURCE)
@@ -387,12 +435,26 @@ SOURCE=$(SPATH)\pol_mirror.c
 "$(OD)\pol_mirror.exe" : "$(OD)" $(MTOOL) "$(OD)\pol_mirror.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\pol_mirror.pdb" /out:"$(OD)\pol_mirror.exe" "$(IDIR)\pol_mirror.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\collimator_radial.c
+"$(IDIR)\collimator_radial.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\collimator_radial.exe" : "$(OD)" $(MTOOL) "$(OD)\collimator_radial.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\collimator_radial.pdb" /out:"$(OD)\collimator_radial.exe" "$(IDIR)\collimator_radial.obj" $(MTOOL) 
+
 SOURCE=$(SPATH)\precessionfield.c
 "$(IDIR)\precessionfield.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\precessionfield.exe" : "$(OD)" $(MTOOL) "$(OD)\precessionfield.obj" "$(OD)\magneticmap.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\precessionfield.pdb" /out:"$(OD)\precessionfield.exe" "$(IDIR)\precessionfield.obj" $(MTOOL) "$(OD)\magneticmap.obj" 
+
+SOURCE=$(SPATH)\sesans_field.c
+"$(IDIR)\sesans_field.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sesans_field.exe" : "$(OD)" $(MTOOL) "$(OD)\sesans_field.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sesans_field.pdb" /out:"$(OD)\sesans_field.exe" "$(IDIR)\sesans_field.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\sample_elasticisotr.c
 "$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
@@ -477,6 +539,13 @@ SOURCE=$(SPATH)\sample_sans.c
 
 "$(OD)\sample_sans.exe" : "$(OD)" $(STOOL) "$(OD)\sample_sans.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sample_sans.pdb" /out:"$(OD)\sample_sans.exe" "$(IDIR)\sample_sans.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_environment.c
+"$(IDIR)\sample_environment.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_environment.exe" : "$(OD)" $(STOOL) "$(OD)\sample_environment.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_environment.pdb" /out:"$(OD)\sample_environment.exe" "$(IDIR)\sample_environment.obj" $(STOOL) 
 
 SOURCE=$(SPATH)\chop_phases.c
 "$(IDIR)\chop_phases.obj" : $(SOURCE)

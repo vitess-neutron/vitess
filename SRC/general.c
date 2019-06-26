@@ -15,14 +15,18 @@
 /* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
 
 #include "general.h"
-#include "init.h"
 #include "ctype.h"
+
+#ifndef RND_SIMPLE
+ #include <gsl/gsl_rng.h>
+ gsl_rng * vit_gsl_rng;
+#endif
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
 
 
 /****************************************************************************************/
-/*  Coversion between physical properties                                               */
+/*  Conversion between physical properties                                              */
 /****************************************************************************************/
 
 double ENERGY_FROM_LAMBDA(double x)
@@ -78,11 +82,21 @@ double sq(double Value)
 
 double atan0(double a, double b)
 {
-	if (b > 0.)		return (double) atan(a / b) ;
+	if (b > 0.)
+	  return (double) atan(a / b) ;
 
-	if (b == 0.)	return M_PI_2 ;
+	if (b == 0.)
+	  return M_PI_2 ;
 
-	else			return (double) atan(a / b) + M_PI ;
+	return (double) atan(a / b) + M_PI ;
+}
+
+
+/* rounds a value mathematically  */
+
+double Round(double value)
+{
+	return floor(value + 0.5);
 }
 
 
@@ -115,7 +129,7 @@ double Max(double value1, double value2)
 
 
 
-/* 'Exchange' of two values */
+/* swap two values */
 
 void Exchange(double* pValue1, double* pValue2)
 {
@@ -125,7 +139,6 @@ void Exchange(double* pValue1, double* pValue2)
 	*pValue1 = *pValue2;
 	*pValue2 = dHelp;
 
-	return;
 }
 
 
@@ -136,22 +149,18 @@ void Exchange(double* pValue1, double* pValue2)
 /*                                         */
 double SolidAngle(const double dHorAngle, const double dVertAngle)
 {
-	double dSolAngle=0.0;
 
-	if (dVertAngle < 0.55)
-	{	/* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan�(theta)/3) */
-		dSolAngle = 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
-	}
-	else if (dHorAngle < 0.55)
-	{	/* solution for small angles: Omega = 2(tan(phi)-tan�(phi)/3) * 2 theta */
-		dSolAngle = 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
-	}
-	else
-	{	/* empirical approximation for large angles */
-		dSolAngle = 4 * sqrt(dHorAngle * sin(dHorAngle) * dVertAngle * sin(dVertAngle));
-	}
+  if (dVertAngle < 0.55)
+    /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan�(theta)/3) */
+    return 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	
+  if (dHorAngle < 0.55)
+    /* solution for small angles: Omega = 2(tan(phi)-tan�(phi)/3) * 2 theta */
+    return 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
 
-	return dSolAngle;
+  /* empirical approximation for large angles */
+  return 4 * sqrt(dHorAngle * sin(dHorAngle) * dVertAngle * sin(dVertAngle));
+
 }
 
 
@@ -164,11 +173,9 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 /*                                                    */
 void CopyVector(const VectorType Src, VectorType Dest)
 {
-	int i;
-
-	for(i=0;i<3;i++)
-	{	Dest[i] = Src[i];
-	}
+    Dest[0] = Src[0];
+    Dest[1] = Src[1];
+    Dest[2] = Src[2];
 }
 
 
@@ -176,13 +183,11 @@ void CopyVector(const VectorType Src, VectorType Dest)
 /*                                                                            */
 long MAXV(const VectorType Vector)
 {
-	if( (fabs(Vector[0]) > fabs(Vector[1])) && (fabs(Vector[0]) > fabs(Vector[2])))
-		return 0;
-	else
-		if(fabs(Vector[1]) > fabs(Vector[2]))
-			return 1;
-		else
-			return 2;
+  if( (fabs(Vector[0]) > fabs(Vector[1])) && (fabs(Vector[0]) > fabs(Vector[2])))
+    return 0;
+  if(fabs(Vector[1]) > fabs(Vector[2]))
+    return 1;
+  return 2;
 }
 
 
@@ -190,7 +195,10 @@ long MAXV(const VectorType Vector)
 /*                                                    */
 double LengthVector(const VectorType Vec)
 {
-	return sqrt(ScalarProduct(Vec,Vec));
+  //return sqrt(ScalarProduct(Vec,Vec));
+
+  return sqrt(Vec[0]*Vec[0] + Vec[1]*Vec[1] + Vec[2]*Vec[2]);
+
 }
 
 
@@ -198,18 +206,16 @@ double LengthVector(const VectorType Vec)
 /*                                              */
 short NormVector(VectorType Vector)
 {
-	long   i;
-	double dLen = LengthVector(Vector);
+  long   i;
+  double dLen = LengthVector(Vector);
 
-	if (dLen==0.0)
-	{	return FALSE;
-	}
-	else
-	{	for(i=0;i<3;i++)
-		{	Vector[i] /= dLen;
-		}
-		return TRUE;
-	}
+  if (dLen==0.0)
+    return FALSE;
+       
+  for(i=0;i<3;i++)
+    Vector[i] /= dLen;
+
+  return TRUE;
 }
 
 
@@ -229,25 +235,19 @@ double DistVector(const VectorType Vec1, const VectorType Vec2)
 /*                                                        */
 void AddVector(VectorType Value, const VectorType Add)
 {
-	int i ;
-	VectorType Result ;
-	for(i=0;i<3;i++)
-		Result[i]=Value[i]+ Add[i] ;
-	CopyVector(Result, Value) ;
+  int i ;
+  for (i=0;i<3;i++)
+    Value[i] += Add[i] ;
 }
 
 
-/* 'SubVector' Substracts 'Sub' to 'Value' and returns 'Value' */
+/* 'SubVector' Substracts 'Sub' from 'Value' and returns 'Value' */
 /*                                                             */
 void SubVector(VectorType Value, const VectorType Sub)
 {
-	int i ;
-	VectorType Result ;
-	for(i=0;i<3;i++)
-	{
-		Result[i]=Value[i]- Sub[i] ;
-		Value[i] = Result[i] ;
-	}
+  int i ;
+  for(i=0;i<3;i++)
+    Value[i] -=  Sub[i];
 }
 
 
@@ -255,13 +255,9 @@ void SubVector(VectorType Value, const VectorType Sub)
 /*                                                    */
 void MultiplyByScalar(VectorType Vector, const double Scalar)
 {
-	int i ;
-	VectorType Result ;
-	for(i=0;i<3;i++)
-	{
-		Result[i] = Scalar * Vector[i] ;
-		Vector[i] = Result[i] ;
-	}
+  int i;
+  for (i=0;i<3;i++)
+    Vector[i] *= Scalar;
 }
 
 
@@ -269,23 +265,17 @@ void MultiplyByScalar(VectorType Vector, const double Scalar)
 /*                                                                            */
 double ScalarProduct(const VectorType v1, const VectorType v2)
 {
-	int		j;
-	double	result;
-
-	result = 0.;
-	for(j=0;j<3;j++) result += v1[j]*v2[j] ;
-
-	return result ;
+  return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }
 
 /* angle between two vectors in degs */
 
 double AngleVectors(VectorType v1, VectorType v2)
 {
-double theta ;
+  double theta ;
 
-	theta= ScalarProduct(v1, v2) / (double)sqrt(ScalarProduct(v1, v1)) / (double)sqrt(ScalarProduct(v2, v2)) ;
-	return 180./M_PI * (double) acos(theta) ;
+  theta = ScalarProduct(v1, v2) / (double)sqrt(ScalarProduct(v1, v1)) / (double)sqrt(ScalarProduct(v2, v2)) ;
+  return 180./M_PI * (double) acos(theta) ;
 }
 
 /* area of triangle from two vectors, G.Zs */
@@ -293,9 +283,11 @@ double theta ;
 
 double Area(VectorType v1, VectorType v2)
 {
-return LengthVector(v1) * LengthVector(v2) *
+  double lv = LengthVector(v1) * LengthVector(v2);
+  return lv * fabs(sin(acos( ScalarProduct(v1, v2) / lv)) /2.);
 
-		fabs(sin(acos( ScalarProduct(v1, v2)/(LengthVector(v1) * LengthVector(v2)))) /2.);
+  //return LengthVector(v1) * LengthVector(v2) *
+  //		fabs(sin(acos( ScalarProduct(v1, v2)/(LengthVector(v1) * LengthVector(v2)))) /2.);
 
 }
 
@@ -355,7 +347,7 @@ void FillRMatrixZY(double RotMatrix[3][3], double roty, double rotz)
   RotMatrix[2][1] = -sy*sz;
   RotMatrix[2][2] =  cy;
 
-  /* cutoff very small matrix elements */
+  /* cut off very small matrix elements */
   for(i=0; i<3; i++)
     for(j=0; j<3; j++)
       if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
@@ -489,9 +481,7 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen) {
 
 void ReadParString(FILE *fpt, char *stringvar)
 {
-	fscanf(fpt,"%s", stringvar ) ;
-
-	return ;
+  fscanf(fpt,"%s", stringvar) ;
 }
 
 
@@ -499,10 +489,8 @@ void ReadParString(FILE *fpt, char *stringvar)
 
 double ReadParF(FILE *fpt)
 {
-	double value ;
-	value=0. ;
-	fscanf(fpt,"%lf", &value ) ;
-	return value;
+  double value;
+  return 1 == fscanf (fpt, "%lf", &value) ? value : 0.;
 }
 
 
@@ -510,10 +498,8 @@ double ReadParF(FILE *fpt)
 
 int ReadParI(FILE *fpt)
 {
-	int value ;
-	value=0 ;
-	fscanf(fpt,"%d", &value ) ;
-	return value;
+  int value;
+  return fscanf(fpt,"%d", &value) == 1 ? value : 0;
 }
 
 
@@ -521,8 +507,8 @@ int ReadParI(FILE *fpt)
 
 void ReadParComment(FILE *fpt)
 {
-	char comment[100], *c ;
-	c=fgets(comment, 100, fpt) ;
+  char comment[100], *c;
+  c = fgets(comment, 100, fpt);
 }
 
 

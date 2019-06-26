@@ -44,10 +44,21 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
+#ifdef RND_SIMPLE
+  #ifdef WINDOWS
+    #define Vran() rand()
+  #else
+    #define Vran() random()
+  #endif
+#else  
+  #define Vran() gsl_rng_uniform (vit_gsl_rng)
+#endif
+
 typedef enum
-{	VT_CUBE   = 1,
-	VT_CYL    = 2,
-	VT_SPHERE = 3
+{	VT_CUBE    = 1,
+	VT_CYL     = 2,
+	VT_SPHERE  = 3,
+	VT_HOL_CYL = 4
 }
 SampleGeom;
 
@@ -58,11 +69,13 @@ typedef enum
 	VT_GUIDE       =  11,
 	VT_BENDER      =  12,
 	VT_COLLIMATOR  =  13,
+	VT_RAD_COLLIM  =  14,
 	VT_SM_ENSEMBLE =  15,
 	VT_SPACE       =  20,
 	VT_WINDOW      =  21,
 	VT_WND_MULT    =  22,
 	VT_GRID        =  23,
+	VT_SLIT        =  24,
 	VT_CHOP_DISC   =  31,
 	VT_CHOP_FERMI  =  32,
 	VT_VEL_SELECT  =  41,
@@ -75,6 +88,7 @@ typedef enum
 	VT_RES_DRABKIN =  59,
 	VT_PREC_FIELD  =  60,
 	VT_ROT_FIELD   =  61,
+	VT_SESANS_FIELD=  62,
 	VT_DETECTOR    =  71,
 	VT_SMPL_EL_ISO =  81,
 	VT_SMPL_INELAST=  83,
@@ -83,15 +97,19 @@ typedef enum
 	VT_SMPL_S_Q    =  86,
 	VT_SMPL_SANS   =  87,
 	VT_SMPL_REFL   =  89,
+	VT_SMPL_ENVIRON=  90,
 	VT_MONITOR_1   = 101,
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
+	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
+	VT_EVAL_ELAST2 = 222,
 	VT_EVAL_INELAST= 112,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
 	VT_WRITEOUT    = 141,
+	VT_RESET       = 142,
 	VT_TOOL        = 999
 }
 VtModID;
@@ -151,17 +169,15 @@ Neutron;
 
 typedef struct
 {
-      double height, r;
-}
-CylinderType;
-
-
-typedef struct
-{
       double height, width, thickness;
 }
 CubeType;
 
+typedef struct
+{
+      double height, r;
+}
+CylinderType;
 
 typedef struct
 {
@@ -169,12 +185,19 @@ typedef struct
 }
 BallType;
 
+typedef struct
+{
+      double h_out, h_in, r_out, r_in;
+}
+HolCylType;
+
 
 typedef union
 {
-    CylinderType Cyl;
     CubeType     Cube;
+    CylinderType Cyl;
     BallType     Ball;
+    HolCylType   HCyl;
 }
 SampleGeomType;
 
@@ -187,6 +210,7 @@ typedef struct
   SampleGeomType SG;
 }
 SampleType;
+
 
 typedef struct
 {
@@ -212,12 +236,12 @@ double ENERGY_FROM_V   (double x);
 double V_FROM_LAMBDA   (double x);
 double LAMBDA_FROM_V(double x);
 
-#define Vran() gsl_rng_uniform (vit_gsl_rng)
 double MonteCarlo (double x, double y);
 double DistrGauss(double Module, double Sigma);
 
 double sq   (double Value);                        /* = Value*Value*/
 double atan0(double a, double b);
+double Round(double value);
 void   Exchange(double* pValue1, double* pValue2);
 double Min(double value1, double value2);
 double Max(double value1, double value2);

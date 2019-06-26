@@ -443,13 +443,78 @@ long LineIntersectsCube(VectorType Offset, VectorType Direction, CubeType *Cube,
 }
 
 
+/****************************************************************************/
+/* 'LineIntersectsHollowCyl'  intersection function for a hollow cylinder   */
+/* the cylinder axis points along the x-axis                                */
+/* (Author: K. Lieutenant)                                                  */
+long LineIntersectsHollowCyl(VectorType Offset, VectorType Direction, HolCylType *HCyl, double t[2], VtDir eDir)
+{
+	CylinderType stCyl;
+	double       t_cyl[2], t1, t2, t3, t4;
+	short        rc=FALSE;
+
+	t1=t2=t3=t4=0.0;
+
+	// intersection points with the outer cylinder
+	stCyl.height = HCyl->h_out;
+	stCyl.r      = HCyl->r_out;
+	if (LineIntersectsCylinder(Offset, Direction, &stCyl, t_cyl))
+	{
+		// t1 is reached first, t4 last
+		if (t_cyl[0] < t_cyl[1]) 
+		{	t1 = t_cyl[0];
+			t4 = t_cyl[1];
+		}
+		else               
+		{	t1 = t_cyl[1];
+			t4 = t_cyl[0];
+		}
+		// if t4 is close to zero, the neutron has already passed through the hollow cylinder
+		if (t4 < 1.0E-06)
+			rc = FALSE;
+		else
+			rc = TRUE;
+
+		if (rc)
+		{	// intersection points with the inner cylinder
+			stCyl.height = HCyl->h_in;
+			stCyl.r      = HCyl->r_in;
+			if (LineIntersectsCylinder(Offset, Direction, &stCyl, t_cyl))
+			{
+				// t2 is reached before t3
+				if (t_cyl[0] < t_cyl[1]) 
+				{	t2 = t_cyl[0];
+					t3 = t_cyl[1];
+				}
+				else               
+				{	t2 = t_cyl[1];
+					t3 = t_cyl[0];
+				}
+				switch (eDir)
+				{	// use first 2 points for incoming and last 2 points for outgoing neutrons
+					case VT_IN :  t[0]=t1; t[1]=t2; break;
+					case VT_OUT:  t[0]=t3; t[1]=t4; break;
+					// look for t=0 crossing for neutrons already inside
+					default: if  (t1*t2 < 0.0) 
+									 {t[0]=t1; t[1]=t2;} 
+								else{t[0]=t3; t[1]=t4;} 
+				}
+			}
+			else 
+			{	t[0]=t1;
+				t[1]=t4; 
+			}
+		}
+	}
+	return rc;
+}
+
 
 /*************************************************************************/
-/* 'LineIntersectsCylinders'    intersection function for a cylinder     */
-/* the cylinder axis points a long the x-axis                            */
-/* (Author: F. Streffer)                                                                 */
-long LineIntersectsCylinder(VectorType Offset, VectorType Direction,
-                              CylinderType *Cyl, double t[2])
+/* 'LineIntersectsCylinder'     intersection function for a cylinder     */
+/* the cylinder axis points along the x-axis                             */
+/* (Author: F. Streffer)                                                 */
+long LineIntersectsCylinder(VectorType Offset, VectorType Direction, CylinderType *Cyl, double t[2])
 {
 	VectorType ISP[2];
 	double p=0.0,q,

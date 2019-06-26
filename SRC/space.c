@@ -4,6 +4,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  Mar 2002  K. Lieutenant   initial version                                            */
+/* 1.1  May 2008  K. Lieutenant   improvements for length = 0.0                              */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -22,9 +23,10 @@ void  OwnInit(int argc, char *argv[]);
 /** Global Variables         **/
 /******************************/
 
-Plane  Endpoint;        /* Endpoint.D: distance to end of free flight path along x-axis [cm] */
 long   ntfs=0, count, k;    	      
-double VelocityReal, N_Wavelength , mu, prob=0.0;
+double VelocityReal, N_Wavelength, mu, prob=0.0,
+       Length=0.0;          /* distance to end of free flight path along x-axis [cm]    */
+Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */
   
 
 
@@ -34,16 +36,14 @@ double VelocityReal, N_Wavelength , mu, prob=0.0;
 
 int main(int argc, char *argv[])
 {
-	long  i, BufferIndex;
+	long  i;
 
 	double TimeOF,AveTimeOF;
 	double CenterX, CenterY, CenterZ, SumProb;
 
 	/* initialisation */
-	BufferIndex     = 0;
-
 	Init(argc, argv, VT_SPACE);
-	print_module_name("Space 1.0a");
+	print_module_name("Space 1.1");
 	OwnInit(argc, argv);
 	
 	CenterX   = 0.0; 
@@ -64,26 +64,28 @@ int main(int argc, char *argv[])
 			/* 	Move neutron to end of space and calculate Time of Flight (ms).    */
 			/*************************************************************************/
 			
-			if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			if (InputNeutrons[i].Wavelength == 0.0) continue;
-			VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-			if (VelocityReal <= 0.0) continue;
-			
-			if (keygrav == 1)
-			{
-				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			}
-			else
-			{
-				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-			}
+			if (InputNeutrons[i].Vector[0]  <= 0.0) continue;
+			if (InputNeutrons[i].Wavelength <= 0.0) continue;
 
+			if (fabs(Length) > 0.0)
+			{	
+				VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+				
+				if (keygrav == 1)
+				{
+					TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+				}
+				else
+				{
+					TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+				}
+				InputNeutrons[i].Time += (double)TimeOF;
+			}
 
 			/*************************************************************************/
 			/* Calculate center of beam  and  writeout new data set                  */
 			/*************************************************************************/
 
-			InputNeutrons[i].Time += (double)TimeOF;
 			AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
 			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
 			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
@@ -91,6 +93,7 @@ int main(int argc, char *argv[])
 			SumProb   += InputNeutrons[i].Probability;
 			
 			InputNeutrons[i].Position[0]=0.0;
+
 			WriteNeutron(&InputNeutrons[i]);
 		}
 	}	
@@ -113,7 +116,7 @@ int main(int argc, char *argv[])
 	fprintf(LogFilePtr," \n");
 
 
-	Cleanup((-Endpoint.D), 0.0, 0.0, 0.0, 0.0);
+	Cleanup(Length,0.0,0.0, 0.0,0.0);
 	
 
 	return(0);
@@ -132,11 +135,7 @@ void  OwnInit(int argc, char *argv[])
 			switch(argv[i][1])
       	{
 				case 'd':
-					Endpoint.A = 1.0;
-					Endpoint.B = 0.0;
-					Endpoint.C = 0.0;
-					Endpoint.D = -atof(&argv[i][2]);
-					fprintf(LogFilePtr,"Distance between entrance and exit plane: %8.3f  cm \n", -Endpoint.D);
+					Length = atof(&argv[i][2]);
 					break;
       
 				default:
@@ -146,6 +145,12 @@ void  OwnInit(int argc, char *argv[])
 			}
 		}
 	}
+
+	Endpoint.A = 1.0;
+	Endpoint.B = 0.0;
+	Endpoint.C = 0.0;
+	Endpoint.D = -Length;
+	fprintf(LogFilePtr,"Distance between entrance and exit plane: %8.3f  cm \n", Length);
 }
 
   

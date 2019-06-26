@@ -31,7 +31,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       maxModule DummyEntry SourceDirectory ExeDirectory PipeLogList buffersize
 
   switch [set Comode $mode] {
-    bat - tcl - ser {set prefi \$V}
+    bat - tcl - grd - ser {set prefi \$V}
     default {
       set prefi $ExeDirectory
       set Plotfile {}; set Plottype {}
@@ -40,22 +40,23 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   upvar #0 ExeSuffix sys
   set logf [tmpFilename vpipelog]
   set PipeLogList {}
+  # fc will be the full command
   upvar #0 FullCommand fc
   set fc ""
   lookWhosConcerned srep0 spar0 serno0 0 $Comode $serll sermol serpal
-  #  3..6: random seed, random_gen,  neutron weight, gravitation effect
+  #  3..6: random seed, random_gen, neutron weight, gravitation effect
   foreach {i} [lrange $ll 3 6] {
+    # next proc writes to FullCommand
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
-  switch $Comode {
-    ser {set pdir \$P}
-    default {set pdir [entryVal defdirectory]}
-  }
-  set insert "$fc --B$buffersize --P$pdir";  # insert: general command options
+  set pdir [entryVal defdirectory]
+  set insert "$fc --B$buffersize --P";	# general command options  
+  if {$Comode == "grd"} {append insert \$P} else {append insert $pdir}
 
-  # restart construction of fc, after general options have been saved to insert
+  # restart construction of fc, general options have been saved to variable insert
   switch $Comode {
     bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
+    grd {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nZ=--Z\nL=--L\n"}
     tcl {
       set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\n"
       foreach v {seed gen} vv {SEED TYPE} {
@@ -150,6 +151,11 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     #  output file
     writeCommandOption [lindex $ll 1] _ no_file $spar0 $srep0 $serno0
   }
+  if {$Comode == "grd"} {
+    # a shell environment will substitute $P
+    regsub -all "$pdir/" $fc "\$P/" fc
+  }
+  # get rid of superfluous blanks
   regsub -all "  " $fc " " fc
   if {$Comode == "bat"} {append fc "\nmv $logf* \$P"}
 
@@ -354,19 +360,23 @@ proc startAction {{sercom ""} {simu simulation}} {
   set wsecs 1
   set wmsecs [expr 1000 * $wsecs]
   if {$timeout == "unlimited"} {
-    set ctout -1
+    set wsecs 0
   } else {
     set ctout [expr $timeout / $wsecs]
   }
   set i 0
   while {1} {
-    if {$i == $ctout} {
-      outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
-      stopAction
+    if {$wsecs != 0} {
+      if {$i == $ctout} {
+	outProtocol "!\npipe execution took more than $timeout seconds,\n\tstopping pipe"
+	stopAction
+      } else {
+	showText . ""
+      }
+      incr i
     } else {
       showText . ""
     }
-    incr i
     if {$PipeActive && [$PsCheck]} {
       after $wmsecs;			# wait for completion,
       update;				# but allow other window events

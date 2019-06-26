@@ -2,7 +2,8 @@
 	for pulsed and continuous sources
 
 
-Hahn-Meitner-Institut Berlin
+Hahn-Meitner-Institut Berlin, now
+Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
 
 Modules:
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
@@ -12,13 +13,13 @@ Modules:
 	Friedrich Streffer
 
 GUI Software:
-	Michael Fromme     (fromme@hmi.de)
+	Michael Fromme     (fromme@helmholtz-berlin.de)
 
 
 README
 
-This program has been developed on Unix systems, but runs
-on windows systems, too.
+This program has been developed on Unix and Windows, 
+and runs fine on both operating systems.
 
 Installation under Unix
 
@@ -28,7 +29,7 @@ Your operating system should be Linux (versions from 2.0.35),
 SunOS (versions from 5.6), or OSF1(V4.0). Vitess may be compiled
 from sources for other versions of Unix. 
 
-We assume Tcl/Tk software with a version 8 or higher
+We assume Tcl/Tk software with a version 8.2 or higher
 is installed separately. If you miss information, try
 http://www.scriptics.com/software/
 
@@ -46,6 +47,21 @@ https://www.hmi.de/projects/ess/vitess/checksums.txt
 The file vitess.tar.gz might be de-tared in whatever
 <vitess parent directory> you want, like /usr/bin for root installation
 or $HOME for personal installation.
+
+Silver Bullet
+-------------
+If you have perl installed on your system, fetch and store locally
+https://www.hmi.de/projects/ess/vitess/installAndTest
+
+	cd <vitess parent directory>
+        installAndTest -v vitess.tar.gz
+
+This will check your Tcl/Tk installation, extract the tarball,
+check for shared libraries, ...
+        installAndTest -h
+to see what is possible.
+
+Or:
 
 2. do
 -----
@@ -69,19 +85,31 @@ We used vitess with different versions of wish and bltwish, but
 recommend the latest versions 8.4 / 2.4.
 
 (Due to a bug in /usr/local/lib/tk8.4/tkfbox.tcl browsing
-directories and files fails. We send you a patch on request.)
+directories and files fails with some distributions. 
+We send you a patch on request, or you may produce the patched file by 
+       installAndTest -p tkfbox.tcl
+)
+
+If you want to install Vitess for others, you might adopt the
+perl script callVitess to your needs.
 
 4. try it
 ---------
 	<vitess parent directory>/vitess/Vitess
+
+Missing shared libraries?
+-------------------------
+installAndTest may find shared libraries needed e.g. for the
+bender executable. Those libraries may be missing on minimal 
+systems, but are easily installed from RPMs by your local Unix guru.
 
 Compilation from sources
 ------------------------
 The Tcl/Tk code should work with little or no modification
 for all Unix derivates.
 
-C sources have been compiled for Linux,
-Solaris and Tru64.
+C sources have been compiled for Linux, elder versions for
+Solaris and Tru64, too.
 
 Difference to the Windows version
 ---------------------------------
@@ -92,8 +120,9 @@ images. The MODULES directory contains those files, you
 need the right ones for your operating system. 
 For module guide (from guide.c) we find
 
+guide.exe		 Windows 32 bit
 guide_Linux		 Linux i386
 guide_Linux_x86_64       Linux x86 64 architecture
+and in the past
 guide_SunOS		 Solaris sparc
 guide_OSF		 Tru64 alpha
-guide.exe		 Windows 32 bit

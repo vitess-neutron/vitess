@@ -288,12 +288,12 @@ long GetLong(char* pText)
 
 short GetShort(char* pText)
 {
-	short nValue;
+  int nValue;
 	
-	printf("%s ", pText);
-	scanf ("%d", &nValue);
+  printf("%s ", pText);
+  scanf ("%d", &nValue);
 
-	return nValue;
+  return (short) nValue;
 }
 
 
