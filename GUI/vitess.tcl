@@ -68,10 +68,10 @@ set DoNotSave [concat $DoNotSaveSetting {
   labColor
   maxModule menuButtonColor menubarfont menuColor
   monospaced monofontfamily monofontsize monofonttype
-  place plotapp_ plotmode
+  place plotapp_ plotmode trajmode
   radioColor
   scrollWidth simulation serif sserif
-  timeout
+  timeout x3dapp_
 }]
 
 foreach s {b h l m t} {
@@ -97,6 +97,7 @@ set TempVars {
   pA pA2
   res
   sps
+  pow
   tA
 }
 
@@ -153,10 +154,10 @@ proc makeModuleSets {} {
   # 1 list of submodules; may be empty
   # 2 help item; may be a list, if different submodules have different help texts
   set AvailableSET {
-    {source {source_const_wave source_HMI source_ILL
-      source_short_pulsed source_SNS source_IPNS source_ISIS
-      source_ESS_LPTS} source}
-    {guide {guide bender} {guide bender}}
+    {source {source_const_wave source_ILL source_HMI source_FRM2
+      source_short_pulsed source_SNS source_IPNS source_ISIS source_CSNS
+      source_ESS_LPTS source_ESS_2012} source}
+    {guide {guide bender guide_ideal} {guide bender guide_elliptic}}
     {sm_ensemble {} sm_ensemble}
     {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
@@ -183,10 +184,10 @@ proc makeModuleSets {} {
     {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
-      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz
+      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
-      monpol_divy monpol_divz monitorpol_pos monitor2D
+      monpol_divy monpol_divz monitorpol_pos monitor1D monitor2D
       } {visual monitor}}
   }
 
@@ -245,8 +246,8 @@ rename makeModuleSets {}
 ### for type {select}
 ### 4 list of pairs with {name_appendix default_bool}
 ###
-### for types (browsefile browsedir editablefile parbrowsefile pareditablefile
-###            moneditablefile mon2editablefile mneditablefile mn2editablefile)
+### for types {browsefile browsedir editablefile parbrowsefile pareditablefile
+###            moneditablefile mon2editablefile mneditablefile mn2editablefile}
 ### 4 r for a readable file,
 ###   w for a valid filename
 ### 5 file extension, used to specify GUI-editable files
@@ -310,6 +311,7 @@ set inputESET {
 ###
 set xcontrolDefaultsESET {
   {plotapp browsefile gnuplot {"plot application" "Application to be executed when the 'Ext. Plot file' title menu button is pressed. The application becomes called with a file name parameter."} r}
+  {x3dapp browsefile InstantPlayer {"X3D application" "Application to be executed when visualizing X3D trajectories + instrument gemetry. The application becomes called with a file name parameter."} r}
 }
 
 
@@ -476,7 +478,7 @@ set smASET {
     "max. divergence\nx <-> z [deg]"
     "maximal divergence theta [deg] (half of angular spread x-z-plane)"
     "" z} le90}
-  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
+  {dirdet radio "by window" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
   Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
   In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
     {"by divergence" "by window" "by virtual window"} {0 1 2}}
@@ -490,6 +492,10 @@ set smisisASET {
   {}
   {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
   {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
+  {}
+  {dirdet radio "by window" {"direction\ndefined" "The distribution of flight directions are defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
+  Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
+    {"by window" "by virtual window"} {1 2}}
   {" " header}
 }
 
@@ -541,8 +547,8 @@ Only those trajectories are started in the second run that are found in the 'ray
 
 set li {"moderator\ndescription file" "Name of the file containing the description of the source and one or two moderators. Existing files are in FILES/moderators" "" a}
 
-foreach s {const_wave HMI ILL} \
-        m {ReactorCold HmiMS IllColdSrcCold} {
+foreach s {const_wave HMI ILL FRM2} \
+        m {ReactorCold HmiMS IllColdSrcCold FRM-II_ColdFile} {
   set al [list modfile pareditablefile $m.mod $li w cmo 1]
   set source_${s}ESET [concat [list $al] $smASET $traceASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {source_cwsCheckErr $app}
@@ -583,18 +589,20 @@ proc source_cwsCheckErr {{app _}} {
 ### source
 ###   SPSS short pulsed spallation sources
 
-proc sore {f s} {
+proc sore {f s p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
-  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS} {- ESS SNS}]]
-  return [concat $f $s]
+  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
+  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
+  return [concat $f $s $p]
 }
 
-foreach s {short_pulsed SNS J-PARC IPNS} \
-        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois} \
-        fr {50 60 20 50} \
-        sps {- SNS - - } {
+foreach s {short_pulsed SNS J-PARC IPNS CSNS} \
+        m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois CsnsH2coupled} \
+        fr {50 60 20 50 25} \
+        sps {- SNS - - CSNS} \
+        pow {- 1.0 - - 0.1} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
-  set fl [sore $fr $sps]
+  set fl [sore $fr $sps $pow]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
@@ -612,25 +620,28 @@ proc source_ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 ### source
 ###   LPSS long pulsed spallation sources
 
-set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
-set source_ESS_LPTSESET [concat {
-  {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-  {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
-  {freq float 16.667 {"pulse repetition\nrate [Hz]" "" "" R} 1}
-  {plen float 2.0 {"proton pulse\nlength [ms]" "time dependence of neutron flux
-     \tt < p:  1/s*[1-exp(-t/beta)]
-     \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
-} [list $al] $smASET $traceASET $cwsASET]
+foreach s {ESS_LPTS ESS_2012} {
 
-proc source_ESS_LPTSCheckErr {{app _}} {
-  foreach l {tau1 tau2 name}  {
-    upvar #0 $l$app $l
+  set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
+  set source_${s}ESET [concat {
+    {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
+    {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
+    {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
+    {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
+       \tt < p:  1/s*[1-exp(-t/beta)]
+       \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
+  } [list $al] $smASET $traceASET $cwsASET]
+
+  proc source_${s}CheckErr {{app _}} {
+    foreach l {tau1 tau2 name}  {
+      upvar #0 $l$app $l
+    }
+    if {$name == "" && ($tau1 == "" || $tau2 == "")} {
+      showText "!Please specify tau1 and tau2 or select a known source"
+      return 1
+    }
+    return [source_cwsCheckErr $app]
   }
-  if {$name == "" && ($tau1 == "" || $tau2 == "")} {
-    showText "!Please specify tau1 and tau2 or select a known source"
-    return 1
-  }
-  return [source_cwsCheckErr $app]
 }
 
 ### Detector
@@ -715,6 +726,7 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
+  {outSeparator radio Space {"Separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {detectcolor int -1 {
     "writeout color" "Write only events with given color. A negative number means any color." "" C}
     }
@@ -749,6 +761,10 @@ set writeoutESET {
     "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "-1.0" {
     "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
+  {}
+  {"column selection" header}
+  {}
+  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
 }
 
 ### spin_reset
@@ -805,8 +821,7 @@ set winAdd {
 set a {
   {dist_orig_window float 0 {
     "distance orig.\n  <-> win. [cm]"
-    "distance from origin to window when projecting along the x axis"
-    "" l} ge0 "" 1}
+    "distance from origin to window when projecting along the x axis" "" l} ge0 "" 1}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
@@ -833,6 +848,14 @@ set a {
     "use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F}
     {no yes} {0 1}
   }
+  {"Filter options" header}
+  {treatcolor int -1 {
+    "treat color" "Treat only events with given color. A negative number means any color." "" f}}
+  {"Additional window options" header}
+  {phimin float -1 {
+    "min. phi [°]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
+  {phimax float -1 {
+    "max. phi [°]" "Filter for maximum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" P}}
 }
 
 set spacewindowESET [concat $a $winAdd]
@@ -897,9 +920,9 @@ set slitESET {
 
 ### Beamstop
 set beamstopESET {
-  {dist_stop float "" {"distance\n to beamstop [cm]" "" "" d} ge0}
+  {dist_stop float "" {"distance\n from sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "progagation of neutrons to beamstop\ndetector expects neutrons at sample position" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface \n'yes'         : neutrons are propagated to the beamstop" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -1103,6 +1126,142 @@ proc guideCheckErr {{app _}} {
   }
   return 0
 }
+
+### Ideally shaped Guide
+###
+set guide_idealESET {
+  {"Shape and size of guide" header}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+    {constant linear elliptic} {0 1 2}}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+    {constant linear elliptic} {0 1 2}}
+  {}
+  {shape_file mneditablefile guide_shape.dat
+    {"guide shape" "File containing ellipse parameters" "" O}}
+  {}
+  {axis_long_hor float 0 {
+    "Major ellipse\naxis in x-y plane [m]"
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
+  {axis_short_hor float 0 {
+    "Minor ellipse\naxis in x-y plane [m]"
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+  {}
+  {axis_long_ver float 0 {
+    "Major ellipse\naxis in x-z plane [m]"
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
+  {axis_short_ver float 0 {
+    "Minor ellipse\naxis in x-z plane [m]"
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+  {}	 		
+  {enter_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+  {enter_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+  {}
+  {exit_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+  {exit_height float 10 {
+    "exit\nheight [cm]"
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+  {}
+  {length_guide float 0 {
+    "Guide length [m]"
+    "Length of guide in m"  "" l} ge0 "" 1}	
+  {dist_focus_hor float 0 {
+    "Distance from exit to \n focus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+  {dist_focus_ver float 0 {
+    "Distance from exit to \n focus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+  {} 
+   {addColor float 0 {
+    "Add to color"
+    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
+  {"Guide characteristics" header}
+  {"Reflectivity files" header}
+  {lrefl_filename pareditablefile mirr1a.dat
+    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
+  {rrefl_filename pareditablefile mirr1a.dat
+    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+  {tbrefl_filename pareditablefile mirr1a.dat
+    {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
+  {brefl_filename pareditablefile mirr1a.dat
+    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  
+}
+
+set guide_idealESET [concat $guide_idealESET]
+
+### Elliptical Guide (old)
+###
+set guide_ellipticESET {
+  {"Shape and size of guide" header}
+  {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane. \n Note that in constant case entrance and exit width \n must be the same!" "" H}
+    {constant linear elliptic} {0 1 2}}
+  {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane. \n Note that in constant case entrance and exit height \n must be same!" "" V}
+    {constant linear elliptic} {0 1 2}}
+  {}
+  {shape_file mneditablefile guide_shape.dat
+    {"guide shape" "File containing ellipse parameters" "" O}}
+  {}
+  {axis_long_hor float 0 {
+    "Major ellipse\naxis in x-y plane [m]"
+    "Size of major ellipse axis in horizontal plane in m"  "" a} ge0 "" 1}
+  {axis_short_hor float 0 {
+    "Minor ellipse\naxis in x-y plane [m]"
+    "Size of minor ellipse axis in horizontal plane in m" "" b} ge0 "" 1}
+  {}
+  {axis_long_ver float 0 {
+    "Major ellipse\naxis in x-z plane [m]"
+    "Size of major ellipse axis in vertical plane in m"  "" A} ge0 "" 1}
+  {axis_short_ver float 0 {
+    "Minor ellipse\naxis in x-z plane [m]"
+    "Size of minor ellipse axis in vertical plane in m" "" B} ge0 "" 1}
+  {}	 		
+  {enter_width float 6 {
+    "entrance\nwidth [cm]"
+    "entrance of guide: width in cm (center of entrance window = origin)"  "" w} ge0 "" 1}
+  {enter_height float 10 {
+    "entrance\nheight [cm]"
+    "entrance of guide: height in cm (center of entrance window = origin)" "" u} ge0 "" 1}
+  {}
+  {exit_width float 6 {
+    "exit\nwidth [cm]"
+    "exit of guide: width in cm (center of exit window = new origin)"  "" W} ge0 "" 1}
+  {exit_height float 10 {
+    "exit\nheight [cm]"
+    "exit of guide: height in cm (center of exit window = new origin)" "" U} ge0 "" 1}
+  {}
+  {length_guide float 0 {
+    "Guide length [m]"
+    "Length of guide in m"  "" l} ge0 "" 1}	
+  {dist_focus_hor float 0 {
+    "Distance from exit to \n focus in hor. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in horizontal plane."  "" d} ge0 "" 1}	
+  {dist_focus_ver float 0 {
+    "Distance from exit to \n focus  in ver. plane [m]"
+    "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
+  {} 
+   {addColor float 0 {
+    "Add to color"
+    "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
+  {"Guide characteristics" header}
+  {"Reflectivity files" header}
+  {lrefl_filename pareditablefile mirr1a.dat
+    {"left plane" "Reflectivity file for left plane (where y>0)" "" i} r dat 1}
+  {rrefl_filename pareditablefile mirr1a.dat
+    {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
+  {tbrefl_filename pareditablefile mirr1a.dat
+    {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
+  {brefl_filename pareditablefile mirr1a.dat
+    {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  
+}
+
+set guide_ellipticESET [concat $guide_ellipticESET]
 
 ### Bender
 ###
@@ -1459,8 +1618,11 @@ set ma_flatESET {
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
   {}
-  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d}
-    {Lorentzian Gaussian} {1 2}}
+  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and \n 'transmission' of the remaining beam" "" X} {Reflection Transmission} {1 2}}	
+  {coeff float 0.00005 {"Absorption\n coefficient"
+    "Absorption coefficient in the crystal in [1/cm]." "" C}}
+  {}
+  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
 }
 
 ### Monochromator analyser
@@ -1881,7 +2043,7 @@ set rotating_fieldESET {
 ###
 set quadr_fieldESET {
   {"Field range and strength" header}
-  {sf_bf pareditablefile field.dat {"field range file" "data file (which is read) giving the range of the magnetic field" "" P}}
+  {sf_bf pareditablefile field.dat {"field range file" "input file giving the range of the magnetic field" "" P}}
   {}
   {sf_mx float 0 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" F}}
   {sf_my float 0 {"magnetic\nfield Y [Oe]" "y component of the magnetic field in Oe" "" G}}
@@ -1947,10 +2109,11 @@ set nA {
     "number\nof bins"
     "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
   {mtrl_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated\nnegative values mean that all files containing colour 0, 1, 2, ... -Input are generated simultaneously"
+	"" C} -10 32768}
 }
 set nnA {
-  {withbin radio yes {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
+  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
 }
 
 set mA {
@@ -2197,6 +2360,44 @@ proc monpol_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
 
+### monitor
+###   mon_brilliance
+
+set ra {
+  {refile parbrowsefile "" {"reference file" "" "" S}}
+  {ffile parbrowsefile "" {"flux file" "" "" F}}
+  {}
+  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
+  {}
+  {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
+  {maxlam float "" {"max lambda [Å]" "maximal lambda [Å]" "" L}}
+  {}
+  {mint float "" {"minimal time [ms]" "minimal time for monitoring" "" t}}
+  {maxt float "" {"maximal time [ms]" "maximal time for monitoring" "" T}}
+  {}
+  {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
+  {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
+  {}
+  {lowbh float "" {"low bound\nheight [cm]" "lower bound for the height [cm]" "" z}}
+  {upbh float "" {"up bound\nheight [cm]" "upper bound for the height [cm]" "" Z}}
+  {}
+  {lowhd float "" {"low bound\nhor div [deg]" "lower bound for the horizontal divergence [deg]" "" h}}
+  {uphd float "" {"up bound\nhor div [deg]" "upper bound for the horizontal divergence [deg]" "" H}}
+  {}
+  {lowvd float "" {"low bound\nvert div [deg]" "lower bound for the vertical divergence [deg]" "" v}}
+  {upvd float "" {"up bound\nvert div [deg]" "upper bound for the vertical divergence [deg]" "" V}}
+  {}
+  {lowrd float "" {"low bound\nradial div [deg]" "lower bound for the radial divergence [deg]" "" r}}
+  {uprd float "" {"up bound\nradial div [deg]" "upper bound for the radial divergence [deg]" "" R}}
+  {}
+  {freq float "" {"frequency [Hz]" "frequency of the pulsed source" "" f}}
+}
+
+set mon_brillianceESET [concat [genFE brilliance] $nA $ra]
+unset ra
+
+
 ### mon2
 ###   position
 
@@ -2385,46 +2586,42 @@ proc mon2_rdivCheckErr {{app _}} {
   return [checkMiMaErr min_z max_z "" $app]
 }
 
-### monitor2D
-### generic monitor
+### monitor1D
+### generic 1D monitor
 
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
-set mA2 {
-  {parameter2 radio pos_z {
-    "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
-    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
-}
 set mAV {
   {}
   {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
-  {min_vy float 0 {"minimal\ny-value" "" "" h} -1E6 1E6 1}
-  {}
   {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
-  {max_vy float 0 {"maximal\ny-value" "" "" H} -1E6 1E6 1}
 }
 
 set nA {
   {}	
   {number_xbins int 100 {
     "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
-  {number_ybins int 100 {
-    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
 }
 
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}	
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill both criteriea (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
 }
 
 set fPAi {
@@ -2447,6 +2644,94 @@ set polAH {
   {"Polarisation analysis" header}
 }
 
+set polA {
+  {polA radio no {
+    "Polarisation\nanalysis" "If switched on, define the polarisation analysis axis" "" P}
+    {no yes} {0 1}}
+}
+
+set dA {
+  {"Analysis direction" header}
+  {dirx float 1 {"direction\nX" "x component of the direction vector representing the quantization direction" "" r}}
+  {diry float 0 {"direction\nY" "y component of the direction vector representing the quantization direction" "" s}}
+  {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
+}
+
+set monitor1DESET [concat [genFE mon1D] $mA1 $mAV $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mAV nA fA1 fA2 fComb fPAi fPAj polAH polA dA
+proc monitor1DCheckErr {{app _}} {
+  if [checkMiMaErr min_vx max_vx "" $app] {return 1}
+  return {0}
+}
+
+
+### monitor2D
+### generic 2D monitor
+
+set mA1 {
+  {parameter1 radio pos_y {
+    "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}	
+
+set mA2 {
+  {parameter2 radio pos_z {
+    "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+set mAV {
+  {}
+  {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
+  {min_vy float 0 {"minimal\ny-value" "" "" h} -1E6 1E6 1}
+  {}
+  {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {max_vy float 0 {"maximal\ny-value" "" "" H} -1E6 1E6 1}
+}
+
+set nA {
+  {}	
+  {number_xbins int 100 {
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+  {number_ybins int 100 {
+    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
+}
+
+set fA1 {
+  {filter_param1 radio none {
+    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+}
+set fA2 {
+  {filter_param2 radio none {
+    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill both criteriea (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
+}
+
+set fPAi {
+  {}
+  {filtIMin float "" {
+    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {
+    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+}
+
+set fPAj {
+  {}
+  {filtJMin float "" {
+    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {
+    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+}
+
+set polAH {
+  {"Polarisation analysis" header}
+}
 
 set polA {
   {polA radio no {
@@ -2461,10 +2746,11 @@ set dA {
   {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
 }
 
-set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
+set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mA2 mAV nA  pA FA fA fLA fA1 fA2 fComb fPAi fPAj polAH polA dA
 proc monitor2DCheckErr {{app _}} {
-  return [checkMiMaErr number_xbins number_ybins "" $app]
-#  return [checkMiMaErr min_z max_z "" $app]
+  if [checkMiMaErr min_vx max_vx "" $app] {return 1}
+  return [checkMiMaErr min_vy max_vy "" $app]
 }
 
 ### sample
@@ -2496,9 +2782,9 @@ set envESET {
   {env_hei float "" {"height [cm]" "outer height of the cylinder"} gt0}
   {env_sffile pareditablefile "" {"structure\nfactor file"} r}
   {Scattering header}
-  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
-  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
-  {env_abs float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
+  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic incoherent scattering cross-section"} 1}
+  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic total scattering cross-section"} 1}
+  {env_abs float "" {"absorption\n[1/cm]" "macroscopic absorption cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {env_ucv float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 50}
 }
 
@@ -2669,7 +2955,7 @@ set sample_environmentESET {
   {ev_file pareditablefile environ.env {"parameter file"
     "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
   {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
-  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment before sample" "" r} {in out} {1 2}}
+  {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment after sample" "" r} {in out} {1 2}}
 }
 
 ### proc sample_environmentCheckErr {{app _}} {
@@ -2856,6 +3142,16 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+  {"Incoherent scattering" header}
+  {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
+  {}
+  {muInc float 0 {"Incoherent pathlength" "If incoherent scattering from sample is taken into account, \n specify the parameter mu for the scattering probability P=mu*x" "" X}}
+  {}
+  {detDist float 0 {"Detector distance" "If incoherent scattering from sample is taken into account, \n specify the distance to the detector. This is needed together with detector \n width and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" d}}	
+  {detW float 0 {"Detector width" "If incoherent scattering from sample is taken into account, \n specify the width the detector. This is needed together with detector \n distance and detector height to calculate the solid angle \n the incoherent part of the background is scattered to." "" p}}	
+  {detH float 0 {"Detector height" "If incoherent scattering from sample is taken into account, \n specify the height the detector. This is needed together with detector \n distance and detector width to calculate the solid angle \n the incoherent part of the background is scattered to." "" t}}
+  {}
+  {detN float 1 {"Norm factor" "If incoherent scattering from sample is taken into account, \n the norm factor describes the fraction of the detector \n where the specular signal is expected with respect to \n the whole detector area. If it's not specified, the proper normalisation \n should be done in the subsequent analysis." "" S}}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
@@ -2931,33 +3227,29 @@ set isoESET {
 ###
 set capture_fluxESET {
   {"General parameters" header}
-  {foilarea float 1
-    {"gold foil\narea [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
-  {}
   {refwave float 1.798 {
     "reference\nwavelength [A]" "default value is 1.798 A. Use 0.0 to avoid the use of a reference wavelength." "" R} ge0}
   {}
-  {}
-  {circ radio "no window" {"window type" "defines the area which is taken into account" "" t} {"no window" circular rectangular} {0 1 2}}
-  {"circular window coordinates" header}
-  {radi float 0.5 {"radius [cm]" "radius of circular window in cm" "" r} gt0}
-  {centy float 0 {"center y [cm]" "" "" y} }
-  {centz float 0 {"center z [cm]" "" "" z} }
-  {"rectangular window coordinates" header}
+  {circ radio "rectangular" {"window type" "shape of the gold foil" "" t} {circular rectangular} {1 2}}
+  {"circular foil coordinates" header}
+  {radi float 0.5 {"radius [cm]" "radius of a circular foil in cm" "" r} gt0}
+  {centy float 0 {"center y [cm]" "center y (horizontal) of a circular foil [cm]" "" y} }
+  {centz float 0 {"center z [cm]" "center z (vertical) of a circular foil[cm]" "" z} }
+  {"rectangular foil coordinates" header}
   {min_y float -0.5 {
-    "min. y [cm]" "minimal y value [cm]" "" w}}
+    "min. y [cm]" "minimal y value (right) of a rectangular foil [cm]" "" w}}
   {max_y float 0.5 {
-    "max. y [cm]" "maximul y value [cm]" "" W}}
+    "max. y [cm]" "maximul y value (left) of a rectangular foil [cm]" "" W}}
   {}
   {min_z float -0.5 {
-    "min. z [cm]" "minimal z value [cm]" "" h}}
+    "min. z [cm]" "minimal z value of a rectangular foil [cm]" "" h}}
   {max_z float 0.5 {
-    "max. z [cm]" "maximal z value [cm]" "" H}}
+    "max. z [cm]" "maximal z value of a rectangular foil [cm]" "" H}}
   {"lambda window" header}
   {min_lambda float 0.0 {
-    "min. lambda [A]" "minimal lambda value [A]. If min and max lambda is zero this option is ignored." "" l}}
+    "min. lambda [A]" "minimal lambda value [A]. If min and max lambda are zero this option is ignored." "" l}}
   {max_lambda float 0.0 {
-    "max. lambda [A]" "maximal lambda value [A]. If min and max lambda is zero this option is ignored." "" L}}
+    "max. lambda [A]" "maximal lambda value [A]. If min and max lambda are zero this option is ignored." "" L}}
 }
 
 ### eval
@@ -3033,7 +3325,7 @@ proc eval_elastCheckErr {{app _}} {
 ###   elast2
 set eval_elast2ESET {
   {psel radio "Scattering angle [deg] and wavelength [A]" {
-    "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+      "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
   {psort radio "Intensity" {
     "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
   {}
@@ -3070,7 +3362,10 @@ set eval_elast2ESET {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
   {toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
-  {}
+  {tofcorr radio no {
+    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
+  {sdpath float "" {
+    "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {timevalbegin float -1.e10 {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
@@ -3122,11 +3417,11 @@ set eval_sansESET {
   {sn_nbins int 100 {
     "number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
   {sn_mina float 0.001 {
-    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} gt0}
+    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} ge0}
   {sn_maxa float 1 {
     "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
   {sn_scat float 0.1 {
-    "scattering\nprobability" "total scattering probability of the isotropic scatterer" "" p} gt0}
+    "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {sn_bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {sn_dspot float "" {
@@ -3183,13 +3478,17 @@ set eval_inelastESET {
     geometry "Choose geometry type of TOF instrument." "" A}
     {"direct geometry" "inverted geometry"} {0 1}}
   {}
-  {rwlen float 6.27  {"reference\nwavelength [A]" "Initial or final wavelength of the neutrons which is known from the experimental setup." "" c} gt0 "" 1}
-  {pfpath float 10 {"primary flight\npath [cm]"   "Distance from the moderator to sample and from sample to detector." "" a} gt0 "" 1}
-  {sfpath float 2 {"secondary flight\npath [cm]" "Distance from the moderator to sample and from sample to detector." "" b} gt0 "" 1}
-  {nbins int 100 {"number\nof bins" "The number of time and energy channels to be considered." "" C} ge1 "" 1}
-  {mint float 0   {"minimal\ntime [ms]" "The TOF range in which the user is interested to bin intensities." "" e} 1}
-  {maxt float 100   {"maximal\ntime [ms]" "The TOF range in which the user is interested to bin intensities." "" g} 1}
-  {toff float 0    {"time offset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
+  {pfpath float 10  {"primary\nflight path [cm]"   "Distance from the moderator to sample and from sample to detector." "" a} gt0 "" 1}
+  {sfpath float 2   {"secondary\nflight path [cm]" "Distance from the moderator to sample and from sample to detector." "" b} gt0 "" 1}
+  {rwlen float 6.27 {"reference\nwavelength [A]" "Initial or final wavelength of the neutrons which is known from the experimental setup." "" c} gt0 "" 1}
+  {toff float 0   {"time\noffset [ms]" "If nonzero, start time at moderator is shifted: TOF' = TOF - time offset." "" d} 1}
+  {nbins int 100  {"number\nof bins" "The number of time and energy channels to be considered.\nOnly 1 range needs to be given, the other range is calculated." "" C} ge1 "" 1}
+  {}
+  {mine float -2  {"min. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" m} }
+  {maxe float  2  {"max. energy\ntransfer [meV]" "The range of energy transfers in which the user is interested to bin intensities." "" M} }
+  {}
+  {mint float  50 {"minimal\ntime [ms]" "The TOF range (reduced by the time offset) in which the user is interested to bin intensities." "" e} }
+  {maxt float  60 {"maximal\ntime [ms]" "The TOF range (reduced by the time offset) in which the user is interested to bin intensities." "" g} }
   {grtbin float 0 {"gradient\nof timebins" "Derivative s of the time channel width in function of TOF (as described in the help manual, sec. 4)." "" h} gt-0.1 lt0.1}
   {}
   {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j} 1}
@@ -3298,6 +3597,7 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
+    {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
   {"output frame" header}
@@ -3633,7 +3933,7 @@ gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
 
-			<boption>		<bdefault>
+		          	<boption>       <bdefault>
 1. neutron input filename	--f<filename>	stdin
 2. neutron output filename	--F<filename>	stdout
 3. rng init			--Z<value>	1
@@ -3646,6 +3946,8 @@ package VITESS, i.e they have a common meaning. These options are
 10.helper threads               --T
 11.read potentially compressed  --c<bytesize>
 12.write compressed             --C<mode>       0
+13.generate geometry file       --v<filename>   do not generate geometry file
+14.generate trajectory file     --V<filename>   do not generate trajectory file
 
 1. neutron input filename (--f<filename>)
   This option is necessary for the first VITESS module of a pipe,
@@ -3717,6 +4019,13 @@ package VITESS, i.e they have a common meaning. These options are
   float values, reducing the file size to approx. 40%. These compression mode will
   even improve VITESS performance, because they are straight forward and reduce I/O sizes.
   Data files may be further compressed by gzip in a second step, independent of this.
+
+13. generate geometry file (--v)
+  In this mode all modules of the pipe do not generate neutron trajectories, but write
+  geometric information about the module to a file.
+
+14. generate trajectory file (--V)
+  With this mode modules additionally write geometric information of interaction points.
 
 The specific input parameters for each module must not be controlled
 by the general command options.
@@ -4447,7 +4756,7 @@ proc serializeImoFile {f mode var app} {
 }
 
 
-proc editSave {var param ext app {saveAs 0}} {
+proc editSave {var param ext app {saveAs 0} {destroyAtEnd 1}} {
 # param = 1 forces that a file with new filename is within
 # the given default directory
   if [errorWithValues $ext 1 $app] return
@@ -4472,7 +4781,9 @@ proc editSave {var param ext app {saveAs 0}} {
     puts $f [$w.v.text get 1.0 end]
   }
   close $f
-  destroy $w
+  if {$destroyAtEnd} {
+    destroy $w
+  }
 }
 
 
@@ -4525,10 +4836,10 @@ proc editFile {var param ext app} {
   if  {$f != "0"} {close $f}
 
   bButton $w.b.check Check "clearText; errorWithValues $ext 1 $app"
-  bButton $w.b.save "Save+Close" "editSave $var $param $ext $app"
+  bButton $w.b.savecl "Save+Close" "editSave $var $param $ext $app"
   bButton $w.b.saveas "Save As" "editSave $var $param $ext $app 1"
   bButton $w.b.cancel Cancel "destroy $w"
-  pack $w.b.check $w.b.save $w.b.saveas $w.b.cancel -side left -expand 1
+  pack $w.b.check $w.b.savecl $w.b.saveas $w.b.cancel -side left -expand 1
 }
 
 proc helpOnModule {i} {
@@ -4743,3 +5054,4 @@ foreach n $TempVars {
 foreach p {sore genFE genFE2} {
   proc $p {} {}
 }
+#puts [info globals]

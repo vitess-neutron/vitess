@@ -3,10 +3,11 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.00  Feb 2008                 initial version                                            */
+/* 1.00  Feb 2008  K. Lieutenant  initial version                                            */
 /* 1.01  Oct 2009  A. Houben      User may change reference wavelength                       */
 /* 1.10  Oct 2009  A. Houben      Limit capture area by circle or rectangle (like window)    */
 /* 1.11  Nov 2009  A. Houben      Limit captured flux by wave-length range                   */
+/* 1.12  Nov 2009  K. Lieutenant  gold foil area calculated                                  */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_CAPTURE);
-  print_module_name("capture_flux 1.11");
+  print_module_name("capture_flux 1.12");
 
   /* module specific initialization */
   OwnInit(argc, argv);
@@ -77,16 +78,20 @@ int main(int argc, char **argv)
 
 
 	  if (!bOutOfWindow && !bOutOfLambda) {
-        if (ReferenceWavelength <= 0.) {
-			CaptInt  +=    InputNeutrons[i].Probability;
-			CaptQuad += sq(InputNeutrons[i].Probability);
-		} else {
-			CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
-			CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
-		}
-		avColor += (double)InputNeutrons[i].Color;
-		avwColor += (double)InputNeutrons[i].Color*InputNeutrons[i].Probability;
-        Ntot++;
+	    if (ReferenceWavelength <= 0.) {
+	      CaptInt  +=    InputNeutrons[i].Probability;
+	      CaptQuad += sq(InputNeutrons[i].Probability);
+	    } else {
+	      CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
+	      CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
+	    }
+
+	    //colour counting: sum (horizontal+vertical)
+	    double col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
+	    avColor += col;
+	    avwColor += col*InputNeutrons[i].Probability;
+
+	    Ntot++;
 	  }
 
       WriteNeutron(&(InputNeutrons[i]));
@@ -102,6 +107,7 @@ int main(int argc, char **argv)
 	CaptErr = sqrt(sq(CaptInt)/Ntot + (Ntot*CaptQuad-sq(CaptInt))/(Ntot-1));
   else
     CaptErr = CaptInt;
+
   avColor /= Ntot;
   avwColor /= CaptInt;
 
@@ -122,7 +128,7 @@ int main(int argc, char **argv)
 	fprintf(LogFilePtr,"Lambda window from %6.2f A to %6.2f A \n", lambdamin, lambdamax);
 
   fprintf(LogFilePtr, "Reference wavelength: %12.3f A\n", ReferenceWavelength);
-  if (avColor != 0.0) {
+  if (avColor != 0.0 && Ntot!=0) {
 	fprintf(LogFilePtr, "Average color       : %12.3f \n", avColor);
 	fprintf(LogFilePtr, "Avr. weighted color : %12.3f \n", avwColor);
   }
@@ -149,9 +155,9 @@ void  OwnInit(int argc, char *argv[])
     { switch(argv[i][1])
       { 
 		/* area */
-		case 'A':
+		/* case 'A':
 			CaptArea = atof(&argv[i][2]);  
-			break;
+			break; */
 		case 'R':
 			ReferenceWavelength = atof(&argv[i][2]);  
 			break;
@@ -198,6 +204,16 @@ void  OwnInit(int argc, char *argv[])
       }
     }
   }
+
+  if (WindowType==1)        // circular
+  {
+    CaptArea = sq(winradius)*M_PI;
+  }
+  else if (WindowType==2)   // rectangular
+  {
+    CaptArea = (heightmax-heightmin)*(widthmax-widthmin);
+  }
+
   return;
 }
 

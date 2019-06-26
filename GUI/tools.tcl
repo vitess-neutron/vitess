@@ -706,7 +706,8 @@ proc tmpFilename {{name temp.tmp}} {
     if [catch {set n $env($w)}] continue
     break
   }
-  return [getFullTmpFile "$n[clock seconds]$name"]
+  set s [format %x [clock seconds]]
+  return [getFullTmpFile "$n$s$name"]
 }
 
 proc getDirectory {name} {

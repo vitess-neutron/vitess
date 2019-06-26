@@ -13,8 +13,6 @@ void   FillRotMatrixX(double RotMatrix[3][3], double rotx);
 void   FillRotMatrixY(double RotMatrix[3][3], double roty);
 void   FillRotMatrixZ(double RotMatrix[3][3], double rotz);
 
-void   CartesianToEulerZY  (VectorType Vector, double *roty,  double *rotz);
-void   EulerToCartesianZY  (VectorType Vector, double *roty,  double *rotz);
 void   CartesianToSpherical(VectorType Vector, double *Theta, double *Phi);
 void   SphericalToCartesian(VectorType Vector, double *Theta, double *Phi);
 

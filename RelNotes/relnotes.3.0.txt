@@ -1,0 +1,45 @@
+VITESS 3.0  Release Note
+------------------------
+
+Visualization:
+--------------
+A framework for the visualization of the instrument geometry and neutron trajectories
+has been implemented. Modules produce individual output files in special exececution
+modes which are gathered in another step and transformed to X3D (3 dimensional virtual reality)
+or SVG (2D vector graphic) files then, under control of the GUI.
+Virtual reality scenes may be examined with external viewers then, as 2D graphics
+may be shown by means of a browser.
+The framework has been filled for the following modules yet:
+Source, guide, chopper_disk, space, spacewindow, slit, supermirror ensemble, guide_elliptic and detector
+and is considered "beta".
+
+Pipe import:
+------------
+Simulation pipes with VITESS modules may be (re-)imported to a GUI representation
+of the instrument, the input file may be any text file with a line containing 
+the pipe command.
+
+The maximal number of modules in the pipe has been extended to 100 now.
+
+New modules:
+------------
+elliptic guide: Represents a guide with a true elliptic shape, opposed to the regular guide module, which approximates a curved shape by segmentation and interpolation.
+mon_brilliance: Displays the brilliance distribution
+monitor1D     : A generic 1D monitor
+
+Source characteristics:
+----------------------
+- FRM-2 included as source
+- New ESS cold source
+- New HZB cold and bi-spectral source
+
+Bug fixes, improvements:
+-----------------------
+- monitor1D & 2D  : Color as filter variable introduced
+- monochr_analyzer: Transition mode added
+- sample_reflectom: Incoherent scattering added
+- monitor1        : option to writeout files for colour 0, 1, 2, ... simultaneously (max. 10)
+- eval_inelast    : calculation of energy transfer and restriction of ang. range corrected
+- guide           : counts reflections separately in hor. and vert. direction
+- sm_ensemble     : counts also reflections
+- ...

@@ -52,7 +52,7 @@
 
 /* START HEADER STORY */
 
-#define MAX_MIRR 16
+#define MAX_MIRR 50
 
 FILE	   *COLLFILE;
 char       *ParameterFileName, *ReflUpFileName, *ReflDownFileName;
@@ -63,7 +63,7 @@ long	   User, NumWrong[MAXWORKER], nocolM = 10000, Wallonoff, NoCh;
 long	   number_vis_tr; // current number of visualised trajectories, used to limit output
 double	   rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
 int        mcperneutron = (MAX_MIRR*3);
-
+short int   increaseColor=0;
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
            r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
@@ -214,6 +214,8 @@ void OwnInit(int argc, char *argv[])
 	exit(0);
       }
       break;
+    case 'R':
+      sscanf(arg, "%i", &increaseColor);
     case 'r':
       sscanf(arg, "%lf", &TranslOutput[0]);
       break;
@@ -314,9 +316,227 @@ void OwnInit(int argc, char *argv[])
 } /* End OwnInit */
 
 
+void DetermineAndLogMirrorShape(int i)
+{
+
+	// Initialise all 6 vectors in a quadrangle
+  VectorType v[6];
+  int largestVectorIndex = -1;
+  int secondLargestVectorIndex = -1;
+  double largestVector = 0.;
+  double width = 0.;
+  int widthIndex = -1;
+  double height = 0.;
+  int heightIndex = -1;
+  int j;
+  int numRightAngles[4];
+  int counter = 0;
+  short isRectangle = 1;	
+
+  CopyVector(r2[i], v[0]);  
+  SubVector(v[0], r1[i]);
+
+  CopyVector(r3[i], v[1]);  
+  SubVector(v[1], r2[i]);
+  
+  CopyVector(r4[i], v[2]);  
+  SubVector(v[2], r3[i]);
+
+  CopyVector(r1[i], v[3]);  
+  SubVector(v[3], r4[i]);
+
+  CopyVector(r3[i], v[4]);  
+  SubVector(v[4], r1[i]);
+
+  CopyVector(r4[i], v[5]);  
+  SubVector(v[5], r2[i]);
+
+  fprintf(LogFilePtr, "%10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
+	  r1[i][0], r1[i][1], r1[i][2], r2[i][0], r2[i][1], r2[i][2], r3[i][0], r3[i][1], r3[i][2], r4[i][0], r4[i][1], r4[i][2]);
+
+  // Determine the two largest vectors of the mirror element
+  // In a rectangle these are the two diagonals
+  for (j = 0; j < 6; j++) {
+    double lengthVector = LengthVector(v[j]);
+    if (lengthVector >= largestVector) {
+      secondLargestVectorIndex = largestVectorIndex;
+      largestVectorIndex = j;
+      largestVector = lengthVector;
+    }
+   /* if (widthIndex < 0) {
+      width = lengthVector;
+      widthIndex = j;
+    }*/
+    if (heightIndex < 0) {
+      height = lengthVector;
+      heightIndex = j;
+    }
+    if (lengthVector < height) {
+      height = lengthVector;
+      heightIndex = j;
+    }
+   /* else if (lengthVector > height && lengthVector < largestVector) {
+      width = lengthVector;
+      widthIndex = j;
+    }*/
+  }
+  width = height;
+  widthIndex = heightIndex;
+  for (j = 0; j < 6; j++) {
+	if (LengthVector(v[j]) < LengthVector(v[secondLargestVectorIndex]) && LengthVector(v[j]) > width) {
+			width = LengthVector(v[j]);
+			widthIndex = j;
+		}
+  }
+ 
+  // Determine whether we deal with a rectangle
+  // 4 right angles have to be present
+  
+  for (j = 0; j < 4; j++) numRightAngles[j] = 0;
+	
+  for (j = 0; j < 6; j++) {
+	  int k;	
+	if (j == largestVectorIndex || j == secondLargestVectorIndex) continue;
+
+    for (k = j; k < j+6; k++) {
+      int kk = k%6;
+	  double scalarProd = fabs(ScalarProduct(v[j], v[kk]));	
+      double angle = acos(scalarProd/(LengthVector(v[j])*LengthVector(v[kk])))*180./M_PI;
+      if (kk == largestVectorIndex || kk == secondLargestVectorIndex) continue;
+      if (angle > 89.9)  numRightAngles[counter]++;
+    }
+    
+    counter++;
+  }
+
+  for (j = 0; j < 4; j++) isRectangle &= (numRightAngles[j] == 2);
+  
+  // Set the rectangle parameters
+  if (isRectangle) {
+
+	VectorType zAxis = {0, 0, 1};
+    double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));		
+    stGeometry.nRectangles++;
+    CopyVector(WallOffset[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
+    CopyVector(WallNormal[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vNormal);
+    stGeometry.pRectangle[stGeometry.nRectangles-1].Width = width;
+    stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
+    stGeometry.pRectangle[stGeometry.nRectangles-1].rotAngle = rotationAngle/M_PI*180.;
+
+  }
+  // Build the quadrangle with tho triangles, if mirror is a triangle, the second one is a line
+  else {
+
+    VectorType basePoint1, basePoint2, thirdPoint1, thirdPoint2;
+    switch(largestVectorIndex) {
+    
+    case 0: 
+      CopyVector(r1[i], basePoint1);
+      CopyVector(r2[i], basePoint2);
+      CopyVector(r3[i], thirdPoint1);
+      CopyVector(r4[i], thirdPoint2);
+      break;
+   
+    case 1:
+      CopyVector(r2[i], basePoint1);
+      CopyVector(r3[i], basePoint2);
+      CopyVector(r4[i], thirdPoint1);
+      CopyVector(r1[i], thirdPoint2);
+      break;
+   
+     case 2: 
+       CopyVector(r3[i], basePoint1);
+       CopyVector(r4[i], basePoint2);
+       CopyVector(r1[i], thirdPoint1);
+       CopyVector(r2[i], thirdPoint2);
+      break;
+     
+    case 3: 
+      CopyVector(r4[i], basePoint1);
+      CopyVector(r1[i], basePoint2);
+      CopyVector(r2[i], thirdPoint1);
+      CopyVector(r3[i], thirdPoint2);
+      break;
+     
+    case 4:
+      CopyVector(r1[i], basePoint1);
+      CopyVector(r3[i], basePoint2);
+      CopyVector(r2[i], thirdPoint1);
+      CopyVector(r4[i], thirdPoint2);
+      break;
+    
+    case 5: 
+      CopyVector(r2[i], basePoint1);
+      CopyVector(r4[i], basePoint2);
+      CopyVector(r1[i], thirdPoint1);
+      CopyVector(r3[i], thirdPoint2);
+      break;
+        
+    default:
+      fprintf(LogFilePtr, "Something went wrong when preparing mirror Nr. %d for visualization! \n", i+1);
+      exit(-1);
+      break;
+    }
+
+     fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
+	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2], 
+	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]);
+
+    stGeometry.nTriangles++;    
+    CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
+    CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
+    CopyVector(thirdPoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
+
+    stGeometry.nTriangles++;
+    CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
+    CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
+    CopyVector(thirdPoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
+
+  }
+
+}
+
+void SetGeometryData()
+{
+ 
+  bVisInstalled = TRUE;
+ 
+  // Geometry data
+ if (bVisInstr) {
+   int i;
+
+   stGeometry.pRectangle = calloc(max_mirr, sizeof(VtRectangle));
+   stGeometry.pTriangle = calloc(max_mirr*2, sizeof(VtTriangle));
+   
+   for (i = 1; i <= max_mirr; i++) {
+     DetermineAndLogMirrorShape(i);
+   }
+
+   stGeometry.pDescr  = "sm ensemble:green";
+   stGeometry.eModule = VT_SM_ENSEMBLE;
+
+ }
+
+}
+
 void OwnCleanup()
 {
-  int i,c;
+  
+	int i,c;
+	SetGeometryData();
+  
 #ifdef VT_GRAPH
   if (p >= 2) cpgclos();
 #endif
@@ -346,7 +566,7 @@ static VINLINE void CartesianToSpherical2(const VectorType Vector, double *Theta
 static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const VectorType rt) {
   // Area(r1,r2) > Area(r1,rt) + Area(r2, rt)
   double lv1,lv2,lvt, lva,lvb,lvc, sp12,sp1t,sp2t;
-  lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVector²
+  lv1 = r1[0]*r1[0] + r1[1]*r1[1] + r1[2]*r1[2]; // LengthVectorÂ²
   lv2 = r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2];
   lvt = rt[0]*rt[0] + rt[1]*rt[1] + rt[2]*rt[2];
   sp12 = r1[0]*r2[0] + r1[1]*r2[1] + r1[2]*r2[2]; // ScalarProduct(r1,r2)
@@ -598,6 +818,10 @@ void processNeutron (int i, int thread_i) {
     }
 
     for (l=1; l<=max_mirr; l++) { // loop over mirrors
+      Neutron myneutron, *n;
+      n = &myneutron;
+      CopyNeutron(&InputNeutrons[i], n);
+
       if (m == l) continue;
       for (im=1; im<=max_mirr; im++)
 	if (im != l && PathA[l] > PathA[im])
@@ -611,6 +835,12 @@ void processNeutron (int i, int thread_i) {
       Prob = prob[l];
       m = l;
       nocol++;
+	  
+      CopyVector(Pos, n->Position);
+      CopyVector(Dir, n->Vector);
+      WriteIAP(n, VT_REFLECTED);
+      if (increaseColor) InputNeutrons[i].Color++;
+
       if (p) {
 	if (p==1)
 	  fprintf(COLLFILE,
@@ -709,7 +939,7 @@ int main(int argc, char **argv)
   if (p==1) {
     COLLFILE = fopen(COLLFILEName, "w");
     fprintf(COLLFILE,
-	    "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/°\n\n");
+	    "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/Â°       dir z/Â°\n\n");
   }
 
   // no helper threads when plotting or writing to file per neutron

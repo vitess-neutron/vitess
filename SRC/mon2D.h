@@ -58,8 +58,9 @@ class Mon2D {
   double filterVarMax1; // minimum value of parameter 1, additional filter for the monitor, optional input parameter
   double filterVarMax2; // maximum value of parameter 2, additional filter for the monitor, optional input parameter
 
-  int filterParam1;  // filter parameter 1, optional input parameter
-  int filterParam2;  // filter parameter 2, optional input parameter
+  int filterParam1;      // filter parameter 1, optional input parameter
+  int filterParam2;      // filter parameter 2, optional input parameter
+  int filterComb; //filter 1 and 2 combined with AND or OR
   
   int analysePol;  // switched on if polarisation analysis desired, optional input parameter
 

@@ -239,29 +239,6 @@ void RotMatrixToAnglesZY(double RotMatrix[3][3], double *roty, double *rotz)
 
 
 
-/* 'CartesianToEulerZY' calculates Euler angles 'rotz' and 'roty'         */
-/* to transfer the x-axis to 'Vector' by rotation around y- and z-axis ZY */
-/* (cf. FillRotMatrixZY)                                                  */
-/*  Author: G. Zsigmond                                                   */
-void CartesianToEulerZY(VectorType Vector, double *roty, double *rotz)
-{
-	*rotz = (double) atan2( Vector[1] , Vector[0] ) ;
-
-	*roty = (double) atan2( Vector[2] , ((double) cos(*rotz) * Vector[0] + (double) sin(*rotz) * Vector[1]) ) ;
-}
-
-/* Euler to cartesian - invers of previous                            */
-/*  Author: G. Zsigmond                                               */
-
-void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
-{
-
-	Vector[0]= (double) cos(*roty) * (double) cos(*rotz) ;
-	Vector[1]= (double) cos(*roty) * (double) sin(*rotz) ;
-	Vector[2]= (double) sin(*roty) ;
-
-}
-
 
 /* 'CartesianToSpherical' calculates Theta and Phi of a unit vector  */
 /* if Theta is the angle with the axis of lowest index               */

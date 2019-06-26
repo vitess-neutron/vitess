@@ -158,12 +158,29 @@ if {$tcl_platform(os) == "Darwin"} {set menuColor black} else {set menuColor $c}
 set itemlabwidth 16
 set fileentrywidth 48
 set VisState 0
-# VisGather is an external program to gather 1. step visualisation results
-set VisGather [file join $ExeDirectory gather$ExeSuffix]
-if {![file exists $VisGather]} {set VisGather ""}
+# VisGather is either
+# - an external program path 
+# - or just-concatenate
+# to gather 1. step visualisation results
+#set VisGather [file join $ExeDirectory sortiap$ExeSuffix]
+#if {! [file exists $VisGather]} {set VisGather "just-concatenate"}
+set VisGather "just-concatenate"
+
 # VisMerge is an external program to merge 2. step visualisation results
-set VisMerge [file join $ExeDirectory merge$ExeSuffix]
-if {![file exists $VisMerge]} {set VisMerge ""}
+set VisMerge [file join $ExeDirectory sortiap$ExeSuffix]
+if [file exists $VisMerge] {
+  if {$tcl_platform(platform) == "unix"} {
+    set optf [file join $env(HOME) .x3dopt]
+  } else {
+    set optf [file join $ExeDirectory x3d.opt]
+  }
+  if [file exists $optf] {
+    append VisMerge " -f $optf"
+  }
+  unset optf
+} else {
+  set VisMerge ""
+}
 
 set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
 

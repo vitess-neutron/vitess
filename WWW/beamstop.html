@@ -1,28 +1,25 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Module Beamstop</title>
 </head>
  <body>
- 
 <h1>VITESS Module Beamstop</h1>
-<br>
+<p>
 The module <b>beamstop</b> simulates a beamstop of rectangular or circular shape. 
 It is regarded as a plane area and is centered around the beam axis. Distance and size of the beamstop have to be given.
 Assuming that it is between sample and detector, it does not change the co-ordinate system (in contrast to most other modules).
 Thus, the origin remains at the sample position. As a consequence, the distance of the detector module is the distance to the sample in any case.  
-<br>
+<p>
 There are two options: either all neutrons are propagated to the plane through the beamstop or the neutrons remain at their positions. 
 In both cases, those neutrons that hit the beamstop or would hit the beamstop are removed.
 The main difference is that the first option only makes sense if the beamstop is in front of a planar detector,
 because otherwise they may not reach the plane through beamstop or end up behind the detector.
-<br>
-<br>
-<h3><font size="+2"> Parameters for module 'beamstop' </font></h3>
-<br>
+<p>
+<h3>Parameters for module 'beamstop'</h3>
+<p>
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -78,8 +75,7 @@ because otherwise they may not reach the plane through beamstop or end up behind
    
   </tbody> 
 </table>
-<br> 
-<br>
+
  
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 

@@ -748,7 +748,8 @@ void ReadParameterFile()
 
 		}
 
-		if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) {fprintf(LogFilePtr,"\nERROR: Distance to sample must be larger than sample dimensions!\n") ; exit(0);}
+		if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
+      {fprintf(LogFilePtr,"\nWarning: Distance to sample smaller than at least one sample dimension!\n") ; exit(0);}
 		
 /*	 checks some values */
 

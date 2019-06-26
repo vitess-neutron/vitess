@@ -179,14 +179,19 @@ int main(int argc, char *argv[])
 
 						if (AddColor > 0) OutNeutron.Color += AddColor;
 						WriteNeutron(&OutNeutron);
+						if (NeutCount < 1)  {
+						  WriteIAP(&OutNeutron, VT_ENTERED);
+						}
 					} /* for */
 				} /* if intersects detector */
 				else {
 					WriteNeutron(&InputNeutrons[i]);
+					WriteIAP(&InputNeutrons[i], VT_EXITED);
 				}
 			} /* if color */
 			else {
 				WriteNeutron(&InputNeutrons[i]);
+				WriteIAP(&InputNeutrons[i], VT_EXITED);
 			}
 		} //for(i=0; i<NumNeutGot; i++)
 	} //while((ReadNeutrons())!= 0)
@@ -481,6 +486,7 @@ void  OwnInit(int argc, char *argv[])
 	    fprintf(LogFilePtr,"For the cylindrical detector the -D, -t, -h, -w and -e options are mandatory!\n");
 	    exit(-1);
 	    }*/
+	  
 	  Detector.SG.Cyl.r=distance;
 	  Detector.SG.Cyl.height = dHeight;
 	  Thickness = thickness;
@@ -498,6 +504,31 @@ void  OwnInit(int argc, char *argv[])
 
 	  NeutronIntersectsDetector=NeutronIntersectsCylDetector;
 	  DetectorSpot=CylinderDetSpot;
+
+	  bVisInstalled = TRUE;
+	  // Geometry data
+	  if (bVisInstr)
+	    { 
+	      stGeometry.pCylSlice = calloc(1, sizeof(VtCylSlice));
+	      stGeometry.nCylSlices = 1; 
+	      
+	      stGeometry.pCylSlice[0].Radius = distance; 
+	      stGeometry.pCylSlice[0].Width  = dWidth;
+	      stGeometry.pCylSlice[0].Height = dHeight;
+	      stGeometry.pCylSlice[0].vCntr[0]  = 0.;
+	      stGeometry.pCylSlice[0].vCntr[1]  = 0.;
+	      stGeometry.pCylSlice[0].vCntr[2]  = 0.;
+	      stGeometry.pCylSlice[0].vSymAxis[0]= 0;
+	      stGeometry.pCylSlice[0].vSymAxis[1]= 0;
+	      stGeometry.pCylSlice[0].vSymAxis[2]= 1;
+	      stGeometry.pCylSlice[0].Phi = iphi/M_PI*180.;
+	      stGeometry.pCylSlice[0].OpenAngle = dWidth/(2.*M_PI*distance)*360.;
+	      
+
+	      stGeometry.pDescr  = "detector:cyan";
+	      stGeometry.eModule = VT_DETECTOR;
+	    }
+
 	} 
       else 
 	{
@@ -521,6 +552,27 @@ void  OwnInit(int argc, char *argv[])
 	  Thickness=thickness;
 	  NeutronIntersectsDetector=NeutronIntersectsCubeDetector;
 	  DetectorSpot=CubeDetSpot;
+
+	  bVisInstalled = TRUE;
+	  // Geometry data
+	  if (bVisInstr)
+	    { 
+	      stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
+	      stGeometry.nCuboids = 1; 
+	      
+	      stGeometry.pCuboid[0].Length = thickness; 
+	      stGeometry.pCuboid[0].Width  = dWidth;
+	      stGeometry.pCuboid[0].Height = dHeight;
+	      stGeometry.pCuboid[0].vCntr[0]  = distance;
+	      stGeometry.pCuboid[0].vCntr[1]  = 0.;
+	      stGeometry.pCuboid[0].vCntr[2]  = 0.;
+	      stGeometry.pCuboid[0].vNormal[0]= cos(itheta);
+	      stGeometry.pCuboid[0].vNormal[1]= sin(itheta)*cos(iphi);
+	      stGeometry.pCuboid[0].vNormal[2]= sin(itheta)*sin(iphi);
+	      
+	      stGeometry.pDescr  = "detector:cyan";
+	      stGeometry.eModule = VT_DETECTOR;
+	    }
 	}
     } 
   else 

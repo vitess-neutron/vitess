@@ -569,7 +569,7 @@ void   OwnInit   (int argc, char *argv[])
 					break;
 
 				case 'S':
-					eShape = (short) atol(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
+					eShape = (VtWndGeom) atol(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
 					break;
 
 

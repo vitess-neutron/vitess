@@ -25,6 +25,16 @@
 # define ISNAN(x) isnan(x)
 #endif
 
+#ifdef  _MSC_VER
+/* The Microsoft visual C++ compiler spews about 1000 warnings during */
+/* compilation of gnuplot. The following lines disable most of them.  */
+#pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+#define _CRT_SECURE_NO_WARNINGS
+# if _MSC_VER <= 1200
+    typedef unsigned int uintptr_t; 
+# endif
+#endif
+
 #define MN          1.6749284E-27
 #define G           9.80665
 #define K           1.380662E-23
@@ -38,6 +48,10 @@
 
 #define UP          1
 #define DOWN        0
+
+#define SPIN_UP     1
+#define SPIN_UNDEF  0
+#define SPIN_DOWN  -1
 
 #define ON          1
 #define OFF         0
@@ -136,6 +150,22 @@ typedef enum
 }
 VtDistr;
 
+typedef enum
+{	
+	VT_CREATED   = 0,    // source
+	VT_OUTSIDE   = 1,    // guide 
+	VT_OUT_OF_WND= 2,    // slit
+	VT_PASSED    = 3,    // chopper, slit
+	VT_ENTERED   = 4,    // guide
+	VT_TRANSIT   = 5,    // from one guide segment to the next
+	VT_REFLECTED = 6,    // guide or mirror surface
+	VT_SCATTERED = 7,    // sample
+	VT_ABSORBED  = 8,    // chopper, guide, collimator
+	VT_EXITED    = 9,    // guide
+	VT_DETECTED  = 10,   // detector
+}
+VtReason;
+
 
 typedef double VectorType[3];
 typedef double DoublePair[2];
@@ -191,6 +221,19 @@ Neutron;
 
 typedef struct
 {
+  float          pos[3];
+  float          lambda;
+  float          weight;
+	TotalID        id;
+	short          color;
+  VtReason       reason;
+	short          spin;
+}
+VtTrajPoint;
+
+
+typedef struct
+{
       double height, width, thickness;
 }
 CubeType;
@@ -236,13 +279,162 @@ SampleType;
 
 typedef struct
 {
+  VectorType vPosBeg;
+  VectorType vPosEnd;
+}  
+VtLine;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Width;
+  double     Height;
+  double     rotAngle;
+}  
+VtRectangle;
+
+typedef struct
+{
+  VectorType vEdges[3];
+}  
+VtTriangle;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Width;
+  double     Height;
+  double     InnerWidth;
+  double     InnerHeight;
+}  
+VtOpenRect;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Radius;
+  double     AngleBeg;
+  double     AngleEnd;
+}  
+VtCircle;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Length;
+  double     Width;
+  double     Height;
+}  
+VtCuboid;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vNormal;
+  double     Length;
+  double     WidthIn;
+  double     WidthOut;
+  double     HeightIn;
+  double     HeightOut;
+}  
+VtHull;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Radius;
+}  
+VtCylinder;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Radius;
+  double     InnerRadius;
+}  
+VtHolCyl;
+
+typedef struct
+{
+  VectorType vCntr;
+  double     Radius;
+}  
+VtSphere;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Length;
+  double     Width;
+  double     Height;
+  double     Xlow;
+  double     Xhigh;
+}  
+VtEllipsoid;
+
+typedef struct
+{
+  VectorType vCntr;
+  VectorType vSymAxis;
+  double     Radius;
+  double     Width;
+  double     Height;
+  double     Phi;
+  double     OpenAngle;
+}
+VtCylSlice;  
+  
+
+typedef struct
+{
+  VtModID      eModule;
+  VtLine*      pLine;
+  int          nLines;
+  VtRectangle* pRectangle;
+  int          nRectangles; 
+  VtTriangle*  pTriangle;
+  int          nTriangles; 
+  VtOpenRect*  pOpenRect;
+  int          nOpenRects; 
+  VtCircle*    pCircle;
+  int          nCircles; 
+  VtCuboid*    pCuboid;
+  int          nCuboids;
+  VtHull*      pHull;
+  int          nHulls;
+  VtCylinder*  pCylinder;
+  int          nCylinders;
+  VtHolCyl*    pHolCyl;
+  int          nHolCyls;
+  VtEllipsoid* pEllipsoid;
+  int          nEllipsoids;
+  VtSphere*    pSphere;
+  int          nSpheres;
+  VtCylSlice*  pCylSlice;
+  int          nCylSlices;
+  const char*  pDescr;   /* description   */
+}
+VtModGeom;
+
+
+
+typedef struct
+{
   VtModID  eModule;
   double   dWPar;    /* width, ...             */
   double   dHPar;    /* height, end width, ... */
   double   dRPar;    /* radius, ...            */
   long     nNumber;  /* number of ....         */
   short    eType;    /* shape, mon. par., ...  */
-  const char* pDescr;   /* material, ...          */
 }
 ModProp;
 
@@ -251,11 +443,12 @@ ModProp;
 /** Prototypes               **/
 /******************************/
 
-double ENERGY_FROM_LAMBDA(const double x);
-double LAMBDA_FROM_ENERGY(const double x);
-double ENERGY_FROM_V   (const double x);
-double V_FROM_LAMBDA   (const double x);
+double ENERGY_FROM_LAMBDA(const double lmbd);
+double LAMBDA_FROM_ENERGY(const double E);
+double ENERGY_FROM_V   (const double v);
+double V_FROM_ENERGY   (const double E);
 double LAMBDA_FROM_V(const double x);
+double V_FROM_LAMBDA   (const double x);
 
 double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
@@ -278,19 +471,23 @@ double LengthVector (const VectorType Vector);
 double DistVector   (const VectorType Vec1, const VectorType Vec2);
 double ScalarProduct(const VectorType Vec1, const VectorType Vec2);
 double AngleVectors (const VectorType v1, const VectorType v2);
-double Area(const VectorType v1, const VectorType v2);
+double Area            (const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
-void   RotVector       (double RotMatrix[3][3], VectorType Vector);
-void   RotBackVector   (double RotMatrix[3][3], VectorType Vector);
-void   FillRMatrixZY   (double RotMatrix[3][3], const double roty, const double rotz);
+
+void   RotVector         (double RotMatrix[3][3], VectorType Vector);
+void   RotBackVector     (double RotMatrix[3][3], VectorType Vector);
+void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const double rotz);
+void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
+void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
 FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);
 void   Warning(const char *text);
 void   Abort();
+void   Wait(float WaitTime);
 
 int    ReadLine(FILE* pFile, char* pLine, int nStrLen);
 void   ReadParString(FILE *fpt, char *stringvar);

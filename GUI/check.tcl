@@ -216,10 +216,15 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
   set list [lindex $e 3]
   if {[set c [lindex $list 3]] == ""} return ; # command option
   set varname [lindex $e 0]
-  set v [string trim [entryVal $varname $app]];	# value
-  if {$v == ""}  {
-    if {$special == ""} return
-    set v $special
+  set rt [lindex $e 1]
+  if {$rt == "select"} {
+    set v ""
+  } else {
+    set v [string trim [entryVal $varname $app]];	# value
+    if {$v == ""}  {
+      if {$special == ""} return
+      set v $special
+    }
   }
   global FullCommand Comode Serdefault SerRadio SerRadioV Plotfile Plottype
 
@@ -233,7 +238,13 @@ proc writeCommandOption {e {app _} {special ""} {serpar {}} {serrep {}} {serno {
     }
     incr sercol
   }
-  switch [set rt [lindex $e 1]] {
+  switch $rt {
+    select {
+      # concatenate values of select variables
+      foreach f [lindex $e 4] {
+        append v [globVal [string tolower $varname$app[lindex $f 0]]]
+      }
+    }
     radio {
       # substitute visible values with command codes, if
       # command codes are present
