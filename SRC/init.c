@@ -250,13 +250,17 @@ void Init(int argc, char **argv, VtModID eModule)
       break;
 
     case 'Z':                   /* init number for the random number generator */
-#ifdef _MSC_VER
+#if defined(PENV) || defined(_MSC_VER)
       {
 	int i;
         if (sscanf(arg, "%i", &i)) {
 	  char buf[24];	  
 	  sprintf(buf, "GSL_RNG_SEED=%d", i);
-	  _putenv(buf);
+#      ifdef _MSC_VER
+  	  _putenv(buf);
+#      else
+  	  putenv(buf);
+#      endif
 	}
       }
 #else

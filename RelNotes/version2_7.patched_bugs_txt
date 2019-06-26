@@ -1,0 +1,16 @@
+This is a description of bugs found in version 2.7
+
+These bugs have been corrected in the distribution files
+if not otherwise stated.
+
+GUI
+---
+
+General gravitiy option has not been exported correctly on programm calls.
+
+
+Modules
+-------
+
+source: ISIS parameter file handling, example
+
