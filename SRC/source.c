@@ -28,6 +28,8 @@
 /* 1.11  Jun  2004  K. Lieutenant  Correction: transformation v <-> phi,theta;               */
 /*                                 normalisation of traj. for 'direction by window'          */
 /*                                 new way of integration in 'LoadWavelengthDistribution'    */
+/* 1.11a Nov  2004  K. Lieutenant  'WriteSimData' extended, 'PolDegree'+'FracPolDir' introdu.*/
+/* 1.11b Dec  2004  K. Lieutenant  solid angle calculation to general.c, (count rate errors) */
 /*********************************************************************************************/
 
 #include <string.h>
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize */
 	Init             (argc, argv, VT_SOURCE);
-	print_module_name("Source and Window 1.11a");
+	print_module_name("Source and Window 1.11b");
 	OwnInit          (argc, argv);
 	CenterX   = 0.0; 
 	CenterY   = 0.0;
@@ -196,16 +198,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
-		{	if (stTraj[imod].dMaxDivY < 0.55 && stTraj[imod].dMaxDivZ < 0.55)
-			{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2(tan(theta)-tan³(theta)/3) */
-				dSolAngle = 4 * (tan(stTraj[imod].dMaxDivY) - pow(tan(stTraj[imod].dMaxDivY),3)/3.0) 
-				              * (tan(stTraj[imod].dMaxDivZ) - pow(tan(stTraj[imod].dMaxDivZ),3)/3.0);
-			}
-			else
-			{	/* empirical approximation for large angles */
-				dSolAngle = 4 * sqrt(stTraj[imod].dMaxDivY * sin(stTraj[imod].dMaxDivY) 
-				                   * stTraj[imod].dMaxDivZ * sin(stTraj[imod].dMaxDivZ));  
-			}
+		{	dSolAngle = SolidAngle(stTraj[imod].dMaxDivY, stTraj[imod].dMaxDivZ);  
 		}
 
 		/* calculate flux and mean current of the neutron beam */

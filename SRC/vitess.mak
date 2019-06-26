@@ -62,6 +62,7 @@ ALL : \
 	"$(OD)\lattice_dist.exe" \
 	"$(OD)\mirror_coating.exe" \
 	"$(OD)\surface_file.exe" \
+	"$(OD)\guide_shape.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\collimator_soller.exe" \
@@ -79,6 +80,7 @@ ALL : \
 	"$(OD)\polariser_sm.exe" \
 	"$(OD)\polariser_he3.exe" \
 	"$(OD)\flipper_coil.exe" \
+	"$(OD)\pol_mirror.exe" \
 	"$(OD)\precessionfield.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
@@ -120,32 +122,32 @@ SOURCE=$(SPATH)\sample.c
 "$(IDIR)\sample.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\ma_geom.c
-"$(IDIR)\ma_geom.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\magneticmap.c
-"$(IDIR)\magneticmap.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\ma_functions.c
-"$(IDIR)\ma_functions.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\src_modchar.c
-"$(IDIR)\src_modchar.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\gener_fct.c
-"$(IDIR)\gener_fct.obj" : $(SOURCE)
+SOURCE=$(SPATH)\bender_inter_data.c
+"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sq_calc.c
 "$(IDIR)\sq_calc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\bender_inter_data.c
-"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
+SOURCE=$(SPATH)\ma_functions.c
+"$(IDIR)\ma_functions.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\gener_fct.c
+"$(IDIR)\gener_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\ma_geom.c
+"$(IDIR)\ma_geom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\src_modchar.c
+"$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\magneticmap.c
+"$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ascii2bin.c
@@ -245,6 +247,13 @@ SOURCE=$(SPATH)\surface_file.c
 
 "$(OD)\surface_file.exe" : "$(OD)" $(TOOL) "$(OD)\surface_file.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\surface_file.pdb" /out:"$(OD)\surface_file.exe" "$(IDIR)\surface_file.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\guide_shape.c
+"$(IDIR)\guide_shape.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_shape.exe" : "$(OD)" $(TOOL) "$(OD)\guide_shape.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\guide_shape.pdb" /out:"$(OD)\guide_shape.exe" "$(IDIR)\guide_shape.obj" $(TOOL) 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
@@ -364,6 +373,13 @@ SOURCE=$(SPATH)\flipper_coil.c
 
 "$(OD)\flipper_coil.exe" : "$(OD)" $(MTOOL) "$(OD)\flipper_coil.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\flipper_coil.pdb" /out:"$(OD)\flipper_coil.exe" "$(IDIR)\flipper_coil.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\pol_mirror.c
+"$(IDIR)\pol_mirror.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\pol_mirror.exe" : "$(OD)" $(MTOOL) "$(OD)\pol_mirror.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\pol_mirror.pdb" /out:"$(OD)\pol_mirror.exe" "$(IDIR)\pol_mirror.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\precessionfield.c
 "$(IDIR)\precessionfield.obj" : $(SOURCE)

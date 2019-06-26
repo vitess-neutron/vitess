@@ -4,7 +4,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.00  Jun 1999  D. Wechsler                                                               */
-/* 1.01  Mar 2001  S. Manoshin    include of gravity effect                                  */	
+/* 1.01  Mar 2001  S. Manoshin    include of gravity effect                                  */
 /* 1.02  Jun 2001  K. Lieutenant  SOFTABORT                                                  */
 /* 1.03  Jan 2002  G. Zsigmond    weighted center of beam                                    */
 /* 1.04  Jan 2002  K. Lieutenant  reorganisation                                             */
@@ -87,13 +87,13 @@ int main(int argc, char *argv[])
 {
 	long   i;
 
-	double mu,    /* absorption coeffient of the absorbing material [1/cm] */ 
+	double mu,    /* absorption coeffient of the absorbing material [1/cm] */
 	       prob;  /* resulting attenuation inside absorbing material       */
-	
-	double TimeOF, 
-	       AveTimeOF,                 /* average time of flight to chopper weighted by count rate */ 
+
+	double TimeOF,
+	       AveTimeOF,                 /* average time of flight to chopper weighted by count rate */
 	       SumProb,                   /* sum of count rates of all traj. reaching the chopper */
-	       CenterX, CenterY, CenterZ; /* center of beam of all traj. reaching the chopper at chopper weighted by count rate */ 
+	       CenterX, CenterY, CenterZ; /* center of beam of all traj. reaching the chopper at chopper weighted by count rate */
 
 	 /* initialisation, definitions see Input below */
 	ChopperInitialOffset = prob = 0.0;
@@ -101,19 +101,19 @@ int main(int argc, char *argv[])
 	Endpoint.D           = 0.0;
 
 	Init(argc, argv, VT_CHOP_DISC);
-	print_module_name("Space and Chopper 1.8a");
+	print_module_name("Space and Chopper 1.8b");
 	OwnInit(argc, argv);
 
-	CenterX   = 0.0; 
-	CenterY   = 0.0; 
-	CenterZ   = 0.0; 
+	CenterX   = 0.0;
+	CenterY   = 0.0;
+	CenterZ   = 0.0;
 	AveTimeOF = 0.0;
-	SumProb   = 0.0;	
+	SumProb   = 0.0;
 
 	/* Reading chopper file  */
 	ReadChopperData();
 
-	DECLARE_ABORT	
+	DECLARE_ABORT
 
 	while(ReadNeutrons()!= 0)
 	{
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 			/****************************************************************************************/
 			if (InputNeutrons[i].Position[0] > -Endpoint.D)
 				CountMessageID(ALL_BEHIND_COMPONENT, InputNeutrons[i].ID);
-			
+
 			/****************************************************************************************/
 			/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
 			/****************************************************************************************/
@@ -142,11 +142,11 @@ int main(int argc, char *argv[])
 			InputNeutrons[i].Time += (double)TimeOF;
 
 			AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
-			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-			CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
+			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
+			CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
 			SumProb   += InputNeutrons[i].Probability;
-			
+
 			InputNeutrons[i].Position[0]=0.0;
 
 
@@ -161,8 +161,8 @@ int main(int argc, char *argv[])
 
 				switch (eAbsMaterial)
 				{	/* ideally absorbing material */
-					case 0: 
-						continue; 
+					case 0:
+						continue;
 						break;
 
 					/* gadolinium */
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 						{	double *pLmbdList=NULL, *pMuList=NULL;
 
 							mu   = Interpolation(InputNeutrons[i].Wavelength, 1, pLmbdList, pMuList, 44);
-							prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */	   
+							prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */
 						}
 				 		else
 						{	prob = 0.0;
@@ -183,20 +183,20 @@ int main(int argc, char *argv[])
 						break;
 
 					/* Bor-10 */
-					case 2: 
+					case 2:
 						if (InputNeutrons[i].Wavelength < 0.29)
 						{	double eV, mcnp;
 
 							eV   = 1.0e-06*ENERGY_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 							mcnp = 612.07/sqrt(eV);
 							mu   = mcnp * NA * 2.46E-24 / 10.811;
-							prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */	   
+							prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
 						}
 						else if ( InputNeutrons[i].Wavelength < 6.0)
 						{	double *pLmbdList=NULL, *pMuList=NULL;
 
 							mu   = Interpolation(InputNeutrons[i].Wavelength, 3, pLmbdList, pMuList, 44);
-							prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */	   
+							prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
 						}
 				 		else
 						{	prob = 0.0;
@@ -209,11 +209,11 @@ int main(int argc, char *argv[])
 				InputNeutrons[i].Probability *= prob;
 			}
 
-			if (InputNeutrons[i].Probability < 0.0) 
+			if (InputNeutrons[i].Probability < 0.0)
 			{
 				Error("NeutronProbability < 0");
 			}
-			else if (InputNeutrons[i].Probability < wei_min) 
+			else if (InputNeutrons[i].Probability < wei_min)
 			{
 				continue;
 			}
@@ -228,8 +228,8 @@ int main(int argc, char *argv[])
 	if (SumProb != 0.0)
 	{
 		CenterX = CenterX/SumProb;
-		CenterY = CenterY/SumProb; 
-		CenterZ = CenterZ/SumProb; 
+		CenterY = CenterY/SumProb;
+		CenterZ = CenterZ/SumProb;
 		AveTimeOF = AveTimeOF/SumProb;
 		fprintf(LogFilePtr,"Center of beam before the chopper: X = %f cm Y = %f cm Z = %f cm TOF = %f ms \n",CenterX, CenterY, CenterZ, AveTimeOF);
 	}
@@ -274,7 +274,7 @@ void OwnInit   (int argc, char *argv[])
 					case 2: fprintf(LogFilePtr,"Absorption of Bor-10 in chopper disk assumed\n"); break;
 					default: Error("This kind of absorption is not supported");
 				}
-					
+
 				break;
 
 			case 'z':
@@ -319,7 +319,7 @@ void OwnInit   (int argc, char *argv[])
 				ThisChopper.Frequency = 2.0*M_PI*Rpm/60.0;
 				Period = 60.0/Rpm;
 				break;
-			
+
 			default:
 				fprintf(LogFilePtr,"ERROR: Unknown command option: %s\n",argv[i]);
 				exit(-1);
@@ -336,11 +336,11 @@ void OwnCleanup()
 {
 	long   nModuleNo;    /* number of the previous module (not needed) */
 	short  dir=0;
-	double time, phi0=0.0, 
+	double time, phi0=0.0,
 	       phi_wnd1, phi_wnd2, phi_wnd3;
-	double dTimeMeas,    /* measuring time  (not needed here) */
-	       dFreq,        /* pulse frequency (not needed here) */
-	       dLmbdWanted,  /* desired wavelength          */
+	double dTimeMeas,    /* measuring time     (from simulation.inf, not needed here) */
+	       dLmbdWanted,  /* desired wavelength (from simulation.inf)                  */
+	       dFreq,        /* source frequency   (from simulation.inf, not needed here) */
 	       dLength,      /* length of the instrument until chopper module */
 	       dRotZ, dRotY; /* orientation of the output of the previous component (not needed) */
 	VectorType EndPos;   /* position of the output of the previous component (not needed) */
@@ -352,7 +352,7 @@ void OwnCleanup()
 	fprintf(LogFilePtr," \n");
 
 	/* set description for instrument plot */
-	ReadSimData  (&dTimeMeas, &dLmbdWanted, &dFreq);	
+	ReadSimData  (&dTimeMeas, &dLmbdWanted, &dFreq);
 	if (dLmbdWanted > 0.0)
 	{	ReadInstrData(&nModuleNo, EndPos, &dLength, &dRotZ, &dRotY);
 		time = (dLength-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(dLmbdWanted)); /* velocity in m/s instead of cm/ms */
@@ -444,11 +444,11 @@ void ReadChopperData()
 		}
 		sscanf(Buffer,"%lf %lf %lf %lf %lf",&Offset,&WindowHeight,&WindowOpening,&ThisChopper.Window[k].Left,&ThisChopper.Window[k].Right);
 
-		fprintf(LogFilePtr, "Window %d:\n  Position : %6.2f deg\n  Aperture : %6.2f deg\n  Height   : %6.2f cm\n", 
+		fprintf(LogFilePtr, "Window %d: Position: %7.2f deg   Aperture: %6.2f deg   Height: %6.2f cm\n",
 		                    k+1, Offset, WindowOpening, WindowHeight);
 		if (ThisChopper.Window[k].Left > 0.0 || ThisChopper.Window[k].Right > 0.0)
 			fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n",
-			                    ThisChopper.Window[k].Left, ThisChopper.Window[k].Right); 
+			                    ThisChopper.Window[k].Left, ThisChopper.Window[k].Right);
 
 		Offset        = 2.0*M_PI*Offset/360.0;
 		WindowOpening = 2.0*M_PI*WindowOpening/360.0;
@@ -507,11 +507,11 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 	/***********************************************************************************/
 
 
-	if (bSetColour) 
+	if (bSetColour)
 		ThisNeutron->Color = 0;
 
 	for(i=0;i<ThisChopper.NumberOfWindows;i++)
-	{	
+	{
 		RightTurns=0; LeftTurns=0; /*modified*/
 
 		/***********************************************************************************/
@@ -528,7 +528,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		if(OriginNeutronDistance < ThisChopper.Window[i].Bottom) continue;
 
 		/* second check: if neutron does not hit chopper at all*/
-		if(OriginNeutronDistance > ThisChopper.Radius) 				
+		if(OriginNeutronDistance > ThisChopper.Radius)
 			goto passed_outside;
 
 		/***********************************************************************************/
@@ -592,7 +592,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		{
 			if((NeutronAngle>Left)&&(NeutronAngle<Right))
 			{
-				if (bSetColour) 
+				if (bSetColour)
 					ThisNeutron->Color = (short) (i+1);
 				goto passed;
 			}
@@ -601,8 +601,8 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		{
 			if(((NeutronAngle<Left)&&(NeutronAngle<Right))||   /* why not "> Left or < Right" */
 				((NeutronAngle>Left)&&(NeutronAngle>Right)))
-			{	
-				if (bSetColour) 
+			{
+				if (bSetColour)
 					ThisNeutron->Color = (short) (i+1);
 				goto passed;
 			}
@@ -628,7 +628,7 @@ passed_outside:
 passed:
 	/* set time (close to) zero, if demanded */
 	if (bZeroTime)
-	{	
+	{
 		ThisNeutron->Time = 1000.0 * ChopperOffset / ThisChopper.Frequency;
 	}
 	return FALSE;

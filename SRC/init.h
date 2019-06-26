@@ -26,17 +26,18 @@ extern char*    ParDirectory;   /* parameter directory */
 extern double   wei_min;        /* Minimal weight for tracing neutron */
 extern long     keygrav;
 extern long     idum;           /* random number specific */
+extern short    bOldFrame;      /* criterion: new co-ordinate system set for current module */
 
 
 void Init             (int argc, char **argv, VtModID eModule);
-void Cleanup          (double dShiftX, double dShiftY, double dShiftZ, 
+void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
                        double dHorizAngle, double dVertAngle);
 void print_module_name(char name[]);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
-void WriteInstrData   (long    nModuleNo, VectorType EndPos, double  dLength, double  dRotZ, double  dRotY); 
-void ReadInstrData    (long*   pModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY); 
-void WriteSimData     (double  dTimeMeas, double dLmbdWant, double dFreq);
+void WriteInstrData   (long    nModuleNo, VectorType EndPos, double  dLength, double  dRotZ, double  dRotY);
+void ReadInstrData    (long*   pModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY);
+void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
 void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 void CopyNeutron      (Neutron* source, Neutron *dest);
 long LinesInFile      (FILE* In);

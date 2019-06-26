@@ -5,7 +5,7 @@
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
 /* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
-/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */ 
+/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* Change: K.L.  2002 JAN, reorganized routines                                             */
 /* Change: G.Zs. 2002 JUL, new routines                                                     */
@@ -30,8 +30,8 @@ FILE* LogFilePtr;        /* pointer to the log file stream              */
 /*  Coversion between physical properties                                               */
 /****************************************************************************************/
 
-double ENERGY_FROM_LAMBDA(double x) 
-{	
+double ENERGY_FROM_LAMBDA(double x)
+{
 	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
@@ -40,7 +40,7 @@ double LAMBDA_FROM_ENERGY(double x)
 	return(sqrt(81805.048 / x)); /* [ueV]   -> [Ang] */
 }
 
-double ENERGY_FROM_V(double x) 
+double ENERGY_FROM_V(double x)
 {
 	return(0.5227033 * x * x);   /* [cm/ms] -> [ueV] */
 }
@@ -50,6 +50,10 @@ double V_FROM_LAMBDA(double x)
 	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
+double LAMBDA_FROM_V(double x)
+{
+	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
+}
 
 /****************************************************************************************/
 /*  Random Functions                                                                    */
@@ -200,6 +204,30 @@ void Exchange(double* pValue1, double* pValue2)
 }
 
 
+/* Calculation of solid angle from horizontal and vertical opening angle */
+/*                                         */
+/* dHorAngle : horizontal angle in radians */
+/* dVertAngle: horizontal angle in radians */
+/*                                         */
+double SolidAngle(const double dHorAngle, const double dVertAngle)
+{
+	double dSolAngle=0.0;
+
+	if (dHorAngle < 0.55 && dVertAngle < 0.55)
+	{	/* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2(tan(theta)-tan³(theta)/3) */
+		dSolAngle = 4 * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0)
+				        * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+	}
+	else
+	{	/* empirical approximation for large angles */
+		dSolAngle = 4 * sqrt(dHorAngle  * sin(dHorAngle)
+				             * dVertAngle * sin(dVertAngle));
+	}
+
+	return dSolAngle;
+}
+
+
 
 /****************************************************************************************/
 /*  Vector Functions                                                                    */
@@ -244,7 +272,7 @@ double LengthVector(const VectorType Vec)
 short NormVector(VectorType Vector)
 {
 	long   i;
-	double dLen = LengthVector(Vector);	
+	double dLen = LengthVector(Vector);
 
 	if (dLen==0.0)
 	{	return FALSE;
@@ -328,7 +356,7 @@ double ScalarProduct(const VectorType v1, const VectorType v2)
 double AngleVectors(VectorType v1, VectorType v2)
 {
 double theta ;
- 
+
 	theta= ScalarProduct(v1, v2) / (double)sqrt(ScalarProduct(v1, v1)) / (double)sqrt(ScalarProduct(v2, v2)) ;
 	return 180./M_PI * (double) acos(theta) ;
 }
@@ -338,8 +366,8 @@ double theta ;
 
 double Area(VectorType v1, VectorType v2)
 {
-return LengthVector(v1) * LengthVector(v2) * 
-		
+return LengthVector(v1) * LengthVector(v2) *
+
 		fabs(sin(acos( ScalarProduct(v1, v2)/(LengthVector(v1) * LengthVector(v2)))) /2.);
 
 }
@@ -411,15 +439,15 @@ void FillRMatrixZY(double RotMatrix[3][3], double roty, double rotz)
 /*  General I/O Functions                                                               */
 /****************************************************************************************/
 
-/* fileOpen open file 'name' and gives pointer back 
+/* fileOpen open file 'name' and gives pointer back
    in case of an opening error, a message is written to the LogFile */
 
 FILE * fileOpen(const char *name, char *mode)
-{	
+{
 	FILE *f=NULL;
-	
+
 	f = fopen(name, mode);
-	if (f==NULL) 
+	if (f==NULL)
 	{	fprintf(LogFilePtr, "ERROR: Can't open %s!\n", name);
 		exit(-1);
 	}
@@ -451,10 +479,10 @@ void Abort()
 /*  Functions for Reading of Input Data                                                 */
 /****************************************************************************************/
 
-/* ReadLine reads next line from file 'pFile' into string 'pLine' that is 
+/* ReadLine reads next line from file 'pFile' into string 'pLine' that is
      not empty and not a comment line (beginning with #)
 	  returning TRUE if line is found and FALSE otherwise
-   it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr 
+   it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr
    the maximal number of characters in the string must be given in 'nStrLen'
 */
 int
@@ -466,8 +494,8 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen)
 	strcpy(pLine, "");
 	if (pFile!=NULL)
 	{
-		while(strlen(pLine)==0  && !feof(pFile))	
-		{	
+		while(strlen(pLine)==0  && !feof(pFile))
+		{
 			fgets (pLine, nStrLen, pFile);
 
 			/* delete line feeds, tabs and carriage returns */
@@ -562,7 +590,7 @@ StrgLShift(char* sStr, int kWidth)
 }
 
 
-/* Scan string 'sStr' and copy all values (but maximally 'nMax') 
+/* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of double values,  beginning with value number 'nStart'*/
 long
 StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
@@ -576,19 +604,19 @@ StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 	{	/* search of beginning and end of 1st number of (remaining) string */
 		k=0;
 		/* step forward until first number or control character */
-		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0) 
-			k++; 
+		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
+			k++;
 		/* step forward until space-like or control character */
-		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0) 
-			k++;  
+		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
+			k++;
 
 		/* separating first number and adding it to the list */
 		if (k > 0)
-		{	
+		{
 			StrgCopy(sNumber, pStr, k);
 			if (n >= 0)
 				pTab[n] = atof(sNumber);
-			n++;	
+			n++;
 			pStr += k;
 		}
 	}
