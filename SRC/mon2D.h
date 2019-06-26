@@ -32,7 +32,9 @@ class Mon2D {
 
   double** dataArray; // here the monitor data is stored
   double** dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
-  
+  double** dataArrayError;
+  int** dataArrayCounts;
+
   double xMin;  // minimum x value, input parameter
   double xMax;  // maximum x value, input parameter
   double yMin;  // mininum y value, input parameter
@@ -49,6 +51,9 @@ class Mon2D {
 
   FILE* fMonitor; // pointer to output file
   string fMonitorFilename;  // name of the output file, input parameter
+
+  string weightTag[2];
+  string formatTag[2];
 
   double lambdaMin;  // minimum wavelength, filter for the monitor, optional input parameter
   double lambdaMax;  // maximum wavelength, filter for the monitor, optional input parameter

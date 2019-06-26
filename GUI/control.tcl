@@ -33,6 +33,10 @@ proc finalExit {} {
       catch {file delete $f}
     }
   }
+  set fdir [file join [globVal SourceDirectory] FILES .saved]
+  foreach f [glob -nocomplain -directory $fdir *.gui] {
+    catch {file delete $f}
+  }
   exit
 }
 
@@ -95,10 +99,12 @@ proc showModulesAgain {{delall 0}} {
   }
   reShowModules $Mlf
   setInstrumentfile $savname
-  # give a hint of the overall geometry, otherwise we see a stamp with Linux
   if {[getSystem] == "unix"} {
-    # this in conjunction with KDE works like "maximize to full window"
-    wm geometry .x 800x600
+    # Give a hint of the overall geometry, otherwise we see a stamp
+    # sized window with Linux. We may not specify the exact size, sorry;
+    # In conjunction with KDE the result is 
+    # "maximize to full window vertically".
+    wm geometry $XRoot 800x600
   }
 }
 
@@ -222,7 +228,7 @@ proc controlMenu {w} {
 
   set lmenu {
     {c "LOAD Instrument" {loadAll gui}}
-    {c "SAVE Instrument" {storeAll gui}} 
+    {c "SAVE Instrument" {storeAll gui}}
     {c "SAVE As" {storeAll gui newfile.gui}} s
     {c "ADD Packet" {addPacket}}
     {c "INSERT Packet" {insertPacketWindow}}
@@ -242,7 +248,7 @@ proc controlMenu {w} {
     {c "tcl script" {storeAll tcl}}
     {c "pl perl script" {storeAll pl}}
     {c "py python script" {storeAll py}}
-  } 
+  }
   if {[getSystem] == "unix"} {
     lappend flist \
       {c "sh shell script" {storeAll sh}} \
@@ -255,11 +261,13 @@ proc controlMenu {w} {
   unset flist
 
   popMenu $w.copa.menu \
+      {c "Recover Instrument" recoverFileGUI} \
+      {s} \
       {c "Copy  Module Parameters" copyModPars} \
       {c "Paste Module Parameters" pasteModPars}
 
   set lmenu {{c "Plot File" {plotFile 1}} {c "2D Plot File" {plotFile 2}}}
-  if {"" != [getPreferredPlotCmd]} {
+  if {"" != [getGnuPlotApp]} {
     lappend lmenu \
         {c "Plot Cmd" {plotCmdWindow}}\
         {c "Plot using Template" {plotTemplateCmdWindow}} s\
@@ -274,7 +282,7 @@ proc controlMenu {w} {
       {c "Define Instrument Digest" genDigest}
 
   set clist {ascii2bin
-    define_direction direct_view gener_batch mirror_coating surface_file
+    define_direction direct_view gener_batch mirror_coating surface_file gener_bispectral
     standard_deviation rvitess lattice_dist guide_shape
   }
   set htmlist $clist
@@ -283,7 +291,7 @@ proc controlMenu {w} {
 
   set nlist {"Convert Ascii to Binary"
     "Define Direction"
-    "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files"
+    "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files" "Generate Extraction System"
     "Standard Deviation" "Read and Visualise Output"
     "Lattice Distances" "Guide Shape"
     "Cryst. Analyzer Spectrom."
@@ -399,9 +407,22 @@ proc controlMenu {w} {
       {m Trajectories trajmode} \
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
-      {m Xcontrol intern} s\
+      {m Xcontrol intern} \
+      {m Recovery recovery} s\
       {c "X3D options" editX3DOptions} \
       {c "Helper applications" editDefaults}
+
+  set ww $wo.recovery
+  menu $ww -bg $menuColor -tearoff 0
+  popMenu $ww \
+      {m Snapshots states} \
+      {m "Snap Interval (s)" secs}
+
+  forceDef StoreStates 8
+  cascEntries $ww.states StoreStates 2 4 8 16
+
+  forceDef WatchSeconds 30
+  cascEntries $ww.secs WatchSeconds 5 10 20 30 60 300 600 900
 
   set ww $wo.afont
   menu $ww -bg $menuColor -tearoff 0
@@ -428,14 +449,10 @@ proc controlMenu {w} {
       {m "Info level" infolevel} \
       {m Timeout timeout} s\
       {m Bell bell} \
-      {m Precision prec} \
       {m Protocol prot}
 
   forceDef ProtocolMode action
   cascEntries $ww.prot ProtocolMode action everything nothing
-
-  forceDef tcl_precision 12
-  cascEntries $ww.prec tcl_precision 8 9 10 11 12 13 14 15 16 17
 
   forceDef tk_strictMotif [expr {[getSystem] == "unix"}]
   cascEntries $ww.tk_strictMotif tk_strictMotif 1 0
@@ -461,15 +478,15 @@ proc controlMenu {w} {
   cascEntries $wo.checkmode Checkmode normal set_default strict
 
   forceDef Execmode normal
-  cascEntries $wo.execmode Execmode normal "save old" "copy results" 
+  cascEntries $wo.execmode Execmode normal "save old" "copy results"
 
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
   # if we have an X3D viewer installed, prefer this over SVG
-  if {[getPreferredX3DCmd] == ""} {set emode X3D} else {set emode "SVG xz"}
+  if {[getPreferredX3DCmd] != ""} {set emode X3D} else {set emode "SVG xz"}
   forceDef trajmode $emode
-  cascEntries $wo.trajmode trajmode "SVG xz" "SVG xy" X3D textfile
+  cascEntries $wo.trajmode trajmode X3D "SVG xz" "SVG xy" textfile
 
   forceDef browse_ext_mode select
   cascEntries $wo.browse_ext_mode browse_ext_mode all select
@@ -698,7 +715,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.0"
+  set t "VITESS 3.1"
   set maxModule 100
   set DummyEntry "--inactive--"
 
@@ -732,9 +749,9 @@ proc showBeef {w} {
   # ch: fixed height of module list and visible module window, in cm
   # 0.8 means the VITESS window should not take more than 80 % of the display height
   # 12/28 is the ratio of module list window per total height we want to obtain
-  
+
   set ch [expr $hpx * 0.8 * 12.0/28.0 / $pcm]c
-  
+
   # length and width of window components given in cm
   # cw    list canvas width
   # ch    list canvas height
@@ -744,7 +761,7 @@ proc showBeef {w} {
 
   # Tth   text window height, in characters of given font, means visible text lines
   set Tth 10
-  
+
   switch $FontSizeIndex {
     0 {
       set cw 9c
@@ -809,7 +826,7 @@ proc showBeef {w} {
   helpFrame $Amf
 
   ### action buttons
-  global fileentrywidth LastWin LastState Progress ProgressS ProgressTextL
+  global fileentrywidth LastWin Progress ProgressS ProgressTextL
   set savw $fileentrywidth
   set fileentrywidth 72
 
@@ -852,9 +869,71 @@ proc showBeef {w} {
   pack $wb.del -fill x
   pack $wb.dummy -fill x -anchor w -pady 12m
   pack $wb.del $wb.exit -fill x
-  set LastState [generateVitessCommand kstate]
+  saveLastState
   set LastWin $wb.exit
   bind $LastWin <Destroy> windowManagerExit
+}
+
+proc saveLastState {} {
+  # Save the state, which is hashed in a generated command.
+  global LastState
+  set LastState [generateVitessCommand kstate]
+}
+
+proc doSnapshot {} {
+  global LastSnapState LastCheck StateStoreInd StoreStates
+
+  set i 0
+
+  set st [generateVitessCommand kstate]
+
+  set sexist [info exists StateStoreInd]
+
+  if {! $sexist} {
+    set do_snap 1
+  } elseif {! [info exists LastSnapState]} {
+    set do_snap 1
+  } elseif {$st == $LastSnapState} {
+    set do_snap 0
+  } else {
+    set do_snap 1
+  }
+
+  if $do_snap {
+    set LastSnapState $st
+
+    if $sexist {
+      set i [expr [incr StateStoreInd] % $StoreStates]
+    } else {
+      set StateStoreInd 0
+    }
+    set fdir [file join [globVal SourceDirectory] FILES .saved]
+    file mkdir $fdir
+    set fn [file join $fdir $i.gui]
+    storeAll gui "" $fn 0
+  }
+
+  # indicate snap time to watchdog
+  set LastCheck [clock seconds]
+}
+
+proc watchdogMonitor {} {
+  global WatchSeconds PipeActive LastCheck
+  
+  set tsec $WatchSeconds
+  if {! $PipeActive} {
+    set do_snap 1
+    if [info exists Lastcheck] {
+      set tdelta [expr [clock seconds] - $LastCheck]
+      if {$tdelta < $tsec} {
+        set do_snap 0
+        incr tsec -$tdelta
+      }
+    }
+    if $do_snap doSnapshot
+  }
+  # reenable watchdog execution
+  after [expr 1000*$tsec] watchdogMonitor
 }
 
 ### main control widget of Xcontrol, specific for VITESS if the name of this widget
@@ -877,7 +956,7 @@ proc controlGUI {
   ### with different integer part (versions like 1.0 and 1.10 are
   ### compatible, but versions 1 and 2 are not)
   ###
-  set XcontrolVersion 2
+  set XcontrolVersion 2.1
 
   if {!$restart && $w != "."} {
     ###
@@ -912,11 +991,14 @@ proc controlGUI {
     wm withdraw .
     showModulesAgain
   } else {
-    global ControlDirectory
+    global ControlDirectory WatchSeconds PipeActive
+    set PipeActive 0
     set ControlDirectory $defaultdirectory
     setAll
     # for the xcontrol root window names start with . dot
     if {$w == "."} {set w ""}
     showBeef $w
+    after [expr 1000*$WatchSeconds] watchdogMonitor
   }
+
 }

@@ -82,10 +82,10 @@
   int do_visualise; /* default : no visualisation */
   long number_vis_tr=0; /* counter : number of trajectories, which was visualised */
   long	cancel_vis=0; /* cancel visualisation */
+  extern int gselec; /* choose the output 1 - display only, 2 - file only,
+			    3 - both, defined in cpgplot.c */
 #endif
 
-extern int    gselec; /* choose the output 1 - display only, 2 - file only,
-			    3 - both, defined in cpgplot.c */
 
 #include "intersection.h"
 #include "init.h"
@@ -137,6 +137,13 @@ BenderChannel;
 /******************************/
 
 FILE * openNFile (char *name) {return fileOpen (name, "r");}
+
+
+/**************************************/
+/** Prototypes of internal functions **/
+/**************************************/
+
+short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin);
 
 
 /**************************************/
@@ -278,6 +285,7 @@ int main(int argc, char *argv[])
   Nchannels = 0;
   BufferIndex = 0;
   surfacerough = 0.0; /*set by default */
+
   gselec = 1 ; /* Activate visualisation device -screen */
 
   /*input*/
@@ -387,7 +395,9 @@ int main(int argc, char *argv[])
       break;
 
     case 'o':
+#ifdef VT_GRAPH
       gselec = atol(&argv[i][2]);
+#endif
       break;
 
     case 'y':
@@ -683,97 +693,13 @@ if (bAbsTransCrit != 0)
     BenderExitHeight = BenderEntranceHeight;
 
 
-  /* Read reflectivity file for left surfaces of bender, spin up */
-
-  if (ReflFileNamelup !=NULL)
-  {
-    for(count=0; count<1000; count++)
-    {
-      if (fscanf(refl_filelup,"%lf",&rdatalup[count])==EOF)
-	break;
-    }
-
-    fclose(refl_filelup);
-  }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for left surfaces of bender, for spin up \n");
-
-  /* Read reflectivity file for right surfaces of bender, spin up */
-
-  if (ReflFileNamerup !=NULL)
-  {
-    for(count=0; count<1000; count++)
-    {
-      if (fscanf(refl_filerup,"%lf",&rdatarup[count])==EOF)
-	break;
-    }
-
-    fclose(refl_filerup);
-  }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for right surfaces of bender, for spin up \n");
-
-
-  /* Read reflectivity file for top and bottom planes of bender, spin up */
-
-  if (ReflFileNametbup !=NULL)
-    {
-      for(count=0; count<1000; count++)
-	{
-	  if (fscanf(refl_filetbup,"%lf",&rdatatbup[count])==EOF)
-	    break;
-	}
-
-      fclose(refl_filetbup);
-    }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for top and bottom planes, for spin up \n");
-
-
-
-  /* Read reflectivity file for left surfaces of bender, spin down */
-
-  if (ReflFileNameldo !=NULL)
-    {
-      for(count=0; count<1000; count++)
-	if (fscanf(refl_fileldo,"%lf",&rdataldo[count])==EOF)
-	  break;
-
-      fclose(refl_fileldo);
-    }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for left surfaces of bender, for spin down \n");
-
-  /* Read reflectivity file for right surfaces of bender, spin down */
-
-  if (ReflFileNamerdo !=NULL)
-    {
-      for(count=0; count<1000; count++)
-	{
-	  if (fscanf(refl_filerdo,"%lf",&rdatardo[count])==EOF)
-	    break;
-	}
-
-      fclose(refl_filerdo);
-    }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for right surfaces of bender, for spin down \n");
-
-
-  /* Read reflectivity file for top and bottom planes of bender, spin down */
-
-  if (ReflFileNametbdo !=NULL)
-    {
-      for(count=0; count<1000; count++)
-	{
-	  if (fscanf(refl_filetbdo,"%lf",&rdatatbdo[count])==EOF)
-	    break;
-	}
-
-      fclose(refl_filetbdo);
-    }
-  else
-    fprintf(LogFilePtr,"case of no reflectivity for top and bottom planes, for spin down \n");
+  /* Read reflectivity files for all walls, spin up and down */
+  LoadReflFile(refl_filelup,  rdatalup, "left",  "up");
+  LoadReflFile(refl_filerup,  rdatarup, "right", "up");
+  LoadReflFile(refl_filetbup, rdatatbup,"top and bottom", "up");
+  LoadReflFile(refl_fileldo,  rdataldo, "left", "down");
+  LoadReflFile(refl_filerdo,  rdatardo, "right", "down");
+  LoadReflFile(refl_filetbdo, rdatatbdo,"top and bottom", "down");
 
 
  if (bAbsTransCrit != 0)
@@ -1807,6 +1733,33 @@ else
 
   return(0);
 }
+
+short LoadReflFile(FILE* pReflFile, double* pData, char* sWall, char* sSpin)
+{
+  short rc;
+  int  nLines, iLine;
+  char sBuffer[100];
+
+  if (pReflFile != NULL) 
+  {
+    nLines = LinesInFile(pReflFile);
+
+    for(iLine=0; iLine < nLines; iLine++) 
+    {
+      ReadLine(pReflFile, sBuffer, sizeof(sBuffer)-1);
+      StrgScanLF(sBuffer, &pData[10*iLine], 10, 0);
+    }
+	fclose(pReflFile);
+	rc=TRUE;
+  }
+  else
+  { fprintf(LogFilePtr,"case of no reflectivity for %s surfaces of bender for spin %s neutrons \n", sWall, sSpin);
+	rc=FALSE;
+  }
+  return rc;
+}
+
+
 
 
 

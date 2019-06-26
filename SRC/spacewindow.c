@@ -67,6 +67,7 @@ double  heightmin,       /* z-coordinate: bottom of rectangular window          
   double Thicknesscolli=0.0;
   double DistMove=0.0;
   short  TreatColor = -1; // Treat only neutrons with a given color
+  short  RemoveOtherColor = FALSE; // If treated only neutrons with a given color, all others are removed
   double minPhi=-1.0, maxPhi=-1.0;  //Angle in xz plane
 
 
@@ -360,8 +361,10 @@ int main(int argc, char *argv[])
 
 			  if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
 			    Output = InputNeutrons[i];
-			    WriteIAP(&Output, VT_EXITED);
-			    WriteNeutron(&Output);
+			    if (!RemoveOtherColor) {
+			        WriteIAP(&Output, VT_EXITED);
+			        WriteNeutron(&Output);
+			    }
 			    continue;
 			  }
 			
@@ -659,6 +662,9 @@ void  OwnInit(int argc, char *argv[])
       case 'f':
 				sscanf(&(argv[i][2]),"%hd", &TreatColor);
 				break;
+      case 'd':
+				sscanf(&(argv[i][2]),"%hd", &RemoveOtherColor);
+				break;
       case 'p':
 				minPhi = atof(&argv[i][2]);
 				/* in deg, min angle in yz plane */
@@ -719,13 +725,13 @@ void SetGeometryData()
     stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
     stGeometry.nCuboids = 1; 
 
-    stGeometry.pCuboid[0].Length = widthmax - widthmin; 
-    stGeometry.pCuboid[0].Width  = heightmax - heightmin;
-    stGeometry.pCuboid[0].Height = Max(Thicknesscoll, Thicknesscolli);
+    stGeometry.pCuboid[0].Length = Max(Thicknesscoll, Thicknesscolli); 
+    stGeometry.pCuboid[0].Width  = widthmax - widthmin;
+    stGeometry.pCuboid[0].Height = heightmax - heightmin;
     stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Height/2.;
     stGeometry.pCuboid[0].vCntr[1]  = ywincenter;
     stGeometry.pCuboid[0].vCntr[2]  = zwincenter;
-    stGeometry.pCuboid[0].vNormal[0]= 0.0;
+    stGeometry.pCuboid[0].vNormal[0]= 1.0;
     stGeometry.pCuboid[0].vNormal[1]= cos(rotang);
     stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
 

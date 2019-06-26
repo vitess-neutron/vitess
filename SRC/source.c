@@ -38,6 +38,8 @@
 /* 1.16  Jan  2012  K. Lieutenant  visualization                                             */
 /* 1.17  Aug  2012  K. Lieutenant  new characteristics for the ESS cold moderator            */
 /* 1.18  Sep  2012  K. Lieutenant  CSNS source                                               */
+/* 1.19  Mar  2013  K. Lieutenant  correction ISIS source brlliance                          */
+/* 1.20  May  2013  K. Lieutenant  data base versions for moderator characteristics          */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -47,6 +49,7 @@
 #include "softabort.h"
 #include "intersection.h"
 #include "src_modchar.h"
+#include "source_csns.h"
 #include "message.h"
 
 
@@ -66,7 +69,8 @@ short     eTraceMode=0;        /* mode 0: no tracing
                                   mode 2: simulation only with traj. of interest  */
 char*     pModFileName=NULL;
 
-short     nNumMod=0,           /* number of moderators in moderator system        */
+short     iDataVsn=1,          /* version of the data base for the source characteristics */
+          nNumMod=0,           /* number of moderators in moderator system        */
           imod=0;              /* index of moderators in moderator system         */
 double    NumberOfNeutrons=0,
           dTimeMeas   =  0.0,  /* time of measurement in seconds                  */
@@ -138,6 +142,7 @@ int main(int argc, char *argv[])
      CenterZ, AveTimeOF,/*     at window                                                 */
      SumProb,           /* sum of probabilities (counts) used to calculate average values*/
      dFact   =    1.0,  /* for 'direction by window' */
+     IsisNorm=    1.0,
      PolNorm =    0.0;
      
    // ISIS specific parameter
@@ -149,7 +154,7 @@ int main(int argc, char *argv[])
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.18");
+   print_module_name("Source and Window 1.20");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -183,14 +188,14 @@ int main(int argc, char *argv[])
          fprintf(LogFilePtr, "pulse length                 : %7.3f ms \n", 1000.*stSrc.dPulseLength);
       }
       fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.dPulseFreq);
-      fprintf(LogFilePtr, "average power                : %7.3f MW \n\n", stSrc.dPower/1000000.);
-
+      fprintf(LogFilePtr, "average power                : %7.3f MW \n",   stSrc.dPower/1000000.);
+      fprintf(LogFilePtr, "data base version            : %d       \n\n", iDataVsn);
    }
 
    /* for all moderators in the system */
    for (imod=0; imod < nNumMod; imod++)
    {
-      if (stMod[imod].nColour != 0 || stMod[imod].nBackground!=0)
+      if (stMod[imod].nColour != NO_COLOR || stMod[imod].nBackground!=0)
          fprintf(LogFilePtr, "colour %d   spatial order %d\n", stMod[imod].nColour, stMod[imod].nBackground);
 
       /* load wavelength distribution and time distribution of pulse */
@@ -198,13 +203,19 @@ int main(int argc, char *argv[])
       { 
         if (stMod[imod].eIsisTS > 0) 
         {
-         // set up ISIS specific parameters and values
-         FILE* IFptr;
-         IFptr = openFile(FullParName(stMod[imod].sLTFileName));
-         ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
-         fclose(IFptr);
-         fprintf(LogFilePtr,"Isis moderator - target station %d \n",stMod[imod].eIsisTS);
-        } 
+          // set up ISIS specific parameters and values
+          FILE* IFptr;
+          IFptr = openFile(FullParName(stMod[imod].sLTFileName));
+          ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
+          fclose(IFptr);
+          fprintf(LogFilePtr,"Isis moderator - target station %d \n", stMod[imod].eIsisTS);
+
+          // normalisation of ISIS data, which are for 60 µA, and division through frequency
+          if (stMod[imod].eIsisTS == 1)
+            IsisNorm = 160.0/60.0/40.0;  // 60 µA -> 160 µA;   40 Hz
+          else
+            IsisNorm =  40.0/60.0/10.0;  // 60 µA ->  40 µA;   10 Hz
+        }
         else 
         {
          LoadWavelengthTimeDistrib(&stMod[imod], &stTraj[imod], &stFluxLT[imod]);
@@ -298,8 +309,6 @@ int main(int argc, char *argv[])
                stMod[imod].dFUAmpl = stMod[imod].dTotalFlux / (2*M_PI * stSrc.dPulseFreq) ;
          }
 
-		 if (stSrc.eSrcType==LPSS_OPT && stMod[imod].dModTemp < 100.0)
-            fprintf(LogFilePtr, "optimized ");
          switch(stMod[imod].eModType)
          {  case MULT_SPEC: fprintf(LogFilePtr, "multi-spectral moderator\n"); break;
             case POISONED : fprintf(LogFilePtr, "decoupled poisoned moderator\n"); break;
@@ -496,55 +505,44 @@ int main(int argc, char *argv[])
         Input.Wavelength = stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax  - stTraj[imod].dLambdaMin)  * Vran();
         Input.Time       = stTraj[imod].dTimeFrmMin + (stTraj[imod].dTimeFrmMax - stTraj[imod].dTimeFrmMin) * Vran();
       }
+      if (Input.Wavelength==0.0) continue;
       	
       /*Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
       if (stSrc.eSrcType == CWS)
-         prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp)
+      {   prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp)
               / stFluxL[imod].dInt * sM->dNorm;
+      }
       else 
       {  
-         TimeAtModerator = Input.Time;
-         if (stSrc.dPulsePeriod > 0.0) 
-         {
-            while(TimeAtModerator < 0.0)                {TimeAtModerator += stSrc.dPulsePeriod;}
-            while(TimeAtModerator > stSrc.dPulsePeriod) {TimeAtModerator -= stSrc.dPulsePeriod;}
-         }
-         TimeAtModerator *= 0.001;   /*  time in seconds  */
+        TimeAtModerator = Input.Time;
+        if (stSrc.dPulsePeriod > 0.0) 
+        {
+           while(TimeAtModerator < 0.0)                {TimeAtModerator += stSrc.dPulsePeriod;}
+           while(TimeAtModerator > stSrc.dPulsePeriod) {TimeAtModerator -= stSrc.dPulsePeriod;}
+        }
+        TimeAtModerator *= 0.001;   /*  time in seconds  */
 
-         if(strlen(sM->sLTFileName) > 0) 
-         {
-            // case: flux(lambda,t) was given in a file
-            // change for 180 uAmp or 60 uAmp..... frequency of source....
-            if (sM->eIsisTS > 0) 
-            {
-               prob = TS.Total*3.744905847e14*1.1879451*dSolAngle*WindowWidth*WindowHeight*stSrc.dPulseFreq/NumberOfNeutrons;
-               prob *= sM->eIsisTS == 1 ? 3.0/50 : 0.1;
-            } else {
-               prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].dInt * sM->dNorm;
-            }
-         }
-         else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
-         { // case ESS, SNS
-		    if (stSrc.eSrcType == LPSS_OPT && stMod[imod].dModTemp < 100.0)   // new cold moderator, empirical correction factor
-            { double lmbd = Input.Wavelength;
-				prob = EssModFU(lmbd, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm
-			         * log(1.402 + 0.898 * lmbd);
-			  if (lmbd <= 2.5) prob *= 2.0776 - 4.1093*lmbd + 4.8836*sq(lmbd) - 2.4715*pow(lmbd,3) + 0.4521*pow(lmbd,4);
-			  if (lmbd >  2.5 && lmbd <= 3.5) prob *= 4.3369 - 1.8367*lmbd + 0.2524*sq(lmbd);
-            }
-		    else
-			{ prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
-			}
-		 }
-         else if (stSrc.nSource==CSNS)
-         { // case CSNS
-           prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / sM->dFUAmpl * sM->dNorm;
-         }
-         else
-         { prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
+        if(strlen(sM->sLTFileName) > 0) 
+        {
+           // case: flux(lambda,t) was given in a file
+           if (sM->eIsisTS > 0) 
+              prob = IsisNorm * TS.Total * 3.744905847e14 * 1.1879451 * dSolAngle * WindowWidth * WindowHeight * stSrc.dPulseFreq / NumberOfNeutrons;
+           else
+              prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].dInt * sM->dNorm;
+        }
+        else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
+        { // case ESS, SNS
+			    prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+        }
+        else if (stSrc.nSource==CSNS)
+        { // case CSNS
+          prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / sM->dFUAmpl * sM->dNorm;
+        }
+        else
+        { prob = stFluxL[imod].pDisFct(Input.Wavelength, sM->dModTemp) / stFluxL[imod].dInt  
                  * stFluxT[imod].pDisFct(TimeAtModerator, sM->dTauDecay, sM->dTauDecay/sM->dTauAscent, stSrc.dPulseLength) 
                  / stFluxT[imod].dInt * sM->dNorm;
-		 }
+        }
       }
 
       if(prob <= 0.0) continue; 
@@ -662,7 +660,7 @@ int main(int argc, char *argv[])
 
 
   /* Do the general cleanup */
-  stGeometry.pDescr = "Source";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
+  stGeometry.pDescr = "source:yellow";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
   OwnCleanup();
   Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
 
@@ -717,7 +715,7 @@ void OwnInit(int argc, char **argv)
 
             /* source and moderator */
           case 'S':
-            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS; 4: ESS-2012 */
+            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
             break;
           case 'N':
             stSrc.pSrcName = arg;
@@ -728,7 +726,10 @@ void OwnInit(int argc, char **argv)
             else if (strcmp(arg,"CSNS")==0)
               stSrc.nSource  = CSNS;
             else 
-              stSrc.nSource = ANYSOURCE;	  /* no specific source given */
+              stSrc.nSource = ANYSOURCE;	     /* no specific source given */
+            break;
+          case 'v':
+            iDataVsn = (short)atoi(arg);       /* version of the data base */
             break;
 
           case 'R':
@@ -857,8 +858,8 @@ void OwnCleanup()
         stGeometry.nRectangles++;
     }
     if (stGeometry.nCircles > 0)
-      stGeometry.pCircle = calloc(stGeometry.nCircles, sizeof(VtCircle));
-    stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+      stGeometry.pCircle = (VtCircle*) calloc(stGeometry.nCircles, sizeof(VtCircle));
+    stGeometry.pRectangle = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
 
     // Moderators
     for (m=0; m < nNumMod; m++)
@@ -938,8 +939,8 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
         {
             /* reading number of lines, allocating memory and reading distribution file */
             pFluxL->nLines = LinesInFile(pDisFile);
-            pFluxL->pTabX  = calloc(pFluxL->nLines, sizeof(double));
-            pFluxL->pTabF  = calloc(pFluxL->nLines, sizeof(double));
+            pFluxL->pTabX  = (double*) calloc(pFluxL->nLines, sizeof(double));
+            pFluxL->pTabF  = (double*) calloc(pFluxL->nLines, sizeof(double));
 
             for(i=0; i < pFluxL->nLines; i++)
             {  
@@ -951,7 +952,7 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
                if wavelength range of the simulation is covered by data in file */
             if (pTraj->dLambdaMin >= pFluxL->pTabX[0] && pTraj->dLambdaMax <= pFluxL->pTabX[pFluxL->nLines-1])
             {
-               pFluxL->pDisFct = UserLambdaDis;
+               pFluxL->pDisFct = (double(*)()) UserLambdaDis;
             } 
             else 
             {  fprintf(LogFilePtr,"ERROR: The wavelength range given in %s is smaller than that in the simulation\n", pMod->sLFileName);
@@ -991,7 +992,7 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
    else
    {
     /* otherwise use Maxwellian distribution */
-    pFluxL->pDisFct = Maxwellian;
+    pFluxL->pDisFct = (double(*)()) Maxwellian;
     pFluxL->dInt    = 1.0 ;
    }
 }
@@ -1021,8 +1022,8 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
       {
         /* reading number of lines, allocating memory and reading distribution file */
         pFluxT->nLines = LinesInFile(pDisFile);
-        pFluxT->pTabX = calloc(pFluxT->nLines, sizeof(double));
-        pFluxT->pTabF = calloc(pFluxT->nLines, sizeof(double));
+        pFluxT->pTabX = (double*) calloc(pFluxT->nLines, sizeof(double));
+        pFluxT->pTabF = (double*) calloc(pFluxT->nLines, sizeof(double));
 
         for (i=0; i < pFluxT->nLines; i++)
         {  
@@ -1034,7 +1035,7 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
            if time range of the simulation is covered by data in file */
         if (pTraj->dTimeFrmMin >= pFluxT->pTabX[0] &&  pTraj->dTimeFrmMax <= pFluxT->pTabX[pFluxT->nLines-1])
         {
-          pFluxT->pDisFct =  UserTimeDis;
+          pFluxT->pDisFct = (double(*)()) UserTimeDis;
         } 
         else 
         { fprintf(LogFilePtr,"ERROR: The time range given in %s is smaller than that in the simulation\n", pMod->sTFileName);
@@ -1094,10 +1095,9 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
   else
   {
     switch (stSrc.eSrcType) 
-	{
-      case SPSS:     pFluxT->pDisFct = PulseShapeP; break;
-      case LPSS_OPT: 
-	  case LPSS: pFluxT->pDisFct = PulseIntEss; break;
+    {
+      case SPSS: pFluxT->pDisFct = (double(*)()) PulseShapeP; break;
+      case LPSS: pFluxT->pDisFct = (double(*)()) PulseIntEss; break;
       default  : Error("Wrong value for variable 'source type'\n");
                  exit(-1);
     }
@@ -1127,9 +1127,9 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       /* reading number of lines, allocating memory and reading distribution file */
       pFluxLT->nLines   = LinesInFile  (pDisFile) - 1;
       pFluxLT->nColumns = ColumnsInFile(pDisFile);
-      pFluxLT->pTabX = calloc(pFluxLT->nLines,   sizeof(double));
-      pFluxLT->pTabY = calloc(pFluxLT->nColumns, sizeof(double));
-      pFluxLT->pTabF = calloc(pFluxLT->nColumns*pFluxLT->nLines, sizeof(double));
+      pFluxLT->pTabX = (double*) calloc(pFluxLT->nLines,   sizeof(double));
+      pFluxLT->pTabY = (double*) calloc(pFluxLT->nColumns, sizeof(double));
+      pFluxLT->pTabF = (double*) calloc(pFluxLT->nColumns*pFluxLT->nLines, sizeof(double));
  
       ReadLine  (pDisFile, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, pFluxLT->pTabY, pFluxLT->nColumns, 0);
@@ -1148,7 +1148,7 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
           && pTraj->dLambdaMin  >= pFluxLT->pTabY[0] 
           && pTraj->dLambdaMax  <= pFluxLT->pTabY[pFluxLT->nColumns-1])
       {
-        pFluxLT->pDisFct = UserLmbdTimeDis;
+        pFluxLT->pDisFct = (double(*)()) UserLmbdTimeDis;
       } 
       else 
       { fprintf(LogFilePtr,"ERROR: The wavelength or the time range given in %s is smaller than that in the simulation\n", pMod->sLTFileName);
@@ -1269,7 +1269,7 @@ void LoadTraceFile()
 
         /* reads number of lines, allocates memory and then reads distribution file */
         g_nLinesTr = LinesInFile(pTraceFile);
-        g_pTrace   = calloc(g_nLinesTr, sizeof(TotalID));
+        g_pTrace   = (TotalID*) calloc(g_nLinesTr, sizeof(TotalID));
 
         for(i=0; i<g_nLinesTr; i++)
         {  

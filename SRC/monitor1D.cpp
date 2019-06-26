@@ -51,7 +51,7 @@ DECLARE_ABORT;
 	{
       CHECK;
       // registered = 1 if neutron was considered in the monitor
-	  registered=templateMonitor.FillMonitor(&InputNeutrons[i]);
+	  registered=templateMonitor.FillMonitorArray(&InputNeutrons[i]);
 	  
 	  if((exclusivecount==0) || (registered==1)) {
 	      WriteNeutron(&(InputNeutrons[i]));

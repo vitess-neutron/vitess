@@ -4,7 +4,7 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler,                                     */
 /* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* Change: K.L.  2002 JAN, reorganized routines                                             */
@@ -165,11 +165,11 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 {
 
   if (dVertAngle < 0.55)
-    /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
+    /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tanÂ³(theta)/3) */
     return 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
 	
   if (dHorAngle < 0.55)
-    /* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2 theta */
+    /* solution for small angles: Omega = 2(tan(phi)-tanÂ³(phi)/3) * 2 theta */
     return 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
 
   /* empirical approximation for large angles */
@@ -564,8 +564,8 @@ int ReadParI(FILE *fpt)
 
 void ReadParComment(FILE *fpt)
 {
-  char comment[100], *c;
-  c = fgets(comment, 100, fpt);
+  char comment[100];
+  fgets(comment, 100, fpt);
 }
 
 
@@ -582,7 +582,6 @@ StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 }
 
 
-#ifdef VERS26
 /* Shift string 'sStr' 'kWidth' bytes to the left */
 void
 StrgLShift(char* sStr, int kWidth)
@@ -594,7 +593,7 @@ StrgLShift(char* sStr, int kWidth)
 	for (k=0; k <= ke; k++)
 		sStr[k] = sStr[k+kWidth];
 }
-#endif
+
 
 /* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of double values,  beginning with value number 'nStart'*/

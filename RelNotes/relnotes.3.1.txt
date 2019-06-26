@@ -1,0 +1,79 @@
+VITESS 3.1  Release Note
+------------------------
+
+General:
+--------
+colour is now uniquely used in the way:
+-1: all colours  (default in monitor and eval)
+ 0: no colour
+Note that colour '0' is now regarded as a specifique colour. For this choice, neutrons with colours
+greater equal 1 will not be considered  
+With the first use of Vitess 3.1, colour=0 will be changed to colour=-1 in the monitor and evaluate modules,
+where it has been used differently so far. But it is recommended to check it.
+
+Optimization:
+-------------
+Numerical optimization is included now. Two gradient methods and a Metropolis algorithm can be used
+in this first version, others will follow.
+The handling is quite easy. In many cases, it can be used by just editing the ASCII control files
+that can be found in the folder 'OPTIMIZATION'. 
+Its use is described in detail in the document 'Optimization.pdf' in the folder 'Concepts'. 
+
+Visualization:
+--------------
+All modules generate a geometric representation, some  got a specific improvement.
+
+Grid runs:
+----------
+If you save a .grd file of your instrument, you may start a parallel simulation on a
+grid of computer nodes. These must be Linux servers, accessed by ssh or the sun grid
+engine, and have a common home directory. The framework will split the simulation 
+into n jobs, and the results (monitor files, binary output) can then be combined. 
+See TOOLS/gridrun -h and Concepts/clusterjobs.txt for details.  
+
+GUI:
+----
+The GUI silently stores the state of the active session at reasonable times.
+You may recover these snapshots after changing something, e.g. after accidentially
+deleting some modules.
+You may give the actual module a specific name. The actual module in the right frame
+is emphasized in the module list. Name tags help to distinguish modules in a list
+of equal modules, for example monitor series.
+
+New modules:
+------------
+filter            : should be used instead of using filters in monitor modules.
+read_in           : reads trajectories in ASCII format as written by writeout in VITESS or McStas format
+source_csns       : moderator characteristics of the 'Chinese Spallation Neutron Source'
+
+New tools:
+----------
+Generate Extraction System:  This tool generates an input file for the sm_ensemble module, describing
+a (e.g. bispectral) extraction system consisting of up to 50 mirrors which can be combined with
+max. 4 guide walls (intransparent mirrors).
+
+Upgraded detector module:
+-------------------------
+3D volume detector instead of 2D area, tube geometry possible for flat detector, cylindrical detector
+with axis along x or y added, wavelength dependent efficiency now calculated from material or taken
+from input file, possibility to add resolution effects, new constant delta phi mode added,
+detector array can be build with several detector modules, event mode output file can be written.
+
+Bug fixes, improvements:
+-----------------------
+monitor1D         : The generic monitor1D can now write out up to 3 neutron parameters simultaneously
+                    in 3 different monitor files with a common filename pattern.
+mon1              : option to write files for all colours simultaneously
+source            : better moderator descriptions for ISIS and HMI
+spacewindow       : positioning in x-direction
+sample_reflectom  : handles offspecular scattering now, see Help file.
+writeout          : writes trajectories now also in McStas format
+
+Moderator data:
+--------------
+Moderator characteristics have been updated for ESS, SNS, HZB and ILL and the structure
+of the FILES folder has been changed.
+For ESS and SNS, a version of the data set has been included to allow using recent or earlier characteristics.
+For the same reason, HZB and ILL  input files exist now with names describing the version.
+
+(June 26 2013, subversion 433)

@@ -3,135 +3,315 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Module Detector</title>
 </head>
   <body>
 
 <h1>VITESS Module Detector</h1>
 
-<p>The detector module simulates a basic 2D detector array, which may have
+<p>The detector module simulates a basic 3D detector array, which may have
 a rectangular or cylindrical geometry. The coordinate system (x,y,z) is defined
 by the preceding module (the origin being e.g. the centre of a sample) and
 is <u>not</u> altered by the detector module. The centre of the detector
-is given in spherical coordinates, with<font face="Symbol"> q</font> [0;180&deg;]
-the angle between the position vector and the +x-axis and <font
- face="Symbol">f</font> [0;360&deg;] the angle between the projection of
-the position vector to the yz-plane and the +y-axis (<font face="Symbol">q&gt;0;f=0
-</font>points along the +y-axis,&nbsp; <font face="Symbol">q&gt;0;f=90&deg;
-</font>along the +z-axis, a.s.o.). The distance (length of the position vector
-pointing from the origin to the detector surface centre)&nbsp; has also to
+is given in spherical coordinates, with &#977 [0;180&deg;]
+the angle between the position vector and the +x-axis and &#966 [0;360&deg;] the angle between the projection of
+the position vector to the yz-plane and the +y-axis (&#977&gt;0;&#966=0
+points along the +y-axis, &#977&gt;0;&#966=90&deg;
+along the +z-axis, a.s.o.). The distance (length of the position vector
+pointing from the origin to the detector surface centre) has also to
 be specified as well as the total height, width and thickness of the detector
-and the&nbsp; rows and columns defining the size and number of the position
+and the&nbsp; rows, columns and layers defining the size and number of the position
 sensitive areas.
 &nbsp; </p>
-<p>Due to this definitions the centre of the rectangular detector can be every
+
+<p>
+<u>Overall detector geometry</u> <br>
+Due to this definitions, the centre of the rectangular (<i><u>flat</i></u>) detector can be every
 point in space, while the surface is always perpendicular to the position
 vector mentioned above. <br>
-The cylindrical detector is restricted to one orientation (the cylinder axis&nbsp;
-will always point along the +z-axis of the coordinate system) <br>
-and the centre (=middle of the cylinder arch) of this detector type always
-lies in the z=0 plane . The arch centre is defined with the angles described
-above and due to the restrictions&nbsp; <font face="Symbol">f</font> can
-only&nbsp; be&nbsp; 0&deg; or 180&deg;, the cylinder centre itself is always
-fixed at the origin position (==&gt; cylinder radius = distance to detector
-centre). The covered angular range is calculated from two input values: distance
-of the detector from the origin (= cylinder radius)&nbsp; and the width (=arch)
-of the cylinder segment. The angular range is then bordered by <br>
-(detector centre +-width/(2*radius)). </p>
-<p>Now the focus will be put at some neutron probability issues: First of
-all it is tested whether the neutron intersects the detector, if not the
-neutron is discarded. If the neutron intersects the detector the flight path
-through the detector is determined and the neutron will be written to the
-output accordingly. The position of detection l1 along the flight path of
-the neutron in the detector will be given by a Monte Carlo choice and the
-neutron's probability weight&nbsp; P is multiplied by an exponential factor
-which considers appropriately the position dependent probability of detection
-and the efficiency of the detector. In addition a wavelength dependent factor
-F is multiplied (it will be treated more differentiated for different types
-of detectors in future VITESS versions): <br>
-F= min(0.5 + 0.1*wavelength;1.0) </p>
-<p>All this may be deactivated by the "monitor only"-option, i.e. the probability
-weight of the neutron is not altered by the detector module <br>
-and the neutrons are registered always with Efficiency 1 and each point of&nbsp;
-the flightpath within the detector is considered with equal chance to be
-the point of detection. The monitor option might lead to better statistics
-because of the deactivation of the realistic detector thickness MonteCarlo
-procedure).</p>
+The <i><u>cylindrical</i></u> detector is restricted to three orientations (the cylinder axis
+will always point along one of the axes of the coordinate system) and the centre (=middle of the cylinder arch) of this detector type always
+lies in the 0-plane perpendicular to the cylinder axis (i.e. z=0 for a cylinder
+  around the z-axis). The arch centre is defined with the angles described
+above and the cylinder centre itself is always
+fixed at the origin position (==&gt; inner cylinder radius = <i>distance</i> to
+detector arch centre). 
+ Due to these restrictions, the following constraints apply to &#966 and &#977
+for a cylinder axis along the  <br/>
+ - z-axis: &#966=0&deg; or 180&deg; defines +y or -y direction <br/>
+ - y-axis: &#966=0&deg; or 180&deg; defines +z or -z direction <br/>
+ - x-axis: &#977=90&deg; (will be set to 90&deg; if other input is given), only
+&#966 defines the arch position  <br/>
+The extension of the detector in direction of the cylinder axis is given by the
+  input variable <i>height</i> for all cylinder orientations, and the covered
+  angular range is calculated from the <i>width</i> and the <i>distance</i>
+of the detector from the origin (= cylinder radius)&nbsp;. The angular range is
+then bordered by (detector surface centre +-width/(2*radius)). </p>
+
 <p>
-From version 1.7 on, the detector writes the same parameter set for the trajectories
-as all the other modules. The transformation to scattering angles is performed
-in the 'eval' modules now. <br>
-In the "monitor only"-option, the incoming flight direction and the intersection
-point with the detector surface are written to the output.<br>
-In the "usage normal" mode, the position of detection and the direction between
-the centre of the sample and the point of detection are written. The position of
-detection (and thus the direction) maybe altered by switching the 'grid' on.
-In this case, each trajectority is treated as having hit the centre of the detector
-cell.<br>
-With 'TOF option'=no, the path length to the point of detection (inside the detector)
-is set to zero, but the efficiency of detection is nevertheless treated.
+<u>Tube detector</u> <br>
+A flat detector can be build from horizontally or vertically arranged tubes
+with circular or rectangular cross-sections. In the flight path of the neutron
+through the detector, only the detector volume containing
+active material is taken into account in the calculation of interaction
+probability and the scattering position; dead zones between circular tubes as
+well as the tube walls (specified by the <i>wall thickness</i>) are treated as
+vacuum. Different layers of detector tubes can be shifted against each other
+(see fig. 1(b)). <br>
+The <i>tubes</i> option is not possible for cylindical geometry. <br>
+<img src="TubeDetector.png" height="120" width="300">
+<caption align="right" style="font-style: italic;" >Figure 1: Side view of tube
+  detector (a: circular, b: circular shifted, c: rectangular)</caption>
 
+</p>
+
+<p>
+<u>Interaction probability</u> <br>
+First of all it is tested whether the neutron intersects the detector; if not, the
+neutron is discarded. If the neutron intersects the detector, the flight path
+through the detector is determined and the neutron will be written to the
+output accordingly. The position of interaction along the flight path of
+the neutron in the detector will be given by a Monte Carlo choice and the
+neutron's probability weight is multiplied by the interaction probability
+calculated from the total scattering cross-section &#963, the particle density
+N and the length until scattering l as <br>
+N&#963 &#8901 exp(-N&#963 &#8901l) &#8901 L/N<sub>rep</sub> &#8901
+&#949<sub>mod</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1). <br>
+The total length in the detector L divided by the number of <i>repetitions</i> N<sub>rep</sub>
+is used as normalization and represents the distance over which the probability is assumed to be constant. <br>
+&#949<sub>mod</sub> is an optional modifyer that can be used to take
+losses due to e.g. secondary particle production into account, since &#963
+contains only the interaction of neutrons with the absorber/converter
+material. The wavelength dependence of this interaction is calculated by a
+linear approximation from the tables at NNDC
+(http://www.nndc.bnl.gov/sigma/index.jsp?as=10&lib=endfb7.1&nsub=10). Currently
+implemented are <sup>3</sup>He, <sup>10</sup>B
+and <sup>6</sup>Li. The particle density N is calculated from either gas
+pressure and temperature in case of <sup>3</sup>He and BF<sub>3</sub>, or
+directly given as input variable <i>atom density</i> for solid materials. <br>
+If <i>other</i> is chosen as absorber/converter material, a wavelength
+independent interaction probability is calculated from &#949<sub>mod</sub>,
+which then serves not as a modifyer but gives the overall efficiency. <br>
+Alternatively, the wavelength-dependent detection efficiency can be given via
+an input file. In this case, the choice of active detector material will be
+ignored and the efficiency taken from this file, hence it is independent of the path of the
+neutron through the detector material. <br> </p>
+
+<p>
+<u>Detector signal</u> <br>
+In the <u><i>usage normal</i></u> mode, the position of detection and the direction between
+the centre of the sample and the point of detection are written. This point of
+  detection given as detector signal is a 3-dimensional pixel center
+  determined by the number of rows, columns and layers in combination with the detector
+  height, width and thickness. These "pixels" can represent either a physical
+  pixel size (e.g. a tube diameter) or a digital pixel size caused by the
+  readout. <br>
+If a non-zero <u><i>resolution</i></u> is given in either dimension, the
+interaction point of the neutron with the detector is smeared by a gaussian
+function before being shifted to the pixel center. (The standard deviation of
+this gaussian is calculated from the FWHM given as input.) A spatial
+uncertainty caused by e.g. the extension of the secondary particle cloud can
+thus be taken into account. <br>
+All this as well as the probability calculation may be deactivated by
+the <u><i>monitor only</i></u> option, i.e. the true interaction point is
+written and the probability
+weight of the neutron is not altered by the detector module, so the neutrons
+  are registered always with efficiency 1 and each point of the flightpath
+within the active detector material is considered with equal chance to be
+the point of detection. (The monitor option might lead to better statistics
+because of the deactivation of the realistic detector thickness MonteCarlo.) 
+In the <i>monitor only</i> option, the incoming flight direction and the interaction
+point with the detector are written to the output.<br>
+In the  <u><i>grid off</i></u> mode, the neutron detection position is not
+shifted to the 3-dimensional pixel center. Other than with the <i>monitor only</i>
+mode, the resolution is taken into account; if the resolution is set to 0 in
+all dimensions, the <i>grid off</i> mode yields the same output position as
+the <i>monitor only</i> mode but with the neutron weight changed according to
+the detection probability. The neutron direction is set to the normalized
+vector of the written position (like in the <i>usage normal</i> mode). </p>
+
+<p>
+<u>Detector array</u> <br>
+A complex detector shape can be build out of several detector parts by using
+the detector module several times in a row and ticking the <i>array</i> box for
+all but the last detector part. The first and intermediate detector parts will
+then pass neutrons that don't intersect with them on to the next detector
+module. The last part of the detector array discards neutrons that have not been
+detected by any of the detector parts. Neutrons detected in different
+sub-detectors of an array can be distinguished by usage of
+the <i>add color</i> value. Note that this <b>adds</b> the given value to the color
+property of the neutrons to allow distinction on several levels; if only
+a seperation of different detector parts is needed, make sure the color of
+incoming neutrons is the same (e.g. set it to 0 with the module <i>spin_reset</i>). <br>
+<img src="DetectorArray.png" height="150" width="300">
+<caption>Figure 2: example of an detector array consiting of 4 detector parts,
+two <i>flat</i> and two <i>cylindrical</i></caption>
+</p>
+
+<p>
+<u>Output file</u> <br>
+If a filename is given as <i>Output filename</i>, a file containing the 3D
+position, time, probability weight and colour of each neutron will be written (event
+mode output). In a detector array, only the last detector writes this file, which then contains the
+neutrons detected in all sub-detectors. (The sub-detector in which a neutron
+has been detected can be distinguished by use of the <i>add color</i> option in
+each detector module.)
+</p>
+
+<p>-------------------------------------- </p>
+<p><b>!!!!! Please make sure that no neutron from the input stream starts already
+within the detector (having a finite thickness) itself. In case of cylindric geometry:
+All neutrons initially have to lie within the cylinder of radius = distance to
+detector. !!!!!!</b> <br>
+-------------------------------------- </p>
 
 <br>
-&nbsp; </p>
+</p>
 <p><b>Input parameters:</b> </p>
+<p><i>array (first or intermediate part)</i> <br>
+&nbsp;Tick this box if other detector modules follow. All neutrons are then passed to
+  the following module, otherwise neutrons not intersecting this detector part
+  will be discarded. </p>
 <p><i>geometry</i> <br>
-&nbsp;The geometry parameter specifies the&nbsp; geometry of the detector.
-<br>
-&nbsp;There are rectangular or cylindrical detectors. </p>
-<p><i>height </i>[cm] <br>
-&nbsp;Height of the detector in cm. </p>
-<p><i>width</i> [cm] <br>
-&nbsp;Full width of a flat detector in cm.In case of a cylindrical detector
-it is the length of the cylinder arch under consideration. </p>
-<p><i>thickness</i> [cm] <br>
-&nbsp;Thickness of the detecting material in cm. </p>
-<p><i>efficiency</i> <br>
-Efficiency of the detector, range: 0&lt;Efficiency&lt;0.99999. </p>
-<p><i>theta</i> <br>
-&nbsp;Angle theta [0;180 deg]&nbsp; of the middle of the detector.&nbsp; Theta
-is defined as the angle between the position vector (pointing from <br>
-the origin to the detector centre) and the +x-axis. </p>
-<p><i>phi</i> <br>
-&nbsp;Angle phi [0;360 deg] of the middle of the detector, i.e. the angle
-between the projection of the position vector to the yz-plane and the +y-axis.
-For cylindrical geometry phi must be 0 oder 180! </p>
-<p><i>distance</i> [cm] <br>
-&nbsp;Distance of the centre of the detector surface to the origin (0,0,0)
-in cm. In case of a cylindrical detector this is the cylinder radius. </p>
-<p><i>number of columns</i> <br>
-&nbsp;Number of columns of the detector. </p>
-<p><i>number of rows</i> <br>
-&nbsp;Number of rows partitioning the detector height. </p>
+&nbsp;The geometry parameter specifies the overall geometry of the detector,
+  which can either be <i>flat</i> (i.e. rectangular)
+  or <i>cylindrical</i>. </p>
+<p><i>type</i> <br>
+&nbsp;The detector can be either a <i>tube</i> or an <i>area/volume</i>
+  detector. A tube detector is only possible in combination with an overall flat
+  detector geometry. </p>
+<p><i>usage</i> <br>
+&nbsp;If the usage option <i>monitor only</i> is selected, the detector geometry
+is only used as a monitor, i.e. the weight of the trajectory and the flight
+direction are unchanged, the intersection point with the detector is
+written to the output. Otherwise thickness, efficiency and wavelength are used
+to calculate a count rate that can be expected in experiments. If the <i>grid
+    off</i> option is chosen, the position of detection is not shifted to the
+  nearest pixel center, but resolution effects are taken into account. (See
+  section <i>Detector signal</i> above.)</p>
 <p><i>repetition</i> <br>
 &nbsp;'repetition' specifies the number of neutron data sets
 generated for each trajectory arriving at the detector, i.e. the detection
 process is repeated 'repetition' times. This can improve statistics, but be
 aware that these are not independent events. </p>
-<p><i>usage</i> <br>
-&nbsp;If the 'usage' option 'monitor only' is selected, the detector geometry
-is only used as a monitor, i.e. the weight of the trajectory and the flight
-direction are unchanged, the intersection point with the detector surface is
-written to the output. Otherwise thickness, efficiency and wavelength are used
-to calculate a count rate that can be expected in experiments.</p>
-<p><i>detector grid</i>
+<p><i>detect color</i> <br>
+&nbsp;If a value other than -1 is given, only neutrons with that color can be
+  detected, other neutrons are discarded. -1 means all neutrons are treated.</p>
+<p><i>add color</i> <br>
+&nbsp;If a value other than -1 is given, the colour of detected neutrons is
+  <b>increased</b> by the given value. -1 means no change to the colour. </p>
+<p><i>phi</i> <br>
+&nbsp;Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle
+between the projection of the position vector to the yz-plane and the +y-axis.
+For cylindrical geometry and a cylinder axis along the z or y axis, phi must be 0&deg; oder 180&deg;! </p>
+<p><i>theta</i> <br>
+&nbsp;Angle theta [0;180 deg] of the middle of the detector surface. Theta
+is defined as the angle between the position vector (pointing from the origin to the detector surface centre) and the +x-axis. For cylindrical
+  geometry and a cylinder axis along the x axis, theta is set to 90&deg;
+  (i.e. the position of the cylinder arch is solely defined by phi).</p>
+<p><i>distance</i> [cm] <br>
+&nbsp;Distance of the centre of the detector surface to the origin (0,0,0)
+in cm. In case of a cylindrical detector this is the inner cylinder radius. </p>
+<p><i>height </i>[cm] <br>
+&nbsp;Height of the detector in cm. In cylindical geometry, the height is
+  defined as the extension along the cyl. axis.</p>
+<p><i>width</i> [cm] <br>
+&nbsp;Full width of a flat detector in cm. In case of a cylindrical detector
+it is the length of the cylinder arch under consideration. </p>
+<p><i>thickness</i> [cm] <br>
+&nbsp;Thickness of the detecting material in cm. </p>
+<p><i>number of rows</i> <br>
+&nbsp;Number of rows partitioning the detector height. </p>
+<p><i>number of columns</i> <br>
+&nbsp;Number of columns partitioning the detector width. </p>
+<p><i>number of layers</i> <br>
+&nbsp;Number of layers partitioning the detector thickness. </p>
+<p><i>hor. resolution</i> <br>
+&nbsp;Horizontal resolution: FWHM in cm in the <i>width</i> dimension, leading
+  to a gaussian uncertainty in the position signal (in addition to
+  uncertainties caused by pixel size and parallax effect). 0 means no
+  uncertainty (i.e. perfect resolution).  </p>
+<p><i>vert. resolution</i> <br>
+&nbsp;Vertical resolution: FWHM in cm in the <i>height</i> dimension, leading
+  to a gaussian uncertainty in the position signal (in addition to
+  uncertainties caused by pixel size and parallax effect). 0 means no
+  uncertainty (i.e. perfect resolution).  </p>
+<p><i>resolution in x</i> <br>
+&nbsp;Resolution in neutron flight direction: FWHM in cm in the <i>thickness</i> dimension, leading
+  to a gaussian uncertainty in the position signal (in addition to
+  uncertainties caused by pixel size and parallax effect). 0 means no
+  uncertainty (i.e. perfect resolution).  </p>
+<p><i>efficiency modifyer</i> <br>
+&nbsp;Modifies the efficiency calculated from the interaction cross-section
+  with the chosen material, e.g. for losses due to secondary particle detection etc. If 
+'other' material is chosen, this value is used as wavelength independet constant 
+efficieny, and has to be between 0 and 0.999999. The efficiency modifyer is
+  ignored in case an efficiency file is used. A value of 1 means no
+  modification to the efficiency calculated from a chosen material. </p>
+<p><i>lambda efficiency file</i> <br>
+&nbsp;Input file containing two columns with wavelength and efficiency. If
+  such a file is given, the effieciency will be taken from there independently
+  of the choice of <i>absorber/converter type</i> and independtly
+  of the neutron path through the detector material.  </p>
+<p><i>absorber/converter type</i> <br>
+&nbsp;Material interacting with the incoming neutrons, the total scattering
+  cross-section of which determines the detection efficiency. If <i>other</i>
+  is chosen, a fixed efficiency of value <i>efficiency modifyer</i> is
+  used. The choice of material is ignored if an efficiency file is given. If a
+  solid material is chosen, the neutron path length through the detector (used
+  to calculate the efficiency) will
+  be scaled by (<i>solid layer thickness</i> / <i>thickness</i>). </p>
+<p><i>gas pressure <b>or</b> solid layer thickness</i> <br>
+&nbsp;The interpretation of this input variable depends on the choice
+  of <i>absorber/converter type</i>: gas pressure in bar for gaseous material,
+  or thickness of the solid material in cm (primary interaction). </p>
+<p><i>gas temperature <b>or</b> atom density</i> <br>
+&nbsp;The interpretation of this input variable depends on the choice
+  of <i>absorber/converter type</i>: temerature of gas in K for gaseous material,
+  or atom density of particles interacting with the neutrons in solid material
+  (the particle density N in formula (1) above). </p>
 <br>
-&nbsp;If the detector grid is switched off, the exact position of neutron
-detection and the direction from the centre of the sample to this point are
-written to the output file; otherwise the centre of the cell and the direction
-to this point are written (provided usage is set to 'normal'.)
-<p><i>TOF option</i>
-<br>
-&nbsp;By setting the 'TOF option' to 'no', a zero flight path from the detector
-surface to the point of detection is assumed. The detector efficiency is
-considered.
 </p>
-<p>-------------------------------------- </p>
-<p>!!!!! Please make sure that no neutron from the input stream starts already
-within the detector (having a finite thickness) itself. In case of cylindric geometry:
-All neutrons initially have to lie within the cylinder of radius = distance to
-detector. !!!!!! <br>
--------------------------------------- </p>
+<p><b>Special input parameters for tube detector:</b> </p>
+<p><i>tube orientation</i> <br>
+&nbsp;Horizontal (vertical) tube orientation means the axes of the tube
+  cylinders are along the width (height) dimension. Since the tubes are
+  symmetric, in a detector with horizontal (vertical) tubes,
+  height/N<sub>Rows</sub> (width/N<sub>Columns</sub>) is the tube diameter and
+  has to be equal to thickness/N<sub>Layers</sub>.  </p>
+<p><i>tube cross-section</i> <br>
+&nbsp;The tube cross-section can be circular (as in fig. 1 (a,b)) or
+  rectangular (as in fig. 1(c)). </p>
+<p><i>wall thickness</i> <br>
+&nbsp;The detector volume occupied by tube walls is treated as vacuum
+  (i.e. not contributing to neutron detection). </p>
+<p><i>layers shifted</i> <br>
+&nbsp;Tick this box if the tube layers are shifted against each other as
+  schematically drawn in figure 1(b). Two additional rows or columns will be
+  added to increase the detector height or width by two tube diameters to
+  ensure the whole intended area is still covered.</p>
+<br>
+</p>
+<p><b>Special input parameters for cylindrical detector:</b> </p>
+<p><i>axis orientation</i> <br>
+&nbsp;Choose the orientation of the cylinder axis as z, y or x
+  axis. Constraints on theta and phi following from this choice are explained
+  above (section <i>Overall detector geometry</i>). </p>
+<p><i>constant phi</i> <br>
+&nbsp;Tick this box if the pixel size in the cylinder height dimension is not
+  uniformely thickness/N<sub>Rows</sub>, but variable such that a constant
+angular width &#948&#966 defines the pixel size. </p>
+<br>
+<p><b>Detector output</b> </p>
+<p><i>Output filename</i> <br>
+&nbsp;Name of file to which detector output is written. Ignored for first or
+  intermediate parts of an detector array, for which the last sub-detector
+  writes the combined detector output. In event mode (default and currently
+  only), the 3D position, time, probability weight and colour of each detected neutron are written.
+ </p>
+
+
 <p> </p>
 <hr><a href="vitess.html">Back to VITESS overview</a><br>
  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>

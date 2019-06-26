@@ -39,8 +39,9 @@ my @Obj = qw(general intersection matrix sample softabort);
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
-	   mon_brilliance velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
+	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
+	   mirror_coating surface_file gener_bispectral guide_shape spin_reset capture_flux runtime
+     fom gener_pipe opt_sim);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
@@ -55,10 +56,7 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    pol_mirror
 	    collimator_radial
 	    precessionfield sesans_field
-	    sample_elasticisotr sample_inelast
-	    sample_reflectom
 	    define_direction
-	    sample_singcryst
 	    cas_v40
 	    mirror_elliptical
             flipper_gradient
@@ -73,10 +71,12 @@ my @CN = qw(monitor1D monitor2D);
 my @CMG = qw(guide_parallel);
 
 # module which need GTOOL (=TOOL + mathvector mathfunctions)
-my @CG = qw(guide_elliptic);
+my @CG = qw(guide_elliptic filter);
 
 # modules which need STOOL (=MTOOL + sample)
-my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs);
+my @CS = qw(sample_powder sample_s_q sample_sans sample_environment sample_nxs
+	    sample_elasticisotr sample_inelast sample_reflectom sample_singcryst
+);
 
 my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 
@@ -96,11 +96,13 @@ $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
-	   source => 'src_modchar',
+	   source => 'src_modchar source_csns',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
 	   precessionfield => 'magneticmap',
 	   gener_batch => 'gener_fct',
+	   gener_pipe => 'pipe_fct',
+	   opt_sim => 'opt_grad opt_grad_mc opt_metro opt_fct calc_sim_fom',
 	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
@@ -159,11 +161,11 @@ sub usage {
 
   print <<EOS;
 usage:
-configure \{option\}
+mmake.pl \{option\}
   this script is meant to be run under Unix, to generate two files
   1) Makfile suitable for GNU make
   2) vitess.mak suitable for Windows nmake
-  configure tries to adopt Makefile to the local Unix system.
+  mmake.pl tries to adopt Makefile to the local Unix system.
 
   Options may be
 
@@ -291,19 +293,27 @@ STOOL = sample.o $(MTOOL)
 NTOOL = mathvector.o mathmatrix.o $(TOOL)
 GTOOL = mathvector.o mathfunctions.o $(TOOL)
 
+#Compile
 EOS
 
   # set appropriate make macros
-  print OF 'CFLAGS = -pthread ', $sys eq 'Darwin' ? '' : '-s ';
-  print OF <<'EOS';
--O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-EOS
+  $_ = ($sys eq 'Darwin' ? '' : '-s ') .
+       '-O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng';
 
   print OF <<EOS;
 CCOMP = gcc
-CC = \$(CCOMP) \$(CFLAGS)
 CPLUSCOMP = g++
+CFLAGS = -pthread $_
+
+# alternative intel icc compiler
+# uncomment the appropriate lines to use icc
+#CCOMP = icc
+#CPLUSCOMP = icc -x c++
+#CFLAGS = -pthread -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -fast -w3 -g0 -Wall -Wremarks -Irng -ffreestanding
+
+CC = \$(CCOMP) \$(CFLAGS)
 CPLUS = \$(CPLUSCOMP) \$(CFLAGS)
+
 LIBS = -Lrng/$subdir -lgslran -lstdc++ -lm
 GDOPEN = g2_open_gd
 EOS
@@ -517,7 +527,7 @@ EOS
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
 EOS
-  print "Gobj:\n@Gobj\n";
+
   subRule($rule, @Gobj);
 
   $rule .= <<'EOS';

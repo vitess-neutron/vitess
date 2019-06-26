@@ -17,10 +17,10 @@
 #include "softabort.h"
 #include "general.h"
 
-#define BINSIZE 201
+#include "mon2_header.h"
 
-  static double bposz[BINSIZE],bposy[BINSIZE];
-  static double binyz[BINSIZE][BINSIZE];
+static double bposz[BINSIZE],bposy[BINSIZE];
+
 
 int main(int argc, char *argv[])
 {
@@ -117,7 +117,14 @@ int main(int argc, char *argv[])
 
   /*initialisation */
 
+  if (probactiv != 1) probactiv = 0;
+
   bintc = 0;
+
+   //New pointers allowing for global write out
+  by = bposy;
+  bz = bposz;
+
   for(dy = 0; dy<nbiny+1; dy++)
     {
       bposy[dy] = widthmin + (widthmax-widthmin) * dy / (double)nbiny;
@@ -126,6 +133,8 @@ int main(int argc, char *argv[])
 	{
 	  bposz[dz] = heightmin + (heightmax-heightmin)  * dz / (double) nbinz;
 	  binyz[dy][dz] = 0.0;
+	  binyzerror[dy][dz]=0.;
+	  binyzcounts[dy][dz]=0;
 	}
     }
 
@@ -148,6 +157,7 @@ CHECK;
 	      binyz[dy][dz] = binyz[dy][dz] +  p ;
 	      bintc = bintc + p;
 	      registered=1;
+	      binyzcounts[dy][dz]++;
 	    }
 	  
 	  if((exclusivecount==0)||(registered==1))
@@ -158,33 +168,8 @@ CHECK;
     }
 
 my_exit:
-  switch (format) {
-	case 0:
-	  for(dy = 0; dy<nbiny; dy++)
-		{
-		  fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);
-		}
-	  for(dz = 0; dz<nbinz; dz++)
-		{
-		  fprintf(fmonitor,"\n %5.3f\t",(bposz[dz]+bposz[dz+1])/2.0);
-		  for(dy = 0; dy<nbiny; dy++)
-		{
-		  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
-		}
-		}
-	  break;
-    case 1:
-	  fprintf(fmonitor, "#x  y  z\n");
-	  for(dz = 0; dz<nbinz; dz++) {
-		  for(dy = 0; dy<nbiny; dy++) {
-			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bposy[dy]+bposy[dy+1])/2.0, (bposz[dz]+bposz[dz+1])/2.0, binyz[dy][dz]);
-		  }
-		  fprintf(fmonitor, "\n");
-	  }
-	break;
-  }
-  fclose(fmonitor);
-
+ 
+  WriteOutput (fmonitor, format, probactiv, nbiny, nbinz);
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

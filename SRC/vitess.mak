@@ -70,15 +70,20 @@ ALL : \
 	"$(OD)\mon2_rdiv.exe" \
 	"$(OD)\mon_brilliance.exe" \
 	"$(OD)\velselect.exe" \
+	"$(OD)\read_in.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
 	"$(OD)\lattice_dist.exe" \
 	"$(OD)\mirror_coating.exe" \
 	"$(OD)\surface_file.exe" \
+	"$(OD)\gener_bispectral.exe" \
 	"$(OD)\guide_shape.exe" \
 	"$(OD)\spin_reset.exe" \
 	"$(OD)\capture_flux.exe" \
 	"$(OD)\runtime.exe" \
+	"$(OD)\fom.exe" \
+	"$(OD)\gener_pipe.exe" \
+	"$(OD)\opt_sim.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\chopper_fermi_parallel.exe" \
@@ -109,11 +114,7 @@ ALL : \
 	"$(OD)\collimator_radial.exe" \
 	"$(OD)\precessionfield.exe" \
 	"$(OD)\sesans_field.exe" \
-	"$(OD)\sample_elasticisotr.exe" \
-	"$(OD)\sample_inelast.exe" \
-	"$(OD)\sample_reflectom.exe" \
 	"$(OD)\define_direction.exe" \
-	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
 	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\flipper_gradient.exe" \
@@ -122,12 +123,17 @@ ALL : \
 	"$(OD)\monitor1D.exe" \
 	"$(OD)\monitor2D.exe" \
 	"$(OD)\guide_elliptic.exe" \
+	"$(OD)\filter.exe" \
 	"$(OD)\guide_parallel.exe" \
 	"$(OD)\sample_powder.exe" \
 	"$(OD)\sample_s_q.exe" \
 	"$(OD)\sample_sans.exe" \
 	"$(OD)\sample_environment.exe" \
 	"$(OD)\sample_nxs.exe" \
+	"$(OD)\sample_elasticisotr.exe" \
+	"$(OD)\sample_inelast.exe" \
+	"$(OD)\sample_reflectom.exe" \
+	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble_parallel.exe" \
@@ -139,7 +145,7 @@ ALL : \
 
 SOURCE=$(SPATH)\init.c
 "$(IDIR)\init.obj" : $(SOURCE)
-	$(CPP) /DVMAJOR=3 /DVMINOR=0 $(CPP_PROJ) $(SOURCE)
+	$(CPP) /DVMAJOR=3 /DVMINOR=1 $(CPP_PROJ) $(SOURCE)
 SOURCE=$(SPATH)\general.c
 "$(IDIR)\general.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -176,8 +182,16 @@ SOURCE=$(SPATH)\mirrrefl.c
 "$(IDIR)\mirrrefl.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_grad.c
+"$(IDIR)\opt_grad.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\lensetr.c
 "$(IDIR)\lensetr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_fct.c
+"$(IDIR)\opt_fct.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\magneticmap.c
@@ -208,20 +222,28 @@ SOURCE=$(SPATH)\nxs.c
 "$(IDIR)\nxs.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\bender_inter_data.c
-"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\sghkl.c
 "$(IDIR)\sghkl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\bender_inter_data.c
+"$(IDIR)\bender_inter_data.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\threadHelper.c
 "$(IDIR)\threadHelper.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\opt_metro.c
+"$(IDIR)\opt_metro.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\src_modchar.c
 "$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\opt_grad_mc.c
+"$(IDIR)\opt_grad_mc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\mon2D.cpp
@@ -232,8 +254,20 @@ SOURCE=$(SPATH)\sgclib.c
 "$(IDIR)\sgclib.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\pipe_fct.c
+"$(IDIR)\pipe_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\calc_sim_fom.c
+"$(IDIR)\calc_sim_fom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\ma_geom.c
 "$(IDIR)\ma_geom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\source_csns.c
+"$(IDIR)\source_csns.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ascii2bin.c
@@ -313,6 +347,13 @@ SOURCE=$(SPATH)\velselect.c
 "$(OD)\velselect.exe" : "$(OD)" $(TOOL) "$(OD)\velselect.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\velselect.pdb" /out:"$(OD)\velselect.exe" "$(IDIR)\velselect.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\read_in.c
+"$(IDIR)\read_in.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\read_in.exe" : "$(OD)" $(TOOL) "$(OD)\read_in.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\read_in.pdb" /out:"$(OD)\read_in.exe" "$(IDIR)\read_in.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\writeout.c
 "$(IDIR)\writeout.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -348,6 +389,13 @@ SOURCE=$(SPATH)\surface_file.c
 "$(OD)\surface_file.exe" : "$(OD)" $(TOOL) "$(OD)\surface_file.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\surface_file.pdb" /out:"$(OD)\surface_file.exe" "$(IDIR)\surface_file.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\gener_bispectral.cpp
+"$(IDIR)\gener_bispectral.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\gener_bispectral.exe" : "$(OD)" $(TOOL) "$(OD)\gener_bispectral.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\gener_bispectral.pdb" /out:"$(OD)\gener_bispectral.exe" "$(IDIR)\gener_bispectral.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\guide_shape.c
 "$(IDIR)\guide_shape.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -375,6 +423,27 @@ SOURCE=$(SPATH)\runtime.c
 
 "$(OD)\runtime.exe" : "$(OD)" $(TOOL) "$(OD)\runtime.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\runtime.pdb" /out:"$(OD)\runtime.exe" "$(IDIR)\runtime.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\fom.c
+"$(IDIR)\fom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\fom.exe" : "$(OD)" $(TOOL) "$(OD)\fom.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\fom.pdb" /out:"$(OD)\fom.exe" "$(IDIR)\fom.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\gener_pipe.c
+"$(IDIR)\gener_pipe.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\gener_pipe.exe" : "$(OD)" $(TOOL) "$(OD)\gener_pipe.obj" "$(OD)\pipe_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\gener_pipe.pdb" /out:"$(OD)\gener_pipe.exe" "$(IDIR)\gener_pipe.obj" $(TOOL) "$(OD)\pipe_fct.obj" 
+
+SOURCE=$(SPATH)\opt_sim.c
+"$(IDIR)\opt_sim.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\opt_sim.exe" : "$(OD)" $(TOOL) "$(OD)\opt_sim.obj" "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\opt_sim.pdb" /out:"$(OD)\opt_sim.exe" "$(IDIR)\opt_sim.obj" $(TOOL) "$(OD)\calc_sim_fom.obj" "$(OD)\opt_metro.obj" "$(OD)\opt_grad.obj" "$(OD)\opt_grad_mc.obj" "$(OD)\opt_fct.obj" 
 
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
@@ -429,8 +498,8 @@ SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" 
+"$(OD)\source.exe" : "$(OD)" $(ITOOL) "$(OD)\source.obj" "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\source.pdb" /out:"$(OD)\source.exe" "$(IDIR)\source.obj" $(ITOOL) "$(OD)\src_modchar.obj" "$(OD)\source_csns.obj" 
 
 SOURCE=$(SPATH)\spacewindow.c
 "$(IDIR)\spacewindow.obj" : $(SOURCE)
@@ -586,40 +655,12 @@ SOURCE=$(SPATH)\sesans_field.c
 "$(OD)\sesans_field.exe" : "$(OD)" $(MTOOL) "$(OD)\sesans_field.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sesans_field.pdb" /out:"$(OD)\sesans_field.exe" "$(IDIR)\sesans_field.obj" $(MTOOL) 
 
-SOURCE=$(SPATH)\sample_elasticisotr.c
-"$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_elasticisotr.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_elasticisotr.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_elasticisotr.pdb" /out:"$(OD)\sample_elasticisotr.exe" "$(IDIR)\sample_elasticisotr.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_inelast.c
-"$(IDIR)\sample_inelast.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_inelast.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_inelast.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_inelast.pdb" /out:"$(OD)\sample_inelast.exe" "$(IDIR)\sample_inelast.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_reflectom.c
-"$(IDIR)\sample_reflectom.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_reflectom.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_reflectom.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_reflectom.pdb" /out:"$(OD)\sample_reflectom.exe" "$(IDIR)\sample_reflectom.obj" $(MTOOL) 
-
 SOURCE=$(SPATH)\define_direction.c
 "$(IDIR)\define_direction.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 "$(OD)\define_direction.exe" : "$(OD)" $(MTOOL) "$(OD)\define_direction.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\define_direction.pdb" /out:"$(OD)\define_direction.exe" "$(IDIR)\define_direction.obj" $(MTOOL) 
-
-SOURCE=$(SPATH)\sample_singcryst.c
-"$(IDIR)\sample_singcryst.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\sample_singcryst.exe" : "$(OD)" $(MTOOL) "$(OD)\sample_singcryst.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\sample_singcryst.pdb" /out:"$(OD)\sample_singcryst.exe" "$(IDIR)\sample_singcryst.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\cas_v40.c
 "$(IDIR)\cas_v40.obj" : $(SOURCE)
@@ -677,6 +718,13 @@ SOURCE=$(SPATH)\guide_elliptic.cpp
 "$(OD)\guide_elliptic.exe" : "$(OD)" $(GTOOL) "$(OD)\guide_elliptic.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide_elliptic.pdb" /out:"$(OD)\guide_elliptic.exe" "$(IDIR)\guide_elliptic.obj" $(GTOOL) 
 
+SOURCE=$(SPATH)\filter.cpp
+"$(IDIR)\filter.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\filter.exe" : "$(OD)" $(GTOOL) "$(OD)\filter.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\filter.pdb" /out:"$(OD)\filter.exe" "$(IDIR)\filter.obj" $(GTOOL) 
+
 SOURCE=$(SPATH)\guide_parallel.c
 "$(IDIR)\guide_parallel.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -718,6 +766,34 @@ SOURCE=$(SPATH)\sample_nxs.c
 
 "$(OD)\sample_nxs.exe" : "$(OD)" $(STOOL) "$(OD)\sample_nxs.obj" "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\sample_nxs.pdb" /out:"$(OD)\sample_nxs.exe" "$(IDIR)\sample_nxs.obj" $(STOOL) "$(OD)\sghkl.obj" "$(OD)\sgclib.obj" "$(OD)\sgio.obj" "$(OD)\sgfind.obj" "$(OD)\read_table-lib.obj" "$(OD)\sgsi.obj" "$(OD)\nxs.obj" 
+
+SOURCE=$(SPATH)\sample_elasticisotr.c
+"$(IDIR)\sample_elasticisotr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_elasticisotr.exe" : "$(OD)" $(STOOL) "$(OD)\sample_elasticisotr.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_elasticisotr.pdb" /out:"$(OD)\sample_elasticisotr.exe" "$(IDIR)\sample_elasticisotr.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_inelast.c
+"$(IDIR)\sample_inelast.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_inelast.exe" : "$(OD)" $(STOOL) "$(OD)\sample_inelast.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_inelast.pdb" /out:"$(OD)\sample_inelast.exe" "$(IDIR)\sample_inelast.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_reflectom.c
+"$(IDIR)\sample_reflectom.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_reflectom.exe" : "$(OD)" $(STOOL) "$(OD)\sample_reflectom.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_reflectom.pdb" /out:"$(OD)\sample_reflectom.exe" "$(IDIR)\sample_reflectom.obj" $(STOOL) 
+
+SOURCE=$(SPATH)\sample_singcryst.c
+"$(IDIR)\sample_singcryst.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sample_singcryst.exe" : "$(OD)" $(STOOL) "$(OD)\sample_singcryst.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\sample_singcryst.pdb" /out:"$(OD)\sample_singcryst.exe" "$(IDIR)\sample_singcryst.obj" $(STOOL) 
 
 SOURCE=$(SPATH)\chop_phases.c
 "$(IDIR)\chop_phases.obj" : $(SOURCE)

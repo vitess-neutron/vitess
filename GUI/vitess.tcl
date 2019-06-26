@@ -13,7 +13,7 @@
 # - variable names must be of the form [a-zA-Z][a-zA-Z0-9_.]+
 # - an _ underscore as last character is for entry value variables only
 # - if the first character is uppercase, the variable will not be saved / loaded
-# - variables with SET, ESET or Add in the end are reserved for formular lists 
+# - variables with SET, ESET or Add in the end are reserved for formular lists
 # - mod<n> has either "--inactive--" or the name of module n as value,
 #   normal variable names should not have of the form mod[0-9]+
 # - <var>_<n> is the entry variable for entry var of module n; because this name
@@ -32,10 +32,10 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
-set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
-# Some variables for settings begin with a capital letter, or are otherwise rejected by 
+# Some variables for settings begin with a capital letter, or are otherwise rejected by
 # the regular expression, but should be saved:
 set DoSaveSetting {
   audible_bell
@@ -62,7 +62,8 @@ set DoNotSaveSetting {
 
 set DoNotSave [concat $DoNotSaveSetting {
   audible_bell
-  bgColor browse_ext_mode buffersize
+  bgColor browse_ext_mode buffersize buttonColor
+  canvasColor
   fileentrywidth
   infolevel itemlabwidth
   labColor
@@ -97,6 +98,7 @@ set TempVars {
   pA pA2
   res
   sps
+  vsn
   pow
   tA
 }
@@ -174,14 +176,15 @@ proc makeModuleSets {} {
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
-	sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
+      sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
+    {filter {} filter}
     {frame {} frame}
     {external_command}
-    {trajectories {writeout spin_reset} {writeout spin_reset}}
+    {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
@@ -220,7 +223,7 @@ rename makeModuleSets {}
 ###
 ### General positions & meaning in lists
 ###
-### these lists should have name ending with (or at least including) ESET
+### these lists should have names ending with (or at least including) ESET
 ### like singleDetectorESET
 ###
 ### 0 name of global variable (first part of name for type select)
@@ -273,7 +276,7 @@ rename makeModuleSets {}
 ### An entry of type filename must specify an existing file or directory.
 ### The input may contain tilde (~) notation on unix systems.
 ### If a filename entry becomes checked, and the file or directory
-### exists, it is replaced by a fully qualified filename. This helpss
+### exists, it is replaced by a fully qualified filename. This helps
 ### to avoid error situations, where a filename is used with a different
 ### default environment than xcontrol.
 ###
@@ -311,7 +314,7 @@ set inputESET {
 ###
 set xcontrolDefaultsESET {
   {plotapp browsefile gnuplot {"plot application" "Application to be executed when the 'Ext. Plot file' title menu button is pressed. The application becomes called with a file name parameter."} r}
-  {x3dapp browsefile InstantPlayer {"X3D application" "Application to be executed when visualizing X3D trajectories + instrument gemetry. The application becomes called with a file name parameter."} r}
+  {x3dapp browsefile InstantPlayer {"X3D application" "Application to be executed when visualizing X3D trajectories + instrument geometry. The application becomes called with a file name parameter."} r}
 }
 
 
@@ -589,20 +592,22 @@ proc source_cwsCheckErr {{app _}} {
 ### source
 ###   SPSS short pulsed spallation sources
 
-proc sore {f s p} {
+proc sore {f s v p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
   set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
+  set v [list [list dvsn radio $v {"data base" "choose the version of the data base - see help file" "" v} {1 2} {1 2}]]
   set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
-  return [concat $f $s $p]
+  return [concat $f $s $v $p]
 }
 
 foreach s {short_pulsed SNS J-PARC IPNS CSNS} \
         m {SPTScold SnsColdCpld J-ParcCold IpnsSPThermPois CsnsH2coupled} \
         fr {50 60 20 50 25} \
         sps {- SNS - - CSNS} \
+        vsn {1 2 1 1 1} \
         pow {- 1.0 - - 0.1} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
-  set fl [sore $fr $sps $pow]
+  set fl [sore $fr $sps $vsn $pow]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
   proc source_${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
@@ -625,6 +630,7 @@ foreach s {ESS_LPTS ESS_2012} {
   set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
   set source_${s}ESET [concat {
     {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
+    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt} {1 2 3}}
     {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
     {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
@@ -647,53 +653,59 @@ foreach s {ESS_LPTS ESS_2012} {
 ### Detector
 ###
 set detectorESET {
-  {"Detector geometry" header}
-  {geom radio flat {geometry
-    "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
-    {flat cylindrical} {cub cyl}}
-  {}
-  {hei float 10 {
-    "height [cm]" "Height of the detector in cm." "" h}
-    gt0 "" 1}
-  {wid float 10 {
-    "width [cm]" "Full width of a flat detector in cm.In case of a cylindrical detector it is the length of the cylinder arch under consideration." "" w}
-    gt0 "" 1}
-  {thick float 0.2 {
-    "thickness [cm]" "Thickness of the detecting material in cm." "" t}
-    gt0 "" 1}
-  {nrow int 1 {
-    "number\nof rows" "Number of rows partitioning the detector height." "" r} 1 10000 1}
-  {ncol int 1 {
-    "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
-  {eff float 0.95 {
-    efficiency "Efficiency of the detector, range: 0<Efficiency<0.99999." "" e} gt0 1 1}
-  {phi float 0 {
-    "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
-  {theta float 0 {
-    "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
-  {dist float 100 {
-    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
-  {repr int 1 {
-    repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron." "" A} 1}
-  {use radio normal {
-    usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments." "" M}
-    {normal "monitor only"} {0 1}}
-  {grid radio on {
-    "detector grid" "If the detector grid is switched off, the exact neutron position is written to the output file." "" g}
-    {on off} {1 0}}
-  {det_tof radio calc {
-    "TOF option" "no: flight path inside detector is set to zero\ncalc: length and TOF calculated from thickness" "" o}
-    {no calc} {0 1}}
-  {detectcolor int -1 {
-    "detect color" "Detect only events with given color. A negative number means any color." "" C}
-    }
-  {addcolor int -1 {
-    "add color" "Add value to color property after detection. A negative number means no change." "" S}
-    }
+   {"General detector geometry" header}
+    {array select array {"array (first or intermediated part)" "select if detector is first or intermediate part of detector array" "" B} {{"" 0}}}
+    {}
+    {geom radio flat {geometry
+	"The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}
+	{flat cylindrical} {2 1}}
+    {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
+    {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
+    {}
+    {repr int 10 {  repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron." "" A} 1}
+    {detectcolor int -1 { "detect color" "Detect only events with given color. A negative number means any color." "" C}  }
+    {addcolor int -1 {  "add color" "Add value to color property after detection. A negative number means no change. Note that a value larger 0 is not set, but ADDED to the value of the incoming neutron; the module spin_reset can be used to reset the color before the detector array if only a distinction between sub-detectors is desired." "" S}  }
+    {}
+    {phi float 0 { "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector surface, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
+    {theta float 0 {  "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector surface. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
+    {dist float 100 {  "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the inner cylinder radius." "" D} ge0 "" 1}
+    {hei float 10 {"height [cm]" "Total height of the detector in cm. If tube detector, determines tube length (vert.) or diameter=height/rows (hor.)." "" h} gt0 "" 1}
+    {wid float 10 { "width [cm]" "Full width of a flat detector in cm. If tube detector, determines tube length (hor.) or diameter=width/columns (vert.). In case of a cylindrical detector it is the length of the cylinder arch under consideration." "" w} gt0 "" 1}
+    {thick float 0.2 { "thickness [cm]" "Total thickness of the detecting material in cm." "" t}  gt0 "" 1}
+    {nrow int 1 { "number\nof rows" "Number of rows partitioning the detector height (hor. tubes or digitalization bins)." "" r} 1 100000 1}
+    {ncol int 1 {  "number\nof columns" "Number of columns partitioning the detector width (vert. tubes or digitalization bins)" "" c} 1 100000 1}
+    {nlay int 1 { "number\nof layers" "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector). If tube detector, thickness/layers must be equal to either height/rows or width/columns." "" n} 1 1000 0}
+    {resolutionH float 0 {"hor. resolution [cm]" "spatial resolution (FWHM) in horizontal direction" "" u} 0 10 0}
+    {resolutionV float 0 {"vert. resolution [cm]" "spatial resolution (FWHM) in vertical direction" "" v} 0 10 0}
+    {resolutionX float 0 {"resolution in x [cm]" "spatial resolution (FWHM) in x direction" "" l} 0 10 0}
+    {detgaseff float 1 {"efficiency\nmodifyer" "If not 1, modifies efficiency calculated from interaction cross-section with chosen material, e.g. for losses due to secondary particle detection etc. If \"other\" material is chosen, this value is used as wavelength independet probability of detection within [0,thickness], i.e. of neutrons perpendicular to detector surface. Ignored in case of efficiency file." "" e} 0 1 0}
+    {}
+    {eff_file pareditablefile ""  {"lambda\nefficiency" "File containing two columns: wavelength and efficiency. If an efficiency file is given, absorber/converter type is ignored." "" E}}
+    {}
+    {absorbertype radio "3He gas" {"absorber/converter type" "Material that interacts with neutrons, the total cross-section of which determines the (wavelength-dependent) detection efficiency." "" m} {"BF3 gas" "3He gas" "solid B10" "solid Li6" "other"}  {0 1 2 3 5}}
+    {}
+    {pressure float 4 {"gas pressure [bar] or \n solid layer thickness [cm]" "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component. \n solid B10 or Li6: layer thickness of converter material." "" p} 0 20 0}
+    {temperature float 293 {"gas temperature [K] or \n  atom density (solid) [10^27 1/m^3]" "He3, BF3: Temperature used to calculate particle density. \n solid B10 or Li6: atom density of converter material." "" k} 0 500 0}
+    {}
+    {"Tube detector" header}
+    {orientation radio horizontal {"tube orientation" "Orientation of tubes: horizontal mean the cylinder axis (in case of circular cross-section) is parallel to the y axis or width dimension, vertical to the z axis or height dimension. Tube length is total width (height) for hor. (vert.) orientation." "" o} {horizontal vertical} {0 1}}
+    {cs radio circular {"tube cross-section" "Choose circular or rectangular cross-section for cylindrical or cubic tubes." "" b} {circular rectangular} {0 1}}
+    {}
+    {wallt float 0 {"wall thickness [mm]" "Thickness of tube walls. Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering." "" f} 0 10 0}
+    {shift select shift {"layers shifted" "tube layers shifted against each other by half the diameter" "" s} {{"" 0}}}
+    {}
+    {"Cylindrical geometry" header}
+    {}
+    {phimode select constphi {"const. phi" "Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." "" z} {{"" 0}}}
+    {cylaxis radio "z" {"axis orientation" "Orientation of cylinder axis must be parallel to x,y, or z axis." "" x} {"x" "y" "z"} {0 1 2}}
+    {"Output file" header}
+    {}
+    {out_file pareditablefile ""  {"Output filename" "Name of output file, written by last detector in array. If left blank or the array box is ticked, no output file will be written. Default output (and currently only) is event mode (3D position, time, weight)." "" O}}
 }
 
+
 proc detectorCheckErr {{app _}} {
-  foreach l {geom wid phi}  {
+  foreach l {geom wid phi cylaxis}  {
     upvar #0 $l$app $l
   }
   if {$geom == "flat"} {
@@ -702,8 +714,8 @@ proc detectorCheckErr {{app _}} {
       return 1
     }
   } else {				# $geom == "cylindrical"
-    if {$phi != 0 && $phi != 180} {
-      showText "!Please specify phi as either 0 or 180 for a cylindrical geometry"
+    if {$phi != 0 && $phi != 180 && $cylaxis != "x" } {
+      showText "!Please specify phi as either 0 or 180 for a cylindrical geometry if the cylinder axis is not pointing along x"
       return 1
     }
   }
@@ -720,18 +732,33 @@ set external_commandESET {
 }
 
 
+### Read_In
+###
+set read_inESET {
+  {fname pareditablefile noutascii.dat {
+    "ASCII\ninput file" "Specifies the name of the ASCII input file containing the trajectories." "" A} w "" 1}
+  {inprgf radio VITESS {"program" "Program by which the input was written" "" f} {VITESS McStas} {1 2}}
+  {inform radio float {"VITESS\ndata format" "format of double values in the input file" "" F} {exp float} {0 1}}
+  {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
+  {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
+}
+
 ### Writeout
 ###
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
-    "ASCII\nfile name" "Specifies the name of the ASCII file." "" A} w "" 1}
-  {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
-  {outSeparator radio Space {"Separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
-  {detectcolor int -1 {
-    "writeout color" "Write only events with given color. A negative number means any color." "" C}
-    }
-  {"filter selection" header}
+    "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} w "" 1}
+  {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
+  {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
   {}
+  {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
+  {}
+  {"VITESS parameters" header}
+  {outform radio float {"data format" "format of float values in writeout file" "" F} {exp float} {0 1}}
+  {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
+  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
+  {}
+  {"Filter selection" header}
   {filtLambdaMin float "-1.0" {
     "filter lambda\nmin [A]" "begin of lambda interval to be filtered, -1.0 means any" "" l}}
   {filtLambdaMax float "-1.0" {
@@ -761,10 +788,6 @@ set writeoutESET {
     "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "-1.0" {
     "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
-  {}
-  {"column selection" header}
-  {}
-  {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
 }
 
 ### spin_reset
@@ -821,7 +844,7 @@ set winAdd {
 set a {
   {dist_orig_window float 0 {
     "distance orig.\n  <-> win. [cm]"
-    "distance from origin to window when projecting along the x axis" "" l} ge0 "" 1}
+    "distance from origin to window when projecting along the x axis" "" l}}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
@@ -851,6 +874,9 @@ set a {
   {"Filter options" header}
   {treatcolor int -1 {
     "treat color" "Treat only events with given color. A negative number means any color." "" f}}
+  {removecol radio no {
+    "remove other\ncolors" "Remove all other events not matching color." "" d}
+    {no yes} {0 1}}
   {"Additional window options" header}
   {phimin float -1 {
     "min. phi [°]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
@@ -1031,7 +1057,8 @@ set guideESET {
     "curvature\n(radius) [m]"
     "radius of curvature [m] (0 means no curvature, > 0 to the left,\n < 0 to the right)" "" R}}
 }
-
+# guide needs a scrollable window
+set BigFrameguide 1
 
 set specoptAdd {
   {"Special options" header}
@@ -1176,7 +1203,7 @@ set guide_idealESET {
   {dist_focus_ver float 0 {
     "Distance from exit to \n focus  in ver. plane [m]"
     "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
-  {} 
+  {}
    {addColor float 0 {
     "Add to color"
     "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
@@ -1190,7 +1217,7 @@ set guide_idealESET {
     {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
   {brefl_filename pareditablefile mirr1a.dat
     {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  
+
 }
 
 set guide_idealESET [concat $guide_idealESET]
@@ -1244,7 +1271,7 @@ set guide_ellipticESET {
   {dist_focus_ver float 0 {
     "Distance from exit to \n focus  in ver. plane [m]"
     "Distance from guide exit to focal point of the ellipse.\n in vertical plane."  "" D} ge0 "" 1}	
-  {} 
+  {}
    {addColor float 0 {
     "Add to color"
     "Modify the color of a trajectory every time \n a reflection with guide walls occurs." "" C}}		
@@ -1258,7 +1285,7 @@ set guide_ellipticESET {
     {"top plane" "Reflectivity file for top plane" "" j} r dat 1}
   {brefl_filename pareditablefile mirr1a.dat
     {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  
+
 }
 
 set guide_ellipticESET [concat $guide_ellipticESET]
@@ -1406,7 +1433,7 @@ set chopper_discESET {
     {yes no} {1 0}}
   {wnd_colour radio no {
     "set colour"
-    "yes: colour of neutrons will be defined by window that they are passing\nno: color set before is kept" "" c}
+    "yes: colour of the neutrons will be defined by the window that they are passing\nno: colour remains unchanged" "" c}
     {yes no} {1 0}}
   {chop_file pareditablefile chop_105.dat {
     "chopper file"
@@ -2083,6 +2110,64 @@ set visualESET {
 }
 
 
+### filter module
+###
+set fA {
+  {"filter selection" header}
+}
+
+set fA1 {
+  {filter_param1 radio none {
+    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+}
+set fA2 {
+  {filter_param2 radio none {
+    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+set fA3 {
+  {filter_param3 radio none {
+    "filter\nparameter 3" "choose filter parameter 2 (optional)" "" K}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+
+
+set fComb {
+  {filter_comb radio OR {
+      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill all criteria (AND) or at least one (OR)" "" C}
+    {OR AND} {0 1}}
+}
+
+set fPAi {
+  {}
+  {filtIMin float "" {
+    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {
+    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+}
+
+set fPAj {
+  {}
+  {filtJMin float "" {
+    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {
+    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+}
+
+set fPAk {
+  {}
+  {filtKMin float "" {
+    "filter 3\nmin value" "min value of filter parameter 3" "" w}}
+  {filtKMax float "" {
+    "filter 3\nmax value" "max value of filter parameter 3" "" W}}
+}
+
+set filterESET [concat $fA $fA1 $fA2 $fA3 $fComb $fPAi $fPAj $fPAk]
+unset fA fA1 fA2 fA3 fComb fPAi fPAj fPAk
+
+
 ### Monitor many many modules
 
 proc genFE {n} {
@@ -2105,15 +2190,12 @@ set dA {
 }
 
 set nA {
-  {number_bins int 10 {
-    "number\nof bins"
-    "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
-  {mtrl_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated\nnegative values mean that all files containing colour 0, 1, 2, ... -Input are generated simultaneously"
-	"" C} -10 32768}
+  {number_bins int 100 {"number\nof bins" "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
+  {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -10 32768}
 }
 set nnA {
-  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {yes no} {1 0}}
+  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {no yes} {0 1}}
+  {all_files radio no {"all files" "if 'yes' files containing all trajectories and those of colour 0, 1, 2, ... 'colour' are generated simultaneously\nif 'no' only one file containing trajectories of colour 'colour' is generated" "" c} {no yes} {0 1}}
 }
 
 set mA {
@@ -2200,7 +2282,7 @@ set fPAuv {
 ### monitor
 ###   wavelength
 
-set mon1_lambdaESET [concat [genFE lambda] $nA $nnA $mA $pA $tA $fA $fPA]
+set mon1_lambdaESET [concat [genFE lambda] $nA $mA $nnA $pA $tA $fA $fPA]
 proc mon1_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
 }
@@ -2212,7 +2294,7 @@ set tA {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" T}}
 }
 
-set monpol_lambdaESET [concat [genFE p_lambda] $nA $mA $pA $tA $dA]
+set monpol_lambdaESET [concat [genFE p_lambda] $nA $nnA $mA $pA $tA $dA]
 proc monpol_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
 }
@@ -2242,7 +2324,7 @@ proc mon1_timeCheckErr {{app _}} {
   return [checkMiMaErr min_time max_time "" $app]
 }
 
-set monpol_timeESET [concat [genFE p_time] $nA $mA $pA $dA]
+set monpol_timeESET [concat [genFE p_time] $nA $nnA $nnA $mA $pA $dA]
 proc monpol_timeCheckErr {{app _}} {
   return [checkMiMaErr min_time max_time "" $app]
 }
@@ -2263,7 +2345,7 @@ proc mon1_divyCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
 
-set monpol_divyESET [concat [genFE p_divy] $nA $mA $pA $dA]
+set monpol_divyESET [concat [genFE p_divy] $nA $nnA $mA $pA $dA]
 proc monpol_divyCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -2278,12 +2360,12 @@ set mA {
     "max. div.\nx <-> z [deg]" "upper bound of the monitored interval" "" M} 1}
 }
 
-set mon1_divzESET [concat [genFE divz] $nA $nnA $mA $pA $fA $fLA $fPA]
+set mon1_divzESET [concat [genFE divz] $nA $nnA $nnA $mA $pA $fA $fLA $fPA]
 proc mon1_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
 
-set monpol_divzESET [concat [genFE p_divz] $nA $mA $pA $dA]
+set monpol_divzESET [concat [genFE p_divz] $nA $nnA $mA $pA $dA]
 proc monpol_divzCheckErr {{app _}} {
   return [checkMiMaErr min_div max_div "" $app]
 }
@@ -2334,7 +2416,7 @@ proc mon1_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
 
-set monpol_yESET [concat [genFE p_pos_y] $nA $mA $pA $dA]
+set monpol_yESET [concat [genFE p_pos_y] $nA $nnA $nnA $mA $pA $dA]
 proc monpol_yCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -2355,7 +2437,7 @@ proc mon1_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
 
-set monpol_zESET [concat [genFE p_pos_z] $nA $mA $pA $dA]
+set monpol_zESET [concat [genFE p_pos_z] $nA $nnA $mA $pA $dA]
 proc monpol_zCheckErr {{app _}} {
   return [checkMiMaErr minv maxv "" $app]
 }
@@ -2367,7 +2449,7 @@ set ra {
   {refile parbrowsefile "" {"reference file" "" "" S}}
   {ffile parbrowsefile "" {"flux file" "" "" F}}
   {}
-  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} } 
+  {kind radio lambda {kind "" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
   {excl radio no {exclusive "if set, only neutrons meeting the monitor conditions are considered further on" "" e} {no yes} {0 1} }
   {}
   {minlam float "" {"min lambda [Å]" "minimal lambda [Å]" "" l}}
@@ -2589,33 +2671,59 @@ proc mon2_rdivCheckErr {{app _}} {
 ### monitor1D
 ### generic 1D monitor
 
+proc genFE {n} {
+  set ll {"monitor file"
+    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval. If several parameters should be monitored,  \n then the file name is used as a template and the parameter name and .mon is added to the template name, e.g. TEMPLATENAME_lambda.mon for the wavelength parameter." "" O}
+  return [list [list monitor_file moneditablefile $n.dat $ll "" "" 1]]
+}
+
 set mA1 {
   {parameter1 radio pos_y {
-    "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
+    "1st parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
     {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+  {parameter2 radio none {
+    "2nd parameter\non x-axis" "choose the 2nd parameter to be shown on the x-axis, \n a separate file will be created." "" Y}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+  {parameter3 radio none {
+    "3rd parameter\non x-axis" "choose the 3rd parameter to be shown on the x-axis, \n a separate file will be created." "" Z}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }	
 
-set mAV {
+set mAV1 {
   {}
-  {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
-  {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {min_vx1 float 0 {"1st minimal\nx-value" "" "" w} -1E6 1E6 1}
+  {min_vx2 float 0 {"2nd minimal\nx-value" "" "" f}}
+  {min_vx3 float 0 {"3rd minimal\nx-value" "" "" g}}
+  
+}
+
+set mAV2 {
+  {}
+  {max_vx1 float 0 {"1st maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {max_vx2 float 0 {"2nd maximal\nx-value" "" "" F}}
+  {max_vx3 float 0 {"3rd maximal\nx-value" "" "" G}}
+  
 }
 
 set nA {
   {}	
-  {number_xbins int 100 {
-    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+  {number_xbins1 int 100 {
+    "1st number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
+  {number_xbins2 int 100 {
+    "2nd number\nof x-bins" "number of bins within the y-axis interval" "" y}}	
+  {number_xbins3 int 100 {
+    "3rd number\nof x-bins" "number of bins within the y-axis interval" "" z}} 
 }
 
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
@@ -2657,8 +2765,8 @@ set dA {
   {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
 }
 
-set monitor1DESET [concat [genFE mon1D] $mA1 $mAV $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
-unset mA1 mAV nA fA1 fA2 fComb fPAi fPAj polAH polA dA
+set monitor1DESET [concat [genFE mon1D] $mA1 $mAV1 $mAV2 $nA $pA $fA $fLA $fA1 $fA2 $fComb $fPAi $fPAj $polAH $polA $dA]
+unset mA1 mAV1 mAV2 nA fA1 fA2 fComb fPAi fPAj polAH polA dA
 proc monitor1DCheckErr {{app _}} {
   if [checkMiMaErr min_vx max_vx "" $app] {return 1}
   return {0}
@@ -2691,20 +2799,20 @@ set mAV {
 set nA {
   {}	
   {number_xbins int 100 {
-    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1E6}
   {number_ybins int 100 {
-    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
+    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1E6 1}
 }
 
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}	
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 set fComb {
@@ -2818,8 +2926,8 @@ set samASET [list {Sample header} \
 set nxsESET [concat $samASET {
   {nxsfile pareditablefile "" {"nxs para-\nmeter file"} dr}
 }]
-  
-  
+
+
 ### sample
 ###   pow file description
 
@@ -2898,14 +3006,15 @@ proc powCheckErr {{app _}} {
 set sanESET [concat $samASET {
   {Scattering header}
   {sob radio spheres {
-    "scattering\nobject" "specifies the shape of the scattering object. According to this selection, the next three parameters are taken. For
+    "scattering\nobjects" "specifies the shape of the scattering objects. According to this selection, the next three parameters are taken. For
 spheres: radius
-ellipsoid: three radii
-parallelepiped: length, width, height
-cylinder: radius 1, radius 2, height
+polydispersive spheres: minimal and maximal radius
+ellipsoids: three radii
+parallelepipeds: length, width, height
+cylinders: radius 1, radius 2, height
 isotropic scattering: no value needed."}
-    {spheres ellipsoid parallelepiped cylinder "isotropic scattering"}
-    {S E P C I}
+    {"spheres" "polydispersive spheres" "ellipsoids" "parallelepipeds" "cylinders" "isotropic scattering"}
+    {S D E P C I}
   }
   {}
   {hsrad float "" {"radius 1 or\nlength [Ang]"} gt0}
@@ -3142,6 +3251,8 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
 zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+  {"Offspecular scattering" header}
+  {useOffspec radio Off {"Offspecular scattering" "Switch on, if the reflectivity file takes into account\n offspecular scattering, i.e. R(q_i, q_f)." "" o} {Off On} {0 1} }
   {"Incoherent scattering" header}
   {useInc radio Off {"Incoherent scattering" "Switch on, if incoherent scattering from sample should be taken into account." "" B} {Off On} {0 1} }
   {}
@@ -3183,8 +3294,8 @@ set sample_elasticisotrESET {
   {pf pareditablefile sampleelastizotr_default.iso {"parameter\nfile" "" "" P} r iso 1}
   {"Special Options" header}
   {r int 1 {repetition "" "" A}}
-  {si_color int 0
-    {"colour" "if zero, all neutrons are scattered\nif not, only neutrons of this color are scattered" "" c}}
+  {si_color int -1
+    {"colour" "if -1, all neutrons are scattered\nif not, only neutrons of this color are scattered" "" c}}
 }
 
 ### iso file description
@@ -3259,7 +3370,7 @@ set eval_elastESET {
     "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"d-spacing [A]" "momentum transfer Q [1/A]" "scattering angle [deg]" "wavelength difference [A]"} {1 2 3 4}}
   {}
   {sfile moneditablefile elast.eva {
-    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
+    "spectrum\nfile" "the spectra file: it contains the scattering results" "" o}}
   {ifile pareditablefile "" {
     "intensity\nfile" "intensity file (optional, see help manual) it contains the integrated intensities with respect to certain ranges of the scattering results (e.g. one is interested in the total intensity within each peak of a powder spectrum ). The ranges of integration have to be defined in the info file" "" O}}
   {infofile pareditablefile "" {
@@ -3270,21 +3381,27 @@ set eval_elastESET {
     "minimum\n[A, 1/A, deg]" "lower bound of the evaluation interval" "" m} 1}
   {maxa float 0 {
     "maximum\n[A, 1/A, deg]" "upper bound of the evaluation interval" "" M} 1}
-  {prob_w radio yes {
-    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
-  {sAxis radio none {
-    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	 
- {bin_prz float "" {
+  {bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {}
+  {prob_w radio yes {
+    "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
   {eval_excl radio no {
     "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {sAxis radio none {
+    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	
+  {}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {tofcor radio no {
+    "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no "yes, origin in sample" "yes, origin at detector"} {0 1 2}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {ddist float "" {
+    "sample-detector\ndistance [cm]" "nominal distance from sample to detector" "" D} ge0}
   {toff float 0 {
     "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
   {refwave float "" {
@@ -3293,8 +3410,8 @@ set eval_elastESET {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
-  {eval_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {eval_colour int -1 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 
 proc eval_elastCheckErr {{app _}} {
@@ -3351,28 +3468,33 @@ set eval_elast2ESET {
   {}
   {prob_w radio yes {
     "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
-  {dspot float "" {
-    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
   {eval_excl radio no {
     "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
+  {scatang radio direction {
+    "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
+  {}
+  {tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {tofcorr radio no {
+    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
-  {toff float 0 {
-    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
-  {tofcorr radio no {
-    "correct tof\nto distance" "correct tof to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
+  {toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {}
+  {dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
   {timevalbegin float -1.e10 {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {}
   {"color selection" header}
-  {eval_colour int 0 {
-    "color" "color necessary for the trajectory to be evaluated\ncolor 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {eval_colour int -1 {
+    "color" "color necessary for the trajectory to be evaluated\ncolor -1 means: all trajectories are evaluated" "" C} 0 32768}
   {minColor int -1 {
     "minColor" "color necessary for the trajectory to be evaluated\nminColor -1 means: all trajectories are evaluated\notherwise neutron color must be >= minColor" "" a} -1 32768}
   {maxColor int -1 {
@@ -3439,8 +3561,8 @@ set eval_sansESET {
     "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
   {sn_timevalend float 1.e10 {
     "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
-  {sn_eval_colour int 0 {
-    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+  {sn_eval_colour int -1 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 
 
@@ -3597,6 +3719,7 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
+    {mirrMat radio Other {"Mirror coating" "Choose between available materials Silicon or Sapphire\n for a proper description of neutron absorption. Choose Other for a general approximation. \n " "" S} {Other Silicon Sapphire} {0 1 2}}
     {incColor radio Off {"Modify color" "Increase the neutron color by 1 for each mirror reflection" "" R} {Off On} {0 1}}
   {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
     {X Y Z N} {0 1 2 -1}}
@@ -3928,7 +4051,7 @@ If you are interested in intermediate results you can use the module <bwriteout>
 which stores and passes through the data it receives.
 A special form of the pipe is used to read compressed data:
 gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
-  | module2 -a<value> ... | moduleN -a<value> ... 
+  | module2 -a<value> ... | moduleN -a<value> ...
 
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
@@ -4009,7 +4132,7 @@ package VITESS, i.e they have a common meaning. These options are
   If the first program in the pipe is an external program like gzip, which decompresses
   a neutron trajectory file, the second program in the pipe will be the first
   module of the instrument. This module knows to accept data from standard input then,
-  potentially compressed, and the value of this parameter gives the byte file size 
+  potentially compressed, and the value of this parameter gives the byte file size
   of the data file decompressed by the first program.
 
 12. write compressed data (--C)
@@ -4038,6 +4161,7 @@ Xcontrol is a generic graphical user interface to control experiments.
 
 First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
+
 
 Contact: fromme@hmi.de
 }
@@ -4070,7 +4194,7 @@ When exploring the parameter space of an instrument it often helps to split
 the instrument.
 The neutron trajectories of a first part, where parameters are fixed,
 are saved to a binary file, to be read over and over again in the second part
-of the instrument pipe, where parameters are changed often. 
+of the instrument pipe, where parameters are changed often.
 These neutron files may grow quite large.
 
 The menu bar option "Output compression" allows to compress data
@@ -4109,6 +4233,20 @@ proc cleanupModView {} {
 }
 
 
+proc highlightSelectedModule {{i -1}} {
+  # highlight selected module
+  global maxModule Mlf bgColor entryColor
+  for {set ii 0} {$ii < $maxModule} {incr ii} {
+    if [winfo exists $Mlf.g$ii.label] {
+      if {$ii == $i} {
+        $Mlf.g$ii.label configure -bg $entryColor
+      } else {
+        $Mlf.g$ii.label configure -bg $bgColor
+      }
+    }
+  }
+}
+
 ### checkModVar
 ###
 proc checkModVar {i {wishedmode ""}} {
@@ -4140,13 +4278,13 @@ proc checkModVar {i {wishedmode ""}} {
   }
   set needMoreModules 0
   cleanupModView
+
   switch $sep {
     here {				# normal entries in main window
       catch {destroy $sepw}
       set sepw ""
       set wm $Amf;			# actual module frame
-      if {$visible == $DummyEntry} {set n $wm.label} else {
-	set n $wm.$visible}
+      if {$visible == $DummyEntry} {set n $wm.label} else {set n $wm.$visible}
       catch {destroy $n}
       set visible $var
       if {$var == $DummyEntry} {
@@ -4154,7 +4292,12 @@ proc checkModVar {i {wishedmode ""}} {
       } else {
 	fGroup $wm.h $wm.$var
 	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor
-	pack $wm.h.head
+        entry $wm.h.mname -width 6 -bg $bgColor -textvariable mmm_$i
+        bind  $wm.h.mname <KeyRelease> "showModName $i"
+        bind  $wm.h.mname <Leave> "showModName $i"
+        pack $wm.h.mname -side left
+	pack $wm.h.head -side left -expand yes -fill both
+
 	generateEntries $wm.$var ${var}ESET $delist _$i
 	set needMoreModules 1
 	regsub {.c.f$} $Amf .c sw
@@ -4200,6 +4343,8 @@ proc checkModVar {i {wishedmode ""}} {
       set needMoreModules 1
     }
   }
+
+  if {$sep == "here"} {highlightSelectedModule $i} else highlightSelectedModule
 
   if {!$needMoreModules} return
   set nexti [expr $i + 1]
@@ -4306,9 +4451,10 @@ proc serializeSampleFile {f mode var app submodule} {
 	catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
 	switch $s {
 	  S {set sob spheres}
-	  E {set sob ellipsoid}
-	  P {set sob parallelepiped}
-	  C {set sob cylinder}
+	  D {set sob "polydispersive spheres"}
+	  E {set sob ellipsoids}
+	  P {set sob parallelepipeds}
+	  C {set sob cylinders}
 	  default {set sob "isotropic scattering"}
 	}
 	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
@@ -4340,9 +4486,10 @@ proc serializeSampleFile {f mode var app submodule} {
       san {
 	switch $sob {
 	  spheres {set s S}
-	  ellipsoid {set s E}
-	  parallelepiped {set s P}
-	  cylinder {set s C}
+	  "polydispersive spheres" {set s D}
+	  ellipsoids {set s E}
+	  parallelepipeds {set s P}
+	  cylinders {set s C}
 	  default {set s I}
 	}
 	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
@@ -4854,7 +5001,7 @@ proc trimModules {w i rmlist deflist} {
   # delete all entry variable settings of superseeded modules
   foreach l $rmlist {
     global $l
-    unset $l
+    catch {unset $l}
   }
   # redefine saved entry variables for shifted module
   foreach item $deflist {
@@ -4863,6 +5010,9 @@ proc trimModules {w i rmlist deflist} {
   }
   # reactivate saved modules for new indices
   reShowModules $w
+
+  # show given names of modules
+  showModName
 }
 
 proc moveDown {oldi} {
@@ -4878,7 +5028,7 @@ proc moveDown {oldi} {
   set deflist {}
   lappend deflist [list visM$oldi $DummyEntry] [list mod$oldi $DummyEntry]
   set allglob [info globals]
-  set w $Mlf;
+  set w $Mlf
 
   # append a free module below
   if {$i < $maxModule} {        # else we're full
@@ -4958,12 +5108,32 @@ proc removeMod {oldi} {
     lappend deflist [list visM$newi $DummyEntry] [list mod$newi $DummyEntry]
     trimModules $w $oldi $rmlist $deflist
   }
+  highlightSelectedModule
+}
+
+proc showModName {{i ""}} {
+  global Mlf maxModule DummyEntry
+  if {$i != ""} {
+    $Mlf.g$i.nlabel configure -text [globVal mmm_$i]
+  } else {
+    for {set i 0} {$i < $maxModule} {incr i} {
+      upvar #0 mmm_$i m
+      set v ""
+      if {[globVal mod$i] == $DummyEntry} {
+        catch {unset m}
+      } else {
+        catch {set v $m}
+      }
+      set w $Mlf.g$i.nlabel
+      if [winfo exists $w] {$w configure -text $v}
+    }
+  }
 }
 
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf labColor radioColor menuColor menuButtonColor
+  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor
   set fn [headerFont]
   set lfn [labelFont]
   set tfn [textFont]
@@ -5012,6 +5182,8 @@ proc moduleMenus {{n 1}} {
     button $w.top -image ftop -command "checkModVar $i separate"
     button $w.cross -image fcross -command "removeMod $i"
 
+    label $w.nlabel -font $tfn -bg $bgColor
+
     set varName mod$i
     upvar #0 $varName var
     set var $DummyEntry
@@ -5039,12 +5211,12 @@ proc moduleMenus {{n 1}} {
 	}
       }
     }
-    pack $w.cross $w.down $w.label $w.opt $w.top $w.right -side left -padx 1 -anchor w
+    pack $w.cross $w.down $w.label $w.opt $w.top $w.right $w.nlabel -side left -padx 1 -anchor w
   }
 }
 
 
-# Unset temporary help variables used here, variables matching single characters, 
+# Unset temporary help variables used here, variables matching single characters,
 # or with Add in the end are deleted by setAll.
 foreach n $TempVars {
   catch {unset $n}

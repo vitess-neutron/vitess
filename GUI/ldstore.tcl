@@ -62,7 +62,7 @@ proc doSavePacket {w} {
     if [catch {open $as w} f] {
       outProtocol "can't open $as to write"
       return
-    }  
+    }
   } else {
     if {[set f [openWriteFile $extension]] == 0} return
   }
@@ -120,7 +120,7 @@ proc savePacketWindow {} {
 
   set dname [file join [entryVal defdirectory] packet.gui]
   gSet savePacketESET [list $l1 $l2 [list spacketfile parbrowsefile $dname {
-    "package\nfilename" "The package definitions will be stored to a .gui file."} w gui]] 
+    "package\nfilename" "The package definitions will be stored to a .gui file."} w gui]]
   generateEntries $w.v savePacketESET
 
   bButton $w.b.cancel Cancel "destroy $w"
@@ -163,12 +163,12 @@ proc fileSettings {{saveit 0}} {
   close $f
 }
 
-proc storeAll {extension {prosal ""} {as ""}} {
-  conditionalOpenProtfile
+proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
+  if $proto conditionalOpenProtfile
   if {$extension == "gui"} {
     if {$as != ""} {
       if [catch {open $as w} f] {
-	outProtocol "can't open $as to write"
+	if $proto {outProtocol "can't open $as to write"}
 	return
       }
       set fname $as
@@ -181,15 +181,18 @@ proc storeAll {extension {prosal ""} {as ""}} {
       }
       if {[set f [openWriteFile gui $prosal fname]] == 0} return
     }
-    set n [file tail $fname]
-    set la [string last "." $n]
-    if {$la > 0} {set n [string range $n 0 [incr la -1]]}
-    setInstrumentfile $n
+    if $proto {
+      set n [file tail $fname]
+      set la [string last "." $n]
+      if {$la > 0} {set n [string range $n 0 [incr la -1]]}
+      setInstrumentfile $n
+    }
   } else {
     if {[set f [openWriteFile $extension "" fname]] == 0} return
   }
   switch $extension {
     gui {
+      cleanupGlobalVariables
       puts $f "#experiment description save file"
       puts $f "#version [globVal XcontrolVersion]"
       foreach g [savableGlobals] {
@@ -205,9 +208,11 @@ proc storeAll {extension {prosal ""} {as ""}} {
     }
   }
   close $f
-  outProtocol "stored file $fname"
-  conditionalCloseProtfile
-  gSet LastState [generateVitessCommand kstate]
+  if $proto {
+    outProtocol "stored file $fname"
+    conditionalCloseProtfile
+  }
+  saveLastState
 }
 
 
@@ -343,6 +348,9 @@ proc deleteSomeModules {w i} {
     upvar #0 visM$i v
     upvar #0 mod$i mv
     set v [set mv $DummyEntry]
+    # dump old module name tag
+    upvar #0 mmm_$i mt
+    catch {unset mt}
   }
 }
 
@@ -445,7 +453,7 @@ proc findModName {n com} {
       regexp {([^\/]+)\.mod} [optVal $com a] a oa
       set oa [string tolower $oa]
       switch [optVal $com S] {
-        1 { 
+        1 {
           switch -regexp $oa {
             hmi {return source_HMI}
             ill {return source_ILL}
@@ -475,10 +483,6 @@ proc findModName {n com} {
 }
 
 proc interpretCommand {com mi gsetkey gsetval} {
-  # dmf:debug
-  # uncomment next 2 lines
-  #puts "interpretCommand $mi"
-  #puts $com
   set modname ""
   upvar $gsetkey gkey
   upvar $gsetval gval
@@ -558,9 +562,6 @@ proc interpretCommand {com mi gsetkey gsetval} {
       }
       lappend gkey ${oname}_$mi
       lappend gval $v
-      # dmf:debug
-      #uncomment next line
-      #puts "+ ${oname}_$mi -> $v"
     }
   }
   return 1
@@ -623,24 +624,28 @@ proc doImportPipe {name} {
 
   # Ask if modified new default directory is ok
   confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-  gSet LastState [generateVitessCommand kstate]
+  saveLastState
 
   return 1
 }
 
 proc importPipe {} {
-  if [dontDoit "You have unsaved changes. Forget them?"] return
   set name [fileDialog open]
   if {$name == ""} return
+  if [dontDoit "Your changes will be saved to a snapshot only. Continue importing a pipe?"] return
+  doSnapshot
   doImportPipe $name
 }
 
 
-proc openSaveFile {name descs} {
+proc openSaveFile {name descs {versvar ""}} {
   # check if file has been written by a previous storeAll
 
-  if {$name == ""} return ""
+  if {$name == ""} {return ""}
 
+  if {$versvar != ""} {
+    upvar $versvar version
+  }
   set version -1
   if [catch {open $name r} f] {return ""}
   if {[gets $f] == "#$descs"} {
@@ -655,6 +660,7 @@ proc openSaveFile {name descs} {
   }
   set a [globVal XcontrolVersion]
   if {int($version) != int($a)} {
+    # versions with different integer part are incompatible
     close $f
     outProtocol "! version $version of $name doesn't match actual version $a"
     return ""
@@ -662,10 +668,56 @@ proc openSaveFile {name descs} {
   return $f
 }
 
+proc cleanupGlobalVariables {} {
+
+  # Delete global <name>_<number> variables, if they do not belong to a valid module.
+  # First we look for entry variables of active modules.
+  global DummyEntry maxModule ENames
+
+  for {set i 1} {$i <= $maxModule} {incr i} {
+    upvar #0 mod$i mod
+    if {! [info exists mod]} continue
+    if {$mod == "$DummyEntry"} continue
+    # check if it is a valid module name
+    upvar #0 ${mod}ESET m
+    if {! [info exists m]} continue
+    set mname($i) $mod
+    if [info exists ENames($mod)] continue ; # variable names of that module are known
+    foreach n $m {
+      set he [lindex $n 1]
+      if {$he == "" || $he == "header"} continue
+      lappend ENames($mod) [lindex $n 0]
+    }
+    lappend ENames($mod) mmm ; # special module name entry 
+  }
+
+  foreach e [info globals] {
+    # we examine <name>_<number> variables.
+    if {! [regexp {^(.+)_([0-9]+)$} $e a nm n]} continue
+    if [info exists mname($n)] {
+      # module n exists, look if the variable belongs to that module
+      set rc [lsearch $ENames($mname($n)) $nm]
+      # puts "   $mname($n) exists, $nm has index $rc"
+      if {$rc >= 0} continue
+      if  {[regexp {^(.+)_[or]_([0-9]+)$} $e a nm n]} {
+        # do not delete name_o_n or name_r_n variables for known names
+        set rc [lsearch $ENames($mname($n)) $nm]
+        # puts "   $mname($n) exists, $nm has index $rc"
+        if {$rc >= 0} continue
+      }
+    }
+    # else delete that relict
+    #dmf:debug
+    #puts "unset $e"
+    global $e
+    unset $e
+  }
+}
+
 proc checkConsistency {} {
   # As gui input files may contain inconsistent settings for various reasons.
   # We look for global variables which might disturb further work.
-  # First we look for variables mod_<number> 
+  # First we look for variables mod_<number>
   # These should be set to --inactive-- or a valid modul name.
   # All global variables of the form <name>_<number> are deleted, if they
   # do no belong to a active module.
@@ -700,19 +752,29 @@ proc checkConsistency {} {
 }
 
 ###
-proc loadAll {extension} {
-  if [dontDoit "You have unsaved changes. Forget them?"] return
+proc loadAll {extension {givenname ""}} {
 
-  set name [fileDialog open $extension]
-  set f [openSaveFile $name "experiment description save file"]
+  set name $givenname
+  if {$name == ""} {
+    set name [fileDialog open $extension]
+    if {$name == ""} return
+  }
+
+  if [dontDoit "Your changes will be saved to a snapshot only. Continue loading?"] return
+  doSnapshot
+
+  set f [openSaveFile $name "experiment description save file" version]
   if {$f == ""} return
- 
-  # remember old default directory
-  global defdirectory_ Mlf
-  set olddef $defdirectory_
 
-  # this will probably be the new default directory
-  set nd [file dirname $name]
+  global defdirectory_ Mlf
+
+  if {$givenname == ""} {
+    # remember old default directory
+    set olddef $defdirectory_
+
+    # this will probably be the new default directory
+    set nd [file dirname $name]
+  }
 
   # delete all modules
   deleteSomeModules $Mlf 1
@@ -734,6 +796,12 @@ proc loadAll {extension} {
     if {[lsearch $DoNotSave $e] >= 0} continue
     # match curly brace content
     if {[regexp "\{(.+)\}" $line a v]} {
+      if {$version <= 2 && $v == "0"} {
+        # Hack: some entry values have to be re-mapped 0 -> -1
+        if [regexp {^(mtrl_colour|eval_colour|sn_eval_colour|si_color|detectcolor|treatcolor)_[0-9]+$} $e] {
+          set v -1
+        }
+      }
       gSet $e "$v"
       #puts "gSet $e \"$v\""
     } elseif {[string match "*\{\}" $line]} {
@@ -758,17 +826,28 @@ proc loadAll {extension} {
   reShowModules $Mlf
 
   removeTrailingDummies
-  setInstrumentfile $name
 
-  # Ask if modified new default directory is ok
-  confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-  gSet LastState [generateVitessCommand kstate]
+  if {$givenname == ""} {
+    setInstrumentfile $name
+
+    # Ask if modified new default directory is ok
+    confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
+
+  } else {
+    global instrumentfile
+    set oname $instrumentfile
+    setInstrumentfile $oname
+    set defdirectory_ [file dirname $oname]
+  }
+
+  cleanupGlobalVariables
+  showModName
+  saveLastState
 
   return 1
 }
 
 proc deleteAllModules {} {
-  # delete all modules
   global Mlf Amf DoNotSaveRegexp
   deleteSomeModules $Mlf 1
   reShowModules $Mlf
@@ -776,7 +855,7 @@ proc deleteAllModules {} {
   setInstrumentfile 1
   gSet LastState ""
   helpFrame $Amf
-  foreach e [stringToSet [info globals]] {
+  foreach e [info globals] {
     if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e] {
       global $e
@@ -913,4 +992,78 @@ proc editInfFile {{mode 0}} {
   if $mode {set ft open} else {set ft write}
   if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
   showTextEditWindow .editinf $fn "Instrument File" 32 1
+}
+
+proc lCompare  {a b} {
+  global FTime
+  set xa [lindex $FTime $a]
+  set xb [lindex $FTime $b]
+  if {$xa > $xb} {return -1}
+  if {$xa == $xb} {return 0}
+  return 1
+}
+
+proc recoverFile {w fn} {
+  # who recoveres a file will probably need more snapshots
+  global StoreStates
+  if {$StoreStates < 8} {set StoreStates 8}
+
+  # dump the recovery GUI window
+  destroy $w
+
+  # load the old snapshot
+  loadAll gui $fn
+}
+
+proc recoverFileGUI {} {
+  set w .rgui
+  if [winfo exists $w] {
+    raise $w
+    return
+  }
+  global FTime bgColor
+  set fdir [file join [globVal SourceDirectory] FILES .saved]
+  set i 0
+  set FTime {}
+  set fname {}
+  foreach fn [glob -nocomplain -directory $fdir *.gui] {
+    lappend FTime [file mtime $fn]
+    lappend fname $fn
+    lappend findex $i
+    incr i
+  }
+  if {$i == 0} {
+    showText "!No snapshots taken so far"
+    return
+  }
+  set findex [lsort -command lCompare $findex]
+
+  set n "Recover Instrument"
+  generateToplevel $w $n "" "+120+60"
+  label $w.l -text $n -font [headerFont] -bg $bgColor
+  pack $w.l -side top -fill both -expand yes
+
+  set now [clock seconds]
+  for {set k 0} {$k < $i} {incr k} {
+    set ui [lindex $findex $k]
+    set tfn [lindex $fname $ui]
+    set ot [lindex $FTime $ui]
+    set ago [expr $now - $ot]
+    if {$ago > 3600} {
+      set ttime [clock format $ot -format {%H:%M:%S   %d.%m.%Y}]
+    } elseif {$ago > 60} {
+      set minutes  [expr int($ago / 60)]
+      set sec [expr $ago - 60*$minutes]
+      set ms [format  {%2d} $minutes]
+      set ss [format  {%0.2d} $sec]
+      set ttime  "$ms:$ss minutes ago"
+    } else {
+      set ttime "$ago seconds ago"
+    }
+    bButton $w.b$k $ttime "recoverFile $w $tfn"
+    pack $w.b$k -side top -fill both -expand yes
+  }
+
+  bButton $w.b$k Cancel "destroy $w"
+  pack $w.b$k -side top -fill both -expand yes
 }

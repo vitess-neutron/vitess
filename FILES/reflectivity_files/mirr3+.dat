@@ -1,3 +1,9 @@
+# reflectivity file for m=3.5 supermirror coating
+# - origin unknown
+# - smooth drop at m=3.5   (W about 0.002)
+# - reflectivity falls non-linearly from 99% to 60% from m=1.1 to m=3.5
+# - not state-of-the-art any more in 2012
+#
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99

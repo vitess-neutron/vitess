@@ -18,18 +18,17 @@
 #include "softabort.h"
 #include "general.h"
 
-#define BINSIZE 201
+#include "mon2_header.h"
 
-  static double bdiv_[BINSIZE],bpos_[BINSIZE];
-  static double bin_posdiv[BINSIZE][BINSIZE];
+static double bdiv_[BINSIZE],bpos_[BINSIZE];
 
 int main(int argc, char *argv[])
 {
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
-  int		index_yz , dpos,ddiv;
+  int		index_yz , dpos,ddiv, probactiv;
   long	i, exclusivecount, registered, BufferIndex, nbin_pos=0, nbin_div=0 ;
-  double pos_, div_, pos_min, pos_max, div_min, div_max,p, probactiv, bintc;
+  double pos_, div_, pos_min, pos_max, div_min, div_max,p,  bintc;
   double filtLambdaMin=-1.0,          /* filter      */
 		 filtLambdaMax=-1.0,
 		 filtYMin=-1.0e10,
@@ -150,8 +149,14 @@ int main(int argc, char *argv[])
 
 
   /*initialisation */
+  if (probactiv != 1) probactiv = 0;
 
   bintc = 0;
+
+   //New pointers allowing for global write out
+  by = bpos_;
+  bz = bdiv_;
+
   for(dpos = 0; dpos<nbin_pos+1; dpos++)
     {
       bpos_[dpos] = pos_min + (pos_max-pos_min) * dpos / (double)nbin_pos;
@@ -159,7 +164,9 @@ int main(int argc, char *argv[])
       for(ddiv = 0;ddiv<(nbin_div+1); ddiv++)
 	{
 	  bdiv_[ddiv] = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
-	  bin_posdiv[dpos][ddiv] = 0.0;
+	  binyz[dpos][ddiv] = 0.0;
+	  binyzerror[dpos][ddiv]=0.;
+	  binyzcounts[dpos][ddiv]=0;
 	}
     }
 
@@ -201,9 +208,10 @@ DECLARE_ABORT;
 	  ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
 	  if(((dpos>=0)&&(dpos<nbin_pos))&&((ddiv>=0)&&(ddiv<nbin_div))) {	
-	    bin_posdiv[dpos][ddiv] = bin_posdiv[dpos][ddiv] +  p ;
+	    binyz[dpos][ddiv] = binyz[dpos][ddiv] +  p ;
 	    bintc = bintc + p;
 	    registered=1;
+	    binyzcounts[dpos][ddiv]++;
 	  }
 	  
 	  if((exclusivecount==1) && (registered==1)) {
@@ -212,33 +220,8 @@ DECLARE_ABORT;
 	}
   }
 my_exit:
-  switch (format) {
-	case 0:
-	  for(dpos = 0; dpos<nbin_pos; dpos++)
-		{
-		  fprintf(fmonitor,"%10.7f\t",(bpos_[dpos]+bpos_[dpos+1])/2.0);
-		}
-	  for(ddiv = 0; ddiv<nbin_div; ddiv++)
-		{
-		  fprintf(fmonitor,"\n %5.3f\t",(bdiv_[ddiv]+bdiv_[ddiv+1])/2.0);
-		  for(dpos = 0; dpos<nbin_pos; dpos++)
-		{
-		  fprintf(fmonitor,"%5.3E\t",bin_posdiv[dpos][ddiv]);
-		}
-		}
-	  break;
-    case 1:
-	  fprintf(fmonitor, "#x  y  z\n");
-	  for(ddiv = 0; ddiv<nbin_div; ddiv++) {
-		  for(dpos = 0; dpos<nbin_pos; dpos++) {
-			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bpos_[dpos]+bpos_[dpos+1])/2.0, (bdiv_[ddiv]+bdiv_[ddiv+1])/2.0, bin_posdiv[dpos][ddiv]);
-		  }
-		  fprintf(fmonitor, "\n");
-	  }
-	break;
-  }
-  fclose(fmonitor);
-
+ 
+  WriteOutput (fmonitor, format, probactiv, nbin_pos, nbin_div);
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

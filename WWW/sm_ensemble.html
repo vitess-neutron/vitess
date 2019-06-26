@@ -27,8 +27,7 @@ The algorithm calculates the angle of inclination for each trajectory and decide
 For angles below theta_c, a reflectivity of 1 is assumed, for angles above thetaCSM, reflectivity of 0 is used (see Table: 'Parameter file'). 
 For angles between theta_c and thetaCSM, the reflectivity decreases linearly from 1 to R. 
 Neutrons that are not reflected are transmitted.<br>
-In the case of transmission, the new direction after refraction is determined and the attenuation inside the material calculated using an wavelength
-dependent and a wavelength independent term.
+In the case of transmission, the new direction after refraction is determined and the attenuation inside the material calculated using dedicated fit functions for silicon and sapphire. For silicon, the sum of the wavelength-dependent and independent term has to be 0.037 per 1cm mirror thickness. For other materials a generic function is used including a wavelength dependent and a wavelength independent term. 
 </p>
 <p>
 Visualisation of neutron paths or collision points is available. The module will visualize only the first 10000 trajectories or points. <br>
@@ -135,8 +134,8 @@ Visualisation of neutron paths or collision points is available. The module will
       <tr>
         <td>H/° V/°<br>[deg]</td>
         <td>Rotation angles which define the final normal vector of the mirror. <br>
-            It is first rotated (in a horizontal plane) about the z-axis by an angle 'H'. <br>
-            Then it is rotated (in a vertikal plane) about the y-axis by an angle 'V'.    <br>
+            It is first rotated (in a horizontal plane) about the z-axis by an angle 'H'.  <br>
+            Then it is rotated (in a vertikal plane) about the new y-axis by an angle 'V'. <br>
         <td>-180° to 180°</td>
       </tr>
 
@@ -174,7 +173,7 @@ Visualisation of neutron paths or collision points is available. The module will
             d is the thickness of the mirror in cm<br/>
             µ is the macroscopic attenuation (in 1/cm) for 1 Å neutrons</td>
         <td>> 0.0<br/>
-            0.0048 for Si</td>
+            0.017 for Si</td>
       </tr>
 
       <tr>
@@ -183,7 +182,7 @@ Visualisation of neutron paths or collision points is available. The module will
             d is the thickness of the mirror in cm<br/>
             µ_incoh is the macroscopic attenuation (in 1/cm)</td>
         <td>> 0.0<br/>
-            0.030 for Si</td>
+            0.020 for Si</td>
       </tr>
 
       <tr>

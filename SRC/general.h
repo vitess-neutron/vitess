@@ -58,6 +58,9 @@
 
 #define GUIDEFLIGHT 1
 
+#define ANY_COLOR  -1
+#define NO_COLOR    0
+
 #define MAX_COLLISIONS      100
 #define MAX_CHOPPER_WINDOWS  10
 #define LAMBDA_MIN            0.001
@@ -130,6 +133,7 @@ typedef enum
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
+	VT_FILTER      = 105,
 	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_ELAST2 = 222,
@@ -328,6 +332,7 @@ typedef struct
   double     Length;
   double     Width;
   double     Height;
+  double     rotAngle;
 }  
 VtCuboid;
 
@@ -340,6 +345,7 @@ typedef struct
   double     WidthOut;
   double     HeightIn;
   double     HeightOut;
+  double     rotAngle;
 }  
 VtHull;
 
@@ -496,9 +502,8 @@ int    ReadParI(FILE *fpt);
 void   ReadParComment(FILE *fpt);
 
 void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
-#ifdef VERS26
 void   StrgLShift(char* sStr, int kWidth);
-#endif
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
+
 #endif
 

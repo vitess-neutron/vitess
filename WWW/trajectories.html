@@ -3,6 +3,7 @@
   <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">    
    <link rel="stylesheet" type="text/css" href="default.css">
+   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
    <title>Visualization of Instruments and Trajectories</title>
   </head>
 <body>
@@ -54,7 +55,7 @@ X3D viewer.
 <br>
 The <a href="http://www.instantreality.org/downloads/">instantreality player</a>
 of Fraunhofer IGD is available for all supported operating
-systems, download it as a binary to be used without fee in a non-commercial version.
+systems, download it as a binary to be used without fee in a non-commercial version. Note that the latest 2.2 version may not be supported by older Linux systems like Ubuntu 10.04. Please install InstantPlayer 2.1 or older in case you don't have the latest OS.
 <br>
 If you select (Options / Helper applications) an external X3D viewer installed on your system, it will be used to
 show the generated geometry file. If the default InstantPlayer is present on your
@@ -67,13 +68,13 @@ The visualisation is implemented for the most important instrument components in
 The interaction with the 3D scene is very flexible. In the beginning the scene is shown
 with the source in the origin. In examine mode (key shortcut e) you may orient the scene
 with the mouse, left button pressed. It's like touching and turning a virtual ball around
-the origin. Use the mouse wheel to zoom in an out. If you want to reset the origin to another module,
+the origin. Use the mouse wheel to zoom in an out. Press the right mouse button and move the mouse to zoom in or out more gently. If you want to reset the origin to another module,
 switch to mode "look at" (key shortcut l) and click at the module you are interested in. Please note that this does not work for lines illustrating the neutron trajectories.
 After that switch back to mode examine. If you got lost, press R or r. If you press 'Space' an info screen appears, which in particular contains, among other information, the current position and the orientation of the camera. The camera position is in meters and is referreing to the origin at the source position. Select View --> Statistics --> Keyboard Mapping to get the complete list of all keyboard shortcuts.
 <br>
 <br>
 When generating a X3D scene, VITESS looks for an option file. You may edit this file with
-the GUI, Otions / X3D options. With Unix, this file is ~/.x3dopt, for Windows it's
+the GUI, Options / X3D options. With Unix, this file is ~/.x3dopt, for Windows it's
 FILES\x3d.opt where VITESS has been installed.
 <br>
 When editing this file with the GUI, you may see what may be changed, and with what syntax.
