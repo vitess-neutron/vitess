@@ -41,6 +41,7 @@
 #include "matrix.h"
 #include "message.h"
 
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
 /******************************/
 /** Structures and Enums     **/
@@ -100,6 +101,8 @@ double GuideEntranceHeight=0.0,
        LcntrZ  = 0.0,
        AxisY   = 0.0,        /* long axes of ellipse */
        AxisZ   = 0.0,
+       AparY   = 0.0,        /* factor of quadratic term in parabola  */
+       AparZ   = 0.0,
        Radius  = 0.0,
        piecelength=0.0,      /* length of 1 piece of the guide */
        dTotalLength,         /* total length of the guide  */
@@ -185,10 +188,11 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "elliptic shape\n");
 			fprintf(LogFilePtr, " maximal width  :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
 			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisY/100.);
-			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Y/100., FocusY/100.);
+			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Y/100., FocusY/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape\n");
+			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			                    (sq(GuideEntranceWidth)*AparY-dTotalLength-1.0/AparY/16.0)/100.);
 			break;
 		case VT_CURVED  :
 			break;
@@ -205,10 +209,11 @@ int main(int argc, char *argv[])
 			fprintf(LogFilePtr, "elliptic shape\n");
 			fprintf(LogFilePtr, " max. height    :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
 			fprintf(LogFilePtr, " long half axis :%8.3f m\n", AxisZ/100.);
-			fprintf(LogFilePtr, " focus points   :%8.3f m from entrance, %8.2f m after exit\n", D_Foc1Z/100., FocusZ/100.);
+			fprintf(LogFilePtr, " focal points   :%8.3f m from entrance, %8.3f m after exit\n", D_Foc1Z/100., FocusZ/100.);
 			break;
 		case VT_PARABOLIC:
-			fprintf(LogFilePtr, "parabolic shape\n");
+			fprintf(LogFilePtr, "parabolic shape : focal point:%8.3f m after exit\n", 
+			                    (sq(GuideEntranceHeight)*AparZ-dTotalLength-1.0/AparZ/16.0)/100.);
 			break;
 		case VT_CONSTANT:
 		case VT_LINEAR  :
@@ -353,7 +358,7 @@ int main(int argc, char *argv[])
 			TimeOF1 = 0.0;
 			TimeOF2 = 0.0;
 
-			/*	InputNeutrons[i].Position.X = 0.0;   /* !!!!!!!! */
+			/*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
 			/****************************************************************************************/
 			/* Check to see if the neutron is initially in the entrance to the guide...             */
 			/****************************************************************************************/
@@ -694,8 +699,8 @@ void OwnInit   (int argc, char *argv[])
 			Error("You must enter the width of the guide exit");
 	}
 
-	if (eGuideShapeY==VT_ELLIPTIC && PhiAnfY < 0.5*M_PI && GuideExitWidth  > GuideEntranceWidth ||
-	    eGuideShapeZ==VT_ELLIPTIC && PhiAnfZ < 0.5*M_PI && GuideExitHeight > GuideEntranceHeight   )
+	if ((eGuideShapeY==VT_ELLIPTIC && PhiAnfY < 0.5*M_PI && GuideExitWidth  > GuideEntranceWidth) ||
+	    (eGuideShapeZ==VT_ELLIPTIC && PhiAnfZ < 0.5*M_PI && GuideExitHeight > GuideEntranceHeight)   )
 	{
 		Error("The ellipse must widen at the guide entrance (angle > 90 deg) to achieve a exit width larger than the entrance width");
 	}
@@ -799,7 +804,6 @@ double Height(double dLength)
 {
 	double dHeight=0.0,
 	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
-	       A,               /* factor of quadratic term in parabola  */
 	       eps,             /* correction value =(b*b)/(2a*a)        */
 	       Phi,
 	       Phi_anf,Phi_end; /* phases in ellipse                     */
@@ -814,9 +818,9 @@ double Height(double dLength)
 			dHeight = GuideEntranceHeight + (GuideExitHeight-GuideEntranceHeight)/dTotalLength * dLength;
 			break;
 		case VT_PARABOLIC:
-			A      = dTotalLength/(sq(GuideEntranceHeight) - sq(GuideExitHeight));
-			L_end  = A * sq(GuideEntranceHeight);
-			dHeight = sqrt((L_end-dLength)/A);
+			AparZ   = dTotalLength/(sq(GuideEntranceHeight) - sq(GuideExitHeight));
+			L_end   = AparZ * sq(GuideEntranceHeight);
+			dHeight = sqrt((L_end-dLength)/AparZ);
 			break;
 		case VT_ELLIPTIC:
 			/* first approximation */
@@ -852,7 +856,6 @@ double Width(double dLength)
 {
 	double dWidth=0.0,
 	       L_end,           /* end of parabel or 2nd part of ellipse (center to exit) */
-	       A,               /* factor of quadratic term in parabola  */
 	       eps,             /* correction value =(b*b)/(2a*a)        */
 	       Phi,
 	       Phi_anf,Phi_end; /* phases in ellipse                     */
@@ -867,9 +870,9 @@ double Width(double dLength)
 			dWidth = GuideEntranceWidth + (GuideExitWidth-GuideEntranceWidth)/dTotalLength * dLength;
 			break;
 		case VT_PARABOLIC:
-			A      = dTotalLength/(sq(GuideEntranceWidth) - sq(GuideExitWidth));
-			L_end  = A * sq(GuideEntranceWidth);
-			dWidth = sqrt((L_end-dLength)/A);
+			AparY  = dTotalLength/(sq(GuideEntranceWidth) - sq(GuideExitWidth));
+			L_end  = AparY * sq(GuideEntranceWidth);
+			dWidth = sqrt((L_end-dLength)/AparY);
 			break;
 		case VT_ELLIPTIC:
 			AxisY   = 0.5*fabs((sq(dTotalLength+FocusY)*sq(GuideExitWidth) - sq(FocusY*GuideEntranceWidth))
@@ -924,7 +927,7 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 	double  TimeOF, TimeOFmin;
 	double  TimeOFTotal=0.0;
 	double  VelocityReal, DOTP;
-	double  VX, VY, VZ, len;
+	double  VX, VY, VZ;
 	VectorType vWallN,  /* normal to the plane wall             */
 	           vWaviN;  /* normal to the wall with its waviness */
 	Neutron TempNeutron, NearestNeutron; /* Local copies of actual trajectory for loops */
@@ -1044,17 +1047,18 @@ PathThroughGuideGravOrder1(Neutron *ThisNeutron, NeutronGuide ThisGuide, double 
 		{
 			/* rough surface must not alter the side from which the neutron comes */
 			do
-			{	len = vector3rand(&VX, &VY, &VZ);
-				vWaviN[0] = vWallN[0] + surfacerough*VX;
-				vWaviN[1] = vWallN[1] + surfacerough*VY;
-				vWaviN[2] = vWallN[2] + surfacerough*VZ;
+			  {	// len = vector3rand(&VX, &VY, &VZ);
+			    gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+			    vWaviN[0] = vWallN[0] + surfacerough*VX;
+			    vWaviN[1] = vWallN[1] + surfacerough*VY;
+			    vWaviN[2] = vWallN[2] + surfacerough*VZ;
 
-				/* Renormalize normal vector */
-				if (LengthVector(vWaviN) == 0.0)
-					return(-1.0);
-				else
-					NormVector(vWaviN);
-			}
+			    /* Renormalize normal vector */
+			    if (LengthVector(vWaviN) == 0.0)
+			      return(-1.0);
+			    else
+			      NormVector(vWaviN);
+			  }
 			while (  ScalarProduct(NearestNeutron.Vector, vWallN)
 		          * ScalarProduct(NearestNeutron.Vector, vWaviN) < 0.0);
 		}

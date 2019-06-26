@@ -9,8 +9,8 @@
 #include <g2_X11.h>
 # include <unistd.h>
 #endif
-#ifdef DO_GIF
-# include <g2_GIF.h>
+#ifdef DO_GD
+# include <g2_gd.h>
 #endif
 #ifdef DO_PS
 # include <g2_PS.h>
@@ -38,7 +38,7 @@ int gselec = 3;
 #define OD3(f,a,b,c)
 #define OD4(f,a,b,c,d)
 
-#if defined(DO_GIF) || defined(DO_PS)
+#if defined(DO_GD) || defined(DO_PS)
 # define G0(c) {if (gselec & 1) c(dev); if (gselec & 2) c(gdev);}
 # define G1(c,a) {if (gselec & 1) c(dev,a); if (gselec & 2) c(gdev,a);}
 # define G2(c,a,b) {if (gselec & 1) c(dev,a,b); if (gselec & 2) c(gdev,a,b);}
@@ -156,8 +156,12 @@ int cpgopen(const char *device)
     OD2("Farbe %i: %i\n", i, myC[i]);
   }
 
-#ifdef DO_GIF
+#ifdef DO_GD
+# ifdef DO_PNG
+  gdev = g2_open_gd(device, WINX, WINY, g2_gd_png);
+# else
   gdev = g2_open_GIF(device, WINX, WINY);
+#endif
   // eigene Farben
   for (i=0; i<8; i++) {
     gC[i] = g2_ink(gdev, farbe[i][0], farbe[i][1], farbe[i][2]);
@@ -318,7 +322,7 @@ void cpgsci(int ci)
   // set color index
   G0(g2_flush);
   g2_pen(dev, MYCOL(ci));
-#if defined(DO_GIF) || defined(DO_PS)
+#if defined(DO_GD) || defined(DO_PS)
   g2_pen(gdev, GCOL(ci));
 #endif
   OD2("pen: %i %i\n",ci,i);

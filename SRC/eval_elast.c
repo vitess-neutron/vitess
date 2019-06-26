@@ -10,6 +10,7 @@
 /* 1.4  Nov 2003  K. Lieutenant  evaluation dependent on colour                              */
 /* 1.5  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                */
 /* 1.6  Feb 2004  K. Lieutenant  'FullParName' + ERROR included; check of 'kind' out of loop */
+/* 1.7  Nov 2005  K. Lieutenant  transformation direction -> scattering angles added         */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -19,6 +20,7 @@
 
 #include "init.h"
 #include "general.h"
+#include "matrix.h"
 #include "softabort.h"
 
 #define BINS   5000
@@ -66,8 +68,8 @@ int main(int argc, char *argv[])
 	double bpost[BINS+1], bintc, binterval=1.0,
 	  bint[BINS+1],
 	  center[NCENTER], totcenter[NCENTER], range[NCENTER],
-	  time,
-	  lambda, TwoTheta, TwoThetaDeg,
+	  time, lambda, 
+	  TwoTheta, TwoThetaDeg, Phi, 
 	  qValue, dspacing,
 	  prob=0;
 
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast 1.6b");
+	print_module_name("eval_elast 1.7");
 	OwnInit(argc, argv);
 
 	switch (kind) 
@@ -125,10 +127,11 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
+			CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
 			time     = InputNeutrons[i].Time - TimeOffset;
 			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
-			TwoTheta = InputNeutrons[i].Vector[0];
+			// TwoTheta = InputNeutrons[i].Vector[0];
 
 			/* Writing out all neutrons, if 'exclusive counts = no' is set */
 			if (bExclCount==FALSE)		

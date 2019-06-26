@@ -56,7 +56,14 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   # restart construction of fc, after general options have been saved to insert
   switch $Comode {
     bat {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\n"}
-    tcl {set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\nexec "}
+    tcl {
+      set fc "\#!/usr/bin/tclsh\nset V $ExeDirectory\nset P $pdir\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "set env(GSL_RNG_$vv) $t\n"
+      }
+      append fc "exec "
+    }
     default {set fc ""}
   }
   set first 1
@@ -77,8 +84,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_short_pulsed {set com "source$sys -S2"}
       source_ESS {set com "source$sys -S2"}
       source_IPNS {set com "source$sys -S2"}
-      source_ISIS-1 {set com "source$sys -S2"}
-      source_ISIS-2 {set com "source$sys -S2"}
+      source_ISIS {set com "source$sys -S2"}
       source_SNS {set com "source$sys -S2"}
       source_ESS_LPTS {set com "source$sys -S3"}
       chopper_fermi_str {set com "chopper_fermi$sys -O1"}
@@ -92,6 +98,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       mon1_divz   {set com "monitor1$sys -k4"}
       mon1_y      {set com "monitor1$sys -k5"}
       mon1_z      {set com "monitor1$sys -k6"}
+      mon1_energy {set com "monitor1$sys -k7"}
       monpol_lambda {set com "monitorpol_1d$sys -k1"}
       monpol_time   {set com "monitorpol_1d$sys -k2"}
       monpol_divy   {set com "monitorpol_1d$sys -k3"}
@@ -226,6 +233,7 @@ proc cleanupPipes {} {
   global PipeLogList
   conditionalOpenProtfile
   set errfound 0
+  set firstgsl 1
   foreach fname $PipeLogList {
     if {"0" != [catch {open $fname r} f]} continue
     outProtocol "------------------------------"
@@ -233,6 +241,13 @@ proc cleanupPipes {} {
       if [regexp ERROR: $line] {
 	outProtocol RRR$line
 	set errfound 1
+      } elseif [regexp GSL_RNG_ $line] {
+	if {$firstgsl} {
+	  outProtocol $line
+	}
+	if [regexp GSL_RNG_SEED $line] {
+	  set firstgsl 0
+	}
       } else {
 	outProtocol $line
       }
@@ -305,6 +320,11 @@ proc startAction {{sercom ""} {simu simulation}} {
 
   update
   stopAction 0
+  global env
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    set env(GSL_RNG_$vv) $t
+  }
   if $tool {
     regsub -all \n $c "" c
     set p [pardirPar]
@@ -638,6 +658,11 @@ set COM {$c}
 set PipeLogList {$PipeLogList}
 set pname $pname
 "
+  
+  foreach v {seed gen} vv {SEED TYPE} {
+    if {"" == [set t [entryVal random_$v]]} continue
+    append fc "set env(GSL_RNG_$vv) $t\n"
+  }
 
   # no variable substitution here, will be done in script!
   append fc {

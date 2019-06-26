@@ -69,8 +69,8 @@ section C. </p>
     <tr>
    <td valign="top" width="33%">2. Crystal_focus:</td>
     <td valign="top" width="67%">Activates the Focus File generation for
-a)        <font face="Symbol">l-</font>focussing, b) spherical or c) vertical
- cylinder M/A geometry.</td>
+      a) <font face="Symbol">l-</font>focussing, b) spherical c) vertically focussing
+      cylinder or d) double focussing cylinder&nbsp; M/A geometry.</td>
     <td>-O2</td>
    </tr>
     <tr>
@@ -86,7 +86,7 @@ a)        <font face="Symbol">l-</font>focussing, b) spherical or c) vertical
    
 <p>Option 2 takes advantage of an internal code of the module, which automatically 
  generates the <i>Focus File</i> for a) <font face="Symbol">l-</font>focussing, 
- b) spherical or c) vertical cylinder&nbsp; M/A geometry. This option is suitable,
+ b) spherical c) vertical cylinder d) or double focussing&nbsp; M/A geometry. This option is suitable,
 for example, for setting analysers in a near-backscattering geometry to provide
 for example constant wavelength selection for neutrons scattered from the
 center of the sample (Fig. <i><font face="Symbol">l</font>-focussing</i>). 
@@ -317,24 +317,24 @@ the last being read from focus data file.</p>
               
       <p>[deg]</p>
         </td>
-    <td valign="top" width="54%"><i><font face="Symbol">phi</font></i>, <i><font
- face="Symbol">theta </font></i><font face="Symbol">Euler angles</font> 
+    <td valign="top" width="54%"><i><font face="Symbol">f</font></i>, <i><font
+ face="Symbol">q</font></i>&nbsp; Euler angles 
              
-      <p>If <i>phi<font face="Symbol"></font>=<font face="Symbol">theta</font></i>= 
+      <p>If <i><font face="Symbol">f</font> = <font face="Symbol">q</font></i> =  
 0.0 (exact backscattering), the normal vector of CE is parallel to the positive
  X axis direction. A rotation first around the Z axis (<i><font
- face="Symbol">phi</font></i> ) and then around the (new)Y axis (<i><font
- face="Symbol">theta</font></i> )<i> </i>gives a proper orientation of the 
-CE. The orientation of each single CE will be (<i><font face="Symbol">phi</font></i>, 
-      <i><font face="Symbol">theta</font></i><i>) +deviation from</i> (<i><font
- face="Symbol">phi</font></i>, <i><font face="Symbol">theta</font></i><i>) 
+ face="Symbol">f</font></i> ) and then around the (new)Y axis (<i><font
+ face="Symbol">q</font></i> )<i> </i>gives a proper orientation of the 
+CE. The orientation of each single CE will be (<i><font face="Symbol">f</font></i>, 
+      <i><font face="Symbol">q</font></i><i>) +deviation from</i> (<i><font
+ face="Symbol">f</font></i>, <i><font face="Symbol">q</font></i><i>) 
       </i>the last being read from focus data file<i>.</i></p>
         </td>
-    <td valign="top" width="28%"><i><font face="Symbol">phi</font></i>= <i><font
- face="Symbol">theta</font></i>= 0.0<font size="-1"> </font>exact backscattering; 
+    <td valign="top" width="28%"><i><font face="Symbol">f</font></i> = <i><font
+ face="Symbol">q</font></i> = 0.0<font size="-1"> </font>exact backscattering; 
               
-      <p><i><font face="Symbol">phi</font>&nbsp; </i>= 0.0, <i><font
- face="Symbol">theta</font></i>=  0 90 degs; </p>
+      <p><i><font face="Symbol">f</font></i> = 0.0, 
+         <i><font face="Symbol">q</font></i> = 0 ... 90 deg; </p>
                
       <p>&nbsp;</p>
         </td>
@@ -431,6 +431,15 @@ the new (output) position. Default setting is: (<i>x</i>, <i>y</i>, <i>z</i>)
     <td>-r</td>
    </tr>
     <tr>
+   <td valign="top" width="18%">radius horiz.              
+      <p>[cm]</p>
+        </td>
+    <td valign="top" width="54%">Radius of focussing in horizontal direction for a 
+    double focussing shape.</td>
+    <td valign="top" width="28%">200 cm, <p>0 cm to focus only vertically </p></td>
+    <td>-s</td>
+   </tr>
+    <tr>
    <td valign="top" width="18%">angle vertical               
       <p>[deg]</p>
         </td>
@@ -444,9 +453,13 @@ CE-matrix  relative to the horizontal plane containing the sample center
    <td>focusing option: <br>
   1 constant lambda <br>
   2 spherical <br>
-  3 vert. cylinder</td>
-    <td>Here one can choose the focusing geometry.</td>
-    <td>1, 2, 3</td>
+  3 vert. cylinder<br>
+  4 double focussing</td>
+    <td>Here one can choose the focusing geometry.
+    <p> The 'double focussing' option assumes a flat geometry, in which each element is
+       rotated to give cylindrical focussing with different radii in vert. and hor. direction.
+       The 'vert. cylinder' option really forms a vertically focussing cylinder.</p></td>
+    <td>1, 2, 3, 4</td>
     <td>-g</td>
    </tr>
          

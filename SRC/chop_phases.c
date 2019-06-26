@@ -82,8 +82,8 @@ int main(int argc, char* argv[])
 	dTprd    = 1.0  / dRotFreq;       // period of chopper in seconds
 
 	if (cMode=='o') 
-	{	dVwb     = (dLDet - dLwb) / dLwb;                // ratio for WB chopper
-		dThsWb   = dBeam / (dRChop * 2*dPi * dRotFreq);  // half shadow time at WB chopper
+	{	dVwb     = (dLDet - dLwb) / dLwb;                              // ratio for WB chopper
+		dThsWb   = 2 * asin(0.5*dBeam / dRChop) / (2*dPi * dRotFreq);  // half shadow time at WB chopper
 	}
 	else 
 	{	dTpMax = dTp;
@@ -154,8 +154,8 @@ int main(int argc, char* argv[])
 		dTevDW2 = dLDet * dLdMaxE*1.0e-10 * dMassNeutron / dHPlanck + dTE;
 
 		/* optimal evaluation time (without half-shadow) */
-		dTevOp1 = fmax(dTevDW1,dTevMin) + dVwb * dThsWb;
-		dTevOp2 = fmin(dTevDW2,dTevMax) - dVwb * dThsWb;
+		dTevOp1 = dTevMin + dVwb * dThsWb;  // fmax(dTevDW1,dTevMin) + dVwb * dThsWb;
+		dTevOp2 = dTevMax - dVwb * dThsWb;  //fmin(dTevDW2,dTevMax) - dVwb * dThsWb;
 
 		// wavelength range that can be evaluated
 		dLmbdOp1 = 3956.0346 / (dLDet/(dTevOp1-dTdelay));
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
 		// Half shadow time and additional opening time of frame overlap chopper
 		dVfo    = (dLDet - dL) / dL;
-		dThsFo  = dBeamFo / (dRChop * 2*dPi * dRotFreq);
+		dThsFo  = 2 * asin(0.5*dBeamFo / dRChop) / (2*dPi * dRotFreq);
 		dThsFoM = dThsWb * dVwb /dVfo;
 		if (cFoMode=='h')
 			dAddT   = dTp * (dLwb-dL)/dLwb + (dThsFo-dThsFoM); 

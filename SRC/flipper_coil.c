@@ -438,8 +438,6 @@ void OwnInit(int argc, char *argv[])
 
 		/* inhomogeneous field */
 		{ /*double the_field, phi_field ;*/ VectorType field_cart ;
-int sign=1 ;
-
 
 		for(ind_x=1;ind_x<(ind_x_max+1);ind_x++) { for(ind_y=1;ind_y<(ind_y_max+1);ind_y++) { for(ind_z=1;ind_z<(ind_z_max+1);ind_z++) {
 

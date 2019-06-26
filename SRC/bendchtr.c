@@ -15,7 +15,8 @@
  
 #include "intersection.h"
 #include "init.h"
- 
+
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
  
  
 /****************************************/ 
@@ -75,7 +76,7 @@ double	PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
   double  TimeOF, TimeOF1, TimeOFmin; 
   double  TimeOFTotal=0.0; 
   double  AP, BP, CP, DOTP, FP, VelocityReal; 
-  double  VX, VY, VZ, len; 
+  double  VX, VY, VZ; 
   double signl, signr, signt, signb; 
   double chance;
   /* KL: new variable */
@@ -335,7 +336,9 @@ double	PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
  
     if (surfacerough != 0.0) 
     { 
-      len = vector3rand(&VX, &VY, &VZ); 
+      // len = vector3rand(&VX, &VY, &VZ);
+      gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+
       /*fprintf(LogFilePtr,"vx vy vz %f  %f  %f  %f  %f \n",VX,VY,VZ,len,surfacerough);*/		 
       AP = AP + surfacerough*VX; 
       BP = BP + surfacerough*VY; 
@@ -352,7 +355,7 @@ double	PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
       CP = CP/FP; 
     }	 
  
-    chance = (double)ran3(&R1);
+    chance = Vran();
  
     angular=fabs(NeutronPlaneAngle2(&NearestNeutron, AP, BP, CP)); 
  

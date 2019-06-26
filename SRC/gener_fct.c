@@ -193,12 +193,21 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
 
 	// Extract parameter list (without leading blanks) for each simulation
 	while(GetLine(pFileR, sBuffer) && i < MAX_SIM)
-	{	sscanf(sBuffer, "%s", sSimName[i]);
-		strcpy(sParList[i], sBuffer+strlen(sSimName[i]));
-		while (sParList[i][0]==' ')
-		{	StrgLShift(sParList[i], 1);
-		}
-		i++;
+	{
+#ifdef VERS26
+	  sscanf(sBuffer, "%s", sSimName[i]);
+	  strcpy(sParList[i], sBuffer+strlen(sSimName[i]));
+	  while (sParList[i][0]==' ')
+	    {	StrgLShift(sParList[i], 1);
+	    }
+#else
+	  int n;
+	  sscanf(sBuffer, "%s%n", sSimName[i], &n);
+	  while (sBuffer[n] == ' ')
+	    n++;
+	  strcpy(sParList[i], sBuffer+n);
+#endif
+	  i++;
 	}
 	fclose(pFileR);
 
@@ -274,39 +283,50 @@ short ChangeParam(short iSim)
 int
 GetLine(FILE* pFile, char* const pLine)
 {
-	char *pComment, sBuffer[BUFLEN];
-	short k, kmax;
+#ifdef VERS26
+  char *pComment, sBuffer[BUFLEN];
+  short k, kmax;
 
-	strcpy(sBuffer, "");
+  strcpy(sBuffer, "");
 
-	while(strlen(sBuffer)==0  && !feof(pFile))	
-	{	
-		fgets (sBuffer, BUFLEN-1, pFile);
+  while(strlen(sBuffer)==0  && !feof(pFile))	
+    {	
+      fgets (sBuffer, BUFLEN-1, pFile);
 
-		// delete line feeds, tabs and carriage returns
-		kmax = (short) strlen(sBuffer);
-		for (k=0; k < kmax; k++)
-		{	if (sBuffer[k]=='\n' || sBuffer[k]=='\t' || sBuffer[k]=='\r')
-				sBuffer[k]=' ';
-		}
-		// strip the comments and leading and succeeding blanks
-		pComment = strchr(sBuffer, '#');
-		if (pComment != NULL)
-			*pComment = '\0';
-		while (sBuffer[0]==' ')
-		{	StrgLShift(sBuffer,1);
-		}
-		while (sBuffer[strlen(sBuffer)-1]==' ')
-		{	sBuffer[strlen(sBuffer)-1]='\0';
-		}
+      // delete line feeds, tabs and carriage returns
+      kmax = (short) strlen(sBuffer);
+      for (k=0; k < kmax; k++)
+	{	if (sBuffer[k]=='\n' || sBuffer[k]=='\t' || sBuffer[k]=='\r')
+	    sBuffer[k]=' ';
 	}
-	if (strlen(sBuffer) > 0)
-	{	strcpy(pLine, sBuffer);
-		return TRUE;
+      // strip the comments and leading and succeeding blanks
+      pComment = strchr(sBuffer, '#');
+      if (pComment != NULL)
+	*pComment = '\0';
+      while (sBuffer[0]==' ')
+	{	StrgLShift(sBuffer,1);
 	}
-	else
-	{	return FALSE;
+      while (sBuffer[strlen(sBuffer)-1]==' ')
+	{	sBuffer[strlen(sBuffer)-1]='\0';
 	}
+    }
+  if (strlen(sBuffer) > 0)
+    {	strcpy(pLine, sBuffer);
+      return TRUE;
+    }
+  else
+    {	return FALSE;
+    }
+  
+#else
+
+  char sBuffer[BUFLEN];
+  int rc;
+  if ((rc = ReadLine(pFile, sBuffer, BUFLEN)))
+    strcpy(pLine, sBuffer);
+  return rc;
+
+#endif
 }
 
 
@@ -323,10 +343,18 @@ StripCmdLine(char* const pLine, char cShort)
 	ChangeSlash(pLine);
 
 	// delete leading line feeds and " | "
+#ifdef COMPLICATED
 	while (pLine[0]==' ' || pLine[0]=='|')
 	{	StrgLShift(pLine,1);
 	}
-
+#else
+	{
+	  int k,v;
+	  for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
+	  if (k)
+	    strcpy(pLine, pLine+k);
+	}
+#endif
 	// extract the PATH directory from the command
 	if (strlen(sPath)==0)
 	{	pBlank = strchr(pLine, ' ');

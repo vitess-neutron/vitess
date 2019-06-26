@@ -9,6 +9,8 @@
 #include "intersection.h"
 #include "flipper_gradient.h"
 
+void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
+
 /* Original version module rotating_field v1.5, see comments, Jul 03
    July 03: That module was converted from rotating_field v1.5, order A. Ioffe for simulation of 
 	    gradient flipper for TOF NSE:
@@ -31,7 +33,7 @@ int main(int argc, char **argv)
 /* Variable for rotation */
 double TimeR, Rroty, Rrotz, RRSM;
 VectorType RR, RR1, RRS;
-double VX, VY, VZ, VLL;
+double VX, VY, VZ;
 
 Neutron NeutronAdd1, NeutronAdd2;
 Plane EndPoint1, EndPoint2;
@@ -395,10 +397,11 @@ while (ind_x != (ind_x_max +1))
 	/* Perform randomize of the gradient (or permanent) magentic field */
 	 if (FieldValue0Dev > 0.0)
 	 {
-	 	VLL = vector3rand(&VX, &VY, &VZ);
-		FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
-		FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
-		FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
+	   // VLL = vector3rand(&VX, &VY, &VZ);
+	   gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+	   FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
+	   FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
+	   FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
 	 }	
 	 
 //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
@@ -1556,24 +1559,6 @@ double RectangularFTr(double Time, double FieldValue, double Period)
 
 	return Ampl;
 }	
-
-
- 	
-double DistrGauss(double Module, double Sigma)
-{
-    double Res, Norm;
-    long i;
-    
-    Norm = 0.0;
-    for(i = 1; i <= 12; i++)
-    {
-	Norm = Norm + ran3(&idum);
-    }
-    Norm = (fabs(Sigma))*(Norm - 6.0);
-    Res = Module + Norm;
-    return Res;
-}
-
 
 
 

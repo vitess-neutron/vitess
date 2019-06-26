@@ -25,7 +25,7 @@ set fileDialogSET {
   {"chopper files" {.chp .par .dat}}
   {"crystal" {.crs .par .dat}}
   {"moderator (cws source)"  {.mod .cmo .src}}
-  {"moderator (spss source)" {.mod .smo .src}}
+  {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
   {"powder sample" {.pow .par .dat}}
   {"sample s(q)" {.psq .par .dat}}
@@ -57,7 +57,7 @@ proc makeModuleSets {} {
   # 2 help item; may be a list if different submodules have different help
   set AvailableSET {
     {source {source_const_wave source_HMI source_ILL
-      source_short_pulsed source_ESS source_IPNS source_ISIS-1 source_ISIS-2 source_SNS
+      source_short_pulsed source_ESS source_IPNS source_ISIS source_SNS
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
@@ -82,8 +82,8 @@ proc makeModuleSets {} {
     {writeout {} writeout}
     {visualise_data {
       visual
-      mon1_time mon1_lambda mon1_y mon1_z
-      mon1_divy mon1_divz mon2_div mon2_pos mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
+      mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz 
+      mon2_pos mon2_div mon2_kdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
       monpol_divy monpol_divz monitorpol_pos
       } {visual monitor}}
@@ -188,11 +188,16 @@ set inputESET {
   {random_seed float 1 {
     "random seed" "random number generator initialization" "" -Z}}
 
+  {random_gen radio ran3 {
+    "random number\ngenerator" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default ran3)"}
+    {ran3 taus gfsr4 mt19937 ranlux} {0 1 2 3 4}}
+
+  {wei_min float 1.0e-25
+    {"min. neutron\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
+
   {gravity radio on
     {gravity "simulation includes gravity influence on neutrons or not" "" -G}
     {on off} {1 0}}
-  {wei_min float 1.0e-25
-    {"min. neutron\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
 }
 
 ### Xcontrol defaults
@@ -277,6 +282,24 @@ set cmoESET [concat {
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
 } $Mod2 ]
 
+### ISIS variant
+
+set imoESET {
+  {Moderator header}
+  {width float 0 {"moderator\ndiameter or\nwidth [cm]" "moderator width or diameter in cm"} ge0 "" 1}
+  {height float 0 {"moderator\nheight [cm]" "moderator height in cm"} ge0 "" 1}
+  {}
+  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0).
+In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected).
+Deviations of the moderator center from this position must be given here."}}
+  {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
+  {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
+  {}
+  {tstat radio TS1 {"target\nstation"} {TS1 TS2} {1 2}}
+  {}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm² s str Ang)]"}}
+}
+
 ### pulsed sources
 
 set Mod1 {}
@@ -330,9 +353,21 @@ set smASET {
     "max. divergence\nx <-> z [deg]"
     "maximal divergence theta [deg] (half of angular spread x-z-plane)"
     "" z} le90}
-  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').\nAlternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. In this case the given values in 'max. divergence ...' are ignored." "" d}
-    {"by divergence" "by window"} {0 1}}
+  {dirdet radio "by divergence" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
+  Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface. 
+  In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
+    {"by divergence" "by window" "by virtual window"} {0 1 2}}
   {}
+}
+
+set smisisASET {
+  {"Restriction of sampling trajectories" header}
+  {number_of_neutrons float 1000000 {
+    "number of\ntrajectories" "" "" n} ge0 "" 1}
+  {}
+  {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
+  {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
+  {" " header}
 }
 
 set traceASET {
@@ -354,7 +389,8 @@ set cwsASET {
   {Propagation header}
   {dist_mod_prop float 200 {
     "distance to\nwindow [cm]"
-    "distance between moderator and propagation window in cm" "" D} ge0 "" 1}
+    "distance between moderator and propagation window in cm.
+    If the moderator is not positioned at the origin (0.0,0.0,0.0), it is the distance from the origin." "" D} ge0 "" 1}
   {prop_width float 10 {
     "window\nwidth [cm]"
     "width of propagation window in cm" "" w} gt0 "" 1}
@@ -409,15 +445,25 @@ proc sore {f s} {
   return [concat $f $s]
 }
 
-foreach s {short_pulsed ESS IPNS ISIS-1 ISIS-2 SNS} \
-        m {SPTScold EssSPThermDec IpnsSPThermPois IsisTS1hydrogen IsisTS2hydrogen SnsColdCpld} \
-        fr {50 50 50 50 10 60} \
-        sps {- ESS - - - SNS} {
+foreach s {short_pulsed ESS IPNS SNS} \
+        m {SPTScold EssSPThermDec IpnsSPThermPois SnsColdCpld} \
+        fr {50 50 50 60} \
+        sps {- ESS - SNS} {
   set al [list modfile pareditablefile $m.mod $li w smo 1]
   set fl [sore $fr $sps]
   set source_${s}ESET [concat $fl [list $al] $smASET $traceASET $cwsASET]
   proc ${s}CheckErr {{app _}} {return [source_cwsCheckErr $app]}
 }
+
+proc sore {f} {
+  return [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
+}
+
+set al [list modfile pareditablefile IsisTS1hydrogen.mod $li w imo 1]
+set fl [sore 50]
+set source_ISISESET [concat $fl [list $al] $smisisASET $traceASET $cwsASET]
+proc ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
+
 
 ### source
 ###   LPSS long pulsed spallation sources
@@ -459,28 +505,28 @@ set detectorESET {
   {thick float 0.2 {
     "thickness [cm]" "Thickness of the detecting material in cm." "" t}
     gt0 "" 1}
-  {eff float 0.95 {
-    efficiency "Efficiency of the detector, range: 0<Efficiency<0.99999." "" e} gt0 1 1}
-  {theta float 0 {
-    "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
-  {phi float 0 {
-    "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
-  {dist float 100 {
-    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
-  {ncol int 1 {
-    "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
   {nrow int 1 {
     "number\nof rows" "Number of rows partitioning the detector height." "" r} 1 10000 1}
+  {ncol int 1 {
+    "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
+  {eff float 0.95 {
+    efficiency "Efficiency of the detector, range: 0<Efficiency<0.99999." "" e} gt0 1 1}
+  {phi float 0 {
+    "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
+  {theta float 0 {
+    "theta [deg]" "Angle theta [0;180 deg] of the middle of the detector. Theta is defined as the angle between the position vector (pointing from the origin to the detector centre) and the +x-axis." "" T} 0 180 1}
+  {dist float 100 {
+    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
   {repr int 1 {
-    repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron. A larger neutron repetition will give better statistics in the spectrum." "" A} 1}
+    repetition "The neutron repetition specifies the number of neutron data sets generated for each scattered neutron." "" A} 1}
   {use radio normal {
-    usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the probability of the neutron is unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments." "" M}
+    usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments." "" M}
     {normal "monitor only"} {0 1}}
   {grid radio on {
     "detector grid" "If the detector grid is switched off, the exact neutron position is written to the output file." "" g}
     {on off} {1 0}}
   {det_tof radio calc {
-    "TOF option" "calc: TOF inside detector is calculated (incl. probability distr.) no: no TOF treatment" "" o}
+    "TOF option" "no: flight path inside detector is set to zero\ncalc: length and TOF calculated from thickness" "" o}
     {no calc} {0 1}}
 }
 
@@ -542,7 +588,6 @@ set frameESET {
 
 ### Spacewindow
 ###
-
 set winAdd {
   {"Outer Material" header}
   {thick float 0.0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for collimator." "" t} ge0}
@@ -566,15 +611,15 @@ set a {
   {centy float 0 {"center y" "" "" y} }
   {centz float 0 {"center z" "" "" z} }
   {"rectangular window coordinates" header}
-  {min_z float "" {
-    "min. z [cm]" "minimal z value [cm]" "" h}}
-  {max_z float "" {
-    "max. z [cm]" "maximal z value [cm]" "" H}}
-  {}
   {min_y float "" {
     "min. y [cm]" "minimal y value [cm]" "" w}}
   {max_y float "" {
     "max. y [cm]" "maximul y value [cm]" "" W}}
+  {}
+  {min_z float "" {
+    "min. z [cm]" "minimal z value [cm]" "" h}}
+  {max_z float "" {
+    "max. z [cm]" "maximal z value [cm]" "" H}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
     {no yes} {0 1}
@@ -856,6 +901,7 @@ set chopper_discESET {
     "file with chopper data\n(position, radius, number of windows, window opening, left and right angular deviation of window)" "" C} r chp 1}
   {dist float 0 {
     "distance to\nprev. module [cm]" "distance between chopper and origin generated by the antecedent module along x-axis" "" l} ge0 "" 1}
+  {equwnd int 1 {"No of equ.\nwindows" "number of equivalent windows on chopper disc used to generate pulses" "" n} 1}
 }
 
 ### chopper
@@ -1059,6 +1105,7 @@ set ma_flatESET {
   {dspread float 0.00005 {"d spread"
     "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
+  {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d}
     {Lorentzian Gaussian} {1 2}}
 }
@@ -1067,14 +1114,16 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
   {cradius float 200 {"radius\n[cm]"
     "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {cangle float 0 {"angle vertical\n[deg]"
+  {cangle float 0 {"angle\nvert. [deg]"
     "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
+  {chradius float 200 {"radius\nhoriz. [cm]"
+    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
   {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder"} {1 2 3}}
+    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
 }]
 
 ### Monochromator analyser
@@ -1533,6 +1582,14 @@ set mA {
     "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
 }
 
+set eA {
+  {}
+  {min_w float 0 {
+    "minimal\nenergy [meV]" "lower bound of the monitored interval" "" m} ge0 "" 1}
+  {max_w float 20 {
+    "maximal\nenergy [meV]" "upper bound of the monitored interval" "" M} gt0  "" 1}
+}
+
 set pA {
   {prob_w radio yes {
     "probability\nweight" "the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p}
@@ -1568,6 +1625,15 @@ set tA {
 set monpol_lambdaESET [concat [genFE p_lambda] $nA $mA $pA $tA $dA]
 proc monpol_lambdaCheckErr {{app _}} {
   return [checkMiMaErr min_w max_w "" $app]
+}
+
+
+### monitor
+###   energy
+
+set mon1_energyESET [concat [genFE energy] $nA $nnA $eA $pA $tA]
+proc mon1_energyCheckErr {{app _}} {
+  return [checkMiMaErr min_e max_e "" $app]
 }
 
 
@@ -1725,6 +1791,24 @@ set mon2_divESET [concat [genFE2 div] $nA $mA $pA]
 proc mon2_divCheckErr {{app _}} {
   if [checkMiMaErr min_y max_y "" $app] {return 1}
   return [checkMiMaErr min_z max_z "" $app]
+}
+
+### mon2
+###   kdiv
+
+set mA {
+  {}
+  {min_ky float -0.1 {"minimal\nky-value [1/Ang]" "" "" w} -100 100 1}
+  {max_ky float 0.1 {"maximal\nky-value [1/Ang]" "" "" W} -100 100 1}
+  {}
+  {min_kz float -0.1 {"minimal\nkz-value [1/Ang]" "" "" h} -100 100 1}
+  {max_kz float 0.1 {"maximal\nkz-value [1/Ang]" "" "" H} -100 100 1}
+}
+
+set mon2_kdivESET [concat [genFE2 kdiv] $nA $mA $pA]
+proc mon2_kdivCheckErr {{app _}} {
+  if [checkMiMaErr min_ky max_ky "" $app] {return 1}
+  return [checkMiMaErr min_kz max_kz "" $app]
 }
 
 ### mon2
@@ -2221,7 +2305,7 @@ set eval_elastESET {
     "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"d-spacing [A]" "momentum transfer Q [1/A]" "scattering angle [deg]" "wavelength difference [A]"} {1 2 3 4}}
   {}
   {sfile moneditablefile elast.eva {
-    "spectra\nfile" "the spectra file: it contains the scattering results" "" o} "" "" 1}
+    "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}
   {ifile pareditablefile "" {
     "intensity\nfile" "intensity file (optional, see help manual) it contains the integrated intensities with respect to certain ranges of the scattering results (e.g. one is interested in the total intensity within each peak of a powder spectrum ). The ranges of integration have to be defined in the info file" "" O}}
   {infofile pareditablefile "" {
@@ -2238,9 +2322,10 @@ set eval_elastESET {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
-  {}
   {tof radio no {
     "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {eval_excl radio no {
+    "exclusive\ncounts" "if \"exclusive counts\" is activated, only the evaluated neutrons will be considered by subsequent modules and/or written to the VITESS output file." "" c}  {yes no} {1 0}}
   {}
   {fpath float "" {
     "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
@@ -3152,6 +3237,12 @@ proc convert2Code {ll app} {
 	multi-spectral {set v 4}
 	default {set v 0}
       }
+    } elseif {$i == 17} {
+      switch -- $v {
+	TS1 {set v 1}
+	TS2 {set v 2}
+	default {set v 0}
+      }
     } elseif {$v == ""} {
       set v 0
     }
@@ -3220,6 +3311,49 @@ proc serializeLmoFile {f mode var app} {
 proc serializeSmoFile {f mode var app} {
   serializeModFile $f $mode $var $app
 }
+
+proc serializeImoFile {f mode var app} {
+  set il {cx cy cz width wtfile tstat}
+  set al {temp color shape cx cy cz width height spaord scale current
+    wfile tfile wtfile modtype tau1 tau2 tstat}
+
+  if {$mode == "r"} {
+    foreach l $il {
+      upvar #0 $l$app $l
+      catch {unset $l}
+    }
+
+    if {$f == "0"} return
+    set imode -1
+    while {[gets $f line] >= 0} {
+      set ll [itemize $line]
+      set fi [lindex $ll 0]
+      if {$fi == ""} continue
+      if {[string index $fi 0] == "#"} continue
+      set ll [convert2String $ll]
+      set cx [lindex $ll 3]
+      set cy [lindex $ll 4]
+      set cz [lindex $ll 5]
+      set width [lindex $ll 6]
+      set wtfile [lindex $ll 13]
+      switch [lindex $ll 17] {
+	2 {set tstat TS2}
+	default {set tstat TS1}
+      }
+    }
+  } else {
+    foreach l $al {
+      # supply dummy values for items without meaning for cws/lpss sources
+      upvar #0 $l$app $l
+      if {[info exist $l] == 0} {set $l 0}
+    }
+    puts $f "# Source
+# Moderators:  center size  distribution files  time
+# Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d ISIS"
+    puts $f [convert2Code $al $app]
+  }
+}
+
 
 proc editSave {var param ext app {saveAs 0}} {
 # param = 1 forces that a file with new filename is within

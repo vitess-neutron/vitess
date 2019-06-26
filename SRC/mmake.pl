@@ -18,7 +18,8 @@ my $unixout = $ARGV[0] =~ /u/i;
 my $mscdir = 'c:|programme|microsoft visual studio .net 2003|vc7';
 #my $spath = 'e:|control|vitess|SRC';
 my $sroot = 'h:|control';
-my $svnroot = 'h:|control|vitess|trunk';
+#my $svnroot = 'h:|control|vitess|trunk';
+my $svnroot = 'h:|V';
 
 my $unixcomment =<<'EOS';
 #
@@ -38,7 +39,7 @@ EOS
 my @Obj = qw(init general intersection matrix sample);
 
 # modules which need TOOL (init general)
-my @C = qw(ascii2bin eval_elast monitor1
+my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
 	   mirror_coating surface_file guide_shape);
@@ -48,19 +49,21 @@ my @CI = qw(chopper_disc chopper_fermi collimator_soller
 	    source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_inelast frame guide
+my @CM = qw(detector eval_elast eval_inelast frame guide
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
 	    polariser_sm polariser_he3 flipper_coil
 	    pol_mirror
 	    precessionfield
-	    rotating_field flipper_gradient resonator_drabkin
 	    sample_elasticisotr sample_inelast
 	    sample_reflectom
 	    define_direction
 	    sample_singcryst
 	    cas_v40
 	   );
+
+# modules which need MGTOOL (=MTOOL + distrgauss)
+my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans);
@@ -74,6 +77,7 @@ my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
 $Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', @CM);
+$Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
@@ -110,7 +114,7 @@ foreach (qw(visual bender dist_time sm_ensemble)) {
   $lib{$_} = '$(GRALIB)';		# needed libs for a module
 }
 
-my @All = (@C, @CI, @CM, @CS, @Gexe, @PTool);
+my @All = (@C, @CI, @CM, @CMG, @CS, @Gexe, @PTool);
 
 ###
 ### end define targets #####################################################################
@@ -135,36 +139,38 @@ EOS
 TOOL = init.o general.o message.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
+MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
 CC = $(CCOMP) -DOSF $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
+GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
 ifeq ($(SYS),Linux)
 CCOMP = gcc
 CC = $(CCOMP) $(CFLAGS)
-GRALIB = $(GRAOPT) -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+GRASLIB = -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
 
-LIBS = -lm
+GRALIB = $(GRAOPT) -Lrng -lgslran_$(SYS) $(GRASLIB)
+LIBS = -Lrng -lgslran_$(SYS) -lm
 
 .KEEP_STATE :
 
 all: $(ALL)
-	strip $^
+
 EOS
 
   $dep{$_} = "$_ $dep{$_}" foreach @All;	
@@ -176,14 +182,17 @@ EOS
   }
 	
   print <<'EOS';
+.c.o:
+	$(CC) -c $<
+
 Move:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
-	rm *.o
+	-rm -f *.o
 Copy:
 	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
-	rm *.o $(ALL)
+	-rm -f *.o $(ALL)
 EOS
 
   exit;
@@ -206,6 +215,7 @@ LPATH2=$(CPATH2)|lib
 
 SPATH=$(SVNROOT)|SRC
 GPATH=$(SROOT)|g2_win
+GSLPATH=$(SPATH)|rng
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
@@ -218,22 +228,24 @@ IDIR=.|Release
 
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
-INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
+INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
+CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
+LIBGSL=libgsl.lib
 
 LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib |
  shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 |
- /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)"
+ /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
 TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
+MGTOOL="$(IDIR)|distrgauss.obj" $(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
    $(CPP) @<<
@@ -278,8 +290,12 @@ subRule($rule, @CI);
 $rule =~ s/ITOOL/MTOOL/g;
 subRule($rule, @CM);
 
+# MGTool, @CMG
+$rule =~ s/MTOOL/MGTOOL/g;
+subRule($rule, @CMG);
+
 # STool, @CS
-$rule =~ s/MTOOL/STOOL/g;
+$rule =~ s/MGTOOL/STOOL/g;
 subRule($rule, @CS);
 
 # PTool
