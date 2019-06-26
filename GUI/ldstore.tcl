@@ -87,8 +87,8 @@ proc storeAll {extension {prosal ""} {as ""}} {
       if {"windows" == [getSystem]} {regsub -all / $c \\ c}
       puts $f $c
     }
-    tcl {
-      puts $f [generateVitessCommand tcl]
+    default {
+      puts $f [generateVitessCommand $extension]
     }
   }
   close $f

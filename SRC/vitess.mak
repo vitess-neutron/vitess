@@ -1,8 +1,6 @@
 # Vitess NMAKE File
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
 SROOT=h:\control
-#SVNROOT=h:\V
-#SVNROOT=h:\control\vitess\trunk
 SVNROOT=d:\vitcsrc
 CPATH2=$(CPATH)\PlatformSDK
 IPATH=$(CPATH)\include
@@ -26,7 +24,6 @@ IDIR=.\Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-#CPP_OPT=/nologo /ML /W3 /Ox $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
@@ -55,7 +52,6 @@ ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
 
 ALL : \
 	"$(OD)\ascii2bin.exe" \
-	"$(OD)\eval_elast.exe" \
 	"$(OD)\monitor1.exe" \
 	"$(OD)\mon2_div.exe" \
 	"$(OD)\mon2_pos.exe" \
@@ -69,14 +65,19 @@ ALL : \
 	"$(OD)\mirror_coating.exe" \
 	"$(OD)\surface_file.exe" \
 	"$(OD)\guide_shape.exe" \
+	"$(OD)\spin_reset.exe" \
+	"$(OD)\capture_flux.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\collimator_soller.exe" \
+	"$(OD)\slit.exe" \
+	"$(OD)\grid.exe" \
 	"$(OD)\source.exe" \
 	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
 	"$(OD)\detector.exe" \
+	"$(OD)\eval_elast.exe" \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
@@ -162,13 +163,6 @@ SOURCE=$(SPATH)\ascii2bin.c
 
 "$(OD)\ascii2bin.exe" : "$(OD)" $(TOOL) "$(OD)\ascii2bin.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\ascii2bin.pdb" /out:"$(OD)\ascii2bin.exe" "$(IDIR)\ascii2bin.obj" $(TOOL) 
-
-SOURCE=$(SPATH)\eval_elast.c
-"$(IDIR)\eval_elast.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\monitor1.c
 "$(IDIR)\monitor1.obj" : $(SOURCE)
@@ -261,6 +255,20 @@ SOURCE=$(SPATH)\guide_shape.c
 "$(OD)\guide_shape.exe" : "$(OD)" $(TOOL) "$(OD)\guide_shape.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide_shape.pdb" /out:"$(OD)\guide_shape.exe" "$(IDIR)\guide_shape.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\spin_reset.c
+"$(IDIR)\spin_reset.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\spin_reset.exe" : "$(OD)" $(TOOL) "$(OD)\spin_reset.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\spin_reset.pdb" /out:"$(OD)\spin_reset.exe" "$(IDIR)\spin_reset.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\capture_flux.c
+"$(IDIR)\capture_flux.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\capture_flux.exe" : "$(OD)" $(TOOL) "$(OD)\capture_flux.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\capture_flux.pdb" /out:"$(OD)\capture_flux.exe" "$(IDIR)\capture_flux.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -281,6 +289,20 @@ SOURCE=$(SPATH)\collimator_soller.c
 
 "$(OD)\collimator_soller.exe" : "$(OD)" $(ITOOL) "$(OD)\collimator_soller.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\collimator_soller.pdb" /out:"$(OD)\collimator_soller.exe" "$(IDIR)\collimator_soller.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\slit.c
+"$(IDIR)\slit.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\slit.exe" : "$(OD)" $(ITOOL) "$(OD)\slit.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\slit.pdb" /out:"$(OD)\slit.exe" "$(IDIR)\slit.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\grid.c
+"$(IDIR)\grid.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\grid.exe" : "$(OD)" $(ITOOL) "$(OD)\grid.obj" "$(OD)\bender_inter_data.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\grid.pdb" /out:"$(OD)\grid.exe" "$(IDIR)\grid.obj" $(ITOOL) "$(OD)\bender_inter_data.obj" 
 
 SOURCE=$(SPATH)\source.c
 "$(IDIR)\source.obj" : $(SOURCE)
@@ -316,6 +338,13 @@ SOURCE=$(SPATH)\detector.c
 
 "$(OD)\detector.exe" : "$(OD)" $(MTOOL) "$(OD)\detector.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\detector.pdb" /out:"$(OD)\detector.exe" "$(IDIR)\detector.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\eval_elast.c
+"$(IDIR)\eval_elast.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\eval_elast.exe" : "$(OD)" $(MTOOL) "$(OD)\eval_elast.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\eval_elast.pdb" /out:"$(OD)\eval_elast.exe" "$(IDIR)\eval_elast.obj" $(MTOOL) 
 
 SOURCE=$(SPATH)\eval_inelast.c
 "$(IDIR)\eval_inelast.obj" : $(SOURCE)

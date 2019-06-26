@@ -215,17 +215,6 @@ CHECK;
 	RotVector(RotMatrixFoc, Dir) ;
 
 
-	/* translates neutron variables for output - X'=0.
-
-	TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
-
-	CopyVector(Dir, Path) ;
-
-	MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-
-	AddVector(Pos, Path) ; /* Path = displacement vector */
-
-
 	/* transmit coordinates which were not changed, the rest overwrite below */
 
 	Neutrons = InputNeutrons[i]; 
@@ -240,7 +229,7 @@ CHECK;
 
 
 
-/*	 writes output binary file */
+	/* writes output binary file */
 
 	NumOut++ ;
 
@@ -395,14 +384,17 @@ double thrmax, phrmax ;
 void OwnInit(int argc, char *argv[])
 {
 	fprintf(LogFilePtr," \n") ;
-	print_module_name("monochr_analyser 1.6") ;
+	print_module_name("monochr_analyser 1.8") ;
 
 	d_spr_option = 1;
-	geom_option = 1;
+	geom_option  = 1;
+	DevH         = 0.0;
+	DevV         = 0.0;
+	GapH         = 0.0;
+	GapV         = 0.0;
 
-/*    INPUT  */
 
-
+	/*  INPUT  */
 
 	while(argc>1)
 	{
@@ -433,14 +425,21 @@ void OwnInit(int argc, char *argv[])
 			sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
 			break;
 
-
 		case 'M':
 			sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
 			break;
 
+		case 't':
+			sscanf(&argv[1][2], "%lf", &DevH) ;
+			break;
+
+		case 'T':
+			sscanf(&argv[1][2], "%lf", &DevV) ;
+			break;
+
 
 		case 'd':
-			sscanf(&argv[1][2], "%ld", &d_spr_option) ;
+			sscanf(&argv[1][2], "%d", &d_spr_option) ;
 			break;
 
 		case 'D':
@@ -453,7 +452,16 @@ void OwnInit(int argc, char *argv[])
 
 
 		case 'g':
-			sscanf(&argv[1][2], "%ld", &geom_option) ;
+			sscanf(&argv[1][2], "%d", &geom_option) ;
+			break;
+
+
+		case 'h':
+			sscanf(&argv[1][2], "%lf", &GapH) ;
+			break;
+
+		case 'v':
+			sscanf(&argv[1][2], "%lf", &GapV) ;
 			break;
 
 
@@ -497,7 +505,7 @@ void OwnInit(int argc, char *argv[])
 
 						mosaic_fwhm[0], mosaic_fwhm[1], d_fwhm, Reflectivity) ;
 
-	fprintf(LogFilePtr,"\n	repetition rate		=   %d", Repetition) ;
+	fprintf(LogFilePtr,"\n	repetition rate		=   %ld", Repetition) ;
 
 
 	/* prints to log file */
@@ -510,9 +518,11 @@ void OwnInit(int argc, char *argv[])
 	{
 		fprintf(LogFilePtr,"	'crystal_focus'") ;
 
-		fprintf(LogFilePtr,"\n	number of CE		=   %d, %d (h.,v.)\n	radius			=   %lf\n	angle vertical		=   %lf",
+		fprintf(LogFilePtr,"\n	vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg",
+		                   NumberCE[1], ParGeom[0], GapV, DevV, ParGeom[1]) ;
 
-							NumberCE[0], NumberCE[1], ParGeom[0], ParGeom[1]) ;
+		fprintf(LogFilePtr,"\n	horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg",
+		                   NumberCE[0], ParGeom[2], GapH, DevH) ;
 
 		fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName) ;
 	}

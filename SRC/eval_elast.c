@@ -63,10 +63,12 @@ void OwnInit   (int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
 	long	i,j,k, 
+	  bcnt[BINS+1],      /* number of trajectories contributing to count rate */
 	  leftedge, rightedge;
 
-	double bpost[BINS+1], bintc, binterval=1.0,
-	  bint[BINS+1],
+	double bintc, binterval=1.0,
+	  bpost[BINS+1],     /* limits of the bins                                */
+	  bint[BINS+1],      /* count rate of a bin                               */
 	  center[NCENTER], totcenter[NCENTER], range[NCENTER],
 	  time, lambda, 
 	  TwoTheta, TwoThetaDeg, Phi, 
@@ -105,6 +107,7 @@ int main(int argc, char *argv[])
 		{
 			bpost[ibin] = bpost[ibin-1] * (1.0 + dLogProz/100.);
 			bint [ibin] = 0.0;
+			bcnt [ibin] = 0;
 		}
 		nbins = ibin-1;
 	}
@@ -116,6 +119,7 @@ int main(int argc, char *argv[])
 		{
 			bpost[ibin] = m + binterval*ibin;
 			bint [ibin] = 0.0;
+			bcnt [ibin] = 0;
 		}
 	}
 
@@ -158,8 +162,10 @@ int main(int argc, char *argv[])
 					for(ibin = 0; ibin<nbins; ibin++)
 					{	if (bpost[ibin] <= dspacing && dspacing < bpost[ibin+1])
 						{
+							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+							break;
 						}
 					}
 					break;
@@ -169,8 +175,10 @@ int main(int argc, char *argv[])
 					for(ibin = 0; ibin<nbins; ibin++)
 					{	if (bpost[ibin] <= qValue && qValue < bpost[ibin+1])
 						{
+							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+							break;
 						}
 					}
 					break;
@@ -180,8 +188,10 @@ int main(int argc, char *argv[])
 					for(ibin = 0; ibin<nbins; ibin++)
 					{	if (bpost[ibin] <= TwoThetaDeg && TwoThetaDeg < bpost[ibin+1])
 						{
+							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+							break;
 						}
 					}
 					break;
@@ -191,8 +201,10 @@ int main(int argc, char *argv[])
 					for(ibin = 0; ibin<nbins; ibin++)
 					{	if (bpost[ibin] <= dDelLambda && dDelLambda < bpost[ibin+1])
 						{
+							bcnt[ibin]++;
 							bint[ibin] = bint[ibin] + prob;
 							bintc = bintc + prob;
+							break;
 						}
 					}
 					break;
@@ -219,7 +231,7 @@ int main(int argc, char *argv[])
 				bmid = sqrt(bpost[ibin]*bpost[ibin+1]);
 			else
 				bmid = (bpost[ibin]+bpost[ibin+1])/2.0;
-			fprintf(fspectra,"%7.7f\t %g\n", bmid, bint[ibin]);
+			fprintf(fspectra,"%12g %12g %7ld\n", bmid, bint[ibin], bcnt[ibin]);
 		}
 		fclose(fspectra);
 	}
@@ -246,7 +258,7 @@ int main(int argc, char *argv[])
 			leftedge =  (long)floor( (center[j] - (range[j]/2.0) -m)/binterval );
 			rightedge = (long)floor( (center[j] + (range[j]/2.0) -m)/binterval);
 	  				  
-			fprintf(LogFilePtr,"\n [%d, %d]",leftedge, rightedge);
+			fprintf(LogFilePtr,"\n [%ld, %ld]",leftedge, rightedge);
 				  
 			for (k=leftedge; k<=rightedge; k++)
 			totcenter[j] += bint[k];

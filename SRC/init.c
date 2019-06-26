@@ -13,6 +13,7 @@
 /* Jan 2004  K. Lieutenant  new function 'FullName' and changes for 'instrument.dat         */
 /* Feb 2004  M. Fromme      functions FullParName and FullInstallName                       */
 /* Feb 2004  K. Lieutenant  use of Full...Name, 'instrument.inf' and 'simulation.inf'       */
+/* Mar 2008  M. Fromme      compressed neutron data                                         */
 /********************************************************************************************/
 
 #ifdef _MSC_VER
@@ -25,9 +26,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gsl/gsl_rng.h>
 
-#include "general.h"
+#include "init.h"
 
 #define MAX_COL 4   /* max. number of count rates written separately for different colours
                        0 means no separate rates writable */
@@ -65,7 +65,6 @@ short    bTrace=TRUE,     /* criterion: write trace files */
          bOldFrame=FALSE, /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate=TRUE;   /* criterion: write separate count rates */
 
-gsl_rng * vit_gsl_rng;
 
 /**************************************************************/
 /* static variables                                           */
@@ -75,10 +74,16 @@ static long       TracePoints=FALSE;     /* creates dot for every written output
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static const char VITESS_VERSION[] = "2.7";
+static const char VITESS_VERSION[] = "2.8";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;
+
+#define COMPRESSBUFLEN 65536
+static int compressModeR, compressModeW, compressedRestlen, spinVector;
+static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
+static char *compressBuf;
+
 
 
 /**************************************************************/
@@ -87,6 +92,8 @@ static int ParDirectoryLength, InstallDirectoryLength;
 
 static void   OutputBufferFlush();
 static void   WriteTraceLine(Neutron* Neut);
+static int    readCompressedNeutrons();
+static void   writeCompressed();
 
 
 /**************************************************************/
@@ -292,15 +299,40 @@ void Init(int argc, char **argv, VtModID eModule)
 
   /* Now we know how to handle filenames, which might correspond to the parameter directory */
   if ((arg = marg[0])) {
-    if (strcmp(arg, "no_file"))
+    if (strcmp(arg, "no_file")) {
       InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
-    else
+      if (InputFilePtr) {
+	// Is it compressed ?
+	char b[4];
+	compressModeR = 0;
+	if (4 == fread(b, 1, 4, InputFilePtr)) {
+	  if (memcmp(b, "cmp2", 4) == 0)
+	    compressModeR = 2;
+	  else if (memcmp(b, "cmp1", 4) == 0)
+	    compressModeR = 1;
+	}
+	if (compressModeR)
+	  compressedRestlen = spinVector = 0;
+	else
+	  fseek(InputFilePtr, 0, SEEK_SET);
+      }
+    } else
       InputFilePtr = NULL;
   }
 
   if ((arg = marg[1])) {
     if (strcmp(arg,"no_file")) {
       OutputFilePtr = fileOpen((OutputFileName = FullParName(arg)), "wb");
+      if (OutputFilePtr) {
+	if (strstr(OutputFileName, ".float.")) {
+	  compressModeW = 2;
+	  fwrite("cmp2", 1, 4, OutputFilePtr);
+	} else if (strstr(OutputFileName, ".nodebug.")) {
+	  compressModeW = 1;
+	  fwrite("cmp1", 1, 4, OutputFilePtr);
+	} else 
+	  compressModeW = 0;
+      }
     } else
       OutputFilePtr = NULL;
   }
@@ -451,14 +483,19 @@ int ReadNeutrons()
 {
   long i;
 
-  NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
-  NumNeutRead += NumNeutGot;
-  for(i=0; i<NumNeutGot; i++)
-  { WriteTraceLine(&InputNeutrons[i]);
-    /* normalization of direction vector for modules representing hardware */
-    if (stPicture.eModule < VT_MONITOR_1)
-      NormVector(InputNeutrons[i].Vector);
+  if (compressModeR == 0) {
+    NumNeutGot = fread(InputNeutrons, sizeof(Neutron), BufferSize, InputFilePtr);
+    for(i=0; i<NumNeutGot; i++) {
+      WriteTraceLine(&InputNeutrons[i]);
+      /* normalization of direction vector for modules representing hardware */
+      if (stPicture.eModule < VT_MONITOR_1)
+	NormVector(InputNeutrons[i].Vector);
+    }
+  } else {
+    NumNeutGot = readCompressedNeutrons();
+    // compressed neutrons are not meant for tracing
   }
+  NumNeutRead += NumNeutGot;
   return NumNeutGot;
 }
 
@@ -473,19 +510,16 @@ void WriteNeutron(Neutron *OutNeutron)
 {
   dProbTotal[0] +=    OutNeutron->Probability;
   dProbQuad     += sq(OutNeutron->Probability);
-  if (bSepRate)
-  {  if (OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
-       dProbTotal[OutNeutron->Color] += OutNeutron->Probability;
-  }
+  if (bSepRate && OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
+    dProbTotal[OutNeutron->Color] += OutNeutron->Probability;
 
   /* copy the neutron to the buffer */
   CopyNeutron(OutNeutron, &(OutputNeutrons[OutNeutPtr++]));
 
-  /* test if the buffer is full */
-  if(OutNeutPtr >= BufferSize) {
-    /* write the neutrons to the stream */
+  if(OutNeutPtr >= BufferSize)
+    /* write the neutrons to the stream if the buffer is full */
     OutputBufferFlush();
-  }
+
   WriteTraceLine(OutNeutron);
 }
 
@@ -506,27 +540,33 @@ void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ
   /* source module writes header lines */
   if (nModuleNo==0)
   { pFile = fopen( FullParName("instrument.inf"), "w");
-    fprintf(pFile, "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver.      W-Par.       H-Par.       R-Par       number  type Description\n");
-    fprintf(pFile, "# ------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(pFile, "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver.      W-Par.       "
+	    "H-Par.       R-Par       number  type Description\n");
+    fprintf(pFile, "# ----------------------------------------------------------------------------------------------"
+	    "--------------------------------------------------\n");
   }
   /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
   else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
   { i=-1;
-    pFile = fopen(FullParName("instrument.inf"), "r");
     pBuffer=malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
-    for (m=-2; m<nModuleNo; m++)
-    { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
-      strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
-      if (memcmp(sBuffer, "EOP", 3)==0)
+    pFile = fopen(FullParName("instrument.inf"), "r");
+    if (pFile)
+    { for (m=-2; m<nModuleNo; m++)
       { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
         strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+        if (memcmp(sBuffer, "EOP", 3)==0)
+        { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
+          strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+        }
       }
+      fclose(pFile);
     }
-    fclose(pFile);
     pFile = fopen( FullParName("instrument.inf"), "w");
-    for (m=0; m<=i; m++)
-      fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
-    fprintf(pFile, "EOP\n");
+    if (pFile)
+    { for (m=0; m<=i; m++)
+        fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
+      fprintf(pFile, "EOP\n");
+    }
     free(pBuffer);
   }
   /* each other module appends a line */
@@ -636,7 +676,6 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
 
 
 
-
 /***************************************************************/
 /* Copies the contents of a structure 'Neutron' to another one */
 /***************************************************************/
@@ -727,16 +766,184 @@ long ColumnsInFile(FILE* pFile)
 /* LOCAL FUNCTIONS                                            */
 /**************************************************************/
 
+#define HULK(a,b,s) memcpy((char*)(a), (char*)(b), s); wlen += s; a += s
+
+static void writeCompressed() {
+
+  Neutron *pn = OutputNeutrons;
+  char *newspin,
+    *op = (char *) OutputNeutrons;   // will be overwritten
+  int dirbit, i, spincode, ineut;
+  double dx,dy,dz, tarr[8];
+  int wlen = 0;
+
+  for (ineut = OutNeutPtr; ineut > 0; ineut--) {
+    double factor;
+    int *iop;
+    // copy data to prevent unwanted overwriting
+    memcpy((char*) tarr, (char*) &pn->Time, 8*sizeof(double));
+
+    // normalize direction
+    dx = tarr[6]; dy = tarr[7]; dz = pn->Vector[2];
+    factor = 1.0 / sqrt(dx*dx + dy*dy + dz*dz);
+    tarr[6] = dx * factor;
+    tarr[7] = dy * factor;
+
+    dirbit = dz > 0 ? 1 : 0;
+
+    // code spin value
+    newspin = 0;
+    if (memcmp((void*) &pn->Spin, (void*) spinUpOut, sizeof(VectorType)) == 0)
+      spincode = 1;
+    else if (memcmp((void*) &pn->Spin, (void*) spinDownOut, sizeof(VectorType)) == 0)
+      spincode = 2;
+    else {
+      if (spinVector++ % 2) {
+	spincode = 3;
+	newspin = (char*) spinUpOut;
+      } else {
+	spincode = 4;
+	newspin = (char*) spinDownOut;
+      }
+      memcpy(newspin, (char*) &pn->Spin, sizeof(VectorType));
+    }
+    iop = (int *) op;
+    *iop++ = pn->Color | ((dirbit | (spincode << 1)) << 16);  /* coded color + dirbit + spincode */
+    op = (char*) iop;
+    wlen += sizeof(int);
+
+    if (newspin) {
+      HULK(op, newspin, sizeof(VectorType));
+    }
+
+    // Write Time, Wavelength, Probability, Position vector and Vector x,y
+    if (compressModeW == 1) {
+      // lossless
+      HULK(op, tarr, 8*sizeof(double));
+    } else {
+      // double -> float
+      float  *fp = (float*) op;
+      double *dp = tarr;
+      for (i=0; i<6; i++)
+	fp[i] = (float) (dp[i]);
+      op   += 6*sizeof(float);
+      wlen += 6*sizeof(float);
+      // output direction dx, dy
+      HULK(op, tarr + 6, 2*sizeof(double));
+    }
+    pn++;
+  }
+    
+  fwrite(OutputNeutrons, 1, wlen, OutputFilePtr);
+}
+#undef HULK
+
+#define GULP(s) p += s; rlen -= s;
+
+static int readCompressedNeutrons (void) {
+
+  Neutron *pn = InputNeutrons;
+  char    *p, *readp;
+  int     *pi, colword, dirbit,tocopy, i, rlen, ngot, toread, newread;
+  static unsigned long idNo;
+
+  if (! compressBuf)
+    compressBuf = malloc(COMPRESSBUFLEN);
+  p = readp = compressBuf;
+  if (!p) return 0;
+
+  ngot = 0;
+  toread = COMPRESSBUFLEN;
+  if ((rlen = compressedRestlen) > 0) {
+    // do not overwrite saved rest, but add fresh input
+    readp += rlen;
+    toread -= rlen;
+    compressedRestlen = 0;
+  }
+  newread = fread(readp, 1, toread, InputFilePtr);
+  if (rlen <= 0 && newread <= 0) 
+    return 0;
+  if (newread > 0)
+    rlen += newread;
+  ngot = 0;
+  do {
+    double x,y,z;
+    pn->ID.IDGrp[0] = 'A';
+    pn->ID.IDGrp[1] = 'A';
+    pn->ID.IDNo = ++idNo;
+    pn->Debug = 'N';
+    // get color, spin code, and direction bit from a 4 byte int
+    pi = (int *)p;
+    GULP(sizeof(int));
+    colword = *pi;
+    pn->Color = (short) colword & 0xffff;
+    colword >>= 16;
+    dirbit = colword & 1;
+
+    switch (colword >> 1) {
+    case 3: // new spin up
+      memcpy((char*)spinUp, p, sizeof(VectorType));
+      GULP(sizeof(VectorType));
+    case 1: // spin up
+      memcpy((void*) &pn->Spin, (void*)spinUp, sizeof(VectorType));
+      break;
+    case 4: // new spin down
+      memcpy((char*)spinDown, p, sizeof(VectorType));
+      GULP(sizeof(VectorType));
+    case 2: // spin down
+      memcpy((void*) &pn->Spin, (void*)spinDown, sizeof(VectorType));
+      break;
+    default: 
+      return 0; 		/* bad data */
+    }
+
+    if (compressModeR == 1) {
+      // lossless
+      tocopy = 8*sizeof(double);
+      memcpy((char *) &(pn->Time), p, tocopy);
+      GULP(tocopy);
+    } else {
+      // copy 6 floats -> double
+      float  *fp = (float*) p;
+      double *dp = & pn->Time;
+      for (i=0; i<8; i++)
+	dp[i] = fp[i];
+      GULP(6*sizeof(float));
+      // copy direction x,y as double
+      tocopy = 2*sizeof(double);
+      memcpy((char *) &(pn->Vector), p, tocopy);
+      GULP(tocopy);
+    }
+    x = pn->Vector[0]; y = pn->Vector[1];
+    z = sqrt(1.0 - x*x - y*y);
+    pn->Vector[2] = dirbit ? z : -z;
+
+    ngot++;
+    pn++;
+  } while (ngot < BufferSize && (rlen >= sizeof(Neutron) || (rlen > 0 && newread == 0)));
+ 
+  if (rlen > 0 && newread > 0) {
+    // save the rest
+    compressedRestlen = rlen;
+    memcpy(compressBuf, p, rlen);
+  }
+  return ngot;
+}
+#undef GULP
+
 static
 void OutputBufferFlush()
 {
-  if (OutputFilePtr)
-    fwrite(OutputNeutrons, sizeof(Neutron), OutNeutPtr, OutputFilePtr);
+  if (OutputFilePtr) {
+    if (compressModeW == 0)
+      fwrite(OutputNeutrons, sizeof(Neutron), OutNeutPtr, OutputFilePtr);
+    else
+      writeCompressed();
+  }
   NumNeutWritten += OutNeutPtr;
   OutNeutPtr = 0;
   if(TracePoints) fprintf(LogFilePtr,".");
 }
-
 
 /* Writing one line into the trace file */
 static

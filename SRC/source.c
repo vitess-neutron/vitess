@@ -1184,7 +1184,7 @@ void LoadTraceFile()
 	  for(i=0; i<g_nLinesTr; i++)
 	    {  
 	      ReadLine(pTraceFile, sBuffer, CHAR_BUF_LENGTH-1);
-	      sscanf  (sBuffer, "%c%c%u", &g_pTrace[i].IDGrp[0], &g_pTrace[i].IDGrp[1], &g_pTrace[i].IDNo);
+	      sscanf  (sBuffer, "%c%c%lu", &g_pTrace[i].IDGrp[0], &g_pTrace[i].IDGrp[1], &g_pTrace[i].IDNo);
 	    }
 
 	  /* closes trace file */

@@ -257,7 +257,7 @@ void OwnInit(int argc, char *argv[])
 		
 		fprintf(LogFilePtr, "\n*** INPUT: ***\n"
 							"\n* No. trajectories, main wavelength, wavelength band, zeta:\n\n"
-							"trajectories: %12d\n"
+							"trajectories: %12ld\n"
 							"lambda:       %12.6f\n"
 							"widthlambda:  %12.6f\n"
 							"zeta:         %12.6f  (if |zeta|>0 : see output VI.)\n"

@@ -44,6 +44,16 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
+#ifdef RND_SIMPLE
+  #ifdef WINDOWS
+    #define Vran() rand()
+  #else
+    #define Vran() random()
+  #endif
+#else  
+  #define Vran() gsl_rng_uniform (vit_gsl_rng)
+#endif
+
 typedef enum
 {	VT_CUBE   = 1,
 	VT_CYL    = 2,
@@ -63,6 +73,7 @@ typedef enum
 	VT_WINDOW      =  21,
 	VT_WND_MULT    =  22,
 	VT_GRID        =  23,
+	VT_SLIT        =  24,
 	VT_CHOP_DISC   =  31,
 	VT_CHOP_FERMI  =  32,
 	VT_VEL_SELECT  =  41,
@@ -87,11 +98,13 @@ typedef enum
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
 	VT_MON_POL_POS = 104,
+	VT_CAPTURE     = 110,
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_INELAST= 112,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
 	VT_WRITEOUT    = 141,
+	VT_RESET       = 142,
 	VT_TOOL        = 999
 }
 VtModID;
@@ -212,7 +225,6 @@ double ENERGY_FROM_V   (double x);
 double V_FROM_LAMBDA   (double x);
 double LAMBDA_FROM_V(double x);
 
-#define Vran() gsl_rng_uniform (vit_gsl_rng)
 double MonteCarlo (double x, double y);
 double DistrGauss(double Module, double Sigma);
 

@@ -24,9 +24,8 @@ my $svnroot = 'h:|V';
 my $unixcomment =<<'EOS';
 #
 # compile hosts to use
-# Linux : dixi3
-# SunOS : dsapp3
-# OSF1  : darling
+# Linux   : dixi3  openSUSE 10.2 (i586)
+# Linux64 : dinux4 openSUSE 10.2 (X86-64)
 
 EOS
 
@@ -42,11 +41,11 @@ my @Obj = qw(init general intersection matrix sample);
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
 	   velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file guide_shape);
+	   mirror_coating surface_file guide_shape spin_reset capture_flux);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi collimator_soller
-	    source spacewindow spacewindow_multiple space);
+	    slit grid source spacewindow spacewindow_multiple space);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_inelast frame guide
@@ -86,6 +85,7 @@ my %dep = (			# needed objects for a module
 	   monochr_analyser => 'ma_functions ma_geom',
 	   precessionfield => 'magneticmap',
 	   gener_batch => 'gener_fct',
+	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
 	   chopper_disc => 'bender_inter_data');
@@ -143,29 +143,42 @@ MGTOOL = $(MTOOL) distrgauss.o
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+ARCH = $(shell uname -i)
 
-GRAOPT = -DDO_X11 -DDO_GIF -DVT_GRAPH -I.
+CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+
+GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
+GDOPEN = g2_open_gd
+
 ifeq ($(SYS),SunOS)
 CCOMP = /net/bin/gcc
-CC = $(CCOMP) $(CFLAGS)
-GRASLIB = -Ig2/SunOS  -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
+CC = $(CCOMP) -DPENV $(CFLAGS)
+GRASLIB = -Ig2/SunOS -Lg2/SunOS -lg2 -L/net/usr/lib -L/usr/openwin/lib -R/usr/openwin/lib -L/usr/local/libll -lm -lX11 -lgd -lpng
 endif
 
 ifeq ($(SYS),OSF1)
 CCOMP = /net/bin/gcc
-CC = $(CCOMP) -DOSF $(CFLAGS)
+CC = $(CCOMP) -DOSF -DPENV $(CFLAGS)
 GRASLIB = -Ig2/OSF1 -Lg2/OSF1  -L/net/usr/lib -lg2 -lX11 -lm -lgd -lpng
 endif
 
+SUBDIR = $(SYS)
+XLIBL = lib
 ifeq ($(SYS),Linux)
-CCOMP = gcc
-CC = $(CCOMP) $(CFLAGS)
-GRASLIB = -Ig2/Linux -Lg2/Linux -L/usr/X11R6/lib -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
+ CCOMP = gcc
+ CC = $(CCOMP) $(CFLAGS)
+ GRAOPT2 = -DDO_PNG
+ ifeq ($(ARCH),x86_64)
+  SUBDIR = $(SYS)_$(ARCH)
+  SUBDIR = Linux_x86_64
+  XLIBL = lib64
+ endif
+ GRASLIB = -Ig2/$(SUBDIR) -Lg2/$(SUBDIR) -L/usr/X11R6/$(XLIBL) -L/usr/local/lib -lX11 -lg2 -lgd -lpng -lz -lfreetype -lXpm -lttf -lm
 endif
 
-GRALIB = $(GRAOPT) -Lrng -lgslran_$(SYS) $(GRASLIB)
-LIBS = -Lrng -lgslran_$(SYS) -lm
+
+GRALIB = $(GRAOPT2) $(GRAOPT) -Lrng/$(SUBDIR) -lgslran $(GRASLIB)
+LIBS = -Lrng/$(SUBDIR) -lgslran -lm
 
 .KEEP_STATE :
 
@@ -185,11 +198,15 @@ EOS
 .c.o:
 	$(CC) -c $<
 
+Unix:
+	-mkdir Unix
+	a=_$(SUBDIR) ; h='Unix/' ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	-rm -f *.o
 Move:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do mv $$l $$h$$l$$a ; done
 	-rm -f *.o
 Copy:
-	a=_$(SYS) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
+	a=_$(SUBDIR) ; h=$(INSTDIR) ; for l in $(ALL) ; do cp $$l $$h$$l$$a ; done
 
 clean :
 	-rm -f *.o $(ALL)

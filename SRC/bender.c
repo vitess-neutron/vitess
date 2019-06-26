@@ -1735,7 +1735,8 @@ else
       }
 
       if(TimeOF1 == -1.0)  continue;
-      if(TimeOF1 == -10000.0) exit(-1);
+      if(TimeOF1 == -10000.0) exit(-1)
+;
 
 
       /****************************************************************************************/
@@ -1800,7 +1801,7 @@ else
   }
 #endif
 
-  Cleanup(x2, y2, 0.0, (180.0*beta/(M_PI)), 0.0);
+  Cleanup(x2, y2, 0.0, beta, 0.0);
 
   fclose(AsciiFile);
 

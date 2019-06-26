@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 	/* Writing to log file */
 	fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
 	if (nChannels > 1)
-		fprintf(LogFilePtr, " with %d channels", nChannels);
+		fprintf(LogFilePtr, " with %ld channels", nChannels);
 	fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
 	if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
 		fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
@@ -221,6 +221,7 @@ int main(int argc, char *argv[])
 			else if (GuideExitHeight < GuideEntranceHeight) fprintf(LogFilePtr, "linearly converging\n");
 			else    fprintf(LogFilePtr, "constant height\n");
 			break;
+	default: ;
 	}
 
 	if (Radius != 0.0)  /* curved guide */
@@ -228,7 +229,7 @@ int main(int argc, char *argv[])
 		dCosBetH = cos(beta/2.0);
 		dSinBetH = sin(beta/2.0);
 		FillRotMatrixZ(RotMatrix, beta);
-		fprintf(LogFilePtr,"\n%d kink(s) with an angle of %8.4f deg  each", nPieces-1, 180/M_PI*beta);
+		fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each", nPieces-1, 180/M_PI*beta);
 	}
 	else
 	{	beta = 0.0;
@@ -465,6 +466,8 @@ int main(int argc, char *argv[])
 
 							Guide.Wall[2].D = -Guide.Wall[2].B *   left_beg;
 							Guide.Wall[3].D =  Guide.Wall[3].B *(-right_beg);
+							break;
+					        default: ;
 					}
 
 					switch (eGuideShapeZ)
@@ -483,6 +486,8 @@ int main(int argc, char *argv[])
 							/* top and bottom walls are moved */
 							Guide.Wall[0].D = -Guide.Wall[0].C * Zpce[j];
 							Guide.Wall[1].D =  Guide.Wall[1].C * Zpce[j];
+					        break;
+					default: ;
 					}
 				}
 

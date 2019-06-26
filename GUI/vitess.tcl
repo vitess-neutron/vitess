@@ -20,6 +20,7 @@ set fileDialogSET {
   {"Batch command files" {.bat}}
   {"Tcl files" {.tcl}}
   {"Series information files" {.inf}}
+  {"Grid Command files" {.grd}}
   {"X,Y ASCII files" {.dat}}
   {"2 D Intensity files" {.out}}
   {"chopper files" {.chp .par .dat}}
@@ -61,8 +62,8 @@ proc makeModuleSets {} {
       source_ESS_LPTS} source}
     {guide {guide bender} {guide bender}}
     {sm_ensemble {} sm_ensemble}
-    {spacewindow {spacewindow spacewindow_multiple space}
-      {spacewindow spacewindow_multiple}}
+    {spacewindow {space slit spacewindow spacewindow_multiple grid}
+      {space slit spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {velselect {} velselect}
     {collimator_soller {} collimator}
@@ -76,10 +77,10 @@ proc makeModuleSets {} {
 	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {detector {} detector}
-    {evaluation {eval_elast eval_inelast} {eval_elast eval_inelast}}
+    {evaluation {capture_flux eval_elast eval_inelast} {capture_flux eval_elast eval_inelast}}
     {frame {} frame}
     {external_command}
-    {writeout {} writeout}
+    {trajectories {writeout spin_reset} {writeout spin_reset}}
     {visualise_data {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz 
@@ -374,11 +375,11 @@ set traceASET {
   {poldeg float 0
     {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
   {}
-  {polx float 1
+  {polx float 0
     {"polarisation X\ndirection" "X-component of the polarisation direction" "" X}}
   {poly float 0
     {Y "Y-component of the polarisation direction" "" Y}}
-  {polz float 0
+  {polz float 1
     {Z "Z-component of the polarisation direction" "" V}}
   {}
 }
@@ -566,6 +567,20 @@ set writeoutESET {
   {outform radio float {"data format" "format of double values in writeout file" "" F} {exp float} {0 1}}
 }
 
+### spin_reset
+###
+set spin_resetESET {
+  {scpoldeg float 0
+    {"degree of pola-\nrization [%]" "percentage of polarisation" "" P} 0 100}
+  {}
+  {scpolx float 0
+    {"polarisation X\ndirection" "X-component of the polarisation direction" "" X}}
+  {scpoly float 0
+    {Y "Y-component of the polarisation direction" "" Y}}
+  {scpolz float 1
+    {Z "Z-component of the polarisation direction" "" Z}}
+}
+
 ### Frame
 ###
 set frameESET {
@@ -667,6 +682,8 @@ set a {
     "distance orig\n<->win [cm]" "Distance to window along x-direction  [cm]" "" D} ge0}
   {rad float 100 {
     "Outer\nradius [cm]" "Outer radius of the circular plate (multiaperture collimators) [cm]" "" r} gt0}
+  {wndshape radio automatic {shape "shape of the individual windows\nautomatic means: 3 columns gives circular, 4 columns rectangular shape" "" S}
+    {automatic spherical rectangular} {0 1 2}}
 }
 
 set spacewindow_multipleESET [concat $a $winAdd]
@@ -676,6 +693,61 @@ set spacewindow_multipleESET [concat $a $winAdd]
 set spaceESET {
   {dist float "" {"distance [cm]" "" "" d} gt0}
 }
+
+### Slit
+set slitESET {
+  {dist_slit float "" {"distance\n to slit [cm]" "" "" d} ge0}
+  {width_slit float "" {"width [cm]" "width of rectangular slit [cm]" "" W} ge0}
+  {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H} ge0}
+}
+
+### Grid
+###
+set gridESET {
+  {"Geometry description" header}    
+  {dist float 0 {
+    "distance orig\n<->grid [cm]" "Distance to grid along x-direction  [cm]" "" D} ge0}
+  {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}    
+  {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for the grid." "" t} ge0}
+  {outera float 5.0 {
+    "Outer hor size \n or radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}        
+  {outerb float 5.0 {
+    "Outer vert size  \n [cm]" "Outer vertical size of the grid" "" b} gt0}          
+  {shiftver float 0.0 {
+    "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}      
+  {shifthor float 0.0 {
+    "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}            
+  {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}  
+  {keycolor radio no {"Crosstalk between \n channels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}  
+
+  {"Material of a grid" header}        
+  {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
+  {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}
+  {0 1 2 3 4 5 6}}
+  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of a grid." "" C}}  
+    
+  {"Deviation of parameters" header}    
+  {shiftverdev float 0.0 {
+    "vertical shift +-[cm]" "Deviation of vertical shift of the grid, +-[cm]" "" q} ge0}      
+  {shifthordev float 0.0 {
+    "horizontal shift +-[cm]" "Deviation of horizontal shift of the grid, +-[cm]" "" y} ge0}        
+  {winraddev float 0.0 {
+    "radius of window +-[cm]" "Deviation of the radius of window, +-[cm]" "" h} ge0}        
+  {wincenterdev float 0.0 {
+    "center of window +-[cm]" "Deviation of the center position of window, +-[cm]" "" H} ge0}        
+  {distancedev float 0.0 {
+    "distance orig\n<->grid +-[cm]" "Deviation of the distance orig-grid,  +-[cm]" "" X} ge0}            
+      
+  {"Options Gravity Monochromator" header}    
+  {distabs float 0.0 {
+    "calc dist orig\n<->grid [cm]" "Distance for calculation to grid along x-direction  [cm]" "" M} ge0}
+  {disttotal float 0.0 {
+    "calc total dist [cm]" "Total distance for calculation of grid system along x-direction  [cm]" "" m} ge0}    
+  {wavemon float 0.0 {
+    "Monoch Wavelength [A]" "Wavelength of monochromatisation [Ang]" "" n} ge0}    
+
+}
+
 
 ### Guide
 ###
@@ -720,7 +792,7 @@ set guideESET {
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
-    "substrate\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
+    "blade\nwidth [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
 }
 
 
@@ -766,7 +838,7 @@ set benderESET {
   {exit_height float 10 {
     "exit\nheight [cm]"
     "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
-  {swidth float 0 {"substrate\nwidth [cm]"
+  {swidth float 0 {"blade\nwidth [cm]"
     "thickness of material dividing the guide/bender into channels" "" s} ge0 "" 1}
   {len_guide float 100 {
     "length [cm]" "length of a guide [cm]. Specify either length or filename." "" l} gt0 "" 1}
@@ -1114,16 +1186,28 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
+  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
+    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
-  {cradius float 200 {"radius\n[cm]"
+  {}
+  {chradius float 200 {"radius\nhoriz. [cm]"
+    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
+  {cradius float 200 {"radius\n vert. [cm]"
     "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
   {cangle float 0 {"angle\nvert. [deg]"
     "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
-  {chradius float 200 {"radius\nhoriz. [cm]"
-    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {}
+  {gaphor float 0.0 {"gap between\ncolumns  [cm]"
+    "Horizontal distance between columns of crystal elements\n (in the equatorial plane" "" h} ge0 "" 1}
+  {gapvert float 0.0 {"gap between\nrows  [cm]"
+    "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
+  {}
+  {devhor float 0.0 {"orient. dev. \nhor. [deg]"
+    "Horizontal deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev. \nvert. [deg]"
+    "Vertical deviation from exact crystal orientation.\n Values in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### Monochromator analyser
@@ -2298,6 +2382,14 @@ set isoESET {
   {va float 0 {"vert.\nangle [deg]"}}
 }
 
+
+### capture_flux
+###
+set capture_fluxESET {
+  {foilarea float 1
+    {"gold foil area [cm^2]" "size of the gold foil used to mesasure the flux\nintegrated intensity is devided by this area to get the capture flux" "" A} gt0}
+}
+
 ### eval
 ###   elast
 set eval_elastESET {
@@ -2446,7 +2538,7 @@ set sm_ensembleESET {
   {Visualisation header}
   {visu radio "no output" {visualisation "type of visualisation" "" T}
     {"no output" "output in collision file"
-     "plane XOY" "plane XOZ" "plane YOZ"} {0 1 2 3 4 5}}
+     "plane XOY" "plane XOZ" "plane YOZ"} {0 1 2 3 4}}
   {visdev radio display {device "visual device" "" o} {display file display+file} {1 2 3}}
   {vt radio lines {type "type of visualisation" "" c} {lines points} {0 1}}
   {h1 float "" {hmin "minimal horizontal coordinate of visualisation window" "" w}}
@@ -2602,6 +2694,7 @@ If you save all GUI settings with the 'Save Instrument' button of the
 'File' title menu to a file, you may re-use these parameters later with
 the 'Load Instrument' action.
 'Save as Command' stores the pipe command to a text file.
+'Save as Grid-Command' is meant to generate a Grid Engine command file.
 
 1d or 2d plots of simulation results come with the 'Plot file'
 and '2d Plot file' buttons of the 'File' title menu.
@@ -2767,8 +2860,7 @@ proc editDefaults {} {
   generateToplevel $w "VITESS Defaults"
   fGroup $w.defaults $w.b
   generateEntries $w.defaults xcontrolDefaultsESET
-  bButton $w.b.done Done "destroy $w"    puts "calling convert2Code $il1"
-
+  bButton $w.b.done Done "destroy $w"
   pack $w.b.done
 }
 

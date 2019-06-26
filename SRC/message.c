@@ -130,7 +130,7 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 		  int nid = stMessage[n].TrajID.IDNo, nno = stMessage[n].nNumber;
 		  fprintf(LogFilePtr, sMsgText, nno, nno > 1 ? "ies" : "y", pText);
 		  if (bID==ON && nid > 0)
-		    fprintf(LogFilePtr, nno > 1 ? "First trajectory has ID %c%c%09lu.\n" : "Trajectory has ID %c%c%09lu.\n",
+		    fprintf(LogFilePtr, nno > 1 ? "First trajectory has ID %c%c%09d.\n" : "Trajectory has ID %c%c%09d.\n",
 			    stMessage[n].TrajID.IDGrp[0], stMessage[n].TrajID.IDGrp[1], nid);
 		}
 #endif
