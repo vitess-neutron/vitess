@@ -1,3 +1,7 @@
+/**
+    nxs - neutron cross sections (c) 2010-2014 Mirko Boin
+*/
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -23,19 +27,70 @@ extern "C"
 #define SGCOREDEF__
 #include "sginfo.h"
 
+
+#define NXSLIB_VERSION 1.5
+
+
 /**
-  @author Mirko Boin, Helmholtz Centre Berlin for Materials and Energy <boin@helmholtz-berlin.de>
+    @author Mirko Boin, Helmholtz-Zentrum Berlin f&uuml; Materialien und Energy GmbH, <boin@helmholtz-berlin.de>
 */
 
-/*! \file nxs.h
-    \brief nxs header file.
 
-    Details: ...
+/*!
+    Details:
 
+    The nxs library for computing neutron scattering and absorption cross sections provides
+    a number of C structs and functions to calculate wavelength-dependent cross section values for
+    polycrystalline/powder-like materials. The definition of a material is represented by the composition
+    of a unit cell (NXS_UnitCell). A unit cell is created from the specification of a space group and its
+    unit cell parameters. The SgInfo routines from Ralf W. Grosse-Kunstleve is included here for such
+    purposes. Monoatomic materials as well as multi-atomic compounds are created by adding NXS_AtomInfo
+    atom information/properties. The library also provides a reading and saving routines to compose unit
+    cells from nxs parameter files.
+
+
+    Example:
+
+    The below example shows howto quickly use the library routines to initialise a unit cell from a parameter
+    file and calculate some cross sections.
+    \code{.c}
+      NXS_UnitCell uc;
+      if( NXS_ERROR_OK == nxs_initFromParameterFile( "Al.nxs", &uc ) )
+      {
+        double lambda=0.1;
+        for( lambda=0.1; lambda<4.0; lambda+=0.1 )
+          printf("%f\n",nxs_Absorption(lambda, &uc ) );
+      }
+    \endcode
+
+    A more comprehensive example shows use of individual atom parameters for the construction of a unit
+    cell and the initialization of hkl lattice reflections in order to prepare for cross section calculations.
+    \code{.c}
+      NXS_UnitCell uc;
+      NXS_AtomInfo *atomInfoList;
+      int numAtoms = nxs_readParameterFile( "Al.nxs", &uc, &atomInfoList);
+      if( numAtoms > 0 )
+      {
+        int i=0;
+        nxs_initUnitCell(&uc);
+        for( i=0; i<numAtoms; i++ )
+          nxs_addAtomInfo( &uc, atomInfoList[i] );
+
+        nxs_initHKL( &uc );
+
+        double lambda=0.1;
+        for( lambda=0.1; lambda<4.0; lambda+=0.1 )
+        {
+          printf("%f\n",nxs_Absorption(lambda, &uc ) );
+        }
+      }
+    \endcode
+
+    \copyright
+    nxs - neutron cross sections (c) 2010-2014 Mirko Boin
 
     The nxs library includes the SgInfo library, whose free usage is granted by the following notice:
 
-    Copyright Notice:
     Space Group Info (c) 1994-96 Ralf W. Grosse-Kunstleve
     Permission to use and distribute this software and its documentation for noncommercial
     use and without fee is hereby granted, provided that the above copyright notice appears
@@ -44,106 +99,161 @@ extern "C"
     software is not in the public domain.
 */
 
+#define MAX_CHARS_SPACEGROUP 40
+#define MAX_CHARS_ATOMLABEL 100
+
+
+// nxs error codes
+#define NXS_ERROR_OK                      0
+#define NXS_ERROR_NOMATCHINGSPACEGROUP   -1
+#define NXS_ERROR_NOATOMINFOFOUND        -2
+#define NXS_ERROR_READINGFILE            -10
+#define NXS_ERROR_SAVINGFILE             -11
+#define NXS_ERROR_MEMORYALLOCATIONFAILED -20
+
+
+/*!
+ \fn nxs_version
+ \return
+*/
+const char* nxs_version();
+
+
+
+/************************ UNIT CELL structs/functions ************************/
 /**
-\struct <EquivHKL>
+\struct <NXS_EquivHKL>
 
   \brief struct for symmetry equivalent Miller indices (hkl)
 
-  This struct is used by struct HKL to hold symmetry equivalent hkl.
-  \see s_HKL
+  This struct is used by struct NXS_HKL to hold symmetry equivalent hkl.
+  \see NXS_HKL
 */
-typedef struct {
+typedef struct NXS_EquivHKL {
   int h;                           /*!< Miller index */
   int k;                           /*!< Miller index */
   int l;                           /*!< Miller index */
-} EquivHKL;
+} NXS_EquivHKL;
 
 
 /**
-\struct <HKL>
+\struct <NXS_HKL>
 
   \brief struct for Miller indices (hkl)
 
   According to a given reflection this struct stores the hkl indices, its multiplicity, its lattice spacing, its structure factor and the symmetry equivalent hkl indices.
 */
-typedef struct {
+typedef struct NXS_HKL {
   int h;                           /*!< Miller index */
   int k;                           /*!< Miller index */
   int l;                           /*!< Miller index */
   unsigned int multiplicity;       /*!< multiplicity of the hkl reflection */
   double dhkl;                     /*!< hkl lattice spacing in &Aring;*/
   double FSquare;                  /*!< \f$|F|^2\f$ (structure factor) */
-  EquivHKL *equivHKL;              /*!< holds the symmetry equivalent reflections including the current indices */
-} s_HKL;
+  NXS_EquivHKL *equivHKL;          /*!< holds the symmetry equivalent reflections including the current indices */
+} NXS_HKL;
 
 
 /**
-\struct <AtomInfo>
+\struct <NXS_AtomInfo>
 
   \brief struct for atom descrpition
 
   This struct stores the position of an atom, its average cross sections, mass and Debye temperature.
 */
-typedef struct {
-  char wyckoffLetter;     /*!< Wyckoff letter */
-  unsigned int nAtoms;    /*!< number of atoms = Wyckoff multiplicity */
-  unsigned int elementNumber;  /*!< Element number from PSE */
-  char *label;            /*!< Label for the atom */
+typedef struct NXS_AtomInfo {
+  char wyckoffLetter;               /*!< Wyckoff letter */
+  unsigned int nAtoms;              /*!< number of atoms = Wyckoff multiplicity */
+  unsigned int elementNumber;       /*!< Element number from PSE */
+  char label[MAX_CHARS_ATOMLABEL];  /*!< Label (name) for the atom */
   double x[192];          /*!< holds the x positions, the first entry is the Wyckoff position */
   double y[192];          /*!< holds the y positions, the first entry is the Wyckoff position */
   double z[192];          /*!< holds the z positions, the first entry is the Wyckoff position */
   double sigmaAbsorption; /*!< in [\f$barn = 10^{-24} cm^2  at \ 2200 \frac{m}{s} = 1.798 \AA\f$] */
   double sigmaCoherent;   /*!< in [\f$barn = 10^{-24} cm^2\f$] */
   double sigmaIncoherent; /*!< in [\f$barn = 10^{-24} cm^2\f$] */
-  double b_coherent;
+  double b_coherent;      /*!< in [fm] */
   double molarMass;       /*!< Molar mass in [\f$u = 1.66 \times 10^{-27} kg\f$] */
+  double M_m;             /*! M/m = molarMass*ATOMIC_MASS_U_kg/MASS_NEUTRON_kg  / */
   double debyeTemp;       /*!< Debye temperature in [K] */
   double phi_1;           /*!< \f$\varphi_1\f$ */
   double phi_3;           /*!< \f$\varphi_3\f$ */
   double B_iso;           /*!< \f$B_{iso}\f$ the isotropic atomic displacement factor */
-} AtomInfo;
-
+  double sph;             /*!< Single phonon part per atom info */
+} NXS_AtomInfo;
 
 
 /**
-\struct <UnitCell>
+\struct <NXS_UnitCell>
 
-  \brief struct for unit cell descrpition
+  \brief struct for unit cell description
 
-  This struct stores space group symbol, the lattice parameters, the three sigma values, the atom mass the Debye temperature, some calculated values and the s_HKL and UnitCell struct as well as the SgInfo struct (see SgInfo documentation on http://cci.lbl.gov/sginfo/).
+  This struct stores space group symbol, the lattice parameters, the three sigma values, the atom mass the Debye temperature, some calculated values and the HKL and UnitCell struct as well as the SgInfo struct (see SgInfo documentation on http://cci.lbl.gov/sginfo/).
 */
-typedef struct {
-  int crystalSystem;         /*!< crysal system: XS_Tetragonal, XS_Hexagonal, XS_Cubic ... */
-  const char *spaceGroup;    /*!< space group number or denotation */
-  double a;                  /*!< lattice constant a */
-  double b;                  /*!< lattice constant b */
-  double c;                  /*!< lattice constant c */
-  double alpha;              /*!< lattice constant \f$\alpha\f$ */
-  double beta;               /*!< lattice constant \f$\beta\f$ */
-  double gamma;              /*!< lattice constant \f$\gamma\f$ */
-  double avgSigmaCoherent;   /*!< in [\f$barn = 10^{-24} cm^2\f$] */
-  double avgSigmaIncoherent; /*!< in [\f$barn = 10^{-24} cm^2\f$] */
-  unsigned int nAtoms;       /*!< total number of atoms inside the unit cell */
-  unsigned int nAtomInfo;    /*!< number of unit cell atoms */
-  AtomInfo *atomInfoList;    /*!< atom info \see AtomInfo */
-  T_SgInfo sgInfo;           /*!< struct from SgInfo library needed for further calculations see SgInfo documentation on http://cci.lbl.gov/sginfo/ */
-  double volume;             /*!< unit cell volume */
-  unsigned int nHKL;         /*!< number of hkl reflections after initUnitCell() */
-  unsigned int maxHKL_index; /*!< maximum hkl index */
-  s_HKL *hklList;            /*!< \see HKL */
-  double mass;               /*!< unit cell mass [\f$\frac{g}{mol}\f$]*/
-  double density;            /*!< unit cell density [\f$\frac{g}{cm^3}\f$]*/
-} UnitCell;
+typedef struct NXS_UnitCell {
+  int crystalSystem;                     /*!< crysal system: XS_Tetragonal, XS_Hexagonal, XS_Cubic ... */
+  char spaceGroup[MAX_CHARS_SPACEGROUP]; /*!< space group number or denotation */
+  double a;                              /*!< lattice constant a */
+  double b;                              /*!< lattice constant b */
+  double c;                              /*!< lattice constant c */
+  double alpha;                          /*!< lattice constant \f$\alpha\f$ */
+  double beta;                           /*!< lattice constant \f$\beta\f$ */
+  double gamma;                          /*!< lattice constant \f$\gamma\f$ */
+  double mph_c2;                         /*!< constant for mph calculation from A.K. Freund (1983) Nucl. Instr. Meth. 213, 495-501, if not defined C2 = 4.27*exp( A/61.0 ) will be calculated */
+  double debyeTemp;                      /*!< Debye temperature in [K] */
+  double avgSigmaCoherent;               /*!< in [\f$barn = 10^{-24} cm^2\f$] */
+  double avgSigmaIncoherent;             /*!< in [\f$barn = 10^{-24} cm^2\f$] */
+  unsigned int nAtoms;                   /*!< total number of atoms inside the unit cell */
+  unsigned int nAtomInfo;                /*!< number of unit cell atoms */
+  NXS_AtomInfo *atomInfoList;            /*!< atom info \see AtomInfo */
+  T_SgInfo sgInfo;                       /*!< struct from SgInfo library needed for further calculations see SgInfo documentation on http://cci.lbl.gov/sginfo/ */
+  double temperature;                    /*!< sample environment temperature [K] */
+  double volume;                         /*!< unit cell volume */
+  double mass;                           /*!< unit cell mass [\f$\frac{g}{mol}\f$]*/
+  double density;                        /*!< unit cell density [\f$\frac{g}{cm^3}\f$]*/
+  unsigned int nHKL;                     /*!< number of hkl reflections after initUnitCell() */
+  unsigned int maxHKL_index;             /*!< maximum hkl index */
+  NXS_HKL *hklList;                      /*!< \see NXS_HKL */
+  unsigned char __flag_mph_c2;           /*!< flag to indicate if mph_c2 is set or should be calculated */
+} NXS_UnitCell;
+
+
+NXS_UnitCell nxs_newUnitCell();
+int nxs_initUnitCell( NXS_UnitCell *uc );
+int nxs_addAtomInfo( NXS_UnitCell *uc, NXS_AtomInfo ai );
+int nxs_initHKL( NXS_UnitCell *uc );
+double nxs_calcDhkl( int h, int k, int l, NXS_UnitCell *uc );
+double nxs_calcFSquare( NXS_HKL *hklReflex, NXS_UnitCell *uc );
+/*****************************************************************************/
 
 
 
+/************************** CROSS SECTION FUNCTIONS **************************/
+double nxs_Absorption             ( double lambda, NXS_UnitCell* uc );
+double nxs_CoherentElastic        ( double lambda, NXS_UnitCell* uc );
+double nxs_CoherentInelastic      ( double lambda, NXS_UnitCell* uc );
+double nxs_TotalInelastic         ( double lambda, NXS_UnitCell* uc );
+double nxs_TotalInelastic_BINDER  ( double lambda, NXS_UnitCell* uc );
+double nxs_TotalInelastic_COMBINED( double lambda, NXS_UnitCell* uc );
+double nxs_SinglePhonon           ( double lambda, NXS_UnitCell* uc );
+double nxs_MultiPhonon            ( double lambda, NXS_UnitCell* uc );
+double nxs_MultiPhonon_CASSELS    ( double lambda, NXS_UnitCell* uc );
+double nxs_MultiPhonon_FREUND     ( double lambda, NXS_UnitCell* uc );
+double nxs_MultiPhonon_COMBINED   ( double lambda, NXS_UnitCell* uc );
+double nxs_IncoherentElastic      ( double lambda, NXS_UnitCell* uc );
+double nxs_IncoherentInelastic    ( double lambda, NXS_UnitCell* uc );
+/*****************************************************************************/
+
+
+
+/******************************* TEXTURE STUFF *******************************/
 /**
-\struct <Texture>
+\struct <NXS_Texture>
 
   \brief struct for texture descrpition using March-Dollase approach
 
 */
-typedef struct{
+typedef struct NXS_Texture {
   int a;
   int b;
   int c;
@@ -152,43 +262,39 @@ typedef struct{
   double **sin_beta;
   double **cos_beta;
   double *P_alpha_H;
-} Texture;
-
+} NXS_Texture;
 
 
 /**
-\struct <MarchDollase>
+\struct <NXS_MarchDollase>
 
   \brief struct for March-Dollase correction calculation
 
 */
-typedef struct{
+typedef struct NXS_MarchDollase {
   unsigned int M;
   unsigned int N;
   unsigned int nOrientations;
   double *sin_phi;
   double *cos_phi;
-  Texture *texture;
-  UnitCell *unitcell;
-} MarchDollase;
+  NXS_Texture *texture;
+  NXS_UnitCell *unitcell;
+} NXS_MarchDollase;
+
+NXS_MarchDollase nxs_initMarchDollase( NXS_UnitCell* uc );
+void nxs_addTexture( NXS_MarchDollase* md, NXS_Texture texture );
+double nxs_CoherentElasticTexture( double lambda, NXS_MarchDollase* md );
+/*****************************************************************************/
 
 
-double calcDhkl( int h, int k, int l, UnitCell* uc );
-double calcFSquare( s_HKL *hklReflex, UnitCell* uc );
-int initUnitCell( UnitCell *uc );
-int addAtomInfo( UnitCell *uc, AtomInfo ai );
-int initHKL( UnitCell *uc );
-double nxsAbsorption         ( double lambda, UnitCell* uc );
-double nxsCoherentElastic    ( double lambda, UnitCell* uc );
-double nxsCoherentInelastic  ( double lambda, UnitCell* uc );
-double nxsTotalInelastic     ( double lambda, UnitCell* uc );
-double nxsIncoherentElastic  ( double lambda, UnitCell* uc );
-double nxsIncoherentInelastic( double lambda, UnitCell* uc );
-double calcPhi_1( double theta );
-double calcPhi_3( double theta );
-MarchDollase initMarchDollase( UnitCell* uc );
-void addTexture( MarchDollase* md, Texture texture );
-double nxsCoherentElasticTexture( double lambda, MarchDollase* md );
+
+/************************** PARAMETER FILE ROUTINES **************************/
+int nxs_readParameterFile( const char* fileName, NXS_UnitCell *uc , NXS_AtomInfo *atomInfoList[] );
+int nxs_saveParameterFile( const char* fileName, NXS_UnitCell *uc );
+int nxs_initFromParameterFile( const char* fileName, NXS_UnitCell *uc );
+/*****************************************************************************/
+
+
 
 #endif
 

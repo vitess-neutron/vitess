@@ -329,7 +329,7 @@ double EssModFU(const double _dLambda, const double _dTime, const double _dLengt
 	}
 	else
 	{	
-    if (iDataVsn >= 3 && dTemp < 100.0)     // new cold moderator, analytical description
+    if ((iDataVsn==3 || iDataVsn==4) && dTemp < 100.0)     // new cold moderator, analytical description
       dM = LeakageFct(_dLambda, &stMInfo[imod][0]);
     else
 		  dM = Maxwellian(_dLambda, stMInfo[imod][0].dTemp);

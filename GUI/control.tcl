@@ -328,9 +328,10 @@ proc controlMenu {w} {
       {c Optimization {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
-      {m "Modules A - F" m1} \
-      {m "Modules G - P" m2} \
-      {m "Modules R - Z" m3}
+      {m "Modules A - L" m1} \
+      {m "Modules M" m2} \
+      {m "Modules N - R" m3} \
+      {m "Modules S - Z" m4}
 
   set pwd [file join $SourceDirectory WWW]
 
@@ -348,6 +349,7 @@ proc controlMenu {w} {
   }
 
   # Add a help link for all modules with given HTML help file.
+  # First obtain two lists, nl for names and hl for help items
   set nl {}
   set hl {}
   foreach line $AvailableSET {
@@ -371,17 +373,30 @@ proc controlMenu {w} {
       }
     }
   }
+  # Sort items alphabetically, as nl may not be sorted lexically
+  set nlen [llength $nl]
+  set il {}
+  foreach m $nl h $hl {
+    lappend il [list $m $h]
+  }
+  set il [lsort -command pCompare $il]
+  # The result list is a list of {name help} pairs
+
   set li1 {}
   set li2 {}
   set li3 {}
-  foreach m $nl h $hl {
+  set li4 {}
+  foreach e $il {
+    set m [lindex $e 0]
+    set h [lindex $e 1]
     if [file exists [file join $pwd $h.html]] {
       set Htmlhelp($m) $h.html
       set ll [list c $m "showHelpItem $h.html"]
       switch -regexp $m {
-	^[a-fA-F] {lappend li1 $m $ll}
-	^[g-pG-P] {lappend li2 $m $ll}
-	default {lappend li3 $m $ll}
+	^[a-lA-L] {lappend li1 $m $ll}
+	^[mM] {lappend li2 $m $ll}
+	^[n-rN-R] {lappend li3 $m $ll}
+	default {lappend li4 $m $ll}
       }
     }
   }
@@ -393,6 +408,9 @@ proc controlMenu {w} {
 
   menu $w.hel.menu.m3 -bg $menuColor -tearoff 0
   eval popMenu $w.hel.menu.m3 $li3
+
+  menu $w.hel.menu.m4 -bg $menuColor -tearoff 0
+  eval popMenu $w.hel.menu.m4 $li4
 
   set wo $w.opt.menu
   popMenu $wo \
@@ -726,7 +744,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.2"
+  set t "VITESS 3.3"
   set maxModule 100
   set DummyEntry "--inactive--"
 

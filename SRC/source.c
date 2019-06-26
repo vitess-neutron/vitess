@@ -42,6 +42,8 @@
 /* 1.20  May  2013  K. Lieutenant  data base versions for moderator characteristics          */
 /* 1.21  Sep  2013  K. Lieutenant  time focusing                                             */
 /* 1.22  Nov  2013  K. Lieutenant  pancake moderator                                         */
+/* 1.23  Mar  2015  K. Lieutenant  correction of solid angle for large declination angles    */
+/* 1.24  May  2015  Lieutenant/Zendler  new ESS moderator data (Butterfly)                   */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -52,6 +54,7 @@
 #include "intersection.h"
 #include "src_modchar.h"
 #include "source_csns.h"
+#include "source_ess.h"
 #include "message.h"
 
 
@@ -163,7 +166,7 @@ int main(int argc, char *argv[])
    /* Initialize */
    bVisInstalled = TRUE;
    Init             (argc, argv, VT_SOURCE);
-   print_module_name("Source and Window 1.22");
+   print_module_name("Source and Window 1.24");
    OwnInit          (argc, argv);
    CenterX   = 0.0; 
    CenterY   = 0.0;
@@ -303,7 +306,12 @@ int main(int argc, char *argv[])
          }
          /* case ESS, SNS */
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
-         {  stMod[imod].dFUAmpl    = TotalFU(stMod[imod].dModTemp, stSrc.nSource, stMod[imod].eModType, stSrc.dPower, stSrc.dPulsePeriod, stSrc.dPulseLength);
+         {  
+	   if (stSrc.nSource==ESS && iDataVsn >= 5){
+	     stMod[imod].dFUAmpl = EssTotFU2015(stMod[imod].dHeight, stMod[imod].dModTemp, stSrc.dPower, stSrc.dPulseFreq, stSrc.dPulseLength);
+	   }
+	   else
+              stMod[imod].dFUAmpl = TotalFU(stMod[imod].dModTemp, stSrc.nSource, stMod[imod].eModType, stSrc.dPower, stSrc.dPulsePeriod, stSrc.dPulseLength);
             stMod[imod].dTotalFlux = 2*M_PI * stMod[imod].dFUAmpl * stSrc.dPulseFreq ;
          }
         /* case CSNS */
@@ -495,7 +503,7 @@ int main(int argc, char *argv[])
       else 
       {
          Y0                = sM->dCntrY + sM->dWidth /2.0 - sM->dWidth  * Vran();
-         Input.Position[2] = sM->dCntrZ + sM->dHeight/2.0 - sM->dHeight * Vran();
+	 Input.Position[2] = sM->dCntrZ + sM->dHeight/2.0 - sM->dHeight * Vran();
       }
 
       /* check if another moderator is in front of the actual one */
@@ -511,9 +519,16 @@ int main(int argc, char *argv[])
          if (im < 0) continue; 
       }
 
-      /* Declination */
-      Input.Position[1] = Y0 * dDecCos;
-      Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+
+	/* Declination */
+	/* for ESS butterfly: do this after prob is calculated*/
+	if(stSrc.nSource!=ESS || iDataVsn < 5){
+	  Input.Position[1] = Y0 * dDecCos;
+	  Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+	  }
+	else {
+	  Input.Position[1] = Y0;
+	}
 
       /* MC choice of wavelength and starting time */
       if (sM->eIsisTS > 0)
@@ -543,14 +558,19 @@ int main(int argc, char *argv[])
         if(strlen(sM->sLTFileName) > 0) 
         {
            // case: flux(lambda,t) was given in a file
-           if (sM->eIsisTS > 0) 
+	  if (sM->eIsisTS > 0) 
               prob = IsisNorm * TS.Total * 3.744905847e14 * 1.1879451 * dSolAngle * WindowWidth * WindowHeight * stSrc.dPulseFreq / NumberOfNeutrons;
            else
               prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].dInt * sM->dNorm;
         }
         else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
         { // case ESS, SNS
-			    prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
+          if (stSrc.nSource==ESS && iDataVsn >= 5){
+            prob = EssModFU2015(stMod[imod].dHeight, stSrc.dPower, stSrc.dPulseFreq, Declination, &Input) / sM->dFUAmpl * sM->dNorm;
+            Input.Color=GetColour_ESSbutterfly2015(Input.Position[1],Declination);
+          }
+          else
+            prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.dPulseLength) / sM->dFUAmpl * sM->dNorm;
         }
         else if (stSrc.nSource==CSNS)
         { // case CSNS
@@ -564,6 +584,12 @@ int main(int argc, char *argv[])
       }
 
       if(prob <= 0.0) continue; 
+
+      /* Declination for ESS butterfly (others: has been done already)*/
+      if(stSrc.nSource==ESS && iDataVsn >= 5){
+	Input.Position[1] = Y0 * dDecCos;
+	Input.Position[0] = Y0 * dDecSin + sM->dCntrX;
+      }
 
       /* direction of flight */
       /* defined by starting position on moderator and position on propagation window */
@@ -590,10 +616,11 @@ int main(int argc, char *argv[])
 
          dFact = sq(cos(Theta)*cos(Phi)) / sM->dWndFact;
          prob *= dFact; 
+         prob /= sq(dFP/sM->dDistModWnd); //  correction for solid angles in case of different distances from source to (virtual) window 
       } 
       else  
       {
-	/* defined by divergence */
+         /* defined by divergence */
          Phi   = stTraj[imod].dMaxDivY*(1.0-2.0*Vran());
          Theta = stTraj[imod].dMaxDivZ*(1.0-2.0*Vran());
          Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
@@ -1424,6 +1451,73 @@ short ReadModData(char* sFileName)
     }
 
   fclose(pFileR);
+
+
+  /* set only moderator option for ESS butterfly: */
+  if (stSrc.nSource==ESS && iDataVsn >= 5){
+    fprintf(LogFilePtr,"For ESS_2015 moderator description, both thermal and cold moderator are simulated and set to default values: \n"); 
+    fprintf(LogFilePtr,"  thermal: at       (0,0,0),       about 14-16 cm wide; colour: 1 \n ");
+    fprintf(LogFilePtr,"  cold   : at about (0,+-11.25,0), about  7- 8 cm wide; colour: 2 \n");
+    fprintf(LogFilePtr,"Only height is taken from moderator file (must be either 3cm or 6cm) \n");
+    fprintf(LogFilePtr,"Choose beamport position via declination angle \n");
+    fprintf(LogFilePtr,"Default orientation to the thermal centre (adjust with frame module) \n");
+    fprintf(LogFilePtr,"! Note: a default factor of 0.75 is applied to the brilliance to reflect the loss from engineering design details not included in the model ! \n");
+    // set butterfly geometry:
+    stMod[0].dModTemp = 325.0;
+    stMod[0].dCntrX = 0; 
+    stMod[0].dCntrY = 0;
+    stMod[0].dCntrZ = 0; 
+    stMod[0].dWidth = GetModeratorWidth_ESSbutterfly2015(fabs(Declination),stMod[0].dModTemp);
+    stMod[0].nColour = 1;
+    stMod[0].dDiameter = 0.0;
+    stMod[0].dArea     = stMod[0].dHeight * stMod[0].dWidth;        
+    stMod[0].bCircle   = FALSE;
+    stMod[0].dDistModWnd = WindowDist-stMod[0].dCntrX;
+    stMod[1].dModTemp = 50.0;
+    stMod[1].dWidth = GetModeratorWidth_ESSbutterfly2015(fabs(Declination),stMod[1].dModTemp);
+    stMod[1].dCntrX = 0;
+    stMod[1].dCntrY = (Declination>0) ? (stMod[0].dWidth+stMod[1].dWidth)/2 : -(stMod[0].dWidth+stMod[1].dWidth)/2 ;
+    stMod[1].dCntrZ = 0;
+    stMod[1].nColour = 2;
+    // add 2nd mod values in case only 1 has been given;
+    stMod[1].dHeight = stMod[0].dHeight;
+    stMod[1].dDiameter = 0.0;
+    stMod[1].dArea     = stMod[1].dHeight * stMod[1].dWidth;        
+    stMod[1].bCircle   = FALSE;
+    stMod[1].dDistModWnd = WindowDist-stMod[1].dCntrX;
+    stMod[1].dWndFact    = 0.0;
+    stMod[1].eIsisTS = 0;
+    stTraj[1].dLambdaMin  = stTraj[0].dLambdaMin;
+    stTraj[1].dLambdaMax  = stTraj[0].dLambdaMax;
+    stTraj[1].dTimeFrmMin = stTraj[0].dTimeFrmMin;
+    stTraj[1].dTimeFrmMax = stTraj[0].dTimeFrmMax;
+    stTraj[1].dMaxDivY    = stTraj[0].dMaxDivY;
+    stTraj[1].dMaxDivZ    = stTraj[0].dMaxDivZ;
+    imod=2;
+    // add second cold for the theta=0 view:
+    if( fabs(Declination)<0.01){
+      imod=3;
+      stMod[2].dModTemp = 50.0;
+      stMod[2].dWidth = GetModeratorWidth_ESSbutterfly2015(fabs(Declination),stMod[2].dModTemp);
+      stMod[2].dCntrX = 0;
+      stMod[2].dCntrY = (stMod[0].dWidth+stMod[1].dWidth)/2;
+      stMod[2].dCntrZ = 0;
+      stMod[2].nColour = 2;
+      stMod[2].dHeight = stMod[0].dHeight;
+      stMod[2].dDiameter = 0.0;
+      stMod[2].dArea     = stMod[2].dHeight * stMod[2].dWidth;        
+      stMod[2].bCircle   = FALSE;
+      stMod[2].dDistModWnd = WindowDist-stMod[2].dCntrX;
+      stMod[2].dWndFact    = 0.0;
+      stMod[2].eIsisTS = 0;
+      stTraj[2].dLambdaMin  = stTraj[0].dLambdaMin;
+      stTraj[2].dLambdaMax  = stTraj[0].dLambdaMax;
+      stTraj[2].dTimeFrmMin = stTraj[0].dTimeFrmMin;
+      stTraj[2].dTimeFrmMax = stTraj[0].dTimeFrmMax;
+      stTraj[2].dMaxDivY    = stTraj[0].dMaxDivY;
+      stTraj[2].dMaxDivZ    = stTraj[0].dMaxDivZ;
+    }
+  }
 
   /* initialize array pointers */
   stFluxL [imod].pTabX=NULL;

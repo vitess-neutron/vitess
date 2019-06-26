@@ -243,12 +243,12 @@ int Mon2D::FillMonitor(Neutron* n)
   // Find or calculate the parameter set for the x-axis, dismiss if outside the range
   double xValue = DetermineParameter(xParam, n);  
   int binX = (int)((xValue - xMin)/xBinSize);
-  if (binX < 0 || binX >= nBinsX) return 0;
+  if (xValue < xMin || xValue > xMax) return 0;
   
   // Find or calculate the parameter set for the y-axis, dismiss if outside the range
   double yValue = DetermineParameter(yParam, n);  
   int binY = (int)((yValue - yMin)/yBinSize);
-  if (binY < 0 || binY >= nBinsY) return 0;
+  if (yValue < yMin || yValue > yMax) return 0;
 
   // Dismiss if outside the wavelength range, if defined
   if (lambdaMin >= 0 || lambdaMax > 0) {

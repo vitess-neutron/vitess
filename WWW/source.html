@@ -678,6 +678,28 @@ but the    time constants as well as the amplitudes are set in the program.
 These amplitudes    are scaled to be used for SNS.&nbsp;  
 </div>
 
+<p><b>The ESS "butterfly" moderator</b> </p>
+<p> The database version 2015_Butterfly selects the ESS moderator baseline as specified in the beginning of 2015. According to the specifications, there are two moderators: a 3 cm high moderator on top and a 6 cm high moderator on the bottom side of the target wheel. Both have a central thermal moderator and cold wings, as shown in the left-hand figure below. The only input parameter taken from the moderator description file is the <b>height</b>, which has to be either 3 cm or 6 cm. The <b>declination</b> angle sets the orientation of the beamport w.r.t. a reference direction chosen such that 0° is rectangular to the proton beam. The declination angle can be set between 0° and pm 55°. The origin of the coordinate system is the center of the thermal moderator. Note that, according to the current baseline, the monolith inserts point at the separation between the cold and thermal moderator (red crosses is figure below): this can be modelled by an additional frame module. In the same way, the viewpoint of the beamline can be adjusted to look at the cold moderator instead (or at another point on the thermal moderator than the center).  The moderator is symmetric for pos. and neg. declination angles. Only the closer cold moderator can be viewed from a given declination angle. The only exception is a declination of 0°, from which both cold moderators are visible (cf brightness curves below). </p>
+
+<p> The moderator description uses functions developed by T. Schoenfeldt, which are described in more detail in "Phenomenological Study of Expected Cold and Thermal Brightness Phase-Space at ESS" by T. Schoenfeld et. al (in preparation). The functions were fitted to the 3 cm top moderator and extended to the 6 cm bottom moderator based on previous fits to the pancake moderator of different heights. Hence the model of the 6 cm moderator has to be regarded with a slightly larger systematic uncertainty than the 3 cm moderator. The spatial dependence (horizontally) of the brightness of the 3 cm top moderator, which is one of the functions provided by T. Schoenfeldt, is shown in the right-hand side figure below for different viewpoints. The moderator width given in the VITESS log file is the one derived from these functions, without further projection of this width onto the viewpoint.</p>
+
+<p> Engineering details which will reduce the performance were not part of the original model, but have been investigated since and found to decrease the brightness by 20-30%. Therefore, a factor of 0.75 is applied to the moderator brightness in VITESS. If the user desires a different factor, simulation results can simply be re-scaled.</p>
+<p>
+<table class="image" align=left>
+<caption align="top" style="font-style: italic;" >Butterfly moderator geometry (picture from K. Andersen, "New ESS moderator Baseline")</caption>
+<tr><td>
+<img src="ButterflyModeratorGeometry.png" style="width:600px; height:500px; border:1px solid black; font-size: 9pt; font-style: italic; text-align: center;margin-left: 20px;;margin-right: 20px"
+</td></tr>
+</table>
+<table class="image" align=left>
+<caption align="top" style="font-style: italic;">Brightness factor as function of horizontal position for different declination angles.</caption>
+<tr><td>
+<img src="ButterflyImplementation_HorizontalPosition_PositiveTheta.png" style="width:700px; height:500px; border:1px solid black; float:left; font-size: 9pt; font-style: italic; text-align: center; margin-right: 20px;">
+</td></tr>
+</table>
+</p>
+
+
 
 <p><b>2. Moderator Characteristics from Files</b> </p>
 

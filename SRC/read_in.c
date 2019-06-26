@@ -6,6 +6,7 @@
 /* 0.9  Jan  2013  K. Lieutenant   initial version                                           */
 /* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
 /* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
+/* 1.1a Apr  2014  K. Lieutenant   repetition corrected                                      */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -62,19 +63,19 @@ int main(int argc, char **argv)
 
   /* Initialize the program according to the parameters given   */
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("read_in 1.1");
+  print_module_name("read_in 1.1a");
 
   /* module specific initialization */
   OwnInit(argc, argv);
  
   for (m=0; m < NF_MAX; m++)
   { 
+    Irep=0;
     if (pInFile[m])
     {  
       rc=TRUE;
       for(i=0; i<1e14 && rc==TRUE; i++)
       {
-        Irep=0;
         rc=ReadLine(pInFile[m], sLine, sizeof(sLine));
         if (rc==TRUE)
         { 

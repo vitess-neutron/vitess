@@ -2,7 +2,6 @@
 #define SRC_MODCHAR_H
 
 /***********************************************/
-/* LSCForm.h                                   */
 /* Functions for simulations of moderators     */
 /***********************************************/
 
@@ -141,7 +140,7 @@ FctTable;
 
 long   IndLT        (const long i, const long j);
 double TotalFU      (const double Temp,    const short  eSource,  const short  eModType,
-					 const double dPower,  const double dPeriod,  const double dPulseLen);
+					           const double dPower,  const double dPeriod,  const double dPulseLen);
 double EssModFU     (const double Lambda,  const double dTime,    const double dLength);
 
 double Maxwellian   (const double Lambda,  const double dModTemp);

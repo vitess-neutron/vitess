@@ -650,7 +650,7 @@ foreach s {ESS_LPTS ESS_2012} {
   set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
   set source_${s}ESET [concat {
     {name radio ESS {"name of source" "" "" N} {- ESS} {- ESS}}
-    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight} {1 2 3 4}}
+    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly} {1 2 3 4 5}}
     {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
     {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
     {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
@@ -786,7 +786,7 @@ set read_inESET {
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
-  {Active radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
+  {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {outprgf radio VITESS {"program" "program for which the output is written" "" f} {VITESS McStas} {1 2}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
@@ -1062,6 +1062,7 @@ set guideESET {
   {"Guide characteristics" header}
   {len_guide_piece float "" {"piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
   {number_pieces int 1 {"number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
+  {rad_curve float 0 {"curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
   {}
   {h_focus_pnt float 0 {"hor. focus dist.\nof ellipse [cm]"
     "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
@@ -1076,13 +1077,11 @@ set guideESET {
   {rrefl_filename pareditablefile mirr1a.dat {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
   {tbrefl_filename pareditablefile mirr1a.dat  {"top plane" "Reflectivity file for top (and bottom) plane" "" j} r dat}
   {brefl_filename pareditablefile "" {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
-  {"Bender option" header}
+  {"Channel option" header}
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
   {spacer_width float "" {
     "blade\nthickness [cm]" "thickness of material dividing the guide/bender into channels" "" s} ge0}
-  {rad_curve float 0 {
-    "curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
 }
 # guide needs a scrollable window
 set BigFrameguide 1
@@ -2283,18 +2282,22 @@ set fA2 {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
-
 set fA3 {
   {filter_param3 radio none {
-    "filter\nparameter 3" "choose filter parameter 2 (optional)" "" K}
+    "filter\nparameter 3" "choose filter parameter 3 (optional)" "" K}
+    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+}
+set fA4 {
+  {filter_param4 radio none {
+    "filter\nparameter 4" "choose filter parameter 4 (optional)" "" L}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
 
 set fComb {
   {filter_comb radio OR {
-      "filter\ncombination" "If both filters defined, neutrons pass if they fulfill all criteria (AND) or at least one (OR)" "" C}
-    {OR AND} {0 1}}
+      "filter\ncombination" "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)" "" C}
+    {OR AND AND_OR_AND} {0 1 2}}
 }
 
 set fPAi {
@@ -2304,7 +2307,6 @@ set fPAi {
   {filtIMax float "" {
     "filter 1\nmax value" "max value of filter parameter 1" "" U}}
 }
-
 set fPAj {
   {}
   {filtJMin float "" {
@@ -2312,7 +2314,6 @@ set fPAj {
   {filtJMax float "" {
     "filter 2\nmax value" "max value of filter parameter 2" "" V}}
 }
-
 set fPAk {
   {}
   {filtKMin float "" {
@@ -2320,9 +2321,16 @@ set fPAk {
   {filtKMax float "" {
     "filter 3\nmax value" "max value of filter parameter 3" "" W}}
 }
+set fPAl {
+  {}
+  {filtLMin float "" {
+    "filter 4\nmin value" "min value of filter parameter 4" "" x}}
+  {filtLMax float "" {
+    "filter 4\nmax value" "max value of filter parameter 4" "" X}}
+}
 
-set filterESET [concat $fA $fA1 $fA2 $fA3 $fComb $fPAi $fPAj $fPAk]
-unset fA fA1 fA2 fA3 fComb fPAi fPAj fPAk
+set filterESET [concat $fA $fA1 $fA2 $fA3 $fA4 $fComb $fPAi $fPAj $fPAk $fPAl]
+unset fA fA1 fA2 fA3 fA4 fComb fPAi fPAj fPAk fPAl
 
 
 ### Monitor many many modules
@@ -3615,8 +3623,11 @@ proc eval_elastCheckErr {{app _}} {
 set eval_elast2ESET {
   {psel radio "Scattering angle [deg] and wavelength [A]" {
       "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [A]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
+  {}
   {psort radio "Intensity" {
     "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
+  {evzero radio "no" {
+    "Zeros" "Choose if zero entries shall be written to disk. Writing those results is considerably slower and may result in much bigger files. Memory consumption may increase significantly." "" f} {"no" "yes"} {0 1}}
   {}
   {sfile mon2editablefile elast2.eva {
     "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}

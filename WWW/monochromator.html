@@ -22,7 +22,12 @@ determine the correct normalisation has become obsolete. The new module now hand
 the normalisation of the outgoing neutrons properly if the peak reflectivity,
 i.e. the reflectivity of the monochromator crystal for neutrons of the peak wavelength
 and negligible divergence, is given</b>. The peak reflectivity is usually known 
-from dedicated measurements.</p>
+from dedicated measurements. Note that a correct normalisation of the outgoing intensity is only
+possible, if realistic, non-zero values for the mosaicity and the d-spread are given. If an ideal crystal
+needs to be simulated, i.e. the mosaicity or d-spread are very close to zero, 
+then it is possible that the outgoing intensity is larger than the incoming one. In this case you can set the 
+reflectivity normalisation to a value below 1. If both the d-spread and the mosaicities are set to 0 then
+the crystal will only transmit the peak wavelength, resulting in a complete loss of intensity in a simulation. </p>
 
 
 <p> A monochromator element is characterized by its geometric and crystallographic

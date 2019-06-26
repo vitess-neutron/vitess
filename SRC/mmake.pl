@@ -13,12 +13,13 @@ use strict;
 my @Vstudio = ('c:|programme|microsoft visual studio .net 2003',
                'C:|Program Files (x86)|Microsoft Visual Studio 10.0');
 # 3 subdirectories each, specific for a visual studio version
+# first 2 for path in compile.bat, 3. CPATH2 in vitess.mak
 my @VSub = ('vc7', 'common7|IDE', $Vstudio[0] . '|Vc7|PlatformSDK',
-            'VC', 'Common7|IDE', 'C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
+             'VC', 'Common7|IDE','C:|Program Files (x86)|Microsoft SDKs|Windows|v7.0A');
 
 
-my $sroot = 'h:|control|g2_win';      # --g2dir parameter
-my $svnroot = 'd:|vitcsrc';           # --src parameter
+my $sroot = 'C:|Users|dmf';
+my $svnroot = 'C:|Users|dmf|vitess';  # --src parameter
 
 # unix comment
 my $unixcomment =<<'EOS';
@@ -105,7 +106,7 @@ $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
-	   source => 'src_modchar source_csns',
+	   source => 'src_modchar source_csns source_ess',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
            monochromator => 'monochrclass',
@@ -119,7 +120,7 @@ my %dep = (			# needed objects for a module
 	   chopper_disc => 'bender_inter_data',
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl',
-           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi read_table-lib',
+           sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi',
            monitor1D => 'mon1D',
            monitor2D => 'mon2D'
 	  );
@@ -194,7 +195,8 @@ mmake.pl \{option\}
   --vstudio path        path to visual studio directory, in a form like (default)
                         --vstudio '$vstudio'
                         use | as separator instead of \\ here
-  -win7                generate vitess.mak and compile.bat for windows 7 + vis. studio 10
+  -winXP                generate vitess.mak and compile.bat for old windows xp,
+                        default for windows 7 + vis. studio 10
   --winpath path        path to visual studio binaries, in a form like (default)
                         --winpath '$mscpath'
 EOS
@@ -205,6 +207,8 @@ EOS
 my ($lpath, $sys, $arch, $s, @LPath, %LPath);
 my $libpng = 'png'; # unless changed by checkLibs
 my $args = "@_";
+
+$win7 = 1;  # new default
 
 while ($_ = shift) {
   if ($_ eq '-win7') {
@@ -228,8 +232,8 @@ while ($_ = shift) {
     $svnroot = $arg;
   } elsif ($_ eq 'g2dir') {
     $sroot = $arg;
-  } elsif ($_ eq 'win7') {
-    $win7 = 1;
+  } elsif ($_ eq 'winXP') {
+    $win7 = 0;
   } else {
     &usage;
   }
@@ -241,8 +245,11 @@ my $i = $win7 ? 3 : 0;
 my $s1 = $VSub[$i];
 my $s2 = $VSub[$i+1];
 $mscdir  = "$vstudio|$s1";
-$mscpath = "$vstudio|$s1|bin;$vstudio|$s2";
-
+if ($win7) {
+  $mscpath = "$vstudio|$s2;$vstudio|$s1|BIN";
+} else {
+  $mscpath = "$vstudio|$s1;$vstudio|$s2";
+}
 # try to read VITESS version from ../GUI/control.tcl
 
 my ($version, $fullversion);
@@ -418,7 +425,7 @@ sub prepareNMakefile {
 
   $s = <<EOS;
 # Vitess NMAKE File
-GROOT=$sroot
+SROOT=$sroot
 SVNROOT=$svnroot
 CPATH=$mscdir
 CPATH2=$_
@@ -431,7 +438,7 @@ IPATH2=$(CPATH2)|include
 LPATH2=$(CPATH2)|lib
 
 SPATH=$(SVNROOT)|SRC
-GPATH=$(GROOT)
+GPATH=$(SROOT)\g2_win
 GSLPATH=$(SPATH)|rng
 
 !IF "$(OS)" == "Windows_NT"
@@ -582,7 +589,7 @@ EOS
   $_ = $mscpath;
   tr/|/\\/;
   print OF <<EOS;
-path $_\r
+Path=$_\r
 nmake /f vitess.mak all\r
 EOS
   close OF;
