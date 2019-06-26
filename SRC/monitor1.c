@@ -17,7 +17,8 @@
 /* 1.6  K. Lieutenant FEB 2005 intensity as a function of energy                             */
 /* 1.6a A. Houben     JAN 2010 filter for wavelength and yz position (only if applicable)    */
 /* 1.7  A. Houben     MAY 2010 monitor for div on x-axis rotated by rot angle                */
-/* 1.8  A. Lieutenant Aug 2012 multiple file output                                          */
+/* 1.8  K. Lieutenant Aug 2012 multiple file output                                          */
+/* 1.9  K. Lieutenant Feb 2012 any color = -1                                                */
 /*********************************************************************************************/
 
 // includes and definitions
@@ -35,51 +36,53 @@
 
 
 // Prototypes
-void NumerateName (char* sFileLong, char* sFileShort, const short nNumber);
+void NumerateName(char* sFileLong, char* sFileShort, const short nNumber);
 
 
 int main(int argc, char *argv[])
 {
   FILE	*pFileMon=NULL,       /* monitor output file */
-         *pFileRef=NULL;       /* reference file      */
-//  FILE   fFileMonC[MAX_FILES];
-  FILE*  pFileMonC[MAX_COLS]={NULL, NULL, NULL, NULL,NULL, NULL,NULL, NULL};
+        *pFileRef=NULL;       /* reference file      */
+  FILE*  pFileMonC[MAX_COLS]={NULL, NULL, NULL, NULL,NULL, NULL,NULL, NULL};  // Pointer to additional monitor files
   char	*MonitorFileName=NULL,
-         *RefFileName=NULL,
-         sNewName[99]="", sModuleName[41],
-         sBuffer[512];
-  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
-         sParN[MAX_KIND+1][22]={"", "wavelength", "time",
-                                "horizontal divergence", "vertical divergence",
-                                "horizontal position",   "vertical position", "energy", "divergence yz"};
+        *RefFileName=NULL,
+        sNewName[99]="", sModuleName[41],
+        sBuffer[512];
+  char  sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
+        sParN[MAX_KIND+1][22]={"", "wavelength", "time",
+                               "horizontal divergence", "vertical divergence",
+                               "horizontal position",   "vertical position", "energy", "divergence yz"};
+	char  weightTag[2][7] = {"", "weight"};
 
   short  bProbWeight=0,        /* Probability weight yes or no */
+         bAllFiles=FALSE,      /* criterion: files for all colors until the given one generated */ 
          iCol,                 /* colour of the trajectory */
+         // jCol,                  colour to be used in a monitor
+         jMon,                 /* monitor number */
+         nColour =ANY_COLOR,
+         nAddMons=0,           /* number of additional output files (for separate colours) */                
          bSplitWeight=1;       /* Split weight in case of yz: yes or no */
   long   iBin,                 /* bin number */
-         jMon,                 /* monitor number */
          i, 
-		 kind=1, 
-		 exclusivecount=0, 
-		 registered=0, 
-		 normalise=0, 
-		 nBiny=10, 
-		 nColour=0,
-		 nAddMons=0,          /* number of additional output files (for separate colours  */                
+         kind=1, 
+         exclusivecount=0, 
+         registered=0, 
+         normalise =0, 
+         nBiny   =10, 
          nTrjTot=0, crot = 0;  /* total number of traj. within binning and eval. time; number of rot angles for yz */
   double dIntTot=0.0,          /* total count rate within binning and eval. time      */
          Miny=0.0,Maxy=1.0, 
-         prob=0.0,                /* neutron weight */
+         prob=0.0,             /* neutron weight */
 		 time, 
          rotang_min=0.0, 
          rotang_max=0.0,
          rotang_step=0.0;
-  double filtLambdaMin=-1.0,          /* filter      */
-		 filtLambdaMax=-1.0,
-		 filtYMin=-1.0e10,
-         filtYMax=1.0e10,
-		 filtZMin=-1.0e10,
-		 filtZMax=1.0e10;
+  double filtLambdaMin=-1.0,   /* filter      */
+         filtLambdaMax=-1.0,
+         filtYMin=-1.0e10,
+         filtYMax= 1.0e10,
+         filtZMin=-1.0e10,
+         filtZMax= 1.0e10;
   double Divy, Divz, Div, rotang,
          dEvalTimeMin=-1.0e10, /* min. and max. TOF to be taken into account */
          dEvalTimeMax=1.0e10,
@@ -145,7 +148,6 @@ int main(int argc, char *argv[])
       case 'm':
         Miny = atof(&argv[i][2]);   /* lower bound lambda, time or div. window [A], [ms], [deg]*/
         break;
-
       case 'M':
         Maxy = atof(&argv[i][2]);   /* upper bound lambda, time or div. window [A], [ms], [deg]*/
         break;
@@ -163,7 +165,6 @@ int main(int argc, char *argv[])
       case 'l':
         filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
         break;
-
       case 'L':
         filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
         break;
@@ -171,15 +172,12 @@ int main(int argc, char *argv[])
       case 'y':
         filtYMin = atof(&argv[i][2]);   /* filter Y */
         break;
-
       case 'Y':
         filtYMax = atof(&argv[i][2]);   /* filter Y */
         break;
-
       case 'z':
         filtZMin = atof(&argv[i][2]);   /* filter Z */
         break;
-
       case 'Z':
         filtZMax = atof(&argv[i][2]);   /* filter Z */
         break;
@@ -187,7 +185,6 @@ int main(int argc, char *argv[])
       case 'p':
         bProbWeight = (short) atol(&argv[i][2]); /* p=1 means probability weight activated, */
         break;                                   /* else neutron weight is set to 1.0       */
-
       case 'P':
         bSplitWeight = (short) atol(&argv[i][2]); /* p=1 means split weight activated for each angle, */
         break;                                   /* else neutron weight is multiplied by number of detection angles */
@@ -197,21 +194,20 @@ int main(int argc, char *argv[])
         break;
 
       case 'f':
-        if(argv[i][2]=='1') normalise = 1; /* if 1, each channel normalised with bin size */
-        break;                             /* if 2, each channel normalised reference file */
+        if(argv[i][2]=='1') normalise = 1;  /* if 1, each channel normalised with bin size */
+        break;                              /* if 2, each channel normalised reference file */
 
       case 'C':
-        nColour = atol(&argv[i][2]);       /*  excludes all neutrons with diff. Colour, if nColour > 0   */
-		if (nColour < 0)                   /*  writes separate files from colour=0, 1, ...,-nColour      */
-		{ nAddMons  = mini(MAX_COLS,-nColour);
-		  nColour = 0;
-		}
+        nColour = atol(&argv[i][2]);        /*  excludes all neutrons with diff. Colour, if nColour >= 0   */
+        break;  
+                          
+      case 'c':
+        bAllFiles = (short)atoi(&argv[i][2]); /*  criterion: files containing all colors until the given one generated   */
         break;
 
       case 't':
         dEvalTimeMin = atof(&argv[i][2]);   /* minimal time for monitoring */
         break;
-
       case 'T':
         dEvalTimeMax = atof(&argv[i][2]);   /* maximal time for monitoring */
         break;
@@ -224,16 +220,21 @@ int main(int argc, char *argv[])
     }
   }
 
-  sprintf(sModuleName, "monitor1_%s 1.8", sParN[kind] );
+  sprintf(sModuleName, "monitor1_%s 1.9", sParN[kind] );
   print_module_name(sModuleName);
+  memset(pFileMonC, '\0', sizeof (FILE*));
 
+  if (bAllFiles == TRUE)                    /*  writes separate files from colour=0, 1, ..., nColour      */
+  { nAddMons = mini(MAX_COLS, nColour+1);
+    nColour  = ANY_COLOR;
+  }
   if (nAddMons > 0)
   { 
-	for (jMon=1; jMon<=nAddMons; jMon++)
-	{ 
-      NumerateName (sNewName, MonitorFileName, jMon);
-      pFileMonC[jMon-1] = fopen(FullParName(sNewName),"wt");
-	} 
+	  for (jMon=0; jMon<nAddMons; jMon++)
+	  { 
+        NumerateName(sNewName, MonitorFileName, jMon);
+        pFileMonC[jMon] = fopen(FullParName(sNewName),"wt");
+	  } 
   }
 
   pPosT = (double*) calloc(nBiny+1, sizeof(double));
@@ -256,7 +257,7 @@ int main(int argc, char *argv[])
       pInt [iBin+jMon*(nBiny+1)]=0.0;
       pSD  [iBin+jMon*(nBiny+1)]=0.0;
       pBinN[iBin+jMon*(nBiny+1)]=0;
-	}
+    }
     if(normalise==1)
     { pNorm[iBin] =(Maxy-Miny)/(double)nBiny;
     }
@@ -287,6 +288,8 @@ int main(int argc, char *argv[])
     crot = 1;
   }
 
+  if (bProbWeight != 1) bProbWeight = 0;
+
   DECLARE_ABORT;
   while (ReadNeutrons()!= 0)
   {
@@ -308,8 +311,8 @@ int main(int argc, char *argv[])
       if (exclusivecount==0)
         WriteNeutron(&(InputNeutrons[i]));
 
-      /* exclude traj. with wrong colours: (nColour=0 means: all colours accepted) */
-      if (nColour > 0 && nColour!=InputNeutrons[i].Color) continue;
+      /* exclude traj. with wrong colours: (nColour=-1 means: all colours accepted) */
+      if (nColour != ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
       if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
       if (InputNeutrons[i].Position[1] < filtYMin) continue;
@@ -392,10 +395,10 @@ int main(int argc, char *argv[])
           dIntTot     += prob;
           nTrjTot     += 1;
           registered = 1;
-          if (nAddMons > 0 && iCol > 0 && iCol <= nAddMons)
+          if (nAddMons > 0 && iCol >= 0 && iCol < nAddMons)
           { 
-            pInt [iBin + iCol*(nBiny+1)] += prob;
-            pBinN[iBin + iCol*(nBiny+1)] += 1;
+            pInt [iBin + (iCol+1)*(nBiny+1)] += prob;
+            pBinN[iBin + (iCol+1)*(nBiny+1)] += 1;
           }
         }
 	  }
@@ -410,11 +413,13 @@ int main(int argc, char *argv[])
 
 my_exit:
   // main monitor
-  if (pFileMon != NULL)
-  { for (iBin = 0; iBin < nBiny; iBin++)
+  if (pFileMon != NULL)     
+  { 
+    fprintf(pFileMon,"#Monitor %s %s\n", weightTag[bProbWeight], sParN[kind]);
+    for (iBin = 0; iBin < nBiny; iBin++)
     { if(pBinN[iBin]!=0) 
 	    pSD[iBin] = pInt[iBin]*sqrt(1./((double)pBinN[iBin]/(double)crot));
-      fprintf(pFileMon,"% 7.7E\t% 11.7E \t% 11.7E \t% 11.7E \n",
+      fprintf(pFileMon,"%12.4e   %14.7e   %14.7e %12.2f\n",
                        (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin]/pNorm[iBin]), pSD[iBin]/pNorm[iBin], pBinN[iBin]/(double)crot);
       dIntMax = Max(dIntMax, pInt[iBin]);
     }
@@ -423,22 +428,24 @@ my_exit:
 
   // additional monitors
   if (nAddMons > 0) 
-  { for (jMon=1; jMon<=nAddMons; jMon++)
-    { if (pFileMonC[jMon-1] != NULL)
-      { for (iBin = 0; iBin < nBiny; iBin++)
+  { for (jMon=0; jMon<nAddMons; jMon++)
+    { if (pFileMonC[jMon] != NULL)
+      { 
+        fprintf(pFileMonC[jMon],"#Monitor %s %s\n", weightTag[bProbWeight], sParN[kind]);
+        for (iBin = 0; iBin < nBiny; iBin++)
         {
-          if(pBinN[iBin+jMon*(nBiny+1)]!=0) 
-		    pSD[iBin+jMon*(nBiny+1)] = pInt[iBin+jMon*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+jMon*(nBiny+1)]));
-          fprintf(pFileMonC[jMon-1],"%12.4e   %14.7e   %14.7e   %10ld\n",
-                  (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+jMon*(nBiny+1)]/pNorm[iBin]), pSD[iBin+jMon*(nBiny+1)]/pNorm[iBin], 
-                  pBinN[iBin+jMon*(nBiny+1)]);
+          if(pBinN[iBin+(jMon+1)*(nBiny+1)]!=0) 
+            pSD[iBin+(jMon+1)*(nBiny+1)] = pInt[iBin+(jMon+1)*(nBiny+1)]*sqrt(1./((double)pBinN[iBin+(jMon+1)*(nBiny+1)]));
+          fprintf(pFileMonC[(jMon+1)-1],"%12.4e   %14.7e   %14.7e   %10ld\n",
+                  (pPosT[iBin]+pPosT[iBin+1])/2.0, (pInt[iBin+(jMon+1)*(nBiny+1)]/pNorm[iBin]), pSD[iBin+(jMon+1)*(nBiny+1)]/pNorm[iBin], 
+                  pBinN[iBin+(jMon+1)*(nBiny+1)]);
         }
-        fclose(pFileMonC[jMon-1]);
+        fclose(pFileMonC[jMon]);
       }
     }
   }
 
-    if (kind==2) /* monitor TOF */
+  if (kind==2) /* monitor TOF */
   { 
     ReadSimData(&dTimeMeas, &dLmbdWant, &dFreq);
     if (dFreq > 0.0)
@@ -469,7 +476,7 @@ my_exit:
 /* Building a combined file name of 'sFilename' and 'sAddition' without changing the extension */
 /***********************************************************************************************/
 void
-NumerateName (char* sFileLong, char* sFileShort, const short nNumber)
+NumerateName(char* sFileLong, char* sFileShort, const short nNumber)
 
 {
    char sParExt [4],      // extension of file names (with simulation results)

@@ -4,6 +4,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  May 2008  K. Lieutenant   initial version                                            */
+/* 1.1a Nov 2012  K. Lieutenant   visualization, part 1                                      */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -79,11 +80,12 @@ int main(int argc, char *argv[])
 	         AngCntrAct,AngMinAct,/* [deg] actual value of minimal and central inclination towards collim. */
 	         DistExit;            /* [cm]  distance from origin to exit                                    */ 
 	VectorType vDir;              /*       direction to the collimator centre in cartesian co-ordinates    */
-	Neutron    OutNeutron;
+	Neutron    OutNeutron, EnterNeutron;
 
 	/* initialisation */
 	Init(argc, argv, VT_RAD_COLLIM);
-	print_module_name("collimator_radial 1.0");
+	print_module_name("collimator_radial 1.1a");
+  bVisInstalled = TRUE;
 	OwnInit(argc, argv);
 
 	AngCntrAct  = AngCentre;
@@ -116,6 +118,7 @@ int main(int argc, char *argv[])
 				}
 				NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
 				NewPosZ = OutNeutron.Position[2];
+        CopyNeutron(&OutNeutron, &EnterNeutron);
 				
 				/*******************************************************************************/
 				/* Follow neutron through the collimator if it enters into one of the channels */
@@ -145,8 +148,21 @@ int main(int argc, char *argv[])
 								if (iChanIn==iChanOut)
 								{
 									OutNeutron.Time += (ToF1 + ToF2);
-									WriteNeutron(&OutNeutron);
+									// WriteNeutron(&OutNeutron);
+									WriteNeutron(&InputNeutrons[i]);
+                  // WriteIAP(&OutNeutron, VT_EXITED);
 								}
+                else
+                { // estimate point inside the collimator for absorption
+                  // might be exchanged by the position where it hits the blade
+                  double prc;
+                  int k,
+                      N2 = 2 * abs(iChanOut - iChanIn); 
+                  prc = (double) (N2-1)/N2;
+                  for (k=0; k < 3; k++)
+                    OutNeutron.Position[k] -= prc*(OutNeutron.Position[k] - EnterNeutron.Position[k]);
+                  WriteIAP(&OutNeutron, VT_ABSORBED);
+                }
 							}
 						} // bHit2
 					}
@@ -171,7 +187,8 @@ int main(int argc, char *argv[])
 
 	SphericalToCartesian(vDir, &Theta, &Phi);
 	CartesianToEulerZY  (vDir, &RotY,  &RotZ);
-	Cleanup(DistExit*vDir[0], DistExit*vDir[1], DistExit*vDir[2], RotZ, RotY); 
+	//	Cleanup(DistExit*vDir[0], DistExit*vDir[1], DistExit*vDir[2], RotZ, RotY); 
+	Cleanup(0., 0., 0., 0., 0.);
 
 	return(0);
 }
@@ -252,6 +269,45 @@ int DetermineChannel(double angle, double angle_min, double angle_sep, double ra
 void OwnCleanup()
 {
 	/* set description for instrument plot */
+	  // Geometry data
+	if (bVisInstr)
+  { 
+    double ry, rz;
+
+    RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
+    fprintf(LogFilePtr,"For the radial collimator ry %f, rz %f", ry, rz);
+    if (rz < 0) rz += 2.*M_PI;
+
+    stGeometry.pCylSlice = (VtCylSlice*) calloc(2, sizeof(VtCylSlice));
+    stGeometry.nCylSlices = 2; 
+	      
+    stGeometry.pCylSlice[0].Radius = Distance; 
+    stGeometry.pCylSlice[0].Width  = Distance*(AngWidth+OscWidth)/180.0*M_PI;
+    stGeometry.pCylSlice[0].Height = EntrHeight;
+    stGeometry.pCylSlice[0].vCntr[0]   = 0.;
+    stGeometry.pCylSlice[0].vCntr[1]   = 0.;
+    stGeometry.pCylSlice[0].vCntr[2]   = 0.;
+    stGeometry.pCylSlice[0].vSymAxis[0]= 0;
+    stGeometry.pCylSlice[0].vSymAxis[1]= 0;
+    stGeometry.pCylSlice[0].vSymAxis[2]= 1;
+    stGeometry.pCylSlice[0].OpenAngle  = AngWidth+OscWidth;
+    stGeometry.pCylSlice[0].Phi        = AngCentre + rz/M_PI*180.0;
+	      
+    stGeometry.pCylSlice[1].Radius = Distance+Length; 
+    stGeometry.pCylSlice[1].Width  =(Distance+Length)*(AngWidth+OscWidth)/180.0*M_PI;
+    stGeometry.pCylSlice[1].Height = ExitHeight;
+    stGeometry.pCylSlice[1].vCntr[0]   = 0.;
+    stGeometry.pCylSlice[1].vCntr[1]   = 0.;
+    stGeometry.pCylSlice[1].vCntr[2]   = 0.;
+    stGeometry.pCylSlice[1].vSymAxis[0]= 0;
+    stGeometry.pCylSlice[1].vSymAxis[1]= 0;
+    stGeometry.pCylSlice[1].vSymAxis[2]= 1;
+    stGeometry.pCylSlice[1].OpenAngle  = AngWidth+OscWidth;
+    stGeometry.pCylSlice[1].Phi        = AngCentre + rz/M_PI*180.0;
+
+    stGeometry.pDescr  = "collimator_radial:blue";
+    stGeometry.eModule = VT_RAD_COLLIM;
+  }
 	stPicture.dWPar   = AngWidth;
 	stPicture.dHPar   = EntrHeight;
 	stPicture.dRPar   = Distance;

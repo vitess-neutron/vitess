@@ -22,7 +22,6 @@
 #define CWS       1
 #define SPSS      2
 #define LPSS      3
-#define LPSS_OPT  4
 
 #define POISONED   1   /* moderator decoupled poisoned        */
 #define DECOUPLED  2   /* moderator decoupled unpoisoned      */
@@ -114,11 +113,10 @@ FctTable;
 long   IndLT        (const long i, const long j);
 double TotalFU      (const double dTemp,   const short  eSource,  const short  eModType,
 					 const double dPower,  const double dPeriod,  const double dPulseLen);
-double CsnsTotalFU  (const double dTemp,   const short  eModType, const double dPower);
 double EssModFU     (const double dLambda, const double dTime,    const double dLength);
-double CsnsModFU    (const double dLambda, const double dTime,    const double dPosY,    const double dPosZ);
 
 double Maxwellian   (const double dLambda, const double dModTemp);
+double LeakageFct   (const double dLambda);
 double NotMaxwell   (const double dLambda, const double dParam);
 double UserLambdaDis(const double dLambda, const double dModTemp);
 

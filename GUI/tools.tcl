@@ -110,7 +110,7 @@ proc mGroup {dy args} {
     frame $g -bg $bgColor
     pack  $g -side top -fill both -pady $dy
   }
-} 
+}
 
 proc scrollFrame {w side cw ch sh {sw ""}} {
   global bgColor
@@ -266,7 +266,7 @@ proc printFrame {w} {
 proc checkalldefs {} {
   global globalDescriptionSET
   set elist {}
-  foreach g [lsort [split [info globals]]] {
+  foreach g [lsort [info globals]] {
     if [string match *ESET $g] {
       lappend elist $g
     }
@@ -393,8 +393,10 @@ proc savableGlobals {} {
     set lasti $i
   }
   set l {}
-  foreach e [stringToSet [info globals]] {
+  foreach e [info globals] {
+
     if [regexp $DoNotSaveRegexp $e] continue
+
     if [regexp {_([0-9]+)$} $e a n] {
       if {$n > $lasti} continue
     }
@@ -430,7 +432,7 @@ proc isSavableSetting {e} {
 
 proc savableSettings {} {
   set l {}
-  foreach e [stringToSet [info globals]] {
+  foreach e [info globals] {
     if [isSavableSetting $e] {
       global $e
       if {[catch {array size $e} size] || !$size} {

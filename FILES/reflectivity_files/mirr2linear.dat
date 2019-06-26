@@ -1,3 +1,9 @@
+# reflectivity file for m=2.0 supermirror coating
+# - calculated using tool 'GenerateMirrorFiles'
+# - sharp drop at m=2.0  (W=0.0)
+# - reflectivity falls linearly from 99% to 90% from m=1.0 to m=2.0
+# - not state-of-the-art any more in 2012
+#
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99
 0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99  0.99

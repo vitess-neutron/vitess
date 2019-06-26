@@ -156,7 +156,7 @@ collimator : collimator.c $(ITOOL)
 capture_flux : capture_flux.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
-source : source.c src_modchar.c $(ITOOL)
+source : source.c src_modchar.c source_csns.c $(ITOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)

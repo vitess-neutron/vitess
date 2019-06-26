@@ -242,6 +242,7 @@ void OwnInit(int argc, char *argv[])
   FillRotMatrixZY(RotMatrixZY, AnglAroundY * M_PI/180., AnglAroundZ * M_PI/180.);
 
   FillRotMatrixXZ(RotMatrixAroundX, 0., AnglAroundX * M_PI/180.);
+  FillRotMatrixXZ(RotMatrixMX, 0., AnglAroundX * M_PI/180.);
 
   fprintf(LogFilePtr, "\nEuler frame rotations: Positive rotation of frame means rotation of one positive \n"
 					  "axis towards a higher index positive axis : +X->+Y, +Y->+Z, +X->+Z \n\n");

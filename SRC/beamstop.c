@@ -141,6 +141,8 @@ void  OwnInit(int argc, char *argv[])
 {
   int i;
 
+    bVisInstalled = TRUE;
+
   for(i=1; i<argc; i++)
   {
     if(argv[i][0]!='+') 
@@ -183,6 +185,48 @@ void  OwnInit(int argc, char *argv[])
   Endpoint.B = 0.0;
   Endpoint.C = 0.0;
   Endpoint.D = -1.0*DistMove;
+
+    //Visualisation of the beamstop geometry
+    // Geometry data
+  if (bVisInstr)
+  { 
+    if (bCircularWindow) {
+
+      stGeometry.pCircle =calloc(1, sizeof(VtCircle));
+      stGeometry.nCircles=1; 
+      
+      stGeometry.pCircle[0].Radius     = Radius;
+      stGeometry.pCircle[0].AngleBeg    = 0;
+      stGeometry.pCircle[0].AngleEnd    = 360;
+      stGeometry.pCircle[0].vCntr[0]  = DistMove;
+      stGeometry.pCircle[0].vCntr[1]  = 0.0;
+      stGeometry.pCircle[0].vCntr[2]  = 0.0;
+      stGeometry.pCircle[0].vNormal[0]= 1.0;
+      stGeometry.pCircle[0].vNormal[1]= 0.0;
+      stGeometry.pCircle[0].vNormal[2]= 0.0;
+      
+      stGeometry.pDescr  = "beamstop:blue";
+      stGeometry.eModule = VT_BEAMSTOP;
+    }
+    else {
+      stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
+      stGeometry.nRectangles=1; 
+      
+      stGeometry.pRectangle[0].Width     = Width;
+      stGeometry.pRectangle[0].Height    = Height;
+      stGeometry.pRectangle[0].vCntr[0]  = DistMove;
+      stGeometry.pRectangle[0].vCntr[1]  = 0.0;
+      stGeometry.pRectangle[0].vCntr[2]  = 0.0;
+      stGeometry.pRectangle[0].vNormal[0]= 1.0;
+      stGeometry.pRectangle[0].vNormal[1]= 0.0;
+      stGeometry.pRectangle[0].vNormal[2]= 0.0;
+      
+      stGeometry.pDescr  = "beamstop:blue";
+      stGeometry.eModule = VT_BEAMSTOP;
+    }
+  }
+
+
 }
 
   

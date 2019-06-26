@@ -23,6 +23,7 @@ proc lookWhosConcerned {serrep serpar serno \
 }
 
 proc unzipCom {fname} {
+  global tcl_platform
   if {$fname == ""} {return ""}
   if {[file size $fname] < 512}  {return ""}
   if {![regexp {\.([a-z]+)$} $fname r e]} {return ""}
@@ -30,6 +31,9 @@ proc unzipCom {fname} {
     if {[getSystem] == "windows"} {return "[file join [globVal ExeDirectory] gzip.exe] -cd"}
     catch {exec file $fname} res
     if [string match "*gzip compressed data*" $res] {
+      if {$tcl_platform(os) == "Darwin"} {
+        return "gzcat"
+      }
       # look if zcat is installed
       if [catch {exec which zcat}] {return ""}
       return "zcat"
@@ -145,9 +149,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       regsub -all / $ExeDirectory \\ winexdir
       regsub -all / $pdir \\ winpdir
       set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+	if {"" == [set t [entryVal random_$v]]} continue
+	append fc "set GSL_RNG_$vv=$t\n"
+      }
     }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
-    grd {set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"}
+    grd {
+      set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
+      if {"" != [set v [entryVal random_gen]]} {
+        append fc "G=$v\n"
+      }
+    }
     tcl {
       set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
@@ -206,7 +219,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
       sm_ensemble {set com "sm_ensemble$par$sys"}
-      source_ESS_2012 {set com "source$sys -S4"}
+      source_ESS_2012 {set com "source$sys -S3"}
       source_ESS_LPTS {set com "source$sys -S3"}
       source_HMI  {set com "source$sys -S1"}
       source_FRM2 {set com "source$sys -S1"}
@@ -235,16 +248,17 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
 
     set logopt $logf$i
+    set imore " $insert --N$i --L"
     switch $mode {
       bat {
-        set imore  " $insert --LP:\\$logtmp$i"
+        append imore P:\\$logtmp$i
         lappend usedIdices $i
       }
       sh - tcl - pl - py - grd {
-        set imore  " $insert --L\$\{L\}$i"
+        append imore \$\{L\}$i
         lappend usedIdices $i
       }
-      default {set imore " $insert --L$logopt"}
+      default {append imore $logopt}
     }
     switch $VisState {
       1 - 3 {
@@ -317,7 +331,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       regsub -all {\$P} $fc P:\\ fc
       regsub -all {$pdir/} $fc P:\\ fc
     }
-    sh - tcl - pl - py {
+    sh - tcl - pl - py - grd {
       regsub -all "$pdir/" $fc "\$P/" fc
     }
     default {}
@@ -370,22 +384,29 @@ proc checkAll {} {
     if {$firstmod == ""} {
       set firstmod $var
       if {$VisState > 0} {
-        # check for reasonable number_of_neutrons
+        # check for reasonable number_of_neutrons when visualizing trajectories
         set n [entryVal number_of_neutrons _$i]
-        if {$n == "" || $n > 100000} {
-	  showText "!The number of trajectories for a visualisation run should be at most 100000"
-	  set errors 1
+        if {$n != ""} {
+          if {$n > 100000} {
+            set t [entryVal trace _$i]
+            set tfile [entryVal utrcfunction _$i]
+            # no problem, if a raytracing filename is given, an the option activated this file
+            if {$tfile == "" || $t == "no"} {
+              showText "!The number of trajectories for a visualisation run should be at most 100000"
+              set errors 1
+            }
+          }
         }
       }
-      if {! [regexp {^source_} $var]} {
-	set infname [entryVal infilename]
-	if {"" == $infname} {
-	  showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
-	  set errors 1
-	} elseif {! [file exists $infname]} {
-	  showText "!The given input file does not exist"
-	  set errors 1
-	}
+      if {! [regexp {^(source_|read_in)} $var]} {
+        set infname [entryVal infilename]
+        if {"" == $infname} {
+	        showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
+	        set errors 1
+        } elseif {! [file exists $infname]} {
+	        showText "!The given input file does not exist"
+	        set errors 1
+        }
       }
     }
     if [errorWithValues $var 1 _$i] {set errors 1}
@@ -542,17 +563,7 @@ proc saveEnvironment  {} {
   catch {unset TimesBefore}
   set FilesBefore {}
   set clist {}
-  catch {
-    foreach fn [glob -directory $defdirectory_ *] {
-      set ft [file type $fn]
-      if {$ft != "file"} continue
-      lappend FilesBefore $fn
-      file stat $fn fst
-      set TimesBefore($fn) $fst(mtime)
-    }
-  }
-  set tdir ""
-  # create a subdirectory of saved files
+  # create a subdirectory for saved files
   for {set i 1} {$i < 1000} {incr i} {
     set tdir [file join  $defdirectory_ "saved_$i"]
     if [file exists $tdir] continue
@@ -563,7 +574,12 @@ proc saveEnvironment  {} {
     # no free slot
     return ""
   }
-  foreach fn $FilesBefore {
+  foreach fn [glob -nocomplain -directory $defdirectory_ *] {
+    if {[file type $fn] != "file"} continue
+    set tname [file tail $fn]
+    lappend FilesBefore $tname
+    file stat $fn fst
+    set TimesBefore($tname) $fst(mtime)
     file copy $fn $tdir
   }
   return $tdir
@@ -589,51 +605,51 @@ proc cleanupEnvDir {{envDir ""}} {
   if {! [file isdirectory $envDir]} return
   set someremain 0
   set dayname "Xc[clock format [clock seconds] -format "%Y%j"].log"
-  catch {
-    foreach fn [glob -directory $defdirectory_ *] {
-      if [file isdirectory $fn] continue
-      set tn [file tail $fn]
-      # If it is just today's log file: forget about it.
-      if {$tn == "$dayname"} continue
-      set ofn [file join $envDir $tn]
-      set fni [lsearch $FilesBefore $fn]
-      if {$Execmode == "restore old"} {
-        if {$fni < 0} {
-          # delete the new file, which did not exist before
-          file delete $fn
-        } else {
-          # file existed before
-          file stat $fn fst
-          if {$fst(mtime) > $TimesBefore($fn)} {
-            # changed mtime
-            # rename the old file, to keep the old modification date
-            file rename -force $ofn $fn
-          }
-        }
-      } else if {$fni >= 0} {
+
+  foreach fn [glob -nocomplain -directory $defdirectory_ *] {
+    if [file isdirectory $fn] continue
+    set tn [file tail $fn]
+    # If it is just today's log file: forget about it.
+    if {$tn == "$dayname"} continue
+    set ofn [file join $envDir $tn]
+    set fni [lsearch $FilesBefore $tn]
+    if {$Execmode == "restore old"} {
+      if {$fni < 0} {
+        # delete the new file, which did not exist before
+        file delete $fn
+      } else {
+        # file existed before
         file stat $fn fst
-        set remain 0
-        if {$fst(mtime) > $TimesBefore($fn)} {
-          # File has a change mtime, have contents been changed, too ?
-          if [sameMD5Hash $fn $ofn] {
-            set remain 2
-          } else {
-            set remain [set someremain 1]
-          }
-        }
-        if {$remain == 0} {
-          # file has not been changed, delete the copy
-          file delete $ofn
-        } elseif {$remain == 2} {
-          # file has a new modification date, but the same contents
-          # rename it, to keep the old modification date
+        if {$fst(mtime) > $TimesBefore($tn)} {
+          # changed mtime
+          # rename the old file; do not copy, to keep the old modification date
           file rename -force $ofn $fn
-        } else {
-          outProtocol "saved old file to $ofn"
         }
+      }
+    } elseif {$fni >= 0} {
+      file stat $fn fst
+      set remain 0
+      if {$fst(mtime) > $TimesBefore($tn)} {
+        # File has a changed mtime, have contents been changed, too ?
+        if [sameMD5Hash $fn $ofn] {
+          set remain 2
+        } else {
+          set remain [set someremain 1]
+        }
+      }
+      if {$remain == 0} {
+        # file has not been changed, delete the copy
+        file delete $ofn
+      } elseif {$remain == 2} {
+        # file has a new modification date, but the same contents
+        # rename it, to keep the old modification date
+        file rename -force $ofn $fn
+      } else {
+        outProtocol "saved old file to $ofn"
       }
     }
   }
+
   if {$Execmode == "restore old"} {
     # some old files may have been deleted, restore them
     foreach ofn [glob -directory $envDir *] {
@@ -749,7 +765,8 @@ proc doGather {gcom geomfile glist} {
       if {$gex} {append opt " -S $geomfile"}
       set ext svg
     }
-    3 { if {$gex} {set opt " -X $geomfile"} else {set opt " -x"}
+    3 {
+      if {$gex} {set opt " -X $geomfile"} else {set opt " -x"}
       set optfilename [getX3DoptfileName]
       if [file exists $optfilename] {append opt " -f $optfilename"}
       set ext x3d
@@ -767,9 +784,9 @@ proc doGather {gcom geomfile glist} {
   }
 
   set com "$gcom$opt -o $visRes $gl"
-  # dmf:debug uncommnent next line
-  #puts "debug: doing\n$com"
+
   if [catch {eval exec $com}] {
+    #dmf:debug
     # puts "debug: caught exception"
     catch {file delete $visRes}
     return ""
@@ -889,39 +906,21 @@ proc startActionD {} {
 
 proc startActionV {} {
   # start a visualisation run
-  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode
+  global PipeActive VisState VisGather VisMerge VisLogList FilesToDeleteList trajmode defdirectory_
 
   if [pipeIsActive] return
 
   # puts "debug: startActionV\nVisGather is :$VisGather: VisMerge is :$VisMerge:"
-  set firstText ""
-  set visRes ""
-  if  {$VisGather != ""} {
-    # VisState 1 for first --v invocation
-    set VisState 1
-    startAction "" "" 1
-    if [reduceFList VisLogList] {
-      # puts "debug: reduceFList VisLogList $VisLogList"
-      # gather results of first run
-      if {$VisGather == "just-concatenate"} {
-        set visRes [tmpFilename _3dvis]
-        if {"0" == [catch {open $visRes w} outf]} {
-          foreach fname $VisLogList {
-            if {"0" != [catch {open $fname r} f]} continue
-            while {[gets $f line] >= 0} {
-              puts $outf $line
-            }
-            close $f
-          }
-          close $outf
-        }
-      } else {
-        set visRes [doGather $VisGather "" VisLogList]
-      }
-      # result file is to be deleted when VITESS finishes
-      lappend FilesToDeleteList $visRes
-      set firstText "Find 3D geometry in $visRes"
-    }
+
+  # VisState 1 for first --v invocation
+  set VisState 1
+  startAction "" "" 1
+  if [reduceFList VisLogList] {
+    # assume modules have written a valid geometry.inf
+    set geom [file join $defdirectory_ geometry.inf]
+    set firstText "Find 3D geometry in $geom"
+  } else {
+    set geom [set firstText ""]
   }
 
   condDelList VisLogList
@@ -939,13 +938,12 @@ proc startActionV {} {
 
   if [reduceFList VisLogList] {
     # merge visualisation trajectories
-    set fullres [doGather $VisMerge $visRes VisLogList]
+    set fullres [doGather $VisMerge $geom VisLogList]
   } else {
     set fullres ""
   }
 
-  # puts "debug: fullres $fullres  trajmode $trajmode"
-  # dmf:debug comment next line
+  # dmf:debug comment next line to keep files
   condDelList VisLogList
   set VisState 0
 
@@ -959,8 +957,6 @@ proc startActionV {} {
       set ecom [getPreferredX3DCmd]
       if {$ecom != ""} {
         # launch external X3D viewer
-        # dmf:debug uncomment next line
-        #puts "doing :$ecom $fullres"
         catch {exec $ecom $fullres &}
       } elseif {[info procs VisViewer] != ""} {
         # launch viewer = browser
@@ -976,7 +972,7 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
   global PipeActive PipeIds PipeIdsAtStart PipeErr PipeIdList PipeLogList defdirectory_\
       SourceDirectory PsCheck Plotfile Plottype Infolevel Checkmode timeout StartTime VisState
 
-  if [pipeIsActive] return
+  if {$visrun == 0 && [pipeIsActive]} return
 
   set c $sercom
   set tool 0
@@ -1074,7 +1070,13 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
 
       set PipeActive 0
       if {$sercom == "" && $VisState == 0} {
+        # Autoplot
+        set ploti -1
 	foreach p $Plotfile pt $Plottype {
+          if [incr ploti] {
+            # wait some time
+            after 500
+          }
           showPlotFile $p $pt
 	}
       }

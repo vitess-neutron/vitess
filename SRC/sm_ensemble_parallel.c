@@ -1,5 +1,5 @@
 /************************************************************************************************/
-/*  VITESS module 'chopper_fermi'                                                               */
+/*  VITESS module 'sm_ensemble_parallel'                                                        */
 /*                                                                                              */
 /* The free non-commercial use of these routines is granted providing due credit is given to    */
 /* the authors.                                                                                 */
@@ -63,16 +63,19 @@ long	   User, NumWrong[MAXWORKER], nocolM = 10000, Wallonoff, NoCh;
 long	   number_vis_tr; // current number of visualised trajectories, used to limit output
 double	   rupdata[1001], rdowndata[1001], OutputAngleHoriz, OutputAngleVert, RotMatrixOut[3][3];
 int        mcperneutron = (MAX_MIRR*3);
-short int   increaseColor=0;
+int        increaseColor=0;
 VectorType TranslOutput,
            WallOffset[MAX_MIRR+1], WallNormal[MAX_MIRR+1],
-           r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1];
+  r1[MAX_MIRR+1], r2[MAX_MIRR+1], r3[MAX_MIRR+1], r4[MAX_MIRR+1], WallOffsetShift[MAX_MIRR+1];
 	
 double	   thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2], RthetaCSM[MAX_MIRR+1][2], mued[MAX_MIRR+1][4],
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],
            WallVert[MAX_MIRR+1], WallHoriz[MAX_MIRR+1],
-           RotMatrixWall[MAX_MIRR+1][3][3],
+  RotMatrixWall[MAX_MIRR+1][3][3],RotMatrixVisElements[MAX_MIRR+1][3][3],
            Windw = -10.0, WindW = 200.0, Windh = -10.0, WindH = 10.0, wei_min1 = 0.0;
+short int  mirrMaterial=0;
+
+void SetGeometryData();
 	
 /* FINISH HEADER STORY */
 
@@ -231,6 +234,9 @@ void OwnInit(int argc, char *argv[])
     case 'v':
       sscanf(arg, "%lf", &OutputAngleVert);
       break;
+    case 'S':
+      sscanf(arg, "%hd", &mirrMaterial);
+      break;
 
       // Visual data
     case 'a':
@@ -313,7 +319,22 @@ void OwnInit(int argc, char *argv[])
   if (Par_Field)
     ReadParameterFile(Par_Field);
 
+  //Determine geometry for visualisation
+  SetGeometryData();
+
 } /* End OwnInit */
+
+
+void UpdateMirrorElementOffset(VectorType edgeVector, VectorType diagonalVector, VectorType newOffset, int nMirror)
+{
+
+  int nComp;
+  
+  for (nComp = 0; nComp < 3; nComp++) newOffset[nComp] = edgeVector[nComp] + 0.5*diagonalVector[nComp];
+
+  CopyVector(newOffset, WallOffsetShift[nMirror]);
+
+}
 
 
 void DetermineAndLogMirrorShape(int i)
@@ -321,6 +342,8 @@ void DetermineAndLogMirrorShape(int i)
 
 	// Initialise all 6 vectors in a quadrangle
   VectorType v[6];
+  VectorType elementCenterOffset;
+  VectorType elementCenterOffsetTemp;
   int largestVectorIndex = -1;
   int secondLargestVectorIndex = -1;
   double largestVector = 0.;
@@ -388,6 +411,35 @@ void DetermineAndLogMirrorShape(int i)
 			widthIndex = j;
 		}
   }
+
+  // Update the element offset, needed for a correct calculation of reflection points
+  // The offset MUST reside within the element!
+
+  CopyVector(WallOffset[i], elementCenterOffsetTemp);
+
+  switch (largestVectorIndex) {
+  case 0: 
+    UpdateMirrorElementOffset(r1[i], v[0], elementCenterOffset, i);
+    break;
+  case 1: 
+    UpdateMirrorElementOffset(r2[i], v[1], elementCenterOffset, i);
+    break;  
+  case 2: 
+    UpdateMirrorElementOffset(r3[i], v[2], elementCenterOffset, i);
+    break;  
+  case 3: 
+    UpdateMirrorElementOffset(r4[i], v[3], elementCenterOffset, i);
+    break;
+  case 4: 
+    UpdateMirrorElementOffset(r1[i], v[4], elementCenterOffset, i);
+    break;
+  case 5: 
+    UpdateMirrorElementOffset(r2[i], v[5], elementCenterOffset, i);
+    break;
+  default:
+    fprintf(LogFilePtr, "Offset of mirror element Nr. %d could not be updated! \n", i+1);
+    break;
+  }
  
   // Determine whether we deal with a rectangle
   // 4 right angles have to be present
@@ -417,7 +469,10 @@ void DetermineAndLogMirrorShape(int i)
 	VectorType zAxis = {0, 0, 1};
     double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));		
     stGeometry.nRectangles++;
-    CopyVector(WallOffset[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
+
+    RotBackVector(RotMatrixWall[i], elementCenterOffset);
+    AddVector(elementCenterOffset, elementCenterOffsetTemp);
+    CopyVector(elementCenterOffset, stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
     CopyVector(WallNormal[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vNormal);
     stGeometry.pRectangle[stGeometry.nRectangles-1].Width = width;
     stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
@@ -478,30 +533,32 @@ void DetermineAndLogMirrorShape(int i)
       break;
     }
 
-     fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
-	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2], 
-	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]);
+     /* fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n",  */
+     /* 	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2],  */
+     /* 	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]); */
 
     stGeometry.nTriangles++;    
     CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
     CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
     CopyVector(thirdPoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
+
+    
 
     stGeometry.nTriangles++;
     CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
     CopyVector(basePoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[1],  WallOffset[i]);
     CopyVector(thirdPoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
-    RotVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
+    RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
 
   }
@@ -535,7 +592,7 @@ void OwnCleanup()
 {
   
 	int i,c;
-	SetGeometryData();
+
   
 #ifdef VT_GRAPH
   if (p >= 2) cpgclos();
@@ -614,11 +671,11 @@ static double CollideWall
 (const int thread_i, const double WL, const VectorType SpinVector,
  double *prob, VectorType pos, VectorType dir, VectorType spin,
  const VectorType WallOffset, const VectorType WallNormal, double RotMatrixWall[3][3],
- const VectorType r1, const VectorType r2, const VectorType r3, const VectorType r4,
+ VectorType r1,VectorType r2, VectorType r3,VectorType r4, const VectorType vOffsetShift,
  const double thetaC[2], const double thetaCSM[2], const double RthetaCSM[2],
  const double mued[4], const double mrangh, const double mrangv)
 {
-  VectorType rt;
+  VectorType rt, rt2;
   double path, RotMatrixRang[3][3];
   int angularSpread;
 
@@ -654,66 +711,154 @@ static double CollideWall
 
   /* now check for collision; compute  */
   {
-    double the, Choise, Refl[2], expon[2];
-		
+    double the, Refl[2], expon[2];
+    double Choise= MonteCarloPar(0,1, thread_i);
+    double alphaQ=0, betaQ=0, mNumber=4, Q=0, Qc=0, M2=0, W=0, R0=0.99;
+    int index_expon=0, index_mued1=1, index_mued2=2, index_theta=0;
+    // Shift vector according to the new offset of the mirror element
+    SubVector(rt, vOffsetShift); 
+    
     if (! hitwall(r1, r2, r3, r4, rt)) {		
-      RotBackVector(RotMatrixWall, dir);
+
+      AddVector(rt, vOffsetShift); 
+      RotBackVector(RotMatrixWall, dir);      
       return 99999;
     }
+    
+    // Now shift back to the correct frame
+    AddVector(rt, vOffsetShift); 
+
+    CopyVector(rt, rt2);
 		
     the = M_PI_2 - acos(fabs(dir[0]));
 
-    if (SpinVector[quant_dir] == 1.) {
-
-      /* spin up */
-      if (the <= thetaC[0] * WL) {
-	dir[0] *= -1.;
-      }	else  {	
-	expon[0] = (mued[0] * WL + mued[1]) / sqrt(sq(sin(the)) - sq(sin(thetaC[0] * WL)));
-				
-	if(expon[0] > 500)
-	  expon[0] = 500;
-	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) {
-	  Refl[0] = RthetaCSM[0] +
-	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the);
-	  Choise = MonteCarloPar(0,1, thread_i);
-	  if (Choise < Refl[0])
-	    dir[0] *= -1.;
-	  else
-	    *prob *= exp(- expon[0]);
-	}
-	if (the > thetaCSM[0] * WL)
-	  *prob *= exp(- expon[0]);
-      }
-
-    } else if (SpinVector[quant_dir] == -1.) {
-
-      /* spin down */
-      if(the <= thetaC[1] * WL) {
-	dir[0] *= -1.;
-      }	else {
-	expon[1] = (mued[2] * WL + mued[3]) / sqrt(sq(sin(the)) - sq(sin(thetaC[1] * WL)));
- 				
-	if(expon[1] > 500) expon[1] = 500;
-	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) {
-	  Refl[1] = RthetaCSM[1] +
-	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the);
-	  Choise = MonteCarloPar(0,1, thread_i);
-	  if(Choise < Refl[1])
-	    dir[0] *= -1.;
-	  else
-	    *prob *= exp(- expon[1]);
-	}
-	if(the > thetaCSM[1] * WL)
-	  *prob *= exp(- expon[1]);
-      }
-
+    if (SpinVector[quant_dir] == 1.) {/* spin up */
+      index_expon=0; index_mued1=0; index_mued2=1; index_theta=0;
+    } else if (SpinVector[quant_dir] == -1.) {/* spin down */
+      index_expon=1; index_mued1=2; index_mued2=3; index_theta=1;
     } else {
-
       NumWrong[thread_i]++;
       *prob = 0.;
     }
+
+     
+    if (mirrMaterial == 1) {
+      // Silicon
+      double x =  ENERGY_FROM_LAMBDA(WL)/1000.; //Energy in meV
+      double p0 = -4.25823;
+      double p1 = -0.560678;
+      double p2 = 0.0624372;
+      double p3 = -0.126251;
+      double p4 = 0.0802101;
+      double p5 = 55.8559;
+      double p6 = -0.00880107;
+      double p7 = 0.176497;
+
+      double mirrThickness = (mued[index_mued1] + mued[index_mued2]) / 0.037; // Calculate the thickness of the mirror element
+
+      //Fit valid only between 0.3 A and 25 A
+      if (WL < 0.3) x = ENERGY_FROM_LAMBDA(0.3)/1000.;
+      else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
+
+      // Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
+      expon[index_expon] = 0.0499*(p0 + p1*log(x) + p2*pow(log(x+p3), 2) + p4*pow(log(x+p5), 3) + p6*pow(log(x+p7), 4))*mirrThickness/ sqrt(sq(sin(the)));
+    }
+    //Henriks Attenuation: for Sapphire
+    else if (mirrMaterial == 2) {
+      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2] / WL - 0.00025) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
+    }
+    else {
+      expon[index_expon] = (mued[index_mued1] * WL + mued[index_mued2]) / sqrt(sq(sin(the)) - sq(sin(thetaC[index_theta] * WL)));
+    }
+
+
+    if (the <= thetaC[index_theta] * WL) {
+      if (Choise < 0.99) 
+	dir[0] *= -1.;
+      else 
+	*prob *= (double) exp(- expon[index_expon]);
+    }	else  {	
+
+      if(expon[index_expon] > 500)
+	expon[index_expon] = 500;
+
+      if (the > thetaC[index_theta] * WL) {
+	//if (the > thetaC[index_theta] * WL && the <= thetaCSM[index_theta] * WL) {
+	  //Refl[index_theta] = RthetaCSM[index_theta] + (1. - RthetaCSM[index_theta])/(thetaCSM[index_theta] * WL - thetaC[index_theta] * WL)*(thetaCSM[index_theta] * WL - the); /* old model */
+	// McStats reflection:
+	mNumber=thetaCSM[index_theta]/thetaC[index_theta];
+	M2 = mNumber*0.9853 + 0.1978;
+	alphaQ=(mNumber>3) ? ( 5.0944 + 0.1204*mNumber) : mNumber;
+	betaQ =(mNumber>3) ? (68.1137 - 7.6251*mNumber) : 0.0;
+	Q = 4*M_PI*sin(the)/ WL;
+	Qc = 4*M_PI*sin(thetaC[index_theta])/ 1;
+	W  = 0.0022 - 0.0002*mNumber;
+	R0 = 0.99;
+
+	Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
+
+	if (Choise < Refl[index_theta])
+	  dir[0] *= -1.;
+	else
+	  *prob *= exp(- expon[index_expon]);
+      }
+      //if (the > thetaCSM[index_theta] * WL){
+      //	*prob *= exp(- expon[index_expon]);}
+    }
+    
   }
+
+    /* if (SpinVector[quant_dir] == 1.) { */
+
+  /*     /\* spin up *\/ */
+  /*     if (the <= thetaC[0] * WL) { */
+  /* 	dir[0] *= -1.; */
+  /*     }	else  {	 */
+  /* 	expon[0] = (mued[0] * WL + mued[1]) / sqrt(sq(sin(the)) - sq(sin(thetaC[0] * WL))); */
+				
+  /* 	if(expon[0] > 500) */
+  /* 	  expon[0] = 500; */
+  /* 	if (the > thetaC[0] * WL && the <= thetaCSM[0] * WL) { */
+  /* 	  Refl[0] = RthetaCSM[0] + */
+  /* 	    (1. - RthetaCSM[0])/(thetaCSM[0] * WL - thetaC[0] * WL)*(thetaCSM[0] * WL - the); */
+  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
+  /* 	  if (Choise < Refl[0]) */
+  /* 	    dir[0] *= -1.; */
+  /* 	  else */
+  /* 	    *prob *= exp(- expon[0]); */
+  /* 	} */
+  /* 	if (the > thetaCSM[0] * WL) */
+  /* 	  *prob *= exp(- expon[0]); */
+  /*     } */
+
+  /*   } else if (SpinVector[quant_dir] == -1.) { */
+
+  /*     /\* spin down *\/ */
+  /*     if(the <= thetaC[1] * WL) { */
+  /* 	dir[0] *= -1.; */
+  /*     }	else { */
+  /* 	expon[1] = (mued[2] * WL + mued[3]) / sqrt(sq(sin(the)) - sq(sin(thetaC[1] * WL))); */
+ 				
+  /* 	if(expon[1] > 500) expon[1] = 500; */
+  /* 	if (the > thetaC[1] * WL && the <= thetaCSM[1] * WL) { */
+  /* 	  Refl[1] = RthetaCSM[1] + */
+  /* 	    (1. - RthetaCSM[1])/(thetaCSM[1] * WL - thetaC[1] * WL)*(thetaCSM[1] * WL - the); */
+  /* 	  Choise = MonteCarloPar(0,1, thread_i); */
+  /* 	  if(Choise < Refl[1]) */
+  /* 	    dir[0] *= -1.; */
+  /* 	  else */
+  /* 	    *prob *= exp(- expon[1]); */
+  /* 	} */
+  /* 	if(the > thetaCSM[1] * WL) */
+  /* 	  *prob *= exp(- expon[1]); */
+  /*     } */
+
+  /*   } else { */
+
+  /*     NumWrong[thread_i]++; */
+  /*     *prob = 0.; */
+  /*   } */
+  /* } */
 
   /* transform back into original frame  */
 	
@@ -731,8 +876,9 @@ static double CollideWall
   /* compute pathlength until collision */
 
   path = DistVector(rt, pos);
-	
+
   CopyVector(rt, pos);
+
   return path;
 }
 
@@ -798,11 +944,12 @@ void processNeutron (int i, int thread_i) {
       CopyVector(Dir, dir[l]);
       CopyVector(SpinVector, spin[l]);
       prob[l]= Prob;
-      if (m != l)
+      if (m != l) {
 	PathA[l] = CollideWall(thread_i, WL, SpinVector,
 			       &prob[l], pos[l], dir[l], spin[l], WallOffset[l], WallNormal[l],
-			       RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], thetaC[l], thetaCSM[l],
+			       RotMatrixWall[l], r1[l], r2[l], r3[l], r4[l], WallOffsetShift[l], thetaC[l], thetaCSM[l],
 			       RthetaCSM[l], mued[l], mrangh[l], mrangv[l]);
+      }
       else
 	PathA[l] = 99999;
     }                            // end loop over mirrors
@@ -854,7 +1001,11 @@ void processNeutron (int i, int thread_i) {
 	  drawIt(Pos);
 #endif
       }
+
+      //     fprintf(LogFilePtr, "ID: %d, End position: %f %f %f  Mirror: %d\n", InputNeutrons[i].ID.IDNo, n->Position[0], n->Position[1], n->Position[2], l);
     }                             // end loop over mirrors
+
+    
 	
     if (nocol == nocolM)
       break; // leave collsions loop
@@ -933,6 +1084,8 @@ void processNeutron (int i, int thread_i) {
 int main(int argc, char **argv)
 {
 
+  int m;
+
   Init(argc, argv, VT_SM_ENSEMBLE);
   OwnInit(argc, argv);
 
@@ -945,8 +1098,23 @@ int main(int argc, char **argv)
   // no helper threads when plotting or writing to file per neutron
   if (p)
     NThreads = 0;
+  
+  for (m=1; m<=max_mirr; m++) {
+    
+    SubVector(r1[m], WallOffsetShift[m]); 
+    SubVector(r2[m], WallOffsetShift[m]); 
+    SubVector(r3[m], WallOffsetShift[m]); 
+    SubVector(r4[m], WallOffsetShift[m]); 
+  }
 
   processPipedNeutrons(NThreads, processNeutron, 1, mcperneutron);
+
+   for (m=1; m<=max_mirr; m++) {
+     AddVector(r1[m], WallOffsetShift[m]); 
+     AddVector(r2[m], WallOffsetShift[m]); 
+     AddVector(r3[m], WallOffsetShift[m]); 
+     AddVector(r4[m], WallOffsetShift[m]); 
+   }
 
   if (p==1) fclose(COLLFILE);	
 	

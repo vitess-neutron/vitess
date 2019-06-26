@@ -27,21 +27,28 @@ typedef union {
 
 // t_point is for a list of positions in a trajectory, here stored as strings
 typedef struct s_point {
-  t_point_union u;
   struct s_point *next;
+  t_point_union u;
 } t_point, *p_point;
 
-int id_len, id_count;
-char *id_buffer;
-p_point * point_buffer;
+typedef unsigned int u_int;
+typedef struct s_hashentry {
+  struct s_hashentry *next;
+  char *key;
+  p_point point;
+  u_int hashvalue;
+  int count;
+} t_hashentry, *p_hashentry;
+
+#define HASHALEN 65536
+p_hashentry hashA[HASHALEN];
 
 int len_factor=1;
 int output_type;  // 0 text,  1 svg,  2 x3d, 3 x3d with geometry
 char *geom_file;
-int ids_from_all_files;
 
 float xwlow = 0, xwhigh = 100;  // x range for SVG output, %
-float scale2 = 1;             // scale factor for second dimension, SVG output
+float scale2 = 1;               // scale factor for second dimension, SVG output
 
 FILE *outf;
 
@@ -106,7 +113,7 @@ typedef enum {
 
 int xz_view; // default 0, view x,y
 
-#define toRad(a) (float)(a*(M_PI/180.0))
+int transformV2X3D = 1; // transform VITESS to X3D coordinates
 
 void usage() {
   printf("usage:\n"
@@ -114,7 +121,6 @@ void usage() {
          "\tinfile\t\tzero ore more names of input files with trajectories\n"
          "\t-o outfile\tresult file, default stdout\n"
          "\n\toption\tmay be\n"
-         "\t-a\tread ids from all input files, default is to assume all ids\n\t\t\tare to be seen in the first file\n"
          "\t-f setupfile\n\t\tload a file with x3d options\n"
          "\t-s\tSVG x,y output\n"
          "\t-S geometry\tSVG output with instrument geometry\n"
@@ -133,6 +139,25 @@ void usage() {
 #define myexit(s) {fputs(s,stderr); exit(2);}
 #define myexit1(s,a) {fprintf(stderr,s,a); exit(2);}
 #define myexit2(s,a,b) {fprintf(stderr,s,a,b); exit(2);}
+
+float normalizeAngle(float a) {
+  // normalize an angle to the range of 0 - 360 deg
+  while (a < 0)
+    a += 360;
+  while (a > 360)
+    a -= 360;
+  return a;  
+}
+
+float toRad(float a) {
+  // deg -> rad
+  return normalizeAngle(a) * (M_PI/180.0);
+}
+
+float mirrAng(float a) {
+  // mirror angle [deg]
+  return normalizeAngle(-a);
+}
 
 void setVF(float *v, const char *s) {
   if (1 > sscanf(s, "%f", v))
@@ -195,6 +220,7 @@ void parseX3dOptionFile() {
       GVS(pheremat,SPHEREMAT);
       break;
     case 't':
+      GVI(ransformv2x3d,transformV2X3D);
       GVS(rianglemat,TRIANGLEMAT);
       break;
     case 'x':
@@ -215,34 +241,27 @@ void parseX3dOptionFile() {
   fclose(xf);
 }
 
-int compIDs(const void* p1, const void* p2) {
-  return memcmp(p1, p2, id_len);
-}
+u_int myHash(const char *s) {
+  // RSHash
+  const u_int b = 378551;
+  u_int a, hash, v;
 
-int searchId(const char *id) {
-
-  // binary search for a given id in a sorted array of ids
-  int ihalf, ilow, ihigh, rc;
-
-  ilow = 0;
-  ihigh = id_count - 1;
-  while (ilow <= ihigh) {
-    ihalf = (ilow+ihigh) / 2;
-    rc = memcmp(id, id_buffer + ihalf*id_len, id_len);
-    if (rc == 0) return ihalf;
-    if (rc < 0)
-      ihigh = ihalf - 1; // move left
-    else
-      ilow = ihalf + 1;  // move right
+  a    = 63689;
+  hash = 0;
+  while ((v = *s++)) {
+    hash = hash * a + v;
+    a   *= b;
   }
-  myexit1("unknown id %s encountered\n", id);
-  return -1;  // never
+  return hash;
 }
 
-p_point newPoint(const char *data) {
+void addPoint(p_hashentry phash, const char *data) {
+
   int color;
   float lambda, weight;
-  p_point p = calloc(1, sizeof(t_point));
+  p_point p, pold;
+
+  p = malloc(sizeof(t_point));
   if (output_type) {
     // SVG or X3D
     if (6 != sscanf(data, "%d %f %f %f %f %f", &color, &lambda, &weight,
@@ -255,23 +274,45 @@ p_point newPoint(const char *data) {
     // text
     p->u.t = strdup(data);
 
-  return p;
+  // push p to list
+  if ((p->next = pold = phash->point)) {
+    if (output_type && p->u.pos[0] == pold->u.pos[0] &&
+        p->u.pos[1] == pold->u.pos[1] && p->u.pos[2] == pold->u.pos[2]) {
+      free(p); // omit doublettes
+      return;
+    }
+    phash->count++;
+  } else
+    phash->count = 1;
+
+  phash->point = p;
 }
 
-void insertPoint(const char *ids, const char *point_data) {
-  p_point lp, next_lp;
-
-  // search neutron id in list
-  int id = searchId(ids);
-
-  if ((lp = point_buffer[id])) {
-    // find last point of trajectory so far and append new point
-    while ((next_lp = lp->next))
-      lp = next_lp;
-    lp->next = newPoint(point_data);
+void insertPoint(const char *id, const char *content) {
+  p_hashentry ph, nph;
+  // hash id
+  u_int hv, hind;
+  hv = myHash(id);
+  hind = hv % HASHALEN;
+  if ((ph = hashA[hind])) {
+    while (1)
+      if (hv == ph->hashvalue && 0 == strcmp(id, ph->key)) {
+        break;
+      } else if (ph->next) {
+        ph = ph->next;
+      } else {
+        ph->next = nph = (p_hashentry) calloc(1, sizeof(t_hashentry));
+        ph = nph;
+        ph->key = strdup(id);
+        ph->hashvalue = hv;
+        break;
+      }
   } else {
-    point_buffer[id] = newPoint(point_data);
+    hashA[hind] = ph = (p_hashentry) calloc(1, sizeof(t_hashentry));
+    ph->key = strdup(id);
+    ph->hashvalue = hv;
   }
+  addPoint(ph, content);
 }
 
 char * sS(float v, char *s, const char *format);
@@ -481,7 +522,8 @@ void drawHollowCylinderShape(float inner_r, char *appearance) {
   static const char *ouse;
 
   if (appearance) {
-    nuse = use = appearance;
+    sprintf(ss, "<Appearance>%s</Appearance>", appearance);
+    nuse = use = ss;
   } else {
     if (ouse) {
       nuse = use = ouse;
@@ -532,8 +574,7 @@ float toAng(float a) {
 void drawCylSlice (float dirang, float openang) {
   float x, y, deltang, a, sina, cosa;
 
-  // assure sensible angles
-  if (dirang < 0   || dirang > 360) return;
+  // assure sensible open angle
   if (openang <= 0 || openang >= 360) return;
 
   // compute first point of a line along a circular arc
@@ -655,6 +696,7 @@ void restrictPoint(float *fa) {
 #define MAXARGS 16
 
 typedef
+
 struct s_definition {
   char *key;
   char *value;
@@ -690,7 +732,7 @@ static char *lookForDef(char *name) {
 
 
 int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mods, char **appearance) {
-  int vtype, len, slen, nargs, rc;
+  int vtype, slen, nargs, i;
   char *rs, *p, *q;
 
  next_line:
@@ -702,14 +744,13 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   if (!rs) return 0;
 
   *p++ = 0;
-  len = strlen(line);
   vtype = -1;
   switch (*rs++) {
   case 'C':
     if (0 == strcmp(rs, "ircle")) {
       vtype = GT_Circle;  nargs = 9;
     } else if (0 == strcmp(rs, "uboid")) {
-      vtype = GT_Cuboid;  nargs = 9;
+      vtype = GT_Cuboid;  nargs = 10;
     } else if (0 == strcmp(rs, "ylinder")) {
       vtype = GT_Cylinder;  nargs = 8;
     } else if (0 == strcmp(rs, "ylSlice")) {
@@ -733,11 +774,11 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     break;
   case 'H':
     if (0 == strcmp(rs, "ull")) {
-      vtype = GT_Hull;  nargs = 11;
+      vtype = GT_Hull;  nargs = 12;
     } else if (0 == strcmp(rs, "ull6")) {
-      vtype = GT_Hull6;  nargs = 13;
+      vtype = GT_Hull6;  nargs = 14;
     } else if (0 == strcmp(rs, "ull8")) {
-      vtype = GT_Hull8;  nargs = 15;
+      vtype = GT_Hull8;  nargs = 16;
     } else if (0 == strcmp(rs, "ollowCylinder")) {
       vtype = GT_HollowCylinder;  nargs = 9;
     }
@@ -774,24 +815,12 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
 
   ++(*ngeom);
 
-  switch (nargs) {
-  case  4: rc = sscanf(p, "%f %f %f %f%n", fa,fa+1,fa+2,fa+3, &slen); break;
-  case  6: rc = sscanf(p, "%f %f %f %f %f %f%n", fa,fa+1,fa+2,fa+3,fa+4,fa+5, &slen); break;
-  case  8: rc = sscanf(p, "%f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7, &slen); break;
-  case  9: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8, &slen); break;
-  case 10: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9, &slen); break;
-  case 11: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10, &slen); break;
-  case 13: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10,fa+11,fa+12, &slen); break;
-  case 15: rc = sscanf(p, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f%n",
-                       fa,fa+1,fa+2,fa+3,fa+4,fa+5,fa+6,fa+7,fa+8,fa+9,fa+10,fa+11,fa+12,fa+13,fa+14, &slen); break;
-  default: rc = 0;
-  }
-  if (rc != nargs) return -1;
+  for (i=0; i<nargs; i++)
+    if (sscanf(p, "%f%n", fa+i, &slen))
+      p += slen;
+    else
+      break;
+  if (i != nargs) return -1;
 
   // apply viewport, if specified
   if (x3d_option_filename &&
@@ -799,7 +828,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     goto next_line;
 
   // mods is the zero terminated module name string
-  p += slen;
   while (isspace(*p)) ++p;
   *mods = p;
 
@@ -832,7 +860,6 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
 }
 
 #define swapYZ(y,z) v=fa[y]; fa[y]=fa[z]; fa[z] = -v
-#define swapWH(w,h) v=fa[w]; fa[w]=fa[h]; fa[h] = v
 
 static void vitessToX3Dcoordinates(float *fa, int vtype) {
 
@@ -842,8 +869,7 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
   // x_x3d = x
   // y_x3d = z
   // z_x3d = -y
-  // We use swapYZ to transform 3d coordinates, and swapWH to transform
-  // width and height values for 3D objects.
+  // We use swapYZ to transform 3d coordinates.
 
   float v;
 
@@ -858,19 +884,37 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     // all these have a direction vector in elements 3,4,5
     swapYZ(4,5); // direction
 
-    switch (vtype) {
-    case GT_Ellipsoid:
-    case GT_Cuboid:
-      swapWH(7,8);
-      break;
-    case GT_Hull:
-      swapWH(7,9);
-      swapWH(8,10);
-      break;
-    default : ; // we must not swap width,height values for 2D objects 
-    }
+    if (vtype == GT_CylSlice)
+      fa[8] = mirrAng(fa[8]); // mirror direction angle
   }
         
+}
+
+int preTrans (float nx, float ny,  float nz) {
+  // start transformation from default (1,0,0) to (nx,ny,nz)
+  static char rots[64];
+  int t = 0;
+  if (nx != 1 || ny || nz) {
+    if (ny) {
+      // tilt plane
+      rotString(nx, 0, nz, nx,ny,nz, rots);
+      fprintf (outf, "<Transform rotation='%s'>", rots);
+      t++;
+    }
+    if (nx || nz) {
+      // rotate around y axis
+      rotString(1, 0, 0, nx, 0, nz, rots);
+      fprintf (outf, "<Transform rotation='%s'>", rots);
+      t++;
+    }
+  }
+  return t;
+}
+
+void postTrans(int t) {
+  while (t--)
+    fputs ("</Transform>", outf);
+  putc('\n', outf);
 }
 
 void geom2X3D(char *fn) {
@@ -884,7 +928,7 @@ void geom2X3D(char *fn) {
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
-  int vtype, vvtype, len, ngeom = 0, firstmodule=1;
+  int vtype, vvtype, len, opentrans, ngeom = 0, firstmodule=1;
 
   defineMaterials();
 
@@ -898,7 +942,8 @@ void geom2X3D(char *fn) {
     if (vtype < 0)
       myexit2("unknown geometry item in %s line\n%s\n", fn, line);
 
-    vitessToX3Dcoordinates(fa, vtype);
+    if (transformV2X3D)
+      vitessToX3Dcoordinates(fa, vtype);
 
     // first 3 values give x,y,z position
     sprintf(trans, "%s %s %s",
@@ -959,15 +1004,21 @@ void geom2X3D(char *fn) {
                rots, trans, ngeom, shape,
                sS5(fa[6], b1), sS5(toRad(fa[7]), b2), sS5(toRad(fa[8]), b3) );
       break;
+
     case GT_Cuboid:
-      // X3D Cuboid has default orientation 0 1 0
-      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
-      // desired length fa[6] becomes scale fa[6]/2 for y axis
-      // desired width  fa[7] becomes scale fa[7]/2 for x axis
-      // desired height fa[8] becomes scale fa[8]/2 for z axis
-      fprintf (outf, "<Transform scale='%s %s %s' translation='%s' rotation='%s'>%s</Transform>\n",
-               sS5(fa[7]/2.0f, b1), sS5(fa[6]/2.0f, b2), sS5(fa[8]/2.0f, b3), trans, rots, shape);
+      fprintf (outf, "<Transform translation='%s'>", trans);
+      opentrans = preTrans(fa[3], fa[4], fa[5]) + 2;
+      // desired length fa[6] scales x axis
+      // width  fa[7] scales z axis
+      // height fa[8] scales y axis
+      fprintf (outf, "<Transform scale='%s %s %s'", sS5(fa[6]/2.0f, b1), sS5(fa[8]/2.0f, b2), sS5(fa[7]/2.0f, b3));
+      if (fa[9]) {
+        fprintf (outf, " rotation='1 0 0 %s'", sS5(toRad(fa[9]), b1));
+      }
+      fprintf (outf, ">%s", shape);
+      postTrans(opentrans);
       break;
+
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
       // 0 1 2  location
@@ -985,22 +1036,33 @@ void geom2X3D(char *fn) {
                scales, scales, scales, trans, shape);
       break;
     case GT_Hull:
-      // Hull is constructed from an extrusion with default orientation 0 1 0
       // 6   length
       // 7   entry width    8   exit width
       // 9   entry height  10  exit height
-      rotString(0, 1, 0, fa[3], fa[4], fa[5], rots);
+      // 11  angle
+      fprintf (outf, "<Transform translation='%s'>", trans);
+      opentrans = preTrans(fa[3], fa[4], fa[5]) + 1;
+
+      if (fa[11])
+        fprintf (outf, "<Transform rotation='1 0 0 %s'>", sS5(toRad(fa[11]), b1));
+
+      // Hull is constructed from an extrusion with default orientation 0 1 0
+      rotString(0,1,0, 1,0,0, rots);
       // The desired length fa[6] becomes the scale factor fa[6]/2 for the y axis,
       // width and height are scaled individually by extrusion scale factors.
-      // Remember: an extrusion direction has _4_ parameters, vector + angle.
-      fprintf (outf, "<Transform scale='1 %s 1' rotation='%s' translation='%s'>"
+      // Remember: an extrusion orientation has _4_ parameters, vector + angle.
+
+      fprintf (outf, "<Transform scale='1 %s 1' rotation='%s'>"
                "<Shape><Appearance>%s</Appearance>"
                "<Extrusion solid='false' beginCap='false' endCap='false' "
-               "spine='0 -1 0 0 1 0' direction='0 1 0 0 0 1 0 0' "
-               "scale='%s %s %s %s'/></Shape></Transform>\n",
-               sS5(fa[6]/2.0f, b1), rots, trans, appearance ? appearance : HULLMAT,
-               sS5(fa[7]/2.0f, b2), sS5(fa[9]/2.0f, b3),
-               sS5(fa[8]/2.0f, b4), sS5(fa[10]/2.0f, b5) );
+               "spine='0 -1 0 0 1 0' orientation='0 1 0 0 0 1 0 0' "
+               "scale='%s %s %s %s'/></Shape></Transform>",
+               sS5(fa[6]/2.0f, b1), rots, appearance ? appearance : HULLMAT,
+               sS5(fa[9]/2.0f, b2), sS5(fa[7]/2.0f, b3),
+               sS5(fa[10]/2.0f, b4), sS5(fa[8]/2.0f, b5) );
+      if (fa[11])
+        fputs ("</Transform>", outf);
+      postTrans(opentrans);
       break;
     case GT_Hull6:
     case GT_Hull8:
@@ -1008,9 +1070,10 @@ void geom2X3D(char *fn) {
       break;
     case GT_Ellipsoid:
       // We construct the ellipsoid with a default orientation 1 0 0
+      // The width fa[7] scales the z axis, height fa[8] the y axis
       rotString(1, 0, 0, fa[3], fa[4], fa[5], rots);
       fprintf (outf, "<Transform scale='%s %s %s' rotation='%s' translation='%s %s %s'><Shape>",
-               sS5(fa[6]/2.0f, b1), sS5(fa[7]/2.0f, b2), sS5(fa[8]/2.0f, b3),
+               sS5(fa[6]/2.0f, b1), sS5(fa[8]/2.0f, b2), sS5(fa[7]/2.0f, b3),
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawEllipsoidShape(fa[9], fa[10]);
@@ -1074,8 +1137,9 @@ void geom2X3D(char *fn) {
 
 
 void writeX3D() {
-  int ntraj, count, id, mat;
-  p_point p,q, first_p, last_p;
+  int ntraj, count, mat, hi;
+  p_point p, first_p;
+  p_hashentry ph;
   static char buf[32], material_known[32];
 
   // start X3D file
@@ -1095,69 +1159,74 @@ void writeX3D() {
 
   ntraj = 0;
 
-  for (id=0; id<id_count; id++) {
+  for (hi=0; hi<HASHALEN; hi++) {
+    for (ph = hashA[hi]; ph; ph = ph->next) {
 
-    p = q = point_buffer[id];
-    count = 0;
-    last_p = 0;
-    if (x3d_option_filename) {
-      first_p = 0;
-      while (p) {
-        if (count) {
-          last_p = p;
-          ++count;
-          if (outOfView(p->u.pos)) {
-            // add a last point, but restrict to bounds
-            restrictPoint(p->u.pos);
-            break;
+      p = ph->point;
+      if (x3d_option_filename) {
+        // we have to restrict points to a view
+        count = 0;
+        first_p = 0;
+        while (p) {
+          if (count) {
+            ++count;
+            if (outOfView(p->u.pos)) {
+              // add a last point, but restrict to bounds
+              restrictPoint(p->u.pos);
+              break;
+            }
+          } else if (!outOfView(p->u.pos)) {
+            count = 1;
+            first_p = p;
           }
-        } else if (!outOfView(p->u.pos)) {
-          count = 1;
-          first_p = last_p = p;
+          if (!p->next) break;
+          p = p->next;
         }
-        if (!p->next) break;
-        p = p->next;
+      } else {
+        count = ph->count;
+        first_p = p;
       }
-    } else {
-      first_p = p;
-      while (p) {
-        ++count;
-        if (!p->next) break;
-        p = p->next;
+      if (count <= 1) continue; // a single point is of no interest
+
+      ++ntraj;
+      mat = ntraj % 32;
+      if (material_known[mat])
+        fprintf(outf,
+                "<Shape DEF='L-%d'><Appearance><Material USE='M-%d'/></Appearance>"
+                "<LineSet vertexCount='%d'><Coordinate point='",
+                ntraj, mat, count);
+      else {
+        genColor(mat, buf);
+        fprintf(outf, "<Shape DEF='L-%d'>"
+                "<Appearance><Material DEF='M-%d' diffuseColor='0 0 0' emissiveColor='%s'/></Appearance>"
+                "<LineSet vertexCount='%d'><Coordinate point='",
+                ntraj, mat, buf, count);
+        material_known[mat] = 1;
       }
-    }
-    if (count <= 1) continue; // a single point is of no interest
 
-    ++ntraj;
-    mat = ntraj % 32;
-    if (material_known[mat])
-      fprintf(outf,
-              "<Shape DEF='L-%d'><Appearance><Material USE='M-%d'/></Appearance>"
-              "<LineSet vertexCount='%d'><Coordinate point='",
-            ntraj, mat, count);
-    else {
-      genColor(mat, buf);
-      fprintf(outf, "<Shape DEF='L-%d'>"
-              "<Appearance><Material DEF='M-%d' diffuseColor='0 0 0' emissiveColor='%s'/></Appearance>"
-              "<LineSet vertexCount='%d'><Coordinate point='",
-              ntraj, mat, buf, count);
-      material_known[mat] = 1;
+      for (p = first_p; p; p = p->next) {
+        float y,z;
+        fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x_vitess = x
+        putc(' ', outf);
+        if (transformV2X3D) {
+          // transform VITESS coordinates to X3D coordinates
+          y =   p->u.pos[2];   // y_x3d = z
+          z = - p->u.pos[1];   // z_x3d = -y
+        } else {
+          y = p->u.pos[1];
+          z = p->u.pos[2];
+        }
+        fputs(sS4(y, buf), outf);
+        putc(' ', outf);
+        fputs(sS4(z, buf), outf);
+        putc(' ', outf);
+        
+        if (--count <= 0)
+          break;
+      }
+      fseek(outf, -1, SEEK_CUR);
+      fputs("'/></LineSet></Shape>\n", outf);
     }
-
-    for (p = first_p; p; p = p->next) {
-      // transform VITESS coordinates to X3D coordinates
-      fputs(sS4(p->u.pos[0], buf), outf);   // x_x3d = x
-      putc(' ', outf);
-      fputs(sS4(p->u.pos[2], buf), outf);   // y_x3d = z
-      putc(' ', outf);
-      fputs(sS4(- p->u.pos[1], buf), outf); // z_x3d = -y
-      putc(' ', outf);
-
-      if (p == last_p)
-        break;
-    }
-    fseek(outf, -1, SEEK_CUR);
-    fputs("'/></LineSet></Shape>\n", outf);
   }
   fputs("</Scene></X3D>\n", outf);
 }
@@ -1372,9 +1441,10 @@ void geom2SVG(char *fn) {
 
 void writeSVG() {
 
-  int id, i, ntraj;
+  int hi, i, ntraj;
   int count = 0;
-  p_point p,q;
+  p_point p;
+  p_hashentry ph;
   char ba[16], bb[16], bc[16], bd[16];
   float c1[2], c2[2], v, xlow, xhigh, xdelta, ydelta, d;
 
@@ -1383,8 +1453,9 @@ void writeSVG() {
   c1[0] = c2[0] = (float) svg_width;
   c1[1] = c2[1] = 0;
 
-  for (id=0; id<id_count; id++)
-    for (p = point_buffer[id]; p; p = p->next) {
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next) {
+      p = ph->point;
       minMax(c1, p->u.pos[0]);
       v = p->u.pos[1] *= scale2;
       minMax(c2, v);
@@ -1404,23 +1475,24 @@ void writeSVG() {
     xhigh = xlow + xwhigh*xfactor;
     xlow += xwlow*xfactor;
 
-    for (id=0; id<id_count; id++) {
-      p_point newlist, nold;
-      float v1;
-      newlist = nold = 0;
-      for (p = point_buffer[id]; p; p = p->next) {
-        v1 = p->u.pos[0];
-        if (v1 < xlow || v1 > xhigh) continue;
-        if (newlist) {
-          nold->next = p;
-          nold = p;
-        } else
-          newlist = nold = p;
+    for (hi=0; hi<HASHALEN; hi++)
+      for (ph = hashA[hi]; ph; ph = ph->next) {
+        p_point newlist, nold;
+        float v1;
+        newlist = nold = 0;
+        for (p = ph->point; p; p = p->next) {
+          v1 = p->u.pos[0];
+          if (v1 < xlow || v1 > xhigh) continue;
+          if (newlist) {
+            nold->next = p;
+            nold = p;
+          } else
+            newlist = nold = p;
+        }
+        if (nold)
+          nold->next = 0;
+        ph->point = newlist;
       }
-      if (nold)
-        nold->next = 0;
-      point_buffer[id] = newlist;
-    }
   }
 
   xdelta =  (xhigh - xlow) / 100;
@@ -1449,35 +1521,28 @@ void writeSVG() {
 
   ntraj = 0;
 
-  for (id=0; id<id_count; id++) {
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next) {
 
-    p = q = point_buffer[id];
-    count = 0;
-    while (p) {
-      count++;
-      if (!p->next) break;
-      p = p->next;
+      if ((count = ph->count) <= 1) continue; // a single point is of no interest
+
+      ++ntraj;
+      fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
+              ntraj, svg_line_color, strokeWS);
+      
+      for (p = ph->point; p; p = p->next) {
+        float a,b;
+        char *pa,*pb;
+        a = p->u.pos[0];
+        b = p->u.pos[1];
+        pa = sS3(a, ba);
+        pb = sS3(b, bb);
+        fprintf(outf,"%s,%s", pa, pb);
+        if (--count > 0) fputc(',', outf);
+      }
+      fputs("\"/></g>\n", outf);
     }
-    if (count <= 1) continue; // a single point is of no interest
-
-    ++ntraj;
-    fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
-             ntraj, svg_line_color, strokeWS);
-
-    i = 0;
-    for (p = q; p; p = p->next) {
-      float a,b;
-      char *pa,*pb;
-      a = p->u.pos[0];
-      b = p->u.pos[1];
-      pa = sS3(p->u.pos[0], ba);
-      pb = sS3(b, bb);
-      fprintf(outf,"%s,%s", pa, pb);
-      if (++i < count) fputc(',', outf);
-    }
-    fputs("\"/></g>\n", outf);
-  }
-
+  
   // finish SVG file
   for (i=1; i<=ntraj; i++)
     fprintf(outf, "<use id=\"uset%d\" xlink:href=\"#t%d\" onclick=\"meldung(%d);\"/>\"\n",
@@ -1485,32 +1550,28 @@ void writeSVG() {
   fputs("</svg>\n", outf);
 }
 
-void writeTrajectory(int i) {
-  static char idstring[32]; // static to terminate string by 0
-  int count = 0;
-  p_point p,q;
+void writeTrajectories() {
+  int hi;
+  p_point p;
+  p_hashentry ph;
 
-  p = q = point_buffer[i];
-
-  while (p) {
-    count++;
-    if (!p->next) break;
-    p = p->next;
-  }
-  if (count <= 1) return; // a single point is of no interest
-
-  memcpy(idstring, id_buffer + id_len*i, id_len);
-  fprintf(outf, "%d %s\n", count, idstring);
-  for (p = q; p; p = p->next)
-    fprintf(outf, "%s\n", p->u.t);
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next)
+      if (ph->count > 1) {
+        // at least 2 points
+        fprintf(outf, "%d %s\n", ph->count, ph->key);
+        for (p = ph->point; p; p = p->next)
+          fputs(p->u.t, outf);
+      }
 }
 
 
 int main (int argc, char **argv) {
 
-  char *arg, *p, *bufp, *s;
+  char *arg, *p, *s;
   static char line[256];
-  int i, id, maxIdFile;
+  int i, hi;
+  p_hashentry ph;
   FILE *f;
   static char *outfilename;
   static char *infilename[128];
@@ -1536,7 +1597,6 @@ int main (int argc, char **argv) {
         else
           usage();
         break;
-      case 'a': ids_from_all_files = 1; break;
       case 'f' : x3d_option_filename = *argv++;
         if (!x3d_option_filename || !*x3d_option_filename) usage();
         break;
@@ -1578,81 +1638,12 @@ int main (int argc, char **argv) {
     return 0;
   }
 
-  maxIdFile = ids_from_all_files ? infilecount-1 : 0;
-
-  // count neutron ids from files
-
-  for (i=0; i<=maxIdFile; i++) {
-    if (! (f = fopen(infilename[i], "r")))
-      myexit1("unable to read %s\n", infilename[i]);
-    while (fgets(line,255,f)) {
-      int len;
-      if (strchr(line, '#')) continue;
-      id_count++;
-      if ((p = strchr(line, ' ')) || (p = strchr(line, '\t'))) {
-        *p = 0;
-        len = strlen(line);
-        if (id_len) {
-          if (len != id_len)
-            myexit1("insufficient neutron ids in %s\n",infilename[i]);
-        } else
-          id_len = len;
-      } else
-        myexit1("insufficient input in %s\n",infilename[i]);
-    }
-    fclose(f);
-  }
-
-  // read ids now
-  id_buffer = bufp = malloc(id_len*id_count);
-
-  for (i=0; i<=maxIdFile; i++) {
-    if (! (f = fopen(infilename[i], "r")))
-      myexit1("unable to read %s\n", infilename[i]);
-    while (fgets(line,255,f)) {
-      if (strchr(line, '#')) continue;
-      memcpy(bufp, line, id_len);
-      bufp += id_len;
-    }
-    fclose(f);
-  }
-
-  // sort ids
-  qsort((void *)id_buffer, id_count, (size_t) id_len, compIDs);
-
-  if (maxIdFile > 0) {
-    // eliminate double id entries
-    int remain = 1;
-    int gap = 0;
-    char *n;
-    p = id_buffer;
-    n = p + id_len;
-    for (i=1; i<id_count; i++) {
-      if (0 == memcmp(p, n, id_len))
-        gap = 1;
-      else {
-        ++remain;
-        p += id_len;
-        if (gap)
-          memcpy(p, n, id_len);
-      }
-      n += id_len;
-    }
-    if (2*remain < id_count) {
-      n = realloc(id_buffer, remain*id_len);
-      id_buffer = n;
-    }
-    id_count = remain;
-  }
-
-  point_buffer = (p_point *) calloc(id_count, sizeof(p_point));
-
+  // read all trajectory files, construct point lists for ids found
   for (i=0; i<infilecount; i++) {
     if (! (f = fopen(infilename[i], "r")))
       myexit1("unable to read %s\n", infilename[i]);
 
     while (fgets(line,255,f)) {
-      int slen;
       if ((p = strchr(line, '#'))) {
         const char *tests = "unit_length=";
         if ((s = strstr(p,tests))) {
@@ -1663,16 +1654,31 @@ int main (int argc, char **argv) {
           else if (s[0] == 'm' && s[1] == 'm')
             len_factor = 1000;
         }
-        continue;
-      }
-      slen = strlen(line);
-      if (slen < id_len+2)
-        myexit1("insufficient data in input line :%s:\n", line);
-      line[slen-1] = 0;  // remove \n
-      insertPoint(line, line + id_len + 1);
+      } else if ((p = strchr(line, ' ')) || (p = strchr(line, '\t'))) {
+        *p++ = 0; // terminate id string
+        insertPoint(line, p);
+      } else
+        myexit1("insufficient input in %s\n",infilename[i]);
     }
     fclose(f);
   }
+
+  // revert point lists to restore original order
+  for (hi=0; hi<HASHALEN; hi++)
+    for (ph = hashA[hi]; ph; ph = ph->next)
+      if (ph->count > 1) {
+        p_point left, mid, right;
+        left = 0;
+        mid = ph->point;
+        while (1) {
+          right = mid->next;
+          mid->next = left;
+          if (! right) break;
+          left = mid;
+          mid = right;
+        }
+        ph->point = mid;
+      }
 
   // write trajectories
   switch (output_type) {
@@ -1684,8 +1690,7 @@ int main (int argc, char **argv) {
     writeX3D();
     break;
   default:
-    for (id=0; id<id_count; id++)
-      writeTrajectory(id);
+    writeTrajectories();
   }
 
   if (outf != stdout)

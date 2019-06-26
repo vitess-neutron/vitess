@@ -25,7 +25,8 @@ typedef enum
 	SMPL_TRAJ_INSIDE       = 801,
 	ENV_TRAJ_INSIDE        = 802,
 	ENV_TRAJ_OUTSIDE       = 803,
-	DET_TRAJ_INSIDE        = 901
+	DET_TRAJ_INSIDE        = 901,
+        DET_L_RANGE_TOO_SMALL  = 902
 }
 VtMsgID;
 

@@ -19,13 +19,14 @@
 #include "softabort.h"
 #include "matrix.h"
 #include "intersection.h"
+#include "sample.h"
 
 /* START HEADER STORY */
 
 #define	STRING_BUFFER 50
 
 	FILE		*Par_Sample, *XFILE; 
-	char		Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER];
+	char		Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER], *SampleFileName;
 	long		User, NumOut, Repetition, BoseF, repet,  i ;
 	double		TOF, WL, Prob ;
 	double		MaxPathLength, MaxPathLengthHol=0., PathLength, PathLengthHol=0., scattered_dir[3], l_reference, h_reference, v_reference;
@@ -695,155 +696,192 @@ void OwnCleanup()
 void ReadParameterFile()
 {
 
-		fprintf(LogFilePtr,"	P1			=  %9.4f\n	P2			=  %9.4f\n	P3			=  %9.4f\n	P4			=  %9.4f\n	D1			=  %9.4f\n	D2			=  %9.4f\n	D3			=  %9.4f\n	temperature		=  %9.4f",
-			
-				P1, P2, P3, P4, D1, D2, D3, Temperature) ;
+  SampleType sample;
 
-		fprintf(LogFilePtr,"\n	repetition  		=     %ld", Repetition) ;
+  fprintf(LogFilePtr,"	P1			=  %9.4f\n	P2			=  %9.4f\n	P3			=  %9.4f\n	P4			=  %9.4f\n	D1			=  %9.4f\n	D2			=  %9.4f\n	D3			=  %9.4f\n	temperature		=  %9.4f",
+			
+	  P1, P2, P3, P4, D1, D2, D3, Temperature) ;
+
+  fprintf(LogFilePtr,"\n	repetition  		=     %ld", Repetition) ;
 
   if(Repetition > 1)fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate > 1 can lead to wrong results. Be sure that you have very good statistics" 
-	  "\nin wavelength, time, x,y,z and directions just before the sample") ;
+			    "\nin wavelength, time, x,y,z and directions just before the sample") ;
 
-		if(BoseF == 1) fprintf(LogFilePtr,"\nmultiplied by Bose-factor");
+  if(BoseF == 1) fprintf(LogFilePtr,"\nmultiplied by Bose-factor");
 
-		if(BoseF != 1) fprintf(LogFilePtr,"\nnot multiplied by Bose-factor");
+  if(BoseF != 1) fprintf(LogFilePtr,"\nnot multiplied by Bose-factor");
 
-		if((BoseF == 1)&&(Temperature == 0.)) fprintf(LogFilePtr," (T = 0 means 1 for w > 0 and 0 for w < 0)");
+  if((BoseF == 1)&&(Temperature == 0.)) fprintf(LogFilePtr," (T = 0 means 1 for w > 0 and 0 for w < 0)");
 
 
 	
-		fprintf(LogFilePtr,"\ndata from parameter file: '%s':",ParameterFileName) ;
-		if(P2 <= 0.0002)fprintf(LogFilePtr,"\nWARNING: P2 <= 0.0002 converted to P2 = 0.") ;
+  fprintf(LogFilePtr,"\ndata from parameter file: '%s':",ParameterFileName) ;
+  if(P2 <= 0.0002)fprintf(LogFilePtr,"\nWARNING: P2 <= 0.0002 converted to P2 = 0.") ;
 
 	
 	
 
-		/* reads from file by using ReadParF(Par_Sample) and ReadParComment(Par_Sample) */
+  /* reads from file by using ReadParF(Par_Sample) and ReadParComment(Par_Sample) */
 
 
-		random_main[0]=ReadParF(Par_Sample) ; random_main[1]=ReadParF(Par_Sample) ; random_main[2]=ReadParF(Par_Sample) ;ReadParComment(Par_Sample) ;
+  random_main[0]=ReadParF(Par_Sample) ; random_main[1]=ReadParF(Par_Sample) ; random_main[2]=ReadParF(Par_Sample) ;ReadParComment(Par_Sample) ;
 
-		random_range[0]=ReadParF(Par_Sample) ; random_range[1]=ReadParF(Par_Sample) ; random_range[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+  random_range[0]=ReadParF(Par_Sample) ; random_range[1]=ReadParF(Par_Sample) ; random_range[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		ScatteringC=ReadParF(Par_Sample) ; AbsorptionC=ReadParF(Par_Sample) ;  ReadParComment(Par_Sample) ;
+  ScatteringC=ReadParF(Par_Sample) ; AbsorptionC=ReadParF(Par_Sample) ;  ReadParComment(Par_Sample) ;
 
-		PosSample[0]=ReadParF(Par_Sample) ; PosSample[1]=ReadParF(Par_Sample) ; PosSample[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+  PosSample[0]=ReadParF(Par_Sample) ; PosSample[1]=ReadParF(Par_Sample) ; PosSample[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		AnglSampleHoriz=ReadParF(Par_Sample) ; AnglSampleVert=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+  AnglSampleHoriz=ReadParF(Par_Sample) ; AnglSampleVert=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		ReadParString(Par_Sample, Option) ; ReadParComment(Par_Sample) ;
+  ReadParString(Par_Sample, Option) ; ReadParComment(Par_Sample) ;
 
-		DimSample[0]=ReadParF(Par_Sample) ; DimSample[2]=ReadParF(Par_Sample) ; DimSample[1]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+  DimSample[0]=ReadParF(Par_Sample) ; DimSample[2]=ReadParF(Par_Sample) ; DimSample[1]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		User = ReadParI(Par_Sample) ; ReadParComment(Par_Sample) ;
+  User = ReadParI(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		l_reference =ReadParF(Par_Sample) ; h_reference =ReadParF(Par_Sample) ; v_reference =ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+  l_reference =ReadParF(Par_Sample) ; h_reference =ReadParF(Par_Sample) ; v_reference =ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		if(User == 1)
-		{
+  if(User == 1)
+    {
 
-		TranslOut[0]=ReadParF(Par_Sample) ; TranslOut[1]=ReadParF(Par_Sample) ; TranslOut[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+      TranslOut[0]=ReadParF(Par_Sample) ; TranslOut[1]=ReadParF(Par_Sample) ; TranslOut[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		AnglOutHoriz=ReadParF(Par_Sample) ; AnglOutVert=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
+      AnglOutHoriz=ReadParF(Par_Sample) ; AnglOutVert=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
 
-		}
+    }
 
-		if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
-      {fprintf(LogFilePtr,"\nWarning: Distance to sample smaller than at least one sample dimension!\n") ; exit(0);}
+  if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
+    {fprintf(LogFilePtr,"\nWarning: Distance to sample smaller than at least one sample dimension!\n") ; exit(0);}
 		
-/*	 checks some values */
+  /*	 checks some values */
 
-	if((Option[1] != 'y') && (Option[1] != 'o') && (Option[1] != 'u') && (Option[1] != 'a'))
+  if((Option[1] != 'y') && (Option[1] != 'o') && (Option[1] != 'u') && (Option[1] != 'a'))
+    {
+      fprintf(LogFilePtr,"\nNo valid geometry option!\n") ;
+      exit(0) ;
+    }
+
+  k_reference[0] = 2.* M_PI / l_reference * (double) cos(v_reference) * (double) cos(h_reference) ;
+
+  k_reference[1] = 2.* M_PI / l_reference * (double) cos(v_reference) * (double) sin(h_reference) ;
+
+  k_reference[2] = 2.* M_PI / l_reference * (double) sin(v_reference) ;
+
+
+
+  if(LengthVector(k_reference) == 0.)
+    {
+      fprintf(LogFilePtr,"\nZero reference wavevector not allowed!\n");
+      exit(0);
+    }
+
+  /* sets default values if frame for output not user defined */
+
+  if(User != 1.)
+    {
+
+      if(LengthVector(k_reference) == 0.)
 	{
-			fprintf(LogFilePtr,"\nNo valid geometry option!\n") ;
-			exit(0) ;
+	  fprintf(LogFilePtr,"\nZero reference wavevector not allowed\n");
+	  exit(0);
 	}
 
-	k_reference[0] = 2.* M_PI / l_reference * (double) cos(v_reference) * (double) cos(h_reference) ;
 
-	k_reference[1] = 2.* M_PI / l_reference * (double) cos(v_reference) * (double) sin(h_reference) ;
-
-	k_reference[2] = 2.* M_PI / l_reference * (double) sin(v_reference) ;
-
-
-
-	if(LengthVector(k_reference) == 0.)
-	{
-		fprintf(LogFilePtr,"\nZero reference wavevector not allowed!\n");
-		exit(0);
-	}
-
-		/* sets default values if frame for output not user defined */
-
-		if(User != 1.)
-		{
-
-			if(LengthVector(k_reference) == 0.)
-			{
-				fprintf(LogFilePtr,"\nZero reference wavevector not allowed\n");
-				exit(0);
-			}
-
-
-			/* computes angles corresponding to the output frame */
+      /* computes angles corresponding to the output frame */
 												
 					
-				AnglOutHoriz	= random_main[1] ;
+      AnglOutHoriz	= random_main[1] ;
 				
-				AnglOutVert		= random_main[2] ;
+      AnglOutVert		= random_main[2] ;
 				
 
-			/* shifts output frame origin to center of sample */
+      /* shifts output frame origin to center of sample */
 
-			CopyVector(PosSample, TranslOut) ;
-		}
+      CopyVector(PosSample, TranslOut) ;
+    }
 	
 
-		/* prints parameters into log file for verification */
+  /* prints parameters into log file for verification */
 
-		fprintf(LogFilePtr,"\n	random main w, y, z		=  %9.4f, %9.4f, %9.4f\n	range x, y, z		=  %9.4f, %9.4f, %9.4f\n	absorption constant	=     %9.4e\n	cutoff probability		=     %8.1e",
+  fprintf(LogFilePtr,"\n	random main w, y, z		=  %9.4f, %9.4f, %9.4f\n	range x, y, z		=  %9.4f, %9.4f, %9.4f\n	absorption constant	=     %9.4e\n	cutoff probability		=     %8.1e",
 			
-				random_main[0], random_main[1], random_main[2], random_range[0], random_range[1], random_range[2], AbsorptionC, ProbCutoff) ;
+	  random_main[0], random_main[1], random_main[2], random_range[0], random_range[1], random_range[2], AbsorptionC, ProbCutoff) ;
 
-		fprintf(LogFilePtr,"\n	position x, y, z		=  %9.4f, %9.4f, %9.4f\n	thickn./radius, height, width  =  %9.4f, %9.4f, %9.4f\n	offset angle horiz		=  %9.4f\n	offset angle vert		=  %9.4f",
+  fprintf(LogFilePtr,"\n	position x, y, z		=  %9.4f, %9.4f, %9.4f\n	thickn./radius, height, width  =  %9.4f, %9.4f, %9.4f\n	offset angle horiz		=  %9.4f\n	offset angle vert		=  %9.4f",
 			
-				PosSample[0], PosSample[1], PosSample[2], DimSample[0], DimSample[2], DimSample[1], AnglSampleHoriz, AnglSampleVert) ;
+	  PosSample[0], PosSample[1], PosSample[2], DimSample[0], DimSample[2], DimSample[1], AnglSampleHoriz, AnglSampleVert) ;
 
-		fprintf(LogFilePtr,"\n	reference-k x, y, z		=  %9.4f, %9.4f, %9.4f",
+  fprintf(LogFilePtr,"\n	reference-k x, y, z		=  %9.4f, %9.4f, %9.4f",
 			
-				k_reference[0], k_reference[1], k_reference[2]) ;
+	  k_reference[0], k_reference[1], k_reference[2]) ;
 
 
-		if(Option[1] == 'y') fprintf(LogFilePtr,"\nsample geometry:	'cylinder'") ;
+  sample.Position[0] = PosSample[0];
+  sample.Position[1] = PosSample[1];
+  sample.Position[2] = PosSample[2];
+  
 
-		if(Option[1] == 'o') fprintf(LogFilePtr,"\nsample geometry:	'hollow cylinder'") ;
+  if(Option[1] == 'y') {
 
-		if(Option[1] == 'u') fprintf(LogFilePtr,"\nsample geometry:	'cuboid'") ;
+    sample.SG.Cyl.r = DimSample[0];
+    sample.SG.Cyl.height = DimSample[1];
+    sample.Type = VT_CYL;
 
-		if(Option[1] == 'a') fprintf(LogFilePtr,"\nsample geometry:	'sphere'") ;/**/
+    fprintf(LogFilePtr,"\n             sample geometry:	'cylinder'") ;
+
+  }
+  if(Option[1] == 'o') {
+    sample.SG.Cyl.r = DimSample[0];
+    sample.SG.Cyl.height = DimSample[1];
+    sample.Type = VT_CYL;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'hollow cylinder'") ;
+
+  }
+  if(Option[1] == 'u') {
+   
+    sample.SG.Cube.thickness = DimSample[0];
+    sample.SG.Cube.width = DimSample[1];
+    sample.SG.Cube.height = DimSample[2];
+    sample.Type = VT_CUBE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'cuboid'") ;
+
+  }
+  if(Option[1] == 'a') {
+
+    sample.SG.Ball.r = DimSample[0];
+    sample.Type = VT_SPHERE;
+
+    fprintf(LogFilePtr,"\n             sample geometry:	'sphere'") ;
+
+  }
+
+  SetSampleGeometry(&sample);
 
 
-		if(User != 1) fprintf(LogFilePtr,"\nstandard frame generation:") ;
+  if(User != 1) fprintf(LogFilePtr,"\nstandard frame generation:") ;
 
-		if(User == 1) fprintf(LogFilePtr,"\nuser defined frame:") ;
+  if(User == 1) fprintf(LogFilePtr,"\nuser defined frame:") ;
 
-		fprintf(LogFilePtr,"\n	output horizontal angle	= %9.4f\n	output vertical angle	= %9.4f\n	X',Y',Z'			= %9.4f, %9.4f, %9.4f", 
+  fprintf(LogFilePtr,"\n	output horizontal angle	= %9.4f\n	output vertical angle	= %9.4f\n	X',Y',Z'			= %9.4f, %9.4f, %9.4f", 
 			
-				AnglOutHoriz, AnglOutVert, TranslOut[0], TranslOut[1], TranslOut[2]) ;
+	  AnglOutHoriz, AnglOutVert, TranslOut[0], TranslOut[1], TranslOut[2]) ;
 
 
-		/* converts degs in radian etc. */
+  /* converts degs in radian etc. */
 
-		AnglSampleHoriz	*= M_PI/180. ;
+  AnglSampleHoriz	*= M_PI/180. ;
 
-		AnglSampleVert	*= M_PI/180. ;
+  AnglSampleVert	*= M_PI/180. ;
 
-		AnglOutHoriz	*= M_PI/180. ;
+  AnglOutHoriz	*= M_PI/180. ;
 
-		AnglOutVert		*= M_PI/180. ;
+  AnglOutVert		*= M_PI/180. ;
 
 
-	/* Hollow cylinder option */
+  /* Hollow cylinder option */
 
   CopyVector(DimSample, DimSampleHol); DimSampleHol[0] = DimSample[1];
 

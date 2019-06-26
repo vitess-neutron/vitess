@@ -25,12 +25,14 @@ int main(int argc, char *argv[])
 {
   FILE	*fmonitor=NULL;
   char	*MonitorFileName=NULL;
-  int	dy,dz;
+  int	dy,dz, probactiv;
   long	i, exclusivecount, registered;
   long	BufferIndex;
   long	nbiny, nbinz;
   double RotMatrixAnalysis[3][3], bintc, bintcpol, analysis_dir[3];
-  double widthmin, widthmax, heightmin, heightmax,p, probactiv;
+  double widthmin, widthmax, heightmin, heightmax,p;
+
+  char  weightTag[2][7] = {"", "weight"};
 
   BufferIndex = 0;
   p=0.0;
@@ -128,6 +130,8 @@ int main(int argc, char *argv[])
 
   /*initialisation */
 
+ if (probactiv != 1) probactiv = 0;	
+
   bintc = 0;
   bintcpol = 0;
   for(dy = 0; dy<nbiny+1; dy++)
@@ -181,7 +185,7 @@ CHECK;	  registered=0;
 	}
     }
 my_exit:
-
+  fprintf(fmonitor,"#Monitor matrix %s\n", weightTag[probactiv]);
   for(dy = 0; dy<nbiny; dy++)
     {
       fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);

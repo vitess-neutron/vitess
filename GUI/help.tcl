@@ -288,11 +288,21 @@ Click on the '--inactive--' button and choose 'visualise_data' -> 'mon1_lambda'.
 helpItem {Saving an Instrument} {
 You may store settings of your assembled simulation to an instrument file
 with .gui extension (menu 'File' | 'save instrument').
-All parameter settings are part of the resulting file, so that you or others 
+All parameter settings are part of the resulting file, so that you or others
 may load that instrument on a later simulation, if you provide that file along with other
 files refered from the parameter directory.
 (There are few exceptions: Options and some global variables which would prevent
 the execution under a different environment are not saved here.)
+}
+
+helpItem {Recover an Instrument} {
+The GUI stores the instrument silently to snapshots when you change parameters.
+You may recover a stored snapshot via menu Edit / Recover Instrument:
+select a snapshot of your session some time ago.
+The default is to take a snapshot per minute, if something has been changed.
+There are up to 8 latest snapshots available.
+You may change these numbers via menu Options / Recovery.
+Snapshots will be deleted on VITESS exit.
 }
 
 helpItem {Packages} {

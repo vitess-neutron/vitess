@@ -17,6 +17,7 @@ typedef struct
 {
 	double dF001;
 	double dF002;
+	double dF003;
 	double dTemp;
 }
 ModInfo;
@@ -29,10 +30,11 @@ FctTable  stFluxT[NUM_MOD],  /* data of time distr.            */
           stFluxL[NUM_MOD],  /* data of wavelength distr.      */
           stFluxLT[NUM_MOD]; /* data of wavelength-time distr. */
 extern
-short     nNumMod,         /* number of moderators in moderator system */
-          imod;            /* index of moderators in moderator system  */
+short     iDataVsn,          /* version of the data base for the source characteristics */
+          nNumMod,           /* number of moderators in the moderator system            */
+          imod;              /* index of moderators in the moderator system             */
 extern
-Moderator stMod  [NUM_MOD]; /* moderator data            */
+Moderator stMod  [NUM_MOD];  /* moderator data            */
 
 
 /* static variables */
@@ -47,6 +49,9 @@ ModInfo   stMInfo[NUM_MOD][2]; /* additional moderator data
 static short  s_nSource=ANYSOURCE, /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS                         */
               s_nModType=0;        /* s_nModType   : decoupled POISONED, DECOUPLED unpoisened, COUPLED */
 
+
+double NewMaxwell (const double _lambda, const double _temp);
+double EmpCorrFact(double lmbd);
 
 
 /* ----------------------------- */
@@ -117,27 +122,41 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 			}
 
 			if (s_nModType==MULT_SPEC)
-			{	/* one side cold; Phi8 = integration of 3*Phi6 */
-				stMInfo[imod][0].dF001 = 2.3e11;
-				stMInfo[imod][0].dF002 = 9.2e10;
+			{	dFacM = 2.0;
 				stMInfo[imod][0].dTemp =  50.0;
-				/* one side thermal; Phi7 = integration of 3*Phi3 */
-				dFacM = 2.0;
-				stMInfo[imod][1].dF001 = 4.5e11;
-				stMInfo[imod][1].dF002 = 9.2e10;
 				stMInfo[imod][1].dTemp = 325.0;
+        if (iDataVsn==3)
+        { stMInfo[imod][0].dF001 = 1.263e15/50.0/25.0;     // Phi8, Schönfeldt
+          stMInfo[imod][0].dF002 = 7.224e13/50.0/25.0;     // divided by SP source freq. and multiplied by duty cycle
+          stMInfo[imod][0].dF003 = 2.019e13/50.0/25.0; 
+          stMInfo[imod][1].dF001 = 4.359e14/50.0/25.0/2.0; // Phi7, Schönfeldt
+          stMInfo[imod][1].dF002 = 7.480e13/50.0/25.0;     // divided by SP source freq. and multiplied by duty cycle, factor 2 bc. of 2 fct. F(t)
+        }
+        else
+				{ stMInfo[imod][0].dF001 = 2.3e11; stMInfo[imod][0].dF002 = 9.2e10; //   Phi8, Mezei, cold
+				  stMInfo[imod][1].dF001 = 4.5e11; stMInfo[imod][1].dF002 = 9.2e10; // + Phi7, Mezei, thermal
+        }
 			}
 			else  // coupled
 			{	if      (_dTemp== 50.0)
-				{  /* Phi8 = integration of 3*Phi6 */
-					stMInfo[imod][0].dF001 = 2.3e11;
-					stMInfo[imod][0].dF002 = 9.2e10;
-				}
+				{	if (iDataVsn==3)
+          { stMInfo[imod][0].dF001 = 1.263e15/50.0/25.0;   // Phi8, Schönfeldt
+            stMInfo[imod][0].dF002 = 7.224e13/50.0/25.0;   // divided by SP source freq. and multiplied by duty cycle
+            stMInfo[imod][0].dF003 = 2.019e13/50.0/25.0; 
+          }
+          else
+				  { stMInfo[imod][0].dF001 = 2.3e11; stMInfo[imod][0].dF002 = 9.2e10;   // Phi8, Mezei
+          }
+        }
 				else if (_dTemp==325.0)
-				{  /* Phi7 = integration of 3*Phi3 */
-					dFacM = 2.0;
-					stMInfo[imod][0].dF001 = 4.5e11;
-					stMInfo[imod][0].dF002 = 9.2e10;
+				{ dFacM = 2.0;
+          if (iDataVsn==3)
+          { stMInfo[imod][0].dF001 = 4.359e14/50.0/25.0/2.0; // Phi7, Schönfeldt
+            stMInfo[imod][0].dF002 = 7.480e13/50.0/25.0;     // divided by SP source freq. and multiplied by duty cycle, factor 2 bc. of 2 fct. F(t)
+          }
+          else
+					{ stMInfo[imod][0].dF001 = 4.5e11;  stMInfo[imod][0].dF002 = 9.2e10;  // Phi7, Mezei
+          }
 				}
 				else
 				{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
@@ -150,14 +169,16 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 			{
 				case POISONED:
 					if      (_dTemp== 50.0)
-					{  /* Phi4 */
-						stMInfo[imod][0].dF001 = 2.7e10;
-						stMInfo[imod][0].dF002 = 4.6e10;
+					{ stMInfo[imod][0].dF001 = 2.7e10; stMInfo[imod][0].dF002 = 4.6e10;  /* Phi4 */
 					}
 					else if (_dTemp==325.0)
-					{  /* Phi1 */
-						stMInfo[imod][0].dF001 = 9.0e10;
-						stMInfo[imod][0].dF002 = 4.6e10;
+					{ 
+            if (iDataVsn>=2)
+            { stMInfo[imod][0].dF001 = 1.64e10; stMInfo[imod][0].dF002 = 3.0e10;  /* Phi1 */
+            }
+            else
+            { stMInfo[imod][0].dF001 = 9.0e10;  stMInfo[imod][0].dF002 = 4.6e10;   /* Phi1 */
+            }
 					}
 					else
 					{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
@@ -166,14 +187,10 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 
 				case DECOUPLED:
 					if      (_dTemp== 50.0)
-					{  /* Phi5 */
-						stMInfo[imod][0].dF001 = 5.4e10;
-						stMInfo[imod][0].dF002 = 9.2e10;
+					{ stMInfo[imod][0].dF001 = 5.4e10; stMInfo[imod][0].dF002 = 9.2e10;  /* Phi5 */
 					}
 					else if (_dTemp==325.0)
-					{  /* Phi2 */
-						stMInfo[imod][0].dF001 = 1.8e11;
-						stMInfo[imod][0].dF002 = 9.2e10;
+					{ stMInfo[imod][0].dF001 = 1.8e11; stMInfo[imod][0].dF002 = 9.2e10;  /* Phi2 */
 					}
 					else
 					{  Error("moderator temperature for ESS/SNS must be 50 or 325 K");
@@ -182,15 +199,12 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 
 				case COUPLED:
 					if      (_dTemp== 50.0)
-					{  /* Phi6*/
-						stMInfo[imod][0].dF001 = 2.3e11;
-						stMInfo[imod][0].dF002 = 9.2e10;
+					{ stMInfo[imod][0].dF001 = 2.3e11; stMInfo[imod][0].dF002 = 9.2e10;  /* Phi6*/
 					}
 					else if (_dTemp==325.0)
-					{  /* Phi3*/
+					{ 
 						dFacM = 2.0;
-						stMInfo[imod][0].dF001 = 4.5e11;
-						stMInfo[imod][0].dF002 = 9.2e10;
+						stMInfo[imod][0].dF001 = 4.5e11; stMInfo[imod][0].dF002 = 9.2e10;  /* Phi3*/
 					}
 					else
 					{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
@@ -219,69 +233,23 @@ double TotalFU(const double _dTemp,  const short  _nSource, const short  _nModTy
 			
 	stMInfo[imod][0].dF001 *= (dEpulse/dEp_std);
 	stMInfo[imod][0].dF002 *= (dEpulse/dEp_std);
+	stMInfo[imod][0].dF003 *= (dEpulse/dEp_std);
 	
 	if (s_nModType==MULT_SPEC)
 	{	
 		stMInfo[imod][1].dF001 *= (dEpulse/dEp_std);
 		stMInfo[imod][1].dF002 *= (dEpulse/dEp_std);
+		stMInfo[imod][1].dF003 *= (dEpulse/dEp_std);
 
-		dFUAmpl = (      stMInfo[imod][0].dF001 + dFacN*stMInfo[imod][0].dF002         /* cold    */
-		         + dFacM*stMInfo[imod][1].dF001 + dFacN*stMInfo[imod][1].dF002) / 2.0; /* thermal */
+		dFUAmpl = (        stMInfo[imod][0].dF001 + stMInfo[imod][0].dF003  + dFacN * stMInfo[imod][0].dF002         /* cold    */
+		         + dFacM * stMInfo[imod][1].dF001                           + dFacN * stMInfo[imod][1].dF002) / 2.0; /* thermal */
 	}
 	else
-	{	dFUAmpl =  dFacM*stMInfo[imod][0].dF001 + dFacN*stMInfo[imod][0].dF002;
+	{	dFUAmpl =  dFacM *(stMInfo[imod][0].dF001 + stMInfo[imod][0].dF003) + dFacN * stMInfo[imod][0].dF002;
 	}
 	return(dFUAmpl);
 }
 
-/* dTemp      : [K]  eff. moderator temperature 
-   nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED
-   dPower     : [W]  average source power                    */          
-double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPower)
-{
-  double dFUAmpl=0.0;;
-
-  s_nSource = CSNS; 
-
-  if (dTemp < 100.0)
-  { 
-    if (eModType==POISONED)
-      dFUAmpl = dPower * 2.7e10/5.0e06/(25.0/50.0);
-	else
-      dFUAmpl = dPower * 2.3e11/5.0e06/(25.0/50.0);
-  }
-  else
-  { 
-    dFUAmpl = dPower * 1.8e11/5.0e06/(25.0/50.0);
-  }
-  return dFUAmpl;
-}
-
-
-/* dLambda: [Ang]  wavelength                          [Ang]
-   dTime  :  [s]   time (after beginning of pulse)     [s]          
-   dPosY  :  [cm]  horinzontal position on the source  [cm]
-   dPosY  :  [cm]  vertical position on the source     [cm]   */
-
-double CsnsModFU(const double dLambda, const double dTime, const double dPosY, const double dPosZ)
-{
-  double dFuA,         // amplitude of the flux    [n/(cm²  sterad Ang]
-         dFu=0.0;      // actualflux value         [n/(cm²s sterad Ang]
-
-  dFuA = stMod[imod].dFUAmpl * Maxwellian(dLambda, stMod[imod].dModTemp);
-
-  if      (stMod[imod].eModType==COUPLED   && stMod[imod].dModTemp < 100.0)
-    dFu = dFuA * PulseShape(dTime, 2.9e-04, 20.0);
-  else if (stMod[imod].eModType==DECOUPLED && stMod[imod].dModTemp > 100.0)
-    dFu = dFuA * PulseShape(dTime, 3.5e-05,  5.0);
-  else if (stMod[imod].eModType==POISONED  && stMod[imod].dModTemp < 100.0)
-    dFu = dFuA * PulseShape(dTime, 4.9e-05,  5.0);
-  else
-    Error("data for chosen CSNS moderator not available");
-
-  return dFu;
-}
-  
 
 double EssModFU(const double _dLambda, const double _dTime, const double _dLength)
 {
@@ -332,15 +300,22 @@ double EssModFU(const double _dLambda, const double _dTime, const double _dLengt
 				case POISONED:
 					if      (dTemp== 50.0)
 					{	/* Phi4 */
-						dPSM =  PulseShape(_dTime, 49e-6          , 5);
-						dPSN =  PulseShape(_dTime,  7e-6*_dLambda, 5);
+						dPSM =  PulseShape(_dTime,  49.0e-6           , 5);
+						dPSN =  PulseShape(_dTime,   7.0e-6 * _dLambda, 5);
 						dN   =  NotMaxwell(_dLambda, 0.9);
 					}
 					else if (dTemp==325.0)
 					{	/* Phi1 */
-						dPSM =  PulseShape(_dTime, 22e-6          , 5);
-						dPSN =  PulseShape(_dTime,  7e-6*_dLambda, 5);
-						dN   =  NotMaxwell(_dLambda, 2.5);
+            if (iDataVsn>=2)
+						{ dPSM =  PulseShape(_dTime,  21.0e-6           , 5);
+						  dPSN =  PulseShape(_dTime,   3.6e-6 * _dLambda, 5);
+						  dN   =  NotMaxwell(_dLambda, 1.9);
+            }
+            else
+						{ dPSM =  PulseShape(_dTime,  22.0e-6           , 5);
+						  dPSN =  PulseShape(_dTime,   7.0e-6 * _dLambda, 5);
+						  dN   =  NotMaxwell(_dLambda, 2.5);
+            }
 					}
 					else
 					{	Error("moderator temperature for ESS/SNS must be 50 or 325 K");
@@ -394,20 +369,35 @@ double EssModFU(const double _dLambda, const double _dTime, const double _dLengt
 	}
 
 	if (s_nModType==MULT_SPEC)
-	{	double fc, ft;
+	{	double FUc, FUt;
+
+		FUt  =  stMInfo[imod][1].dF001 * Maxwellian(_dLambda, stMInfo[imod][1].dTemp) * dPSMT
+		      + stMInfo[imod][1].dF002 * NotMaxwell(_dLambda, 2.5)                    * dPSN ;
 	
-		fc  = f_cold (_dLambda);
-		ft  = f_therm(_dLambda);
-		dFU =  fc * ( stMInfo[imod][0].dF001 * Maxwellian(_dLambda, stMInfo[imod][0].dTemp) * dPSMC
-		            + stMInfo[imod][0].dF002 * NotMaxwell(_dLambda, 0.9)      * dPSN )
-		     + ft * ( stMInfo[imod][1].dF001 * Maxwellian(_dLambda, stMInfo[imod][1].dTemp) * dPSMT
-		            + stMInfo[imod][1].dF002 * NotMaxwell(_dLambda, 2.5)      * dPSN );
+    if (iDataVsn >= 3)       // new cold moderator, analytical description
+		{ FUc  =  stMInfo[imod][0].dF001 * LeakageFct(_dLambda     ) * dPSMC
+		        + stMInfo[imod][0].dF002 * NotMaxwell(_dLambda, 0.9) * dPSN ;
+    }
+    else
+		{ FUc  =  stMInfo[imod][0].dF001 * Maxwellian(_dLambda, stMInfo[imod][0].dTemp) * dPSMC
+		        + stMInfo[imod][0].dF002 * NotMaxwell(_dLambda, 0.9)                    * dPSN ;
+      if (iDataVsn == 2)     // new cold moderator, empirical correction factor
+        FUc *= EmpCorrFact(_dLambda);
+    }
+    dFU = f_cold (_dLambda) * FUc + f_therm(_dLambda) * FUt;
 	}
 	else
 	{	
-		dM  =  Maxwellian(_dLambda, dTemp);
+    if (iDataVsn >= 3 && dTemp < 100.0)     // new cold moderator, analytical description
+      dM = LeakageFct(_dLambda);
+    else
+		  dM = Maxwellian(_dLambda, dTemp);
+
 		dFU =  stMInfo[imod][0].dF001 * dM * dPSM
 		     + stMInfo[imod][0].dF002 * dN * dPSN;
+
+    if (iDataVsn == 2 && dTemp < 100.0)     // new cold moderator, empirical correction factor
+      dFU *= EmpCorrFact(_dLambda);
 	}
 
 	return(dFU);
@@ -435,6 +425,47 @@ double Maxwellian(const double _dLambda, const double _dModTemp)
 		                   _dLambda, _dModTemp);
 		exit(99);
 	}
+
+	return dM;
+}
+
+
+double LeakageFct(const double _lambda)
+{
+	/* _lambda : Wavelength in Angstroem */
+
+	double dM=0.0, xi, 
+         alpha1  = 0.6175,
+         alpha2  = 0.2237,
+         alphaL  =-6.714,
+         lambdaL = 2.421;
+  
+  xi = stMInfo[imod][0].dF003 / stMInfo[imod][0].dF001;
+	dM = sqrt(1.0/(1.0 + exp(alphaL*(_lambda-lambdaL)))) * (exp(-alpha1*_lambda) + xi*exp(-alpha2*_lambda));
+
+	return dM;
+}
+
+double EmpCorrFact(double lmbd)
+{ 
+	double factor = log(1.402 + 0.898 * lmbd);
+
+	if (lmbd <= 2.5) 
+    factor *= 2.0776 - 4.1093*lmbd + 4.8836*sq(lmbd) - 2.4715*pow(lmbd,3) + 0.4521*pow(lmbd,4);
+	if (lmbd >  2.5 && lmbd <= 3.5) 
+    factor *= 4.3369 - 1.8367*lmbd + 0.2524*sq(lmbd);
+
+  return factor;              
+}
+
+double NewMaxwell(const double _lambda, const double _temp)
+{
+	/* _lambda : Wavelength in Angstroem */
+
+	double dM=0.0, a, 
+         lambdaT = 949.2;
+  a  = lambdaT/_temp;
+  dM = 4.36e14*a*a/pow(_lambda,5)*exp(-a/pow(_lambda,2));
 
 	return dM;
 }

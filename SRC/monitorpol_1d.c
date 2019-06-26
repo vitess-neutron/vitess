@@ -25,8 +25,11 @@ int main(int argc, char *argv[])
   int	 dy;
   long	 i, kind, exclusivecount, registered, BufferIndex, nbiny;
   double RotMatrixAnalysis[3][3], bpost[10001], bintc, binpol, analysis_dir[3];
-  double Divy, Divz, bint[10001],bintch[10001],m,p,M,probactiv;
+  double Divy, Divz, bint[10001],bintch[10001], binerror[10001], m,p,M;
+  int bincounts[10001],probactiv;
 
+  char  weightTag[2][7] = {"", "weight"};
+  
   BufferIndex = 0;
   kind = 1;
   probactiv=1.0;
@@ -134,8 +137,12 @@ int main(int argc, char *argv[])
       bpost[dy]=m+((M-m)*dy/(double)nbiny);
       bint[dy]=0.0;
       bintch[dy]=0.0;
+      binerror[dy]=0.;
+      bincounts[dy]=0;
     }
          
+  if (probactiv != 1) probactiv = 0;
+
 DECLARE_ABORT;
   while (ReadNeutrons()!= 0)
     {
@@ -237,6 +244,8 @@ CHECK;	  registered=0;
 	  }
 	    
 	  
+	  if((dy>=0)&&(dy<nbiny)) bincounts[dy]++;
+
 	/* calculate spin vector in the original direction */
 
 	RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
@@ -248,9 +257,13 @@ CHECK;	  registered=0;
 	}
     }
 my_exit:
+  fprintf(fmonitor,"#Monitor %s\n", weightTag[probactiv]);
   for (dy = 0; dy<(nbiny); dy++)
     {
-      if(bintch[dy]!=0.)fprintf(fmonitor,"% 7.7f\t% 11.7E \n",(bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]));
+      if(bintch[dy]!=0.) {
+	binerror[dy] = (bint[dy]/bintch[dy])*sqrt(1./bincounts[dy]);
+	fprintf(fmonitor,"%7.7f\t%5.3E\t%5.3E\t%d\n",(bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
+      }
     }
 
   fclose(fmonitor);

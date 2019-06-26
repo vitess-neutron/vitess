@@ -3,6 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>d-spacing []</title>
 </head>
   <body>
@@ -12,7 +13,38 @@
 <p>The reflectivity data of a sample are taken from a file that contains
 the reflectivity R as a function of momentum transfer Q. To be able to get
 a simulated function R(Q), it is possible to simulate a reference measurement.
- The reference sample has a reflectivity of 1 for all Q-values. </p>
+ The reference sample has a reflectivity of 1 for all Q-values. <br>
+If offspecular scattering
+mode is desired, the reflectivity file should contain a look-up table in the form: q_i, q_f,j, R(q_i, q_f,j). 
+Here, q_i is the incoming neutron "scattering" vector: q_i = 2*pi/lambda * sin(theta), where theta is the angle between 
+the sample and the beam axis. q_f,j is an array of possible outgoing scattered vector components : 
+q_f,j = 2*pi/lambda * sin(theta_j), where theta_j=theta is the specular case and theta_j=-theta stands for the direct beam. 
+The reflectivity table thus looks like this: </p>
+<p>
+   q_i.................q_f,j.......R(q_i, q_f,j) <br>
+0.00255028      -0.0800882      0.001 <br>
+0.00255028      -0.0797596      0.0005 <br>
+0.00255028      -0.079431       0.0005 <br>
+0.00255028      -0.0791025      0.0015 <br>
+... <br>
+0.00255028      0.0876443       0.0005 <br>
+0.00255028      0.0879728       0.0005 <br>
+<br>
+0.00280531      -0.0798336      0.0005 <br>
+0.00280531      -0.079505       0.0005 <br>
+0.00280531      -0.0791764      0.0005 <br>
+0.00280531      -0.0788478      0.0005 <br>
+0.00280531      -0.0785192      0.001 <br>
+... <br>
+<br>
+An empty line between two subsequent q_i values is recommended to match the plotting format of gnuplot. An example file with a 
+generic offspecular look-up table is provided in the FILES folder.
+
+ </p>
+
+<p>
+The reflectometry sample can now handle incoherent isotropic scattering. It requires information on the scattering path length mu, with P=&mu;*x being the scattering probability (0.00288 1/cm for D<sub>2</sub>O), and on some detector parameters. Besides, if the ratio between the area containing the specular signal and the total detector area is known, this is used to scale the incoherent trajectories such that eval_elast can provide the correct backgroun level without additional data treatment inside and outside the specular signal area.
+</p>
 
 <p>The reflection of neutrons at several angles can be done in one simulation.
  In this case, a minimal value, a maximal value, and a step size for the
@@ -107,6 +139,77 @@ typical. +1&deg;....+4&deg;<br>
   </tbody>
 </table>
    </p>
+
+<p><font face="Symbol">- </font>ADVANCED OPTIONS <br>
+ &nbsp;
+<table border="1" cellpadding="5" width="809">
+  <tbody>
+     <tr>
+  <td valign="top" width="18%"><b>Parameter</b></td>
+   <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
+   <td valign="top" width="28%"><b>Range, Examples</b></td>
+  </tr>
+   <tr>
+  <td valign="top" width="18%">Offspecular scattering&nbsp;</td>
+   <td valign="top" width="54%">If enabled, the module expects the reflectivity file in a shape shown above&nbsp;</td>
+   <td valign="top" width="28%">&nbsp;yes or no</td>
+  </tr>
+   <tr>
+  <td valign="top" width="18%">Incoherent scattering&nbsp;</td>
+   <td valign="top" width="54%">If enabled, the module expects additional parameters, see below&nbsp;</td>
+   <td valign="top" width="28%">&nbsp;yes or no</td>
+  </tr>	
+   <tr>
+  <td valign="top" width="18%">Incoherent pathlength
+      <p>[1/cm]</p>
+       </td>
+       <td valign="top" width="54%">&mu;, needed to calculate the probability of incoherent scattering, calculated as P=&mu;*x, where x is the pathlength in sample<br>
+      </p>
+       </td>
+   <td valign="top" width="28%">&nbsp;&mu;=0.00288 1/cm for D<sub>2</sub>O</td>
+    </tr>
+    <tr> 	
+   <td valign="top" width="18%">Detector distance
+      <p>[cm]</p>
+       </td>
+       <td valign="top" width="54%">Detector parameters are needed to scatter trajectories efficiently towards detector surface.<br>
+				The specular signal is expected in the center of the detector.	
+      </p>
+       </td>
+   <td valign="top" width="28%">&nbsp;Typically up to 10 m</td>
+      	
+    </tr>
+	<tr>
+    <td valign="top" width="18%">Detector width
+      <p>[cm]</p>
+       </td>
+       <td valign="top" width="54%">Detector parameters are needed to scatter trajectories efficiently towards detector surface.<br>
+                                    The specular signal is expected in the center of the detector.	
+      </p>
+       </td>
+   <td valign="top" width="28%">&nbsp;Typically up to 1-2 m, assuming flat detector</td>
+    </tr>
+    <tr>
+    <td valign="top" width="18%">Detector height
+      <p>[cm]</p>
+       </td>
+       <td valign="top" width="54%">Detector parameters are needed to scatter trajectories efficiently towards detector surface.<br>
+                                    The specular signal is expected in the center of the detector.	
+      </p>
+       </td>
+   <td valign="top" width="28%">&nbsp;Typically up to 1-2 m, assuming flat detector</td>
+	 </tr>
+    <tr>
+   <td valign="top" width="18%">Norm factor     
+       </td>
+       <td valign="top" width="54%">Ratio between the specular area and the total detector area. <br> If given, the background trajectories are scaled and the resulting reflectivity should show the expected background level.
+      </td>     
+   <td valign="top" width="28%">&nbsp;Usually several percent for an area detector, put in 1 otherwise, if unknown.</td>	
+  </tr>
+  </tbody>
+</table>
+   </p>
+<br>
 
 <p><font face="Symbol">- </font>FILE INPUT PARAMETERS <br>
  &nbsp;
@@ -218,8 +321,8 @@ difference <font face="Symbol">Dq</font>. <br>
 
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
  &nbsp; <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
-<p><!-- hhmts start --><font size="-1">Last modified: Tue Oct 5 16:09:32
-MET DST 1999</font><!-- hhmts end --> </p>
+<p><!-- hhmts start --><font size="-1">Last modified: Tue Jun 13 16:05:32
+MET DST 2013</font><!-- hhmts end --> </p>
  <br>
  <br>
 </body>
