@@ -42,9 +42,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   set PipeLogList {}
   upvar #0 FullCommand fc
   set fc ""
-  #  random seed, gravitation effect, neutron weight
   lookWhosConcerned srep0 spar0 serno0 0 $Comode $serll sermol serpal
-  foreach {i} [lrange $ll 3 5] {
+  #  3..6: random seed, random_gen,  neutron weight, gravitation effect
+  foreach {i} [lrange $ll 3 6] {
     writeCommandOption $i _ "" $spar0 $srep0 $serno0
   }
   switch $Comode {

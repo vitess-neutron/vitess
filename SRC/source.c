@@ -32,6 +32,7 @@
 /* 1.11b Dec  2004  K. Lieutenant  solid angle calculation to general.c, (count rate errors) */
 /* 1.12  Aug  2005  D. Champion    special code to describe ISIS source                      */
 /* 1.13  Jul  2006  K. Lieutenant  virtual window                                            */
+/* 1.14  Apr  2007  D.Champion     fix parameter directory bug in isis moderator file reading*/
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -193,7 +194,7 @@ int main(int argc, char *argv[])
 	  if (stMod[imod].eIsisTS > 0) {
 	    // set up ISIS specific parameters and values
 	    FILE* IFptr;
-	    IFptr = openFile(stMod[imod].sLTFileName);
+	    IFptr = openFile(FullParName(stMod[imod].sLTFileName));
 	    ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
 	    fclose(IFptr);
 	    // set to be propagation window instead of divergence which is default

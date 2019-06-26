@@ -2,7 +2,8 @@
 CPATH=c:\programme\microsoft visual studio .net 2003\vc7
 SROOT=h:\control
 #SVNROOT=h:\V
-SVNROOT=h:\control\vitess\trunk
+#SVNROOT=h:\control\vitess\trunk
+SVNROOT=d:\vitcsrc
 CPATH2=$(CPATH)\PlatformSDK
 IPATH=$(CPATH)\include
 LPATH=$(CPATH)\lib

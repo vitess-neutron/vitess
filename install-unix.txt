@@ -3,9 +3,10 @@
 
 
 Hahn-Meitner-Institut Berlin
+
 Modules:
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
-	Klaus Lieutenant   (lieutena@ill.fr)
+	Klaus Lieutenant   (klaus.lieutenant@ife.no)
 	Sergey Manoshin
 	Dietmar Wechsler
 	Friedrich Streffer
@@ -20,11 +21,12 @@ This program has been developed on Unix systems, but runs
 on windows systems, too.
 
 Installation under Unix
-cd
+
 1. check
 --------
 Your operating system should be Linux (versions from 2.0.35),
-SunOS (versions from 5.6), or OSF1(V4.0).
+SunOS (versions from 5.6), or OSF1(V4.0). Vitess may be compiled
+from sources for other versions of Unix. 
 
 We assume Tcl/Tk software with a version 8 or higher
 is installed separately. If you miss information, try
@@ -72,3 +74,26 @@ directories and files fails. We send you a patch on request.)
 4. try it
 ---------
 	<vitess parent directory>/vitess/Vitess
+
+Compilation from sources
+------------------------
+The Tcl/Tk code should work with little or no modification
+for all Unix derivates.
+
+C sources have been compiled for Linux,
+Solaris and Tru64.
+
+Difference to the Windows version
+---------------------------------
+The Windows version comes alongside with standard Tcl/Tk
+software. For the Vitess part the only difference to the
+Unix version is to be seen in the directory for executable
+images. The MODULES directory contains those files, you
+need the right ones for your operating system. 
+For module guide (from guide.c) we find
+
+guide_Linux		 Linux i386
+guide_Linux_x86_64       Linux x86 64 architecture
+guide_SunOS		 Solaris sparc
+guide_OSF		 Tru64 alpha
+guide.exe		 Windows 32 bit
