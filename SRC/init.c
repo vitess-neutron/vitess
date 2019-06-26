@@ -92,7 +92,7 @@ static void   WriteTraceLine(Neutron* Neut);
 void  CopyNeutron    (Neutron* source,   Neutron* dest);
 void  WriteInstrData (long   nModuleNo,  VectorType Pos, double  dLength, double  dRotZ, double  dRotY);
 void  ReadInstrData  (long*  pModuleNo,  VectorType Pos, double* pLength, double* pRotZ, double* pRotY);
-void  ReadSimData    (double* pTimeMeas, double* pLmbdWant);
+void  ReadSimData    (double* pTimeMeas, double* pLmbdWant, double* pFreq);
 long  LinesInFile    (FILE* In);
 char* FullParName    (char* filename);
 char* FullInstallName(char* fileName, char* sRelPath);
@@ -328,7 +328,7 @@ void Init(int argc, char **argv, VtModID eModule)
 void Cleanup(double dShiftX, double dShiftY, double dShiftZ, 
              double dHorizAngle, double dVertAngle)
 {
-  double dTimeMeas, dLmbdWant, nNoNeutrons,
+  double dTimeMeas, dLmbdWant, dFreq, nNoNeutrons,
          dRotMatrix[3][3], dRotY, dRotZ, dLength;
   long   nModuleNo;
   int    k,l;
@@ -347,7 +347,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   free(OutputNeutrons);
   
   ReadInstrData(&nModuleNo, EndPos, &dLength, &dRotZ, &dRotY);
-  ReadSimData  (&dTimeMeas, &dLmbdWant);
+  ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
   nModuleNo++;
   Shift[0]= dShiftX/100.;
   Shift[1]= dShiftY/100.;
@@ -390,7 +390,7 @@ void print_module_name(char name[])
 {
   char sNameHlp[41], *pBlank;
 
-  fprintf(LogFilePtr,"\n\nVITESS version %s module %s\n", VITESS_VERSION, name);
+  fprintf(LogFilePtr,"\n\nVITESS version %s  module %s\n", VITESS_VERSION, name);
 
   /* Keeping name in mind (without "Space and" and without version number */
   if (strncmp(name, "Space and ", 10)==0)
@@ -510,7 +510,7 @@ void ReadInstrData(long* pModuleNo, VectorType Pos, double* pLength, double* pRo
 }
 
 
-void WriteSimData(double dTimeMeas, double dLmbdWant)
+void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq)
 {
   FILE*  pFile=NULL;
 
@@ -518,11 +518,12 @@ void WriteSimData(double dTimeMeas, double dLmbdWant)
   if (pFile) 	
   { fprintf(pFile, "%15.5e   # measuring time     [s]\n", dTimeMeas);
     fprintf(pFile, "%10.5f        # desired wavelength [Ang]\n", dLmbdWant);
+    fprintf(pFile, "%10.5f        # source frequency   [Hz]\n", dFreq);
     fclose(pFile);
   }
 }
 
-void ReadSimData(double* pTimeMeas, double* pLmbdWant)
+void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
 {
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
@@ -538,6 +539,9 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant)
     /* Second line - desired wavelength */
     ReadLine(pFile, sLine, sizeof(sLine)-1);
     sscanf(sLine, "%lf", pLmbdWant);
+    /* Third line - frequency */
+    ReadLine(pFile, sLine, sizeof(sLine)-1);
+    sscanf(sLine, "%lf", pFreq);
 
     fclose(pFile);
   }
@@ -565,6 +569,7 @@ long LinesInFile(FILE *pIn)
   char Buffer[CHAR_BUF_LARGE]="";
   long NumLines=0;
 
+  rewind(pIn);
   if (pIn!=NULL)
   { while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
       NumLines++;
