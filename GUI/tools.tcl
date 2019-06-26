@@ -177,7 +177,7 @@ proc helpFrame {w {mode ""}} {
       -font [textFont] -bg $bgColor\
       -wrap none
   pack $w -side left -expand yes -fill both -ipadx 1 -ipady 1
-  #$w tag configure t1 -font [labelFont]
+
   $w tag configure tl -underline on -font [labelFont]
 
   helpButton $w {Getting Help} t5 Help

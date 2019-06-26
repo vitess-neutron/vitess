@@ -387,6 +387,7 @@ proc setGlobals {mode globvar {app _}} {
 proc itemGroup {w iref inc it icount lit wid app {opt ""}} {
   global itemlabwidth
   upvar $iref i
+  set nel [llength $lit]
   for {set li 0; set rest $it} {$rest > 0} {incr li $items} {
     set items [expr $rest >= $icount ? $icount : $rest]
     incr rest -$items
@@ -398,6 +399,7 @@ proc itemGroup {w iref inc it icount lit wid app {opt ""}} {
 
 
 proc generateEntries {w globalset {delist {}} {app _}} {
+
   foreach l $delist {
     global $l
     unset $l;				# unset old entry variables
@@ -469,4 +471,5 @@ proc generateEntries {w globalset {delist {}} {app _}} {
       incr i
     }
   }
+  propagateDigestValues
 }

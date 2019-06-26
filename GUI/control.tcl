@@ -49,6 +49,8 @@ proc finalCheck {} {
 }
 
 proc confirmedExit {} {
+  # debug
+  # exit
   global TryingToExit KillMe
   if {[info exists KillMe] && $KillMe} return
   set nt [clock seconds]
@@ -181,7 +183,9 @@ proc controlMenu {w} {
       {c "Paste Module Parameters" pasteModPars}
 
   popMenu $w.con.menu \
-      {c "Set Instrument Name" setInstrumentName}
+      {c "Set Instrument Name" setInstrumentName} s\
+      {c "Define Instrument Digest" genDigest}
+      
 
   set clist {ascii2bin
     define_direction direct_view gener_batch mirror_coating surface_file
@@ -318,13 +322,6 @@ proc controlMenu {w} {
       {m Precision prec} \
       {m Protocol prot}
 
-  set ww $wo.color
-  menu $ww -bg $menuColor -tearoff 0
-  popMenu $ww \
-      {c Background {chooseColor 1}} \
-      {c Buttons {chooseColor 2}} \
-      {c Entries {chooseColor 3}}
-
   forceDef ProtocolMode action
   cascEntries $ww.prot ProtocolMode action everything nothing
 
@@ -337,6 +334,13 @@ proc controlMenu {w} {
 
   forceDef audible_bell on
   cascEntries $ww.bell audible_bell on off
+
+  set ww $wo.color
+  menu $ww -bg $menuColor -tearoff 0
+  popMenu $ww \
+      {c Background {chooseColor 1}} \
+      {c Buttons {chooseColor 2}} \
+      {c Entries {chooseColor 3}}
 
   forceDef timeout unlimited
   cascEntries $wo.timeout timeout 10 100 500 1000 3600\
@@ -544,7 +548,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.5.1"
+  set t "VITESS 2.5.3"
   set maxModule 40
   set DummyEntry "--inactive--"
 
@@ -591,7 +595,7 @@ proc showBeef {w} {
 
   set Amf [scrollFrame $Root.r both $amw $ch $sh]; # Actual module frame
   set Mlf [scrollFrame $Root.l left $cw $ch $sh];  # Module list frame
-  set com fGroup
+  set com "fGroup $Mlf.dig"
   for {set i 1} {$i <= $maxModule} {incr i} {
     append com " $Mlf.g$i $Mlf.m$i"
   }

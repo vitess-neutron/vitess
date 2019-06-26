@@ -14,9 +14,7 @@ set GraphOptions {
   Legend.hide           true
   background		white
   x.Loose		no
-  x.Title		X
   y.Rotate		90
-  y.Title		Y
 }
 
 proc showDPoint {w x y} {
@@ -54,10 +52,21 @@ proc showXYfile {fname} {
   vector create VX
   vector create VY
 
+  set hf 0;				# header found?
   while {[gets $f ins] > 0} {
-    if {2 != [scan $ins "%f%f" x y]} continue
-    VX append $x
-    VY append $y
+    if {$hf} {
+      if {2 != [scan $ins "%f%f" x y]} continue
+      VX append $x
+      VY append $y
+      continue
+    }
+    if [regexp {^\# *(.*)} $ins a match] {
+      # match contains column descriptions
+    } elseif [regexp {^ *[a-zA-Z]} $ins] {
+      set match $ins
+    }
+    regexp {^([^ ]+) *([^ ]+)} $match a xtitle ytitle
+    set hf 1
   }
   close $f
   VX sort VY
@@ -71,6 +80,11 @@ proc showXYfile {fname} {
   toplevel $w -background $bgColor
   set g $w.graph
   set resource [string trimleft $g .]
+  if {$xtitle == ""} {set xtitle X}
+  option add *$resource.x.Title $xtitle
+  if {$ytitle == ""} {set ytitle Y}
+  option add *$resource.y.Title $ytitle
+
   foreach {option value} $GraphOptions {
     option add *$resource.$option $value
   }

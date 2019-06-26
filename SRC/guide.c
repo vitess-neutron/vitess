@@ -31,6 +31,7 @@
 /* 2.8   Jan 2004  K. Lieutenant  correction: wrong direction because of high waviness      */
 /* 2.9   Feb 2004  K. Lieutenant  'FullParName'; 'message' included                         */
 /* 2.10  Mar 2004  K. Lieutenant  parabolic and elliptic shape                              */
+/* 2.11  Oct 2004  K. Lieutenant  curvature to the right by negative radius                 */
 /********************************************************************************************/
 
 #include "intersection.h"
@@ -163,7 +164,7 @@ int main(int argc, char *argv[])
 
 	/* Initialisation */
 	Init(argc, argv, VT_GUIDE);
-	print_module_name("guide 2.10d");
+	print_module_name("guide 2.11");
 	OwnInit(argc, argv);
 
 	/* Writing to log file */
@@ -205,7 +206,7 @@ int main(int argc, char *argv[])
 	if (nChannels > 1)
 		fprintf(LogFilePtr, " with %d channels", nChannels);
 
-	if (Radius > 0.0)  /* curved guide */
+	if (Radius != 0.0)  /* curved guide */
 	{	beta = 2.0*asin(piecelength/(2.0*Radius));
 		dCosBetH = cos(beta/2.0);
 		dSinBetH = sin(beta/2.0);
@@ -343,8 +344,6 @@ int main(int argc, char *argv[])
 			kChan = 0;
 			TimeOF1 = 0.0; 
 			TimeOF2 = 0.0;
-			if (i==709)
-				test=TRUE;
   
 			/*	InputNeutrons[i].Position.X = 0.0;   /* !!!!!!!! */
 			/****************************************************************************************/
@@ -490,7 +489,7 @@ int main(int argc, char *argv[])
 				InputNeutrons[i].Position[0] -= piecelength;
 
 				/* For curved guide: frame rotated for next piece, but not after last piece */
-				if (Radius > 0.0 && j < nPieces-1)
+				if (Radius != 0.0 && j < nPieces-1)
 				{
 					/* horizontal position and flight direction adjusted */
 					RotVector(RotMatrix, InputNeutrons[i].Position);
@@ -753,7 +752,7 @@ void OwnCleanup()
 	else
 		stPicture.nNumber = nPieces;
 	beta_ges = (nPieces-1)*beta;
-	if (Radius > 0.0)
+	if (Radius != 0.0)
 	{	dDeltaX = Radius*sin(beta_ges)       + 0.5*piecelength*(cos(beta_ges)+1.0);
 		dDeltaY = Radius*(1.0-cos(beta_ges)) + 0.5*piecelength* sin(beta_ges);
 	}
