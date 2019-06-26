@@ -34,7 +34,7 @@ static void  OwnInit    (int argc, char *argv[]);
 
 
 char  sBuffer[BUF_SIZE+1];
-char *pTitle="  ",  /* title of the plot                   */
+const char *pTitle="  ",  /* title of the plot                   */
      *pFileName="dist_time.ps", /* Name of plot file                   */ 
      *pFullName;    /* name of plot file incl. path        */
 float fTmax=10.0,   /* max. time that shall be displayed   */
@@ -74,9 +74,9 @@ int main(int argc, char* argv[])
 	      nFr;             /* running variable in loop over frames */
 	      
 #ifdef DO_WIN32 
-  char *GraphDev = "dist_time.ps"; 
+  const char *GraphDev = "dist_time.ps"; 
 #else 
-  char *GraphDev = "/xs"; 
+  const char *GraphDev = "/xs"; 
 #endif 
 
 	if (do_visualise) 

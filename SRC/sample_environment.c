@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
 	/* Initialize the program according to the parameters given   */
 	Init(argc, argv, VT_SMPL_ENVIRON);
-	print_module_name("sample_environment 0.9");
+	print_module_name("sample_environment 1.0");
 
 	/* Module specific initialization and reading of sample geometry and name of the structure factor file */
 	InitSample    (&stEnvironment);

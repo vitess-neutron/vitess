@@ -1,0 +1,94 @@
+Helper threads for sm_ensemble
+==============================
+
+This module _is consuming compute power to the extreme_ and for that reason
+a good candidate for helper thread usage.
+Two main obstacles are in the way:
+1. Graphic output per neutron or trace output per neutron would need frequent synchronisation
+   at a low lewel, which would prohibit any speedup. So we do _not_ use helper
+   threads in these cases.
+2. sm_ensemble makes heavy use of random numbers when calculating collisions with
+   mirror planes. Unfortunately a good guess of the average count of random numbers per
+   neutron is dependent of many parameters, and a provable maximum is far too high
+   to be workable. In that situation we give a reasonable guess, and a special option
+   for the user to increase this if necessary for his mirror configuration.
+
+processNeutron
+--------------
+Variables which need to be local to processNeutron:
+  VectorType  Pos, Dir, SpinVector;
+  double
+    TOF, WL, Prob, Path0, Path,
+    prob[MAX_MIRR+1],
+    PathA[MAX_MIRR+1];
+  int j,m, nocol;
+
+"goto getlost" translates to return, "goto contin" becomes a break to leave the collisions loop.
+
+We have to keep p==0 if once set so in the beginning, and make sure
+not to write COLLFILE or to the graphic device then.
+Incrementing number_vis_tr is restricted to p > 0.
+
+NumWrong needs to be an array to avoid race writing in threads. The final sum is
+computed from the array.
+
+CollideWall
+-----------
+Additional parameters thread_i, WL, SpinVector are necessary for encapsulation
+of these variables to the calling thread invocation of processNeutron.
+
+Computation of angular spread may be moved to a later point, because
+we have the chance to return earlier.
+
+Incrementing NumWrong has to be done per thread to avoid race faults.
+
+max. MonteCarloPar invocations
+2 for angular spread
+1 for Choise (choice?)
+
+MonteCarlo -> MonteCarloPar
+---------------------------
+A hard problem is to guess the maximum number of MonteCarloPar invocations
+per neutron, because the sure maximum of 1000*max_mirr*3 would make up
+BufferSize * 1000 * max_mirr * 3 = 10000 * 1000 * 48 = 500 million random
+number to be computed beforehand; This price is too high.
+
+For that reason we introduce a special option -m for sm_ensemble_parallel,
+so that the user may specify a bigger number than the default MAX_MIRR*30.
+A value of 500 was used for tests with the PolariserCavity.gui example.
+
+With the experience of PolCav2:
+99% of the MonteCarloPar calls in the PolCav2 example were superfluous,
+because the random number has not been used (MonteCarlo(0,0) == 0 forever).
+With this information we may reduce mcperneutron to 3*MAX_MIRR.
+
+softabort.h + softabort.c
+-------------------------
+
+We need to create softabort.c to allow inclusion of softabort.h in more
+than one c source per module, here for threadHelper.c and sm_ensemble_parallel.c.
+This is necessary because handling a single neutron in processNeutron may take
+longer than normal, and we insert a CHECK macro within the collisions loop.
+Global variables of softabort are created
+in softabort.c only, and are declared extern elsewhere.
+
+other code modifications
+------------------------
+
+casts to the default type are not necessary, like (double) sqrt
+because sqrt is defined to be double in math.h.
+
+a += - 1 rewritten a -= 1
+
+(a == 1) evaluates to the same result as (a) when used in logical context,
+same holds for (a != NULL)
+if (a) return 1; else return 0;
+rewritten to
+return a;
+if a logically may only be either 0 or 1.
+
+nobody really sees the blank in " \n" output, "\n" is enough
+
+global variables with no output or no usage at all deleted (repet, .., IntegralIntensity,..)
+
+Writing to LogFilePtr after Cleanup() crashed sm_ensemble.

@@ -26,10 +26,10 @@ VtShape;
 
 double Height   (double length);
 double Width    (double length);
-double GetDouble(char* pText);
-long   GetLong  (char* pText);
-short  GetShort (char* pText);
-void   GetString(char* pString, char* pText);
+double GetDouble(const char* pText);
+long   GetLong  (const char* pText);
+short  GetShort (const char* pText);
+void   GetString(char* pString, const char* pText);
 
 
 short   eGuideShapeY, eGuideShapeZ;
@@ -265,7 +265,7 @@ double Height(double dLength)
 }
 
 
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -275,7 +275,7 @@ double GetDouble(char* pText)
 	return dValue;
 }
 
-long GetLong(char* pText)
+long GetLong(const char* pText)
 {
 	long nValue;
 	
@@ -286,7 +286,7 @@ long GetLong(char* pText)
 }
 
 
-short GetShort(char* pText)
+short GetShort(const char* pText)
 {
   int nValue;
 	
@@ -297,7 +297,7 @@ short GetShort(char* pText)
 }
 
 
-void GetString(char* pString, char* pText)
+void GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

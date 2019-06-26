@@ -23,9 +23,9 @@
 
 char sBuffer   [256];
 
-long   GetLong  (char* pText);
-double GetDouble(char* pText);
-void   GetString(char* pString, char* pText);
+long   GetLong  (const char* pText);
+double GetDouble(const char* pText);
+void   GetString(char* pString, const char* pText);
 
 
 int main(int argc, char* argv[])
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 }
 
 
-long GetLong(char* pText)
+long GetLong(const char* pText)
 {
 	long nValue;
 	
@@ -141,7 +141,7 @@ long GetLong(char* pText)
 }
 
 
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -152,7 +152,7 @@ double GetDouble(char* pText)
 }
 
 
-void GetString(char* pString, char* pText)
+void GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

@@ -1,0 +1,385 @@
+17.02.2010 14:24:12 --- control file /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/PolCav2.gui successfully loaded ---
+17.02.2010 14:24:19 Parameter directory is /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest
+Starting simulation
+/chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/source_Linux_x86_64 -S2 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog1 -R50 -NESS -a/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/EssSPColdCpld.mod -n1000000 -m0.1 -t0 -y1 -M10 -T0.4 -z1 -d1 -P0 -X0 -Y0 -V-1 -D100 -w6 -h10 -i0 -A0 -k0 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog2 -w5.97 -h10 -W5.97 -H10 -p800 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog3 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/lambdasou.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/sm_ensemble_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog4 -P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/gbranchparsplit.dat -M1000 -Q2 -r600 -s0 -t0 -h0 -v0 -T0 -o1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog5 -w5.97 -h10. -W5.97 -H10. -p50 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitorpol_1d_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog6 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/p_l_trans.dat -n50 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog7 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 --Fno_file
+17.02.2010 14:24:19 simulation (1319 131a 131b 131c 131d 131e 131f ) (4889 4890 4891 4892 4893 4894 4895) is active
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 GSL_RNG_TYPE=ran3
+17.02.2010 14:24:22 GSL_RNG_SEED=21
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 VITESS version 2.9  module supermirror_ensemble_parallel 1.9
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 ERROR: Parameter file '/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/gbranchparsplit.dat' not found.
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 VITESS version 2.9  module guide_parallel 2.3
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 Total length of guide   :    0.500  m
+17.02.2010 14:24:22 Width x Height          :    5.970  x  10.000 cm²
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 Horizontal: constant width
+17.02.2010 14:24:22  area (top+bottom) :   0.060 m²
+17.02.2010 14:24:22 Vertical  : constant height
+17.02.2010 14:24:22  area (left+right) :   0.100 m²
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 Reflectivity file  : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat
+17.02.2010 14:24:22  maximal defined m :     1.15
+17.02.2010 14:24:22  surface area      :   0.160 m²
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 Inside guide abutment loss is disabled
+17.02.2010 14:24:22 The walls have no waviness
+17.02.2010 14:24:22 maximum usage of mc prefetch buffers      0.0 %, buffer sizes 0, 1 helper thread(s)
+17.02.2010 14:24:22 
+17.02.2010 14:24:22  1 number of trajectories read         :           0
+17.02.2010 14:24:22    number of trajectories written      :           0
+17.02.2010 14:24:22 (time averaged) neutron count rate     :  0.0000e+00 +/-  0.000e+00 n/s 
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 VITESS version 2.9  module monitorpol1 1.2
+17.02.2010 14:24:22  2 number of trajectories read         :           0
+17.02.2010 14:24:22    number of trajectories written      :           0
+17.02.2010 14:24:22 (time averaged) neutron count rate     :  0.0000e+00 +/-  0.000e+00 n/s 
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22 VITESS version 2.9  module monitor1_wavelength 1.6a
+17.02.2010 14:24:22 Norm     : 0.198200
+17.02.2010 14:24:22 Binning  : 50 bins from    0.10000 to   10.01000 Ang
+17.02.2010 14:24:22 File     : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat
+17.02.2010 14:24:22 total neutron count rate within binning and eval. time:  0.0000e+00 n/s 
+17.02.2010 14:24:22 
+17.02.2010 14:24:22  3 number of trajectories read         :           0
+17.02.2010 14:24:22    number of trajectories written      :           0
+17.02.2010 14:24:22 (time averaged) neutron count rate     :  0.0000e+00 +/-  0.000e+00 n/s 
+17.02.2010 14:24:22 ------------------------------
+17.02.2010 14:24:22 ERRORS OCCURED: Read error messages of the modules concerned
+17.02.2010 14:25:19 Parameter directory is /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest
+Starting simulation
+/chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/source_Linux_x86_64 -S2 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog1 -R50 -NESS -a/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/EssSPColdCpld.mod -n1000000 -m0.1 -t0 -y1 -M10 -T0.4 -z1 -d1 -P0 -X0 -Y0 -V-1 -D100 -w6 -h10 -i0 -A0 -k0 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog2 -w5.97 -h10 -W5.97 -H10 -p800 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog3 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/lambdasou.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/sm_ensemble_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog4 -P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/gbranchparsplit.dat -M1000 -Q2 -r600 -s0 -t0 -h0 -v0 -T0 -o1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog5 -w5.97 -h10. -W5.97 -H10. -p50 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitorpol_1d_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog6 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/p_l_trans.dat -n50 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T1 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog7 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 --Fno_file
+17.02.2010 14:25:20 simulation (132f 1330 1331 1332 1333 1334 1336 ) (4911 4912 4913 4914 4915 4916 4918) is active
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 GSL_RNG_TYPE=ran3
+17.02.2010 14:25:24 GSL_RNG_SEED=21
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module Source and Window 1.14a
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 > Simulation of short pulsed spallation source ESS <
+17.02.2010 14:25:24 pulse frequency              :  50.000 Hz 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 coupled moderator
+17.02.2010 14:25:24 moderator temperature        :  50.000 K
+17.02.2010 14:25:24 total neutron flux (in 2*pi) :  1.5342e+14 n/(cm²s) 
+17.02.2010 14:25:24 moderator position           :(  0.000    0.000    0.000) cm 
+17.02.2010 14:25:24 moderator size (W x H)       :  21.000 cm  x  12.000 cm 
+17.02.2010 14:25:24 divergence defined by propagation window 
+17.02.2010 14:25:24 time averaged neutron current:  3.6698e+13 n/s in 0.005964 str
+17.02.2010 14:25:24 wavelength band used         :   0.100 Ang -  10.000 Ang
+17.02.2010 14:25:24 time interval used           :   0.000 ms  -   0.400 ms 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 real window    (W x H)       :   6.000 cm  x  10.000 cm
+17.02.2010 14:25:24   in a distance of           :   1.000 m
+17.02.2010 14:25:24   with a declination of      :   0.000°
+17.02.2010 14:25:24 polarization                 :   0.000 %  X: 0.000 Y: 0.000 Z: -1.000
+17.02.2010 14:25:24 Center of beam at window     :(100.000   -0.042   -0.043) cm 
+17.02.2010 14:25:24 Average TOF                  :   0.586 ms 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Gravity is enabled 
+17.02.2010 14:25:24 Cutoff probability per traj. :  1.000e-26 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 number of trajectories started         :     1000000
+17.02.2010 14:25:24  1 number of trajectories read         :           0
+17.02.2010 14:25:24    number of trajectories written      :     1000000
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  3.1425e+13 +/-  4.855e+11 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module guide_parallel 2.3
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Total length of guide   :    8.000  m
+17.02.2010 14:25:24 Width x Height          :    5.970  x  10.000 cm²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Horizontal: constant width
+17.02.2010 14:25:24  area (top+bottom) :   0.955 m²
+17.02.2010 14:25:24 Vertical  : constant height
+17.02.2010 14:25:24  area (left+right) :   1.600 m²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Reflectivity file  : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat
+17.02.2010 14:25:24  maximal defined m :     1.15
+17.02.2010 14:25:24  surface area      :   2.555 m²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Inside guide abutment loss is disabled
+17.02.2010 14:25:24 The walls have no waviness
+17.02.2010 14:25:24 maximum usage of mc prefetch buffers      0.0 %, buffer sizes 0, 1 helper thread(s)
+17.02.2010 14:25:24 
+17.02.2010 14:25:24  2 number of trajectories read         :     1000000
+17.02.2010 14:25:24    number of trajectories written      :       22256
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  3.0759e+11 +/-  7.852e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module monitor1_wavelength 1.6a
+17.02.2010 14:25:24 Norm     : 0.198200
+17.02.2010 14:25:24 Binning  : 50 bins from    0.10000 to   10.01000 Ang
+17.02.2010 14:25:24 File     : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/lambdasou.dat
+17.02.2010 14:25:24 total neutron count rate within binning and eval. time:  3.0759e+11 n/s 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24  3 number of trajectories read         :       22256
+17.02.2010 14:25:24    number of trajectories written      :       22256
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  3.0759e+11 +/-  7.852e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module supermirror_ensemble_parallel 1.9
+17.02.2010 14:25:24 Stops at 1000 collisions.
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 A:   118.75000   5.00000  -118.75000   5.00000  -118.75000  -5.00000   118.75000  -5.00000   118.75000  -2.98000   0.00000   -90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 B:   181.25000   5.00000  -181.25000   5.00000  -181.25000  -5.00000   181.25000  -5.00000   418.75000  -2.98000   0.00000   -90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000    0.00024    0.00000    0.00205    0.00206    1.00000    0.00024   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 C:   300.00000   5.00000  -300.00000   5.00000  -300.00000  -5.00000   300.00000  -5.00000   300.00000   2.98000   0.00000    90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 D:   181.23000   5.00000  -181.23000   5.00000  -181.23000  -5.00000   181.23000  -5.00000   418.75000  -5.89000   0.00000   -90.91700   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00097    0.00098    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 E:   300.01000   5.00000  -300.01000   5.00000  -300.01000  -5.00000   300.01000  -5.00000   300.00000  -0.99000   0.00000    89.62000   0.00000     0.00000   0.00000     0.00202   0.00349    0.90000    0.00024    0.00000    0.00081    0.00082    1.00000    0.00024   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 F:   150.00000   5.00000  -150.00000   5.00000  -150.00000  -5.00000   150.00000  -5.00000   150.00000   1.99000   0.00000   -89.62000   0.00000     0.00000   0.00000     0.00202   0.00349    0.90000    0.00024    0.00000    0.00081    0.00082    1.00000    0.00024   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 G:     2.98000 300.00000    -2.98000 300.00000    -2.98000-300.00000     2.98000-300.00000   300.00000   0.00000   5.00000     0.00000  90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 H:     2.98000 300.00000    -2.98000 300.00000    -2.98000-300.00000     2.98000-300.00000   300.00000   0.00000  -5.00000     0.00000 -90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 I:     0.01000   0.01000    -0.01000 181.25000    -5.80000-181.16000     0.01000-181.25000   418.75000  -2.98000   5.00000     0.00000  90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 J:     0.01000 181.25000    -5.80000 181.16000    -0.01000-181.25000     0.01000  -0.01000   418.75000  -2.98000  -5.00000     0.00000 -90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 ABCDEFGHIJ
+17.02.2010 14:25:24 maximum usage of mc prefetch buffers     16.0 %, buffer sizes 2400480, 1 helper thread(s)
+17.02.2010 14:25:24  4 number of trajectories read         :       22256
+17.02.2010 14:25:24    number of trajectories written      :        5524
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  1.5376e+11 +/-  7.788e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module guide_parallel 2.3
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Total length of guide   :    0.500  m
+17.02.2010 14:25:24 Width x Height          :    5.970  x  10.000 cm²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Horizontal: constant width
+17.02.2010 14:25:24  area (top+bottom) :   0.060 m²
+17.02.2010 14:25:24 Vertical  : constant height
+17.02.2010 14:25:24  area (left+right) :   0.100 m²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Reflectivity file  : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat
+17.02.2010 14:25:24  maximal defined m :     1.15
+17.02.2010 14:25:24  surface area      :   0.160 m²
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 Inside guide abutment loss is disabled
+17.02.2010 14:25:24 The walls have no waviness
+17.02.2010 14:25:24 maximum usage of mc prefetch buffers      0.0 %, buffer sizes 0, 1 helper thread(s)
+17.02.2010 14:25:24 
+17.02.2010 14:25:24  5 number of trajectories read         :        5524
+17.02.2010 14:25:24    number of trajectories written      :        3220
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  1.3596e+11 +/-  7.786e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module monitorpol1 1.2
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 polarization: -0.92231 
+17.02.2010 14:25:24  6 number of trajectories read         :        3220
+17.02.2010 14:25:24    number of trajectories written      :        3220
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  1.3596e+11 +/-  7.786e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24 VITESS version 2.9  module monitor1_wavelength 1.6a
+17.02.2010 14:25:24 Norm     : 0.198200
+17.02.2010 14:25:24 Binning  : 50 bins from    0.10000 to   10.01000 Ang
+17.02.2010 14:25:24 File     : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat
+17.02.2010 14:25:24 total neutron count rate within binning and eval. time:  1.3596e+11 n/s 
+17.02.2010 14:25:24 
+17.02.2010 14:25:24  7 number of trajectories read         :        3220
+17.02.2010 14:25:24    number of trajectories written      :        3220
+17.02.2010 14:25:24 (time averaged) neutron count rate     :  1.3596e+11 +/-  7.786e+10 n/s 
+17.02.2010 14:25:24 ------------------------------
+17.02.2010 14:25:40 file stored
+17.02.2010 14:25:45 Parameter directory is /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest
+Starting simulation
+/chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/source_Linux_x86_64 -S2 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog1 -R50 -NESS -a/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/EssSPColdCpld.mod -n10000000 -m0.1 -t0 -y1 -M10 -T0.4 -z1 -d1 -P0 -X0 -Y0 -V-1 -D100 -w6 -h10 -i0 -A0 -k0 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog2 -w5.97 -h10 -W5.97 -H10 -p800 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog3 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/lambdasou.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/sm_ensemble_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog4 -P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/gbranchparsplit.dat -M1000 -Q2 -r600 -s0 -t0 -h0 -v0 -T0 -o1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/guide_parallel_Linux_x86_64 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog5 -w5.97 -h10. -W5.97 -H10. -p50 -N1 -i/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -I/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -j/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -J/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat -R0 -a0 -k100 -x0 -X10000 -u0 -U10 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitorpol_1d_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog6 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/p_l_trans.dat -n50 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 -a0 -b0 -c1 
+| /chmi/dixi3/dmf/SRC/vitess/trunk/MODULES/monitor1_Linux_x86_64 -k1 --Z21 --U1.0e-26 --G1 --T4 --B10000 --P/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest --L/tmp/dmfvpipelog7 -O/chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat -n50 -C0 -f1 -m0.1 -M10.01 -p1 -e0 -t-1.e10 -T1.e10 --Fno_file
+17.02.2010 14:25:45 simulation (1344 1345 1346 1347 1348 1349 134e ) (4932 4933 4934 4935 4936 4937 4942) is active
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 GSL_RNG_TYPE=ran3
+17.02.2010 14:26:12 GSL_RNG_SEED=21
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module Source and Window 1.14a
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 > Simulation of short pulsed spallation source ESS <
+17.02.2010 14:26:12 pulse frequency              :  50.000 Hz 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 coupled moderator
+17.02.2010 14:26:12 moderator temperature        :  50.000 K
+17.02.2010 14:26:12 total neutron flux (in 2*pi) :  1.5342e+14 n/(cm²s) 
+17.02.2010 14:26:12 moderator position           :(  0.000    0.000    0.000) cm 
+17.02.2010 14:26:12 moderator size (W x H)       :  21.000 cm  x  12.000 cm 
+17.02.2010 14:26:12 divergence defined by propagation window 
+17.02.2010 14:26:12 time averaged neutron current:  3.6698e+13 n/s in 0.005964 str
+17.02.2010 14:26:12 wavelength band used         :   0.100 Ang -  10.000 Ang
+17.02.2010 14:26:12 time interval used           :   0.000 ms  -   0.400 ms 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 real window    (W x H)       :   6.000 cm  x  10.000 cm
+17.02.2010 14:26:12   in a distance of           :   1.000 m
+17.02.2010 14:26:12   with a declination of      :   0.000°
+17.02.2010 14:26:12 polarization                 :   0.000 %  X: 0.000 Y: 0.000 Z: -1.000
+17.02.2010 14:26:12 Center of beam at window     :(100.000    0.013   -0.011) cm 
+17.02.2010 14:26:12 Average TOF                  :   0.579 ms 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Gravity is enabled 
+17.02.2010 14:26:12 Cutoff probability per traj. :  1.000e-26 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 number of trajectories started         :    10000000
+17.02.2010 14:26:12  1 number of trajectories read         :           0
+17.02.2010 14:26:12    number of trajectories written      :     9999991
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  3.1854e+13 +/-  1.580e+11 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module guide_parallel 2.3
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Total length of guide   :    8.000  m
+17.02.2010 14:26:12 Width x Height          :    5.970  x  10.000 cm²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Horizontal: constant width
+17.02.2010 14:26:12  area (top+bottom) :   0.955 m²
+17.02.2010 14:26:12 Vertical  : constant height
+17.02.2010 14:26:12  area (left+right) :   1.600 m²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Reflectivity file  : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat
+17.02.2010 14:26:12  maximal defined m :     1.15
+17.02.2010 14:26:12  surface area      :   2.555 m²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Inside guide abutment loss is disabled
+17.02.2010 14:26:12 The walls have no waviness
+17.02.2010 14:26:12 maximum usage of mc prefetch buffers      0.0 %, buffer sizes 0, 4 helper thread(s)
+17.02.2010 14:26:12 
+17.02.2010 14:26:12  2 number of trajectories read         :     9999991
+17.02.2010 14:26:12    number of trajectories written      :      221633
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  2.2994e+11 +/-  9.911e+09 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module monitor1_wavelength 1.6a
+17.02.2010 14:26:12 Norm     : 0.198200
+17.02.2010 14:26:12 Binning  : 50 bins from    0.10000 to   10.01000 Ang
+17.02.2010 14:26:12 File     : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/lambdasou.dat
+17.02.2010 14:26:12 total neutron count rate within binning and eval. time:  2.2994e+11 n/s 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12  3 number of trajectories read         :      221633
+17.02.2010 14:26:12    number of trajectories written      :      221633
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  2.2994e+11 +/-  9.911e+09 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module supermirror_ensemble_parallel 1.9
+17.02.2010 14:26:12 Stops at 1000 collisions.
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 A:   118.75000   5.00000  -118.75000   5.00000  -118.75000  -5.00000   118.75000  -5.00000   118.75000  -2.98000   0.00000   -90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 B:   181.25000   5.00000  -181.25000   5.00000  -181.25000  -5.00000   181.25000  -5.00000   418.75000  -2.98000   0.00000   -90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000    0.00024    0.00000    0.00205    0.00206    1.00000    0.00024   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 C:   300.00000   5.00000  -300.00000   5.00000  -300.00000  -5.00000   300.00000  -5.00000   300.00000   2.98000   0.00000    90.00000   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 D:   181.23000   5.00000  -181.23000   5.00000  -181.23000  -5.00000   181.23000  -5.00000   418.75000  -5.89000   0.00000   -90.91700   0.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00097    0.00098    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 E:   300.01000   5.00000  -300.01000   5.00000  -300.01000  -5.00000   300.01000  -5.00000   300.00000  -0.99000   0.00000    89.62000   0.00000     0.00000   0.00000     0.00202   0.00349    0.90000    0.00024    0.00000    0.00081    0.00082    1.00000    0.00024   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 F:   150.00000   5.00000  -150.00000   5.00000  -150.00000  -5.00000   150.00000  -5.00000   150.00000   1.99000   0.00000   -89.62000   0.00000     0.00000   0.00000     0.00202   0.00349    0.90000    0.00024    0.00000    0.00081    0.00082    1.00000    0.00024   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 G:     2.98000 300.00000    -2.98000 300.00000    -2.98000-300.00000     2.98000-300.00000   300.00000   0.00000   5.00000     0.00000  90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 H:     2.98000 300.00000    -2.98000 300.00000    -2.98000-300.00000     2.98000-300.00000   300.00000   0.00000  -5.00000     0.00000 -90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 I:     0.01000   0.01000    -0.01000 181.25000    -5.80000-181.16000     0.01000-181.25000   418.75000  -2.98000   5.00000     0.00000  90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 J:     0.01000 181.25000    -5.80000 181.16000    -0.01000-181.25000     0.01000  -0.01000   418.75000  -2.98000  -5.00000     0.00000 -90.00000     0.00000   0.00000     0.00205   0.00206    1.00000  100.00000  100.00000    0.00205    0.00206    1.00000  100.00000   0.00000
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 ABCDEFGHIJ
+17.02.2010 14:26:12 maximum usage of mc prefetch buffers     23.0 %, buffer sizes 960480, 4 helper thread(s)
+17.02.2010 14:26:12  4 number of trajectories read         :      221633
+17.02.2010 14:26:12    number of trajectories written      :       55007
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  5.8837e+10 +/-  7.913e+09 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module guide_parallel 2.3
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Total length of guide   :    0.500  m
+17.02.2010 14:26:12 Width x Height          :    5.970  x  10.000 cm²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Horizontal: constant width
+17.02.2010 14:26:12  area (top+bottom) :   0.060 m²
+17.02.2010 14:26:12 Vertical  : constant height
+17.02.2010 14:26:12  area (left+right) :   0.100 m²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Reflectivity file  : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/mirr1b.dat
+17.02.2010 14:26:12  maximal defined m :     1.15
+17.02.2010 14:26:12  surface area      :   0.160 m²
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 Inside guide abutment loss is disabled
+17.02.2010 14:26:12 The walls have no waviness
+17.02.2010 14:26:12 maximum usage of mc prefetch buffers      0.0 %, buffer sizes 0, 4 helper thread(s)
+17.02.2010 14:26:12 
+17.02.2010 14:26:12  5 number of trajectories read         :       55007
+17.02.2010 14:26:12    number of trajectories written      :       32263
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  4.2560e+10 +/-  7.895e+09 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module monitorpol1 1.2
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 polarization: -0.67062 
+17.02.2010 14:26:12  6 number of trajectories read         :       32263
+17.02.2010 14:26:12    number of trajectories written      :       32263
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  4.2560e+10 +/-  7.895e+09 n/s 
+17.02.2010 14:26:12 ------------------------------
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12 VITESS version 2.9  module monitor1_wavelength 1.6a
+17.02.2010 14:26:12 Norm     : 0.198200
+17.02.2010 14:26:12 Binning  : 50 bins from    0.10000 to   10.01000 Ang
+17.02.2010 14:26:12 File     : /chmi/dixi3/dmf/SRC/vitess/trunk/FILES/ParTest/l_trans.dat
+17.02.2010 14:26:12 total neutron count rate within binning and eval. time:  4.2560e+10 n/s 
+17.02.2010 14:26:12 
+17.02.2010 14:26:12  7 number of trajectories read         :       32263
+17.02.2010 14:26:12    number of trajectories written      :       32263
+17.02.2010 14:26:12 (time averaged) neutron count rate     :  4.2560e+10 +/-  7.895e+09 n/s 
+17.02.2010 14:26:12 ------------------------------

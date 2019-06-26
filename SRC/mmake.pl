@@ -35,23 +35,24 @@ EOS
 ### define targets #####################################################
 ###
 # tool objects
-my @Obj = qw(init general intersection matrix sample);
+my @Obj = qw(init general intersection matrix sample softabort);
 
 # modules which need TOOL (init general message)
 my @C = qw(ascii2bin monitor1
-	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv
+	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   velselect writeout gener_batch lattice_dist
-	   mirror_coating surface_file guide_shape spin_reset capture_flux);
+	   mirror_coating surface_file guide_shape spin_reset capture_flux runtime);
 
 # modules which need ITOOL (=TOOL + intersection)
-my @CI = qw(chopper_disc chopper_fermi collimator_soller collimator
-	    slit grid source spacewindow spacewindow_multiple space);
+my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
+	    slit grid source spacewindow spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
-my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
+my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide guide_parallel
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
-	    polariser_sm polariser_he3 flipper_coil
+	    polariser_sm polariser_sm_parallel
+	    polariser_he3 flipper_coil
 	    pol_mirror
 	    collimator_radial
 	    precessionfield sesans_field
@@ -60,23 +61,27 @@ my @CM = qw(detector eval_elast eval_elast2 eval_inelast frame guide
 	    define_direction
 	    sample_singcryst
 	    cas_v40
+	    mirror_elliptical
 	   );
 
-# modules which need MGTOOL (=MTOOL + distrgauss)
+# modules which need MGTOOL (=MTOOL)
 my @CMG = qw(rotating_field flipper_gradient resonator_drabkin);
 
 # modules which need STOOL (=MTOOL + sample)
 my @CS = qw(sample_powder sample_s_q sample_sans sample_environment);
 
-my @Gexe = qw(bender visual sm_ensemble dist_time);
+my @Gexe = qw(bender visual sm_ensemble sm_ensemble_parallel dist_time);
 
 # auxillary programs without further libs
 my @PTool = qw(chop_phases standard_deviation direct_view);
 
+# modules with helper thread support
+my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
+
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
 $Macro{$_} = '$(ITOOL)' foreach ('bender', @CI);
-$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', @CM);
+$Macro{$_} = '$(MTOOL)' foreach ('sm_ensemble', 'sm_ensemble_parallel', @CM);
 $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
@@ -89,7 +94,11 @@ my %dep = (			# needed objects for a module
 	   grid => 'bender_inter_data',
 	   spacewindow => 'bender_inter_data',
 	   spacewindow_multiple => 'bender_inter_data',
-	   chopper_disc => 'bender_inter_data');
+	   chopper_disc => 'bender_inter_data',
+	   lenses => 'lensetr cpgplot',
+	   mirror_elliptical => 'mirrrefl'
+	  );
+$dep{$_} = 'threadHelper' foreach (@ParMod);
 
 # objects necessary for some modules, to be compiled separately
 my %K;
@@ -107,13 +116,18 @@ foreach (split) {
   push @Gobj, $_ unless $K{$_};
 }
 
-$dep{$_} = 'cpgplot' foreach qw(visual dist_time sm_ensemble);
+$dep{$_} .= ' cpgplot' foreach qw(visual dist_time sm_ensemble sm_ensemble_parallel);
 
 my (%sopt, %lib);
-foreach (qw(visual bender dist_time sm_ensemble)) {
+foreach (qw(visual bender dist_time sm_ensemble sm_ensemble_parallel lenses)) {
   $sopt{$_} = '$(GRAOPT)';		# special compile options for a module
   $lib{$_} = '$(GRALIB)';		# needed libs for a module
 }
+
+# Modules needing thread support:
+my %Thread;
+$Thread{$_} = 1 foreach @ParMod;
+
 
 my @All = (@C, @CI, @CM, @CMG, @CS, @Gexe, @PTool);
 
@@ -137,16 +151,16 @@ EOS
 
   print <<'EOS';
 
-TOOL = init.o general.o message.o
+TOOL = init.o general.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
-MGTOOL = $(MTOOL) distrgauss.o
+MGTOOL = $(MTOOL)
 STOOL = sample.o $(MTOOL)
 
 SYS = $(shell uname)
 ARCH = $(shell uname -i)
 
-CFLAGS = -s -O3 -Wall -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
+CFLAGS = -pthread -s -O3 -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
 
 GRAOPT = -DDO_X11 -DDO_GD -DVT_GRAPH -I.
 GDOPEN = g2_open_gd
@@ -191,8 +205,9 @@ EOS
 
   foreach my $d (keys %dep) {
     my $l = $lib{$d} || '$(LIBS)';
-    print $d . ' : ' .  join('.c ', split(' ', $dep{$d})) . '.c ' . $Macro{$d} .
-      "\n\t" . '$(CC) -o $@ $^ ' . "$l\n\n";
+    print $d, ' : ',  join('.c ', split(' ', $dep{$d})), '.c ', $Macro{$d},
+      "\n\t", '$(CC)', ($Thread{$d} ? ' -pthread' : ''),
+	' -o $@ $^ ', "$l\n\n";
   }
 	
   print <<'EOS';
@@ -249,23 +264,24 @@ IDIR=.|Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)|vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)||" /Fd"$(IDIR)||"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
 
 LINK32=link.exe
-WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib |
- shell32.lib
+WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 |
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj"
+TOOL="$(IDIR)|init.obj" "$(IDIR)|general.obj" "$(IDIR)|message.obj" "$(IDIR)|softabort.obj"
 ITOOL="$(IDIR)|intersection.obj" $(TOOL)
 MTOOL="$(IDIR)|matrix.obj" $(ITOOL)
-MGTOOL="$(IDIR)|distrgauss.obj" $(MTOOL)
+MGTOOL=$(MTOOL)
 STOOL="$(IDIR)|sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+#ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
+ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
    $(CPP) @<<
@@ -373,6 +389,7 @@ sub subRule {
     }
     s/zzz/$lib{$c}/;
     s/ooo/$sopt{$c}/;
+    s/\(ML\)/\(ML_T\)/g if $Thread{$c};
     $s .= $_;
   }
 }

@@ -20,8 +20,8 @@
 
 // static char sBuffer[128];
 
-double GetDouble(char* pText);
-void   GetString(char* pString, char* pText);
+double GetDouble(const char* pText);
+void   GetString(char* pString, const char* pText);
 double RoundD   (const double in, const int nDigits);
 
 int main(int argc, char* argv[])
@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	FILE*   pFile;
 	char    sFileName[50]="", 
 	       *pFullName;
+	//double x2=-0.0056, x1=-0.0357, x0=1.0359; // sq. polynomial fit constants for dRm(x=m)
 
 	Init(argc, argv, VT_TOOL);
 
@@ -72,13 +73,20 @@ int main(int argc, char* argv[])
 //  McStas function has its cut-off at m*theta_c, 
 //                              not at m*theta_c(Ni) !!
 
-read:
+// read:
 	dR0      = GetDouble("reflectivity(Q=0)                      ");
 	dM       = GetDouble("m   = Qmax / Qmax(Ni)                  ");
 	dQc      = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.021743 for Ni)                 ");
 	dRm      = GetDouble("reflectivity(Q=m*Q_c(Ni))              ");
 	dW       = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
 	GetString(sFileName, "Name of the mirror file                ");
+	/*dR0      = 0.99;
+	dM       = 6.75;
+	dQc      = 0.021743;
+	dRm      = (x2)*((dM)*(dM))+(x1)*(dM)+x0;
+	dW       = 0.001;
+	//strcpy(&sFileName[0], "mirr2.25.dat\0");
+    sprintf(&sFileName[0], "mirr%.2f.dat\0", dM);*/
 
 	dQcNi    = RoundD(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
 
@@ -141,7 +149,7 @@ read:
 		fclose(pFile);
 	}
 	else
-	{	printf("\nERROR: Output file could not be generated\n");
+	{	printf("\nERROR: Output file could not be generated\n(%s)", pFullName);
 	}
 
 	printf("\n Hit any key to terminate ! \n");
@@ -157,7 +165,7 @@ read:
 }
 
 
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -167,7 +175,7 @@ double GetDouble(char* pText)
 	return dValue;
 }
 
-void GetString(char* pString, char* pText)
+void GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

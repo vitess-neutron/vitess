@@ -6,6 +6,7 @@
 /* 1.0            Géza Zsigmond                                                             */
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2a JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
   int	dy,dz;
   long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
+  long format = 0;
 
   /* vertical: lambda, horizontal: tof   */
 
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_tofwl 1.2");
+  print_module_name("mon2_tofwl 1.2a");
 
 
   for(i=1; i<argc; i++)
@@ -91,6 +93,10 @@ int main(int argc, char *argv[])
 	    if(argv[i][2]=='1')
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
+
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
+        break;
 
 	  default:
 	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
@@ -150,18 +156,31 @@ CHECK;
     }
 
 my_exit:
-  for(dy = 0; dy<nbiny; dy++)
-    {
-      fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);
-    }
-  for(dz = 0; dz<nbinz; dz++)
-    {
-      fprintf(fmonitor,"\n %5.3f\t",(bposz[dz]+bposz[dz+1])/2.0);
-      for(dy = 0; dy<nbiny; dy++)
-	{
-	  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
-	}
-    }
+  switch (format) {
+	case 0:
+	  for(dy = 0; dy<nbiny; dy++)
+		{
+		  fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);
+		}
+	  for(dz = 0; dz<nbinz; dz++)
+		{
+		  fprintf(fmonitor,"\n %5.3f\t",(bposz[dz]+bposz[dz+1])/2.0);
+		  for(dy = 0; dy<nbiny; dy++)
+		{
+		  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
+		}
+		}
+	  break;
+    case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(dz = 0; dz<nbinz; dz++) {
+		  for(dy = 0; dy<nbiny; dy++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bposy[dy]+bposy[dy+1])/2.0, (bposz[dz]+bposz[dz+1])/2.0, binyz[dy][dz]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 

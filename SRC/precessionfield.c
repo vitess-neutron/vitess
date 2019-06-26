@@ -22,7 +22,7 @@
 #include "intersection.h"
 #include "precessionfield.h"
 
-
+static double RotMatrixMain[3][3];
 
 int main(int argc, char **argv)
 {

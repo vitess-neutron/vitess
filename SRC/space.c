@@ -5,6 +5,7 @@
 /*                                                                                           */
 /* 1.0  Mar 2002  K. Lieutenant   initial version                                            */
 /* 1.1  May 2008  K. Lieutenant   improvements for length = 0.0                              */
+/* 1.2  Sep 2009  K. Lieutenant   attenuation included                                       */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -24,8 +25,10 @@ void  OwnInit(int argc, char *argv[]);
 /******************************/
 
 long   ntfs=0, count, k;    	      
-double VelocityReal, N_Wavelength, mu, prob=0.0,
-       Length=0.0;          /* distance to end of free flight path along x-axis [cm]    */
+double VelocityReal,        /* speed of the neutron                             [km/s]  */
+       Length=0.0,          /* distance to end of free flight path along x-axis  [cm]   */
+       MuScat=0.0,          /* macroscopic scattering coeff.                    [1/cm]  */
+       MuAbs=0.0;           /* macroscopic absorption coeff.                    [1/cm]  */
 Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */
   
 
@@ -43,7 +46,7 @@ int main(int argc, char *argv[])
 
 	/* initialisation */
 	Init(argc, argv, VT_SPACE);
-	print_module_name("Space 1.1");
+	print_module_name("Space 1.2");
 	OwnInit(argc, argv);
 	
 	CenterX   = 0.0; 
@@ -86,6 +89,8 @@ int main(int argc, char *argv[])
 			/* Calculate center of beam  and  writeout new data set                  */
 			/*************************************************************************/
 
+			InputNeutrons[i].Probability*=exp(-(MuScat+MuAbs*InputNeutrons[i].Wavelength/1.798)*Length);
+
 			AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
 			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
 			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
@@ -115,10 +120,8 @@ int main(int argc, char *argv[])
 
 	fprintf(LogFilePtr," \n");
 
-
 	Cleanup(Length,0.0,0.0, 0.0,0.0);
 	
-
 	return(0);
 }
 
@@ -135,7 +138,14 @@ void  OwnInit(int argc, char *argv[])
 			switch(argv[i][1])
       	{
 				case 'd':
-					Length = atof(&argv[i][2]);
+					Length = atof(&argv[i][2]); /* distance to fly  */
+					break; 
+
+				case 'M':
+					MuScat = atof(&argv[i][2]); /* macroscopic scattering coeff. in 1/cm */
+					break;
+				case 'm':
+					MuAbs  = atof(&argv[i][2]); /* macroscopic absorption coeff. in 1/cm */
 					break;
       
 				default:

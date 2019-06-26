@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* Author: Géza Zsigmond,                                                                   */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                */
+/* Author: GÃ©za Zsigmond,                                                                   */
+/* 1.1  JUL 2002  GÃ©za Zsigmond  change                                                */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /********************************************************************************************/
 
@@ -278,10 +278,8 @@ void OwnInit(int argc, char *argv[])
 }/* End OwnInit */
 
 
-/* own cleanup  */
-
 void OwnCleanup()
 {
-  free(&Neutrons);
+  // do not free(&Neutrons); because Neutrons is a static variable
 }
 

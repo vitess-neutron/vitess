@@ -7,19 +7,29 @@
   <title>Define Direction</title>
 </head>
     <body>
-     
 <h1>VITESS Tool Define Direction</h1>
-<br>
-<br>
+<p>
+<pre>
+1) Converts between direction definitions in VITESS:
+ Cartesian: X = main propagation axis,
+            Y = horizontal axis (left positive),
+            Z = vertical axis (upward positive).
+ Spherical: Theta = Angle with the +X axis,
+            Phi   = Angle of the YZ projection with the +Y axis.
+ Euler:     How to transform vector into (1 0 0 )?
+            Rotates +X into chosen direction i.e. +X''= direction.
+            Alpha =  First frame rotation angle around the Z axis,
+            Beta  =  Second frame rotation angle around the new Y axis.
+
+2) Performs Euler frame rotations as next option.
+
+IMPORTANT: Positive rotation of frame means rotation of one positive
+axis towards a higher index positive axis : +X-&gt;+Y, +Y-&gt;+Z, +X-&gt;+Z
+</pre>
  
-<pre><big><big><font face="Times New Roman, Times, serif"><big><small>1) Converts between direction definitions in VITESS: <br>Cartesian: X = main propagation axis, <br>Y = horizontal axis (left positive), <br>Z = vertical axis (upward positive). <br>Spherical: Theta = Angle with the +X axis,<br>Phi   = Angle of the YZ projection with the +Y axis. <br>Euler:     How to transform vector into (1 0 0 )? <br>Rotates +X into chosen direction i.e. +X''= direction. <br>Alpha =  First frame rotation angle around the Z axis,<br>Beta  =  Second frame rotation angle around the new Y axis. <br><br>2) Performs Euler frame rotations as next option.<br><br>IMPORTANT: Positive rotation of frame means rotation of one positive <br>axis towards a higher index positive axis : +X-&gt;+Y, +Y-&gt;+Z, +X-&gt;+Z</small><br></big></font></big></big><br></pre>
- 
-<hr><a href="vitess.html"><br>
-Back to VITESS overview</a><br>
-<p><b><a href="http://www.hmi.de/projects/ess/vitess/">VITESS homepage</a></b></p>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de<br>
-<br>
-</a> 
+<hr>
+<a href="vitess.html">Back to VITESS overview</a><br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
 <p> <!-- hhmts start --><font size="-1"> Last modified: </font>Thu Jan 29
 15:15:00 MET 2004, G.Zs.<font size="-1"><!--#echo var="LAST_MODIFIED"  -->
  <!-- hhmts end --></font><br>

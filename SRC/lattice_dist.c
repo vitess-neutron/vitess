@@ -28,10 +28,9 @@ static long   SquareSum(const short h, const short k, const short l);
 static short  NextHkl  (short* p_h, short* p_k, short* p_l, const long nSumMax);
 static long   IncHkl   (short* p_h, short* p_k, short* p_l, const short max);
 static short  MultPlane(const short h, const short k, const short l);
-static int    GetChar  (const char *s);
-static double GetDouble(char* pText);
-static long   GetLong  (char* pText);
-static void   GetString(char* pString, char* pText);
+static double GetDouble(const char* pText);
+static long   GetLong  (const char* pText);
+static void   GetString(char* pString, const char* pText);
 
 char sBuffer[512];
 
@@ -240,15 +239,7 @@ short MultPlane(const short h, const short k, const short l)
 
 
 static
-int GetChar (const char *s) 
-{
-	printf(s);
-	fgets(sBuffer, 128, stdin);
-	return sBuffer[0];
-}
-
-static
-double GetDouble(char* pText)
+double GetDouble(const char* pText)
 {
 	double dValue;
 	
@@ -259,7 +250,7 @@ double GetDouble(char* pText)
 }
 
 static
-long GetLong(char* pText)
+long GetLong(const char* pText)
 {
 	long nValue;
 	
@@ -270,7 +261,7 @@ long GetLong(char* pText)
 }
 
 static
-void GetString(char* pString, char* pText)
+void GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);

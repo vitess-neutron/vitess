@@ -24,23 +24,24 @@ IDIR=.\Release
 CPP=cl.exe
 DEFS=/DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS"
 INC=/I "$(IPATH)" /I "$(IPATH2)" /I "$(SPATH)" /I "$(GSLPATH)"
-CPP_OPT=/nologo /ML /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
+CPP_OPT=/nologo /MT /W3 /Ox /Oy /Og /GF $(INC) $(DEFS) /Fp"$(IDIR)\vit.pch" /YX /FD /c
 CPP_PROJ=$(CPP_OPT) /Fo"$(IDIR)\\" /Fd"$(IDIR)\\"
 GRAOPT=/I "$(GPATH)" /I "$(GPATH)\WIN32" /I "$(GPATH)\PS" /DDO_PS /DVT_GRAPH
 LIBGSL=libgsl.lib
 
 LINK32=link.exe
-WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib \
- shell32.lib
+WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
  /libpath:"$(LPATH)" /libpath:"$(LPATH2)" /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj"
+TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
-MGTOOL="$(IDIR)\distrgauss.obj" $(MTOOL)
+MGTOOL=$(MTOOL)
 STOOL="$(IDIR)\sample.obj" $(MTOOL)
 GRALIB=g2.lib
-ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+#ML=$(LIBGSL) $(WINLIBS) $(LINK32_FLAGS)
+ML=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
+ML_T=$(LIBGSL) $(WINLIBS) libcmt.lib /NODEFAULTLIB:libc.lib $(LINK32_FLAGS)
 
 .c{$(IDIR)}.obj::
  $(CPP) @<<
@@ -58,6 +59,8 @@ ALL : \
 	"$(OD)\mon2_posdiv.exe" \
 	"$(OD)\mon2_tofwl.exe" \
 	"$(OD)\mon2_wldiv.exe" \
+	"$(OD)\mon2_kdiv.exe" \
+	"$(OD)\mon2_rdiv.exe" \
 	"$(OD)\velselect.exe" \
 	"$(OD)\writeout.exe" \
 	"$(OD)\gener_batch.exe" \
@@ -67,8 +70,10 @@ ALL : \
 	"$(OD)\guide_shape.exe" \
 	"$(OD)\spin_reset.exe" \
 	"$(OD)\capture_flux.exe" \
+	"$(OD)\runtime.exe" \
 	"$(OD)\chopper_disc.exe" \
 	"$(OD)\chopper_fermi.exe" \
+	"$(OD)\chopper_fermi_parallel.exe" \
 	"$(OD)\collimator_soller.exe" \
 	"$(OD)\collimator.exe" \
 	"$(OD)\slit.exe" \
@@ -77,16 +82,20 @@ ALL : \
 	"$(OD)\spacewindow.exe" \
 	"$(OD)\spacewindow_multiple.exe" \
 	"$(OD)\space.exe" \
+	"$(OD)\lenses.exe" \
+	"$(OD)\beamstop.exe" \
 	"$(OD)\detector.exe" \
 	"$(OD)\eval_elast.exe" \
 	"$(OD)\eval_elast2.exe" \
 	"$(OD)\eval_inelast.exe" \
 	"$(OD)\frame.exe" \
 	"$(OD)\guide.exe" \
+	"$(OD)\guide_parallel.exe" \
 	"$(OD)\monitorpol_1d.exe" \
 	"$(OD)\monitorpol_pos.exe" \
 	"$(OD)\monochr_analyser.exe" \
 	"$(OD)\polariser_sm.exe" \
+	"$(OD)\polariser_sm_parallel.exe" \
 	"$(OD)\polariser_he3.exe" \
 	"$(OD)\flipper_coil.exe" \
 	"$(OD)\pol_mirror.exe" \
@@ -99,6 +108,7 @@ ALL : \
 	"$(OD)\define_direction.exe" \
 	"$(OD)\sample_singcryst.exe" \
 	"$(OD)\cas_v40.exe" \
+	"$(OD)\mirror_elliptical.exe" \
 	"$(OD)\rotating_field.exe" \
 	"$(OD)\flipper_gradient.exe" \
 	"$(OD)\resonator_drabkin.exe" \
@@ -109,6 +119,7 @@ ALL : \
 	"$(OD)\bender.exe" \
 	"$(OD)\visual.exe" \
 	"$(OD)\sm_ensemble.exe" \
+	"$(OD)\sm_ensemble_parallel.exe" \
 	"$(OD)\dist_time.exe" \
 	"$(OD)\chop_phases.exe" \
 	"$(OD)\standard_deviation.exe" \
@@ -134,8 +145,36 @@ SOURCE=$(SPATH)\sample.c
 "$(IDIR)\sample.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+SOURCE=$(SPATH)\softabort.c
+"$(IDIR)\softabort.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 SOURCE=$(SPATH)\bender_inter_data.c
 "$(IDIR)\bender_inter_data.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\gener_fct.c
+"$(IDIR)\gener_fct.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\mirrrefl.c
+"$(IDIR)\mirrrefl.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\threadHelper.c
+"$(IDIR)\threadHelper.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\lensetr.c
+"$(IDIR)\lensetr.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\src_modchar.c
+"$(IDIR)\src_modchar.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+SOURCE=$(SPATH)\magneticmap.c
+"$(IDIR)\magneticmap.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\sq_calc.c
@@ -146,20 +185,12 @@ SOURCE=$(SPATH)\ma_functions.c
 "$(IDIR)\ma_functions.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\gener_fct.c
-"$(IDIR)\gener_fct.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\ma_geom.c
 "$(IDIR)\ma_geom.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\src_modchar.c
-"$(IDIR)\src_modchar.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-SOURCE=$(SPATH)\magneticmap.c
-"$(IDIR)\magneticmap.obj" : $(SOURCE)
+SOURCE=$(SPATH)\cpgplot.c
+"$(IDIR)\cpgplot.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 SOURCE=$(SPATH)\ascii2bin.c
@@ -210,6 +241,20 @@ SOURCE=$(SPATH)\mon2_wldiv.c
 
 "$(OD)\mon2_wldiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_wldiv.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\mon2_wldiv.pdb" /out:"$(OD)\mon2_wldiv.exe" "$(IDIR)\mon2_wldiv.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\mon2_kdiv.c
+"$(IDIR)\mon2_kdiv.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon2_kdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_kdiv.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon2_kdiv.pdb" /out:"$(OD)\mon2_kdiv.exe" "$(IDIR)\mon2_kdiv.obj" $(TOOL) 
+
+SOURCE=$(SPATH)\mon2_rdiv.c
+"$(IDIR)\mon2_rdiv.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mon2_rdiv.exe" : "$(OD)" $(TOOL) "$(OD)\mon2_rdiv.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mon2_rdiv.pdb" /out:"$(OD)\mon2_rdiv.exe" "$(IDIR)\mon2_rdiv.obj" $(TOOL) 
 
 SOURCE=$(SPATH)\velselect.c
 "$(IDIR)\velselect.obj" : $(SOURCE)
@@ -274,6 +319,13 @@ SOURCE=$(SPATH)\capture_flux.c
 "$(OD)\capture_flux.exe" : "$(OD)" $(TOOL) "$(OD)\capture_flux.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\capture_flux.pdb" /out:"$(OD)\capture_flux.exe" "$(IDIR)\capture_flux.obj" $(TOOL) 
 
+SOURCE=$(SPATH)\runtime.c
+"$(IDIR)\runtime.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\runtime.exe" : "$(OD)" $(TOOL) "$(OD)\runtime.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\runtime.pdb" /out:"$(OD)\runtime.exe" "$(IDIR)\runtime.obj" $(TOOL) 
+
 SOURCE=$(SPATH)\chopper_disc.c
 "$(IDIR)\chopper_disc.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -287,6 +339,13 @@ SOURCE=$(SPATH)\chopper_fermi.c
 
 "$(OD)\chopper_fermi.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\chopper_fermi.pdb" /out:"$(OD)\chopper_fermi.exe" "$(IDIR)\chopper_fermi.obj" $(ITOOL) 
+
+SOURCE=$(SPATH)\chopper_fermi_parallel.c
+"$(IDIR)\chopper_fermi_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\chopper_fermi_parallel.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\chopper_fermi_parallel.pdb" /out:"$(OD)\chopper_fermi_parallel.exe" "$(IDIR)\chopper_fermi_parallel.obj" $(ITOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\collimator_soller.c
 "$(IDIR)\collimator_soller.obj" : $(SOURCE)
@@ -344,6 +403,20 @@ SOURCE=$(SPATH)\space.c
 "$(OD)\space.exe" : "$(OD)" $(ITOOL) "$(OD)\space.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\space.pdb" /out:"$(OD)\space.exe" "$(IDIR)\space.obj" $(ITOOL) 
 
+SOURCE=$(SPATH)\lenses.c
+"$(IDIR)\lenses.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\lenses.exe" : "$(OD)" $(ITOOL) "$(OD)\lenses.obj" "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\lenses.pdb" /out:"$(OD)\lenses.exe" "$(IDIR)\lenses.obj" $(ITOOL) "$(OD)\lensetr.obj" "$(OD)\cpgplot.obj"  $(GRALIB)
+
+SOURCE=$(SPATH)\beamstop.c
+"$(IDIR)\beamstop.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\beamstop.exe" : "$(OD)" $(ITOOL) "$(OD)\beamstop.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\beamstop.pdb" /out:"$(OD)\beamstop.exe" "$(IDIR)\beamstop.obj" $(ITOOL) 
+
 SOURCE=$(SPATH)\detector.c
 "$(IDIR)\detector.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -386,6 +459,13 @@ SOURCE=$(SPATH)\guide.c
 "$(OD)\guide.exe" : "$(OD)" $(MTOOL) "$(OD)\guide.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\guide.pdb" /out:"$(OD)\guide.exe" "$(IDIR)\guide.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\guide_parallel.c
+"$(IDIR)\guide_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\guide_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\guide_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\guide_parallel.pdb" /out:"$(OD)\guide_parallel.exe" "$(IDIR)\guide_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
+
 SOURCE=$(SPATH)\monitorpol_1d.c
 "$(IDIR)\monitorpol_1d.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -413,6 +493,13 @@ SOURCE=$(SPATH)\polariser_sm.c
 
 "$(OD)\polariser_sm.exe" : "$(OD)" $(MTOOL) "$(OD)\polariser_sm.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\polariser_sm.pdb" /out:"$(OD)\polariser_sm.exe" "$(IDIR)\polariser_sm.obj" $(MTOOL) 
+
+SOURCE=$(SPATH)\polariser_sm_parallel.c
+"$(IDIR)\polariser_sm_parallel.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\polariser_sm_parallel.exe" : "$(OD)" $(MTOOL) "$(OD)\polariser_sm_parallel.obj" "$(OD)\threadHelper.obj"
+	$(LINK32) $(ML_T) /pdb:"$(OD)\polariser_sm_parallel.pdb" /out:"$(OD)\polariser_sm_parallel.exe" "$(IDIR)\polariser_sm_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" 
 
 SOURCE=$(SPATH)\polariser_he3.c
 "$(IDIR)\polariser_he3.obj" : $(SOURCE)
@@ -498,6 +585,13 @@ SOURCE=$(SPATH)\cas_v40.c
 "$(OD)\cas_v40.exe" : "$(OD)" $(MTOOL) "$(OD)\cas_v40.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\cas_v40.pdb" /out:"$(OD)\cas_v40.exe" "$(IDIR)\cas_v40.obj" $(MTOOL) 
 
+SOURCE=$(SPATH)\mirror_elliptical.c
+"$(IDIR)\mirror_elliptical.obj" : $(SOURCE)
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\mirror_elliptical.exe" : "$(OD)" $(MTOOL) "$(OD)\mirror_elliptical.obj" "$(OD)\mirrrefl.obj"
+	$(LINK32) $(ML) /pdb:"$(OD)\mirror_elliptical.pdb" /out:"$(OD)\mirror_elliptical.exe" "$(IDIR)\mirror_elliptical.obj" $(MTOOL) "$(OD)\mirrrefl.obj" 
+
 SOURCE=$(SPATH)\rotating_field.c
 "$(IDIR)\rotating_field.obj" : $(SOURCE)
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -580,10 +674,6 @@ SOURCE=$(SPATH)\bendertr.c
 "$(IDIR)\bendertr.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
 
-SOURCE=$(SPATH)\cpgplot.c
-"$(IDIR)\cpgplot.obj" : $(SOURCE)
-	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
-
 SOURCE=$(SPATH)\bender.c
 "$(IDIR)\bender.obj" : $(SOURCE)
 	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
@@ -604,6 +694,13 @@ SOURCE=$(SPATH)\sm_ensemble.c
 
 "$(OD)\sm_ensemble.exe" : "$(OD)" "$(OD)\sm_ensemble.obj" $(MTOOL) "$(OD)\cpgplot.obj"
 	$(LINK32) $(ML) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble.pdb" /out:"$(OD)\sm_ensemble.exe" "$(IDIR)\sm_ensemble.obj" "$(OD)\cpgplot.obj"
+
+SOURCE=$(SPATH)\sm_ensemble_parallel.c
+"$(IDIR)\sm_ensemble_parallel.obj" : $(SOURCE)
+	$(CPP) $(GRAOPT) $(CPP_PROJ) $(SOURCE)
+
+"$(OD)\sm_ensemble_parallel.exe" : "$(OD)" "$(OD)\sm_ensemble_parallel.obj" $(MTOOL) "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
+	$(LINK32) $(ML_T) $(MTOOL) $(GRALIB) /pdb:"$(OD)\sm_ensemble_parallel.pdb" /out:"$(OD)\sm_ensemble_parallel.exe" "$(IDIR)\sm_ensemble_parallel.obj" "$(OD)\threadHelper.obj" "$(OD)\cpgplot.obj"
 
 SOURCE=$(SPATH)\dist_time.c
 "$(IDIR)\dist_time.obj" : $(SOURCE)

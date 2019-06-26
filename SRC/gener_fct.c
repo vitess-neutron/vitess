@@ -512,9 +512,10 @@ long
 StrgScanHD(const char* sStr, short* pTab, const int nMax)
 {
 	long   k, n=0;
-	char   *pStr, sNumber[31];
+	const char *pStr;
+	char sNumber[31];
 
-	pStr = (char*) sStr;
+	pStr = sStr;
 	do
 	{	/* search of beginning and end of 1st number of (remaining) string */
 		k=0;
@@ -547,10 +548,11 @@ StrgScanHD(const char* sStr, short* pTab, const int nMax)
 long
 StrgScanS(const char* sStr, char* pTab, const int nMax, const int nTextLen)
 {
-	char   *pStr, sNumber[31];
-	long   i, k, n=0;
+  const char   *pStr;
+  char sNumber[31];
+  long   i, k, n=0;
 
-	pStr = (char*) sStr;
+	pStr = (const char*) sStr;
 	do
 	{	/* search of beginning and end of 1st number of (remaining) string */
 		i=0;k=0;

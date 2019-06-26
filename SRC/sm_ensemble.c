@@ -326,8 +326,6 @@ my_exit:;
 
   Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);	
 
-  fprintf(LogFilePtr," \n");
-
   return 0;
 }
 
@@ -621,8 +619,13 @@ double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,
 	{
 /*	rangh=MonteCarlo(0., mrangh);
 	rangv=MonteCarlo(0., mrangv);
-*/	rangh=MonteCarlo(- mrangh/2., mrangh/2.);
+*/
+/*      nonsense to call MonteCarlo if the mrang value is 0
+	rangh=MonteCarlo(- mrangh/2., mrangh/2.);
 	rangv=MonteCarlo(- mrangv/2., mrangv/2.);
+*/
+        rangh = mrangh == 0 ? 0 : MonteCarlo(- mrangh/2., mrangh/2.);
+        rangv = mrangv == 0 ? 0 : MonteCarlo(- mrangv/2., mrangv/2.);
 	FillRotMatrixZY(RotMatrixRang, rangv, rangh); /*fprintf(LogFilePtr,"%e  %e \n", rangh, rangv);*/
 	}
 	
@@ -659,9 +662,6 @@ double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,
 	/* here comes to collision etc. */
 	{double the, Choise, Refl[2], expon[2];
 		
-		Choise = MonteCarlo(0,1);
-		the = M_PI_2 - (double) acos(fabs(dir[0])); 
-
 		if(hitwall(r1, r2, r3, r4, rt)==0) 
 		{		
 		RotBackVector(RotMatrixWall, dir);
@@ -669,6 +669,9 @@ double CollideWall(double *prob, VectorType pos,VectorType dir,VectorType spin,
 		return 99999;
 		}
 		
+		Choise = MonteCarlo(0,1);
+		the = M_PI_2 - (double) acos(fabs(dir[0])); 
+
 		if(fabs(SpinVector[quant_dir])!=1.) {NumWrong+=1; *prob = 0. ;}
 
 		/* here if spin up */

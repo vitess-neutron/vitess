@@ -49,6 +49,86 @@ proc removeTrailingDummies {} {
   }
 }
 
+proc doSavePacket {w} {
+  set m1 [entryVal smod1]
+  set m2 [entryVal smod2]
+  set as [entryVal spacketfile]
+  conditionalOpenProtfile
+  if {$as != ""} {
+    set flist [file split $as]
+    if {[llength $flist] < 2} {
+      set as [file join [entryVal defdirectory] $as]
+    }
+    if [catch {open $as w} f] {
+      outProtocol "can't open $as to write"
+      return
+    }  
+  } else {
+    if {[set f [openWriteFile $extension]] == 0} return
+  }
+  puts $f "#packet file"
+  puts $f "#version [globVal XcontrolVersion]"
+
+  # selected exists:ge
+  set resi 1
+  for {set i $m1} {$i <= $m2} {incr i} {
+    set v [globVal mod$i]
+    if {$v != "--inactive--" } {
+      set ge($i) $resi
+      puts $f "gSet mod$resi \{$v\}"
+      incr resi
+    }
+  }
+  foreach g [savableGlobals] {
+    if [regexp {^(.+)_([0-9]+)$} $g a v n] {
+      if [info exists ge($n)] {
+	set resi $ge($n)
+	puts $f "gSet ${v}_$resi \{[globVal $g]\}"
+      }
+    }
+  }
+  close $f
+  outProtocol "packet file stored ($as)"
+  conditionalCloseProtfile
+  catch {destroy $w}
+}
+
+
+proc activeModules {} {
+  # which modules are active?
+  # return a list of module numbers; at least 1 is "active"
+  set m [globVal maxModule]
+  set n {}
+  for {set i 1} {$i < $m} {incr i} {
+    set s [globVal mod$i]
+    if {$s == "" || $s == "--inactive--"} break
+    lappend n $i
+  }
+  return $n
+}
+
+proc savePacketWindow {} {
+  set actm [activeModules]
+  if {[llength $actm] <= 0} return
+  set w .spacket
+  catch {destroy $w}
+  generateToplevel $w "Save packet"
+  fGroup $w.v $w.b
+
+  set l1 [list smod1 radio 1 {"first module"} $actm $actm]
+  set l2 [list smod2 radio [lindex $actm end] {"last module"} $actm $actm]
+
+  set dname [file join [entryVal defdirectory] packet.gui]
+  gSet savePacketESET [list $l1 $l2 [list spacketfile parbrowsefile $dname {
+    "package\nfilename" "The package definitions will be stored to a .gui file."} w gui]] 
+  generateEntries $w.v savePacketESET
+
+  bButton $w.b.cancel Cancel "destroy $w"
+  bButton $w.b.save "Save Packet" "doSavePacket $w"
+  pack $w.b.cancel -side left
+  pack $w.b.save -side right
+}
+
 proc storeAll {extension {prosal ""} {as ""}} {
   conditionalOpenProtfile
   if {$extension == "gui"} {
@@ -94,7 +174,129 @@ proc storeAll {extension {prosal ""} {as ""}} {
   close $f
   outProtocol "file stored"
   conditionalCloseProtfile
-  gSet LastState [generateVitessCommand action]
+  gSet LastState [generateVitessCommand kstate]
+}
+
+
+proc doInsertPacked {name insert_after} {
+  conditionalOpenProtfile
+  set version -1
+  if [catch {open $name r} f] { return 0 }
+  # check if the file has been written by savePacket
+  if {[gets $f] == "#packet file"} {
+    if {1 != [scan [gets $f] "#version %d" version]} {
+      set version 0
+    }
+  }
+  if {$version == -1} {
+    close $f
+    outProtocol "! file $name missing or unappropriate"
+    return 0
+  }
+
+  # read packet definitions from file
+  set nkey {}
+  set nval {}
+  set nmods 0
+  global DoNotSave DoNotSaveRegexp
+  while {[gets $f line] >= 0} {
+    set sp [split $line]
+    if {"gSet" != [lindex $sp 0]} continue
+    set k [lindex $sp 1]
+    if [regexp $DoNotSaveRegexp $k] continue
+    if {[lsearch $DoNotSave $k] >= 0} continue
+    set v [lindex $sp 2]
+    # remove braces from value
+    if [catch {eval set v $v}] { set v ""}
+    if [regexp {^mod([0-9]+)$} $k a n] {
+      lappend nkey "mod[expr $n + $insert_after]"
+      incr nmods
+    } elseif [regexp {^(.+)_([0-9]+)$} $k a m n] {
+      lappend nkey "${m}_[expr $n + $insert_after]"
+    } else continue
+    lappend nval "$v"
+  }
+  close $f
+  if {$nmods == 0} {
+    outProtocol "! file $name contains no module definitions"
+    return 0
+  }
+
+  # save definitions of old modules known so far; shift corresponding keys
+  set kkey {}
+  set kval {}
+  foreach g [savableGlobals] {
+    set v [globVal $g]
+    lappend kval "$v"
+    if [regexp {^mod([0-9]+)$} $g a n] {
+      if {$n > $insert_after} {incr n $nmods}
+      lappend kkey mod$n
+    } elseif [regexp {^(.+)_([0-9]+)$} $g a v n] {
+      if {$n > $insert_after} {incr n $nmods}
+      lappend kkey ${v}_$n
+    } else {
+      lappend kkey $g
+    }
+  }
+
+  # delete old modules
+  global defdirectory_ Mlf
+  deleteSomeModules $Mlf 1
+
+  setAll 0
+  # set new global definitions
+  foreach k $nkey v $nval {
+    gSet $k $v
+    #puts "gSet $k :$v:"
+  }
+  foreach k $kkey v $kval {
+    gSet $k $v
+    #puts "old gSet $k :$v:"
+  }
+
+  # create modules
+  reShowModules $Mlf
+
+  conditionalCloseProtfile
+  return 1
+}
+
+proc insertPacket {w} {
+  set insert_after [entryVal insmod]
+  set name [entryVal ipacketfile]
+  if {$name == ""} return
+  if [doInsertPacked $name $insert_after] {
+    catch {destroy $w}
+  }
+}
+
+proc addPacket {} {
+  set actm [activeModules]
+  if {[llength $actm] <= 0} {set iat 0} else {set iat [lindex $actm end]}
+  set name [fileDialog open gui]
+  if {$name == ""} return
+  doInsertPacked $name $iat
+}
+
+proc insertPacketWindow {} {
+  set actm [activeModules]
+  if {[llength $actm] <= 0} {
+    addPacket
+    return
+  }
+  set w .ipacket
+  catch {destroy $w}
+  generateToplevel $w "Insert packet"
+  fGroup $w.v $w.b
+
+  gSet insPacketESET [list [list insmod radio 1 {insert\nbehind module} $actm $actm] {
+    ipacketfile browsefile "" {"package\nfilename" "Package modules will be inserted in the pipe."} r gui 1} ]
+  generateEntries $w.v insPacketESET
+
+  bButton $w.b.cancel Cancel "destroy $w"
+  bButton $w.b.save "Insert Packet" "insertPacket $w"
+  pack $w.b.cancel -side left
+  pack $w.b.save -side right
 }
 
 proc deleteSomeModules {w i} {
@@ -130,7 +332,7 @@ proc doSetIname {w} {
 
 proc setInstrumentName {} {
   set w .siname
-  catch { destroy $w}
+  catch {destroy $w}
   generateToplevel $w "Set Instrument Name" "" +300+300
   fGroup $w.v $w.b
   generateEntries $w.v sInameESET
@@ -142,13 +344,12 @@ proc setInstrumentName {} {
 }
 
 proc setInstrumentfile {name} {
-  global instrumentfile sserif
+  global instrumentfile
   regsub -all " " $name _ name
   set instrumentfile $name
-  regexp {[0-9a-zA-ZäöüÄÖÜß_-]+} [file tail $instrumentfile] a
-  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
-  .x.bm.hlab configure -text "Instrument $a" \
-      -font [list $sserif $ls bold]
+  regexp {[0-9a-zA-ZÃ¤Ã¶Ã¼Ã„Ã–ÃœÃŸ_-]+} [file tail $instrumentfile] a
+
+  .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
 }
 
 
@@ -167,9 +368,9 @@ proc loadAll {extension} {
       set version 0
     }
   }
-  close $f
   if {$version == -1} {
-    outProtocol "! file $name does not exists or is unusable to load"
+    close $f
+    outProtocol "! file $name is no instrument file"
     return 0
   }
   set a [globVal XcontrolVersion]
@@ -188,34 +389,34 @@ proc loadAll {extension} {
   # delete all modules
   deleteSomeModules $Mlf 1
 
-  # If a gui-file from a different OS becomes loaded, settings for GUI sizes
-  # and the default directory from this are mostly non-sense or not applicable.
-  # So we store all font settings.
-  # If the default path contains a double colon, we assume a windows environment.
-  set herewin [regexp : [globVal defdirectory_]]
-  set savlist {defdirectory_ maxModule scrollWidth serif sserif monospaced
-    itemlabwidth fileentrywidth}
-  set vallist {}
-  foreach s $savlist {lappend vallist [globVal $s]}
-  foreach s {b h l m t} {
-    foreach t {family size type} {
-      lappend vallist [globVal [set n ${s}font$t]]
-      lappend savlist $n
+  # If a gui-file becomes loaded, settings for GUI sizes and the default directory
+  # could be changed, too. If values come from a different OS, these values would be
+  # non-sense or not applicable, at least these changes probably are unexpected.
+  # So we check if a variable to load is allowed.
+
+  global DoNotSave TempVars DoNotSaveRegexp
+
+  set errs ""
+  while {[gets $f line] >= 0} {
+    set sp [split $line]
+    if {"gSet" != [lindex $sp 0]} continue
+    set e [lindex $sp 1]
+    if [regexp $DoNotSaveRegexp $e] continue
+    if {[lsearch $TempVars $e] >= 0} continue
+    if {[lsearch $DoNotSave $e] >= 0} continue
+    # match curly brace content
+    if {[regexp "\{(.+)\}" $line a v]} {
+      gSet $e "$v"
+      #puts "gSet $e \"$v\""
+    } elseif {[string match "*\{\}" $line]} {
+      gSet $e ""
+    }  else {
+      set errs "!dubious input in $name ignored ($line)"
     }
   }
-
-  # now load all definitions by sourcing the gui-file
-  if [catch {source $name} res] {
-    set errs "dubious gui file $name, $res"
-  } else {
-    set errs "control file $name successfully loaded"
-  }
-
-  if {$herewin != [regexp : [globVal defdirectory_]]} {
-    # restore old settings
-    foreach s $savlist sval $vallist {
-      gSet $s $sval
-    }
+  close $f
+  if {$errs == ""} {
+    append errs "control file $name successfully loaded"
   }
 
   setAll 0
@@ -228,17 +429,16 @@ proc loadAll {extension} {
   removeTrailingDummies
   setInstrumentfile $name
 
-  set defdirectory_ $olddef; # restore old value
-  # but ask if modified new default directory is ok
+  # Ask if modified new default directory is ok
   confirmedCommand gSet "defdirectory_ $nd" "Set default directory to $nd"
-  gSet LastState [generateVitessCommand action]
+  gSet LastState [generateVitessCommand kstate]
 
   return 1
 }
 
 proc deleteAllModules {} {
   # delete all modules
-  global Mlf Amf
+  global Mlf Amf DoNotSaveRegexp
   deleteSomeModules $Mlf 1
   reShowModules $Mlf
   removeTrailingDummies
@@ -246,7 +446,7 @@ proc deleteAllModules {} {
   gSet LastState ""
   helpFrame $Amf
   foreach e [stringToSet [info globals]] {
-    if [regexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$} $e] continue
+    if [regexp $DoNotSaveRegexp $e] continue
     if [regexp {_([0-9]+)$} $e] {
       global $e
       catch {unset $e}
@@ -287,7 +487,8 @@ proc doSaveDir {w} {
     foreach l [globVal ${var}ESET] {
       set vname [lindex $l 0]
       switch [lindex $l 1] {
-	parfilename - pareditablefile - parbrowsefile - moneditablefile - mon2editablefile {
+	parfilename - pareditablefile - parbrowsefile -\
+	    moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
 	  lappend pall [entryVal $vname _$i]
 	}
       }
@@ -374,5 +575,3 @@ proc editInfFile {{mode 0}} {
   bButton $w.b.cancel Cancel "destroy $w"
   pack $w.b.save $w.b.cancel -side left -expand 1
 }
-
-

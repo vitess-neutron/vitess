@@ -1,3 +1,7 @@
+/*
+  Wrapper routines used to map cpgplot API entries to g2 library calls.
+*/
+
 #include "cpgplot.h"
 #include <stdio.h>
 #include <math.h>
@@ -30,6 +34,9 @@
 static int dev,gdev;
 int gselec = 3;
 
+#define MAXDEVICES 8
+static int stored_dev[MAXDEVICES],stored_gdev[MAXDEVICES], stored_set[MAXDEVICES];
+
 #define DD(f) fprintf(stderr, f)
 #define DD1(f,a) fprintf(stderr, f,a)
 #define DD2(f,a,b) fprintf(stderr, f,a,b)
@@ -59,7 +66,7 @@ int gselec = 3;
 
 
 static float tpos[3][2] = {
-  {0.5*WINX, 0.5*M},      /* pos. (x,y) of heading of x-axis */
+  {0.5*WINX, 0.5*M},  /* pos. (x,y) of heading of x-axis */
   {2.0*M, WINY-M},    /* pos. (x,y) of heading of y-axis */
   {0.6*WINX, WINY-M}  /* pos. (x,y) of title             */
 };
@@ -154,7 +161,7 @@ int cpgopen(const char *device)
   dev = g2_open_win32(WINX, WINY,"VITESS",0);
 #endif
 
-  // eigene Farben
+  // own colors
   for (i=0; i<8; i++) {
     myC[i] = g2_ink(dev, farbe[i][0], farbe[i][1], farbe[i][2]);
     OD2("Farbe %i: %i\n", i, myC[i]);
@@ -166,26 +173,54 @@ int cpgopen(const char *device)
 # else
   gdev = g2_open_GIF(device, WINX, WINY);
 #endif
-  // eigene Farben
+  // own colors
   for (i=0; i<8; i++) {
     gC[i] = g2_ink(gdev, farbe[i][0], farbe[i][1], farbe[i][2]);
     OD2("Farbe %i: %i\n", i, gC[i]);
   }
 #elif DO_PS
   gdev = g2_open_PS(device, g2_A4, g2_PS_land);
-  // eigene Farben
+  // own colors
   for (i=0; i<8; i++) {
     gC[i] = g2_ink(gdev, farbe[i][0], farbe[i][1], farbe[i][2]);
   }
 #endif
-  return 1;
+
+  // store dev and gdev to enable multiple open devices
+  for (i=0; i<MAXDEVICES; i++)
+    if (stored_set[i] == 0) {
+      stored_set[i] = 1;
+      stored_dev[i] = dev;
+      stored_gdev[i] = gdev;
+      break;
+    }
+
+  return gdev;
+}
+
+void cpgslct(int sel) {
+  // set selected device
+  int i;
+  for (i=0; i<MAXDEVICES; i++)
+    if (stored_set[i] && stored_gdev[i] == sel) {
+      dev = stored_dev[i];
+      gdev = sel;
+      return;
+    }
 }
 
 void cpgclos (void)
 {
-  // close device
-  G0(g2_flush);
-  G0(g2_close);
+  // close devices
+  int i;
+  for (i=0; i<MAXDEVICES; i++)
+    if (stored_set[i]) {
+      dev = stored_dev[i];
+      gdev = stored_gdev[i];  
+      G0(g2_flush);
+      G0(g2_close);
+      stored_set[i] = 0;
+    }
   OD("g2 closed\n");
 }
 
@@ -272,9 +307,9 @@ void cpgdraw(float x, float y)
 void cpglab(const char *xlbl, const char *ylbl, const char *toplbl)
 {
   // 3 labels x label, y label, top label
-  G3(g2_string, tpos[0][0]-4*strlen(xlbl), tpos[0][1], ((char*) xlbl));
-  G3(g2_string, tpos[1][0], tpos[1][1], ((char*) ylbl));
-  G3(g2_string, tpos[2][0]-4*strlen(toplbl), tpos[2][1], ((char*) toplbl));
+  G3(g2_string, tpos[0][0]-4*strlen(xlbl), tpos[0][1], xlbl);
+  G3(g2_string, tpos[1][0], tpos[1][1], ylbl);
+  G3(g2_string, tpos[2][0]-4*strlen(toplbl), tpos[2][1], toplbl);
 }
 
 void cpgmove(float x, float y)

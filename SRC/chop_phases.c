@@ -5,8 +5,8 @@
 /*                                                                  */
 /********************************************************************/
 
-#include "math.h"
-#include "stdio.h"
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef int bool;
@@ -16,28 +16,32 @@ typedef int bool;
 
 static double Time2Lambda(double dDistance, double dT1, double dT2);
 static double PhaseRed(const double dPhiTot, int* pNumRot);
-static double fmax    (double a, double b);
-static double fmin    (double a, double b);
 static void   OwnInit (int argc, char *argv[]);
 static void   ErrorMsg(const char *text); 
 
+
+static double FMax(double a, double b) { return a > b ? a : b; }
+static double FMin(double a, double b) { return a < b ? a : b; }
+
+
 char   sBuffer[129];
-double dMassNeutron  = 1.674928e-27, // neutron mass in kg
-       dHPlanck      = 6.626076e-34, // Planck's constant in Js
-       dPi           = 3.14159265,
-       dRpm, dRotFreq,               // Rotat. frequency in rpm and Hz                     
-	    dRepRate,                     // Repetition rate of the pulse in Hz                     
-	    dL, dL1, dL2,                 // Distances: source - chopper (center, 1. and 2. of double chopper)
-	    dLwb,                         // Distance and TOF: source - wavelength band chopper
-	    dAwb,  dA,                    // Apertures of the wavelength band chopper and the frame overlap chopper
-	    dLambda,                      // Wavelength (mimimal or average) in Angstroem
-	    dLDet=0.0,                    // Distance: source - detector
-	    dBeam=0.0,                    // Beam diameter at the wavelength band chopper in cm
-	    dBeamFo=0.0,                  // Beam diameter at the frame overlap chopper in cm
-	    dTdelay,                       // pulse lengths in ms:  end of pulse       (those neutrons shall pass the choppers)
-	    dTp,                          // pulse lengths in ms:  end of pulse       (those neutrons shall pass the choppers)
-	    dTpMax,                       //                       very end of pulse  (considered for the evaluation time)
-	    dRChop;                       // Distance: center of beam - center of chopper  in cm  
+double 
+  dMassNeutron  = 1.674928e-27, // neutron mass in kg
+  dHPlanck      = 6.626076e-34, // Planck's constant in Js
+  dPi           = 3.14159265,
+  dRpm, dRotFreq,               // Rotat. frequency in rpm and Hz                     
+  dRepRate,                     // Repetition rate of the pulse in Hz                     
+  dL, dL1, dL2,                 // Distances: source - chopper (center, 1. and 2. of double chopper)
+  dLwb,                         // Distance and TOF: source - wavelength band chopper
+  dAwb,  dA,                    // Apertures of the wavelength band chopper and the frame overlap chopper
+  dLambda,                      // Wavelength (mimimal or average) in Angstroem
+  dLDet=0.0,                    // Distance: source - detector
+  dBeam=0.0,                    // Beam diameter at the wavelength band chopper in cm
+  dBeamFo=0.0,                  // Beam diameter at the frame overlap chopper in cm
+  dTdelay,                       // pulse lengths in ms:  end of pulse       (those neutrons shall pass the choppers)
+  dTp,                          // pulse lengths in ms:  end of pulse       (those neutrons shall pass the choppers)
+  dTpMax,                       //                       very end of pulse  (considered for the evaluation time)
+  dRChop;                       // Distance: center of beam - center of chopper  in cm  
 char   cMode, cWBand, cRotSense, cFoMode;
 FILE*  pOutFile;
 
@@ -191,8 +195,8 @@ int main(int argc, char* argv[])
 		dLdMaxFA = Time2Lambda(dL2, dTA, dT2 + 0.5 * dA/360.0 * dTprd);
 
 		// min. and max. TOF to detector
-		dTdet1  = dLDet * fmax(dLdMinFM, dLdMinM) *1.0e-10 * dMassNeutron / dHPlanck + dTM;
-		dTdet2  = dLDet * fmin(dLdMaxFA, dLdMaxA) *1.0e-10 * dMassNeutron / dHPlanck + dTA;
+		dTdet1  = dLDet * FMax(dLdMinFM, dLdMinM) *1.0e-10 * dMassNeutron / dHPlanck + dTM;
+		dTdet2  = dLDet * FMin(dLdMaxFA, dLdMaxA) *1.0e-10 * dMassNeutron / dHPlanck + dTA;
 
 		// Output
 		fprintf(pOutFile, "%7.3f\n", dA);
@@ -375,22 +379,6 @@ double PhaseRed(const double dPhiTot, int* pNumRot)
 	}
 	return dPhi;
 }
-
-
-static
-double fmax(double a, double b)
-{	
-	if(a > b) return a;
-	else      return b;
-}
-
-static
-double fmin(double a, double b)
-{	
-	if(a < b) return a;
-	else      return b;
-}
-
 
 static
 void ErrorMsg(const char *text) 

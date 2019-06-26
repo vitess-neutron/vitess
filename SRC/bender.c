@@ -267,9 +267,9 @@ int main(int argc, char *argv[])
   /* MF: visualisation for Windows and generation of file for the picture */
 
 #ifdef DO_WIN32
-  char *GraphDev = "bender.ps";
+  const char *GraphDev = "bender.ps";
 #else
-  char *GraphDev = "bender.png";
+  const char *GraphDev = "bender.png";
 #endif
 
   BenderEntranceHeight = BenderExitHeight = BenderEntranceWidth = 0.0;

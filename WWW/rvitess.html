@@ -5,33 +5,35 @@
   </head>
  <body>
   <h1>VITESS Tool rvitess</h1>
-  <p>
-   With this tool you may visualise VITESS output files.<br>
-   It reads and displays ASCII output from module writeout, and
-   binary output files.<br>
-   To read binary files call rvitess on a
-   computer of same convenience as VITESS, i.e. the same
-   operating system and hardware architecture.
-  <p>
-   This tool assumes you have IDL or PV-Wave software installed
-   on your computer.<br>
-   If the TOOLS directory is C:/Programs/Vitess/Tools,
-   you call it from an idl / pv-wave command window prompt by typing
 <pre>
+With this tool you may visualise VITESS output files.
+It reads and displays ASCII output from module writeout, and
+binary output files.
+
+To read binary files call rvitess on a computer of same convenience as VITESS,
+i.e. the same operating system and hardware architecture.
+
+This tool assumes you have IDL or PV-Wave software installed
+on your computer.
+If the TOOLS directory is C:/Programs/Vitess/Tools,
+you call it from an idl / pv-wave command window prompt by typing
+<code>
 cd, 'C:/Programs/Vitess/Tools'
 rvitess
-</pre>
-  <p>
-   To call rvitess directly from the VITESS GUI, you have to provide
-   a call script in the MODULES directory: rvitess.exe for Windows,
-   rvitess_Linux for linux, and so on. The provided rvitess_Linux 
-   works for HMI and contains
-<pre>
+</code>
+To call rvitess directly from the VITESS GUI, you have to provide
+a call script in the MODULES directory: rvitess.exe for Windows,
+rvitess_Linux for linux, and so on. The provided rvitess_Linux 
+works for the HZB and contains
+<code>
 #!/bin/sh
 callwave `pwd`/TOOLS rvitess
+</code>
 </pre>
-  <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-  <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
+
+<hr>
+<a href="vitess.html">Back to VITESS overview</a><br>
+<a href="mailto:vitess@hmi.de">vitess@hmi.de</a> 
   <br>
  </body>
 </html>

@@ -10,9 +10,19 @@
 /** Definitions              **/
 /******************************/
 
+#ifdef WIN32
+# define VINLINE __inline
+#else
+# define VINLINE inline
+#endif
+
 #ifdef _MSC_VER
-#define M_PI            3.14159265358979323846  /* pi */
-#define M_PI_2          1.57079632679489661923  /* pi/2 */
+# include <float.h>
+# define M_PI            3.14159265358979323846  /* pi */
+# define M_PI_2          1.57079632679489661923  /* pi/2 */
+# define ISNAN(x) _isnan(x)
+#else
+# define ISNAN(x) isnan(x)
 #endif
 
 #define MN          1.6749284E-27
@@ -39,19 +49,19 @@
 #define LAMBDA_MIN            0.001
 #define LAMBDA_MAX          100.0
 
-#define BUFFER_SIZE       10000
+#define BUFFER_SIZE       50000
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
 #ifdef RND_SIMPLE
-  #ifdef WINDOWS
-    #define Vran() rand()
-  #else
-    #define Vran() random()
-  #endif
+# ifdef WINDOWS
+#  define Vran() rand()
+# else
+#  define Vran() random()
+# endif
 #else  
-  #define Vran() gsl_rng_uniform (vit_gsl_rng)
+# define Vran() gsl_rng_uniform (vit_gsl_rng)
 #endif
 
 typedef enum
@@ -76,6 +86,9 @@ typedef enum
 	VT_WND_MULT    =  22,
 	VT_GRID        =  23,
 	VT_SLIT        =  24,
+	VT_LENSE       =  25,
+	VT_ELMIRROR    =  26,
+	VT_BEAMSTOP    =  27,
 	VT_CHOP_DISC   =  31,
 	VT_CHOP_FERMI  =  32,
 	VT_VEL_SELECT  =  41,
@@ -98,6 +111,7 @@ typedef enum
 	VT_SMPL_SANS   =  87,
 	VT_SMPL_REFL   =  89,
 	VT_SMPL_ENVIRON=  90,
+	VT_SMPL_DEFL   =  91,
 	VT_MONITOR_1   = 101,
 	VT_MONITOR_2   = 102,
 	VT_MON_POL_1   = 103,
@@ -106,6 +120,7 @@ typedef enum
 	VT_EVAL_ELAST  = 111,
 	VT_EVAL_ELAST2 = 222,
 	VT_EVAL_INELAST= 112,
+	VT_RUNTIME     = 113,
 	VT_VISUAL      = 121,
 	VT_FRAME       = 131,
 	VT_WRITEOUT    = 141,
@@ -113,6 +128,13 @@ typedef enum
 	VT_TOOL        = 999
 }
 VtModID;
+
+typedef enum
+{	
+	VT_RECTANGULAR = 1,
+	VT_GAUSSIAN    = 2,
+}
+VtDistr;
 
 
 typedef double VectorType[3];
@@ -214,39 +236,39 @@ SampleType;
 
 typedef struct
 {
-	VtModID  eModule;
-	double   dWPar;    /* width, ...             */
-	double   dHPar;    /* height, end width, ... */
-	double   dRPar;    /* radius, ...            */
-	long     nNumber;  /* number of ....         */
-	short    eType;    /* shape, mon. par., ...  */
-	char*    pDescr;   /* material, ...          */
+  VtModID  eModule;
+  double   dWPar;    /* width, ...             */
+  double   dHPar;    /* height, end width, ... */
+  double   dRPar;    /* radius, ...            */
+  long     nNumber;  /* number of ....         */
+  short    eType;    /* shape, mon. par., ...  */
+  const char* pDescr;   /* material, ...          */
 }
 ModProp;
-
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 
-double ENERGY_FROM_LAMBDA(double x);
-double LAMBDA_FROM_ENERGY(double x);
-double ENERGY_FROM_V   (double x);
-double V_FROM_LAMBDA   (double x);
-double LAMBDA_FROM_V(double x);
+double ENERGY_FROM_LAMBDA(const double x);
+double LAMBDA_FROM_ENERGY(const double x);
+double ENERGY_FROM_V   (const double x);
+double V_FROM_LAMBDA   (const double x);
+double LAMBDA_FROM_V(const double x);
 
-double MonteCarlo (double x, double y);
+double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
 
-double sq   (double Value);                        /* = Value*Value*/
-double atan0(double a, double b);
-double Round(double value);
+double sq   (const double Value);                        // Value*Value
+double atan0(const double a, const double b);
+double Round(const double value);
+double RoundP(const double value, const int decimal);
 void   Exchange(double* pValue1, double* pValue2);
-double Min(double value1, double value2);
-double Max(double value1, double value2);
-long   mini(long value1, long value2);
-long   maxi(long value1, long value2);
+double Min(const double value1, const double value2);
+double Max(const double value1, const double value2);
+long   mini(const long value1, const long value2);
+long   maxi(const long value1, const long value2);
 
 double SolidAngle   (const double dHorAngle, const double dVertAngle);
 
@@ -255,17 +277,17 @@ long   MAXV         (const VectorType Vector);
 double LengthVector (const VectorType Vector);
 double DistVector   (const VectorType Vec1, const VectorType Vec2);
 double ScalarProduct(const VectorType Vec1, const VectorType Vec2);
-double AngleVectors (VectorType v1, VectorType v2);
-double Area(VectorType v1, VectorType v2);
+double AngleVectors (const VectorType v1, const VectorType v2);
+double Area(const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
 void   RotVector       (double RotMatrix[3][3], VectorType Vector);
 void   RotBackVector   (double RotMatrix[3][3], VectorType Vector);
-void   FillRMatrixZY   (double RotMatrix[3][3], double roty, double rotz);
+void   FillRMatrixZY   (double RotMatrix[3][3], const double roty, const double rotz);
 
-FILE * fileOpen(const char *name, char *mode);
+FILE * fileOpen(const char *name, const char *mode);
 void   Error(const char *text);
 void   Warning(const char *text);
 void   Abort();
@@ -281,6 +303,5 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 #endif
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
-
 #endif
 

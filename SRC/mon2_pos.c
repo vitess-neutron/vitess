@@ -6,6 +6,8 @@
 /* 1.0  Sep 1999  D. Wechsler                                                               */
 /* 1.1  JUL 2002  G. Zsigmond    reorganized                                                */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.2a JAN 2010  A. Houben      Added wavelength filter                                    */
+/* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,7 +30,9 @@ int main(int argc, char *argv[])
   int	dy,dz;
   long	i, exclusivecount, registered, BufferIndex, nbiny, nbinz ;
   double widthmin, widthmax, heightmin, heightmax,p, probactiv, bintc;
-
+  double filtLambdaMin=-1.0,          /* filter      */
+		 filtLambdaMax=-1.0;
+  long format = 0;
 
   BufferIndex = 0;
   p=0.0;
@@ -38,7 +42,7 @@ int main(int argc, char *argv[])
 
   /*input*/
   Init(argc, argv, VT_MONITOR_2);
-  print_module_name("mon2_pos 1.2");
+  print_module_name("mon2_pos 1.2b");
 
 
   for(i=1; i<argc; i++)
@@ -90,7 +94,18 @@ int main(int argc, char *argv[])
 	    if(argv[i][2]=='1')
 	      exclusivecount = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
 	    break;
+	  
+	  case 'l':
+        filtLambdaMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
 
+      case 'L':
+        filtLambdaMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
+        break;
+
+	  case 'F':
+        format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
+        break;
 	  }
       }
     }
@@ -119,11 +134,20 @@ int main(int argc, char *argv[])
   /*************************************************************/
 DECLARE_ABORT;
   while(ReadNeutrons()!= 0)
-    {
-CHECK;      for(i=0; i<NumNeutGot; i++)
+  {
+	CHECK;      
+	for(i=0; i<NumNeutGot; i++)
 	{
+	  CHECK;
 	  registered=0;
-CHECK;
+
+	  if(exclusivecount==0) {
+		  WriteNeutron(&(InputNeutrons[i]));
+	  }
+
+	  if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	  if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+
 	  if(probactiv==1.0) {p = InputNeutrons[i].Probability;}
 	  else p=1.0;
 
@@ -131,20 +155,21 @@ CHECK;
 	  dz = (int)floor(nbinz*(InputNeutrons[i].Position[2]-heightmin)/(heightmax-heightmin));
 			
 	  if(((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
-	    {	
+	  {	
 	      binyz[dy][dz] = binyz[dy][dz] +  p ;
 	      bintc = bintc + p;
 	      registered=1;
-	    }
+	  }
 	  
-	  if((exclusivecount==0)||(registered==1))
-	    {
+	  if((exclusivecount==1) && (registered==1)) {
 	      WriteNeutron(&(InputNeutrons[i]));
-	    }
+	  }
 	}
-    }
+  }
 
 my_exit:
+  switch (format) {
+	  case 0:
   for(dy = 0; dy<nbiny; dy++)
     {
       fprintf(fmonitor,"%10.7f\t",(bposy[dy]+bposy[dy+1])/2.0);
@@ -157,6 +182,17 @@ my_exit:
 	  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
 	}
     }
+  break;
+  case 1:
+	  fprintf(fmonitor, "#x  y  z\n");
+	  for(dz = 0; dz<nbinz; dz++) {
+		  for(dy = 0; dy<nbiny; dy++) {
+			fprintf(fmonitor,"%10.7f  %10.7f  %5.3E\n", (bposy[dy]+bposy[dy+1])/2.0, (bposz[dz]+bposz[dz+1])/2.0, binyz[dy][dz]);
+		  }
+		  fprintf(fmonitor, "\n");
+	  }
+	break;
+  }
   fclose(fmonitor);
 
 
