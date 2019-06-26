@@ -1,0 +1,87 @@
+VITESS 2.4
+----------
+
+Due to changes and improvements in the module 'source', 'guide', 'chopper_fermi', 
+etc. (see below), exactly the same result as by Vitess 2.3 cannot be expected. 
+Nevertheless, the changes should only cause statistical deviations - except for 
+simulations of instruments with guides in the very long wavelength range (above 
+30 Ang) calculated with gravity.
+
+
+New MODULES are:
+----------------
+
+'sample_singcryst'
+ ----------------
+This module simulates a single crystal sample.
+
+
+
+New features in MODULES
+-----------------------
+
+'source'
+ ------
+- The specification of neutron sources with up to 2 moderators has been introduced.
+- An intensity distribution file I(lambda,t) as a function of time and wavelength
+  can be read for pulsed sources.
+- The divergence of the neutrons can be defined by the 'propagation window'
+- The order of MC choices is changed. Now a separate window after the source should 
+  give the same result as putting the same window into the 'propagation' part of
+  the source module.
+
+'chopper_disc'
+ ------------
+- The chopper center can now be positioned beside the guide (instead of above or below it).
+- The chopper can set the time to zero.
+
+'monitor'
+ -------
+- An option is included to normalize the data with binsize
+- Standard deviations per bins are written out as third column 
+
+'guide'
+ -----
+- The first and the last segment of a bended guide are aligned to the preceding
+  or following resp. component
+- Additinal check, if trajectories end out of the guide exit area
+  (loss of trajectories by waviness and gravity is prevented)
+
+'bender'
+ ------
+- Greater number of possible channels
+
+'sm-ensemble'
+ -----------
+- Visualisation
+
+
+
+Improved or corrected modules
+-----------------------------
+'chopper_fermi'
+'detector'
+'sample_powder'
+'sample_reflectom'
+'eval_inelast'
+
+
+
+New TOOLS are:
+--------------
+
+Visualise Vitess output files with IDL / PV-Wave
+(see rvitess.pro)
+
+'Generate Surface Files'
+ ----------------------
+Helps to generate the surface file for the bender module.
+The bender may consist of thin layers.
+
+
+
+Improved TOOLS
+--------------
+'Generate Batches'
+- number of possible variables, simulations etc. increased
+

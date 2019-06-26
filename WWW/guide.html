@@ -1,0 +1,237 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                        
+  <meta name="GENERATOR"
+ content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
+  <title>Module Guide</title>
+</head>
+  <body>
+            
+<h1> VITESS Module Guide</h1>
+      The module <b>guide</b> simulates the neutron flight path through a 
+mirrored   guide calculating the intensity loss for each reflection (in dependence
+ of the neutron wavelength and the incident angle). It can be straight, diverging 
+  or converging,&nbsp;or consist of several straight parts that form a polygon 
+  section with a certain curvature. It can also consist of several vertical 
+  channels (bender option).&nbsp; In this case, the module   bender must
+be used.<br>
+     Subsequent modules always refer to the new origin, which is defined
+as  the  middle of the exit window. It is generated automatically by the
+program,  also in the case of curvature (the orientation of the frame follows
+the curvature).   <br>
+     <i></i>      
+<p>&nbsp; </p>
+         
+<p><img src="Guide2.GIF" height="286" width="568">
+      <br>
+     &nbsp; <br>
+     &nbsp; </p>
+         
+<h3> Simulation parameters</h3>
+      The effect of gravity is considered in this module, if this option
+is  chosen.  Trajectories with a probability/count rate less than the 'minimal 
+ weight'  are taken out of the simulation in this module <br>
+     &nbsp;      
+<h3> Guide characteristics</h3>
+      The guide consists of one piece or of several straight pieces that
+form   a polygon section with a certain curvature. The number of straight
+pieces   and the length of <b>each</b> piece are input parameters. For a
+straight  guide, this number is 1 so that the guide length is equal to the
+piece length;  radius = 0 has to be given in this case. For a curved guide,
+the guide length  is: number_of _pieces * piece_length.<br>
+     The guide may be converging or diverging. Convergence or divergence
+are   defined by input and output width and height.     
+<p>Each piece is described by 5 planes: left, right, top , bottom and exit.
+   Each plane is described by an equation of first order: </p>
+         
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ax + by + cz + d = 0&nbsp;</p>
+         
+<p>The coefficients a,b,c,d are calculated from guide length as well as width 
+  and height of entrance and exit. The trajectory is calculated until the 
+exit  plane is reached, taking into account the intensity loss for each reflection. 
+  A warning is given, if a trajectory is found out of the exit area.<br>
+      </p>
+         
+<p>In case of a polygon section, a radius of curvature (not equal zero) must 
+  be given. The co-ordinate system is rotated by an angle&nbsp;</p>
+         
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; beta = 2.0*arcsin(length/(2*radius))&nbsp;</p>
+         
+<p>between two succeeding pieces. The first piece is aligned to the preceding
+   module, the last piece is aligned to the following module. The algorithm 
+  used here works properly only for guides with constant width. Therefore 
+<i>the  combination of curvature and horizontal converging/diverging is not 
+supported!</i>&nbsp;</p>
+         
+<p>If the real guide does not consist of straight pieces, a large number
+of pieces must be used for a good simulation. Alternatively, the module 'bender' 
+  can be used. The module 'bender' uses arcs instead of planes for the surface 
+  of the guide.  <br>
+     <br>
+     </p>
+         
+<h3> Bender option</h3>
+      The guide can be divided into channels (in the x-z-plane). The entrance
+  width of each channel is determined by: <br>
+     [entrance_width - (number_of_channels - 1) * spacer_width] / number_of_channels.
+   <br>
+     &nbsp; <br>
+     &nbsp; &nbsp;      
+<h3> Reflectivity Files</h3>
+      The reflectivity files describe the reflection properties of the coating:
+       
+<pre>mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0)<br>mirr1a.dat: Ni coating&nbsp;&nbsp;  (theta_Ni    = 0.099138 deg/&Aring;*lambda)<br>mirr1b.dat: Ni-58 coating (theta_Ni-58 = 0.11456  deg/&Aring;*lambda)<br>mirr2linear.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.9 from theta_Ni to 2 theta_Ni; cutoff at 2 theta_Ni;<br>mirr30opt.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.8 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;<br>mirr30std.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.75 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;<br>mirr3+.dat: super-mirror coating (3.5 theta_Ni)<br>mirr23FeCo.dat: supermirror coating of FeCo-Si,<br>&nbsp; reflectivity 0.99 -&gt; 0.77 from theta_Ni to 2.3 theta_Ni; cutoff at 2.3 theta_Ni;<br><br></pre>
+      The reflectivity file contains the probability of reflection in dependence
+   of the incident angle for neutrons with a wavelength of 1 &Aring;. Each
+ row contains 10 data points and covers 0.01 deg, i.e. each point gives the
+ probability average over an angular interval of 0.001 deg (the second row
+ covers 0.01-0.02 deg a.s.o.). The number of data points may vary between
+1 and 1000. If end of file is reached (e.g. only 52 values are given) the
+probability to reflect 1 &Aring; neutrons for higher angles is set to 0.
+If no reflectivity file is given as an input, the guide operates in total
+absorption mode, i.e. each neutron hitting a guide wall is lost. <br>
+     There is one file for the left (= inner) side, one for the right (=
+outer   side) and one for the top and bottom of the bender (channels). <br>
+     &nbsp;      
+<h3><br>
+     </h3>
+         
+<h2>Module parameters:</h2>
+      &nbsp;      
+<table border="1" width="90%">
+      <tbody>
+         <tr>
+      <td><b>Parameter</b> <br>
+           <b>Unit</b></td>
+       <td><b>Description</b></td>
+       <td><b>Command option</b></td>
+      </tr>
+       <tr>
+      <td valign="top">Horizontal / vertical shape<br>
+      </td>
+      <td valign="top">shape of the guide: <br>
+      <b>constant</b>: same cross-section on the whole length (usually 1
+piece)<br>
+      <b>linear</b> : &nbsp;linearly converging or diverging between entrance
+and exit (usually 1 piece)<br>
+      <b>curved</b> (only in <b>horizontal</b> plane): several pieces form
+part of a regular polygon . The first piece is aligned to the preceding,
+the last to the succeeding module. The radius of the circle through the polygon
+corners and the number or pieces need to be given.<br>
+      <b>parabolic</b>: the guide consists of several straight pieces &nbsp;that
+approach a parabola, which is defined by entrance and exit width. The number
+or pieces need to be given.<br>
+      <b>elliptic</b>: the guide consists of several straight pieces &nbsp;that
+approach an ellipse, which is defined by entrance and exit width, and an
+angle describing the position of the ellipse. This angle and the number or
+pieces need to be given (see below). <br>
+      </td>
+      <td valign="top">-Y, -Z<br>
+      </td>
+    </tr>
+    <tr>
+      <td>entrance width, height <br>
+     [cm]</td>
+       <td>size of the guide entrance (in y- and z-direction)</td>
+       <td>-w, -h</td>
+      </tr>
+       <tr>
+      <td>exit width, height <br>
+     [cm]</td>
+       <td>size of the guide exit (in y- and z-direction)</td>
+       <td>&nbsp;-W, -H</td>
+      </tr>
+       <tr>
+      <td>piece length <br>
+     [cm]</td>
+       <td>length of <b>one</b> piece of&nbsp; the guide</td>
+       <td>-p</td>
+      </tr>
+       <tr>
+      <td>number of pieces</td>
+       <td>number of pieces that build the polygon section</td>
+       <td>-n</td>
+      </tr>
+       <tr>
+      <td>curvature (radius) <br>
+     [m]</td>
+       <td>radius of a circle through the polygon; for a straight guide:
+radius    = 0 or nothing</td>
+       <td>-R</td>
+      </tr>
+       <tr>
+      <td>left, right, top/bottom plane</td>
+       <td>reflectivity file for the coating of the guide on the inner side 
+ (left),&nbsp;        <br>
+     on the outer side (right), on the top and on the bottom plane.<br>
+   If no file for the bottom plane is given, the file of the top plane is 
+used  for the bottom.<br>
+         </td>
+       <td>-i, -I, -j, -J</td>
+      </tr>
+       <tr>
+      <td>number of channels</td>
+       <td>number of <b>vertical</b> channels, into which the guide is divided</td>
+       <td>-b</td>
+      </tr>
+       <tr>
+      <td>substrate width <br>
+     [cm]</td>
+       <td>thickness of the material that separates two neighbouring channels</td>
+       <td>-s</td>
+      </tr>
+       <tr>
+      <td>surface waviness <br>
+     [deg]</td>
+       <td>waviness of the inner guide surface, i.e. deviations from a perfectly
+         <br>
+     plane surface</td>
+       <td>-r</td>
+      </tr>
+       <tr>
+      <td valign="top">angle defin. pos. of ellipse<br>
+[deg]<br>
+      </td>
+      <td valign="top">only needed for elliptic shape:<br>
+This angle describes the position of the ellipse. 90 deg means that the guide
+entrance is the position of max. width/height of the ellipse, i.e. its center.
+An angle &gt; 90 deg shifts the center towards the guide exit, i.e. the max.
+width / height is larger than the guide entrance and will be reached somewhere
+in the guide (or lies behind the guide exit.) An angle &lt; 90 deg sets the
+center before the beginning of the guide. Thus the guide is converging on
+the whole length and the exit must be smaller than the entrance.&nbsp; &nbsp;
+      <br>
+      </td>
+      <td valign="top">-y, -z<br>
+      </td>
+    </tr>
+    <tr>
+      <td>abutment loss</td>
+       <td>yes: neutrons that hit the surface close to one of the ends of 
+the  guide        <br>
+     (or a guide segment) are rejected.&nbsp; <br>
+     no: neutrons are treated with the given reflectivity in the whole guide</td>
+       <td>-a</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<p> </p>
+         
+<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+     <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>      
+<p><!-- hhmts start -->Last modified:&nbsp;<!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+   </p>
+     <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

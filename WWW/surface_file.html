@@ -1,0 +1,104 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>VITESS Tool Generate Mirror Files</title>
+</head>
+  <body>
+    
+<h1>VITESS Tool Generate Surface Files</h1>
+  This tool generates surface files that are used in the module 'bender'.
+The following parameters have to be given.  
+<p>&nbsp;&nbsp;</p>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top"><b>Parameter<br>
+      </b></td>
+      <td valign="top"><b>Description<br>
+      </b></td>
+      <td valign="top"><b>Values and range<br>
+      </b></td>
+    </tr>
+    <tr>
+      <td valign="top">Number N of channels<br>
+      </td>
+      <td valign="top">The bender can consist of N channels, each of which
+consists of M wafers.<br>
+The wafers of a channel must have the same length, the channels may have
+different lenghts and a spacing at the exit (see below).<br>
+In case of equal lengths and no spacing, there is no difference between L
+channels a 1 wafer and 1 channel a N wafers.<br>
+      </td>
+      <td valign="top">&gt;= 1<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Number M of&nbsp; wafers <br>
+per channel&nbsp;<br>
+      </td>
+      <td valign="top">Each channel consist of M identical wafers.<br>
+      </td>
+      <td valign="top">&gt;= 1<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Thickness of wafer<br>
+[cm]<br>
+      </td>
+      <td valign="top">Layer thickness of each wafer<br>
+      </td>
+      <td valign="top">&gt; 0<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Radius of the bender<br>
+[cm]<br>
+      </td>
+      <td valign="top">Radius of the middle of the bender. The radius for
+each wafer is calculated in a way that they all form parts of circles with
+one common centre.<br>
+      </td>
+      <td valign="top">&gt;= 0<br>
+0 = straight<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">Space between channels at exit<br>
+[cm]<br>
+      </td>
+      <td valign="top">The channels may be separated by a certain distance
+at the exit. The distance is supposed to be zero at the entrance and increases
+linearly over the bender length.<br>
+      </td>
+      <td valign="top">&gt;= 0<br>
+0 = no space between&nbsp; &nbsp; &nbsp; &nbsp;channels at exit<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">File name<br>
+      </td>
+      <td valign="top">Path and name of the file into which the data shall
+be written.<br>
+ If no path is given, the file will be written to the directory .../Vitess.<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+ 
+<p> </p>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+ <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>  
+<p><!-- hhmts start --><font size="-1">Last modified:&nbsp;</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+ </p>
+ <br>
+ <br>
+</body>
+</html>

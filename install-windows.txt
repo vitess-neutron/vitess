@@ -1,0 +1,75 @@
+        Virtual Instrumentation (VITESS)
+	for pulsed and continuous sources
+
+
+Hahn-Meitner-Institut Berlin
+Modules:
+	Géza Zsigmond (zsigmond@hmi.de)
+	Klaus Lieutenant (lieutenant@hmi.de)
+	Sergey Manoshin
+	Dietmar Wechsler
+	Friedrich Streffer
+
+GUI Software:
+	Michael Fromme   (fromme@hmi.de)
+
+
+README
+
+This program is a Tcl/Tk application. It has
+been developed on Unix systems, but runs on windows
+systems, too.
+
+Installation under Windows 95/98/NT/2000/XP
+
+This version came to you as a selfextracting file,
+which has been produced with Inno Setup (by Jordan Russell
+http://www.jrsoftware.org/isinfo.htm).
+
+You may compare the CRC32 or MD5 checksums of the downloaded
+vitess.exe install program with those stated at
+https://www.hmi.de/projects/ess/vitess/checksums.txt
+
+
+If you install the full version with Tcl/Tk + BLT
+files included, double-clicking the VITESS item on your
+desktop should start the application.
+
+If you install the minimal version, the desktop symbol
+might not link to your installed tcl software.
+Let us assume you installed tcl at C:\Programs\tcl
+and VITESS to c:\Programs\vitess.
+Please change the program shortcut (link) on your desktop accordingly:
+VITESS start command
+  C:\Programs\tcl\bin\wish.exe -f Vitess
+working directory
+  C:\Programs\vitess
+
+CAVEAT: 
++---------------------------------------------------------------------+
+| Do not use folder names with blanks and other                       |
+| non-alphanumeric characters! DO NOT USE C:\Program Files\           |
+| Pipes and commands will fail, because they assume command           |
+| parts to be separated by blanks.                                    |
++---------------------------------------------------------------------+
+
+To uninstall VITESS you might use the uninstall item
+in the command (sub-) menu (like START/VITESS/uninstall)
+or the windows 9x uninstall procedure for software
+(START/settings/system/software or German 
+ START/Einstellungen../Systemsteuerung/Software). 
+
+Pipe Command Execution under Windows 9x
+
+If you save a pipe command and execute it as a batch file
+in a MS-DOS shell window, you might observe problems with
+temporary file sizes. Pipes in a MS-DOS shell are executed
+strictly serialized, with intermediate files storing
+command output. These intermediate files may be too big.
+With Tcl/Tk piped commands are executed (quasi-)pararallel,
+with small intermediate buffers in memory. 
+Solution: 
+1) start pipes from the VITESS GUI
+2) Save the GUI setting with "save tcl" to a file e.g. C:\c.tcl
+   Start a separate wish (C:\Programs\tcl\bin\tclsh.exe)
+   and source C:\c.tcl there.

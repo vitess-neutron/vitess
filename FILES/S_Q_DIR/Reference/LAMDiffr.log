@@ -1,0 +1,99 @@
+description O.K.
+
+Parameter directory is C:/Programme/VITESS_2_5_1/FILES/S_Q_DIR
+Starting simulation
+C:/Programme/VITESS_2_5_1/MODULES/source.exe -S2 --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog1 -R50 -NESS -aC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/EssSPThermDec.mod -n12000000 -m0.75 -t0 -y0.8 -M3.0 -T0.8 -z0.5 -d0 -P0 -X1 -Y0 -V0 -D650 -w4 -h4 -i0 -A0 
+| C:/Programme/VITESS_2_5_1/MODULES/spacewindow.exe --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog2 -l250 -R0 -h-1.5 -H1.5 -w-1.5 -W1.5 -S0 -t0 -c6 
+| C:/Programme/VITESS_2_5_1/MODULES/monitor1.exe -k1 --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog3 -OC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/lambda.dat -n40 -m0.00 -M4.0 -p1 -e0 -t-1.e10 -T1.e10 
+| C:/Programme/VITESS_2_5_1/MODULES/sample_s_q.exe --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog4 -D30 -d30 -P180 -p180 -A40 -I0 -SC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/glass.psq 
+| C:/Programme/VITESS_2_5_1/MODULES/detector.exe --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog5 -Gcyl -h100 -w300 -t2 -e0.9 -T0 -P0 -D150 -c150 -r50 -A1 -M0 -g1 
+| C:/Programme/VITESS_2_5_1/MODULES/eval_elast.exe --Z2 --G1 --U1.0e-6 --B10000 --PC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR --LC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/vpipelog6 -k2 -oC:/Programme/VITESS_2_5_1/FILES/S_Q_DIR/elast.eva -n50 -m0 -M10 -p1 -w1 -l1080 -T0 -e-1.e10 -E1.e10 --Fno_file
+simulation (8a8 770 f58 e2c e24 944 ) (2216 1904 3928 3628 3620 2372) is active
+.............................................................------------------------------
+
+
+VITESS version 2.5 module Source and Window 1.11
+
+> Simulation of short pulsed spallation source ESS <
+pulse frequency              :  50.000 Hz 
+
+decoupled unpoisoned moderator
+moderator temperature        : 325.000 K
+total neutron flux (in 2*pi) : 1.1158e+014 n/(cm²s) 
+moderator position           :(  0.000    0.000    0.000) cm 
+moderator size (W x H)       :  21.000 cm  x  12.000 cm 
+angle of opening used        :   1.600°    x   1.000°   
+time averaged neutron current: 2.1811e+012 n/s in 0.000487 str
+wavelength band used         :   0.750 Ang -   3.000 Ang
+time interval used           :   0.000 ms  -   0.800 ms 
+
+window (W x H)               :   4.000 cm  x   4.000 cm 
+  in a distance of           :   6.500 m   
+  with a declination of      :   0.000°    
+polarization                 :   0.000 %  X: 1.000 Y: 0.000 Z: 0.000
+Center of beam at window     :(650.000   -0.006    0.003) cm 
+Average TOF                  :   2.310 ms 
+
+Gravity is enabled 
+Cutoff probability per traj. : 1.000e-006 
+
+number of trajectories started         :    12000000
+ 1 number of trajectories read         :           0
+   number of trajectories written      :      711170
+(time averaged) neutron count rate     : 7.0611e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module Space and Window 2.21
+OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+Thickness of outer material of collimator 0.000000 cm 
+Gravity is enabled 
+Distance between plane x=0 and window plane  250.000000 cm 
+Center of beam: X = 250.000000 cm Y = -0.017310 cm Z = -0.007095 cm 
+ 
+ 2 number of trajectories read         :      711170
+   number of trajectories written      :      172034
+(time averaged) neutron count rate     : 1.7448e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module monitor1 1.4
+Norm:  1.000000
+ 3 number of trajectories read         :      172034
+   number of trajectories written      :      172034
+(time averaged) neutron count rate     : 1.7448e+010 n/s 
+------------------------------
+
+
+VITESS version 2.5 module sample_s_q 1.2
+Cubic sample, sizes:    0.20,   3.00,   3.00   cm  (thickness, height, width)
+  direction        :(   1.000,  0.000,  0.000)   
+  position         :(  30.00,   0.00,   0.00 ) cm
+macr. cross section:    0.00000,   0.50000,   0.05000  1/cm (incoh, coh scat; absorption)
+Q-values from struct.factor file: C:/Programme/Vitess_2_5/FILES/S_Q_DIR/argon_like.dat
+ 
+ 4 number of trajectories read         :      172034
+   number of trajectories written      :     5816960
+(time averaged) neutron count rate     : 3.5962e+008 n/s 
+------------------------------
+
+
+VITESS version 2.5 module detector 1.5
+ 
+ 5 number of trajectories read         :     5816960
+   number of trajectories written      :     3277408
+(time averaged) neutron count rate     : 7.3452e+007 n/s 
+------------------------------
+
+
+VITESS version 2.5 module eval_elast 1.6b
+Option: momentum transfer Q
+total neutron count rate within binning: 7.3452e+007 n/s 
+
+ 6 number of trajectories read         :     3277408
+   number of trajectories written      :     3277408
+(time averaged) neutron count rate     : 7.3452e+007 n/s 
+------------------------------
+simulation finished
+
+

@@ -1,0 +1,92 @@
+#================
+# XControl VITESS
+#================
+
+Remarks on Tcl/Tk sources:
+
+Start VITESS from a normal wish, sourcing the Vitess file,
+which needs no editing, if all .tcl files reside
+in the same directory, and subdirectories MODULES and BITMAPS
+are as delivered.
+
+----------------------------------------------------------------------------
+Customisation for VITESS is mainly in vitess.tcl (and more or less
+indicated by special comments in other files like control.tcl):
+
+Steps needed to insert a new simulation module quark:
+
+1. edit vitess.tcl
+- add a line behind 
+	set AvailableSET {
+  like 
+	{quark {}}
+  (filling the inner {} with submodule names goes beyond this read-me.)
+- input the quarkESET structure, which defines all entries like
+	### quark
+	###
+  	gSet quarkESET {
+  		...
+  	}
+  each entry within ... corresponds to a list which fully describes
+  the entry. The first list element is a lowercase letter name, second
+  comes the type of the entry, third the entry default. All list items
+  are specified in comments in vitess.tcl.
+- input a procedure to check interdependencies of variables, if 
+  range/type checking of values is not sufficient like
+	proc quarkCheckErr {{app _}} {
+   	...
+  	return ...
+  	}
+  returning 0 if o.k. Use showText "!error 4711" to display a blinking
+  error 4711 text in the message window.
+- For bigger help info on quark input help text like
+	### Help items
+	###
+	helpItem Quark {
+	<bThe quark module of VITESS>
+	...
+	}
+  with <bxyz> producing a bold word xyz and <pmyquark.gif> to insert
+  bitmaps/myquark.gif in the help text.
+  Another form is to produce a file quark.html in the WWW subdirectory
+  and change the quark entry in AvailableSET to
+	{quark {} quark}
+- If quark relies on separate input files, you may want to have
+  edit-able file entries.
+  To edit these with GUI-support, invent a 3 letter suffix
+  for these files, like qua. Go to tools.tcl, and add a line like
+    {"quark file"             {.qua .dat}  }
+  within proc fileDialog.
+  Within vitess.tcl add a procedure to serialize quark files like
+	proc serializeQuaFile {filename mode var app} {
+        ...
+	}
+  comparable to serializeChpFile.
+  The special file entries will need a quaESET, which may be checked by
+  a proc qauCheckErr {{app _}} {}. To read/save .qua files, you'll need
+  to augment proc editSave {var ext app {saveAs 0}} {} for the 
+  qua file type.
+
+2. Produce the executable image for that module, and put it to the
+  MODULES subdirectory.
+  If under Windows, this is MODULES/quark.exe, under Unix it is
+  MODULES/quark_<xxx>, where <xxx> is $tcl_platform(os).
+  If the executable cremor belongs to module quark, you have to enter a line
+  in proc generateVitessCommand after 
+    if {[info exists var] && $var != $DummyEntry} {
+      switch $var {
+  like 
+	quark {set com cremor$sys}
+
+----------------------------------------------------------------------------
+
+Naming conventions
+
+Variable names in ESET lists should start with lower case letters,
+and end with letters or digits. Only letters, digits, and the underscore
+character should make up the rest characters between.
+This is important to avoid name conflicts, and make entry values
+storable. The exact storage exclude pattern is 
+	{^([A-Z_.]|error|auto_|arg|tk|tcl)|env|SET$|Add$}
+
+

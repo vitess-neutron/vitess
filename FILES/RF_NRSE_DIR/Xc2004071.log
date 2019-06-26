@@ -1,0 +1,824 @@
+11.03.2004 16:34:27 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/klim_fl1.gui successfully loaded ---
+11.03.2004 16:35:05 file stored
+11.03.2004 16:35:14 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/klim_fl1.gui successfully loaded ---
+11.03.2004 16:35:24 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog1 -n100000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/s.dat -y0.5 -z0.5 -m2.28 -M2.42 -t0 -T10 -d0 -P95 -X0 -Y0 -V1 -D10 -w2 -h2 -i0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_rfx.dat -n100 -m0 -M3000 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_rfy.dat -n100 -m0 -M3000 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_rfz.dat -n100 -m0 -M3000 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog5 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D99 -E99 -M2 -d9.57833 -w291640.00 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K-100 -q0 -W2.35 -S1 -x0 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/polgradfl.dat -N/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/magngradfl.dat 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog6 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex_rfx.dat -n1 -m0 -M3000 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog7 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex_rfy.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog8 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex_rfz.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b0 -c1 --F/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/noutput.dat
+11.03.2004 16:35:24 simulation (4b14 4b15 4b16 4b17 4b18 4b19 4b1a 4b1b ) (19220 19221 19222 19223 19224 19225 19226 19227) is active
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module Source and Window 1.9
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 > Simulation of constant wave source (null) <
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 wavelength distribution file : constant_source.dat 
+11.03.2004 16:35:50 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+11.03.2004 16:35:50 moderator size (W x H)       :   4.000 cm  x   4.000 cm 
+11.03.2004 16:35:50 moderator position           :(  0.000    0.000    0.000) cm 
+11.03.2004 16:35:50 angle of opening used        :   1.000°    x   1.000°   
+11.03.2004 16:35:50 time averaged neutron current:  7.7570e+04 n/s in 0.000305 str
+11.03.2004 16:35:50 wavelength band used         :   2.280 Ang -   2.420 Ang
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 window (W x H)               :   2.000 cm  x   2.000 cm 
+11.03.2004 16:35:50   in a distance of           :   0.100 m   
+11.03.2004 16:35:50   with a declination of      :   0.000°    
+11.03.2004 16:35:50 polarization                 :  95.000 %  X: 0.000 Y: 0.000 Z: 1.000
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 Gravity is enabled 
+11.03.2004 16:35:50 Cutoff probability for one trajectory  1.000e-25 
+11.03.2004 16:35:50 Center of beam at window     :( 10.000    0.001   -0.005) cm 
+11.03.2004 16:35:50 Average TOF                  :   5.062 ms 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 number of trajectories started     :         100000
+11.03.2004 16:35:50  1 number of trajectories read         :          0
+11.03.2004 16:35:50    number of trajectories written      :      24992
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8094e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: 0.00000 
+11.03.2004 16:35:50  2 number of trajectories read         :      24992
+11.03.2004 16:35:50    number of trajectories written      :      24992
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8094e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: 0.00000 
+11.03.2004 16:35:50  3 number of trajectories read         :      24992
+11.03.2004 16:35:50    number of trajectories written      :      24992
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8094e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: 0.94974 
+11.03.2004 16:35:50  4 number of trajectories read         :      24992
+11.03.2004 16:35:50    number of trajectories written      :      24992
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8094e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50  
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:35:50 Activate output in the file the components of polarisation 
+11.03.2004 16:35:50 ACTIVATE ROTATING FIELD 
+11.03.2004 16:35:50 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:35:50 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 291640.005891 Hz 
+11.03.2004 16:35:50 !! for permanent magnetic field module  100.000000  Oe 
+11.03.2004 16:35:50 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  99.999998 Oe
+11.03.2004 16:35:50 !!!!! for frequency  291640.000000  Hz 
+11.03.2004 16:35:50 !!!!!!!! Amplitude of rotating field must be 9.620416 Oe 
+11.03.2004 16:35:50 !!!!!!!! for PI flipping and for wavelength 2.350000 A 
+11.03.2004 16:35:50 Amplitude of magnetic field is permanent 
+11.03.2004 16:35:50 Frequency of magnetic field is permanent 
+11.03.2004 16:35:50 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ 1832.428163(N) * Time +  0.000000 ]
+11.03.2004 16:35:50 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:35:50 Full Number of precessions  : 5.257715
+11.03.2004 16:35:50 Ave Number of precessions  : 0.053108
+11.03.2004 16:35:50 All Number of precessions  : 5.221586
+11.03.2004 16:35:50 Average number of precession per domains : 0.052568
+11.03.2004 16:35:50  5 number of trajectories read         :      24992
+11.03.2004 16:35:50    number of trajectories written      :      24949
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8063e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: -0.00017 
+11.03.2004 16:35:50  6 number of trajectories read         :      24949
+11.03.2004 16:35:50    number of trajectories written      :      24949
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8063e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: 0.00007 
+11.03.2004 16:35:50  7 number of trajectories read         :      24949
+11.03.2004 16:35:50    number of trajectories written      :      24949
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8063e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:35:50 
+11.03.2004 16:35:50 polarization: -0.94795 
+11.03.2004 16:35:50  8 number of trajectories read         :      24949
+11.03.2004 16:35:50    number of trajectories written      :      24949
+11.03.2004 16:35:50 (time averaged) neutron count rate     :  1.8063e+01 n/s 
+11.03.2004 16:35:50 ------------------------------
+11.03.2004 16:36:15 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/nrse.gui successfully loaded ---
+11.03.2004 16:36:29 file stored
+11.03.2004 16:37:56 file stored
+11.03.2004 16:38:08 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/nrse.gui successfully loaded ---
+11.03.2004 16:38:20 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog1 -n200000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/s.dat -y0.58 -z0.58 -m2.29 -M2.43 -t0 -T10 -d0 -P87.4 -X0 -Y1 -V0 -D70 -w8 -h10 -i0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_nrsex.dat -n1 -m0 -M3000 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_nrsey.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_nrsez.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog5 -l20 -R0 -r10 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog6 -X3.0 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3.0 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w-699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K240 -q0 -S0 -x0 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog7 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3.0 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K-240 -q0 -S0 -x0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog8 -l55 -R1 -r1000 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog9 -X3.0 -Y14.0 -V5.5 -k1.5 -l0 -m0 -i0 -p3.0 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K-240 -q0 -S0 -x0 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog10 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w-699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K240 -q0 -S0 -x0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog11 -l45 -R0 -r1000 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog12 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_nrsex.dat -n1 -m0 -M3000 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog13 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_nrsey.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog14 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_nrsez.dat -n1 -m0 -M3000 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog15 -l45 -R0 -r1000 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog16 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K-240 -q0 -S0 -x0 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog17 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w-699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K240 -q0 -S0 -x0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog18 -l55.0 -R1 -r1000 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog19 -X3.0 -Y14.0 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w-699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K240 -q0 -S0 -x0 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog20 -X3 -Y14 -V5.5 -k1.5 -l0 -m0 -i0 -p3 -r0 -s0 -C99 -D10 -E10 -M2 -d9.57833 -w699936.014138 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K-240 -q0 -S0 -x0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog21 -l20 -R0 -r10 -y0 -z0 -h-2.5 -H2.5 -w-1.5 -W1.5 -S0 -c6 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog22 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/699pex-nrsez.dat -n1 -m0.0 -M3000 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog23 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/699pex-nrsey.dat -n1 -m0.0 -M3000 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog24 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/699pex-nrsex.dat -n1 -m0.0 -M3000 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_pos_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog25 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/699p_pos.dat -y40 -z40 -w-1.5 -W1.5 -h-2.5 -H2.5 -p1 -e0 -a0 -b1 -c0 --F/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/noutput.dat
+11.03.2004 16:38:21 simulation (4b51 4b52 4b53 4b54 4b55 4b56 4b57 4b58 4b59 4b5a 4b5b 4b5c 4b5d 4b5e 4b5f 4b60 4b61 4b62 4b63 4b64 4b65 4b66 4b67 4b68 4b69 ) (19281 19282 19283 19284 19285 19286 19287 19288 19289 19290 19291 19292 19293 19294 19295 19296 19297 19298 19299 19300 19301 19302 19303 19304 19305) is active
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module Source and Window 1.9
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 > Simulation of constant wave source (null) <
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 wavelength distribution file : constant_source.dat 
+11.03.2004 16:52:26 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+11.03.2004 16:52:26 moderator size (W x H)       :   4.000 cm  x   4.000 cm 
+11.03.2004 16:52:26 moderator position           :(  0.000    0.000    0.000) cm 
+11.03.2004 16:52:26 angle of opening used        :   1.160°    x   1.160°   
+11.03.2004 16:52:26 time averaged neutron current:  1.0438e+05 n/s in 0.000410 str
+11.03.2004 16:52:26 wavelength band used         :   2.290 Ang -   2.430 Ang
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 window (W x H)               :   8.000 cm  x  10.000 cm 
+11.03.2004 16:52:26   in a distance of           :   0.700 m   
+11.03.2004 16:52:26   with a declination of      :   0.000°    
+11.03.2004 16:52:26 polarization                 :  87.400 %  X: 0.000 Y: 1.000 Z: 0.000
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 Gravity is enabled 
+11.03.2004 16:52:26 Cutoff probability for one trajectory  1.000e-25 
+11.03.2004 16:52:26 Center of beam at window     :( 70.000   -0.001   -0.003) cm 
+11.03.2004 16:52:26 Average TOF                  :   5.412 ms 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 number of trajectories started     :         200000
+11.03.2004 16:52:26  1 number of trajectories read         :          0
+11.03.2004 16:52:26    number of trajectories written      :     200000
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  9.7420e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 polarization: 0.00000 
+11.03.2004 16:52:26  2 number of trajectories read         :     200000
+11.03.2004 16:52:26    number of trajectories written      :     200000
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  9.7420e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 polarization: 0.87380 
+11.03.2004 16:52:26  3 number of trajectories read         :     200000
+11.03.2004 16:52:26    number of trajectories written      :     200000
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  9.7420e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 polarization: 0.00000 
+11.03.2004 16:52:26  4 number of trajectories read         :     200000
+11.03.2004 16:52:26    number of trajectories written      :     200000
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  9.7420e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:26 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:26 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:26 Gravity is enabled 
+11.03.2004 16:52:26 Distance between plane x=0 and window plane  20.000000 cm 
+11.03.2004 16:52:26 Center of beam: X = 20.000000 cm Y = -0.001085 cm Z = -0.003785 cm TOF = 5.531748 ms  
+11.03.2004 16:52:26  
+11.03.2004 16:52:26  5 number of trajectories read         :     200000
+11.03.2004 16:52:26    number of trajectories written      :     141809
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  6.9075e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26  
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:26 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:26 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:26 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:26 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:26 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:26 !!!!! for frequency  -699936.014138  Hz 
+11.03.2004 16:52:26 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:26 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:26 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:26 Frequency of magnetic field is permanent 
+11.03.2004 16:52:26 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ -4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:26 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:26 Full Number of precessions  : 12.193982
+11.03.2004 16:52:26 Ave Number of precessions  : 0.123172
+11.03.2004 16:52:26 All Number of precessions  : 12.536412
+11.03.2004 16:52:26 Average number of precession per domains : 0.126580
+11.03.2004 16:52:26  6 number of trajectories read         :     141809
+11.03.2004 16:52:26    number of trajectories written      :     141784
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  6.9063e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26  
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:26 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:26 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:26 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:26 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:26 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:26 !!!!! for frequency  699936.014138  Hz 
+11.03.2004 16:52:26 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:26 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:26 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:26 Frequency of magnetic field is permanent 
+11.03.2004 16:52:26 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ 4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:26 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:26 Full Number of precessions  : 12.193982
+11.03.2004 16:52:26 Ave Number of precessions  : 0.123172
+11.03.2004 16:52:26 All Number of precessions  : 12.536422
+11.03.2004 16:52:26 Average number of precession per domains : 0.126580
+11.03.2004 16:52:26  7 number of trajectories read         :     141784
+11.03.2004 16:52:26    number of trajectories written      :     141766
+11.03.2004 16:52:26 (time averaged) neutron count rate     :  6.9054e+01 n/s 
+11.03.2004 16:52:26 ------------------------------
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 
+11.03.2004 16:52:26 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:26 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:26 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:27 Gravity is enabled 
+11.03.2004 16:52:27 Distance between plane x=0 and window plane  55.000000 cm 
+11.03.2004 16:52:27 Center of beam: X = 55.000000 cm Y = -0.001341 cm Z = -0.005162 cm TOF = 5.895991 ms  
+11.03.2004 16:52:27  
+11.03.2004 16:52:27  8 number of trajectories read         :     141766
+11.03.2004 16:52:27    number of trajectories written      :     141766
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  6.9054e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ 4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.193983
+11.03.2004 16:52:27 Ave Number of precessions  : 0.123172
+11.03.2004 16:52:27 All Number of precessions  : 12.517703
+11.03.2004 16:52:27 Average number of precession per domains : 0.126576
+11.03.2004 16:52:27  9 number of trajectories read         :     141766
+11.03.2004 16:52:27    number of trajectories written      :     137984
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  6.7212e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  -699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ -4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.193983
+11.03.2004 16:52:27 Ave Number of precessions  : 0.123172
+11.03.2004 16:52:27 All Number of precessions  : 12.518088
+11.03.2004 16:52:27 Average number of precession per domains : 0.126578
+11.03.2004 16:52:27 10 number of trajectories read         :     137984
+11.03.2004 16:52:27    number of trajectories written      :     137550
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  6.7001e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:27 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:27 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:27 Gravity is enabled 
+11.03.2004 16:52:27 Distance between plane x=0 and window plane  45.000000 cm 
+11.03.2004 16:52:27 Center of beam: X = 45.000000 cm Y = -0.002829 cm Z = -0.004991 cm TOF = 6.200523 ms  
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 11 number of trajectories read         :     137550
+11.03.2004 16:52:27    number of trajectories written      :      99834
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.8629e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: 0.00552 
+11.03.2004 16:52:27 12 number of trajectories read         :      99834
+11.03.2004 16:52:27    number of trajectories written      :      99834
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.8629e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: -0.00504 
+11.03.2004 16:52:27 13 number of trajectories read         :      99834
+11.03.2004 16:52:27    number of trajectories written      :      99834
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.8629e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: -0.00027 
+11.03.2004 16:52:27 14 number of trajectories read         :      99834
+11.03.2004 16:52:27    number of trajectories written      :      99834
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.8629e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:27 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:27 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:27 Gravity is enabled 
+11.03.2004 16:52:27 Distance between plane x=0 and window plane  45.000000 cm 
+11.03.2004 16:52:27 Center of beam: X = 45.000000 cm Y = -0.001655 cm Z = -0.006202 cm TOF = 6.473169 ms  
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 15 number of trajectories read         :      99834
+11.03.2004 16:52:27    number of trajectories written      :      84498
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.1159e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ 4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.690385
+11.03.2004 16:52:27 Ave Number of precessions  : 0.128186
+11.03.2004 16:52:27 All Number of precessions  : 12.535909
+11.03.2004 16:52:27 Average number of precession per domains : 0.126579
+11.03.2004 16:52:27 16 number of trajectories read         :      84498
+11.03.2004 16:52:27    number of trajectories written      :      84481
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.1151e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  -699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ -4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.690385
+11.03.2004 16:52:27 Ave Number of precessions  : 0.128186
+11.03.2004 16:52:27 All Number of precessions  : 12.535895
+11.03.2004 16:52:27 Average number of precession per domains : 0.126579
+11.03.2004 16:52:27 17 number of trajectories read         :      84481
+11.03.2004 16:52:27    number of trajectories written      :      84468
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.1144e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:27 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:27 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:27 Gravity is enabled 
+11.03.2004 16:52:27 Distance between plane x=0 and window plane  55.000000 cm 
+11.03.2004 16:52:27 Center of beam: X = 55.000000 cm Y = -0.003821 cm Z = -0.008908 cm TOF = 6.834373 ms  
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 18 number of trajectories read         :      84468
+11.03.2004 16:52:27    number of trajectories written      :      84468
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  4.1144e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  -699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ -4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.690385
+11.03.2004 16:52:27 Ave Number of precessions  : 0.128186
+11.03.2004 16:52:27 All Number of precessions  : 12.509225
+11.03.2004 16:52:27 Average number of precession per domains : 0.126569
+11.03.2004 16:52:27 19 number of trajectories read         :      84468
+11.03.2004 16:52:27    number of trajectories written      :      81473
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  3.9685e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 16:52:27 ACTIVATE ROTATING FIELD 
+11.03.2004 16:52:27 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 16:52:27 !! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = 699936.014138 Hz 
+11.03.2004 16:52:27 !! for permanent magnetic field module  240.000000  Oe 
+11.03.2004 16:52:27 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  240.000000 Oe
+11.03.2004 16:52:27 !!!!! for frequency  699936.014138  Hz 
+11.03.2004 16:52:27 !!!!!!!! Amplitude of rotating field must be 1.130399 Oe 
+11.03.2004 16:52:27 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 16:52:27 Amplitude of magnetic field is permanent 
+11.03.2004 16:52:27 Frequency of magnetic field is permanent 
+11.03.2004 16:52:27 Rotating magnetic field activated around Z axis H =  9.578330(X,N) *-cos-sin-[ 4397.827680(N) * Time +  0.000000 ]
+11.03.2004 16:52:27 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 16:52:27 Full Number of precessions  : 12.690385
+11.03.2004 16:52:27 Ave Number of precessions  : 0.128186
+11.03.2004 16:52:27 All Number of precessions  : 12.511916
+11.03.2004 16:52:27 Average number of precession per domains : 0.126572
+11.03.2004 16:52:27 20 number of trajectories read         :      81473
+11.03.2004 16:52:27    number of trajectories written      :      81124
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  3.9515e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 16:52:27 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 16:52:27 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 16:52:27 Gravity is enabled 
+11.03.2004 16:52:27 Distance between plane x=0 and window plane  20.000000 cm 
+11.03.2004 16:52:27 Center of beam: X = 20.000000 cm Y = -0.003851 cm Z = -0.006456 cm TOF = 6.990218 ms  
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 21 number of trajectories read         :      81124
+11.03.2004 16:52:27    number of trajectories written      :      57911
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  2.8208e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: -0.00031 
+11.03.2004 16:52:27 22 number of trajectories read         :      57911
+11.03.2004 16:52:27    number of trajectories written      :      57911
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  2.8208e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: 0.85993 
+11.03.2004 16:52:27 23 number of trajectories read         :      57911
+11.03.2004 16:52:27    number of trajectories written      :      57911
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  2.8208e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 polarization: -0.00002 
+11.03.2004 16:52:27 24 number of trajectories read         :      57911
+11.03.2004 16:52:27    number of trajectories written      :      57911
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  2.8208e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 
+11.03.2004 16:52:27 VITESS version 2.5 module monitorpol_pos 1.1
+11.03.2004 16:52:27  
+11.03.2004 16:52:27 polarization: 0.85993 
+11.03.2004 16:52:27 25 number of trajectories read         :      57911
+11.03.2004 16:52:27    number of trajectories written      :      57911
+11.03.2004 16:52:27 (time averaged) neutron count rate     :  2.8208e+01 n/s 
+11.03.2004 16:52:27 ------------------------------
+11.03.2004 16:58:53 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/v23rot6.gui successfully loaded ---
+11.03.2004 16:59:04 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/v23rot6.gui successfully loaded ---
+11.03.2004 16:59:24 Starting simulation
+./MODULES/source_Linux -S1 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog1 -n200000 -A0 -k0 -a/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/s.dat -y0.5 -z0.5 -m19.9 -M20.1 -t0 -T0 -d0 -P95 -X0 -Y0 -V1 -D0 -w10 -h10 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog2 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_foilx.dat -n1 -m0 -M300 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog3 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_foily.dat -n1 -m0 -M300 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog4 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pin_foilz.dat -n1 -m0 -M300 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog5 -X0.0010 -Y5 -V5 -k0.0005 -l0 -m0 -i0 -p0.0010 -r0 -s0 -C40 -D20 -E20 -M0 -d3392 -w50000 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K0 -q0 -S0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog6 -l100 -R1 -r100 -y0 -z0 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog7 -X0.0010 -Y5 -V5 -k0.0005 -l0 -m0 -i0 -p0.0010 -r0 -s0 -C40 -D20 -E20 -M0 -d3392 -w50000 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K0 -q0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog8 -l50 -R1 -r100 -y0 -z0 -S0 -c6 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog9 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_foilx.dat -n1 -m0 -M300 -p1 -e0 -a1 -b0 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog10 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_foily.dat -n1 -m0 -M300 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog11 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/psm_foilz.dat -n1 -m0 -M300 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog12 -l50 -R1 -r100 -y0 -z0 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog13 -X0.0010 -Y5 -V5 -k0.0005 -l0 -m0 -i0 -p0.0010 -r0 -s0 -C40 -D20 -E20 -M0 -d3392 -w-50000 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K0 -q0 -S0 
+| ./MODULES/spacewindow_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog14 -l100 -R1 -r100 -y0 -z0 -S0 -c6 
+| ./MODULES/rotating_field_Linux --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog15 -X0.0010 -Y5 -V5 -k0.0005 -l0 -m0 -i0 -p0.0010 -r0 -s0 -C40 -D20 -E20 -M0 -d3392 -w-50000 -z0 -a0 -e3 -b0 -v2 -n1 -I0 -A0 -K0 -q0 -S0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog16 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex-foilz.dat -n1 -m0.0 -M300 -p1 -e0 -a0 -b0 -c1 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog17 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex-foily.dat -n1 -m0.0 -M300 -p1 -e0 -a0 -b1 -c0 
+| ./MODULES/monitorpol_1d_Linux -k2 --Z1 --G1 --U1.e-25 --B10000 --P/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR --L/tmp/cqevpipelog18 -O/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/pex-foilx.dat -n1 -m0.0 -M300 -p1 -e0 -a1 -b0 -c0 --F/hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/noutput.dat
+11.03.2004 16:59:24 simulation (4f41 4f42 4f43 4f44 4f45 4f46 4f47 4f48 4f49 4f4a 4f4b 4f4c 4f4d 4f4e 4f4f 4f50 4f51 4f52 ) (20289 20290 20291 20292 20293 20294 20295 20296 20297 20298 20299 20300 20301 20302 20303 20304 20305 20306) is active
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Source and Window 1.9
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 > Simulation of constant wave source (null) <
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 wavelength distribution file : constant_source.dat 
+11.03.2004 17:03:39 total neutron flux (in 2*pi) :  1.0000e+08 n/(cm²s) 
+11.03.2004 17:03:39 moderator size (W x H)       :   4.000 cm  x   4.000 cm 
+11.03.2004 17:03:39 moderator position           :(  0.000    0.000    0.000) cm 
+11.03.2004 17:03:39 angle of opening used        :   1.000°    x   1.000°   
+11.03.2004 17:03:39 time averaged neutron current:  7.7570e+04 n/s in 0.000305 str
+11.03.2004 17:03:39 wavelength band used         :  19.900 Ang -  20.100 Ang
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 window (W x H)               :  10.000 cm  x  10.000 cm 
+11.03.2004 17:03:39   in a distance of           :   0.000 m   
+11.03.2004 17:03:39   with a declination of      :   0.000°    
+11.03.2004 17:03:39 polarization                 :  95.000 %  X: 0.000 Y: 0.000 Z: 1.000
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 Gravity is enabled 
+11.03.2004 17:03:39 Cutoff probability for one trajectory  1.000e-25 
+11.03.2004 17:03:39 Center of beam at window     :(  0.000    0.001   -0.002) cm 
+11.03.2004 17:03:39 Average TOF                  :   0.000 ms 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 number of trajectories started     :         200000
+11.03.2004 17:03:39  1 number of trajectories read         :          0
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00000 
+11.03.2004 17:03:39  2 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00000 
+11.03.2004 17:03:39  3 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.94956 
+11.03.2004 17:03:39  4 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 17:03:39 ACTIVATE ROTATING FIELD 
+11.03.2004 17:03:39 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 17:03:39 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  17.144424 Oe
+11.03.2004 17:03:39 !!!!! for frequency  50000.000000  Hz 
+11.03.2004 17:03:39 !!!!!!!! Amplitude of rotating field must be 3391.196784 Oe 
+11.03.2004 17:03:39 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 17:03:39 Amplitude of magnetic field is permanent 
+11.03.2004 17:03:39 Frequency of magnetic field is permanent 
+11.03.2004 17:03:39 Rotating magnetic field activated around X axis H =  3392.000000(X,N) *-cos-sin-[ 314.159265(N) * Time +  0.000000 ]
+11.03.2004 17:03:39 ONLY rotating field! No additional permanent magnetic field! 
+11.03.2004 17:03:39 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 17:03:39 Full Number of precessions  : 0.497836
+11.03.2004 17:03:39 Ave Number of precessions  : 0.012446
+11.03.2004 17:03:39 All Number of precessions  : 0.500131
+11.03.2004 17:03:39 Average number of precession per domains : 0.012503
+11.03.2004 17:03:39  5 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 17:03:39 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 17:03:39 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 17:03:39 Gravity is enabled 
+11.03.2004 17:03:39 Distance between plane x=0 and window plane  100.000000 cm 
+11.03.2004 17:03:39 Center of beam: X = 100.000000 cm Y = -0.000992 cm Z = -0.016105 cm TOF = 5.055744 ms  
+11.03.2004 17:03:39  
+11.03.2004 17:03:39  6 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     200000
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  1.0343e+02 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 17:03:39 ACTIVATE ROTATING FIELD 
+11.03.2004 17:03:39 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 17:03:39 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  17.144424 Oe
+11.03.2004 17:03:39 !!!!! for frequency  50000.000000  Hz 
+11.03.2004 17:03:39 !!!!!!!! Amplitude of rotating field must be 3391.196784 Oe 
+11.03.2004 17:03:39 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 17:03:39 Amplitude of magnetic field is permanent 
+11.03.2004 17:03:39 Frequency of magnetic field is permanent 
+11.03.2004 17:03:39 Rotating magnetic field activated around X axis H =  3392.000000(X,N) *-cos-sin-[ 314.159265(N) * Time +  0.000000 ]
+11.03.2004 17:03:39 ONLY rotating field! No additional permanent magnetic field! 
+11.03.2004 17:03:39 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 17:03:39 Full Number of precessions  : 0.497836
+11.03.2004 17:03:39 Ave Number of precessions  : 0.012446
+11.03.2004 17:03:39 All Number of precessions  : 0.500129
+11.03.2004 17:03:39 Average number of precession per domains : 0.012503
+11.03.2004 17:03:39  7 number of trajectories read         :     200000
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 17:03:39 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 17:03:39 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 17:03:39 Gravity is enabled 
+11.03.2004 17:03:39 Distance between plane x=0 and window plane  50.000000 cm 
+11.03.2004 17:03:39 Center of beam: X = 50.000000 cm Y = -0.001630 cm Z = -0.028184 cm TOF = 7.583611 ms  
+11.03.2004 17:03:39  
+11.03.2004 17:03:39  8 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00930 
+11.03.2004 17:03:39  9 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00658 
+11.03.2004 17:03:39 10 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00932 
+11.03.2004 17:03:39 11 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 17:03:39 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 17:03:39 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 17:03:39 Gravity is enabled 
+11.03.2004 17:03:39 Distance between plane x=0 and window plane  50.000000 cm 
+11.03.2004 17:03:39 Center of beam: X = 50.000000 cm Y = -0.002760 cm Z = -0.050438 cm TOF = 10.111448 ms  
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 12 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     192036
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  9.9309e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 17:03:39 ACTIVATE ROTATING FIELD 
+11.03.2004 17:03:39 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 17:03:39 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  17.144424 Oe
+11.03.2004 17:03:39 !!!!! for frequency  -50000.000000  Hz 
+11.03.2004 17:03:39 !!!!!!!! Amplitude of rotating field must be 3391.196784 Oe 
+11.03.2004 17:03:39 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 17:03:39 Amplitude of magnetic field is permanent 
+11.03.2004 17:03:39 Frequency of magnetic field is permanent 
+11.03.2004 17:03:39 Rotating magnetic field activated around X axis H =  3392.000000(X,N) *-cos-sin-[ -314.159265(N) * Time +  0.000000 ]
+11.03.2004 17:03:39 ONLY rotating field! No additional permanent magnetic field! 
+11.03.2004 17:03:39 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 17:03:39 Full Number of precessions  : 0.497837
+11.03.2004 17:03:39 Ave Number of precessions  : 0.012446
+11.03.2004 17:03:39 All Number of precessions  : 0.500130
+11.03.2004 17:03:39 Average number of precession per domains : 0.012503
+11.03.2004 17:03:39 13 number of trajectories read         :     192036
+11.03.2004 17:03:39    number of trajectories written      :     157898
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  8.1655e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Space and Window 2.10
+11.03.2004 17:03:39 OUTER MATERIAL OF COLLIMATOR: IDEAL ABSORBER 
+11.03.2004 17:03:39 Thickness of outer material of collimator 0.000000 cm 
+11.03.2004 17:03:39 Gravity is enabled 
+11.03.2004 17:03:39 Distance between plane x=0 and window plane  100.000000 cm 
+11.03.2004 17:03:39 Center of beam: X = 100.000000 cm Y = -0.004445 cm Z = -0.088702 cm TOF = 15.167191 ms  
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 14 number of trajectories read         :     157898
+11.03.2004 17:03:39    number of trajectories written      :     157898
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  8.1655e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39  
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module Rotating magnetic fields v2.2
+11.03.2004 17:03:39 ACTIVATE ROTATING FIELD 
+11.03.2004 17:03:39 +++ Resonance and/or PI flipping conditions +++
+11.03.2004 17:03:39 !!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  17.144424 Oe
+11.03.2004 17:03:39 !!!!! for frequency  -50000.000000  Hz 
+11.03.2004 17:03:39 !!!!!!!! Amplitude of rotating field must be 3391.196784 Oe 
+11.03.2004 17:03:39 !!!!!!!! for PI flipping and for wavelength 20.000000 A 
+11.03.2004 17:03:39 Amplitude of magnetic field is permanent 
+11.03.2004 17:03:39 Frequency of magnetic field is permanent 
+11.03.2004 17:03:39 Rotating magnetic field activated around X axis H =  3392.000000(X,N) *-cos-sin-[ -314.159265(N) * Time +  0.000000 ]
+11.03.2004 17:03:39 ONLY rotating field! No additional permanent magnetic field! 
+11.03.2004 17:03:39 Neutron TOF from preceding modules is use for rotating field phase
+11.03.2004 17:03:39 Full Number of precessions  : 0.501157
+11.03.2004 17:03:39 Ave Number of precessions  : 0.012529
+11.03.2004 17:03:39 All Number of precessions  : 0.500125
+11.03.2004 17:03:39 Average number of precession per domains : 0.012503
+11.03.2004 17:03:39 15 number of trajectories read         :     157898
+11.03.2004 17:03:39    number of trajectories written      :     123403
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  6.3816e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.94954 
+11.03.2004 17:03:39 16 number of trajectories read         :     123403
+11.03.2004 17:03:39    number of trajectories written      :     123403
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  6.3816e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: -0.00017 
+11.03.2004 17:03:39 17 number of trajectories read         :     123403
+11.03.2004 17:03:39    number of trajectories written      :     123403
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  6.3816e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 VITESS version 2.5 module monitorpol1 1.2
+11.03.2004 17:03:39 
+11.03.2004 17:03:39 polarization: 0.00933 
+11.03.2004 17:03:39 18 number of trajectories read         :     123403
+11.03.2004 17:03:39    number of trajectories written      :     123403
+11.03.2004 17:03:39 (time averaged) neutron count rate     :  6.3816e+01 n/s 
+11.03.2004 17:03:39 ------------------------------
+11.03.2004 17:10:29 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/IN11_DIR/IN11.gui successfully loaded ---
+11.03.2004 17:27:49 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/klim_fl1.gui successfully loaded ---
+11.03.2004 17:27:52 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/nrse.gui successfully loaded ---
+11.03.2004 17:27:56 --- control file /hmi/hmicuser/cqe/Vitess250/FILES/RF_NRSE_DIR/v23rot6.gui successfully loaded ---

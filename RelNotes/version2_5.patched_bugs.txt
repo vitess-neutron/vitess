@@ -1,0 +1,28 @@
+This is a description of bugs found in version 2.5
+
+These bugs have been corrected in the distribution files
+if not otherwise stated.
+
+GUI
+---
+
+Timeout increased larger than 48 hours
+
+
+Modules
+-------
+
+guide: elliptic geometry option corrected 
+
+chopper_fermi: input-phase calculation corrected
+
+sample_inelastic and sample_elasticisotr: automatic normalisation now with 'repetition'
+
+
+examples
+--------
+
+IRIS example works with new moderator file
+
+HET example included
+

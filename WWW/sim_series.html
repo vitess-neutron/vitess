@@ -1,0 +1,86 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>VITESS Tool Generate Series</title>
+</head>
+  <body>
+        
+<h1>VITESS Tool Generate Series</h1>
+    To do a series of simulations, you start with an instrument you haved 
+developed  using the GUI. Let's call it the 'standard instrument'. When you 
+have completed it, you choose the menu "File"-&gt;"Generate Series".<br>
+ In the item 'Iterations' you give the number of desired simulations. Then 
+you have to define the parameters that are variable during the simulation. 
+To be more precise, all parameters that are not mentioned here have the same 
+values in all runs as in the standard instrument. To define a variable parameters 
+you have to assign the module by its consecutive number and the item by its 
+'command option' (without '-'), connected by a colon. It is possible to give 
+it a name behind a second colon. Several parameters are separated by a [space] 
+character. Instead of typing, you can just click on the item text and it appears
+in the list.<br>
+ Example: 1:M:max_wavelength 2:p:length <br>
+ means that the parameter defined by the command option -M of the first module 
+will be changed, and it will be given the name "max_wavelength" on the following 
+window. (If the first module is the 'source' module, this is the maximal wavelength.)
+Additionly,  the parameter defined by the command option -p of the second
+&nbsp;module will be variable and gets the name 'length'.  (If the second
+module is the 'guide' module, this is the piece length.)<br>
+ 
+<p>When the list is complete, you switch to the next window by clicking the 
+'&gt;&gt;' button. Here you'll find a table with as many columns as variable 
+parameters and as many rows as the number of &nbsp;simulations (or iterations) 
++ 3 heading rows for: <br>
+1. name of parameter (e.g. max_wavelength), <br>
+2. the combination defining the parameter (e.g. 1:M) and <br>
+3. a value 'delta' to define a whole column according to: value_i = value_1
++ (i-1)*delta &nbsp;(i defines the row). To fill the column, the first value
+must be given; then 'delta' has to be set and [enter] be pressed (while the
+cursor is inside the delta cell).<br>
+ The table must now be filled to assign the whole series. To make things
+more convenient, every empty cell of the table is interpreted as having the
+value of the standard instrument.<br>
+ To save the results of the simulations, a list of files must be given that 
+shall be copied. (Otherwise the results are deleted by the following simulations.) 
+They are copied to a file with the new name 's1 _filename.ext', 's2_filename.ext', 
+etc. into the directory given in the item 'CopyTargetDirectory'. Several
+files need to be separated by a [space] character.<br>
+ </p>
+ 
+<p>When the table is filled, the series of simulations can be started or saved.
+Before saving the series in a tcl-file, you can view (and change) the result
+of the parser. In case of mistakes, you can edit the table again (after clicking
+on the '&lt;&lt;' button). <br>
+ But it is also possible to go back to the first window (by clicking on the 
+'&lt;&lt;' button) and extend or change the series. In order to continue your
+work on the series (maybe after a change of standard instrument), you just
+choose the menu "File"-&gt;"Generate Series" again and continue, where you
+have stopped.<br>
+ </p>
+ 
+<p><br>
+ Restrictions:<br>
+   max. number of modules: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp; &nbsp;30<br>
+   max. number of variable parameters:&nbsp; 25<br>
+   max. number of simulations: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; 
+ 100<br>
+   max. number of files to be copied: &nbsp; &nbsp; 10 <br>
+    </p>
+     
+<p> </p>
+     
+<p> </p>
+     
+<hr><a href="vitess.html">Back to VITESS overview</a> <br>
+   <a href="mailto:vitess@hmi.de">vitess@hmi.de</a>    
+<p><!-- hhmts start --><font size="-1">Last modified:&nbsp;</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+  </p>
+   <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

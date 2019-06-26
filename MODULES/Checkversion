@@ -1,0 +1,18 @@
+#!/net/bin/wish -f
+puts "\nYour operating system version :\n"
+foreach n {os osVersion} {
+  puts "\t$n      \t$tcl_platform($n)"
+}
+puts {
+
+The system info above should fit one of the following
+        os              OSF1
+        osVersion       V4.0
+
+        os              SunOS
+        osVersion       5.6
+
+        os              Linux
+        osVersion       2.0.35
+}
+exit

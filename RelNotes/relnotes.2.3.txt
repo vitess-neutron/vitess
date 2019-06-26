@@ -1,0 +1,57 @@
+VITESS 2.3
+----------
+
+New FEATURES are:
+'Source Code'
+In this version the source code is released for most of the modules.
+
+'Data set'
+The data set that is transfered from one module to the following is extended
+to allow for a better ray-tracing (see below). Additionally a 'color' is added,
+which is supposed to be used to mark special trajectories by the user.
+(Thanks to the McStas team for allowance to take this idea.)
+
+'Ray tracing'
+Saving the identity of the neutron trajectories allows for tracing back of the
+paths of the neutrons arrived at a certain position in the instrument.
+By starting the simulation a second time, one can, for example, follow the
+probability distribution changes of only these special trajectories.
+To do that, you can for instance use the output of module 'writeout' as the
+'raytracing file', which has to be given as input file in the module 'source'.
+For all trajectories in this list, a file is generated, in which the modules
+write data about this trajectory. Every user has to decide, what to write out;
+default is: time, y-value, z-value, color. The function 'WriteTraceLine' in
+'init.c' has to changed to write different data.
+(All executables have to be built after the change.) 
+
+
+New MODULES are:
+'sample_s_q' 
+is made to simulate a S(Q) sample.
+
+'rotating_field'
+This module simulates spin precessions in a rotating magnetic field.
+
+'sm_ensemble'
+This module simulates an ensemble of super mirror (SM) planes.
+
+
+New TOOLS are:
+'MirrorCoating'
+With this tool it is possible to generate a reflectivity file for the guide or
+bender module from a few input data. (See description within 'MirrorCoating.c'.)
+
+'DirectView'
+is to decide whether the bending of a guide is enough to prevent direct view.
+
+'GenerBatch'
+is made to generate a batch file for a series of measurements.
+
+'Define Direction'
+Converts between direction definitions in VITESS: Cartesian, Spherical, Euler.      
+Performs Euler frame rotations as next option.
+
+'Standard Deviation'
+Calculates standard deviation ("sigma") of a one-dimensional distribution:
+SD = <(x - <x>)2> to characterise the width of a signal.
+

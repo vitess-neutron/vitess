@@ -1,0 +1,124 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.75 [de] (WinNT; U) [Netscape]">
+  <title>Module Chopper</title>
+</head>
+  <body>
+      
+<h1> VITESS Module Curved Fermi Chopper</h1>
+      
+<p><br>
+  This module simulates a Fermi chopper with curved channels i.e. neutrons
+ are transmitted with a time AND wavelength modulation . <br>
+  The geometry of the chopper consists of a horizontal cylinder with a wide
+ channel system built in vertical direction (when transmitting). At the entrance
+ all channels have the same height, at the exit the channel height depends
+ on the vertical position and other parameters in order to transmit all neutrons
+ having 0 divergence and the nominal (main) wavelength. See figure below.
+The alghorhythm works with rotating chopper framework. Neutrons reflected
+on the channel walls are absorbed. </p>
+   
+<p>Module parameters: <br>
+  &nbsp;   
+<table border="1" width="81%">
+   <tbody>
+      <tr>
+   <td><b>Parameter</b> <br>
+        <b>Unit</b></td>
+    <td><b>Description</b></td>
+    <td><b>Command option</b></td>
+   </tr>
+    <tr>
+   <td>position X, Y, Z&nbsp; <br>
+  [cm]</td>
+    <td>center position of the Fermi chopper in the input framework</td>
+    <td>X, -Y, -V</td>
+   </tr>
+    <tr>
+   <td>height, width <br>
+  [cm]&nbsp;</td>
+    <td>height and width of the Fermi chopper channel system</td>
+    <td>&nbsp;-a&nbsp;&nbsp; -b&nbsp;</td>
+   </tr>
+    <tr>
+   <td>optimal wavelength&nbsp; <br>
+  [A]</td>
+    <td>optimal wavelength to be transmitted at highest intensity</td>
+    <td>-c</td>
+   </tr>
+    <tr>
+   <td>number of channels</td>
+    <td>number of curved channels</td>
+    <td>-l</td>
+   </tr>
+    <tr>
+   <td>wall thickness <br>
+  [cm]&nbsp;</td>
+    <td>thickness of the wall between channels</td>
+    <td>-m</td>
+   </tr>
+    <tr>
+   <td>diameter <br>
+  [cm]&nbsp;</td>
+    <td>diameter of the shadowing cylinder</td>
+    <td>-r</td>
+   </tr>
+    <tr>
+   <td>rotations per second&nbsp;</td>
+    <td>frequency of rotation</td>
+    <td>-n</td>
+   </tr>
+    <tr>
+   <td>phase <br>
+  [deg]</td>
+    <td>dephasing angle at zero time</td>
+    <td>-q&nbsp;</td>
+   </tr>
+    <tr>
+   <td>geometry file</td>
+    <td>output file of the curved channel geometry&nbsp; <br>
+  (for scatter plot of the last two columns, first column: channel index, 
+0 = envelope)</td>
+    <td>-G</td>
+   </tr>
+         
+  </tbody>  
+</table>
+    </p>
+   
+<p>Example for the geometry file </p>
+   
+<p><img src="CurvedFermi.gif" border="0" height="612" width="701">
+   <br>
+  &nbsp;<br>
+  <br>
+  </p>
+   
+<p>GUI example:</p>
+   
+<p><br>
+  <img src="fermicurved_help.jpg" alt="fermicurved_help" width="720"
+ height="540">
+ &nbsp; <br>
+   </p>
+   
+<p> </p>
+   
+<hr>   
+<p><a href="vitess.html">Back to VITESS overview</a> <br>
+  <a href="mailto:vitess@hmi.de">vitess@hmi.de</a> </p>
+   
+<p><!-- hhmts start --><font size="-1">Last modified: Fri Jul&nbsp; 4 16:43:41
+ MEST 2003 G. Zs.</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> 
+ </p>
+  <br>
+  <br>
+ <br>
+</body>
+</html>

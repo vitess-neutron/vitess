@@ -1,0 +1,347 @@
+/********************************************************************************************/
+/*  VITESS module 'sample.c'                                                                */
+/*    Some functions for sample_powder, sample_sans, etc.                                   */
+/*                                                                                          */
+/* The free non-commercial use of these routines is granted providing due credit is given   */
+/* to the authors.                                                                          */
+/*                                                                                          */
+/********************************************************************************************/
+
+#include <string.h>
+
+#include "init.h"
+#include "intersection.h"
+#include "sample.h"
+#include "matrix.h"
+
+
+/******************************/
+/**   Global Variables       **/
+/******************************/
+
+double g_fMuTot=0.0, /* total macroscopic scattering cross-section (= sigma_tot/UCV) [1/cm] */
+       g_fMuAbs=0.0; /* macroscopic absorption cross-section       (= sigma_abs/UCV) [1/cm] */
+
+extern char* SampleFileName;  /* pointer to the parameter file name (located in argv) */
+
+
+
+/******************************/
+/**   Program                **/
+/******************************/
+
+
+
+/****************************************************************/
+/* 'InitSample'                                                 */
+/*   initializes structure 'SampleType'                         */
+void InitSample  (SampleType* pSample)
+{
+	pSample->Position [2] = pSample->Position [1] = pSample->Position [0] = 0.0;
+	pSample->Direction[2] = pSample->Direction[1] = pSample->Direction[0] = 0.0;
+	pSample->SG.Cube.thickness=0.0;
+	pSample->SG.Cube.height   =0.0;
+	pSample->SG.Cube.width    =0.0;
+}
+
+
+/****************************************************************/
+/* 'ReadCube'                                                   */
+/*   reads information about a sample of cubic geometry         */
+/*                                                              */
+/* SampleFile: Pointer to the File                        (in)  */
+/* Sample    : Information about geometry and orientation (out) */
+/*                                                              */
+void ReadCube(FILE *SampleFile, SampleType *Sample)
+{
+	char Buffer[CHAR_BUF_LENGTH];
+	char *helpptr;
+
+	/* get next line from SampleFile */
+	if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
+	{
+		/* first strip any comment                  */
+		helpptr= strchr(Buffer, '#');
+		sscanf(Buffer,"%lf %lf %lf", &(Sample->SG.Cube.thickness),
+		                             &(Sample->SG.Cube.height),
+		                             &(Sample->SG.Cube.width));
+		if (Sample->SG.Cube.thickness==0.0 || Sample->SG.Cube.height==0.0 || Sample->SG.Cube.width==0.0)
+			Error("One of the lengths of the (cuboid) sample is not given or assigned to zero");
+		if(helpptr!=NULL) *helpptr='\0';
+
+		if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
+		{
+			sscanf(Buffer, "%lf %lf %lf",
+			          &(Sample->Direction[0]), &(Sample->Direction[1]), &(Sample->Direction[2]));
+			if (NormVector(Sample->Direction)==FALSE)
+				Error("Sample direction is missing");
+		} 
+		else 
+		{	fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
+			exit(-1);
+		}
+	} 
+	else 
+	{	fprintf(LogFilePtr,"ERROR: height, width and thickness of the cube not found in %s!\n",
+		                   SampleFileName);
+		exit(-1);
+	}
+}
+
+
+
+/****************************************************************/
+/* 'ReadCylinder'                                               */
+/*   reads information about a sample of cylindric geometry     */
+/*                                                              */
+/* SampleFile: Pointer to the File                        (in)  */
+/* Sample    : Information about geometry and orientation (out) */
+/*                                                              */
+void ReadCylinder(FILE *SampleFile, SampleType *Sample)
+{
+	char Buffer[CHAR_BUF_LENGTH];
+	char *helpptr;
+
+	/* get next line from SampleFile */
+	if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
+	{
+		/* first strip any comment                  */
+		helpptr= strchr(Buffer, '#');
+		if(helpptr!=NULL) *helpptr='\0';
+
+		sscanf(Buffer,"%lf %lf", &(Sample->SG.Cyl.r), &(Sample->SG.Cyl.height));
+		if (Sample->SG.Cyl.r==0.0 || Sample->SG.Cyl.height==0.0)
+			Error("Height or radius of the (cylindrical) sample is not given or assigned to zero");
+		if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
+		{
+			sscanf(Buffer, "%lf %lf %lf",
+			          &(Sample->Direction[0]), &(Sample->Direction[1]), &(Sample->Direction[2]));
+			if (NormVector(Sample->Direction)==FALSE)
+				Error("Sample direction is missing");
+		} 
+		else 
+		{	fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
+			exit(-1);
+		}
+	} 
+	else 
+	{
+		fprintf(LogFilePtr,"ERROR: radius and height of the cylinder not found in %s!\n",
+		                   SampleFileName);
+		exit(-1);
+	}
+}
+
+
+
+/****************************************************************/
+/* 'ReadBall'                                                   */
+/*   reads information about a sample of spheric geometry       */
+/*                                                              */
+/* SampleFile: Pointer to the File                        (in)  */
+/* Sample    : Information about geometry and orientation (out) */
+/*                                                              */
+void ReadBall(FILE *SampleFile, SampleType *Sample)
+{
+	char Buffer[CHAR_BUF_LENGTH];
+	char *helpptr;
+
+	if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
+	{
+		/* first strip any comment                  */
+		helpptr= strchr(Buffer, '#');
+		if(helpptr!=NULL) *helpptr='\0';
+		sscanf(Buffer,"%lf", &(Sample->SG.Ball.r));
+		if (Sample->SG.Ball.r==0.0)
+			Error("Radius of the (spherical) sample is not given or assign to zero");
+		Sample->Direction[0] = 0.0;
+		Sample->Direction[1] = 0.0;
+		Sample->Direction[2] = 1.0;
+	}
+}
+
+
+
+/****************************************************************/
+/* 'CompPair'                                                   */
+/* This function is needed by qsort to sort the StrucFac Array  */
+/* remember in StrucFac[0][0] should be the largest d-spacing   */
+/*                                                              */
+int CompPair(const void* p1, const void* p2)
+{
+	DoublePair* pOne = (DoublePair *)p1;
+	DoublePair* pTwo = (DoublePair *)p2;
+
+	if(*pOne[0] <  *pTwo[0]) return +1;
+	if(*pOne[0] == *pTwo[0]) return  0;
+	if(*pOne[0] >  *pTwo[0]) return -1;
+	/* this should never be reached */
+	return -99;
+}
+
+
+/****************************************************************/
+/* 'ReadTilComment'                                             */
+/* This function reads one line of the parameter file and       */
+/* strips the comment at the end beginning with '#'             */
+/*                                                              */
+int ReadTilComment(char* pBuffer, FILE* pSampleFile)
+{
+	char* pHelp;
+ 
+	/* read line */
+	if(fgets(pBuffer, CHAR_BUF_LENGTH, pSampleFile)!=NULL)
+	{	
+		/* strip any comment 			*/
+		pHelp = strchr(pBuffer, '#');
+		if(pHelp != NULL) 
+			*pHelp = '\0';
+
+		return TRUE;
+	}
+	else 
+	{	return FALSE;
+	}
+}
+
+
+
+/*******************************************************************/
+/* 'ProcessNeutronToEnd'                                           */
+/* This function calculates the output data of a neutron (incl.    */
+/* total scattering probability) after the scattering in a sample  */
+/*                                                                 */
+/* Neut         : information about the current neutron            */
+/* SP           : scattering point                                 */
+/* Ls           : path length inside sample before scattering      */
+/* DetFac       : Probability by detector coverage                 */
+/* ScProb       : Probability of the scattering process itself     */
+/* OutTheta,                                                       */
+/* OutPhi       : New flight direction in the new coordinte system */
+/* Sample       : holds geometry data about the sample             */
+/* SampleRotNeut: is a matrix that rotates the old to the new      */
+/*                neutron coordinate system                        */
+/* RotMatrixSmpl: is a matrix that rotates the sample              */
+/*                in its position (from the (1,0,0) direction      */
+/*                                                                 */
+void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
+                        double DetFac, double ScProb, double OutTheta,
+                        double OutPhi, SampleType *Sample,
+                        double RotMatrixNeut[3][3], double RotMatrixSmpl[3][3])
+{
+	Neutron    OutNeutron;
+	double     Las, t, Atten, Lbs;
+	VectorType OutISP[2];
+	long       nisp;
+
+	/* Determine the flight length of the neutron before scattering */
+	Lbs = DistVector(Neut->Position, SP); /*including the distance to the sample*/
+
+	/* initialize output data of the neutron */
+	memcpy(&OutNeutron, Neut, sizeof(Neutron));
+
+	/* set new direction of the neutron */
+	OutNeutron.Vector[0]= cos(OutTheta);
+	OutNeutron.Vector[1]= sin(OutTheta)*cos(OutPhi);
+	OutNeutron.Vector[2]= sin(OutTheta)*sin(OutPhi);
+
+	/* Bring the direction back to the original coordinte system */
+	RotBackVector(RotMatrixNeut, OutNeutron.Vector);
+
+	/* put the neutron to the scattering point */
+	CopyVector(SP,OutNeutron.Position);
+
+	/* ok the neutron is at SP and has its new Direction */
+	/* find the intersections with the sample walls      */
+	if(NeutronIntersectsSample(&OutNeutron, Sample, RotMatrixSmpl, OutISP, &nisp)) 
+	{
+		/* Distance between SP and OutISP, Length atfter scattering */
+		Las = DistVector(SP, OutISP[1]);
+
+		/* ok, neutron leaves the sample at OutISP[1] */
+		CopyVector(OutISP[1],OutNeutron.Position);
+
+		/* it takes t sec to travel through the sample */
+		t = (Las+Lbs)/V_FROM_LAMBDA(OutNeutron.Wavelength);
+
+		/* and the neutron may be attenuated                               */
+		/* also scale MuAbs for the neutrons velocity                        */
+		/* MuAbs is proportional to 1/v, i.e. proportional to the wavelength */
+		/* reference wavelength is usually 1.798 Ang                       */
+		Atten = exp(-(Las+Ls)*(g_fMuTot + g_fMuAbs*OutNeutron.Wavelength/1.798));
+
+		/* now put all together  */
+		OutNeutron.Time        = Neut->Time+t;
+		OutNeutron.Probability = Neut->Probability*DetFac*Atten*ScProb;
+
+		/* write the Neutron to the output file   */
+		WriteNeutron(&OutNeutron);
+	} 
+	else 
+	{ /* Uhh, here is something terribly wrong */
+		Error("(internal): neutron leaves the sample without intersecting its wall");
+	}
+}
+
+
+
+/****************************************************************/
+/* 'NeutronIntersectsSample'                                    */
+/*   tests whether the neutron hits the sample                  */
+/*                                                              */
+/* returns TRUE =1 if neutron intersects,                       */
+/*         FALSE=0 otherwise                                    */
+/*                                                              */
+/* Nin             carries information about the current neutron*/
+/* Sample          holds geometry data about the sample         */
+/* SampleRotMatrix is a matrix that rotates the sample          */
+/*                 in its position (from the (1,0,0) direction  */
+/* ISP             denotes the intersection points              */
+/*                 it is given in the input coordinate system   */
+/* nisp            number of intersections to come (with t > 0) */
+/****************************************************************/
+long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
+                             double SampleRotMatrix[3][3], VectorType ISP[2],
+                             long* pNisp) 
+{
+	double t[2];
+	VectorType Position, Direction;
+	long j, rc=FALSE;
+
+	CopyVector(Nin->Position, Position);
+	CopyVector(Nin->Vector, Direction);
+
+	/* Rotation of the sample to the neutron's frame  */
+	if (pSample->Type != VT_SPHERE)
+	{	RotBackVector(SampleRotMatrix, Position);
+		RotBackVector(SampleRotMatrix, Direction);
+	}
+
+	/* Searching the distances t0 and t1 to the intersection points with the sample */
+	switch (pSample->Type)
+	{	case VT_CUBE  : rc=LineIntersectsCube    (Position, Direction, &(pSample->SG.Cube), t); break;
+		case VT_CYL   : rc=LineIntersectsCylinder(Position, Direction, &(pSample->SG.Cyl),  t); break;
+		case VT_SPHERE: rc=LineIntersectsSphere  (Position, Direction, &(pSample->SG.Ball), t); break;
+		default:      Error("Sample type unknown");
+	}
+
+	if(rc==TRUE) 
+	{	
+		/*   calculating of the intersection points ISP0 and ISP1 
+		     t0: entering the sample, t1: leaving the sample        */
+		for(j=0; j<3; j++)
+		{	ISP[1][j]=Nin->Position[j]+t[1]*Nin->Vector[j];
+			ISP[0][j]=Nin->Position[j]+t[0]*Nin->Vector[j];
+		}
+		/* calculating the number of intersection points to come
+	      (result of LineIntersects.... are ordered t0 < t1  */
+		*pNisp = 0;
+		if (t[1] > 0.0) (*pNisp)++;
+		if (t[0] > 0.0) (*pNisp)++;
+		return TRUE;
+	}
+	else
+	{	return FALSE;
+	}
+}
+
