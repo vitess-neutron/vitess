@@ -35,15 +35,20 @@ proc showDPoint {w x y} {
 }
 
 proc showXYfile {fname} {
-  if {[catch {open $fname r} f] || [eof $f]} {
+  if [catch {open $fname r} f] {
     showText "! can't open $fname"
+    return
+  }
+  if [eof $f] {
+    close $f
+    showText "! empty $fname"
     return
   }
   global GraphOptions plotmode buttonColor bgColor scrollWidth
 
   set i [getFreePlot]
   set w .plot$i
-  
+
   upvar #0 VX$i GX
   upvar #0 VY$i GY
   set postextname GP$i
@@ -53,6 +58,8 @@ proc showXYfile {fname} {
   vector create VY
 
   set hf 0;				# header found?
+  set xtitle ""
+  set ytitle ""
   while {[gets $f ins] > 0} {
     if {$hf} {
       if {2 != [scan $ins "%f%f" x y]} continue
@@ -64,8 +71,12 @@ proc showXYfile {fname} {
       # match contains column descriptions
     } elseif [regexp {^ *[a-zA-Z]} $ins] {
       set match $ins
+    } else {
+      set match ""
     }
-    regexp {^([^ ]+) *([^ ]+)} $match a xtitle ytitle
+    if {$match != ""} {
+      regexp {^([^ ]+) *([^ ]+)} $match a xtitle ytitle
+    }
     set hf 1
   }
   close $f

@@ -193,7 +193,8 @@ proc loadAll {extension} {
   # So we store all font settings.
   # If the default path contains a double colon, we assume a windows environment.
   set herewin [regexp : [globVal defdirectory_]]
-  set savlist {defdirectory_ maxModule scrollWidth serif sserif itemlabwidth fileentrywidth}
+  set savlist {defdirectory_ maxModule scrollWidth serif sserif monospaced
+    itemlabwidth fileentrywidth}
   set vallist {}
   foreach s $savlist {lappend vallist [globVal $s]}
   foreach s {b h l m t} {
@@ -349,7 +350,7 @@ proc saveInfFile {w fn} {
 }
 
 proc editInfFile {{mode 0}} {
-  global defdirectory_ bgColor
+  global defdirectory_ bgColor monospaced
   if $mode {set ft open} else {set ft write}
   if {[set fn [fileDialog $ft inf instrument.inf]] == 0} return
   set w .editinf
@@ -357,8 +358,8 @@ proc editInfFile {{mode 0}} {
   generateToplevel $w "Edit Instrument File"
   fGroup $w.v $w.b
   text $w.v.text -relief raised -bd 2 \
-      -height 32 -width 80\
-      -font [textFont] -bg $bgColor\
+      -height 32 -width 150\
+      -font [list $monospaced 8 normal] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
   yscroll $w.v "$w.v.text yview"

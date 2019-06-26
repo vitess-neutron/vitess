@@ -8,8 +8,13 @@ proc getFreePlot {} {
 
 # show 2d array coded with colors
 proc show2Dfile {fname} {
-  if {[catch {open $fname r} f] || [eof $f]} {
+  if [catch {open $fname r} f] {
     showText "! can't open $fname"
+    return
+  }
+  if [eof $f] {
+    close $f
+    showText "! empty $fname"
     return
   }
 

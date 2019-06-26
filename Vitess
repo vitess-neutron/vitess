@@ -1,6 +1,6 @@
+#!/usr/bin/bltwish
 #!/usr/local/bin/bltwish
 #!/usr/local/bin/wish8.4
-#!/usr/bin/bltwish
 #!/net/bin/wish -f
 ### VITESS simulation GUI start script
 
@@ -70,7 +70,12 @@ switch $tcl_platform(platform) {
     set TextPos +620+0
     set MaxOutstringLength 80
     set Browser [file join $ExeDirectory shelexec.exe]
-    set serif "Lucida Console"
+    set s "Lucida Console"
+    if {[lsearch [font families] $s] >= 0} {
+      set serif $s
+    } else {
+      set serif Courier
+    }
     set sserif Arial
     catch {exec $KillProg C} res
   }
@@ -80,6 +85,7 @@ switch $tcl_platform(platform) {
   }
 }
 catch {unset ld place resname s i}
+set monospaced $serif
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]
 ###    use tk_chooseColor to find better colors

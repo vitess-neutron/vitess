@@ -1,26 +1,31 @@
-/*********************************************************************************************/
-/*  VITESS module 'chopper_fermi'                                                            */
-/*                                                                                           */
-/* The free non-commercial use of these routines is granted providing due credit is given to */
-/* the authors.                                                                              */
-/*                                                                                           */
-/* 1.00  Jul 2002  G. Zsigmond	initial version                                             */
-/* 1.01  Aug 2002  G. Zsigmond	forward all coordinates                                     */
-/* 1.02  Sep 2002  G. Zsigmond	included more channel windows                               */
-/* 1.03  Apr 2003  G. Zsigmond	sign correction                                             */
-/* 1.04  May 2003  G. Zsigmond	info changed                                                */
-/* 1.05  Jun 2003  G. Zsigmond	modulo function included for safety                         */
-/* 1.06  Jul 2003  G. Zsigmond	generalised for optional number of pulses; warnings included*/
-/* 1.07  Oct 2003  G. Zsigmond	superfluous modulo function cancelled                       */
-/* 1.08  Nov 2003  G. Zsigmond	put 2 more windows representing channels, now 6 windows     */
-/*                               in the big IF loop ">=" changed to ">"                      */
-/* 1.09  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                */
+/********************************************************************************************************************************************************/
+/*  VITESS module 'chopper_fermi'                                                            
+/*                                                                                           
+/* The free non-commercial use of these routines is granted providing due credit is given to 
+/* the authors.                                                                              
+/*                                                                                           
+/* 1.00  Jul 2002  G. Zsigmond	initial version                                             
+/* 1.01  Aug 2002  G. Zsigmond	forward all coordinates                                     
+/* 1.02  Sep 2002  G. Zsigmond	included more channel windows                               
+/* 1.03  Apr 2003  G. Zsigmond	sign correction                                             
+/* 1.04  May 2003  G. Zsigmond	info changed                                                
+/* 1.05  Jun 2003  G. Zsigmond	modulo function included for safety                         
+/* 1.06  Jul 2003  G. Zsigmond	generalised for optional number of pulses; warnings included
+/* 1.07  Oct 2003  G. Zsigmond	superfluous modulo function cancelled                       
+/* 1.08  Nov 2003  G. Zsigmond	put 2 more windows representing channels, now 6 windows    
+/*                               in the big IF loop ">=" changed to ">"                      
+/* 1.09  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                
 /* 1.10  Jan 2004  G. Zsigmond  back to 4 windows representing channels
 /* 1.11  Apr 2004  G. Zsigmond  negative time of flight defined
 /* 1.12  Apr 2004  G. Zsigmond  negative time of flight - corrections, set zero time
 /* 1.13  May 2004  G. Zsigmond  circular geom option and channel length included in curved fc
 /* 1.14  JUL 2004  G. Zsigmond  small change in Init to adapt to new GUI
-/*********************************************************************************************/
+/* 1.15  OCT 2004  G. Zsigmond  changed to use both even or odd number of channels
+/* 1.16  MAY 2005  G. Zsigmond  output changed to give trajectory coordinates at a plane crossing the center of the chopper (to be compatible with zero time option)
+/*								zero time option fixed to get one peak 
+/*                              shadowing cylinder opening activated 
+/* 1.17  MAY 2005  G. Zsigmond  new option choice of 4, 6(better,slower) or 8(much better, very slow) gates, 4 gates option adjusted
+/********************************************************************************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,11 +40,13 @@
 
 #define	STRING_BUFFER 100
 
-int			Option, CurvGeomOption, zerotime=0;
+int			Option, CurvGeomOption, GatesNumber, zerotime=0;
 long		NumOut, Nchannels, i;
-double		TOF, TOF_zero, WL, omega, height, width, depth, optimal_wl, radius_of_curv, main_depth, diameter, Phase, shift_y=0., angle_channel, phase0, wallwidth, IntegralIntensity, y_ch[10][2000], x_ch[10][2000], coef_pi;
+double		TOF, TOF_zero, WL, omega, height, width, depth, optimal_wl, radius_of_curv, main_depth, 
+			diameter, Phase, shift_y=0., angle_channel, phase0, wallwidth, expon,
+			IntegralIntensity, y_ch[10][2000], x_ch[10][2000], coef_pi;
 char		*GeomFileName, XFILEName[STRING_BUFFER];
-FILE		*GeomFilePtr;
+FILE		*GeomFilePtr, *GatesFilePtr;
 VectorType	Pos, Dir, pos_ch;
 Neutron		Neutrons;
 
@@ -56,6 +63,7 @@ if (val>=0) result = (double)asin(val);
 else  result =  2*M_PI + (double)asin(val);
 return result;
 }
+
 
 
 /* FINISH HEADER STORY */
@@ -123,7 +131,7 @@ int main(int argc, char **argv)
 
 			TOF = TOF + (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
 			
-			/*if(TOF<0) {fprintf(LogFilePtr,"\nERROR: This algorithm only works with positive time-of-flight \n"); exit(-1); }*/
+			if((TOF<0)&&(Nchannels==1)){fprintf(LogFilePtr,"\nERROR: Single-slit Fermi chopper needs positive flight time at the chopper position! \n"); exit(-1); }
 				
 			CopyVector(Dir, Path);
 
@@ -146,43 +154,43 @@ int main(int argc, char **argv)
 
 	  phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI); 
 	
-	  TOF_zero = phase0/omega;
+	  for(k=0; k<GatesNumber; k++) 
+	  {
+		for(j=0; j < 2*Nchannels+2; j++) {
 
-	  for(k=0; k<4; k++) {
-  
-		for(j=1; j < 2*Nchannels+2; j++) {
+		  double x_ch_k_j, y_ch_k_j, sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j;
 
-      double x_ch_k_j, y_ch_k_j, sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j;
+		  x_ch_k_j    = x_ch[k][j];
+		  y_ch_k_j    = y_ch[k][j];
+		  sq_x_ch_k_j = sq(x_ch_k_j);
+		  Denom_k     = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_k_j)) );
 
-      x_ch_k_j    = x_ch[k][j];
-      y_ch_k_j    = y_ch[k][j];
-      sq_x_ch_k_j = sq(x_ch_k_j);
-      Denom_k     = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_k_j)) );
+		  Arg_k = dirpos / Denom_k;
 
-      Arg_k = dirpos / Denom_k;
+		  if (fabs(Arg_k) > 1.) {
+			Arg_k = vz_pos;
+			y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
+		  } else
+			y_ch_new_k_j = y_ch_k_j; /* no intersection with trajectory */
 
-      if (fabs(Arg_k) > 1.) {
-		Arg_k = vz_pos;
-		y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
-      } else
-		y_ch_new_k_j = y_ch_k_j; /* no intersection with trajectory */
+		  Denom_k = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_new_k_j)) );
 
-      Denom_k = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_new_k_j)) );
+		  arg_k = (Dir[0]*y_ch_new_k_j - Dir[1]*x_ch_k_j) / Denom_k;
 
-      arg_k = (Dir[0]*y_ch_new_k_j - Dir[1]*x_ch_k_j) / Denom_k;
-      if (fabs(arg_k) > 1.) {
-		phase[k][j] = 777;
-		  } else {
-		pha_k_j = asin(Arg_k) - asin(arg_k); 
+		  if (fabs(arg_k) > 1.) {
+			phase[k][j] = 777;} 
+			  
+		  else {
+			pha_k_j = asin(Arg_k) - asin(arg_k); 
 
-		if(x_ch_k_j < 0.) pha_k_j = - pha_k_j; 
-							
-		phase[k][j] =  pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
+			if(x_ch_k_j < 0.) pha_k_j = - pha_k_j; 
+								
+			phase[k][j] =  pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
 		  }
 		}
 	  }
 
-
+	  if(GatesNumber==4){
 		  m = -1; 
 
 		  for(j=0;j<2*Nchannels+1; j++) 
@@ -191,13 +199,10 @@ int main(int argc, char **argv)
 							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
 							   &&(phase[2][j] > phase0 )&&(phase0 > phase[2][j+1])
 							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1]))
-					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ 
-											 goto happyend;}
-
-
+					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ goto happyend;}
+											 
 					m = m * (-1); 
 		  }
-		  
 		  
 		  /* also tries one turn earlier  */
 		  
@@ -212,12 +217,90 @@ int main(int argc, char **argv)
 							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
 							   &&(phase[2][j] > phase0 )&&(phase0 > phase[2][j+1])
 							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1]))
-					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ 
-											 goto happyend;}
-
-
+					{/*fprintf(LogFilePtr, "j  %d   phases %f   %f    %f\n", j, 57.296*phase[0][j], 57.296*phase[0][j+1], 57.296*phase0);*/ goto happyend;}
+											 
 					m = m * (-1); 
 		  }
+	  }
+
+	  if(GatesNumber==6){
+		  m = -1; 
+
+		  for(j=0;j<2*Nchannels+1; j++) 
+		  {
+					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
+							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
+							   &&(phase[2][j] < phase0 )&&(phase0 < phase[2][j+1])
+							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1])
+							   &&(phase[4][j] > phase0 )&&(phase0 > phase[4][j+1])
+							   &&(phase[5][j] > phase0 )&&(phase0 > phase[5][j+1]))
+					{goto happyend;}
+											 
+					m = m * (-1); 
+		  }
+		  
+		  /* also tries one turn earlier  */
+		  
+		  if((phase0 > 0)&&(omega > 0)) phase0 +=  - coef_pi*M_PI;
+		  if((phase0 < 0)&&(omega < 0)) phase0 +=  coef_pi*M_PI;
+
+		  m = -1; 
+
+		  for(j=0;j<2*Nchannels+1; j++) 
+		  {
+					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
+							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
+							   &&(phase[2][j] < phase0 )&&(phase0 < phase[2][j+1])
+							   &&(phase[3][j] > phase0 )&&(phase0 > phase[3][j+1])
+							   &&(phase[4][j] > phase0 )&&(phase0 > phase[4][j+1])
+							   &&(phase[5][j] > phase0 )&&(phase0 > phase[5][j+1]))
+					{goto happyend;}
+											 
+					m = m * (-1); 
+		  }
+	  }
+
+	  if(GatesNumber==8){
+		  m = -1; 
+
+		  for(j=0;j<2*Nchannels+1; j++) 
+		  {
+					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
+							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
+							   &&(phase[2][j] < phase0 )&&(phase0 < phase[2][j+1])
+							   &&(phase[3][j] < phase0 )&&(phase0 < phase[3][j+1])
+							   &&(phase[4][j] > phase0 )&&(phase0 > phase[4][j+1])
+							   &&(phase[5][j] > phase0 )&&(phase0 > phase[5][j+1])
+							   &&(phase[6][j] > phase0 )&&(phase0 > phase[6][j+1])
+							   &&(phase[7][j] > phase0 )&&(phase0 > phase[7][j+1]))
+					{goto happyend;}
+											 
+					m = m * (-1); 
+		  }
+		  
+		  /* also tries one turn earlier  */
+		  
+		  if((phase0 > 0)&&(omega > 0)) phase0 +=  - coef_pi*M_PI;
+		  if((phase0 < 0)&&(omega < 0)) phase0 +=  coef_pi*M_PI;
+
+		  m = -1; 
+
+		  for(j=0;j<2*Nchannels+1; j++) 
+		  {
+					if((m == 1)&&(phase[0][j] < phase0 )&&(phase0 < phase[0][j+1])
+							   &&(phase[1][j] < phase0 )&&(phase0 < phase[1][j+1])
+							   &&(phase[2][j] < phase0 )&&(phase0 < phase[2][j+1])
+							   &&(phase[3][j] < phase0 )&&(phase0 < phase[3][j+1])
+							   &&(phase[4][j] > phase0 )&&(phase0 > phase[4][j+1])
+							   &&(phase[5][j] > phase0 )&&(phase0 > phase[5][j+1])
+							   &&(phase[6][j] > phase0 )&&(phase0 > phase[6][j+1])
+							   &&(phase[7][j] > phase0 )&&(phase0 > phase[7][j+1]))
+					{goto happyend;}
+											 
+					m = m * (-1); 
+		  }
+	  }
+
 
 					goto getlost;
 
@@ -231,22 +314,26 @@ int main(int argc, char **argv)
 
 
 
-	/* translates neutron variables for output - X'= diameter/2. . */
+	/* translates neutron variables for output - X'= 0. . */
 
 	{
 		VectorType Path;
 
-		if(zerotime==1) Neutrons.Time = TOF_zero + (diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-		else Neutrons.Time = TOF + (diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL); 
+		Neutrons.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL); 
 			
+		if(zerotime==1)
+		{ 
+			Neutrons.Time = fabs(fmod(Neutrons.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega)) - coef_pi*M_PI/2./omega ;
+		}
+
 		CopyVector(Dir, Path);
 
-		MultiplyByScalar(Path, (diameter/2. - Pos[0])/ Dir[0] );
+		MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
 
-		AddVector(Pos, Path);  
+		AddVector(Pos, Path);  /*Path = displacement vector */
 		
 		CopyVector(Pos, Neutrons.Position);
-	}											/*	 Path = displacement vector */
+	}												 
 
 
 	  /* writes output binary file */
@@ -276,13 +363,17 @@ my_exit:;
 void OwnInit(int argc, char *argv[])
 {
   fprintf(LogFilePtr," \n");
-  print_module_name("Fermi-Chopper 1.14a");
+  print_module_name("Fermi-Chopper 1.17");
 
   /*    INPUT  */
 
   GeomFileName="chopper_fermi_g.dat";
 
   CurvGeomOption = 1;
+
+  GatesNumber = 4;
+
+  expon = 0.3333;
 
   while(argc>1)
     {
@@ -320,10 +411,6 @@ void OwnInit(int argc, char *argv[])
 
 	case 'l':
 	  sscanf(arg, "%ld", &Nchannels);
-	  if((Nchannels/2. - floor(Nchannels/2.)) > 0.) {
-	    Nchannels += 1;
-	    fprintf(LogFilePtr,"\nWARNING: Number of channels must be even! Set %ld. \n", Nchannels);
-	  }
 	  break;
 
 	case 'm':
@@ -333,7 +420,6 @@ void OwnInit(int argc, char *argv[])
 	case 'n':
 	  sscanf(arg, "%lf", &omega);
 	  if(omega == 0) omega = 1.E-6;
-/*	  if(omega < 0) {fprintf(LogFilePtr,"\nERROR: This algorithm only works with positive frequency \n"); exit(-1); }*/
 	  omega = omega * 2. * M_PI / 1000.;
 	  break;
 
@@ -349,6 +435,11 @@ void OwnInit(int argc, char *argv[])
 
 	case 'g':
 	  sscanf(arg, "%ld", &CurvGeomOption);
+	  break;
+
+	case 'p':
+	  sscanf(arg, "%ld", &GatesNumber);
+	  if((GatesNumber!=4)&&(GatesNumber!=6)&&(GatesNumber!=8)){fprintf(LogFilePtr,"\nERROR: Good options: 4, 6 or 8 gates  !\n"); exit(-1); }
 	  break;
 
 	case 'r':
@@ -371,56 +462,67 @@ void OwnInit(int argc, char *argv[])
 
 	if(pos_ch[0] < diameter/2.) {fprintf(LogFilePtr,"\nERROR: Minimum position is diameter/2 \n"); exit(-1); }
 
+	if(Nchannels==1) wallwidth=0.;
+
+	GatesFilePtr = fopen("gates.dat","w");
+
+
 	
   /* calculate edge positions */ 
   
   if(Option==1)
     {
-
       fprintf(LogFilePtr,"\nStraight Fermi chopper option activated\n");
 
       /* diameter matter */
 
       main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
-      if(depth > main_depth) {
-	fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.)));
-
-	exit(-1);
-      }
+      if(depth > main_depth) {	fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'channel length' and 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.)));	exit(-1);       }
 
 	{
 	  double add, w_ch;
-
 	  long j, k, m;
 
-	  if((     w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels    ) <= 0.)
-	    {fprintf(LogFilePtr,"\nERROR: Channel width =< 0 !\n"); exit(-1);}
+	  if(( w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels ) <= 0.){fprintf(LogFilePtr,"\nERROR: Channel width =< 0 !\n"); exit(-1);}
 
-		fprintf(LogFilePtr,"Channel width: %f cm\n",w_ch);
+	  fprintf(LogFilePtr,"Channel width: %f cm\nChannels represented by %d gates.\n",w_ch, GatesNumber);
 
-	  for(k=0;k<4; k++) y_ch[k][0] =  - width/2.;
+	  for(k=0;k<GatesNumber; k++) y_ch[k][0] =  - width/2.;
 
 	  m = 1;
 
 	  for(j=1; j< 2*Nchannels+2; j++)
 	    {
-
 	      if(m == 1) add = wallwidth; else add = w_ch;
 
-	      for(k=0;k<4; k++) 
+	      for(k=0;k<GatesNumber/2; k++) 
 		  {
-				x_ch[k][j] = - depth/2. * (3.- k)/3. + k/3. * depth/2.;
-
-				y_ch[k][j] = y_ch[k][j-1] + add;
+			  x_ch[k][j] = - depth/2. * (1. - pow(2.*k/GatesNumber, expon)); x_ch[GatesNumber - 1 - k][j] = depth/2. * (1. - pow(2.*k/GatesNumber, expon));
 		  }
+
+		  for(k=0;k<GatesNumber; k++) y_ch[k][j] = y_ch[k][j-1] + add;
 
 	      m = m * (-1);
 	    }
 
-	  for(k=0;k<4; k++) 
-	  {		  
-		x_ch[k][0] = x_ch[k][1] = x_ch[k][2*Nchannels] = x_ch[k][2*Nchannels+1] = - depth/2. *(3. - k)/3. + k/3. * depth/2.;
+	  for(k=0;k<GatesNumber/2; k++) 
+	  {
+		x_ch[k][0] = x_ch[k][1] = x_ch[k][2*Nchannels] = x_ch[k][2*Nchannels+1] = - depth/2. * (1. - pow(2.*k/GatesNumber, expon)); 
+		x_ch[GatesNumber - 1 - k][0] = x_ch[GatesNumber - 1 - k][1] = x_ch[GatesNumber - 1 - k][2*Nchannels] = x_ch[GatesNumber - 1 - k][2*Nchannels+1] 
+			= depth/2. * (1. - pow(2.*k/GatesNumber, expon));
 	  }
+
+	  /* activating shadowing cylinder */
+
+		x_ch[0][0] = x_ch[0][1] = x_ch[0][2*Nchannels] = x_ch[0][2*Nchannels+1] = - main_depth/2.;
+	
+		x_ch[GatesNumber - 1][0] = x_ch[GatesNumber - 1][1] = x_ch[GatesNumber - 1][2*Nchannels] = x_ch[GatesNumber - 1][2*Nchannels+1] = main_depth/2.;
+	
+		
+		/* print out gate coordinates */
+
+		for(j=0; j< 2*Nchannels+2; j++) for(k=0;k<GatesNumber; k++) fprintf(GatesFilePtr,"%f   %f  \n", x_ch[k][j] , y_ch[k][j]);
+
 	}
 
     }
@@ -431,7 +533,7 @@ void OwnInit(int argc, char *argv[])
 		  {
 						  fprintf(LogFilePtr,"\nCurved Fermi chopper activated \n");
 
-						  fprintf(LogFilePtr,"\nGeometry option: ideally shaped (close to parabolic) long channels ('depth' inactive) \n");
+						  fprintf(LogFilePtr,"\nGeometry option: ideally shaped (close to parabolic) long channels ('channel length' inactive parameter) \n");
 
 						  fprintf(LogFilePtr,"\nRadius of curvature (parabolic approximation):\n" 
 											 "	%f cm at center\n" 
@@ -448,15 +550,14 @@ void OwnInit(int argc, char *argv[])
 						if((     w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels    ) <= 0.)
 						  {fprintf(LogFilePtr,"\nChannel width =< 0 !\n"); exit(-1);}
 
-							fprintf(LogFilePtr,"Channel width: %f cm\n",w_ch);
+						  fprintf(LogFilePtr,"Channel width: %f cm\nChannels represented by %d gates.\n",w_ch, GatesNumber);
+
 
 							y_ch[0][0] =  - width/2.;
 							x_ch[0][0] = sqrt(sq(diameter/2.) - sq(y_ch[0][0]));
-							x_ch[3][0] = diameter/2. * sin(omega*diameter/V_FROM_LAMBDA(optimal_wl) + acos(2.*y_ch[0][0]/diameter));
-							y_ch[3][0] = diameter/2. * cos(omega*diameter/V_FROM_LAMBDA(optimal_wl) + acos(2.*y_ch[0][0]/diameter));
 
-						for(k=0; k<500; k++)
-						  { tt = k /500. * 2 * M_PI; xx[k] = diameter/2. * cos(tt); yy[k] = diameter/2. * sin(tt); /* the circle */
+						/* the circle */for(k=0; k<500; k++)
+						  { tt = k /500. * 2 * M_PI; xx[k] = diameter/2. * cos(tt); yy[k] = diameter/2. * sin(tt); 
 						  fprintf(GeomFilePtr, " %ld %lf  %lf\n", 0, xx[k], yy[k]);
 						  }
 
@@ -464,33 +565,41 @@ void OwnInit(int argc, char *argv[])
 
 						for(j=1; j< 2*Nchannels+2; j++)
 						{
-
 							if(m == 1) add = wallwidth; else add = w_ch;
 							
 							y_ch[0][j] = y_ch[0][j-1] + add;
 
 							x_ch[0][j] = - sqrt(sq(diameter/2.) - sq(y_ch[0][j]));
 
-							
+							m = m * (-1);
+						}
+
+						for(j=0; j< 2*Nchannels+2; j++)
+						{							
 							for(k=0; k<500; k++)
 							  {
-								tt= k /500. * 2. * fabs(x_ch[0][j])/V_FROM_LAMBDA(optimal_wl);
+								tt= k /499. * 2. * fabs(x_ch[0][j])/V_FROM_LAMBDA(optimal_wl);
 								xx[k] = y_ch[0][j] * sin(omega*tt) + (V_FROM_LAMBDA(optimal_wl)*tt - fabs(x_ch[0][j])) * cos(omega*tt);
 								yy[k] = y_ch[0][j] * cos(omega*tt) - (V_FROM_LAMBDA(optimal_wl)*tt - fabs(x_ch[0][j])) * sin(omega*tt);
 
 								fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);		
 							  }
 
-								x_ch[1][j] = xx[167];
-								y_ch[1][j] = yy[167];
-								x_ch[2][j] = xx[333];
-								y_ch[2][j] = yy[333];
-								x_ch[3][j] = diameter/2. * sin(2.* omega*fabs(x_ch[0][j])/V_FROM_LAMBDA(optimal_wl) + acos(2.*y_ch[0][j]/diameter));
-								y_ch[3][j] = diameter/2. * cos(2.* omega*fabs(x_ch[0][j])/V_FROM_LAMBDA(optimal_wl) + acos(2.*y_ch[0][j]/diameter));
-
-								m = m * (-1);
+								  for(k=0;k<GatesNumber/2; k++) 
+								  { int index;
+										
+										index = (int)(pow(2.*k/GatesNumber, expon)*250.);
+										x_ch[k][j] = xx[index];
+										y_ch[k][j] = yy[index];
+										x_ch[GatesNumber - 1 - k][j] = xx[499 - index];
+										y_ch[GatesNumber - 1 - k][j] = yy[499 - index];
+								  }
 						}
+						/* print out gate coordinates */
+
+						for(j=0; j< 2*Nchannels+2; j++) for(k=0;k<GatesNumber; k++) fprintf(GatesFilePtr,"%f   %f  \n", x_ch[k][j] , y_ch[k][j]);
 				  }
+
 		  }
 		if(CurvGeomOption==2)
 		{
@@ -500,13 +609,13 @@ void OwnInit(int argc, char *argv[])
 
 				  main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
 				  if(depth > main_depth) {
-					fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.))); exit(-1);}
+					fprintf(LogFilePtr,"\nERROR: Diameter too small - not compatible with 'channel length' and 'width'!\nTake min %f cm\n", 2. * sqrt(sq(depth/2.) + sq(width/2.))); exit(-1);}
 
 
 		  
 				  fprintf(LogFilePtr,"\nCurved Fermi chopper activated \n");
 
-				  fprintf(LogFilePtr,"\nGeometry option: circular shaped channels with fixed length (via 'depth') \n");
+				  fprintf(LogFilePtr,"\nGeometry option: circular shaped channels with fixed length (via 'channel length') \n");
 
 				  radius_of_curv = V_FROM_LAMBDA(optimal_wl)/2./omega;
 
@@ -527,7 +636,8 @@ void OwnInit(int argc, char *argv[])
 					if((     w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels    ) <= 0.)
 					  {fprintf(LogFilePtr,"\nChannel width =< 0 !\n"); exit(-1);}
 
-					fprintf(LogFilePtr,"Channel width: %f cm\n",w_ch);
+					  fprintf(LogFilePtr,"Channel width: %f cm\nChannels represented by %d gates.\n",w_ch, GatesNumber);
+
 
 
 					for(k=0; k<500; k++)
@@ -539,9 +649,7 @@ void OwnInit(int argc, char *argv[])
 
 					for(j=0; j< 2*Nchannels+2; j++)
 					{
-
 						if(m == 1) add = wallwidth; else add = w_ch;
-
 								
 						for(k=0; k<500; k++)
 						  {
@@ -551,18 +659,27 @@ void OwnInit(int argc, char *argv[])
 							fprintf(GeomFilePtr, "%ld   %lf  %lf\n", j, xx[k], yy[k]);		
 						  }
 
-							x_ch[0][j] = xx[0];
-							y_ch[0][j] = yy[0];
-							x_ch[1][j] = xx[167];
-							y_ch[1][j] = yy[167];
-							x_ch[2][j] = xx[333];
-							y_ch[2][j] = yy[333];
-							x_ch[3][j] = xx[499];
-							y_ch[3][j] = yy[499];
-
+					  for(k=0;k<GatesNumber/2; k++) 
+					  { int index;
+							
+							index = (int)(pow(2.*k/GatesNumber, expon)*250.);
+							x_ch[k][j] = xx[index];
+							y_ch[k][j] = yy[index];
+							x_ch[GatesNumber - 1 - k][j] = xx[499 - index];
+							y_ch[GatesNumber - 1 - k][j] = yy[499 - index];
+					  }													  
 							shift_y += add;
 							m = m * (-1);
 					}
+				  /* activating shadowing cylinder */
+
+					x_ch[0][0] = x_ch[0][1] = x_ch[0][2*Nchannels] = x_ch[0][2*Nchannels+1] = - main_depth/2.;
+				
+					x_ch[GatesNumber - 1][0] = x_ch[GatesNumber - 1][1] = x_ch[GatesNumber - 1][2*Nchannels] = x_ch[GatesNumber - 1][2*Nchannels+1] = main_depth/2.;
+	
+		/* print out gate coordinates */
+
+		for(j=0; j< 2*Nchannels+2; j++) for(k=0;k<GatesNumber; k++) fprintf(GatesFilePtr,"%f   %f  \n", x_ch[k][j] , y_ch[k][j]);
 
 			  }
 		}
@@ -578,6 +695,7 @@ void OwnInit(int argc, char *argv[])
 
   IntegralIntensity = 0.;
 
+
 }/* End OwnInit */
 
 
@@ -586,6 +704,7 @@ void OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
   if (GeomFilePtr) fclose(GeomFilePtr);
+  if (GatesFilePtr) fclose(GatesFilePtr);
 }/* End OwnCleanup */
 
 

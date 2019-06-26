@@ -67,7 +67,7 @@ proc makeModuleSets {} {
     {velselect {} velselect}
     {collimator_soller {} collimator}
     {monochr_analyser {ma_flat ma_focus ma_focus_dat} monochr_analyser}
-    {polariser {polariser_he3 polariser_sm} {polariser_he3 polariser_sm}}
+    {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
     {magnetic_field {precessionfield rotating_field} {precessionfield rotating_field}}
@@ -466,7 +466,7 @@ set detectorESET {
   {phi float 0 {
     "phi [deg]" "Angle phi [0;360 deg] of the middle of the detector, i.e. the angle between the projection of the position vector to the yz-plane and the +y-axis. For cylindrical geometry phi must be 0 or 180!" "" P} 0 360 1}
   {dist float 100 {
-    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} gt0 "" 1}
+    "distance [cm]" "Distance of the centre of the detector surface to the origin (0,0,0) in cm. In case of a cylindrical detector this is the cylinder radius." "" D} ge0 "" 1}
   {ncol int 1 {
     "number\nof columns" "Number of columns of the detector." "" c} 1 10000 1}
   {nrow int 1 {
@@ -479,6 +479,9 @@ set detectorESET {
   {grid radio on {
     "detector grid" "If the detector grid is switched off, the exact neutron position is written to the output file." "" g}
     {on off} {1 0}}
+  {det_tof radio calc {
+    "TOF option" "calc: TOF inside detector is calculated (incl. probability distr.) no: no TOF treatment" "" o}
+    {no calc} {0 1}}
 }
 
 proc detectorCheckErr {{app _}} {
@@ -574,6 +577,10 @@ set a {
     "max. y [cm]" "maximul y value [cm]" "" W}}
   {useasbstop radio no {
     "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
+    {no yes} {0 1}
+  }
+  {oldframe radio no {
+    "use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F}
     {no yes} {0 1}
   }
 }
@@ -676,10 +683,10 @@ set specoptAdd {
   {"Special options" header}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r}}
-  {max_ang_y float 90 {
-    "angle shape\ny-ellipse [deg]"  "only needed for elliptic shape: This angle describes the position of the ellipse. 90 deg means that the guide entrance is the position of max. width/height of the ellipse, i.e. its center. An angle > 90 deg shifts the center towards the guide exit"  "" y} ge0}
-  {max_ang_z float 90 {
-    "angle shape\nz-ellipse [deg]" "only needed for elliptic shape: This angle describes the position of the ellipse. 90 deg means that the guide entrance is the position of max. width/height of the ellipse, i.e. its center. An angle > 90 deg shifts the center towards the guide exit" "" z} ge0}
+  {h_focus_pnt float 0 {
+    "hor. focus dist.\nof ellipse [cm]"  "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
+  {v_focus_pnt float 0 {
+    "vert. focus dist.\nof ellipse [cm]" "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a}
@@ -894,6 +901,17 @@ set chpESET {
     "left side\ndeviation [deg]" "Angular deviation of left window side (see graph in help manual), positive value indicates that window widens"}}
   {rdeviation2 float "" {
     "right side\ndeviation [deg]" "Angular deviation of right window side (see graph in help manual), positive value indicates that window widens"}}
+  {"4th window (only if 4 windows)" header}
+  {winpos3 float "" {
+    "window\nposition [deg]" "angular position of window centre"}}
+  {winheight3 float "" {
+    "window\nheight [cm]" "window height from edge of chopper disk to bottom of window "}}
+  {width3 float "" {
+    "window\nwidth [deg]" "angular opening of chopper window"}}
+  {ldeviation3 float "" {
+    "left side\ndeviation [deg]" "Angular deviation of left window side (see graph in help manual), positive value indicates that window widens"}}
+  {rdeviation3 float "" {
+    "right side\ndeviation [deg]" "Angular deviation of right window side (see graph in help manual), positive value indicates that window widens"}}
 }
 
 proc chpCheckErr {{app _}} {
@@ -934,7 +952,7 @@ set chop1Add {
   {z float 0 {"position\nZ [cm]" "center position z of the Fermi chopper" "" V}}
   {a float 5 {"height [cm]" "height of the Fermi chopper" "" a} gt0}
   {b float 4 {"width [cm]" "width of the Fermi chopper" "" b} gt0}
-  {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper" "" c} gt0}
+  {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper (not active for channel shape option 'ideal')" "" c} gt0}
   {chans int 20 {"number of\nchannels" "number of straight channels" "" l} ge1}
   {wall float 0.02 {"wall\nthickness [cm]" "thickness of the wall between channels" "" m} ge0}
   {dia float 7.1 {"diameter [cm]" "diameter of the shadowing cylinder" "" r} gt0}
@@ -949,23 +967,30 @@ set chop2Add {
     {yes no} {1 0}}
 }
 
+set chop3Add {
+  {number_of_gates radio 4 {
+    "number of gates"
+    "4: number of gates representing the channels ideal for thermal and best for cold neutrons\n6: more accurate but slower\n8: most accurate but slowest" "" p}
+    {4 6 8} {4 6 8}}
+}
+
 ### chopper fermi_str
 ###
 set chopper_fermi_strESET [concat $chop1Add {
-} $chop2Add ]
+} $chop2Add $chop3Add ]
 
 
 ### chopper fermi_cur
 ###
 set chopper_fermi_curESET [concat $chop1Add {
-  {cfL float 5 {"optimal\nwavelength [A]" "optimal wavelength to be transmitted at highest intensity" "" L} gt0}
+  {cfL float 5 {"optimal\nwavelength [A]" "optimal wavelength to be transmitted at highest intensity.\nIf radius of curvature is fixed:\nlambda[A] = 314.8/radius_of_curvature[m]/frequency[Hz]" "" L} gt0}
 } $chop2Add {
   {chan_shape radio circular {
     "channel shape"
     "circular: channels have circular shape\nideal: channels close to parabolic shape" "" g}
-    {"ideal (~parabolic)" "circular"} {1 2}}
+    {"ideal" "circular"} {1 2}}
   {geomfile pareditablefile ch_fermi_geom.dat {"geometry\nfile" "output file of the curved channel geometry (for scatter plot of the last two columns, first column: channel index, O = envelope) " "" G}}
-  } ]
+  } $chop3Add ]
 
 
 ### ref file description
@@ -979,11 +1004,11 @@ set refESET {
   {mz float 0 {"main position\nZ [cm]"
     "Generally defines the reference point (origin) of the sample in the frame provided by the former module."} 1}
   {thick float 0.00001 {"thickness\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
+    "Thickness of the rectangular sample, i.e. perpendicular to refl. surface.\n It determines the range of depth in which the reflection is supposed to take place."} ge0 "" 1}
   {wid float 1 {"width\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
-  {hei float 1 {"height\nsample [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular sample."} ge0 "" 1}
+    "Width of the rectangular sample (along y-axis for reflection angle 0)."} ge0 "" 1}
+  {hei float 1 {"length\nsample [cm]"
+    "Length of the rectangular sample (along x-axis for reflection angle 0)."} ge0 "" 1}
   {"Output Frame" header}
   {gen radio "standard defined frame" {"frame\ngeneration"
     "If and only if user defined frame has been selected, then horiz. and vertical angle and output frame origin x,y, and z must be specified, too."}
@@ -1141,6 +1166,35 @@ set polariser_he3ESET {
   {oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
 }
 
+### polarising
+### mirror
+gSet pol_mirrorESET {
+  {pm_ufile pareditablefile mirr3+.dat {"Up-reflectivity\nfile" "reflectivity data file for Up neutrons" "" U}}
+  {pm_dfile pareditablefile mirr1a.dat {"Down-reflectivit\nfile" "reflectivity data file for Down neutrons" "" D}}
+  {pm_obs radio transmission {"mode" "choose between measuring in reflection and transmission" "" T}
+    {reflection transmission} {0 1}}
+  {"Mirror size" header}
+  {pm_dx float 60 {"length [cm]" "length of the polarising mirror (along beam axis)" "" L} gt0 "" 1}
+  {pm_dy float 10 {"width or\nheight [cm]" "width or height of the polarising mirror" "" W} gt0 "" 1}
+  {"Mirror position and orientation" header}
+  {pm_ori radio horizontal {"orientation" "choose between vertical and horizontal orientation of the mirror" "" O}
+    {horizontal vertical} {0 1}}
+  {pm_x float 100 {"position\nX [cm]" "x center position of the polarizing mirror" "" X}}
+  {pm_y float 0   {"position\nY [cm]" "y center position of the polarizing mirror" "" Y}}
+  {pm_z float 0   {"position\nZ [cm]" "z center position of the polarizing mirror" "" Z}}
+  {pm_voff float 1 {"inclination [deg]" "rotation angle of the polarizing mirror" "" V}}
+  {"Analysis direction" header}
+  {pm_ax float 1 {"analysis dir.\nX [-]" "x direction vector component of the quantization direction" "" a}}
+  {pm_ay float 0 {"analysis dir.\nY [-]" "y direction vector component of the quantization direction" "" b}}
+  {pm_az float 0 {"analysis dir.\nZ [-]" "z direction vector component of the quantization direction" "" c}}
+  {"Output frame" header}
+  {pm_ox float 200 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" x}}
+  {pm_oy float 0   {"output\nY [cm]" "y position of the output frame (in the input frame)" "" y}}
+  {pm_oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" z}}
+  {pm_r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (first rotation)" "" h}}
+  {pm_r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (second rotation)" "" v}}
+}
+
 ### polariser
 ###        sm
 set polariser_smESET {
@@ -1161,6 +1215,8 @@ set polariser_smESET {
   {r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (0, 0 means parallel to original X)" "" h}}
   {r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (0, 0 means parallel to original X)" "" v}}
 }
+
+
 
 ### pol file description
 
@@ -1459,7 +1515,7 @@ set dA {
 set nA {
   {number_bins int 10 {
     "number\nof bins"
-    "number of bins determines the segmentation of the interval" "" n} 1 10000 1}
+    "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
   {mtrl_colour int 0 {
     "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
 }
@@ -1473,6 +1529,8 @@ set mA {
     "minimal\nwavelength [A]" "lower bound of the monitored interval" "" m} ge0 "" 1}
   {max_w float 20 {
     "maximal\nwavelength [A]" "upper bound of the monitored interval" "" M} gt0  "" 1}
+  {reff pareditablefile "" {
+    "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
 }
 
 set pA {
@@ -2088,7 +2146,7 @@ First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {axis radio Y {"axis of\nrotation" "Axis around which the sample is rotated." "" R} {Y Z}}
   {}
   {refl float 1 {"reflection\nangle \[deg\]" "the sample is rotated by this angle around the 'axis of rotation'.
-zero means: parallel to x-axis; (small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
+zero means: parallel to x-axis,i.e. surface normal in z-direction; \n(small) positive angles cause flight directions after reflection with positive y or z components resp." "" a} -180 180}
 }
 
 proc sample_reflectomCheckErr {{app _}} {
@@ -3019,7 +3077,7 @@ proc serializeRefFile {f mode var app} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
-      if $gen {			
+      if $gen {
 	# user frame
 	set gen "user defined frame"
 	readNumItems $f $blist $app
@@ -3219,7 +3277,7 @@ proc editFile {var param ext app} {
     global bgColor
     text $w.v.text -relief raised -bd 2 \
 	-height 32 -width 80\
-	-font [textFont] -bg $bgColor\
+	-font [monoFont] -bg $bgColor\
 	-setgrid 1\
 	-yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
@@ -3384,7 +3442,7 @@ proc moduleMenus {{n 1}} {
   }
 
   # prepend button to digest view if a digest has been defined
-  set w $Mlf.dig.f 
+  set w $Mlf.dig.f
   if {"" == [globVal digestSource]} {
     catch {destroy $w}
   } elseif {! [winfo exists $w]} {
@@ -3392,7 +3450,7 @@ proc moduleMenus {{n 1}} {
     button $w.cross -image fcross -command removeDigest
     button $w.right -image fright -command digestView
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $menuButtonColor  
+	-font $lfn -bg $menuButtonColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w

@@ -399,7 +399,7 @@ proc stopAction {{verbose 1} {kill 0}} {
 	catch {eval exec $KillProg $args}
 	if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
       }
-      default {	
+      default {
 	if {$verbose} {showText "!don´t know how to stop processes"}
       }
     }
@@ -423,21 +423,22 @@ proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
   global AbortSeries SeriesActive
   set SeriesActive 1
   set AbortSeries 0
-  set j -1
+  set step 0
   foreach v $vl {
     set com $c
     # substitute special options by list values
     for {set i 0} {$i < $ll} {incr i} {
       regsub \#$i\# $com [lindex $v $i] com
     }
-    showText "BBB\n\n\nSeries Step [incr j]\nValues: $v\n"
+    set pre s[lindex $tindl $step]_
+    incr step
+    showText "BBB\n\n\nSeries Step $step\nValues: $v\n"
     startAction $com
     if $AbortSeries break
     if {$copy == 0} continue
     catch {
       set so ""
       upvar #0 defdirectory_ P
-      set pre s[lindex $tindl [incr j]]_
       foreach fn $cfiles {
 	set fb [file join $cdir $pre$fn]
 	file copy -force [file join $P $fn] $fb
@@ -682,7 +683,7 @@ exit
   set lfont [labelFont]
   text $w.v.text -relief raised -bd 2 \
       -height 48 -width 80\
-      -font [textFont] -bg $bgColor\
+      -font [monoFont] -bg $bgColor\
       -setgrid 1\
       -yscrollcommand "$w.v.yscroll set"
   yscroll $w.v "$w.v.text yview"
@@ -807,7 +808,7 @@ proc inputSeries {w} {
 
   set lwid 40
   forceDef seriesselection_ all
-  forceDef seriescopytarget_ [entryVal defdirectory]
+  forceDef seriescopytarget_ [file join [entryVal defdirectory] Test]
   lPack2 $w.p "Step\nSelection" seriesselection_ $lfont $lwid
   lPack2 $w.ct "Copy Target\nDirectory" seriescopytarget_ $lfont $lwid
   lPack2 $w.c "Files to\nbe copied" seriescopyfiles_ $lfont $lwid

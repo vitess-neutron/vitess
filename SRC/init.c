@@ -6,7 +6,7 @@
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
 /* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
-/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */ 
+/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* Jan 2002  K. Lieutenant  reorganized routines                                            */
 /* Mar 2003  K. Lieutenant  new function 'ColumnsInFile'                                    */
@@ -28,8 +28,9 @@
 
 #include "general.h"
 
-#define MAX_COL 3   /* max. number of count rates written separately for different colours 
+#define MAX_COL 4   /* max. number of count rates written separately for different colours
                        0 means no separate rates writable */
+#define NUM_EOP 3   /* number of end-of-part lines that can be treated in 'instrument.inf' */
 
 extern long  idum;         /* parameter for the random number generation  */
 extern FILE* LogFilePtr;   /* pointer to the log file stream              */
@@ -61,6 +62,7 @@ char*    InstallDirectory;
 double   wei_min=0.0;     /* Minimal weight for tracing neutron */
 long     keygrav=1;
 short    bTrace=TRUE,     /* criterion: write trace files */
+         bOldFrame=FALSE, /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate=TRUE;   /* criterion: write separate count rates */
 
 
@@ -68,10 +70,11 @@ short    bTrace=TRUE,     /* criterion: write trace files */
 /* static variables                                           */
 /**************************************************************/
 
-static long       TracePoints=FALSE;     /* will generate for every written output buffer if TRUE */
-static double     dProbTotal[MAX_COL+1]; /* sum of the probabilities/currents of all trajectories [n/s]*/
+static long       TracePoints=FALSE;     /* creates dot for every written output buffer if TRUE */
+static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
+                  dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static const char VITESS_VERSION[] = "2.5";
+static const char VITESS_VERSION[] = "2.6";
 static char       sModuleName[21];
 
 static int ParDirectoryLength, InstallDirectoryLength;
@@ -153,7 +156,7 @@ static char *conCat (char *b, char* c, int sel) {
   clen = strlen(c);
   if ((res = (char *) malloc(alen+blen+clen+1)))
 /*{ if (alen)
-      memcpy(res, a, alen); 
+      memcpy(res, a, alen);
     strcpy(res+alen, c);
     strcpy(res+alen+clen, b);  */
   { if (alen)
@@ -171,7 +174,7 @@ char* FullParName(char* fileName)
 {
   return conCat(fileName, "", 0);
 }
-  
+
 /* Adding path of installation directory to file name */
 char* FullInstallName(char* fileName, char* sRelPath)
 {
@@ -232,7 +235,7 @@ void Init(int argc, char **argv, VtModID eModule)
     case 'f' :			/* input file if other than stdin */
       marg[0] = arg;
       break;
-      
+
     case 'F':                   /* output file if other than stdout */
       marg[1] = arg;
       break;
@@ -325,27 +328,18 @@ void Init(int argc, char **argv, VtModID eModule)
 /* e.g. buffers are flushed and files are closed etc.            */
 /* you should also write your OwnCleanup() for your module       */
 /*****************************************************************/
-void Cleanup(double dShiftX, double dShiftY, double dShiftZ, 
+void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
              double dHorizAngle, double dVertAngle)
 {
   double dTimeMeas, dLmbdWant, dFreq, nNoNeutrons,
-         dRotMatrix[3][3], dRotY, dRotZ, dLength;
+         dRotMatrix[3][3], dRotY, dRotZ, dLength,
+	      dCntRateErr;
   long   nModuleNo;
   int    k,l;
-  VectorType Shift,  /* Shift of end position       [cm] */ 
+  VectorType Shift,  /* Shift of end position       [cm] */
              EndPos; /* end position of prev. module [m] */
-  
-  /* flush the output buffer and close the input and output file */
-  OutputBufferFlush();
-  if(InputFileName)  
-    fclose(InputFilePtr);
-  if(OutputFilePtr && OutputFilePtr!=stdout)
-    fclose(OutputFilePtr);
-  
-  /* release the buffer memory */
-  free(InputNeutrons);
-  free(OutputNeutrons);
-  
+
+  /* update 'instrument.inf' */
   ReadInstrData(&nModuleNo, EndPos, &dLength, &dRotZ, &dRotY);
   ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
   nModuleNo++;
@@ -359,24 +353,45 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   dLength += LengthVector(Shift);
   dRotZ   += dHorizAngle;
   dRotY   += dVertAngle;
-
   WriteInstrData(nModuleNo, EndPos, dLength, dRotZ, dRotY);
-  
+
+  /* flush the output buffer and close the input and output file */
+  OutputBufferFlush();
+  if(InputFileName)
+    fclose(InputFilePtr);
+  if(OutputFilePtr && OutputFilePtr!=stdout)
+    fclose(OutputFilePtr);
+
+  /* release the buffer memory */
+  free(InputNeutrons);
+  free(OutputNeutrons);
+
+  /* error for the given count rate calculated through adding squared errors
+     - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
+     - of the average count rate of each trajectory I_s = I_tot/N:
+       sqrt((<I_s²> - <I_s>²)/(N-1))
+     as independent contributions */
+  if (NumNeutWritten > 1)
+    dCntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
+                      + (NumNeutWritten*dProbQuad-sq(dProbTotal[0])) / (NumNeutWritten-1) );
+  else
+    dCntRateErr = dProbTotal[0];
+
   fprintf(LogFilePtr, "%2ld number of trajectories read         : %11.0f\n", nModuleNo, NumNeutRead);
   fprintf(LogFilePtr, "   number of trajectories written      : %11.0f\n", NumNeutWritten);
-  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e n/s \n", dProbTotal[0]);
+  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], dCntRateErr);
   for (l=1; l<=MAX_COL; l++)
   { if (dProbTotal[l] > 0)
       fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", l, dProbTotal[l]);
   }
 
-  if (dTimeMeas > 0.0) 
+  if (dTimeMeas > 0.0)
   {
     nNoNeutrons = floor(dProbTotal[0]*dTimeMeas + 0.5);
     fprintf(LogFilePtr, "number of neutrons in %8.0f seconds : %11.4e  \n",
 	    dTimeMeas, nNoNeutrons);
   }
-  
+
   if (LogFileName) fclose(LogFilePtr);
 }
 
@@ -435,9 +450,10 @@ int ReadNeutrons()
 
 void WriteNeutron(Neutron *OutNeutron)
 {
-  dProbTotal[0] += OutNeutron->Probability;
+  dProbTotal[0] +=    OutNeutron->Probability;
+  dProbQuad     += sq(OutNeutron->Probability);
   if (bSepRate)
-  {  if (OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL) 
+  {  if (OutNeutron->Color >= 1 && OutNeutron->Color <= MAX_COL)
        dProbTotal[OutNeutron->Color] += OutNeutron->Probability;
   }
 
@@ -463,46 +479,96 @@ void WriteNeutron(Neutron *OutNeutron)
 void WriteInstrData(long nModuleNo, VectorType Pos, double dLength, double dRotZ, double dRotY)
 {
   FILE*  pFile=NULL;
+  char   *pBuffer, sBuffer[CHAR_BUF_SMALL+1];
+  int    m, i;
 
-  if (nModuleNo==0)  
+  /* source module writes header lines */
+  if (nModuleNo==0)
   { pFile = fopen( FullParName("instrument.inf"), "w");
     fprintf(pFile, "# No ID    module           len [m]  x [m]   y [m]   z [m]    hor. [deg] ver.      W-Par.       H-Par.       R-Par       number  type Description\n");
     fprintf(pFile, "# ------------------------------------------------------------------------------------------------------------------------------------------------\n");
   }
+  /* first module of 2nd, 3rd ... part re-writes file up to end of previous part */
+  else if (InputFilePtr!=NULL && InputFilePtr!=stdin)
+  { i=-1;
+    pFile = fopen(FullParName("instrument.inf"), "r");
+    pBuffer=malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
+    for (m=-2; m<nModuleNo; m++)
+    { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
+      strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+      if (memcmp(sBuffer, "EOP", 3)==0)
+      { fgets (sBuffer, sizeof(sBuffer)-1, pFile);
+        strcpy(&pBuffer[++i*CHAR_BUF_SMALL], sBuffer);
+      }
+    }
+    fclose(pFile);
+    pFile = fopen( FullParName("instrument.inf"), "w");
+    for (m=0; m<=i; m++)
+      fprintf(pFile, "%s", &pBuffer[CHAR_BUF_SMALL*m]);
+    fprintf(pFile, "EOP\n");
+    free(pBuffer);
+  }
+  /* each other module appends a line */
   else
   { pFile = fopen(FullParName("instrument.inf"), "a");
   }
-  if (pFile) {	
-    fprintf(pFile, "%3ld %3d %-18.18s %7.3f %7.3f %7.3f %7.3f  %8.3f %8.3f  %12.4e %12.4e %12.4e %7ld %5d %s\n", 
-                   nModuleNo, stPicture.eModule, sModuleName, dLength, Pos[0], Pos[1], Pos[2], 
-                   180.0/M_PI*dRotZ, 180.0/M_PI*dRotY, 
-                   stPicture.dWPar,   stPicture.dHPar, stPicture.dRPar,
+
+  if (pFile) {
+    char cNF=' ';
+    if (bOldFrame) cNF='F';
+    fprintf(pFile, "%3ld %3d %-18.18s %7.3f %7.3f %7.3f %7.3f  %8.3f %8.3f  %12.4e %12.4e %12.4e %c %5ld %5d %s\n",
+                   nModuleNo, stPicture.eModule, sModuleName, dLength, Pos[0], Pos[1], Pos[2],
+                   180.0/M_PI*dRotZ, 180.0/M_PI*dRotY,
+                   stPicture.dWPar,   stPicture.dHPar, stPicture.dRPar, cNF,
                    stPicture.nNumber, stPicture.eType, stPicture.pDescr);
+    /* mark end of actual part */
+    if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
+      fprintf(pFile, "EOP\n");
     fclose(pFile);
   }
 }
 
 void ReadInstrData(long* pModuleNo, VectorType Pos, double* pLength, double* pRotZ, double* pRotY)
 {
-  FILE* pFile=NULL;
-  int   nModuleID;
-  char  sBuffer[CHAR_BUF_LENGTH], sLine[CHAR_BUF_LENGTH];
-  
+  FILE*  pFile=NULL;
+  int    nModuleID;
+  long   No=0, nDum;
+  char   sBuffer[CHAR_BUF_LENGTH]="", sLine[CHAR_BUF_LENGTH]="", sLineH[CHAR_BUF_LENGTH]="";
+
   *pModuleNo = 0;
   Pos[0]   = Pos[1] = Pos[2] = 0.0;
   *pLength = 0.0;
   *pRotY   = 0.0;
   *pRotZ   = 0.0;
-  
-  pFile = fopen(FullParName("instrument.inf"), "r");
-  if (pFile) 
-  {	
-    /* Read last line */
-    while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
-    strcpy(sLine, sBuffer);
 
-    sscanf(sLine, "%ld %3d %18c %lf %lf %lf %lf %lf %lf", 
-                  pModuleNo, &nModuleID, sBuffer, pLength, &Pos[0], &Pos[1], &Pos[2], pRotZ, pRotY);
+  pFile = fopen(FullParName("instrument.inf"), "r");
+  if (pFile)
+  {
+    if (InputFilePtr==NULL || InputFilePtr==stdin)
+    { /* Read last line and copy content, except:
+		   lines containing F at pos 116-118, they have not a new frame) */
+      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
+      { sscanf(sBuffer, "%ld", pModuleNo);
+		  // ndig = short(floor(lg10(*pModuleNo));
+        if (sBuffer[116]!='F' && sBuffer[117]!='F' && sBuffer[118]!='F') strcpy(sLine, sBuffer);
+		}
+    }
+    else
+    {  /* read until end of previous part, if input file is used */
+      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
+      { if (memcmp(sBuffer, "EOP", 3)==0)
+        {  *pModuleNo = No;
+           strcpy(sLine, sLineH);
+        }
+        else
+        { sscanf(sBuffer, "%ld", &No);
+          if (sBuffer[116]!='F' && sBuffer[117]!='F' && sBuffer[118]!='F') strcpy(sLineH, sBuffer);
+		  }
+      }
+      if (strlen(sLine)==0) {*pModuleNo = No; strcpy(sLine, sLineH);}
+    }
+    sscanf(sLine, "%ld %3d %18c %lf %lf %lf %lf %lf %lf",
+                  &nDum, &nModuleID, sBuffer, pLength, &Pos[0], &Pos[1], &Pos[2], pRotZ, pRotY);
     *pRotZ *= M_PI/180.0;
     *pRotY *= M_PI/180.0;
     fclose(pFile);
@@ -515,7 +581,7 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq)
   FILE*  pFile=NULL;
 
   pFile = fopen(FullParName("simulation.inf"), "w");
-  if (pFile) 	
+  if (pFile)
   { fprintf(pFile, "%15.5e   # measuring time     [s]\n", dTimeMeas);
     fprintf(pFile, "%10.5f        # desired wavelength [Ang]\n", dLmbdWant);
     fprintf(pFile, "%10.5f        # source frequency   [Hz]\n", dFreq);
@@ -527,12 +593,12 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
 {
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
-  
+
   *pTimeMeas = 0.0;
-  
+
   pFile = fopen(FullParName("simulation.inf"), "r");
-  if (pFile) 
-  {	
+  if (pFile)
+  {
     /* First line - measuring time */
     ReadLine(pFile, sLine, sizeof(sLine)-1);
     sscanf(sLine, "%le", pTimeMeas);
@@ -574,7 +640,7 @@ long LinesInFile(FILE *pIn)
   { while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
       NumLines++;
     rewind(pIn);
-  }  
+  }
   return NumLines;
 }
 
@@ -595,16 +661,16 @@ long ColumnsInFile(FILE* pFile)
 
 		pPos = strchr(Buffer, ' ');
 		while (pPos != NULL)
-		{	
+		{
 			iPos = pPos - Buffer + 1;
-			if (iPos > 1) 
+			if (iPos > 1)
 				nLns++;
-			StrgLShift(Buffer, iPos);			
+			StrgLShift(Buffer, iPos);
 			pPos = strchr(Buffer, ' ');
 		}
-		
+
 		if (strlen(Buffer) > 1)
-			nLns++;	
+			nLns++;
 
 		rewind(pFile);
 	}
@@ -629,9 +695,9 @@ void OutputBufferFlush()
 
 
 /* Writing one line into the trace file */
-static 
+static
 void   WriteTraceLine(Neutron* pNeutron)
-{ 
+{
   if (bTrace && pNeutron->Debug=='T')
   {
     char   sFileName[21]="";
@@ -645,7 +711,7 @@ void   WriteTraceLine(Neutron* pNeutron)
       fprintf(pFile,"no     module           Trc color   TOF    lambda   count rate    "
 			           "pos_x    pos_y    pos_z     dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
     }
-    else    
+    else
     { pFile = fopen(FullParName(sFileName), "r+");
       if (pFile != NULL)
       { nLns   = (short) LinesInFile(pFile);
@@ -658,13 +724,13 @@ void   WriteTraceLine(Neutron* pNeutron)
     }
     fprintf(pFile, "%2d %-20.20s:",  nModNr, sModuleName);
     fprintf(pFile," %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
-            pNeutron->Debug,       pNeutron->Color,       
+            pNeutron->Debug,       pNeutron->Color,
             pNeutron->Time,        pNeutron->Wavelength,  pNeutron->Probability,
-            pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2], 
-            pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2], 
+            pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2],
+            pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
             pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]);
-    /* fprintf(pFile, "%2d %-20.20s: t=% .5e y=% .5e z=% .5e col=%5d\n",  nModNr, sModuleName, 
+    /* fprintf(pFile, "%2d %-20.20s: t=% .5e y=% .5e z=% .5e col=%5d\n",  nModNr, sModuleName,
                    pNeutron->Time, pNeutron->Position[1], pNeutron->Position[2], pNeutron->Color);*/
-    fclose (pFile); 
+    fclose (pFile);
   }
 }

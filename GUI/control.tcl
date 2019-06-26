@@ -66,7 +66,7 @@ proc confirmedExit {} {
 }
 
 proc showModulesAgain {{delall 0}} {
-  
+
   global Mlf XRoot mod1 DummyEntry instrumentfile LastWin
   # save name of first module and instrument name,
   # and re-set them after destruction/construction from scratch
@@ -79,7 +79,7 @@ proc showModulesAgain {{delall 0}} {
     foreach w [winfo children $XRoot] {
       destroy $w
     }
-  } 
+  }
   showBeef $XRoot
   if {$savmod1 != "" && $savmod1 != $DummyEntry} {
     set mod1 $savmod1
@@ -185,11 +185,11 @@ proc controlMenu {w} {
   popMenu $w.con.menu \
       {c "Set Instrument Name" setInstrumentName} s\
       {c "Define Instrument Digest" genDigest}
-      
+
 
   set clist {ascii2bin
     define_direction direct_view gener_batch mirror_coating surface_file
-    standard_deviation rvitess lattice_dist
+    standard_deviation rvitess lattice_dist guide_shape
   }
   set htmlist $clist
   lappend htmlist crysanalyzerspec chop_phases chop_phases dist_time
@@ -199,7 +199,7 @@ proc controlMenu {w} {
     "Define Direction"
     "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files"
     "Standard Deviation" "Read and Visualise Output"
-    "Lattice Distances"
+    "Lattice Distances" "Guide Shape"
     "Cryst. Analyzer Spectrom."
     "Compute Chopper Phases" "Design Chopper System"
     "Distance Time Plot"
@@ -225,6 +225,7 @@ proc controlMenu {w} {
       {c Tutorial {showHelpItem tutorial.pdf}} \
       {c "User interface" {showHelpItem VITESS-GUI}} \
       {c "Generate Series" {showHelpItem sim_series.html}} \
+      {c "Instrument Digest" {showHelpItem digest.html}} \
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
       {m Tools me} s \
@@ -304,11 +305,12 @@ proc controlMenu {w} {
       {m "Copy results" copresults} \
       {m Plotmode plotmode} \
       {m Timeout timeout} s\
-      {m Menubarfont mfont}\
-      {m Headerfont hfont}\
-      {m Buttonfont bfont}\
-      {m Labelfont lfont}\
-      {m Textfont tfont} s\
+      {m "Fonts: text" tfont}\
+      {m "monospaced text" monofont}\
+      {m menubar mfont}\
+      {m header hfont}\
+      {m button bfont}\
+      {m label lfont} s\
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} s\
       {c "external settings" editDefaults} s\
@@ -359,6 +361,7 @@ proc controlMenu {w} {
   fontMenu $wo hfont
   fontMenu $wo bfont
   fontMenu $wo lfont
+  fontMenu $wo monofont
   fontMenu $wo tfont
 
   forceDef scrollWidth 8
@@ -394,12 +397,18 @@ proc textFont {} {
   global tfontfamily tfontsize tfonttype
   return [list $tfontfamily $tfontsize $tfonttype]
 }
+proc monoFont {} {
+  global monofontfamily monofontsize monofonttype
+  return [list $monofontfamily $monofontsize $monofonttype]
+}
+
 
 proc setOptions {} {
-  global serif sserif \
+  global serif sserif monospaced \
       mfontfamily mfontsize mfonttype \
       hfontfamily hfontsize hfonttype bfontfamily bfontsize bfonttype \
-      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype
+      lfontfamily lfontsize lfonttype tfontfamily tfontsize tfonttype \
+      monofontfamily monofontsize monofonttype
   if [info exists hfontfamily] return
 
   set hfontfamily $sserif
@@ -418,6 +427,10 @@ proc setOptions {} {
   set tfontsize 10
   set tfonttype normal
 
+  set monofontfamily $monospaced
+  set monofontsize $tfontsize
+  set monofonttype $tfonttype
+
   if {[getSystem] == "windows"} {
     incr hfontsize -4
     incr lfontsize -3
@@ -434,6 +447,7 @@ proc setOptions {} {
   option add *Button.font [buttonFont]
   option add *Label.font  [labelFont]
   option add *font [textFont]
+  option add *monofont [monoFont]
 }
 
 proc pardirPar {} {
@@ -548,7 +562,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.5.3"
+  set t "VITESS 2.6"
   set maxModule 40
   set DummyEntry "--inactive--"
 
@@ -621,7 +635,7 @@ proc showBeef {w} {
 	-font [list $sserif $hcs bold] -anchor n -text $t
     pack $w.bm.hlab $w.bm.c -side left
   }
-  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16} 
+  if {[winfo screenwidth .] <= 1024} {set ls 12} else {set ls 16}
   label $w.bm.notice -bg $bgColor -fg steelblue \
       -text "Click parameter names for help!"\
       -font [list $sserif $ls bold]
