@@ -128,32 +128,32 @@ fprintf(LogFilePtr,"GEOMETRY OF BENDER IS TESTING - BEGIN\n");
   	  
 	if (fabs(temp1) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.1 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.1 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp2) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.2 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.2 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp3) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.3 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.3 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp4) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.4 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.4 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp5) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.5 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.5 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp6) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 1.6 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 1.6 of bender geometry is not passed. \n");
 	}
 	
 //	fprintf(LogFilePtr,"Test left and right surfaces:  %f  %f  %f  %f\n",temp1,temp2,temp3,temp4);
@@ -231,22 +231,22 @@ fprintf(LogFilePtr,"GEOMETRY OF BENDER IS TESTING - BEGIN\n");
 	
 	if (fabs(temp1) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 2.1 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 2.1 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp2) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 2.2 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 2.2 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp3) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 2.3 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 2.3 of bender geometry is not passed. \n");
 	}
 	
 	if (fabs(temp4) >= nearzero)
 	{
-	    fprintf(LogFilePtr,"WARNING!!! Test 2.4 of bender geometry is not passed. Please contact with manochine@hmi.de \n");
+	    fprintf(LogFilePtr,"WARNING!!! Test 2.4 of bender geometry is not passed. \n");
 	}	
 	
 /*    fprintf(LogFilePtr,"Test top, bot surfaces  %f  %f  %f  %f \n",temp1,temp2,temp3,temp4); */
@@ -260,7 +260,7 @@ fprintf(LogFilePtr,"GEOMETRY OF BENDER IS TESTING - BEGIN\n");
 	    temp1 = -1.0*atan(temp1);
 	    if (fabs(beta-temp1)> nearzero)
 	    {	
-		fprintf(LogFilePtr,"Angle test %ld is not passed. Please contact with manochine@hmi.de \n",i);
+		fprintf(LogFilePtr,"Angle test %ld is not passed. \n",i);
 	    }
 //	    fprintf(LogFilePtr,"(Legth/Radius)  =  %f ; Calculated angle =  %f \n",beta,temp1); 
 	}

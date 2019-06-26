@@ -39,10 +39,10 @@ double SolveQuadraticEq(double, double, double);
 /* global functions                                                                */
 /***********************************************************************************/
 
-/***************************************************************************************************/
+/**************************************************************************************************/
 /* This Function similar NeutronPlaneIntersection, but he is calculate new position of neutron
    in the plane (update) and RETURN time of flight of neutron
-   Author: Manoshin Sergey, manoshin@hmi.de  20.02.01 */
+   Author: Manoshin Sergey,   20.02.01                                                            */
 /**************************************************************************************************/
 double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 {
@@ -90,8 +90,8 @@ double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 /***************************************************************************************************/
 /* This Function similar NeutronPlaneIntersection, but he is include GRAVITY effect
    and calculate new position of neutron in the plane (update) and time of flight of neutron (return)
-   Author: Manoshin Sergey, manoshin@hmi.de  12.02.01 */
-/**************************************************************************************************/
+   Author: Manoshin Sergey,    12.02.01                                                            */
+/***************************************************************************************************/
 double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
 {
   // Calculate the time of flight of a neutron INCLUDING gravity with the plane.
@@ -172,10 +172,10 @@ double	NeutronPlaneAngle2(const Neutron *ThisNeutron, const double AP, const dou
 
 
 
-/***************************************************************************************************/
+/**************************************************************************************************/
 /* This function move neutron from current position to the surface , furthemore he is include
    GRAVITY effect  and time of flight of neutron (return)
-   Author: Manoshin Sergey, manoshin@hmi.de  25.03.01 */
+   Author: Manoshin Sergey,   25.03.01                                                            */
 /**************************************************************************************************/
 double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond ThisSurfaceSecond, const long keygrav)
 {
@@ -836,7 +836,7 @@ int PlaneLineIntersect2(const VectorType LineOffset, const VectorType LineDir,
 /*******************************************************************/
 /* THIS FUNCTION SOLVES THE QUADRATIC EQUATION
    AA*X*X+BB*X+CC=0
-   Version from 29.01.01, Author Manoshin Sergey  manoshin@hmi.de  */
+   Version from 29.01.01, Author Manoshin Sergey                   */
 /*******************************************************************/
 
 double SolveQuadraticEq(double AA, double BB, double CC)

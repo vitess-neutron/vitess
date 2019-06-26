@@ -30,6 +30,7 @@ double Interpolation(double, long, double *, double *, long);
 int main(int argc, char *argv[])
 {
 	char	*CollFileName=NULL;
+    char    sLine[1024];
 	FILE	*coll_file=NULL;
 
 	long	i, j, k, counter;
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
 	
 	long	key_colortracking=0; /* Activate color tracking, default no(0) */
 	short	color_current, hole_current=0 ;
-	
+	int     rc;
 
 	double	Distance=0.0, DistanceDev=0.0; /* distance and deviation */
 	
@@ -524,10 +525,12 @@ int main(int argc, char *argv[])
 
   if (CollFileName !=NULL)
     {
-      for(counter = 1; counter <= 3000; counter++)
+      for(counter = 1; counter <= 3000; counter+=3)
 	{
-	  if (fscanf(coll_file,"%lf",&rdate[counter])==EOF)
-	    break;
+	  // if (fscanf(coll_file,"%lf",&rdate[counter])==EOF) break;
+        rc=ReadLine(coll_file, sLine, sizeof(sLine));
+        if (rc==FALSE) break;
+        StrgScanLF(sLine, &rdate[counter], 3, 0);
 	}
 
       fclose(coll_file);

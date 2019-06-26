@@ -7,7 +7,7 @@
 /* the authors.                                                                             */
 /*                                                                                          */
 /* Writied by Manoshin Sergey, start project Apr 2001 for include GRAVITY                   */
-/* Hahn-Meitner-Institut, Berlin: manochine@hmi.de                   			    */
+/* Hahn-Meitner-Institut, Berlin:                                                           */
 /* Fixed some major bugs... Manoshin Sergey 08.04.2002.                                     */
 /* Add key -g for gravity off or on                                                         */
 /* Add key -a for abutment error on or off                                                  */

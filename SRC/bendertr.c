@@ -183,7 +183,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
 	    }
 	    else
 	    {
-		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY, contact with manochine@hmi.de! \n");
+		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY! \n");
 		return(-1);
 	    }
 	    
@@ -561,7 +561,7 @@ if (datanumber <= 999)
 	break; 
 	 
       default: 
-	fprintf(LogFilePtr,"No such plane! Contact with manochine@hmi.de \n"); 
+	fprintf(LogFilePtr,"No such plane!  \n"); 
 	break; 
 	 
       }			 
@@ -714,7 +714,7 @@ if (datanumber <= 999)
 	    }
 	    else
 	    {
-		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY, contact with manochine@hmi.de! \n");
+		fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY! \n");
 		return(-1);
 	    }
 	    

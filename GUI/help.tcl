@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@hmi.de
+### M. Fromme fromme@helmholtz-berlin.de
 ### June 1999
 
 ###
@@ -248,8 +248,8 @@ proc helpToHtml {{args ""}} {
   puts $f {
     <p><hr><strong>
     <a href="#top">Back to start of page</a><p>
-    <a href="http://www.hmi.de/projects/ess/vitess/index.html">VITESS homepage</a><hr>
-    <address><a href="mailto:vitess@hmi.de">Email vitess@hmi.de</a></address>
+    <a href="http://www.helmholtz-berlin.de/vitess/index.html">VITESS homepage</a><hr>
+    <address><a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a></address>
     </strong>
   </body>
 </html>

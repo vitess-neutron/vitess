@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@hmi.de
+### M. Fromme fromme@helmholtz-berlin.de
 ### June 1999
 
 proc showRange {name e op} {

@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@hmi.de
+### M. Fromme fromme@helmholtz-berlin.de
 ### June 1999
 
 ### control variables lists and procedures for
@@ -3028,7 +3028,7 @@ proc monitor2DCheckErr {{app _}} {
 ### sample
 ###
 
-set Refa "This option describes the solid angle covered by the detector. The direction (Theta,Phi) points to the middle of the covered area, which extend from \[Theta-dTheta; Theta+dTheta\] and \[Phi-dPhi;Phi+dPhi\].\nTheta is defined as the angle between +x-axis (main flight direction of the neutrons) and the Vector R to be described. Phi is the angle between the +y-axis and the projection of R into the yz-plane. x,y and z form right-handed system.\nIf you specify any parameter of Theta,dtheta,Phi, and dPhi, you must specify all of them. The default is a coverage of 4*PI."
+set Refa "This option describes the range of the Bragg cones sent out by the sample. The direction (Theta,Phi) points to the middle of the covered range, which extends from \[Theta-dTheta; Theta+dTheta\] and \[Phi-dPhi;Phi+dPhi\].\nTheta is the scattering angle defined as the angle between +x-axis (main flight direction of the neutrons) and the Vector R to be described. Phi is the direction on the cone defined as the angle between the +y-axis and the projection of R into the yz-plane.\nThe default is Theta=DelTheta=90°, Phi=DelPhi=180° corresponding to a coverage of 4*PI."
 set Refb "'repetitions' specifies the number of data sets (trajectories) generated for each scattered trajectory. A larger number of repetitions enriches the population on the detector and gives therefore better statistics in the spectrum."
 
 set sampleASET [list \
@@ -3168,9 +3168,9 @@ proc nxsCheckErr {{app _}} {
   return [samplefilesCheckErr nxs $app]
 }
 
-proc powCheckErr {{app _}} {
-  return [samplefilesCheckErr pow $app]
-}
+### proc powCheckErr {{app _}} {
+###   return [samplefilesCheckErr pow $app]
+### }
 
 ### sample
 ###   san file description (SANS)
@@ -3212,10 +3212,10 @@ proc sampleCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$bdtheta != "" || $dtheta != "" || $bphi != "" || $bdphi != ""} {
-    if {$bdtheta == "" || $dtheta == "" || $bphi == "" || $bdphi == ""} {
-      showText "!Either specify all of (Theta,dTheta,Phi,dPhi) or none."
-      return 1
-    }
+###    if {$bdtheta == "" || $dtheta == "" || $bphi == "" || $bdphi == ""} {
+###      showText "!Either specify all of (Theta,dTheta,Phi,dPhi) or none."
+###      return 1
+###    }
     if {$bdtheta + $dtheta > 180 || $bdtheta - $dtheta < 0} {
       showText "!Please specify Theta+dTheta <= 180 and Theta-dTheta >= 0."
       return 1
@@ -4193,7 +4193,7 @@ The help system allows to search for keywords.
 helpItem VITESS-General {
 VITESS is a virtual instrumentation tool for neutron scattering at pulsed and
 continuous sources. Please have a look on our web-site
-www.hmi.de/projects/ess/vitess for more and updated information.
+www.helmholtz-berlin.de/vitess for more and updated information.
 
 VITESS is supported by a graphical user interface (GUI) which generates and
 controls command lines according to the given input.
@@ -4350,7 +4350,7 @@ First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
 
 
-Contact: fromme@hmi.de
+Contact: fromme@helmholtz-berlin.de
 }
 
 helpItem External-Commands {
