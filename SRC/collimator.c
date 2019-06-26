@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
 
   long   i;
   int    iChanIn, iChanOut;       /* channel where neutron enters and leaves                     */
-  short  bReach;                    /* boolean: hits exit or not                                   */
+  short  bReach;                  /* boolean: hits exit or not                                   */
   double ChanDistIn, ChanDistOut, /* distance between neighbouring channels at entrance and exit */
-    ChanMinIn,  ChanMinOut,  /* minimal y-position for channel determination                */
-    ToF,
-    RotMatrix[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
+    ChanMinIn,  ChanMinOut,       /* minimal y-position for channel determination                */
+    ToF;
+  // double RotMatrix[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
   // char   sBuffer[512]="";
 
   Plane   CollExit;
@@ -85,11 +85,11 @@ int main(int argc, char *argv[])
   CollExit.D = -Length;
 
   /* Writing to log file */
-  fprintf(LogFilePtr, "\nLinear collimator of %d channels\n", nChannels);
+  fprintf(LogFilePtr, "\nLinear collimator of %ld channels\n", nChannels);
   fprintf(LogFilePtr, "length         : %6.3f m\n",  Length/100.);
-  fprintf(LogFilePtr, "width x height : %6.3f x %6.3f cm²", CollEntrWidth, CollEntrHeight);
+  fprintf(LogFilePtr, "width x height : %6.3f x %6.3f cmÂ²", CollEntrWidth, CollEntrHeight);
   if (CollExitWidth != CollEntrWidth || CollExitHeight != CollEntrHeight)
-    fprintf(LogFilePtr, " -> %6.3f x %6.3f cm²", CollExitWidth, CollExitHeight);
+    fprintf(LogFilePtr, " -> %6.3f x %6.3f cmÂ²", CollExitWidth, CollExitHeight);
   fprintf(LogFilePtr, "\n");
 
   DECLARE_ABORT;

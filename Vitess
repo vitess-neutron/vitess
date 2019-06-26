@@ -1,10 +1,14 @@
-#!/usr/bin/wish
+#!/bin/sh
+# the next line restarts using wish \
+exec /usr/bin/wish "$0" "$@"
+
 #!/usr/bin/bltwish
 
 ### VITESS simulation GUI start script
 
-# try to use BLT
-set NoBLT [catch {package require BLT}]
+# to use BLT uncomment next line
+#set NoBLT [catch {package require BLT}]
+set NoBLT 1
 
 proc VScroll {w {u 5}} {
   # scroll module windows
@@ -53,34 +57,38 @@ proc wheelEvent { x y delta } {
 switch $tcl_platform(platform) {
   unix {
     switch $tcl_platform(os) {
-      OSF1 - SunOS - Linux {}
+      OSF1 - SunOS - Linux {
+        # Browser for HTML help display:
+        # Select whatever is installed from mozilla, netscape, ...
+        # It should be callable as
+        # mozilla -remote openURL(file:vitess.html)
+        # otherwise change help.tcl accordingly
+        set Browser ""
+        foreach b {firefox mozilla netscape communicator konqueror} {
+          catch {
+            catch {exec sh -c "which $b"} bb
+            if {$bb != "" && [file exists $bb]} {
+              set Browser $bb
+            }
+          }
+          if {$Browser != ""} break
+        }
+        catch {unset b bb} 
+      }
+      Darwin {
+        set Browser open
+      }
       default {
-	puts "System not supported.\n"
-	exit
+        puts "System not supported.\n"
+        exit
       }
     }
-    # Browser for HTML help display:
-    # Select whatever is installed from mozilla, netscape, ...
-    # It should be callable as
-    # mozilla -remote openURL(file:vitess.html)
-    # otherwise change help.tcl accordingly
-    set Browser ""
-    foreach b {firefox mozilla netscape communicator konqueror} {
-      catch {
-	catch {exec sh -c "which $b"} bb
-	if {$bb != "" && [file exists $bb]} {
-	  set Browser $bb
-	}
-      }
-      if {$Browser != ""} break
-    }
-    catch {unset b bb} 
     if {$Browser == ""} {
       puts "no browser found!"
     }
     set serif Courier
     set sserif Helvetica
-
+    
     regsub ^./ [glob [info script]] "" s
     set i [string last / $s]
     incr i -1
@@ -97,7 +105,7 @@ switch $tcl_platform(platform) {
     set ExeDirectory [file join $SourceDirectory MODULES]
     set ExeSuffix _[set s $tcl_platform(os)]
     set m $tcl_platform(machine)
-    if {$s == "Linux" && $m == "x86_64"} {append ExeSuffix _$m}
+    if {($s == "Linux" || $s == "Darwin") && $m == "x86_64"} {append ExeSuffix _$m}
     set KillProg kill
     set PsCheck PsCheckUnix
     set WinPos +50+0
@@ -105,6 +113,7 @@ switch $tcl_platform(platform) {
     set MaxOutstringLength 90
     bind all <Button-4>  {VScroll %W -5}
     bind all <Button-5>  {VScroll %W 5}
+    set scrollWidth 8
   }
   windows {
     set SourceDirectory [pwd]
@@ -124,6 +133,7 @@ switch $tcl_platform(platform) {
       set serif Courier
     }
     set sserif Arial
+    set scrollWidth 16
   }
   default {
     puts "System not supported.\n"
@@ -143,12 +153,17 @@ set radioColor $c
 set buttonColor #98b4a0
 set menuButtonColor $c
 set canvasColor $c
-set menuColor $c
+if {$tcl_platform(os) == "Darwin"} {set menuColor black} else {set menuColor $c}
 
 set itemlabwidth 16
 set fileentrywidth 48
-
-set scrollWidth 8
+set VisState 0
+# VisGather is an external program to gather 1. step visualisation results
+set VisGather [file join $ExeDirectory gather$ExeSuffix]
+if {![file exists $VisGather]} {set VisGather ""}
+# VisMerge is an external program to merge 2. step visualisation results
+set VisMerge [file join $ExeDirectory merge$ExeSuffix]
+if {![file exists $VisMerge]} {set VisMerge ""}
 
 set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
 

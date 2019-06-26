@@ -1,0 +1,63 @@
+Installation of gnuplot on MAC OS X
+-------------------------------------
+
+(Tested for Mac OS X 10.7.2 Lion and 10.6.8 Snow Leopard)
+
+In the following, we describe how to install gnuplot on a Mac, following a documentation by Dan Sanderson on http://www.dansanderson.com/blog/2011/03/installing-gnuplot-on-mac-os-x-106.html. If you don't want gnuplot but just what is needed for VITESS to run, skip the last step.
+By default, gnuplot is used by VITESS since version 2.11 if gnuplot is available on your system.
+
+VITESS uses libgd, which is not installed with Mac OS X by default. In order to run VITESS on a Mac, you have to install libgd first, which in turn requires zlib, libjpeg and freetype. Once these are installed successfully, you have already done most of the work for installing gnuplot, so we recommend to add one further step and also install gnuplot.
+
+NOTE: you need your administration password for installation (sudo-commands below).
+
+
+Recipe summary:
+(for further explanations, see http://www.dansanderson.com/blog/2011/03/installing-gnuplot-on-mac-os-x-106.html)
+
+1. Requirements: Xcode development tools and X11 libraries installed (should be included on your SnowLeopard/Lion installation DVD as an installation option)
+
+2. export PATH=/usr/local/bin:$PATH
+
+3. Download and unpack: zlib, libjpeg, FreeType, libgd, (gnuplot)
+You can get the latest version from your favourite software or mirror website; the following links are examples valid at the time of writing (Oct 2011).
+
+- http://zlib.net/zlib-1.2.5.tar.gz 
+- http://www.ijg.org/files/jpegsrc.v8c.tar.gz 
+- http://download.savannah.gnu.org/releases/freetype/freetype-2.4.7.tar.gz 
+- for libgd, you can google for gd-2.0.35.tar.gz (and find e.g. http://fossies.org/unix/www/gd-2.0.35.tar.gz )
+- http://sourceforge.net/projects/gnuplot/files/latest/download?source=files 
+
+Usually, the packed files are saved in the Downloads directory, and can be unpacked either by double-klicking or by:
+ls -1 *.gz | xargs -n 1 tar xzvf
+
+4. zlib: 
+cd ~/Downloads/zlib-1.2.5
+./configure --shared && make && sudo make install
+
+5. libjpeg:
+cd ~/Downloads/jpeg-8c
+export MACOSX_DEPLOYMENT_TARGET=10.7 (for Lion, 10.6 for SnowLeopard)
+./configure --enable-shared && make && sudo make install
+
+6. FreeType:
+cd ~/Downloads/freetype-2.4.7
+Look into include/freetype/config/ftoption.h: if the line defining TT_CONFIG_OPTION_BYTECODE_INTERPRETER is commented out, uncomment.
+./configure && make && sudo make install
+
+7. libgd
+cd ~/Downloads/gd-2.0.35
+sudo ln -s /usr/X11R6/include/fontconfig /usr/local/include
+ln -s `which glibtool` ./libtool
+./configure --with-png=/usr/X11 --x-includes=/usr/X11/include --x-libraries=/usr/X11/lib
+make && sudo make install
+
+
+8. gnuplot
+cd ~/Downloads/gnuplot-4.4.3
+./configure
+make && sudo make install
+
+To test if your installtion was sucessfull, start gnuplot and plot a simple sine function:
+gnuplot
+plot sin(x)
+quit

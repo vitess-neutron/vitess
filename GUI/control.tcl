@@ -25,6 +25,11 @@ proc setAll {{mode 0}} {
   }
 }
 
+proc finalExit {} {
+  global tcl_platform
+  if {$tcl_platform(os) == "Darwin"} {destroy .}
+  exit
+}
 
 ### catch destroy events from window manager, but
 ### normal exit at confirmed situations
@@ -37,7 +42,7 @@ proc windowManagerExit {} {
     wm deiconify .
   } else {
     finalCheck
-    exit
+    finalExit
   }
 }
 
@@ -49,8 +54,6 @@ proc finalCheck {} {
 }
 
 proc confirmedExit {} {
-  # debug
-  # exit
   global TryingToExit KillMe
   if {[info exists KillMe] && $KillMe} return
   set nt [clock seconds]
@@ -61,8 +64,9 @@ proc confirmedExit {} {
   }
   if [dontDoit "Exit VITESS\nchanges not saved yet"] return
   set KillMe 1
+  catch {closeCmdHandles}
   finalCheck
-  exit
+  finalExit
 }
 
 proc showModulesAgain {{delall 0}} {
@@ -86,6 +90,11 @@ proc showModulesAgain {{delall 0}} {
   }
   reShowModules $Mlf
   setInstrumentfile $savname
+  # give a hint of the overall geometry, otherwise we see a stamp with Linux
+  if {[getSystem] == "unix"} {
+    # this in conjunction with KDE works like "maximize to full window"
+    wm geometry .x 800x600
+  }
 }
 
 proc applySettings {} {
@@ -199,41 +208,57 @@ proc controlMenu {w} {
 
   mMenu $w.fil File
   mMenu $w.copa Edit
+  mMenu $w.plo Plot
   mMenu $w.con Configure
   mMenu $w.opt Options
   mMenu $w.tool Tools
   mMenu $w.hel Help
-  pack $w.fil $w.copa $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
-  #pack $w.hel -side right -ipadx 2m
+  pack $w.fil $w.copa $w.plo $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
 
-  popMenu $w.fil.menu \
-      {c "LOAD Instrument" {loadAll gui}}\
-      {c "SAVE Instrument" {storeAll gui}} \
-      {c "SAVE As" {storeAll gui newfile.gui}} s\
-      {c "ADD Packet" {addPacket}}\
-      {c "INSERT Packet" {insertPacketWindow}}\
-      {c "SAVE Packet" {savePacketWindow}} s\
-      {c "SAVE to Directory" saveDirectory} s\
-      {c "SAVE as Command" {storeAll bat}}\
-      {c "SAVE as Grid Command" {storeAll grd}}\
-      {c "SAVE tcl" {storeAll tcl}} s\
-      {c "Generate Series" {genSeries .gser}} s\
-      {c "New *.inf File" editInfFile} \
-      {c "Edit *.inf File" {editInfFile 1}} s\
-      {c "Plot File" {plotFile 1}} \
-      {c "2D Plot File" {plotFile 2}} \
-      {c "Ext. Plot File" plotFile} s \
-      {c} \
-      {c EXIT confirmedExit}
+  set lmenu {
+    {c "LOAD Instrument" {loadAll gui}}
+    {c "SAVE Instrument" {storeAll gui}} 
+    {c "SAVE As" {storeAll gui newfile.gui}} s
+    {c "ADD Packet" {addPacket}}
+    {c "INSERT Packet" {insertPacketWindow}}
+    {c "SAVE Packet" {savePacketWindow}} s
+    {c "SAVE to Directory" saveDirectory} s
+    {m "Export as" mex} s
+    {c "Generate Series" {genSeries .gser}} s
+    {c "New *.inf File" editInfFile}
+    {c "Edit *.inf File" {editInfFile 1}} s
+  }
+  lappend lmenu {c EXIT confirmedExit}
+  eval popMenu $w.fil.menu $lmenu
+
+  menu $w.fil.menu.mex -bg $menuColor -tearoff 0
+  popMenu $w.fil.menu.mex \
+      {c "bat shell script" {storeAll bat}}\
+      {c "sh shell script" {storeAll sh}}\
+      {c "tcl script" {storeAll tcl}}\
+      {c "sh grid script" {storeAll grd}}\
+      {c "pl perl script" {storeAll pl}}\
+      {c "py python script" {storeAll py}} 
+
 
   popMenu $w.copa.menu \
       {c "Copy  Module Parameters" copyModPars} \
       {c "Paste Module Parameters" pasteModPars}
 
+  set lmenu {{c "Plot File" {plotFile 1}} {c "2D Plot File" {plotFile 2}}}
+  if {"" != [getPreferredPlotCmd]} {
+    lappend lmenu \
+        {c "Plot Cmd" {plotCmdWindow}}\
+        {c "Plot using Template" {plotTemplateCmdWindow}} s\
+        {c "New Template" {newTemplate}}\
+        {c "Edit Template" {editTemplate}}
+  }
+  eval popMenu $w.plo.menu $lmenu
+
+
   popMenu $w.con.menu \
       {c "Set Instrument Name" setInstrumentName} s\
       {c "Define Instrument Digest" genDigest}
-
 
   set clist {ascii2bin
     define_direction direct_view gener_batch mirror_coating surface_file
@@ -344,34 +369,48 @@ proc controlMenu {w} {
   menu $w.hel.menu.m3 -bg $menuColor -tearoff 0
   eval popMenu $w.hel.menu.m3 $li3
 
-
   set wo $w.opt.menu
   popMenu $wo \
       {c "Apply settings" applySettings} s\
+      {c "Load settings" {fileSettings 0}} \
+      {c "Save settings" {fileSettings 1}} s\
       {c "Smaller fonts" smallerFonts} \
-      {c "Bigger fonts" biggerFonts} s\
-      {m Color color} s\
-      {m "Info level" infolevel} \
+      {c "Bigger fonts" biggerFonts} \
+      {m Fonts afont} s\
       {m "Check mode" checkmode} \
       {m "Output compression" compmode} \
       {m "Execution mode" execmode} \
+      {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
-      {m Timeout timeout} s\
-      {m "Fonts: text" tfont}\
+      {m "Browse selection" browse_ext_mode} \
+      {m "Scrollbar width" swid} s\
+      {m Xcontrol intern} s\
+      {c "Helper applications" editDefaults}
+
+  set ww $wo.afont
+  menu $ww -bg $menuColor -tearoff 0
+  popMenu $ww \
+      {m text tfont}\
       {m "monospaced text" monofont}\
       {m menubar mfont}\
       {m header hfont}\
       {m button bfont}\
-      {m label lfont} s\
-      {m "Scrollbar width" swid} s\
-      {m Xcontrol intern} s\
-      {c "external settings" editDefaults} s\
-      {m Buffersize buffersize}
+      {m label lfont}
+
+  fontMenu $ww mfont
+  fontMenu $ww hfont
+  fontMenu $ww bfont
+  fontMenu $ww lfont
+  fontMenu $ww monofont
+  fontMenu $ww tfont
 
   set ww $wo.intern
   menu $ww -bg $menuColor -tearoff 0
   popMenu $ww \
       {m "GUI Style" tk_strictMotif} \
+      {m Color color} s\
+      {m "Info level" infolevel} \
+      {m Timeout timeout} s\
       {m Bell bell} \
       {m Precision prec} \
       {m Protocol prot}
@@ -389,19 +428,19 @@ proc controlMenu {w} {
   forceDef audible_bell on
   cascEntries $ww.bell audible_bell on off
 
-  set ww $wo.color
-  menu $ww -bg $menuColor -tearoff 0
-  popMenu $ww \
+  set www $ww.color
+  menu $www -bg $menuColor -tearoff 0
+  popMenu $www \
       {c Background {chooseColor 1}} \
       {c Buttons {chooseColor 2}} \
       {c Entries {chooseColor 3}}
 
   forceDef timeout unlimited
-  cascEntries $wo.timeout timeout 10 100 500 1000 3600\
+  cascEntries $ww.timeout timeout 10 100 500 1000 3600\
       5400 10000 20000 28800 57600 172800 unlimited
 
   forceDef Infolevel user
-  cascEntries $wo.infolevel Infolevel user expert
+  cascEntries $ww.infolevel Infolevel user expert
 
   forceDef Checkmode normal
   cascEntries $wo.checkmode Checkmode normal set_default strict
@@ -412,17 +451,15 @@ proc controlMenu {w} {
   forceDef plotmode dots
   cascEntries $wo.plotmode plotmode dots "dots + lines"
 
+  forceDef browse_ext_mode select
+  cascEntries $wo.browse_ext_mode browse_ext_mode all select
+
   forceDef Compmode none
   cascEntries $wo.compmode Compmode none nodebug float gzip nodebug+gzip float+gzip
 
-  fontMenu $wo mfont
-  fontMenu $wo hfont
-  fontMenu $wo bfont
-  fontMenu $wo lfont
-  fontMenu $wo monofont
-  fontMenu $wo tfont
 
-  forceDef scrollWidth 8
+  if {[getSystem] == "windows"} {set scw 16} else {set scw 8}
+  forceDef scrollWidth $scw
   cascEntries $wo.swid scrollWidth 4 8 12 16
 
   forceDef buffersize 10000
@@ -559,9 +596,14 @@ proc performCommand {prog mod {tw ""} {ts ""}} {
     writeCommandOption $l _gt
   }
 
+  # puts "doing :exec $fc --P[pardirPar]:"
   # execute the command, catch errors
   if [catch {eval exec $fc --P[pardirPar]} res] {
-    showText "!could not execute tool command $prog"
+    if {$prog == "dist_time"} {
+      showText $res
+    } else {
+      showText "!could not execute tool command $prog\n$res"
+    }
     return
   }
   if {$tw == ""} return
@@ -629,7 +671,7 @@ proc showBeef {w} {
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
   pack $w.mbar -side top -fill both
 
-  set t "VITESS 2.10"
+  set t "VITESS 2.11"
   set maxModule 50
   set DummyEntry "--inactive--"
 
@@ -750,23 +792,27 @@ proc showBeef {w} {
   set wb $w.h.b
   bButton $wb.check Check checkAction
   bButton $wb.start Start startAction
-  frame  $wb.dummy
-  bButton $wb.kill Kill "stopAction 1 1"
-  bButton $wb.stop Stop stopAction
-  pack $wb.check $wb.start -fill x
-  pack $wb.dummy -fill x -anchor w -pady 3m
+  bButton $wb.startv Trajectories startActionV
+  frame $wb.meter
+  frame $wb.stop
+  bsButton $wb.stop.kill Kill "stopAction 1 1"
+  bsButton $wb.stop.stop Stop stopAction
+  pack $wb.check $wb.start $wb.startv -fill x
+
+  pack $wb.meter -fill x -anchor w
   set Progress 0
   if {"" == [info command ttk::progressbar]} {
     set ProgressTextL ""
-    set wl $wb.dummy.l
+    set wl $wb.meter.l
     label $wl -textvariable ProgressTextL
     pack $wl
     trace variable Progress w trVar
   } else {
-    ttk::progressbar $wb.dummy.progress -orient horizontal -mode determinate -variable Progress
-    pack $wb.dummy.progress
+    ttk::progressbar $wb.meter.progress -orient horizontal -mode determinate -variable Progress
+    pack $wb.meter.progress  -fill x
   }
-  pack $wb.kill $wb.stop -fill x
+  pack $wb.stop -anchor w -fill x
+  pack $wb.stop.stop $wb.stop.kill -side left -ipadx 1m
 
   set wb $w.h.r
   bButton $wb.del Fresh deleteAllModules

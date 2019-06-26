@@ -28,43 +28,69 @@
 #   - don't touch a variable beginning with a capital letter
 #   - ignore Tcl/TK variables
 #   - ignore ESET lists
-# 2 The global variable DoNotSave contains a list of variable names to exclude.
+# 2 The global variables DoNotSaveSetting and DoNotSave contain lists of variable names to exclude.
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring)$}
+set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
-set DoNotSave {
+# Some variables for settings begin with a capital letter, or are otherwise rejected by 
+# the regular expression, but should be saved:
+set DoSaveSetting {
   audible_bell
-  bgColor buffersize
+  plotapp_
+  BFontSizes Browser
+  Checkmode Compmode
+  Execmode
+  FontSizeIndex FontSizeMinIndex
+  HFontSizes
+  Infolevel
+  LFontSizes LastMarker
+  MaxOutstringLength
+  Plottype ProtocolMode
+  TFontSizes TextPos Tth
+  WinPos
+}
+
+set DoNotSaveSetting {
   defdirectory_
-  fileentrywidth
   helpthreads_
+  noBLT
+  savedir_
+}
+
+set DoNotSave [concat $DoNotSaveSetting {
+  audible_bell
+  bgColor browse_ext_mode buffersize
+  fileentrywidth
   infolevel itemlabwidth
   labColor
   maxModule menuButtonColor menubarfont menuColor
   monospaced monofontfamily monofontsize monofonttype
-  noBLT
   place plotapp_ plotmode
   radioColor
-  savedir_ scrollWidth simulation serif sserif
+  scrollWidth simulation serif sserif
   timeout
-}
+}]
+
 foreach s {b h l m t} {
   foreach t {family size type} {
     lappend DoNotSave [set n ${s}font$t]
   }
 }
 
+lappend DoNotSaveSetting instrumentfile
+
 set TempVars {
-  Mod1 Mod2
+  Mod1 Mod2 Mod3
   Refa Refb Refc Refm
   al
   dA
   eA
   fA fLA fPA fPAuv fPAy fPAz
   fl fr
-  i1 i2
+  i1 i2 i3
   ld li ll
   m0 m1 m2 m3 mA
   nA nnA
@@ -93,7 +119,7 @@ set fileDialogSET {
   {"X,Y ASCII files" {.dat}}
   {"2 D Intensity files" {.out}}
   {"chopper files" {.chp .par .dat}}
-  {"crystal" {.crs .par .dat}}
+  {crystal {.crs .par .dat}}
   {"moderator (cws source)"  {.mod .cmo .src}}
   {"moderator (spss source)" {.mod .smo .imo .src}}
   {"moderator (lpss source)" {.mod .lmo .src}}
@@ -135,7 +161,7 @@ proc makeModuleSets {} {
     {optical_elements {lense} {lense}}
     {beamstop {} beamstop}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
-      {space slit spacewindow spacewindow_multiple grid}}
+      {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {velselect {} velselect}
     {collimator {collimator collimator_radial collimator_soller} collimator}
@@ -145,13 +171,13 @@ proc makeModuleSets {} {
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {resonator_drabkin {} resonator_drabkin}
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
-    {sample {sample_elasticisotr sample_inelast sample_powder
+    {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
       sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
-	sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
+	sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
     {detector {} detector}
-    {evaluation {capture_flux eval_elast eval_elast2 eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_inelast runtime}}
+    {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
     {frame {} frame}
     {external_command}
     {trajectories {writeout spin_reset} {writeout spin_reset}}
@@ -160,7 +186,7 @@ proc makeModuleSets {} {
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
       monpol_time monpol_lambda monpol_y monpol_z
-      monpol_divy monpol_divz monitorpol_pos
+      monpol_divy monpol_divz monitorpol_pos monitor2D
       } {visual monitor}}
   }
 
@@ -341,16 +367,21 @@ set m3 {
 
 set Mod1 {}
 set Mod2 {}
+set Mod3 {}
 foreach e [concat $m1 $m2] {
   set n [lindex $e 0]
   if {$n == "" || [lindex $e 1] == "header"} {
-    set i1 [set i2 $e]
+    set i1 $e
+    set i2 $e
+    set i3 $e
   } else {
     set i1 [lreplace $e 0 0 ${n}1]
     set i2 [lreplace $e 0 0 ${n}2]
+    set i3 [lreplace $e 0 0 ${n}3]
   }
   lappend Mod1 $i1
   lappend Mod2 $i2
+  lappend Mod3 $i3
 }
 
 ### cws source module description
@@ -360,7 +391,10 @@ set cmoESET [concat {
 } $Mod1 {
   {"Moderator 2" header}
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
-} $Mod2 ]
+} $Mod2 {
+  {"Moderator 3" header}
+  {usemod3 radio unused {"third moderator"} {used unused} {1 0}}
+} $Mod3 ]
 
 ### ISIS variant
 
@@ -384,16 +418,21 @@ Deviations of the moderator center from this position must be given here."}}
 
 set Mod1 {}
 set Mod2 {}
+set Mod3 {}
 foreach e [concat $m0 $m1 $m2 $m3] {
   set n [lindex $e 0]
   if {$n == "" || [lindex $e 1] == "header"} {
-    set i1 [set i2 $e]
+    set i1 $e
+    set i2 $e
+    set i3 $e
   } else {
     set i1 [lreplace $e 0 0 ${n}1]
     set i2 [lreplace $e 0 0 ${n}2]
+    set i3 [lreplace $e 0 0 ${n}3]
   }
   lappend Mod1 $i1
   lappend Mod2 $i2
+  lappend Mod3 $i3
 }
 
 ### spss source module description
@@ -402,7 +441,10 @@ set smoESET [concat {
 } $Mod1 {
   {"Moderator 2" header}
   {usemod2 radio unused {"second moderator"} {used unused} {1 0}}
-} $Mod2 ]
+} $Mod2 {
+  {"Moderator 3" header}
+  {usemod3 radio unused {"third moderator"} {used unused} {1 0}}
+} $Mod3 ]
 
 ### lpss source module description
 set lmoESET $smoESET
@@ -693,10 +735,20 @@ set writeoutESET {
   {filtZMax float "" {
     "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
   {}
+  {filtYDivMin float "-1.0" {
+    "filter horz. div.\nmin [deg]" "min horz. divergency, -1.0 means any" "" e}}
   {filtYDiv float "-1.0" {
     "filter horz. div.\nmax [deg]" "max horz. divergency, -1.0 means any" "" d}}
+  {}
+  {filtZDivMin float "-1.0" {
+    "filter vert. div.\nmin [deg]" "min vert. divergency, -1.0 means any" "" E}}
   {filtZDiv float "-1.0" {
     "filter vert. div.\nmax [deg]" "max vert. divergency, -1.0 means any" "" D}}
+  {}
+  {filtDivMin float "-1.0" {
+    "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
+  {filtDivMax float "-1.0" {
+    "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
 
 ### spin_reset
@@ -976,7 +1028,7 @@ set specoptAdd {
   {addplane float 0 {
     "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
-  {abutlen float ""
+  {abutlen float 0
     {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}
@@ -1845,7 +1897,7 @@ set quadr_fieldESET {
 ###
 set visualESET {
   {visdev radio display {device "visual device" "" o} {display file display+file} {1 2 3}}
-  {vt radio "circular beam" {type "type of\nvisualization" "" R}
+  {vt radio "circular beam" {type "type of\nvisualisation" "" R}
     {"circular beam" "rectangular beam" "time_of_arrival(wavelength)" "wavelength(time_of_arrival)"}
     {1 2 3 4}}
   {}
@@ -2333,6 +2385,88 @@ proc mon2_rdivCheckErr {{app _}} {
   return [checkMiMaErr min_z max_z "" $app]
 }
 
+### monitor2D
+### generic monitor
+
+set mA1 {
+  {parameter1 radio pos_y {
+    "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+}	
+
+set mA2 {
+  {parameter2 radio pos_z {
+    "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
+    {pos_y pos_z div_y div_z lambda energy time k_y k_z r phi} {1 2 3 4 5 6 7 8 9 10 11}}
+}
+set mAV {
+  {}
+  {min_vx float 0 {"minimal\nx-value" "" "" w} -1E6 1E6 1}
+  {min_vy float 0 {"minimal\ny-value" "" "" h} -1E6 1E6 1}
+  {}
+  {max_vx float 0 {"maximal\nx-value" "" "" W} -1E6 1E6 1}
+  {max_vy float 0 {"maximal\ny-value" "" "" H} -1E6 1E6 1}
+}
+
+set nA {
+  {}	
+  {number_xbins int 100 {
+    "number\nof x-bins" "number of bins within the y-axis interval" "" x} 1 1000}
+  {number_ybins int 100 {
+    "number\nof y-bins" "number of bins within the z-axis interval" "" y} 1 1000 1}
+}
+
+set fA1 {
+  {filter_param1 radio none {
+    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}	
+}
+set fA2 {
+  {filter_param2 radio none {
+    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+    {none pos_y pos_x div_y div_z lambda energy time k_y k_z r phi} {0 1 2 3 4 5 6 7 8 9 10 11}}
+}
+
+set fPAi {
+  {}
+  {filtIMin float "" {
+    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {
+    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+}
+
+set fPAj {
+  {}
+  {filtJMin float "" {
+    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {
+    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+}
+
+set polAH {
+  {"Polarisation analysis" header}
+}
+
+
+set polA {
+  {polA radio no {
+    "Polarisation\nanalysis" "If switched on, define the polarisation analysis axis" "" P}
+    {no yes} {0 1}}
+}
+
+set dA {
+  {"Analysis direction" header}
+  {dirx float 1 {"direction\nX" "x component of the direction vector representing the quantization direction" "" r}}
+  {diry float 0 {"direction\nY" "y component of the direction vector representing the quantization direction" "" s}}
+  {dirz float 0 {"direction\nZ" "z component of the direction vector representing the quantization direction" "" t}}
+}
+
+set monitor2DESET [concat [genFE2 mon2D] $mA1 $mA2 $mAV $nA  $pA $FA $fA $fLA $fA1 $fA2 $fPAi $fPAj $polAH $polA $dA]
+proc monitor2DCheckErr {{app _}} {
+  return [checkMiMaErr number_xbins number_ybins "" $app]
+#  return [checkMiMaErr min_z max_z "" $app]
+}
+
 ### sample
 ###
 
@@ -2392,6 +2526,14 @@ set samASET [list {Sample header} \
   [list cz float "" [list "z direction" $Refb]] \
   ]
 
+### sample
+###   nxs file description
+
+set nxsESET [concat $samASET {
+  {nxsfile pareditablefile "" {"nxs para-\nmeter file"} dr}
+}]
+  
+  
 ### sample
 ###   pow file description
 
@@ -2455,6 +2597,10 @@ proc samplefilesCheckErr {type {app _}} {
     checkMv $cz "z direction" rc
   }
   return $rc
+}
+
+proc nxsCheckErr {{app _}} {
+  return [samplefilesCheckErr nxs $app]
 }
 
 proc powCheckErr {{app _}} {
@@ -2529,6 +2675,23 @@ set sample_environmentESET {
 ### proc sample_environmentCheckErr {{app _}} {
 ###   return [sampleCheckErr $app]
 ### }
+
+### sample
+###   nxs
+set sample_nxsESET [concat $sampleASET {
+  {samplefile pareditablefile nxs_sample.par {
+    "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r nxs 1}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
+    {yes no} {1 0}}
+  {trans_only radio no {"transmission\nonly" "'yes' only handles transmission (imaging mode), i.e. all neutrons intersecting the sample are transmitted and weighted according to the calculated total neutron cross section. 'no' additionally performs scattering." "" T}
+    {yes no} {1 0}}
+}]
+
+proc sample_nxsCheckErr {{app _}} {
+  return [sampleCheckErr $app]
+}
+
 
 ### sample
 ###   powder
@@ -2817,7 +2980,9 @@ set eval_elastESET {
     "maximum\n[A, 1/A, deg]" "upper bound of the evaluation interval" "" M} 1}
   {prob_w radio yes {
     "probability\nweight" "probability weight: the neutron probability weights, e.g. mirroring the flux distribution of the source or the sample scattering processes, can be fixed to 1 for every neutron with \"no\"" "" p} {yes no} {1 0}}
-  {bin_prz float "" {
+  {sAxis radio none {
+    "Scattering axis\nof the sample" "Please specify if the scattering by the sample occurs only in y-direction or only in z-direction. Choose 'none' if scattering is isotropic." "" A} {none y z} {-1 1 2}}	 
+ {bin_prz float "" {
     "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
   {dspot float "" {
     "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
@@ -2948,6 +3113,67 @@ proc eval_elast2CheckErr {{app _}} {
 }
 
 ### eval
+###   sans
+set eval_sansESET {
+  {sn_sfile moneditablefile sans.eva {
+    "S(Q) file" "the spectrum file: it contains the S(Q) result" "" S}}
+  {sn_rfile pareditablefile "" {
+    "reference\nfile" "reference file: it contains the intensity distribution I(Q) at the detector for isotropic scattering" "" I}}
+  {sn_nbins int 100 {
+    "number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
+  {sn_mina float 0.001 {
+    "minimum\n[1/Å]" "lower bound of the Q-value interval" "" m} gt0}
+  {sn_maxa float 1 {
+    "maximum\n[1/Å]" "upper bound of the Q-value interval" "" M} gt0}
+  {sn_scat float 0.1 {
+    "scattering\nprobability" "total scattering probability of the isotropic scatterer" "" p} gt0}
+  {sn_bin_prz float "" {
+    "increase to\n next bin[%]" "case of logarithmic binning\nnumber of bins is neglected in this case" "" R} gt0}
+  {sn_dspot float "" {
+    "dead-spot\n[deg]" "dead-spot: only needed if the direct beam points to the detector (as in the case of SANS).\nAll neutrons with a scattering angle(2 theta) between 0 and dead-spot will therefore not be considered in the evaluation." "" d} 0 90}
+  {sn_tof radio no {
+    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+  {}
+  {sn_fpath float "" {
+    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+  {sn_toff float 0 {
+    "time offset [ms]" "global shift of the neutron time t t-TimeOffset [ms], useful to shift the temporal reference point for the time of flight analysis" "" T}}
+  {sn_refwave float "" {
+    "reference\nwavelength [A]" "needed only for non-time of flight case, i.e. a crystal monochromator or velocity selector was used. In this case one must know which wavelength is assumed for the evaluation (to mirror the resolution adequately, naturally the stored wavelenghts cannot be used)" "" r} gt0}
+  {sn_timevalbegin float -1.e10 {
+    "time interval\nbegin [ms]" "begin of time interval to be evaluated" "" e}}
+  {sn_timevalend float 1.e10 {
+    "time interval\nend [ms]" "end of time interval to be evaluated" "" E}}
+  {sn_eval_colour int 0 {
+    "colour" "colour necessary for the trajectory to be evaluated\ncolour 0 means: all trajectories are evaluated" "" C} 0 32768}
+}
+
+
+proc eval_sansCheckErr {{app _}} {
+  foreach l {sn_tof sn_fpath sn_toff sn_refwave sn_bin_prz sn_nbins}  {
+    upvar #0 $l$app $l
+  }
+  set rc 0
+  if {$sn_nbins == "" && $sn_bin_prz == ""} {
+    showText "!Please specify either the number of bins, or give a value for increasing to the next bin."
+    set rc 1
+  }
+  if {$sn_tof == "yes"} {
+    if {$sn_fpath == "" || $sn_toff == ""} {
+      showText "!Please specify flight path and time offset"
+      set rc 1
+    }
+  } elseif {$sn_refwave == ""} {
+    showText "!Please specify reference wavelength"
+    set rc 1
+  }
+  if [checkMiMaErr sn_mina sn_maxa "" $app] {
+    set rc 1
+  }
+  return $rc
+}
+
+### eval
 ###   inelast
 
 set eval_inelastESET {
@@ -3072,8 +3298,8 @@ set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}
   {scond int 1000 {"stop at\ncollisions" "here it stops and writes out the coordinates" "" M}}
-  {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module)" "" Q}
-    {X Y Z} {0 1 2}}
+  {sdir radio X {"spin quantisation\ndirection" "direction of spin quantisation in accordance with input data (e.g. source module). Put  if spin direction should be ignored." "" Q}
+    {X Y Z N} {0 1 2 -1}}
   {"output frame" header}
   {x float 200 {"X' [cm]" "x coordinate in output frame" "" r}}
   {y float   0 {"Y' [cm]" "y coordinate in output frame" "" s}}
@@ -3132,8 +3358,8 @@ set lenseESET {
   {"Number of lenses" header}
   {nx int 1 {"Number of lenses" "Number of lenses in the X direction" "" I} gt0}
   {"Visualisation" header}
-  {visu radio no {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
-  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {visu radio no {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
+  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
   {"Ray-tracing after lenses" header}
   {visurtal radio no {"Visual ray-tracing \n after lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
@@ -3176,10 +3402,10 @@ set mirror_ellipticalESET {
   {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" t}}
   {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" w}}
   {"Visulalisation" header}
-  {visu radio yes {"Activate visualisation" "activate viusalisation" "" y} {yes no} {1 0}}
+  {visu radio yes {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
   {visuty radio XZ {"Type of visualisation" "choose plane for visualisation" "" Y} {XZ XY YZ} {0 1 2}}
-  {visual radio no {"Full visualisation" "Visalisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}
-  {visualty radio x-windows {"Output device (for Unix only)" "Output device for visalisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {visual radio no {"Full visualisation" "Visualisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}
+  {visualty radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
   {"Reflectivity for the elliptic mirror" header}
   {reflne radio no {"Reflected neutrons" "If yes is chosen, only reflected neutrons are going later, if no all neutrons are going later" "" u} {yes no} {1 0}}
   {outkey radio yes {"Ideal reflection" "Choose ideal reflection or from reflectivities files" "" R}
@@ -3826,6 +4052,47 @@ proc serializeSanFile {f mode var app} {
   serializeSampleFile $f $mode $var $app san
 }
 
+proc serializeNxsFile {f mode var app} {
+  set nlist {x y z cyl hei thick cx cy cz wid nxsfile density}
+  foreach l $nlist {
+    upvar #0 $l$app $l
+  }
+  if {$mode == "r"} {
+    foreach l $nlist {catch {unset $l}}
+    if {$f == "0"} return
+    if {[gets $f line] < 0 || [gets $f l1] < 0 || [gets $f l2] < 0} return
+    scan $line "%g%g%g" x y z
+    switch [string range [string tolower $l1] 0 2] {
+      cyl {
+	set cyl cylinder
+	scan $l2 "%g%g" thick hei
+	if {[gets $f l2] < 0} return
+	scan $l2 "%g%g%g" cx cy cz
+      }
+      bal {
+	set cyl sphere
+	scan $l2 "%g" thick
+      }
+      default {
+	set cyl cuboid
+	scan $l2 "%g%g%g" thick hei wid
+	if {[gets $f l2] < 0} return
+	scan $l2 "%g%g%g" cx cy cz
+      }
+    }
+    if {[gets $f l1] < 0} return
+    set nxsfile $l1
+  } else {
+    puts $f "$x $y $z"
+    switch $cyl {
+      cylinder {puts $f "cyl\n$thick $hei\n$cx $cy $cz"}
+      sphere {puts $f "bal\n$thick"}
+      default {puts $f "cub\n$thick $hei $wid\n$cx $cy $cz"}
+    }
+    puts $f "$nxsfile"
+  }
+}
+
 proc serializePowFile {f mode var app} {
   serializeSampleFile $f $mode $var $app pow
 }
@@ -4065,21 +4332,26 @@ proc convert2Code {ll app} {
   return $s
 }
 
+# read / write moderator description file
+
 proc serializeModFile {f mode var app} {
   set al {temp color shape cx cy cz width height spaord scale current
     wfile tfile wtfile modtype tau1 tau2}
   set il1 [prepList $al 1]
   set il2 [prepList $al 2]
+  set il3 [prepList $al 3]
 
-  set nlist [concat $il1 $il2]
-  upvar #0 usemod2$app umod
+  set nlist [concat $il1 $il2 $il3]
+  upvar #0 usemod2$app umod2
+  upvar #0 usemod3$app umod3
 
   if {$mode == "r"} {
     foreach l $nlist {
       upvar #0 $l$app $l
       catch {unset $l}
     }
-    set umod unused
+    set umod2 unused
+    set umod3 unused
     if {$f == "0"} return
     set imode -1
     while {[gets $f line] >= 0} {
@@ -4090,7 +4362,10 @@ proc serializeModFile {f mode var app} {
       switch [incr imode] {
 	0 {set tl $il1}
 	1 {set tl $il2
-	  set umod used
+	  set umod2 used
+	}
+	2 {set tl $il3
+	  set umod3 used
 	}
       }
       if {[llength $ll] != [llength $tl]} continue
@@ -4110,8 +4385,11 @@ proc serializeModFile {f mode var app} {
 # Moderators:  center size  distribution files  time
 # Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d"
     puts $f [convert2Code $il1 $app]
-    if {$umod == "used"} {
+    if {$umod2 == "used"} {
       puts $f [convert2Code $il2 $app]
+    }
+    if {$umod3 == "used"} {
+      puts $f [convert2Code $il3 $app]
     }
   }
 }
@@ -4381,7 +4659,8 @@ proc moduleMenus {{n 1}} {
   set maxi $maxModule
   if {$maxi > $n} {set maxi $n}
 
-  if {![string match fdown [image names]]} {
+  if {![regexp fdown [image names]]} {
+    # create these images once from bitmap files
     set fpath [file join [globVal SourceDirectory] BITMAPS]
     image create bitmap fdown -file  [file join $fpath downarr.xbm]
     image create bitmap fright -file [file join $fpath rightarr.xbm]

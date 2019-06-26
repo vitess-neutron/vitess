@@ -376,7 +376,7 @@ int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
 	} else
 		*ibinY = (int)((*Yval - y) / ((Y - y) / (double)nbinsY));
 	
-	if ((*ibinX < nbinsX) && (*ibinY < nbinsY))
+	if ((*ibinX >= 0) && (*ibinY >= 0) && (*ibinX < nbinsX) && (*ibinY < nbinsY))
 		return INDEX(*ibinX, *ibinY);
 	else
 		return -1;

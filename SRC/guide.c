@@ -40,7 +40,7 @@
 /*                                (data is complementary to traceing and writeout)          */
 /* 2.17  Sep 2009  A. Houben      Extended writeout of reflection parameters                */
 /* 2.18  Sep 2009  A. Houben      Changes to shape defined by file & some minor things      */
-/* 2.19  Oct 2009  A. Houben      Shape by file for nonäquidistant planes & minor things    */
+/* 2.19  Oct 2009  A. Houben      Shape by file for nonequidistant planes & minor things    */
 /*                                (introduced rounding of XYZ positions but left commented) */
 /* 2.20  Dez 2009  A. Houben      -FROM FILE mode allows to give mirror filenames           */
 /*                                -GuidePieces are managed by array of struct GuidePiece    */
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
          dSinBetH = 0.0,     /* cos(beta/2) and sin(beta/2)            */
          TimeOF1, TimeOF2,
          RotMatrix[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
-  double cx, sx, d;
+  double cx, sx, d = 0;
 
   NeutronGuide Guide;
   Neutron      Output;
@@ -374,9 +374,9 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
   if (nChannels > 1)
     fprintf(LogFilePtr, " with %ld channels", nChannels);
-  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+  fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cmÂ²", GuideEntranceWidth, GuideEntranceHeight);
   if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-    fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+    fprintf(LogFilePtr, " -> %7.3f x %7.3f cmÂ²", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
   switch (eGuideShapeY)
   { case VT_ELLIPTIC:
@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
       else    fprintf(LogFilePtr, "constant width\n");
       break;
   }
-  fprintf(LogFilePtr, " area (top+bottom) :%8.3f m²\n", AreaY*2./1e4);
+  fprintf(LogFilePtr, " area (top+bottom) :%8.3f mÂ²\n", AreaY*2./1e4);
   fprintf(LogFilePtr, "Vertical  : ");
   switch (eGuideShapeZ)
   { case VT_ELLIPTIC:
@@ -431,7 +431,7 @@ int main(int argc, char *argv[])
       break;
   default: ;
   }
-  fprintf(LogFilePtr, " area (left+right) :%8.3f m²\n", AreaZ*2./1e4);
+  fprintf(LogFilePtr, " area (left+right) :%8.3f mÂ²\n", AreaZ*2./1e4);
 
   if (Radius != 0.0)  /* curved guide */
   {	beta = 2.0*asin(piecelength/(2.0*Radius));
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
       } else {
         fprintf(LogFilePtr,"WARNING: Case of zero reflectivity for this file! Most probably the file was not found!\n");
       }
-      fprintf(LogFilePtr,  " surface area      :%8.3f m²\n", pReflFiles[i].area/1.e4);
+      fprintf(LogFilePtr,  " surface area      :%8.3f mÂ²\n", pReflFiles[i].area/1.e4);
     } else {
       break;
     }
@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
   { fprintf(LogFilePtr,"The walls have no waviness \n");
   }
   else
-  {	fprintf(LogFilePtr,"The walls have a waviness of %10.3e° ", atan(surfacerough)*180.0/M_PI);	
+  {	fprintf(LogFilePtr,"The walls have a waviness of %10.3eÂ° ", atan(surfacerough)*180.0/M_PI);	
     if (eWaviDistr==VT_GAUSSIAN)
       fprintf(LogFilePtr,"rms Gaussian distribution \n");
     else
@@ -885,64 +885,68 @@ int main(int argc, char *argv[])
     //fprintf(pReflPlot, "#   X          Y        counts   Mode  0   5   10  RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z  WeightSum\n"
 	    //           "#   1          2          3      4=A  4:A      5=A 6=A  6:1N       7:1N  8:A       9:A   10:A           11:A     12:A  13:1N  14:A   15:A   16:A     17:S           18:A       19:A       20:A       21:A      22:A      23:A      24:A 25:A 26:A\n"
     const char *fstr="%10.4f %10.4f %10d %5.1f %7d %7d %7d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f %11.3e\n";
-    char buf[3][40] = {0};
+    char buf[3][40];
+
+    memset(buf, 0, 3*40); // clean initialisation
 
     GetKeyName(KeyX, buf[0]);
     GetKeyName(KeyY, buf[1]);
     GetKeyName(KeyProb, buf[2]);
     fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n", buf[0], buf[1], buf[2]);
     fprintf(pReflPlot, "#==Data==\n");
-
-
-  	
+    
+    
+    
     //for (ibinXY = 0; ibinXY < INDEX(nbinsX, nbinsY); ibinXY++)
     for (ibinX = 0; ibinX < nbinsX; ibinX++)
     {
       cout = 0;
       for (ibinY = 0; ibinY < nbinsY; ibinY++)
-	    {
+      {
         ibinXY = INDEX(ibinX, ibinY);
         if (bin[ibinXY] != NULL)
         {// Generate averages
-          bin[ibinXY]->ndata.degangular          /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.m                   /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.reflectivity        /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.DivY                /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.DivZ                /= bin[ibinXY]->ProbSum;
-          //bin[ibinXY]->ndata.Mode                /= bin[ibinXY]->ProbSum; //see below
-          //bin[ibinXY]->ndata.neutron.Color       /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Time        /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Wavelength  /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Position[0] /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Position[1] /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Position[2] /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Vector[0]   /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Vector[1]   /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Vector[2]   /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Spin[0]     /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Spin[1]     /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->ndata.neutron.Spin[2]     /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->RefCount                  /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->RefCountY                 /= bin[ibinXY]->ProbSum;
-          bin[ibinXY]->RefCountZ                 /= bin[ibinXY]->ProbSum;
+          if (bin[ibinXY]->ProbSum > 0.) {
+            bin[ibinXY]->ndata.degangular          /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.m                   /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.reflectivity        /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.DivY                /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.DivZ                /= bin[ibinXY]->ProbSum;
+            //bin[ibinXY]->ndata.Mode                /= bin[ibinXY]->ProbSum; //see below
+            //bin[ibinXY]->ndata.neutron.Color       /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Time        /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Wavelength  /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Position[0] /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Position[1] /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Position[2] /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Vector[0]   /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Vector[1]   /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Vector[2]   /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Spin[0]     /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Spin[1]     /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->ndata.neutron.Spin[2]     /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->RefCount                  /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->RefCountY                 /= bin[ibinXY]->ProbSum;
+            bin[ibinXY]->RefCountZ                 /= bin[ibinXY]->ProbSum;
 
-          cout++;
-          fprintf(pReflPlot, fstr, 
-            bin[ibinXY]->X                        , bin[ibinXY]->Y                        , bin[ibinXY]->Counts, 
-            ((double)(bin[ibinXY]->ndata.Mode)/bin[ibinXY]->ProbSum), 
-            bin[ibinXY]->Mode0                    , bin[ibinXY]->Mode5                    , bin[ibinXY]->Mode10                   ,
-            bin[ibinXY]->RefCount                 , bin[ibinXY]->RefCountY                , bin[ibinXY]->RefCountZ,
-            bin[ibinXY]->ndata.neutron.ID.IDGrp[0], bin[ibinXY]->ndata.neutron.ID.IDGrp[1], bin[ibinXY]->ndata.neutron.ID.IDNo,
-            bin[ibinXY]->ndata.ThisCollision      , bin[ibinXY]->ndata.degangular         , bin[ibinXY]->ndata.m, 
-            bin[ibinXY]->ndata.reflectivity       , bin[ibinXY]->ndata.DivY               , bin[ibinXY]->ndata.DivZ,
-            bin[ibinXY]->ndata.neutron.Debug      , 
-            ((double)bin[ibinXY]->ndata.neutron.Color)/bin[ibinXY]->ProbSum,
-            bin[ibinXY]->ndata.neutron.Time       , bin[ibinXY]->ndata.neutron.Wavelength , bin[ibinXY]->ndata.neutron.Probability,
-            bin[ibinXY]->ndata.neutron.Position[0], bin[ibinXY]->ndata.neutron.Position[1], bin[ibinXY]->ndata.neutron.Position[2],
-            bin[ibinXY]->ndata.neutron.Vector[0]  , bin[ibinXY]->ndata.neutron.Vector[1]  , bin[ibinXY]->ndata.neutron.Vector[2],
-            bin[ibinXY]->ndata.neutron.Spin[0]    , bin[ibinXY]->ndata.neutron.Spin[1]    , bin[ibinXY]->ndata.neutron.Spin[2],
-            bin[ibinXY]->ProbSum
-            );
+            cout++;
+            fprintf(pReflPlot, fstr, 
+              bin[ibinXY]->X                        , bin[ibinXY]->Y                        , bin[ibinXY]->Counts, 
+              ((double)(bin[ibinXY]->ndata.Mode)/bin[ibinXY]->ProbSum), 
+              bin[ibinXY]->Mode0                    , bin[ibinXY]->Mode5                    , bin[ibinXY]->Mode10                   ,
+              bin[ibinXY]->RefCount                 , bin[ibinXY]->RefCountY                , bin[ibinXY]->RefCountZ,
+              bin[ibinXY]->ndata.neutron.ID.IDGrp[0], bin[ibinXY]->ndata.neutron.ID.IDGrp[1], bin[ibinXY]->ndata.neutron.ID.IDNo,
+              bin[ibinXY]->ndata.ThisCollision      , bin[ibinXY]->ndata.degangular         , bin[ibinXY]->ndata.m, 
+              bin[ibinXY]->ndata.reflectivity       , bin[ibinXY]->ndata.DivY               , bin[ibinXY]->ndata.DivZ,
+              bin[ibinXY]->ndata.neutron.Debug      , 
+              ((double)bin[ibinXY]->ndata.neutron.Color)/bin[ibinXY]->ProbSum,
+              bin[ibinXY]->ndata.neutron.Time       , bin[ibinXY]->ndata.neutron.Wavelength , bin[ibinXY]->ndata.neutron.Probability,
+              bin[ibinXY]->ndata.neutron.Position[0], bin[ibinXY]->ndata.neutron.Position[1], bin[ibinXY]->ndata.neutron.Position[2],
+              bin[ibinXY]->ndata.neutron.Vector[0]  , bin[ibinXY]->ndata.neutron.Vector[1]  , bin[ibinXY]->ndata.neutron.Vector[2],
+              bin[ibinXY]->ndata.neutron.Spin[0]    , bin[ibinXY]->ndata.neutron.Spin[1]    , bin[ibinXY]->ndata.neutron.Spin[2],
+              bin[ibinXY]->ProbSum
+              );
+          }
           //free(bin[ibinXY]);
           //bin[ibinXY] = NULL;
         }
@@ -951,54 +955,56 @@ int main(int argc, char *argv[])
     }
 
 //#ifdef bn
-		fprintf(pReflPlot, "\n#==XData==\n");
-		for (ibinX = 0; ibinX < nbinsX; ibinX++)
-		{
-			//cout = 0;
-			if (binX[ibinX] != NULL)
-			{// Generate averages
-				binX[ibinX]->ndata.degangular          /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.m                   /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.reflectivity        /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.DivY                /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.DivZ                /= binX[ibinX]->ProbSum;
-				//binX[ibinX]->ndata.Mode                /= binX[ibinX]->ProbSum; //see below
-				//binX[ibinX]->ndata.neutron.Color       /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Time        /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Wavelength  /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Position[0] /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Position[1] /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Position[2] /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Vector[0]   /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Vector[1]   /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Vector[2]   /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Spin[0]     /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Spin[1]     /= binX[ibinX]->ProbSum;
-				binX[ibinX]->ndata.neutron.Spin[2]     /= binX[ibinX]->ProbSum;
-				binX[ibinX]->RefCount                  /= binX[ibinX]->ProbSum;
-				binX[ibinX]->RefCountY                 /= binX[ibinX]->ProbSum;
-				binX[ibinX]->RefCountZ                 /= binX[ibinX]->ProbSum;
+    fprintf(pReflPlot, "\n#==XData==\n");
+    for (ibinX = 0; ibinX < nbinsX; ibinX++)
+    {
+      //cout = 0;
+      if (binX[ibinX] != NULL)
+      {// Generate averages
+        if (binX[ibinX]->ProbSum > 0.) {
+          binX[ibinX]->ndata.degangular          /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.m                   /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.reflectivity        /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.DivY                /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.DivZ                /= binX[ibinX]->ProbSum;
+          //binX[ibinX]->ndata.Mode                /= binX[ibinX]->ProbSum; //see below
+          //binX[ibinX]->ndata.neutron.Color       /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Time        /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Wavelength  /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Position[0] /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Position[1] /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Position[2] /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Vector[0]   /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Vector[1]   /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Vector[2]   /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Spin[0]     /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Spin[1]     /= binX[ibinX]->ProbSum;
+          binX[ibinX]->ndata.neutron.Spin[2]     /= binX[ibinX]->ProbSum;
+          binX[ibinX]->RefCount                  /= binX[ibinX]->ProbSum;
+          binX[ibinX]->RefCountY                 /= binX[ibinX]->ProbSum;
+          binX[ibinX]->RefCountZ                 /= binX[ibinX]->ProbSum;
 
-				//cout++;
-				fprintf(pReflPlot, fstr, 
-					binX[ibinX]->X                        , 0.                                    , binX[ibinX]->Counts, 
-					((double)(binX[ibinX]->ndata.Mode)/binX[ibinX]->ProbSum), 
-					binX[ibinX]->Mode0                    , binX[ibinX]->Mode5                    , binX[ibinX]->Mode10                   ,
-					binX[ibinX]->RefCount                 , binX[ibinX]->RefCountY                , binX[ibinX]->RefCountZ,
-					binX[ibinX]->ndata.neutron.ID.IDGrp[0], binX[ibinX]->ndata.neutron.ID.IDGrp[1], binX[ibinX]->ndata.neutron.ID.IDNo,
-					binX[ibinX]->ndata.ThisCollision      , binX[ibinX]->ndata.degangular         , binX[ibinX]->ndata.m, 
-					binX[ibinX]->ndata.reflectivity       , binX[ibinX]->ndata.DivY               , binX[ibinX]->ndata.DivZ,
-					binX[ibinX]->ndata.neutron.Debug      , 
-					((double)binX[ibinX]->ndata.neutron.Color)/binX[ibinX]->ProbSum,
-					binX[ibinX]->ndata.neutron.Time       , binX[ibinX]->ndata.neutron.Wavelength , binX[ibinX]->ndata.neutron.Probability,
-					binX[ibinX]->ndata.neutron.Position[0], binX[ibinX]->ndata.neutron.Position[1], binX[ibinX]->ndata.neutron.Position[2],
-					binX[ibinX]->ndata.neutron.Vector[0]  , binX[ibinX]->ndata.neutron.Vector[1]  , binX[ibinX]->ndata.neutron.Vector[2],
-					binX[ibinX]->ndata.neutron.Spin[0]    , binX[ibinX]->ndata.neutron.Spin[1]    , binX[ibinX]->ndata.neutron.Spin[2],
-					binX[ibinX]->ProbSum
-					);
-			}
-			//if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
-		}
+          //cout++;
+          fprintf(pReflPlot, fstr, 
+            binX[ibinX]->X                        , 0.                                    , binX[ibinX]->Counts, 
+            ((double)(binX[ibinX]->ndata.Mode)/binX[ibinX]->ProbSum), 
+            binX[ibinX]->Mode0                    , binX[ibinX]->Mode5                    , binX[ibinX]->Mode10                   ,
+            binX[ibinX]->RefCount                 , binX[ibinX]->RefCountY                , binX[ibinX]->RefCountZ,
+            binX[ibinX]->ndata.neutron.ID.IDGrp[0], binX[ibinX]->ndata.neutron.ID.IDGrp[1], binX[ibinX]->ndata.neutron.ID.IDNo,
+            binX[ibinX]->ndata.ThisCollision      , binX[ibinX]->ndata.degangular         , binX[ibinX]->ndata.m, 
+            binX[ibinX]->ndata.reflectivity       , binX[ibinX]->ndata.DivY               , binX[ibinX]->ndata.DivZ,
+            binX[ibinX]->ndata.neutron.Debug      , 
+            ((double)binX[ibinX]->ndata.neutron.Color)/binX[ibinX]->ProbSum,
+            binX[ibinX]->ndata.neutron.Time       , binX[ibinX]->ndata.neutron.Wavelength , binX[ibinX]->ndata.neutron.Probability,
+            binX[ibinX]->ndata.neutron.Position[0], binX[ibinX]->ndata.neutron.Position[1], binX[ibinX]->ndata.neutron.Position[2],
+            binX[ibinX]->ndata.neutron.Vector[0]  , binX[ibinX]->ndata.neutron.Vector[1]  , binX[ibinX]->ndata.neutron.Vector[2],
+            binX[ibinX]->ndata.neutron.Spin[0]    , binX[ibinX]->ndata.neutron.Spin[1]    , binX[ibinX]->ndata.neutron.Spin[2],
+            binX[ibinX]->ProbSum
+            );
+        }
+      }
+      //if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+    }
 
     if (keyReflParam<0) fprintf(pReflPlot,"\n");
     fprintf(pReflPlot, "\n#==YData==\n");
@@ -1007,45 +1013,47 @@ int main(int argc, char *argv[])
       //cout = 0;
       if (binY[ibinY] != NULL)
       {// Generate averages
-        binY[ibinY]->ndata.degangular          /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.m                   /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.reflectivity        /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.DivY                /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.DivZ                /= binY[ibinY]->ProbSum;
-        //binY[ibinY]->ndata.Mode                /= binY[ibinY]->ProbSum; //see below
-        //binY[ibinY]->ndata.neutron.Color       /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Time        /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Wavelength  /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Position[0] /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Position[1] /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Position[2] /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Vector[0]   /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Vector[1]   /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Vector[2]   /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Spin[0]     /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Spin[1]     /= binY[ibinY]->ProbSum;
-        binY[ibinY]->ndata.neutron.Spin[2]     /= binY[ibinY]->ProbSum;
-        binY[ibinY]->RefCount                  /= binY[ibinY]->ProbSum;
-        binY[ibinY]->RefCountY                 /= binY[ibinY]->ProbSum;
-        binY[ibinY]->RefCountZ                 /= binY[ibinY]->ProbSum;
+        if (binY[ibinY]->ProbSum > 0.) {
+          binY[ibinY]->ndata.degangular          /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.m                   /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.reflectivity        /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.DivY                /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.DivZ                /= binY[ibinY]->ProbSum;
+          //binY[ibinY]->ndata.Mode                /= binY[ibinY]->ProbSum; //see below
+          //binY[ibinY]->ndata.neutron.Color       /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Time        /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Wavelength  /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Position[0] /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Position[1] /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Position[2] /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Vector[0]   /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Vector[1]   /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Vector[2]   /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Spin[0]     /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Spin[1]     /= binY[ibinY]->ProbSum;
+          binY[ibinY]->ndata.neutron.Spin[2]     /= binY[ibinY]->ProbSum;
+          binY[ibinY]->RefCount                  /= binY[ibinY]->ProbSum;
+          binY[ibinY]->RefCountY                 /= binY[ibinY]->ProbSum;
+          binY[ibinY]->RefCountZ                 /= binY[ibinY]->ProbSum;
 
-        //cout++;
-        fprintf(pReflPlot, fstr, 
-                0.                                    , binY[ibinY]->Y                        , binY[ibinY]->Counts, 
-                ((double)(binY[ibinY]->ndata.Mode)/binY[ibinY]->ProbSum), 
-                binY[ibinY]->Mode0                    , binY[ibinY]->Mode5                    , binY[ibinY]->Mode10                   ,
-                binY[ibinY]->RefCount                 , binY[ibinY]->RefCountY                , binY[ibinY]->RefCountZ,
-                binY[ibinY]->ndata.neutron.ID.IDGrp[0], binY[ibinY]->ndata.neutron.ID.IDGrp[1], binY[ibinY]->ndata.neutron.ID.IDNo,
-                binY[ibinY]->ndata.ThisCollision      , binY[ibinY]->ndata.degangular         , binY[ibinY]->ndata.m, 
-                binY[ibinY]->ndata.reflectivity       , binY[ibinY]->ndata.DivY               , binY[ibinY]->ndata.DivZ,
-                binY[ibinY]->ndata.neutron.Debug      , 
-                ((double)binY[ibinY]->ndata.neutron.Color)/binY[ibinY]->ProbSum,
-                binY[ibinY]->ndata.neutron.Time       , binY[ibinY]->ndata.neutron.Wavelength , binY[ibinY]->ndata.neutron.Probability,
-                binY[ibinY]->ndata.neutron.Position[0], binY[ibinY]->ndata.neutron.Position[1], binY[ibinY]->ndata.neutron.Position[2],
-                binY[ibinY]->ndata.neutron.Vector[0]  , binY[ibinY]->ndata.neutron.Vector[1]  , binY[ibinY]->ndata.neutron.Vector[2],
-                binY[ibinY]->ndata.neutron.Spin[0]    , binY[ibinY]->ndata.neutron.Spin[1]    , binY[ibinY]->ndata.neutron.Spin[2],
-                binY[ibinY]->ProbSum
-                );
+          //cout++;
+          fprintf(pReflPlot, fstr, 
+            0.                                    , binY[ibinY]->Y                        , binY[ibinY]->Counts, 
+            ((double)(binY[ibinY]->ndata.Mode)/binY[ibinY]->ProbSum), 
+            binY[ibinY]->Mode0                    , binY[ibinY]->Mode5                    , binY[ibinY]->Mode10                   ,
+            binY[ibinY]->RefCount                 , binY[ibinY]->RefCountY                , binY[ibinY]->RefCountZ,
+            binY[ibinY]->ndata.neutron.ID.IDGrp[0], binY[ibinY]->ndata.neutron.ID.IDGrp[1], binY[ibinY]->ndata.neutron.ID.IDNo,
+            binY[ibinY]->ndata.ThisCollision      , binY[ibinY]->ndata.degangular         , binY[ibinY]->ndata.m, 
+            binY[ibinY]->ndata.reflectivity       , binY[ibinY]->ndata.DivY               , binY[ibinY]->ndata.DivZ,
+            binY[ibinY]->ndata.neutron.Debug      , 
+            ((double)binY[ibinY]->ndata.neutron.Color)/binY[ibinY]->ProbSum,
+            binY[ibinY]->ndata.neutron.Time       , binY[ibinY]->ndata.neutron.Wavelength , binY[ibinY]->ndata.neutron.Probability,
+            binY[ibinY]->ndata.neutron.Position[0], binY[ibinY]->ndata.neutron.Position[1], binY[ibinY]->ndata.neutron.Position[2],
+            binY[ibinY]->ndata.neutron.Vector[0]  , binY[ibinY]->ndata.neutron.Vector[1]  , binY[ibinY]->ndata.neutron.Vector[2],
+            binY[ibinY]->ndata.neutron.Spin[0]    , binY[ibinY]->ndata.neutron.Spin[1]    , binY[ibinY]->ndata.neutron.Spin[2],
+            binY[ibinY]->ProbSum
+            );
+        }
       }
       //if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
     }
@@ -1769,7 +1777,7 @@ void OwnInit   (int argc, char *argv[])
     GuideEntranceHeight = pPieces[0].Zpce*2.;
     GuideExitWidth = pPieces[nPieces].Ypce*2.;
     GuideExitHeight = pPieces[nPieces].Zpce*2.;
-    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonäquidistant planes */
+    piecelength  = dTotalLength / (double)nPieces; /* Use piecelength with care in the case of nonequidistant planes */
   }
   else
   {
@@ -2380,9 +2388,9 @@ void   WriteReflParam(ReflCond *RefOut, int Mode, Neutron *pNeutron, NeutronGuid
         }
         CopyNeutron(pNeutron, &RefOut->neutrons[RefOut->cneutrons].neutron);
         RefOut->neutrons[RefOut->cneutrons].neutron.Position[0] += Pce->Xpce + XpceZero;
-        if (RefOut->neutrons[RefOut->cneutrons].neutron.Position[0] > 2850) {
+        /*if (RefOut->neutrons[RefOut->cneutrons].neutron.Position[0] > 2850) {
           RefOut->neutrons[RefOut->cneutrons].degangular = degangular;
-        }
+        }*/
         RefOut->neutrons[RefOut->cneutrons].ThisCollision = ThisCollision;
         RefOut->neutrons[RefOut->cneutrons].degangular = degangular;
         RefOut->neutrons[RefOut->cneutrons].m = mVal;

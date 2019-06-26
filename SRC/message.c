@@ -75,7 +75,7 @@ void CountMessageID(VtMsgID eErrID, TotalID eTrajID)
 	if (stMessage[n].nNumber==1)
 	{	stMessage[n].eID = eErrID;
 		stMessage[n].TrajID.IDNo = eTrajID.IDNo;
-		strcpy(stMessage[n].TrajID.IDGrp, eTrajID.IDGrp);
+		StrgCopy(stMessage[n].TrajID.IDGrp, eTrajID.IDGrp, 2);
 	}
 }
 
@@ -85,7 +85,7 @@ void CountMessageID_C(VtMsgID eErrID, TotalID eTrajID, int count)
   if (0 == stMessage[n].nNumber) {
     stMessage[n].eID = eErrID;
     stMessage[n].TrajID.IDNo = eTrajID.IDNo;
-    strcpy(stMessage[n].TrajID.IDGrp, eTrajID.IDGrp);
+    StrgCopy(stMessage[n].TrajID.IDGrp, eTrajID.IDGrp, 2);
   }
   stMessage[n].nNumber += count;
 }

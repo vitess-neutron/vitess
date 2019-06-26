@@ -1,50 +1,49 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-        
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-        
+
   <meta name="GENERATOR"
  content="Mozilla/4.6 [de] (WinNT; I) [Netscape]">
   <title>VITESS Feature Ray-Tracing</title>
 </head>
   <body>
-    
+
 <h1>VITESS Feature Ray-Tracing</h1>
   In order to trace certain trajectories, one has to give a list of IDs of
  these trajectories as 'ray-tracing file' in the 'Source' module. The files
- written by the module 'writeout' can for instance be used for that. This 
+ written by the module 'writeout' can for instance be used for that. This
 file is usually generated in a first run. Tracing is then performed in a second
 run.<br>
  <br>
  Mode 1: '<b>write trace files</b>'<br>
  For each trajectory in this list, a file is generated, in which each module
- processing this trajectory writes two lines of data - one for the time that 
-the neutrons enter the module and one for the time of leaving it. By default 
-the written data are: module number, module name, time, y-position, z-position, 
-and color of the trajectory. The set of data that is written can be changed 
-in the function 'WriteTraceLine' in 'init.c'. A better solution to change 
+ processing this trajectory writes two lines of data - one for the time that
+the neutrons enter the module and one for the time of leaving it. By default
+the written data are: module number, module name, time, y-position, z-position,
+and color of the trajectory. The set of data that is written can be changed
+in the function 'WriteTraceLine' in 'init.c'. A better solution to change
 the output data is planned for the near future.<br>
- In this mode, the whole run is repeated and should give exactly the same 
+ In this mode, the whole run is repeated and should give exactly the same
 results as the first run. All trajectories are calculated, but only some of
 them are traced.<br>
  Note:<br>
- This mode is only sensible, if a low number of trajectories is regarded, 
+ This mode is only sensible, if a low number of trajectories is regarded,
 because a file is generated for each of them.<br>
  <br>
  Mode 2: '<b>only trace trajectories</b>'<br>
- In this mode, only the trajectories in the list are written to the output 
+ In this mode, only the trajectories in the list are written to the output
 of the 'source' module. This saves a lot of time in the second run. <br>
- But <b>attention</b>: If a module follows in the simulation that makes Monte 
+ But <b>attention</b>: If a module follows in the simulation that makes Monte
 Carlo choices, the sequence of choices is disturbed and the results will be
 different from that module on. These modules are (apart from the source module):
 all samples, monochromator/analyser, supermirror ensemble, bender in the
 mode 'transmission=yes', detector in the mode 'usage normal'.
-<p> 
+<p>
 <hr>
 <a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de</a>  
-<p><!-- hhmts start --><font size="-1">Last modified:&nbsp;</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 </body>
 </html>

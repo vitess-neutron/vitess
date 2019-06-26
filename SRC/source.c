@@ -680,11 +680,12 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'd':
-            eDirDet = (short) atol(arg); 
-            if (eDirDet < 0 || eDirDet > 2)
-              Error("Wrong parameter for 'direction determination'");
-            break;
-
+            { int v = atol(arg);
+              if (v < 0 || v > 2)
+                Error("Wrong parameter for 'direction determination'");
+              eDirDet = (short) v; 
+              break;
+            }
           case 'A':
             dTimeMeas = (double) atof(arg); /* [s] */
             break;

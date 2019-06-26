@@ -1,23 +1,23 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-            
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
   <title>VITESS Tool Compute Chopper Phases</title>
 </head>
   <body>
-      
+
 <h1>VITESS Tool Chopper Phases</h1>
-   This application determines the optimal apertures and phases of disc choppers 
- of a time of flight (TOF) instrument. It is designed for instruments installed 
-on a spallation source, but it can also be used for choppers in TOF instrument 
-at a reactor source. Then the first chopper must be regarded as the source. 
-It is meant to deliver the input data for MC simulation with the VITESS software 
-package, especially those of the disk chopper module.   
+   This application determines the optimal apertures and phases of disc choppers
+ of a time of flight (TOF) instrument. It is designed for instruments installed
+on a spallation source, but it can also be used for choppers in TOF instrument
+at a reactor source. Then the first chopper must be regarded as the source.
+It is meant to deliver the input data for MC simulation with the VITESS software
+package, especially those of the disk chopper module.
 <p>There are 2 options: <br>
   A) <b>ComputeChopperPhases</b> <br>
-  The phase of a chopper is calculated (cf. chapter 'direction of rotation...'). 
+  The phase of a chopper is calculated (cf. chapter 'direction of rotation...').
  The length of the pulse is taken into account. The phase is chosen in a way
 that the center of the pulse reaches the center of the chopper (at the given
 length). The aperture of the chopper is used to give additional information
@@ -28,38 +28,38 @@ the  phasing (cf. chapter 'pulse length....'). This application helps to
 design  the chopper system and to get information about the usable wavelength
 range  at the detector (cf. chapter 'evaluation time.....'). <br>
    </p>
-   
-<p>In both cases you can choose the average (option 'a') or the minimal&nbsp; 
+
+<p>In both cases you can choose the average (option 'a') or the minimal&nbsp;
  (option 'm') wavelength that can pass. Some of the input or output data may
 need an explanation: </p>
-    
+
 <h3> 'pulse length' and 'max. pulse length', 'frame overlap chopper' and
 'wavelength band chopper'</h3>
-   The 'pulse length' and the 'wavelength band chopper' (WB chopper) determine 
+   The 'pulse length' and the 'wavelength band chopper' (WB chopper) determine
  that part of the pulse that can pass the chopper system and can be evaluated
  at the detector. There are 2 ways of determining the apertures of the frame
  overlap choppers:<br>
-  a) The idea is, not to stop any neutron of the right velocity by a frame 
+  a) The idea is, not to stop any neutron of the right velocity by a frame
 overlap chopper that starts in that time interval. The frame overlap <br>
   choppers shall only prevent frame overlap. <br>
   b) The frame overlap choppers shall not increase the half shadow time,
 i.e  its half shadow is at most as large as that of the wavelength band chopper.
  With this condition the apertures are larger than by condition a).<br>
-  The maximal pulse length is necessary to determine the first arrival of 
+  The maximal pulse length is necessary to determine the first arrival of
 neutrons of the pulse. <br>
-  &nbsp;   
+  &nbsp;
 <h3> 'evaluation time', 'beam diameter'</h3>
-   The evaluation time is the time of a pulse that can be used for data collection 
- and evaluation. The wavelength band chopper and the actual frame overlap 
+   The evaluation time is the time of a pulse that can be used for data collection
+ and evaluation. The wavelength band chopper and the actual frame overlap
 chopper are considered in the calculation. <br>
   - the 'TOF for desired wavelengths' is the time interval from the time
 of  arrival of the fastest neutrons starting at the beginning of the pulse
 until  the time of arrival of the slowest starting at t=t_p (pulse length).
 <br>
-  - Neutrons starting at the end of the pulse (t=t_max, max. pulse length) 
-can have a higher velocity than planned and arrive before the fastest from 
-the beginning of the pulse. Analogously, neutrons from the beginning of the 
-pulse can arrive after the slowest starting at t=t_p. Therefore, the 'TOF 
+  - Neutrons starting at the end of the pulse (t=t_max, max. pulse length)
+can have a higher velocity than planned and arrive before the fastest from
+the beginning of the pulse. Analogously, neutrons from the beginning of the
+pulse can arrive after the slowest starting at t=t_p. Therefore, the 'TOF
 range at the detector' is larger than the 'TOF for desired wavelengths'. <br>
   - The 'maximal evaluation time' is between the arrival of the last neutrons
  of the previous pulse and the first of the following pulse. <br>
@@ -72,11 +72,11 @@ be multiplied by the ratio: distance source - WB chopper&nbsp; to&nbsp; distance
  WB chopper - detector.&nbsp; <br>
   Warning: The calculated times are not valid any more, if the frame overlap
  chopper is positioned behind the wavelength band chopper. <br>
-  &nbsp;   
+  &nbsp;
 <h3></h3>
  The following input data need to be given:<br>
  <br>
- 
+
 <table cellpadding="2" cellspacing="2" border="1" width="100%">
    <tbody>
      <tr>
@@ -119,9 +119,9 @@ be multiplied by the ratio: distance source - WB chopper&nbsp; to&nbsp; distance
       </td>
       <td valign="middle" align="center">X<br>
       </td>
-      <td valign="top">rotational speed of the choppers; (different speeds 
+      <td valign="top">rotational speed of the choppers; (different speeds
 in one chopper system cannot be treated by this tool)<br>
- &gt; 0: chopper phase approaches + infinity with time;&nbsp; =&gt; initial 
+ &gt; 0: chopper phase approaches + infinity with time;&nbsp; =&gt; initial
 phase &lt; 0<br>
  &lt; 0: chopper phase&nbsp;approaches - infinity with time; &nbsp; =&gt;
 initial phase &gt; 0<br>
@@ -188,7 +188,7 @@ on zero time<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">pulsed source: time at which intensity of pulse is 
+       <td valign="top">pulsed source: time at which intensity of pulse is
 practically zero<br>
  continuous source: usually = pulse length<br>
        </td>
@@ -207,7 +207,7 @@ practically zero<br>
        </td>
        <td valign="top">for phase calculation, this is the&nbsp;aperture
 of the only chopper under consideration<br>
- for the chopper-system design, this is the aperture of the wavelength band 
+ for the chopper-system design, this is the aperture of the wavelength band
 chopper<br>
        </td>
        <td valign="top">&gt; 0 <br>
@@ -239,7 +239,7 @@ chopper<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">the beam diameter influences the half shadow time 
+       <td valign="top">the beam diameter influences the half shadow time
 and is therefore necessary to calculate the usable wavelength range<br>
        </td>
        <td valign="top">&gt; 0<br>
@@ -255,8 +255,8 @@ and is therefore necessary to calculate the usable wavelength range<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">(as the beam diameter), the distance beam - chopper-axle 
-influences the half shadow time and is therefore necessary to calculate the 
+       <td valign="top">(as the beam diameter), the distance beam - chopper-axle
+influences the half shadow time and is therefore necessary to calculate the
 usable wavelength range<br>
        </td>
        <td valign="top">&gt; beam diameter<br>
@@ -272,7 +272,7 @@ usable wavelength range<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">distance to the frame overlap chopper, whose aperture 
+       <td valign="top">distance to the frame overlap chopper, whose aperture
 and phase shall be determined<br>
        </td>
        <td valign="top">&gt; 0 &nbsp;and<br>
@@ -289,8 +289,8 @@ and phase shall be determined<br>
       </td>
       <td valign="middle" align="center">X<br>
       </td>
-      <td valign="top">the beam diameter determines the opening and closing 
-and is therefore necessary to calculate the aperture of the frame overlap 
+      <td valign="top">the beam diameter determines the opening and closing
+and is therefore necessary to calculate the aperture of the frame overlap
 chopper<br>
       </td>
       <td valign="top">&gt; 0<br>
@@ -306,7 +306,7 @@ chopper<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">minimal or average wavelength that shall pass the 
+       <td valign="top">minimal or average wavelength that shall pass the
 chopper (system) - s.a. next row<br>
        </td>
        <td valign="top">&gt; 0<br>
@@ -338,10 +338,10 @@ chopper (system) - s.a. next row<br>
        </td>
        <td valign="middle" align="center">X<br>
        </td>
-       <td valign="top">the frame overlap chopper apertures are chosen in 
+       <td valign="top">the frame overlap chopper apertures are chosen in
 a way that they<br>
  h: do not increase the half shadow time <br>
- n: do not stop any neutron of the right wavelength range that is able to 
+ n: do not stop any neutron of the right wavelength range that is able to
 pass the wavelength band chopper<br>
        </td>
        <td valign="top">h &nbsp;or &nbsp;n<br>
@@ -350,17 +350,17 @@ pass the wavelength band chopper<br>
        <td valign="top">-k<br>
        </td>
      </tr>
-   
-  </tbody> 
+
+  </tbody>
 </table>
- &nbsp;   
+ &nbsp;
 <h3></h3>
- &nbsp;   
+ &nbsp;
 <p> </p>
-   
+
 <hr>
 <a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@hmi.de">vitess@hmi.de</a>   
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
 
 </body>
 </html>
