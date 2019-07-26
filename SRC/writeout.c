@@ -63,7 +63,7 @@ short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv, const 
 
 short McStasParameters();
 short MCNPXParameters();
-short ConvertVitess2McStas(Neutron*         pMcNeutron,   const Neutron* pVitNeutron);
+short ConvertVitess2McStas(McNeutron*       pMcNeutron,   const Neutron* pVitNeutron);
 short ConvertVitess2MCNPX (Neutron*         pMcnpNeutron, const Neutron* pVitNeutron);
 short ConvertVitess2MCPL  (mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron);
 
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 
   // Initialize the program according to the parameters given 
   Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.7");
+  print_module_name("writeout 1.7a");
 
   // module specific initialization 
   OwnInit(argc, argv);
@@ -573,7 +573,7 @@ short MCNPXParameters()
 //  Convert VITESS to McStas trajectory 
 // ------------------------------------
 
-short ConvertVitess2McStas(Neutron* pMcNeutron, const Neutron* pVitNeutron)
+short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
 {
 	double  velocity;      // velocity of the neutron  [m/s]
 
@@ -583,11 +583,11 @@ short ConvertVitess2McStas(Neutron* pMcNeutron, const Neutron* pVitNeutron)
 	pMcNeutron->Time /= 1000.0;            // unit ms -> s
 
 	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
-	RotVit2Mc(&pMcNeutron->Vector,   &pVitNeutron->Vector);
+	RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
 	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
 
 	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
-	MultiplyByScalar(pMcNeutron->Vector, velocity);     
+	MultiplyByScalar(pMcNeutron->Speed, velocity);     
 	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
 
   return(TRUE);

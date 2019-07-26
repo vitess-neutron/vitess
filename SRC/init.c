@@ -36,6 +36,7 @@
 
 #include "init.h"
 
+
 #define MAX_COL 6   /* max. number of count rates written separately for different colours
                        0 means no separate rates writable */
 #define NUM_EOP 3   /* number of end-of-part lines that can be treated in 'instrument.inf' */
@@ -43,7 +44,9 @@
 
 extern FILE* LogFilePtr;   /* pointer to the log file stream              */
 
-const char *sInstrumentInf = "instrument.inf";
+const char *sInstrInfOut = "instrument.inf";
+const char *sInstrInfIn  = "instrument.inf";
+
 
 /**************************************************************/
 /* This file contains several global variables which are      */
@@ -458,6 +461,9 @@ void Init(int argc, char **argv, VtModID eModule)
     case 'L':                   // output file if other than stderr
       marg[2] = arg;
       break;
+    case 'I':                   // instrument file for reading data if other than instrument.inf
+      sInstrInfIn = arg;
+      break;
 
     case 'N':                   // module number
       iModuleId = atol(arg);
@@ -625,20 +631,20 @@ void Init(int argc, char **argv, VtModID eModule)
 
   /* Read instrument data */
   if (bVisTraj)
-  { if (eModule!=VT_SOURCE)
-    { nModuleNo=ReadInstrData(iModuleId, BegPosM, &BlnLen, &RotZ, &RotY);
-      if (nModuleNo==-1)
-      { sprintf(text, "Module %ld could not be found in 'instrument.inf'", iModuleId);
-        Error(text);
-      }
-      CopyVector(BegPosM, BegPosS);
-    }
-    else
+  { if (eModule==VT_SOURCE)
     { nModuleNo=1;
       BegPosM[0]=BegPosM[1]=BegPosM[2]=0.0;
       BegPosS[0]=BegPosS[1]=BegPosS[2]=0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
+    }
+    else
+    { nModuleNo=ReadInstrData(iModuleId, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
+      if (nModuleNo==-1)
+      { sprintf(text, "Module '%ld' could not be found in '%s'", iModuleId, sInstrInfIn);
+        Error(text);
+      }
+      CopyVector(BegPosM, BegPosS);
     }
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
     FillRMatrixZY(RotMatrixS, RotY, RotZ);
@@ -676,14 +682,27 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   /* update 'instrument.inf' */
   if (!bVisTraj)
   { if (stPicture.eModule == VT_SOURCE)
-    { nModuleNo=1;
-      BegPosM[0]=BegPosM[1]=BegPosM[2]=0.0;
+    { nModuleNo = 1;
+      BegPosM[0]= BegPosM[1] = BegPosM[2] = 0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
-    }
+    } 
+    /* else if (stPicture.eModule == VT_READ_IN)
+    { 
+      char   sCmd[99]="copy instrument_pt1.inf instrument.inf /Y";
+     #ifdef VT_WINDOWS
+      ChangeSlash(sInstrInfIn);
+      ChangeSlash(sInstrInfOut);
+      sprintf(sCmd, "copy %s %s /Y", sInstrInfIn, sInstrInfOut);
+     #else
+      sprintf(sCmd, "cp %s %s -f", sInstrInfIn, sInstrInfOut);
+     #endif 
+      system (sCmd);
+      nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
+    } */
     else
     { if (bTest) Wait(0.75*iModuleId);
-      nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY);
+      nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
     }
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
@@ -975,22 +994,21 @@ void WriteInstrData(VectorType Pos)
   char   *pBuffer;
   long   iModId=iModuleId;
 
-  if (nModuleNo==0) {
-
+  if (nModuleNo==0) 
+  {
     // source module writes header and line number '0'
     iModId=0;
-    pFile = fopen( FullParName(sInstrumentInf), "w");
+    pFile = fopen( FullParName(sInstrInfOut), "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
-
-  } else if (InputFilePtr!=NULL && InputFilePtr!=stdin) {
-
-    // first module of 2nd, 3rd ... part re-writes file up to end of previous part
-
+  } 
+  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || stPicture.eModule==VT_READ_IN) 
+  {
+    // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
     char *inp;
     pBuffer = inp = (char*) malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
-    pFile = fopen(FullParName(sInstrumentInf), "r");
+    pFile = fopen(FullParName(sInstrInfIn), "r");
     if (pFile) {
       int m;
       for (m=-2; m<nModuleNo; m++) {
@@ -1002,7 +1020,7 @@ void WriteInstrData(VectorType Pos)
       }
       fclose(pFile);
     }
-    pFile = fopen(FullParName(sInstrumentInf), "w");
+    pFile = fopen(FullParName(sInstrInfOut), "w");
     if (pFile) {
       char *p = pBuffer;
       while (p != inp) {
@@ -1013,15 +1031,16 @@ void WriteInstrData(VectorType Pos)
     }
     free(pBuffer);
     pBuffer=0;
-
-  } else {
-
-    // each other module appends a line
-    pFile = fopen(FullParName(sInstrumentInf), "a");
-
+  } 
+  else 
+  {
+    // for each other module: open file to append a line
+    pFile = fopen(FullParName(sInstrInfOut), "a");
   }
 
-  if (pFile) {
+  // each module appends a line
+  if (pFile) 
+  {
     char cNF=' ';
     if (bOldFrame) cNF='F';
     fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
@@ -1299,7 +1318,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   }
 }
 
-long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, double* pRotY)
+long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile)
 {
   FILE*  pFile=NULL;
   int    nModuleID;
@@ -1312,7 +1331,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
   *pRotY   = 0.0;
   *pRotZ   = 0.0;
 
-  pFile = fopen(FullParName(sInstrumentInf), "r");
+  pFile = fopen(FullParName(pInstrFile), "r");
 
   if (pFile)
   {

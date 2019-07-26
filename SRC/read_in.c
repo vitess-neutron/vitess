@@ -8,6 +8,7 @@
 /* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
 /* 1.1a Apr  2014  K. Lieutenant   repetition corrected                                      */
 /* 1.2  Apr  2018  K. Lieutenant   MCPL format                                               */
+/* 1.3  May  2019  K. Lieutenant   option to read only trace trajectories                    */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -17,6 +18,7 @@
 #include "in_out.h"
 #include "softabort.h"
 #include "mcpl.h"
+#include "trace.h"
 
 #define NF_MAX 3
 
@@ -46,12 +48,12 @@ void  GetId      (TotalID* pID);
 /******************************/
 FILE*        pInFile[NF_MAX]={NULL,NULL,NULL}; // pointer to input file
 mcpl_file_t  hInFile;                          // handle to input file
-short        DetectColor=-1;            // ReadInt only neutrons with a given color, -1 means any
-int          Nrep=1;                    // Number of times the input is read
-double       FactInt=1.0,               // Factor to normmalize to the source intensity from MCNPX data
-             Weight[NF_MAX];            // Weights of the input files
-VtPrgFormat  ePrgFormat=VT_VITESS_FMT;  // format of data to read (VITESS, McStas, MCNPX)
-VtDataFormat eDatFormat=VT_FLOAT;       // output format (exponential, float)
+short        DetectColor=-1;                   // Flag: read only neutrons that are marked for 'trace'
+int          Nrep=1;                           // Number of times the input is read
+double       FactInt=1.0,                      // Factor to normmalize to the source intensity from MCNPX data
+             Weight[NF_MAX];                   // Weights of the input files
+VtPrgFormat  ePrgFormat=VT_VITESS_FMT;         // format of data to read (VITESS, McStas, MCNPX)
+VtDataFormat eDatFormat=VT_FLOAT;              // output format (exponential, float)
 
 
 /******************************/
@@ -64,15 +66,17 @@ int main(int argc, char **argv)
                   Irep=0,           // counter for number of repetitions
                   rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
   short           Nt=0;             // number of trajectories identified
-  char            sLine[256];       // one line in input file
+  char            sLine[256]="";    // one line in input file
   Neutron         InNeutron;
 
   /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_WRITEOUT);
-  print_module_name("read_in 1.2");
+  Init(argc, argv, VT_READ_IN);
+  print_module_name("read_in 1.3");
 
   /* module specific initialization */
   OwnInit(argc, argv);
+  if (__pTraceFileName!=NULL)
+    fprintf(LogFilePtr, "trace file used              : %s\n", __pTraceFileName);
 
   if (ePrgFormat==VT_MCPL_FMT)
   {
@@ -83,7 +87,7 @@ int main(int argc, char **argv)
       while (rc != VT_EOF)
       {
         rc=ReadMcplTraj(&InNeutron, 1.0);
-        if (rc==TRUE && (DetectColor < 0 || InNeutron.Color == DetectColor)) 
+        if (rc==TRUE) 
         {    
           NumNeutRead += rc;       
           WriteNeutron(&InNeutron);
@@ -113,12 +117,16 @@ int main(int argc, char **argv)
           { 
             switch (ePrgFormat)
             {
-              case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); break;
+              case VT_VITESS_FMT: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); 
+                                  InNeutron.Debug = __eTraceMode==WRITE_TRC_FILES ? GetTraceState(InNeutron.ID) : 'N';
+                                  if (__eTraceMode==ONLY_TRC_TRAJ && GetTraceState(InNeutron.ID)=='N' || DetectColor > -1 && InNeutron.Color!=DetectColor) 
+                                    Nt=FALSE;                                        
+                                  break;
               case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine, Weight[m]); break;
               case VT_MCNPX_FMT : Nt=ScanMcnpxTraj (&InNeutron, sLine, Weight[m]); break;
               default: Error("Data format for this program not (yet) implemented");
             }
-            if (Nt==TRUE && (DetectColor < 0 || InNeutron.Color == DetectColor)) 
+            if (Nt==TRUE) 
             {    
               NumNeutRead += Nt;       
               WriteNeutron(&InNeutron);
@@ -181,6 +189,12 @@ void  OwnInit(int argc, char *argv[])
         case 'I':
           FactInt =   (double)atof(&argv[i][2]);
           break;
+        case 't':
+          __eTraceMode = atoi(&argv[i][2]);
+          break;
+        case 'T':
+          __pTraceFileName = &argv[i][2];  
+          break;
 
         case 'f':
           ePrgFormat = (VtPrgFormat) atoi(&argv[i][2]);
@@ -229,6 +243,9 @@ void  OwnInit(int argc, char *argv[])
       exit(-1);
     }
   }
+
+  if (__eTraceMode==ONLY_TRC_TRAJ && __pTraceFileName!=NULL)
+    LoadTraceFile();
 }
 
 

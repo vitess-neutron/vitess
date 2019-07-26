@@ -532,12 +532,11 @@ set cwsASET {
     {"time of\nmeasurement [s]" "not necessary: the number of neutrons for the given time range is calculated in each module, if the time is not zero." "" A} ge0}
   {deswl float "" {"desired\nwavelength [A]" "not necessary: (average) wavelength (at the sample) to be used in the measurement - not necessary, only needed to write optimal chopper phases to 'instrument.inf'" "" W}}
   {}
-  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest.
-                   For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.
-                   Option 'only trace trajectories'
-                   Only those trajectories are started in the second run that are found in the 'raytracing file'.
+  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+                   1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
+                   2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
                    (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" k} {no "write trace files" "only trace trajectories"} {0 1 2}}
-  {utrcfunction editablefile "" {"raytracing file" "Name of the file that contains the ID of the trajectories for tracing." "" r}}
+  {utrcfunction editablefile "" {"raytracing file" "Name of the file that contains the IDs of the trajectories for tracing." "" r}}
 }
 
 ### source
@@ -769,7 +768,8 @@ set external_commandESET {
 ### Read_In
 ###
 set read_inESET {
-  {fname pareditablefile ascii_in1.dat {"ASCII input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
+  {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
+  {fname pareditablefile "ascii_in.dat" {"ASCII input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
   {fname2 pareditablefile "" {"ASCII input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories." "" B} r}
   {fname3 pareditablefile "" {"ASCII input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories." "" D} r}
   {}
@@ -779,10 +779,15 @@ set read_inESET {
   {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {}
   {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
-  {inform radio float {"VITESS\nstorage format" "format of double values in the input file" "" F} {exp float} {0 1}}
   {}
-  {incolor int -1  {"read in color" "Read only events with a given color. A negative number means any color." "" C}}
+  {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
+  {}
+  {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+                     1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
+                     2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
+                     (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" t} {no "write trace files" "only trace trajectories"} {0 1 2}}
+  {intrcfile editablefile "" {"raytracing file" "Name of the file that contains the IDs of the trajectories for tracing." "" T}}
 }
 
 ### Writeout
@@ -5035,8 +5040,8 @@ proc serializeModFile {f mode var app} {
       set ll [convert2String $ll]
       if {$len1 != $len2} {
         if {$len1 + 1 == $len2} {
-           # last variable perform has not been given, take 1 as default
-          lappend ll 1
+           # last variable perform has not been given
+          lappend ll 0
         } else {
           # silently ignore this line
           continue

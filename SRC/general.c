@@ -25,6 +25,12 @@
 #endif
 
 
+#ifdef VT_WINDOWS
+ char cSl = '\\';
+#else
+ char cSl = '/';
+#endif
+
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
@@ -659,4 +665,19 @@ StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 	while (n < nMax && k > 0);
 
 	return(n);
+}
+
+
+/**************************************************************/
+/* Change of the Slashes to the right ones, e.g. '\' to '/'   */
+/**************************************************************/
+void ChangeSlash(char* pStr)
+{
+	int k, klen;
+
+	klen = strlen(pStr);
+	for (k=0; k < klen; k++)
+	{	if (pStr[k]=='/' || pStr[k]=='\\')
+			pStr[k]=cSl;
+	}
 }

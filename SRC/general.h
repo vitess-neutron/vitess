@@ -18,6 +18,7 @@
 
 #ifdef _MSC_VER
 # include <float.h>
+#define VT_WINDOWS
 # define M_PI            3.14159265358979323846  /* pi */
 # define M_PI_2          1.57079632679489661923  /* pi/2 */
 # define ISNAN(x) _isnan(x)
@@ -77,6 +78,12 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 
+#define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
+
+#define NO_TRACING      0
+#define WRITE_TRC_FILES 1
+#define ONLY_TRC_TRAJ   2
+
 //#define DEBUG 1
 
 #ifdef RND_SIMPLE
@@ -101,6 +108,7 @@ SampleGeom;
 typedef enum
 {
 	VT_SOURCE      =   1,
+	VT_READ_IN     =   2,
 	VT_GUIDE       =  11,
 	VT_BENDER      =  12,
 	VT_COLLIMATOR  =  13,
@@ -514,6 +522,8 @@ void   ReadParComment(FILE *fpt);
 void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
+
+void  ChangeSlash(char* pStr);
 
 #endif
 

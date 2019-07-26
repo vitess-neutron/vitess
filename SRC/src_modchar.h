@@ -31,10 +31,6 @@
 
 #define FNL      101
 
-#define NO_TRACING      0
-#define WRITE_TRC_FILES 1
-#define ONLY_TRC_TRAJ   2
-
 
 /***********************************************/
 /* Structures                                  */
