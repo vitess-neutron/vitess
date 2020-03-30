@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QToolButton>
-
+#include <QSignalMapper>
 namespace Ui {
 class ModulTable;
 }
@@ -20,6 +20,9 @@ public:
     QVector<QToolButton *> arrowButton;
     QIcon *arrow;
     QString modullist[3]={"--inactive--","Beamstop","Detector"};
+    QStringList module[1000];
+    int linenum;
+    QSignalMapper mapper;
 
 signals:
     void changedCombo(QString text);
@@ -29,7 +32,7 @@ private:
 
 private slots:
     void comboModulItemChanged(QString);
-
+    void arrowButtonClicked(int row);
 };
 
 #endif // MODULTABLE_H

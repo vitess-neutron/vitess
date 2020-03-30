@@ -25,7 +25,6 @@ private:
     Ui::MainWindow *ui;
     Beamstop  *beamstop;
     Detector *detector;
-    //    ModulTable *modultab;
     ModulTable* modultab;
 };
 

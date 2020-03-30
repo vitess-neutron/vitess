@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "QTableWidgetItem"
-//#include <QDebug>
-//#include <iostream>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -30,6 +29,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::comboModulItemChanged(QString text)
 {
+    ui->stackedWidget->hide();
     for (int i=0; i<  ui->stackedWidget->count(); i++)
     {
         ui->stackedWidget->setCurrentIndex(i);
