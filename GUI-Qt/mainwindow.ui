@@ -201,7 +201,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>210</width>
+          <width>225</width>
           <height>405</height>
          </size>
         </property>
@@ -387,24 +387,28 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menu_Export_as">
+     <property name="title">
+      <string>Export as </string>
+     </property>
+     <addaction name="actionEid_Instrument"/>
+     <addaction name="actionPy_Python_script"/>
+     <addaction name="actionPI_Perl_script"/>
+     <addaction name="actionBat_shell"/>
+    </widget>
     <addaction name="actionLoad"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
     <addaction name="actionAdd"/>
-    <addaction name="actionInsert"/>
-    <addaction name="actionSave_2"/>
     <addaction name="separator"/>
     <addaction name="actionSave_to_dir"/>
     <addaction name="separator"/>
     <addaction name="actionImport_Pipe"/>
-    <addaction name="actionExport_as"/>
+    <addaction name="menu_Export_as"/>
     <addaction name="separator"/>
-    <addaction name="actionGenerate_Series"/>
+    <addaction name="actionVariations_2"/>
     <addaction name="separator"/>
-    <addaction name="actionMerge_Results"/>
-    <addaction name="separator"/>
-    <addaction name="actionNew_inf_File"/>
     <addaction name="actionEdit_inf_File"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -413,31 +417,86 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionRecover_Instument"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopy_Module_Parameters"/>
+    <addaction name="actionPaste_Module_Parameters"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Instrument_Name"/>
+    <addaction name="separator"/>
+    <addaction name="actionGenerate_Series_2"/>
    </widget>
    <widget class="QMenu" name="menuPlot">
     <property name="title">
      <string>Plot</string>
     </property>
-   </widget>
-   <widget class="QMenu" name="menuConfigure">
-    <property name="title">
-     <string>Configure</string>
-    </property>
+    <addaction name="actionPlot_File"/>
+    <addaction name="action2D_Plot_File"/>
+    <addaction name="separator"/>
+    <addaction name="actionclose_gnuplot_Windows"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
      <string>Options</string>
     </property>
+    <addaction name="actionSmaller_fonts"/>
+    <addaction name="actionBigger_fonts"/>
+    <addaction name="actionFonts"/>
+    <addaction name="separator"/>
+    <addaction name="actionCheck_mode"/>
+    <addaction name="actionSave_Instr_mode"/>
+    <addaction name="actionOutput_compression"/>
+    <addaction name="actionExecution_mode"/>
+    <addaction name="actionBuffersize"/>
+    <addaction name="actionPlot_mode"/>
+    <addaction name="actionTrajectories"/>
+    <addaction name="actionBrowse_selection"/>
+    <addaction name="actionScrollbar_width"/>
+    <addaction name="separator"/>
+    <addaction name="actionXcontrol"/>
+    <addaction name="actionRecovery"/>
+    <addaction name="separator"/>
+    <addaction name="actionX3D_options"/>
+    <addaction name="actionapplications"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionGeneral_Information"/>
+    <addaction name="actionTutorial"/>
+    <addaction name="actionUser_Interface"/>
+    <addaction name="actionGenerate_Series_3"/>
+    <addaction name="actionExternal_Commands"/>
+    <addaction name="actionRay_tracing"/>
+    <addaction name="actionVisualization"/>
+    <addaction name="actionOptimization"/>
+    <addaction name="actionTools"/>
+    <addaction name="separator"/>
+    <addaction name="actionXcontrol_2"/>
+    <addaction name="separator"/>
+    <addaction name="actionModules_A_L"/>
+    <addaction name="actionModules_M"/>
+    <addaction name="actionModules_N_R"/>
+    <addaction name="actionModules_S_Z"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionConvert_Ascii_to_Binary"/>
+    <addaction name="actionDefine_Direction"/>
+    <addaction name="actionGenerate_Mirror_Files"/>
+    <addaction name="actionGenerate_Surface_Files"/>
+    <addaction name="actionGenerate_Extraction_System"/>
+    <addaction name="actionGuide_Shape"/>
+    <addaction name="actionCryst_Analayzer_Spectrom"/>
+    <addaction name="actionCompute_Chopper_Phases"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuPlot"/>
-   <addaction name="menuConfigure"/>
+   <addaction name="menuTools"/>
    <addaction name="menuOptions"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -452,22 +511,22 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad">
    <property name="text">
-    <string>Load</string>
+    <string>LOAD Instument</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>SAVE Instrument</string>
    </property>
   </action>
   <action name="actionSave_as">
    <property name="text">
-    <string>Save as</string>
+    <string>SAVE As</string>
    </property>
   </action>
   <action name="actionAdd">
    <property name="text">
-    <string>Add</string>
+    <string>New Instrument</string>
    </property>
   </action>
   <action name="actionInsert">
@@ -487,17 +546,7 @@
   </action>
   <action name="actionImport_Pipe">
    <property name="text">
-    <string>Import Pipe</string>
-   </property>
-  </action>
-  <action name="actionExport_as">
-   <property name="text">
-    <string>Export as</string>
-   </property>
-  </action>
-  <action name="actionGenerate_Series">
-   <property name="text">
-    <string>Generate Series</string>
+    <string>Import Eid Instrument</string>
    </property>
   </action>
   <action name="actionMerge_Results">
@@ -518,6 +567,266 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionEid_Instrument">
+   <property name="text">
+    <string>Eid Instrument</string>
+   </property>
+  </action>
+  <action name="actionPy_Python_script">
+   <property name="text">
+    <string>Py Python script</string>
+   </property>
+  </action>
+  <action name="actionPI_Perl_script">
+   <property name="text">
+    <string>PI Perl script</string>
+   </property>
+  </action>
+  <action name="actionBat_shell">
+   <property name="text">
+    <string>Bat shell</string>
+   </property>
+  </action>
+  <action name="actionVariations">
+   <property name="text">
+    <string>Variations</string>
+   </property>
+  </action>
+  <action name="actionCopy_Module_Parameters">
+   <property name="text">
+    <string>Copy Module Parameters</string>
+   </property>
+  </action>
+  <action name="actionPaste_Module_Parameters">
+   <property name="text">
+    <string>Paste Module Parameters</string>
+   </property>
+  </action>
+  <action name="actionSet_Instrument_Name">
+   <property name="text">
+    <string>Set Instrument Name</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Series_2">
+   <property name="text">
+    <string>Generate Series</string>
+   </property>
+  </action>
+  <action name="actionVariations_2">
+   <property name="text">
+    <string>Variations</string>
+   </property>
+  </action>
+  <action name="actionRecover_Instument">
+   <property name="text">
+    <string>Recover Instument</string>
+   </property>
+  </action>
+  <action name="actionPlot_File">
+   <property name="text">
+    <string>Plot File</string>
+   </property>
+  </action>
+  <action name="action2D_Plot_File">
+   <property name="text">
+    <string>2D Plot File</string>
+   </property>
+  </action>
+  <action name="actionclose_gnuplot_Windows">
+   <property name="text">
+    <string>close gnuplot Windows</string>
+   </property>
+  </action>
+  <action name="actionConvert_Ascii_to_Binary">
+   <property name="text">
+    <string>Convert Ascii to Binary</string>
+   </property>
+  </action>
+  <action name="actionDefine_Direction">
+   <property name="text">
+    <string>Define Direction</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Mirror_Files">
+   <property name="text">
+    <string>Generate Mirror Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Surface_Files">
+   <property name="text">
+    <string>Generate Surface Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Extraction_System">
+   <property name="text">
+    <string>Generate Extraction System</string>
+   </property>
+  </action>
+  <action name="actionGuide_Shape">
+   <property name="text">
+    <string>Guide Shape</string>
+   </property>
+  </action>
+  <action name="actionCryst_Analayzer_Spectrom">
+   <property name="text">
+    <string>Cryst.Analayzer Spectrom.</string>
+   </property>
+  </action>
+  <action name="actionCompute_Chopper_Phases">
+   <property name="text">
+    <string>Compute Chopper Phases</string>
+   </property>
+  </action>
+  <action name="actionSmaller_fonts">
+   <property name="text">
+    <string>Smaller fonts</string>
+   </property>
+  </action>
+  <action name="actionBigger_fonts">
+   <property name="text">
+    <string>Bigger fonts</string>
+   </property>
+  </action>
+  <action name="actionFonts">
+   <property name="text">
+    <string>Fonts</string>
+   </property>
+  </action>
+  <action name="actionCheck_mode">
+   <property name="text">
+    <string>Check mode</string>
+   </property>
+  </action>
+  <action name="actionSave_Instr_mode">
+   <property name="text">
+    <string>Save Instr. mode</string>
+   </property>
+  </action>
+  <action name="actionOutput_compression">
+   <property name="text">
+    <string>Output compression</string>
+   </property>
+  </action>
+  <action name="actionExecution_mode">
+   <property name="text">
+    <string>Execution mode</string>
+   </property>
+  </action>
+  <action name="actionBuffersize">
+   <property name="text">
+    <string>Buffersize</string>
+   </property>
+  </action>
+  <action name="actionPlot_mode">
+   <property name="text">
+    <string>Plot mode</string>
+   </property>
+  </action>
+  <action name="actionTrajectories">
+   <property name="text">
+    <string>Trajectories</string>
+   </property>
+  </action>
+  <action name="actionBrowse_selection">
+   <property name="text">
+    <string>Browse selection</string>
+   </property>
+  </action>
+  <action name="actionScrollbar_width">
+   <property name="text">
+    <string>Scrollbar width</string>
+   </property>
+  </action>
+  <action name="actionXcontrol">
+   <property name="text">
+    <string>Xcontrol</string>
+   </property>
+  </action>
+  <action name="actionRecovery">
+   <property name="text">
+    <string>Recovery</string>
+   </property>
+  </action>
+  <action name="actionX3D_options">
+   <property name="text">
+    <string>X3D options</string>
+   </property>
+  </action>
+  <action name="actionapplications">
+   <property name="text">
+    <string>applications</string>
+   </property>
+  </action>
+  <action name="actionGeneral_Information">
+   <property name="text">
+    <string>General Information</string>
+   </property>
+  </action>
+  <action name="actionTutorial">
+   <property name="text">
+    <string>Tutorial</string>
+   </property>
+  </action>
+  <action name="actionUser_Interface">
+   <property name="text">
+    <string>User Interface</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Series_3">
+   <property name="text">
+    <string>Generate Series</string>
+   </property>
+  </action>
+  <action name="actionExternal_Commands">
+   <property name="text">
+    <string>External Commands</string>
+   </property>
+  </action>
+  <action name="actionRay_tracing">
+   <property name="text">
+    <string>Ray tracing</string>
+   </property>
+  </action>
+  <action name="actionVisualization">
+   <property name="text">
+    <string>Visualization</string>
+   </property>
+  </action>
+  <action name="actionOptimization">
+   <property name="text">
+    <string>Optimization</string>
+   </property>
+  </action>
+  <action name="actionTools">
+   <property name="text">
+    <string>Tools</string>
+   </property>
+  </action>
+  <action name="actionXcontrol_2">
+   <property name="text">
+    <string>Xcontrol</string>
+   </property>
+  </action>
+  <action name="actionModules_A_L">
+   <property name="text">
+    <string>Modules A-L</string>
+   </property>
+  </action>
+  <action name="actionModules_M">
+   <property name="text">
+    <string>Modules M</string>
+   </property>
+  </action>
+  <action name="actionModules_N_R">
+   <property name="text">
+    <string>Modules N-R</string>
+   </property>
+  </action>
+  <action name="actionModules_S_Z">
+   <property name="text">
+    <string>Modules S-Z</string>
    </property>
   </action>
  </widget>

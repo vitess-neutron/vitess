@@ -14,7 +14,7 @@ ModulTable::ModulTable(QWidget *parent) :
     ui(new Ui::ModulTable)
 {
     ui->setupUi(this);
-    ui->tableWidget->setColumnWidth(0,140);
+    ui->tableWidget->setColumnWidth(0,160);
     ui->tableWidget->setRowCount(1);
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(1,20);

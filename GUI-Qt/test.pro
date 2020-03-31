@@ -25,21 +25,30 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        chopper_fermi_str.cpp \
+        collimator.cpp \
         detector.cpp \
+        filter.cpp \
         main.cpp \
         mainwindow.cpp \
         modultable.cpp \
         beamstop.cpp
 
 HEADERS += \
+        chopper_fermi_str.h \
+        collimator.h \
         detector.h \
+        filter.h \
         mainwindow.h \
         modultable.h \
         beamstop.h
 
 FORMS += \
         beamstop.ui \
+        chopper_fermi_str.ui \
+        collimator.ui \
         detector.ui \
+        filter.ui \
         mainwindow.ui \
         modultable.ui
 
