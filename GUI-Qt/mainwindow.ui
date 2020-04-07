@@ -32,42 +32,42 @@
       <item>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
-         <widget class="QPushButton" name="pushButton_5">
+         <widget class="QPushButton" name="pushCheck">
           <property name="text">
            <string>Check</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QPushButton" name="pushButton_6">
+         <widget class="QPushButton" name="pushDryrun">
           <property name="text">
            <string>Dryrun</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0" colspan="2">
-         <widget class="QPushButton" name="pushButton_9">
+         <widget class="QPushButton" name="pushStart">
           <property name="text">
            <string>Start</string>
           </property>
          </widget>
         </item>
         <item row="2" column="0" colspan="2">
-         <widget class="QPushButton" name="pushButton_10">
+         <widget class="QPushButton" name="pushVisual">
           <property name="text">
            <string>Visualization</string>
           </property>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QPushButton" name="pushButton_11">
+         <widget class="QPushButton" name="pushStop">
           <property name="text">
            <string>Stop</string>
           </property>
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QPushButton" name="pushButton_12">
+         <widget class="QPushButton" name="pushKill">
           <property name="text">
            <string>Kill</string>
           </property>
@@ -87,17 +87,17 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="lineIndir"/>
           </item>
           <item row="0" column="2">
-           <widget class="QPushButton" name="pushButton_8">
+           <widget class="QPushButton" name="pushBrowseIndir">
             <property name="text">
              <string>Browse</string>
             </property>
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QPushButton" name="pushButton_7">
+           <widget class="QPushButton" name="pushBrowseIndirN">
             <property name="text">
              <string>BrowseN</string>
             </property>
@@ -111,17 +111,17 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit_2"/>
+           <widget class="QLineEdit" name="lineOutdir"/>
           </item>
           <item row="1" column="2">
-           <widget class="QPushButton" name="pushButton_13">
+           <widget class="QPushButton" name="pushBrowseOutdir">
             <property name="text">
              <string>Browse</string>
             </property>
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QPushButton" name="pushButton_14">
+           <widget class="QPushButton" name="pushBrowseOutdirN">
             <property name="text">
              <string>BrowseN</string>
             </property>
@@ -139,7 +139,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_4"/>
+           <widget class="QLineEdit" name="lineRandomseed"/>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
@@ -149,7 +149,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="comboRandomopt">
             <item>
              <property name="text">
               <string>ran3</string>
@@ -165,7 +165,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_3"/>
+           <widget class="QLineEdit" name="lineNeutronopt"/>
           </item>
           <item>
            <widget class="QLabel" name="label_5">
@@ -175,7 +175,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="comboGravity">
             <item>
              <property name="text">
               <string>on</string>
@@ -202,7 +202,7 @@
         <property name="minimumSize">
          <size>
           <width>225</width>
-          <height>405</height>
+          <height>410</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -216,6 +216,12 @@
       <item>
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
          <item>
           <widget class="QStackedWidget" name="stackedWidget">
            <property name="enabled">
@@ -270,7 +276,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="pushBig">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -289,7 +295,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pushClear">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -308,7 +314,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_15">
+         <widget class="QPushButton" name="pushSave">
           <property name="maximumSize">
            <size>
             <width>50</width>

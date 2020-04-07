@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>880</width>
+    <width>751</width>
     <height>940</height>
    </rect>
   </property>
@@ -14,10 +14,24 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_8">
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
    <item row="0" column="0">
     <widget class="QScrollArea" name="scrollArea">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>1</number>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAsNeeded</enum>
@@ -30,11 +44,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>868</width>
+        <width>739</width>
         <height>928</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
        <item>
         <widget class="QLabel" name="Titel">
          <property name="maximumSize">
@@ -42,6 +59,13 @@
            <width>16777215</width>
            <height>20</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="text">
           <string>Detector</string>
@@ -57,189 +81,10 @@
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Sunken</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout_7">
-          <item row="0" column="0" rowspan="3">
-           <layout class="QFormLayout" name="formLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="geometry_2">
-              <property name="text">
-               <string>geometry</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox_3">
-              <item>
-               <property name="text">
-                <string>flat</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="geometry_3">
-              <property name="text">
-               <string>repition</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="geometry_4">
-              <property name="text">
-               <string>maxColor</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_2">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="geometry_5">
-              <property name="text">
-               <string>kepp wrong color</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QComboBox" name="comboBox_7"/>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="geometry_6">
-              <property name="text">
-               <string>phi [deg]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QLineEdit" name="lineEdit_4">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="geometry_7">
-              <property name="text">
-               <string>hight [cm]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QLineEdit" name="lineEdit_5">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="geometry_8">
-              <property name="text">
-               <string>num of rows</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QLineEdit" name="lineEdit_6">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="0" column="1">
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>type</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox_4">
-              <item>
-               <property name="text">
-                <string>area/volume</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="geometry_22">
-              <property name="text">
-               <string>addColor</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_19"/>
-            </item>
-           </layout>
-          </item>
-          <item row="0" column="2">
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>usage       </string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox">
-              <item>
-               <property name="text">
-                <string>normal</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="geometry_23">
-              <property name="text">
-               <string>minColor</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_20">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="1">
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="1" colspan="2">
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -252,37 +97,241 @@
             </property>
            </spacer>
           </item>
-          <item row="1" column="2">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>270</width>
-              <height>48</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="1">
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_13"/>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="geometry_16">
+          <item row="2" column="2">
+           <layout class="QFormLayout" name="formLayout_3">
+            <item row="0" column="0">
+             <widget class="QLabel" name="geometry_20">
               <property name="text">
-               <string>num of columns</string>
+               <string>distance [cm]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineDistance"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_21">
+              <property name="text">
+               <string>thickness [cm]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineThickness"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="geometry_19">
+              <property name="text">
+               <string>num of layers</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineNrLayers"/>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0">
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="geometry_2">
+              <property name="text">
+               <string>             geometry</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboGeom">
+              <item>
+               <property name="text">
+                <string>flat</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_3">
+              <property name="text">
+               <string>repition</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineRepition">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QFormLayout" name="formLayout_6">
+            <item row="0" column="0">
+             <widget class="QLabel" name="geometry_4">
+              <property name="text">
+               <string>maxColor</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineMaxCol">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_5">
+              <property name="text">
+               <string>keep wrong color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="comboKeepCol"/>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="2">
+           <layout class="QFormLayout" name="formLayout_5">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>usage</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboUsage">
+              <item>
+               <property name="text">
+                <string>normal</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_23">
+              <property name="text">
+               <string>      minColor</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineMinCol">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <layout class="QFormLayout" name="formLayout_7">
+            <item row="0" column="0">
+             <widget class="QLabel" name="geometry_6">
+              <property name="text">
+               <string>             phi [deg]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="linePhi">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_7">
+              <property name="text">
+               <string>hight [cm]</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineHight">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="geometry_8">
+              <property name="text">
+               <string>num of rows</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineNrRows">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="1">
+           <layout class="QFormLayout" name="formLayout_2">
             <item row="0" column="0">
              <widget class="QLabel" name="geometry_17">
               <property name="text">
                <string>theta[deg]</string>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineTheta"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="geometry_18">
@@ -295,47 +344,62 @@
               <property name="text">
                <string>width[cm]</string>
               </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEdit_14"/>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_15"/>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="2">
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0">
-             <widget class="QLabel" name="geometry_20">
-              <property name="text">
-               <string>phi [deg]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEdit_17"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="geometry_21">
-              <property name="text">
-               <string>hight [cm]</string>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_16"/>
+             <widget class="QLineEdit" name="lineWidth"/>
             </item>
             <item row="2" column="0">
-             <widget class="QLabel" name="geometry_19">
+             <widget class="QLabel" name="geometry_16">
               <property name="text">
-               <string>num of layers</string>
+               <string>num of columns</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_18"/>
+             <widget class="QLineEdit" name="lineNrCol"/>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="1">
+           <layout class="QFormLayout" name="formLayout_4">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>type</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="combType">
+              <item>
+               <property name="text">
+                <string>area/volume</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="geometry_22">
+              <property name="text">
+               <string>          addColor</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineAddCol"/>
             </item>
            </layout>
           </item>
@@ -348,9 +412,12 @@
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Sunken</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
@@ -358,10 +425,13 @@
               <property name="text">
                <string>hor. resolution [cm]</string>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_3">
+             <widget class="QLineEdit" name="lineHoriRes">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -375,20 +445,26 @@
               <property name="text">
                <string>ver. resolution [cm]</string>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_21"/>
+             <widget class="QLineEdit" name="lineVertiRes"/>
             </item>
             <item>
              <widget class="QLabel" name="label_7">
               <property name="text">
                <string>resolution in x [cm]</string>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_22"/>
+             <widget class="QLineEdit" name="lineResX"/>
             </item>
            </layout>
           </item>
@@ -405,10 +481,13 @@
               <property name="text">
                <string>efficiency modifyer</string>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_23">
+             <widget class="QLineEdit" name="lineModifyer">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -449,12 +528,15 @@
                </size>
               </property>
               <property name="text">
-               <string>lambda efficiency</string>
+               <string>   lambda efficiency</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_24">
+             <widget class="QLineEdit" name="lineLambda">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -464,7 +546,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="pushBrowse">
               <property name="maximumSize">
                <size>
                 <width>70</width>
@@ -477,7 +559,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="pushBrowseN">
               <property name="maximumSize">
                <size>
                 <width>70</width>
@@ -490,7 +572,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QPushButton" name="pushEdit">
               <property name="maximumSize">
                <size>
                 <width>50</width>
@@ -520,7 +602,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_8">
+             <widget class="QComboBox" name="comboAbsCon">
               <item>
                <property name="text">
                 <string>3He gas</string>
@@ -555,7 +637,7 @@
                </widget>
               </item>
               <item row="0" column="1" rowspan="2">
-               <widget class="QLineEdit" name="lineEdit_25"/>
+               <widget class="QLineEdit" name="lineGasPress"/>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_24">
@@ -589,7 +671,7 @@
                </widget>
               </item>
               <item row="0" column="1" rowspan="2">
-               <widget class="QLineEdit" name="lineEdit_26">
+               <widget class="QLineEdit" name="lineGasTemp">
                 <property name="maximumSize">
                  <size>
                   <width>250</width>
@@ -635,7 +717,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_9">
+             <widget class="QComboBox" name="comboTubeOrient">
               <item>
                <property name="text">
                 <string>horizontal</string>
@@ -664,7 +746,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_10">
+             <widget class="QComboBox" name="comboTubeCross">
               <item>
                <property name="text">
                 <string>circular</string>
@@ -684,7 +766,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_27">
+             <widget class="QLineEdit" name="lineWallThick">
               <property name="maximumSize">
                <size>
                 <width>125</width>
@@ -694,7 +776,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox">
+             <widget class="QCheckBox" name="checkLayers">
               <property name="text">
                <string>layers shifted</string>
               </property>
@@ -741,7 +823,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_29">
+             <widget class="QLineEdit" name="linePhiN">
               <property name="maximumSize">
                <size>
                 <width>125</width>
@@ -761,7 +843,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_28">
+             <widget class="QLineEdit" name="lineThetaN">
               <property name="maximumSize">
                <size>
                 <width>125</width>
@@ -811,7 +893,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_11">
+             <widget class="QComboBox" name="comboAxisOrient">
               <item>
                <property name="text">
                 <string>z</string>
@@ -820,7 +902,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_2">
+             <widget class="QCheckBox" name="checkConstPhi">
               <property name="text">
                <string>const.phi</string>
               </property>
@@ -873,7 +955,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_31">
+             <widget class="QLineEdit" name="lineOutputFile">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -883,7 +965,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_4">
+             <widget class="QPushButton" name="pushFileBrowse">
               <property name="maximumSize">
                <size>
                 <width>70</width>
@@ -896,7 +978,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="pushFileBrowseN">
               <property name="maximumSize">
                <size>
                 <width>70</width>
@@ -909,7 +991,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_6">
+             <widget class="QPushButton" name="pushFileEdit">
               <property name="maximumSize">
                <size>
                 <width>50</width>

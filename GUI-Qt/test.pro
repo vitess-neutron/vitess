@@ -25,30 +25,39 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        capture_flux.cpp \
+        chopper_disc.cpp \
         chopper_fermi_str.cpp \
         collimator.cpp \
         detector.cpp \
         filter.cpp \
+        flipper_coil.cpp \
         main.cpp \
         mainwindow.cpp \
         modultable.cpp \
         beamstop.cpp
 
 HEADERS += \
+        capture_flux.h \
+        chopper_disc.h \
         chopper_fermi_str.h \
         collimator.h \
         detector.h \
         filter.h \
+        flipper_coil.h \
         mainwindow.h \
         modultable.h \
         beamstop.h
 
 FORMS += \
         beamstop.ui \
+        capture_flux.ui \
+        chopper_disc.ui \
         chopper_fermi_str.ui \
         collimator.ui \
         detector.ui \
         filter.ui \
+        flipper_coil.ui \
         mainwindow.ui \
         modultable.ui
 
@@ -59,3 +68,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resource.qrc
+
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += yaml-cpp

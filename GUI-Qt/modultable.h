@@ -4,7 +4,9 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QToolButton>
-#include <QSignalMapper>
+#include <QStringList>
+#include <QHeaderView>
+
 namespace Ui {
 class ModulTable;
 }
@@ -14,25 +16,34 @@ class ModulTable : public QWidget
     Q_OBJECT
 
 public:
-    explicit ModulTable(QWidget *parent = nullptr);
+    explicit ModulTable(QStringList s1,QWidget *parent = nullptr);
     ~ModulTable();
-    QVector<QComboBox *> comboModule;
-    QVector<QToolButton *> arrowButton;
-    QIcon *arrow;
-    QString modullist[3]={"--inactive--","Beamstop","Detector"};
+
     QStringList module[1000];
     int linenum;
-    QSignalMapper mapper;
 
 signals:
     void changedCombo(QString text);
 
-private:
-    Ui::ModulTable *ui;
-
 private slots:
     void comboModulItemChanged(QString);
-    void arrowButtonClicked(int row);
+    void arrowButtonPressed(bool);
+    void showContextMenu(const QPoint&);
+    void removeRow(int);
+    void insertModule();
+    void removeModule();
+    void infoModule();
+
+private:
+    Ui::ModulTable *ui;
+    QStringList modNames;
+    void addNewRow();
+    QVector<QComboBox *> comboModule;
+    QVector<QToolButton *> arrowButton;
+    QIcon *arrow;
+    int minWidth;
+    QMenu *context;
+    QHeaderView *header;
 };
 
 #endif // MODULTABLE_H
