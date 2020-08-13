@@ -11,6 +11,8 @@
 /*                                normalisation without an extra normalisation run           */
 /*                                visualisation improved                                     */
 /*                                Allow for several monochromators after each other          */
+/* 2.1  Jan 2020  K. Lieutenant   tidy up, transmission geom. corrected, attenuation improved*/  
+/* 2.2  Jan 2020  K. Lieutenant   option: rotating monochromator                             */  
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -29,12 +31,11 @@ int main(int argc, char *argv[])
  
   long	i = 0;
   
-  /*input*/
-  Init(argc, argv, VT_MONOC_ANALY);
-  print_module_name("monochromator 2.0");
+  // input
+  Init(argc, argv, MCN_MONOCHROM);
+  print_module_name("monochromator 2.1");
 
-  /* This is the class for a generic 2D monitor. 
-     It handles 11 parameter at the moment */
+  // This is the class for a monochromator
   Monochromator monochrom;
   monochrom.Init(argc, argv);
   

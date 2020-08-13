@@ -27,9 +27,9 @@ static short ReadMessageText(VtMsgID eID, char* sText, char* cType);
 /** global and static variables **/
 /*********************************/
 
-VtMessage stMessage[12];              /* up to 11 messages can be treated (0 not used)  */
+VtMessage stMessage[MAX_MSG];              /* up to 11 messages can be treated (0 not used)  */
 short     nMsgNo=0;                   /* counts the number of messages that are treated */
-char      sMsgText[MESSAGE_LEN+1]=""; /* message text build of table text and data given by error */
+char      sMsgText[MSG_LEN+1]=""; /* message text build of table text and data given by error */
 
 
 /********************************************************************************************/
@@ -43,7 +43,7 @@ char      sMsgText[MESSAGE_LEN+1]=""; /* message text build of table text and da
 
 void MsgInit()
 {
-  memset(stMessage, 0, 10*sizeof(VtMessage));
+  memset(stMessage, 0, MAX_MSG*sizeof(VtMessage));
 }
 
 
@@ -96,12 +96,12 @@ void CountMessageID_C(VtMsgID eErrID, TotalID eTrajID, int count)
 /*                                                                                          */
 /*  input:  eErrID: ID of the message  (see enum VtMsgID in message.h)                      */
 /*          bID   : ON : ID of the first trajectory causing this message is added, if saved */
-/*                  OFF: noting else is done                                                                        */
+/*                  OFF: noting else is done                                                */
 /********************************************************************************************/
 
 void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 {
-  char  sText[MESSAGE_LEN+10], cMessType;
+  char  sText[MSG_LEN+10], cMessType;
   short n=GetLfdNo(eErrID);
 	
   if (n <= 0) return;
@@ -117,7 +117,8 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
   }
 
   {
-    int nid = stMessage[n].TrajID.IDNo, nno = stMessage[n].nNumber;
+    int nid = stMessage[n].TrajID.IDNo, 
+        nno = stMessage[n].nNumber;
     fprintf(LogFilePtr, sMsgText, nno, nno > 1 ? "ies" : "y", pText);
     if (bID==ON && nid > 0)
       fprintf(LogFilePtr, nno > 1 ? "First trajectory has ID %c%c%09d.\n" : "Trajectory has ID %c%c%09d.\n",
@@ -144,7 +145,7 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
 static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
 {
   FILE* pFile;
-  char  sLine[MESSAGE_LEN+3]="", c;
+  char  sLine[MSG_LEN+3]="", c;
   int   eTabID=0;
 
   *pText = 0;
@@ -154,7 +155,7 @@ static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
   if (pFile == NULL) return FALSE;
 
   do {	
-    if (ReadLine(pFile, sLine, MESSAGE_LEN))
+    if (ReadLine(pFile, sLine, MSG_LEN))
       sscanf(sLine, "%3d%c%c", &eTabID, &c, pType);
     else
       break;

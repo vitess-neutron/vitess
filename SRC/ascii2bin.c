@@ -8,19 +8,16 @@
 #include "general.h"
 #include "init.h"
 
-/* Here, any include file may follow you like */
 
 extern short bTrace;
 
-FILE *AsciiFile;
-
-char skipcomment[1000];
+FILE* pAsciiFile;
+char  AsciiFileName [80]="";
+char  BinaryFileName[80]="";
 
 
 short OwnInit(void) 
 {
-  char  AsciiFileName [80];
-  char  BinaryFileName[80];
   short bDirGiven=TRUE;
 
   bTrace = FALSE;
@@ -28,19 +25,20 @@ short OwnInit(void)
   printf("Give ASCII file name : ");
   scanf("%s", AsciiFileName);
 	
-  if((AsciiFile=fopen(AsciiFileName,"r"))==NULL) 
+  pAsciiFile=fopen(AsciiFileName,"r");
+  if (pAsciiFile==NULL) 
   { 
     bDirGiven=FALSE;
-    AsciiFile=fopen(FullParName(AsciiFileName),"r");
-    if (AsciiFile==NULL)
+    pAsciiFile=fopen(FullParName(AsciiFileName),"r");
+    if (pAsciiFile==NULL)
     { printf("Can't open file %s\n", AsciiFileName);
       return(FALSE);
     }
   }
 
+  // write output file
   printf("Give binary file name: ");
   scanf("%s", BinaryFileName);
-
   if(bDirGiven)
     OutputFilePtr=fopen(BinaryFileName,"wb");
   else
@@ -50,8 +48,9 @@ short OwnInit(void)
   { printf("Can't open file %s\n", BinaryFileName);
     return(FALSE);
   }
-  
-  return TRUE;
+  else
+  { return(TRUE);
+  }
 }
 
 void OwnCleanup()
@@ -61,57 +60,47 @@ void OwnCleanup()
   getchar();
   getchar();
   
-  if (AsciiFile!=NULL)
-    fclose(AsciiFile);
+  if (pAsciiFile!=NULL)
+    fclose(pAsciiFile);
 }
 
 int main(int argc, char **argv)
 {
-  int i,j;
-  char cBlank;
+  int   i,j, rc;
+  char  sLine[256];
+	char  *pForm="%c%c%lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf";
   short bFiles;
 
   /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_TOOL);
-  print_module_name("ASCII2BIN");
+  Init(argc, argv, MCN_TOOL);
+  print_module_name("ascii2bin");
 
   /* module specific initialization */
+  NumNeutRead=0.0;
   bFiles = OwnInit();
-
   if (bFiles)
   { 
-    /* header line */
-    fgets(skipcomment, 1000, AsciiFile);
-
     for(j=0; j<1e10; j++)
     {
       for(i=0; i<BufferSize; i++) 
       {
-        if (fscanf(AsciiFile,"%2s", (char *) &InputNeutrons[i].ID.IDGrp )==EOF) goto finish;
-        fscanf(AsciiFile,"%lu", &InputNeutrons[i].ID.IDNo ) ;
-        fscanf(AsciiFile,"%c%c", &cBlank,  &InputNeutrons[i].Debug ) ;
-        fscanf(AsciiFile,"%hd", &InputNeutrons[i].Color ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Time ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Wavelength ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Probability ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[2] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[2] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[2] ) ;
-        fgets(skipcomment, 1000, AsciiFile) ;
+        ReadLine(pAsciiFile, sLine, sizeof(sLine)-1);
 
-        NumNeutRead += 1;
-               
+        rc=sscanf(sLine, pForm, &InputNeutrons[i].ID.IDGrp[0], &InputNeutrons[i].ID.IDGrp[1], &InputNeutrons[i].ID.IDNo, 
+                                &InputNeutrons[i].Debug,       &InputNeutrons[i].Color,                        
+                                &InputNeutrons[i].Time,        &InputNeutrons[i].Wavelength,  &InputNeutrons[i].Probability, 
+                                &InputNeutrons[i].Position[0], &InputNeutrons[i].Position[1], &InputNeutrons[i].Position[2], 
+                                &InputNeutrons[i].Vector[0],   &InputNeutrons[i].Vector[1],   &InputNeutrons[i].Vector[2], 
+                                &InputNeutrons[i].Spin[0],     &InputNeutrons[i].Spin[1],     &InputNeutrons[i].Spin[2]   ); 
+        if (rc < 1)
+          goto finish;
+                       
         WriteNeutron(&(InputNeutrons[i]));
+        NumNeutRead += 1;
       }
     }
   finish:
-    printf("\n binary file written !\n");
+    printf("\n %6.0f trajectories written to binary file %s !\n", NumNeutRead, BinaryFileName);
   }
 
   /* do module specific cleanups */

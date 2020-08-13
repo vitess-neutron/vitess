@@ -24,6 +24,16 @@ typedef struct
 }
 McNeutron;
 
+typedef struct
+{
+	VectorType     Position;
+	VectorType     Vector;
+  double         Energy;
+	double         Counts;
+	double         Shakes;
+}
+McnpNeutron;
+
 
 /***********************/
 /** Enums             **/

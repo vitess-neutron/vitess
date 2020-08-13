@@ -27,7 +27,7 @@
 #define COUPLED    3   /* moderator coupled                   */
 #define MULT_SPEC  4   /* effective spectrum of a moderator consisting of a cold and thermal part      */
 
-#define NUM_MOD    3   /* max. number of moderators in the moderator system */
+#define NUM_MOD    5   /* max. number of moderators in the moderator system */
 
 #define FNL      101
 

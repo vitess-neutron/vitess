@@ -1,23 +1,24 @@
-/********************************************************************************************/
-/*  VITESS module 'sample_refl.c'                                                           */
-/*    This module simulates a sample of a reflectometer                                     */
-/*                                                                                          */
-/* The free non-commercial use of these routines is granted providing due credit is given   */
-/* to the authors.                                                                          */
-/*                                                                                          */
-/* 1.0  Dec  2001  K. Lieutenant  initial version                                           */
-/* 1.1  Feb? 2002  K. Lieutenant  average of reflectivity value built in logarithmic scale  */
-/* 1.2  Jul? 2002  K. Lieutenant  storing of reflectivity data                              */
-/* 2.0  Jan  2002  K. Lieutenant  reorganisation                                            */
-/* 2.1  Jul  2003  K. Lieutenant  correction time-of-flight calculation                     */
-/* 2.2  Jan  2004  K. Lieutenant  changes for 'instrument.dat'                              */
-/* 2.3  Jan  2004  K. Lieutenant  reduced output, only one angle, sign of angle changed     */
-/*                                new message for 'Q not in range given by file'            */
-/* 2.4  Feb  2004  K. Lieutenant  'FullParName' and 'ERROR' included                        */
-/*      Aug  2012  M. Fromme     clean up, variable definition a block start                */
-/* 3.1	Mar  2013  D. Nekrassov  Calculation of scattering process takes place in separate  */
-/*                               functions, offspecular scattering added                    */
-/********************************************************************************************/
+/*********************************************************************************************/
+/*  VITESS module 'sample_refl.c'                                                            */
+/*    This module simulates a sample of a reflectometer                                      */
+/*                                                                                           */
+/* The free non-commercial use of these routines is granted providing due credit is given    */
+/* to the authors.                                                                           */
+/*                                                                                           */
+/* 1.0  Dec  2001  K. Lieutenant  initial version                                            */
+/* 1.1  Feb? 2002  K. Lieutenant  average of reflectivity value built in logarithmic scale   */
+/* 1.2  Jul? 2002  K. Lieutenant  storing of reflectivity data                               */
+/* 2.0  Jan  2002  K. Lieutenant  reorganisation                                             */
+/* 2.1  Jul  2003  K. Lieutenant  correction time-of-flight calculation                      */
+/* 2.2  Jan  2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 2.3  Jan  2004  K. Lieutenant  reduced output, only one angle, sign of angle changed      */
+/*                                new message for 'Q not in range given by file'             */
+/* 2.4  Feb  2004  K. Lieutenant  'FullParName' and 'ERROR' included                         */
+/*      Aug  2012  M. Fromme      clean up, variable definition a block start                */
+/* 3.1	Mar  2013  D. Nekrassov   Calculation of scattering process takes place in separate  */
+/*                                functions, offspecular scattering added                    */
+/* 3.2  Nov  2019  K. Lieutenant  tidy up, global variable, visualization , length <-> width */
+/*********************************************************************************************/
 
 #include <string.h>
 #include <stdio.h>
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
 {
   double     arg, dAnglOutHoriz, dAnglOutVert,
     mRotMatrixOut[3][3];
+	long       i;             // index of trajectories
   short      nIndex;
   VectorType vPath, vDirIn={1.0, 0.0, 0.0}, vDirOut ;
   Neutron    Neutrons ;
@@ -43,7 +45,7 @@ int main(int argc, char **argv)
   short int doReflection, doOffspecular, doIncoherent;
 
   /* Initialize the program according to the parameters given   */
-  Init   (argc, argv, VT_SMPL_REFL);
+  Init   (argc, argv, MCN_SMPL_REFL);
   print_module_name("sample_reflectom 2.4") ;
   OwnInit(argc, argv);
   MsgInit();
@@ -222,7 +224,7 @@ double	ReadReflect(const double p_dQ)
     }
   else
     {	/* read error: momentum transfer higher than all values in the reflectivity file */
-      CountMessageID(SMPL_Q_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+      CountMessageID(SMPL_Q_RANGE_TOO_SMALL, InputNeutrons[i].ID);     // Qmax nach Lesen d. Datei merken und vor Aufruf von ReadReflect abfragen
     }
 
   return dReflect;
@@ -398,9 +400,9 @@ void OwnInit(int argc, char *argv[])
 
 void OwnCleanup()
 {
-	/* print error that might have occured many times */
-  int i;
+  int k;
 
+	/* print error that might have occured many times */
   PrintMessage(SMPL_Q_RANGE_TOO_SMALL, "", ON);
 
 	fprintf(LogFilePtr,"Maximum scattering probability reached: %f \n", maxProb);
@@ -418,9 +420,10 @@ void OwnCleanup()
 	if (offspecularScattering) {
 	  if (g_pTab_Qin_Qout[0]!=NULL) free (g_pTab_Qin_Qout[0]);
 	  if (g_pTab_Qin_Qout[1]!=NULL) free (g_pTab_Qin_Qout[1]);
-	  for (i=0; i < g_nLinesRefl;i++) {
-	    if (g_pTab_Qin_Qout[i+2]!=NULL) free (g_pTab_Qin_Qout[i+2]);
-	    if (g_pTab_RoffSpec[i]!=NULL) free (g_pTab_RoffSpec[i]);
+	  for (k=0; k < g_nLinesRefl; k++) 
+    {
+	    if (g_pTab_Qin_Qout[k+2]!=NULL) free (g_pTab_Qin_Qout[i+2]);
+	    if (g_pTab_RoffSpec[k]!=NULL) free (g_pTab_RoffSpec[i]);
 	  }
 	}
 

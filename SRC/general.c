@@ -14,6 +14,7 @@
 /* Change: K.L.  2003 MAR, new function 'StrgScanLF', additional parameter in 'ReadLine'    */
 /* Change: M.F.  2005 DEC, random number generators from GNU GSL                            */
 /* Change: A.H.  2009 OCT, new routine: RoundP for rounding after given decimal position    */
+/********************************************************************************************/
 
 #include "general.h"
 #include "ctype.h"
@@ -71,6 +72,37 @@ double V_FROM_LAMBDA(const double x)
 }
 
 
+double Lambda2E(const double lmbd)
+{
+  double L2E = 0.5 * 1.0e23 * sq(H_P)/E_C / MN,   // Ang -> meV
+         E   = L2E / sq(lmbd); 
+
+  return(E);
+}
+
+double E2Lambda(const double E)
+{
+  double L2E  = 0.5 * 1.0e23 * sq(H_P)/E_C / MN,  // meV -> Ang 
+         lmbd = sqrt(L2E / E); 
+
+  return(lmbd);
+}
+
+
+double ReflAngle(const double lambda, const double Q)  // [Ang], [1/Ang] -> [deg]
+{
+  double thetaR = asin(lambda * Q/(4.0*M_PI));
+
+  return(Degrees(thetaR));
+}
+
+double QbyRefl(const double lambda, const double thetaD)  // [Ang], [deg] -> [1/Ang] 
+{
+  double Q = 4.0*M_PI * sin(Radians(thetaD))/lambda;
+
+  return(Q);
+}
+
 /****************************************************************************************/
 /*  Random Functions                                                                    */
 /****************************************************************************************/
@@ -92,8 +124,19 @@ double DistrGauss(double Center, double Sigma)
 /*  General Functions                                                                   */
 /****************************************************************************************/
 
-/* computes square of a real value */
+/* conversion between degree and rad */
+double Radians(const double angleD)
+{
+  return (angleD * M_PI/180.0);
+}
 
+double Degrees(const double angleR)
+{
+  return (angleR * 180.0/M_PI);
+}
+
+
+/* computes square of a real value */
 double sq(const double Value)
 {
 	return Value * Value ;
@@ -101,7 +144,6 @@ double sq(const double Value)
 
 
 /* calculates atan2 in the range (0, 2*M_PI) */
-
 double atan0(const double a, const double b)
 {
 	if (b > 0.)
@@ -114,12 +156,10 @@ double atan0(const double a, const double b)
 }
 
 /* rounds a value mathematically  */
-
 double Round(const double value)
 {
 	return floor(value + 0.5);
 }
-
 
 double RoundP(const double value, const int decimal)
 {
@@ -129,7 +169,6 @@ double RoundP(const double value, const int decimal)
 
 
 /* minimum and maximum of two double or long values */
-
 long mini(const long value1, const long value2)
 {
   return value1 < value2 ? value1 : value2;
@@ -150,9 +189,7 @@ double Max(const double value1, const double value2)
   return value1 > value2 ? value1 : value2;
 }
 
-
 /* swap two values */
-
 void Exchange(double* pValue1, double* pValue2)
 {
   double dHelp;
@@ -160,6 +197,164 @@ void Exchange(double* pValue1, double* pValue2)
   dHelp    = *pValue1;
   *pValue1 = *pValue2;
   *pValue2 = dHelp;
+}
+
+
+void CompID2Name (char* sCompName, const McCompID eComp)
+{
+  switch (eComp)
+  { case MCN_SOURCE       : strcpy(sCompName, "Source");            break;           
+	  case MCN_SRC_SMPL     : strcpy(sCompName, "SourceSimple");      break;     
+	  case MCN_SRC_CWS      : strcpy(sCompName, "SourceConst");       break;      
+	  case MCN_SRC_TOF      : strcpy(sCompName, "SourceTOF");         break;        
+	  case MCN_SRC_SP       : strcpy(sCompName, "SourceSP");          break;         
+	  case MCN_SRC_LP       : strcpy(sCompName, "SourceLP");          break;         
+	  case MCN_READ_IN      : strcpy(sCompName, "EventsIn");          break;         
+	  case MCN_SPACE        : strcpy(sCompName, "Space");             break;            
+	  case MCN_SLIT         : strcpy(sCompName, "Slit");              break;             
+	  case MCN_WINDOW       : strcpy(sCompName, "Window");            break;           
+	  case MCN_WND_MULT     : strcpy(sCompName, "WindowMult");        break;       
+	  case MCN_GRID         : strcpy(sCompName, "WindowGrid");        break;       
+	  case MCN_LENSE        : strcpy(sCompName, "Lens");              break;             
+	  case MCN_MIRROR       : strcpy(sCompName, "Mirror");            break;           
+	  case MCN_MIRROR_POL   : strcpy(sCompName, "MirrorPolarizing");  break; 
+	  case MCN_MIRROR_ELLI  : strcpy(sCompName, "MirrorElliptic");    break;   
+	  case MCN_SM_ENSEMBLE  : strcpy(sCompName, "MirrorEmsemble");    break;   
+	  case MCN_COLLIMATOR   : strcpy(sCompName, "Collimator");        break;       
+	  case MCN_COLL_SOLLER  : strcpy(sCompName, "CollimatorSoller");  break; 
+	  case MCN_COLL_RADIAL  : strcpy(sCompName, "CollimatorRadial");  break; 
+	  case MCN_COLL_VIRT    : strcpy(sCompName, "CollimatorVirtual"); break;
+	  case MCN_GUIDE        : strcpy(sCompName, "Guide");             break;            
+	  case MCN_BENDER       : strcpy(sCompName, "Bender");            break;           
+	  case MCN_CHOP_DISC    : strcpy(sCompName, "ChopperDisc");       break;      
+	  case MCN_CHOP_FERMI   : strcpy(sCompName, "ChopperFermi");      break;     
+	  case MCN_VEL_SELECT   : strcpy(sCompName, "VelocitySelector");  break; 
+	  case MCN_MONO_ANA     : strcpy(sCompName, "MonochrAnalyzer");   break;  
+	  case MCN_MONOCHROM    : strcpy(sCompName, "Monochromator");     break;    
+	  case MCN_POL_HE3      : strcpy(sCompName, "PolarizerHe3");      break;     
+	  case MCN_POL_SM       : strcpy(sCompName, "PolarizerSM");       break;      
+	  case MCN_FLIP_COIL    : strcpy(sCompName, "FlipperCoil");       break;      
+	  case MCN_FLIP_GRAD    : strcpy(sCompName, "FlipperGradient");   break;  
+	  case MCN_RES_DRABKIN  : strcpy(sCompName, "ResonatorDrabkin");  break; 
+	  case MCN_PREC_FIELD   : strcpy(sCompName, "MagnField");         break;        
+	  case MCN_ROT_FIELD    : strcpy(sCompName, "MagnFieldRotating"); break;
+	  case MCN_SESANS_FIELD : strcpy(sCompName, "MagnFieldSESANS");   break;  
+	  case MCN_CAPTURE      : strcpy(sCompName, "Source");            break;           
+	  case MCN_BEAMSTOP     : strcpy(sCompName, "BeamStop");          break;         
+	  case MCN_SMPL_ENVIRO  : strcpy(sCompName, "SampleEnvironment"); break;
+	  case MCN_DETECTOR     : strcpy(sCompName, "Detector");          break;         
+	  case MCN_WRITEOUT     : strcpy(sCompName, "EventsOut");         break;        
+	  case MCN_SMPL_EL_ISO  : strcpy(sCompName, "SampleElasticIsotr");break;
+	  case MCN_SMPL_INELAS  : strcpy(sCompName, "SampleInelastic");   break;  
+	  case MCN_SMPL_SNGL_X  : strcpy(sCompName, "SampleSnglCrytal");  break; 
+	  case MCN_SMPL_POWDER  : strcpy(sCompName, "SamplePowder");      break;     
+	  case MCN_SMPL_S_Q     : strcpy(sCompName, "SampleSofQ");        break;       
+	  case MCN_SMPL_NXS     : strcpy(sCompName, "SampleNXS");         break;        
+	  case MCN_SMPL_SANS    : strcpy(sCompName, "SampleSANS");        break;       
+	  case MCN_SMPL_REFL    : strcpy(sCompName, "SampleReflect");     break;    
+	  case MCN_FRAME        : strcpy(sCompName, "Frame");             break;            
+	  case MCN_FILTER       : strcpy(sCompName, "Filter");            break;           
+	  case MCN_RESET        : strcpy(sCompName, "Reset");             break;            
+	  case MCN_VISUAL       : strcpy(sCompName, "Visualization");     break;    
+	  case MCN_MONITOR1     : strcpy(sCompName, "Monitor1D");         break;        
+	  case MCN_MON1_POL     : strcpy(sCompName, "Monitor1D-Pol");     break;    
+	  case MCN_MONITOR2     : strcpy(sCompName, "Monitor2D");         break;        
+    case MCN_MON2_POS     : strcpy(sCompName, "Monitor2D_Pos");     break;    
+	  case MCN_MON2_DIV     : strcpy(sCompName, "Monitor2D_Div");     break;    
+	  case MCN_MON2_KDIV    : strcpy(sCompName, "Monitor2D_kDiv");    break;   
+	  case MCN_MON2_POSDIV  : strcpy(sCompName, "Monitor2D_Pos-Div"); break;
+	  case MCN_MON2_HDIVH   : strcpy(sCompName, "Monitor2D_H-DivH");  break; 
+	  case MCN_MON2_VDIVV   : strcpy(sCompName, "Monitor2D_W-DivW");  break; 
+	  case MCN_MON2_TOFWL   : strcpy(sCompName, "Monitor2D_Tof-Wl");  break; 
+	  case MCN_MON2_WLDIV   : strcpy(sCompName, "Monitor2D_Wl-Div");  break; 
+	  case MCN_MON2_POL_POS : strcpy(sCompName, "Monitor2D-Pol_Pos"); break;
+	  case MCN_EVAL1_ELAST  : strcpy(sCompName, "Eval1D_Elastic");    break;   
+	  case MCN_EVAL1_INELAST: strcpy(sCompName, "Eval1D_Inelastic");  break; 
+	  case MCN_EVAL2_ELAST  : strcpy(sCompName, "Eval2D_Elastic");    break;   
+	  case MCN_RUNTIME      : strcpy(sCompName, "RunTime");           break;          
+	  case MCN_TOOL         : strcpy(sCompName, "Tool");              break;             
+    default:               strcpy(sCompName, "unknown component"); 
+  }
+}
+
+
+McCompID Name2CompID (const char* sCompName)
+{
+  McCompID eComp;
+
+        if (strcmp(sCompName, "Source"))           eComp=MCN_SOURCE; 
+  else if (strcmp(sCompName, "SourceSimple"))      eComp=MCN_SRC_SMPL     ;     
+  else if (strcmp(sCompName, "SourceConst"))       eComp=MCN_SRC_CWS      ;      
+  else if (strcmp(sCompName, "SourceTOF"))         eComp=MCN_SRC_TOF      ;        
+  else if (strcmp(sCompName, "SourceSP"))          eComp=MCN_SRC_SP       ;         
+  else if (strcmp(sCompName, "SourceLP"))          eComp=MCN_SRC_LP       ;         
+  else if (strcmp(sCompName, "EventsIn"))          eComp=MCN_READ_IN      ;         
+  else if (strcmp(sCompName, "Space"))             eComp=MCN_SPACE        ;            
+  else if (strcmp(sCompName, "Slit"))              eComp=MCN_SLIT         ;             
+  else if (strcmp(sCompName, "Window"))            eComp=MCN_WINDOW       ;           
+  else if (strcmp(sCompName, "WindowMult"))        eComp=MCN_WND_MULT     ;       
+  else if (strcmp(sCompName, "WindowGrid"))        eComp=MCN_GRID         ;       
+  else if (strcmp(sCompName, "Lens"))              eComp=MCN_LENSE        ;             
+  else if (strcmp(sCompName, "Mirror"))            eComp=MCN_MIRROR       ;           
+  else if (strcmp(sCompName, "MirrorPolarizing"))  eComp=MCN_MIRROR_POL   ; 
+  else if (strcmp(sCompName, "MirrorElliptic"))    eComp=MCN_MIRROR_ELLI  ;   
+  else if (strcmp(sCompName, "MirrorEmsemble"))    eComp=MCN_SM_ENSEMBLE  ;   
+  else if (strcmp(sCompName, "Collimator"))        eComp=MCN_COLLIMATOR   ;       
+  else if (strcmp(sCompName, "CollimatorSoller"))  eComp=MCN_COLL_SOLLER  ; 
+  else if (strcmp(sCompName, "CollimatorRadial"))  eComp=MCN_COLL_RADIAL  ; 
+  else if (strcmp(sCompName, "CollimatorVirtual")) eComp=MCN_COLL_VIRT    ;
+  else if (strcmp(sCompName, "Guide"))             eComp=MCN_GUIDE        ;            
+  else if (strcmp(sCompName, "Bender"))            eComp=MCN_BENDER       ;           
+  else if (strcmp(sCompName, "ChopperDisc"))       eComp=MCN_CHOP_DISC    ;      
+  else if (strcmp(sCompName, "ChopperFermi"))      eComp=MCN_CHOP_FERMI   ;     
+  else if (strcmp(sCompName, "VelocitySelector"))  eComp=MCN_VEL_SELECT   ; 
+  else if (strcmp(sCompName, "MonochrAnalyzer"))   eComp=MCN_MONO_ANA     ;  
+  else if (strcmp(sCompName, "Monochromator"))     eComp=MCN_MONOCHROM    ;    
+  else if (strcmp(sCompName, "PolarizerHe3"))      eComp=MCN_POL_HE3      ;     
+  else if (strcmp(sCompName, "PolarizerSM"))       eComp=MCN_POL_SM       ;      
+  else if (strcmp(sCompName, "FlipperCoil"))       eComp=MCN_FLIP_COIL    ;      
+  else if (strcmp(sCompName, "FlipperGradient"))   eComp=MCN_FLIP_GRAD    ;  
+  else if (strcmp(sCompName, "ResonatorDrabkin"))  eComp=MCN_RES_DRABKIN  ;  
+  else if (strcmp(sCompName, "MagnField"))         eComp=MCN_PREC_FIELD   ;        
+  else if (strcmp(sCompName, "MagnFieldRotating")) eComp=MCN_ROT_FIELD    ;
+  else if (strcmp(sCompName, "MagnFieldSESANS"))   eComp=MCN_SESANS_FIELD ;  
+  else if (strcmp(sCompName, "Source"))            eComp=MCN_CAPTURE      ;           
+  else if (strcmp(sCompName, "BeamStop"))          eComp=MCN_BEAMSTOP     ;         
+  else if (strcmp(sCompName, "SampleEnvironment")) eComp=MCN_SMPL_ENVIRO  ;
+  else if (strcmp(sCompName, "Detector"))          eComp=MCN_DETECTOR     ;         
+  else if (strcmp(sCompName, "EventsOut"))         eComp=MCN_WRITEOUT     ;        
+  else if (strcmp(sCompName, "SampleElasticIsotr"))eComp=MCN_SMPL_EL_ISO  ;
+  else if (strcmp(sCompName, "SampleInelastic"))   eComp=MCN_SMPL_INELAS  ; 
+  else if (strcmp(sCompName, "SampleSnglCrytal"))  eComp=MCN_SMPL_SNGL_X  ; 
+  else if (strcmp(sCompName, "SamplePowder"))      eComp=MCN_SMPL_POWDER  ; 
+  else if (strcmp(sCompName, "SampleSofQ"))        eComp=MCN_SMPL_S_Q     ; 
+  else if (strcmp(sCompName, "SampleNXS"))         eComp=MCN_SMPL_NXS     ; 
+  else if (strcmp(sCompName, "SampleSANS"))        eComp=MCN_SMPL_SANS    ;
+  else if (strcmp(sCompName, "SampleReflect"))     eComp=MCN_SMPL_REFL    ; 
+  else if (strcmp(sCompName, "Frame"))             eComp=MCN_FRAME        ; 
+  else if (strcmp(sCompName, "Filter"))            eComp=MCN_FILTER       ; 
+  else if (strcmp(sCompName, "Reset"))             eComp=MCN_RESET        ; 
+  else if (strcmp(sCompName, "Visualization"))     eComp=MCN_VISUAL       ;
+  else if (strcmp(sCompName, "Monitor1D"))         eComp=MCN_MONITOR1     ;
+  else if (strcmp(sCompName, "Monitor1D-Pol"))     eComp=MCN_MON1_POL     ;
+  else if (strcmp(sCompName, "Monitor2D"))         eComp=MCN_MONITOR2     ;
+  else if (strcmp(sCompName, "Monitor2D_Pos"))     eComp=MCN_MON2_POS     ;
+  else if (strcmp(sCompName, "Monitor2D_Div"))     eComp=MCN_MON2_DIV     ;
+  else if (strcmp(sCompName, "Monitor2D_kDiv"))    eComp=MCN_MON2_KDIV    ; 
+  else if (strcmp(sCompName, "Monitor2D_Pos-Div")) eComp=MCN_MON2_POSDIV  ;
+  else if (strcmp(sCompName, "Monitor2D_H-DivH"))  eComp=MCN_MON2_HDIVH   ; 
+  else if (strcmp(sCompName, "Monitor2D_W-DivW"))  eComp=MCN_MON2_VDIVV   ; 
+  else if (strcmp(sCompName, "Monitor2D_Tof-Wl"))  eComp=MCN_MON2_TOFWL   ; 
+  else if (strcmp(sCompName, "Monitor2D_Wl-Div"))  eComp=MCN_MON2_WLDIV   ; 
+  else if (strcmp(sCompName, "Monitor2D-Pol_Pos")) eComp=MCN_MON2_POL_POS ;
+  else if (strcmp(sCompName, "Eval1D_Elastic"))    eComp=MCN_EVAL1_ELAST  ; 
+  else if (strcmp(sCompName, "Eval1D_Inelastic"))  eComp=MCN_EVAL1_INELAST; 
+  else if (strcmp(sCompName, "Eval2D_Elastic"))    eComp=MCN_EVAL2_ELAST  ; 
+  else if (strcmp(sCompName, "RunTime"))           eComp=MCN_RUNTIME      ; 
+  else if (strcmp(sCompName, "Tool"))              eComp=MCN_TOOL         ; 
+  else                                             eComp=MCN_COMP_UNKNOWN ; 
+
+  return eComp; 
 }
 
 
@@ -185,60 +380,228 @@ double SolidAngle(const double dHorAngle, const double dVertAngle)
 }
 
 
+double TrueSolidAngle(const double dHorAngle, const double dVertAngle)
+{
+  return (4 * asin(dHorAngle* dVertAngle));
+}
+
+
 // Calculation of reflectivity on supermirrors from wavelength and inclination angle
 // either following quadratic SwissNeutronics description by Henrik Jacobsen (ReflSN)
-// or using any reflectivity file (ReflFile)
+// or using the new description   (ReflAllCpys)
+// or using any reflectivity file (ReflInterpol)
 //
 // Lambda: wavelength        [Ang]
 // Angle : inclination angle [deg]
-// M     : official m value of the supermirror    (ReflSN only)
+// M     : nominal m value of the supermirror    
 // Rdata : pointer to list of reflectivity values (ReflFile only)
 //
-double ReflSN(const double Lambda,    const double Angle,    const double M)
+double ReflSNT(char* sText, const double Q, const double m, const short bPrint)
 {
   double S,T, 
-    M2,            // m'     : 'real' m value
-    Q,             // Q      : momentum transfer of the reflection
+    m2=m,          // m'     : 'real' m value
     Qc,            // Q_c    : crit. momentum transfer 
-    QcNi  =0.0217, // Q_c,Ni : crit. momentum transfer of nickel
+    QcNi  =QC_NI,  // Q_c,Ni : crit. momentum transfer of nickel
     R0    =0.99,   // R_0    : reflectivity for 0 <= Q <= Q_c
     alphaQ=0.0,    //          slope Delta_R / Delta_Q
     betaQ =0.0,    //          quadratic term to describe R(q)
-    W,             // W      : width of the cut-off  [1/Ang]
-    R;             // R      : reflectivity
+    W     =0.0,    // W      : width of the cut-off  [1/Ang]
+    R     =0.0;    // R      : reflectivity
 
-  Qc = QcNi*Min(M, 1.0);
-  Q  = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
+  Qc = QcNi*Min(m, 1.0);
+  //  Q  = 4*M_PI*sin(M_PI/180.0*Angle)/Lambda;
 
   if (Q <= Qc)
   { R = R0;
   }
   else
   { 
-    if (M <= 1.0)
+    if (m <= 1.0)
     { R=0.0;
     }
     else
     {
-      W  = 0.0022 - 0.0002*M;
-      M2 = M*0.9853 + 0.1978;
+      W  = 0.0022 - 0.0002*m;
+      m2 = m*0.9853 + 0.1978;
 
-      if (M > 3.0)
-      { alphaQ =  5.0944 + 0.1204*M;
-        betaQ  = 68.1137 - 7.6251*M;
+      if (m > 3.0)
+      { alphaQ =  5.0944 + 0.1204*m;
+        betaQ  = 68.1137 - 7.6251*m;
       }
       else
-      { alphaQ = M;
+      { alphaQ = m;
         betaQ  = 0.0;
       }
-      T = 0.5 * (1.0 - tanh((Q - M2*QcNi) / W));
+      T = 0.5 * (1.0 - tanh((Q - m2*QcNi) / W));
       S = (1.0 - alphaQ * (Q-Qc) + betaQ * sq(Q-Qc));
-	    R = R0 * T * S ;
+	    R = R0 * S * T ;
     }
   }
-  return(R);
+
+  if (bPrint)
+    sprintf(sText, "R(Q) = %5.3f * (1 - %5.3f*(Q-Qc) + %6.3f*(Q-Qc)^2) * 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f)) ,   Qc=%7.5f 1/Ang", R0, alphaQ,betaQ, m2,W, Qc);
+
+  return R;
 }
 
+// Description of a typical reflectivity curve (averaged over all companies) 
+double ReflTypicalT(char* sText, const double Q, const double m, const short bPrint)
+{
+  double R    = 0.0,
+         R0   = 0.995,
+         W    = 0.00157,
+         mReal= m + 0.14,
+         Rcut = Min(R0, 1.096 - 0.0758*m);
+
+  R = ReflMirrT(sText, Q, mReal, R0, Rcut, W, QC_NI, bPrint);
+
+  return R;
+}
+
+double ReflTypical(const double Q, const double m)
+{
+  short  bPrint=FALSE;
+  char*  sText = NULL;
+  double R    = 0.0,
+         R0   = 0.995,
+         W    = 0.00157,
+         mReal= m + 0.14,
+         Rcut = Min(R0, 1.096 - 0.0758*m);
+
+  R = ReflMirrT(sText, Q, mReal, R0, Rcut, W, QC_NI, FALSE);
+
+  return R;
+}
+
+double ReflMirrT(char* sText, const double Q, const double m, const double R0, const double Rm, const double W, const double Qc, const short bPrint)
+{
+  char   sSlope[50]="", sDecay[50]="";
+  double R=0.0, S=1.0, T=1.0,
+         Qcm  = m * QC_NI,            // Q-value, where the reflectivity drops to zero
+         Qc1  = Min(Qc, Qcm),         // Q-value, where R=R0 ends
+         alpha= 0.0;
+
+  if (m > 1.0)
+  { 
+    alpha = (R0 - Rm)/(m - 1.0)/QC_NI;
+    S = Min(1.0, 1.0 - alpha*(Q - Qc1));
+  }
+
+  if (W > 0.0)
+  {
+    T = 0.5 * (1.0 - tanh((Q - Qcm)/W));
+  }
+  else
+  { if (Q > Qcm) T = 0.0;
+    else         T = 1.0;
+  }
+
+  R = R0 * S * T ;
+
+  if (bPrint)
+  { 
+    if (m > 1.0) sprintf(sSlope, "* (1 - %5.3f*(Q-Qc))", alpha);
+    if (W > 0.0) sprintf(sDecay, "* 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f))", m, W);
+    sprintf(sText,  "R(Q) = %5.3f %s %s   Rm=%5.3f  Qc=%7.5f 1/Ang", R0, sSlope, sDecay, Rm,Qc);
+  }
+
+  return R;
+}
+
+
+// Loads Reflectivity data from a file where R(Q) is given. Give pReflFile as input
+// ----------------------------------------------------------
+int ReadRofQ(FILE* pReflFile, double* aQ, double* aR) 
+{
+  char   sBuffer[CHAR_BUF_SMALL]="";
+  int    k, nLines;           // index and number of lines
+
+  nLines = LinesInFile(pReflFile);
+
+  for (k=1; k<=nLines && k<ROFQ_MAX; k++)
+  {
+    ReadLine(pReflFile, sBuffer, sizeof(sBuffer)-1);
+    sscanf(sBuffer, "%lf %lf", &aQ[k], &aR[k]);  
+  }
+
+  aQ[0]=0.0; 
+  aR[0]=aR[1];
+
+  return (nLines+1);
+}
+
+
+// Determines the number of points in a Vitess reflectivity array up to Qmax
+// -------------------------------------------------------------------------
+int NumDataPtsQ(const double Qmax)
+{
+  double ThetaMax = ReflAngle(1.0, Qmax);
+  int    nPts     = (int)(ceil(1000*ThetaMax)) + 4;
+
+  return(nPts);
+}
+
+int NumDataPtsM(const double m, const double Qc, const double W)
+{
+  double ThetaC, ThetaW, ThetaM;
+  int    nPts=0;
+
+  ThetaC = ReflAngle(1.0, Qc);
+	ThetaW = ReflAngle(1.0, W);
+	ThetaM = m * ThetaC;
+	// nPts   = (int) ((Max(ThetaM,ThetaC) + 6.0*ThetaW)*1000) + 4;
+	nPts   = (int) (ceil((ThetaM + 6.0*ThetaW)*1000)) + 4;
+
+  return nPts;
+}
+
+
+// Fills Vitess reflectivity array from R(Q) data
+// ----------------------------------------------
+// pReflDat: pointer to array of reflectivity data for 1 Ang in steps of 0.001 deg
+// aQ, aR  : pointers to arrays Q and reflecitvity R as read from 2 column file R(Q)
+// nVals   : length of Q and R array
+// --------------------------------------------------------------------------------------
+void SetReflData(double* pReflDat, const double* aQ, const double* aR, const int nVals)
+{
+  int    j=0;   // index for Vitess reflectivity file  
+  double theta,        // reflection angle
+         Q;            // Q-value of the reflection angle for 1 Ang
+  long   nArrayLen=NumDataPtsQ(aQ[nVals-1]);
+
+  for (j=0; j < nArrayLen; j++)
+  { 
+    theta = j / 1000.0;
+    Q     = QbyRefl(1.0, theta);
+    pReflDat[j]= InterpolQ(Q, aQ, aR, nVals);
+  }
+}
+
+double InterpolM(const double m, const double* aM, const double* aR, const int nVals)
+{
+  double R=0.0;
+
+  for (int k=0; k < nVals-1; k++)
+  {
+    if (aM[k] <= m && aM[k+1] > m)
+      R = aR[k] + (aR[k+1] - aR[k])/(aM[k+1] - aM[k]) * (m - aM[k]);   
+  }
+
+  return R;
+}
+
+double InterpolQ(const double Q, const double* aQ, const double* aR, const int nVals)
+{
+  double R=0.0;
+
+  for (int k=0; k < nVals-1; k++)
+  {
+    if (aQ[k] <= Q && aQ[k+1] > Q)
+      R = aR[k] + (aR[k+1] - aR[k])/(aQ[k+1] - aQ[k]) * (Q - aQ[k]);   
+  }
+
+  return R;
+}
 
 double ReflInterpol(const double Lambda, const double Angle, const double* Rdata, long MaxData)
 {
@@ -247,13 +610,20 @@ double ReflInterpol(const double Lambda, const double Angle, const double* Rdata
          R=0.0;     // reflectivity
 
   w   = Angle*1000.0 / Lambda;
+
+#ifdef FAST_SIM
+  iw1 = (long) floor(w+0.5);
+  R = Rdata[iw1];
+#else
   iw1 = (long) floor(w);
 
   if ((iw1+1) < MaxData)
     R = Rdata[iw1] + (Rdata[iw1+1] - Rdata[iw1]) * (w - iw1);
+#endif
 
   return(R);
 }
+
 
 
 /****************************************************************************************/
@@ -536,6 +906,50 @@ void Wait(float WaitTime)
    it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr
    the maximal number of characters in the string must be given in 'nStrLen'
 */
+
+/********************************************************************/
+/* counts the number of lines in a text file and rewinds it         */
+/********************************************************************/
+long LinesInFile(FILE *pIn)
+{
+  char Buffer[CHAR_BUF_LARGE]="";
+  long NumLines=0;
+
+  rewind(pIn);
+  if (pIn!=NULL)
+  { while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
+      NumLines++;
+    rewind(pIn);
+  }
+  return NumLines;
+}
+
+
+/***********************************************************/
+/* Function for counting the number of columns in a file   */
+/*   pFile: pointer to file of interest                    */
+/***********************************************************/
+long ColumnsInFile(FILE* pFile)
+{
+  int i,v, nLns, isin;
+  char buf[CHAR_BUF_LARGE];
+  if (pFile == NULL)
+    return 0;
+  ReadLine(pFile, buf, CHAR_BUF_LARGE-1);
+  rewind(pFile);
+  for (nLns=isin=i=0; (v = buf[i]); i++)
+    if (v != ' ')
+      isin = 1;
+    else if (isin) {
+      nLns++;
+      isin = 0;
+    }
+  if (isin)
+    nLns++;
+
+  return nLns;
+}
+
 
 int
 ReadLine(FILE* pFile, char* pLine, int nStrLen) {

@@ -4,7 +4,8 @@
 /*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given    */
 /* to the authors:                                                                           */
-/* 1.0  K. Lieutenant May 2012 initial version (based on monitor1.c)                         */
+/* 1.0  K. Lieutenant  May 2012  initial version (based on monitor1.c)                       */
+/* 1.1  K. Lieutenant  Oct 2019  brilliance as a function of energy, logarithmic binning     */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -16,170 +17,215 @@
 #include "softabort.h"
 #include "general.h"
 
-#define MAX_KIND 8
 
-void OwnInit(int argc, char *argv[]);
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
+#define MAX_PAR 9
 
-// Global variables
-// ----------------
-FILE	*pFileMon=NULL,        // pointer to monitor output file
-      *pFileRef=NULL,              // pointer to reference file
-      *pFileFlux=NULL;             // pointer to flux file
-char  *MonitorFileName=NULL,   // name of monitor output file
-      *RefFileName=NULL,           // name of reference file
-      *FluxFileName=NULL;          // name of flux file
-short  kind=0,                 // defines variable parameter in brilliance monitoring
-       src_type=0,                  // defines source type: 0: constant source  1: pulsed source
-       exclusivecount=0;            // criterion: only trajectories within limits are written
-long   nBin=100,               // number of bins in monitor file
-       nColour=ANY_COLOR;                   // color of trajectory that is monitored   (0=all)
-double MinY = -10.0,  MaxY  = 10.0, // min. and max. width to be taken into account
-       MinZ = -10.0,  MaxZ  = 10.0, // min. and max. height to be taken into account
-       MinDivY=-5.0,  MaxDivY= 5.0, // min. and max. hor. div. to be taken into account
-       MinDivZ=-5.0,  MaxDivZ= 5.0, // min. and max. vert. div. to be taken into account
-       MinDivR= 0.0,  MaxDivR=10.0, // min. and max. radial div. to be taken into account
-       MinLmbd= 0.0,  MaxLmbd=20.0, // min. and max. width to be taken into account
-       MinTime=-1.0e9,MaxTime=1.0e9,// min. and max. TOF to be taken into account
-       MinRange,      MaxRange;     // min. and max. value of the variable parameter
-double DelLmbd,                // width of wavelength band used to calculate the brilliance (transfer)
-       DelTime=0.0,                     // space of time used to calculate the brilliance (transfer); only used for pulsed sources
-       DelY, DelZ,                  // spatial width and height used to calculate the brilliance (transfer)
-       DelDivY, DelDivZ,            // hor. and vert. divergence range used to calculate the brilliance (transfer)
-       DelDivR,                     // radial divergence range used to calculate the brilliance (transfer)
-       Freq=0.0;                    // source frequency   (from simulation.inf)
+#define VT_BRL_ABS    1
+#define VT_BRL_TRANS  2
+#define VT_BRL_PCT    3
 
 
+typedef enum
+{
+  VT_NOT_DEF =0,
+  VT_LAMBDA  =1,
+  VT_TIME    =2,
+  VT_POS_Y   =3,
+  VT_POS_Z   =4,
+  VT_DIV_HOR =5,
+  VT_DIV_VERT=6,
+  VT_DIV_RAD =7,
+  VT_ENERGY  =8
+}
+VtMonPar;
+
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+void   OwnInit(int argc, char *argv[]);                  // Reads input parameters and sets global parameters
+double E2DelLmbd(const double Emax, const double Emin);  // converts DelE = Emax - Emin (meV) into DelLambda (Ang)
+double RangeAvrg(const double Xmin, const double Xmax);  // calculates average value according to binning type
+
+
+
+
+/******************************/
+/** Global variables         **/
+/******************************/
+char  *MonitorFileName=NULL,         // name of a file to monitor the brilliance
+      *RefFileName =NULL,            // name of a reference file (it is used to calculate the brilliance transfer)
+      *FluxFileName=NULL;            // name of a flux file      (it is used to monitor the average or max. brilliance as a function of any parameter in running a series of simulations)
+FILE	*pFileMon =NULL,               // pointer to the monitor output file
+      *pFileRef =NULL,               // pointer to the reference file
+      *pFileFlux=NULL;               // pointer to the flux file 
+short  bPulsedSrc =FALSE,            // defines source type: FALSE: constant source  TRUE: pulsed source
+       bExclusive =FALSE,            // criterion: only trajectories within limits are written
+       bLogBin=FALSE,            // TRUE : bin size increases exponentially  FALSE: linear binning
+       eBrlNorm=VT_BRL_ABS;          // 1: absolute brilliance [n/(cm²s sr Ang)]   2: relative brilliance (= brilliance transfer)   3: brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]
+long   nBins=100,                    // number of bins in the monitor file
+       nColour=ANY_COLOR;            // color of trajectory that is monitored   (-1=all)
+double MinY = -50.0,  MaxY  = 50.0,  // min. and max. width to be taken into account
+       MinZ = -50.0,  MaxZ  = 50.0,  // min. and max. height to be taken into account
+       MinDivY=-5.0,  MaxDivY= 5.0,  // min. and max. hor. div. to be taken into account
+       MinDivZ=-5.0,  MaxDivZ= 5.0,  // min. and max. vert. div. to be taken into account
+       MinDivR= 0.0,  MaxDivR=10.0,  // min. and max. radial div. to be taken into account
+       MinLmbd= 0.0,  MaxLmbd=99.0,  // min. and max. width to be taken into account
+       MinE   = 0.0,  MaxE   =1.0e9, // min. and max. width to be taken into account
+       MinTime=-1.0e9,MaxTime=1.0e9, // min. and max. TOF to be taken into account
+       MinRange,      MaxRange;      // min. and max. value of the variable parameter
+double DelLmbd,                      // width of wavelength band used to calculate the brilliance (transfer)
+       DelTime=0.0,                  // space of time used to calculate the brilliance (transfer); only used for pulsed sources
+       DelY, DelZ,                   // spatial width and height used to calculate the brilliance (transfer)
+       DelDivY, DelDivZ,             // hor. and vert. divergence range used to calculate the brilliance (transfer)
+       DelDivR,                      // radial divergence range used to calculate the brilliance (transfer)
+       Freq=0.0;                     // source frequency   (from simulation.inf)
+VtMonPar eBrlPar=VT_NOT_DEF;         // defines the variable parameter in brilliance monitoring
+
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char *argv[])
 {
   char	 sBuffer[512];
-  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "cm", "cm", "deg", "deg", "deg"},
-         sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
-                                "horizontal divergence", "vertical divergence", "radial divergence"};
+  char   sUnit[MAX_PAR+1][ 4]={"", "Ang", "ms", "cm", "cm", "deg", "deg", "deg", "eV"},
+         sParN[MAX_PAR+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
+                                   "horizontal divergence", "vertical divergence", "radial divergence", "energy"};
 
-  // char  weightTag[2][7] = {"", "weight"};
-  short  registered=0;         // criterion: trajectory is within limits set
+  short  bRegistered=FALSE;    // criterion: trajectory is within limits set
   long   iBin,                 // bin number
-      i,                    // index of trajectories
-      normalise,            // 1: absolute brilliance value   2: relative brilliance
-      // crot = 0,          // number of rot angles for yz
-      nTrjTot=0;            // total number of traj. within binning and eval. time
-  double dIntTot=0.0,     // total count rate within binning and eval. time
-      P,                    // weight,
-      Lmbd,                 // wavelength,
-      Time,                 // time of flight,
-      Y, Z;                 // hor. and vert. position of the neutron under consideration
-  double dBinSize,        // size of each bin
+         i,                    // index of trajectories
+         nTrjTot=0;            // total number of traj. within binning and eval. time
+  double dIntTot=0.0,          // total count rate within binning and eval. time
+         P,                    // weight,
+         Lmbd,                 // wavelength,
+         E,                    // energy
+         Time,                 // time of flight,
+         Y, Z;                 // hor. and vert. position of the neutron under consideration
+  double BinSize=0.0,          // size of each bin
+         FactLog=1.0,          // ratio of neighbouring bin values for logarithmic binning
+         Bins,                 // number of bins as double value
          MonData[3];           // data in one monitor row
   double DivY, DivZ=0, DivR,   // hor., vert. and radial divergence of the trajectory
-      *pPosT=NULL,          /* limits of bin (minimal and maximal value)  */
-      *pInt=NULL,           /* intensity (=count rate) per bin  */
-      *pNorm=NULL,          /* normalisation value for each bin */
-      *pNormSD=NULL,        /* standard deviation of normalisation value for each bin */
-      *pSD=NULL,            /* standard deviation per bin       */
-      ParCntr,              // center of a bin of the variable parameter
-      PhaseSpaceVol,        // phase space volume of a bin
-      Brilliance,           // brilliance within one bin
-      Transmission,         // brilliance transfer within one bin
-      BrillMax=0.0,         // maximal brilliance
-      BrillAve=0,           // average brilliance
-      TransMax=0.0,         // maximal brilliance transfer
-      TransAve=0,           // average brilliance transfer
-      BrillAveIn=0.0;       // average brilliance of reference spectrum
-    long   *pBinN=NULL;     // number of trajectories per bin
+         *pPosT=NULL,          // limits of bin (minimal and maximal value)
+         *pInt=NULL,           // intensity (=count rate) per bin
+         *pNorm=NULL,          // normalisation value for each bin
+         *pNormSD=NULL,        // standard deviation of normalisation value for each bin
+         *pSD=NULL,            // standard deviation per bin 
+         ParCntr,              // center of a bin of the variable parameter
+         PhaseSpaceVol,        // phase space volume of a bin
+         PhaseSpaceVolTot,     // phase space volume of the whole range
+         LmbdPrz=1.0,          // percentage DelLambda/Lambda
+         Brilliance=0.0,       // brilliance within one bin
+         Transmission=1.0,     // brilliance transfer within one bin
+         BrillMax=0.0,         // maximal brilliance
+         BrillAve=0,           // average brilliance
+         TransMax=0.0,         // maximal brilliance transfer
+         TransAve=0,           // average brilliance transfer
+         BrillAveIn=0.0,       // average brilliance of reference spectrum
+         LmbdAve;              // average wavelength in a bin
+    long *pBinN=NULL;          // number of trajectories per bin
 
 
     /* initialisation */
     /* -------------- */
-    Init   (argc, argv, VT_MONITOR_1);
-    print_module_name("mon_brilliance 1.0");
+    Init   (argc, argv, MCN_MON1_BRL);
+    print_module_name("mon_brilliance 1.1a");
     OwnInit(argc, argv);
 
-    if (pFileRef!=NULL)
-      normalise = 2;
+    pPosT   = (double*) calloc(nBins+1,sizeof(double));
+    pInt    = (double*) calloc(nBins+1,sizeof(double));
+    pSD     = (double*) calloc(nBins+1,sizeof(double));
+    pNorm   = (double*) calloc(nBins+1,sizeof(double));
+    pNormSD = (double*) calloc(nBins+1,sizeof(double));
+    pBinN   = (long*)   calloc(nBins+1,sizeof(long));
+
+    Bins = (double)nBins;
+    if (bLogBin)
+      FactLog = pow(MaxRange/MinRange, 1.0/Bins);
     else
-      normalise = 1;
+      BinSize = (MaxRange - MinRange)/Bins;
 
-    pPosT   = (double*) calloc(nBin+1,sizeof(double));
-    pInt    = (double*) calloc(nBin+1,sizeof(double));
-    pSD     = (double*) calloc(nBin+1,sizeof(double));
-    pNorm   = (double*) calloc(nBin+1,sizeof(double));
-    pNormSD = (double*) calloc(nBin+1,sizeof(double));
-    pBinN   = (long*)   calloc(nBin+1,sizeof(long));
-
-    switch (kind)
-      {
-      case 1: MinRange = MinLmbd; MaxRange = MaxLmbd; break;  //monitor lambda dependent brilliance
-      case 2: MinRange = MinTime; MaxRange = MaxTime; break;  //monitor time dependent brilliance
-      case 3: MinRange = MinY;    MaxRange = MaxY;    break;  //monitor y dependent brilliance
-      case 4: MinRange = MinZ;    MaxRange = MaxZ;    break;  //monitor z dependent brilliance
-      case 5: MinRange = MinDivY; MaxRange = MaxDivY; break;  //monitor div_y dependent brilliance
-      case 6: MinRange = MinDivZ; MaxRange = MaxDivZ; break;  //monitor div_z dependent brilliance
-      case 7: MinRange = MinDivR; MaxRange = MaxDivR; break;  //monitor radial divergence dependent brilliance
-      default:  Error("Kind of brilliance calculation unknown");
+    for (iBin=0; iBin<=nBins; iBin++)
+    { // logarithmic
+	    if (bLogBin)
+      { if (iBin==0)
+          pPosT[iBin] = MinRange;
+        else
+          pPosT[iBin] = pPosT[iBin-1] * FactLog;
       }
-    dBinSize = (MaxRange - MinRange)/(double)nBin;
-
-    for (iBin=0; iBin<=nBin; iBin++)
-      {
-        pPosT[iBin]=MinRange+(dBinSize*iBin);
-        pInt [iBin]=0.0;
-        pSD  [iBin]=0.0;
-        pBinN[iBin]=0;
-		// for brilliance transfer read reference file and assign these values as normalization
-        if (normalise==2)                       
-          { ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1);
-            StrgScanLF(sBuffer, MonData, 3, 0);
-            pNorm[iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
-	    pNormSD[iBin] = MonData[2];         // uncertainty is the third value in brilliance monitor
-            BrillAveIn += MonData[1]/nBin;
-          }
-        else                                    // absolute brilliance
-          { pNorm[iBin] = 1.0;
-	    pNormSD[iBin] = 0.0;
-          }
+	    else
+      { pPosT[iBin] = MinRange+(BinSize*iBin);  // linear
       }
+      pInt [iBin] = 0.0;
+      pSD  [iBin] = 0.0;
+      pBinN[iBin] = 0;
+  
+      // for brilliance transfer read reference file and assign these values as normalization
+      if (eBrlNorm==VT_BRL_TRANS)                       
+      { ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1);
+        StrgScanLF(sBuffer, MonData, 3, 0);
+        pNorm  [iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
+	      pNormSD[iBin] = MonData[2];         // uncertainty is the third value in brilliance monitor
+        BrillAveIn += MonData[1]/nBins;
+      }
+      else                                    // absolute brilliance
+      { pNorm[iBin]   = 1.0;
+	      pNormSD[iBin] = 0.0;
+      }
+    }
 
     /* output to log file */
     /* ------------------ */
-    if (normalise==2)
-      { fclose(pFileRef);
-        fprintf(LogFilePtr, "brilliance transfer relative to %s ", RefFileName);
-      }
+    if (eBrlNorm==VT_BRL_TRANS)
+    { fclose(pFileRef);
+      fprintf(LogFilePtr, "brilliance transfer relative to %s ", RefFileName);
+    }
+    else if (eBrlNorm==VT_BRL_PCT)
+    { fprintf(LogFilePtr, "brilliance in 1%% DelLambda/Lambda  [n/(cm^2 s sr)]");
+    }
     else
-      { fprintf(LogFilePtr, "absolute brilliance ");
-      }
-    if (src_type==0)
+    { fprintf(LogFilePtr, "absolute brilliance  [n/(cm^2 s sr Ang)]");
+    }
+    if (bPulsedSrc==FALSE)
       fprintf(LogFilePtr, "of a constant source \n");
     else
       fprintf(LogFilePtr, "of a pulsed source of frequency %4.1f Hz \n", Freq);
-    fprintf(LogFilePtr, "Binning  : %ld bins in %s from %10.5f to %10.5f %s\n", nBin, sParN[kind], MinRange, MaxRange, sUnit[kind]);
+    fprintf(LogFilePtr, "Binning  : %ld bins in %s from %10.5f to %10.5f %s\n", nBins, sParN[eBrlPar], MinRange, MaxRange, sUnit[eBrlPar]);
     fprintf(LogFilePtr, "File     : %s\n", MonitorFileName);
 
     /* loop over trajectories */
     /* ---------------------- */
     DECLARE_ABORT;
 
-    while (ReadNeutrons()!= 0) {
+    while (ReadNeutrons()!= 0) 
+    {
       CHECK;
-      for(i=0; i<NumNeutGot; i++) {
+      for(i=0; i<NumNeutGot; i++) 
+      {
         CHECK;
 
         /* write out all neutrons, if 'exclusive counts = no' is set */
-        if (exclusivecount==0)
+        if (bExclusive==FALSE)
           WriteNeutron(&(InputNeutrons[i]));
 
-        registered=0;
+        bRegistered=FALSE;
         P    = InputNeutrons[i].Probability;
         Lmbd = InputNeutrons[i].Wavelength;
         Time = InputNeutrons[i].Time;
         Y    = InputNeutrons[i].Position[1];
         Z    = InputNeutrons[i].Position[2];
+        E    = Lambda2E(Lmbd);                // Ang -> meV
         if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
           DivY = 0.0;
         else
           DivY = 180.0/M_PI * atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[0]);
         if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-          DivY = 0.0;
+          DivZ = 0.0;
         else
           DivZ = 180.0/M_PI * atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
         DivR = sqrt(sq(DivY) + sq(DivZ));
@@ -187,7 +233,7 @@ int main(int argc, char *argv[])
         /* exclude traj. with wrong colours: (nColour=-1 means: all colours accepted) */
         if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
-		/* exclude traj. outside the given ranges */
+		    /* exclude traj. outside the given ranges */
         if (Lmbd < MinLmbd || Lmbd > MaxLmbd) continue;
         if (Time < MinTime || Time > MaxTime) continue;
         if (Y    < MinY    || Y    > MaxY   ) continue;
@@ -195,127 +241,173 @@ int main(int argc, char *argv[])
         if (DivY < MinDivY || DivY > MaxDivY) continue;
         if (DivZ < MinDivZ || DivZ > MaxDivZ) continue;
         if (DivR < MinDivR || DivR > MaxDivR) continue;
+        if (E    < MinE    || E    > MaxE   ) continue;
 
-		// determine channel for a given trajetory depending on the variable parameter
-        switch (kind) {
-        case 1: //monitor lambda dependent brilliance
-          iBin = (int)floor(nBin * (Lmbd - MinLmbd)/(MaxLmbd - MinLmbd));
-          break;
-
-        case 2: //monitor time dependent brilliance
-          iBin = (int)floor(nBin * (Time - MinTime)/(MaxTime - MinTime));
-          break;
-
-        case 3: //monitor y dependent brilliance
-          iBin = (int)floor(nBin * (Y - MinY)/(MaxY - MinY));
-          break;
-
-        case 4: //monitor z dependent brilliance
-          iBin = (int)floor(nBin * (Z - MinZ)/(MaxZ - MinZ));
-          break;
-
-        case 5: //monitor div_y dependent brilliance
-          iBin = (int)floor(nBin * (DivY - MinDivY)/(MaxDivY - MinDivY));
-          break;
-
-        case 6: //monitor div_z dependent brilliance
-          iBin = (int)floor(nBin * (DivZ - MinDivZ)/(MaxDivZ - MinDivZ));
-          break;
-		
-        case 7: //monitor radial divergence dependent brilliance
-          iBin = (int)floor(nBin * (DivR - MinDivR)/(MaxDivR - MinDivR));
-          break;
+	    	// determine the channel for a given trajectory depending on the variable parameter
+        if (bLogBin==TRUE)
+        { 
+          switch (eBrlPar) 
+          {
+            case VT_LAMBDA  : iBin = (int)floor(nBins * log(Lmbd/MinLmbd)/log(MaxLmbd/MinLmbd)); break;
+            case VT_TIME    : iBin = (int)floor(nBins * log(Time/MinTime)/log(MaxTime/MinTime)); break;
+            case VT_POS_Y   : iBin = (int)floor(nBins * log(Y   /MinY   )/log(MaxY   /MinY));    break;
+            case VT_POS_Z   : iBin = (int)floor(nBins * log(Z   /MinZ   )/log(MaxZ   /MinZ));    break;
+            case VT_DIV_HOR : iBin = (int)floor(nBins * log(DivY/MinDivY)/log(MaxDivY/MinDivY)); break;
+            case VT_DIV_VERT: iBin = (int)floor(nBins * log(DivZ/MinDivZ)/log(MaxDivZ/MinDivZ)); break;
+            case VT_DIV_RAD : iBin = (int)floor(nBins * log(DivR/MinDivR)/log(MaxDivR/MinDivR)); break;
+            case VT_ENERGY  : iBin = (int)floor(nBins * log(E   /MinE   )/log(MaxE   /MinE));    break;
+          }
+        }
+        else 
+        { 
+          switch (eBrlPar) 
+          {
+            case VT_LAMBDA  : iBin = (int)floor(nBins * (Lmbd - MinLmbd)/(MaxLmbd - MinLmbd)); break;
+            case VT_TIME    : iBin = (int)floor(nBins * (Time - MinTime)/(MaxTime - MinTime)); break;
+            case VT_POS_Y   : iBin = (int)floor(nBins * (Y    - MinY   )/(MaxY    - MinY));    break;
+            case VT_POS_Z   : iBin = (int)floor(nBins * (Z    - MinZ   )/(MaxZ    - MinZ));    break;
+            case VT_DIV_HOR : iBin = (int)floor(nBins * (DivY - MinDivY)/(MaxDivY - MinDivY)); break;
+            case VT_DIV_VERT: iBin = (int)floor(nBins * (DivZ - MinDivZ)/(MaxDivZ - MinDivZ)); break;
+            case VT_DIV_RAD : iBin = (int)floor(nBins * (DivR - MinDivR)/(MaxDivR - MinDivR)); break;
+            case VT_ENERGY  : iBin = (int)floor(nBins * (E    - MinE   )/(MaxE    - MinE));    break;
+          }
         }
 
-        if (iBin >= 0  &&  iBin < nBin) {
+        if (iBin >= 0  &&  iBin < nBins) 
+        {
           pInt [iBin] += P;
           pBinN[iBin] += 1;
-          dIntTot   += P;
-          nTrjTot   += 1;
-          registered=1;
+          dIntTot     += P;
+          nTrjTot     += 1;
+          bRegistered = TRUE;
         }
 
         /* write out registered neutrons, if 'exclusive counts = yes' is set */
-        if((exclusivecount==1) && (registered==1))
-          {
-            WriteNeutron(&(InputNeutrons[i]));
-          }
+        if((bExclusive==TRUE) && (bRegistered==TRUE))
+        {
+          WriteNeutron(&(InputNeutrons[i]));
+        }
       }
     }
 
  my_exit:
-
+    // Evaluate binned data and write to monitor file
+    // ----------------------------------------------
     if (pFileMon != NULL) 
     {
-      fprintf(pFileMon, "#Monitor weight\n");
-      for (iBin = 0; iBin < nBin; iBin++) 
+      fprintf(pFileMon, "# Brilliance Monitor \n");
+      for (iBin = 0; iBin < nBins; iBin++) 
       {
-        switch(kind)
-        { case 1: DelLmbd = (pPosT[iBin+1] - pPosT[iBin]);              break;
-          case 2: DelTime = (pPosT[iBin+1] - pPosT[iBin]) / 1000.0;     break; // ms -> s
-          case 3: DelY    = (pPosT[iBin+1] - pPosT[iBin]);              break;
-          case 4: DelZ    = (pPosT[iBin+1] - pPosT[iBin]);              break;
-          case 5: DelDivY = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-          case 6: DelDivZ = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-          case 7: DelDivR = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
+        switch(eBrlPar)
+        { case VT_LAMBDA  : DelLmbd = (pPosT[iBin+1] - pPosT[iBin]);              break;
+          case VT_TIME    : DelTime = (pPosT[iBin+1] - pPosT[iBin]) / 1000.0;     break; // ms -> s
+          case VT_POS_Y   : DelY    = (pPosT[iBin+1] - pPosT[iBin]);              break;
+          case VT_POS_Z   : DelZ    = (pPosT[iBin+1] - pPosT[iBin]);              break;
+          case VT_DIV_HOR : DelDivY = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
+          case VT_DIV_VERT: DelDivZ = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
+          case VT_DIV_RAD : DelDivR = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
+          case VT_ENERGY  : DelLmbd = E2DelLmbd(pPosT[iBin+1], pPosT[iBin]);      break; 
         }
 
-        ParCntr = (pPosT[iBin]+pPosT[iBin+1])/2.0;
+        // center of the bin
+        ParCntr = RangeAvrg(pPosT[iBin], pPosT[iBin+1]);
 
-        if (kind==7) // radial divergence
-          PhaseSpaceVol= DelLmbd * DelY * DelZ * 2*M_PI * ParCntr*M_PI/180.0 * DelDivR;
+        // calculate brilliance
+        if (eBrlPar==VT_DIV_RAD) // radial divergence
+          PhaseSpaceVol = DelLmbd * DelY * DelZ * 2*M_PI * ParCntr*M_PI/180.0 * DelDivR;
         else
-          PhaseSpaceVol= DelLmbd * DelY * DelZ * DelDivY * DelDivZ;
+          PhaseSpaceVol = DelLmbd * DelY * DelZ * DelDivY * DelDivZ;
 
-        if (src_type==0)
+        if (bPulsedSrc==FALSE)
           Brilliance = pInt[iBin] / PhaseSpaceVol;
         else
           Brilliance = pInt[iBin] / PhaseSpaceVol / Freq / DelTime;
-        
-		    if (pNorm[iBin] > 0.0)
-		      Transmission = Brilliance / pNorm[iBin];
-		    else
-          Transmission = 1.0;
 
-        if(pBinN[iBin]!=0)
-          pSD[iBin] = Transmission * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
-        else
-          pSD[iBin] = 0.0;
+        // normalisation to 1% in DelLambda/Lambda
+        if (eBrlNorm==VT_BRL_PCT)
+        { 
+          if (eBrlPar==VT_LAMBDA)
+            LmbdAve = ParCntr;
+          else if (eBrlPar==VT_ENERGY)
+            LmbdAve = RangeAvrg(E2Lambda(pPosT[iBin]), E2Lambda(pPosT[iBin+1]));  // meV -> Ang
+          else 
+            LmbdAve = RangeAvrg(MinRange, MaxRange);
 
-        fprintf(pFileMon,"%11.7e  %11.7e  %11.7e  %7ld\n", ParCntr, Transmission, pSD[iBin], pBinN[iBin]);
-
+          LmbdPrz = 100.0 * 1.0 / LmbdAve;       // Brilliance calculated per Ang; this gives the calculated percentage in DelLmbd/Lmbd 
+          Brilliance /= LmbdPrz;
+        }
+ 
         BrillMax = Max(BrillMax, Brilliance);
-        TransMax = Max(TransMax, Transmission);
+        
+        // calculate transmission for brilliance transfer 
+        // write transmission or brilliance to monitor file
+        if (eBrlNorm==VT_BRL_TRANS)
+        { if (pNorm[iBin] > 0.0)
+		        Transmission = Brilliance / pNorm[iBin];
+		      else
+            Transmission = 1.0;
+          TransMax = Max(TransMax, Transmission);
+
+          if(pBinN[iBin]!=0)
+            pSD[iBin] = Transmission * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
+          else
+            pSD[iBin] = 0.0;
+
+          fprintf(pFileMon,"%11.7e  %11.7e  %11.7e  %7ld\n", ParCntr, Transmission, pSD[iBin], pBinN[iBin]);
+        }
+        else
+        {
+          if(pBinN[iBin]!=0)
+            pSD[iBin] = Brilliance * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
+          else
+            pSD[iBin] = 0.0;
+
+          fprintf(pFileMon,"%11.7e  %11.7e  %11.7e  %7ld\n", ParCntr, Brilliance, pSD[iBin], pBinN[iBin]);
+        }
       }
 
-      if (kind==7)
-        PhaseSpaceVol = (MaxLmbd - MinLmbd) * (MaxY - MinY) * (MaxZ - MinZ) * M_PI * (sq(M_PI/180.0*MaxDivR) - sq(M_PI/180.0*MinDivR));
+      // calculate average brilliance
+      if (eBrlPar==VT_DIV_RAD)
+        PhaseSpaceVolTot = (MaxLmbd - MinLmbd) * (MaxY - MinY) * (MaxZ - MinZ) * M_PI * (sq(M_PI/180.0*MaxDivR) - sq(M_PI/180.0*MinDivR));
       else
-        PhaseSpaceVol = (MaxLmbd - MinLmbd) * (MaxY - MinY) * (MaxZ - MinZ) * M_PI/180.0*(MaxDivY - MinDivY) * M_PI/180.0*(MaxDivZ - MinDivZ);
+        PhaseSpaceVolTot = (MaxLmbd - MinLmbd) * (MaxY - MinY) * (MaxZ - MinZ) * M_PI/180.0*(MaxDivY - MinDivY) * M_PI/180.0*(MaxDivZ - MinDivZ);
 
-      if (src_type==0)
-        BrillAve = dIntTot / PhaseSpaceVol;
+      if (bPulsedSrc==FALSE)
+        BrillAve = dIntTot / PhaseSpaceVolTot;
       else
-        BrillAve = dIntTot / (PhaseSpaceVol * Freq * (MaxTime - MinTime)/1000.0);
+        BrillAve = dIntTot / (PhaseSpaceVolTot * Freq * (MaxTime - MinTime)/1000.0);    // ms -> s
 
-      TransAve = BrillAve/BrillAveIn;
+      // normalisation to 1% in DelLambda/Lambda
+      if (eBrlNorm==VT_BRL_PCT)
+      { 
+        LmbdAve = RangeAvrg(MinLmbd, MaxLmbd);
+        LmbdPrz = 100.0 * 1.0 / LmbdAve;       // Brilliance calculated per Ang; this gives the calculated percentage in DelLmbd/Lmbd 
+        Brilliance /= LmbdPrz;
+      }
 
       fclose(pFileMon);
     }
 
-    if (pFileFlux != NULL) {
+    // Finish: print parameters, write geometry and instrument file, free memory
+    // -------------------------------------------------------------------------
+
+    // write out one line into the flux file 
+    if (pFileFlux != NULL) 
+    {
       fprintf(pFileFlux, "%10.3f %10.3f %10.3f %10.3f %10.3f %10.3f     %11.4e     %11.4e \n",
               0.5*(MaxLmbd+MinLmbd), 0.5*(MaxY+MinY), 0.5*(MaxZ+MinZ), 0.5*(MaxDivY+MinDivY), 0.5*(MaxDivZ+MinDivZ), 0.5*(MaxDivR+MinDivR),
               BrillAve, BrillMax);
       fclose(pFileFlux);
     }
 
+    // write total and average values to 
     fprintf(LogFilePtr, "total neutron count rate within given ranges: %11.4e n/s \n", dIntTot);
     fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm^2 s Ang sterad)\n\n", BrillAve, BrillMax);
-    if (normalise==2)
+    if (eBrlNorm==VT_BRL_TRANS)
+    { TransAve = BrillAve/BrillAveIn;
       fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
+    }
 
-    stPicture.eType  = (short) kind;
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
     if (pPosT!=NULL)   free(pPosT);
     if (pInt !=NULL)   free(pInt);
@@ -331,152 +423,232 @@ int main(int argc, char *argv[])
 }
 
 
+/***********************************************************************************/
+/* OwnInit:                                                                        */
+/* This routine reads the parameter values and checks them                         */
+/***********************************************************************************/
 void OwnInit(int argc, char *argv[])
 {
   int    i;
   double TimeMeas,   // measuring time
-    LmbdWant;   // wanted wavelength
+         LmbdWant;   // wanted wavelength
   char	 sNewName[99]="";
 
-  for(i=1; i<argc; i++) {
-    if(argv[i][0]!='+') {
-      switch(argv[i][1]) {
-      case 'O':
-        MonitorFileName=&argv[i][2];
-        pFileMon = fopen(FullParName(MonitorFileName),"wt");
-        if (pFileMon==NULL) {
-          char* p1=NULL, *p2=NULL;
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
+      switch(argv[i][1]) 
+      {
+        case 'O':
+          MonitorFileName=&argv[i][2];
+          pFileMon = fopen(FullParName(MonitorFileName),"wt");
+          if (pFileMon==NULL) 
+          {
+            char* p1=NULL, *p2=NULL;
 
-          fprintf(LogFilePtr,"\nFile %s could not be opened for monitor output\n", MonitorFileName);
+            fprintf(LogFilePtr,"\nFile %s could not be opened for monitor output\n", MonitorFileName);
 
-          p1= strrchr(MonitorFileName, '/');
-          p2= strrchr(MonitorFileName, '\\');
-          if (p1 > p2)
-            sprintf(sNewName, "new_%s", p1+1);
-          if (p2 > p1)
-            sprintf(sNewName, "new_%s", p2+1);
-          if (p1 != p2)
-            fprintf(LogFilePtr,"file name changed to %s\n", sNewName);
-        }
-        break;
+            p1= strrchr(MonitorFileName, '/');
+            p2= strrchr(MonitorFileName, '\\');
+            if (p1 > p2)
+              sprintf(sNewName, "new_%s", p1+1);
+            if (p2 > p1)
+              sprintf(sNewName, "new_%s", p2+1);
+            if (p1 != p2)
+              fprintf(LogFilePtr,"file name changed to %s\n", sNewName);
+          }
+          break;
 
-      case 'S':
-        RefFileName=&argv[i][2];
-        pFileRef = fopen(FullParName(RefFileName),"rt");
-        if (pFileRef==NULL)
+        case 'S':
+          RefFileName=&argv[i][2];
+          pFileRef = fopen(FullParName(RefFileName),"rt");
+          if (pFileRef==NULL)
           {  fprintf(LogFilePtr,"\nReference file %s could not be opened\n", RefFileName);
           }
-        break;
+          break;
 
-      case 'F':
-        FluxFileName=&argv[i][2];
-        pFileFlux = fopen(FullParName(FluxFileName),"at");
-        if (pFileFlux==NULL)
+        case 'F':
+          FluxFileName=&argv[i][2];
+          pFileFlux = fopen(FullParName(FluxFileName),"at");
+          if (pFileFlux==NULL)
           {  fprintf(LogFilePtr,"\nFlux file %s could not be opened\n", FluxFileName);
           }
-        break;
+          break;
 
-      case 'k':
-        kind = atol(&argv[i][2]);     // 1: lambda  2: time  3: y  4: z  5: div_y  6: div_z  7: div_rad
-        break;
+        case 'k':
+          eBrlPar  = (short) atoi(&argv[i][2]);     // 1: lambda  2: time  3: y  4: z  5: div_y  6: div_z  7: div_rad  8: energy
+          break;
+        case 'N':
+          eBrlNorm = (short) atoi(&argv[i][2]);     // 1: absolute brilliance [n/(cm²s sr Ang)]   2: brilliance transfer   3: brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]
+          break;
+				case 'B':
+					bLogBin  = (short) atoi(&argv[i][2]);     // TRUE : bin size increases exponentially   FALSE: linear binning
+					break;
         /* case 'p':
-           src_type = atol(&argv[i][2]); // 0: constant source  1: pulsed source
-           break; */
+            bPulsedSrc = atol(&argv[i][2]); // 0: constant source  1: pulsed source
+            break; */
 
-      case 'n':
-        nBin = atol(&argv[i][2]); /* number of bins */
-        break;
+        case 'n':
+          nBins = atol(&argv[i][2]);     // number of bins
+          break;
 
-      case 'l':
-        MinLmbd = atof(&argv[i][2]);   // lower bound lambda [Å]
-        break;
-      case 'L':
-        MaxLmbd = atof(&argv[i][2]);   // upper bound lambda [Å]
-        break;
+        case 'l':
+          MinLmbd = atof(&argv[i][2]);   // lower bound wavelength [Å]
+          break;
+        case 'L':
+          MaxLmbd = atof(&argv[i][2]);   // upper bound wavelength [Å]
+          break;
 
-      case 'y':
-        MinY = atof(&argv[i][2]);      // lower bound width [cm]
-        break;
-      case 'Y':
-        MaxY = atof(&argv[i][2]);      // upper bound width [cm]
-        break;
+        case 'm':
+          MinE = atof(&argv[i][2]);      // lower bound energy [meV]
+          break;
+        case 'M':
+          MaxE = atof(&argv[i][2]);      // upper bound energy [meV]
+          break;
 
-      case 'z':
-        MinZ = atof(&argv[i][2]);      // lower bound height [cm]
-        break;
-      case 'Z':
-        MaxZ = atof(&argv[i][2]);      // upper bound height [cm]
-        break;
+        case 'y':
+          MinY = atof(&argv[i][2]);      // lower bound width [cm]
+          break;
+        case 'Y':
+          MaxY = atof(&argv[i][2]);      // upper bound width [cm]
+          break;
 
-      case 'h':
-        MinDivY = atof(&argv[i][2]);      // lower bound hor. divergence [deg]
-        break;
-      case 'H':
-        MaxDivY = atof(&argv[i][2]);      // upper bound hor. divergence [deg]
-        break;
+        case 'z':
+          MinZ = atof(&argv[i][2]);      // lower bound height [cm]
+          break;
+        case 'Z':
+          MaxZ = atof(&argv[i][2]);      // upper bound height [cm]
+          break;
 
-      case 'v':
-        MinDivZ = atof(&argv[i][2]);      // lower bound vert. divergence [deg]
-        break;
-      case 'V':
-        MaxDivZ = atof(&argv[i][2]);      // upper bound vert. divergence [deg]
-        break;
+        case 'h':
+          MinDivY = atof(&argv[i][2]);      // lower bound hor. divergence [deg]
+          break;
+        case 'H':
+          MaxDivY = atof(&argv[i][2]);      // upper bound hor. divergence [deg]
+          break;
 
-      case 'r':
-        MinDivR = atof(&argv[i][2]);      // lower bound radial divergence [deg]
-        break;
-      case 'R':
-        MaxDivR = atof(&argv[i][2]);      // upper bound radial divergence [deg]
-        break;
+        case 'v':
+          MinDivZ = atof(&argv[i][2]);      // lower bound vert. divergence [deg]
+          break;
+        case 'V':
+          MaxDivZ = atof(&argv[i][2]);      // upper bound vert. divergence [deg]
+          break;
 
-      case 'e':
-        if(argv[i][2]=='1') exclusivecount = 1;   // if activated, only neutrons meeting the monitor conditions are considered further on
-        break;
-      case 'C':
-        nColour = atol(&argv[i][2]);       //  excludes all neutrons with diff. Colour, if nColour >= 0
-        break;
+        case 'r':
+          MinDivR = atof(&argv[i][2]);      // lower bound radial divergence [deg]
+          break;
+        case 'R':
+          MaxDivR = atof(&argv[i][2]);      // upper bound radial divergence [deg]
+          break;
 
-      case 't':
-        MinTime = atof(&argv[i][2]);   // minimal time for monitoring [s]
-        break;
-      case 'T':
-        MaxTime = atof(&argv[i][2]);   // maximal time for monitoring [s]
-        break;
-      case 'f':
-        Freq = atof(&argv[i][2]);      // frequency of the pulsed source [Hz]
-        break;
+        case 'e':
+          bExclusive = (short) atoi(&argv[i][2]);  // if activated, only neutrons meeting the monitor conditions are considered further on
+          break;
+        case 'C':
+          nColour = atol(&argv[i][2]);       //  excludes all neutrons with diff. Colour, if nColour >= 0
+          break;
 
-      default:
-        fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
-        exit(-1);
-        break;
+        case 't':
+          MinTime = atof(&argv[i][2]);   // minimal time for monitoring [s]
+          break;
+        case 'T':
+          MaxTime = atof(&argv[i][2]);   // maximal time for monitoring [s]
+          break;
+        case 'f':
+          Freq = atof(&argv[i][2]);      // frequency of the pulsed source [Hz]
+          break;
+
+        default:
+          fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
+          exit(-1);
+          break;
       }
     }
   }
 
-  // pulsed source assumed if time is variable parameter or frequency > 0
-  if (kind==2  || Freq > 0.0) src_type=1;
+  // pulsed source assumed if time is the variable parameter or frequency > 0
+  if (eBrlPar==VT_TIME  || Freq > 0.0) 
+    bPulsedSrc=TRUE;
 
-  if (src_type==1 && Freq==0.0)
+  // Read frequency from 'simulation.inf' if not given here
+  if (bPulsedSrc==TRUE && Freq==0.0)
     ReadSimData(&TimeMeas, &LmbdWant, &Freq);
 
   // ranges of phase space
-  if (src_type==1)
+  if (bPulsedSrc==TRUE)
   {  if (MinTime==-1.0e9 || MaxTime==1.0e9)
       DelTime = 1.0/Freq;
     else
       DelTime = (MaxTime - MinTime)/1000.0;   // ms -> s;  only used for time dependent brilliance
   }
-  DelLmbd =  MaxLmbd - MinLmbd;
+
+  // calculate wavelength band from energy for an energy dependent monitor or if the wavelength range is not given
+  if (eBrlPar==VT_ENERGY || (MaxLmbd > 90.0 && MaxE < 1.0e6) )
+    DelLmbd =  E2DelLmbd(MaxE, MinE);
+  else
+    DelLmbd =  MaxLmbd - MinLmbd;
+
   DelY    =  MaxY - MinY;
   DelZ    =  MaxZ - MinZ;
   DelDivY = (MaxDivY - MinDivY) * M_PI/180.0; // deg -> rad
   DelDivZ = (MaxDivZ - MinDivZ) * M_PI/180.0; // deg -> rad
   DelDivR = (MaxDivR - MinDivR) * M_PI/180.0; // deg -> rad
 
-  if (MonitorFileName==NULL) {
+  // check if file name is given
+  if (MonitorFileName==NULL) 
+  {
     fprintf(LogFilePtr,"you must define a MonitorOutputFile\n");
     exit(99);
   }
 
+  // set range for monitor file
+  switch (eBrlPar)
+  {
+    case VT_LAMBDA  : MinRange = MinLmbd; MaxRange = MaxLmbd; break;  // monitor lambda dependent brilliance
+    case VT_TIME    : MinRange = MinTime; MaxRange = MaxTime; break;  // monitor time dependent brilliance
+    case VT_POS_Y   : MinRange = MinY;    MaxRange = MaxY;    break;  // monitor y dependent brilliance
+    case VT_POS_Z   : MinRange = MinZ;    MaxRange = MaxZ;    break;  // monitor z dependent brilliance
+    case VT_DIV_HOR : MinRange = MinDivY; MaxRange = MaxDivY; break;  // monitor div_y dependent brilliance
+    case VT_DIV_VERT: MinRange = MinDivZ; MaxRange = MaxDivZ; break;  // monitor div_z dependent brilliance
+    case VT_DIV_RAD : MinRange = MinDivR; MaxRange = MaxDivR; break;  // monitor radial divergence dependent brilliance
+    case VT_ENERGY  : MinRange = MinE;    MaxRange = MaxE;    break;  // monitor energy dependent brilliance
+    default:  Error("Kind of brilliance calculation unknown");
+  }
+
+  // check if lower bound value is positive for logarithmic binning
+  if (bLogBin && MinRange<=0.0)
+    Error("Lower bound value of the range must be positive for logarithmic binning");
+
+  return;
+}
+
+
+/***********************************************************************************/
+/* E2DelLmbd:                                                                      */
+/* convert DelE = Emax - Emin (meV) into DelLambda (Ang)                           */
+/***********************************************************************************/
+double E2DelLmbd(const double Emax, const double Emin)
+{
+  double LmbdMin=E2Lambda(Emax),   // meV -> Ang
+         LmbdMax=E2Lambda(Emin);
+
+  return(LmbdMax-LmbdMin);
+}
+
+
+/***********************************************************************************/
+/* RangeAvrg:                                                                      */
+/* calculate average value according to binning type                               */
+/***********************************************************************************/
+double RangeAvrg(const double Xmin, const double Xmax)
+{
+  double Xavrg;
+
+  if (bLogBin)
+    Xavrg = sqrt(Xmin * Xmax);
+  else
+    Xavrg = (Xmin + Xmax)/2.0;
+
+  return(Xavrg);
 }

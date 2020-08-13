@@ -8,7 +8,8 @@
 /** definitions and structures **/
 /********************************/
 
-#define MESSAGE_LEN 255
+#define MSG_LEN 255
+#define MAX_MSG  10
 
 typedef enum
 {	
@@ -22,6 +23,9 @@ typedef enum
   GUID_OUT_OF_EXIT       = 200,
   GUID_NO_PLANE          = 201,
   CHOP_PASSED_OUTSIDE    = 300,
+  WNDO_L_RANGE_TOO_SMALL = 402,
+  WNDI_L_RANGE_TOO_SMALL = 403,
+  WND_CROSS_TALK         = 410,
   SMPL_Q_RANGE_TOO_SMALL = 800,
   SMPL_TRAJ_INSIDE       = 801,
   ENV_TRAJ_INSIDE        = 802,

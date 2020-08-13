@@ -1,5 +1,9 @@
 /*********************************************************************************************/
-/*  VITESS module  READ_IN                                                                   */
+/*  VITESS module 'read-in'                                                                  */
+/*                                                                                           */
+/* This module reads neutron events (trajectories) from files in different formats           */
+/*   (so it replaces a source module)                                                        */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
@@ -7,8 +11,9 @@
 /* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
 /* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
 /* 1.1a Apr  2014  K. Lieutenant   repetition corrected                                      */
-/* 1.2  Apr  2018  K. Lieutenant   MCPL format                                               */
-/* 1.3  May  2019  K. Lieutenant   option to read only trace trajectories                    */
+/* 1.2  Apr  2018  K. Lieutenant   MCPL and MCNP format                                      */
+/* 1.3  May  2019  K. Lieutenant   option to read only trajectories marked for tracing       */
+/* 1.3a Jul  2019  K. Lieutenant   MCNPX format uses its own structure                       */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -46,14 +51,16 @@ void  GetId      (TotalID* pID);
 /******************************/
 /** Global Variables    **/
 /******************************/
+McCompID     _eModule=MCN_READ_IN;
+
 FILE*        pInFile[NF_MAX]={NULL,NULL,NULL}; // pointer to input file
-mcpl_file_t  hInFile;                          // handle to input file
+mcpl_file_t  hInFile;                          // handle to MCPL input file
 short        DetectColor=-1;                   // Flag: read only neutrons that are marked for 'trace'
 int          Nrep=1;                           // Number of times the input is read
-double       FactInt=1.0,                      // Factor to normmalize to the source intensity from MCNPX data
+double       FactInt=1.0,                      // Factor to normalize to the source intensity from MCNPX data
              Weight[NF_MAX];                   // Weights of the input files
 VtPrgFormat  ePrgFormat=VT_VITESS_FMT;         // format of data to read (VITESS, McStas, MCNPX)
-VtDataFormat eDatFormat=VT_FLOAT;              // output format (exponential, float)
+// VtDataFormat eDatFormat=VT_FLOAT;           // output format (exponential, float)
 
 
 /******************************/
@@ -70,11 +77,13 @@ int main(int argc, char **argv)
   Neutron         InNeutron;
 
   /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_READ_IN);
-  print_module_name("read_in 1.3");
-
-  /* module specific initialization */
+  bVisInstalled = FALSE;
+  bBlowupInstal = FALSE;
+  
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
+  
   if (__pTraceFileName!=NULL)
     fprintf(LogFilePtr, "trace file used              : %s\n", __pTraceFileName);
 
@@ -199,9 +208,9 @@ void  OwnInit(int argc, char *argv[])
         case 'f':
           ePrgFormat = (VtPrgFormat) atoi(&argv[i][2]);
           break;
-        case 'F':
+        /* case 'F':
           eDatFormat = (VtDataFormat) atoi(&argv[i][2]);
-          break;
+          break; */
         case 'C':
           DetectColor = (short) atoi(&argv[i][2]);
           break;
@@ -272,26 +281,26 @@ void OwnCleanup()
 // ----------------------
 // Read VITESS trajectory
 // ----------------------
-short ScanVitessTraj(Neutron* pNeutron, const char* sLine, double Weight)
+short ScanVitessTraj(Neutron* pNeutron, const char* sLine, double weight)
 {
-  int     rc=0;
-	char*   form=NULL;
+  int    rc=0;
+	char*  pForm="%c%c%lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf";
 
-  switch (eDatFormat)
+  /* switch (eDatFormat)
   {
     case  VT_EXPONENTIAL: form = "%c%c%lu %c %hd %le %le %le %le %le %le %le %le %le %le %le %le"; break;
     case  VT_FLOAT      : form = "%c%c%lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf"; break;
     default             : Error("Data format not implemented");
-  }
+  }*/
 
-  rc=sscanf(sLine, form, &pNeutron->ID.IDGrp[0], &pNeutron->ID.IDGrp[1], &pNeutron->ID.IDNo, 
-                         &pNeutron->Debug,       &pNeutron->Color, 
-                         &pNeutron->Time,        &pNeutron->Wavelength,  &pNeutron->Probability, 
-                         &pNeutron->Position[0], &pNeutron->Position[1], &pNeutron->Position[2], 
-                         &pNeutron->Vector[0],   &pNeutron->Vector[1],   &pNeutron->Vector[2], 
-                         &pNeutron->Spin[0],     &pNeutron->Spin[1],     &pNeutron->Spin[2]   ); 
+  rc=sscanf(sLine, pForm, &pNeutron->ID.IDGrp[0], &pNeutron->ID.IDGrp[1], &pNeutron->ID.IDNo, 
+                          &pNeutron->Debug,       &pNeutron->Color, 
+                          &pNeutron->Time,        &pNeutron->Wavelength,  &pNeutron->Probability, 
+                          &pNeutron->Position[0], &pNeutron->Position[1], &pNeutron->Position[2], 
+                          &pNeutron->Vector[0],   &pNeutron->Vector[1],   &pNeutron->Vector[2], 
+                          &pNeutron->Spin[0],     &pNeutron->Spin[1],     &pNeutron->Spin[2]   ); 
   if (rc)
-    pNeutron->Probability *= Weight/Nrep;        // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
+    pNeutron->Probability *= (weight/Nrep);        // reduction of weight if data are read more than once or more than 1 file is read
 
   if (rc > 0)
     return(1);
@@ -302,21 +311,21 @@ short ScanVitessTraj(Neutron* pNeutron, const char* sLine, double Weight)
 // -----------------------
 //  Read McStas trajectory 
 // -----------------------
-short ScanMcStasTraj(Neutron* pNeutron, const char* sLine, double Weight)
+short ScanMcStasTraj(Neutron* pNeutron, const char* sLine, double weight)
 {
-  McNeutron McNeut;
+  McNeutron McNeutr;
   short rc=FALSE, rs=0;
 
   rs=sscanf(sLine, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-                   &McNeut.Weight, 
-                   &McNeut.Position[0], &McNeut.Position[1], &McNeut.Position[2], 
-                   &McNeut.Speed[0],    &McNeut.Speed[1],    &McNeut.Speed[2], 
-                   &McNeut.Time, 
-                   &McNeut.Spin[0],     &McNeut.Spin[1],     &McNeut.Spin[2]    ); 
+                   &McNeutr.Weight, 
+                   &McNeutr.Position[0], &McNeutr.Position[1], &McNeutr.Position[2], 
+                   &McNeutr.Speed[0],    &McNeutr.Speed[1],    &McNeutr.Speed[2], 
+                   &McNeutr.Time, 
+                   &McNeutr.Spin[0],     &McNeutr.Spin[1],     &McNeutr.Spin[2]    ); 
   if (rs > 0)
-    rc= ConvertMcStas2Vitess(pNeutron, &McNeut);
+    rc= ConvertMcStas2Vitess(pNeutron, &McNeutr);
   if (rc)
-     pNeutron->Probability *= Weight/Nrep;       // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
+     pNeutron->Probability *= (weight/Nrep);       // reduction of weight if data are read more than once or more than 1 file is read
 
   return(rc);
 }
@@ -328,7 +337,7 @@ short ScanMcStasTraj(Neutron* pNeutron, const char* sLine, double Weight)
 // rc: 1: neutron found
 //     0: other particle
 //    -1: EOF
-short ReadMcplTraj(Neutron* pNeutron, double Weight)
+short ReadMcplTraj(Neutron* pNeutron, double weight)
 {
   const mcpl_particle_t* pMcplPtcl;
   short rc=FALSE;
@@ -341,7 +350,7 @@ short ReadMcplTraj(Neutron* pNeutron, double Weight)
   else
   { rc= ConvertMcpl2Vitess(pNeutron, pMcplPtcl);
     if (rc)
-      pNeutron->Probability *= Weight/Nrep;       // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
+      pNeutron->Probability *= (weight/Nrep);       // reduction of weight if data are read more than once or more than 1 file is read
   }
 
   return(rc);
@@ -351,25 +360,31 @@ short ReadMcplTraj(Neutron* pNeutron, double Weight)
 // -----------------------
 //  Read MCNPX trajectory 
 // -----------------------
-short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine, double Weight)
+short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine, double weight)
 {
-  double energy;
-  short rc=FALSE, rs=0;
-
-	// initialization
-  InitNeutron(pNeutron);			                      
+  McnpNeutron McnpNeutr;
+  short       rc=FALSE, rs=0;
 
   rs=sscanf(sLine, "%le %le %le %le %le %le %le %le %le", 
-                   &pNeutron->Position[0], &pNeutron->Position[1], &pNeutron->Position[2], 
-                   &pNeutron->Vector[0],   &pNeutron->Vector[1],   &pNeutron->Vector[2], 
-                   &energy,                &pNeutron->Probability, &pNeutron->Time); 
+                   &McnpNeutr.Position[0], &McnpNeutr.Position[1], &McnpNeutr.Position[2], 
+                   &McnpNeutr.Vector[0],   &McnpNeutr.Vector[1],   &McnpNeutr.Vector[2], 
+                   &McnpNeutr.Energy,      &McnpNeutr.Counts,      &McnpNeutr.Shakes); 
+
   if (rs > 0)
   { 
+  	// initialization
+    InitNeutron(pNeutron);			                      
+
+    CopyVector(McnpNeutr.Position, pNeutron->Position);
+    CopyVector(McnpNeutr.Vector,   pNeutron->Vector);
+    
+    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> µeV,  lambda -> energy
+    pNeutron->Probability = McnpNeutr.Counts * FactInt * weight/Nrep;       // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
+    pNeutron->Time        = McnpNeutr.Shakes * 1.0e-05;                     // unit  shakes (=1.0e-08 s) -> ms
+
     rc=TRUE;
-    pNeutron->Wavelength  =  LAMBDA_FROM_ENERGY(1.0e+12*energy); // unit MeV -> µeV,  lambda -> energy
-    pNeutron->Probability *= FactInt*Weight/Nrep;                // normalisation counts -> n/s and reduction of weight if data are read more than once or more than 1 file is read
-    pNeutron->Time        *= 1.0e-05;                            // unit  shakes (=1.0e-08 s) -> ms
   }
+
   return(rc);
 }
 

@@ -1,10 +1,14 @@
 /*********************************************************************************************/
-/*  VITESS module  slit                                                                      */
+/*  VITESS module 'slit'                                                                     */
+/*                                                                                           */
+/* This module simulates a rectangular aperture                                              */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  Dec 2006  K. Lieutenant   initial version                                            */
 /* 1.1  Jan 2012  K. Lieutenant   visualization                                              */
+/* 1.2  Jul 2019  K. Lieutenant   blow-up option for visualization                           */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -15,36 +19,39 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-
-void  OwnInit(int argc, char *argv[]);
+void  OwnInit(int argc, char *argv[]);      // reads input parameters and initializes global variables
+void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
+McCompID _eModule=MCN_SLIT;
 
 Plane  Endpoint;                /* Endpoint.D: distance to end of free flight path along x-axis [cm] */
 double VelocityReal,            /* velocity of the neutron                    */
        Width=0.0, Height=0.0,   /* width and Height of the (rectangular) slit */
        DistMove;                /* distance between starting point and slit   */
 
+
 /******************************/
 /** Program                  **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
 	long  i;
 
-	double TimeOF,               /* time of flight of the neutron to the window */
-	       NewPosY, NewPosZ;     /* hor. and vert. position of neutron at slit  */
+	double TimeOF,                /* time of flight of the neutron to the window */
+	       NewPosY, NewPosZ;      /* hor. and vert. position of neutron at slit  */
 
 	/* initialisation */
-        bVisInstalled = TRUE;
-
-	Init(argc, argv, VT_SLIT);
-	print_module_name("Slit 1.1");
+	Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.2");
 	OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
 	DECLARE_ABORT
 
@@ -95,35 +102,23 @@ int main(int argc, char *argv[])
 		}
 	}	
 
- my_exit:
+/******************************************************************************/
+/* Finish: print parameters, write geometry and instrument file, free memory  */
+/******************************************************************************/
+my_exit:
 	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
 	                    Width, Height, DistMove);
 
-  // Geometry data
-  if (bVisInstr)
-  { stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
-    stGeometry.nRectangles=1; 
+  SetGeometry("blue");                       // write geometry data for visualization
+  Cleanup(DistMove, 0.0, 0.0, 0.0, 0.0);     // print intensity, write instrument.inf, free memory
 
-    stGeometry.pRectangle[0].Width     = Width;
-    stGeometry.pRectangle[0].Height    = Height;
-    stGeometry.pRectangle[0].vCntr[0]  = DistMove;
-    stGeometry.pRectangle[0].vCntr[1]  = 0.0;
-    stGeometry.pRectangle[0].vCntr[2]  = 0.0;
-    stGeometry.pRectangle[0].vNormal[0]= 1.0;
-    stGeometry.pRectangle[0].vNormal[1]= 0.0;
-    stGeometry.pRectangle[0].vNormal[2]= 0.0;
-
-    stGeometry.pDescr  = "slit:cyan";
-    stGeometry.eModule = VT_SLIT;
-  }
-
-	Cleanup(DistMove,0.0,0.0, 0.0,0.0);	
-
-	return(0);
+  return(0);
 }
 
 
-
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
 	int i;
@@ -159,7 +154,35 @@ void  OwnInit(int argc, char *argv[])
 	Endpoint.D = -1.0*DistMove;
 }
 
-  
+
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  // Visualisation of the slit geometry
+  if (bVisInstr)
+  {
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    stGeometry.pRectangle = calloc(1, sizeof(VtRectangle));
+    stGeometry.nRectangles = 1;
+
+    stGeometry.pRectangle[0].Width    = Width;
+    stGeometry.pRectangle[0].Height   = Height;
+    stGeometry.pRectangle[0].vCntr[0] = DistMove/CmprFact;
+    stGeometry.pRectangle[0].vCntr[1] = 0.0;
+    stGeometry.pRectangle[0].vCntr[2] = 0.0;
+    stGeometry.pRectangle[0].vNormal[0] = 1.0;
+    stGeometry.pRectangle[0].vNormal[1] = 0.0;
+    stGeometry.pRectangle[0].vNormal[2] = 0.0;
+  }
+
+  return;
+}
+
 
 	    
 

@@ -1,5 +1,8 @@
 /*********************************************************************************************/
-/*  VITESS module  space                                                                     */
+/*  VITESS module 'space'                                                                    */
+/*                                                                                           */
+/* This module simulates neutron propagation incl. attenuation over a certain distance       */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
@@ -17,27 +20,25 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-
 void  OwnInit(int argc, char *argv[]);
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
+McCompID _eModule=MCN_SPACE;
 
 long   ntfs=0, count, k;    	      
 double VelocityReal,        /* speed of the neutron                             [km/s]  */
        Length=0.0,          /* distance to end of free flight path along x-axis  [cm]   */
        MuScat=0.0,          /* macroscopic scattering coeff.                    [1/cm]  */
        MuAbs=0.0;           /* macroscopic absorption coeff.                    [1/cm]  */
-Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */
-  
+Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */  
 
 
 /******************************/
 /** Program                  **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
 	long  i;
@@ -46,10 +47,15 @@ int main(int argc, char *argv[])
 	double CenterX, CenterY, CenterZ, SumProb;
 
 	/* initialisation */
-	bVisInstalled = TRUE;
-	Init(argc, argv, VT_SPACE);
-	print_module_name("Space 1.3");
+	Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.3");
 	OwnInit(argc, argv);
+
+	bVisInstalled = FALSE;
+  if (bVisInstr)
+  { bLengthCmpr = TRUE;
+  	stGeometry.pDescr = "space";
+  }
 	
 	CenterX   = 0.0; 
 	CenterY   = 0.0; 
@@ -106,7 +112,10 @@ int main(int argc, char *argv[])
 		}
 	}	
 
- my_exit:
+/******************************************************************************/
+/* Finish: print parameters, write instrument file, free memory               */
+/******************************************************************************/
+my_exit:
 	if (SumProb != 0.0)
 	{
 		CenterX   = CenterX/SumProb;
@@ -114,24 +123,22 @@ int main(int argc, char *argv[])
 		CenterZ   = CenterZ/SumProb; 
 		AveTimeOF = AveTimeOF/SumProb;
 		
-		fprintf(LogFilePtr,"Center of beam at exit:  (%8.3f,%7.3f,%7.3f) cm, TOF = %8.4f ms \n", CenterX, CenterY, CenterZ, AveTimeOF);
+		fprintf(LogFilePtr,"Center of beam at exit:  (%8.3f,%7.3f,%7.3f) cm, TOF = %8.4f ms \n\n", CenterX, CenterY, CenterZ, AveTimeOF);
 	}
 	else
 	{
-		fprintf(LogFilePtr,"No neutrons at the exit of this module \n");
+		fprintf(LogFilePtr,"No neutrons at the exit of this module \n\n");
 	}
-
-	fprintf(LogFilePtr," \n");
-	stGeometry.pDescr = "space";
-
-
+  
 	Cleanup(Length,0.0,0.0, 0.0,0.0);
 	
 	return(0);
 }
 
 
-
+/***************************************************************/
+/* OwnInit: Reads input parameters and sets global parameters  */
+/***************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
 	int i;

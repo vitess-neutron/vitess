@@ -12,7 +12,7 @@
 
 #include <math.h>
 
-#define thetaCNi 0.099138
+// #define thetaCNi 0.099138
 
 #include "guide_elliptic.h"
 

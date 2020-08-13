@@ -1,5 +1,8 @@
 /*********************************************************************************************/
-/*  VITESS module  WRITEOUT                                                                  */
+/*  VITESS module 'writeout'                                                                 */
+/*                                                                                           */
+/* This module writes neutron events (trajectories) info files in different formats          */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
@@ -19,6 +22,7 @@
 /*      Aug  2012  M. Fromme       clean up                                                  */
 /* 1.6  Jan  2013  K. Lieutenant   tidy up; McStas and MCNPX format                          */
 /* 1.7  Apr  2018  K. Lieutenant   MCPL format                                               */
+/* 1.8  Jul  2018  K. Lieutenant   McStas and MCNPX format use their own structures          */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -33,8 +37,8 @@
 /******************************/
 /** Definitions and Enums    **/
 /******************************/
-#define SP(var, form) if (csep) strcpy(var,sep); strncat(var, form, 13)
-#define FP(s) if (csep++) fputs(sep, pOutFile); fputs(s, pOutFile)
+#define SP(var, form) if (iSep) strcpy(var,pSep); strncat(var, form, 13)
+#define FP(s) if (iSep++) fputs(pSep, pOutFile); fputs(s, pOutFile)
 
 #define cID       0
 #define cTrc      1
@@ -64,8 +68,8 @@ short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv, const 
 short McStasParameters();
 short MCNPXParameters();
 short ConvertVitess2McStas(McNeutron*       pMcNeutron,   const Neutron* pVitNeutron);
-short ConvertVitess2MCNPX (Neutron*         pMcnpNeutron, const Neutron* pVitNeutron);
-short ConvertVitess2MCPL  (mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron);
+short ConvertVitess2MCNPX (McnpNeutron*     pMcnpNeutron, const Neutron* pVitNeutron);
+short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeutron, const Neutron* pVitNeutron);
 
 void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);
 
@@ -73,6 +77,8 @@ void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);
 /******************************/
 /** Global Variables    **/
 /******************************/
+McCompID       _eModule=MCN_WRITEOUT;
+
 FILE*          pOutFile; // pointer to output file
 mcpl_outfile_t hOutFile; // handle to output file for MCPL format
 
@@ -85,6 +91,7 @@ VtPrgFormat  ePrgFormat=VT_VITESS_FMT; // output format (VITESS, McStas, MCNPX)
 VtDataFormat eDatFormat=VT_FLOAT;      // output format (exponential, float)
 VtSeparator  eSeparator=VT_BLANK;      // separator between columns (space, tab)
 
+double FactInt=1.0;         // Factor to normalize to the source intensity from MCNPX data
 short  DetectColor  = 0;    // WriteOut only neutrons with a given color, -1 means any
 int    calcDivY = 0,        // boolean: calculation of hor. divergence 
        calcDivZ = 0;        //                      or vert. divergence necessary
@@ -120,28 +127,34 @@ double filtLambdaMin=-1.0,   // filter
 int main(int argc, char **argv)
 {
   int             i,                // index of trajectories
-                  csep;             // index of formats (useless)
-  const char     *sep;              // separator
+                  iSep=0;           // index of formats
+  const char*     pSep=NULL;        // separator
   double          Divy, Divz, Div;  // divergence of actual trajectory
   Neutron         OutNeutron;
+  McNeutron       OutMcNeutron;
+  McnpNeutron     OutMpNeutron;
   mcpl_particle_t OutParticle;
 
   Divy = Divz = Div = 0.0;
+  memset(&OutNeutron,   '\0', sizeof(Neutron));
+  memset(&OutMcNeutron, '\0', sizeof(McNeutron));
+  memset(&OutMpNeutron, '\0', sizeof(McnpNeutron));
+  memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
   // Initialize the program according to the parameters given 
-  Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.7a");
-
-  // module specific initialization 
+  bVisInstalled = FALSE;
+  bBlowupInstal = FALSE;
+  
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
   
   if (eSeparator==VT_TABULATOR) 
-    sep = "\t"; 
+    pSep = "\t"; 
   else if (eSeparator==VT_BLANK) 
-    sep = " ";
+    pSep = " ";
   else
     Error("Separator has unknown value");
-  csep = 0;
 
   // define format for variables in output file and print headline
   if (bF_Active)
@@ -168,7 +181,7 @@ int main(int argc, char **argv)
         break;
       default:   // nothing to do for VITESS
 	      fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
-        SetFormatsAndHeader(csep, sep);
+        SetFormatsAndHeader(iSep, pSep);
     }
   }
  
@@ -210,13 +223,13 @@ int main(int argc, char **argv)
       // transform to wanted format
       switch (ePrgFormat)
       { case VT_MCSTAS_FMT:
-          ConvertVitess2McStas(&OutNeutron, &InputNeutrons[i]);
+          ConvertVitess2McStas(&OutMcNeutron, &InputNeutrons[i]);
           break;
         case VT_MCPL_FMT:
-          ConvertVitess2MCPL (&OutParticle, &InputNeutrons[i]);
+          ConvertVitess2MCPL (&OutParticle,   &InputNeutrons[i]);
           break;
         case VT_MCNPX_FMT:
-          ConvertVitess2MCNPX(&OutNeutron,  &InputNeutrons[i]);
+          ConvertVitess2MCNPX(&OutMpNeutron,  &InputNeutrons[i]);
           break;
         default:   // nothing to do for VITESS
           memcpy(&OutNeutron, &InputNeutrons[i], sizeof(Neutron));
@@ -228,11 +241,11 @@ int main(int argc, char **argv)
         switch (ePrgFormat)
         {
           case VT_MCSTAS_FMT:
-            fprintf(pOutFile, outform, OutNeutron.Probability, 
-			                                 OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
-			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
-		                                   OutNeutron.Time,        
-			                                 OutNeutron.Spin    [0], OutNeutron.Spin    [1], OutNeutron.Spin    [2]);
+            fprintf(pOutFile, outform, OutMcNeutron.Weight, 
+			                                 OutMcNeutron.Position[0], OutMcNeutron.Position[1], OutMcNeutron.Position[2],
+			                                 OutMcNeutron.Speed   [0], OutMcNeutron.Speed   [1], OutMcNeutron.Speed   [2],
+		                                   OutMcNeutron.Time,        
+			                                 OutMcNeutron.Spin    [0], OutMcNeutron.Spin    [1], OutMcNeutron.Spin    [2]);
             break;
 
           case VT_MCPL_FMT:
@@ -306,6 +319,9 @@ void  OwnInit(int argc, char *argv[])
           break;
         case 'C':
           DetectColor = (short) atoi(&argv[i][2]);
+          break;
+        case 'I':
+          FactInt    = atof(&argv[i][2]);
           break;
 
         case 'f':
@@ -442,7 +458,7 @@ short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const Vecto
 // -------------------------------------------------------------
 // define format for variables in output file and print headline
 // -------------------------------------------------------------
-void SetFormatsAndHeader(int csep, const char *sep)
+void SetFormatsAndHeader(int iSep, const char *pSep)
 {
   switch (ePrgFormat)
   { case VT_MCSTAS_FMT: McStasParameters(); break;
@@ -578,15 +594,16 @@ short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
 	double  velocity;      // velocity of the neutron  [m/s]
 
 	// initialization			                      
-	memcpy(pMcNeutron, pVitNeutron, sizeof(Neutron));        
+	memset(pMcNeutron, '\0', sizeof(McNeutron));        
 
-	pMcNeutron->Time /= 1000.0;            // unit ms -> s
+	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
+	pMcNeutron->Time   = pVitNeutron->Time/1000.0;            // unit ms -> s
+  pMcNeutron->Weight = pVitNeutron->Probability;
 
 	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
 	RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
 	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
 
-	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
 	MultiplyByScalar(pMcNeutron->Speed, velocity);     
 	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
 
@@ -616,13 +633,13 @@ short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutr
 // ------------------------------------------
 // conversion from VITESS to MCNPX parameters
 // ------------------------------------------
-short ConvertVitess2MCNPX (Neutron* pMcnpNeutron, const Neutron* pVitNeutron)
+short ConvertVitess2MCNPX (McnpNeutron* pMcnpNeutron, const Neutron* pVitNeutron)
 {
-  memcpy(pMcnpNeutron, pVitNeutron, sizeof(Neutron));
-
-  pMcnpNeutron->Wavelength  =  ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) // lambda -> energy
-                             * 1.0e-12;     // unit µeV -> MeV
-  pMcnpNeutron->Time        *= 1.0e+05;     // unit  ms -> shakes = 1.0e-08 s
+  CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
+  CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
+  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit µeV -> MeV
+  pMcnpNeutron->Counts = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
+  pMcnpNeutron->Shakes = 1.0e+05 *pVitNeutron->Time;                              // unit  ms -> shakes = 1.0e-08 s
 
   return(TRUE);
 }

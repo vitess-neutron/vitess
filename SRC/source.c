@@ -1,5 +1,9 @@
 /*********************************************************************************************/
 /*  VITESS module source                                                                     */
+/*                                                                                           */
+/* This module generates trajectories using the flux distribution of a neutron source        */
+/* (it normalises intensity according to number of traj., wavelength and angular range, ...) */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
@@ -67,6 +71,8 @@ typedef enum
 VtDirect;
 
 /* global variables */
+McCompID _eModule=MCN_SOURCE;
+
 TotalID*  g_pTrace=NULL;       /* table of trajectory IDs for tracing             */
 long      g_nLinesTr=0;        /* Number of lines in the trace file               */
 char*     pTraceFileName=NULL;
@@ -114,8 +120,10 @@ FctTable  stFluxT [NUM_MOD], /* data of time distr.       */
 
 
 /* local functions */
+void  OwnInit(int argc, char **argv);
 void  OwnCleanup();
-void  OwnInit();
+void  SetGeometry(char* sColor);
+
 void  LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL);
 void  LoadTimeDistribution      (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT);  
 void  LoadWavelengthTimeDistrib (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL);
@@ -168,13 +176,11 @@ int main(int argc, char *argv[])
 
    /* Initialize */
    bVisInstalled = TRUE;
-   Init             (argc, argv, VT_SOURCE);
- #ifdef _TEST
-   print_module_name("Source and Window 1.25t");
- #else
-   print_module_name("Source and Window 1.25e");
- #endif
+   
+   Init(argc,argv, _eModule);
+   PrintModuleName(_eModule, "1.26");
    OwnInit(argc, argv);
+
    CenterX   = 0.0; 
    CenterY   = 0.0;
    CenterZ   = 0.0; 
@@ -732,13 +738,13 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr,"\nGravity is enabled \n");
    else
       fprintf(LogFilePtr,"\nGravity is disabled \n");
-      fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
+   fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
    // fprintf(LogFilePtr,"random seed                  : %ld \n",  idum);
    fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f\n", NumberOfNeutrons);
 
 
   /* Do the general cleanup */
-  stGeometry.pDescr = "source:yellow";   // or: Z.121: sText="Source";  here: stGeometry.pDescr = sText;
+  SetGeometry("yellow");
   OwnCleanup();
   Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
 
@@ -795,6 +801,7 @@ void OwnInit(int argc, char **argv)
             /* source and moderator */
           case 'S':
             stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            fprintf(LogFilePtr,"Source type                  : %d \n", stSrc.eSrcType);
             break;
           case 'N':
             stSrc.pSrcName = arg;
@@ -937,14 +944,11 @@ void OwnInit(int argc, char **argv)
 /* End OwnInit */
  
 
-
 /* own cleanup of the source module */
 /* -------------------------------- */
 void OwnCleanup()
 {
-  short m,     /* index for moderators  */
-        kc=0,  /* index for circular moderators */
-        ks=0;  /* index for rectangular moderators */
+  short m;     /* index for moderators  */
 
   /* print messages of loops (if existing) */
   // PrintMessage(SRC_L_RANGE_TOO_SMALL, stMod[imod].sLFileName, OFF);
@@ -952,9 +956,35 @@ void OwnCleanup()
   // PrintMessage(SRC_LT_RANGE_TOO_SMALL,stMod[imod].sLTFileName,OFF);
 
 
+  /* free allocated memory */
+  for (m=0; m < nNumMod; m++)
+  {   if (stFluxL[m].pTabX!=NULL)  free(stFluxL[m].pTabX);
+      if (stFluxL[m].pTabF!=NULL)  free(stFluxL[m].pTabF);
+      if (stFluxT[m].pTabX!=NULL)  free(stFluxT[m].pTabX);
+      if (stFluxT[m].pTabF!=NULL)  free(stFluxT[m].pTabF);
+      if (stFluxLT[m].pTabX!=NULL) free(stFluxLT[m].pTabX);
+      if (stFluxLT[m].pTabY!=NULL) free(stFluxLT[m].pTabY);
+      if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
+  }
+  if (g_pTrace!=NULL) free(g_pTrace);
+}
+/* End OwnCleanup */
+
+
+void SetGeometry(char* sColor)
+{
+  short m,     /* index for moderators  */
+        kc=0,  /* index for circular moderators */
+        ks=0;  /* index for rectangular moderators */
+
   // Geometry data
   if (bVisInstr)
-  { stGeometry.nCircles=0;
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    stGeometry.nCircles=0;
     stGeometry.nRectangles=1;
 
     for (m=0; m < nNumMod; m++)
@@ -965,7 +995,7 @@ void OwnCleanup()
         stGeometry.nRectangles++;
     }
     if (stGeometry.nCircles > 0)
-      stGeometry.pCircle = (VtCircle*) calloc(stGeometry.nCircles, sizeof(VtCircle));
+      stGeometry.pCircle =  (VtCircle*)    calloc(stGeometry.nCircles, sizeof(VtCircle));
     stGeometry.pRectangle = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
 
     // Moderators
@@ -1005,23 +1035,8 @@ void OwnCleanup()
     stGeometry.pRectangle[ks].vNormal[2] = 0.0;
     stGeometry.pRectangle[ks].Width      = WindowWidth;
     stGeometry.pRectangle[ks].Height     = WindowHeight;
-
-    stGeometry.eModule = VT_SOURCE;
   }
-
-  /* free allocated memory */
-  for (m=0; m < nNumMod; m++)
-  {   if (stFluxL[m].pTabX!=NULL)  free(stFluxL[m].pTabX);
-      if (stFluxL[m].pTabF!=NULL)  free(stFluxL[m].pTabF);
-      if (stFluxT[m].pTabX!=NULL)  free(stFluxT[m].pTabX);
-      if (stFluxT[m].pTabF!=NULL)  free(stFluxT[m].pTabF);
-      if (stFluxLT[m].pTabX!=NULL) free(stFluxLT[m].pTabX);
-      if (stFluxLT[m].pTabY!=NULL) free(stFluxLT[m].pTabY);
-      if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
-  }
-  if (g_pTrace!=NULL) free(g_pTrace);
 }
-/* End OwnCleanup */
 
 
 /* load wavelength distribution from file or set 'Maxwellian' as distribution function */
@@ -1201,7 +1216,7 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     {
       case SPSS: pFluxT->pDisFct = (double(*)()) PulseShapeP; break;
       case LPSS: pFluxT->pDisFct = (double(*)()) PulseIntEss; break;
-      default  : Error("Wrong value for variable 'source type'\n");
+      default  : fprintf(LogFilePtr,"ERROR: Wrong value %d for variable 'source type'\n", stSrc.eSrcType);
                  exit(-1);
     }
     pFluxT->dInt = 1.0 ;
@@ -1622,9 +1637,9 @@ int
 PosBehindMod(const int i, const double Y, const double Z)
 {
   return stMod[i].nBackground < stMod[imod].nBackground &&
-    (  ( stMod[i].bCircle &&  sq(Y-stMod[i].dCntrY) + sq(Z-stMod[i].dCntrZ) <= sq(stMod[i].dDiameter/2.0) ) ||
-       (!stMod[i].bCircle &&  fabs(Y-stMod[i].dCntrY) <= 0.5*stMod[i].dWidth 
-	  &&  fabs(Z-stMod[i].dCntrZ) <= 0.5*stMod[i].dHeight ) );
+    (  ( stMod[i].bCircle &&   sq(Y-stMod[i].dCntrY) + sq(Z-stMod[i].dCntrZ) <= sq(stMod[i].dDiameter/2.0) ) ||
+       (!stMod[i].bCircle && fabs(Y-stMod[i].dCntrY) <= 0.5*stMod[i].dWidth 
+	                        && fabs(Z-stMod[i].dCntrZ) <= 0.5*stMod[i].dHeight) );
 }
 
 

@@ -11,7 +11,7 @@
 
 FILE   *Par_Crys, *Foc_Crys ;
 char   *ParameterFileName, *SampleFileName;
-long   NumOut,  i ;
+long   NumOut ;
 
 short  g_nNoAngle,       /* number of angles                               */
   useIncoherent,         /* Flag whether to use incoherent scattering: 0 for "not use", 1 "for use" */

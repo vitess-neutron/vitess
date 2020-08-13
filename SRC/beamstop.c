@@ -1,9 +1,13 @@
 /*********************************************************************************************/
-/*  VITESS module  slit                                                                      */
+/*  VITESS module 'beamstop'                                                                 */
+/*                                                                                           */
+/* This module simulates a beamstop of circular or rectangular shape                         */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  Apr 2011  K. Lieutenant   initial version                                            */
+/* 1.1  Jul 2019  K. Lieutenant   blow-up option for visualization                           */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -14,20 +18,23 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit(int argc, char *argv[]);
+void  OwnInit(int argc, char *argv[]);      // reads input parameters and sets global parameters
+void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
+McCompID _eModule=MCN_BEAMSTOP;
+
 Plane  Endpoint;                 // vertical Plane through the position of the beamstop
                                  //  (Endpoint.D = distance to end of free flight path along x-axis [cm]) 
-double VelocityReal,             // velocity of the neutron 
+double VelocityReal=0.0,         // velocity of the neutron 
+       DistCenter  =0.0,         // distance between center of beamstop and point of striking of the neutron
        Width   =0.0, Height=0.0, // width and height of an rectangular beamstop 
        Radius  =0.0,             // radius of an circular beamstop  
        DistMove=0.0,             // distance between starting point and beamstop 
-       CenterY =0.0, CenterZ=0.0,// center of the beamstop position
-       DistCenter;               // distance between center of beamstop and point of striking of the neutron
+       CenterY =0.0, CenterZ=0.0;// center of the beamstop position
 short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, FALSE rectangular 
        bOnBeamstop,              // criterion: beamstop hit or not 
        bProp=FALSE;              // criterion: propagate to beamstop  0: no,  1: yes
@@ -36,21 +43,20 @@ short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, 
 /******************************/
 /** Program                  **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
-  long   i, BufferIndex;
-  double TimeOF,               /* time of flight of the neutron to the window */
-         NewPosY, NewPosZ;     /* hor. and vert. position of neutron at slit  */
+  long    i=0;                   // index of trajectories
+  double  TimeOF,                // time of flight of the neutron to the window
+          NewPosY, NewPosZ;      // hor. and vert. position of neutron at slit
   Neutron TestNeutron;
 
   /******************/
   /* initialisation */
   /******************/
-  BufferIndex     = 0;
+  bVisInstalled = TRUE;
 
-  Init(argc, argv, VT_BEAMSTOP);
-  print_module_name("Beamstop 1.0");
+  Init(argc,argv, _eModule);
+	PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
 
   DECLARE_ABORT
@@ -85,18 +91,18 @@ int main(int argc, char *argv[])
       { NewPosY = TestNeutron.Position[1];
         NewPosZ = TestNeutron.Position[2];
 
-			  if(bCircularWindow==TRUE)
-			  {	
+        if(bCircularWindow==TRUE)
+        {	
           DistCenter = sqrt(sq(NewPosY - CenterY) + sq(NewPosZ - CenterZ));
-				  if (DistCenter <= Radius)
-					  bOnBeamstop=TRUE;
-				  else
-					  bOnBeamstop=FALSE;
-			  }
-			  else
+          if (DistCenter <= Radius)
+            bOnBeamstop=TRUE;
+          else
+            bOnBeamstop=FALSE;
+        }
+        else
         { 
           if (fabs(NewPosY - CenterY) <= 0.5*Width  &&  fabs(NewPosZ - CenterZ) <= 0.5*Height)
-				    bOnBeamstop=TRUE;
+            bOnBeamstop=TRUE;
 			    else
 				    bOnBeamstop=FALSE;
         }
@@ -109,9 +115,9 @@ int main(int argc, char *argv[])
       /* if beamstop is missed: writeout original data set for 'progation'=no  */
       /*                                   or new data set for 'progation'=yes */
       /*************************************************************************/      
-			if (!bOnBeamstop)
+      if (!bOnBeamstop)
       { 
-			  if (bProp)
+        if (bProp)
           WriteNeutron(&TestNeutron);
         else
           WriteNeutron(&InputNeutrons[i]);
@@ -119,126 +125,118 @@ int main(int argc, char *argv[])
     }
   }	
 
- my_exit:
+/******************************************************************************/
+/* Finish: print parameters, write geometry and instrument file, free memory  */
+/******************************************************************************/
+my_exit:
   if (bCircularWindow)
-  { fprintf(LogFilePtr, "Beamstop of %6.2f cm diameter in a distance of %7.2f cm \n",             2.0*Radius, DistMove);
-    stPicture.dWPar = Radius;
-  }
+    fprintf(LogFilePtr, "Beamstop of %6.2f cm diameter in a distance of %7.2f cm \n",             2.0*Radius, DistMove);
   else
-  { fprintf(LogFilePtr, "Beamstop of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
-    stPicture.dWPar = Width;
-    stPicture.dHPar = Height;
-  }
-
+    fprintf(LogFilePtr, "Beamstop of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
+  
+  SetGeometry("blue");
   Cleanup(DistMove,0.0,0.0, 0.0,0.0);	
 
   return(0);
 }
 
 
-
-void  OwnInit(int argc, char *argv[])
+/*******************************************************/
+/** Reads input parameters and sets global parameters **/
+/*******************************************************/
+void  OwnInit(int argc, char* argv[])
 {
-  int i;
+	int i;
 
-    bVisInstalled = TRUE;
+	bVisInstalled = TRUE;
 
-  for(i=1; i<argc; i++)
-  {
-    if(argv[i][0]!='+') 
-    {
-      switch(argv[i][1])
-      {
-        case 'p':
-          bProp = atoi(&argv[i][2]);        // criterion: propagate to beamstop  0: no,  1: yes
-          if (bProp==FALSE)
-            bOldFrame=TRUE;
-          break;
-        case 'R':
-          bCircularWindow = atoi(&argv[i][2]);
-          break;
+	for (i = 1; i < argc; i++)
+	{
+		if (argv[i][0] != '+')
+		{
+			switch (argv[i][1])
+			{
+			case 'p':
+				bProp = atoi(&argv[i][2]);        // criterion: propagate to beamstop  0: no,  1: yes
+				if (bProp == FALSE)
+					bOldFrame = TRUE;
+				break;
+			case 'R':
+				bCircularWindow = atoi(&argv[i][2]);
+				break;
 
-        case 'd':
-          DistMove = atof(&argv[i][2]);
-          break;
+			case 'd':
+				DistMove = atof(&argv[i][2]);
+				break;
 
-        case 'r':
-          Radius = atof(&argv[i][2]);
-          break;
+			case 'r':
+				Radius = atof(&argv[i][2]);
+				break;
 
-        case 'W':
-          Width  = atof(&argv[i][2]);
-          break;
-        case 'H':
-          Height = atof(&argv[i][2]);
-          break;
+			case 'W':
+				Width = atof(&argv[i][2]);
+				break;
+			case 'H':
+				Height = atof(&argv[i][2]);
+				break;
 
-        default:
-          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-          exit(-1);
-          break;
-      }
-    }
-  }
+			default:
+				fprintf(LogFilePtr, "ERROR: unknown command option: %s\n", argv[i]);
+				exit(-1);
+				break;
+			}
+		}
+	}
 
-  Endpoint.A = 1.0;
-  Endpoint.B = 0.0;
-  Endpoint.C = 0.0;
-  Endpoint.D = -1.0*DistMove;
+	Endpoint.A =  1.0;
+	Endpoint.B =  0.0;
+	Endpoint.C =  0.0;
+	Endpoint.D = -1.0 * DistMove;
+}
 
-    //Visualisation of the beamstop geometry
-    // Geometry data
+
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  // Visualisation of the beamstop geometry
   if (bVisInstr)
   { 
-    if (bCircularWindow) {
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
 
+    if (bCircularWindow) 
+    {
       stGeometry.pCircle =calloc(1, sizeof(VtCircle));
       stGeometry.nCircles=1; 
       
-      stGeometry.pCircle[0].Radius     = Radius;
-      stGeometry.pCircle[0].AngleBeg    = 0;
-      stGeometry.pCircle[0].AngleEnd    = 360;
-      stGeometry.pCircle[0].vCntr[0]  = DistMove;
+      stGeometry.pCircle[0].Radius    = Radius;
+      stGeometry.pCircle[0].AngleBeg  = 0;
+      stGeometry.pCircle[0].AngleEnd  = 360;
+      stGeometry.pCircle[0].vCntr[0]  = DistMove/CmprFact;
       stGeometry.pCircle[0].vCntr[1]  = 0.0;
       stGeometry.pCircle[0].vCntr[2]  = 0.0;
       stGeometry.pCircle[0].vNormal[0]= 1.0;
       stGeometry.pCircle[0].vNormal[1]= 0.0;
       stGeometry.pCircle[0].vNormal[2]= 0.0;
-      
-      stGeometry.pDescr  = "beamstop:blue";
-      stGeometry.eModule = VT_BEAMSTOP;
     }
-    else {
+    else 
+    {
       stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
       stGeometry.nRectangles=1; 
       
       stGeometry.pRectangle[0].Width     = Width;
       stGeometry.pRectangle[0].Height    = Height;
-      stGeometry.pRectangle[0].vCntr[0]  = DistMove;
+      stGeometry.pRectangle[0].vCntr[0]  = DistMove/CmprFact;
       stGeometry.pRectangle[0].vCntr[1]  = 0.0;
       stGeometry.pRectangle[0].vCntr[2]  = 0.0;
       stGeometry.pRectangle[0].vNormal[0]= 1.0;
       stGeometry.pRectangle[0].vNormal[1]= 0.0;
       stGeometry.pRectangle[0].vNormal[2]= 0.0;
-      
-      stGeometry.pDescr  = "beamstop:blue";
-      stGeometry.eModule = VT_BEAMSTOP;
     }
   }
 
-
+  return;
 }
-
-  
-
-	    
-
-      
- 
-
-
-
-      
-
-
-

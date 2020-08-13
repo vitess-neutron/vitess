@@ -799,6 +799,7 @@ set writeoutESET {
   {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
+  {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
   {}
   {"VITESS parameters" header}
   {outform radio float {"storage format" "format of float values in writeout file" "" F} {exp float} {0 1}}
@@ -1056,7 +1057,7 @@ set gridESET {
 set guideESET {
   {"Shape and size of guide" header}
   {keyshape_y radio constant {"horizontal\nshape" "shape of the guide in x-y-plane" "" Y}
-    {constant linear curved parabolic elliptic "from file"} {0 1 2 3 4 5}}
+    {constant linear curved parabolic elliptic "from file" "curved+linear"} {0 1 2 3 4 5 6}}
   {keyshape_z radio constant {"vertical\nshape" "shape of the guide in x-z-plane" "" Z}
     {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
   {}
@@ -1098,7 +1099,7 @@ set BigFrameguide 1
 set specoptAdd {
   {"Special options" header}
   {gd_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
-  {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ãà [1/cm]" "" m} ge0}
+  {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ang [1/cm]" "" m} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
     "Neutrons hitting the surface close to the connection of guide segment are absorbed." "" a}
@@ -1660,8 +1661,8 @@ set refESET {
   {thick float 0.00001 {"thickness\nsample [cm]"
     "Thickness of the rectangular sample, i.e. perpendicular to refl. surface.\nIt determines the range of depth in which the reflection is supposed to take place."} ge0 "" 1}
   {wid float 1 {"width\nsample [cm]"
-    "Width of the rectangular sample (along y-axis for reflection angle 0)."} ge0 "" 1}
-  {hei float 1 {"length\nsample [cm]"
+    "Width of the rectangular sample (along y-/z-axis for reflection angle 0)."} ge0 "" 1}
+  {len float 1 {"length\nsample [cm]"
     "Length of the rectangular sample (along x-axis for reflection angle 0)."} ge0 "" 1}
   {"Output Frame" header}
   {gen radio "standard defined frame" {"frame\ngeneration"
@@ -1692,6 +1693,18 @@ proc refCheckErr {{app _}} {
       }
     }
   }
+
+  upvar #0 mx$app mx
+  upvar #0 len$app len
+  if {[info exists mx] && [info exists len]} {
+    if {$mx < $len/2} {
+      showText "!The main x position should at least be half of the sample length."
+      return 1
+    }
+  } else {
+    showText "!Please specify main x position and sample length."
+  }
+
   return $err
 }
 
@@ -1701,23 +1714,17 @@ proc refCheckErr {{app _}} {
 
 set ma_flat_newESET {
   {"Monochromator Analyser" header}
-  {parfile pareditablefile crys.par {"parameter file" "" "" P} r crs_new 1}
-  {reprate int 1 {"repetition\nrate"
-    "If this integer > 1, the neutron is used multiple times for better statistics." "" A} 1 1000000 1}
-  {array select array {"First or only\nused monochromator" "Select if this is the only one or the first\nmonochromator in an array of several." "" o} {{"" 1}}}
-  {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]"
-    "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m}
-    ge0 "" 1}
-  {svert float 0.8 {"mosaic spread\nvert. [deg]"
-    "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" M}
-    ge0 "" 1}
-  {dspread float 0.00005 {"d spread"
-    "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
-  {refl float 1 {"reflectivity\nnormalization [-]" "By this variable the peak reflectivity R may be renormalized from the\ndefault value (Pmax = 1)e.g. to (Pmax = 0.30), if R = 30%." "" R} gt0 "" 1}
+  {parfile pareditablefile crys.par {"parameter file" "This files contains parameters describing a crystal element (CE)" "" P} r crs_new 1}
+  {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
+  {sel_tr select array {"transmission\ntreated" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {{"" 0}}}
+  {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]" "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m} ge0 "" 1}
+  {svert float 0.8  {"mosaic spread\nvert. [deg]" "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" M}  ge0 "" 1}
+  {dspread float 0.00005 {"d spread" "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
+  {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
   {}
-  {mode radio Reflection {"Crystal mode" "Choose between 'reflection' of the characteristic wavelength and\n'transmission' of the remaining beam. Choose 'Reflection + Transmission'\nfor ALL monochromators that are part of an array. Please note that\nin this case the rotation of the main neutron beam axis MUST\nbe done by a following frame module." "" X} {Reflection Transmission "Reflection + Transmission"} {1 2 3}}
-  {coeff float 0.00005 {"Absorption\ncoefficient"
-    "Absorption coefficient in the crystal in [1/cm]." "" C}}
+  {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
+  {mo_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section of the crystal [1/cm]" "" c} ge0}
+  {mo_abs float 0  {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
   {}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
 }
@@ -1725,29 +1732,23 @@ set ma_flat_newESET {
 ### New monochromator analyser
 ###   focus initialization
 set ma_focus_newESET [concat [globVal ma_flat_newESET] {
-  {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
+  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry.\nFor details see Help|Modules M|ma_focus_new." "" g} {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
   {}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
-  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylincer'" "" H} gt0 "" 1}
+  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the crystal element matrix." "" V} gt0 "" 1}
   {}
   {chradius float 200 {"radius\nhoriz. [cm]"
-    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
+    "Radius of focusing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
   {cradius float 200 {"radius\nvert. [cm]"
-    "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {cangle float 0 {"angle\nvert. [deg]"
-    "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+    "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix.\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction." "" r} ge0 "" 1}
+  {cangle float 0 {"angle\nvert. [deg]" "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center.\nThis parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)." "" a} 1}
   {}
-  {gaphor float 0.0 {"gap between\ncolumns  [cm]"
-    "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
-  {gapvert float 0.0 {"gap between\nrows  [cm]"
-    "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
+  {gaphor float 0.0 {"gap between\ncolumns  [cm]" "Horizontal distance between columns of crystal elements\n(in the equatorial plane)" "" h} ge0 "" 1}
+  {gapvert float 0.0 {"gap between\nrows  [cm]"  "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
   {}
-  {devhor float 0.0 {"orient. dev.\nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev.\nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
+  {devhor float 0.0 {"orient. dev.\nhor. [deg]" "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev.\nvert. [deg]" "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### New monochromator analyser
@@ -1761,32 +1762,31 @@ set ma_focus_dat_newESET [concat [globVal ma_flat_newESET] {
 
 set crs_newESET {
   {"Monochromator-Analyser parameters" header}
-  {mposx float 100 {"main position\nX [cm]" "Generally defines the reference point (origin) of the monochromator/analyser-system in the frame provided by the former module."} 1}
-  {mposy float 0  {"main position\nY [cm]" "Generally defines the reference point (origin) of the monochromator/analyser-system in the frame provided by the former module."} 1}
-  {mposz float 0  {"main position\nZ [cm]" "Generally defines the reference point (origin) of the monochromator/analyser-system in the frame provided by the former module."} 1}
-  {offahoriz float 0 {"surface offset\nhorizontal [deg]" "A rotation first around the Z axis and then around the (new) Y axis gives a proper orientation of the crystal surface. 0 angle means perpendicular to beam."} 1}
-  {offavert float 0 {"surface offset\nvertical [deg]" "A rotation first around the Z axis and then around the (new) Y axis gives a proper orientation of the crystal surface. 0 angle means perpendicular to beam."} 1}
+  {mposx float 100 {"main position\nX [cm]" "X component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
+  {mposy float 0   {"main position\nY [cm]" "Y component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
+  {mposz float 0   {"main position\nZ [cm]" "Z component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
+  {offahoriz float 0 {"surface offset\nhorizontal [deg]" "Horizontal offset of the crystal surface from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
+  {offavert float 0  {"surface offset\nvertical [deg]"   "Vertical offset of the crystal surface from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
   {}
-  {bragghoriz float "" {"Bragg offset\nhorizontal [deg]" "horizontal offset from backscattering of the diffraction planes determining the Bragg angle. 0 angle means diffraction planes perpendicular to beam."}}
-  {braggvert float "" {"Bragg offset\nvertical [deg]" "vertical offset from backscattering of the diffraction planes determining the Bragg angle. 0 angle means diffraction planes perpendicular to beam."}}
+  {bragghoriz float "" {"Bragg offset\nhorizontal [deg]" "Horizontal offset from backscattering of the crystal planes determining the Bragg reflection.\nFor details see Help|Modules M|ma_focus_new."}}
+  {braggvert float "" {"Bragg offset\nvertical [deg]" "Vertical offset from backscattering of the crystal planes determining the Bragg reflection.\nFor details see Help|Modules M|ma_focus_new."}}
   {}
-  {thick float 0.2 {"thickness cryst.\nelement [cm]"
-    "Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular crystal element."} gt0 "" 1}
-  {width float 1 {"width cryst.\nelement [cm]"} gt0 "" 1}
-  {height float 1 {"height cryst.\nelement [cm]"} gt0 "" 1}
+  {thick float 0.2 {"thickness cryst.\nelement [cm]" "Thickness (perpendicular to reflecting surface) of the rectangular crystal element."} gt0 "" 1}
+  {width float 1 {"width cryst.\nelement [cm]" "Width of the rectangular crystal element."} gt0 "" 1}
+  {height float 1 {"height cryst.\nelement [cm]" "Height of the rectangular crystal element."} gt0 "" 1}
   {dspacing float 3.135 {"d-spacing [A]"
-    "Lattice parameter corresponding to a reflection from a (h,k,l) crystal plane."} gt0 "" 1}
-  {reford int 1 {"order of\nreflection" "Order of reflection conforming to Bragg's Law."} ge1 "" 1}
+    "Lattice distance corresponding to a reflection from a (h,k,l) crystal plane."} gt0 "" 1}
+  {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge1 "" 1}
   {"Output frame" header}
   {oframedef radio "standard frame generation"
-    {"output frame definition" "If and only if \"user defined frame\" has been selected, then the following 5 entries must be specified, too"}
+    {"output frame definition" "Choice if the output frame should be generated automatically or 'by hand'\nAutomatically means along the reflected beam if no transmission is treated. By hand means according the following 5 entries. For details see Help|Modules M|ma_focus_new."}
     {"standard frame generation" "user defined frame"} {0 1}}
   {}
-  {oframex float 200 {"X' [cm]" "The x position of the output frame origin in the original frame."}}
-  {oframey float 0 {"Y' [cm]" "The y position of the output frame origin in the original frame."}}
-  {oframez float 0 {"Z' [cm]" "The z position of the output frame origin in the original frame."}}
-  {oframehang float 180 {"horizontal\nangle [deg]" "In case of 'user defined output frame', a rotation about the Z axis and then a rotation about the (new)Y axis defines a new reference orientation for the output neutrons."}}
-  {oframevang float 0 {"vertical\nangle [deg]" "In case of 'user defined output frame', a rotation about the Z axis and then a rotation about the (new)Y axis defines a new reference orientation for the output neutrons."}}
+  {oframex float 200 {"X' [cm]" "In 'user defined frame': The x position of the output frame origin in the original frame."}}
+  {oframey float 0 {"Y' [cm]" "In 'user defined frame': The y position of the output frame origin in the original frame."}}
+  {oframez float 0 {"Z' [cm]" "In 'user defined frame': The z position of the output frame origin in the original frame."}}
+  {oframehang float 180 {"horizontal\nangle [deg]" "In 'user defined frame', angle of the first rotation - about the Z axis - to generate  the output frame."}}
+  {oframevang float 0 {"vertical\nangle [deg]" "In 'user defined frame', angle of the second rotation - about the new Y axis - to generate the output frame."}}
 }
 
 proc crs_newCheckErr {{app _}} {
@@ -2623,16 +2623,21 @@ proc monpol_zCheckErr {{app _}} {
 ###   mon_brilliance
 
 set ra {
-  {refile parbrowsefile "" {"reference file" "" "" S}}
-  {ffile parbrowsefile "" {"flux file" "" "" F}}
+  {refile parbrowsefile "" {"reference file" "(the reference file is needed as a reference to calculate the brilliance transfer)" "" S}}
+  {ffile parbrowsefile "" {"flux file" "the flux file can be used to monitor the average or max. brilliance as a function of any parameter in running a series of simulations" "" F}}
   {}
-  {kind radio lambda {"variable\nparameter" "the brilliance is monitored as a function of this parameter\nthe given range is divided into the given number of bins" "" k}  {lambda time y z div_y div_z div_rad} {1 2 3 4 5 6 7} }
+  {kind radio lambda {"variable\nparameter" "the brilliance is monitored as a function of this parameter\nthe given range is divided into the given number of bins" "" k}  {lambda time y z div_y div_z div_rad energy} {1 2 3 4 5 6 7 8} }
+  {brl_nrm radio absolute {"norm. type" "1: absolute brilliance [n/(cm²s sr Ang)]\n2: brilliance transfer\n3: brilliance within 1 percent DelLambda/Lambda [n/(cm²s sr)]" "" N}  {absolute transfer "1% lambda" } {1 2 3} }
+  {brl_bin radio no     {"logarithic\nbinning" "no : fixed bin size\nyes: constant ratio of upper to lower bound value of each bin, i.e. exponential increase" "" B}  {no yes} {0 1} }
   {}
-  {minlam float "" {"min lambda [Ãà]" "minimal lambda [Ãà]" "" l}}
-  {maxlam float "" {"max lambda [Ãà]" "maximal lambda [Ãà]" "" L}}
+  {mint float "" {"min. time [ms]" "minimal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" t}}
+  {maxt float "" {"max. time [ms]" "maximal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" T}}
   {}
-  {mint float "" {"minimal time [ms]" "minimal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" t}}
-  {maxt float "" {"maximal time [ms]" "maximal time for monitoring\nonly necessary for time dependent brilliance of pulsed sources\nleave this item and time range empty for time averaged brilliance on pulsed sources" "" T}}
+  {minlam float "" {"min. lambda [Ang]" "minimal wavelength [Ang]" "" l}}
+  {maxlam float "" {"max. lambda [Ang]" "maximal wavelength [Ang]" "" L}}
+  {}
+  {mineny float "" {"min. energy [meV]" "minimal energy [meV]" "" m}}
+  {maxeny float "" {"max. energy [meV]" "maximal energy [meV]" "" M}}
   {}
   {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
   {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
@@ -3461,17 +3466,6 @@ proc sample_reflectomCheckErr {{app _}} {
     showText "!Please specify a parameter file in the parameter directory"
     return 1
   }
-  upvar #0 step$app s
-  upvar #0 minrefl$app mi
-  upvar #0 maxrefl$app ma
-  if {[info exists s] && [info exists mi] && [info exists ma]} {
-    if {$s * ($ma - $mi) < 0} {
-      showText "!Step size and (MaxRefl - MinRefl) must have the same sign."
-      return 1
-    }
-  } else {
-    showText "!Please specify step size, MaxRefl, and MinRefl."
-  }
 
   return 0
 }
@@ -3833,7 +3827,7 @@ set collimator_sollerESET {
   {minang float 0 {
     "minimum of\nangle range [deg]" "" "" m}}
   {ncent int 1 {
-    "number of\ncoll. centres" "Each collimation centre is defined by an angle which corresponds to divergence 0 (x-y-plane, angle 0 corresponds to the positive x-axis direction). The first center is defined by the 'minimum of angle range', the following centers (always higher angles) are calculated by considering a gap of (2*(allowed divergence)+ angle spacing) between the centres." "" n} ge1}
+    "number of\ncoll. centres" "Each collimation centre is defined by an angle which corresponds to divergence 0 (x-y-plane, angle 0 corresponds to the positive x-axis direction). The first center is defined by the 'minimum of angle range', the following centers (always higher angles) are calculated by considering a gap of (2*(allowed divergence)+ angle spacing) between the centres." "" n} ge1 le10000}
   {spang float 0 {
     "angle spacing [deg]" "Additional angular distance between the collimation centres due to the size of collimator spacers" "" a} ge0}
 }
@@ -3909,7 +3903,6 @@ set collimator_radialESET {
 
 ### sm_ensemble
 ###
-
 set sm_ensembleESET {
   {grefdat pareditablefile sm_ensemble_beamsplitter.dat {
     "geometry and\nreflect. data" "plane shapes and reflectivity data for the supermirror components" "" P}}

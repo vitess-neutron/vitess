@@ -44,31 +44,31 @@ proc unzipCom {fname} {
 
 # following are global strings whose values are not to be evaluated
 set TCL_TOOL {
-proc pwrite {fnw pattern} {
-  set fo [open $fnw w]
-  foreach fn [lsort [glob $pattern*]] {
-    set f [open $fn r]
-    while {[gets $f ins] >= 0} {puts $fo $ins}
-    close $f
-    file delete $fn
+  proc pwrite {fnw pattern} {
+    set fo [open $fnw w]
+    foreach fn [lsort [glob $pattern*]] {
+      set f [open $fn r]
+      while {[gets $f ins] >= 0} {puts $fo $ins}
+      close $f
+      file delete $fn
+    }
+    close $fo
   }
-  close $fo
-}
 }
 
 # this pwrite is _not_ a tcl, but a perl script
 set PERL_TOOL {
-sub pwrite {
-  my ($fnw, $pattern) = @_;
-  open FO,">$fnw";
-  foreach $fn (glob("$pattern*")) {
-    open F, $fn;
-    print FO $_ while <F>;
-    close F;
-    unlink $fn;
+  sub pwrite {
+    my ($fnw, $pattern) = @_;
+    open FO,">$fnw";
+    foreach $fn (glob("$pattern*")) {
+      open F, $fn;
+      print FO $_ while <F>;
+      close F;
+      unlink $fn;
+    }
+    close FO;
   }
-  close FO;
-}
 }
 
 # do not change indentation in PYTHON_TOOL
@@ -159,8 +159,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       regsub -all / $pdir \\ winpdir
       set fc "subst V: /d\nsubst V: $winexdir\nsubst P: /d\nsubst P: $winpdir\n"
       foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "set GSL_RNG_$vv=$t\n"
+        if {"" == [set t [entryVal random_$v]]} continue
+        append fc "set GSL_RNG_$vv=$t\n"
       }
     }
     sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
@@ -230,18 +230,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_const_wave  {set com "source$sys -S1"}
       source_short_pulsed {set com "source$sys -S2"}
       external_command {
-	set intcom 0
-	set com "[globVal extern_com_$i] [globVal extern_shortopt_$i]"
-	upvar #0 extern_optfile_$i fname
-	forceParamDir fname resfn
-	if {$fname != ""} {
-	  if {"0" == [catch {open $resfn r} f]} {
-	    while {[gets $f ins] > 0} {
-	      append com " $ins"
-	    }
-	    close $f
-	  }
-	}
+        set intcom 0
+        set com "[globVal extern_com_$i] [globVal extern_shortopt_$i]"
+        upvar #0 extern_optfile_$i fname
+        forceParamDir fname resfn
+        if {$fname != ""} {
+	        if {"0" == [catch {open $resfn r} f]} {
+	          while {[gets $f ins] > 0} {
+	            append com " $ins"
+	          }
+	          close $f
+	        }
+        }
       }
       default    {set com $var$sys}
     }
@@ -273,24 +273,24 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     if $intcom {
       set com [file join $prefi $com]
       if $first {
-	append com $ppadd
-	append fc "$com$imore"
-	if {$mode != "kstate"} {
-	  # get name of input file
-	  set l [lindex $ll 0]
-	  set finame [entryVal [lindex $l 0]]
-	  if {"" != [set unzip [unzipCom $finame]]} {
-	    set fc "$unzip $finame | $fc --c[file size $finame]"
-	  } else {
-	    writeCommandOption $l _ "" $spar0 $srep0 $serno0
-	  }
-	}
-	set first 0
+        append com $ppadd
+        append fc "$com$imore"
+        if {$mode != "kstate"} {
+	        # get name of input file
+	        set l [lindex $ll 0]
+	        set finame [entryVal [lindex $l 0]]
+	        if {"" != [set unzip [unzipCom $finame]]} {
+	          set fc "$unzip $finame | $fc --c[file size $finame]"
+	        } else {
+	          writeCommandOption $l _ "" $spar0 $srep0 $serno0
+	        }
+        }
+        set first 0
       } else {
-	append fc " | $com$imore"
+        append fc " | $com$imore"
       }
       foreach l [globVal ${var}ESET] {
-	writeCommandOption $l _$i "" $serpar $serrep $serno
+        writeCommandOption $l _$i "" $serpar $serrep $serno
       }
     } elseif {$first} {
       append com $ppadd
@@ -311,7 +311,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       # get name of output file
       set foname [entryVal [lindex [lindex $ll 1] 0]]
       if {$foname != "" && $foname != "no_file"} {
-	append fc " --C$c"
+        append fc " --C$c"
         # puts "DEBUG appended --C$c"
       }
     }
@@ -350,8 +350,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       splitPipe ol $fc \"
       set fc "\#!/usr/bin/tclsh[globVal TCL_TOOL]set V $ExeDirectory\nset P $pdir\nset L $logf\n"
       foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "set env(GSL_RNG_$vv) $t\n"
+        if {"" == [set t [entryVal random_$v]]} continue
+        append fc "set env(GSL_RNG_$vv) $t\n"
       }
       append fc "set coml \{\n"
       append fc [join $ol "\n"]
@@ -361,8 +361,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       splitPipe ol $fc \"
       set fc "\#!/usr/bin/perl[globVal PERL_TOOL]\$V='$ExeDirectory';\n\$P='$pdir';\n\$L='$logf';\n"
       foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
+        if {"" == [set t [entryVal random_$v]]} continue
+        append fc "\$ENV\{'GSL_RNG_$vv'\}='$t';\n"
       }
       append fc "\@coml=(\n"
       append fc [join $ol ",\n"]
@@ -370,8 +370,8 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     py  {
       foreach v {seed gen} vv {SEED TYPE} {
-	if {"" == [set t [entryVal random_$v]]} continue
-	append oex "GSL_RNG_$vv='$t' "
+        if {"" == [set t [entryVal random_$v]]} continue
+        append oex "GSL_RNG_$vv='$t' "
       }
       splitPipe ol $fc
       set fc "\#! /usr/bin/env python"
@@ -496,17 +496,17 @@ proc cleanupPipes {} {
     outProtocol "------------------------------"
     while {[gets $f line] >= 0} {
       if [regexp ERROR: $line] {
-	outProtocol RRR$line
-	set errfound 1
-      } elseif [regexp GSL_RNG_ $line] {
-	if {$firstgsl} {
-	  outProtocol $line
-	}
-	if [regexp GSL_RNG_SEED $line] {
-	  set firstgsl 0
-	}
+        outProtocol RRR$line
+        set errfound 1
+            } elseif [regexp GSL_RNG_ $line] {
+        if {$firstgsl} {
+	        outProtocol $line
+        }
+        if [regexp GSL_RNG_SEED $line] {
+	        set firstgsl 0
+        }
       } else {
-	outProtocol $line
+        outProtocol $line
       }
     }
     close $f
@@ -522,19 +522,19 @@ proc cleanupPipes {} {
     if {$foname != "" && $foname != "no_file"} {
       set foname [file join [entryVal defdirectory] $foname]
       if {[file size $foname] > 512} {
-	# compress that file
-	outProtocol "try to compress $foname"
-	if {[getSystem] == "windows"} {
-	  set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
-	} else {
-	  set rc [catch {exec gzip -f $foname} res]
-	}
-	set fzname $foname.gz
-	if {$rc == 0 && [file exists $fzname]} {
-	  outProtocol "compressed to $fzname"
-	} else {
-	  outProtocol "did not compress, $res"
-	}
+        # compress that file
+        outProtocol "try to compress $foname"
+        if {[getSystem] == "windows"} {
+	        set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
+        } else {
+	        set rc [catch {exec gzip -f $foname} res]
+        }
+        set fzname $foname.gz
+        if {$rc == 0 && [file exists $fzname]} {
+	        outProtocol "compressed to $fzname"
+        } else {
+	        outProtocol "did not compress, $res"
+        }
       }
     }
   }
@@ -550,10 +550,10 @@ proc PsCheckUnix {} {
     foreach line [split $res \n] {
       set fi [lindex [split [string trim $line]] 0]
       if [regexp {^[0-9]+$} $fi] {
-	# if the first item (blanks omitted) of the ps
-	# output line is a number, then it is a process number
-	lappend PipeIdList $fi
-	set rc 1
+        # if the first item (blanks omitted) of the ps
+        # output line is a number, then it is a process number
+        lappend PipeIdList $fi
+        set rc 1
       }
     }
   }
@@ -910,7 +910,7 @@ proc startActionD {} {
     } else {
       update
       if {!$PipeActive} {
-	showText "doing cleanup"
+        showText "doing cleanup"
       }
       cleanupPipes
       set PipeActive 0
@@ -1082,7 +1082,7 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
     } else {
       update
       if {!$PipeActive} {
-	showText "doing cleanup"
+        showText "doing cleanup"
       }
       cleanupPipes
       set dtime [expr [clock seconds] - $startTime]
@@ -1092,13 +1092,13 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
       if {$sercom == "" && $VisState == 0} {
         # Autoplot
         set ploti -1
-	foreach p $Plotfile pt $Plottype {
+        foreach p $Plotfile pt $Plottype {
           if [incr ploti] {
             # wait some time
             after 500
           }
           showPlotFile $p $pt
-	}
+        }
       }
       cleanupEnvDir $sEnvDir
       conditionalCloseProtfile
@@ -1117,25 +1117,25 @@ proc stopAction {{verbose 1} {kill 0}} {
     if {$kill} {set PipeActive 0}
     switch [getSystem] {
       unix    {
-	if {$kill} {
-	  catch {eval exec $KillProg -9 $PipeIdList}
-	} else {
-	  # The sequence of ids in $PipeIdList may have changed.
-	  # For correct results we stop processes in pipe order.
-	  foreach p $PipeIdsAtStart {
-	    if {[lsearch $PipeIdList $p] < 0} continue
-	    catch {exec $KillProg $p}
-	    after 500;			# wait and let things come to an end
-	  }
-	}
+        if {$kill} {
+	        catch {eval exec $KillProg -9 $PipeIdList}
+        } else {
+	        # The sequence of ids in $PipeIdList may have changed.
+	        # For correct results we stop processes in pipe order.
+	        foreach p $PipeIdsAtStart {
+	          if {[lsearch $PipeIdList $p] < 0} continue
+	          catch {exec $KillProg $p}
+	          after 500;			# wait and let things come to an end
+	        }
+        }
       }
       windows {
-	if {$kill} {set args "k $PipeIds"} else {set args S}
-	catch {eval exec $KillProg $args}
-	if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
+        if {$kill} {set args "k $PipeIds"} else {set args S}
+        catch {eval exec $KillProg $args}
+        if {$verbose} {outProtocol "!stopping pipe $PipeIdList"}
       }
       default {
-	if {$verbose} {showText "!don´t know how to stop processes"}
+        if {$verbose} {showText "!don´t know how to stop processes"}
       }
     }
   }
@@ -1301,9 +1301,9 @@ proc exeSeries {pdir copy cfiles cdir c ll vl tindl} {
       set so ""
       upvar #0 defdirectory_ P
       foreach fn $cfiles {
-	set fb [file join $cdir $pre$fn]
-	file copy -force [file join $P $fn] $fb
-	append so "\n$fb"
+        set fb [file join $cdir $pre$fn]
+        file copy -force [file join $P $fn] $fb
+        append so "\n$fb"
       }
       showText "BBBcopied files:$so"
     }
@@ -1459,10 +1459,10 @@ proc saveSeries {w {act tofile}} {
       lappend tindl $i
       set s {}
       for {set j 0} {$j < $ll} {incr j} {
-	set tv [entryVal series$i.$j]
-	if {$tv == ""} {catch {set tv $Serdefault($j)}}
-	selTypeConv tv $j
-	lappend s $tv
+        set tv [entryVal series$i.$j]
+        if {$tv == ""} {catch {set tv $Serdefault($j)}}
+        selTypeConv tv $j
+        lappend s $tv
       }
       lappend vl $s
     }
@@ -1485,24 +1485,24 @@ proc saveSeries {w {act tofile}} {
   set pname [tmpFilename std.err]
   set myexe [info nameofexecutable]
   set fc "#!$myexe
-# parameter directory
-set P $pdir
-# copy these files after each iteration, give \{\} for no files
-set CFILES {$cfiles}
-# copy them to this directory, give \"\" for no directory
-set CDIR \"$cdir\"
-# selected indices
-set CIND {$tindl}
-# list values for parameters
-set VL {$vl}
-#
-# you should know what you're doing if you edit lines below
-set LL $ll
-set V $ExeDirectory
-set COM {$c}
-set PipeLogList {$PipeLogList}
-set pname $pname
-"
+  # parameter directory
+  set P $pdir
+  # copy these files after each iteration, give \{\} for no files
+  set CFILES {$cfiles}
+  # copy them to this directory, give \"\" for no directory
+  set CDIR \"$cdir\"
+  # selected indices
+  set CIND {$tindl}
+  # list values for parameters
+  set VL {$vl}
+  #
+  # you should know what you're doing if you edit lines below
+  set LL $ll
+  set V $ExeDirectory
+  set COM {$c}
+  set PipeLogList {$PipeLogList}
+  set pname $pname
+  "
 
   foreach v {seed gen} vv {SEED TYPE} {
     if {"" == [set t [entryVal random_$v]]} continue
@@ -1511,40 +1511,40 @@ set pname $pname
 
   # no variable substitution here, will be done in script!
   append fc {
-lappend PipeLogList $pname
+    lappend PipeLogList $pname
 
-set j -1
-foreach v $VL {
-  set com $COM
-  # substitute special options by list values
-  for {set i 0} {$i < $LL} {incr i} {
-    regsub -all \#$i\# $com [lindex $v $i] com
-  }
-  # execute pipe
-  catch {eval exec 2> $pname $com}
-  # gather results from temporary pipe log list files
-  foreach fname $PipeLogList {
-    puts "------------------------------"
-    if {"0" != [catch {open $fname r} f]} continue
-    while {[gets $f line] >= 0} {puts $line}
-    close $f
+    set j -1
+    foreach v $VL {
+      set com $COM
+      # substitute special options by list values
+      for {set i 0} {$i < $LL} {incr i} {
+        regsub -all \#$i\# $com [lindex $v $i] com
+      }
+      # execute pipe
+      catch {eval exec 2> $pname $com}
+      # gather results from temporary pipe log list files
+      foreach fname $PipeLogList {
+        puts "------------------------------"
+        if {"0" != [catch {open $fname r} f]} continue
+        while {[gets $f line] >= 0} {puts $line}
+        close $f
+        }
+      catch {eval file delete $PipeLogList}
+      # copy files
+      if {$CDIR == ""} continue
+      set pre s[lindex $CIND [incr j]]_
+      foreach fn $CFILES {
+        catch {
+          set fc [file join $CDIR $pre$fn]
+          file copy -force [file join $P $fn] $fc
+          puts "copied file: $fc"
+        }
+      }
     }
-  catch {eval file delete $PipeLogList}
-  # copy files
-  if {$CDIR == ""} continue
-  set pre s[lindex $CIND [incr j]]_
-  foreach fn $CFILES {
-    catch {
-      set fc [file join $CDIR $pre$fn]
-      file copy -force [file join $P $fn] $fc
-      puts "copied file: $fc"
-    }
+    exit
   }
-}
-exit
-}
 
-# show tcl text in edit window
+  # show tcl text in edit window
   dialogSWindow $w
   frame $w.v -bg $bgColor
   frame $w.b -bg $bgColor

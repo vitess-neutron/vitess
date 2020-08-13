@@ -1,5 +1,9 @@
 /*********************************************************************************************/
-/*  VITESS module  spacewindow                                                               */
+/*  VITESS module 'window'                                                               */
+/*                                                                                           */
+/* This module simulates an aperture or window of circular or rectangular shape              */
+/*   (attenuation inside and non-ideal absorption outside the window can be considered)      */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
@@ -7,14 +11,13 @@
 /* 1.00  Feb  2001  S. Manoshin     include of gravity effect                                */
 /* 1.01  June 2001  K. Lieutenant   parameter S to simulate a beamstop + SOFTABORT           */
 /* 1.02  Jan  2002  K. Lieutenant   reorganisation                                           */
-/* 2.00  Jun  2003  S. Manoshin     Add possibility for simulations of outer material of     */
-/*	                                 collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, */
-/*                                  3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber        */
-/* 2.10  Mar  2004  S. Manoshin     Add "choosing" of material for inner part of collimator  */
-/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick collimator                 */
+/* 2.00  Jun  2003  S. Manoshin     Add material for window frame                            */
+/* 2.10  Mar  2004  S. Manoshin     Add material for inner part of window                    */
+/* 2.21  Jul  2004  S. Manoshin     Corrected some bugs for thick window                     */
 /* 2.22  Jan  2002  K. Lieutenant   correction:  position after beamstop                     */
 /* 2.23  May  2010  A. Houben       "Rotation" of square window by counter rot of neutron pos*/
 /* 2.24  Apr  2012  A. Houben       Treat only neutrons with a given color and phi angle     */
+/* 2.25  Aug  2019  K. Lieutenant   tidy up and blow-up option for visualiation              */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -22,382 +25,154 @@
 #include "intersection.h"
 #include "bender_inter_data.h"
 #include "matrix.h"
+#include "message.h"
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
+void  OwnInit(int argc, char *argv[]);    // reads input parameters and initializes global variables
+void  EvalInput();
+void  SetGeometry(char* sColor);          // fills the structure stGeometry for visualization
 
-void  OwnInit(int argc, char *argv[]);
-void  SetGeometryData();
 
 /******************************/
 /** Global Variables         **/
 /******************************/
+McCompID _eModule=MCN_WINDOW;
 
+short  bCircularWindow=TRUE,    // Criterion: kind of window, TRUE: circular, FALSE rectangular  
+       bBeamStop=FALSE,         // Criterion: beamstop        TRUE: beamstop, FALSE normal window
+       bRemoveOtherColor=FALSE, // If treated, only neutrons with a given color, all others are removed
+       TreatColor = -1;         // Treat only neutrons with a given color
 
-long    bCircularWindow, /* criterion: kind of window, TRUE: circular, FALSE rectangular   */
-	    bBeamStop;       /* criterion: beamstop        TRUE: beamstop, FALSE normal window */
+Plane  Endpoint,                // Planes through window for zero thickness and
+       EndPointO,               //   end of the Outer and end of the Inner wall
+       EndPointI;               // Endpoint.D: distance to window along x-axis         [cm]  
 
-Plane   Endpoint;        /* Endpoint.D: distance to window along x-axis            [cm] */
-double  heightmin,       /* z-coordinate: bottom of rectangular window             [cm] */
-        heightmax,       /* z-coordinate: top of rectangular window                [cm] */
-        widthmin,        /* y-coordinate: lower frame value of rectangular window  [cm] */
-        widthmax,        /* y-coordinate: higher frame value of rectangular window [cm] */
-        winradius,       /* radius of circular window                              [cm] */
-        ywincenter,      /* y coordinate: center of circular window                [cm] */
-        zwincenter,      /* y coordinate: center of circular window                [cm] */
-        rotang = 0.0;    /* Rotation angle (neutron pos is counter rot to window)   [°] */
+double DistMove =0.0;        // Distance from origin to the window (along the x-axis)  [cm]
+double heightmin=0.0,        // z-coordinate: bottom of rectangular window             [cm]
+       heightmax=0.0,        // z-coordinate: top of rectangular window                [cm]
+       widthmin =0.0,        // y-coordinate: lower frame value of rectangular window  [cm]
+       widthmax =0.0,        // y-coordinate: higher frame value of rectangular window [cm]
+       winradius=0.0,        // radius of circular window                              [cm]
+       ywincenter=0.0,       // y coordinate: center of window                         [cm]
+       zwincenter=0.0,       // z coordinate: center of window                         [cm]
+       rotang = 0.0;         // Rotation angle (neutron pos is counter rot to window)  [rad]
 
+long   KeymaterialO=6,       // Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+	                           //                        4 - Eu,        5 - Silicon,    6 - ideal absorber
+       KeymaterialI=1;       // Absorption of open part of window, 0 - from file  1 - no(default) 
 
-  long  keymaterial0=6; /*Material of collimator: 0 - from file, 1 - gadolinium, 2 - cadmium,
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-  long  keymaterial1=1; /* Absorbtion of open part of collimator, 1 -no(default) 0 - from file */
-  long ntfs=0, count, k;
-  long ntfss=0, ntfs1=0; /* internal */
-  double WAVS[500], MUS[500], transm0[1001];
- /* Material of collimator */
-  double WAV1[500], MU1[500], transm1[1001]; /* Material of open part of collimator */
-  char		*TransFileName0=NULL;
-  char		*TransFileName1=NULL;
-  FILE	*trans_file0=NULL; /* file for describing of transmission of material of collimator  */
-  FILE  *trans_file1=NULL; /* file for describing of transmission of open part of collimator */
+char	*sTransFileNameO=NULL; // file describing the transmission of the window frame material
+FILE	*pTransFileO=NULL; 
+double WavO[MAX_MU],            // lambda, µ and T-values and thickness of the frame material 
+       MuO [MAX_MU], 
+       ThicknessO=0.0;
+long   nValFO=0;             // number of attenuation values in file (for window frame material)
 
-  double VelocityReal, N_Wavelength , mu, prob=0.0;
-  double Thicknesscoll=0.0;
-  double Thicknesscolli=0.0;
-  double DistMove=0.0;
-  short  TreatColor = -1; // Treat only neutrons with a given color
-  short  RemoveOtherColor = FALSE; // If treated only neutrons with a given color, all others are removed
-  double minPhi=-1.0, maxPhi=-1.0;  //Angle in xz plane
+char	*sTransFileNameI=NULL; // file describing the transmission of the material in the open part of window
+FILE  *pTransFileI=NULL; 
+double WavI[MAX_MU],            // lambda, µ and T-values and thickness of the inner material 
+       MuI [MAX_MU], 
+       ThicknessI=0.0;
+long   nValFI=0;             // number of attenuation values in file (for window pane material)
+
+double minPhi=-1.0, 
+       maxPhi=-1.0;          // min. and max. angle in xz plane
 
 
 /******************************/
 /** Program                  **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
-	short bOutOfWindow=FALSE;
+	short   bOutOfWindow=FALSE;
+	long    i=0;               // index of trajectories
 
-	long  i, BufferIndex;
+	double  DistSquared=0.0;   // distance from point of hitting to center of window   
+	double  TimeOF,            // TOF of neutron from origin to window
+          TOF3;              // TOF of neutron to pass through window material
+	double  NewPositionY=0.0,  // neutron position in co-ordinate system  rotated by 'rotang'
+          NewPositionZ=0.0, 
+          Phi=0.0;           // phi angle of the current trajectory
+	double  CenterX=0.0,       // center of beam at window
+          CenterY=0.0, 
+          CenterZ=0.0, 
+          SumProb=0.0;
+  double  VelocityReal=0.0,  // velocity of the current neutron
+          N_Wavelength,      // wavelength of the current neutron
+          mu=0.0,            // attenuation coefficient of the material, that the neutron traverses
+          prob=0.0;          // probability of traversing the material
 
-	double tempdistsquared;
-	double TimeOF;
-	double NewPositionY, NewPositionZ, Phi;
-	double CenterX, CenterY, CenterZ, SumProb, TOF3 ;
+  Neutron Output;            // trajectory as it is written to the output
 
-	Neutron Output;
+  /**********************/
+  /** Initialisation   **/
+  /**********************/
+  memset(&Output, '\0', sizeof(Neutron));
 
-	/* for moving */
-	Plane EndPoint1 ;
-	Plane EndPoint2 ;
+	Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "2.25");
+  OwnInit(argc, argv);
+  MsgInit();
+  EvalInput();
 
-
-	/* initialisation */
-	heightmin = heightmax = widthmin = widthmax = 0.0;
-	winradius = ywincenter = zwincenter = 0.0;
-
-	BufferIndex     = 0;
-	bCircularWindow = TRUE,
-	bBeamStop       = FALSE;
-
-	Init(argc, argv, VT_WINDOW);
-	OwnInit(argc, argv);
-
-	print_module_name("Space and Window 2.24");
-
-	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
-
-	if (TransFileName1 != NULL)
-	{
-	    trans_file1 = fopen(TransFileName1,"r");
-	    fprintf(LogFilePtr,"MATERIAL OF OPEN PART OF COLLIMATOR IS DESCRIBED BY FILE:  %s \n", TransFileName1);
-	    keymaterial1 = 0; /* activate this material */
-	}
-
-
-	if (DistMove < 0.0 && bOldFrame == FALSE)
-	{
-		fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
-		exit(-1);
-	}
-
-	if (Thicknesscoll < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of collimator < 0.0 !!!");
-		exit(-1);
-	}
-
-	if (Thicknesscolli < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of open part of the collimator < 0.0 !!!");
-		exit(-1);
-	}
-
-
-
-	if (Thicknesscoll != Thicknesscolli)
-	{
-		fprintf(LogFilePtr,"WARNING: It is recommeded to have outer and inner thickness EQUAL! \n");
-	}
-
-
-	if (Thicknesscoll == 0.0)
-	{
-		keymaterial0 = 6;
-	}
-
-	if (Thicknesscolli == 0.0)
-	{
-		keymaterial1 = 1;
-	}
-
-
-	if (keymaterial0 == 0)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Material transmission characteristics read from file\n");
-  	}
-
-  	if (keymaterial0 == 1)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Gadolinium \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary \n");
-  	}
-
-  	if (keymaterial0 == 2)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Cadmium \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-
-  	if (keymaterial0 == 3)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Bor10 \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-
-  	if (keymaterial0 == 4)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Eu \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-
-  	if (keymaterial0 == 5)
-  	{
-	    fprintf(LogFilePtr,"OUTER MATERIAL OF COLLIMATOR: Silicon \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
-  	}
-
-  	if (keymaterial0 == 6)
-  	{
-	    // fprintf(LogFilePtr,"Outer material of  collimator: ideal absorber \n");
-  	}
-
-	if ((keymaterial0 != 0)&&(keymaterial0 != 1)&&(keymaterial0 != 2)&&(keymaterial0 != 3)&&(keymaterial0 != 4)&&(keymaterial0 != 5)&&(keymaterial0 != 6))
-  	{
-  	    fprintf(LogFilePtr,"ERROR: OUTER MATERIAL OF COLLIMATOR: No material: EXIT! Correct -c option \n");
-	    exit(-1);
-  	}
-
-
-	if (Thicknesscoll > 0)
-     fprintf(LogFilePtr,"Thickness of outer material of collimator %f cm \n", Thicknesscoll);
-	if (Thicknesscolli > 0)
-	  fprintf(LogFilePtr,"Thickness of inner material of collimator %f cm \n", Thicknesscolli);
-
-
-
-	  for(i=0; i<500; i++)
-	  {
-		WAVS[i] = 0.0;
-		MUS[i] = 0.0;
-		WAV1[i] = 0.0;
-		MU1[i] = 0.0;
-	  }
-
-	  for(i=0; i<=1000; i++)
-	  {
-		transm0[i] = 0.0;
-		transm1[i] = 0.0;
-	  }
-
-
-
-////////////
-    if (keymaterial0 == 0)
-    {
-      /* Read transmission file for collimator */
-
-      if (TransFileName0 !=NULL)
-        {
-          for(count=1; count<=1000; count++)
-    	    {
-    		if (fscanf(trans_file0,"%lf",&transm0[count])==EOF)
-		    break;
-	    }
-
-    	  fclose(trans_file0);
-
-	    k = 1;
-	    ntfs = (long)((count-1)/2);
-	    ntfss = ntfs;
-    	    for(i = 1; i <= ntfs; i++)
-	    {
-		WAVS[i] = transm0[k];
-		MUS[i] = transm0[k+1];
-		k = k + 2;
-	    }
-
-	/* check the input data */
-	    for(i = 1; i <= (ntfs-1); i++)
-	    {
-		if (WAVS[i+1] <= WAVS[i])
-		{
-		    fprintf(LogFilePtr,"ERROR: incorrect data in transmission file of the collimator \n");
-		    fprintf(LogFilePtr,"The numbers in the wavelength columns must be increase!!! \n");
-		    exit(-1);
-		}
-	    }
-
-//	    fprintf(LogFilePtr,"transmfile for surface count = %d  num = %d \n", count, ntfs);
-//	    for(i = 1; i <= ntfs; i++)
-//	    fprintf(LogFilePtr," %f   %f  \n",WAVS[i], MUS[i]);
-	    fprintf(LogFilePtr,"Minimal and maximal wavelengths must be %f ... %f \n",WAVS[1], WAVS[ntfs]);
-
-      }
-      else
-	fprintf(LogFilePtr,"No file, which describes transmission of collimator \n");
-    }
-/////////////////
-
-
-
-////////////
-    if (keymaterial1 == 0)
-    {
-
-          for(count=1; count<=1000; count++)
-    	    {
-    		if (fscanf(trans_file1,"%lf",&transm1[count])==EOF)
-		    break;
-	    }
-
-    	  fclose(trans_file1);
-
-	    k = 1;
-	    ntfs = (long)((count-1)/2);
-	    ntfs1 = ntfs;
-    	    for(i = 1; i <= ntfs; i++)
-	    {
-		WAV1[i] = transm1[k];
-		MU1[i] = transm1[k+1];
-		k = k + 2;
-	    }
-
-	/* check the input data */
-	    for(i = 1; i <= (ntfs-1); i++)
-	    {
-		if (WAV1[i+1] <= WAV1[i])
-		{
-		    fprintf(LogFilePtr,"ERROR: incorrect data in open transmission file of the collimator \n");
-		    fprintf(LogFilePtr,"The numbers in the wavelength columns must be increase!!! \n");
-		    exit(-1);
-		}
-	    }
-
-//	    fprintf(LogFilePtr,"transmfile for surface count = %d  num = %d \n", count, ntfs);
-//	    for(i = 1; i <= ntfs; i++)
-//	    fprintf(LogFilePtr," %f   %f  \n",WAV1[i], MU1[i]);
-	    fprintf(LogFilePtr,"Minimal and maximal wavelengths must be %f ... %f \n",WAV1[1], WAV1[ntfs]);
-
-    }
-/////////////////
-
-	Endpoint.A = 1.0;
-	Endpoint.B = 0.0;
-	Endpoint.C = 0.0;
-	Endpoint.D = -1.0*DistMove;
-
-
-	EndPoint1.A = 1.0;
-	EndPoint1.B = 0.0;
-	EndPoint1.C = 0.0;
-	EndPoint1.D = -1.0*(Thicknesscolli+DistMove);
-
-
-	EndPoint2.A = 1.0;
-	EndPoint2.B = 0.0;
-	EndPoint2.C = 0.0;
-	EndPoint2.D = -1.0*(Thicknesscoll+DistMove);
-
-
-	SetGeometryData();
-
-	/*if(keygrav == 1)
-	{
-		fprintf(LogFilePtr,"Gravity is enabled \n");
-	}
-	else
-	{
-		fprintf(LogFilePtr,"Gravity is disabled \n");
-	}*/
-
-	CenterX   = 0.0;
-	CenterY   = 0.0;
-	CenterZ   = 0.0;
-	SumProb   = 0.0;
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
 	DECLARE_ABORT
 
-	while(ReadNeutrons()!= 0)
+  /******************************/
+  /** Loop over trajectories   **/
+  /******************************/
+  while(ReadNeutrons()!= 0)
 	{
 		for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
-
-			/****************************************************************************************/
-			/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
-			/****************************************************************************************/
-
-			  if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) {
-			    Output = InputNeutrons[i];
-			    if (!RemoveOtherColor) {
-			        WriteIAP(&Output, VT_EXITED);
-			        WriteNeutron(&Output);
-			    }
-			    continue;
-			  }
+      
+      // Remove neutrons with wrong color
+      // --------------------------------
+      if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) 
+      {
+        Output = InputNeutrons[i];
+        if (!bRemoveOtherColor) 
+        {
+    	      WriteIAP(&Output, VT_EXITED);
+    	      WriteNeutron(&Output);
+        }
+        continue;
+      }
 			
-			if (bOldFrame==FALSE) {
+      // Remove neutrons with wrong direction ro wavelength
+      // --------------------------------------------------
+			if (bOldFrame==FALSE)
+      {
 			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
 			  if (InputNeutrons[i].Wavelength == 0.0) continue;
 			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
 			  if (VelocityReal <= 0.0) continue;
 			} 
-			else {
-
+			else 
+      {
 			  Output = InputNeutrons[i];			
-
 			}
 			
+      // Write intersection point
+      // ------------------------
 			WriteIAP(&InputNeutrons[i], VT_ENTERED);
 
+      // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
+      // ----------------------------------------------------------------------------------------
 			if (keygrav == 1)
-			  {
-			    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			  }
+			  TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
 			else
-			{
 				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-			}
-
-
-			/****************************************************************************************/
-			/* Calculate the distance to this intercept.                                            */
-			/****************************************************************************************/
-
-
+      
+			// Calculate average position
+      // --------------------------
 			InputNeutrons[i].Time += (double)TimeOF;
 			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
 			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
@@ -405,185 +180,181 @@ int main(int argc, char *argv[])
 			SumProb   += InputNeutrons[i].Probability;
 			TOF3 = 0.0;
 
-			/* window test */
-
-			if (rotang != 0.0) {
-				/*x' = x cos f - y sin f
+			// window test
+      // -----------
+      if (rotang != 0.0) 
+      {   /*x' = x cos f - y sin f
 			      y' = y cos f + x sin f */
 				NewPositionY = InputNeutrons[i].Position[1] * cos(-rotang) - InputNeutrons[i].Position[2] * sin(-rotang);
 				NewPositionZ = InputNeutrons[i].Position[2] * cos(-rotang) + InputNeutrons[i].Position[1] * sin(-rotang);
-			} else {
+			} 
+      else
+      {
 				NewPositionY = InputNeutrons[i].Position[1];
 				NewPositionZ = InputNeutrons[i].Position[2];
 			}
 
-      if (minPhi >= 0 && maxPhi <= 360) {
-        //CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-        //Phi = Phi*180.0/M_PI;
+      if (minPhi >= 0 && maxPhi <= 360) 
+      { 
         Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
-        if (Phi < minPhi || Phi > maxPhi) {
-	  WriteIAP(&Output, VT_ABSORBED);
-	  continue;
-	}
+        if (Phi < minPhi || Phi > maxPhi)
+        {
+	        WriteIAP(&Output, VT_ABSORBED);
+	        continue;
+	      }
       }
 
-			if(bCircularWindow==TRUE)
-			{	tempdistsquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
-				                 + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
-				if (winradius*winradius < tempdistsquared)
-					bOutOfWindow=TRUE;
-				else
-					bOutOfWindow=FALSE;
-			}
-			else
-			{	if((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
-				   (heightmin > NewPositionZ) || (heightmax < NewPositionZ)  )
-					bOutOfWindow=TRUE;
-				else
-					bOutOfWindow=FALSE;
-			}
+      // Test if window is hit
+      if (bCircularWindow==TRUE)
+      {	DistSquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
+                     + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
+        if (winradius*winradius < DistSquared)
+          bOutOfWindow=TRUE;
+        else
+        bOutOfWindow=FALSE;
+      }
+      else
+      {	if ((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
+            (heightmin > NewPositionZ) || (heightmax < NewPositionZ)  )
+          bOutOfWindow=TRUE;
+        else
+          bOutOfWindow=FALSE;
+      }
 
-			/* ok, if out of beamstop or in window */
-			if ((bBeamStop==TRUE  && bOutOfWindow==TRUE) ||
-			    (bBeamStop==FALSE && bOutOfWindow==FALSE))
-			{
+      /* ok, if out of beamstop or in window */
+      if ((bBeamStop==TRUE  && bOutOfWindow==TRUE) ||
+          (bBeamStop==FALSE && bOutOfWindow==FALSE))
+      {
+        if (keygrav == 1)
+        {
+          TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
+        }
+        else
+        {
+          TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
+        }
 
+        if (KeymaterialI == 0)
+        {
+          /* Attenuation during pass of open window material */
+          N_Wavelength = InputNeutrons[i].Wavelength;
+          mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
+          if (mu == -10000.0)
+          { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+            // Error(sBuffer);
+            CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+          }
+          prob = exp(-mu*TOF3*VelocityReal);
+          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+        }
 
-				if (keygrav == 1)
-				{
-					TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPoint1);
-				}
-				else
-				{
-					TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPoint1);
-				}
-
-
-//				fprintf(LogFilePtr,"INN  TOF3 = %f  TimeOF = %f \n", TOF3, TimeOF);
-
-				if (keymaterial1 == 0)
-  				{
-				     /* Attenuation during pass of open collimator material */
-					 N_Wavelength = InputNeutrons[i].Wavelength;
-					 mu = Interpolation(N_Wavelength,keymaterial1,WAV1,MU1,ntfs1);
-					 if (mu == -10000.0)
-					 {
-					    fprintf(LogFilePtr,"ERROR: module spacewindow: EXIT!\n");
-					    exit(-1);
-					 }
-					 prob = exp(-mu*TOF3*VelocityReal);
-//	 				 fprintf(LogFilePtr,"surf prob = %f mu = %f \n",prob,mu);
-	 				 InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-				 }
-
-
-        if (bOldFrame==FALSE) {
-	  WriteIAP(&InputNeutrons[i], VT_EXITED);
-	  InputNeutrons[i].Position[0]=0.0;
+        if (bOldFrame==FALSE) 
+        {
+          WriteIAP(&InputNeutrons[i], VT_EXITED);
+          InputNeutrons[i].Position[0]=0.0;
           InputNeutrons[i].Time += (double)TOF3 ;
-	  Output = InputNeutrons[i];
+          Output = InputNeutrons[i];
         } 
-	else {
-           InputNeutrons[i]=Output;
-	   WriteIAP(&InputNeutrons[i], VT_EXITED);
-	}
-				WriteNeutron(&Output);
+        else 
+        {
+          InputNeutrons[i]=Output;
+          WriteIAP(&InputNeutrons[i], VT_EXITED);
+        }
+        WriteNeutron(&Output);
       }
-			else /* else, if hitting beamstop or out of window */
-			{
+      else /* else, if hitting beamstop or out of window */
+      {
+        if (KeymaterialO != 6)
+        {
+          if (keygrav == 1)
+          {
+            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+          }
+          else
+          {
+            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+          }
 
-				if (keymaterial0 != 6)
-				{
-					if (keygrav == 1)
-					{
-					    TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPoint2);
-					}
-					else
-					{
-					    TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPoint2);
-					}
+          /* Attenuation during pass through window material */
+          N_Wavelength = InputNeutrons[i].Wavelength;
+          mu = Interpolation(N_Wavelength,KeymaterialO,WavO,MuO,nValFO);
+          if (mu == -10000.0)
+          { // sprintf(sBuffer, "Attenuation coefficient of window frame material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+            // Error(sBuffer);
+            CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+          }
+          prob = exp(-mu*TOF3*VelocityReal);
+          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+          InputNeutrons[i].Time += TOF3;
+          InputNeutrons[i].Position[0]=DistMove;
+          Output = InputNeutrons[i];
+          if (InputNeutrons[i].Probability <= wei_min) 
+          {
+            WriteIAP(&Output, VT_ABSORBED);
+          }
+          else 
+          {
+            WriteIAP(&Output, VT_EXITED);
+            WriteNeutron(&Output);
+          }
+        }
+        else 
+        {
+          if (keygrav == 1)
+          {
+            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+          }
+          else
+          {
+            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+          }
+          InputNeutrons[i].Probability = 0.;
+          InputNeutrons[i].Position[0]=DistMove;
+          InputNeutrons[i].Time += TOF3;
+          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+        }
+      }
+    }
+  }
 
-//					fprintf(LogFilePtr,"OUT  TOF3 = %f   TimeOF = %f \n", TOF3, TimeOF);
-
-				     /* Attenuation during pass of collimator material */
-					 N_Wavelength = InputNeutrons[i].Wavelength;
-					 mu = Interpolation(N_Wavelength,keymaterial0,WAVS,MUS,ntfss);
-					 if (mu == -10000.0)
-					 {
-					    fprintf(LogFilePtr,"ERROR: module spacewindow: EXIT!\n");
-					    exit(-1);
-					 }
-					 prob = exp(-mu*TOF3*VelocityReal);
-//	 				 fprintf(LogFilePtr,"surf prob = %f mu = %f \n",prob,mu);
-	 				 InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-	 				 InputNeutrons[i].Time += (double)TOF3;
-	 				 InputNeutrons[i].Position[0]=DistMove;
-					 Output = InputNeutrons[i];
-				 	 if (InputNeutrons[i].Probability <= wei_min) {
-					   WriteIAP(&Output, VT_ABSORBED);
-					 }
-					 else {
-					   WriteIAP(&Output, VT_EXITED);
-					   WriteNeutron(&Output);
-					 }
-				 }
-				else {
-				  if (keygrav == 1)
-				    {
-				      TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPoint2);
-				    }
-				  else
-				    {
-				      TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPoint2);
-				    }
-				   InputNeutrons[i].Probability = 0.;
-				   InputNeutrons[i].Position[0]=DistMove;
-				   InputNeutrons[i].Time += (double)TOF3;
-				   WriteIAP(&InputNeutrons[i], VT_ABSORBED);
-				}
-			}
-		}
-	}
-
- my_exit:
+/******************************************************************************/
+/* Finish: print parameters, write geometry and instrument file, free memory  */
+/******************************************************************************/
+my_exit:
 	if (bCircularWindow)
 	  fprintf(LogFilePtr,"Window of %6.2f cm diameter in a distance of %7.2f cm \n", 2.0*winradius, DistMove);
 	else
 	  fprintf(LogFilePtr,"Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
 	                     widthmax-widthmin, heightmax-heightmin, DistMove);
+  PrintMessage(WNDI_L_RANGE_TOO_SMALL, sTransFileNameI, ON);
+  PrintMessage(WNDO_L_RANGE_TOO_SMALL, sTransFileNameO, ON);
 
 	if (SumProb != 0.0)
-	{
-		CenterX   = CenterX/SumProb;
+	{ CenterX   = CenterX/SumProb;
 		CenterY   = CenterY/SumProb;
 		CenterZ   = CenterZ/SumProb;
 		fprintf(LogFilePtr,"Center of beam: X = %f cm Y = %f cm Z = %f cm \n",CenterX, CenterY, CenterZ);
 	}
 	else
-	{
-		fprintf(LogFilePtr,"No neutrons at the exit of this module \n");
+	{ fprintf(LogFilePtr,"No neutrons at the exit of this module \n");
 	}
+
   if (TreatColor >= 0) fprintf(LogFilePtr,"Only neutrons with color %hd are treated \n", TreatColor);
 
 	fprintf(LogFilePtr," \n");
 
+  // fills the structure stGeometry for visualization
+	SetGeometry("blue");
 
-	if (Thicknesscolli >= Thicknesscoll)
-	{
-		Cleanup((Thicknesscolli+DistMove), 0.0, 0.0, 0.0, 0.0);
-	}
-	else
-	{
-		Cleanup((Thicknesscoll+DistMove), 0.0, 0.0, 0.0, 0.0);
-	}
-
-
+  Cleanup(Max(ThicknessO, ThicknessI)+DistMove, 0.0, 0.0, 0.0, 0.0);
 
 	return(0);
 }
 
 
-
+/**************************************************************/
+/** Reads input parameters and sets them as global variables **/
+/**************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
 	int i;
@@ -603,7 +374,7 @@ void  OwnInit(int argc, char *argv[])
 
 			case 'S':
 				bBeamStop = (short) atol(&argv[i][2]);
-            bOFrame   = TRUE;   /* default for beamstop 'prev. frame' */
+        bOFrame   = TRUE;   /* default for beamstop 'prev. frame' */
 				break;
 
 			case 'F':
@@ -642,29 +413,29 @@ void  OwnInit(int argc, char *argv[])
 				break;
 
 			case 'c':
-				keymaterial0 = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-      				break;
+				KeymaterialO = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
+        break;
 
 			case 'C':
-				TransFileName0=&argv[i][2];
+				sTransFileNameO=&argv[i][2];
 				break;
 			case 'm':
-				TransFileName1=&argv[i][2];
+				sTransFileNameI=&argv[i][2];
 				break;
 
 			case 't':
-				Thicknesscoll = atof(&argv[i][2]);
+				ThicknessO = atof(&argv[i][2]);
 				/* in cm, outer material */
 				break;
 			case 'T':
-				Thicknesscolli = atof(&argv[i][2]);
+				ThicknessI = atof(&argv[i][2]);
 				/* in cm, inner material */
 				break;
       case 'f':
 				sscanf(&(argv[i][2]),"%hd", &TreatColor);
 				break;
       case 'd':
-				sscanf(&(argv[i][2]),"%hd", &RemoveOtherColor);
+				sscanf(&(argv[i][2]),"%hd", &bRemoveOtherColor);
 				break;
       case 'p':
 				minPhi = atof(&argv[i][2]);
@@ -686,63 +457,234 @@ void  OwnInit(int argc, char *argv[])
 	/* take default value for frame, if not explicitely set */
 	if (bOldFrame==-1)
 		bOldFrame=bOFrame;
+
+  // Fill structures defining the planes
+	Endpoint.A =  1.0;
+	Endpoint.B =  0.0;
+	Endpoint.C =  0.0;
+	Endpoint.D = -1.0 * DistMove;
+  
+	EndPointI.A =  1.0;
+	EndPointI.B =  0.0;
+	EndPointI.C =  0.0;
+	EndPointI.D = -1.0 *(DistMove + ThicknessI);
+   
+	EndPointO.A =  1.0;
+	EndPointO.B =  0.0;
+	EndPointO.C =  0.0;
+	EndPointO.D = -1.0 *(DistMove + ThicknessO);
+
+  return;
 }
 
 
-
-
-
-
-
-void SetGeometryData()
+/********************************************************/
+/** Analyses input parameters and prepares attenuation **/
+/********************************************************/
+void EvalInput()
 {
+  char sLine[CHAR_BUF_SMALL]="";
+	long i,                        // index of arrays for wavelength and attenuation 
+	     nVal=0;                   // number of wavelength and attenuation values in the array
 
-  double rotMatrixPi2[3][3];
+  // Checks
+  // ------
+	if (DistMove < 0.0 && bOldFrame == FALSE)
+	{
+		fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
+		exit(-1);
+	}
+
+	if (ThicknessO < 0.0)
+	{
+		fprintf(LogFilePtr,"ERROR: Thickness of window < 0.0 !!!");
+		exit(-1);
+	}
+
+	if (ThicknessI < 0.0)
+	{
+		fprintf(LogFilePtr,"ERROR: Thickness of open part of the window < 0.0 !!!");
+		exit(-1);
+	}
+
+	if (ThicknessO != ThicknessI)
+	{
+		fprintf(LogFilePtr,"WARNING: It is recommeded to have outer and inner thickness EQUAL! \n");
+	}
+	
+	// Init
+  // ----
+	for(i=0; i<MAX_MU; i++)
+	{	
+		WavO[i] = 0.0;
+		MuO [i] = 0.0;
+		WavI[i] = 0.0;
+		MuI [i] = 0.0;
+	}
+	
+	// Case: zero thickness
+  // --------------------
+	if (ThicknessO == 0.0)
+	{
+		KeymaterialO = 6;
+	}
+  	if (ThicknessI == 0.0)
+	{
+		KeymaterialI = 1;
+	}
+	
+	// output text
+  // -----------
+  fprintf(LogFilePtr,"Window frame material: ");
+
+  switch (KeymaterialO)
+  { case 0: fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
+    case 1: fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
+    case 2: fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
+    case 3: fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
+    case 4: fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
+    case 5: fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
+    case 6: fprintf(LogFilePtr, "Ideal absorber \n");                           break;
+    default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
+  }
+
+  if (ThicknessO > 0)
+    fprintf(LogFilePtr,"Thickness of outer material of window %f cm \n", ThicknessO);
+  if (ThicknessI > 0)
+    fprintf(LogFilePtr,"Thickness of inner material of window %f cm \n", ThicknessI);
   
-  bVisInstalled = TRUE;
+  // window frame material from file
+  // -------------------------------
+  if (KeymaterialO == 0)
+  {
+    // Read transmission file for window frame
+    if (sTransFileNameO !=NULL)
+    {
+      pTransFileO = fopen(sTransFileNameO,"r");
+      if (pTransFileO!=NULL)  
+      { 
+        i=0;
+        while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL-1) > 0) 
+        { i++;
+          sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
+        }
+        nVal  =i;
+        nValFO=nVal;
+        fclose(pTransFileO);
+
+        /* check the input data */
+        for(i = 1; i <= (nValFO-1); i++)
+        {
+          if (WavO[i+1] <= WavO[i])
+          {
+            fprintf(LogFilePtr,"ERROR: incorrect data in transmission file of the window \n");
+            fprintf(LogFilePtr,"The numbers in the wavelength columns must be increase!!! \n");
+            exit(-1);
+          }
+        }
+      }
+      else
+      { Error("Transmission file could not be opened");
+      }
+    }		
+    else
+    { 
+      Error("No file name given describing the transmission of the window frame\n");
+    }
+  }	
+
+  if (KeymaterialO >= 0 && KeymaterialO < 6) 
+    fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nVal]);
+
+  // window pane material from file
+  // ------------------------------
+	if (sTransFileNameI != NULL) 
+	{
+	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
+	  KeymaterialI = 0; /* activate this material */
+
+    pTransFileI = fopen(sTransFileNameI,"r");
+    if (pTransFileI!=NULL)  
+    { i=0;
+      while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0) 
+      { i++;
+        sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
+      }
+      nValFI=i;
+      fclose(pTransFileI);
+	
+      /* check the input data */	    
+      for(i = 1; i <= (nValFI-1); i++)
+      {
+        if (WavI[i+1] <= WavI[i]) 
+        {
+          fprintf(LogFilePtr,"ERROR: incorrect data in open transmission file of the window \n");
+          fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
+          exit(-1);
+        }    
+      }
+    }
+    else
+    { Error("Transmission file could not be opened");
+    }
+	    
+    fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nValFI]);
+  }
+  return;
+}
+
+
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  
  // Geometry data
   if (bVisInstr)
   { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
 
-    if (bCircularWindow) {
-      
-      stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
-      stGeometry.nCylinders = 1;
+    if (bCircularWindow) 
+    {  
+      stGeometry.pHolCyl = calloc(1, sizeof(VtHolCyl));
+      stGeometry.nHolCyls = 1;
 
-      stGeometry.pCylinder[0].Radius = winradius;
-      stGeometry.pCylinder[0].Length = Max(Thicknesscoll, Thicknesscolli);
-      stGeometry.pCylinder[0].vCntr[0]  = DistMove + stGeometry.pCylinder[0].Length/2.;
-      stGeometry.pCylinder[0].vCntr[1]  = ywincenter;
-      stGeometry.pCylinder[0].vCntr[2]  = zwincenter;
-      stGeometry.pCylinder[0].vSymAxis[0] = 1.;
-      stGeometry.pCylinder[0].vSymAxis[1] = 0.;
-      stGeometry.pCylinder[0].vSymAxis[2] = 0.;
-      
-      stGeometry.pDescr  = "space window";
-      stGeometry.eModule = VT_WINDOW;
-
+      stGeometry.pHolCyl[0].InnerRadius = winradius;
+      stGeometry.pHolCyl[0].Radius      = winradius * 3.0;
+      stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI)/CmprFact;
+      stGeometry.pHolCyl[0].vCntr[0]    = (DistMove + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
+      stGeometry.pHolCyl[0].vCntr[1]    = ywincenter;
+      stGeometry.pHolCyl[0].vCntr[2]    = zwincenter;
+      stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
+      stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
+      stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
     }
-    else {
+    else 
+    {
+      ywincenter = (widthmax  + widthmin) /2.0;
+      zwincenter = (heightmax + heightmin)/2.0;
 
-    stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
-    stGeometry.nCuboids = 1; 
+      stGeometry.pHull = calloc(1, sizeof(VtHull));
+      stGeometry.nHulls = 1; 
 
-    stGeometry.pCuboid[0].Length = widthmax - widthmin;
-    stGeometry.pCuboid[0].Width  =  Max(Thicknesscoll, Thicknesscolli);
-    stGeometry.pCuboid[0].Height = heightmax - heightmin;
-    stGeometry.pCuboid[0].vCntr[0]  = DistMove + stGeometry.pCuboid[0].Width/2.;
-    stGeometry.pCuboid[0].vCntr[1]  = ywincenter;
-    stGeometry.pCuboid[0].vCntr[2]  = zwincenter;
-    stGeometry.pCuboid[0].vNormal[0]= cos(rotang);
-    stGeometry.pCuboid[0].vNormal[1]= 0.;
-    stGeometry.pCuboid[0].vNormal[2]= sin(rotang);
+      stGeometry.pHull[0].Length    = Max(ThicknessO, ThicknessI)/CmprFact;
+      stGeometry.pHull[0].WidthIn   = (widthmax  - widthmin);
+      stGeometry.pHull[0].WidthOut  = (widthmax  - widthmin) * 3.0;
+      stGeometry.pHull[0].HeightIn  = (heightmax - heightmin);
+      stGeometry.pHull[0].HeightOut = (heightmax - heightmin) * 3.0;
+      stGeometry.pHull[0].vCntr[0]  = (DistMove + stGeometry.pHull[0].Length/2.)/CmprFact;
+      stGeometry.pHull[0].vCntr[1]  = ywincenter;
+      stGeometry.pHull[0].vCntr[2]  = zwincenter;
+      stGeometry.pHull[0].vNormal[0]= 1.0;
+      stGeometry.pHull[0].vNormal[1]= 0.0;
+      stGeometry.pHull[0].vNormal[2]= 0.0;
+      stGeometry.pHull[0].rotAngle  = rotang * 180.0/M_PI;
 
-    FillRotMatrixZY(rotMatrixPi2, 0, M_PI_2);
-    RotVector(rotMatrixPi2, stGeometry.pCuboid[0].vNormal);
-
-    stGeometry.pDescr  = "space window:cyan";
-    stGeometry.eModule = VT_WINDOW;
-
+      // FillRotMatrixZY(rotMatrixPi2, 0, M_PI_2);
+      // RotVector(rotMatrixPi2, stGeometry.pCuboid[0].vNormal);
     }
   }
 }

@@ -11,7 +11,7 @@
 #include <math.h>
 #include "init.h"
 
-#define THETA_NI 0.099138
+//#define THETA_NI 0.099138
 #define PI       3.1415926535898 
 
 typedef enum

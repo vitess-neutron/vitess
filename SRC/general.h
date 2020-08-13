@@ -29,7 +29,7 @@
 #ifdef  _MSC_VER
 /* The Microsoft visual C++ compiler spews about 1000 warnings during */
 /* compilation of gnuplot. The following lines disable most of them.  */
-# pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
+# pragma warning(disable: 4018 4056 4244 4305 4706 4761 4756 4996)
 # ifndef _CRT_SECURE_NO_WARNINGS
 #  define _CRT_SECURE_NO_WARNINGS
 # endif
@@ -45,10 +45,12 @@
 #define H_P         6.6260696E-34
 #define L_2_E       81805.048
 #define E_C         1.6021773E-19
+#define THETA_NI    0.099138
+#define QC_NI       0.0217
 #define NEUTRON_ID  2112
 
-#define TRUE 		1
-#define FALSE 		0
+#define TRUE 		    1
+#define FALSE 		  0
 
 #define UP          1
 #define DOWN        0
@@ -65,8 +67,8 @@
 #define ANY_COLOR  -1
 #define NO_COLOR    0
 
-#define MOD_THML 1
-#define MOD_COLD 2
+#define MOD_THML    1
+#define MOD_COLD    2
 
 #define MAX_COLLISIONS      100
 #define MAX_CHOPPER_WINDOWS  10
@@ -77,6 +79,7 @@
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
+#define ROFQ_MAX            512
 
 #define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
 
@@ -96,6 +99,9 @@
 # define Vran() gsl_rng_uniform (vit_gsl_rng)
 #endif
 
+    
+#include "common.h"
+
 typedef enum
 {	VT_CUBE    = 1,
 	VT_CYL     = 2,
@@ -106,69 +112,12 @@ SampleGeom;
 
 
 typedef enum
-{
-	VT_SOURCE      =   1,
-	VT_READ_IN     =   2,
-	VT_GUIDE       =  11,
-	VT_BENDER      =  12,
-	VT_COLLIMATOR  =  13,
-	VT_RAD_COLLIM  =  14,
-	VT_SM_ENSEMBLE =  15,
-	VT_SPACE       =  20,
-	VT_WINDOW      =  21,
-	VT_WND_MULT    =  22,
-	VT_GRID        =  23,
-	VT_SLIT        =  24,
-	VT_LENSE       =  25,
-	VT_ELMIRROR    =  26,
-	VT_BEAMSTOP    =  27,
-	VT_CHOP_DISC   =  31,
-	VT_CHOP_FERMI  =  32,
-	VT_VEL_SELECT  =  41,
-	VT_MONOC_ANALY =  45,
-	VT_POL_HE3     =  51,
-	VT_POL_SM      =  52,
-	VT_POL_MIRROR  =  53,
-	VT_FLIP_COIL   =  55,
-	VT_FLIP_GRAD   =  56,
-	VT_RES_DRABKIN =  59,
-	VT_PREC_FIELD  =  60,
-	VT_ROT_FIELD   =  61,
-	VT_SESANS_FIELD=  62,
-	VT_DETECTOR    =  71,
-	VT_SMPL_EL_ISO =  81,
-	VT_SMPL_INELAST=  83,
-	VT_SMPL_SING_X =  84,
-	VT_SMPL_POWDER =  85,
-	VT_SMPL_S_Q    =  86,
-	VT_SMPL_SANS   =  87,
-	VT_SMPL_REFL   =  89,
-	VT_SMPL_ENVIRON=  90,
-	VT_SMPL_DEFL   =  91,
-	VT_MONITOR_1   = 101,
-	VT_MONITOR_2   = 102,
-	VT_MON_POL_1   = 103,
-	VT_MON_POL_POS = 104,
-	VT_FILTER      = 105,
-	VT_CAPTURE     = 110,
-	VT_EVAL_ELAST  = 111,
-	VT_EVAL_ELAST2 = 222,
-	VT_EVAL_INELAST= 112,
-	VT_RUNTIME     = 113,
-	VT_VISUAL      = 121,
-	VT_FRAME       = 131,
-	VT_WRITEOUT    = 141,
-	VT_RESET       = 142,
-	VT_TOOL        = 999
-}
-VtModID;
-
-typedef enum
 {	
 	VT_RECTANGULAR = 1,
 	VT_GAUSSIAN    = 2,
 }
 VtDistr;
+
 
 typedef enum
 {	
@@ -418,7 +367,7 @@ VtCylSlice;
 
 typedef struct
 {
-  VtModID      eModule;
+  McCompID      eModule;
   VtLine*      pLine;
   int          nLines;
   VtRectangle* pRectangle;
@@ -443,7 +392,7 @@ typedef struct
   int          nSpheres;
   VtCylSlice*  pCylSlice;
   int          nCylSlices;
-  const char*  pDescr;   /* description   */
+  char*        pDescr;   /* description   */
 }
 VtModGeom;
 
@@ -451,7 +400,7 @@ VtModGeom;
 
 typedef struct
 {
-  VtModID  eModule;
+  McCompID eModule;
   double   dWPar;    /* width, ...             */
   double   dHPar;    /* height, end width, ... */
   double   dRPar;    /* radius, ...            */
@@ -465,36 +414,54 @@ ModProp;
 /** Prototypes               **/
 /******************************/
 
-double ENERGY_FROM_LAMBDA(const double lmbd);
-double LAMBDA_FROM_ENERGY(const double E);
-double ENERGY_FROM_V   (const double v);
-double V_FROM_ENERGY   (const double E);
-double LAMBDA_FROM_V(const double x);
-double V_FROM_LAMBDA   (const double x);
+double ENERGY_FROM_LAMBDA(const double lmbd);  // Ang -> meV
+double LAMBDA_FROM_ENERGY(const double E);     // meV -> Ang
+double ENERGY_FROM_V     (const double v);
+double V_FROM_ENERGY     (const double E);
+double LAMBDA_FROM_V     (const double v);
+double V_FROM_LAMBDA     (const double lmbd);
+
+double Lambda2E (const double lmbd);           // Ang -> meV
+double E2Lambda (const double E);              // meV -> Ang
+
+double ReflAngle(const double lambda, const double Q);       // [Ang], [1/Ang] -> [deg]
+double QbyRefl  (const double lambda, const double ThetaD);  // [Ang], [deg]   -> [1/Ang]
 
 double MonteCarlo (const double x, const double y);
 double DistrGauss(double Module, double Sigma);
 
-double sq   (const double Value);                        // Value*Value
-double atan0(const double a, const double b);
-double Round(const double value);
-double RoundP(const double value, const int decimal);
+double Radians (const double angleD);
+double Degrees (const double angleR);
+double sq      (const double Value);                        // Value*Value
+double atan0   (const double a, const double b);
+double Round   (const double value);
+double RoundP  (const double value, const int decimal);
 void   Exchange(double* pValue1, double* pValue2);
-double Min(const double value1, const double value2);
-double Max(const double value1, const double value2);
-long   mini(const long value1, const long value2);
-long   maxi(const long value1, const long value2);
+double Min     (const double value1, const double value2);
+double Max     (const double value1, const double value2);
+long   mini    (const long   value1, const long   value2);
+long   maxi    (const long   value1, const long   value2);
 
-double SolidAngle   (const double dHorAngle, const double dVertAngle);
-double ReflSN       (const double Lambda,    const double Angle,    const double mValue);
-double ReflInterpol (const double Lambda,    const double Angle,    const double* Rdata,   long MaxData);
+double SolidAngle    (const double dHorAngle,     const double dVertAngle);
+double TrueSolidAngle(const double dHorAngle,     const double dVertAngle);
+double ReflSNT       (char* sTxt, const double Q, const double m, const short bPrint);
+double ReflTypical   (            const double Q, const double m);
+double ReflTypicalT  (char* sTxt, const double Q, const double m, const short bPrint);
+double ReflMirrT     (char* sTxt, const double Q, const double m, const double R0,    const double Rm, const double W, const double Qc, const short bPrint);
+int    ReadRofQ      (FILE* pReflFile,                 double* aQ,          double* aR);
+int    NumDataPtsQ   (const double Q);   
+int    NumDataPtsM   (const double m,             const double  Qc,   const double  W);
+void   SetReflData   (double* pReflDat,           const double* aQ,   const double* aR, const int nVals);
+double InterpolM     (const double m,             const double* aM,   const double* aR, const int nVals);
+double InterpolQ     (const double Q,             const double* aQ,   const double* aR, const int nVals);
+double ReflInterpol  (const double Lambda,        const double Angle, const double* Rdata, long nData);
 
-void   CopyVector   (const VectorType Src, VectorType Dest);
-long   MAXV         (const VectorType Vector);
-double LengthVector (const VectorType Vector);
-double DistVector   (const VectorType Vec1, const VectorType Vec2);
-double ScalarProduct(const VectorType Vec1, const VectorType Vec2);
-double AngleVectors (const VectorType v1, const VectorType v2);
+void   CopyVector    (const VectorType Src, VectorType Dest);
+long   MAXV          (const VectorType Vector);
+double LengthVector  (const VectorType Vector);
+double DistVector    (const VectorType Vec1, const VectorType Vec2);
+double ScalarProduct (const VectorType Vec1, const VectorType Vec2);
+double AngleVectors  (const VectorType v1, const VectorType v2);
 double Area            (const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
@@ -508,12 +475,14 @@ void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
 void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
 FILE * fileOpen(const char *name, const char *mode);
-void   Error(const char *text);
+void   Error  (const char *text);
 void   Warning(const char *text);
-void   Abort();
-void   Wait(float WaitTime);
+void   Abort  ();
+void   Wait   (float WaitTime);
 
-int    ReadLine(FILE* pFile, char* pLine, int nStrLen);
+long   LinesInFile  (FILE* pFile);
+long   ColumnsInFile(FILE* pFile);
+int    ReadLine     (FILE* pFile, char* pLine, int nStrLen);
 void   ReadParString(FILE *fpt, char *stringvar);
 double ReadParF(FILE *fpt);
 int    ReadParI(FILE *fpt);
