@@ -1,0 +1,57 @@
+guide:
+   Name    : "CurvedExpanding"
+   eShapeY : CURVED           # -Y CONSTANT [-]   shape of the guide in horizontal direction    
+   eShapeZ : LINEAR           # -Z CONSTANT [-]   shape of the guide in vertical direction             
+   sShapeFN:                  # -S "guide_shape.dat" [-]   name of the file containing the sizes of the guide, output or input file
+   EntrWdth:    4.0           # -H    0.0  [cm]   height of the guide exit              
+   EntrHite:    4.0           # -h    0.0  [cm]   height of the guide entrance           
+   ExitWdth:    4.0           # -W    0.0  [cm]   width of the guide exit  
+   ExitHite:    6.0           # -w    0.0  [cm]   width of the guide entrance  
+   PieceLen:   50.0           # -p    0.0  [cm]   length of 1 piece of the guide 
+   nPieces :   10             # -N    1     [-]   number of pieces
+   Radius  : 1000.0           # -R    0.0   [m]   radius of a guide that is curved (in horizontal plane)       
+   D_Foc2Y :    0.0           # -f    0.0  [cm]   pos. of 2nd focal point in horizontal direction (for elliptic shape) 
+   D_Foc2Z :    0.0           # -F    0.0  [cm]   pos. of 2nd focal point in vertical direction (for elliptic shape) 
+   m_Left  :    3.0           # -L    1.0   [-]   m-value for left wall 
+   m_Right :    4.0           # -Q    1.0   [-]   m-value for right wall 
+   m_TopBot:    2.0           # -G    1.0   [-]   m-value for top and bottom wall 
+   sReflL  :                  # -i          [-]   name of the reflectivity file for the left wall
+   sReflR  :                  # -I          [-]   name of the reflectivity file for the right wall 
+   sReflT  :                  # -j          [-]   name of the reflectivity file for the top wall
+   sReflB  :                  # -J          [-]   name of the reflectivity file for the bottom wall
+   
+   nChannel:    1             # -b    1     [-]   number of (vertical) channels 
+   BladeThi:    0.0           # -s    0.0  [cm]   thickness of the blades dividing the channels         
+   MuTotSca:    0.0           # -M    0.0 [1/cm]  total macroscopic scattering coeff.
+   MuAbs   :    0.0           # -m    0.0 [1/cm]  macroscopic absorption coeff. 
+   nColour :   -1             # -g   -1     [-]   colour necessary for the trajectory to be regarded:  colour -1 means: all trajectories are regarded  
+   AddToCol:    0             # -A    0     [-]   value added to the color for each reflection
+   bAbutLos:    0             # -a    0     [-]   flag: abutment loss  0: no  1: yes 
+   AbutLen :    0.0           # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 
+   eWaviDis: RECTANGULAR      # -q RECTANGULAR [-] shape of the waviness distribution   RECTANGULAR   GAUSSIAN
+   Waviness:    0.0           # -r    0.0  [deg]  maximal deviation from normal of the waviness of the guide surface 
+   RotPlane:    0.0           # -n    0.0  [deg]  rotation angle to create additional planes
+
+   sLstFN  :                  # -o          [-]   name of the list file for writing each reflection 
+   eLstPar : REFLECTED        # -O LEAVING  [-]   Trajectories to be written out: LEAVING  REFLECTED   SCATTERED    ALL  
+   bLstVbs :    0             # -v    0     [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. 
+   nLstMin :    0             # -e    0     [-]   Minimum number of reflections within the guide for reflection list output 
+   nLstMax :    0             # -E    0     [-]   Maximum number of reflections within the guide for reflection list output 
+   nLstMinY:    0             # -c    0     [-]   Minimum number of reflections on the horizontal guide for reflection list output 
+   nLstMaxY:    0             # -C    0     [-]   Maximum number of reflections on the horizontal guide for reflection list output 
+   nLstMinZ:    0             # -d    0     [-]   Minimum number of reflections on the vertical guide for reflection list output 
+   nLstMaxZ:    0             # -D    0     [-]   Maximum number of reflections on the vertical guide for reflection list output 
+
+   sPlotFN :                  # -P          [-]   name of the file for writing each reflection as plot
+   bPlotPar:   ALL            # -B   ALL    [-]   Plot filter:  ALL   SCATTERED   DIED 
+   ePlotX  :  POS_X           # -t  POS_X   [-]   key defining x parameter for reflection plot
+   ePlotY  :  M_VAL           # -T  M_VAL   [-]   key defining y parameter for reflection plot
+   ePlotPrb:  PROB            # -V  PROB    [-]   key for probability weighting for reflection plot
+   nPlotX  :  100             # -k  100     [-]   number of X bins in reflection plot
+   nPlotY  :  100             # -K  100     [-]   number of Y bins in reflection plot 
+   xPlotMin:    0.0           # -x    0.0  [var]  lower bound of X range in reflection plot
+   xPlotMax:   10.0           # -X   10.0  [var]  upper bound of X range in reflection plot
+   yPlotMin:    0.0           # -u    0.0  [var]  lower bound of Y range in reflection plot
+   yPlotMax:   10.0           # -U   10.0  [var]  upper bound of Y range in reflection plot
+
+

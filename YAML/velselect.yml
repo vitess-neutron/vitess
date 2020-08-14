@@ -1,0 +1,9 @@
+velselect:
+   Name    : "Velocity Selector"
+   Radius  :  20.0            # -r   20.0  [cm]   radius of the velocity selector 
+   Length  :  30.0            # -l   30.0  [cm]   length of the velocity selector 
+   Spacer  :   0.15           # -d    0.0  [cm]   blade thickness   
+   Freq    : 500.0            # -s  250.0  [Hz]   number of velocity selector rotations per second
+   Twist   :  45.0            # -c   45.0  [deg]  twist of the velocity selector channels
+   DistAxle:  17.0            # -o   15.0  [cm]   distance origin - axle of the velocity selector
+   winnum  :  72              # -w   90     [-]   number of windows 

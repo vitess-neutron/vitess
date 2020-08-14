@@ -1,0 +1,26 @@
+sample_s_q:
+   Name    : "protein"
+   bIncScat:  NO              # -I   NO    [-]    flag: incoherent scattering (YES  NO)  
+   Repete  :    1             # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
+   MaxTheta :  10.0           # -M        [deg]   maximal scattering angle to be considered        
+   SmplFile:                  # -S         [-]    sample parameter file name 
+   SmplGeom:  CYLINDER        # file       [-]    enum sample geometry: CYLINDER  SPHERE  CUBOID
+   PosX    :   20.0           # file  0.0  [cm]   center position X of the sample 
+   PosY    :    0.0           # file  0.0  [cm]   center position Y of the sample 
+   PosZ    :    0.0           # file  0.0  [cm]   center position Z of the sample 
+   SizePar1:    0.2           # file  0.0  [cm]   thickness of cuboid / radius of sphere or cylinder
+   Height  :    3.0           # file  0.0  [cm]   height of cuboid or cylinder
+   Width   :    0.0           # file  0.0  [cm]   width of cuboid
+   DirX    :    0.0           # file  0.0  [cm]   x-component of the sample orientation 
+   DirY    :    0.0           # file  0.0  [cm]   y-component of the sample orientation 
+   DirZ    :    1.0           # file  0.0  [cm]   z-component of the sample orientation
+   PtclGeom:    S             # file  S    [-]    geometry of scat. particles: S: spheres  D: distrib. of spheres  E: ellipsoids  C: cylinders  P: epipeds  I: isotropic scat.
+   PtclSizA:  100.0           # file  0.0  [Ang]  size A of the particles: (min.) radius, thickness
+   PtclSizB:    0.0           # file  0.0  [Ang]  size B of the particles:  max. radius, width
+   PtclSizC:    0.0           # file  0.0  [Ang]  size C of the particles: length
+   ScatPtcl:    2.0e10        # file 1e10 [1/cm²] scattering length density of the particles 
+   ScatSolv:    0.5e10        # file 1e10 [1/cm²] scattering length density of the solvent 
+   FracPtcl:    0.1           # file  0.01 [cm]   volume fraction of the particles 
+   MuAbs   :    0.0           # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
+   MuScaTot:    0.0           # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
+   MuScaInc:    0.0           # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample 

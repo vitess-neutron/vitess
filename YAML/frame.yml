@@ -1,0 +1,12 @@
+frame:
+   Name    : "KinkToLeft"
+   Sequence:   RTM            # -S  RTM    [-]   sequence of operations RTM RMT TRM TMR MTR MRT
+   MirrX   :   NO             # -i  NO     [-]   flag: mirror at yz-plane            
+   MirrY   :   NO             # -j  NO     [-]   flag: mirror at xz-plane 
+   MirrZ   :   NO             # -k  NO     [-]   flag: mirror at xy-plane
+	 RotZ    :    2.0           # -H   0.0  [deg]  rotation angle about z-axis
+   RotY    :    0.0           # -V   0.0  [deg]  rotation angle about y-axis
+   RotX    :    0.0           # -A   0.0  [deg]  rotation angle about x-axis
+   TransX  :    0.0           # -x   0.0   [cm]  x-component of the translation vector
+   TransY  :    0.0           # -y   0.0   [cm]  y-component of the translation vector
+   TransZ  :    0.0           # -z   0.0   [cm]  z-component of the translation vector

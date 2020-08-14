@@ -1,0 +1,37 @@
+lenses:
+   Name    : "FocusingLenses"
+   OutFile : "LensTrj.dat"    # -p "lensestrj.dat"  name of the output file
+   nLenses :   16             # -I   1           number of lenses
+   eLensMat:   SiO2           # -i  SiO2         enum: material of the lense: "O", "CO2", "C", "Be", "F", "Bi", "MgO", "Pb", "MgF", "SiO2", "ZrO2", "Mg",  "Si",  "Zr", "Al"
+   bAttenua:   NO             # -H   NO          flag: attenuation inside the lenses (NO  YES)
+   eLensTyp:   PARABOLIC      # -K   0           enum: type of the lense (SPHERICAL  PARABOLIC) 
+   bInfoCO :   NO             # -z   NO           flag: write coordinates in the file for the lense (NO  YES)
+   nLensOut: 1000             # -v   ALL         number of lenses used for the output file 
+   bFocPath:   NO             # -Y   YES         flag: Flight after lense until focus distance
+   eFocCalc:   THIN           # -V   0           enum: choose the formula for focal distance flight after lense (THIN  THICK)
+   Radius1 :    1.0           # -a   1.0  [cm]   radius of the first lense surface 
+   Radius2 :    1.0           # -b   1.0  [cm]   radius of the second lense surface 
+   RadiusM :    1.0           # -c   1.0  [cm]   radius of the lense 
+   Thicknes:    1.0           # -A   1.0  [cm]   thickness of the lense along ox axis 
+   Roughnes:    0.0           # -q   0.0  [deg]  surface roughness of the lense
+   RefrIdx :    1.0           # -R   1.0   [-]   User defined refractive index 
+   LmbdRefr:    1.0           # -C   1.0  [Ang]  wavelength for the user-defined refactive index
+   MyAbs   :    1.0           # -D   1.0 [1/cm]  user defined macroscopic absorption cross section of the lense 
+   MyScat  :    0.0           # -Q   0.0 [1/cm]  user defined macroscopic scattering cross section of the lense 
+   ExWndRi :    0.0           # -m   0.0  [cm]   inner radius of diaphragm at the exit of the lense system
+   ExWndRa :    0.0           # -M   0.0  [cm]   outer radius of diaphragm at the exit of the lense system
+   LmbdCalc:   20.0           # -r  20.0  [Ang]  Wavelength for focal distance calculation
+   PosMainX:    0.0           # -d   0.0  [cm]   center position X of the lense system 
+   PosMainY:    0.0           # -e   0.0  [cm]   center position Y of the lense system 
+   PosMainZ:    0.0           # -k   0.0  [cm]   center position Z of the lense system 
+   OutX    :    0.0           # -s   0.0  [cm]   position X of the output frame
+   OutY    :    0.0           # -t   0.0  [cm]   position Y of the output frame
+   OutZ    :    0.0           # -w   0.0  [cm]   position Z of the output frame
+   
+   # visualization parameters 
+   bVisAct :   NO             # -y  NO           flag: activation of visualization (NO  YES)
+   nLensOut:    0             # -E   0           number of lenses used for visualization
+   bOutDev :   XWIN           # -l  XWIN         enum for Unix/Linux: device for output (XWIN  PS_FILE)
+   bVisFoc :   NO             # -W  NO           flag: visualization of flight paths after lense to focal point (NO  YES)
+   nVisFoc :10000             # -x 10000         number of trajectories for ray-tracing after lense to focal point
+   XmaxVis :    0.0           # -S   0.0  [cm]   max. x-value for ray-tracing visualization after lenses

@@ -1,0 +1,20 @@
+chopper_disc:
+   Name    : ""
+   Rpm     : 6000.0              # -s       [1/min] rotation speed 
+   Offset  :  -72.0              # -o        [deg]  orientation of the chopper at t=0 
+   Dist    :    0.0              # -l        [cm]   distance of the chopper from the end of the previous component 
+   eAbs    :  IDEAL              # -g  IDEAL  [-]   enum: absorption in chopper: IDEAL  GADOLINIUM  BOR 
+   bZeroT  :  NO                 # -z   NO    [-]   flag: chopper sets neutron time to zero 
+   bPass   :  YES                # -p   YES   [-]   flag: neutrons can pass outside the chopper 
+   bColor  :  NO                 # -c   YES   [-]   flag: chopper sets colour to window number 
+   Radius  :   35.0              #     35.0  [cm]   radius of the chopper 
+   HorPos  :    0.0              #      0.0  [cm]   y-component of the centre of the chopper 
+   VerPos  :  -25.0              #    -25.0  [cm]   z-component of the centre of the chopper 
+   Window  :
+      - WndPos  :    0.0         #           [deg]  angular position of the window center 
+        WndWidth:   10.0         #           [deg]  angular opening of the chopper window 
+        WndHite :   15.0         #     15.0  [cm]   window height from edge of chopper disk to bottom of window 
+        DevL    :    0.0         #      0.0  [deg]  Angular deviation of left window side, positive value indicates that window widens (cf. help file) 
+        DevR    :    0.0         #      0.0  [deg]  Angular deviation of right window side, positive value indicates that window widens (cf. help file) 
+      - WndPos  :   90.0         #           [deg]  angular position of the window center 
+        WndWidth:   20.0         #           [deg]  angular opening of the chopper window 

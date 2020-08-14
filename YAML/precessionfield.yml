@@ -1,0 +1,18 @@
+precessionfield:
+   Name    : "Solenoid"
+   FieldMap:                  # -P         [-]    name of the file containing the map of the inhomogeneous magnetic field
+   eOption : HOMOGENEOUS      # -O HOMOGENEOUS [-]    HOMOGENEOUS  INHOMOGENE  
+   PosX    :  100.0           # -k    0.0  [cm]   x-position of the centre of the magnetic field
+   PosY    :    0.0           # -l    0.0  [cm]   y-position of the centre of the magnetic field
+   PosZ    :    0.0           # -m    0.0  [cm]   z-position of the centre of the magnetic field
+   AnglHor :    0.0           # -i    0.0 [deg]   horizontal (first) rotation angle of the magnetic field map
+   AnglVert:    0.0           # -j    0.0 [deg]   vertical (second) rotation angle of the magnetic field map
+   Depth   :  200.0           # -X  100.0  [cm]   x-component of the size of the homogeneous magnetic field 
+   Width   :   20.0           # -Y  100.0  [cm]   y-component of the size of the homogeneous magnetic field 
+   Height  :   20.0           # -V  100.0  [cm]   z-component of the size of the homogeneous magnetic field 
+   FieldX  :  500.0           # -T    1.0  [Oe]   x-component of the homogeneous magnetic field
+   FieldY  :    0.0           # -G    0.0  [Oe]   y-component of the homogeneous magnetic field
+   FieldZ  :    0.0           # -H    0.0  [Oe]   z-component of the homogeneous magnetic field
+   OutX    :  200.0           # -p    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutY    :    0.0           # -r    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutZ    :    0.0           # -s    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)

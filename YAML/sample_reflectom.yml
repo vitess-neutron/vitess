@@ -1,0 +1,25 @@
+sample_reflectom:
+   Name    : "water"
+   bIncScat:  YES             # -B   NO    [-]    flag: incoherent scattering  (YES  NO)  
+   bOffSpec:  NO              # -o   NO    [-]    flag: offspecular scattering (YES  NO)  
+   Mode    :  SAMPLE          # -O  SAMPLE [-]    enum: mode:  1: reflection of SAMPLE   2: reflection of REFERENCE  
+   SmplFile: "refl.ref"       # -P         [-]    sample parameter file name 
+   ReflFile: "refl_d2o.str"   # -I         [-]    name of the file containing the sample reflectometry
+   RotAxis : "Z"              # -R   "Y"   [-]    rotation axis of sample "Y" or"Z"  
+   RotAngle:    2.0           # -a    0.0 [deg]   min. value of angle or reflection 
+   MuIncSca:    0.02          # -X    0.0 [1/cm]  macroscopic incoherent scattering cross section of the sample 
+   DetWidth:   40.0           # -p    0.0  [cm]   Width of the detector for solid angle for incoherent scattering 
+   DetHite :   40.0           # -t    0.0  [cm]   Height of the detector for solid angle for incoherent scattering 
+   DetDist :  200.0           # -d    1.0  [cm]   Distance to the detector for solid angle for incoherent scattering 
+   StoNArea:    0.0           # -S    1.0  [cm]   Relates the area on the detector with signal counts to total detector area
+   PosX    :   20.0           # file  0.0  [cm]   center x position of the sample 
+   PosY    :    0.0           # file  0.0  [cm]   center y position of the sample 
+   PosZ    :    0.0           # file  0.0  [cm]   center z position of the sample 
+   Thicknes:    0.02          # file  0.0  [cm]   thickness of the reflecting surface
+   Width   :    2.0           # file  0.0  [cm]   width of the sample
+   Length  :    4.0           # file  0.0  [cm]   length of the sample
+   OutX    :  150.0           # file  0.0  [-]    x coordinate in output frame 
+   OutY    :    0.0           # file  0.0  [-]    y coordinate in output frame 
+   OutZ    :    0.0           # file  0.0  [-]    x coordinate in output frame 
+   OutHor  :    0.0           # file  0.0  [-]    horizontal angular coordinate in output frame 
+   OutVert :    0.0           # file  0.0  [-]    vertical angular coordinate in output frame 

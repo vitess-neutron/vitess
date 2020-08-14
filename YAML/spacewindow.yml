@@ -1,0 +1,22 @@
+spacewindow:
+   Name    : "Rhomb"
+   bCircWnd:    NO            # -R   YES   [-]   Flag: circular window, YES: circular, NO: rectangular  
+   bBeamStp:    NO            # -S   NO    [-]   Flag: beamstop         YES: beamstop, NO: normal window
+   bRemOthr:    NO            # -d   NO    [-]   Flag: Neutrons that are not treated are removed
+   TreatCol:    2             # -f ANYCOLOR [-]   Treat only neutrons with this color
+   Distance:   50.0           # -l    0.0  [cm]  Distance from origin to the window (along the x-axis) 
+   Hmin    :   -2.0           # -h    0.0  [cm]  z-coordinate: bottom of rectangular window            
+   Hmax    :    2.0           # -H    0.0  [cm]  z-coordinate: top of rectangular window               
+   Wmin    :   -2.0           # -w    0.0  [cm]  y-coordinate: lower frame value of rectangular window 
+   Wmax    :    2.0           # -W    0.0  [cm]  y-coordinate: higher frame value of rectangular window
+   Radius  :    0.0           # -r    0.0  [cm]  radius of circular window                             
+   CntrY   :    0.0           # -y    0.0  [cm]  y coordinate: center of window                        
+   CntrZ   :    0.0           # -z    0.0  [cm]  z coordinate: center of window                        
+   RotAng  :   45.0           # -A    0.0  [deg] Rotation angle
+   PhiMin  :   -1.0           # -p   -1.0  [deg] min. and 
+   PhiMax  :   -1.0           # -P   -1.0  [deg] max. angle in y-z-plane
+   ThickOut:    0.0           # -t    0.0  [cm]  thickness of the frame material    
+   ThickIn :    0.0           # -T    0.0  [cm]  thickness of the pane material      
+   FileOut :                  # -C   NULL   [-]  file describing the transmission of the window frame material
+   FileIn  :                  # -m   NULL   [-]  file describing the transmission of the material in the open part of window
+   eMatrial: IDEAL_ABS        # -c IDEAL_ABS [-] Frame material: FROM_FILE, GADOLINIUM, CADMIUM, BOR10, EU, SILICON, IDEAL_ABS

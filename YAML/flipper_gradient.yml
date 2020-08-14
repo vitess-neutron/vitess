@@ -1,0 +1,42 @@
+flipper_gradient:
+   Name    : "Linear Gradient Flipper"
+   Depth   :  100.0           # -X    0.0   [cm]   x-component of the size of the flipper 
+   Width   :   10.0           # -Y    0.0   [cm]   y-component of the size of the flipper 
+   Height  :   10.0           # -V    0.0   [cm]   z-component of the size of the flipper 
+   PosX    :  100.0           # -k    0.0   [cm]   x-position of the centre of the flipper
+   PosY    :    0.0           # -l    0.0   [cm]   y-position of the centre of the flipper
+   PosZ    :    0.0           # -m    0.0   [cm]   z-position of the centre of the flipper
+   OutX    :  200.0           # -p    0.0   [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutY    :    0.0           # -r    0.0   [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutZ    :    0.0           # -s    0.0   [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   AnglHor :    0.0           # -i    0.0  [deg]   horizontal rotation angle (about z axis) of the flipper
+   nDomainX:   20             # -C    2     [-]    Number of domains in X axis direction 
+   nDomainY:    6             # -D    2     [-]    Number of domains in Y axis direction 
+   nDomainZ:    6             # -E    2     [-]    Number of domains in Z axis direction 
+
+   AmplFldR: 1000.0           # -d    0.0   [Oe]   amplitude of the magnetic field
+   ADevFldR:    0.0           # -a    0.0   [%]    deviation of the amplitude of the magnetic field in %
+   FreqFldR: 3000.0           # -w    0.0   [Hz]   frequency of the rotating magnetic field (number of rotations per second)
+   FDevFldR:    0.0           # -b    0.0   [%]    deviation for frequency of the rotating field in % 
+   PhaseIni:    0.0           # -z    0.0  [deg]   initial phase
+   eRotAxis:   X_AXIS         # -M  X-AXIS  [-]    rotating field about axis X_AXIS, Y_AXIS, Z_AXIS
+   eFctRotF:   SINUS          # -h  SINUS   [-]    function of the variation of the rotating field amplitude: SINUS, PERMANENT, SOLENOID (values 0, 1, 2 resp.)
+   eDirRotF:   X_AXIS         # -y  X_AXIS  [-]    Direction of changing of the rotating field amplitude: x-, y-, z-axis (values 0, 1, 2 resp.) 
+   eAmplDis:   UNIFORM        # -e  NORMAL  [-]    key: distribution of the amplitude of the rotating field: NORMAL, UNIFORM
+   eFreqDis:   UNIFORM        # -v  NORMAL  [-]    key: distribution of the frequency of the rotating field: NORMAL, UNIFORM
+   bTofPhas:    YES           # -n  YES     [-]    flag: neutron TOF from preceding modules is used for the rotating field phase NO  YES
+
+   eFctGdeF:   LINEAR         # -u  COSINUS [-]    Function of the variation of the guide field amplitude: COSINUS, LINEAR, PERMANENT, (values 0, 1, 2 resp.)
+   eDirGdeF:   X_AXIS         # -t  X_AXIS  [-]    Direction of changing of the guide field amplitude: x-, y-, z-axis (values 0, 1, 2 resp.)
+   FldIniX :  150.0           # -I    0.0   [Oe]   x-component of the permanent or initial magnetic field
+   FldIniY :    0.0           # -A    0.0   [Oe]   y-component of the permanent or initial magnetic field
+   FldIniZ :    0.0           # -K    0.0   [Oe]   z-component of the permanent or initial magnetic field
+   FldFinX :  100.0           # -P    0.0   [Oe]   x-component of the amplitude or final   magnetic field
+   FldFinY :    0.0           # -Q    0.0   [Oe]   y-component of the amplitude or final   magnetic field
+   FldFinZ :    0.0           # -R    0.0   [Oe]   z-component of the amplitude or final   magnetic field
+   AmplFldR:    1.0           # -q    0.0   [Oe]   Amplitude of the additional random magnetic field  
+
+   bPolOut :    NO            # -S  NO      [-]    flag: output polarisation components in the file during flight of domains    NO  YES
+   PolFileO:                  # -O          [-]    output file for the polarization components  
+   FldFileO:                  # -N          [-]    output file for the magnetic field 
+

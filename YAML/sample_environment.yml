@@ -1,0 +1,16 @@
+sample_environment:
+   Name    : "Cryostat"
+   ParFile :                  # -F         [-]    parameter file name 
+   nColor  :    0             # -c         [-]    colour of the neutrons scattered from the environment
+   PosMainX:    0.0           # -x    0.0  [cm]   center position X of the sample environment 
+   PosMainY:    0.0           # -y    0.0  [cm]   center position Y of the sample environment 
+   PosMainZ:    0.0           # -z    0.0  [cm]   center position Z of the sample environment 
+   eDirEnv :  IN              # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
+   StrFile : "Alu.str"        # file       [-]    structure factor file name (of the sample environment material)
+   UCV     :   50.0           # file 50.0 [Ang^3] unit cell volume of the sample environment material
+   Height  :   20.0           # file 20.0  [cm]   outer height of the sample environment
+   Diameter:   10.0           # file 10.0  [cm]   outer diameter of the sample environment  (: 2*R_out)
+   Thicknes:    0.2           # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
+   MuAbs   :    0.0           # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
+   MuScaTot:    0.0           # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
+   MuScaInc:    0.0           # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 

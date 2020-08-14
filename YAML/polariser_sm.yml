@@ -1,0 +1,28 @@
+polariser_sm:
+   Name    : "Supermirror-Polarizer"
+   sReflUp :                  # -U         [-]    name of the reflectivity file for the spin-up neutrons
+   sReflDn :                  # -D         [-]    name of the reflectivity file for the spin-down neutrons
+   PosX    :   50.0           # -a    0.0  [cm]   x-position of the center of the polarizer
+   PosY    :    0.0           # -b    0.0  [cm]   y-position of the center of the polarizer
+   PosZ    :    0.0           # -c    0.0  [cm]   z-position of the center of the polarizer
+   AnglHor :    0.0           # -H    0.0 [deg]   horizontal rotation angle (about z axis) of the polarizer
+   AnglVert:    1.0           # -V    0.0 [deg]   vertical (second) rotation angle of the polarizer
+   OutX    :  100.0           # -R    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutY    :    0.0           # -E    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutZ    :    0.0           # -G    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+   OutHor  :    0.0           # -h    0.0 [deg]   horizontal angle of the output frame, relative to input orientation
+   OutVert :    0.0           # -v    0.0 [deg]   vertical angle of the output frame, relative to input orientation  
+
+   Depth   :  100.0           # file  0.0  [cm]   x-component of the size of the polarizer 
+   Width   :   10.0           # file  0.0  [cm]   y-component of the size of the polarizer 
+   Height  :   10.0           # file  0.0  [cm]   z-component of the size of the polarizer 
+   FldGdeX :    0.0           # file  0.0  [Oe]   strength of the magnetic guide field
+   FldGdeY :   10.0           # file  0.0  [Oe]   strength of the magnetic guide field
+   FldGdeZ :    0.0           # file  0.0  [Oe]   strength of the magnetic guide field
+   AnaDirX :    0.0           # file  0.0  [-]   analysis direction of the polarizer
+   AnaDirY :    1.0           # file  0.0  [-]   analysis direction of the polarizer
+   AnaDirZ :    0.0           # file  0.0  [-]   analysis direction of the polarizer
+   nChan   :   10             # file  0    [-]    number of channels
+   Thicknes:    0.05          # file  0.0  [cm]   thickness of the blades dividing the channels
+
+

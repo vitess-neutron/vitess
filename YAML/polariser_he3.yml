@@ -1,0 +1,22 @@
+polariser_he3:
+   Name    : "Supermirror-Polarizer"
+   bAnaCalc:  TRUE            # -a   TRUE   [-]   flag: analytical calculation of polarization and tranmission data
+   PolPcnt :   50.0           # -b    0.0   [%]   percentage of polarisation of the He3 (for analytical calculation)
+   Xsection: 2944.8           # -c    0.0  [barn] polarisation cross section of neutrons in He3
+   Density :    1.0e18        # -d    0.0 [1/cm3] density of the He3 gas 
+   sPolFil :                  # -P          [-]   name of the data file of the wavelength dependent polarisation
+   sTrnsFil:                  # -T          [-]   name of the data file of the wavelength dependent transmission
+   PosX    :  100.0           # -k    0.0   [cm]  x-position of the center of the polarizer
+   PosY    :    0.0           # -l    0.0   [cm]  y-position of the center of the polarizer
+   PosZ    :    0.0           # -m    0.0   [cm]  z-position of the center of the polarizer
+   Length  :  100.0           # -X    0.0   [cm]  length of the cylindrical polariser
+   Radius  :    5.0           # -Y    0.0   [cm]  radius of the cylindrical polariser
+   FldGdeX :    1.0           # -G    0.0   [Oe]  strength of the magnetic guide field
+   FldGdeY :    0.0           # -H    0.0   [Oe]  strength of the magnetic guide field
+   FldGdeZ :    0.0           # -K    0.0   [Oe]  strength of the magnetic guide field
+   FldPolX :   10.0           # -M    0.0   [Oe]  strength of the field in the polarization chamber
+   FldPolY :    0.0           # -N    0.0   [Oe]  strength of the field in the polarization chamber
+   FldPolZ :    0.0           # -O    0.0   [Oe]  strength of the field in the polarization chamber
+   OutX    :  150.0           # -p    0.0   [cm]  position of the new origin  (in the co-ordinate of the old origin)
+   OutY    :    0.0           # -r    0.0   [cm]  position of the new origin  (in the co-ordinate of the old origin)
+   OutZ    :    0.0           # -s    0.0   [cm]  position of the new origin  (in the co-ordinate of the old origin)

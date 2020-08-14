@@ -1,0 +1,100 @@
+sm_ensemble:
+   Name    : "2-Channel-Inpile"
+   eMatMirr:  SILICON            # -S  OTHER  [-]   mirror material:  SILICON  SAPPHIRE  OTHER 
+   bColor  :  NO                 # -R   YES   [-]   flag: Increase the neutron color by 1 for each mirror reflection 
+   eSpinDir:  NONE               # -Q   YES   [-]   enum: direction of spin quantisation:  NONE  X  Y  Z 
+   OutX    :  150.0              # -r   YES   [-]   x coordinate in output frame 
+   OutY    :    0.0              # -s   YES   [-]   y coordinate in output frame 
+   OutZ    :    0.0              # -t   YES   [-]   x coordinate in output frame 
+   OutHor  :    0.0              # -h   YES   [-]   horizontal angular coordinate in output frame 
+   OutVert :    0.0              # -v   YES   [-]   vertical angular coordinate in output frame 
+   Mirror  :
+      - Name: "Left Thermal"
+        Y1      :  75.0          #           [cm]   horizontal position of the top right mirror 
+        Z1      :   1.6          #           [cm]   vertical   position of the top right mirror 
+        Y2      : -75.0          #           [cm]   horizontal position of the top left mirror 
+        Z2      :   1.6          #           [cm]   vertical   position of the top left mirror 
+        Y3      : -75.0          #           [cm]   horizontal position of the bottom left mirror 
+        Z3      :  -1.6          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :  75.0          #           [cm]   horizontal position of the bottom right mirror 
+        Z4      :  -1.6          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :  75.0          #           [cm]   x coordinate of the center of the mirror 
+        CntrY   :   1.9838       #      0.0  [cm]   y coordinate of the center of the mirror 
+        CntrZ   :   0.0          #      0.0  [cm]   x coordinate of the center of the mirror 
+        RotHor  :  89.8344       #      0.0  [cm]   rotation of the mirror in a horizontal plane (about z-axis, through the center) 
+        RotVert :   0.0          #      0.0  [cm]   rotation of the mirror about the y-axis through through the center 
+        DevHor  :   0.0          #      0.0  [cm]   Uncertainty in the rotation about the z-axis 
+        DevVert :   0.0          #      0.0  [cm]   Uncertainty in the rotation about the y-axis 
+        Thick   :   0.0          #      0.0  [cm]   thickness of the mirror 
+        m_up    :   3.5          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   3.5          #            [-]   m of the mirror for spin-down neutrons 
+      - Name: "Right Thermal"
+        Y1      :  75.0          #           [cm]   horizontal position of the top right mirror 
+        Z1      :   1.6          #           [cm]   vertical   position of the top right mirror 
+        Y2      : -75.0          #           [cm]   horizontal position of the top left mirror 
+        Z2      :   1.6          #           [cm]   vertical   position of the top left mirror 
+        Y3      : -75.0          #           [cm]   horizontal position of the bottom left mirror 
+        Z3      :  -1.6          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :  75.0          #           [cm]   horizontal position of the bottom right mirror 
+        Z4      :  -1.6          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :  75.0          #           [cm]   x coordinate of the center of the mirror 
+        CntrY   :  -1.9838       #      0.0  [cm]   y coordinate of the center of the mirror 
+        RotHor  :  90.1656       #      0.0  [cm]   rotation of the mirror in a horizontal plane (about z-axis, through the center) 
+        m_up    :   3.5          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   3.5          #            [-]   m of the mirror for spin-down neutrons 
+      - Name: "Left Cold"
+        Y1      :  75.0          #           [cm]   horizontal position of the top right mirror 
+        Z1      :   1.6          #           [cm]   vertical   position of the top right mirror 
+        Y2      : -75.0          #           [cm]   horizontal position of the top left mirror 
+        Z2      :   1.6          #           [cm]   vertical   position of the top left mirror 
+        Y3      : -75.0          #           [cm]   horizontal position of the bottom left mirror 
+        Z3      :  -1.6          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :  75.0          #           [cm]   horizontal position of the bottom right mirror 
+        Z4      :  -1.6          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :   75.0         #           [cm]   x coordinate of the center of the mirror 
+        CntrY   :  -3.4803       #      0.0  [cm]   y coordinate of the center of the mirror 
+        RotHor  :  90.4356       #      0.0  [cm]   rotation of the mirror in a horizontal plane (about z-axis, through the center) 
+        m_up    :   0.5          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   0.5          #            [-]   m of the mirror for spin-down neutrons 
+      - Name: "Right Cold"
+        Y1      :  75.0          #           [cm]   horizontal position of the top right mirror 
+        Z1      :   1.6          #           [cm]   vertical   position of the top right mirror 
+        Y2      : -75.0          #           [cm]   horizontal position of the top left mirror 
+        Z2      :   1.6          #           [cm]   vertical   position of the top left mirror 
+        Y3      : -75.0          #           [cm]   horizontal position of the bottom left mirror 
+        Z3      :  -1.6          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :  75.0          #           [cm]   horizontal position of the bottom right mirror 
+        Z4      :  -1.6          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :  75.0          #           [cm]   x coordinate of the center of the mirror 
+        CntrY   :  -5.8000       #      0.0  [cm]   y coordinate of the center of the mirror 
+        RotHor  :  90.6900       #      0.0  [cm]   rotation of the mirror in a horizontal plane (about z-axis, through the center) 
+        m_up    :   3.0          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   3.0          #            [-]   m of the mirror for spin-down neutrons 
+      - Name: Top
+        Y1      :   2.21         #           [cm]   horizontal position of the top right mirror 
+        Z1      :  75.0          #           [cm]   vertical   position of the top right mirror 
+        Y2      :  -2.21         #           [cm]   horizontal position of the top left mirror 
+        Z2      :  75.0          #           [cm]   vertical   position of the top left mirror 
+        Y3      :  -2.21         #           [cm]   horizontal position of the bottom left mirror 
+        Z3      : -75.0          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :   2.21         #           [cm]   horizontal position of the bottom right mirror 
+        Z4      : -75.0          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :  75.0          #           [cm]   x coordinate of the center of the mirror 
+        CntrZ   :   1.34475      #      0.0  [cm]   z coordinate of the center of the mirror 
+        RotVert :  90.1369       #      0.0  [cm]   rotation of the mirror about the y-axis through through the center 
+        m_up    :   3.5          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   3.5          #            [-]   m of the mirror for spin-down neutrons 
+      - Name: Bottom
+        Y1      :   2.21         #           [cm]   horizontal position of the top right mirror 
+        Z1      :  75.0          #           [cm]   vertical   position of the top right mirror 
+        Y2      :  -2.21         #           [cm]   horizontal position of the top left mirror 
+        Z2      :  75.0          #           [cm]   vertical   position of the top left mirror 
+        Y3      :  -2.21         #           [cm]   horizontal position of the bottom left mirror 
+        Z3      : -75.0          #           [cm]   vertical   position of the bottom left mirror 
+        Y4      :   2.21         #           [cm]   horizontal position of the bottom right mirror 
+        Z4      : -75.0          #           [cm]   vertical   position of the bottom right mirror 
+        CntrX   :  75.0          #           [cm]   x coordinate of the center of the mirror 
+        CntrZ   :  -1.34475      #      0.0  [cm]   z coordinate of the center of the mirror 
+        RotVert : -90.1369       #      0.0  [cm]   rotation of the mirror about the y-axis through through the center 
+        m_up    :   3.5          #            [-]   m of the mirror for spin-up neutrons 
+        m_down  :   3.5          #            [-]   m of the mirror for spin-down neutrons 

@@ -1,0 +1,21 @@
+field_sesans:
+   Name    : "Prisma1"
+   FieldX  :    0.0           # -F    0.0  [Oe]   x-component of the magnetic field
+   FieldY  :    0.0           # -G    0.0  [Oe]   y-component of the magnetic field
+   FieldZ  :  200.0           # -H   50.0  [Oe]   z-component of the magnetic field
+   OutX    :   50.0           # -q    0.0  [cm]   x-position of the new origin  (in the co-ordinate of the old origin)
+   OutY    :    0.0           # -r    0.0  [cm]   y-position of the new origin  (in the co-ordinate of the old origin)
+   OutZ    :    0.0           # -s    0.0  [cm]   z-position of the new origin  (in the co-ordinate of the old origin)
+   Corner  :
+      - Name: "Bottom Left"
+        CornerX :   5.0       #       0.0  [cm]   x coordinate of the bottom left corner
+        CornerY :   5.0       #       0.0  [cm]   y coordinate of the bottom left corner
+        CornerZ : -10.0       #       0.0  [cm]   x coordinate of the bottom left corner
+      - Name: "Bottom Right"
+        CornerX :   5.0       #       0.0  [cm]   x coordinate of the bottom right corner
+        CornerY :  -5.0       #       0.0  [cm]   y coordinate of the bottom right corner
+        CornerZ : -10.0       #       0.0  [cm]   x coordinate of the bottom right corner
+      - Name: "Bottom Front"
+        CornerX :  45.0       #       0.0  [cm]   x coordinate of the bottom front corner
+        CornerY :   0.0       #       0.0  [cm]   y coordinate of the bottom front corner
+        CornerZ : -10.0       #       0.0  [cm]   x coordinate of the bottom front corner

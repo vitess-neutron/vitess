@@ -1,0 +1,39 @@
+sample_singcryst:
+   Name    : "Al-SingleCrystal"
+   StrFile : "Al2O3.str"      # -S         [-]    structure factor file name (of the sample material)
+   d_spread:  298.0           # -d  0.0001 [-]    d-spacing spread d_FWHM/d 
+   d_distr : GAUSSIAN         # -o LORENTZIAN [-] function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
+
+#  SmplFile: "Al_Sngl.par"    # -P         [-]    sample parameter file name 
+   Ax      :    1.5518        # file  0.0 [1/cm]  x component of the reciprocal unit vector A (defined in the sample frame)
+   Ay      :    0.0           # file  0.0 [1/cm]  y component of the reciprocal unit vector A (defined in the sample frame)
+   Az      :    0.0           # file  0.0 [1/cm]  z component of the reciprocal unit vector A (defined in the sample frame)
+   Bx      :    0.0           # file  0.0 [1/cm]  x component of the reciprocal unit vector B (defined in the sample frame)
+   By      :    1.5518        # file  0.0 [1/cm]  y component of the reciprocal unit vector B (defined in the sample frame)
+   Bz      :    0.0           # file  0.0 [1/cm]  z component of the reciprocal unit vector B (defined in the sample frame)
+   Cx      :    0.0           # file  0.0 [1/cm]  x component of the reciprocal unit vector C (defined in the sample frame)
+   Cy      :    0.0           # file  0.0 [1/cm]  y component of the reciprocal unit vector C (defined in the sample frame)
+   Cz      :    1.5518        # file  0.0 [1/cm]  z component of the reciprocal unit vector C (defined in the sample frame)
+   NormFact:    1.0           # file  1.0 [1/cm]  normalisation factor 
+   MuAbs   :    0.01          # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
+
+   SmplGeom:  CYLINDER        # file       [-]    enum sample geometry: CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER
+   PosX    :  100.0           # file  0.0  [cm]   center x position of the sample 
+   PosY    :    0.0           # file  0.0  [cm]   center y position of the sample 
+   PosZ    :    0.0           # file  0.0  [cm]   center z position of the sample 
+   SizePar1:    0.2           # file  0.0  [cm]   thickness of cuboid / (outer) diameter of sphere or cylinder
+   Height  :    3.0           # file  0.0  [cm]   height of cuboid or cylinder
+   Width   :    0.0           # file  0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder
+   Rot1_Z  :   30.0           # file  0.0 [deg]   rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (1st rot)
+   Rot2_X  :  -15.0           # file  0.0 [deg]   rotation angle of sample i.e. the reciprocal unit vectors about the X-axis (2nd rot)
+   Rot3_Z  :    0.0           # file  0.0 [deg]   rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (3rd rot)
+   OutHor  :    0.0           # file  0.0 [deg]   horizontal angular coordinate in output frame 
+   OutVert :    0.0           # file  0.0 [deg]   vertical angular coordinate in output frame 
+
+   Col_h   :    2             # file  0    [-]    table column containing the h value   
+   Col_k   :    3             # file  0    [-]    table column containing the h value   
+   Col_l   :    4             # file  0    [-]    table column containing the h value   
+   ColF    :    0             # file  0    [-]    table column containing the structure factor values  
+   ColF2   :    5             # file  0    [-]    table column containing the square of the structure factor values    
+   ColDW   :    0             # file  0    [-]    table column containing the Debye-Waller factors
+   Factor  :    1.0           # file  1.0  [-]    scale factor to transfer |F|² to barn

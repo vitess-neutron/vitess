@@ -1,0 +1,5 @@
+space:
+   Name    : "Source-PSC-Distance"
+   Distance:  200.0           # -d   0.0  [cm]   length of the free flight path along the x-axis 
+   MuScat  :    0.0           # -M   0.0 [1/cm]  macroscopic scattering coefficient 
+   MuAbs   :    0.0           # -m   0.0 [1/cm]  macroscopic absorption coefficient 
