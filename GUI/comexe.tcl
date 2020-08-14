@@ -218,17 +218,20 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
       sm_ensemble {set com "sm_ensemble$par$sys"}
-      source_ESS_2012 {set com "source$sys -S3"}
       source_ESS_LPTS {set com "source$sys -S3"}
+      source_ESS_2012 {set com "source$sys -S3"}
+      source_HBS  {set com "source$sys -S3"}
       source_HMI  {set com "source$sys -S1"}
       source_FRM2 {set com "source$sys -S1"}
       source_ILL  {set com "source$sys -S1"}
       source_IPNS {set com "source$sys -S2"}
-      source_ISIS {set com "source$sys -S2"}
+      source_ISIS {set com "source$sys -S2 -NISIS"}
       source_SNS  {set com "source$sys -S2"}
       source_CSNS {set com "source$sys -S2"}
+      source_JPARC {set com "source$sys -S2"}
       source_const_wave  {set com "source$sys -S1"}
       source_short_pulsed {set com "source$sys -S2"}
+      source_long_pulsed {set com "source$sys -S3"}
       external_command {
         set intcom 0
         set com "[globVal extern_com_$i] [globVal extern_shortopt_$i]"
@@ -478,7 +481,6 @@ proc copyResults {} {
 ### check input and generate command output
 ###
 proc checkAction {} {
-  if {![checkAll]} return
   # \| in parenthesis !
   # $n for \n, else confusion with n-th match or \n isn't linefeed
   set n "\n "

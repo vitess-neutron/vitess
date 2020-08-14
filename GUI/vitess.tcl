@@ -178,9 +178,9 @@ proc makeModuleSets {} {
     }
     {sample_environment {} sample_environment}
     {sm_ensemble {} sm_ensemble}
-    {source {source_const_wave source_ILL source_HMI source_FRM2
-      source_short_pulsed source_SNS source_IPNS source_ISIS source_CSNS
-      source_ESS_LPTS source_ESS_2012} source}
+    {source {source_const_wave source_ILL source_FRM2 source_HMI
+      source_short_pulsed source_SNS source_JPARC source_ISIS source_IPNS source_CSNS
+      source_long_pulsed source_ESS_LPTS source_HBS} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -409,15 +409,13 @@ set imoESET {
   {width float 0 {"moderator\ndiameter or\nwidth [cm]" "moderator width or diameter in cm"} ge0 "" 1}
   {height float 0 {"moderator\nheight [cm]" "moderator height in cm"} ge0 "" 1}
   {}
-  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0).
-In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected).
-Deviations of the moderator center from this position must be given here."}}
+  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0). In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected). Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
   {}
-  {tstat radio TS1 {"target\nstation"} {TS1 TS2} {1 2}}
+  {tstat radio 1 {"target\nstation"} {1 2} {1 2}}
   {}
-  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂý s str Ang)]"}}
+  {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cm^2 s str Ang)]"}}
 }
 
 ### pulsed sources
@@ -608,8 +606,8 @@ proc sore {f s p} {
   return [concat $f $s $p]
 }
 
-foreach s {short_pulsed J-PARC IPNS CSNS} \
-        m {SPTScold J-ParcCold IpnsSPThermPois CsnsH2coupled} \
+foreach s {short_pulsed JPARC IPNS CSNS} \
+        m {SPTScold JParcCold IpnsSPThermPois CsnsH2coupled} \
         fr  {50 20 50 25} \
         sps { -  -  - CSNS} \
         pow { -  -  - 0.1} {
@@ -622,9 +620,9 @@ foreach s {short_pulsed J-PARC IPNS CSNS} \
 
 proc sore {f s v p} {
   set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
-  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for ESS and SNS\ntemperature, tau-values and dist. files ignored in this case" "" N} {- ESS SNS CSNS} {- ESS SNS CSNS}]]
+  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- SNS CSNS} {- SNS CSNS}]]
   set v [list [list dvsn radio $v {"data base" "choose the version of the data base - see help file" "" v} {1 2} {1 2}]]
-  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1]]
+  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 "" 1]]
   return [concat $f $s $v $p]
 }
 
@@ -647,18 +645,38 @@ proc source_ISISCheckErr {{app _}} {return [source_cwsCheckErr $app]}
 ### source
 ###   LPSS long pulsed spallation sources
 
-foreach s {ESS_LPTS ESS_2012} {
+proc sore1 {f l} {
+  set f [list [list freq float $f {"pulse repetition\nrate [Hz]" "" "" R} 1]]
+  set l [list [list plen float $l {"proton pulse\nlength [ms]" "time dependence of neutron flux \tt < p:  1/s*[1-exp(-t/beta)] \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1]]
+  return [concat $f $l]
+}
 
-  set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
-  set source_${s}ESET [concat {
-    {name radio ESS {"source name" "" "" N} {- ESS} {- ESS}}
-    {datvsn radio 2013_Schoenfeldt {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
-    {power float 5.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} 1}
-    {freq float 14.0 {"pulse repetition\nrate [Hz]" "" "" R} 1}
-    {plen float 2.857 {"proton pulse\nlength [ms]" "time dependence of neutron flux
-       \tt < p:  1/s*[1-exp(-t/beta)]
-       \tt >= p: 1/s*[1-exp(-p/beta)]*[-(t-p)/beta]" "" p} 1}
-  } [list $al] $smASET $cwsASET]
+proc sore2 {s p} {
+  set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}]]
+  set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 "" 1]]
+  return [concat $s $p]
+}
+
+set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
+set fl [sore1 14 2.857]
+set sp [sore2 ESS 2.0]
+set source_ESS_LPTSESET [concat {
+    {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
+  } $sp $fl [list $al] $smASET $cwsASET]
+set source_ESS_2012ESET [concat {
+    {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
+  } $sp $fl [list $al] $smASET $cwsASET]
+
+set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
+set fl [sore1 96 0.208]
+set sp [sore2 HBS 0.1]
+set source_HBSESET [concat $sp $fl [list $al] $smASET $cwsASET]
+
+set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
+set fl [sore1 24 0.833]
+set source_long_pulsedESET [concat $fl [list $al] $smASET $cwsASET]
+
+foreach s {long_pulsed ESS_LPTS ESS_2010 HBS} {
 
   proc source_${s}CheckErr {{app _}} {
     foreach l {tau1 tau2 name}  {
@@ -796,12 +814,12 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
+  {outprgf radio VITESS_ASCII {"data format" "format of the output data" "" f} {VITESS_ASCII McStas MCPL MCNPX VITESS_Binary} {1 2 3 4 5}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
   {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
   {}
-  {"VITESS parameters" header}
+  {"VITESS_ASCII parameters" header}
   {outform radio float {"storage format" "format of float values in writeout file" "" F} {exp float} {0 1}}
   {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
@@ -1715,18 +1733,23 @@ proc refCheckErr {{app _}} {
 set ma_flat_newESET {
   {"Monochromator Analyser" header}
   {parfile pareditablefile crys.par {"parameter file" "This files contains parameters describing a crystal element (CE)" "" P} r crs_new 1}
-  {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
-  {sel_tr select array {"transmission\ntreated" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {{"" 0}}}
+  {}
+  {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
+  {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {blocked treated} {0 1}}
+  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
+  {}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]" "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m} ge0 "" 1}
   {svert float 0.8  {"mosaic spread\nvert. [deg]" "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" M}  ge0 "" 1}
   {dspread float 0.00005 {"d spread" "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
   {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
+  {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
   {}
-  {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
+  {mo_freq float 0  {"frequency\n[1/s]" "rotational frequency of the monochromator about a vertical axis [1/cm]" "" f}}
+  {mo_phas float 0  {"initial\nphase [deg]" "orientation of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam are defined by surface and Bragg offsets" "" z}}
+  {}
   {mo_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section of the crystal [1/cm]" "" c} ge0}
-  {mo_abs float 0  {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
+  {mo_abs  float 0  {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
   {}
-  {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
 }
 
 ### New monochromator analyser
@@ -1735,7 +1758,7 @@ set ma_focus_newESET [concat [globVal ma_flat_newESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
   {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry.\nFor details see Help|Modules M|ma_focus_new." "" g} {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
   {}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylincer'" "" H} gt0 "" 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the crystal element matrix." "" V} gt0 "" 1}
   {}
   {chradius float 200 {"radius\nhoriz. [cm]"
@@ -1765,11 +1788,11 @@ set crs_newESET {
   {mposx float 100 {"main position\nX [cm]" "X component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
   {mposy float 0   {"main position\nY [cm]" "Y component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
   {mposz float 0   {"main position\nZ [cm]" "Z component of the center of the monochromator/analyser-system in the frame provided by the former module."} 1}
-  {offahoriz float 0 {"surface offset\nhorizontal [deg]" "Horizontal offset of the crystal surface from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
-  {offavert float 0  {"surface offset\nvertical [deg]"   "Vertical offset of the crystal surface from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
+  {offahoriz float 0 {"crystal offset\nhorizontal [deg]" "Horizontal offset of the crystal from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
+  {offavert float 0  {"crystal offset\nvertical [deg]"   "Vertical offset of the crystal from backscattering.\nFor details see Help|Modules M|ma_focus_new."} 1}
   {}
-  {bragghoriz float "" {"Bragg offset\nhorizontal [deg]" "Horizontal offset from backscattering of the crystal planes determining the Bragg reflection.\nFor details see Help|Modules M|ma_focus_new."}}
-  {braggvert float "" {"Bragg offset\nvertical [deg]" "Vertical offset from backscattering of the crystal planes determining the Bragg reflection.\nFor details see Help|Modules M|ma_focus_new."}}
+  {bragghoriz float "" {"Bragg offset\nhorizontal [deg]" "Horizontal offset from backscattering of the crystal planes determining the Bragg reflection.\nIt can deviate from the crystal (surface) orientation for a single monochromator crystal.\nFor details see Help|Modules M|ma_focus_new."}}
+  {braggvert float "" {"Bragg offset\nvertical [deg]" "Vertical offset from backscattering of the crystal planes determining the Bragg reflection.\nIt can deviate from the crystal (surface) orientation for a single monochromator crystal.\nFor details see Help|Modules M|ma_focus_new."}}
   {}
   {thick float 0.2 {"thickness cryst.\nelement [cm]" "Thickness (perpendicular to reflecting surface) of the rectangular crystal element."} gt0 "" 1}
   {width float 1 {"width cryst.\nelement [cm]" "Width of the rectangular crystal element."} gt0 "" 1}
@@ -1779,7 +1802,7 @@ set crs_newESET {
   {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge1 "" 1}
   {"Output frame" header}
   {oframedef radio "standard frame generation"
-    {"output frame definition" "Choice if the output frame should be generated automatically or 'by hand'\nAutomatically means along the reflected beam if no transmission is treated. By hand means according the following 5 entries. For details see Help|Modules M|ma_focus_new."}
+    {"output frame definition" "Choice if the output frame should be generated 'automatically' or 'by hand'\nAutomatically means along the reflected beam if no transmission is treated. By hand means according the following 5 entries.\nFor rotating monochromators it has to be set by hand.\nFor details see Help|Modules M|ma_focus_new."}
     {"standard frame generation" "user defined frame"} {0 1}}
   {}
   {oframex float 200 {"X' [cm]" "In 'user defined frame': The x position of the output frame origin in the original frame."}}
@@ -3300,8 +3323,10 @@ set sample_sansESET {
 ### sample
 ###   S(Q)
 set sample_s_qESET [concat $sampleASET {
-  {samplefile pareditablefile psample.par {
-    "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r psq 1}
+  {samplefile pareditablefile psample.par {"sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r psq 1}
+  {}
+  {modfreq float 0.0 {"modulation\nfreq. [Hz]" "modulation frequency of the sample response\nif Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))" "" f} ge0}
+  {modphas float 0.0 {"phase(t=0)\n[deg]" "phase of the sample response at t=0\nif Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))" "" o}}
 }]
 
 proc sample_s_qCheckErr {{app _}} {
@@ -5099,8 +5124,8 @@ proc serializeImoFile {f mode var app} {
       set width [lindex $ll 6]
       set wtfile [lindex $ll 13]
       switch [lindex $ll 17] {
-	2 {set tstat TS2}
-	default {set tstat TS1}
+        2 {set tstat 2}
+        default {set tstat 1}
       }
     }
   } else {
@@ -5110,8 +5135,8 @@ proc serializeImoFile {f mode var app} {
       if {[info exist $l] == 0} {set $l 0}
     }
     puts $f "# Source
-# Moderators:  center size  distribution files  time
-# Temp. col shape x y z wid|dia hei spaord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d ISIS"
+# Moderators:    center     size                        distribution files          time
+# Temp. col shape x y z wid|dia hei ord tot_flux curr w-file t-file wt-file  Mod tau_a tau_d ISIS"
     puts $f [convert2Code $al $app]
   }
 }

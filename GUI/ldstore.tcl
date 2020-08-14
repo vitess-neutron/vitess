@@ -489,22 +489,28 @@ proc findModName {n com} {
       switch [optVal $com S] {
         1 {
           switch -regexp $oa {
-            hmi {return source_HMI}
             ill {return source_ILL}
+            frm2 {return source_FRM2}
+            hmi {return source_HMI}
             default {return source_const_wave}
           }
         }
         2 {
           switch -regexp $oa {
             ipns {return source_IPNS}
-            parc {return source_J-PARC}
+            parc {return source_JPARC}
             sns {return source_SNS}
             isis {return source_ISIS}
-            ess {return source_ESS}
             default {return source_short_pulsed}
           }
         }
-        3 {return source_ESS_LPTS}
+        3 {
+          switch -regexp $oa {
+            ess {return source_ESS_LPTS}
+            hbs {return source_HBS}
+            default {return source_long_pulsed}
+          }
+        }
         default {return $n}
       }
     }
