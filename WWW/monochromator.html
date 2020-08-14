@@ -29,16 +29,14 @@
       determine the correct normalisation has become obsolete. The new module now handles
       the normalisation of the outgoing neutrons properly if the peak reflectivity,
       i.e. the reflectivity of the monochromator crystal for neutrons of the peak wavelength
-      and negligible divergence, is given
-    </b>. The peak reflectivity is usually known
-    from dedicated measurements. Note that a correct normalisation of the outgoing intensity is only
+      and negligible divergence, is given </b>. 
+    The peak reflectivity is usually known from dedicated measurements. Note that a correct normalisation of the outgoing intensity is only
     possible, if realistic, non-zero values for the mosaicity and the d-spread are given. If an ideal crystal
     needs to be simulated, i.e. the mosaicity or d-spread are very close to zero,
     then it is possible that the outgoing intensity is larger than the incoming one. In this case you can set the
     reflectivity normalisation to a value below 1. If both the d-spread and the mosaicities are set to 0 then
     the crystal will only transmit the peak wavelength, resulting in a complete loss of intensity in a simulation.
   </p>
-
 
   <p>
     A monochromator element is characterized by its geometric and crystallographic
@@ -53,20 +51,19 @@
     to be specified to determine the curved shape of the monochromator element.
     The crystal structure can be characterized by setting the parameters <i>d</i>-spacing,
     <i>d</i>-spread (Lorentzian and Gaussian), mosaicity and reflectivity. Detailed parameter definitions can be read
-    from the tables in section B. In the output
-    frame X'Y'Z', all neutron coordinates are referring to the moment when the
-    neutrons are just reflected from the crystal taking the new directions and
-    probability weights.
+    from the tables in section B. In the output frame X'Y'Z', all neutron coordinates are referring to the moment when the
+    neutrons are just reflected from the crystal taking the new directions and probability weights.
+  </p>
 
   <p>
-    There are two new features: The geometry choice &quot;Transmission&quot; handles a monochromator in transmission geometry.
+    There are two new features in the new monochromator module: The geometry choice &quot;Transmission&quot; handles a monochromator in transmission geometry.
     The option &quot;transmission treated&quot; creates a transmitted beam in addition to the one reflected by the crystal lattice.
     In this case, <i>N<sub>rep</sub></i>+1, i.e. usually 2, outgoing trajectories are generated for each incoming trajectory (hitting a crystal element),
-    <i>N<sub>rep</sub></i> in the direction of reflection and 1 in the original direction.
-    <br> <b>
-      Important: In this mode, the global coordinate system
-      is not altered by the 'standard frame generation', but needs to be defined as a 'user defined frame' or changed in a subsequent frame module.
-    </b>
+    <i>N<sub>rep</sub></i> in the direction of reflection and 1 in the original direction. 
+    <b>Important: In this mode, the global coordinate system is not altered by the 'standard frame generation', but needs to be defined as a 'user defined frame'
+    or changed in a subsequent frame module.</b>
+   <br/>
+    Furthermore, the latest version of the new monochromator module also allows rotation of the monochromator/analyzer about a vertical axis.
   </p>
 
 
@@ -173,7 +170,8 @@
         <tr>
           <td valign="top" width="18%">Parameter File</td>
           <td valign="top" width="54%">
-            This files contains parameters describing a crystal element (CE). It can be read or created/modified by the VITESS shell.  </td>
+            This files contains parameters describing a crystal element (CE). It can be read or created/modified by the VITESS shell.
+          </td>
           <td valign="top" width="28%">crys.par</td>
           <td>-P</td>
         </tr>
@@ -233,7 +231,7 @@
   </tr>
 
   <tr>
-    <td valign="top" width="18%">Peak reflectivity&nbsp; <p>[-]</p> </td>
+    <td valign="top" width="18%">peak reflectivity<p>[-]</p> </td>
     <td valign="top" width="54%">
       <i>R</i>
       <p>(Experimentally determined) peak reflectivity of this monochromator. </p>
@@ -243,7 +241,7 @@
   </tr>
 
   <tr>
-    <td valign="top" width="18%">Transmission treated&nbsp; <p>[-]</p> </td>
+    <td valign="top" width="18%">transmission treated&nbsp; <p>[-]</p> </td>
     <td valign="top" width="54%">
       If chosen, a tranmitted beam is generated in addition to the reflected beam.<br />
       Note that 'transmission treated' means that 'standard frame generation' does not change the co-ordinate system.
@@ -253,33 +251,42 @@
   </tr>
 
   <tr>
-    <td valign="top" width="18%">Total scattering&nbsp; <p>[1/cm]</p> </td>
-    <td valign="top" width="54%">
-      <i>&mu;<sub>tot</sub></i>
-      <p>
-        Macroscopic total scattering cross-section in the crystal <br />
-        supposed to be wavelength independent
-      </p>
-    </td>
+    <td valign="top" width="18%">rot. frequency <p>[1/s]</p> </td>
+    <td valign="top" width="54%"><i>f</i> <p>Rotational frequency of the monochromator about a vertical axis </p> </td>
+    <td valign="top" width="28%">Default: 0.0</td>
+    <td>-f</td>
+  </tr>
+
+  <tr>
+    <td valign="top" width="18%">initial rot. phase <p>[1/s]</p> </td>
+    <td valign="top" width="54%"><i>&zeta;<sub>0</sub></i> 
+      <p> Zero time orientation of the rotating monochromator <br />
+          The orientation at time t is calculated as &zeta;= 2 &pi; f t + &zeta0; <br /> 
+          For &zeta;=0, the orientation of surface and reflecting planes are given by &theta; and &psi; (see Table 'File Input Parameters')</p> </td>
+    <td valign="top" width="28%">Default: 0.0</td>
+    <td>-z</td>
+  </tr>
+
+  <tr>
+    <td valign="top" width="18%">total scattering&nbsp; <p>[1/cm]</p> </td>
+    <td valign="top" width="54%"> <i>&mu;<sub>tot</sub></i>
+      <p> Macroscopic total scattering cross-section in the crystal <br />
+          supposed to be wavelength independent </p> </td>
     <td valign="top" width="28%">0 ... 1</td>
     <td>-c</td>
   </tr>
 
   <tr>
-    <td valign="top" width="18%">Absorption&nbsp; <p>[1/cm]</p> </td>
-    <td valign="top" width="54%">
-      <i>&mu;<sub>abs</sub></i>
-      <p>
-        Macroscopic absorption cross-section in the crystal for 1.798 &Aring; <br />
-        supposed to be proportional to wavelength
-      </p>
-    </td>
+    <td valign="top" width="18%">absorption&nbsp; <p>[1/cm]</p> </td>
+    <td valign="top" width="54%"> <i>&mu;<sub>abs</sub></i>
+      <p> Macroscopic absorption cross-section in the crystal for 1.798 &Aring; <br />
+          supposed to be proportional to wavelength </p> </td>
     <td valign="top" width="28%">0 ... 1</td>
     <td>-C</td>
   </tr>
 
   <tr>
-    <td valign="top" width="18%">Geometry&nbsp; <p>[-]</p> </td>
+    <td valign="top" width="18%">geometry&nbsp; <p>[-]</p> </td>
     <td valign="top" width="54%">
       <p>
         'Reflection'  : Monochromator used in reflection geometry <br>
@@ -303,65 +310,51 @@
   <!-- TABLE 3: File Input Parameters  -->
   <!-- ------------------------------  -->
   <p>
-    <font face="Symbol">- </font>FILE INPUT PARAMETERS <br>  &nbsp;
-    <table border="1" cellpadding="5" width="809">
-      <tbody>
-        <tr>
-          <td valign="top" width="18%"><b>Parameter</b></td>
-          <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
-          <td valign="top" width="28%"><b>Range, Examples</b></td>
-        </tr>
+  <font face="Symbol">- </font>FILE INPUT PARAMETERS <br>  &nbsp;
+  <table border="1" cellpadding="5" width="809">
+  <tbody>
+  <tr>
+    <td valign="top" width="18%"><b>Parameter</b></td>
+    <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
+    <td valign="top" width="28%"><b>Range, Examples</b></td>
+  </tr>
 
-        <tr>
-          <td valign="top" width="18%"> main position&nbsp;
-  <p>[cm]</p> </td>
-  <td valign="top" width="54%">
-    <i>x</i>, <i>y</i>, <i>z</i>
-    <p> Reference point (position) of the center of the monochromator/analyser-system in the frame provided by the former module. </p>
-    <p>
-      The position of each single CE is defined by (<i>x</i>,<i>y</i>,<i>z</i>)<i> +deviation from </i> (<i>x</i>,<i>y</i>,<i>z</i>).
-      The deviation is read from focus data file.
-    </p>
-    <p> For the flat Geometry option, (<i>x</i>,<i>y</i>,<i>z</i>) is simply the center position of the rectangular CE. </p>
-  </td>
-  <td valign="top" width="28%"> <i>x = distance </i>to CE <p><i>y </i>= <i>z </i>= 0.0 </p> </td>
+  <tr>
+    <td valign="top" width="18%"> main position&nbsp;  <p>[cm]</p> </td>
+    <td valign="top" width="54%"> <i>x</i>, <i>y</i>, <i>z</i>
+      <p> Reference point (position) of the center of the monochromator/analyser-system in the frame provided by the former module. </p>
+      <p> The position of each single CE is defined by (<i>x</i>,<i>y</i>,<i>z</i>)<i> +deviation from </i> (<i>x</i>,<i>y</i>,<i>z</i>).
+          The deviation is read from focus data file. </p>
+      <p> For the flat Geometry option, (<i>x</i>,<i>y</i>,<i>z</i>) is simply the center position of the rectangular CE. </p> </td>
+     <td valign="top" width="28%"> <i>x = distance </i>to CE <p><i>y </i>= <i>z </i>= 0.0 </p> </td>
   </tr>
 
   <tr>
     <td valign="top" width="18%"> thickness, width, height of CE  <p>[cm]</p> </td>
-    <td valign="top" width="54%">
-      <i>t</i>, <i>w</i>, <i>h</i>
-      <p>
-        Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular CE. For each single CE the dimensions will
-        be (<i>t</i>,<i>w</i>,<i>h</i>)<i>+deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>) the last being read from focus data file.
-      </p>
-    </td>
+    <td valign="top" width="54%"> <i>t</i>, <i>w</i>, <i>h</i>
+      <p> Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular CE. For each single CE the dimensions will
+          be (<i>t</i>,<i>w</i>,<i>h</i>)<i>+deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>) the last being read from focus data file. </p> </td>
     <td valign="top" width="28%"> <i>t</i> = 0.0 0.5 cm <p><i>w</i> = <i>h</i> = 0.5 20 cm </p> <p>&nbsp;</p> </td>
   </tr>
 
   <tr>
-    <td valign="top" width="18%"> 'surface offset' angle horizontal, vertical <p>[deg]</p> </td>
-    <td valign="top" width="54%"> Euler angles: Offset of the crystal surface from backscattering. <p> See also 'Bragg offset', next row </p> </td>
-    <td valign="top" width="28%"> see next row  </td>
+    <td> 'crystal offset' angle <br>  horizontal, vertical <p>[deg]</p> </td>
+    <td> <i>&theta;</i>,<i>&psi;</i>: 
+      <p> Offset from backscattering of the crystals determining the Bragg reflection. <br />
+          A rotation first about the Z axis (<i>&theta;</i> ) and then about the (new) Y axis (<i>&psi;</i> ) gives the orientation of the planes of the center of the monochromator/analyzer.
+          The orientation of each single CE is given by (<i>&theta;</i>, <i>&psi;</i>) + deviation from (<i>&theta;</i>, <i>&psi;</i>) the last being read from the focus data file. <br />
+          Zero angles means that diffraction planes are perpendicular to the incoming beam.
+    <td>  <i>&theta;</i> = <i>&psi;</i> = 0.0 exact backscattering; 
+      <p> <i>&theta;</i>: 0 ... 90 deg <br> <i>&psi;</i>;: -90 ... 90 deg </p> </td>
   </tr>
 
   <tr>
-    <td> 'Bragg offset' angle <br>  horizontal, vertical <p>[deg]</p> </td>
-    <td>
-      Euler angles <i>&theta;</i>,<i>&psi;</i>: Offset from backscattering of the crystal planes determining the Bragg reflection.
-      <p>
-        A rotation first about the Z axis (<i>&theta;</i> ) and then about the (new) Y axis (<i>&psi;</i> ) gives the orientation of the planes of the center of the monochromator/analyzer.
-        The orientation of each single CE is given by (<i>&theta;</i>, <i>&psi;</i>) + deviation from (<i>&theta;</i>, <i>&psi;</i>) the last being read from the focus data file. <br />
-        Zero angle means that diffraction planes are perpendicular to the incoming beam.
-        If the (<i>h,k,l</i>) planes are parallel to the crystal surface, then 'Bragg offset' angles are identical with the 'surface offset' angles.
-      </p>
-    </td>
-    <td>
-      <i>&theta;</i> = <i>&psi;</i> = 0.0 exact backscattering; <p>
-        <i>&theta;</i>: 0 ... 90 deg <br> <i>&psi;</i>;: -90 ... 90 deg
-      </p>
-    </td>
-
+    <td valign="top" width="18%"> 'Bragg offset' angle horizontal, vertical <p>[deg]</p> </td>
+    <td valign="top" width="54%">           
+    If the (<i>h,k,l</i>) planes are parallel to the crystal surface, then 'Bragg offset' angles are identical with the 'crystal offset' angles (see previous row).<br />
+    For a focusing geometry this is always assumed. However, for a single monochromator/analyzer crystal the orientation of the reflecting crystal planes can be different from the surface orientation.
+    In this case, the orientation of the planes has to be given as 'Bragg offset', while the 'crystal offset is regarded as the surface orientation.</td>
+    <td valign="top" width="28%"> see previous row  </td>
   </tr>
 
   <tr>
@@ -383,18 +376,22 @@
 
   <tr>
     <td valign="top" width="18%"> output frame definition <p>'standard frame generation'<br />'user defined frame'</p> </td>
-    <td valign="top" width="54%"> <p>
-      If 'user defined frame' is chosen, all parameters defining the output frame (X', Y', Z', hor. angle, vert. angle) are taken from the input values (see following two rows). <br />
-      If 'standard frame generation' is chosen, theses values are generated (and the given values for the output frame ignored). 
-      In case of 'transmission treated', the co-ordinate system is not changed. Otherwise, it is moved to the center of the monochromator and directed along the reflected beam. <br />
-      After the co-ordinate transformation, the neutrons are written to the  output file. </p>
+    <td valign="top" width="54%">
+      <p>
+        If 'user defined frame' is chosen, all parameters defining the output frame (X', Y', Z', hor. angle, vert. angle) are taken from the input values (see following two rows). <br />
+        If 'standard frame generation' is chosen, these values are generated (and the given values for the output frame ignored).<br />
+        'Standard frame generation' is not useful if the monochromator is rotated. As the orientation is wavelength dependent it only considers the orientation (at t=0). <br />
+        In case of 'transmission treated', the co-ordinate system is not changed. Otherwise, it is moved to the center of the monochromator and directed along the reflected beam. <br />
+        After the co-ordinate transformation, the neutrons are written to the  output file.
+      </p>
     </td>
     <td valign="top" width="28%"> one point on the reflected beam axis </td>
   </tr>
 
   <tr>
     <td valign="top" width="18%"> X', Y', Z' <p>[cm]</p> </td>
-    <td valign="top" width="54%"> <i>x'</i>, <i>y'</i>, <i>z'</i>   <p>
+    <td valign="top" width="54%">
+      <i>x'</i>, <i>y'</i>, <i>z'</i>   <p>
         In 'user defined frame': The position of the output frame  in the original frame. (<i>x'</i>, <i>y'</i>, <i>z'</i>) represents the translation vector
         applied to shift the origin of the original (input) frame to the new (output) position. <br />
         In 'standard frame generation' without transmitted beam it is: (<i>x'</i>, <i>y'</i>, <i>z'</i>) = (<i>x</i>, <i>y</i>, <i>z</i>) i.e. main position of the M/A system.
@@ -405,8 +402,9 @@
 
   <tr>
     <td valign="top" width="18%"> output horizontal, vertical angle <p>[deg]</p> </td>
-    <td valign="top" width="54%"> <i>&Theta;</i>, <i>&Psi;</i> <p>
-        In 'user defined output frame', these angles are taken to generate the output frame: 
+    <td valign="top" width="54%">
+      <i>&Theta;</i>, <i>&Psi;</i> <p>
+        In 'user defined output frame', these angles are taken to generate the output frame:
         After the translation, a <i>&Theta;</i> rotation about the Z axis and then a &Psi; rotation about the (new) Y axis defines a new orientation.
         If "standard frame generation" is chosen, the output frame is rotated until the new X axis is parallel to the reflected beam.
       </p>

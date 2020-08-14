@@ -738,7 +738,7 @@ range     in this file. <br>
           From these data the 'total flux at the moderator' and the current
  into   a  solid angle W are calculated: </p>
 
-<p><img src="flux_cw.gif" height="176" width="471">
+<p><img src="Flux_CW.png" height="176" width="600">
            </p>
 
 <p>If the 'total flux at moderator' <font face="Symbol">F</font><sub>total</sub>
@@ -751,24 +751,24 @@ range     in this file. <br>
 
 <b>SPSS/LPSS </b>
 <p>
-For a pulsed source, the wavelength dependence of the intensity
-can   be  determined  &nbsp;by a given 'wavelength distribution function'
-as in   the  CW case. Additionally,  the time dependence of the flux can be
-determined    by a 'time distribution  function'. It describes the time dependence
-of  the  pulse. In the first column  the time [ms] has to be given, in the
-second   the amplitude of the flux. The  product of the amplitude given in
-the wavelength    distribution and that given  in the time distribution must
-have the unit   n/(cm&sup2; s Ang str). <br>
-It is also possible to read a 2-dimensional file containing F(<font face="Symbol">l</font>,t). 
-In the first row the wavelength values (in Angstroem) are expected. 
-All following have the time (in ms) in the first column followed by flux values (in FU) for all wavelengths - 
-see examples 'FluxLmbdTime.dat' or files in 'IsisModData'. (Comment lines starting with '#' are allowed.)
-<br>
-In this approach of F(<font face="Symbol">l</font>,t) being the product of the wavelength and the time distribution function, 
-one gets the following equations to determine the time averaged total flux andmthe time averaged current into a solid angle <font face="Symbol">W</font>: 
+  For a pulsed source, the wavelength dependence of the intensity
+  can   be  determined  &nbsp;by a given 'wavelength distribution function'
+  as in   the  CW case. Additionally,  the time dependence of the flux can be
+  determined    by a 'time distribution  function'. It describes the time dependence
+  of  the  pulse. In the first column  the time [ms] has to be given, in the
+  second   the amplitude of the flux. The  product of the amplitude given in
+  the wavelength    distribution and that given  in the time distribution must
+  have the unit   n/(cm&sup2; s &Aring; sr). <br>
+  It is also possible to read a 2-dimensional file containing F(<font face="Symbol">l</font>,t).
+  In the first row the wavelength values (in &Aring;) are expected.
+  All following have the time (in ms) in the first column followed by flux values (in FU) for all wavelengths -
+  see examples 'FluxLmbdTime.dat' or files in 'IsisModData'. (Comment lines starting with '#' are allowed.)
+  <br>
+  In this approach of F(<font face="Symbol">l</font>,t) being the product of the wavelength and the time distribution function,
+  one gets the following equations to determine the time averaged total flux andmthe time averaged current into a solid angle &Omega;:
 </p>
 
-<p><img src="flux_pulse.gif" height="276" width="529">
+<p><img src="Flux_Pulse.png" height="276" width="650">
 </p>
 
 <b>Artificial source</b>
@@ -781,12 +781,12 @@ to the according range or to 0, respectively.
 <h2>Normalizaton</h2>
 
 <p>
- For both ways to restrict the divergence (by window and by max. angles),
-the solid angle corresponding to the divergence window    is  calculated,
-in order to determine absolute flux values.         For every trajectory,
-the count rate that it represents has to be calculated.     If we have chosen
-an analytic function to describe the moderator (e.g.  the  Maxwellian distribution),
-we just use that value of M(<font face="Symbol">l</font>), T(t) or F(<font face="Symbol">l</font>,t) in the equation. 
+  For both ways to restrict the divergence (by window and by max. angles),
+  the solid angle corresponding to the divergence window    is  calculated,
+  in order to determine absolute flux values.         For every trajectory,
+  the count rate that it represents has to be calculated.     If we have chosen
+  an analytic function to describe the moderator (e.g.  the  Maxwellian distribution),
+  we just use that value of M(&lambda;), T(t) or F(&lambda;,t) in the equation.
 </p>
 
 <p>
@@ -794,7 +794,7 @@ we just use that value of M(<font face="Symbol">l</font>), T(t) or F(<font face=
 </p>
 
 <p>
-If the distribution files are used, M(<font face="Symbol">l</font>) or T(t) are interpolated in logarithmic scale, e.g. 
+If the distribution files are used, M(&lambda;) or T(t) are interpolated in logarithmic scale, e.g. 
 </p>
 
 <p>
