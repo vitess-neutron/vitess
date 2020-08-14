@@ -3,7 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0 Oct 2011  D. Nekrassov  initial version                                              */
+/* 1.0  Oct 2011  D. Nekrassov   initial version                                            */
+/* 1.1  Feb 2020  K. Lieutenant  new central visualization parameters                       */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -21,48 +22,50 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
- 
-  long	i,exclusivecount, registered, BufferIndex;
+  long	i=0;
+  short bExclusive, bRegistered;
   
-  BufferIndex = 0;
-  exclusivecount=0;
-  registered=0;
+  bExclusive = FALSE;
+  bRegistered= FALSE;
 
-  /*input*/
-  Init(argc, argv, VT_MONITOR_2);
-  print_module_name("monitor1D 1.0");
-
-  /* This is the class for a generic 1D monitor. 
-     It handles 11 parameter at the moment */
+  // This is the class for a generic 1D monitor. It handles 11 parameter at the moment
   Mon1D templateMonitor;
-  templateMonitor.Init(argc, argv);
 
-  /* exclusivecount = 1: Only neutrons are considered further, 
+  // initialisation
+  // --------------
+	Init(argc, argv, templateMonitor.eModule);
+  PrintModuleName(templateMonitor.eModule, "1.1");
+  templateMonitor.OwnInit(argc, argv);
+ 
+  bVisInstalled = FALSE;
+  bLengthCmpr   = FALSE;
+
+  /* bExclusive = 1: Only neutrons are considered further, 
      which end up in the monitor without being rejected */
-  exclusivecount = templateMonitor.exclCounts;
+  bExclusive = templateMonitor.exclCounts;
 
-  /*************************************************************/
-DECLARE_ABORT;
+  DECLARE_ABORT;
 
   while(ReadNeutrons()!= 0)
   {
-  CHECK;
-  for(i=0; i<NumNeutGot; i++)
-	{
+    CHECK;
+    for (i=0; i<NumNeutGot; i++)
+	  {
       CHECK;
-      // registered = 1 if neutron was considered in the monitor
-	  registered=templateMonitor.FillMonitorArray(&InputNeutrons[i]);
+      // bRegistered = 1 if neutron was considered in the monitor
+	    bRegistered=templateMonitor.FillMonitorArray(&InputNeutrons[i]);
 	  
-	  if((exclusivecount==0) || (registered==1)) {
+	    if ((bExclusive==0) || (bRegistered==1))
 	      WriteNeutron(&(InputNeutrons[i]));
-	  }
     }
   }
+
 my_exit:
-
-  // Stores the information in the output file.
+  // Stores the information in the output file, closes the file and releases memory.
   templateMonitor.WriteOut();
+  templateMonitor.FreeMemory();
 
+  // releases memmory and writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return(0);

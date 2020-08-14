@@ -18,6 +18,8 @@
 #define AND_AND_AND 1
 #define AND_OR_AND  2
 
+McCompID _eModule=MCN_FILTER;
+
 int    filterParam [4];
 double filterVarMin[4];
 double filterVarMax[4];

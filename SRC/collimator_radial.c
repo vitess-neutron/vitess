@@ -8,7 +8,7 @@
 /*                                                                                           */
 /* 1.0  May 2008  K. Lieutenant   initial version                                            */
 /* 1.1a Nov 2012  K. Lieutenant   visualization, part 1                                      */
-/* 1.2  Jul 2019  K. Lieutenant   completion of visualization (no blow-up option)            */
+/* 1.2  Jul 2019  K. Lieutenant   completion of visualization (no length compression)        */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -83,11 +83,13 @@ int main(int argc, char *argv[])
 	// reading of input data and initilisation
   // ---------------------------------------
   bVisInstalled = TRUE;
-	bBlowupInstal = FALSE;
 
   Init(argc,argv, _eModule);
 	PrintModuleName(_eModule, "1.2");
 	OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  bLengthCmpr   = FALSE;
 
 	AngCntrAct  = AngCentre;
 	AngMinAct   = AngMin;
@@ -102,10 +104,8 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
-			/**************************************************************************/
-			/* Move neutron to the beginning of the collimator and determine position */
-			/**************************************************************************/
-			
+			// Move neutron to the beginning of the collimator and determine position
+			// ----------------------------------------------------------------------			
 			if (InputNeutrons[i].Wavelength <= 0.0) continue;
 			VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
 
@@ -123,9 +123,8 @@ int main(int argc, char *argv[])
 				NewPosZ = OutNeutron.Position[2];
         CopyNeutron(&OutNeutron, &EnterNeutron);
 				
-				/*******************************************************************************/
-				/* Follow neutron through the collimator if it enters into one of the channels */
-				/*******************************************************************************/
+				// Follow neutron through the collimator if it enters into one of the channels
+  			// ---------------------------------------------------------------------------			
 				if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*EntrHeight)
 				{	
 					// find out entrance channel   (channel = 0 means 'blade position')
@@ -140,9 +139,8 @@ int main(int argc, char *argv[])
 							NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
 							NewPosZ = OutNeutron.Position[2];
 
-							/******************************************************************************************/
-							/* Writeout new data set, if neutron leaves inside the exit area through the same channel */
-							/******************************************************************************************/
+							// Writeout new data set, if neutron leaves inside the exit area through the same channel
+        			// ----------------------------------------------------------------------			
 							if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*ExitHeight)
 							{	
 								// find out exit channel   (channel = 0 means 'blade position')
@@ -158,6 +156,7 @@ int main(int argc, char *argv[])
                 else
                 { // estimate point inside the collimator for absorption
                   // might be exchanged by the position where it hits the blade
+            			// ----------------------------------------------------------------------			
                   double prc;
                   int k,
                       N2 = 2 * abs(iChanOut - iChanIn); 
@@ -288,7 +287,8 @@ void SetGeometry(char* sColor)
            phi,      // [rad]  direction to the center of a blade
            Xi;       // [deg]  direction to the center of the collimator
 
-    sprintf(stGeometry.pDescr, "%s:%s", sModuleName, sColor);
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
     stGeometry.nCylSlices = 2; 

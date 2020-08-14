@@ -26,12 +26,6 @@
 #endif
 
 
-#ifdef VT_WINDOWS
- char cSl = '\\';
-#else
- char cSl = '/';
-#endif
-
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
 
 FILE* LogFilePtr;        /* pointer to the log file stream              */
@@ -236,16 +230,16 @@ void CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_FLIP_COIL    : strcpy(sCompName, "FlipperCoil");       break;      
 	  case MCN_FLIP_GRAD    : strcpy(sCompName, "FlipperGradient");   break;  
 	  case MCN_RES_DRABKIN  : strcpy(sCompName, "ResonatorDrabkin");  break; 
-	  case MCN_PREC_FIELD   : strcpy(sCompName, "MagnField");         break;        
-	  case MCN_ROT_FIELD    : strcpy(sCompName, "MagnFieldRotating"); break;
-	  case MCN_SESANS_FIELD : strcpy(sCompName, "MagnFieldSESANS");   break;  
+	  case MCN_FIELD_PREC   : strcpy(sCompName, "MagnField");         break;        
+	  case MCN_FIELD_ROT    : strcpy(sCompName, "MagnFieldRotating"); break;
+	  case MCN_FIELD_SESANS : strcpy(sCompName, "MagnFieldSESANS");   break;  
 	  case MCN_CAPTURE      : strcpy(sCompName, "Source");            break;           
 	  case MCN_BEAMSTOP     : strcpy(sCompName, "BeamStop");          break;         
 	  case MCN_SMPL_ENVIRO  : strcpy(sCompName, "SampleEnvironment"); break;
 	  case MCN_DETECTOR     : strcpy(sCompName, "Detector");          break;         
 	  case MCN_WRITEOUT     : strcpy(sCompName, "EventsOut");         break;        
 	  case MCN_SMPL_EL_ISO  : strcpy(sCompName, "SampleElasticIsotr");break;
-	  case MCN_SMPL_INELAS  : strcpy(sCompName, "SampleInelastic");   break;  
+	  case MCN_SMPL_INELAST : strcpy(sCompName, "SampleInelastic");   break;  
 	  case MCN_SMPL_SNGL_X  : strcpy(sCompName, "SampleSnglCrytal");  break; 
 	  case MCN_SMPL_POWDER  : strcpy(sCompName, "SamplePowder");      break;     
 	  case MCN_SMPL_S_Q     : strcpy(sCompName, "SampleSofQ");        break;       
@@ -257,22 +251,30 @@ void CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_RESET        : strcpy(sCompName, "Reset");             break;            
 	  case MCN_VISUAL       : strcpy(sCompName, "Visualization");     break;    
 	  case MCN_MONITOR1     : strcpy(sCompName, "Monitor1D");         break;        
-	  case MCN_MON1_POL     : strcpy(sCompName, "Monitor1D-Pol");     break;    
+	  case MCN_MON1         : strcpy(sCompName, "Mon1D");             break;    
+	  case MCN_MON1_BRL     : strcpy(sCompName, "Mon1D-Brill");       break;    
+	  case MCN_MON1_POL     : strcpy(sCompName, "Mon1D-Pol");         break;    
 	  case MCN_MONITOR2     : strcpy(sCompName, "Monitor2D");         break;        
-    case MCN_MON2_POS     : strcpy(sCompName, "Monitor2D_Pos");     break;    
-	  case MCN_MON2_DIV     : strcpy(sCompName, "Monitor2D_Div");     break;    
-	  case MCN_MON2_KDIV    : strcpy(sCompName, "Monitor2D_kDiv");    break;   
-	  case MCN_MON2_POSDIV  : strcpy(sCompName, "Monitor2D_Pos-Div"); break;
-	  case MCN_MON2_HDIVH   : strcpy(sCompName, "Monitor2D_H-DivH");  break; 
-	  case MCN_MON2_VDIVV   : strcpy(sCompName, "Monitor2D_W-DivW");  break; 
-	  case MCN_MON2_TOFWL   : strcpy(sCompName, "Monitor2D_Tof-Wl");  break; 
-	  case MCN_MON2_WLDIV   : strcpy(sCompName, "Monitor2D_Wl-Div");  break; 
-	  case MCN_MON2_POL_POS : strcpy(sCompName, "Monitor2D-Pol_Pos"); break;
+    case MCN_MON2_POS     : strcpy(sCompName, "Mon2D_Pos");         break;    
+	  case MCN_MON2_DIV     : strcpy(sCompName, "Mon2D_Div");         break;    
+	  case MCN_MON2_KDIV    : strcpy(sCompName, "Mon2D_kDiv");        break;   
+	  case MCN_MON2_RDIV    : strcpy(sCompName, "Mon2D_R-Div");       break;   
+	  case MCN_MON2_POSDIV  : strcpy(sCompName, "Mon2D_Pos-Div");     break;
+	  case MCN_MON2_WLDIV   : strcpy(sCompName, "Mon2D_Wl-Div");      break; 
+	  case MCN_MON2_TOFWL   : strcpy(sCompName, "Mon2D_Tof-Wl");      break; 
+	  case MCN_MON2_POL_POS : strcpy(sCompName, "Mon2D-Pol_Pos");     break;
 	  case MCN_EVAL1_ELAST  : strcpy(sCompName, "Eval1D_Elastic");    break;   
 	  case MCN_EVAL1_INELAST: strcpy(sCompName, "Eval1D_Inelastic");  break; 
 	  case MCN_EVAL2_ELAST  : strcpy(sCompName, "Eval2D_Elastic");    break;   
 	  case MCN_RUNTIME      : strcpy(sCompName, "RunTime");           break;          
-	  case MCN_TOOL         : strcpy(sCompName, "Tool");              break;             
+	  case MCN_TOOL_A2B     : strcpy(sCompName, "Tool_Ascii2Bin");    break;             
+	  case MCN_TOOL_CAS     : strcpy(sCompName, "Tool_CrysAnaSpec");  break;             
+	  case MCN_TOOL_DEF_DIR : strcpy(sCompName, "Tool_DefineDir");    break;             
+	  case MCN_TOOL_GEN_COAT: strcpy(sCompName, "Tool_GenCoating");   break;             
+	  case MCN_TOOL_GEN_EXTR: strcpy(sCompName, "Tool_GenExtrSys");   break;             
+	  case MCN_TOOL_GEN_SURF: strcpy(sCompName, "Tool_GenSurface");   break;             
+	  case MCN_TOOL_GUIDE   : strcpy(sCompName, "Tool_GuideShape");   break;             
+	  case MCN_TOOL_PHASE   : strcpy(sCompName, "Tool_ChopPhase");    break;             
     default:               strcpy(sCompName, "unknown component"); 
   }
 }
@@ -315,16 +317,16 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "FlipperCoil"))       eComp=MCN_FLIP_COIL    ;      
   else if (strcmp(sCompName, "FlipperGradient"))   eComp=MCN_FLIP_GRAD    ;  
   else if (strcmp(sCompName, "ResonatorDrabkin"))  eComp=MCN_RES_DRABKIN  ;  
-  else if (strcmp(sCompName, "MagnField"))         eComp=MCN_PREC_FIELD   ;        
-  else if (strcmp(sCompName, "MagnFieldRotating")) eComp=MCN_ROT_FIELD    ;
-  else if (strcmp(sCompName, "MagnFieldSESANS"))   eComp=MCN_SESANS_FIELD ;  
+  else if (strcmp(sCompName, "MagnField"))         eComp=MCN_FIELD_PREC   ;        
+  else if (strcmp(sCompName, "MagnFieldRotating")) eComp=MCN_FIELD_ROT    ;
+  else if (strcmp(sCompName, "MagnFieldSESANS"))   eComp=MCN_FIELD_SESANS ;  
   else if (strcmp(sCompName, "Source"))            eComp=MCN_CAPTURE      ;           
   else if (strcmp(sCompName, "BeamStop"))          eComp=MCN_BEAMSTOP     ;         
   else if (strcmp(sCompName, "SampleEnvironment")) eComp=MCN_SMPL_ENVIRO  ;
   else if (strcmp(sCompName, "Detector"))          eComp=MCN_DETECTOR     ;         
   else if (strcmp(sCompName, "EventsOut"))         eComp=MCN_WRITEOUT     ;        
   else if (strcmp(sCompName, "SampleElasticIsotr"))eComp=MCN_SMPL_EL_ISO  ;
-  else if (strcmp(sCompName, "SampleInelastic"))   eComp=MCN_SMPL_INELAS  ; 
+  else if (strcmp(sCompName, "SampleInelastic"))   eComp=MCN_SMPL_INELAST ; 
   else if (strcmp(sCompName, "SampleSnglCrytal"))  eComp=MCN_SMPL_SNGL_X  ; 
   else if (strcmp(sCompName, "SamplePowder"))      eComp=MCN_SMPL_POWDER  ; 
   else if (strcmp(sCompName, "SampleSofQ"))        eComp=MCN_SMPL_S_Q     ; 
@@ -336,22 +338,30 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "Reset"))             eComp=MCN_RESET        ; 
   else if (strcmp(sCompName, "Visualization"))     eComp=MCN_VISUAL       ;
   else if (strcmp(sCompName, "Monitor1D"))         eComp=MCN_MONITOR1     ;
-  else if (strcmp(sCompName, "Monitor1D-Pol"))     eComp=MCN_MON1_POL     ;
+  else if (strcmp(sCompName, "Mon1D"))             eComp=MCN_MON1         ;
+  else if (strcmp(sCompName, "Mon1D-Brill"))       eComp=MCN_MON1_BRL     ;
+  else if (strcmp(sCompName, "Mon1D-Pol"))         eComp=MCN_MON1_POL     ;
   else if (strcmp(sCompName, "Monitor2D"))         eComp=MCN_MONITOR2     ;
-  else if (strcmp(sCompName, "Monitor2D_Pos"))     eComp=MCN_MON2_POS     ;
-  else if (strcmp(sCompName, "Monitor2D_Div"))     eComp=MCN_MON2_DIV     ;
-  else if (strcmp(sCompName, "Monitor2D_kDiv"))    eComp=MCN_MON2_KDIV    ; 
-  else if (strcmp(sCompName, "Monitor2D_Pos-Div")) eComp=MCN_MON2_POSDIV  ;
-  else if (strcmp(sCompName, "Monitor2D_H-DivH"))  eComp=MCN_MON2_HDIVH   ; 
-  else if (strcmp(sCompName, "Monitor2D_W-DivW"))  eComp=MCN_MON2_VDIVV   ; 
-  else if (strcmp(sCompName, "Monitor2D_Tof-Wl"))  eComp=MCN_MON2_TOFWL   ; 
-  else if (strcmp(sCompName, "Monitor2D_Wl-Div"))  eComp=MCN_MON2_WLDIV   ; 
-  else if (strcmp(sCompName, "Monitor2D-Pol_Pos")) eComp=MCN_MON2_POL_POS ;
+  else if (strcmp(sCompName, "Mon2D_Pos"))         eComp=MCN_MON2_POS     ;
+  else if (strcmp(sCompName, "Mon2D_Div"))         eComp=MCN_MON2_DIV     ;
+  else if (strcmp(sCompName, "Mon2D_kDiv"))        eComp=MCN_MON2_KDIV    ; 
+  else if (strcmp(sCompName, "Mon2D_R-Div"))       eComp=MCN_MON2_RDIV   ; 
+  else if (strcmp(sCompName, "Mon2D_Pos-Div"))     eComp=MCN_MON2_POSDIV  ;
+  else if (strcmp(sCompName, "Mon2D_Wl-Div"))      eComp=MCN_MON2_WLDIV   ; 
+  else if (strcmp(sCompName, "Mon2D_Tof-Wl"))      eComp=MCN_MON2_TOFWL   ; 
+  else if (strcmp(sCompName, "Mon2D-Pol_Pos"))     eComp=MCN_MON2_POL_POS ;
   else if (strcmp(sCompName, "Eval1D_Elastic"))    eComp=MCN_EVAL1_ELAST  ; 
   else if (strcmp(sCompName, "Eval1D_Inelastic"))  eComp=MCN_EVAL1_INELAST; 
   else if (strcmp(sCompName, "Eval2D_Elastic"))    eComp=MCN_EVAL2_ELAST  ; 
   else if (strcmp(sCompName, "RunTime"))           eComp=MCN_RUNTIME      ; 
-  else if (strcmp(sCompName, "Tool"))              eComp=MCN_TOOL         ; 
+  else if (strcmp(sCompName, "Tool_Ascii2Bin"))    eComp=MCN_TOOL_A2B     ; 
+  else if (strcmp(sCompName, "Tool_CrysAnaSpec"))  eComp=MCN_TOOL_CAS     ; 
+  else if (strcmp(sCompName, "Tool_DefineDir"))    eComp=MCN_TOOL_DEF_DIR ; 
+  else if (strcmp(sCompName, "Tool_GenCoating"))   eComp=MCN_TOOL_GEN_COAT; 
+  else if (strcmp(sCompName, "Tool_GenExtrSys"))   eComp=MCN_TOOL_GEN_EXTR; 
+  else if (strcmp(sCompName, "Tool_GenSurface"))   eComp=MCN_TOOL_GEN_SURF; 
+  else if (strcmp(sCompName, "Tool_GuideShape"))   eComp=MCN_TOOL_GUIDE   ; 
+  else if (strcmp(sCompName, "Tool_ChopPhase"))    eComp=MCN_TOOL_PHASE   ; 
   else                                             eComp=MCN_COMP_UNKNOWN ; 
 
   return eComp; 
@@ -462,11 +472,16 @@ double ReflTypical(const double Q, const double m)
 {
   short  bPrint=FALSE;
   char*  sText = NULL;
-  double R    = 0.0,
+  double mReal,
+         R    = 0.0,
          R0   = 0.995,
          W    = 0.00157,
-         mReal= m + 0.14,
          Rcut = Min(R0, 1.096 - 0.0758*m);
+
+  if (m > 1.25)           
+    mReal = m + 0.14;     // supermirror coatings have a higher m value than the nomimal value
+  else
+    mReal = m;            // for Ni, Ni58 etc, the nominal value should be used
 
   R = ReflMirrT(sText, Q, mReal, R0, Rcut, W, QC_NI, FALSE);
 
@@ -630,8 +645,15 @@ double ReflInterpol(const double Lambda, const double Angle, const double* Rdata
 /*  Vector Functions                                                                    */
 /****************************************************************************************/
 
+/* sets vector to zero */
+void InitVector(VectorType Vector)
+{
+  Vector[0]=0.0;
+  Vector[1]=0.0;
+  Vector[2]=0.0;
+}
+
 /* 'Copy' copies the contents of Vector 'Src' to vector 'Dest'  */
-/*                                                    */
 void CopyVector(const VectorType Src, VectorType Dest)
 {
     Dest[0] = Src[0];
@@ -641,7 +663,6 @@ void CopyVector(const VectorType Src, VectorType Dest)
 
 
 /* 'MAXV' returns the number of the largest component of 'Vector': 0, 1 or 2  */
-/*                                                                            */
 long MAXV(const VectorType Vector)
 {
   if( (fabs(Vector[0]) > fabs(Vector[1])) && (fabs(Vector[0]) > fabs(Vector[2])))
@@ -653,7 +674,6 @@ long MAXV(const VectorType Vector)
 
 
 /* 'LengthVector' returns the length of vector 'Vec'  */
-/*                                                    */
 double LengthVector(const VectorType Vec)
 {
   //return sqrt(ScalarProduct(Vec,Vec));
@@ -664,7 +684,6 @@ double LengthVector(const VectorType Vec)
 
 
 /* 'NormVector' changes the vector length to 1  */
-/*                                              */
 short NormVector(VectorType Vector)
 {
   long   i;
@@ -681,7 +700,6 @@ short NormVector(VectorType Vector)
 
 
 /* 'DistVector' calculates the distance between the points described by Vec1 and Vec2  */
-/*                                                                                     */
 double DistVector(const VectorType Vec1, const VectorType Vec2)
 {
   VectorType Vhlp;
@@ -693,7 +711,6 @@ double DistVector(const VectorType Vec1, const VectorType Vec2)
 
 
 /* 'AddVector' adds 'Add' to 'Value' and returns 'Value'  */
-/*                                                        */
 void AddVector(VectorType Value, const VectorType Add)
 {
   int i ;
@@ -703,7 +720,6 @@ void AddVector(VectorType Value, const VectorType Add)
 
 
 /* 'SubVector' Substracts 'Sub' from 'Value' and returns 'Value' */
-/*                                                             */
 void SubVector(VectorType Value, const VectorType Sub)
 {
   int i ;
@@ -713,7 +729,6 @@ void SubVector(VectorType Value, const VectorType Sub)
 
 
 /* 'MultiplyByScalar' multiplies a vector by a scalar */
-/*                                                    */
 void MultiplyByScalar(VectorType Vector, const double Scalar)
 {
   int i;
@@ -723,14 +738,12 @@ void MultiplyByScalar(VectorType Vector, const double Scalar)
 
 
 /* 'ScalarProduct' calculates the scalar product of two vectors 'v1' and 'v2' */
-/*                                                                            */
 double ScalarProduct(const VectorType v1, const VectorType v2)
 {
   return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }
 
 /* angle between two vectors in degs */
-
 double AngleVectors(const VectorType v1,  const VectorType v2)
 {
   double theta;
@@ -740,8 +753,6 @@ double AngleVectors(const VectorType v1,  const VectorType v2)
 }
 
 /* area of triangle from two vectors, G.Zs */
-
-
 double Area(const VectorType v1, const VectorType v2)
 {
   double lv = LengthVector(v1) * LengthVector(v2);
@@ -752,6 +763,31 @@ double Area(const VectorType v1, const VectorType v2)
 
 }
 
+
+/* sets plane to zero */
+void InitPlane(Plane* pPlane)
+{
+  pPlane->A=0.0;
+  pPlane->B=0.0;
+  pPlane->C=0.0;
+  pPlane->D=0.0;
+}
+
+
+/****************************************************************************************/
+/*  Basic Matrix Functions                                                              */
+/****************************************************************************************/
+
+/* sets 3 x 3 matrix to zero */
+void Init3x3Matrix(double Matrix[3][3])
+{
+  int i,j;
+
+  for (i=0; i < 3; i++)
+  { for (j=0; j < 3; j++)
+      Matrix[i][j] = 0.0;  
+  }
+}
 
 /* 'RotVector' does essentially a Vector times matrix multiplication   */
 /* in order to rotate the Vector. The rotation Matrix may be supplied  */
@@ -781,7 +817,6 @@ void RotBackVector(double RotMatrix[3][3], VectorType Vector)
     TempVec[i]=RotMatrix[0][i]*Vector[0]+RotMatrix[1][i]*Vector[1]+RotMatrix[2][i]*Vector[2];
   CopyVector(TempVec, Vector);
 }
-
 
 /* 'FillRMatrixZY' calculates a rotation matrix, which rotates a frame   */
 /* at first about the z-axis by 'rotz' and then about the y-axis by 'roty' */
@@ -828,7 +863,6 @@ void CartesianToEulerZY(VectorType Vector, double *roty, double *rotz)
 
 /* Euler to cartesian - invers of previous                            */
 /*  Author: G. Zsigmond                                               */
-
 void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 {
   double cos_roty = cos(*roty);
@@ -844,29 +878,44 @@ void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 
 /* fileOpen open file 'name' and gives pointer back
    in case of an opening error, a message is written to the LogFile */
-
 FILE * fileOpen(const char *name, const char *mode)
 {
   FILE *f;
 
   if (! (f = fopen(name, mode))) {
-    fprintf(LogFilePtr, "ERROR: Can't open %s!\n", name);
+    fprintf(LogFilePtr, "ERROR: Can't open file %s!\n", name);
     exit(-1);
   }
   return f;
 }
 
-
-void Error(const char *text)
+FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
 {
-  fprintf(LogFilePtr,"ERROR: %s!\n", text);
-  exit(-1);
+  FILE* fp;
+
+  if (! (fp = fopen(sName, sMode))) 
+  {
+    fprintf(LogFilePtr, "ERROR: Can't open file %s containing %s!\n", sName, sContent);
+    exit(-1);
+  }
+  return fp;
 }
 
 
+void Error(const char *text)
+{
+  fprintf(LogFilePtr, "ERROR: %s!\n", text);
+  exit(-1);
+}
+
 void Warning(const char *text)
 {
-  fprintf(LogFilePtr,"Warning: %s!\n", text);
+  fprintf(LogFilePtr, "WARNING: %s!\n", text);
+}
+
+void Note(const char *text)
+{
+  fprintf(LogFilePtr, "NOTE: %s!\n", text);
 }
 
 
@@ -1087,11 +1136,22 @@ StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 /**************************************************************/
 void ChangeSlash(char* pStr)
 {
-	int k, klen;
+	int k, kLen;
 
-	klen = strlen(pStr);
-	for (k=0; k < klen; k++)
+	kLen = strlen(pStr);
+	for (k=0; k < kLen; k++)
 	{	if (pStr[k]=='/' || pStr[k]=='\\')
-			pStr[k]=cSl;
+			pStr[k]=cSlash;
 	}
+}
+
+void AddSlash(char* pStr)
+{
+  int kLen = strlen(pStr);
+
+  if (pStr[kLen-1]!=cSlash)
+  { pStr[kLen-1]=cSlash;
+    pStr[kLen]  ='\0';
+  }
+
 }

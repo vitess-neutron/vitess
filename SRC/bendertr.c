@@ -18,10 +18,10 @@ void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
  
 double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, BenderChannel ThisBenderCh, long numberch, long NumberOfSurfaces,
-				    double wei_min, double disabut,
+				    double weight_min, double disabut,
 				    double reflectivitylup[1000], double reflectivityrup[1000], double reflectivitytbup[1000], 
 				    double reflectivityldo[1000], double reflectivityrdo[1000], double reflectivitytbdo[1000], 
-				    double surfacerough, long keygrav, long keypol, long qspin,
+				    double surfacerough, long key_grav, long keypol, long qspin,
 				    double entrancediscenter[N_SURF], double exitdiscenter[N_SURF], double spacer,
 				    long keymaterial0, long keymaterial1, long keymaterial2,
 				    double WAVS[MAX_MU], double MUS[MAX_MU], long ntfs,
@@ -158,7 +158,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
   /* until it is absorbed or intercepts with the exit plane.                         */ 
   /***********************************************************************************/ 
  
-  /*	fprintf(LogFilePtr,"weight min  %e \n",wei_min);*/ 
+  /*	fprintf(LogFilePtr,"weight min  %e \n",weight_min);*/ 
   //  fprintf(LogFilePtr,"=============NEU===NEUTRON===========================\n");
  
   R1 = 1;
@@ -190,7 +190,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
  
       CopyNeutron(ThisNeutron, &TempNeutron); 
  
-      TimeOF=NeutronSurfaceSecIntersectionGr(&TempNeutron, ThisBenderCh.Surf[i], keygrav);		 
+      TimeOF=NeutronSurfaceSecIntersectionGr(&TempNeutron, ThisBenderCh.Surf[i], key_grav);		 
  
       /*	Intercept = NeutronPlaneIntersection(*ThisNeutron, ThisGuide.Wall[i]); */ 
       //      	fprintf(LogFilePtr,"num = %d time = %e \n",i, TimeOF); 
@@ -249,7 +249,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
  
       /*	fprintf(LogFilePtr,"Velocity real= %f \n", VelocityReal); */ 
  
-      if (NearestNeutron.Probability <= wei_min)  return(-1.0); 
+      if (NearestNeutron.Probability <= weight_min)  return(-1.0); 
  
  
       ThisNeutron->Position[0] = NearestNeutron.Position[0]; 
@@ -712,19 +712,19 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
     	 
       CopyNeutron(&NearestNeutron, &TempNeutron1); 
       TimeOFm[0] = NeutronSurfaceSecIntersectionGr(&TempNeutron1, 
-      NewSurf, keygrav);		
+      NewSurf, key_grav);		
     	 
       CopyNeutron(&NearestNeutron, &TempNeutron1); 
       TimeOFm[1] = NeutronSurfaceSecIntersectionGr(&TempNeutron1, 
-      ThisBenderCh.Surf[4], keygrav);		 
+      ThisBenderCh.Surf[4], key_grav);		 
     	 
       CopyNeutron(&NearestNeutron, &TempNeutron1); 
       TimeOFm[2] = NeutronSurfaceSecIntersectionGr(&TempNeutron1, 
-      ThisBenderCh.Surf[0], keygrav);		 
+      ThisBenderCh.Surf[0], key_grav);		 
     	 
       CopyNeutron(&NearestNeutron, &TempNeutron1); 
       TimeOFm[3] = NeutronSurfaceSecIntersectionGr(&TempNeutron1, 
-      ThisBenderCh.Surf[1], keygrav);		 
+      ThisBenderCh.Surf[1], key_grav);		 
 
 
       TimeOFmi = 999999999999999999999999.9;
@@ -750,7 +750,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
       {
         /* Pass in the next channel */
      	 	
-        TimeOFpass = NeutronSurfaceSecIntersectionGr(&NearestNeutron, NewSurf, keygrav);		
+        TimeOFpass = NeutronSurfaceSecIntersectionGr(&NearestNeutron, NewSurf, key_grav);		
         TimeOFTotal = TimeOFTotal + TimeOFpass; 
       }
 	 
@@ -758,7 +758,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
       {
         /* Neutron pass via surface material and exit from bender */
 
-        TimeOFpass = NeutronSurfaceSecIntersectionGr(&NearestNeutron, ThisBenderCh.Surf[4], keygrav);		
+        TimeOFpass = NeutronSurfaceSecIntersectionGr(&NearestNeutron, ThisBenderCh.Surf[4], key_grav);		
         TimeOFTotal = TimeOFTotal + TimeOFpass; 		 		 
     	 
         /* Illegal velocity */
@@ -798,7 +798,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
           NearestNeutron.Probability = NearestNeutron.Probability*prob;		
         }
  
-        if (NearestNeutron.Probability <= wei_min)  return(-1.0); 
+        if (NearestNeutron.Probability <= weight_min)  return(-1.0); 
  
         ThisNeutron->Position[0] = NearestNeutron.Position[0]; 
         ThisNeutron->Position[1] = NearestNeutron.Position[1]; 
@@ -943,15 +943,15 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
 
 
       CopyNeutron(ThisNeutron, &TempNeutron1); 
-      TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], keygrav);		 
+      TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], key_grav);		 
 
       CopyNeutron(ThisNeutron, &TempNeutron1); 
     
-      TimeOFtop=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[1], keygrav); 
+      TimeOFtop=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[1], key_grav); 
 
       CopyNeutron(ThisNeutron, &TempNeutron1); 
     
-      TimeOFbot=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[0], keygrav);
+      TimeOFbot=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[0], key_grav);
 
  
       /* CHECK incorrect flight of neutron, move neutron after reflection on small distance 
@@ -967,7 +967,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
         ThisNeutron->Position[2] = ThisNeutron->Position[2] + VelocityReal*stepp*(ThisNeutron->Vector[2]); 
 	
         /* Include gravity */ 
-        if (keygrav == 1) 
+        if (key_grav == 1) 
         {	 
           ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*stepp*stepp; 
           ThisNeutron->Vector[2]   = ThisNeutron->Vector[2]   -    ((G*1.0e-4)*stepp/VelocityReal);	 
@@ -1137,14 +1137,14 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
       fprintf(LogFilePtr,"angle inc = %f, refl = %f \n",angular,angular1); */ 
  
       CopyNeutron(ThisNeutron, &TempNeutron1); 
-      TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], keygrav);
+      TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], key_grav);
     
       CopyNeutron(ThisNeutron, &TempNeutron1); 
     
-      TimeOFtop = NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[1], keygrav);	
+      TimeOFtop = NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[1], key_grav);	
     
       CopyNeutron(ThisNeutron, &TempNeutron1); 
-      TimeOFbot = NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[0], keygrav);	
+      TimeOFbot = NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[0], key_grav);	
  
        /* CHECK incorrect flight of neutron, move neutron after reflection on small distance 
           and check inside channel or no , no - exit(-1) */
@@ -1160,7 +1160,7 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
         ThisNeutron->Position[2] = ThisNeutron->Position[2] + VelocityReal*stepp*(ThisNeutron->Vector[2]); 
 	
         /* Include gravity */ 
-        if (keygrav == 1) 
+        if (key_grav == 1) 
         {	 
           ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*stepp*stepp; 
           ThisNeutron->Vector[2]   = ThisNeutron->Vector[2]   -    ((G*1.0e-4)*stepp/VelocityReal);	 

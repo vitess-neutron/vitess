@@ -7,7 +7,7 @@ typedef struct
   int axis;
   short phimode;  // 0 = const. pixel size; 1 = const Delta phi 
 }
-  CylinderDetectorType;
+CylinderDetectorType;
 
 typedef struct
 {
@@ -16,13 +16,13 @@ typedef struct
          rectXsec,            // circular (0) or rectangular (1) tube cross-section
          tubeshift;           // tube layers shifted against each other
 }
-  TubeDetectorType;
+TubeDetectorType;
 
 typedef struct
 {
   double Lambda, Eff;
 }
-  EffData;
+EffData;
 
 
 typedef struct
@@ -32,14 +32,14 @@ typedef struct
   char    *filename;
   long    maxdata;
 }
-  EffFile;
+EffFile;
 
 typedef struct
 {
   CylinderDetectorType Cyl;
   TubeDetectorType Tube;
 }
-  DetectorGeomType;
+DetectorGeomType;
 
 typedef struct 
 {
@@ -55,22 +55,19 @@ typedef struct
   double GasPressure, GasTemperature,               // only gas det: gas pressure and temperature
          SolidAtomDensity, SolidAbsorberthickness,  // only solid det: density (N) and thickness of converter layer
          EfficiencyMod;                             // modify efficiency
-  int Geom,         // 0: flat,   1: cyl,          2: tube
-      usage,        // 0: normal, 1: monitor only, 2: grid off
-      Absorbertype; // Boron10 (0,2), He3 (1), Li (3) or other (5)               
-  short array,          // first or intermediate part of detector array 
-        minColor,       /* colour necessary for the trajectory to be regarded
+  int    Geom,          // 0: flat,   1: cyl,          2: tube
+         usage,         // 0: normal, 1: monitor only, 2: grid off
+         Absorbertype;  // Boron10 (0,2), He3 (1), Li (3) or other (5)               
+  short  array,         // first or intermediate part of detector array 
+         minColor,      /* colour necessary for the trajectory to be regarded
                            colour -1 means: all trajectories are regarded  
                            use neutrons with color >= minColour */
-        maxColor,       /* colour necessary for the trajectory to be regarded
+         maxColor,      /* colour necessary for the trajectory to be regarded
                            colour -1 means: all trajectories are regarded  
                            use neutrons with color <= maxColour */
-        addColor;       // tag detected neutrons by adding addColor to color
- }
-  DetectorType;
-
-
-
+         addColor;      // tag detected neutrons by adding addColor to color
+}
+DetectorType;
 
 
 /* function pointers */
@@ -78,21 +75,26 @@ short (*NeutronIntersectsDetector)(Neutron *Nin, VectorType ISP[]);
 void (*DetectorSpot)(VectorType SP, VectorType DetSpot);
 
 /* prototypes of local functions */
+void  OwnInit   (int argc, char *argv[]);   // reads input parameters and initializes global variables
+void  OwnCleanup();                         // does module specific cleanup
+void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization
+
+/* Intersection of neutron with different geometries       */
 short NeutronIntersectsCubeDetector(Neutron *Nin, VectorType ISP[]);
 short NeutronIntersectsCylDetector (Neutron *Nin, VectorType ISP[]);
 short NeutronIntersectsLayer(VectorType dir, VectorType pos, int l, VectorType jISP[]);
-short NeutronIntersectsTube(VectorType dir, VectorType pos, int l, VectorType iISP[], VectorType kISP[]);
+short NeutronIntersectsTube (VectorType dir, VectorType pos, int l, VectorType iISP[], VectorType kISP[]);
 
-void CubeDetSpot    (VectorType SP, VectorType DetSpot);
-void CylinderDetSpot(VectorType SP, VectorType DetSpot);
-void CubeDetLayerSpot    (VectorType SP);
+/* final detection position for different detector geometries */
+void  CubeDetSpot     (VectorType SP, VectorType DetSpot);
+void  CylinderDetSpot (VectorType SP, VectorType DetSpot);
+void  CubeDetLayerSpot(VectorType SP);
 
+/* efficiency and absorption cross-section as a function of wavelength   */
+double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID); 
+double GetXsec(int h_absorbertype, double h_lambda);                        
 
-void OwnInit   (int argc, char *argv[]);
-void OwnCleanup();
-void CheckAndAdjustDetectorInput(int type);
-
-double GetXsec(int h_absorbertype, double h_lambda);
-double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID);
+/* checks and completes detector geometry   */
+void  CheckAndAdjustDetectorInput(int type);
 
 #endif

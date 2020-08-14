@@ -1,17 +1,25 @@
-/*******************************************************************************************/
-/* Tool EllipticGuide:                                                                     */
-/*  Calculates shape of an elliptical guide from entrance size, exit size and distance     */
-/*  to focus point                                                                         */
-/*                                                                                         */
-/* 1.0  Sep 2003  K. Lieutenant  initial version                                           */
-/*******************************************************************************************/
+/********************************************************************************************/
+/* Tool EllipticGuide:                                                                      */
+/*  Calculates shape of an elliptical guide from entrance size, exit size and distance      */
+/*  to focus point                                                                          */
+/*                                                                                          */
+/* The free non-commercial use of these routines is granted provided due credit is given to */
+/* the authors.                                                                             */
+/*                                                                                          */
+/* 1.0  Sep 2003  K. Lieutenant  initial version                                            */
+/* 1.1  Mar 2020  K. Lieutenant  tidy up, new central parameters and functions              */
+/********************************************************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 #include "init.h"
 
-//#define THETA_NI 0.099138
+
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
 #define PI       3.1415926535898 
 
 typedef enum
@@ -24,31 +32,41 @@ typedef enum
 VtShape;
 
 
-double Height   (double length);
-double Width    (double length);
-double GetDouble(const char* pText);
-long   GetLong  (const char* pText);
-short  GetShort (const char* pText);
-void   GetString(char* pString, const char* pText);
+/******************************/
+/** Prototypes               **/
+/******************************/
+double Width    (double length);                    // calculates guide width as a function of position
+double Height   (double length);                    // calculates guide height as a function of position
+double GetDouble(const char* pText);                // Reads double value from stdin  
+long   GetLong  (const char* pText);                // Reads long value from stdin  
+short  GetShort (const char* pText);                // Reads short value from stdin  
+void   GetString(char* pString, const char* pText); // Reads string from stdin      
 
 
-short   eGuideShapeY, eGuideShapeZ;
-long    nPieces;
-double  GuideEntranceHeight, GuideExitHeight, FocusZ, D_Foc1Z,
+/*********************************/
+/** Global and Static Variables **/
+/*********************************/
+McCompID _eModule=MCN_TOOL_GUIDE;
+
+short  eGuideShapeY, eGuideShapeZ;
+long   nPieces;
+double GuideEntranceHeight, GuideExitHeight, FocusZ, D_Foc1Z,
 	     GuideEntranceWidth,  GuideExitWidth,  FocusY, D_Foc1Y,
 	     piecelength, dTotalLength;
-double  GuideMaxWidth, GuideMaxHeight,
-        LcntrY, LcntrZ,
-		  AxisY, AxisZ;
+double GuideMaxWidth, GuideMaxHeight,
+       LcntrY, LcntrZ,
+       AxisY, AxisZ;
 
 
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char* argv[])
 {
 	FILE*   pFile;
-	char    sString[9], sFileName[50], 
-	       *pFullName;
+	char    sString[9], sFileName[50];
 
-	Init(argc, argv, VT_TOOL);
+	Init(argc, argv, _eModule);
 
 	printf("---------------------------------------------------------------------\n");
 	printf("Calculation of guide shape from entrance, exit size and focus point  \n");
@@ -63,20 +81,20 @@ int main(int argc, char* argv[])
 	{	GuideEntranceWidth  = GetDouble("entrance width                      [cm] ");
 		GuideExitWidth      = GetDouble("exit width                          [cm] ");
 		if (eGuideShapeY==VT_ELLIPTIC)
-			FocusY           = GetDouble("distance to focus for hor. dir.     [cm] ");
+			FocusY            = GetDouble("distance to focus for hor. dir.     [cm] ");
 		GuideEntranceHeight = GetDouble("entrance height                     [cm] ");
 		GuideExitHeight     = GetDouble("exit height                         [cm] ");
 		if (eGuideShapeZ==VT_ELLIPTIC)
-			FocusZ           = GetDouble("distance to focus for vert. dir.    [cm] ");
+			FocusZ            = GetDouble("distance to focus for vert. dir.    [cm] ");
 		GetString           (sFileName, "Name of the mirror file                  ");
 
 		dTotalLength = nPieces * piecelength;
 
 		/* write to parameter directory or to FILES in install directory */
-		pFullName = FullParName(sFileName);
+		/* pFullName = FullParName(sFileName);
 		if (strcmp(pFullName, sFileName)==0)
-			pFullName = FullInstallName(sFileName, "FILES/");
-		pFile = fopen(pFullName, "w");
+			pFullName = FullInstallName(sFileName, "FILES/"); */
+		pFile = OpenOutputFile(sFileName, FALSE ,"w");
 		
 		if (pFile!=NULL) 
 		{
@@ -94,8 +112,8 @@ int main(int argc, char* argv[])
 					fprintf(pFile, "%10.2f  %10.3f  %10.3f\n", j*piecelength/100.0, 2*Y, 2*Z);
 				}
 			}
-			fclose(pFile)
-				;
+			fclose(pFile);
+
 			/* Writing to log file */
 			printf("\n\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
 			fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
@@ -144,12 +162,11 @@ int main(int argc, char* argv[])
 		{	printf("\nERROR: Output file could not be generated\n");
 		}
 
-
-      printf("\n\n fertig - nochmal (j/n) ");
-      scanf ("%s", sString);
-      printf("\n\n\n");
-   }
-   while (sString[0] != 'n');
+    printf("\n\n done - another one? (y/n) ");
+    scanf ("%s", sString);
+    printf("\n\n\n");
+  }
+  while (sString[0] != 'n');
   
 	/* release the buffer memory */
 	free(InputNeutrons);
@@ -159,6 +176,10 @@ int main(int argc, char* argv[])
 }
 
 
+/*********************************************************/
+/**  Width : guide width as a function of the position  **/
+/**  Height: guide height as a function of the position **/
+/*********************************************************/
 double Width(double dLength)
 {
 	double dWidth=0.0,
@@ -265,6 +286,13 @@ double Height(double dLength)
 }
 
 
+/*******************************************************/
+/** Reads different types of parameters from stdin    **/
+/**   GetDouble:   Reads double value from stdin      **/
+/**   GetLong  :   Reads long value from stdin       **/
+/**   GetShort :   Reads short value from stdin       **/
+/**   GetString:   Reads string from stdin            **/
+/*******************************************************/
 double GetDouble(const char* pText)
 {
 	double dValue;
@@ -295,7 +323,6 @@ short GetShort(const char* pText)
 
   return (short) nValue;
 }
-
 
 void GetString(char* pString, const char* pText)
 {

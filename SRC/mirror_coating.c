@@ -3,6 +3,9 @@
 /*  Generating reflectivity files for mirror coating as used in the                        */
 /*  modules 'guide' and 'bender' from parameters m, R_0, R_m, Q_c and W                    */
 /*                                                                                         */
+/* The free non-commercial use of these routines is granted provided due credit is given   */
+/* to the authors.                                                                         */
+/*                                                                                         */
 /* 1.0  Sep 2003  K. Lieutenant  initial version                                           */
 /* 1.1  Nov 2003  K. Lieutenant  more precise Q-value given                                */
 /* 1.2  Mar 2004  K. Lieutenant  files written to parameter directory or install_dir/FILES;*/
@@ -11,6 +14,7 @@
 /* 1.4  May 2012  K. Lieutenant  parameter beta added                                      */
 /* 1.5  Sep 2012  K. Lieutenant  new treatment of case m<1 and correction: output formula  */
 /* 2.0  Sep 2019  K. Lieutenant  new standard reflect., strict use of 'general.h/c', header*/
+/* 2.1  Mar 2020  K. Lieutenant  new central parameters and functions                      */
 /*******************************************************************************************/
 
 #include <stdlib.h>
@@ -22,11 +26,10 @@
 #include "init.h"
 
 
-//#define THETA_NI 0.099138
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
 #define PI       3.14159265358979323846
-
-// struct tm time;
-
 
 typedef enum
 {	
@@ -39,13 +42,27 @@ typedef enum
 VtInMod;
 
 
-double GetDouble (const char* pText);
-short  GetShort  (const char* pText);
-void   GetString (char* pString, const char* pText);
-void   GetActDate(char* sDate);
-void   Mode2Text (char* sReflMode, VtInMod iMode);
+/*********************************/
+/** Global and Static Variables **/
+/*********************************/
+McCompID _eModule=MCN_TOOL_GEN_COAT;
 
 
+/******************************/
+/** Prototypes               **/
+/******************************/
+short  GetShort  (const char* pText);                // Reads short value from stdin   
+double GetDouble (const char* pText);                // Reads double value from stdin  
+void   GetString (char* pString, const char* pText); // Reads string from stdin        
+void   GetActDate(char* sDate);                      // Gets current date from system  
+void   Mode2Text (char* sReflMode, VtInMod iMode);   // Converts enum for reflectivity calculation to text
+
+char*  FullInName(const char* filename);             // returns path\name.ext for input directory   located in init.c
+
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char* argv[])
 {
 	double  mO=1.0,           // m      : official m-value of supermirror
@@ -74,7 +91,7 @@ int main(int argc, char* argv[])
           sFileIn [50]="",
           sFileOut[50]="";
 
-	Init(argc, argv, MCN_TOOL);
+	Init(argc, argv, _eModule);
   for (i=1; i < ROFQ_MAX; i++)
   { aQ[i]=0.0;
     aR[i]=0.0;
@@ -132,21 +149,21 @@ int main(int argc, char* argv[])
   else if (eMode==VT_M_R_COL)
   {
     GetString(sFileIn, "Name of the 2-column mirror file R(m)  ");
-    mO =     GetDouble("m-value of the coating described there ");
-	  pFileIn = fopen(FullParName(sFileIn), "r");
+    mO      = GetDouble("m-value of the coating described there ");
+	  pFileIn = OpenInputFile(sFileIn, FALSE, "r");
 	  if (pFileIn!=NULL)
 	  {
       nVals = ReadRofQ(pFileIn, aM, aR);
 
       fclose(pFileIn);
     }
-    mT=aM[nVals-1];
+    mT = aM[nVals-1];
   }
   else if (eMode==VT_Q_R_COL)
   {
     GetString(sFileIn, "Name of the 2-column mirror file R(Q)  ");
-    mO =     GetDouble("m-value of the coating described there ");
-	  pFileIn = fopen(FullParName(sFileIn), "r");
+    mO      = GetDouble("m-value of the coating described there ");
+	  pFileIn = OpenInputFile(sFileIn, FALSE, "r");
 	  if (pFileIn!=NULL)
 	  {
       nVals = ReadRofQ(pFileIn, aQ, aR);
@@ -156,7 +173,7 @@ int main(int argc, char* argv[])
     mT=aM[nVals-1]/QC_NI;
   }
   else
-  { mT=mO;
+  { mT = mO;
     Error("Unknown calculation mode");
   }
 
@@ -170,9 +187,9 @@ int main(int argc, char* argv[])
   
   if (nLen > 0)
   {
-	  /* write to parameter directory or to FILES in install directory */
+	  /* write to input directory */
 	  GetString(sFileOut, "Name of the output mirror file         ");
-	  pFileOut = fopen(FullParName(sFileOut), "w");
+	  pFileOut = OpenInputFile(sFileOut, FALSE, "w");
 
 	  if (pFileOut!=NULL)
 	  {
@@ -213,10 +230,10 @@ int main(int argc, char* argv[])
 		  }
 		  fclose(pFileOut);
 
-		  printf("\n%s\nData written to %s\n", sText, FullParName(sFileOut));
+		  printf("\n%s\nData written to %s\n", sText, FullInName(sFileOut));
 	  }
 	  else
-	  {	printf("\nERROR: Output file could not be generated\n(%s)", FullParName(sFileOut));
+	  {	printf("\nERROR: Output file could not be generated\n(%s)", FullInName(sFileOut));
 	  }
   }
   else
@@ -236,6 +253,22 @@ int main(int argc, char* argv[])
 }
 
 
+/*******************************************************/
+/** Reads different types of parameters from stdin    **/
+/**   GetShort :   Reads short value from stdin       **/
+/**   GetDouble:   Reads double value from stdin      **/
+/**   GetString:   Reads string from stdin            **/
+/*******************************************************/
+short  GetShort (const char* pText)
+{
+	short nValue;
+	
+	printf("%s ", pText);
+	scanf ("%hd", &nValue);
+
+	return nValue;
+}
+
 double GetDouble(const char* pText)
 {
 	double dValue;
@@ -246,23 +279,16 @@ double GetDouble(const char* pText)
 	return dValue;
 }
 
-short GetShort(const char* pText)
-{
-	short nValue;
-	
-	printf("%s ", pText);
-	scanf ("%hd", &nValue);
-
-	return nValue;
-}
-
-void GetString(char* pString, const char* pText)
+void   GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);
 }
 
 
+/*******************************************************/
+/** Gets current date from system                     **/
+/*******************************************************/
 void GetActDate(char* sDate)
 {
   struct tm time;
@@ -271,6 +297,10 @@ void GetActDate(char* sDate)
   sprintf(sDate, "%4d-%02d-%02d", time.tm_year+1900, time.tm_mon+1, time.tm_mday);
 }
 
+
+/********************************************************/
+/** Converts enum for reflectivity calculation to text **/
+/********************************************************/
 void Mode2Text(char* sReflMode, VtInMod iMode)
 {
   switch (iMode)

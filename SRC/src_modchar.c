@@ -443,7 +443,8 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
   FILE*      pFile=NULL;
   char       sLine[256];
   short      bFound=FALSE, rc;
-  double     TempT, HeightT,   // moderator temperature and height in table
+  double     TempT=300.0,      // moderator temperature
+             HeightT=3.0,      //  and height in table
              HeightK;          // key value for moderator height to search in table
   EssModChar Info;
 
@@ -480,7 +481,7 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
       HeightK = ModHeight;
 
     // open file containing ESS moderator characteristics
-    pFile=fileOpen(FullInstallName("EssModChar.dat", "FILES/moderators/ESS/"), "rt");
+    pFile = OpenPackInpFile("EssModChar.dat", "FILES/moderators/ESS/", TRUE);
 
     // search for a line with the given temperature and moderator height
     do

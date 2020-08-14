@@ -15,6 +15,7 @@
 #define SNS       2
 #define ISIS      3
 #define CSNS      4
+#define HBS       5
 #define ILL      10
 #define HMI      11
 

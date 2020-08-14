@@ -7,6 +7,8 @@
 
 #define INDEX(x,y,p) (x*(nbinsY)+y   +  (p+1)*nbinsX*nbinsY )
 
+#define MAX_GAMMA_NUM 19
+
 // binning keys
 #define KeyNone            0
 #define iKeyMode           1
@@ -37,7 +39,6 @@
 #define dKeySpinZ         26
 
 
-
 /******************************/
 /** Structures and Enums     **/
 /******************************/
@@ -64,7 +65,7 @@ typedef struct
   double     DivZ;
   int        Mode;  // 0 = Scattered, 5 = GW_EXIT (not saved), 10 = Died
 }
-  NeutronEx;
+NeutronEx;
 
 typedef struct
 {
@@ -82,7 +83,7 @@ typedef struct
   int       Mode0;
   double    ProbSum;
 } 
-  BINDATA;
+BINDATA;
 
 static int allocNeutrons = 16; // allocacte ReflCond.neutrons in this chunk size,
                                // choose a number big enough to avoid frequent reallocations
@@ -102,13 +103,13 @@ typedef struct
   int       alloc_neutrons; // allocated space for neutrons, in multiples of allocNeutrons
   int       cneutrons;      // number of stored neutron trajectory states
 }
-  ReflCond;
+ReflCond;
 
 typedef struct
 {
   Plane *Wall;
 }
-  NeutronGuide;
+NeutronGuide;
 
 typedef enum
 { VT_CONSTANT = 0,
@@ -119,7 +120,7 @@ typedef enum
   VT_FROM_FILE= 5,
   VT_LIN_CURV = 6,
 }
-  VtShape;
+VtShape;
 
 typedef struct
 {
@@ -130,7 +131,7 @@ typedef struct
   long   maxdata;
   double area;
 }
-  ReflFile;
+ReflFile;
 
 typedef struct
 {
@@ -138,7 +139,15 @@ typedef struct
     Wchan;                 // list of widths of channel at beginning and end of each piece
   ReflFile **RData;        // use GW_TOP, GW_BOTTOM, GW_LEFT, GW_RIGHT, etc
 }
-  GuidePiece;
+GuidePiece;
+  
+typedef struct
+{
+  double gammaInt[MAX_GAMMA_NUM];     //Intensities of gammas of Ni and Ti
+  double neutronInt;                  //Intensity of the transmitted neutron 
+}
+Escaping_MCPL_particles;
+
 
 typedef  double(*GetVal)(ReflCond *RefOut, int cNeut);
 

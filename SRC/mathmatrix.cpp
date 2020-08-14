@@ -35,6 +35,17 @@ MathMatrix::MathMatrix(double array[9])
 }
 
 
+MathMatrix::MathMatrix(double matrix[3][3])
+{
+  for (int i = 0; i < 3; i++) 
+  {
+    for (int j = 0; j < 3; j++) 
+    {
+      entries[i][j] = matrix[i][j];
+    }
+  }
+}
+
 MathMatrix::MathMatrix(double alpha, double beta, double gamma, string order)
 {
 
@@ -145,7 +156,6 @@ MathMatrix* MathMatrix::RotMatrixXFromVector(MathVector* v)
   MathMatrix* rotMatrix = new MathMatrix(0, 3.14159265/2. - theta, (-1.)*phi, "xyz");
     
   return rotMatrix;
-
 }
 
 
@@ -163,7 +173,46 @@ MathMatrix* MathMatrix::Transpose()
   }
 
   return transMatrix;
+}
 
+/*
+void MathMatrix::transpose()
+{
+  int i,j;
+  MathMatrix transMatrix;
+
+  for (int i = 0; i < 3; i++) 
+  { for (int j = 0; j < 3; j++) 
+    {
+      transMatrix.entries[j][i] = entries[i][j];
+    }
+  }
+
+  for (int i = 0; i < 3; i++) 
+  { for (int j = 0; j < 3; j++) 
+    {
+      entries[i][j] = transMatrix.entries[i][j];
+    }
+  }
+
+  return;
+}*/
+
+void MathMatrix::transpose()
+{
+  swap(0,1);
+  swap(0,2);
+  swap(1,2);
+  return;
+}
+
+void MathMatrix::swap(int i, int j)
+{
+  double    Aij=entries[i][j]; 
+  entries[i][j]=entries[j][i]; 
+  entries[j][i]=Aij;  
+
+  return;
 }
 
 

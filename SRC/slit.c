@@ -8,7 +8,7 @@
 /*                                                                                           */
 /* 1.0  Dec 2006  K. Lieutenant   initial version                                            */
 /* 1.1  Jan 2012  K. Lieutenant   visualization                                              */
-/* 1.2  Jul 2019  K. Lieutenant   blow-up option for visualization                           */
+/* 1.2  Jul 2019  K. Lieutenant   new central visualization parameters                       */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -28,23 +28,26 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 McCompID _eModule=MCN_SLIT;
 
-Plane  Endpoint;                /* Endpoint.D: distance to end of free flight path along x-axis [cm] */
-double VelocityReal,            /* velocity of the neutron                    */
-       Width=0.0, Height=0.0,   /* width and Height of the (rectangular) slit */
-       DistMove;                /* distance between starting point and slit   */
+double Width=0.0,               // -W   [cm]  width of the (rectangular) slit 
+       Height=0.0,              // -H   [cm]  height of the (rectangular) slit 
+       DistMove=0.0;            // -d   [cm]  distance between starting point and slit 
+
+Plane  Endpoint;                //      [cm]  Endpoint.D: distance to end of free flight path along x-axis [cm]
 
 
 /******************************/
-/** Program                  **/
+/** Main Program             **/
 /******************************/
 int main(int argc, char *argv[])
 {
 	long  i;
 
-	double TimeOF,                /* time of flight of the neutron to the window */
-	       NewPosY, NewPosZ;      /* hor. and vert. position of neutron at slit  */
+	double VelocityReal,          // velocity of the neutron    
+         TimeOF,                // time of flight of the neutron to the window 
+	       NewPosY, NewPosZ;      // hor. and vert. position of neutron at slit 
 
-	/* initialisation */
+  // initialisation
+  // --------------
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
 	OwnInit(argc, argv);
@@ -55,16 +58,16 @@ int main(int argc, char *argv[])
 
 	DECLARE_ABORT
 
-	while(ReadNeutrons()!= 0)
+  // loop over all trajectories
+  // --------------------------
+	while (ReadNeutrons()!= 0)
 	{
-		for(i=0; i<NumNeutGot; i++)
+		for (i=0; i<NumNeutGot; i++)
 		{
 			CHECK
 
-			/*************************************************************************/
-			/* 	Move neutron to end of space and calculate Time of Flight (ms).    */
-			/*************************************************************************/
-			
+			// 	Move neutron to end of space and calculate Time of Flight (ms)
+			// ---------------------------------------------------------------
 			if (InputNeutrons[i].Vector[0] <= 0.0) continue;
 			if (InputNeutrons[i].Wavelength == 0.0) continue;
 			VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
@@ -80,10 +83,8 @@ int main(int argc, char *argv[])
 			}
 
 
-			/*************************************************************************/
-			/* Calculate  and  writeout new data set, if slit is hit                 */
-			/*************************************************************************/
-
+			// Calculate  and  writeout new data set, if slit is hit
+			// -----------------------------------------------------
 			NewPosY = InputNeutrons[i].Position[1];
 			NewPosZ = InputNeutrons[i].Position[2];
 			
@@ -102,9 +103,8 @@ int main(int argc, char *argv[])
 		}
 	}	
 
-/******************************************************************************/
-/* Finish: print parameters, write geometry and instrument file, free memory  */
-/******************************************************************************/
+// Finish: print parameters, write geometry and instrument file, free memory
+// -----------------------------------------------------
 my_exit:
 	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
 	                    Width, Height, DistMove);
@@ -123,12 +123,12 @@ void  OwnInit(int argc, char *argv[])
 {
 	int i;
 
-	for(i=1; i<argc; i++)
+	for (i=1; i<argc; i++)
 	{
-		if(argv[i][0]!='+') 
+		if (argv[i][0]!='+') 
 		{
 			switch(argv[i][1])
-      	{
+      {
 				case 'd':
 					DistMove = atof(&argv[i][2]);
 					break;

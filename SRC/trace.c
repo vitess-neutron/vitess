@@ -38,7 +38,7 @@ void LoadTraceFile()
   if (__pTraceFileName!=NULL) 
    {
       /* opens distribution file */
-      if((pTraceFile=fopen(FullParName(__pTraceFileName),"rt"))!=NULL) 
+      if ((pTraceFile = OpenInputFile(__pTraceFileName, FALSE, "rt"))!=NULL) 
       {
         long i;
 
@@ -68,14 +68,14 @@ void LoadTraceFile()
 char GetTraceState(TotalID stID)
 {
   char cRet = 'N'; 
+  long iS;                               // index of the searched ID in the table
 
-  if (__nLinesTr > 0) 
+  if (__nLinesTr > 5000)                // use smart search algorithm for a long list of trajectories
   {	
-    long   iS,                           // index of the searched ID in the table
-           iL = __nLinesTr-1;            // index of the last item in the table of wanted trajectories
+    long   iL = __nLinesTr-1;            // index of the last item in the table of wanted trajectories
                                          // numbers got by conversion from characters in the ID 
-    double nC = IdNumber(stID);          // - for current trajectory
     double nL = IdNumber(__pTrace[iL]);  // - for the last item in the table of wanted trajectories
+    double nC = IdNumber(stID);          // - for the current trajectory
 
     // estimation of the index of the searched ID
     iS = (long) (iL * nC / nL + 0.5);
@@ -91,7 +91,18 @@ char GetTraceState(TotalID stID)
     if (memcmp(stID.IDGrp, __pTrace[iS].IDGrp, 2)==0 && stID.IDNo==__pTrace[iS].IDNo)
       cRet='T'; 
   }
-  
+  else                                   // otherwise just go through  the list
+  {
+    for (iS=0; iS < __nLinesTr ; iS++)
+    { // set 'tracing', if IDs are identical
+      if (memcmp(stID.IDGrp, __pTrace[iS].IDGrp, 2)==0 && stID.IDNo==__pTrace[iS].IDNo)
+      { cRet='T';
+        goto exit_fct;
+      }
+    }
+  }
+
+ exit_fct:
   return cRet;
 }
 

@@ -17,7 +17,7 @@
 /* 2.22  Jan  2002  K. Lieutenant   correction:  position after beamstop                     */
 /* 2.23  May  2010  A. Houben       "Rotation" of square window by counter rot of neutron pos*/
 /* 2.24  Apr  2012  A. Houben       Treat only neutrons with a given color and phi angle     */
-/* 2.25  Aug  2019  K. Lieutenant   tidy up and blow-up option for visualiation              */
+/* 2.25  Aug  2019  K. Lieutenant   tidy up and compression option for visualization         */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -32,7 +32,7 @@
 /** Prototypes               **/
 /******************************/
 void  OwnInit(int argc, char *argv[]);    // reads input parameters and initializes global variables
-void  EvalInput();
+void  EvalInput();                        // Analyses input parameters and prepares attenuation
 void  SetGeometry(char* sColor);          // fills the structure stGeometry for visualization
 
 
@@ -41,45 +41,43 @@ void  SetGeometry(char* sColor);          // fills the structure stGeometry for 
 /******************************/
 McCompID _eModule=MCN_WINDOW;
 
-short  bCircularWindow=TRUE,    // Criterion: kind of window, TRUE: circular, FALSE rectangular  
-       bBeamStop=FALSE,         // Criterion: beamstop        TRUE: beamstop, FALSE normal window
-       bRemoveOtherColor=FALSE, // If treated, only neutrons with a given color, all others are removed
-       TreatColor = -1;         // Treat only neutrons with a given color
+short  bCircularWindow=TRUE,  // -R  [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
+       bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
+       bRemoveOtherCol=FALSE, // -d  [-]   Flag: Neutrons that are not treated are removed
+       TreatColor = -1;       // -f  [-]   Treat only neutrons with this color
+double DistMove =0.0;         // -l  [cm]  Distance from origin to the window (along the x-axis) 
+double heightmin=0.0,         // -h  [cm]  z-coordinate: bottom of rectangular window            
+       heightmax=0.0,         // -H  [cm]  z-coordinate: top of rectangular window               
+       widthmin =0.0,         // -w  [cm]  y-coordinate: lower frame value of rectangular window 
+       widthmax =0.0,         // -W  [cm]  y-coordinate: higher frame value of rectangular window
+       winradius=0.0,         // -r  [cm]  radius of circular window                             
+       ywincenter=0.0,        // -y  [cm]  y coordinate: center of window                        
+       zwincenter=0.0,        // -z  [cm]  z coordinate: center of window                        
+       rotang = 0.0;          // -A  [rad] Rotation angle (input parameter in [deg])
+double minPhi=-1.0,           // -p  [deg] min. and 
+       maxPhi=-1.0;           // -P  [deg] max. angle in y-z-plane
+double ThicknessO=0.0,        // -t  [cm]  thickness of the frame material    
+       ThicknessI=0.0;        // -T  [cm]  thickness of the pane material      
+char	*sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
+char	*sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of the material in the open part of window
+long   KeymaterialO=6;        // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+	                            //                                  4 - Eu,        5 - Silicon,    6 - ideal absorber
 
-Plane  Endpoint,                // Planes through window for zero thickness and
-       EndPointO,               //   end of the Outer and end of the Inner wall
-       EndPointI;               // Endpoint.D: distance to window along x-axis         [cm]  
+long   KeymaterialI=1;        //           Window pane material:  0 - from file  1 - no(default) 
+FILE	*pTransFileO=NULL;      //           pointer to window frame transmission file 
+FILE  *pTransFileI=NULL;      //           pointer to window pane transmission file 
+double WavO[MAX_MU],          //           wavelength and attenuation values of the frame material 
+       MuO [MAX_MU],          
+       WavI[MAX_MU],          //           wavelength and attenuation values of the pane material 
+       MuI [MAX_MU];          
+long   nValFO=0;              //           number of attenuation values in file (for window frame material)
+long   nValFI=0;              //           number of attenuation values in file (for window pane material)
 
-double DistMove =0.0;        // Distance from origin to the window (along the x-axis)  [cm]
-double heightmin=0.0,        // z-coordinate: bottom of rectangular window             [cm]
-       heightmax=0.0,        // z-coordinate: top of rectangular window                [cm]
-       widthmin =0.0,        // y-coordinate: lower frame value of rectangular window  [cm]
-       widthmax =0.0,        // y-coordinate: higher frame value of rectangular window [cm]
-       winradius=0.0,        // radius of circular window                              [cm]
-       ywincenter=0.0,       // y coordinate: center of window                         [cm]
-       zwincenter=0.0,       // z coordinate: center of window                         [cm]
-       rotang = 0.0;         // Rotation angle (neutron pos is counter rot to window)  [rad]
+Plane  Endpoint,              //           Planes through window for zero thickness and
+       EndPointO,             //             end of the Outer and end of the Inner wall
+       EndPointI;             //           Endpoint.D: distance to window along x-axis         [cm]  
 
-long   KeymaterialO=6,       // Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-	                           //                        4 - Eu,        5 - Silicon,    6 - ideal absorber
-       KeymaterialI=1;       // Absorption of open part of window, 0 - from file  1 - no(default) 
 
-char	*sTransFileNameO=NULL; // file describing the transmission of the window frame material
-FILE	*pTransFileO=NULL; 
-double WavO[MAX_MU],            // lambda, µ and T-values and thickness of the frame material 
-       MuO [MAX_MU], 
-       ThicknessO=0.0;
-long   nValFO=0;             // number of attenuation values in file (for window frame material)
-
-char	*sTransFileNameI=NULL; // file describing the transmission of the material in the open part of window
-FILE  *pTransFileI=NULL; 
-double WavI[MAX_MU],            // lambda, µ and T-values and thickness of the inner material 
-       MuI [MAX_MU], 
-       ThicknessI=0.0;
-long   nValFI=0;             // number of attenuation values in file (for window pane material)
-
-double minPhi=-1.0, 
-       maxPhi=-1.0;          // min. and max. angle in xz plane
 
 
 /******************************/
@@ -138,7 +136,7 @@ int main(int argc, char *argv[])
       if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) 
       {
         Output = InputNeutrons[i];
-        if (!bRemoveOtherColor) 
+        if (!bRemoveOtherCol) 
         {
     	      WriteIAP(&Output, VT_EXITED);
     	      WriteNeutron(&Output);
@@ -435,7 +433,7 @@ void  OwnInit(int argc, char *argv[])
 				sscanf(&(argv[i][2]),"%hd", &TreatColor);
 				break;
       case 'd':
-				sscanf(&(argv[i][2]),"%hd", &bRemoveOtherColor);
+				sscanf(&(argv[i][2]),"%hd", &bRemoveOtherCol);
 				break;
       case 'p':
 				minPhi = atof(&argv[i][2]);
@@ -560,7 +558,7 @@ void EvalInput()
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
     {
-      pTransFileO = fopen(sTransFileNameO,"r");
+      pTransFileO = OpenInputFile(sTransFileNameO, FALSE, "r");
       if (pTransFileO!=NULL)  
       { 
         i=0;
@@ -575,10 +573,10 @@ void EvalInput()
         /* check the input data */
         for(i = 1; i <= (nValFO-1); i++)
         {
-          if (WavO[i+1] <= WavO[i])
+          if (WavO[i+1] < WavO[i])
           {
-            fprintf(LogFilePtr,"ERROR: incorrect data in transmission file of the window \n");
-            fprintf(LogFilePtr,"The numbers in the wavelength columns must be increase!!! \n");
+            fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file '%s' of the window frame (outer window)\n", sTransFileNameO);
+            fprintf(LogFilePtr,"The wavelength values must be in increasing order! \n");
             exit(-1);
           }
         }
@@ -603,7 +601,7 @@ void EvalInput()
 	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
 	  KeymaterialI = 0; /* activate this material */
 
-    pTransFileI = fopen(sTransFileNameI,"r");
+    pTransFileI = OpenInputFile(sTransFileNameI,FALSE, "r");
     if (pTransFileI!=NULL)  
     { i=0;
       while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0) 
@@ -616,10 +614,10 @@ void EvalInput()
       /* check the input data */	    
       for(i = 1; i <= (nValFI-1); i++)
       {
-        if (WavI[i+1] <= WavI[i]) 
+        if (WavI[i+1] < WavI[i]) 
         {
-          fprintf(LogFilePtr,"ERROR: incorrect data in open transmission file of the window \n");
-          fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
+          fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file0 '%s' of the window pane (inner window)\n", sTransFileNameI);
+          fprintf(LogFilePtr,"The wavelength values must be in increasing order! \n");
           exit(-1);
         }    
       }

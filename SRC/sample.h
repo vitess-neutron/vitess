@@ -33,7 +33,7 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
                              long* pNisp, VtDir eDir);
 
-int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactorLookup[]);
+int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[]);
 
 
 #endif

@@ -1,10 +1,28 @@
+#ifndef MATHVECTOR_CPP
+#define MATHVECTOR_CPP
+
 #include "mathvector.h"
 
 MathVector::MathVector()
 {
-  x[0] = 0;
-  x[1] = 0;
-  x[2] = 0;
+  x[0] = 0.0;
+  x[1] = 0.0;
+  x[2] = 0.0;
+}
+
+
+MathVector::MathVector(const MathVector& v)
+{
+  for (int i=0; i < 3; i++)
+    x[i] = v.x[i];
+}
+
+
+MathVector::MathVector(const VectorType V)
+{
+  x[0] = V[0];
+  x[1] = V[1];
+  x[2] = V[2];
 }
 
 
@@ -94,3 +112,5 @@ void MathVector::Array(double* arr)
   arr[1] = x[1];
   arr[2] = x[2];
 }
+
+#endif

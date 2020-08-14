@@ -6,10 +6,11 @@
 #include <string>
 #include <iostream>
 
-extern "C" {
-#include "init.h"
-#include "softabort.h"
-#include "general.h"
+extern "C" 
+{
+  #include "init.h"
+  #include "softabort.h"
+  #include "general.h"
 }
 
 #include "mathvector.h"
@@ -79,37 +80,25 @@ MathVector* gravityDirection=0;
 
 
 /*** Methods ***/
-
-int ProcessNeutron(Neutron* n);
-int PropagateNeutron();
-
-bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
-bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
-
-double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, int plane, bool positive);
-double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, double a2, double x, bool positive);
-
-void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, double a0, double a1, double a2, double xMin, double& x, double& y, bool switchSign);
-void IntersectStraightTrajectoryWithEllipse(double longAxis, double shortAxis, double b, double m, double xMin, double &x, double &y);
-void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y);
-
-//double CalculateEllipsePoint(double x, double longAxis, double shortAxis, double sign = 1.);
-double CalculateGuidePoint(double x, int dir, double sign = 1.);
-
-int TestAbsorptionInBeamstop();
-
-/* bool CalculateEllipseParametersFromStartAndExitWidths(double w1, double w2, double length, double dist, double &longAxis, double &shortAxis); */
-/* void SolveQuarticEquation(double a, double b, double c, double d, double* solutions, bool switchSign); */
-/* double ImprovePrecision(double x, double y, double a, double b, double c, double d); */
-/* double CheckSolution(double x, double a, double b, double c, double d); */
-
-
 void OwnInit(int argc, char *argv[]);
 void LoadReflFile(ReflFile* pReflFile);
 void FillReflContainer(ReflFile* reflStruct, double m);
 void OwnCleanup();
+void SetGeometryData(char* sColor);
 
-void SetGeometryData();
+int ProcessNeutron(Neutron* n);
+
+bool PropagateStraightTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
+bool PropagateParabolicTrajectory(Neutron* n, double &dist, double xMin, int plane, int shape);
+
+void IntersectStraightTrajectoryWithEllipse(double longAxis, double shortAxis, double b, double m, double xMin, double &x, double &y);
+void IntersectParabolicTrajectoryWithEllipse(double longAxis, double shortAxis, double a0, double a1, double a2, double xMin, double& x, double& y, bool switchSign);
+void IntersectTrajectoryWithLinearShape(double slopeFromShape, double shapeWidthAtZero, double a0, double a1, double a2, double xMin, double &x, double &y);
+
+double CalculateAngleAfterReflectionEllipse(double longAxis, double shortAxis, double a1, double a2, double x, int plane, bool positive);
+double CalculateAngleAfterReflectionLinear(double slopeFromShape, double a1, double a2, double x, bool positive);
+double CalculateGuidePoint(double x, int dir, double sign = 1.);
+
 void WriteIAPEllGuide(Neutron *n, VtReason eReason);
 
 #endif

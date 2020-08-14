@@ -33,7 +33,7 @@ static short ReadIniFile(short*  pOut, short*  pNZmax, short*  pNDmax,
 /**********************************************************************************/
 /* Least Square Fitting routine                                                   */
 /**********************************************************************************/
-short OptGradMC()
+short OptGradMC(char* sIniFile)
 {
                              /* sets of the parameter set P to be fitted                                    */
   double P0[NMAX+1],         /* P vector of the last step (or starting value)                               */

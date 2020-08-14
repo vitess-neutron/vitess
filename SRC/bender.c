@@ -1,59 +1,60 @@
-/********************************************************************************************/
-/*  VITESS module 'bender'                                                                  */
-/*                                                                                          */
-/* This module simulates a bender of circular or straight channels with channel cross-talk  */
-/*   (bender is horizontally bent, absorption inside channels can be considered             */
-/*    exit width and height can differ from entrance width and height                       */ 
-/*    magnetic field is vertical, direction up  )                                           */
-/*											    */
-/* The free non-commercial use of these routines is granted providing due credit is given to*/
-/* the authors.                                                                             */
-/*                                                                                          */
-/* 1.00  Jun 2001  S. Manoshin    initial version                                           */
-/* 1.01  Dec 2001  K. Lieutenant  new  : surface file generation, softabort, loss in bender */
-/*                                impr.: graphics acceleration, new scale for the picture   */
-/*                                corr.: transformation, calc. of bender width and step size*/
-/*                                simpl: all radii identical                                */
-/*                 M. Fromme      graphics for Windows                                      */
-/* 1.02  Jan 2002  K. Lieutenant  reorganisation, radii centered                            */
-/* 1.03  Mar 2002  S. Manoshin	  Feature: if radius of curvature zero => straight 	    */
-/* 				  line instead circle for bender surfaces and axis.	    */
-/*				  Also surfaces radius is negative possible		    */
-/*				  New option: Spin quantisation (Sx,Sy,Sz) is defined by    */
-/*				  user -V option; 0,1,2 - axis 0X, OY, OZ;		    */
-/*				  Some reorganisation of data structure, fixed graphics bugs*/
-/*				  Test part of program moved in separated function and	    */
-/*				  included comparing test value with near zero	    	    */
-/*				  New option: -t : 1 - test activated 0 - test disactivated */
-/*				  Fixed bug in visualize part				    */
-/* 1.1alpha Apr 2002 S. Manoshin  Neutron crosstalk between channels under construction     */
-/* 1.1beta  May 2002 S. Manoshin  Initial version: neutrons are travels via bender channel  */
-/*				  WITH CROSSTALK Between channels; Under testing	    */
-/*				  bAbsTransCrit: Behaviour of not reflected neutrons 	    */
-/*				  REORGANISATION, add some comments, abutment length add    */
-/*				  The module is divided into 3 functions and main program   */
-/*				  Neutron, which pass via all extreme surfaces - ABSORBING  */
-/*							top, bottom, right, left 	    */
-/*				  Add materials for neutron flux attenuation between 	    */
-/*				  bender channels					    */
-/* v1.3alpha June 2002 S. Manoshin Add possibility to read transmission characteristics of  */
-/*				  materials between channels from file			    */
-/*				  Generation surface part is remove from module		    */
-/*				  Add neutron flux attenuation inside bender channels	    */
-/* v1.3beta  July 2002 S. Manoshin   Pre-Realization in the VITESS 2.3			    */
-/* v1.4	     July 2002 S. Manoshin   Realization in the VITESS 2.3			    */
-/* v1.5	     Mar  2003 S. Manoshin   Fixed bug for gravity, gravity may apply ONLY for first*/
-/*				     order planes					    */
-/*				     Number of channels (or planes) now defing, not fixed!  */
-/* v1.6	     Oct 2003  S. Manoshin   Corrected some mistakes with output: Interpolation     */
-/*				     func. Improve checking of input datas for interpolation                      */
-/* v1.7	     Feb 2004  S. Manoshin   Visualise only first 10000 trajectories,               */
-/*				     if visualisation was activated                                               */
-/*				     Choose the output device : screen, file or both                              */
-/*				     New external variable gselec                                                 */
-/* v1.8      Nov 2013  D. Nekrassov:   M-values as input 			                              */
-/* v1.8a     Feb 2018  K. Lieutenant:  silicon data for 0.4 Ang added                       */
-/********************************************************************************************/
+/**********************************************************************************************/
+/*  VITESS module 'bender'                                                                    */
+/*                                                                                            */
+/* This module simulates a bender of circular or straight channels with channel cross-talk    */
+/*   (bender is horizontally bent, absorption inside channels can be considered               */
+/*    exit width and height can differ from entrance width and height                         */ 
+/*    magnetic field is vertical, direction up  )                                             */
+/*									                                                                          */
+/* The free non-commercial use of these routines is granted providing due credit is given to  */
+/* the authors.                                                                               */
+/*                                                                                            */
+/* 1.00  Jun 2001  S. Manoshin     initial version                                            */
+/* 1.01  Dec 2001  K. Lieutenant   new  : surface file generation, softabort, loss in bender  */
+/*                                 impr.: graphics acceleration, new scale for the picture    */
+/*                                 corr.: transformation, calc. of bender width and step size */
+/*                                 simpl: all radii identical                                 */
+/*                 M. Fromme       graphics for Windows                                       */
+/* 1.02  Jan 2002  K. Lieutenant   reorganisation, radii centered                             */
+/* 1.03  Mar 2002  S. Manoshin	   Feature: if radius of curvature zero => straight           */
+/*                                 line instead circle for bender surfaces and axis.	        */
+/*                                 Also surfaces radius is negative possible		              */
+/*                                 New option: Spin quantisation (Sx,Sy,Sz) is defined by     */
+/*                                 user -V option; 0,1,2 - axis 0X, OY, OZ;                   */
+/*                                 Some reorganisation of data structure, fixed graphics bugs */
+/*                                 Test part of program moved in separated function and       */
+/*                                 included comparing test value with near zero               */
+/*                                 New option: -t : 1 - test activated 0 - test disactivated  */
+/*                                 Fixed bug in visualize part                                */
+/* 1.1alpha Apr 2002  S. Manoshin  Neutron crosstalk between channels under construction      */
+/* 1.1beta  May 2002  S. Manoshin  Initial version: neutrons are travels via bender channel   */
+/*                                 WITH CROSSTALK Between channels; Under testing             */
+/*                                 bAbsTransCrit: Behaviour of not reflected neutrons         */
+/*                                 REORGANISATION, add some comments, abutment length add     */
+/*                                 The module is divided into 3 functions and main program    */
+/*                                 Neutron, which pass via all extreme surfaces - ABSORBING   */
+/*                                 		top, bottom, right, left                                */
+/*                                 Add materials for neutron flux attenuation between         */
+/*                                 bender channels                                            */
+/* 1.3alpha June 2002 S. Manoshin  Add possibility to read transmission characteristics of    */
+/*			                           materials between channels from file                       */
+/*                                 Generation surface part is remove from module              */
+/*                                 Add neutron flux attenuation inside bender channels        */
+/* 1.3beta  Jul 2002  S. Manoshin  Pre-Realization in the VITESS 2.3                          */
+/* 1.4	    Jul 2002  S. Manoshin  Realization in the VITESS 2.3                              */
+/* 1.5	    Mar 2003  S. Manoshin  Fixed bug for gravity, gravity may apply ONLY for first    */
+/*			                           order planes                                               */
+/*                                 Number of channels (or planes) now defined, not fixed!     */
+/* 1.6	    Oct 2003  S. Manoshin  Corrected some mistakes with output: Interpolation         */
+/*                                 func. Improve checking of input datas for interpolation    */
+/* 1.7	    Feb 2004  S. Manoshin  Visualise only first 10000 trajectories,                   */
+/*                                 if visualisation was activated                             */
+/*                                 Choose the output device : screen, file or both            */
+/*                                 New external variable gselec                               */
+/* 1.8    Nov 2013  D. Nekrassov   M-values as input 			                                    */
+/* 1.8a   Feb 2018  K. Lieutenant  silicon data for 0.4 Ang added                             */
+/* 1.9    Feb 2020  K. Lieutenant  tidy up, new reflectivity calculation, new file handling   */
+/**********************************************************************************************/
 
 
 #include <string.h>
@@ -83,14 +84,15 @@
 /** Inline Functions         **/
 /******************************/
 
-FILE * openNFile (char *name) {return fileOpen (name, "r");}
+FILE * openNFile (char *name) {return OpenInputFile(name, TRUE, "r");}
 
 
 /**************************************/
 /** Prototypes of internal functions **/
 /**************************************/
 
-static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
+void OwnInit(int argc, char *argv[]);                       // reads input parameters and initializes global variables
+int  LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
 void FillReflContainer(double array[1000], double m);
 
 void CreateVisualisationGeometryCurvedChannels  (double xStart, double xEnd, double yStart, double yEnd, double dYcirc, double radius, double entranceHeight, double dZ);
@@ -106,12 +108,95 @@ void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorTy
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_COLLIMATOR;
+McCompID _eModule=MCN_BENDER;
 
 const double lengthGeomPiece = 50.; //Length of a geometry element in cm a surface consists of for x3d visualisation
-int numberRectangles;
-int numberTriangles;
+int   numberRectangles;
+int   numberTriangles;
+long 	NumberOfSurfaces;
 
+long   ntfr=0, ntfl=0, ntfs=0;
+double X2, Y2, COSB, SINB; /* for defining base circle */
+
+long  keypol= 0;
+long  qspin = 0;         /* 0 - axis X, 1 - axis Y, 2 - axis Z magnetic field direction */
+long  keymaterial0=6;    /* Material of bender channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
+long  keymaterial1=1;    /* IN LEFT : Material between channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
+long  keymaterial2=1;    /* IN RIGHT: Material between channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
+
+long   bAbsTransCrit=0;  /* behaviour of not reflected neutrons (0 = absorbed) */
+
+double BenderEntranceHeight=0.0, BenderExitHeight=0.0, BenderEntranceWidth=0.0;
+double BenderExitWidth=0.0, EntranceHelp=0.0, rightend=0.0, leftend=0.0 ,spacer=0.0, channelwidth=0.0;
+double Radius=0.0, length=0.0;
+double surfacerough=0.0;  /* The parameter which characterized bender surface rought */
+double beta=0.0;
+static double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
+static double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
+double TimeOF1;
+double rdate[N_SURF_M3];
+double transm0[1001]; /* file, which describe transmission of material of bender channel */
+double transm1[1001], transm2[1001]; /* file, which describe transmission of material between channels */
+double WAVL[MAX_MU], WAVR[MAX_MU], WAVS[MAX_MU], MUL[MAX_MU], MUR[MAX_MU], MUS[MAX_MU];
+double surradius[N_SURF], entrancediscenter[N_SURF], exitdiscenter[N_SURF];
+
+double XRL[N_SURF], YRL[N_SURF]; /* for calculating converging surface */
+double XENL[N_SURF], XEXL[N_SURF], YENL[N_SURF], YEXL[N_SURF], RADL[N_SURF];
+double XCENL[N_SURF], YCENL[N_SURF], XTMPL[N_SURF], YTMPL[N_SURF], ALPHAL[N_SURF];
+
+double XRR[N_SURF], YRR[N_SURF]; /* for calculating converging surface */
+double XENR[N_SURF], XEXR[N_SURF], YENR[N_SURF], YEXR[N_SURF], RADR[N_SURF];
+double XCENR[N_SURF], YCENR[N_SURF], XTMPR[N_SURF], YTMPR[N_SURF], ALPHAR[N_SURF];
+
+double mNumber[2][3];
+
+double TMP1, TMP2, TMP3, TMP4; /* Temporary for surfaces tests variables */
+
+long   keytest = 0; /* Key for test geometry of bender */
+long   keyVisAct=0;
+
+double entdismin, entdismax;
+double extdismin, extdismax;
+double disabut=0.0; /* Abutment distance, cm */
+
+
+char		*ReflFileNamelup=NULL;
+char 		*ReflFileNameldo=NULL;
+
+char		*TransFileName0=NULL;
+char		*TransFileName1=NULL;
+char		*TransFileName2=NULL;
+
+char		*ReflFileNamerup=NULL;
+char		*ReflFileNamerdo=NULL;
+
+char  	*ReflFileNametbup=NULL;
+char		*ReflFileNametbdo=NULL;
+
+char		*SurfacesFileName=NULL;
+char 		*AsciiFileName=NULL;
+
+
+BenderChannel	BenderCh;
+Bender        BenderMy;
+
+Neutron  Output;
+
+FILE	*refl_filelup=NULL; /* file for describing left surfaces of bender, spin up */
+FILE  *refl_fileldo=NULL; /* file for describing left surface of bender, spin down */
+
+FILE	*trans_file0=NULL; /* file for describing of transmission of material of bender channel  */
+FILE	*trans_file1=NULL; /* file for describing of transmission of bender left surface (see from entrance) */
+FILE  *trans_file2=NULL; /* file for describing of transmission of bender right surface(see from entrance) */
+
+FILE  *refl_filerup=NULL; /* file for describing right surfaces of bender, spin up */
+FILE  *refl_filerdo=NULL; /* file for describing right surfaces of bender, spin down */
+
+FILE  *refl_filetbup=NULL; /* file for describing top and bottom planes of bender, spin up */
+FILE  *refl_filetbdo=NULL; /* file for describing top and bottom planes of bender, spin down */
+
+FILE	*surfaces_file=NULL; /* file for describing of surfaces of converging bender*/
+FILE  *AsciiFile=NULL; /* file for output characteristics of bender surfaces */
 
 
 /******************************/
@@ -127,110 +212,14 @@ int main(int argc, char *argv[])
   /*                                                                                           */
   /* Anything not directly commented is an InputNeutrons or an output routine.                 */
   /********************************************************************************************/
-  long	i, j, count, numberch = 0, keypol =0 ;
-  long	BufferIndex;
-  long  Nchannels;
-  long	k, counter;
-  long 	NumberOfSurfaces;
-  long  qspin = 0; /* 0 - axis X, 1 - axis Y, 2 - axis Z magnetic field direction */
-  long  keymaterial0=6; /*Material of bender channels: 0 - from file, 1 - gadolinium, 2 - cadmium,
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
-  long  keymaterial1=1; /*IN LEFT: Material between channels: 0 - from file, 1 - gadolinium, 2 - cadmium,
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
-  long  keymaterial2=1; /*IN RIGHT: Material between channels: 0 - from file, 1 - gadolinium, 2 - cadmium,
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - Vacuum */
-  long ntfr=0, ntfl=0, ntfs=0;
-
-
-  /* KL */
-  long    bAbsTransCrit=0;  /* behaviour of not reflected neutrons (0 = absorbed) */
-
-  double BenderEntranceHeight, BenderExitHeight, BenderEntranceWidth;
-  double BenderExitWidth, EntranceHelp,rightend,leftend,spacer,channelwidth;
-  double Radius, length, dX, dZ;
-  double beta;
-  static double rdatalup[1000], rdatarup[1000], rdatatbup[1000];
-  static double rdataldo[1000], rdatardo[1000], rdatatbdo[1000];
-  double TimeOF1;
-  double rdate[N_SURF_M3];
-  double transm0[1001]; /* file, which describe transmission of material of bender channel */
-  double transm1[1001], transm2[1001]; /* file, which describe transmission of material between channels */
-  double WAVL[MAX_MU], WAVR[MAX_MU], WAVS[MAX_MU], MUL[MAX_MU], MUR[MAX_MU], MUS[MAX_MU];
-  double surradius[N_SURF], entrancediscenter[N_SURF], exitdiscenter[N_SURF];
-  double surfacerough;  /* The parameter which characterized bender surface rought */
-  double x1, y1, x2, y2, xr, yr, COSB, SINB; /* for definig base circle */
-
-  double XRL[N_SURF], YRL[N_SURF]; /* for calculating conveging surface */
-  double XENL[N_SURF], XEXL[N_SURF], YENL[N_SURF], YEXL[N_SURF], RADL[N_SURF];
-  double XCENL[N_SURF], YCENL[N_SURF], XTMPL[N_SURF], YTMPL[N_SURF], ALPHAL[N_SURF];
-
-  double XRR[N_SURF], YRR[N_SURF]; /* for calculating conveging surface */
-  double XENR[N_SURF], XEXR[N_SURF], YENR[N_SURF], YEXR[N_SURF], RADR[N_SURF];
-  double XCENR[N_SURF], YCENR[N_SURF], XTMPR[N_SURF], YTMPR[N_SURF], ALPHAR[N_SURF];
-
-  double mNumber[2][3];
-
-  double TMP1, TMP2, TMP3, TMP4; /* Temporary for surfaces tests variables */
-  long   keytest = 0; /* Key for test geometry of bender */
-
-  double ytemp=2.0;
-  double entdismin, entdismax;
-  double extdismin, extdismax;
-  double disabut=0.0; /* Abutment distance, cm */
-
-
-  char		*ReflFileNamelup=NULL;
-  char 		*ReflFileNameldo=NULL;
-
-  char		*TransFileName0=NULL;
-  char		*TransFileName1=NULL;
-  char		*TransFileName2=NULL;
-
-  char		*ReflFileNamerup=NULL;
-  char		*ReflFileNamerdo=NULL;
-
-  char  	*ReflFileNametbup=NULL;
-  char		*ReflFileNametbdo=NULL;
-
-  char		*SurfacesFileName=NULL;
-  char 		*AsciiFileName=NULL;
-
-
-  BenderChannel	BenderCh;
-  Bender        BenderMy;
-
-  Neutron  Output;
-
-  FILE	*refl_filelup=NULL; /* file for describing left surfaces of bender, spin up */
-  FILE  *refl_fileldo=NULL; /* file for describing left surface of bender, spin down */
-
-  FILE	*trans_file0=NULL; /* file for describing of transmission of material of bender channel  */
-  FILE	*trans_file1=NULL; /* file for describing of transmission of bender left surface (see from entrance) */
-  FILE  *trans_file2=NULL; /* file for describing of transmission of bender right surface(see from entrance) */
-
-  FILE  *refl_filerup=NULL; /* file for describing right surfaces of bender, spin up */
-  FILE  *refl_filerdo=NULL; /* file for describing right surfaces of bender, spin down */
-
-  FILE  *refl_filetbup=NULL; /* file for describing top and bottom planes of bender, spin up */
-  FILE  *refl_filetbdo=NULL; /* file for describing top and bottom planes of bender, spin down */
-
-  FILE	*surfaces_file=NULL; /* file for describing of surfaces of converging bender*/
-  FILE  *AsciiFile=NULL; /* file for output characteristics of bender surfaces */
+  long	i, j, numberch = 0;
 
   /* MF: visualisation for Windows and generation of file for the picture */
-
 #ifdef DO_WIN32
   const char *GraphDev = "bender.ps";
 #else
   const char *GraphDev = "bender.png";
 #endif
-
-  BenderEntranceHeight = BenderExitHeight = BenderEntranceWidth = 0.0;
-  BenderExitWidth = Radius = length = EntranceHelp = 0.0;
-  spacer = channelwidth =0.0;
-  Nchannels = 0;
-  BufferIndex = 0;
-  surfacerough = 0.0; /*set by default */
 
   mNumber[0][0] = -1; mNumber[0][1] = -1; mNumber[0][2] = -1;
   mNumber[1][0] = -1; mNumber[1][1] = -1; mNumber[1][2] = -1;
@@ -245,6 +234,204 @@ int main(int argc, char *argv[])
 
   Init(argc, argv,_eModule);
   PrintModuleName(_eModule, "1.9");
+  OwnInit(argc, argv);
+  
+  /* test geometry of bender */
+  if (keytest == 1)
+    GeometryTestBender(BenderMy, XENR, YENR, XENL, YENL, XEXR, YEXR, XEXL, YEXL,
+                       BenderEntranceHeight, BenderExitHeight, beta, NumberOfSurfaces);
+
+  /*  set allowed spin direction: qspin must be  0 or 1 or 2 ONLY */
+  if (qspin < 0 || qspin > 2) qspin = 0;
+  if (qspin == 0) fprintf(LogFilePtr,"Magnetic field direction - AXIS OX \n");
+  if (qspin == 1) fprintf(LogFilePtr,"Magnetic field direction - AXIS OY \n");
+  if (qspin == 2) fprintf(LogFilePtr,"Magnetic field direction - AXIS OZ \n");
+
+  if(keygrav == 1)
+    fprintf(LogFilePtr,"Inside bender gravity is enabled if the planes have no curvature!! \n");
+  else
+    fprintf(LogFilePtr,"Inside bender gravity is disabled \n");
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
+  
+  DECLARE_ABORT
+
+  // loop over all trajectories
+  // --------------------------
+  while(ReadNeutrons()) 
+  {
+    for(i=0; i<NumNeutGot; i++) 
+    {
+
+  #ifdef VT_GRAPH
+      if (do_visualise)
+      {
+        if  (number_vis_tr == BufferSize)
+        {
+          do_visualise = 0 != 0; /* stop visualisation */
+          cancel_vis = 1;
+          fprintf(LogFilePtr,"Visualisation is stopped\n");
+        }
+      }
+  #endif
+
+      CHECK
+
+      TimeOF1 = 0.0;
+
+      /*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
+      /****************************************************************************************/
+      /* Check to see if the neutron is initially in the entrance to the bender...             */
+      /****************************************************************************************/
+
+      if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
+
+      /****************choose the channel******************/
+      /* include thickness	*/
+
+      for (j=1;j<=(NumberOfSurfaces-1);j++)
+      {
+        rightend=YENR[j];
+        leftend=YENL[j];
+        if((rightend<InputNeutrons[i].Position[1])&&(leftend>InputNeutrons[i].Position[1]))
+        {
+          numberch = j;
+          break;
+        }
+      }
+
+      //      	fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
+
+      if(j==NumberOfSurfaces)
+        continue;  /*neutron blocked by spacer*/
+
+
+      /* Check the quantization of polarization */
+
+      if (keypol == 1)
+        if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
+        {
+          fprintf(LogFilePtr,"ERROR: Illegal Spin Quantisation!!! Check the Spin value \n");
+          exit(-1);
+        }
+
+
+
+      /******************************************************************************************/
+      /* Pass a pointer to the neutron and the Bender structure variable to a subroutine to do  */
+      /* the donkey work. The return value is the total value of the time of flight through the */
+      /* Bender, or -1.0 if it missed all plates and the exit (should be impossible).           */
+      /******************************************************************************************/
+
+      /* Choose the behavior of neutrons between channels */
+
+      if (bAbsTransCrit == 0)
+      {
+        /* Neutrons travel WITHOUT crosstalk between channels */
+        TimeOF1 = PathThroughChannelGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
+        rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
+        keygrav, keypol, qspin,
+        entrancediscenter, exitdiscenter, spacer);
+      }
+      else
+      {
+        /* Neutrons travel WITH crosstalk between channels */
+        TimeOF1 = PathThroughBenderGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
+                                              rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
+                                              keygrav, keypol, qspin,
+                                              entrancediscenter, exitdiscenter, spacer,
+                                              keymaterial0, keymaterial1, keymaterial2,
+
+        WAVS, MUS, ntfs,
+        WAVL, MUL, ntfl,
+        WAVR, MUR, ntfr);
+      }
+
+      if(TimeOF1 == -1.0)  continue;
+      if(TimeOF1 == -10000.0) exit(-1);
+
+
+      /****************************************************************************************/
+      /* Transform the coordinates.   					         	      */
+      /* X must be always renormalized to zero...                                                  */
+      /****************************************************************************************/
+
+      /* KL: correction: recursion found in calculation of InputNeutrons[i].Position[1], ...Vector[1]
+        InputNeutrons[i].Position[0], ...Vector[0]  were already changed !           */
+
+      Output = InputNeutrons[i];
+
+      /* KL: correction: transformation: move coordinate system to the center of rotation
+	                    rotate
+    	                    move coordinate system back       */
+      /*          InputNeutrons[i].Position[1] -= Radius;
+      Output.Position[0] =  (InputNeutrons[i].Position[0])*COSB + (InputNeutrons[i].Position[1])*SINB;
+      Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
+      Output.Position[1] += Radius;  */
+
+      /* SM: Similar */
+
+      Output.Position[0] =  (InputNeutrons[i].Position[0]-X2)*COSB + (InputNeutrons[i].Position[1]-Y2)*SINB;
+      Output.Position[1] = -(InputNeutrons[i].Position[0]-X2)*SINB + (InputNeutrons[i].Position[1]-Y2)*COSB;
+
+      Output.Vector[0] =  (InputNeutrons[i].Vector[0])*COSB + (InputNeutrons[i].Vector[1])*SINB;
+      Output.Vector[1] = -(InputNeutrons[i].Vector[0])*SINB + (InputNeutrons[i].Vector[1])*COSB;
+
+
+      //      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f \n",Output.Position[0], Output.Position[1], Output.Position[2]);
+
+
+      if (fabs(Output.Position[2])>BenderExitHeight/2.0) continue;
+
+
+      /****************************************************************************************/
+      /* Add the time needed to travel inside Bender.                                   */
+      /****************************************************************************************/
+      Output.Time = Output.Time + TimeOF1;
+      /****************************************************************************************/
+      /* Count this as a success.                                                             */
+      /****************************************************************************************/
+
+#ifdef VT_GRAPH
+      if (do_visualise)
+      {
+        number_vis_tr = number_vis_tr + 1;
+      }
+#endif
+
+      WriteNeutron(&Output);
+    }
+  }
+
+ my_exit:
+
+#ifdef VT_GRAPH
+  if ((do_visualise)||(cancel_vis == 1))
+  {
+    fprintf(LogFilePtr,"Close graphical window\n");
+    cpgclos();
+  }
+#endif
+
+  Cleanup(X2, Y2, 0.0, beta, 0.0);
+
+  if (AsciiFile!=NULL)
+    fclose(AsciiFile);
+
+  return(0);
+}
+
+
+void  OwnInit(int argc, char *argv[])
+{
+  long i, count;
+  long	k, counter;
+
+  double dX, dZ, 
+         X1, Y1, xr, yr; /* for defining base circle */
+
   // OwnInit
   for(i=1; i<argc; i++) 
   {
@@ -301,14 +488,6 @@ int main(int argc, char *argv[])
 
       case 'u':
         SurfacesFileName = arg;
-        if (AsciiFileName==NULL) 
-        {
-          int len = strlen(SurfacesFileName);
-          AsciiFileName = (char*)malloc(len+1);
-          memcpy(AsciiFileName, SurfacesFileName, len-3);
-          AsciiFileName[len-3] = '\0';
-          strcat(AsciiFileName, "Log");
-        }
         break;
 
       case 'k':
@@ -389,9 +568,9 @@ int main(int argc, char *argv[])
         break;
 
       case 'y':
-        ytemp = atof(arg);   /* for visualiztion */
+        keyVisAct = atof(arg);   /* for visualiztion */
   #ifdef VT_GRAPH
-        do_visualise = ytemp != 0;
+        do_visualise = keyVisAct != 0;
   #endif
         break;
 
@@ -421,7 +600,7 @@ int main(int argc, char *argv[])
 
   if (SurfacesFileName)
   {
- 	  surfaces_file = fileOpen( SurfacesFileName, "r");
+ 	  surfaces_file = openNFile(SurfacesFileName);
   }
   else
   {
@@ -649,19 +828,19 @@ int main(int argc, char *argv[])
   if(BenderEntranceHeight == 0.0)
   {
     fprintf(LogFilePtr,"ERROR: You must enter the height of the bender\n");
-    return(0);
+    exit(0);
   }
 
   if(Radius < 0.0)
   {
     fprintf(LogFilePtr,"ERROR: Value of radius is negative\n");
-    return(0);
+    exit(0);
   }
 
   if(length <= 0.0)
   {
     fprintf(LogFilePtr,"ERROR: Valus length is incorrect, negative or zero\n");
-    return(0);
+    exit(0);
   }
 
   if(BenderExitHeight == 0.0)
@@ -842,15 +1021,16 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-
-  if (AsciiFileName)
-  { AsciiFile = fileOpen( AsciiFileName, "wt");
-  }
-  else
+  if (AsciiFileName==NULL) 
   {
-    fprintf(LogFilePtr,"ERROR: The open -A with a file name of the ascii file is mandatory!\n");
-    exit(-1);
+    int len = strlen(SurfacesFileName);
+    AsciiFileName = (char*)malloc(len+1);
+    memcpy(AsciiFileName, SurfacesFileName, len-3);
+    AsciiFileName[len-3] = '\0';
+    strcat(AsciiFileName, "Log");
+    fprintf(LogFilePtr,"NOTE: No name of the bender information file was given. Output is written to %s", AsciiFileName);
   }
+  AsciiFile = OpenOutputFile(AsciiFileName, FALSE, "wt");
 
   NumberOfSurfaces = (long)((counter-1)/3);
 
@@ -944,16 +1124,16 @@ int main(int argc, char *argv[])
     beta = length/Radius;
 
     /* the entrance center point*/
-    x1 = 0.0;
-    y1 = 0.0;
+    X1 = 0.0;
+    Y1 = 0.0;
 
     /* the origin of base circle */
-    xr = x1;
-    yr = y1 + Radius;
+    xr = X1;
+    yr = Y1 + Radius;
 
     /* the exit center point */
-    x2 = xr + Radius*sin(beta);
-    y2 = yr - Radius*cos(beta);
+    X2 = xr + Radius*sin(beta);
+    Y2 = yr - Radius*cos(beta);
   }
   else
   {
@@ -961,16 +1141,16 @@ int main(int argc, char *argv[])
     beta = 0.0;
 
     /* the entrance center point*/
-    x1 = 0.0;
-    y1 = 0.0;
+    X1 = 0.0;
+    Y1 = 0.0;
 
     /* the origin of base circle, not actually */
     xr = 0.0;
     yr = 0.0;
 
     /* the exit center point */
-    x2 = x1 + length;
-    y2 = 0.0;
+    X2 = X1 + length;
+    Y2 = 0.0;
  }
 
 
@@ -979,13 +1159,13 @@ int main(int argc, char *argv[])
   COSB = cos(beta);
   SINB = sin(beta);
 
-  /* NOTE! x2, y2, beta is base for TRANSFORM system of coordimats */
-  /*  fprintf(LogFilePtr,"entp x1= %f  y1= %f beta= %f \n", x1,y1,beta);
-      fprintf(LogFilePtr,"exip x2= %f  y2= %f beta= %f \n", x2,y2,beta);
+  /* NOTE! X2, Y2, beta is base for TRANSFORM system of coordimats */
+  /*  fprintf(LogFilePtr,"entp X1= %f  Y1= %f beta= %f \n", X1,Y1,beta);
+      fprintf(LogFilePtr,"exip X2= %f  Y2= %f beta= %f \n", X2,Y2,beta);
       fprintf(LogFilePtr,"cent base ci xr= %f yr= %f \n",xr,yr); */
 
-  TMP1 = sqrt((xr-x1)*(xr-x1) + (yr-y1)*(yr-y1));
-  TMP2 = sqrt((xr-x2)*(xr-x2) + (yr-y2)*(yr-y2));
+  TMP1 = sqrt((xr-X1)*(xr-X1) + (yr-Y1)*(yr-Y1));
+  TMP2 = sqrt((xr-X2)*(xr-X2) + (yr-Y2)*(yr-Y2));
   //  fprintf(LogFilePtr,"DISTBC  %f  %f\n",TMP1, TMP2);
 
   /* top and bottom planes, possible converging or diverging */
@@ -1053,11 +1233,11 @@ int main(int argc, char *argv[])
 
     /* fprintf(LogFilePtr,"Make channel %d \n",i); */
 
-    XENL[i] = x1;
-    YENL[i] = y1 + (entrancediscenter[i+1]-0.5*spacer);
+    XENL[i] = X1;
+    YENL[i] = Y1 + (entrancediscenter[i+1]-0.5*spacer);
 
-    XEXL[i] = x2 - (sin(beta))*(exitdiscenter[i+1]-0.5*spacer);
-    YEXL[i] = y2 + (cos(beta))*(exitdiscenter[i+1]-0.5*spacer);
+    XEXL[i] = X2 - (sin(beta))*(exitdiscenter[i+1]-0.5*spacer);
+    YEXL[i] = Y2 + (cos(beta))*(exitdiscenter[i+1]-0.5*spacer);
     RADL[i] = surradius[i+1];
 
     if (RADL[i] != 0.0)
@@ -1092,7 +1272,7 @@ int main(int argc, char *argv[])
       BenderMy.SurfLeft[i].Q = 0.0;
       BenderMy.SurfLeft[i].R = 0.0;
 
-      CreateVisualisationGeometryCurvedChannels(XENL[i], XEXL[i], YENL[i], YEXL[i], y2 + YENL[i]*(cos(beta) - 1.), RADL[i], BenderEntranceHeight, dZ*2.);
+      CreateVisualisationGeometryCurvedChannels(XENL[i], XEXL[i], YENL[i], YEXL[i], Y2 + YENL[i]*(cos(beta) - 1.), RADL[i], BenderEntranceHeight, dZ*2.);
 
     }
     else
@@ -1114,11 +1294,11 @@ int main(int argc, char *argv[])
 
     /* FOR RIGHT SURFACES */
 
-    XENR[i] = x1;
-    YENR[i] = y1 + (entrancediscenter[i]+0.5*spacer);
+    XENR[i] = X1;
+    YENR[i] = Y1 + (entrancediscenter[i]+0.5*spacer);
 
-    XEXR[i] = x2 - (sin(beta))*(exitdiscenter[i]+0.5*spacer);
-    YEXR[i] = y2 + (cos(beta))*(exitdiscenter[i]+0.5*spacer);
+    XEXR[i] = X2 - (sin(beta))*(exitdiscenter[i]+0.5*spacer);
+    YEXR[i] = Y2 + (cos(beta))*(exitdiscenter[i]+0.5*spacer);
     RADR[i] = surradius[i];
 
     if (RADR[i] != 0.0)
@@ -1155,7 +1335,7 @@ int main(int argc, char *argv[])
       TMP3 = sqrt((XRR[i]-XENR[i])*(XRR[i]-XENR[i]) + (YRR[i]-YENR[i])*(YRR[i]-YENR[i]));
       TMP4 = sqrt((XRR[i]-XEXR[i])*(XRR[i]-XEXR[i]) + (YRR[i]-YEXR[i])*(YRR[i]-YEXR[i]));
 
-      CreateVisualisationGeometryCurvedChannels(XENR[i], XEXR[i], YENR[i], YEXR[i], y2 + YENR[i]*(cos(beta) - 1.), RADR[i], BenderEntranceHeight, dZ*2.);
+      CreateVisualisationGeometryCurvedChannels(XENR[i], XEXR[i], YENR[i], YEXR[i], Y2 + YENR[i]*(cos(beta) - 1.), RADR[i], BenderEntranceHeight, dZ*2.);
 
     }
     else
@@ -1193,7 +1373,7 @@ int main(int argc, char *argv[])
     BenderMy.SurfExit[i].D = sin(beta);
     BenderMy.SurfExit[i].E = 0.0;
     BenderMy.SurfExit[i].F = 0.0;
-    BenderMy.SurfExit[i].W = -1.0*(x2*cos(beta) + y2*sin(beta));
+    BenderMy.SurfExit[i].W = -1.0*(X2*cos(beta) + Y2*sin(beta));
     BenderMy.SurfExit[i].P = 0.0;
     BenderMy.SurfExit[i].Q = 0.0;
     BenderMy.SurfExit[i].R = 0.0;
@@ -1201,79 +1381,80 @@ int main(int argc, char *argv[])
   }
 
   i = NumberOfSurfaces - 1;
-  CreateVisualisationGeometryTopBottom(XENL[i], XEXL[i], YENL[i], YEXL[i], y2 + YENL[i]*(cos(beta) - 1.), RADL[i],
-				                               XENR[1], XEXR[1], YENR[1], YEXR[1], y2 + YENR[1]*(cos(beta) - 1.), RADR[1], 
+  CreateVisualisationGeometryTopBottom(XENL[i], XEXL[i], YENL[i], YEXL[i], Y2 + YENL[i]*(cos(beta) - 1.), RADL[i],
+				                               XENR[1], XEXR[1], YENR[1], YEXR[1], Y2 + YENR[1]*(cos(beta) - 1.), RADR[1], 
 				                               BenderEntranceHeight, dZ*2.);
 
-
-  /* Output in file some of parameters of surfaces */
-  fprintf(AsciiFile,"******************* UNIVERSAL BENDER module ************************ \n");
-  fprintf(AsciiFile,"********** INFORMATION FOR FABRICATE OF CONVERGING BENDER ********** \n");
-  fprintf(AsciiFile,"******************************************************************** \n");
-  fprintf(AsciiFile,"***USER*INPUT*DATA***\n");
-  for(i = 1; i <= NumberOfSurfaces; i++)
+  if (AsciiFile!=NULL)
   {
-    fprintf(AsciiFile,"Displace data: N = %ld  EN = %e cm  EX = %e cm  RAD = %e cm \n", i,
-    entrancediscenter[i], exitdiscenter[i], surradius[i]);
-  }
-  fprintf(AsciiFile,"Bender Entrance Width = %f cm ;Bender Exit Width = %f cm \n",BenderEntranceWidth,BenderExitWidth);
-  fprintf(AsciiFile,"Bender Entrance Height = %f cm ;Bender Exit Height = %f cm \n",BenderEntranceHeight,BenderExitHeight);
-  fprintf(AsciiFile,"Bender Length = %f cm; Bender surfaces thickness = %f cm \n",length,spacer);
+    /* Output in file some of parameters of surfaces */
+    fprintf(AsciiFile,"******************* UNIVERSAL BENDER module ************************ \n");
+    fprintf(AsciiFile,"********** INFORMATION FOR FABRICATE OF CONVERGING BENDER ********** \n");
+    fprintf(AsciiFile,"******************************************************************** \n");
+    fprintf(AsciiFile,"***USER*INPUT*DATA***\n");
+    for(i = 1; i <= NumberOfSurfaces; i++)
+    {
+      fprintf(AsciiFile,"Displace data: N = %ld  EN = %e cm  EX = %e cm  RAD = %e cm \n", i,
+      entrancediscenter[i], exitdiscenter[i], surradius[i]);
+    }
+    fprintf(AsciiFile,"Bender Entrance Width = %f cm ;Bender Exit Width = %f cm \n",BenderEntranceWidth,BenderExitWidth);
+    fprintf(AsciiFile,"Bender Entrance Height = %f cm ;Bender Exit Height = %f cm \n",BenderEntranceHeight,BenderExitHeight);
+    fprintf(AsciiFile,"Bender Length = %f cm; Bender surfaces thickness = %f cm \n",length,spacer);
 
-  if (Radius != 0.0)
-  {
-    fprintf(AsciiFile,"Base bender axis - circle\n");
-    fprintf(AsciiFile,"Radius of Curvature for base bender axis = %f cm \n",Radius);
-    fprintf(AsciiFile,"ENTRANCE: Base points x = %f cm  y = %f cm \n",x1, y1);
-    fprintf(AsciiFile,"EXIT: Base points x = %f cm  y = %f cm \n",x2, y2);
-    fprintf(AsciiFile,"The coordinates of center of base circle x = %f cm  y = %f cm \n",xr,yr);
-  }
-  else
-  {
-    fprintf(AsciiFile,"Base bender axis - line\n");
-    fprintf(AsciiFile,"ENTRANCE: Base points x = %f cm  y = %f cm \n",x1, y1);
-    fprintf(AsciiFile,"EXIT: Base points x = %f cm  y = %f cm \n",x2, y2);
-  }
+    if (Radius != 0.0)
+    {
+      fprintf(AsciiFile,"Base bender axis - circle\n");
+      fprintf(AsciiFile,"Radius of Curvature for base bender axis = %f cm \n",Radius);
+      fprintf(AsciiFile,"ENTRANCE: Base points x = %f cm  y = %f cm \n",X1, Y1);
+      fprintf(AsciiFile,"EXIT: Base points x = %f cm  y = %f cm \n",X2, Y2);
+      fprintf(AsciiFile,"The coordinates of center of base circle x = %f cm  y = %f cm \n",xr,yr);
+    }
+    else
+    {
+      fprintf(AsciiFile,"Base bender axis - line\n");
+      fprintf(AsciiFile,"ENTRANCE: Base points x = %f cm  y = %f cm \n",X1, Y1);
+      fprintf(AsciiFile,"EXIT: Base points x = %f cm  y = %f cm \n",X2, Y2);
+    }
 
-  fprintf(AsciiFile,"****************************SURFACES******************************* \n");
-  fprintf(AsciiFile,"******************************************************************* \n");
-  fprintf(AsciiFile,"*****************THICKNESS*OF*SURFACES*IS*INCLUDED***************** \n");
+    fprintf(AsciiFile,"****************************SURFACES******************************* \n");
+    fprintf(AsciiFile,"******************************************************************* \n");
+    fprintf(AsciiFile,"*****************THICKNESS*OF*SURFACES*IS*INCLUDED***************** \n");
 
 
-  for(i = 1; i <= (NumberOfSurfaces-1); i++)
-  {
-    fprintf(AsciiFile,"Begin Points of RIGHT surfaces %ld  X, Y;\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XENR[i], YENR[i]);
+    for(i = 1; i <= (NumberOfSurfaces-1); i++)
+    {
+      fprintf(AsciiFile,"Begin Points of RIGHT surfaces %ld  X, Y;\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XENR[i], YENR[i]);
 
-    fprintf(AsciiFile,"Begin Points of LEFT surfaces %ld  X, Y;\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XENL[i], YENL[i]);
-    fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
+      fprintf(AsciiFile,"Begin Points of LEFT surfaces %ld  X, Y;\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XENL[i], YENL[i]);
+      fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
 
-    fprintf(AsciiFile,"Exit Points of RIGHT surfaces %ld  X, Y;\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XEXR[i], YEXR[i]);
+      fprintf(AsciiFile,"Exit Points of RIGHT surfaces %ld  X, Y;\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XEXR[i], YEXR[i]);
 
-    fprintf(AsciiFile,"Exit Points of LEFT surfaces %ld  X, Y;\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XEXL[i], YEXL[i]);
+      fprintf(AsciiFile,"Exit Points of LEFT surfaces %ld  X, Y;\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  \n",    XEXL[i], YEXL[i]);
 
-    fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
+      fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
+      fprintf(AsciiFile,"==============================================================================\n");
+    }
+
     fprintf(AsciiFile,"==============================================================================\n");
+
+
+    for(i = 1; i <= (NumberOfSurfaces-1); i++) 
+    {
+      fprintf(AsciiFile,"Center of RIGHT surface %ld X, Y; Radius\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRR[i], YRR[i], RADR[i]);
+
+      fprintf(AsciiFile,"Center of LEFT surface %ld X, Y; Radius\n",i);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRL[i], YRL[i], RADL[i]);
+
+      fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
+
+    }
   }
-
-  fprintf(AsciiFile,"==============================================================================\n");
-
-
-  for(i = 1; i <= (NumberOfSurfaces-1); i++) 
-  {
-    fprintf(AsciiFile,"Center of RIGHT surface %ld X, Y; Radius\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRR[i], YRR[i], RADR[i]);
-
-    fprintf(AsciiFile,"Center of LEFT surface %ld X, Y; Radius\n",i);
-    fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRL[i], YRL[i], RADL[i]);
-
-    fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
-
-  }
-
 
 #ifdef VT_GRAPH
   if (do_visualise)
@@ -1315,7 +1496,7 @@ int main(int argc, char *argv[])
 
     /* KL: improvement: using a scale that brings the total bender on the screen */
     cpgenv(0.0,1.2*(length),
-    1.2*Min(entdismin,extdismin+y2),1.2*Max(entdismax,extdismax+y2),0,0);
+    1.2*Min(entdismin,extdismin+Y2),1.2*Max(entdismax,extdismax+Y2),0,0);
 
     cpgsfs(2);
 
@@ -1340,8 +1521,8 @@ int main(int argc, char *argv[])
 
 
     cpgsci(2);
-    cpgpt1(x1,y1,-1);
-    cpgpt1(x2,y2,-1);
+    cpgpt1(X1,Y1,-1);
+    cpgpt1(X2,Y2,-1);
 
     /* Draw bender axis */
 
@@ -1362,8 +1543,8 @@ int main(int argc, char *argv[])
     else
     {
       /* draw line axis */
-      cpgmove(x1,y1);
-      cpgdraw(1.2*(length),y2);
+      cpgmove(X1,Y1);
+      cpgdraw(1.2*(length),Y2);
     }
 
     /* visualize entrance and exit line */
@@ -1518,206 +1699,10 @@ int main(int argc, char *argv[])
   }
 #endif
 
-
-  /* test geometry of bender */
-  if (keytest == 1)
-  {
-    GeometryTestBender(BenderMy, XENR, YENR, XENL, YENL, XEXR, YEXR, XEXL, YEXL,
-                       BenderEntranceHeight, BenderExitHeight, beta, NumberOfSurfaces);
-  }
-
-
-  /*  Protect agains illegal value qspin must be  0 or 1 or 2 ONLY */
-
-  if (qspin < 0 || qspin > 2) qspin = 0;
-
-  if (qspin == 0)
-    fprintf(LogFilePtr,"Magnetic field direction - AXIS OX \n");
-
-  if (qspin == 1)
-    fprintf(LogFilePtr,"Magnetic field direction - AXIS OY \n");
-
-  if (qspin == 2)
-    fprintf(LogFilePtr,"Magnetic field direction - AXIS OZ \n");
-
-  if(keygrav == 1)
-  {
-    fprintf(LogFilePtr,"Inside bender gravity is enabled \n");
-    fprintf(LogFilePtr,"Please remember, that gravity only working for first order planes!!! \n");
-    fprintf(LogFilePtr,"If your planes have curvature, gravity is disabled!!! \n");
-  }
-  else
-  {
-    fprintf(LogFilePtr,"Inside bender gravity is disabled \n");
-  }
-
-
-  DECLARE_ABORT
-
-  while(ReadNeutrons()) 
-  {
-    for(i=0; i<NumNeutGot; i++) 
-    {
-
-  #ifdef VT_GRAPH
-      if (do_visualise)
-      {
-        if  (number_vis_tr == BufferSize)
-        {
-          do_visualise = 0 != 0; /* stop visualisation */
-          cancel_vis = 1;
-          fprintf(LogFilePtr,"Visualisation is stopped\n");
-        }
-      }
-  #endif
-
-      CHECK
-
-      TimeOF1 = 0.0;
-
-      /*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
-      /****************************************************************************************/
-      /* Check to see if the neutron is initially in the entrance to the bender...             */
-      /****************************************************************************************/
-
-      if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
-
-      /****************choose the channel******************/
-      /* include thickness	*/
-
-      for (j=1;j<=(NumberOfSurfaces-1);j++)
-      {
-        rightend=YENR[j];
-        leftend=YENL[j];
-        if((rightend<InputNeutrons[i].Position[1])&&(leftend>InputNeutrons[i].Position[1]))
-        {
-          numberch = j;
-          break;
-        }
-      }
-
-      //      	fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
-
-      if(j==NumberOfSurfaces)
-        continue;  /*neutron blocked by spacer*/
-
-
-      /* Check the quantization of polarization */
-
-      if (keypol == 1)
-        if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
-        {
-          fprintf(LogFilePtr,"ERROR: Illegal Spin Quantisation!!! Check the Spin value \n");
-          exit(-1);
-        }
-
-
-
-      /******************************************************************************************/
-      /* Pass a pointer to the neutron and the Bender structure variable to a subroutine to do  */
-      /* the donkey work. The return value is the total value of the time of flight through the */
-      /* Bender, or -1.0 if it missed all plates and the exit (should be impossible).           */
-      /******************************************************************************************/
-
-      /* Choose the behavior of neutrons between channels */
-
-      if (bAbsTransCrit == 0)
-      {
-        /* Neutrons travel WITHOUT crosstalk between channels */
-        TimeOF1 = PathThroughChannelGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
-        rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
-        keygrav, keypol, qspin,
-        entrancediscenter, exitdiscenter, spacer);
-      }
-      else
-      {
-        /* Neutrons travel WITH crosstalk between channels */
-        TimeOF1 = PathThroughBenderGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
-        rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
-        keygrav, keypol, qspin,
-        entrancediscenter, exitdiscenter, spacer,
-        keymaterial0, keymaterial1, keymaterial2,
-
-        WAVS, MUS, ntfs,
-        WAVL, MUL, ntfl,
-        WAVR, MUR, ntfr);
-      }
-
-      if(TimeOF1 == -1.0)  continue;
-      if(TimeOF1 == -10000.0) exit(-1);
-
-
-      /****************************************************************************************/
-      /* Transform the coordinates.   					         	      */
-      /* X must be always renormalized to zero...                                                  */
-      /****************************************************************************************/
-
-      /* KL: correction: recursion found in calculation of InputNeutrons[i].Position[1], ...Vector[1]
-        InputNeutrons[i].Position[0], ...Vector[0]  were already changed !           */
-
-      Output = InputNeutrons[i];
-
-      /* KL: correction: transformation: move coordinate system to the center of rotation
-	                    rotate
-    	                    move coordinate system back       */
-      /*          InputNeutrons[i].Position[1] -= Radius;
-      Output.Position[0] =  (InputNeutrons[i].Position[0])*COSB + (InputNeutrons[i].Position[1])*SINB;
-      Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
-      Output.Position[1] += Radius;  */
-
-      /* SM: Similar */
-
-      Output.Position[0] =  (InputNeutrons[i].Position[0]-x2)*COSB + (InputNeutrons[i].Position[1]-y2)*SINB;
-      Output.Position[1] = -(InputNeutrons[i].Position[0]-x2)*SINB + (InputNeutrons[i].Position[1]-y2)*COSB;
-
-      Output.Vector[0] =  (InputNeutrons[i].Vector[0])*COSB + (InputNeutrons[i].Vector[1])*SINB;
-      Output.Vector[1] = -(InputNeutrons[i].Vector[0])*SINB + (InputNeutrons[i].Vector[1])*COSB;
-
-
-      //      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f \n",Output.Position[0], Output.Position[1], Output.Position[2]);
-
-
-      if (fabs(Output.Position[2])>BenderExitHeight/2.0) continue;
-
-
-      /****************************************************************************************/
-      /* Add the time needed to travel inside Bender.                                   */
-      /****************************************************************************************/
-      Output.Time = Output.Time + TimeOF1;
-      /****************************************************************************************/
-      /* Count this as a success.                                                             */
-      /****************************************************************************************/
-
-#ifdef VT_GRAPH
-      if (do_visualise)
-      {
-        number_vis_tr = number_vis_tr + 1;
-      }
-#endif
-
-      WriteNeutron(&Output);
-    }
-  }
-
- my_exit:
-
-#ifdef VT_GRAPH
-  if ((do_visualise)||(cancel_vis == 1))
-  {
-    fprintf(LogFilePtr,"Close graphical window\n");
-    cpgclos();
-  }
-#endif
-
-  Cleanup(x2, y2, 0.0, beta, 0.0);
-
-  fclose(AsciiFile);
-
-  return(0);
 }
 
 
-static int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin)
+int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin)
 {
   short rc;
   int  nLines, iLine;
@@ -1755,7 +1740,7 @@ void FillReflContainer(double array[1000], double m)
     exit(-1);
   }
 
-  for (i = 0; i < 1000; i++) array[i] = ReflSN(lambda, (double)i*0.01, m);
+  for (i = 0; i < 1000; i++) array[i] = ReflTypical(QbyRefl(lambda, (double)i*0.01), m);
 
   return;
 
@@ -1778,9 +1763,9 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 
   if (!bVisInstr) return;
 
-  fprintf(LogFilePtr,"xStart %f, xEnd %f, yStart %f, yEnd %f, radius %f, entrance height %f, dZ %f \n", xStart, xEnd, yStart, yEnd, radius, entranceHeight, dZ);
+  xStart/=CmprFact; xEnd/=CmprFact;
 
-  bVisInstalled = TRUE;
+  // fprintf(LogFilePtr,"xStart %f, xEnd %f, yStart %f, yEnd %f, radius %f, entrance height %f, dZ %f \n", xStart, xEnd, yStart, yEnd, radius, entranceHeight, dZ);
 
   angle = asin((xEnd - xStart)/radius);
   totalLength = radius*angle;
@@ -1804,7 +1789,7 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
   x1 = xStart;
   y1 = yStart;
 
-  fprintf(LogFilePtr,"dY before %f, total length %f  \n", dYcirc, totalLength);
+  // fprintf(LogFilePtr,"dY before %f, total length %f  \n", dYcirc, totalLength);
 
   // Take into account a possible converging
   dY = yEnd - (yStart + dYcirc);
@@ -1876,14 +1861,11 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ)
 {
 
-  VectorType v1 = {xStart, yStart, -entranceHeight/2.};
-  VectorType v2 = {xStart, yStart, entranceHeight/2.};
-  VectorType v3 = {xEnd, yEnd, (entranceHeight + dZ)/2.};
+  VectorType v1 = {xStart/CmprFact, yStart, -entranceHeight/2.};
+  VectorType v2 = {xStart/CmprFact, yStart, entranceHeight/2.};
+  VectorType v3 = {xEnd/CmprFact, yEnd, (entranceHeight + dZ)/2.};
 
   if (!bVisInstr) return;
-
-  bVisInstalled = TRUE;
-
   
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
   
@@ -1901,8 +1883,8 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
 
   stGeometry.nTriangles++;  
 
-  v2[0] = xEnd;
-  v2[1] = xEnd;
+  v2[0] = xEnd/CmprFact;
+  v2[1] = xEnd/CmprFact;
   v2[2] *= -1.;
 
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
@@ -1939,20 +1921,18 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   int minElements, maxElements;
 
   int i, j;
-  double x11, x12, y11, y12, x21, x22, y21, y22;
+  double x11=0.0, x12=0.0, y11=0.0, y12=0.0, x21=0.0, x22=0.0, y21=0.0, y22=0.0;
   double dY1, dY2;
   double deltaY1, deltaY2;
 
   VectorType v[4];
 
-  double height11;
-  double height12;
-  double height21;
-  double height22;
+  double height11, height12, height21, height22;
  
   if (!bVisInstr) return;
 
-  bVisInstalled = TRUE;
+  x1Start/=CmprFact; x1End/=CmprFact;
+  x2Start/=CmprFact; x2End/=CmprFact;
 
   // outer left surface
   angle1 = asin((x1End - x1Start)/radius1);

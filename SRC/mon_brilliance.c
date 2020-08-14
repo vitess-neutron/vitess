@@ -46,16 +46,17 @@ VtMonPar;
 /******************************/
 /** Prototypes               **/
 /******************************/
-void   OwnInit(int argc, char *argv[]);                  // Reads input parameters and sets global parameters
+void   OwnInit  (int argc, char *argv[]);                // Reads input parameters and sets global parameters
+void   OpenFiles();                                      // Opens all monitor files
 double E2DelLmbd(const double Emax, const double Emin);  // converts DelE = Emax - Emin (meV) into DelLambda (Ang)
 double RangeAvrg(const double Xmin, const double Xmax);  // calculates average value according to binning type
-
-
 
 
 /******************************/
 /** Global variables         **/
 /******************************/
+McCompID _eModule=MCN_MON1_BRL;
+
 char  *MonitorFileName=NULL,         // name of a file to monitor the brilliance
       *RefFileName =NULL,            // name of a reference file (it is used to calculate the brilliance transfer)
       *FluxFileName=NULL;            // name of a flux file      (it is used to monitor the average or max. brilliance as a function of any parameter in running a series of simulations)
@@ -119,23 +120,28 @@ int main(int argc, char *argv[])
          ParCntr,              // center of a bin of the variable parameter
          PhaseSpaceVol,        // phase space volume of a bin
          PhaseSpaceVolTot,     // phase space volume of the whole range
-         LmbdPrz=1.0,          // percentage DelLambda/Lambda
-         Brilliance=0.0,       // brilliance within one bin
+         LmbdPrz     =1.0,     // percentage DelLambda/Lambda
+         Brilliance  =0.0,     // brilliance within one bin
          Transmission=1.0,     // brilliance transfer within one bin
-         BrillMax=0.0,         // maximal brilliance
-         BrillAve=0,           // average brilliance
-         TransMax=0.0,         // maximal brilliance transfer
-         TransAve=0,           // average brilliance transfer
-         BrillAveIn=0.0,       // average brilliance of reference spectrum
+         BrillMax    =0.0,     // maximal brilliance
+         BrillAve    =0.0,     // average brilliance
+         BrillTiAv   =0.0,     // brilliance averaged over the whole period (assuming that the complete pulse is within the given time range)
+         TransMax    =0.0,     // maximal brilliance transfer
+         TransAve    =0.0,     // average brilliance transfer
+         BrillAveIn  =0.0,     // average brilliance of reference spectrum
          LmbdAve;              // average wavelength in a bin
-    long *pBinN=NULL;          // number of trajectories per bin
+  long *pBinN=NULL;            // number of trajectories per bin
 
 
     /* initialisation */
     /* -------------- */
-    Init   (argc, argv, MCN_MON1_BRL);
-    print_module_name("mon_brilliance 1.1a");
+    Init   (argc, argv, _eModule);
+    PrintModuleName(_eModule, "1.1");
     OwnInit(argc, argv);
+    OpenFiles();
+    
+    bVisInstalled = FALSE;
+    bLengthCmpr   = FALSE;
 
     pPosT   = (double*) calloc(nBins+1,sizeof(double));
     pInt    = (double*) calloc(nBins+1,sizeof(double));
@@ -204,7 +210,6 @@ int main(int argc, char *argv[])
 
     while (ReadNeutrons()!= 0) 
     {
-      CHECK;
       for(i=0; i<NumNeutGot; i++) 
       {
         CHECK;
@@ -291,8 +296,8 @@ int main(int argc, char *argv[])
     }
 
  my_exit:
-    // Evaluate binned data and write to monitor file
-    // ----------------------------------------------
+    // Evaluate binned data, write to monitor files and close them
+    // -----------------------------------------------------------
     if (pFileMon != NULL) 
     {
       fprintf(pFileMon, "# Brilliance Monitor \n");
@@ -331,7 +336,7 @@ int main(int argc, char *argv[])
           else if (eBrlPar==VT_ENERGY)
             LmbdAve = RangeAvrg(E2Lambda(pPosT[iBin]), E2Lambda(pPosT[iBin+1]));  // meV -> Ang
           else 
-            LmbdAve = RangeAvrg(MinRange, MaxRange);
+            LmbdAve = RangeAvrg(MinLmbd, MaxLmbd);
 
           LmbdPrz = 100.0 * 1.0 / LmbdAve;       // Brilliance calculated per Ang; this gives the calculated percentage in DelLmbd/Lmbd 
           Brilliance /= LmbdPrz;
@@ -373,9 +378,13 @@ int main(int argc, char *argv[])
         PhaseSpaceVolTot = (MaxLmbd - MinLmbd) * (MaxY - MinY) * (MaxZ - MinZ) * M_PI/180.0*(MaxDivY - MinDivY) * M_PI/180.0*(MaxDivZ - MinDivZ);
 
       if (bPulsedSrc==FALSE)
-        BrillAve = dIntTot / PhaseSpaceVolTot;
+      { BrillAve  = dIntTot / PhaseSpaceVolTot;
+        BrillTiAv = BrillAve; 
+      }
       else
-        BrillAve = dIntTot / (PhaseSpaceVolTot * Freq * (MaxTime - MinTime)/1000.0);    // ms -> s
+      { BrillAve  = dIntTot / (PhaseSpaceVolTot * Freq * (MaxTime - MinTime)/1000.0);    // ms -> s
+        BrillTiAv = dIntTot /  PhaseSpaceVolTot; 
+      }
 
       // normalisation to 1% in DelLambda/Lambda
       if (eBrlNorm==VT_BRL_PCT)
@@ -394,19 +403,22 @@ int main(int argc, char *argv[])
     // write out one line into the flux file 
     if (pFileFlux != NULL) 
     {
-      fprintf(pFileFlux, "%10.3f %10.3f %10.3f %10.3f %10.3f %10.3f     %11.4e     %11.4e \n",
+      fprintf(pFileFlux, "%10.3f %10.3f %10.3f %10.3f %10.3f %10.3f     %11.4e     %11.4e     %11.4e \n",
               0.5*(MaxLmbd+MinLmbd), 0.5*(MaxY+MinY), 0.5*(MaxZ+MinZ), 0.5*(MaxDivY+MinDivY), 0.5*(MaxDivZ+MinDivZ), 0.5*(MaxDivR+MinDivR),
-              BrillAve, BrillMax);
+              BrillAve, BrillMax, BrillTiAv);
       fclose(pFileFlux);
     }
 
     // write total and average values to 
     fprintf(LogFilePtr, "total neutron count rate within given ranges: %11.4e n/s \n", dIntTot);
-    fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm^2 s Ang sterad)\n\n", BrillAve, BrillMax);
+    fprintf(LogFilePtr, "average and maximal brilliance         : %11.4e  %11.4e n/(cm^2 s Ang sterad)\n", BrillAve, BrillMax);
     if (eBrlNorm==VT_BRL_TRANS)
     { TransAve = BrillAve/BrillAveIn;
-      fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n\n", TransAve, TransMax);
+      fprintf(LogFilePtr, "average and maximal brilliance transfer: %7.3f  %7.3f \n", TransAve, TransMax);
     }
+    if (bPulsedSrc==TRUE)
+      fprintf(LogFilePtr, "time averaged brilliance               : %11.4e              n/(cm^2 s Ang sterad)\n", BrillTiAv);
+    fprintf(LogFilePtr, "\n");
 
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
     if (pPosT!=NULL)   free(pPosT);
@@ -432,7 +444,6 @@ void OwnInit(int argc, char *argv[])
   int    i;
   double TimeMeas,   // measuring time
          LmbdWant;   // wanted wavelength
-  char	 sNewName[99]="";
 
   for(i=1; i<argc; i++)
   {
@@ -442,38 +453,14 @@ void OwnInit(int argc, char *argv[])
       {
         case 'O':
           MonitorFileName=&argv[i][2];
-          pFileMon = fopen(FullParName(MonitorFileName),"wt");
-          if (pFileMon==NULL) 
-          {
-            char* p1=NULL, *p2=NULL;
-
-            fprintf(LogFilePtr,"\nFile %s could not be opened for monitor output\n", MonitorFileName);
-
-            p1= strrchr(MonitorFileName, '/');
-            p2= strrchr(MonitorFileName, '\\');
-            if (p1 > p2)
-              sprintf(sNewName, "new_%s", p1+1);
-            if (p2 > p1)
-              sprintf(sNewName, "new_%s", p2+1);
-            if (p1 != p2)
-              fprintf(LogFilePtr,"file name changed to %s\n", sNewName);
-          }
           break;
 
         case 'S':
           RefFileName=&argv[i][2];
-          pFileRef = fopen(FullParName(RefFileName),"rt");
-          if (pFileRef==NULL)
-          {  fprintf(LogFilePtr,"\nReference file %s could not be opened\n", RefFileName);
-          }
           break;
 
         case 'F':
           FluxFileName=&argv[i][2];
-          pFileFlux = fopen(FullParName(FluxFileName),"at");
-          if (pFileFlux==NULL)
-          {  fprintf(LogFilePtr,"\nFlux file %s could not be opened\n", FluxFileName);
-          }
           break;
 
         case 'k':
@@ -620,6 +607,42 @@ void OwnInit(int argc, char *argv[])
   if (bLogBin && MinRange<=0.0)
     Error("Lower bound value of the range must be positive for logarithmic binning");
 
+  return;
+}
+
+
+/*******************************************************/
+/**  Opens all files                                  **/
+/*******************************************************/
+void OpenFiles()
+{
+  // opens main monitor file
+  if (MonitorFileName!=NULL)
+    pFileMon = OpenOutputFile(MonitorFileName, TRUE, "wt");
+  else
+    Error("Monitor file name missing");
+
+  // opens reference file if needed
+  if (eBrlNorm==VT_BRL_TRANS)
+  { if (RefFileName!=NULL)
+    { pFileRef = OpenInputFile(RefFileName, FALSE, "rt");
+      if (pFileRef==NULL)
+      { fprintf(LogFilePtr,"\nERROR: Reference file %s could not be opened\n", RefFileName);
+        exit(-1);
+      }
+    }
+    else
+    { Error("Reference file missing. This is needed for monitoring the brilliance transfer");
+    }
+  }
+
+  // opens flux file
+  if (FluxFileName!=NULL)
+  { pFileFlux = OpenOutputFile(FluxFileName, FALSE, "at");
+    if (pFileFlux==NULL)
+      fprintf(LogFilePtr,"\nWARNING: Flux file %s could not be opened\n", FluxFileName);
+  }
+ 
   return;
 }
 

@@ -14,6 +14,7 @@
 /* 1.2  Apr  2018  K. Lieutenant   MCPL and MCNP format                                      */
 /* 1.3  May  2019  K. Lieutenant   option to read only trajectories marked for tracing       */
 /* 1.3a Jul  2019  K. Lieutenant   MCNPX format uses its own structure                       */
+/* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -44,8 +45,10 @@ short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron*       pMcNeutr
 short ConvertMcpl2Vitess  (Neutron* pVitNeutron, const mcpl_particle_t* pMcplParticle);
 
 void  RotMc2Vit  (VectorType* pVitVector, const VectorType* pMcVector);
-void  InitNeutron(Neutron* pNeutron);
+void  InitMcNeutr(Neutron* pNeutron);
 void  GetId      (TotalID* pID);
+
+extern char* FullParName(const char* filename);     // this function should only be used exceptionally outside init.c
 
 
 /******************************/
@@ -77,12 +80,15 @@ int main(int argc, char **argv)
   Neutron         InNeutron;
 
   /* Initialize the program according to the parameters given   */
-  bVisInstalled = FALSE;
-  bBlowupInstal = FALSE;
-  
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3a");
+  PrintModuleName(_eModule, "1.3b");
   OwnInit(argc, argv);
+
+  bVisInstalled = FALSE;
+  bLengthCmpr   = FALSE;
+  	if (bVisInstr)
+  { stGeometry.pDescr = "read_in:white";
+  }
   
   if (__pTraceFileName!=NULL)
     fprintf(LogFilePtr, "trace file used              : %s\n", __pTraceFileName);
@@ -241,7 +247,7 @@ void  OwnInit(int argc, char *argv[])
   { 
     for (m=0; m < NF_MAX; m++)
     { if (AsciiFileName[m] != NULL)
-      { if ((pInFile[m]=fopen(FullParName(AsciiFileName[m]),"rt"))==NULL) 
+      { if ((pInFile[m] = OpenInputFile(AsciiFileName[m], FALSE, "rt"))==NULL) 
         { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName[m]);
           exit(-1);
         }
@@ -373,7 +379,7 @@ short ScanMcnpxTraj(Neutron* pNeutron, const char* sLine, double weight)
   if (rs > 0)
   { 
   	// initialization
-    InitNeutron(pNeutron);			                      
+    InitMcNeutr(pNeutron);			                      
 
     CopyVector(McnpNeutr.Position, pNeutron->Position);
     CopyVector(McnpNeutr.Vector,   pNeutron->Vector);
@@ -397,7 +403,7 @@ short ConvertMcStas2Vitess(Neutron* pVitNeutron, const McNeutron* pMcNeutron)
 	double  velocity;      // velocity of the neutron  [cm/ms]
 
 	// initialization
-  InitNeutron(pVitNeutron);			                      
+  InitMcNeutr(pVitNeutron);			                      
 
 	velocity = 0.1 * sqrt(  sq(pMcNeutron->Speed[0])     // unit m/s -> cm/ms
 			                  + sq(pMcNeutron->Speed[1])
@@ -424,7 +430,7 @@ short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParti
   if (pMcplParticle->pdgcode==NEUTRON_ID)                    
   {
   	// initialization
-    InitNeutron(pVitNeutron);			  
+    InitMcNeutr(pVitNeutron);			  
 
 	  pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> µeV   
 	  pVitNeutron->Time        = pMcplParticle->time; 
@@ -450,7 +456,7 @@ void RotMc2Vit(VectorType* pVitVector, const VectorType* pMcVector)
 }
 
 
-void InitNeutron(Neutron* pNeutron)
+void InitMcNeutr(Neutron* pNeutron)
 {
 	memset(pNeutron, '\0', sizeof(Neutron));        
 

@@ -1,69 +1,46 @@
-/* The free non-commercial use of these routines is granted          */
-/* providing due credit is given to the authors.                     */
-/* Author: Géza Zsigmond, last change JUL 2002                       */
-/* Change: Klaus Lieutenant, JUL 2002, trace coordinates added       */
+/*********************************************************************************************/
+/*  VITESS tool 'ascii2bin.c'                                                                */
+/*    conversion of tractory files from ASCII format to binary format                        */
+/*                                                                                           */
+/* The free non-commercial use of these routines is granted providing due credit is given to */
+/* the authors.                                                                              */
+/*                                                                                           */
+/* 1.0      2000  G. Zsigmond    initial                                                     */
+/* 1.1  Jul 2002  G. Zsigmond    correction                                                  */
+/* 1.2  Jul 2002  K. Lieutenant  trace coordinates added                                     */
+/* 1.3  Mar 2020  K. Lieutenant  tidy up, new central parameters and functions               */
+/*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "general.h"
 #include "init.h"
 
 
-extern short bTrace;
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+short OwnInit();                   // Reads input parameters and sets global parameters
+void  OwnCleanup();                // Does module specific cleanup
+
+
+/*********************************/
+/** Global and Static Variables **/
+/*********************************/
+McCompID _eModule=MCN_TOOL_A2B;
 
 FILE* pAsciiFile;
 char  AsciiFileName [80]="";
 char  BinaryFileName[80]="";
 
+extern short bTrace;
 
-short OwnInit(void) 
-{
-  short bDirGiven=TRUE;
 
-  bTrace = FALSE;
-
-  printf("Give ASCII file name : ");
-  scanf("%s", AsciiFileName);
-	
-  pAsciiFile=fopen(AsciiFileName,"r");
-  if (pAsciiFile==NULL) 
-  { 
-    bDirGiven=FALSE;
-    pAsciiFile=fopen(FullParName(AsciiFileName),"r");
-    if (pAsciiFile==NULL)
-    { printf("Can't open file %s\n", AsciiFileName);
-      return(FALSE);
-    }
-  }
-
-  // write output file
-  printf("Give binary file name: ");
-  scanf("%s", BinaryFileName);
-  if(bDirGiven)
-    OutputFilePtr=fopen(BinaryFileName,"wb");
-  else
-    OutputFilePtr=fopen(FullParName(BinaryFileName),"wb");
-
-  if (OutputFilePtr==NULL)
-  { printf("Can't open file %s\n", BinaryFileName);
-    return(FALSE);
-  }
-  else
-  { return(TRUE);
-  }
-}
-
-void OwnCleanup()
-{
-  printf("\n Hit [Enter] to terminate ! \n");
-  getchar();
-  getchar();
-  getchar();
-  
-  if (pAsciiFile!=NULL)
-    fclose(pAsciiFile);
-}
-
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char **argv)
 {
   int   i,j, rc;
@@ -72,14 +49,14 @@ int main(int argc, char **argv)
   short bFiles;
 
   /* Initialize the program according to the parameters given   */
-  Init(argc, argv, MCN_TOOL);
-  print_module_name("ascii2bin");
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.3");
+  bFiles = OwnInit();             // module specific initialization
 
-  /* module specific initialization */
-  NumNeutRead=0.0;
-  bFiles = OwnInit();
   if (bFiles)
   { 
+	  // loop over trajectories
+    // ----------------------
     for(j=0; j<1e10; j++)
     {
       for(i=0; i<BufferSize; i++) 
@@ -99,6 +76,9 @@ int main(int argc, char **argv)
         NumNeutRead += 1;
       }
     }
+
+  // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
+  // ----------------------------------------------------------------------------------------
   finish:
     printf("\n %6.0f trajectories written to binary file %s !\n", NumNeutRead, BinaryFileName);
   }
@@ -110,4 +90,53 @@ int main(int argc, char **argv)
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
   
   return 0;
+}
+
+
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
+short OwnInit(void) 
+{
+  NumNeutRead=0.0;
+  bTrace = FALSE;
+
+  // read ASCII input file
+  printf("Give ASCII file name : ");
+  scanf ("%s", AsciiFileName);
+	
+  pAsciiFile = OpenInputFile(AsciiFileName, FALSE, "r");
+  if (pAsciiFile==NULL) 
+  { 
+    printf("Can't open file %s\n", AsciiFileName);
+    return(FALSE);
+  }
+
+  // write binary file to the same folder
+  printf("Give binary file name: ");
+  scanf ("%s", BinaryFileName);
+
+  OutputFilePtr = OpenInputFile(BinaryFileName, FALSE, "wb");
+  if (OutputFilePtr==NULL)
+  { printf("Can't open file %s\n", BinaryFileName);
+    return(FALSE);
+  }
+  else
+  { return(TRUE);
+  }
+}
+
+
+/*******************************************************/
+/** Does module specific cleanup                      **/
+/*******************************************************/
+void OwnCleanup()
+{
+  printf("\n Hit [Enter] to terminate ! \n");
+  getchar();
+  getchar();
+  getchar();
+  
+  if (pAsciiFile!=NULL)
+    fclose(pAsciiFile);
 }

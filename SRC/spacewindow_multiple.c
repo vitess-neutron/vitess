@@ -18,7 +18,7 @@
 /* 2.10  Mar  2004  S. Manoshin     Add material for inner part of window                    */
 /* 2.21  Jul  2004  S. Manoshin	    Corrected bug for thick window                           */
 /* 2.22  Dec  2007  K. Lieutenant   Option to use rectangular windows added                  */
-/* 2.23  Aug  2019  K. Lieutenant   tidy up and visualiation                                 */
+/* 2.23  Aug  2019  K. Lieutenant   tidy up and visualization                                */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -376,7 +376,7 @@ short ReadWndFile()
 	FILE  *coll_file;
 
 	if (CollFileName !=NULL)
-	{	if( (coll_file = fopen(CollFileName,"r"))==NULL)
+	{	if( (coll_file = OpenInputFile(CollFileName, FALSE, "r"))==NULL)
 		{
 			fprintf(LogFilePtr, "ERROR: File %s could not be opened to read window data \n", CollFileName);
 			exit(-1);
@@ -517,7 +517,7 @@ void  EvalInput()
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
     {
-      pTransFileO = fopen(sTransFileNameO,"r");
+      pTransFileO = OpenInputFile(sTransFileNameO, FALSE, "r");
       if (pTransFileO!=NULL)  
       { 
         i=0;
@@ -560,7 +560,7 @@ void  EvalInput()
 	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
 	  KeymaterialI = 0; /* activate this material */
 
-    pTransFileI = fopen(sTransFileNameI,"r");
+    pTransFileI = OpenInputFile(sTransFileNameI, FALSE, "r");
     if (pTransFileI!=NULL)  
     { i=0;
       while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0) 

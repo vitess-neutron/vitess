@@ -18,6 +18,7 @@
 /* 1.09  Nov 2005  K. Lieutenant  option: equivalent windows added                           */
 /* 1.10  Mar 2011  K. Lieutenant  correction: side deviation                                 */
 /* 1.11  Jan 2012  K. Lieutenant  visualization                                              */
+/* 1.12  Feb 2020  K. Lieutenant  new central visualization parameters                       */
 /*********************************************************************************************/
 
 #include "intersection.h"
@@ -30,7 +31,6 @@
 /******************************/
 /** Structures               **/
 /******************************/
-
 typedef struct
 {
 	double  Distance;
@@ -53,22 +53,23 @@ typedef struct
 Chopper;
 
 
-
 /******************************/
 /** Prototypes               **/
 /******************************/
-
 void           OwnInit         (int argc, char *argv[]);
-void           OwnCleanup      ();
 void           ReadChopperData ();
+void           SetGeometry     (char* sColor);
+void           OwnCleanup      ();
+
+unsigned short BlockedByChopper(Chopper, Neutron*);
 double         RedAngle        (double angle, short dir);
 double         ModPhase        (double phase, int nSect);
-unsigned short BlockedByChopper(Chopper, Neutron*);
 
 
 /***********************************/
 /** global and static variables   **/
 /***********************************/
+McCompID _eModule=MCN_CHOP_DISC;
 
 Plane	 Endpoint;
 double ChopperInitialOffset;
@@ -82,10 +83,10 @@ FILE	*ChopperFile=NULL;
 char	*ChopperFileName=NULL;
 Chopper ThisChopper;
 
+
 /******************************/
 /** Program                  **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
 	long   i;
@@ -99,15 +100,20 @@ int main(int argc, char *argv[])
 	       CenterX, CenterY, CenterZ; /* center of beam of all traj. reaching the chopper at chopper weighted by count rate */
   Neutron OutNeutron;
 
-	 /* initialisation, definitions see Input below */
+	// initialisation
+  // --------------
 	ChopperInitialOffset = prob = 0.0;
 	ThisChopper.Centre.X = ThisChopper.Centre.Y = 0.0;
 	Endpoint.D           = 0.0;
   bVisInstalled        = TRUE;
 
-	Init(argc, argv, VT_CHOP_DISC);
-	print_module_name("Disc Chopper 1.11");
+	Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.12");
 	OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
 	CenterX   = 0.0;
 	CenterY   = 0.0;
@@ -120,21 +126,21 @@ int main(int argc, char *argv[])
 
 	DECLARE_ABORT
 
+	// loop over all trajectories
+  // --------------------------
 	while(ReadNeutrons()!= 0)
 	{
 		for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
 
-			/****************************************************************************************/
-			/* Submit both the Neutron and the plane to a subroutine and find the intercept.        */
-			/****************************************************************************************/
+			// Submit both the Neutron and the plane to a subroutine and find the intercept 
+			// ----------------------------------------------------------------------------
 			if (InputNeutrons[i].Position[0] > -Endpoint.D)
 				CountMessageID(ALL_BEHIND_COMPONENT, InputNeutrons[i].ID);
 
-			/****************************************************************************************/
-			/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
-			/****************************************************************************************/
+			// 	Move neutron to window with gravity effect and calculate Time of Flight (ms)
+			// -----------------------------------------------------------------------------
 			if (keygrav == 1)
 			{
 				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
@@ -156,13 +162,9 @@ int main(int argc, char *argv[])
 
 			OutNeutron.Position[0]=0.0;
 
-
-			/****************************************************************************************/
-			/* This really is self explanatory; submit the neutron to a subroutine that works out if */
-			/* the chopper gets in the way.															 */
-			/****************************************************************************************/
-
-			if(BlockedByChopper(ThisChopper, &OutNeutron))
+			// submit the neutron to a subroutine that works out if the chopper gets in the way
+			// --------------------------------------------------------------------------------
+			if (BlockedByChopper(ThisChopper, &OutNeutron))
 			{
 				/* non perfect absorption */
 
@@ -233,6 +235,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+// Finish: print parameters, write geometry and instrument file, free memory
+// -------------------------------------------------------------------------
  my_exit:
 	if (SumProb != 0.0)
 	{
@@ -247,14 +251,17 @@ int main(int argc, char *argv[])
 		Warning("No neutron hit the chopper\n");
 	}
 
-	OwnCleanup();
-	Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
+  SetGeometry("blue");                       // write geometry data for visualization
+	OwnCleanup();                              // write messages, free memory
+	Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);     // print intensity, write instrument.inf, 
 
 	return(0);
 }
 
 
-
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void OwnInit   (int argc, char *argv[])
 {
 	long   i;
@@ -309,13 +316,13 @@ void OwnInit   (int argc, char *argv[])
 
 
 			case 'C':
-				if((ChopperFile = fopen(FullParName(&argv[i][2]),"r"))==NULL)
+				ChopperFileName = &argv[i][2];
+        ChopperFile = OpenInputFile(ChopperFileName, FALSE, "r");
+				if (ChopperFile==NULL)
 				{
-					fprintf(LogFilePtr,"ERROR: Chopper parameter file %s could not be opened\n",&argv[i][2]);
+					fprintf(LogFilePtr, "ERROR: Chopper parameter file %s could not be opened\n", ChopperFileName);
 					exit(-1);
 				}
-				ChopperFileName = &argv[i][2];
-
 				break;
 
 			case 'n':										/* no of windows for pulse generation */
@@ -342,130 +349,11 @@ void OwnInit   (int argc, char *argv[])
 	}
 }
 
-
-/* own cleanup of this module */
-/* -------------------------------- */
-void OwnCleanup()
+/*******************************************************/
+/** Read chopper file                                 **/
+/*******************************************************/
+void ReadChopperData() 
 {
-	long   nModuleNo;    /* number of the previous module (not needed) */
-	short  dir=0,
-         k;            /* index of the chopper window  */
-	double time,         /* time of flight*/
-	       phi_wnd,      /* orientation of the window after TOF 'time' or at t=0 [deg] */
-         phi_red;      /* phi_ges reduced to a value in [0,360[ */
-	double dTimeMeas,    /* measuring time     (from simulation.inf, not needed here) */
-	       dLmbdWanted,  /* desired wavelength (from simulation.inf)                  */
-	       dFreq,        /* source frequency   (from simulation.inf, not needed here) */
-	       dLength,      /* length of the instrument until chopper module */
-	       dRotZ, dRotY; /* orientation of the output of the previous component (not needed) */
-	VectorType EndPos;   /* position of the output of the previous component (not needed) */
-
-	/* print error that might have occured many times */
-	PrintMessage(CHOP_PASSED_OUTSIDE,  "", ON);
-	PrintMessage(ALL_BEHIND_COMPONENT, "", ON);
-
-	fprintf(LogFilePtr," \n");
-
-	ReadSimData  (&dTimeMeas, &dLmbdWanted, &dFreq);
-	if (dLmbdWanted > 0.0)
-	{	nModuleNo=ReadInstrData(0, EndPos, &dLength, &dRotZ, &dRotY);
-		time = (dLength-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(dLmbdWanted)); /* velocity in m/s instead of cm/ms */
-  }
-  else
-  { time = 0.0;
-  }
-	dir  = (short) (ThisChopper.Frequency < 0.0 ? -1 : 1);
-
-  // Geometry data
-  if (bVisInstr)
-  { stGeometry.pCircle  = (VtCircle*) calloc(ThisChopper.NumberOfWindows + 1, sizeof(VtCircle));
-    stGeometry.nCircles = ThisChopper.NumberOfWindows + 1; 
-    // stGeometry.pLine    = (VtLine*) calloc(2*ThisChopper.NumberOfWindows, sizeof(VtLine));
-    // stGeometry.nLines   = 2*ThisChopper.NumberOfWindows; 
-
-    stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D;
-    stGeometry.pCircle[0].vCntr[1]   = ThisChopper.Centre.Y;
-    stGeometry.pCircle[0].vCntr[2]   = ThisChopper.Centre.Z;
-    stGeometry.pCircle[0].Radius     = ThisChopper.Window[0].Bottom;
-    stGeometry.pCircle[0].AngleBeg   =   0.01;
-    stGeometry.pCircle[0].AngleEnd   = 359.99;
-    stGeometry.pCircle[0].vNormal[0] =   1.0;
-    stGeometry.pCircle[0].vNormal[1] =   0.0;
-    stGeometry.pCircle[0].vNormal[2] =   0.0;
-
-    for (k=0; k < ThisChopper.NumberOfWindows; k++)
-    { 
-      phi_wnd = 180.0/M_PI * (ThisChopper.Window[k].Angle + ChopperInitialOffset + ThisChopper.Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
-      phi_red = RedAngle(phi_wnd, -1);
-
-      stGeometry.pCircle[k+1].Radius     = ThisChopper.Radius;
-      stGeometry.pCircle[k+1].AngleBeg   = phi_red + 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
-      stGeometry.pCircle[k+1].AngleEnd   = phi_red - 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
-      stGeometry.pCircle[k+1].vCntr[0]   = -Endpoint.D;
-      stGeometry.pCircle[k+1].vCntr[1]   = ThisChopper.Centre.Y;
-      stGeometry.pCircle[k+1].vCntr[2]   = ThisChopper.Centre.Z;
-      stGeometry.pCircle[k+1].vNormal[0] = 1.0;
-      stGeometry.pCircle[k+1].vNormal[1] = 0.0;
-      stGeometry.pCircle[k+1].vNormal[2] = 0.0;
-
-      /* stGeometry.pLine[2*k].vPosBeg[0] = -Endpoint.D;
-      stGeometry.pLine[2*k].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosEnd[0] = -Endpoint.D;
-      stGeometry.pLine[2*k].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);  
-
-      stGeometry.pLine[2*k+1].vPosBeg[0] = -Endpoint.D;
-      stGeometry.pLine[2*k+1].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
-      stGeometry.pLine[2*k+1].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
-      stGeometry.pLine[2*k+1].vPosEnd[0] = -Endpoint.D;
-      stGeometry.pLine[2*k+1].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
-      stGeometry.pLine[2*k+1].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd); */
-    }
-    stGeometry.pDescr  = "disc chopper:white";
-    stGeometry.eModule = VT_CHOP_DISC;
-  }
-
-	/* free allocated memory */
-	free(ThisChopper.Window);
-}
-/* End OwnCleanup */
-
-
-/* RedAngle: reducing the angle to [0, 360] deg   
-                                or [-360,0] deg (dir = -1)
-*/
-double RedAngle(double angle, short dir)
-{
-	double red_angle;
-
-	red_angle = angle - floor(angle/360.0)*360.0;
-	if (dir==1)
-		red_angle -= 360.0;
-
-	return(red_angle);
-}
-
-/* ModPhase: reducing the phase from a full circle to a section of a circle,
-             i.e. from [-pi,pi] to [-pi/n, pi/n]
-   phi_in: intial angle        [rad]
-   nSect : number of sections
-*/
-double ModPhase(double phase, int nSect)
-{
-	double ph_mod, al, k;
-
-	al     = 2*M_PI/nSect;
-	k      = floor(phase/al + 0.5);
-	ph_mod = phase - k * al;
-
-	return ph_mod;
-}
-
-
-/* Read chopper file */
-/* ----------------- */
-void ReadChopperData() {
   short  k;
   int    iv;
   char   Buffer[CHAR_BUF_LENGTH];
@@ -520,18 +408,115 @@ void ReadChopperData() {
 
   fclose(ChopperFile);
 }
-/* chopper file read */
 
-
-unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
 {
-	/***********************************************************************************/
-	/*This subroutine accepts two structured variables containing information about the*/
-	/*chopper in question and a single neutron incident on the plain of the chopper.   */
-	/*It calculates the offset of the chopper at the time index of the incident neutron*/
-	/*and returns FALSE if the neutron is incident on a window.                        */
-	/***********************************************************************************/
+	long   nModuleNo;    /* number of the previous module (not needed) */
+	short  dir=0,
+         k;            /* index of the chopper window  */
+	double time,         /* time of flight*/
+	       phi_wnd,      /* orientation of the window after TOF 'time' or at t=0 [deg] */
+         phi_red;      /* phi_ges reduced to a value in [0,360[ */
+	double dTimeMeas,    /* measuring time     (from simulation.inf, not needed here) */
+	       dLmbdWanted,  /* desired wavelength (from simulation.inf)                  */
+	       dFreq,        /* source frequency   (from simulation.inf, not needed here) */
+	       dLength,      /* length of the instrument until chopper module */
+	       dRotZ, dRotY; /* orientation of the output of the previous component (not needed) */
+	VectorType EndPos;   /* position of the output of the previous component (not needed) */
 
+                       // Visualisation of the slit geometry
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    ReadSimData  (&dTimeMeas, &dLmbdWanted, &dFreq);
+	  if (dLmbdWanted > 0.0)
+	  {	nModuleNo=ReadInstrData(0, EndPos, &dLength, &dRotZ, &dRotY, sInstrInfIn);
+		  time = (dLength-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(dLmbdWanted)); /* velocity in m/s instead of cm/ms */
+    }
+    else
+    { time = 0.0;
+    }
+	  dir  = (short) (ThisChopper.Frequency < 0.0 ? -1 : 1);
+
+    stGeometry.pCircle  = (VtCircle*) calloc(ThisChopper.NumberOfWindows + 1, sizeof(VtCircle));
+    stGeometry.nCircles = ThisChopper.NumberOfWindows + 1; 
+    // stGeometry.pLine    = (VtLine*) calloc(2*ThisChopper.NumberOfWindows, sizeof(VtLine));
+    // stGeometry.nLines   = 2*ThisChopper.NumberOfWindows; 
+
+    stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D/CmprFact;
+    stGeometry.pCircle[0].vCntr[1]   = ThisChopper.Centre.Y;
+    stGeometry.pCircle[0].vCntr[2]   = ThisChopper.Centre.Z;
+    stGeometry.pCircle[0].Radius     = ThisChopper.Window[0].Bottom;
+    stGeometry.pCircle[0].AngleBeg   =   0.01;
+    stGeometry.pCircle[0].AngleEnd   = 359.99;
+    stGeometry.pCircle[0].vNormal[0] =   1.0;
+    stGeometry.pCircle[0].vNormal[1] =   0.0;
+    stGeometry.pCircle[0].vNormal[2] =   0.0;
+
+    for (k=0; k < ThisChopper.NumberOfWindows; k++)
+    { 
+      phi_wnd = 180.0/M_PI * (ThisChopper.Window[k].Angle + ChopperInitialOffset + ThisChopper.Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
+      phi_red = RedAngle(phi_wnd, dir);
+
+      stGeometry.pCircle[k+1].Radius     = ThisChopper.Radius;
+      stGeometry.pCircle[k+1].AngleBeg   = phi_red + 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
+      stGeometry.pCircle[k+1].AngleEnd   = phi_red - 0.5*180.0/M_PI*ThisChopper.Window[k].Opening;
+      stGeometry.pCircle[k+1].vCntr[0]   = -Endpoint.D/CmprFact;
+      stGeometry.pCircle[k+1].vCntr[1]   = ThisChopper.Centre.Y;
+      stGeometry.pCircle[k+1].vCntr[2]   = ThisChopper.Centre.Z;
+      stGeometry.pCircle[k+1].vNormal[0] = 1.0;
+      stGeometry.pCircle[k+1].vNormal[1] = 0.0;
+      stGeometry.pCircle[k+1].vNormal[2] = 0.0;
+
+      /* stGeometry.pLine[2*k].vPosBeg[0] = -Endpoint.D;
+      stGeometry.pLine[2*k].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      stGeometry.pLine[2*k].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      stGeometry.pLine[2*k].vPosEnd[0] = -Endpoint.D;
+      stGeometry.pLine[2*k].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
+      stGeometry.pLine[2*k].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);  
+
+      stGeometry.pLine[2*k+1].vPosBeg[0] = -Endpoint.D;
+      stGeometry.pLine[2*k+1].vPosBeg[1] = ThisChopper.Centre.Y - ThisChopper.Window[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosBeg[2] = ThisChopper.Centre.Z + ThisChopper.Window[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosEnd[0] = -Endpoint.D;
+      stGeometry.pLine[2*k+1].vPosEnd[1] = ThisChopper.Centre.Y - ThisChopper.Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
+      stGeometry.pLine[2*k+1].vPosEnd[2] = ThisChopper.Centre.Z + ThisChopper.Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd); */
+    }
+  }
+}
+
+/*******************************************************/
+/** Cleanup of this module                            **/
+/*******************************************************/
+void OwnCleanup()
+{
+	/* print error that might have occured many times */
+	PrintMessage(CHOP_PASSED_OUTSIDE,  "", ON);
+	PrintMessage(ALL_BEHIND_COMPONENT, "", ON);
+
+	fprintf(LogFilePtr," \n");
+
+	/* free allocated memory */
+	free(ThisChopper.Window);
+
+  return;
+}
+
+
+/***********************************************************************************/
+/*This subroutine accepts two structured variables containing information about the*/
+/*chopper in question and a single neutron incident on the plain of the chopper.   */
+/*It calculates the offset of the chopper at the time index of the incident neutron*/
+/*and returns FALSE if the neutron is incident on a window.                        */
+/***********************************************************************************/
+unsigned short BlockedByChopper(Chopper ThisChop, Neutron* ThisNeutron)
+{
 	double ChopperOffset=0.0, ChopperOffsetRed=0.0, OriginNeutronDistance, Time;
 	double Left, Right, WindowAngle=0.0, 
 	       NeutronAngle,   // angle from chopper axle to point of striking
@@ -550,7 +535,7 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 	if (bSetColour)
 		ThisNeutron->Color = 0;
 
-	for(k=0;k<ThisChopper.NumberOfWindows;k++)
+	for(k=0;k<ThisChop.NumberOfWindows;k++)
 	{
 		RightTurns=0; LeftTurns=0; /*modified*/
 
@@ -559,24 +544,24 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		/* the chopper window,i.e. the distance to the center of the chopper is calculated  */
 		/* and then compared to the distance bottom of chopper window <-> center of chopper */
 		/***********************************************************************************/
-		OriginNeutronDistance = sqrt((ThisNeutron->Position[0]-ThisChopper.Centre.X)
-											 *(ThisNeutron->Position[0]-ThisChopper.Centre.X)
-											 +(ThisNeutron->Position[1]-ThisChopper.Centre.Y)
-											 *(ThisNeutron->Position[1]-ThisChopper.Centre.Y)
-											 +(ThisNeutron->Position[2]-ThisChopper.Centre.Z)
-											 *(ThisNeutron->Position[2]-ThisChopper.Centre.Z));
-		if(OriginNeutronDistance < ThisChopper.Window[k].Bottom) continue;
+		OriginNeutronDistance = sqrt((ThisNeutron->Position[0]-ThisChop.Centre.X)
+											 *(ThisNeutron->Position[0]-ThisChop.Centre.X)
+											 +(ThisNeutron->Position[1]-ThisChop.Centre.Y)
+											 *(ThisNeutron->Position[1]-ThisChop.Centre.Y)
+											 +(ThisNeutron->Position[2]-ThisChop.Centre.Z)
+											 *(ThisNeutron->Position[2]-ThisChop.Centre.Z));
+		if(OriginNeutronDistance < ThisChop.Window[k].Bottom) continue;
 
 		/* second check: if neutron does not hit chopper at all*/
-		if(OriginNeutronDistance > ThisChopper.Radius)
+		if(OriginNeutronDistance > ThisChop.Radius)
 			goto passed_outside;
 
 		/***********************************************************************************/
 		/* The next statements calculate the angle between the chopper axle and the        */
 		/* neutron and their distance.                                                     */
 		/***********************************************************************************/
-		dZ = ThisNeutron->Position[2] - ThisChopper.Centre.Z;
-		dY = ThisNeutron->Position[1] - ThisChopper.Centre.Y;
+		dZ = ThisNeutron->Position[2] - ThisChop.Centre.Z;
+		dY = ThisNeutron->Position[1] - ThisChop.Centre.Y;
 		NeutronAngle = atan2(dY,dZ);
 		NeutronDist  = sqrt(dY*dY + dZ*dZ);
 
@@ -584,17 +569,17 @@ unsigned short BlockedByChopper(Chopper ThisChopper, Neutron* ThisNeutron)
 		/* The offset of this window at the time the neutron strikes is calculated.        */
 		/***********************************************************************************/
 		Time = ThisNeutron->Time/1000.0;  		/*msec. to sec. */
-		ChopperOffset = Time * ThisChopper.Frequency  + ChopperInitialOffset;
+		ChopperOffset = Time * ThisChop.Frequency  + ChopperInitialOffset;
 
-		WindowAngle = ChopperOffset + ThisChopper.Window[k].Angle;
-		Left        = ChopperOffset + ThisChopper.Window[k].Angle - ThisChopper.Window[k].Opening/2.0; 
-		Right       = ChopperOffset + ThisChopper.Window[k].Angle + ThisChopper.Window[k].Opening/2.0;
+		WindowAngle = ChopperOffset + ThisChop.Window[k].Angle;
+		Left        = ChopperOffset + ThisChop.Window[k].Angle - ThisChop.Window[k].Opening/2.0; 
+		Right       = ChopperOffset + ThisChop.Window[k].Angle + ThisChop.Window[k].Opening/2.0;
 
 		/* Correction of window width by deviation */
-		if (ThisChopper.Window[k].Left != 0.0)	
-			Left  -= ThisChopper.Window[k].Left  - asin(ThisChopper.Window[k].Bottom/NeutronDist*sin(ThisChopper.Window[k].Left));
-		if (ThisChopper.Window[k].Right != 0.0)	
-			Right += ThisChopper.Window[k].Right - asin(ThisChopper.Window[k].Bottom/NeutronDist*sin(ThisChopper.Window[k].Right));
+		if (ThisChop.Window[k].Left != 0.0)	
+			Left  -= ThisChop.Window[k].Left  - asin(ThisChop.Window[k].Bottom/NeutronDist*sin(ThisChop.Window[k].Left));
+		if (ThisChop.Window[k].Right != 0.0)	
+			Right += ThisChop.Window[k].Right - asin(ThisChop.Window[k].Bottom/NeutronDist*sin(ThisChop.Window[k].Right));
 
 		/***********************************************************************************/
 		/* The angles calculated above are now renormalized to lie between +PI and -PI     */
@@ -656,10 +641,41 @@ passed:
 	/* set time (close to) zero, if demanded */
 	if (bZeroTime)
 	{
-		// ChopperOffsetRed  = ModPhase(ChopperOffset+ThisChopper.Window[0].Angle, NumEquWnds) ;
+		// ChopperOffsetRed  = ModPhase(ChopperOffset+ThisChop.Window[0].Angle, NumEquWnds) ;
 		ChopperOffsetRed  = ModPhase(ChopperOffset, NumEquWnds) ;
-		ThisNeutron->Time = 1000.0 * ChopperOffsetRed / ThisChopper.Frequency;
+		ThisNeutron->Time = 1000.0 * ChopperOffsetRed / ThisChop.Frequency;
 	}
 	return FALSE;
+}
+
+
+/* RedAngle: reducing the angle to [0, 360] deg   
+                                or [-360,0] deg (dir = -1)
+*/
+double RedAngle(double angle, short dir)
+{
+	double red_angle;
+
+	red_angle = angle - floor(angle/360.0)*360.0;
+	if (dir==1)
+		red_angle -= 360.0;
+
+	return(red_angle);
+}
+
+/* ModPhase: reducing the phase from a full circle to a section of a circle,
+             i.e. from [-pi,pi] to [-pi/n, pi/n]
+   phi_in: intial angle        [rad]
+   nSect : number of sections
+*/
+double ModPhase(double phase, int nSect)
+{
+	double ph_mod, al, k;
+
+	al     = 2*M_PI/nSect;
+	k      = floor(phase/al + 0.5);
+	ph_mod = phase - k * al;
+
+	return ph_mod;
 }
 

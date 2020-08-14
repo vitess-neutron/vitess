@@ -26,70 +26,76 @@ extern "C" {
 
 
 
-class Mon2D {
-
+class Mon2D 
+{
  public:
+  McCompID eModule;   // defines type of module
 
-  double** dataArray; // here the monitor data is stored
+  // input parameters
+  string fMonitorFilename; // -O  name of the output file
+
+  int    nBinsX;           // -x  number of x bins
+  int    nBinsY;           // -y  number of y bins
+  int    xParam;           // -X  parameter to be shown on the x axis
+  int    yParam;           // -Y  parameter to be shown on the y axis
+
+  double xMin;             // -w  minimum x value
+  double xMax;             // -w  maximum x value
+  double yMin;             // -h  mininum y value
+  double yMax;             // -H  maximum y value
+
+  int    pWeight;          // -p  use eigher actual probability of trajectories or 1 for all trajectories
+  int    exclCounts;       // -e  do not forward neutrons to the pipe that do not contribute to the monitor data
+  int    format;           // -F  format for the output file, '0' for matrix, '1' xyz presentation (3 columns)
+
+  // optional input parameters (filters and polarisation analysis)
+  double lambdaMin;        // -l  minimum wavelength, filter for the monitor
+  double lambdaMax;        // -L  maximum wavelength, filter for the monitor
+  int    filterParam1;     // -I  filter parameter 1
+  int    filterParam2;     // -J  filter parameter 2
+  int    filterComb;       // -C  filter 1 and 2 combined with AND or OR
+  double filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
+  double filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
+  double filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
+  double filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
+  
+  int    analysePol;       // -P  switched on if polarisation analysis desired
+  MathVector* 
+    polAnalysisVector;     // -r -s -t  polarisation analysis vector
+
+  // input parameters that are not (yet) implemented
+//  int normalise; // normaisation of the histogram by the size of x bins, input parameter
+//  int colour;     // if switched on, display only neutrons of specific colour
+
+  // Variables determined from input parameters or trajectory data
+  FILE* fMonitor;          // pointer to output file
+
+  double xBinSize;         // size of x bins 
+  double yBinSize;         // size of y bons
+
+  string weightTag[2];     // text: parameter
+  string formatTag[2];     // text: format
+
+  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
+
+  // arrays for data storage
+  double** dataArray;           // here the monitor data is stored
   double** dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
   double** dataArrayError;
   int** dataArrayCounts;
 
-  double xMin;  // minimum x value, input parameter
-  double xMax;  // maximum x value, input parameter
-  double yMin;  // mininum y value, input parameter
-  double yMax;  // maximum y value, input parameter
+//  Neutron* currentNeutron;
 
-  int nBinsX;  // number of x bins, input parameter
-  int nBinsY;  // number of y bins, input parameter
-
-  double xBinSize; // size of x bins 
-  double yBinSize; // size of y bons
-
-  int xParam;  // parameter to be shown on the x axis, input parameter
-  int yParam;  // parameter to be shown on the y axis, input parameter
-
-  FILE* fMonitor; // pointer to output file
-  string fMonitorFilename;  // name of the output file, input parameter
-
-  string weightTag[2];
-  string formatTag[2];
-
-  double lambdaMin;  // minimum wavelength, filter for the monitor, optional input parameter
-  double lambdaMax;  // maximum wavelength, filter for the monitor, optional input parameter
-
-  double filterVarMin1; // minimum value of parameter 1, additional filter for the monitor, optional input parameter
-  double filterVarMin2; // maximum value of parameter 2, additional filter for the monitor, optional input parameter
-  double filterVarMax1; // minimum value of parameter 1, additional filter for the monitor, optional input parameter
-  double filterVarMax2; // maximum value of parameter 2, additional filter for the monitor, optional input parameter
-
-  int filterParam1;      // filter parameter 1, optional input parameter
-  int filterParam2;      // filter parameter 2, optional input parameter
-  int filterComb; //filter 1 and 2 combined with AND or OR
-  
-  int analysePol;  // switched on if polarisation analysis desired, optional input parameter
-
-  MathVector* polAnalysisVector;   // polarisation analysis vector
-  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
-
-  int format; // format for the output file, '0' for matrix, '1' for gnuplot readable xyz presentation, input parameter
-  int normalise; // normaisation of the histogram by the size of x bins, input parameter
-
-
-  int colour; // if switched on, display only neutrons of specific colour
-  int pWeight; // use eigher actual probability of trajectories or 1 for all trajectories
-  int exclCounts; // do not forward neutrons to the pipe that do not contribute to the monitor data
-
-  Neutron* currentNeutron;
-
+  // constructor and destructor
   Mon2D();
   virtual ~Mon2D() {};
 
-  void Init(int argc, char* argv[]); // Read in the monitor parameters from the command line
+  // operations
+  void   OwnInit(int argc, char* argv[]);        // Read in the monitor parameters from the command line
   double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
-  int FillMonitor(Neutron* n); // Fill monitor, if the neutron fulfills all constraints
-  void WriteOut(); // Write output file
-
+  int    FillMonitor(Neutron* n);                // Fill monitor, if the neutron fulfills all constraints
+  void   WriteOut();                             // Write output file
+  void   FreeMemory();                           // Free allocated memory
 };
 
 

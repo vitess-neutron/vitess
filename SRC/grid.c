@@ -17,7 +17,7 @@
 /*			                    	    Add reducing of grid sizes for convergent gridset system    */
 /* 1.1   Oct 2004  S. Manoshin	  Add and correct the deviation of grid system	              */
 /*			                    	    DistanceDev, ShiftHorDev, ShiftVerDev, Pos and Size  hole   */
-/* 1.2   Aug 2019  K. Lieutenant  tidy up and visualiation                                    */
+/* 1.2   Aug 2019  K. Lieutenant  tidy up and visualization                                   */
 /**********************************************************************************************/
 
 #include "init.h"
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
   MsgInit();
-  EvalInput  ();
+  EvalInput();
   NumberOfHoles=ReadGridFile();
 
   bVisInstalled = TRUE;
@@ -541,7 +541,7 @@ void  EvalInput()
     // Read transmission file for grid element
     if (sTransFileName != NULL)
     {
-      trans_file = fopen(sTransFileName,"r");
+      trans_file = OpenInputFile(sTransFileName, FALSE, "r");
       if (trans_file != NULL)  
       { 
         i=0;
@@ -589,7 +589,8 @@ short ReadGridFile()
   /* Input data from the file describing the grid system */
   if (sCollFileName !=NULL)
   {
-    if( (coll_file = fopen(sCollFileName,"r"))==NULL)
+    coll_file = OpenInputFile(sCollFileName, FALSE, "r");
+    if (coll_file==NULL)
     {
       fprintf(LogFilePtr,"File %s describing the grid arrangement could not be opened\n", sCollFileName);
       exit(-1);

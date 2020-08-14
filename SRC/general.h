@@ -18,12 +18,14 @@
 
 #ifdef _MSC_VER
 # include <float.h>
-#define VT_WINDOWS
-# define M_PI            3.14159265358979323846  /* pi */
-# define M_PI_2          1.57079632679489661923  /* pi/2 */
+# define VT_WINDOWS
+# define M_PI     3.14159265358979323846  /* pi */
+# define M_PI_2   1.57079632679489661923  /* pi/2 */
 # define ISNAN(x) _isnan(x)
+# define cSlash   '\\'
 #else
 # define ISNAN(x) isnan(x)
+# define cSlash   '/'
 #endif
 
 #ifdef  _MSC_VER
@@ -45,7 +47,7 @@
 #define H_P         6.6260696E-34
 #define L_2_E       81805.048
 #define E_C         1.6021773E-19
-#define THETA_NI    0.099138
+#define THETA_NI    0.09894   // the old value 0.099138° corresponds to QC_NI=0.021743 1/Ang
 #define QC_NI       0.0217
 #define NEUTRON_ID  2112
 
@@ -80,6 +82,8 @@
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
 #define ROFQ_MAX            512
+#define PATH_LEN            128  // maximal length of path
+#define NAME_LEN            256  // maximal length of path + filename
 
 #define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
 
@@ -456,6 +460,8 @@ double InterpolM     (const double m,             const double* aM,   const doub
 double InterpolQ     (const double Q,             const double* aQ,   const double* aR, const int nVals);
 double ReflInterpol  (const double Lambda,        const double Angle, const double* Rdata, long nData);
 
+/* Functions using VectorType */
+void   InitVector    (VectorType Vector);
 void   CopyVector    (const VectorType Src, VectorType Dest);
 long   MAXV          (const VectorType Vector);
 double LengthVector  (const VectorType Vector);
@@ -468,15 +474,22 @@ void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
 
+void   InitPlane       (Plane* pPlane);
+
+/* Basic matrix operation */
+void   Init3x3Matrix     (double Matrix   [3][3]);
 void   RotVector         (double RotMatrix[3][3], VectorType Vector);
 void   RotBackVector     (double RotMatrix[3][3], VectorType Vector);
 void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const double rotz);
 void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
 void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
-FILE * fileOpen(const char *name, const char *mode);
+FILE*  fileOpen          (const char* sName, const char* sMode);
+FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sContent);
+
 void   Error  (const char *text);
 void   Warning(const char *text);
+void   Note   (const char *text);
 void   Abort  ();
 void   Wait   (float WaitTime);
 
@@ -493,6 +506,7 @@ void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
 void  ChangeSlash(char* pStr);
+void  AddSlash   (char* pStr);
 
 #endif
 

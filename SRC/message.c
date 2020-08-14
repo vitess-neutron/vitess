@@ -151,10 +151,12 @@ static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
   *pText = 0;
   *pType = '-';
 
-  pFile = fopen(FullInstallName("ErrorTable.dat","FILES/"), "r");
-  if (pFile == NULL) return FALSE;
+  pFile = OpenPackInpFile("ErrorTable.dat","FILES/", FALSE);
+  if (pFile == NULL) 
+    return FALSE;
 
-  do {	
+  do 
+  {	
     if (ReadLine(pFile, sLine, MSG_LEN))
       sscanf(sLine, "%3d%c%c", &eTabID, &c, pType);
     else

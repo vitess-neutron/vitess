@@ -342,11 +342,11 @@ double GetModWidth_ESSbutterfly2016(const double theta, double const ModTemp)
 double GetShift_ESSbutterfly2016(const double theta)
 { 
  //          Beamport  11   10    9    8    7    6    5    4     3      2      1      
-  double Shift[11] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.64, -0.48, -0.21},
+  double aShift[11] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.64, -0.48, -0.21},
          shift=0.0;                         // eff. shift of the cross over point between cold and thermal moderator
   int    iTheta = Round(theta / 6.0); 
 
-  shift = Shift[iTheta];
+  shift = aShift[iTheta];
   shift /= cos(theta*M_PI/180.0);
 
   return shift;
@@ -429,9 +429,11 @@ void LoadHorDistrib(const char* sID)
     Y1min = Shift - Width1; Y1max = Shift; 
     Y2min = Shift;          Y2max = Shift + Width2;
 
-    /* opening distribution file */
+    /* opening distribution file, either from the input directory or from the installation directory */
     sprintf(sFileName, "ESS2016_%s.dat", sID);
-    pDisFile = fopen(FullParName(sFileName),"rt");
+    pDisFile = OpenInputFile(sFileName, FALSE, "rt");
+    if (pDisFile==NULL)
+      pDisFile = OpenPackInpFile(sFileName, "FILES/moderators/ESS/", FALSE);
     if (pDisFile!=NULL) 
     {
       /* reading number of lines, allocating memory and reading distribution files */
@@ -491,14 +493,13 @@ void LoadHorDistrib(const char* sID)
       */
     } 
     else 
-    { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength distribution\nPlease copy (from ...FILES/moderators) to parameter directory\n", 
+    { fprintf(LogFilePtr,"ERROR: Can't open file '%s' to read horizontal intensity distribution, neither in the input directory nor in 'InstallDir/FILES/moderators/ESS'\n", 
                          sFileName);
       exit (-1);
     }
   } 
   else 
   { Error("You have to give a valid beam port!\n");
-    exit(-1);
   }
 }
 

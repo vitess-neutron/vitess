@@ -1,6 +1,6 @@
 
 /********************************************************************************************/
-/*  VITESS module 'virtual collimator'                                                      */
+/*  VITESS module 'collimator_virtual'                                                      */
 /*                                                                                          */
 /* This module simulates a filter acting on neutrons like a radial or Soller collimator     */
 /*   depending on the parameter 'angular collimation', it does not propagate the neutrons   */
@@ -50,7 +50,7 @@ double  PeakTransm=1.0,      //       maximal probability for passing through th
 	      AngSpacing=0.0,      // [deg] angular distance betwee
         AngleMin  =0.0;      // [deg] minimum of angle range 
 
-double  AngleMax  =0.0;      // [deg] minimum of angle range 
+double  AngleMax  =0.0;      // [deg] maximum of angle range 
 
 
 /******************************/
@@ -69,14 +69,11 @@ int main(int argc, char *argv[])
 
 	// Reading of input data and initilisation
   // ---------------------------------------
-	bVisInstalled = TRUE;
-	bBlowupInstal = FALSE;
-	
   Init(argc, argv, _eModule);
   if (bAngColl)
 	  print_module_name("Virtual angular Collimator 1.2");
   else
-	  print_module_name("Virutal Soller Collimator 1.2");
+	  print_module_name("Virtual Soller Collimator 1.2");
   OwnInit(argc,argv);
 
   // array of angles of maximal transition:
@@ -86,17 +83,23 @@ int main(int argc, char *argv[])
   for (j=0; j < nAngles; j++) 
     pAngle[j]=0.0;
 
-	if (bAngColl==TRUE)
+	if (bAngColl==TRUE && nAngles > 1) // case radial collimator	
 	{ 
-    // case radial collimator	
     pAngle[0] = AngleMin;
 		for(j=1; j < nAngles; j++)
 			pAngle[j] = pAngle[j-1] + 2.0*HorCollDiv + AngSpacing;
+  
+    AngleMax = pAngle[nAngles - 1];
+  	bVisInstalled = TRUE;
 	}
-	else
-	{	// case linear collimator in beamline direction (angle=0.0)
-    nAngles = 1; 
+	else // case linear collimator in beamline direction (angle=0.0)
+	{	
+    nAngles  = 1; 
+    AngleMax = AngleMin;
+  	bVisInstalled = FALSE;
 	}
+
+  bLengthCmpr = FALSE;
 
 	DECLARE_ABORT;
 
@@ -198,6 +201,7 @@ void OwnInit   (int argc, char *argv[])
 			}
 		}
 	}
+  return;
 }
 
 
@@ -214,7 +218,8 @@ void SetGeometry(char* sColor)
            Xi =0.0,                // [deg]  direction to the center of the collimator
            distance=STD_COLL_DIST; // [cm]   virtual distance of the radial collimator for visualization 
 
-    sprintf(stGeometry.pDescr, "%s:%s", sModuleName, sColor);
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
     if (AngleMax > AngleMin)

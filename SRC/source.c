@@ -48,7 +48,8 @@
 /* 1.22  Nov  2013  K. Lieutenant  pancake moderator                                         */
 /* 1.23  Mar  2015  K. Lieutenant  correction of solid angle for large declination angles    */
 /* 1.24  May  2015  Lieutenant/Zendler  new ESS moderator data (Butterfly)                   */
-/* 1.25  Dec  2017  Lieutenant     new ESS Butterfly moderator, performance factor           */
+/* 1.25  Dec  2017  K. Lieutenant  new ESS Butterfly moderator, performance factor           */
+/* 1.26  Jan  2020  K. Lieutenant  tidy up, correction reading ISIS moderator data from file */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -63,6 +64,9 @@
 #include "message.h"
 
 
+/******************************/
+/** Structures               **/
+/******************************/
 typedef enum
 {	VT_DIVERGENCE = 0,
 	VT_REAL_WND   = 1,
@@ -70,79 +74,104 @@ typedef enum
 }
 VtDirect;
 
-/* global variables */
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+void  OwnInit(int argc, char **argv);                                                  // Reads input parameters and sets global variables
+void  OwnCleanup();                                                                    // Does module specific cleanup
+short ReadModData(char* sFileName);                                                    // Reads moderator parameters from file
+void  SetGeometry(char* sColor);                                                       // Fills the structure stGeometry for visualization 
+void  LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL); // loads wavelength distribution from file or sets wavelength distribution function
+void  LoadTimeDistribution      (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT); // loads time distribution for the pulse from file or sets time distribution function 
+void  LoadWavelengthTimeDistrib (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL); // loads 2D wavelength-time distribution from file
+void  LoadTraceFile();                                                                 // loads list of trajectories that shall be traced
+char  GetTraceState(TotalID stID);                                                     // looks if trajectory shall be traced
+int   PosBehindMod(const int i, const double Y, const double Z);                       // Checks if position of actual moderator is behind another moderator
+
+// ISIS specific funciton 
+int      binSearch(int, double*, double);
+double** matrix(const int,const int);
+double   calcFraction(double, double, double, double);
+
+
+/******************************/
+/** Global Variables         **/
+/******************************/
 McCompID _eModule=MCN_SOURCE;
 
-TotalID*  g_pTrace=NULL;       /* table of trajectory IDs for tracing             */
-long      g_nLinesTr=0;        /* Number of lines in the trace file               */
-char*     pTraceFileName=NULL;
-short     eTraceMode=0;        /* mode 0: no tracing 
-                                  mode 1: write trace files for traj. of interest
-                                  mode 2: simulation only with traj. of interest  */
-char*     pModFileName=NULL;
-char*     pBeamline=NULL;      // name of the beamline 
+// Input parameters
+// -----------------
+// simulation parameters
+double    NumberOfNeutrons=0;   // -n    1.0e6  [-]   number of neutron trajectories (events) 
+TrajParam stTraj  [NUM_MOD];    // -m -M       [Ang]  min. and max. of the wavelength range 
+                                // -t -T       [ms]   min. and max. of the time frame to start neutrons
+                                // -y -z       [deg]  max. horizontal and vertical divergence (half of angular spread) 
+VtDirect  eDirDet=VT_VIRT_WND;  // -d   WINDOW  [-]   enum: mode to determine neutron directions: VT_DIVERGENCE  VT_VIRT_WND  VT_REAL_WND 
+double    WindowDist  =  0.0,   // -D     0.0  [cm]   distance moderator - target window 
+          WindowWidth = 10.0,   // -w    10.0  [cm]   width of the propagation window 
+          WindowHeight= 10.0;   // -h    10.0  [cm]   height of the propagation window 
+double    TofWndDist  =  0.0,   // -s     0.0  [cm]   distance moderator - position of time window (e.g. chopper)   
+          TofMinWnd   =-1.0e10, // -f    -1e10 [cm]   min and 
+          TofMaxWnd   = 1.0e10; // -F     1e10 [cm]   max TOF allowed in time window 
 
-short     iDataVsn=1,          /* version of the data base for the source characteristics */
-          nNumMod=0,           /* number of moderators in moderator system        */
-          imod=0,              /* index of moderators in moderator system         */
-          ColorByLmbd=FALSE;   // option: set color depending on wavelength
+double    dTimeMeas   =  0.0,   // -A     0.0   [s]   time of measurement in second
+          dLmbdWant   =  0.0;   // -W     0.0  [Ang]  desired wavelength           
 
-double    NumberOfNeutrons=0,
-          dTimeMeas   =  0.0,  /* time of measurement in seconds                  */
-          dLmbdWant   =  0.0,  /* desired wavelength                              */
+// polarisation and trace parameters
+double    PolVecX     =  0.0,   // -X     0.0  [cm]   x-component of the polarisation 
+          PolVecY     =  0.0,   // -Y     0.0  [cm]   y-component of the polarisation
+          PolVecZ     =  0.0,   // -V     0.0  [cm]   z-component of the polarisation
+          PolDegree   =  0.0;   // -P     0.0  [cm]   degree of polarization [%] 
 
-          PolVecX     =  0.0,  /* polarisation            */
-          PolVecY     =  0.0, 
-          PolVecZ     =  0.0, 
-          PolDegree   =  0.0,  /* degree of polarization [%] */
-          FracPolDir  =  0.0,  /* fraction of neutrons in polarization direction */
+char*     sTraceFileName=NULL;  // -r           [-]   name of the file containing the IDs for tracing
+short     eTraceMode=0;         /* -k           [-]   NO_TRACING     : no tracing 
+                                                      WRITE_TRC_FILES: write trace files for traj. of interest
+                                                      ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
+// source, moderator and beamline parameters
+Source    stSrc;                // -N -S        [-]   name and type of the source 
+                                // -R -L      [Hz/MW] pulse frequency and average source power
+                                // -p          [ms]   proton pulse length  
+short     iDataVsn=1;           // -v     1     [-]   version of the data base
 
-          Declination =  0.0,  /* declination between mod. surface normal and propagation window */
-          dDecCos,             /* cosinus and sinus of the declination of the moderator         */
-          dDecSin,             /* to the instrument direction                                   */
-          WindowDist  =  0.0,  /* distance moderator - (virtual) window                          */
-          WindowHeight= 10.0,  // width of the propagation window
-          WindowWidth = 10.0,  // height of the propagation window
-          TofWndDist  =  0.0,  // distance moderator - position of time window   
-          TofMinWnd  =-1.0e10, // min and 
-          TofMaxWnd  = 1.0e10; // max TOF allowed in time window 
+char*     sModFileName=NULL;    // -a           [-]   name of the file containing moderator parameter
+char*     pBeamline=NULL;       // -B           [-]   name of the beamline 
+double    Declination =  0.0;   // -i     0.0  [deg]  declination between moderator surface normal and propagation window 
 
-Plane     Endpoint,            // structure describing (virtual) window position
-          TofWnd;              // structure describing time window position
-VtDirect  eDirDet=VT_REAL_WND; /* enum 'modus to determine neutron flight direction' */
+// Parameters read from file
+// -------------------------
+Moderator stMod   [NUM_MOD];    // file               moderator characteristics read from file
 
-Source    stSrc;             /* source data               */
-Moderator stMod   [NUM_MOD]; /* moderator data            */
-TrajParam stTraj  [NUM_MOD]; /* trajectory data           */
-FctTable  stFluxT [NUM_MOD], /* data of time distr.       */
-          stFluxL [NUM_MOD], /* data of wavelength distr. */
-          stFluxLT[NUM_MOD]; /* data of wavelength & time distr. */
+// Variables determined from input parameters or trajectory data
+// -------------------------------------------------------------
+double    dDecCos,              //                    cosinus and sinus of the declination of the moderator
+          dDecSin;              //                    to the instrument direction 
+double    FracPolDir  =  0.0;   //                    fraction of neutrons in polarization direction 
+                                                      
+Plane     Endpoint,             //                    structure describing (virtual) window position
+          TofWnd;               //                    structure describing time window position
+                                                      
+FctTable  stFluxT [NUM_MOD],    //                    data of time distr.      
+          stFluxL [NUM_MOD],    //                    data of wavelength distr.
+          stFluxLT[NUM_MOD];    //                    data of wavelength & time distr.
+                                                      
+TotalID*  aTrace=NULL;          //                    array of trajectory IDs for tracing 
+long      nLinesTr=0;           //                    number of lines in the trace file   
+                                                      
+short     nNumMod=0,            //                    number of moderators in moderator system
+          imod=0,               //                    index of current moderators in moderator system 
+          ColorByLmbd=FALSE;    //                    option: set color depending on wavelength  (only for ESS Butterfly-1)
 
 
-/* local functions */
-void  OwnInit(int argc, char **argv);
-void  OwnCleanup();
-void  SetGeometry(char* sColor);
-
-void  LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL);
-void  LoadTimeDistribution      (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT);  
-void  LoadWavelengthTimeDistrib (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL);
-void  LoadTraceFile();
-char  GetTraceState(TotalID stID);
-short ReadModData(char* sFileName);
-int PosBehindMod(const int i, const double Y, const double Z);
-int binSearch(int, double*, double);
-double**matrix(const int,const int);
-double calcFraction(double, double, double, double);
-
-void OwnInit(int argc, char *argv[]);
-void adjustProgress(int spercent);
-
-// ISIS Functions
+/*******************************************************/
+/** ISIS code (structure, prototypes, functions       **/
+/*******************************************************/
 #include "source_isis.c"
 
-/*********************************************************************************************/
 
+/******************************/
+/** Main Program             **/
+/******************************/
 int main(int argc, char *argv[])
 {
    unsigned long i=0;
@@ -174,19 +203,22 @@ int main(int argc, char *argv[])
    // ISIS specific parameter
    double ISISflux=0.0;
 
-   /* Initialize */
-   bVisInstalled = TRUE;
-   
+   // Initialisation
+   // --------------
    Init(argc,argv, _eModule);
    PrintModuleName(_eModule, "1.26");
    OwnInit(argc, argv);
+
+   bVisInstalled = TRUE;
+   if (bVisInstr) 
+     bLengthCmpr = TRUE;
 
    CenterX   = 0.0; 
    CenterY   = 0.0;
    CenterZ   = 0.0; 
    SumProb   = 0.0;
    AveTimeOF = 0.0;
-   nNumMod   = ReadModData(pModFileName);
+   nNumMod   = ReadModData(sModFileName);
 
    /* load trace file */
    LoadTraceFile();
@@ -202,14 +234,18 @@ int main(int argc, char *argv[])
    /* simulation parameters and source characteristics */
    fprintf(LogFilePtr, "\n> Simulation of ");
    if (stSrc.eSrcType == CWS)
-   {  fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
+   {  
+      fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
    }
    else	
-   {  if (stSrc.eSrcType==SPSS)
-      {  fprintf(LogFilePtr, "short pulse spallation source %s <\n", stSrc.pSrcName);
+   {  
+      if (stSrc.eSrcType==SPSS)
+      {  
+         fprintf(LogFilePtr, "short pulse spallation source %s <\n", stSrc.pSrcName);
       }
       else
-      {  fprintf(LogFilePtr, "long pulse spallation source %s <\n", stSrc.pSrcName);
+      {  
+         fprintf(LogFilePtr, "long pulse spallation source %s <\n", stSrc.pSrcName);
          fprintf(LogFilePtr, "pulse length                 : %7.3f ms \n", 1000.*stSrc.dPulseLength);
       }
       fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.dPulseFreq);
@@ -230,7 +266,7 @@ int main(int argc, char *argv[])
         {
           // set up ISIS specific parameters and values
           FILE* IFptr;
-          IFptr = openFile(FullParName(stMod[imod].sLTFileName));
+          IFptr = openFile(stMod[imod].sLTFileName);
           ISISflux=LoadIsisDistrib(IFptr,stTraj->dLambdaMin,stTraj->dLambdaMax);
           fclose(IFptr);
           fprintf(LogFilePtr,"Isis moderator - target station %d \n", stMod[imod].eIsisTS);
@@ -448,24 +484,30 @@ int main(int argc, char *argv[])
 
    fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
                       PolDegree, PolVecX, PolVecY, PolVecZ);
-   if (pTraceFileName!=NULL)
-      fprintf(LogFilePtr, "trace file used              : %s\n", pTraceFileName);
+   if (sTraceFileName!=NULL)
+      fprintf(LogFilePtr, "trace file used              : %s\n", sTraceFileName);
 
    /* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
    FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
+
+   /* General simulation settings */
+   if(keygrav == 1)
+      fprintf(LogFilePtr,"\nGravity is enabled \n");
+   else
+      fprintf(LogFilePtr,"\nGravity is disabled \n");
+   fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
+   // fprintf(LogFilePtr,"random seed                  : %ld \n",  idum);
 
    dDecCos = cos(Declination*M_PI/180.0);
    dDecSin = sin(Declination*M_PI/180.0);
 
    if (NThreads > 0)
      setDetachedWrite();
-
-   /****************************************************************************************/
-   /*   Generate neutron trajectories                                                      */
-   /****************************************************************************************/
-
+ 
    DECLARE_ABORT;
 
+   //   Generate neutron trajectories
+   // -------------------------------
    for (No=BufferIndex=TransmittedNeutrons=0; No<NumberOfNeutrons; No++) 
    {
       double prob;
@@ -474,7 +516,8 @@ int main(int argc, char *argv[])
       CHECK;
 
       // provide data for progress meter
-      if ((i & 0xff) == 0) {
+      if ((i & 0xff) == 0) 
+      {
         adjustProgress((int)(100.0 * No / NumberOfNeutrons));
       }
 
@@ -487,10 +530,12 @@ int main(int argc, char *argv[])
             ig1++;
          } 
          else
-            ig2++;
+         {  ig2++;
+         }
       } 
       else
-         i++;
+      {  i++;
+      }
 
       Input.ID.IDGrp[0] = ig1;
       Input.ID.IDGrp[1] = ig2;
@@ -512,12 +557,12 @@ int main(int argc, char *argv[])
          double diam, halfdiam;
          diam = sM->dDiameter;
          halfdiam = diam / 2.0;
-         do {
+         do 
+         {
             Y0                = sM->dCntrY + halfdiam - diam*Vran();
             Input.Position[2] = sM->dCntrZ + halfdiam - diam*Vran();
          }	/* repeat if starting point is out of circle */
          while (sq(Y0 - sM->dCntrY) + sq(Input.Position[2] - sM->dCntrZ) > sq(halfdiam)) ; 
-
       } 
       else 
       {
@@ -538,7 +583,6 @@ int main(int argc, char *argv[])
          if (im < 0) continue; 
       }
 
-
       /* Declination */
 	    /* for ESS butterfly 2015: do this after prob is calculated*/
 	    if(stSrc.nSource!=ESS || iDataVsn != 5)
@@ -552,7 +596,9 @@ int main(int argc, char *argv[])
 
       /* MC choice of wavelength and starting time */
       if (sM->eIsisTS > 0)
+      {
         ISISgetpoint(&Input.Time, &Input.Wavelength);
+      }
       else 
       {
         Input.Wavelength = stTraj[imod].dLambdaMin  + (stTraj[imod].dLambdaMax  - stTraj[imod].dLambdaMin)  * Vran();
@@ -704,12 +750,12 @@ int main(int argc, char *argv[])
 
       if (eDirDet!=VT_VIRT_WND)
       {  if (eDirDet==VT_REAL_WND && (fabs(Input.Position[1]) > WindowWidth/2.0 || fabs(Input.Position[2]) > WindowHeight/2.0) )
-	     {  WriteIAP(&Input, VT_OUT_OF_WND);
-	        continue;
-	     }
-	     else
-	     {  WriteIAP(&Input, VT_PASSED);
-	     }
+	       {  WriteIAP(&Input, VT_OUT_OF_WND);
+	          continue;
+	       }
+	       else
+	       {  WriteIAP(&Input, VT_PASSED);
+	       }
 	  }
       Input.Position[0]=0.0;
 
@@ -717,13 +763,13 @@ int main(int argc, char *argv[])
          WriteNeutron(&Input);
    }  // end loop over trajectories
 
-   my_exit:
+   // Finish: write log, geometry and instrument file, free memory
+   // ------------------------------------------------------------
+  my_exit:
    if (SumProb != 0.0) 
    {
-      CenterX   = CenterX/SumProb; 
-      CenterY   = CenterY/SumProb;
-      CenterZ   = CenterZ/SumProb;
-      AveTimeOF = AveTimeOF/SumProb; 
+      CenterX /= SumProb;  CenterY   /= SumProb;
+      CenterZ /= SumProb;  AveTimeOF /= SumProb; 
       fprintf(LogFilePtr,"Center of beam at window     :(%7.3f  %7.3f  %7.3f) cm \n", CenterX, CenterY, CenterZ);
       fprintf(LogFilePtr,"Average TOF                  : %7.3f ms \n", AveTimeOF);
    }
@@ -732,28 +778,24 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr,"\nNo neutrons on the exit of this module \n");
    }	
 
-
-   /* General simulation settings */
-   if(keygrav == 1)
-      fprintf(LogFilePtr,"\nGravity is enabled \n");
-   else
-      fprintf(LogFilePtr,"\nGravity is disabled \n");
-   fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
-   // fprintf(LogFilePtr,"random seed                  : %ld \n",  idum);
    fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f\n", NumberOfNeutrons);
 
+  /* write geometry file */
+   SetGeometry("yellow");
 
-  /* Do the general cleanup */
-  SetGeometry("yellow");
-  OwnCleanup();
-  Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
+   /* Do module specific cleanups */
+   OwnCleanup();
 
-  return(0);
+   /* Do the general cleanup */
+   Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);
+
+   return(0);
 }
 
 
-/* own init of the source module */
-/* ----------------------------- */
+/*******************************************************/
+/** Reads input parameters and sets global parameters **/
+/*******************************************************/
 void OwnInit(int argc, char **argv)
 {
   int  i,j;
@@ -776,7 +818,7 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'r':
-            pTraceFileName=arg;  
+            sTraceFileName=arg;  
             break;
           case 'k':
             eTraceMode = (short) atol(arg); 
@@ -794,7 +836,7 @@ void OwnInit(int argc, char **argv)
             dTimeMeas = (double) atof(arg); /* [s] */
             break;
           case 'W':
-            dLmbdWant = (double) atof(arg); /* [s] */
+            dLmbdWant = (double) atof(arg); /* [Ang] */
             break;
 
 
@@ -809,6 +851,8 @@ void OwnInit(int argc, char **argv)
               stSrc.nSource = ESS;
             else if (strcmp(arg,"SNS")==0)
               stSrc.nSource  = SNS;
+            else if (strcmp(arg,"ISIS")==0)
+              stSrc.nSource  = ISIS;
             else if (strcmp(arg,"CSNS")==0)
               stSrc.nSource  = CSNS;
             else 
@@ -835,7 +879,7 @@ void OwnInit(int argc, char **argv)
             break;
 
           case 'a':
-            pModFileName=arg;  
+            sModFileName=arg;  
             break;
           case 'B':
             pBeamline=arg;  
@@ -941,11 +985,11 @@ void OwnInit(int argc, char **argv)
      }
    }
 }
-/* End OwnInit */
  
 
-/* own cleanup of the source module */
-/* -------------------------------- */
+/*******************************************************/
+/** Does module specific cleanup                      **/
+/*******************************************************/
 void OwnCleanup()
 {
   short m;     /* index for moderators  */
@@ -958,500 +1002,29 @@ void OwnCleanup()
 
   /* free allocated memory */
   for (m=0; m < nNumMod; m++)
-  {   if (stFluxL[m].pTabX!=NULL)  free(stFluxL[m].pTabX);
-      if (stFluxL[m].pTabF!=NULL)  free(stFluxL[m].pTabF);
-      if (stFluxT[m].pTabX!=NULL)  free(stFluxT[m].pTabX);
-      if (stFluxT[m].pTabF!=NULL)  free(stFluxT[m].pTabF);
-      if (stFluxLT[m].pTabX!=NULL) free(stFluxLT[m].pTabX);
-      if (stFluxLT[m].pTabY!=NULL) free(stFluxLT[m].pTabY);
-      if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
-  }
-  if (g_pTrace!=NULL) free(g_pTrace);
-}
-/* End OwnCleanup */
-
-
-void SetGeometry(char* sColor)
-{
-  short m,     /* index for moderators  */
-        kc=0,  /* index for circular moderators */
-        ks=0;  /* index for rectangular moderators */
-
-  // Geometry data
-  if (bVisInstr)
   { 
-    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
-    stGeometry.pDescr  =  sVisDescrpt;
-    stGeometry.eModule = _eModule;
-
-    stGeometry.nCircles=0;
-    stGeometry.nRectangles=1;
-
-    for (m=0; m < nNumMod; m++)
-    { 
-      if (stMod[m].bCircle)
-        stGeometry.nCircles++;
-      else
-        stGeometry.nRectangles++;
-    }
-    if (stGeometry.nCircles > 0)
-      stGeometry.pCircle =  (VtCircle*)    calloc(stGeometry.nCircles, sizeof(VtCircle));
-    stGeometry.pRectangle = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
-
-    // Moderators
-    for (m=0; m < nNumMod; m++)
-    { 
-      if (stMod[m].bCircle)
-      { stGeometry.pCircle[kc].vCntr[0]   = stMod[m].dCntrX;
-        stGeometry.pCircle[kc].vCntr[1]   = stMod[m].dCntrY;
-        stGeometry.pCircle[kc].vCntr[2]   = stMod[m].dCntrZ;
-        stGeometry.pCircle[kc].vNormal[0] = dDecCos;
-        stGeometry.pCircle[kc].vNormal[1] = dDecSin;
-        stGeometry.pCircle[kc].vNormal[2] = 0.0;
-        stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
-        stGeometry.pCircle[kc].AngleBeg   =   0.0;
-        stGeometry.pCircle[kc].AngleEnd   = 359.99;
-        kc++;
-      }
-      else
-      { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].dCntrX;
-        stGeometry.pRectangle[ks].vCntr[1]   = stMod[m].dCntrY;
-        stGeometry.pRectangle[ks].vCntr[2]   = stMod[m].dCntrZ;
-        stGeometry.pRectangle[ks].vNormal[0] = dDecCos;
-        stGeometry.pRectangle[ks].vNormal[1] = dDecSin;
-        stGeometry.pRectangle[ks].vNormal[2] = 0.0;
-        stGeometry.pRectangle[ks].Width      = stMod[m].dWidth;
-        stGeometry.pRectangle[ks].Height     = stMod[m].dHeight;
-        ks++;
-      }
-    }
-
-    // Propagation window
-    stGeometry.pRectangle[ks].vCntr[0]   = WindowDist;
-    stGeometry.pRectangle[ks].vCntr[1]   = 0.0;
-    stGeometry.pRectangle[ks].vCntr[2]   = 0.0;
-    stGeometry.pRectangle[ks].vNormal[0] = 1.0;
-    stGeometry.pRectangle[ks].vNormal[1] = 0.0;
-    stGeometry.pRectangle[ks].vNormal[2] = 0.0;
-    stGeometry.pRectangle[ks].Width      = WindowWidth;
-    stGeometry.pRectangle[ks].Height     = WindowHeight;
+    if (stFluxL[m].pTabX!=NULL)  free(stFluxL[m].pTabX);
+    if (stFluxL[m].pTabF!=NULL)  free(stFluxL[m].pTabF);
+    if (stFluxT[m].pTabX!=NULL)  free(stFluxT[m].pTabX);
+    if (stFluxT[m].pTabF!=NULL)  free(stFluxT[m].pTabF);
+    if (stFluxLT[m].pTabX!=NULL) free(stFluxLT[m].pTabX);
+    if (stFluxLT[m].pTabY!=NULL) free(stFluxLT[m].pTabY);
+    if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
   }
+  if (aTrace!=NULL) free(aTrace);
 }
 
 
-/* load wavelength distribution from file or set 'Maxwellian' as distribution function */
-/* ----------------------------------------------------------------------------------- */
-void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL)
-{
-   long   i;
-   double dDelX=0.0, dF=0.0;
-   char   sBuffer[CHAR_BUF_LENGTH]=""; 
-   FILE*  pDisFile=NULL;
-
-   /* loading wavelength distribution file, if its name is given and range is set properly  */
-   if(strlen(pMod->sLFileName) > 0) 
-   {
-      if (pTraj->dLambdaMin >= 0.0  &&  pTraj->dLambdaMax > pTraj->dLambdaMin)
-      {
-        /* opening distribution file */
-        pDisFile = fopen(FullParName(pMod->sLFileName),"rt");
-        if (pDisFile!=NULL) 
-        {
-            /* reading number of lines, allocating memory and reading distribution file */
-            pFluxL->nLines = LinesInFile(pDisFile);
-            pFluxL->pTabX  = (double*) calloc(pFluxL->nLines, sizeof(double));
-            pFluxL->pTabF  = (double*) calloc(pFluxL->nLines, sizeof(double));
-
-            for(i=0; i < pFluxL->nLines; i++)
-            {  
-              ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
-              sscanf  (sBuffer, "%lf %le", &pFluxL->pTabX[i], &pFluxL->pTabF[i]);
-            }
-
-            /* definition of wavelength dist. function after check 
-               if wavelength range of the simulation is covered by data in file */
-            if (pTraj->dLambdaMin >= pFluxL->pTabX[0] && pTraj->dLambdaMax <= pFluxL->pTabX[pFluxL->nLines-1])
-            {
-               pFluxL->pDisFct = (double(*)()) UserLambdaDis;
-            } 
-            else 
-            {  fprintf(LogFilePtr,"ERROR: The wavelength range given in %s is smaller than that in the simulation\n", pMod->sLFileName);
-               exit(-1);
-            }
-
-            /* integration of function f(lambda) and storing of ln f */
-            pFluxL->dInt=0.0;
-            for(i=1; i < pFluxL->nLines; i++)
-            {  
-              dDelX =  pFluxL->pTabX[i] - pFluxL->pTabX[i-1];
-              dF    = (pFluxL->pTabF[i] + pFluxL->pTabF[i-1])/2.0;
-              pFluxL->dInt += dF*dDelX;
-            }
-            for(i=0; i < pFluxL->nLines; i++)
-            {  
-              if (pFluxL->pTabF[i] <= 0.0)
-                pFluxL->pTabF[i] = -100.0;
-              else
-                pFluxL->pTabF[i] = log(pFluxL->pTabF[i]);
-            }
-
-            /* closes distribution file */
-            fclose(pDisFile) ;
-        } 
-        else 
-        { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength distribution\nPlease copy (from ...FILES/moderators) to parameter directory\n", 
-	                         pMod->sLFileName);
-          exit (-1);
-        }
-      } 
-      else 
-      { fprintf(LogFilePtr,"ERROR: You have to specify the wavelength range properly!\n");
-        exit(-1);
-      }
-   }
-   else
-   {
-    /* otherwise use Maxwellian distribution */
-    pFluxL->pDisFct = (double(*)()) Maxwellian;
-    pFluxL->dInt    = 1.0 ;
-   }
-}
-/* End: LoadWavelengthDistribution() */
-
-
-
-/* load time distribution for the pulse from file or set 'PulseShape' or 'PulseInt' as distribution function */
-/* --------------------------------------------------------------------------------------------------------- */
-void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
-{
-  long   i;
-  double X1, X2, dDelX=0.0;
-  char   sBuffer[CHAR_BUF_LENGTH]=""; 
-  FILE*  pDisFile=NULL;
-
-  /* loading time distribution file, if its name is given and range is set properly */
-  if(strlen(pMod->sTFileName) > 0) 
-  {
-    if (pTraj->dTimeFrmMax > pTraj->dTimeFrmMin)
-    {
-      /* opening distribution file */
-      pDisFile = fopen(FullParName(pMod->sTFileName),"rt");
-      if (pDisFile!=NULL) 
-      {
-        /* reading number of lines, allocating memory and reading distribution file */
-        pFluxT->nLines = LinesInFile(pDisFile);
-        pFluxT->pTabX = (double*) calloc(pFluxT->nLines, sizeof(double));
-        pFluxT->pTabF = (double*) calloc(pFluxT->nLines, sizeof(double));
-
-        for (i=0; i < pFluxT->nLines; i++)
-        {  
-          ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
-          sscanf  (sBuffer, "%lf %le", &pFluxT->pTabX[i], &pFluxT->pTabF[i]);
-        }
-
-        /* definition of time distribution function after check 
-           if time range of the simulation is covered by data in file */
-        if (pTraj->dTimeFrmMin >= pFluxT->pTabX[0] &&  pTraj->dTimeFrmMax <= pFluxT->pTabX[pFluxT->nLines-1])
-        {
-          pFluxT->pDisFct = (double(*)()) UserTimeDis;
-        } 
-        else 
-        { fprintf(LogFilePtr,"ERROR: The time range given in %s is smaller than that in the simulation\n", pMod->sTFileName);
-          exit(-1);
-        }
-
-        /* integration  function f(time) and saves ln(f) */
-        pFluxT->dInt=0.0;
-        for (i=0; i < pFluxT->nLines; i++)
-        { /* binning of X_i */
-          if (i==0)
-          { if (pFluxT->pTabX[i]==0.0)
-            { X1 = 0.0;
-              X2 = 0.5*pFluxT->pTabX[i+1];
-            }
-            else
-            { X2 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i+1])) / 2.0);
-              X1 = sq(pFluxT->pTabX[i]) / X2;
-            }
-          }
-          else if (i == pFluxT->nLines - 1)
-          { X1 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i-1])) / 2.0);
-            X2 = sq(pFluxT->pTabX[i]) / X1;
-          }
-          else
-          { if (pFluxT->pTabX[i-1]==0.0)
-              X1 = 0.5*pFluxT->pTabX[i];
-            else
-              X1 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i-1])) / 2.0);
-            X2 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i+1])) / 2.0);
-          }
-          dDelX = X2 - X1;
-
-          /* integration, factor 1000. because time values are given in ms instead of s  */
-          pFluxT->dInt += pFluxT->pTabF[i]*dDelX / 1000.0;
-
-          /* storing of logarithmic values ln(f(lambda,time)) */
-          if (pFluxT->pTabF[i] <= 0.0)
-            pFluxT->pTabF[i] = -100.0;
-          else
-            pFluxT->pTabF[i] = log(pFluxT->pTabF[i]);
-        }
-
-        /* closing distribution file */
-        fclose(pDisFile) ;
-      } 
-      else 
-      { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given time distribution\nPlease copy (from ...FILES/moderators) to parameter directory\n", pMod->sTFileName);
-        exit (-1);
-      }
-    }
-    else 
-    { fprintf(LogFilePtr,"ERROR: You have to specify the -t and -T option properly!\n");
-      exit(-1);
-    }
-  }
-  else
-  {
-    switch (stSrc.eSrcType) 
-    {
-      case SPSS: pFluxT->pDisFct = (double(*)()) PulseShapeP; break;
-      case LPSS: pFluxT->pDisFct = (double(*)()) PulseIntEss; break;
-      default  : fprintf(LogFilePtr,"ERROR: Wrong value %d for variable 'source type'\n", stSrc.eSrcType);
-                 exit(-1);
-    }
-    pFluxT->dInt = 1.0 ;
-  }
-}
-/* End: LoadTimeDistribution() */
-
-
-void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxLT)
-{
-  long   i, j;
-  double X1, X2, dDelX=0.0, Y1, Y2, dDelY=0.0;
-  char   sBuffer[CHAR_BUF_LARGE]=""; 
-  FILE*  pDisFile=NULL;
-
-  /* loading distribution file, if its range is set properly  */
-  if (pTraj->dTimeFrmMax > pTraj->dTimeFrmMin &&
-      pTraj->dLambdaMax  > pTraj->dLambdaMin  && pTraj->dLambdaMin >= 0.0)
-  {
-    /* openíng distribution file */
-    pDisFile = fopen(FullParName(pMod->sLTFileName),"rt");
-    if (pDisFile!=NULL) 
-    {
-      /* reading number of lines, allocating memory and reading distribution file */
-      pFluxLT->nLines   = LinesInFile  (pDisFile) - 1;
-      pFluxLT->nColumns = ColumnsInFile(pDisFile);
-      pFluxLT->pTabX = (double*) calloc(pFluxLT->nLines,   sizeof(double));
-      pFluxLT->pTabY = (double*) calloc(pFluxLT->nColumns, sizeof(double));
-      pFluxLT->pTabF = (double*) calloc(pFluxLT->nColumns*pFluxLT->nLines, sizeof(double));
- 
-      ReadLine  (pDisFile, sBuffer, sizeof(sBuffer)-1);
-      StrgScanLF(sBuffer, pFluxLT->pTabY, pFluxLT->nColumns, 0);
- 
-      for (i=0; i < pFluxLT->nLines; i++)
-      {  
-        ReadLine  (pDisFile, sBuffer, sizeof(sBuffer)-1);
-        sscanf    (sBuffer, "%lf", &pFluxLT->pTabX[i]);
-        StrgScanLF(sBuffer, &pFluxLT->pTabF[IndLT(i,0)], pFluxLT->nColumns, 1);
-      }
- 
-      /* definition of wavelength-time distribution function after check 
-         if time and wavelength range of the simulation is covered by data in file */
-      if (   pTraj->dTimeFrmMin >= pFluxLT->pTabX[0]  
-          && pTraj->dTimeFrmMax <= pFluxLT->pTabX[pFluxLT->nLines-1] 
-          && pTraj->dLambdaMin  >= pFluxLT->pTabY[0] 
-          && pTraj->dLambdaMax  <= pFluxLT->pTabY[pFluxLT->nColumns-1])
-      {
-        pFluxLT->pDisFct = (double(*)()) UserLmbdTimeDis;
-      } 
-      else 
-      { fprintf(LogFilePtr,"ERROR: The wavelength or the time range given in %s is smaller than that in the simulation\n", pMod->sLTFileName);
-        exit(-1);
-      }
- 
-      /* integrating function f(lambda, time) */
-      /* x range devided into logarithmicly increasing bins */
-      pFluxLT->dInt=0.0;
-      for (i=0; i < pFluxLT->nLines; i++)
-      { /* binning of X_i */
-        if (i==0)
-        { if (pFluxLT->pTabX[i]==0.0)
-          { X1 = 0.0;
-            X2 = 0.5*pFluxLT->pTabX[i+1];
-          }
-          else
-          { X2 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i+1])) / 2.0);
-            X1 = sq(pFluxLT->pTabX[i]) / X2;
-          }
-        }
-        else if (i == pFluxLT->nLines - 1)
-        { X1 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i-1])) / 2.0);
-          X2 = sq(pFluxLT->pTabX[i]) / X1;
-        }
-        else
-        { if (pFluxLT->pTabX[i-1]==0.0)
-            X1 = 0.5*pFluxLT->pTabX[i];
-          else
-            X1 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i-1])) / 2.0);
-            X2 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i+1])) / 2.0);
-        }
-        dDelX = X2 - X1;
-  
-        for (j=0; j < pFluxLT->nColumns; j++)
-        {	
-          /* binning of Y_j */
-          if (j==0)
-          { if (pFluxLT->pTabY[j]==0.0)
-            { Y1 = 0.0;
-              Y2 = 0.5*pFluxLT->pTabY[j+1];
-            }
-          else
-            { Y2 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j+1])) / 2.0);
-              Y1 = sq(pFluxLT->pTabY[j]) / Y2;
-            }
-          }
-          else if (j == pFluxLT->nColumns - 1)
-          { Y1 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j-1])) / 2.0);
-            Y2 = sq(pFluxLT->pTabY[j]) / Y1;
-          }
-          else
-          { if (pFluxLT->pTabY[j-1]==0.0)
-              Y1 = 0.5*pFluxLT->pTabY[j];
-            else
-              Y1 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j-1])) / 2.0);
-          Y2 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j+1])) / 2.0);
-          }
-          dDelY = Y2 - Y1;
-  
-          /* integration, factor 1000. because time values are given in ms instead of s  */
-          pFluxLT->dInt += pFluxLT->pTabF[IndLT(i,j)]*dDelX*dDelY / 1000.0;
-        } // end for loop over columns (index j)				
-      }   // end for loop over lines (index i)	
-  			
-      /* ISIS normalisation: FU/proton -> FU */
-      if (pFluxLT->dInt < 1.0 && pMod->eIsisTS > 0) 
-      {	
-        double fact = pMod->eIsisTS == 1 ? 1.8e-04 / E_C : 0.6e-04 / E_C;
-  	      
-        for (i=0; i < pFluxLT->nLines; i++)
-          for (j=0; j < pFluxLT->nColumns; j++)
-            pFluxLT->pTabF[IndLT(i,j)] *= fact;
-  
-        pFluxLT->dInt *= fact;
-      }
-  
-      /* storing of logarithmic values ln(f(lambda,time)) to save calculation time during run */
-      for (i=0; i < pFluxLT->nLines; i++)
-      { for (j=0; j < pFluxLT->nColumns; j++)
-        {	
-          if (pFluxLT->pTabF[IndLT(i,j)] <= 0.0)
-            pFluxLT->pTabF[IndLT(i,j)] = -100.0;
-          else
-            pFluxLT->pTabF[IndLT(i,j)] = log(pFluxLT->pTabF[IndLT(i,j)]);
-        }				
-      }
- 
-      /* closes distribution file */
-      fclose(pDisFile) ;
-    } 
-    else  // distribution file not existing 
-    { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength-time distribution\nPlease copy (from ...FILES/moderators) to parameter directory\n", pMod->sLTFileName);
-      exit (-1);
-    }
-  } 
-  else // ranges not properly set 
-  { fprintf(LogFilePtr,"ERROR: You have to specify the parameters -m and -M as well as -t and -T properly!\n");
-    exit(-1);
-  }
-}
-
-
-/* load list of trajectories that shall be traced */
-/* ---------------------------------------------- */
-void LoadTraceFile()
-{
-  char  sBuffer[CHAR_BUF_LENGTH]; 
-  FILE* pTraceFile=NULL;
-
-  /* If there is a trace file go and load the file */
-  if(pTraceFileName!=NULL) 
-   {
-      /* opens distribution file */
-      if((pTraceFile=fopen(FullParName(pTraceFileName),"rt"))!=NULL) 
-      {
-        long i;
-
-        /* reads number of lines, allocates memory and then reads distribution file */
-        g_nLinesTr = LinesInFile(pTraceFile);
-        g_pTrace   = (TotalID*) calloc(g_nLinesTr, sizeof(TotalID));
-
-        for(i=0; i<g_nLinesTr; i++)
-        {  
-          ReadLine(pTraceFile, sBuffer, CHAR_BUF_LENGTH-1);
-          sscanf  (sBuffer, "%c%c%lu", &g_pTrace[i].IDGrp[0], &g_pTrace[i].IDGrp[1], &g_pTrace[i].IDNo);
-        }
-
-        /* closes trace file */
-        fclose(pTraceFile) ;
-      } 
-      else 
-      { fprintf(LogFilePtr, "\nERROR: Can't open %s to read trace file\n", pTraceFileName);
-        exit (-1);
-      }
-   }
-}
-
-
-/* look if trajectory shall be traced */
-/* ---------------------------------- */
-char GetTraceState(TotalID stID)
-{
-  char cRet = 'N'; 
-
-  if (g_nLinesTr > 0) {	
-    long   i, il=g_nLinesTr-1;  /* lines in Table */
-    double nS, nL;              /* numbers got by conversion from IDs */
-    double gS, gL;
-
-    gS = (g_pTrace[il].IDGrp[0]-'A')*1.117e11;
-    gL = (g_pTrace[il].IDGrp[1]-'A')*4.295e09;
-    nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
-    //nL = (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[il].IDNo;
-    nL = gS                                   + gL                                   + g_pTrace[il].IDNo;
-    i = (long) (il * nS / nL + 0.5);
-    if (i > il) i = il;
-
-    /*while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo < nS  &&  i < il ) 
-      i++;
-      while ( (g_pTrace[il].IDGrp[0]-'A')*1.117e11 + (g_pTrace[il].IDGrp[1]-'A')*4.295e09 + g_pTrace[i].IDNo > nS  &&  i > 0 ) 
-      i--;
-    */
-
-    while ( (i < il) && (gS + gL + g_pTrace[i].IDNo < nS) ) 
-      i++;
-    while ( (i > 0) && (i <= il) && (gS + gL + g_pTrace[i].IDNo > nS) ) 
-      i--;
-
-    // set 'tracing', if IDs are identical
-    if (memcmp(stID.IDGrp, g_pTrace[i].IDGrp, 2)==0 && stID.IDNo==g_pTrace[i].IDNo)
-      cRet='T'; 
-  }
-  
-  return cRet;
-}
-
-
-/* read moderator data from file      */
-/* ---------------------------------- */
+/********************************************************/
+/* reads moderator parameters from file                 */
+/********************************************************/
 short ReadModData(char* sFileName)
 {
   char  sShape   [2]="S",
         sBuffer [CHAR_BUF_LENGTH];
   FILE* pFileR;
 
-  pFileR = fileOpen(FullParName(sFileName),"rt");
+  pFileR = OpenInputFile(sFileName, TRUE,"rt");
 
   /* Read a line for each moderator */
   while (ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1)==TRUE)
@@ -1632,9 +1205,490 @@ short ReadModData(char* sFileName)
   return imod;
 }
 
-/* Check whether position (X,Y) of actual moderator 'imod' is behind moderator i */
-int
-PosBehindMod(const int i, const double Y, const double Z)
+
+/*******************************************************/
+/** Fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  short m,     /* index for moderators  */
+        kc=0,  /* index for circular moderators */
+        ks=0;  /* index for rectangular moderators */
+
+  // Geometry data
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    stGeometry.nCircles=0;
+    stGeometry.nRectangles=1;
+
+    for (m=0; m < nNumMod; m++)
+    { 
+      if (stMod[m].bCircle)
+        stGeometry.nCircles++;
+      else
+        stGeometry.nRectangles++;
+    }
+    if (stGeometry.nCircles > 0)
+      stGeometry.pCircle =  (VtCircle*)    calloc(stGeometry.nCircles, sizeof(VtCircle));
+    stGeometry.pRectangle = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+
+    // Moderators
+    for (m=0; m < nNumMod; m++)
+    { 
+      if (stMod[m].bCircle)
+      { stGeometry.pCircle[kc].vCntr[0]   = stMod[m].dCntrX/CmprFact;
+        stGeometry.pCircle[kc].vCntr[1]   = stMod[m].dCntrY;
+        stGeometry.pCircle[kc].vCntr[2]   = stMod[m].dCntrZ;
+        stGeometry.pCircle[kc].vNormal[0] = dDecCos;
+        stGeometry.pCircle[kc].vNormal[1] = dDecSin;
+        stGeometry.pCircle[kc].vNormal[2] = 0.0;
+        stGeometry.pCircle[kc].Radius     = stMod[m].dDiameter/2.0;
+        stGeometry.pCircle[kc].AngleBeg   =   0.0;
+        stGeometry.pCircle[kc].AngleEnd   = 359.99;
+        kc++;
+      }
+      else
+      { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].dCntrX/CmprFact;
+        stGeometry.pRectangle[ks].vCntr[1]   = stMod[m].dCntrY;
+        stGeometry.pRectangle[ks].vCntr[2]   = stMod[m].dCntrZ;
+        stGeometry.pRectangle[ks].vNormal[0] = dDecCos;
+        stGeometry.pRectangle[ks].vNormal[1] = dDecSin;
+        stGeometry.pRectangle[ks].vNormal[2] = 0.0;
+        stGeometry.pRectangle[ks].Width      = stMod[m].dWidth;
+        stGeometry.pRectangle[ks].Height     = stMod[m].dHeight;
+        ks++;
+      }
+    }
+
+    // Propagation window
+    stGeometry.pRectangle[ks].vCntr[0]   = WindowDist/CmprFact;
+    stGeometry.pRectangle[ks].vCntr[1]   = 0.0;
+    stGeometry.pRectangle[ks].vCntr[2]   = 0.0;
+    stGeometry.pRectangle[ks].vNormal[0] = 1.0;
+    stGeometry.pRectangle[ks].vNormal[1] = 0.0;
+    stGeometry.pRectangle[ks].vNormal[2] = 0.0;
+    stGeometry.pRectangle[ks].Width      = WindowWidth;
+    stGeometry.pRectangle[ks].Height     = WindowHeight;
+  }
+}
+
+
+/****************************************************************************************/
+/* loads wavelength distribution from file or set 'Maxwellian' as distribution function */
+/****************************************************************************************/
+void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL)
+{
+   long   i;
+   double dDelX=0.0, dF=0.0;
+   char   sBuffer[CHAR_BUF_LENGTH]=""; 
+   FILE*  pDisFile=NULL;
+
+   /* loading wavelength distribution file, if its name is given and range is set properly  */
+   if(strlen(pMod->sLFileName) > 0) 
+   {
+      if (pTraj->dLambdaMin >= 0.0  &&  pTraj->dLambdaMax > pTraj->dLambdaMin)
+      {
+        /* opening distribution file */
+        pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
+        if (pDisFile!=NULL) 
+        {
+            /* reading number of lines, allocating memory and reading distribution file */
+            pFluxL->nLines = LinesInFile(pDisFile);
+            pFluxL->pTabX  = (double*) calloc(pFluxL->nLines, sizeof(double));
+            pFluxL->pTabF  = (double*) calloc(pFluxL->nLines, sizeof(double));
+
+            for(i=0; i < pFluxL->nLines; i++)
+            {  
+              ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
+              sscanf  (sBuffer, "%lf %le", &pFluxL->pTabX[i], &pFluxL->pTabF[i]);
+            }
+
+            /* definition of wavelength dist. function after check 
+               if wavelength range of the simulation is covered by data in file */
+            if (pTraj->dLambdaMin >= pFluxL->pTabX[0] && pTraj->dLambdaMax <= pFluxL->pTabX[pFluxL->nLines-1])
+            {
+               pFluxL->pDisFct = (double(*)()) UserLambdaDis;
+            } 
+            else 
+            {  fprintf(LogFilePtr,"ERROR: The wavelength range given in %s is smaller than that in the simulation\n", pMod->sLFileName);
+               exit(-1);
+            }
+
+            /* integration of function f(lambda) and storing of ln f */
+            pFluxL->dInt=0.0;
+            for(i=1; i < pFluxL->nLines; i++)
+            {  
+              dDelX =  pFluxL->pTabX[i] - pFluxL->pTabX[i-1];
+              dF    = (pFluxL->pTabF[i] + pFluxL->pTabF[i-1])/2.0;
+              pFluxL->dInt += dF*dDelX;
+            }
+            for(i=0; i < pFluxL->nLines; i++)
+            {  
+              if (pFluxL->pTabF[i] <= 0.0)
+                pFluxL->pTabF[i] = -100.0;
+              else
+                pFluxL->pTabF[i] = log(pFluxL->pTabF[i]);
+            }
+
+            /* closes distribution file */
+            fclose(pDisFile) ;
+        } 
+        else 
+        { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength distribution\nPlease copy (from ...FILES/moderators/...) to input directory\n", 
+	                         pMod->sLFileName);
+          exit (-1);
+        }
+      } 
+      else 
+      { fprintf(LogFilePtr,"ERROR: You have to specify the wavelength range properly!\n");
+        exit(-1);
+      }
+   }
+   else
+   {
+    /* otherwise use Maxwellian distribution */
+    pFluxL->pDisFct = (double(*)()) Maxwellian;
+    pFluxL->dInt    = 1.0 ;
+   }
+}
+
+
+/**************************************************************************************************************/
+/* loads time distribution for the pulse from file or set 'PulseShape' or 'PulseInt' as distribution function */
+/**************************************************************************************************************/
+void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
+{
+  long   i;
+  double X1, X2, dDelX=0.0;
+  char   sBuffer[CHAR_BUF_LENGTH]=""; 
+  FILE*  pDisFile=NULL;
+
+  /* loading time distribution file, if its name is given and range is set properly */
+  if(strlen(pMod->sTFileName) > 0) 
+  {
+    if (pTraj->dTimeFrmMax > pTraj->dTimeFrmMin)
+    {
+      /* opening distribution file */
+      pDisFile = OpenInputFile(pMod->sTFileName, FALSE, "rt");
+      if (pDisFile!=NULL) 
+      {
+        /* reading number of lines, allocating memory and reading distribution file */
+        pFluxT->nLines = LinesInFile(pDisFile);
+        pFluxT->pTabX = (double*) calloc(pFluxT->nLines, sizeof(double));
+        pFluxT->pTabF = (double*) calloc(pFluxT->nLines, sizeof(double));
+
+        for (i=0; i < pFluxT->nLines; i++)
+        {  
+          ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
+          sscanf  (sBuffer, "%lf %le", &pFluxT->pTabX[i], &pFluxT->pTabF[i]);
+        }
+
+        /* definition of time distribution function after check 
+           if time range of the simulation is covered by data in file */
+        if (pTraj->dTimeFrmMin >= pFluxT->pTabX[0] &&  pTraj->dTimeFrmMax <= pFluxT->pTabX[pFluxT->nLines-1])
+        {
+          pFluxT->pDisFct = (double(*)()) UserTimeDis;
+        } 
+        else 
+        { fprintf(LogFilePtr,"ERROR: The time range given in %s is smaller than that in the simulation\n", pMod->sTFileName);
+          exit(-1);
+        }
+
+        /* integration  function f(time) and saves ln(f) */
+        pFluxT->dInt=0.0;
+        for (i=0; i < pFluxT->nLines; i++)
+        { /* binning of X_i */
+          if (i==0)
+          { if (pFluxT->pTabX[i]==0.0)
+            { X1 = 0.0;
+              X2 = 0.5*pFluxT->pTabX[i+1];
+            }
+            else
+            { X2 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i+1])) / 2.0);
+              X1 = sq(pFluxT->pTabX[i]) / X2;
+            }
+          }
+          else if (i == pFluxT->nLines - 1)
+          { X1 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i-1])) / 2.0);
+            X2 = sq(pFluxT->pTabX[i]) / X1;
+          }
+          else
+          { if (pFluxT->pTabX[i-1]==0.0)
+              X1 = 0.5*pFluxT->pTabX[i];
+            else
+              X1 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i-1])) / 2.0);
+            X2 = exp((log(pFluxT->pTabX[i]) + log(pFluxT->pTabX[i+1])) / 2.0);
+          }
+          dDelX = X2 - X1;
+
+          /* integration, factor 1000. because time values are given in ms instead of s  */
+          pFluxT->dInt += pFluxT->pTabF[i]*dDelX / 1000.0;
+
+          /* storing of logarithmic values ln(f(lambda,time)) */
+          if (pFluxT->pTabF[i] <= 0.0)
+            pFluxT->pTabF[i] = -100.0;
+          else
+            pFluxT->pTabF[i] = log(pFluxT->pTabF[i]);
+        }
+
+        /* closing distribution file */
+        fclose(pDisFile) ;
+      } 
+      else 
+      { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given time distribution\nPlease copy (from ...FILES/moderators/...) to input directory\n", pMod->sTFileName);
+        exit (-1);
+      }
+    }
+    else 
+    { fprintf(LogFilePtr,"ERROR: You have to specify the -t and -T option properly!\n");
+      exit(-1);
+    }
+  }
+  else
+  {
+    switch (stSrc.eSrcType) 
+    {
+      case SPSS: pFluxT->pDisFct = (double(*)()) PulseShapeP; break;
+      case LPSS: pFluxT->pDisFct = (double(*)()) PulseIntEss; break;
+      default  : fprintf(LogFilePtr,"ERROR: Wrong value %d for variable 'source type'\n", stSrc.eSrcType);
+                 exit(-1);
+    }
+    pFluxT->dInt = 1.0 ;
+  }
+}
+
+
+/********************************************************/
+/* loads 2D wavelength-time distribution from file      */
+/********************************************************/
+void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxLT)
+{
+  long   i, j;
+  double X1, X2, dDelX=0.0, Y1, Y2, dDelY=0.0;
+  char   sBuffer[CHAR_BUF_LARGE]=""; 
+  FILE*  pDisFile=NULL;
+
+  /* loading distribution file, if its range is set properly  */
+  if (pTraj->dTimeFrmMax > pTraj->dTimeFrmMin &&
+      pTraj->dLambdaMax  > pTraj->dLambdaMin  && pTraj->dLambdaMin >= 0.0)
+  {
+    /* openíng distribution file */
+    pDisFile = OpenInputFile(pMod->sLTFileName, FALSE, "rt");
+    if (pDisFile!=NULL) 
+    {
+      /* reading number of lines, allocating memory and reading distribution file */
+      pFluxLT->nLines   = LinesInFile  (pDisFile) - 1;
+      pFluxLT->nColumns = ColumnsInFile(pDisFile);
+      pFluxLT->pTabX = (double*) calloc(pFluxLT->nLines,   sizeof(double));
+      pFluxLT->pTabY = (double*) calloc(pFluxLT->nColumns, sizeof(double));
+      pFluxLT->pTabF = (double*) calloc(pFluxLT->nColumns*pFluxLT->nLines, sizeof(double));
+ 
+      ReadLine  (pDisFile, sBuffer, sizeof(sBuffer)-1);
+      StrgScanLF(sBuffer, pFluxLT->pTabY, pFluxLT->nColumns, 0);
+ 
+      for (i=0; i < pFluxLT->nLines; i++)
+      {  
+        ReadLine  (pDisFile, sBuffer, sizeof(sBuffer)-1);
+        sscanf    (sBuffer, "%lf", &pFluxLT->pTabX[i]);
+        StrgScanLF(sBuffer, &pFluxLT->pTabF[IndLT(i,0)], pFluxLT->nColumns, 1);
+      }
+ 
+      /* definition of wavelength-time distribution function after check 
+         if time and wavelength range of the simulation is covered by data in file */
+      if (   pTraj->dTimeFrmMin >= pFluxLT->pTabX[0]  
+          && pTraj->dTimeFrmMax <= pFluxLT->pTabX[pFluxLT->nLines-1] 
+          && pTraj->dLambdaMin  >= pFluxLT->pTabY[0] 
+          && pTraj->dLambdaMax  <= pFluxLT->pTabY[pFluxLT->nColumns-1])
+      {
+        pFluxLT->pDisFct = (double(*)()) UserLmbdTimeDis;
+      } 
+      else 
+      { fprintf(LogFilePtr,"ERROR: The wavelength or the time range given in %s is smaller than that in the simulation\n", pMod->sLTFileName);
+        exit(-1);
+      }
+ 
+      /* integrating function f(lambda, time) */
+      /* x range devided into logarithmicly increasing bins */
+      pFluxLT->dInt=0.0;
+      for (i=0; i < pFluxLT->nLines; i++)
+      { /* binning of X_i */
+        if (i==0)
+        { if (pFluxLT->pTabX[i]==0.0)
+          { X1 = 0.0;
+            X2 = 0.5*pFluxLT->pTabX[i+1];
+          }
+          else
+          { X2 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i+1])) / 2.0);
+            X1 = sq(pFluxLT->pTabX[i]) / X2;
+          }
+        }
+        else if (i == pFluxLT->nLines - 1)
+        { X1 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i-1])) / 2.0);
+          X2 = sq(pFluxLT->pTabX[i]) / X1;
+        }
+        else
+        { if (pFluxLT->pTabX[i-1]==0.0)
+            X1 = 0.5*pFluxLT->pTabX[i];
+          else
+            X1 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i-1])) / 2.0);
+            X2 = exp((log(pFluxLT->pTabX[i]) + log(pFluxLT->pTabX[i+1])) / 2.0);
+        }
+        dDelX = X2 - X1;
+  
+        for (j=0; j < pFluxLT->nColumns; j++)
+        {	
+          /* binning of Y_j */
+          if (j==0)
+          { if (pFluxLT->pTabY[j]==0.0)
+            { Y1 = 0.0;
+              Y2 = 0.5*pFluxLT->pTabY[j+1];
+            }
+          else
+            { Y2 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j+1])) / 2.0);
+              Y1 = sq(pFluxLT->pTabY[j]) / Y2;
+            }
+          }
+          else if (j == pFluxLT->nColumns - 1)
+          { Y1 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j-1])) / 2.0);
+            Y2 = sq(pFluxLT->pTabY[j]) / Y1;
+          }
+          else
+          { if (pFluxLT->pTabY[j-1]==0.0)
+              Y1 = 0.5*pFluxLT->pTabY[j];
+            else
+              Y1 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j-1])) / 2.0);
+          Y2 = exp((log(pFluxLT->pTabY[j]) + log(pFluxLT->pTabY[j+1])) / 2.0);
+          }
+          dDelY = Y2 - Y1;
+  
+          /* integration, factor 1000. because time values are given in ms instead of s  */
+          pFluxLT->dInt += pFluxLT->pTabF[IndLT(i,j)]*dDelX*dDelY / 1000.0;
+        } // end for loop over columns (index j)				
+      }   // end for loop over lines (index i)	
+  			
+      /* ISIS normalisation: FU/proton -> FU */
+      if (pFluxLT->dInt < 1.0 && pMod->eIsisTS > 0) 
+      {	
+        double fact = pMod->eIsisTS == 1 ? 1.8e-04 / E_C : 0.6e-04 / E_C;
+  	      
+        for (i=0; i < pFluxLT->nLines; i++)
+          for (j=0; j < pFluxLT->nColumns; j++)
+            pFluxLT->pTabF[IndLT(i,j)] *= fact;
+  
+        pFluxLT->dInt *= fact;
+      }
+  
+      /* storing of logarithmic values ln(f(lambda,time)) to save calculation time during run */
+      for (i=0; i < pFluxLT->nLines; i++)
+      { for (j=0; j < pFluxLT->nColumns; j++)
+        {	
+          if (pFluxLT->pTabF[IndLT(i,j)] <= 0.0)
+            pFluxLT->pTabF[IndLT(i,j)] = -100.0;
+          else
+            pFluxLT->pTabF[IndLT(i,j)] = log(pFluxLT->pTabF[IndLT(i,j)]);
+        }				
+      }
+ 
+      /* closes distribution file */
+      fclose(pDisFile) ;
+    } 
+    else  // distribution file not existing 
+    { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength-time distribution\nPlease copy (from ...FILES/moderators/...) to input directory\n", pMod->sLTFileName);
+      exit (-1);
+    }
+  } 
+  else // ranges not properly set 
+  { fprintf(LogFilePtr,"ERROR: You have to specify the parameters -m and -M as well as -t and -T properly!\n");
+    exit(-1);
+  }
+}
+
+
+/********************************************************/
+/* loads list of trajectories that shall be traced      */
+/********************************************************/
+void LoadTraceFile()
+{
+  char  sBuffer[CHAR_BUF_LENGTH]; 
+  FILE* pTraceFile=NULL;
+
+  /* If there is a trace file go and load the file */
+  if(sTraceFileName!=NULL) 
+   {
+      /* opens distribution file */
+      if ((pTraceFile = OpenInputFile(sTraceFileName, FALSE,"rt")) != NULL) 
+      {
+        long i;
+
+        /* reads number of lines, allocates memory and then reads distribution file */
+        nLinesTr = LinesInFile(pTraceFile);
+        aTrace   = (TotalID*) calloc(nLinesTr, sizeof(TotalID));
+
+        for(i=0; i<nLinesTr; i++)
+        {  
+          ReadLine(pTraceFile, sBuffer, CHAR_BUF_LENGTH-1);
+          sscanf  (sBuffer, "%c%c%lu", &aTrace[i].IDGrp[0], &aTrace[i].IDGrp[1], &aTrace[i].IDNo);
+        }
+
+        /* closes trace file */
+        fclose(pTraceFile) ;
+      } 
+      else 
+      { fprintf(LogFilePtr, "\nERROR: Can't open %s to read trace file\n", sTraceFileName);
+        exit (-1);
+      }
+   }
+}
+
+
+/********************************************************/
+/* looks if trajectory shall be traced                  */
+/********************************************************/
+char GetTraceState(TotalID stID)
+{
+  char cRet = 'N'; 
+
+  if (nLinesTr > 0) {	
+    long   i, il=nLinesTr-1;  /* lines in Table */
+    double nS, nL;              /* numbers got by conversion from IDs */
+    double gS, gL;
+
+    gS = (aTrace[il].IDGrp[0]-'A')*1.117e11;
+    gL = (aTrace[il].IDGrp[1]-'A')*4.295e09;
+    nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
+    //nL = (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[il].IDNo;
+    nL = gS                                   + gL                                   + aTrace[il].IDNo;
+    i = (long) (il * nS / nL + 0.5);
+    if (i > il) i = il;
+
+    /*while ( (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[i].IDNo < nS  &&  i < il ) 
+      i++;
+      while ( (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[i].IDNo > nS  &&  i > 0 ) 
+      i--;
+    */
+
+    while ( (i < il) && (gS + gL + aTrace[i].IDNo < nS) ) 
+      i++;
+    while ( (i > 0) && (i <= il) && (gS + gL + aTrace[i].IDNo > nS) ) 
+      i--;
+
+    // set 'tracing', if IDs are identical
+    if (memcmp(stID.IDGrp, aTrace[i].IDGrp, 2)==0 && stID.IDNo==aTrace[i].IDNo)
+      cRet='T'; 
+  }
+  
+  return cRet;
+}
+
+
+/****************************************************************************************/
+/* Checks whether position (X,Y) of actual moderator 'imod' is behind moderator i       */
+/****************************************************************************************/
+int  PosBehindMod(const int i, const double Y, const double Z)
 {
   return stMod[i].nBackground < stMod[imod].nBackground &&
     (  ( stMod[i].bCircle &&   sq(Y-stMod[i].dCntrY) + sq(Z-stMod[i].dCntrZ) <= sq(stMod[i].dDiameter/2.0) ) ||
@@ -1643,11 +1697,11 @@ PosBehindMod(const int i, const double Y, const double Z)
 }
 
 
-// ISIS SPECIFIC FUNCTIONS
 
-
-double** 
-matrix(const int m,const int n)
+/*******************************************************/
+/* ISIS SPECIFIC FUNCTIONS                             */
+/*******************************************************/
+double** matrix(const int m,const int n)
 /*!
   Determine a double matrix
 */
@@ -1671,8 +1725,7 @@ matrix(const int m,const int n)
 }
 
 
-int
-binSearch(int Npts,double* AR,double V)
+int    binSearch(int Npts,double* AR,double V)
 /*! 
   Object is to find the point in 
   array AR, closest to the value V 
@@ -1706,8 +1759,8 @@ binSearch(int Npts,double* AR,double V)
   return khi;
 }
 
-double
-calcFraction(double EI,double EE,double Ea,double Eb)
+
+double calcFraction(double EI,double EE,double Ea,double Eb)
 /*!
   Calculate the fraction of the bin between Ea -> Eb
   that is encompassed by EI->EE

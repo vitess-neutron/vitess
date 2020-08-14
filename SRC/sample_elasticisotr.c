@@ -5,19 +5,21 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0            Géza Zsigmond                                                             */
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
-/* 1.2  JAN 2004  K. Lieutenant changes for 'instrument.dat'                                */
-/* 1.3  MAY 2004  G. Zsigmond   normalise with repetition                                   */
-/* 1.4  JUL 2004  G. Zsigmond   error message for sample position                           */
-/* 1.5  JUL 2004  G. Zsigmond   including hollow cylinder sample                            */
-/* 1.5a DEC 2004  K. Lieutenant no attenuation by scattering, (error of count rates)        */
-/* 1.5b DEC 2004  K. Lieutenant correction: algorithm for repetitions                       */
-/* 1.6  JAN 2011  K. Lieutenant option to scatter only neutrons of a special color          */
+/* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.3  MAY 2004  G. Zsigmond    normalise with repetition                                  */
+/* 1.4  JUL 2004  G. Zsigmond    error message for sample position                          */
+/* 1.5  JUL 2004  G. Zsigmond    including hollow cylinder sample                           */
+/* 1.5a DEC 2004  K. Lieutenant  no attenuation by scattering, (error of count rates)       */
+/* 1.5b DEC 2004  K. Lieutenant  correction: algorithm for repetitions                      */
+/* 1.6  JAN 2011  K. Lieutenant  option to scatter only neutrons of a special color         */
+/* 1.7  Apr 2020  K. Lieutenant  tidy up and new central visualization parameters           */
 /********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
@@ -25,54 +27,89 @@
 #include "intersection.h"
 #include "sample.h"
 
-/* START HEADER STORY */
-
 #define	STRING_BUFFER 50
 
-FILE        *Par_Sample, *XFILE; 
-char        Option[STRING_BUFFER], *ParameterFileName, XFileName[STRING_BUFFER], *SampleFileName;
-long        User, Repetition, BoseF, repet,  i ;
-short       iColor=ANY_COLOR;                // if != -1, only neutrons of this colour are treated 
-double      TOF, WL, Prob, MaxPathLength, MaxPathLengthHol=0., PathLength, PathLengthHol=0., scattered_dir[3], l_reference, h_reference, v_reference;
-double      P1, P2, P3, P4, Temperature, D1, D2, D3, AnglSampleHoriz, AnglSampleVert, AnglOutHoriz, AnglOutVert ;
-double      RotMatrixSample[3][3], RotMatrixScatter[3][3], RotMatrixOut[3][3], RotMatrixDelta[3][3];
-double      AbsorptionC, ScatteringC, ProbCutoff;
-VectorType  random_main, random_range, k_reference, PosSample, DimSample, DimSampleHol, TranslOut;
-VectorType  Pos1f, Pos2f, Pos3f, Pos4f, 
-            Pos1v, Pos2v, Pos3v, Pos4v, Pos, Dir ;
-Neutron     Neutrons ;
+
+/***********************************/
+/** Prototypes of local functions **/
+/***********************************/
+void   OwnInit(int argc, char *argv[]);                 // Reads input parameters and sets global variables
+void   OwnCleanup();                                    // Does module specific cleanup
+void   ReadParFile(SampleType* pSample);                // Reads sample parameters from file
+void   CalcAndWritePar();                               // Calculates arrays from input parameters and writes to log file
+void   SetGeometry(char* sColor);                       // Fills the structure stGeometry for visualization 
+void   OutputTransform(VectorType Pos, VectorType Dir); // Co-ordinate transformation to output frame
 
 
-long        S_q_w(double *wl, double *prob, VectorType Dir);
-double      FunctionS_q_w(VectorType q, double energy);
-double      Dispersion(VectorType q);
-double      BoseFactor(double T, double w);
-void        SampleS_q_w();
-void        OutputTransformations(VectorType Pos, VectorType Dir);
-void        ReadParameterFile() ;
-void        OwnInit(int argc, char *argv[]) ;
-void        OwnCleanup() ;
+/******************************/
+/**   Global Variables       **/
+/******************************/
+McCompID _eModule=MCN_SMPL_EL_ISO;
 
-/* FINISH HEADER STORY */
+char      *SampleFileName=NULL;     // -P     [-]   pointer to the name of the sample file  
+long       Repetition=1;            // -A     [-]   repetitions (how many trajectories to generate per incoming trajectory)
+short      iColor=ANY_COLOR;        // -c     [-]   enum color: if != ANY_COLOR, only neutrons of this colour are treated 
+                                             
+char       Option[STRING_BUFFER];   // file   [-]   geometry parameter: "cylinder"  "hollow-cylinder"  "cuboid"  "ball" 
+VectorType ScatterMain,             // file  [deg]  horizontal and vertical component (Theta, Phi) of the main scattering direction
+           ScatterRange;            // file  [deg]  hor. and vert. var. (DelTheta, DelPhi) determining scat. range [Phi-DelPhi/2, Phi+DelPhi/2], Theta analogous  
+double     AbsorptionC,             // file  [1/cm] Macroscopic absorption cross section 
+           ScatteringC;             // file  [1/cm] Macroscopic total scattering cross section 
+VectorType PosSample,               // file   [cm]  center position of the sample
+           DimSample;               // file   [cm]  size of the sample
+double     AnglSampleHoriz,         // file  [deg]  horizontal angle of the sample orientation, relative to standard orientation
+           AnglSampleVert;          // file  [deg]  vertical angle of the sample orientation, relative to standard orientation
+VectorType TranslOut;               // file   [cm]  center position of the output frame
+double     AnglOutHoriz,            // file  [deg]  horizontal angle of the output frame, relative to input orientation
+           AnglOutVert;             // file  [deg]  vertical angle of the output frame, relative to input orientation                       
+
+// Variables determined from input parameters or trajectory data
+SampleType stSample;               //       sample geometry
+VectorType DimSampleHol;           //       array to use 'IntersectsWithCylinder()' for hollow cylinders  
+double     ProbCutoff=0.0;         //       neutron weight, below which the trajectory is removed
+double     RotMatrixSample[3][3],  //       rotation matrix to transfer to coordinate system of the sample
+           RotMatrixOut[3][3],     //       rotation matrix to transfer to the output coordinate system
+           RotMatrixScatter[3][3]; //       rotation matrix to transfer into coordinate system of the scattering direction
 
 
-int main(int argc, char **argv) {
+/******************************/
+/**   Main Program           **/
+/******************************/
+int main(int argc, char **argv) 
+{
+  long       repet=0, i=0;
+  double     TOF, WL, Prob, 
+             PathLength   =0.0, PathLengthHol   =0.0, 
+             MaxPathLength=0.0, MaxPathLengthHol=0.0;
+  VectorType Pos1f, Pos2f, Pos3f, Pos4f, 
+             Pos1v, Pos2v, Pos3v, Pos4v, Pos, Dir ;
+  Neutron    Neutrons ;
   
-  /* Initialize the program according to the parameters given  */ 
-  
-  Init(argc, argv, VT_SMPL_EL_ISO); 
-  print_module_name("sample_elasticisotr 1.6a") ;
+  // initialisation
+  // --------------
+  Init   (argc, argv, _eModule);
+  PrintModuleName(_eModule, "2.7");
   OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = FALSE;
+
+  /* reads file containing sample parameters */
+  ReadParFile(&stSample);
+
+  /* determines the dependent parameters and write out important parameters */
+  CalcAndWritePar();
 
   DECLARE_ABORT;
 	
+  // loop over all trajectories
+  // --------------------------
   /* Get the neutrons from the file */
-
-  while ((ReadNeutrons())!= 0) {
-    /* here is what happens to the neutron */
-    CHECK;
-      
-    for(i=0;i<NumNeutGot ;i++) {
+  while ((ReadNeutrons())!= 0) 
+  {
+    for(i=0;i<NumNeutGot ;i++) 
+    {
       CHECK;
 
       if (iColor==ANY_COLOR || iColor==InputNeutrons[i].Color)
@@ -93,13 +130,14 @@ int main(int argc, char **argv) {
         if (Option[1] == 'o')
         {
           if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0) 
-            goto getlost ; 
+          { goto getlost ; 
+          }
           else 
           {
-            if(IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0) 
+            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0) 
               CopyVector(Pos4f, Pos2f);
 
-            if(IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 1)
+            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 1)
             { double r=MonteCarlo(-1.,1);
 
               if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==1)) 
@@ -107,7 +145,7 @@ int main(int argc, char **argv) {
       	
               if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==0))
               {
-                if(r>0.)
+                if (r > 0.0)
                 { 
                   SubVector(Pos2f, Pos1f);
                   PathLengthHol = LengthVector(Pos2f); 
@@ -141,7 +179,6 @@ int main(int argc, char **argv) {
 	      
         if(Option[1] == 'a' && IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
           goto getlost ; 
-	      
 	      
         for (repet=0;repet<Repetition;repet++) 
         {
@@ -191,8 +228,8 @@ int main(int argc, char **argv) {
             
             /* new random direction  */
             
-            DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= random_range[1]/2. * M_PI/180. ;
-            DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= random_range[2]/2. * M_PI/180. ;
+            DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatterRange[1]/2. * M_PI/180. ;
+            DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatterRange[2]/2. * M_PI/180. ;
              
             EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
             
@@ -209,12 +246,16 @@ int main(int argc, char **argv) {
           if(Option[1] == 'o')
           {
           	
-            if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0) 
+            if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0)
+            {
               goto getlost2 ; 
+            }
             else 
             {
               if (IntersectionWithCylinder(DimSampleHol, Pos, Dir, Pos2v, Pos3v) == 0) 
+              { 
                 CopyVector(Pos4v, Pos2v);
+              }
               else
               { VectorType Propag; 
 
@@ -237,8 +278,10 @@ int main(int argc, char **argv) {
                     CopyVector(Pos4v, Pos2v);
                   }
                 }
-                else 
+                else
+                {
                   PathLengthHol = 0.; 
+                }
               }
             }
           }
@@ -275,10 +318,10 @@ int main(int argc, char **argv) {
             TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
           }
 
-          OutputTransformations(Pos2v, Dir) ;
+          OutputTransform(Pos2v, Dir) ;
 		
-          Prob *= random_range[1]/180. * sin(random_range[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
-          if(Prob <= ProbCutoff) goto getlost2 ;
+          Prob *= ScatterRange[1]/180. * sin(ScatterRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
+          if (Prob <= ProbCutoff) goto getlost2 ;
 
           /* transmit coordinates which were not changed, the rest overwrite below */
           Neutrons = InputNeutrons[i]; 
@@ -308,57 +351,28 @@ int main(int argc, char **argv) {
     }   // for loop over trajectories
   }     // do loop, read trajectories
      
-
-  /* Do the general cleanup */
-
+  // Finish: write log, geometry and instrument file, free memory
+  // ------------------------------------------------------------
  my_exit: 
-  fprintf(LogFilePtr," \n") ;
-
+  /* write geometry file */
+  SetGeometry("white");
+  
+  /* Do module specific cleanups */
   OwnCleanup(); 
 
+  /* Do the general cleanup */
   Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHoriz, AnglOutVert);	
 
   return 0;
 }
 
 
-	
-
-/* Output matters */
-
-void OutputTransformations(VectorType Pos, VectorType Dir)
-{
-  /* computes neutron variables in the initial frame */
-  RotBackVector(RotMatrixSample, Pos) ;
-  RotBackVector(RotMatrixSample, Dir) ;
-  AddVector(Pos, PosSample) ;
-
-  /* computes neutron variables in the output frame */
-  SubVector(Pos, TranslOut) ;
-  RotVector(RotMatrixOut, Pos) ;
-  RotVector(RotMatrixOut, Dir) ;
-
-  /* translates neutron variables for output - X'=0. 
-  {
-    VectorType Path ;
-
-    *tof = *tof - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA_PT(wl) ;
-    CopyVector(Dir, Path) ;
-    MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-    AddVector(Pos, Path) ;  
-  }    Path = displacement vector 
-  */
-
-} /* End OutputTransformations() */
-
-
-/* own initialization of the monochromator/analyser module */
-
+/*******************************************************/
+/** Own initialization of the sample_reflectom module **/
+/*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-  ProbCutoff=wei_min ;
-
-  /*    INPUT  */
+  ProbCutoff=wei_min;
 	
   while(argc>1)
   {
@@ -366,12 +380,7 @@ void OwnInit(int argc, char *argv[])
     {
       			
       case 'P':
-        if((Par_Sample = fopen(&argv[1][2],"r"))==NULL)
-          {
-            fprintf(LogFilePtr,"\nParameter file '%s' not found\n",&argv[1][2]);
-            exit(0);
-          }
-        ParameterFileName=&argv[1][2];
+        SampleFileName=&argv[1][2];
         break;
       	
       case 'A':
@@ -387,123 +396,96 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 	
+  if (Repetition < 1)
+    Error("Repetition rate must be >= 1") ;  
 
-  if(Repetition == 0)
-  {
-    fprintf(LogFilePtr,"Repetition rate must be > 0 !\n") ;  
-    exit(0) ;
-  }
+  if (SampleFileName==NULL)
+    Error("Parameter file name missing") ;  
 
-  /* reads parameter file */
-  ReadParameterFile() ; 
-
-  if (Par_Sample != NULL) fclose(Par_Sample) ;
-
-	
-  /* computes global reference values */
-
-  scattered_dir[0]= (double) cos(random_main[2]*M_PI/180.) * (double) cos(random_main[1]*M_PI/180.) ;
-  scattered_dir[1]= (double) cos(random_main[2]*M_PI/180.) * (double) sin(random_main[1]*M_PI/180.) ;
-  scattered_dir[2]= (double) sin(random_main[2]*M_PI/180.) ;
-
-  fprintf(LogFilePtr,"\n	scattered dir.		:     %lf    %lf    %lf", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
-
-  FillRotMatrixZY(RotMatrixScatter, random_main[2]*M_PI/180., random_main[1]*M_PI/180.) ; 
-  FillRotMatrixZY(RotMatrixSample,  AnglSampleVert,           AnglSampleHoriz) ;
-  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,              AnglOutHoriz) ;
-
-}/* End OwnInit */
+  return;
+}
 
 
-/* own cleanup of the monochromator/analyser module */
-
+/*******************************************************/
+/** Does module specific cleanup                      **/
+/*******************************************************/
 void OwnCleanup()
 {
+  return;
+}
 
 
-}/* End OwnCleanup */
-
-
-/* ReadParameterFile() reads the parameters from file */
-
-void ReadParameterFile()
+/*******************************************************/
+/** Reads the sample parameters from file             **/
+/*******************************************************/
+void ReadParFile(SampleType* pSample)
 {
+  // opens file containing sample parameters (program exit in case of error)
+  FILE* pSmplFile = OpenInputFile2(SampleFileName, "sample data", "r");
 
-  SampleType sample;
+  /* reads from file by using ReadParF(pSmplFile) and ReadParComment(pSmplFile) */
+  ScatterMain [1]=ReadParF(pSmplFile); ScatterMain [2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
+  ScatterRange[1]=ReadParF(pSmplFile); ScatterRange[2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
 
-  fprintf(LogFilePtr,"\n	repetition rate		=     %ld", Repetition) ;
-  if(Repetition > 20)
-    fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics" 
-	                    "\nin wavelength, time, x,y,z and directions just before the sample") ;
+  ScatteringC =ReadParF(pSmplFile);    AbsorptionC =ReadParF(pSmplFile);    ReadParComment(pSmplFile) ;
+  PosSample[0]=ReadParF(pSmplFile);    PosSample[1]=ReadParF(pSmplFile);    PosSample[2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
 
-  /* reads from file by using ReadParF(Par_Sample) and ReadParComment(Par_Sample) */
-  random_main [1]=ReadParF(Par_Sample); random_main [2]=ReadParF(Par_Sample); ReadParComment(Par_Sample);
-  random_range[1]=ReadParF(Par_Sample); random_range[2]=ReadParF(Par_Sample); ReadParComment(Par_Sample);
+  AnglSampleHoriz=ReadParF(pSmplFile); AnglSampleVert=ReadParF(pSmplFile);  ReadParComment(pSmplFile);
+  ReadParString(pSmplFile, Option);    ReadParComment(pSmplFile);
 
-  ScatteringC =ReadParF(Par_Sample);    AbsorptionC =ReadParF(Par_Sample);    ReadParComment(Par_Sample) ;
-  PosSample[0]=ReadParF(Par_Sample);    PosSample[1]=ReadParF(Par_Sample);    PosSample[2]=ReadParF(Par_Sample); ReadParComment(Par_Sample);
+  DimSample[0]=ReadParF(pSmplFile); DimSample[2]=ReadParF(pSmplFile); DimSample[1]=ReadParF(pSmplFile) ; ReadParComment(pSmplFile) ;
+  TranslOut[0]=ReadParF(pSmplFile); TranslOut[1]=ReadParF(pSmplFile); TranslOut[2]=ReadParF(pSmplFile) ; ReadParComment(pSmplFile) ;
+  AnglOutHoriz=ReadParF(pSmplFile); AnglOutVert =ReadParF(pSmplFile); ReadParComment(pSmplFile) ;
 
-  AnglSampleHoriz=ReadParF(Par_Sample); AnglSampleVert=ReadParF(Par_Sample);  ReadParComment(Par_Sample);
-  ReadParString(Par_Sample, Option);    ReadParComment(Par_Sample);
+  if ((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
+    Warning("Distance to sample is smaller than at least one sample dimension"); 
 
-  DimSample[0]=ReadParF(Par_Sample); DimSample[2]=ReadParF(Par_Sample); DimSample[1]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
-  TranslOut[0]=ReadParF(Par_Sample); TranslOut[1]=ReadParF(Par_Sample); TranslOut[2]=ReadParF(Par_Sample) ; ReadParComment(Par_Sample) ;
-  AnglOutHoriz=ReadParF(Par_Sample); AnglOutVert =ReadParF(Par_Sample); ReadParComment(Par_Sample) ;
+  /* changes geometry text to small letters */
+  for (int i=0; i < strlen(Option); i++)
+  { if (isupper(Option[i]))
+      Option[i] = tolower(Option[i]);
+  }
 
-
-  if((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
-    fprintf(LogFilePtr,"\nWarning:Distance to sample is smaller than at least one sample dimension!"); 
-		
-		
   /*	 checks some values */
-  if((Option[1] != 'y') && (Option[1] != 'o')  && (Option[1] != 'u') && (Option[1] != 'a'))
+  if ((Option[1] != 'y') && (Option[1] != 'o')  && (Option[1] != 'u') && (Option[1] != 'a'))
+    Error("No valid geometry option");
+
+  pSample->Position[0] = PosSample[0];
+  pSample->Position[1] = PosSample[1];
+  pSample->Position[2] = PosSample[2];
+ 
+  if(Option[1] == 'y') 
   {
-    fprintf(LogFilePtr,"\nNo valid geometry option!\n") ;
-    exit(0) ;
+    pSample->SG.Cyl.r = DimSample[0];
+    pSample->SG.Cyl.height = DimSample[1];
+    pSample->Type = VT_CYL;
+
+    fprintf(LogFilePtr,"             sample geometry:	'cylinder'\n") ;
   }
+  if(Option[1] == 'o') 
+  {
+   pSample->SG.Cyl.r = DimSample[0];
+   pSample->SG.Cyl.height = DimSample[1];
+   pSample->Type = VT_CYL;
 
-  sample.Position[0] = PosSample[0];
-  sample.Position[1] = PosSample[1];
-  sample.Position[2] = PosSample[2];
-  
-
-  if(Option[1] == 'y') {
-
-    sample.SG.Cyl.r = DimSample[0];
-    sample.SG.Cyl.height = DimSample[1];
-    sample.Type = VT_CYL;
-
-    fprintf(LogFilePtr,"\n             sample geometry:	'cylinder'") ;
-
+    fprintf(LogFilePtr,"             sample geometry:	'hollow cylinder'\n") ;
   }
-  if(Option[1] == 'o') {
-    sample.SG.Cyl.r = DimSample[0];
-    sample.SG.Cyl.height = DimSample[1];
-    sample.Type = VT_CYL;
+  if(Option[1] == 'u')
+  { 
+    pSample->SG.Cube.thickness = DimSample[0];
+    pSample->SG.Cube.width = DimSample[1];
+    pSample->SG.Cube.height = DimSample[2];
+    pSample->Type = VT_CUBE;
 
-    fprintf(LogFilePtr,"\n             sample geometry:	'hollow cylinder'") ;
-
+    fprintf(LogFilePtr,"             sample geometry:	'cuboid'\n") ;
   }
-  if(Option[1] == 'u') {
-   
-    sample.SG.Cube.thickness = DimSample[0];
-    sample.SG.Cube.width = DimSample[1];
-    sample.SG.Cube.height = DimSample[2];
-    sample.Type = VT_CUBE;
+  if(Option[1] == 'a') 
+  {
+    pSample->SG.Ball.r = DimSample[0];
+    pSample->Type = VT_SPHERE;
 
-    fprintf(LogFilePtr,"\n             sample geometry:	'cuboid'") ;
-
+    fprintf(LogFilePtr,"             sample geometry:	'sphere'\n") ;
   }
-  if(Option[1] == 'a') {
-
-    sample.SG.Ball.r = DimSample[0];
-    sample.Type = VT_SPHERE;
-
-    fprintf(LogFilePtr,"\n             sample geometry:	'sphere'") ;
-
-  }
-
-  SetSampleGeometry(&sample);
 
   /* converts degs in radian etc. */
   AnglSampleHoriz *= M_PI/180. ;
@@ -512,10 +494,72 @@ void ReadParameterFile()
   AnglOutVert     *= M_PI/180. ;
 
   /* Hollow cylinder option */
-  CopyVector(DimSample, DimSampleHol); DimSampleHol[0] = DimSample[1];
+  CopyVector(DimSample, DimSampleHol); 
+  DimSampleHol[0] = DimSample[1];
 
-  
-}/* End ReadParameterFile */
+  fclose(pSmplFile);
+ 
+}/* End ReadParFile */
 
+
+/**********************************************************************/
+/** calculates ariables from input parameters and writes to log file **/
+/**********************************************************************/
+void  CalcAndWritePar()
+{
+  double scattered_dir[3];
+
+  fprintf(LogFilePtr,"  repetition rate		=     %ld\n", Repetition) ;
+  if(Repetition > 20)
+    fprintf(LogFilePtr,"Warning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics\n" 
+                       "in wavelength, time, x,y,z and directions just before the sample\n") ;
+
+  /* computes global reference values */
+  scattered_dir[0]= (double) cos(ScatterMain[2]*M_PI/180.) * (double) cos(ScatterMain[1]*M_PI/180.) ;
+  scattered_dir[1]= (double) cos(ScatterMain[2]*M_PI/180.) * (double) sin(ScatterMain[1]*M_PI/180.) ;
+  scattered_dir[2]= (double) sin(ScatterMain[2]*M_PI/180.) ;
+
+  fprintf(LogFilePtr,"  scattered dir.		:     %lf    %lf    %lf\n", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
+
+  FillRotMatrixZY(RotMatrixScatter, ScatterMain[2]*M_PI/180., ScatterMain[1]*M_PI/180.) ; 
+  FillRotMatrixZY(RotMatrixSample,  AnglSampleVert,           AnglSampleHoriz) ;
+  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,              AnglOutHoriz) ;
+
+}/* End OwnInit */
+
+
+/*******************************************************/
+/** Fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  /* Geometry data */
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    SetSampleGeometry(&stSample);
+  }
+}
+
+
+/*******************************************************/
+/** Co-ordinate transformation to output frame        **/
+/*******************************************************/
+void OutputTransform(VectorType pos, VectorType dir)
+{
+  /* computes neutron variables in the initial frame */
+  RotBackVector(RotMatrixSample, pos) ;
+  RotBackVector(RotMatrixSample, dir) ;
+  AddVector(pos, PosSample) ;
+
+  /* computes neutron variables in the output frame */
+  SubVector(pos, TranslOut) ;
+  RotVector(RotMatrixOut, pos) ;
+  RotVector(RotMatrixOut, dir) ;
+
+} /* End OutputTransform() */
 
 

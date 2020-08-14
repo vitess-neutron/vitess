@@ -2,6 +2,7 @@
 #define OPTFCT_F_H
 
 #include "opt_defs.h"
+#include "stdio.h"
 
 // External function delivering the F(P; T) 
 // ----------------------------------------

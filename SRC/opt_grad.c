@@ -18,11 +18,14 @@
 
 
 /*********************************************/
-/* static variables                          */
+/* static and global variables               */
 /*********************************************/
-static double F0[IMAX+1],     // calculated values F_1 ... F_anz 
-              FT[IMAX+1];     //  as a function of parameter set P0 and PT
+static 
+double F0[IMAX+1],     // calculated values F_1 ... F_anz 
+       FT[IMAX+1];     //  as a function of parameter set P0 and PT
+double Pfinal[NMAX+1]; // final result
 
+char   sSpecName[99]="CalcSpec.dat";
 
 
 /*********************************************/
@@ -36,7 +39,7 @@ static short ReadIniFile(short*  pOut,  short*  pNZmax, short*  pNDmax,
 /**********************************************************************************/
 /* Least Square Fitting routine                                                   */
 /**********************************************************************************/
-short OptGrad()
+short OptGrad(const char* sIniFile)
 {
 	                           /* sets of the parameter set P to be fitted                                  */
 	double P0[NMAX+1],         /* P vector of the last step (or starting value)                             */
@@ -139,7 +142,8 @@ short OptGrad()
     fprintf(LogFilePtr, "Derivatives:\n------------\n");
 
     // calculate functions for all derivatives, build and invert differential matrix 
-    if (CalcAllFctsG(P0, DelP, OFF)==FALSE) goto End;
+    if (CalcAllFctsG(P0, DelP, OFF)==FALSE) 
+      goto End;
 		Differentiate(NM, R, DelP);
 		Invert       (NI, NM);
 
@@ -225,10 +229,15 @@ short OptGrad()
   End:  
 	fprintf(LogFilePtr, "\nOptimization was finished after %d steps\n\nFinal values :\n", iStep);
 
+  // note result
+  for (j=1; j<=nPar; j++)
+		Pfinal[j] = PT[j];
+
   if (eOut>=2)
   { 
-    pFile=fileOpen("CalcSpec.dat", "wt");
-    if (pFile) {
+    pFile=fileOpen(sSpecName, "wt");
+    if (pFile) 
+    {
       for (i=1; i<=nPts; i++)
         fprintf(pFile, "%10.5f  %12.5e\n", X[i],FT[i]);
       fclose(pFile);
@@ -241,14 +250,13 @@ short OptGrad()
 		{	DP[j]*=SG;
 			fprintf(LogFilePtr, " P(%2d) = %13.5e +/-%13.5e\n", j,PT[j],DP[j]);
 		}
-		fprintf(LogFilePtr, "\nsum of squared errors :%12.4e\nstandard deviation    :%12.4e\n", 
-								QT, SG);
+		fprintf(LogFilePtr, "\nsum of squared errors :%12.4e\nstandard deviation    :%12.4e\n\n\n", QT, SG);
 	}
 	else
 	{	for (j=1; j<=nPar; j++)
 		{	fprintf(LogFilePtr, " P(%2d) = %13.5e\n", j,PT[j]);
 		}
-		fprintf(LogFilePtr, "\nsum of squared errors :%12.4e\n", QT);
+		fprintf(LogFilePtr, "\nsum of squared errors :%12.4e\n\n\n", QT);
 	}
 
 	return READY;

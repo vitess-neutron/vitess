@@ -7,7 +7,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0  Apr 2011  K. Lieutenant   initial version                                            */
-/* 1.1  Jul 2019  K. Lieutenant   blow-up option for visualization                           */
+/* 1.1  Jul 2019  K. Lieutenant   length compression for visualization                       */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -41,7 +41,7 @@ short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, 
 
 
 /******************************/
-/** Program                  **/
+/** Main Program             **/
 /******************************/
 int main(int argc, char *argv[])
 {
@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
   Init(argc,argv, _eModule);
 	PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
   DECLARE_ABORT
 
@@ -147,8 +151,6 @@ my_exit:
 void  OwnInit(int argc, char* argv[])
 {
 	int i;
-
-	bVisInstalled = TRUE;
 
 	for (i = 1; i < argc; i++)
 	{

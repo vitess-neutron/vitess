@@ -9,6 +9,7 @@
 /* 1.3  Nov 2005  K. Lieutenant  transformation scattering angles -> direction removed                  */
 /* 1.4  Aug 2012  K. Lieutenant  calculation of energy transfer and restriction of ang. range corrected */
 /* 1.5  Oct 2013  K. Lieutenant  Bose and transform. factor removed, color and ToF correction included  */
+/* 1.6  Mar 2020  K. Lieutenant  new central visualization parameters                                   */
 /********************************************************************************************************/
 
 #include <stdio.h>
@@ -20,12 +21,18 @@
 #include "matrix.h"
 #include "softabort.h"
 
-/* START HEADER STORY */
 
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
 #define	STRING_BUFFER 50
 #define	BINS_BUFFER 5000
 
-// global variables
+/*********************************/
+/** Global Variables            **/
+/*********************************/
+McCompID _eModule=MCN_EVAL1_INELAST;
+
 FILE		*FilePtrTOF=NULL,  *FilePtrEnergy=NULL;
 char		*FileNameTOF=NULL, *FileNameEnergy=NULL;
 short    eGeomOption,      // geometry option:   0: direct geometry   1: indirect geometry
@@ -35,7 +42,8 @@ short    eGeomOption,      // geometry option:   0: direct geometry   1: indirec
 long     NoBins,           // number of bins in TOF and energy spectrum
          i, k , nperbint[BINS_BUFFER], nperbine[BINS_BUFFER];
 
-double   PrimaryFlightPath, SecondaryFlightPath, 
+double   PrimaryFlightPath, 
+         SecondaryFlightPath, 
          LambdaRef,                   // reference wavelength 
          EnergyRef, VelocityRef,      // and corresponding energy and velocity
          TofRef,                      // TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
@@ -51,16 +59,18 @@ double   t[BINS_BUFFER], e[BINS_BUFFER],
 double   alpha, beta;
 
 
-// prototypes
-double TransformFactor(double DelE);
+/******************************/
+/** Prototypes               **/
+/******************************/
+double TransformFactor(double DeltaE);
 double BoseFactor(double T, double w);
 void   OwnInit(int argc, char *argv[]) ;
 void   OwnCleanup() ;
 
-/* FINISH HEADER STORY */
 
-
-
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char **argv)
 {
   double PathToDetection,   // real pathlength fro sample to detector for individual trajectory
@@ -69,14 +79,18 @@ int main(int argc, char **argv)
          TotIntTof=0.0,     // total intensity within TOF and E binning resp.
          TotIntE=0.0;
 
-  /* Initialize the program according to the parameters given  */
-  Init   (argc, argv, VT_EVAL_INELAST);
-  print_module_name("eval_inelast 1.5") ;
+  // reading of input data and initilisation
+  // ---------------------------------------
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
+ 
+  bVisInstalled = FALSE;
+  bLengthCmpr   = FALSE;
 
   /* calculates TOF channel boundaries and init p_TOF*/
-  t[0] = MinTOF ; e[0] = MinE ;
-
+  t[0] = MinTOF ; 
+  e[0] = MinE ;
   prob_t[0]   = prob_e[0]   = 0.0; 
   nperbint[0] = nperbine[0] = 0;
 
@@ -92,9 +106,10 @@ int main(int argc, char **argv)
 
   DECLARE_ABORT;
 
-  while((ReadNeutrons())!= 0)
+  // loop over trajectories
+  // ----------------------
+  while (ReadNeutrons()!=0)
   {
-    CHECK;
     for(i=0; i < NumNeutGot; i++)
     {
       CHECK;
@@ -148,19 +163,20 @@ int main(int argc, char **argv)
     } // end loop over trajectories
   }
 
+// Finish: writes and closes evaluate file, writes to log and instrument file, frees memory
+// ----------------------------------------------------------------------------------------
+ my_exit:
   // write files
-  for(k=0;k<NoBins;k++)
+  for(k=0; k<NoBins; k++)
   {
-    if (nperbint[k]==0) nperbint[k]=1; if(nperbine[k]==0) nperbine[k]=1; 
+    if (nperbint[k]==0) nperbint[k]=1; 
+    if (nperbine[k]==0) nperbine[k]=1; 
 		
     if (FilePtrTOF    != NULL) fprintf(FilePtrTOF,    "%lf   %le   %le   %9ld\n", (t[k]+t[k+1])/2.0, prob_t[k], prob_t[k]/sqrt((double)nperbint[k]), nperbint[k]) ;
     if (FilePtrEnergy != NULL) fprintf(FilePtrEnergy, "%lf   %le   %le   %9ld\n", (e[k]+e[k+1])/2.0, prob_e[k], prob_e[k]/sqrt((double)nperbine[k]), nperbine[k]) ;
   }
 
   fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTof, TotIntE);
-
-  /* Do the general cleanup */
- my_exit:
 	
   OwnCleanup();
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -170,20 +186,21 @@ int main(int argc, char **argv)
 }/* End main() */
 
 
-/* Transform factor */
-
-double TransformFactor(double DelE)
+/*******************************************************/
+/* Transform factor                                    */
+/*******************************************************/
+double TransformFactor(double DeltaE)
 {
-	if(eGeomOption == 0) return SecondaryFlightPath * sqrt(EnergyRef) / sq(EnergyRef + DelE) ;
-	if(eGeomOption == 1) return PrimaryFlightPath   / sqrt(EnergyRef) / (EnergyRef - DelE) ;
+	if(eGeomOption == 0) return SecondaryFlightPath * sqrt(EnergyRef) / sq(EnergyRef + DeltaE) ;
+	if(eGeomOption == 1) return PrimaryFlightPath   / sqrt(EnergyRef) / (EnergyRef - DeltaE) ;
 
 	else return 0 ;
 }
 
 
-
-/* Bose factor if w in ueV */
-
+/*******************************************************/
+/* Bose factor if w in ueV                             */
+/*******************************************************/
 double	BoseFactor(double T, double w)
 {
 double betha;
@@ -199,121 +216,122 @@ double betha;
 }
 
 
-/* own initialization of the monochromator/analyser module */
-
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
   double TOF_total_e=0.0;   // total TOF without energy transfer
 
-	while(argc>1)
-	{
-		switch(argv[1][1])
-		{
+  while(argc>1)
+  {
+    switch(argv[1][1])
+    {
+      case 'A':
+        eGeomOption = atoi(&argv[1][2]) ;
+        break;
+      case 't':
+        bTofCorr = atoi(&argv[1][2]) ;
+        break;
+      case 'D':
+        bBoseF = atoi(&argv[1][2]) ;
+        break;
 
-			case 'A':
-			eGeomOption = atoi(&argv[1][2]) ;
-			break;
-			case 't':
-			bTofCorr = atoi(&argv[1][2]) ;
-			break;
-			case 'D':
-			bBoseF = atoi(&argv[1][2]) ;
-			break;
+      case 'C':
+        sscanf(&argv[1][2], "%ld", &NoBins) ;
+        break;
+      case 'f':
+        iColor = atoi(&argv[1][2]);
+        break;
 
-			case 'C':
-			sscanf(&argv[1][2], "%ld", &NoBins) ;
-			break;
-			case 'f':
-			iColor = atoi(&argv[1][2]);
-			break;
+      case 'E':
+        FileNameTOF = &argv[1][2];
+        FilePtrTOF  = OpenOutputFile(&argv[1][2], FALSE, "w");
+	      if (FilePtrTOF==NULL)
+	      {
+		      printf("\nTOF spectrum file could not be not opened\n");
+		      exit(0);
+	      }
+      break;
 
-			case 'E':
-			if((FilePtrTOF = fopen(&argv[1][2],"w"))==NULL)
-			{
-				printf("\nTOF spectrum file not opened or created\n");
-				exit(0);
-			}
-			if(FilePtrTOF != NULL) FileNameTOF = &argv[1][2];
-			break;
+      case 'G':
+	      FileNameEnergy = &argv[1][2];
+        FilePtrEnergy  = OpenOutputFile(&argv[1][2], FALSE, "w");
+	      if(FilePtrEnergy==NULL)
+	      {
+		      printf("\nenergy spectrum file not opened or created\n");
+		      exit(0);
+	      }
+      break;
 
-			case 'G':
-			if((FilePtrEnergy = fopen(&argv[1][2],"w"))==NULL)
-			{
-				printf("\nenergy spectrum file not opened or created\n");
-				exit(0);
-			}
-			if(FilePtrEnergy != NULL) FileNameEnergy = &argv[1][2];
-			break;
+      case 'a':
+        sscanf(&argv[1][2], "%lf", &PrimaryFlightPath) ;
+        break;
+      case 'b':
+        sscanf(&argv[1][2], "%lf", &SecondaryFlightPath) ;
+        break;
 
-			case 'a':
-			sscanf(&argv[1][2], "%lf", &PrimaryFlightPath) ;
-			break;
-			case 'b':
-			sscanf(&argv[1][2], "%lf", &SecondaryFlightPath) ;
-			break;
+      case 'c':
+        sscanf(&argv[1][2], "%lf", &LambdaRef) ;
+        break;
 
-			case 'c':
-			sscanf(&argv[1][2], "%lf", &LambdaRef) ;
-			break;
+      case 'd':
+        sscanf(&argv[1][2], "%lf", &TimeOffset) ;
+        break;
 
-			case 'd':
-			sscanf(&argv[1][2], "%lf", &TimeOffset) ;
-			break;
+      case 'e':
+        sscanf(&argv[1][2], "%lf", &MinTOF) ;
+        break;
+      case 'g':
+        sscanf(&argv[1][2], "%lf", &MaxTOF) ;
+        break;
 
-			case 'e':
-			sscanf(&argv[1][2], "%lf", &MinTOF) ;
-			break;
-			case 'g':
-			sscanf(&argv[1][2], "%lf", &MaxTOF) ;
-			break;
+      case 'm':
+        sscanf(&argv[1][2], "%lf", &MinE) ;
+        break;
+      case 'M':
+        sscanf(&argv[1][2], "%lf", &MaxE) ;
+        break;
 
-			case 'm':
-			sscanf(&argv[1][2], "%lf", &MinE) ;
-			break;
-			case 'M':
-			sscanf(&argv[1][2], "%lf", &MaxE) ;
-			break;
+      case 'h':
+        sscanf(&argv[1][2], "%lf", &SlopeBins) ;
+        break;
 
-			case 'h':
-			sscanf(&argv[1][2], "%lf", &SlopeBins) ;
-			break;
+      case 'i':
+        sscanf(&argv[1][2], "%lf", &Temperature) ;
+        break;
 
-			case 'i':
-			sscanf(&argv[1][2], "%lf", &Temperature) ;
-			break;
+      case 'j':
+        sscanf(&argv[1][2], "%lf", &Angle) ;
+        break;
 
-			case 'j':
-			sscanf(&argv[1][2], "%lf", &Angle) ;
-			break;
-
-			case 'k':
-			sscanf(&argv[1][2], "%lf", &AngleRange) ;
-			break;
-
-		}
-		argc--;
-		argv++;
-	}
+      case 'k':
+        sscanf(&argv[1][2], "%lf", &AngleRange) ;
+        break;
+    }
+    argc--;
+    argv++;
+  }
 
 
-  /* check */
-
-  if((eGeomOption != 0) &&	(eGeomOption != 1))
+  // checks
+  // ------
+  if (eGeomOption!=0 &&	eGeomOption!=1)
   {
     fprintf(LogFilePtr,"ERROR: wrong geometry option!\n\n") ;
     exit(0) ;
   }
 
-  if((bBoseF != 0) &&	(bBoseF != 1))
+  if (bBoseF!=0 &&	bBoseF!=1)
   {
-	  fprintf(LogFilePtr,"ERROR: wrong option for Bose-factor!\n\n") ;
-	  exit(0) ;
+    fprintf(LogFilePtr,"ERROR: wrong option for Bose-factor!\n\n") ;
+    exit(0) ;
   }
 
-  if(MinTOF > MaxTOF && MinE > MaxE)
+  if (MinTOF > MaxTOF && MinE > MaxE)
   {
-	  fprintf(LogFilePtr,"ERROR: minimal time/energy must be < maximal time/energy !\n\n") ;
-	  exit(0) ;
+    fprintf(LogFilePtr,"ERROR: minimal time/energy must be < maximal time/energy !\n\n") ;
+    exit(0) ;
   }
 
   /* computes global reference values */
@@ -376,7 +394,8 @@ void OwnInit(int argc, char *argv[])
   }
 
 
-  /* options */
+  // options and printing to log file
+  // --------------------------------
   if (eGeomOption == 0) fprintf(LogFilePtr,"\noption 'direct geometry'\n") ;
   if (eGeomOption == 1) fprintf(LogFilePtr,"\noption 'inverted geometry'\n") ;
 
@@ -412,8 +431,9 @@ void OwnInit(int argc, char *argv[])
 }/* End OwnInit */
 
 
-/* own cleanup of the monochromator/analyser module */
-
+/*******************************************************/
+/* OwnCleanup: close files                             */
+/*******************************************************/
 void OwnCleanup()
 {
 	if(FilePtrTOF != NULL)fclose(FilePtrTOF) ;
@@ -421,7 +441,4 @@ void OwnCleanup()
 	if(FilePtrEnergy != NULL)fclose(FilePtrEnergy) ;
 
 }/* End OwnCleanup */
-
-
-
 

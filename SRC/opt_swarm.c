@@ -37,9 +37,8 @@ static void CopyPosition(double PosIn[], double PosOut[]);
 /*****************************************************************************/
 /* Swarm optimization routine                                                */
 /*****************************************************************************/
-short Swarm(){
-
-
+short Swarm(char* sIniFile)
+{
   double globalBestFoM=1e99;            // inverse FoM: Factor/FOM read from Fcomm.dat, global best value
   double currentFoM=1e99;               // inverse FoM: Factor/FOM read from Fcomm.dat, current value
   int i,j,k,                            // counting variables

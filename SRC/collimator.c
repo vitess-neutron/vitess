@@ -65,12 +65,13 @@ int main(int argc, char *argv[])
 
 	// reading of input data and initialisation
   // ----------------------------------------
-  bVisInstalled = TRUE;
-  bBlowupInstal = TRUE;
-	
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
   memset(&OutNeutron,'\0', sizeof(Neutron));
   ChanDistIn  =  ChanWin  + BladeWidth;
@@ -263,7 +264,8 @@ void SetGeometry(char* sColor)
   {
     int i;   // index of hulls 
 
-    sprintf(stGeometry.pDescr, "%s:%s", sModuleName, sColor);
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
     stGeometry.nHulls  = nChannels; 
@@ -271,12 +273,12 @@ void SetGeometry(char* sColor)
 
     for (i=1; i <= stGeometry.nHulls; i++)
     { 
-      stGeometry.pHull[i-1].WidthIn   = BlowupFact * (NumChan(i,nChannels)*ChanWin  + NumBlds(i,nChannels)*BladeWidth);
-      stGeometry.pHull[i-1].WidthOut  = BlowupFact * (NumChan(i,nChannels)*ChanWout + NumBlds(i,nChannels)*BladeWidth);
-      stGeometry.pHull[i-1].HeightIn  = BlowupFact * CollEntrHeight;
-      stGeometry.pHull[i-1].HeightOut = BlowupFact * CollExitHeight;
-      stGeometry.pHull[i-1].Length    = Length;
-      stGeometry.pHull[i-1].vCntr[0]  = Length/2.;
+      stGeometry.pHull[i-1].WidthIn   = (NumChan(i,nChannels)*ChanWin  + NumBlds(i,nChannels)*BladeWidth);
+      stGeometry.pHull[i-1].WidthOut  = (NumChan(i,nChannels)*ChanWout + NumBlds(i,nChannels)*BladeWidth);
+      stGeometry.pHull[i-1].HeightIn  = CollEntrHeight;
+      stGeometry.pHull[i-1].HeightOut = CollExitHeight;
+      stGeometry.pHull[i-1].Length    =     Length/CmprFact;
+      stGeometry.pHull[i-1].vCntr[0]  = 0.5*Length/CmprFact;
       stGeometry.pHull[i-1].vCntr[1]  = 0.0;
       stGeometry.pHull[i-1].vCntr[2]  = 0.0;
       stGeometry.pHull[i-1].vNormal[0]= 1.0;

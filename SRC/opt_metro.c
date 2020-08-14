@@ -52,7 +52,7 @@ static void  LocalMin   (const VtCheckMode, const double QT,     const double Q0
 /**********************************************************************************/
 /* Metropolis optimization routine                                                */
 /**********************************************************************************/
-short Metropolis()
+short Metropolis(char* sIniFile)
 {
                          /* sets of the parameter set P to be optimized   */
   double P0[NMAX+1],     /* P vector of the last step (or starting value) */

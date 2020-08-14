@@ -7,6 +7,7 @@
 /* ...                                                                                       */
 /* 1.8  Jul 2002  G. Zsigmond                                                                */
 /* 1.9  Aug 2012  K. Lieutenant   visualization included                                     */
+/* 1.10 Apr 2020  K. Lieutenant   new central visualisation parameters                       */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -21,13 +22,25 @@
 #include "intersection.h"
 
 
+McCompID _eModule=MCN_MONO_ANA;
+
+
+/******************************/
+/** Main Program             **/
+/******************************/
 int main(int argc, char **argv)
 {
-  /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_MONOC_ANALY);
-  print_module_name("Monochr_analyser 1.9") ;
+  double		Index;
 
+  // initialisation
+  // --------------
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.10");
   OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
   /* Get the neutrons from the file */
   DECLARE_ABORT;
@@ -269,19 +282,19 @@ int main(int argc, char **argv)
   }
 
  my_exit:
-
-  /* Do the general cleanup */
-
+  /* write geometry file */
+  SetGeometry("white");
+  
+  /* Do module specific cleanups */
   OwnCleanup();
 
+  /* Do the general cleanup */
   Cleanup(TranslFoc[0], TranslFoc[1], TranslFoc[2], AnglFocHoriz, AnglFocVert);
 
   return 0;
 }
 
 
-
-/********************************************************************/
 /********************************************************************/
 
 /* selects CE on which the neutron is reflected and gives output in frame of CE */
@@ -367,7 +380,6 @@ void	MosaicMaxProb(VectorType Dir, double *th, VectorType Mosaic)
 }
 
 
-
 /* own initialization of the monochromator/analyser module */
 
 void OwnInit(int argc, char *argv[])
@@ -388,7 +400,7 @@ void OwnInit(int argc, char *argv[])
       switch(argv[1][1])
 	{
 	case 'P':
-	  if((Par_Crys = fopen(&argv[1][2],"r"))==NULL)
+	  if ((Par_Crys = OpenInputFile(&argv[1][2], FALSE, "r"))==NULL)
 	    {
 	      fprintf(LogFilePtr,"\nERROR: parameter file '%s' not found!",&argv[1][2]);
 	      exit(0);
@@ -582,7 +594,7 @@ void OwnInit(int argc, char *argv[])
       if(geom_option ==3) crys_geomVertCyl() ;
       if(geom_option ==4) crys_geomDoubleCyl() ;
 
-      if((Foc_Crys = fopen(GeomFileName, "r"))==NULL)
+      if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
 	{
 	  fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
 	  exit(0);
@@ -600,7 +612,7 @@ void OwnInit(int argc, char *argv[])
 
       NumberCE[0]= NumberCE[1]=0;
 
-      if((Foc_Crys = fopen(GeomFileName, "r"))==NULL)
+      if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
 	{
 	  fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
 	  exit(0);
@@ -627,71 +639,8 @@ void OwnInit(int argc, char *argv[])
 
   FillRotMatrixZY(RotMatrixFoc, AnglFocVert, AnglFocHoriz) ;
 
-  if (bVisInstr)
-    { 
-      
-      if (Option == 1) {
-	// Visualisation of the monochromator geomentry
-	stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
-	stGeometry.nCuboids = 1; 
-      
-	stGeometry.pCuboid[0].Length = DimCE[0]; 
-	stGeometry.pCuboid[0].Width  = DimCE[1];
-	stGeometry.pCuboid[0].Height = DimCE[2];
-	stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
-	stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
-	stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
-	stGeometry.pCuboid[0].vNormal[0]= 1.;
-	stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
-	stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
-      
-	stGeometry.pDescr  = "monochromator:yellow";
-	stGeometry.eModule = VT_MONOC_ANALY;
-
-      }
-      
-      else {
-	int i, j;
-	int k = 0;
-	
-	stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
-	stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
-	stGeometry.pDescr  = "monochromator:yellow";
-	stGeometry.eModule = VT_MONOC_ANALY;
-
-	for(i = 0;i<NumberCE[0];i++) {
-	  for(j = 0;j<NumberCE[1];j++) {
-	      
-	    VectorType DimCurrCE, PosCurrCE;
-	    double RotMatrixCurrCE[3][3];
-	    VectorType normal={1, 0, 0};
-
-	    CopyVectorsToVector(i, j, PosCE_F, PosCurrCE) ;
-	    CopyVectorsToVector(i, j, DimCE_F, DimCurrCE) ;
-	    CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
-
-	    RotBackVector(RotMatrixCurrCE , normal);
-
-	    stGeometry.pCuboid[k].Length = DimCurrCE[0]; 
-	    stGeometry.pCuboid[k].Width  = DimCurrCE[1];
-	    stGeometry.pCuboid[k].Height = DimCurrCE[2];
-	    stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
-	    stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
-	    stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
-	    stGeometry.pCuboid[k].vNormal[0]= normal[0];
-	    stGeometry.pCuboid[k].vNormal[1]= normal[1];
-	    stGeometry.pCuboid[k].vNormal[2]= normal[2];
-
-	    k++;
-
-	  }
-	}
-	
-      }
-    }
-  
-
 }/* End OwnInit */
+
 
 /* own cleanup of the monochromator/analyser module */
 
@@ -827,6 +776,74 @@ void ReadFocFile()
     }
 
 }/* End ReadFocFile */
+
+
+/* Fills the structure stGeometry for visualization  */
+
+void SetGeometry(char* sColor)
+{
+  int k=0;  // index for geometrical elements in figure
+
+  /* fills structure for instrument visalization */
+  if (bVisInstr)
+  { 
+	  sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  = sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    if (Option == 1) 
+    {
+      // Visualisation of the monochromator geometry
+	    stGeometry.pCuboid  = (VtCuboid*) calloc(1, sizeof(VtCuboid));
+	    stGeometry.nCuboids = 1; 
+	
+	    stGeometry.pCuboid[0].Length    = DimCE[0]; 
+	    stGeometry.pCuboid[0].Width     = DimCE[1];
+	    stGeometry.pCuboid[0].Height    = DimCE[2];
+	    stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
+	    stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
+	    stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
+	    stGeometry.pCuboid[0].vNormal[0]= 1.0;
+	    stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
+	    stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+    }
+    else
+    {	
+      k=0;
+	    stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
+	    stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+      
+	    for (int i=0; i < NumberCE[0]; i++) 
+      {
+	      for (int j=0; j < NumberCE[1]; j++) 
+        {
+	        VectorType DimCurrCE, PosCurrCE;
+	        double RotMatrixCurrCE[3][3];
+	        VectorType normal={1, 0, 0};
+
+	        CopyVectorsToVector (i, j, PosCE_F, PosCurrCE) ;
+	        CopyVectorsToVector (i, j, DimCE_F, DimCurrCE) ;
+	        CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
+
+	        RotBackVector(RotMatrixCurrCE , normal);
+
+	        stGeometry.pCuboid[k].Length    = DimCurrCE[0]; 
+	        stGeometry.pCuboid[k].Width     = DimCurrCE[1];
+	        stGeometry.pCuboid[k].Height    = DimCurrCE[2];
+	        stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
+	        stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
+	        stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
+	        stGeometry.pCuboid[k].vNormal[0]= normal[0];
+	        stGeometry.pCuboid[k].vNormal[1]= normal[1];
+	        stGeometry.pCuboid[k].vNormal[2]= normal[2];
+
+	        k++;
+	      }
+	    }
+	  }
+  }
+  return;
+}
 
 
 /* computes frame angles of output */

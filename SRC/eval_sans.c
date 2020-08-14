@@ -5,6 +5,7 @@
 /*                                                                                           */
 /* 1.0  Nov 2011  K. Lieutenant  initial version                                             */
 /* 1.1  Nov 2013  K. Lieutenant  flight path correction                                      */
+/* 1.2  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -17,15 +18,24 @@
 #include "matrix.h"
 #include "softabort.h"
 
+
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
 #define BINS   5000
 
 
-/* globale variable */
-int   TOF = FALSE,           /* TRUE : time of flight instrument */
-      deadspotactive=FALSE,  /* TRUE : deadspot exists */
-			bPathCor      =FALSE,  /* TRUE : correct TOF for real flight path from sample to detector */
-      /*bExclCount =FALSE,      TRUE : only neutrons complying with the evaluate requirements
-                                       are written to the output      */
+/*********************************/
+/** Global Variables            **/
+/*********************************/
+McCompID _eModule=MCN_EVAL1_SANS;
+
+FILE *pSpectrum=NULL,        // pointer to the file containing the SANS spectrum
+     *pReference=NULL;       // pointer to the file containing the reference (=isotropic scattering) spectrum
+
+int   bTOF       =FALSE,     /* TRUE : time of flight instrument */
+      bDeadSpot  =FALSE,     /* TRUE : deadspot exists */
+			bPathCor   =FALSE,     /* TRUE : correct TOF for real flight path from sample to detector */
       bLogBinning=FALSE;     /* TRUE : binning increases exponentially 
                                 FALSE: linear binning                  */
 
@@ -47,95 +57,104 @@ double referenceWavelength,  /* reference Wavelength for crystal monochromator (
        dEvalTimeMax= 1.0e10;
 
 
-FILE *pSpectrum=NULL,    // pointer to the file containing the SANS spectrum
-     *pReference=NULL;   // pointer to the file containing the reference (=isotropic scattering) spectrum
 
-
+/******************************/
+/** Prototypes               **/
+/******************************/
 void  OwnInit    (int argc, char *argv[]);
 short ReadRefSpec(double* pRefBin, double* pRefVal);
 
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char *argv[])
 {
-	short 
-    bWrite=FALSE,       /* criterion: write data point to output  */
-    bRefFile=FALSE;     /* criterion: reference file available    */
+  short  bWrite=FALSE,       /* criterion: write data point to output  */
+         bRefFile=FALSE;     /* criterion: reference file available    */
 
-	int  
-    ibin,               /* index for the bins                     */
-    nSpec=0;            /* number of calculated S-values          */
+  int    ibin,               /* index for the bins                     */
+         nSpec=0;            /* number of calculated S-values          */
 
-	long	
-    i, 
-	  bcnt[BINS+1];       /* number of trajectories contributing to count rate */
+  long  i, 
+        bcnt[BINS+1];       /* number of trajectories contributing to count rate */
 
-	double 
-    bintc,
-    binterval=1.0,
-	  bpost[BINS+1],      /* limits of the bins                     */
-	  bint [BINS+1],      /* count rate of a bin                    */
-	  rmid [BINS+1],      /* centers of the bins in the ref. file   */
-    rint [BINS+1],      /* count rate of the reference file       */
-	  time,               /* TOF                                    */
-    lambda,             /* wavelngth of the neutron               */
-	  TwoTheta,           /* scattering angle theta = 2 theta_bragg */
-    Phi,                /* scattering direction phi               */
-    Q,                  /* Q value of the scattering              */
-    Svalue,             /* value S(Q)                             */
-	  prob=0,             /* weight of the trajectory               */
-    Flightpath=0.0,     // real length of neutron flight path [cm] 
-    DetPath=0.0;        // path length from sample to position of detection
+  double bintc=0.0,
+         binterval=1.0,
+         bpost[BINS+1],      /* limits of the bins                     */
+         bint [BINS+1],      /* count rate of a bin                    */
+         rmid [BINS+1],      /* centers of the bins in the ref. file   */
+         rint [BINS+1],      /* count rate of the reference file       */
+         time,               /* TOF                                    */
+         lambda,             /* wavelngth of the neutron               */
+         TwoTheta,           /* scattering angle theta = 2 theta_bragg */
+         Phi,                /* scattering direction phi               */
+         Q,                  /* Q value of the scattering              */
+         Svalue,             /* value S(Q)                             */
+         prob=0,             /* weight of the trajectory               */
+         Flightpath=0.0,     // real length of neutron flight path [cm] 
+         DetPath=0.0;        // path length from sample to position of detection
 
 
-	/* Initialisation */
-	Init   (argc, argv, VT_EVAL_ELAST);
-	print_module_name("eval_elast_sans 1.1");
-	OwnInit(argc, argv);
+  // reading of input data and initilisation
+  // ---------------------------------------
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.2");
+  OwnInit(argc, argv);
+ 
+  bVisInstalled = FALSE;
+  bLengthCmpr   = FALSE;
 
+  memset(bpost, 0, (BINS+1)*sizeof(double));
+  memset(bint,  0, (BINS+1)*sizeof(double));
+  memset(rmid,  0, (BINS+1)*sizeof(double));
+  memset(rint,  0, (BINS+1)*sizeof(double));
+
+  // Read reference spectrum
   bRefFile=ReadRefSpec(rmid, rint);
   if (bRefFile==FALSE)
     Warning("reference spectrum could not be read, constant value of 1 assumed");
 
-	memset(bpost,     0, BINS*sizeof(double));
-	memset(bint,      0, BINS*sizeof(double));
-	bintc = 0;
+  /* Construction of the Bins */
+  /* logarithmic */
+  if (bLogBinning)
+  {	
+    bpost[0] = Qmin;
+    bint [0] = 0.0;
+    bcnt [0] = 0;
 
-	/* Construction of the Bins */
-	/* logarithmic */
-	if (bLogBinning)
-	{	
-		bpost[0] = Qmin;
-		bint [0] = 0.0;
-		bcnt [0] = 0;
-
-		for(ibin = 1; bpost[ibin-1] < Qmax; ibin++)
-		{
-			bpost[ibin] = bpost[ibin-1] * (1.0 + dLogProz/100.);
-			bint [ibin] = 0.0;
-			bcnt [ibin] = 0;
-		}
-		nbins = ibin-1;
-	}
-	/* linear */
-	else
-	{	binterval = (Qmax - Qmin) / (double)nbins;
+    for(ibin = 1; bpost[ibin-1] < Qmax; ibin++)
+    {
+      bpost[ibin] = bpost[ibin-1] * (1.0 + dLogProz/100.);
+      bint [ibin] = 0.0;
+      bcnt [ibin] = 0;
+    }
+    nbins = ibin-1;
+  }
+  /* linear */
+  else
+  {	binterval = (Qmax - Qmin) / (double)nbins;
 		
-		for(ibin = 0; ibin<=nbins; ibin++)
-		{
-			bpost[ibin] = Qmin + binterval*ibin;
-			bint [ibin] = 0.0;
-			bcnt [ibin] = 0;
-		}
-	}
+    for(ibin = 0; ibin<=nbins; ibin++)
+    {
+      bpost[ibin] = Qmin + binterval*ibin;
+      bint [ibin] = 0.0;
+      bcnt [ibin] = 0;
+    }
+  }
 
 	/* Processing of the Neutrons */
 	DECLARE_ABORT
 
-	while (ReadNeutrons())
-	{	for(i=0; i<NumNeutGot; i++)
-		{
-			CHECK
+  // loop over trajectories
+  // ----------------------
+  while (ReadNeutrons()!=0)
+  {	
+    for(i=0; i<NumNeutGot; i++)
+    {
+      CHECK
 
-			CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+      CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 
       // flightpath correction if detector distance is given
       if (bPathCor)
@@ -147,59 +166,61 @@ int main(int argc, char *argv[])
       { Flightpath = Flightpath0;
       }
 
-			prob     = InputNeutrons[i].Probability;
-			time     = InputNeutrons[i].Time - TimeOffset;
-			lambda   = TOF ? 395.60346/(Flightpath/time) : referenceWavelength;
+      prob     = InputNeutrons[i].Probability;
+      time     = InputNeutrons[i].Time - TimeOffset;
+      lambda   = bTOF ? 395.60346/(Flightpath/time) : referenceWavelength;
 
-			/* Writing out all neutrons, if 'exclusive counts = no' is set */
-			// if (bExclCount==FALSE)		
-				WriteNeutron(&InputNeutrons[i]);
+      /* Writing out all neutrons, if 'exclusive counts = no' is set */
+      // if (bExclCount==FALSE)		
+      WriteNeutron(&InputNeutrons[i]);
 
-			/* trajectories within deadspot */
-			if (deadspotactive && TwoTheta <= deadspotangle) continue;
+      /* trajectories within deadspot */
+      if (bDeadSpot && TwoTheta <= deadspotangle) continue;
 
-			/* traj. out of time of evaluation */
-			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
+      /* traj. out of time of evaluation */
+      if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-			/* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
-			if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
+      /* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
+      if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
-			/* Writing out the neutrons that comply with the requirements, 
-			   if 'exclusive counts = yes' is set */
-			/* if (bExclCount==TRUE)		
-				   WriteNeutron(&InputNeutrons[i]); */
+      /* Writing out the neutrons that comply with the requirements, 
+      if 'exclusive counts = yes' is set */
+      /* if (bExclCount==TRUE)		
+	      WriteNeutron(&InputNeutrons[i]); */
 
-			Q = 4.0 * M_PI * sin(TwoTheta/2.0) / lambda;
+      Q = 4.0 * M_PI * sin(TwoTheta/2.0) / lambda;
 
-			for(ibin = 0; ibin<nbins; ibin++)
-			{	if (bpost[ibin] <= Q && Q < bpost[ibin+1])
-				{
-					bcnt[ibin]++;
-					bint[ibin] = bint[ibin] + prob;
-					bintc = bintc + prob;
-					break;
-				}
-			}
-		}
+      for(ibin = 0; ibin<nbins; ibin++)
+      {	if (bpost[ibin] <= Q && Q < bpost[ibin+1])
+        {
+          bcnt[ibin]++;
+          bint[ibin] = bint[ibin] + prob;
+          bintc = bintc + prob;
+          break;
+        }
+      }
+    }
 	}
 
-	my_exit:
-	/* Output of Results */
-	fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc);
+// Finish: writes and closes evaluate file, writes to log and instrument file, frees memory
+// ----------------------------------------------------------------------------------------
+  my_exit:
+  /* Output of Results */
+  fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc);
 
-	/* Spectrum */
-	if (pSpectrum != NULL)
-	{
-		double bmid;
+  /* Spectrum */
+  if (pSpectrum != NULL)
+  {
+    double bmid;
 
-		for(ibin = 0; ibin < nbins; ibin++)
-		{	
-			/* if (fabs(bint[ibin]) < 1E-40)
-				bint[ibin] = 0.0; */
-			if (bLogBinning)
-				bmid = sqrt(bpost[ibin]*bpost[ibin+1]);
-			else
-				bmid = (bpost[ibin]+bpost[ibin+1])/2.0;
+    for(ibin = 0; ibin < nbins; ibin++)
+    {	
+      /* if (fabs(bint[ibin]) < 1E-40)
+      bint[ibin] = 0.0; */
+      if (bLogBinning)
+        bmid = sqrt(bpost[ibin]*bpost[ibin+1]);
+      else
+        bmid = (bpost[ibin]+bpost[ibin+1])/2.0;
 
       if (!bRefFile)
       { rmid[ibin] = bmid;
@@ -217,21 +238,20 @@ int main(int argc, char *argv[])
         if (bWrite)
         {
           Svalue = bint[ibin]/(rint[ibin]/ProbScat);
-    		  fprintf(pSpectrum,"%12g %12g %7ld\n", bmid, Svalue, bcnt[ibin]);
+          fprintf(pSpectrum,"%12g %12g %7ld\n", bmid, Svalue, bcnt[ibin]);
         }
-  		}
-		}
-		fclose(pSpectrum);
+      }
+    }
+    fclose(pSpectrum);
     if (nSpec==0)
       Error ("no agreement in binning between reference spectrum and SANS spectrum");
-	}
+  }
+  
+  /*Cleanup*/
+  fprintf(LogFilePtr,"\n");
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
-
-	/*Cleanup*/
-	fprintf(LogFilePtr,"\n");
-	Cleanup(0.0,0.0,0.0, 0.0,0.0);
-
-	return 0;
+  return 0;
 }
 
 
@@ -244,7 +264,6 @@ int main(int argc, char *argv[])
 /*                                                        */
 /* return: rc      : TRUE/FALSE                           */
 /**********************************************************/
-
 short ReadRefSpec(double* pRefBin, double* pRefVal)
 {
   int    iBin=0;
@@ -260,121 +279,117 @@ short ReadRefSpec(double* pRefBin, double* pRefVal)
       pRefVal[iBin] = TabVal[1];
       iBin++;
     }
-    rc=TRUE;
+
+    if (iBin > 0)
+      rc=TRUE;
+
+    fclose(pReference);
   }
   return rc;
 }
       
 
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-	long   i;
-	double winp;
-	char * arg;
+  long   i;
+  double winp;
+  char * arg;
 
-	for(i=1; i<argc; i++) 
-	{
-		arg = argv[i];
-		if (*arg !='+') 
-		{
-			arg += 2;
-			switch(arg[-1]) 
-			{
-				case 'S':
-				  if ((pSpectrum = fopen(FullParName(arg),"w")))
-				    break;
-				  fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
-				  exit(-1);
-					  
-				case 'I':
-				  if ((pReference = fopen(FullParName(arg),"r")))
-				    break;
-				  // fprintf(LogFilePtr,"\nERROR: File %s could not be opened for input\n",arg);
-				  // exit(-1);
+  for(i=1; i<argc; i++) 
+  {
+    arg = argv[i];
+    if (*arg !='+') 
+    {
+      arg += 2;
+      switch(arg[-1]) 
+      {
+        case 'S':
+          pSpectrum = OpenOutputFile(arg, FALSE, "w");
+          if (pSpectrum==NULL)
+          { fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
+            exit(-1);
+          }
+          break;
+        case 'I':
+          pReference = OpenInputFile(arg, FALSE, "r");
+          break;
 
-				case 'n':
-					nbins = atol(arg); /* number of bins */
-					if (nbins <= BINS)
-						break;
-					fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS);
-					exit(99);
+        case 'n':
+          nbins = atol(arg); /* number of bins */
+          if (nbins > BINS)
+          { fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS);
+            exit(99);
+          }
+          break;
 
-				case 'w':
-					winp = atof(arg);
-					if (winp == 1.0) TOF = TRUE; /* time of flight instrument */
-					break;
+        case 'w':
+          winp = atof(arg);
+          if (winp == 1.0) bTOF = TRUE; /* time of flight instrument */
+          break;
 
-				case 'r':
-					referenceWavelength = atof(arg); /* reference Wavelength for crystal monochromator */
-					break;                           /* (or mechanical velocity selector) instrument   */
+        case 'r':
+          referenceWavelength = atof(arg); /* reference Wavelength for crystal monochromator */
+          break;                           /* (or mechanical velocity selector) instrument   */
 
-				case 'e':
-					dEvalTimeMin = atof(arg);        /* minimal time for evaluation */
-					break;
+        case 'e':
+          dEvalTimeMin = atof(arg);        /* minimal time for evaluation */
+          break;
+        case 'E':
+          dEvalTimeMax = atof(arg);             /* maximal time for evaluation */
+          break;
 
-				case 'E':
-					dEvalTimeMax = atof(arg);             /* maximal time for evaluation */
-					break;
+        case 'C':
+          nColour = atol(arg);                  /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
+          break;
 
+        case 'd':
+          deadspotangle = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
+          bDeadSpot = TRUE;                /* scattering angle < deadspotangle [deg] */
+          break;
 
-				case 'C':
-					nColour = atol(arg);                  /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
-					break;
+        case 'p':
+          ProbScat = atof(arg);                 /* scattering probability of the isotropic scatterer */
+          break;
 
-				case 'd':
-					deadspotangle = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
-					deadspotactive = TRUE;                /* scattering angle < deadspotangle [deg] */
-					break;
+        case 'm':
+          Qmin = atof(arg);                     /* lower bound of Q range [1/A] */
+          break;
+        case 'M':
+          Qmax = atof(arg);                     /* upper bound of Q range [1/A] */
+          break;
 
-				case 'p':
-					ProbScat = atof(arg);                 /* scattering probability of the isotropic scatterer */
-					break;
+        case 'R':
+          dLogProz    = atof(arg);              /* percentage of increase to next bin */
+          if (dLogProz!=0.0)
+          bLogBinning = TRUE;
+          break;
 
+        case 'l':
+          Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
+          if (Flightpath0 <= 0.0)
+          Error("you must define a flight path > 0.0");
+          break;
 
-				case 'm':
-					Qmin = atof(arg);                     /* lower bound of Q range [1/A] */
-					break;
+        case 'L':
+          DetDist = atof(arg);  /* length of neutron flight path [cm] */
+          break;
 
-				case 'M':
-					Qmax = atof(arg);                     /* upper bound of Q range [1/A] */
-					break;
+        case 't':
+          bPathCor = atol(arg);     /*  correct flight path length for location of detection */
+          break;
 
-				case 'R':
-					dLogProz    = atof(arg);              /* percentage of increase to next bin */
-					if (dLogProz!=0.0)
-						bLogBinning = TRUE;
-					break;
+        case 'T':
+          TimeOffset = atof(arg); /* global shift of the neutron time t= t-TimeOffset [ms] */
+          break;
 
-        /*
-				case 'c':
-					if(atol(arg)==1)          // if activated, only neutrons complying with the 
-						bExclCount = TRUE;      // evaluate requirements are considered further on
-					break;
-        */
-
-				case 'l':
-					Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
-					if (Flightpath0 <= 0.0)
-						Error("you must define a flight path > 0.0");
-					break;
-
-				case 'L':
-					DetDist = atof(arg);  /* length of neutron flight path [cm] */
-					break;
-
-				case 't':
-					bPathCor = atol(arg);     /*  correct flight path length for location of detection */
-					break;
-
-				case 'T':
-					TimeOffset = atof(arg); /* global shift of the neutron time t= t-TimeOffset [ms] */
-					break;
-
-				default:
-					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n", argv[i]);
-					exit(-1);
-					break;
-			}
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n", argv[i]);
+          exit(-1);
+          break;
+      }
 		}
 	}
 

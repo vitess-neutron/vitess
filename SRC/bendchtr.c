@@ -17,10 +17,10 @@ void gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
 
 double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, BenderChannel ThisBenderCh, long numberch, long NumberOfSurfaces,
-                                    double wei_min, double disabut,
+                                    double weight_min, double disabut,
                                     double reflectivitylup[1000], double reflectivityrup[1000], double reflectivitytbup[1000], 
                                     double reflectivityldo[1000], double reflectivityrdo[1000], double reflectivitytbdo[1000], 
-                                    double surfacerough, long keygrav, long keypol, long qspin,
+                                    double surfacerough, long key_grav, long keypol, long qspin,
                                     double entrancediscenter[N_SURF], double exitdiscenter[N_SURF], double spacer) 
 { 
   /************************************************************************************/ 
@@ -142,7 +142,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
   /* until it is absorbed or intercepts with the exit plane.                         */ 
   /***********************************************************************************/ 
  
-  /*	fprintf(LogFilePtr,"weight min  %e \n",wei_min);*/ 
+  /*	fprintf(LogFilePtr,"weight min  %e \n",weight_min);*/ 
  
   R1 = 1;
   PreviousCollision = 6; 
@@ -172,7 +172,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
  
       CopyNeutron(ThisNeutron, &TempNeutron); 
  
-      TimeOF=NeutronSurfaceSecIntersectionGr(&TempNeutron, ThisBenderCh.Surf[i], keygrav);		 
+      TimeOF=NeutronSurfaceSecIntersectionGr(&TempNeutron, ThisBenderCh.Surf[i], key_grav);		 
  
       /*	Intercept = NeutronPlaneIntersection(*ThisNeutron, ThisGuide.Wall[i]); */ 
       //      	fprintf(LogFilePtr,"num = %d time = %e \n",i, TimeOF); 
@@ -231,7 +231,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
  
       /*	fprintf(LogFilePtr,"Velocity real= %f \n", VelocityReal); */ 
  
-      if (NearestNeutron.Probability <= wei_min)  return(-1.0); 
+      if (NearestNeutron.Probability <= weight_min)  return(-1.0); 
  
  
       ThisNeutron->Position[0] = NearestNeutron.Position[0]; 
@@ -415,7 +415,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
     }			 
  
  	  /* Reject neutron with small probability */
- 	  if (NearestNeutron.Probability <= wei_min)  return(-1.0); 
+ 	  if (NearestNeutron.Probability <= weight_min)  return(-1.0); 
  
     /***********************************************************************************/ 
     /*  Calculate the trajectory of the reflected neutron.                             */ 
@@ -468,7 +468,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
  
     CopyNeutron(ThisNeutron, &TempNeutron1); 
     
-    TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], keygrav);		 
+    TimeOF1=NeutronSurfaceSecIntersectionGr(&TempNeutron1, ThisBenderCh.Surf[4], key_grav);		 
  
      /* CHECK incorrect flight of neutron, move neutron after reflection on small distance 
      and check inside channel or no , no - exit(-1) */
@@ -481,7 +481,7 @@ double PathThroughChannelGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bende
       ThisNeutron->Position[2] = ThisNeutron->Position[2] + VelocityReal*stepp*(ThisNeutron->Vector[2]); 
 	
       /* Include gravity */ 
-      if (keygrav == 1) 
+      if (key_grav == 1) 
       {	 
         ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*stepp*stepp; 
         ThisNeutron->Vector[2]   = ThisNeutron->Vector[2]   -    ((G*1.0e-4)*stepp/VelocityReal);	 

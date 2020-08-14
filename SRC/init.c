@@ -23,10 +23,8 @@
 #ifdef _MSC_VER
 # include <fcntl.h>
 # include <io.h>
-# define cSlash '\\'
 # define SET_BINARY_MODE(file) if (_setmode(_fileno(file),O_BINARY) == -1) myExit("Can't set binary mode\n");
 #else
-# define cSlash '/'
 # define SET_BINARY_MODE(file)
 #endif
 
@@ -37,24 +35,26 @@
 #include "init.h"
 
 
-#define MAX_COL        6   // max. number of count rates written separately for different colours, 0 means no separate rates writable
-#define NUM_EOP        3   // number of end-of-part lines that can be treated in 'instrument.inf'
-#define MAX_TRAJ    1200
+#define MAX_COL            6   // max. number of count rates written separately for different colours, 0 means no separate rates writable
+#define NUM_EOP            3   // number of end-of-part lines that can be treated in 'instrument.inf'
+#define MAX_TRAJ        1200
+#define COMPRESSBUFLEN 65536
 
-extern FILE* LogFilePtr;   /* pointer to the log file stream              */
+
+/***************************************************************************************************/
+/* GLOBAL VARIABLES                                                                                */
+/* ----------------                                                                                */
+/* This file contains several global variables which are essential to each VITESS program module   */
+/***************************************************************************************************/
+extern FILE* LogFilePtr;     /* pointer to the log file stream              */
 
 const char *sInstrInfOut = "instrument.inf";
 const char *sInstrInfIn  = "instrument.inf";
 
-
-/**************************************************************/
-/* This file contains several global variables which are      */
-/* essential to each VITESS program module                    */
-/**************************************************************/
-double   CmprFact=1.0;       /* Factor, by which width and height are enlarged in the visualization */  
+double   CmprFact=1.0;       /* Factor, by which the length is compressed for certain modules in the visualization */  
 long     BufferSize;         /* size of the neutron input and output buffer */
 long     CompressedSize;     /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
-int      CompressionMode;    /* if > 0, compression mode 1 (nodebug) 2(float) */
+int      CompressionMode;    /* if > 0, data compression mode 1 (nodebug) 2(float) */
 Neutron* InputNeutrons;      /* input neutron Buffer */
 Neutron* OutputNeutrons;     /* output neutron buffer */
 Neutron *OutNeutronsCopy;    /* if this has been allocated in source.c, it may be used for double buffering */
@@ -90,7 +90,7 @@ short    bTrace=TRUE,        /* criterion: write trace files             */
          bSepRate =TRUE,     /* criterion: write separate count rates    */
          bTest    =FALSE,    /* criterion: test run (without trajectories)   */
          bVisInstalled=FALSE,/* criterion: visualization routines installed */
-         bLengthCmpr=FALSE,  /* criterion: Blow-up factor handled in module */
+         bLengthCmpr=FALSE,  /* criterion: Length compression active in module, i.e. IAP is also compressed */
          bVisInstr=TRUE,     /* criterion: instrument visualization      */
          bVisTraj =FALSE;    /* criterion: visualization of trajectories */
 double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of this module */
@@ -108,138 +108,132 @@ VectorType vNull={0.0,0.0,0.0},
            BegPosS={0.0,0.0,0.0}; /* [cm] end position of prev. section = origin of this section in absolute co-ordinate system */
 
 TotalID  tempID;
+
 /**************************************************************/
-/* static variables                                           */
+/* STATIC VARIABLES                                           */
 /**************************************************************/
+static char*      InputDir =NULL;       //  [PATH_LEN]="";
+static char*      OutputDir=NULL;       //  [PATH_LEN]="";
 
 static long       TracePoints=FALSE;     /* creates dot for every written output buffer if TRUE */
 static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static int ParDirectoryLength, InstallDirectoryLength;
+static int        ParDirLength, 
+                  InstallDirLength;
 
-#define COMPRESSBUFLEN 65536
-static int compressModeR, compressModeW, compressBufLen, compressedRestlen, spinVector;
-static long byte_read_so_far;
+static int        compressModeR, compressModeW, compressBufLen, compressedRestlen, spinVector;
+static long       byte_read_so_far;
 static VectorType spinUp, spinDown, spinUpOut, spinDownOut;
-static char *compressBuf, *zcat_p;
+static char      *compressBuf, *zcat_p;
 
-int      NThreads;      // number of helper threads for execution, set by --T
-unsigned long int VRandomSeed;  // random seed, default 0, set by --Z
+int               NThreads=0;              // number of helper threads for execution, set by --T
+unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
+
 
 /**************************************************************/
-/* local functions                                            */
+/* PROTOTYPES OF LOCAL FUNCTIONS                              */
 /**************************************************************/
-
-static void  OutputBufferFlush(int final);
-static void  WriteTraceLine(Neutron* Neut);
-static int   readCompressedNeutrons();
-static void  writeCompressed();
+static void  setInstallDirectory(char *arg);
+static void  setParDirectory    (char *arg);
+static char* conCat (const char *sFile, const char* sSubDir, int sel);
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
+static void  writeCompressed();
+static int   readCompressedNeutrons();
+static void  OutputBufferFlush(int final);
+static void  WriteTraceLine   (Neutron* Neut);
+
+// these function should only be used exceptionally outside init.c
+char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
+char* FullParName     (const char* filename);                       // adds parameter directory to file name 
+char* FullInName      (const char* filename);                       // adds output dir to file name 
+char* FullOutName     (const char* filename);                       // adds input dir to file name 
 
 
 /**************************************************************/
-/* global functions that are also used in this module         */
+/* GLOBAL FUNCTIONS                                           */
 /**************************************************************/
-/*
-void  CopyNeutron    (Neutron* source,   Neutron* dest);
-char* FullParName    (const char* filename);
-char* FullInstallName(const char* fileName, const char* sRelPath);
-*/
 
-static void setInstallDirectory (char *arg) {
-  // We need the InstallDirectory path for implicitly referenced data files.
-  // For gridrun we take this from the VITESSROOT environment variable.
-  // Normally we use the executable path of the module, which  contains the installation path;
-  // We assume it to be that string part before MODULES .
-  char *mp;
-#ifndef WIN32
-  // gridrun works with unix only
-  char *s = getenv("VITESSROOT");
-  if (s) {
-    InstallDirectory = strdup(s);
-    InstallDirectoryLength = strlen(s);
-    return;
-  }
-#endif
-  mp = strstr(arg, "MODULES");
-  if (! mp) mp = strstr(arg, "Debug");
-  if (! mp) return;
-  InstallDirectoryLength = (int)((long) mp - (long) arg);
-  /* for pointers too big for long integers: */
-  if (InstallDirectoryLength < 0) InstallDirectoryLength = -InstallDirectoryLength;
-  InstallDirectory = (char *) malloc(InstallDirectoryLength + 1);
-  memcpy(InstallDirectory, arg, InstallDirectoryLength);
-  InstallDirectory[InstallDirectoryLength] = 0;
-}
-
-static void setParDirectory (char *a) {
-  int len;
-  if ((len = strlen(a))) {
-    /* last character should be a slash */
-    if (a[len-1] == cSlash) {
-      memcpy ((ParDirectory = (char *) malloc(len+1)), a, len);
-    } else {
-      memcpy ((ParDirectory = (char *) malloc(len+2)), a, len);
-      ParDirectory[len++] = cSlash;
-      ParDirectory[len] = 0;
-    }
-    ParDirectoryLength = len;
-  }
-}
-
-static char *conCat (const char *b, const char* c, int sel) {
-  char *res, *a=NULL;
-  int alen, blen, clen;
-  if (b == 0)
-    return 0;
-  /* Do not change an absolute path. */
-#ifdef _MSC_VER
-  /* we consider a filename with : as absolute */
-  if (strstr(b, ":")) sel = -1;
-#else
-  if (b[0] == '/') sel = -1;
-#endif
-  if (sel == -1) {
-    alen = 0;
-  } else if (sel == 0) {
-    a = ParDirectory;
-    alen = ParDirectoryLength;
-  } else {
-    a = InstallDirectory;
-    alen = InstallDirectoryLength;
-  }
-  blen = strlen(b);
-  clen = strlen(c);
-  if ((res = (char *) malloc(alen+blen+clen+1))) {
-    if (alen) {
-      memcpy(res, a, alen);
-      if (clen)
-        strcpy(res+alen, c);
-      else
-        res[alen] = 0;
-    } else
-      strcpy(res, c);
-    strcat(res, b);
-  }
-  return res;
-}
-
-/* Adding path of parameter directory to file name */
-char* FullParName(const char* fileName)
-{
-  return conCat(fileName, "", 0);
-}
-
-/* Adding path of installation directory to file name */
+/* Adds path of the installation directory to a file name */
 char* FullInstallName(const char* fileName, const char* sRelPath)
 {
   return conCat(fileName, sRelPath, 1);
 }
 
+/* Adds the path of a directory - input, output or parameter - to a file name */
+char* FullParName(const char* fileName)
+{
+  return conCat(fileName, "", 0);
+}
+
+char* FullInName(const char* fileName)
+{
+  return conCat(fileName, "", 2);
+}
+
+char* FullOutName(const char* fileName)
+{
+  return conCat(fileName, "", 3);
+}
+
+
+/* Adds the path of a directory - input, output or install_dir/sPath - to a file name 
+   opens the file using parameters 'sMode' 
+   and exits with error message if bErrMsg=TRUE     */
+FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
+{
+  FILE* pFile=NULL; 
+
+  if (sFilename!=NULL)
+  { 
+    if (bErrMsg==TRUE)
+      pFile = fileOpen(FullInName(sFilename), sMode);
+    else
+      pFile = fopen(FullInName(sFilename), sMode);
+  }
+  return (pFile);
+}
+
+FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sMode)
+{
+  FILE* pFile=NULL; 
+
+  if (sFilename!=NULL)
+    pFile = fileOpen2(FullInName(sFilename), sMode, sContent);
+  
+  return (pFile);
+}
+
+FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
+{
+  FILE* pFile=NULL; 
+
+  if (sFilename!=NULL)
+  { 
+    if (bErrMsg==TRUE)
+      pFile = fileOpen(FullOutName(sFilename), sMode);
+    else
+      pFile = fopen(FullOutName(sFilename), sMode);
+  }
+  return (pFile);
+}
+
+FILE* OpenPackInpFile(const char *sFilename, const char* sPath, short bErrMsg)
+{
+  FILE* pFile=NULL; 
+
+  if (sFilename!=NULL)
+  { 
+    if (bErrMsg==TRUE)
+      pFile = fileOpen(FullInstallName(sFilename, sPath), "r");
+    else
+      pFile = fopen(FullInstallName(sFilename, sPath), "r");
+  }
+  return (pFile);
+}
+
 
 // tools for detached fwrite
-
 static FILE *TWfile;
 static size_t TWsize;
 static int TWn;
@@ -282,7 +276,8 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   uintptr_t trc;
   int nwr, rc;
 
-  if (!TWdata) {
+  if (!TWdata) 
+  {
     nwr = fwrite(d, s, n, f);
     return n == nwr;
   }
@@ -293,7 +288,8 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 
   if (rc)
     fprintf(LogFilePtr,"WaitForSingleObject problem, rc %d\n", rc);
-  if (final) {
+  if (final) 
+  {
     nwr = fwrite(d, s, n, f);
     return n == nwr;
   }
@@ -360,15 +356,14 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 #endif
 
 
-static void setCompressBufLen() {
+static void setCompressBufLen() 
+{
   int full_len = sizeof(Neutron) * BufferSize;
   compressBufLen = COMPRESSBUFLEN > full_len ? full_len : COMPRESSBUFLEN;
 }
 
 
-/*
-*************************************************************
-
+/**************************************************************
  Init does a general program initialization, which is ok
  for all modules of the VITESS program package.
  A processed option is marked by setting the leading - to +
@@ -376,13 +371,16 @@ static void setCompressBufLen() {
   --B  number of buffer entries
   --c  size        (if the first module is zcat, the second
                     gets the compressed file's size here)
-  --C  mode        compression mode 1 (nodebug) or float (2)
+  --C  mode        data compression mode 1 (nodebug) or float (2)
   --f  input file name
   --F  output file name
   --G  gravitation
+  --i  input directory
+  --I  instrument file of previous part of the simulation
   --J  active trace points
   --L  logfile
   --N  module number 1,2,...
+  --oO  output directory
   --p  progress file
   --P  parameter directory
   --t  test mode
@@ -391,15 +389,11 @@ static void setCompressBufLen() {
   --v  visualization output: geometry file
   --V  visualization output: trajectory file
   --Z  random number generator initialization
-
-************************************************************
-*/
-
+*************************************************************/
 void Init(int argc, char **argv, const McCompID eModule)
 {
-  char *a, *arg, text[99];
   short l, ii, jj;
-  static char * marg[3];
+  char  *a, *arg, text[99];
   const gsl_rng_type * T;
 
   /* Set some default values */
@@ -434,7 +428,7 @@ void Init(int argc, char **argv, const McCompID eModule)
     case 'B':                   // determine the buffer size
       BufferSize = atol(arg);
       break;
-    case 'b':                   // determine the compression factor
+    case 'b':                   // determine the length compression factor
       CmprFact = atof(arg);
       break;
 
@@ -445,12 +439,17 @@ void Init(int argc, char **argv, const McCompID eModule)
       CompressionMode= atoi(arg);
       break;
 
-    case 'f' :			// input file if other than stdin
-      marg[0] = arg;
+    case 'f' :	             		// input file if other than stdin
+      InputFileName = arg;
       break;
-
     case 'F':                   // output file if other than stdout
-      marg[1] = arg;
+      OutputFileName = arg;
+      break;
+    case 'L':                   // output file if other than stderr
+      LogFileName = arg;
+      break;
+    case 'I':                   // instrument file for reading data if other than instrument.inf
+      sInstrInfIn = arg;
       break;
 
     case 'G':
@@ -459,13 +458,6 @@ void Init(int argc, char **argv, const McCompID eModule)
 
     case 'J' :
       TracePoints=TRUE;
-      break;
-
-    case 'L':                   // output file if other than stderr
-      marg[2] = arg;
-      break;
-    case 'I':                   // instrument file for reading data if other than instrument.inf
-      sInstrInfIn = arg;
       break;
 
     case 'N':                   // module number
@@ -478,6 +470,12 @@ void Init(int argc, char **argv, const McCompID eModule)
 
     case 'P':                   // parameter (= default) directory
       setParDirectory(arg);
+      break;
+    case 'i':                   // input directory
+      InputDir=arg;
+      break;
+    case 'o':                   // output directory
+      OutputDir=arg;
       break;
 
     case 't' :
@@ -500,7 +498,7 @@ void Init(int argc, char **argv, const McCompID eModule)
 
     case 'V' :
       pTrajFileName= arg;       // trajectory file name
-      TrajFilePtr  = fopen(FullParName(pTrajFileName), "w");
+      TrajFilePtr  = OpenOutputFile(pTrajFileName, TRUE, "w");
       bVisTraj     = TRUE;
       break;
 
@@ -527,66 +525,79 @@ void Init(int argc, char **argv, const McCompID eModule)
     *a = '+';                   // remember that this argument has been processed
   }
 
-  /* Now we know how to handle filenames, which might correspond to the parameter directory */
+  // The parameter directory is used, if no specific input and output directories are given
+  if (InputDir ==NULL) InputDir  = ParDirectory;
+  if (OutputDir==NULL) OutputDir = ParDirectory;
 
-  // First of all try to open the logfile, if it has been requested.
-  if ((arg = marg[2])) {
-    // Do no use FileOpen to avoid recursion, but fopen directly.
-    LogFilePtr = fopen((LogFileName = FullParName(arg)), "w");
-    if (LogFilePtr == NULL) {
-      printf("ERROR: Can't open log file %s (%s)!\n", LogFileName, arg);
+  // First of all try to open the log file, if it has been requested.
+  if (LogFileName!=NULL) 
+  {
+    // Do not use 'fileOpen' to avoid recursion, but open directly using 'fopen', i.e. set bErrMsg to FALSE.
+    LogFilePtr = OpenOutputFile(LogFileName, FALSE, "w");
+    if (LogFilePtr == NULL) 
+    {
+      printf("ERROR: Can't open log file %s%c%s!\n", OutputDir, cSlash, LogFileName);
       exit (-1);
     }
   }
 
   // Then we care for input, decide if it is compressed.
-  if ((arg = marg[0])) {
+  if (InputFileName!=NULL) 
+  {
     // we got some --f argument
-    if (strcmp(arg, "no_file") == 0)
+    if (strcmp(InputFileName, "no_file") == 0)
       InputFilePtr = NULL;
     else
-      InputFilePtr = fileOpen((InputFileName = FullParName(arg)), "rb");
-    if (InputFilePtr) {
+      InputFilePtr = OpenInputFile(InputFileName, TRUE, "rb");
+    
+    if (InputFilePtr!=NULL) 
+    {
       char b[4];
       // Get the file size to enable a progress bar
-      if (0 == fseek(InputFilePtr, 0, SEEK_END)) {
-	SourceSize = ftell(InputFilePtr);
-	rewind(InputFilePtr);
+      if (0 == fseek(InputFilePtr, 0, SEEK_END)) 
+      {
+        SourceSize = ftell(InputFilePtr);
+        rewind(InputFilePtr);
       }
       // Is it compressed ?
       compressModeR = 0;
-      if (4 == fread(b, 1, 4, InputFilePtr)) {
-	if (memcmp(b, "cmp2", 4) == 0)
-	  compressModeR = 2;
-	else if (memcmp(b, "cmp1", 4) == 0)
-	  compressModeR = 1;
+      if (4 == fread(b, 1, 4, InputFilePtr)) 
+      {
+        if (memcmp(b, "cmp2", 4) == 0)
+          compressModeR = 2;
+        else if (memcmp(b, "cmp1", 4) == 0)
+          compressModeR = 1;
       }
       if (compressModeR)
-	compressedRestlen = spinVector = 0;
+        compressedRestlen = spinVector = 0;
       else
-	rewind(InputFilePtr);
+        rewind(InputFilePtr);
     }
-  } else {
+  } 
+  else 
+  {
     SET_BINARY_MODE(stdin);
-    if (CompressedSize) {
+    if (CompressedSize) 
+    {
       double factor;
       // we are second in the pipe, reading zcat output
       setCompressBufLen();
       zcat_p = compressBuf = (char*) malloc(compressBufLen);
       compressedRestlen = fread(compressBuf, 1, compressBufLen, stdin);
       if (compressedRestlen < 512)
-	myExit("dubious data from first module\n");
+        myExit("dubious data from first module\n");
       // Is it vitess-compressed also ?
       if (memcmp(compressBuf, "cmp2", 4) == 0)
-	compressModeR = 2;
+        compressModeR = 2;
       else if (memcmp(compressBuf, "cmp1", 4) == 0)
-	compressModeR = 1;
+        compressModeR = 1;
       else
-	compressModeR = 0;
+        compressModeR = 0;
 
-      if (compressModeR) {
-	zcat_p += 4;
-	compressedRestlen -= 4;
+      if (compressModeR) 
+      {
+        zcat_p += 4;
+        compressedRestlen -= 4;
       }
 
       factor = compressModeR == 0 ? 55.0 : compressModeR == 2 ? 29.0 : 45.8;
@@ -594,29 +605,35 @@ void Init(int argc, char **argv, const McCompID eModule)
     }
   }
 
-  // Here we care for ouput, and if compression is an option.
-  if ((arg = marg[1])) {
-    if (strcmp(arg,"no_file") == 0)
-      OutputFilePtr = NULL;
-    else {
-      OutputFilePtr = fileOpen((OutputFileName = FullParName(arg)), "wb");
-      if (OutputFilePtr) {
-	if (CompressionMode)
-	  compressModeW = CompressionMode; // it has been stated explicitly
-	else if (strstr(OutputFileName, ".float."))
-	  compressModeW = 2;               // by filename convention
-	else if (strstr(OutputFileName, ".nodebug."))
-	  compressModeW = 1;               // by filename convention
+  // Here we care for output, and if data compression is an option.
+  if (OutputFileName!=NULL) 
+  {
+    if (strcmp(OutputFileName, "no_file") == 0)
+    { OutputFilePtr = NULL;
+    }
+    else 
+    {
+      OutputFilePtr = OpenOutputFile(OutputFileName, TRUE, "wb");
+      if (OutputFilePtr) 
+      {
+        if (CompressionMode)
+	        compressModeW = CompressionMode; // it has been stated explicitly
+        else if (strstr(FullOutName(OutputFileName), ".float."))
+	        compressModeW = 2;               // by filename convention
+        else if (strstr(FullOutName(OutputFileName), ".nodebug."))
+	        compressModeW = 1;               // by filename convention
 
-	if (compressModeW == 1)
-	  fwrite("cmp1", 1, 4, OutputFilePtr);
-	else if (compressModeW == 2)
-	  fwrite("cmp2", 1, 4, OutputFilePtr);
-	else
-	  compressModeW = 0;               // to catch an unknown CompressionMode
+        if (compressModeW == 1)
+	        fwrite("cmp1", 1, 4, OutputFilePtr);
+        else if (compressModeW == 2)
+	        fwrite("cmp2", 1, 4, OutputFilePtr);
+        else
+          compressModeW = 0;               // to catch an unknown CompressionMode
       }
     }
-  } else {
+  } 
+  else 
+  {
     SET_BINARY_MODE(stdout);
   }
 
@@ -724,15 +741,21 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 
   /* flush the output buffer and close the input and output file */
   OutputBufferFlush(1);
-  if(InputFileName)
+  if(InputFilePtr)
     fclose(InputFilePtr);
   if(OutputFilePtr && OutputFilePtr != stdout)
     fclose(OutputFilePtr);
 
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
   /* release the buffer memory */
-  free(InputNeutrons);
-  free(OutputNeutrons);
+  if (InputNeutrons!=NULL)
+    free(InputNeutrons);
+  if (OutputNeutrons!=NULL)
+    free(OutputNeutrons);
+  if (ParDirectory != NULL)
+    free(ParDirectory);
+  if (InstallDirectory != NULL)
+    free(InstallDirectory);
 
   /* free GNU gsl rng state var */
   gsl_rng_free (vit_gsl_rng);
@@ -792,7 +815,6 @@ void PrintModuleName(const McCompID eModule, const char* sModuleVsn)
 # endif
 #endif
 }
-
 
 void print_module_name(const char *name)
 {
@@ -889,6 +911,7 @@ static int readFromPipe() {
   return clen;
 }
 
+
 /****************************************************************/
 /* ReadNeutrons reads BufferSize neutrons from the input stream */
 /* to the input neutron Buffer InputNeutrons. The number of     */
@@ -944,7 +967,6 @@ int ReadNeutrons()
   return NumNeutGot;
 }
 
-
 void ChangeNeutronID(Neutron* n)
 {
 
@@ -957,12 +979,12 @@ void ChangeNeutronID(Neutron* n)
 
 }
 
+
 /*******************************************************************/
 /* WriteNeutron writes a neutron to the neutron ouput buffer       */
 /* OuputNeutrons and flushes the buffer to the output file if the  */
 /* buffer is full. Output Neutrons contains BufferSize entries.    */
 /*******************************************************************/
-
 void WriteNeutron(Neutron *OutNeutron)
 {
   int    col_write =0;
@@ -988,6 +1010,7 @@ void WriteNeutron(Neutron *OutNeutron)
   WriteTraceLine(OutNeutron);
 }
 
+
 /**********************************************************************************/
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
 /* 'ReadInstrData()'  reads these data                                            */
@@ -997,7 +1020,6 @@ void WriteNeutron(Neutron *OutNeutron)
 /*                    (meas.time, wavelength, frequency)                          */
 /* 'ReadSimData()'    reads these data                                            */
 /**********************************************************************************/
-
 void WriteInstrData(VectorType Pos)
 {
   FILE*  pFile=NULL;
@@ -1008,7 +1030,7 @@ void WriteInstrData(VectorType Pos)
   {
     // source module writes header and line number '0'
     iModId=0;
-    pFile = fopen( FullParName(sInstrInfOut), "w");
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
@@ -1018,7 +1040,7 @@ void WriteInstrData(VectorType Pos)
     // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
     char *inp;
     pBuffer = inp = (char*) malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
-    pFile = fopen(FullParName(sInstrInfIn), "r");
+    pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
     if (pFile) {
       int m;
       for (m=-2; m<nModuleNo; m++) {
@@ -1030,7 +1052,7 @@ void WriteInstrData(VectorType Pos)
       }
       fclose(pFile);
     }
-    pFile = fopen(FullParName(sInstrInfOut), "w");
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
     if (pFile) {
       char *p = pBuffer;
       while (p != inp) {
@@ -1045,7 +1067,7 @@ void WriteInstrData(VectorType Pos)
   else 
   {
     // for each other module: open file to append a line
-    pFile = fopen(FullParName(sInstrInfOut), "a");
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "a");
   }
 
   // each module appends a line
@@ -1062,7 +1084,6 @@ void WriteInstrData(VectorType Pos)
     fclose(pFile);
   }
 }
-
 
 void WriteWWP(Neutron *pNeutron, VtReason eReason)
 {
@@ -1121,7 +1142,6 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
                        Wwp.id.IDGrp[0], Wwp.id.IDGrp[1], Wwp.id.IDNo, Wwp.color, Wwp.lambda, Wwp.weight, Wwp.pos[0], Wwp.pos[1], Wwp.pos[2], Wwp.spin, Wwp.reason);
 }
 
-
 void WriteGeomData(VectorType vBegPos, double Length)
 {
   FILE*      pGeomFile=NULL;
@@ -1132,7 +1152,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
   /* the source module opens the file */
   if (stGeometry.eModule == MCN_SOURCE)
-  { pGeomFile = fopen( FullParName(pGeomFileName), "w");
+  { pGeomFile = OpenOutputFile(pGeomFileName, TRUE, "w");
     if (pGeomFile) {
       DefineColors(pGeomFile);
       fprintf(pGeomFile, "#\n#units \n#  [m]  position, length, width, height, radius\n# [deg] angles\n#\n");
@@ -1141,7 +1161,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   }
   /* each other module appends a line */
   else if (stGeometry.eModule < MCN_MONITOR1)
-  { pGeomFile = fopen(FullParName(pGeomFileName), "a");
+  { pGeomFile = OpenOutputFile(pGeomFileName, TRUE, "a");
   }
   else {
     return;
@@ -1346,7 +1366,10 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
   *pRotY   = 0.0;
   *pRotZ   = 0.0;
 
-  pFile = fopen(FullParName(pInstrFile), "r");
+  if (stPicture.eModule==MCN_READ_IN)
+    pFile = OpenInputFile (pInstrFile, FALSE, "r");
+  else
+    pFile = OpenOutputFile(pInstrFile, FALSE, "r");
 
   if (pFile)
   {
@@ -1417,7 +1440,7 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq)
 {
   FILE*  pFile;
 
-  pFile = fopen(FullParName("simulation.inf"), "w");
+  pFile = OpenOutputFile("simulation.inf", FALSE, "w");
   if (pFile)
   { fprintf(pFile, "%15.5e   # measuring time     [s]\n", dTimeMeas);
     fprintf(pFile, "%10.5f        # desired wavelength [Ang]\n", dLmbdWant);
@@ -1433,7 +1456,7 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
 
   *pTimeMeas = 0.0;
 
-  pFile = fopen(FullParName("simulation.inf"), "r");
+  pFile = OpenOutputFile("simulation.inf", FALSE, "r");
   if (pFile)
   {
     /* First line - measuring time */
@@ -1449,21 +1472,6 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
     fclose(pFile);
   }
 }
-
-/*********************************************************************************/
-/* Transform Vector from local co-ordinate system of the module                  */
-/* to absolute co-ordinate system                                                */
-/*********************************************************************************/
-static void Transform(VectorType vAbsVec, const VectorType vRelVec, const VectorType vBegVec)
-{
-  VectorType   Vec;
-
-  CopyVector   (vRelVec, Vec);
-  RotBackVector(RotMatrixM, Vec);
-  AddVector    (Vec, vBegVec);
-  CopyVector   (Vec, vAbsVec);
-}
-
 
 
 void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorType vAbsPosE)
@@ -1482,8 +1490,7 @@ void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vec
 	             Width/100.0, Height/100.0, rotAngle, pDescr);
 }
 
-void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2,
-                   VectorType vEdge3)
+void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2, VectorType vEdge3)
 {
   fprintf(pGeomFile, "Triangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %s\n",
 	  vEdge1[0]/100.0, vEdge1[1]/100.0, vEdge1[2]/100.0,
@@ -1571,6 +1578,7 @@ void DefineColors(FILE* pGeomFile)
         "DEF yellow=<Material diffuseColor='.9 .6 .01' emissiveColor='.9 .6 .01' transparency='.3'/>\n"
         "DEF orange=<Material diffuseColor='.9 .4 .01' emissiveColor='.9 .4 .01' transparency='.4'/>\n"
         "DEF cyan=<Material diffuseColor='.0 .99 .99' emissiveColor='.0 .99 .99' transparency='.4'/>\n"
+        "DEF light_blue=<Material diffuseColor='.6 .99 .99' emissiveColor='.0 .99 .99' transparency='.4'/>\n"
         "DEF magenta=<Material diffuseColor='.9 .01 .6' emissiveColor='.9 .01 .6' transparency='.4'/>\n"
         "DEF grey=<Material diffuseColor='.6 .6 .6' emissiveColor='.6 .6 .6' transparency='.4'/>\n"
         "DEF black=<Material diffuseColor='.01 .01 .01' emissiveColor='.01 .01 .01' transparency='.4'/>\n"
@@ -1579,9 +1587,9 @@ void DefineColors(FILE* pGeomFile)
 }
 
 
-/*************************************************************/
-/* Copy the contents of a structure 'Neutron' to another one */
-/*************************************************************/
+/****************************************************************/
+/* Copy the contents of a structure 'Neutron' or initialze them */
+/****************************************************************/
 void CopyNeutron(const Neutron *source, Neutron *dest)
 {
   memcpy(dest, source, sizeof(Neutron));
@@ -1606,7 +1614,8 @@ void InitNeutron(Neutron* pNeut)
   }
 }
 
-void setDetachedWrite() {
+void setDetachedWrite() 
+{
   initParWrite(sizeof(Neutron), BufferSize);
 }
 
@@ -1614,9 +1623,120 @@ void setDetachedWrite() {
 /**************************************************************/
 /* LOCAL FUNCTIONS                                            */
 /**************************************************************/
+static void setInstallDirectory (char *arg) {
+  // We need the InstallDirectory path for implicitly referenced data files.
+  // For gridrun we take this from the VITESSROOT environment variable.
+  // Normally we use the executable path of the module, which  contains the installation path;
+  // We assume it to be that string part before MODULES .
+  char *mp;
+#ifndef WIN32
+  // gridrun works with unix only
+  char *s = getenv("VITESSROOT");
+  if (s) {
+    InstallDirectory = strdup(s);
+    InstallDirLength = strlen(s);
+    return;
+  }
+#endif
+  mp = strstr(arg, "MODULES");
+  if (! mp) mp = strstr(arg, "Debug");
+  if (! mp) return;
+  InstallDirLength = (int)((long) mp - (long) arg);
+  /* for pointers too big for long integers: */
+  if (InstallDirLength < 0) InstallDirLength = -InstallDirLength;
+  InstallDirectory = (char *) malloc(InstallDirLength + 1);
+  memcpy(InstallDirectory, arg, InstallDirLength);
+  InstallDirectory[InstallDirLength] = 0;
+}
+
+static void setParDirectory (char *a) 
+{
+  int len;
+  if ((len = strlen(a))) 
+  {
+    /* last character should be a slash */
+    if (a[len-1] == cSlash) 
+    {
+      memcpy ((ParDirectory = (char *) malloc(len+1)), a, len);
+    } 
+    else 
+    {
+      memcpy ((ParDirectory = (char *) malloc(len+2)), a, len);
+      ParDirectory[len++] = cSlash;
+      ParDirectory[len] = 0;
+    }
+    ParDirLength = len;
+  }
+}
+
+static char* conCat (const char *sFile, const char* sSubDir, int sel) 
+{
+  char *pResult=NULL, 
+       *pDir=NULL;
+  int  LenD, LenF, LenS;
+
+  // no file, no full file name 
+  if (sFile == NULL)
+    return NULL;
+
+  /* Do not change an absolute path. */
+#ifdef _MSC_VER
+  /* we consider a filename with : as absolute */
+  if (strstr(sFile, ":")) sel = -1;
+#else
+  if (sFile[0] == '/') sel = -1;
+#endif
+
+  switch (sel)
+  { case 0: pDir = ParDirectory;     LenD = ParDirLength;      break;
+    case 1: pDir = InstallDirectory; LenD = InstallDirLength;  break;
+    case 2: pDir = InputDir;         LenD = strlen(InputDir);  break;
+    case 3: pDir = OutputDir;        LenD = strlen(OutputDir); break;
+    default: LenD = 0;
+  }
+
+  LenF = strlen(sFile);
+  LenS = strlen(sSubDir);
+
+  // allocate memory and copy all parts to the string
+  if ((pResult = (char *) malloc(LenD+LenF+LenS+2))) 
+  {
+    // set path
+    if (LenD > 0) 
+    { memcpy(pResult, pDir, LenD);
+      if (LenS > 0)
+        strcpy(pResult+LenD, sSubDir);
+      else
+        pResult[LenD] = '\0';
+    } 
+    else
+    {  strcpy(pResult, sSubDir);
+    }
+
+    // add missing slash and file name
+    if (LenS > 0 && sSubDir[LenS-1]!=cSlash)
+      AddSlash(pResult);
+
+    strcat(pResult, sFile);
+  }
+
+  return pResult;
+}
+
+/***********************************************************************************************/
+/* Transform Vector from local co-ordinate system of the module to absolute co-ordinate system */ 
+/***********************************************************************************************/
+static void Transform(VectorType vAbsVec, const VectorType vRelVec, const VectorType vBegVec)
+{
+  VectorType   Vec;
+
+  CopyVector   (vRelVec, Vec);
+  RotBackVector(RotMatrixM, Vec);
+  AddVector    (Vec, vBegVec);
+  CopyVector   (Vec, vAbsVec);
+}
 
 #define HULK(a,b,s) memcpy((char*)(a), (char*)(b), s); wlen += s; a += s
-
 static void writeCompressed() {
 
   Neutron *pn = OutputNeutrons;
@@ -1688,7 +1808,6 @@ static void writeCompressed() {
 #undef HULK
 
 #define GULP(s) p += s; rlen -= s;
-
 static int readCompressedNeutrons (void) {
 
   Neutron *pn = InputNeutrons;
@@ -1793,9 +1912,7 @@ static int readCompressedNeutrons (void) {
 }
 #undef GULP
 
-
-static
-void OutputBufferFlush(int final)
+static void OutputBufferFlush(int final)
 {
   if (OutputFilePtr) {
     if (compressModeW == 0)
@@ -1805,12 +1922,11 @@ void OutputBufferFlush(int final)
   }
   NumNeutWritten += OutNeutNum;
   OutNeutNum = 0;
-  if(TracePoints) fprintf(LogFilePtr,".");
+  if (TracePoints) fprintf(LogFilePtr,".");
 }
 
 /* Writing one line into the trace file */
-static
-void   WriteTraceLine(Neutron* pNeutron)
+static void   WriteTraceLine(Neutron* pNeutron)
 {
   if (bTrace && pNeutron->Debug=='T')
   {
@@ -1821,22 +1937,23 @@ void   WriteTraceLine(Neutron* pNeutron)
     /* Generating file name from ID and add new line */
     sprintf(sFileName, "Trc%c%c%09lu.dat", pNeutron->ID.IDGrp[0], pNeutron->ID.IDGrp[1], pNeutron->ID.IDNo);
     if (strcmp(sModuleName, "Source and Window")==0)
-    { pFile = fopen(FullParName(sFileName), "w");
+    { pFile = OpenOutputFile(sFileName, FALSE, "w");
       fprintf(pFile,"no     module           Trc color   TOF    lambda   count rate    "
 			           "pos_x    pos_y    pos_z     dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
     }
     else
-    { pFile = fopen(FullParName(sFileName), "r+");
+    { pFile = OpenOutputFile(sFileName, FALSE, "r+");
       if (pFile != NULL)
       { nLns   = (short) LinesInFile(pFile);
         nModNr = (short) (nLns/2 + 1);
         fseek(pFile, 0, 2);     // setting pointer to end of file
       }
       else
-      { pFile = fopen(FullParName(sFileName), "a");
+      { pFile = OpenOutputFile(sFileName, FALSE, "a");
       }
     }
-    if (pFile != NULL) {
+    if (pFile != NULL) 
+    {
       fprintf(pFile, "%2d %-20.20s:",  nModNr, sModuleName);
       fprintf(pFile," %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
               pNeutron->Debug,       pNeutron->Color,

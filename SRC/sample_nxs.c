@@ -43,6 +43,7 @@
 /*                           implemented.                                                       */
 /* 1.0a May 2012  A. Houben  Color is also set for coherently scattered neutrons                */
 /* 1.1  Oct 2014  M. Boin    Updated nxs library and removed dependence from read_table-lib.h   */
+/* 1.2  Apr 2020  K. Lieutenant  visualisation and new central visualization parameters         */
 /************************************************************************************************/
 
 #include <string.h>
@@ -59,38 +60,50 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-double Theta, DelTheta,     /* these angles determine orientation and solid angles covered by the detector */
-       Phi, DelPhi;
-//double DENSITY;      /* unit cell volume                                          */
-short  MAX_HKL = 8;         /* maximum hkl index value                                   */
-short  nColor=0,            /* colour of the scattered neutrons                          */
-       bIncohScat = FALSE,  /* shall incoherent scattering be done ?                     */
-       bTreatAll  = FALSE,  /* shall neutrons not hitting the sample be treated ?        */
-       bTransOnly = FALSE;  /* shall only transmission (imaging) be treated (=TRUE)? Or scattering also(=FALSE)? */
-long   GenNeutrons=1;       /* how many trajectories to generate per incoming trajectory */
-char   *SampleFileName;     /* pointer to the parameter file name (located in argv)      */
-double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
+McCompID _eModule=MCN_SMPL_NXS;
 
+// Input parameters
+char  *SampleFileName;      // -S    name of the sample parameter file      
+double Theta    = M_PI/2.0, // -D    these angles determine orientation and solid angles covered by the detector
+       DelTheta = M_PI/2.0, // -d       Theta has to be in the range of [0;PI]         
+       Phi      = M_PI,     // -P       Phi has to be in the range of [0;2*PI] 
+       DelPhi   = M_PI;     // -p
+//double DENSITY;           // unit cell volume                                  
+short  nColor=NO_COLOR,     // -c    colour of the scattered neutrons  
+       bIncohScat = FALSE,  // -I    shall incoherent scattering be done ?             
+       bTreatAll  = FALSE,  // -a    shall neutrons not hitting the sample be treated ?
+       bTransOnly = FALSE;  // -T    shall only transmission (imaging) be treated (=TRUE)? Or scattering also(=FALSE)?
+long   GenNeutrons=1;       // -A    how many trajectories to generate per incoming trajectory
+
+SampleType Sample;          // file  sample geometry
+
+// constants
+short  MAX_HKL = 8;         // maximum hkl index value                           
+double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
 /******************************/
 /**   Extern Variables       **/
 /******************************/
-extern double g_fMuTot, g_fMuAbs;    /* defined in 'sample.c' */
+extern 
+double MuTot,    // file  macrosc. scattering cross section, defined in 'sample.c'
+       MuAbs;    // file  macrosc. absorption cross section, defined in 'sample.c'
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void OwnInit           (int argc, char *argv[]);
-void OwnCleanup        (DoublePair *StrucFac);
-void GetSample         (SampleType *Sample, char *StrFileName);
+void  OwnInit   (int argc, char *argv[]);                // reads input parameters and sets global 
+void  OwnCleanup(DoublePair *StrucFac);                  // Does module specific cleanup
+void  GetSample (SampleType *Sample, char *StrFileName); // Reads sample parameters from file
+void  SetGeometry(char* sColor);                         // fills the structure stGeometry for visualization
+
+char* FullInName(const char* filename);                  // path to input directory + file name  (from init.c)
 
 
 /******************************/
 /**   Program                **/
 /******************************/
-
 int main(int argc, char *argv[])
 {
   /* sample */
@@ -98,37 +111,39 @@ int main(int argc, char *argv[])
   NXS_AtomInfo   *atomInfoList;    /* list for atom parameters */
   char       nxsFileName[200];     /* nxs parameter file name */
 
-  SampleType Sample;               /* sample geometry */
-
   VectorType InISP[2];             /* neutron intersection before scattering */
   double     DetFacCoh,            /* cares about the detector coverage      */
-    DetFacInc;                     /* for coherent and incoherent scattering */
+             DetFacInc;                     /* for coherent and incoherent scattering */
   double     Lbf;                  /* full path length of the neutron in the sample */
                                    /* with its initial direction */
   double     Ls;                   /* distance of the neutron in the sample before sc. */
   long       j;                    /* counting variable */
   VectorType SP;                   /* position of scattering event */
   double     ScTheta,              /* scattering angles (in neutron coordinate system) */
-    ScPhi;
+             ScPhi;
   double     RotMatrixSmpl[3][3];  /* Rotation matrix that transforms a Vector to the sample coordinate system */
   double     RotMatrixNeut[3][3];
   long       nisp,                 /* number of intersection points to come       */
-    i,                    /* counting index of the incoming trajectories */
-    iGen;                 /* counting index of the generated trajectories (see 'GenNeutrons') */
+             i,                    /* counting index of the incoming trajectories */
+             iGen;                 /* counting index of the generated trajectories (see 'GenNeutrons') */
   DoublePair *StrucFac=NULL;
-  double mu_factor = 0.0;
-  int numAtoms = 0;
-  int nxs_init_success = 0;
+  double     mu_factor = 0.0;
+  int        numAtoms = 0;
+  int        nxs_init_success = 0;
   
-  /* get several things done before programme start */
-  /* which have actually nothing to do with physics */
-  Init(argc, argv, VT_SMPL_POWDER);
-  print_module_name("sample_nxs 1.1");
+  // initialisation
+  // --------------
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of nxs parameter file */
   InitSample(&Sample);
   GetSample (&Sample, nxsFileName);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = FALSE;
 
   switch (Sample.Type)
     { case VT_CUBE:
@@ -152,7 +167,7 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "NXS parameter file: %s\n", nxsFileName);
 
   /* read unit cell parameters from file */
-  numAtoms = nxs_readParameterFile( FullParName(nxsFileName), &uc, &atomInfoList ); 
+  numAtoms = nxs_readParameterFile( FullInName(nxsFileName), &uc, &atomInfoList ); 
   if( numAtoms < 1 )
   {
     NXS_AtomInfo ai;
@@ -177,7 +192,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    unsigned int i;
+    unsigned int k;
     uc.temperature = 293.0;
        
     fprintf(LogFilePtr, "NXS unit cell definition is:\n"
@@ -189,9 +204,9 @@ int main(int argc, char *argv[])
           "# label  b_coherent  sigma_inc  sigma_abs  molar_mass  x  y  z\n",
           uc.spaceGroup, uc.a, uc.alpha, uc.b, uc.beta, uc.c, uc.gamma, uc.debyeTemp);
           
-    for( i=0; i<numAtoms; i++ )
+    for( k=0; k<numAtoms; k++ )
     {
-      NXS_AtomInfo ai = atomInfoList[i];
+      NXS_AtomInfo ai = atomInfoList[k];
       nxs_addAtomInfo( &uc, ai );
       fprintf(LogFilePtr, "%s  %f  %f  %f  %f  %f  %f  %f\n",
           ai.label, ai.b_coherent, ai.sigmaIncoherent, ai.sigmaAbsorption, ai.molarMass, ai.x[0], ai.y[0], ai.z[0]);
@@ -266,7 +281,7 @@ int main(int argc, char *argv[])
         if (bTransOnly)
         {
           /* make mu = 0 and prob = p_transmit to make sure that ProcessNeutronToEnd function works properly */
-          g_fMuTot = g_fMuAbs = 0.0;
+          MuTot = MuAbs = 0.0;
           ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, p_transmit, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
         }
 
@@ -278,16 +293,15 @@ int main(int argc, char *argv[])
           {
             /* TRANSMIT (no scattering) */
             /* make mu = 0 and prob = 1 to make sure that ProcessNeutronToEnd function works properly */
-            g_fMuTot = g_fMuAbs = 0.0;
+            MuTot = MuAbs = 0.0;
             ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, 1, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
           }
           else
           {
             double roulette_ball = MonteCarlo(0, xsect_total);
 
-            /**********************/
-            /* SCATTER coherently */
-            /**********************/
+            // SCATTER coherently
+            // ------------------
             if (roulette_ball <= xsect_coherent)
             {
               double contrib;
@@ -316,18 +330,17 @@ int main(int argc, char *argv[])
                   ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
 
                   /* Ok, now everything needed is known, put it together */
-                  /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
-                  g_fMuTot = xsect_total * mu_factor;
-                  g_fMuAbs = 0.0;
+                  /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
+                  MuTot = xsect_total * mu_factor;
+                  MuAbs = 0.0;
                   ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, 1.0, ScTheta, ScPhi,
                                       &Sample, RotMatrixNeut, RotMatrixSmpl);
                 }
               } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
             }
 
-            /************************/
-            /* SCATTER incoherently */
-            /************************/
+            // SCATTER incoherently 
+            // --------------------
             else if (roulette_ball <= xsect_coherent+xsect_incoherent)
             {
               /* check the incoherent switch */
@@ -340,9 +353,9 @@ int main(int argc, char *argv[])
                   ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
                   ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
 
-                  /* in order to use ProcessNeutronToEnd set g_fMuTot and g_fMuAbs properly */
-                  g_fMuTot = xsect_total * mu_factor;
-                  g_fMuAbs = 0.0;
+                  /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
+                  MuTot = xsect_total * mu_factor;
+                  MuAbs = 0.0;
                   ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, 1.0/GenNeutrons,
                                       ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
                 }
@@ -364,16 +377,25 @@ int main(int argc, char *argv[])
     }
   }
 
+  // Finish: write log, geometry and instrument file, free memory
+  // ------------------------------------------------------------
  my_exit:
+  /* write geometry file */
+  SetGeometry("white");
+  
+  /* Do module specific cleanups */
   OwnCleanup(StrucFac);
-  stPicture.eType = (short) Sample.Type;
+
+  /* Do the general cleanup */
   Cleanup(Sample.Position[0],Sample.Position[1],Sample.Position[2], 0.0,0.0);
 
   return 0;
 }
 
 
-
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
   /*********************************************************************/
@@ -470,8 +492,9 @@ void  OwnInit(int argc, char *argv[])
 }
 
 
-/* cleanup of this module */
-/* ---------------------- */
+/*******************************************************/
+/** Does module specific cleanup                      **/
+/*******************************************************/
 void OwnCleanup(DoublePair *StrucFac)
 {
   /* print error that might have occured many times */
@@ -485,36 +508,35 @@ void OwnCleanup(DoublePair *StrucFac)
 /* End OwnCleanup */
 
 
-
-void GetSample(SampleType *Sample, char *StrFileName)
+/*******************************************************/
+/** Reads sample parameters from file                 **/
+/*******************************************************/
+void GetSample(SampleType *pSample, char *StrFileName)
 {
-  FILE *SampleFile;
+  FILE *pSampleFile;
   char Buffer[CHAR_BUF_LENGTH];
 
-  if((SampleFile=fopen(FullParName(SampleFileName),"rt"))==NULL)
-  { fprintf(LogFilePtr,"ERROR: Cannot open sample file %s\n", SampleFileName);
-    exit(-1);
-  }
+  pSampleFile = OpenInputFile2(SampleFileName, "sample data", "rt");
 
   /* Read the file */
-  if(ReadTilComment(Buffer, SampleFile))
+  if(ReadTilComment(Buffer, pSampleFile))
   { /* first line: sample position     */
-    sscanf(Buffer, "%lf %lf %lf", &(Sample->Position[0]), &(Sample->Position[1]), &(Sample->Position[2]));
+    sscanf(Buffer, "%lf %lf %lf", &(pSample->Position[0]), &(pSample->Position[1]), &(pSample->Position[2]));
 
     /* Next line should describe the type of geometry cylinder, cube, ball */
-    if(ReadTilComment(Buffer, SampleFile))
+    if(ReadTilComment(Buffer, pSampleFile))
     {
       if(strstr(Buffer, "cyl")!=NULL)
-      { ReadCylinder(SampleFile, Sample);
-        Sample->Type=VT_CYL;
+      { ReadCylinder(pSampleFile, pSample);
+        pSample->Type=VT_CYL;
       }
       else if(strstr(Buffer, "cub")!=NULL)
-      { ReadCube(SampleFile, Sample);
-        Sample->Type=VT_CUBE;
+      { ReadCube(pSampleFile, pSample);
+        pSample->Type=VT_CUBE;
       }
       else if(strstr(Buffer, "bal")!=NULL)
-      { ReadBall(SampleFile, Sample);
-        Sample->Type=VT_SPHERE;
+      { ReadBall(pSampleFile, pSample);
+        pSample->Type=VT_SPHERE;
       }
       else
       { fprintf(LogFilePtr, "ERROR: Please denote the sample geometry by cyl, cub or bal in the second line of %s\n", SampleFileName);
@@ -523,18 +545,18 @@ void GetSample(SampleType *Sample, char *StrFileName)
 
       /* the direction vector should have a positive z component  */
       /* this will make things easier with the rotations later on */
-      if(Sample->Direction[2] < 0)
-      { Sample->Direction[0] = -Sample->Direction[0];
-        Sample->Direction[1] = -Sample->Direction[1];
-        Sample->Direction[2] = -Sample->Direction[2];
+      if(pSample->Direction[2] < 0)
+      { pSample->Direction[0] = -pSample->Direction[0];
+        pSample->Direction[1] = -pSample->Direction[1];
+        pSample->Direction[2] = -pSample->Direction[2];
       }
 
       /* Sample Geometry is read */
-      if(ReadTilComment(Buffer, SampleFile))
+      if(ReadTilComment(Buffer, pSampleFile))
       {
         sscanf(Buffer, "%s", StrFileName);
 
-        // if(ReadTilComment(Buffer, SampleFile))
+        // if(ReadTilComment(Buffer, pSampleFile))
         // {
       // sscanf(Buffer,"%lf", &DENSITY);
         // }
@@ -557,6 +579,22 @@ void GetSample(SampleType *Sample, char *StrFileName)
   { fprintf(LogFilePtr, "ERROR: Can't read first line of %s", SampleFileName);
     exit(-1);
   }
-  fclose(SampleFile);
+  fclose(pSampleFile);
 }
 
+
+/*******************************************************/
+/** Fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  /* Geometry data */
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+     SetSampleGeometry(&Sample);
+  }
+}

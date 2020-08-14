@@ -14,7 +14,7 @@
 #include <math.h>
 #include <ctype.h>
 
-#include "init.h"
+#include "general.h"
 #include "opt_fct.h"
 #include "opt_vars.h"
 

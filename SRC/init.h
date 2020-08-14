@@ -11,7 +11,9 @@
 #define MAXWORKER 32
 #define MOD_NAME_LEN  20   // length of module name
 
-extern double   CmprFact;     /* Factor, by which width and height are enlarged in the visualization */  
+extern const char *sInstrInfIn;
+
+extern double   CmprFact;       /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
@@ -40,19 +42,25 @@ extern long     idum;           /* random number specific */
 extern short    bOldFrame,      /* criterion: new co-ordinate system set for current module */
                 bTest,          /* criterion: test run (without trajectories)   */
                 bVisInstalled,  /* criterion: visualization routines installed  */
-                bLengthCmpr,    /* criterion: visualization routines installed  */
-                bVisTraj,       /* criterion: instrument visualization          */
-                bVisInstr;      /* criterion: visualization of trajectories     */
+                bLengthCmpr,    /* criterion: module length compressed by 'CmprFact' in visualization  */
+                bVisTraj,       /* criterion: visualization of trajectories     */
+                bVisInstr;      /* criterion: instrument visualization          */
 
 extern int      NThreads;       /* number of helper threads for execution, set by --T */
 extern double   RotMatrixM[3][3];
 extern double   RotMatrixMX[3][3];
+
+FILE* OpenOutputFile  (const char *sName, short bErrMsg, const char* sMode);              // opens file in the output folder with or without error message
+FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);              // opens file in the input folder with or without error message
+FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message   
+FILE* OpenPackInpFile (const char *sFilename, const char* sPath, short bErrMsg);          // opens input file from the installation directory
 
 void Init             (int argc, char **argv, const McCompID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
                        double dHorizAngle, double dVertAngle);
 void print_module_name(const char *name);
 void PrintModuleName  (const McCompID eModule, const char* sVsn);
+void adjustProgress   (int spercent);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
 void ChangeNeutronID  (Neutron* n);
@@ -83,8 +91,6 @@ void DrawCylSlice     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
 
 void  CopyNeutron     (const Neutron* source, Neutron* dest);
 void  InitNeutron     (Neutron* pNeut);
-char* FullParName     (const char* filename);
-char* FullInstallName (const char* filename, const char* sRelPath);
 
 void setDetachedWrite();
 
