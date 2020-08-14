@@ -28,25 +28,27 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
- 
   long	i = 0;
-  
-  // input
-  Init(argc, argv, MCN_MONOCHROM);
-  print_module_name("monochromator 2.1");
 
   // This is the class for a monochromator
   Monochromator monochrom;
-  monochrom.Init(argc, argv);
+
+  // initialisation
+  // --------------
+	Init(argc, argv, monochrom.eModule);
+  PrintModuleName(monochrom.eModule, "2.2");
+  monochrom.OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  bLengthCmpr   = FALSE;
   
-  /*************************************************************/
   DECLARE_ABORT;
 
+  // loop over all trajectories
+  // --------------------------
   while(ReadNeutrons()!= 0)
   {
-  CHECK;
-
-  for(i=0; i<NumNeutGot; i++)
+    for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
       monochrom.processNeutron(&(InputNeutrons[i]));
@@ -54,7 +56,8 @@ int main(int argc, char *argv[])
   }
  my_exit:
   
-  // OwnCleanup includes the general Cleanup()
+  // Geometry and OwnCleanup, which includes the general Cleanup()
+  monochrom.setGeometry("yellow");
   monochrom.OwnCleanup();
   
   return(0);

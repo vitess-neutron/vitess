@@ -4,20 +4,23 @@
 #include "mathfunctions.h"
 #include "monochrclass.h"
 
+#define DEL_ZETA_MAX 0.01
 
+// constructor, sets all variables to zero
 Monochromator::Monochromator()
 {
+  eModule=MCN_MONOCHROM;
+
   // Initialise member variables
   ParFileName = ""; 
   GeomFileName = "";
   
-//  Par_Crys = NULL;   
   pGeomFile = NULL;
 
-  eGeomOption = 0;
-  eFocGeom    = 0; 
-  bTransm     = FALSE;
-  eMonoMode   = -1;
+  eGeomOption  = 0;
+  eFocGeom     = 0; 
+  bTransm      = FALSE;
+  eMonoMode    = 0;
   d_spr_option = 0; 
   nRepete      = 1; 
 
@@ -26,9 +29,11 @@ Monochromator::Monochromator()
   mu_abs       = 0.0;
   mu_scat      = 0.0;
   Reflectivity = 1.0; 
+  Freq         = 0.0;
+  Zeta0        = 0.0;
 
   for (int i = 0; i < 2; i++) 
-  { NumberCE   [i] = 0;
+  { NumberCE   [i] = 1;
     mosaic_fwhm[i] = 0.0;
   }
   DevH  = 0.0; 
@@ -37,14 +42,14 @@ Monochromator::Monochromator()
   GapV  = 0.0;
   RadH  = 0.0;
   RadV  = 0.0;
-  Psi0 = 0.0;
+  Psi0  = 0.0;
 
-  RotHoriz = 0; 
-  RotVert = 0; 
-  BraggHoriz = 0; 
-  BraggVert = 0;
-  AnglFocHoriz = 0; 
-  AnglFocVert = 0; 
+  SrfcHor   = 0.0; 
+  SrfcVert  = 0.0; 
+  BraggHor  = 0.0; 
+  BraggVert = 0.0;
+  OutHor    = 0.0; 
+  OutVert   = 0.0; 
 
   bUser = 0;   // no user defined frame  
   d_spacing = 0.0; 
@@ -66,9 +71,9 @@ Monochromator::Monochromator()
 
     for (int j = 0; j < 3; j++)
     {  RotMatrixCE   [i][j] = 0.0; 
+       RotMatrixCE0  [i][j] = 0.0; 
        RotMatrixBragg[i][j] = 0.0; 
-       RotMatrixFoc  [i][j] = 0.0; 
-       RotMatrixSurf [i][j] = 0.0;
+       RotMatrixOut  [i][j] = 0.0; 
     }
 
     fNorm[i] = 0.0;
@@ -90,14 +95,21 @@ Monochromator::Monochromator()
   TOF    = -1.0; 
   Prob   = -1.0; 
   NumOut =  0; 
+
+  DelZetaMax = DEL_ZETA_MAX;
+
 }
 
-
-void Monochromator::Init(int argc, char* argv[])
+// reads and checks input parameters and calculates depending values
+void Monochromator::OwnInit(int argc, char* argv[])
 {
   int    k=0;
   double m_cut=M_CUT;
-  char   sHV[2][12]={"horizontal", "vertical"};
+  char   sHV[2][11]={"horizontal", "vertical"},
+         sMM[2][13]={"Reflection", "Transmission"},
+         sTr[2][ 8]={"blocked",    "treated"},
+         sSO[2][11]={"Lorentzian", "Gaussian  "};
+
 
   bVisInstalled = TRUE;
 
@@ -129,6 +141,12 @@ void Monochromator::Init(int argc, char* argv[])
 	      break;
       case 'A':
 	      sscanf(&argv[1][2], "%d", &nRepete) ;
+	      break;
+      case 'f':
+	      sscanf(&argv[1][2], "%lf", &Freq) ;
+	      break;
+      case 'z':
+	      sscanf(&argv[1][2], "%lf", &Zeta0) ;
 	      break;
 
       case 'D':
@@ -183,63 +201,64 @@ void Monochromator::Init(int argc, char* argv[])
     argv++;
   }
 
-  // Check for possible  options   (1 crystal element, geometry calculated or from file
+  // Checks for possible  options   (1 crystal element, geometry calculated or from file
   if((eGeomOption != 1) && (eGeomOption != 2) && (eGeomOption != 3))
-  {
-    fprintf(LogFilePtr,"\nERROR: No valid option (1, 2 or 3) found!!") ;
-    exit(0) ;
-  }
+    Error("No valid option (1, 2 or 3) found!!");
   
-  /* prints to log file */
-  fprintf(LogFilePtr,"	mosaic spread horiz, vert	=%9.4f, %9.4f\n	d spread			=   %10.4e\n	reflectivity		=  %9.4f",
-	                    mosaic_fwhm[0], mosaic_fwhm[1], d_fwhm, Reflectivity) ;
-  fprintf(LogFilePtr,"\n	repetition rate		=   %ld \n", nRepete) ;
-  fprintf(LogFilePtr,"initialised option: ") ;
-
-  if (eGeomOption == 1)
-  { fprintf(LogFilePtr,"	'crystal_flat'");
-  }
-  else if (eGeomOption == 2)
-  {
-    fprintf(LogFilePtr,"	'crystal_focus'");
-    fprintf(LogFilePtr,"\n	vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg",
-	    NumberCE[1], RadV, GapV, DevV, Psi0);
-    fprintf(LogFilePtr,"\n	horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg",
-	    NumberCE[0], RadH, GapH, DevH) ;
-    fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName) ;
-  }
-  else if (eGeomOption == 3)
-  {
-    fprintf(LogFilePtr,"	'crystal_focus_dat'");
-    fprintf(LogFilePtr,"\n	number of CE		=   %d, %d (h.,v.)", NumberCE[0], NumberCE[1]);
-    fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName);
-  }
-  
-  
-  /* reads parameter file */
-  ReadParameterFile() ;
-
-  // check mosaicity   
+  // checks mosaicity   
   for (k=0; k<2; k++) 
   {
     if (mosaic_fwhm[k] < m_cut) 
     {
       mosaic_fwhm[k]	= m_cut;
-      fprintf(LogFilePtr, "\nWARNING: minimum mosaicity %1.1e was set to %s mosaic spread!", m_cut, sHV[k]);
+      fprintf(LogFilePtr, "WARNING: minimum mosaicity %1.1e was set to %s mosaic spread!\n", m_cut, sHV[k]);
     }
   }
 
+  fprintf(LogFilePtr, "  Mode: %s,  transmitted beam: %s\n",               sMM[eMonoMode-1], sTr[bTransm]);
+  fprintf(LogFilePtr, "  Rot.freq, initial orient.: %7.2f Hz %9.4f deg\n", Freq, Zeta0);
+  fprintf(LogFilePtr, "  attenuation   (scat, abs): %9.4f, %9.4f 1/cm\n",  mu_scat, mu_abs);
+  fprintf(LogFilePtr, "  mosaic spread (hor, vert): %9.4f, %9.4f\n",       mosaic_fwhm[0], mosaic_fwhm[1]);
+  fprintf(LogFilePtr, "  d-spread %10s      : %13.4e      \n",             sSO[d_spr_option-1], d_fwhm);
+  fprintf(LogFilePtr, "  reflectivity             : %9.4f \n",             Reflectivity);
+  fprintf(LogFilePtr, "  repetition               : %4ld  \n",             nRepete);
+  
+  /* prints to log file */
+  fprintf(LogFilePtr, "initialised option: ") ;
+  if (eGeomOption == 1)
+  { fprintf(LogFilePtr,"'crystal_flat'\n");
+  }
+  else if (eGeomOption == 2)
+  {
+    fprintf(LogFilePtr,"'crystal_focus'\n");
+    fprintf(LogFilePtr,"  horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg\n",                          NumberCE[0], RadH, GapH, DevH) ;
+    fprintf(LogFilePtr,"  vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg\n", NumberCE[1], RadV, GapV, DevV, Psi0);
+    fprintf(LogFilePtr,"  focus file:                '%s'\n", GeomFileName);
+  }
+  else if (eGeomOption == 3)
+  {
+    fprintf(LogFilePtr,"'crystal_focus_dat'\n");
+    fprintf(LogFilePtr,"  number of CE = %d, %d (h.,v.)\n", NumberCE[0], NumberCE[1]);
+    fprintf(LogFilePtr,"  focus file:                '%s'\n", GeomFileName);
+  }
+
   /* converts degs in radian etc. */
-  mosaic_fwhm[0]  *= M_PI/180. ;
-  mosaic_fwhm[1]  *= M_PI/180. ;
-  RotHoriz        *= M_PI/180. ;
-  RotVert	        *= M_PI/180. ;
-  BraggHoriz      *= M_PI/180. ;
-  BraggVert       *= M_PI/180. ;
-  AnglFocHoriz    *= M_PI/180. ;
-  AnglFocVert     *= M_PI/180. ;
-  d_fwhm          *= d_spacing ;
-  d_sigma          = d_fwhm/sqrt(8.*log(2.));
+  mosaic_fwhm[0]  *= M_PI/180.0;
+  mosaic_fwhm[1]  *= M_PI/180.0;
+  d_fwhm          *= d_spacing;
+  d_sigma          = d_fwhm/sqrt(8.0*log(2.0));
+
+  /*****************************************************************************/
+  /* reads parameter file */
+  ReadParameterFile();
+
+  /* converts degs in radian etc. */
+  SrfcHor   *= M_PI/180.0;
+  SrfcVert	*= M_PI/180.0;
+  BraggHor  *= M_PI/180.0;
+  BraggVert *= M_PI/180.0;
+  OutHor    *= M_PI/180.0;
+  OutVert   *= M_PI/180.0;
 
   // Filling the array of the d_spacing spread parameters 
   // for normalisation calculation and randomising
@@ -257,13 +276,13 @@ void Monochromator::Init(int argc, char* argv[])
   vertMosaicSpreadParams[2] = mosaic_fwhm[1]/sqrt(8.*log(2.));
 
   // Copy Mosaic spread parameters to fRndm and fNorm depending on hor. and vert. Bragg angle
-  FindPeakLambdaSortMosaicityDistr(BraggHoriz, BraggVert);
+  FindPeakLambdaSortMosaicityDistr(BraggHor, BraggVert);
 
-  //This function takes care of a proper normalisation of the fNorm mosaicity Gaussian 
-  //to comply with the reflectivity value provided by the user
+  // This function takes care of a proper normalisation of the fNorm mosaicity Gaussian 
+  // to comply with the reflectivity value provided by the user
   NormFunction();
 
-  fprintf(LogFilePtr,"\n Norm of the mosaic function:  %1.4lf, peak wavelength %1.4lf \n", fNorm[0], peakWL) ;
+  fprintf(LogFilePtr,"Norm of the mosaic function: %1.4lf, peak wavelength %1.4lf \n", fNorm[0], peakWL) ;
 
   // here the the different geometry options are treated
   if(eGeomOption == 1)     // single CE
@@ -274,15 +293,12 @@ void Monochromator::Init(int argc, char* argv[])
     CopyVectorToVectors(0, 0, DimCE0, DimCE_F) ;
 
     std::vector <double> RotHorizVector;
-    RotHoriz_F.push_back(RotHorizVector);
-    RotHoriz_F[0].push_back(RotHoriz);
+    RotCEhor_F.push_back(RotHorizVector);
+    RotCEhor_F[0].push_back(SrfcHor);
       
     std::vector <double> RotVertVector;
-    RotVert_F.push_back(RotVertVector);
-    RotVert_F[0].push_back(RotVert);
-
-    FillRotMatrixZY(RotMatrixSurf, RotVert, RotHoriz);
-     
+    RotCEvert_F.push_back(RotVertVector);
+    RotCEvert_F[0].push_back(SrfcVert); 
   }
   else if (eGeomOption == 2)   // CE positions, dimensions and orientations calculated
   {
@@ -298,28 +314,149 @@ void Monochromator::Init(int argc, char* argv[])
     addDev2Std();
   }
   
-  // calculate parameters for instrument.inf
-  //  rotOffset = CalculateRotationOffset();
-  // totalXOffset = Transl[0] + DimCE0[0]/2.*NumberCE[0]*cos(RotHoriz) + DimCE0[1]/2.*NumberCE[1]*sin(RotVert);
-
+  
   /* computes rotation matrixes corresponding to CE(i,j) offset angles */
-  FillRotMatrixFoc() ;
-
-  /* computes rotation matrixes corresponding to Bragg angles */
-  FillRotMatrixZY(RotMatrixBragg, BraggVert, BraggHoriz) ;
+  fillRotMatrices(Zeta0*M_PI/180.0);
 
   /* computes rotation matrix corresponding to the output frame (focus direction) */
-  FillRotMatrixZY(RotMatrixFoc, AnglFocVert, AnglFocHoriz) ;
+  FillRotMatrixZY(RotMatrixOut, OutVert, OutHor);
+
+  
+  return; 
+}
+
+/* ReadParameterFile() reads the parameters from "crys.par" */
+void Monochromator::ReadParameterFile()
+{
+  // double mosaic_range, d_range;
+  FILE* pParFile = OpenInputFile(ParFileName, FALSE, "r");
+
+  if (pParFile==NULL)
+	{
+	  fprintf(LogFilePtr, "ERROR: parameter file '%s' not found!\n", ParFileName);
+	  exit(0);
+	}
+  else
+  {
+    /* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
+    PosCE0[0]=ReadParF(pParFile);  PosCE0[1]=ReadParF(pParFile); PosCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
+    SrfcHor=ReadParF(pParFile);   SrfcVert=ReadParF(pParFile);   ReadParComment(pParFile) ;
+    BraggHor=ReadParF(pParFile); BraggVert=ReadParF(pParFile); ReadParComment(pParFile) ;
+    DimCE0[0]=ReadParF(pParFile);  DimCE0[1]=ReadParF(pParFile); DimCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
+    d_spacing=ReadParF(pParFile);  OrderReflection=ReadParI(pParFile) ; ReadParComment(pParFile) ;
+    // mosaic_range=ReadParF(pParFile) ; d_range=ReadParF(pParFile) ;  ReadParComment(pParFile) ;   data not in parameter file
+    bUser = ReadParI(pParFile);    ReadParComment(pParFile) ;
+
+    // reads data for user defined output frame
+    if (bUser==TRUE)
+    { Transl[0]=ReadParF(pParFile) ;   Transl[1]=ReadParF(pParFile);   Transl[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
+      OutHor=ReadParF(pParFile); OutVert=ReadParF(pParFile); ReadParComment(pParFile) ;
+    }
+    else
+    // calculates values for output frame, unless transmission is treated
+    { if (bTransm==FALSE)  
+      {
+        /* angles corresponding to the output frame: */
+        AnglesOutputFrame(BraggHor+Zeta0, BraggVert, &OutHor, &OutVert);
+
+        /* shifts output frame origin to center of focussing geometry */
+        CopyVector(PosCE0, Transl) ;
+      }
+      else
+      { Transl[0]=Transl[1]=Transl[2]=0.0;
+        OutHor=OutVert=0.0;
+      }
+    }
+
+    // initializes vectors to chosen CE element
+    CopyVector(PosCE0, PosCE);
+    CopyVector(DimCE0, DimCE);
+
+    /* print parameters to log file for verification */
+    fprintf(LogFilePtr, "data from parameter file   : '%s'\n",                ParFileName) ;
+    fprintf(LogFilePtr, "  order of reflection = %d,   d-spacing =%9.4f\n",   OrderReflection, d_spacing);
+    fprintf(LogFilePtr, "  main position X, Y, Z    : %9.4f, %9.4f, %9.4f\n", PosCE0[0], PosCE0[1], PosCE0[2]);
+    fprintf(LogFilePtr, "  thickness, width, height : %9.4f, %9.4f, %9.4f\n", DimCE0[0], DimCE0[1], DimCE0[2]);
+    fprintf(LogFilePtr, "  Bragg angles   (hor,vert): %9.4f, %9.4f\n",        BraggHor,  BraggVert);
+    fprintf(LogFilePtr, "  Surface angles (hor,vert): %9.4f, %9.4f\n",        SrfcHor,   SrfcVert);
+
+    if (bUser==TRUE) 
+      fprintf(LogFilePtr,"user defined frame:\n") ;
+    else  
+      fprintf(LogFilePtr,"standard frame generation:\n") ;
+    fprintf(LogFilePtr, "  output angles (hor, vert): %9.4f  %9.4f\n",        OutHor,    OutVert); 
+	  fprintf(LogFilePtr, "  position X',Y',Z'        : %9.4f, %9.4f, %9.4f\n", Transl[0], Transl[1], Transl[2]);
+
+    fclose(pParFile);
+  }
+
+  return;
+
+}/* End ReadParameterFile */
+
+
+/* ReadFocFile() reads the parameters from the geometry file */
+void Monochromator::ReadFocFile()
+{
+  int	i, j;
+  
+  pGeomFile = OpenInputFile(GeomFileName, FALSE, "r");
+
+  if (pGeomFile==NULL)
+	{
+	  NumberCE[0]=0; 
+    NumberCE[1]=0;
+	  fprintf(LogFilePtr,"ERROR: focus file '%s' not found!\n", GeomFileName);
+    exit(0);
+	}     
+  else
+  { // reads the from file by using ReadParF() and ReadParComment()
+    // number of columns and rows
+    NumberCE[0] = ReadParI(pGeomFile) ; NumberCE[1] = ReadParI(pGeomFile) ; ReadParComment(pGeomFile) ;
+
+    // loop over all crystal elements (1 line for each element)
+    // reads 3 position deviations, 3 size deviations and 2 orientation deviations in each line
+    // and adds these values to those  given for the monochromator center or central element resp.
+    for(i=0; i<NumberCE[0]; i++)
+    {
+      std::vector <double> tempVector;
+      PosCE_F[0].push_back(tempVector);
+      PosCE_F[1].push_back(tempVector);
+      PosCE_F[2].push_back(tempVector);
+      DimCE_F[0].push_back(tempVector);
+      DimCE_F[1].push_back(tempVector);
+      DimCE_F[2].push_back(tempVector);
+      RotCEhor_F.push_back(tempVector);
+      RotCEvert_F.push_back(tempVector);
+
+      for(j=0; j<NumberCE[1]; j++)
+	    {
+	      PosCE_F[0][i].push_back(ReadParF(pGeomFile));   PosCE_F[1][i].push_back(ReadParF(pGeomFile)); PosCE_F[2][i].push_back(ReadParF(pGeomFile));
+	      DimCE_F[0][i].push_back(ReadParF(pGeomFile));   DimCE_F[1][i].push_back(ReadParF(pGeomFile)); DimCE_F[2][i].push_back(ReadParF(pGeomFile));
+	      RotCEhor_F  [i].push_back(ReadParF(pGeomFile)); RotCEvert_F [i].push_back(ReadParF(pGeomFile));
+	    }
+    }
+
+    fclose(pGeomFile);
+  }
+  return;
+}/* End ReadFocFile */
+
+// fills the structure stGeometry for visualization
+void Monochromator::setGeometry(char* sColor)
+{
+  int k=0;  // index for geometrical elements in figure
 
   /* fills structure for instrument visalization */
   if (bVisInstr)
   { 
-	  stGeometry.pDescr  = "monochromator:yellow";
-	  stGeometry.eModule = MCN_MONOCHROM;
+	  sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  = sVisDescrpt;
+    stGeometry.eModule = eModule;
 
     if(eGeomOption == 1) 
     {
-      // Visualisation of the monochromator geomentry
+      // Visualisation of the monochromator geometry
 	    stGeometry.pCuboid  = (VtCuboid*) calloc(1, sizeof(VtCuboid));
 	    stGeometry.nCuboids = 1; 
 	
@@ -330,8 +467,8 @@ void Monochromator::Init(int argc, char* argv[])
 	    stGeometry.pCuboid[0].vCntr[1]  = PosCE0[1];
 	    stGeometry.pCuboid[0].vCntr[2]  = PosCE0[2];
 	    stGeometry.pCuboid[0].vNormal[0]= 1.;
-	    stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
-	    stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+	    stGeometry.pCuboid[0].vNormal[1]= tan(SrfcHor);
+	    stGeometry.pCuboid[0].vNormal[2]= tan(SrfcVert);
     }
     else
     {	
@@ -368,31 +505,42 @@ void Monochromator::Init(int argc, char* argv[])
 	    }
 	  }
   }
-  
-  return; 
+  return;
 }
 
+// Calls Cleanup to write trajectory information and change to output co-ordinate system
 void Monochromator::OwnCleanup()
 {
   if (bTransm) 
     Cleanup(0, 0, 0, 0, 0);
   else 
-    Cleanup(Transl[0], Transl[1], Transl[2], AnglFocHoriz, AnglFocVert);
+    Cleanup(Transl[0], Transl[1], Transl[2], OutHor, OutVert);
 
   return;
 } 
 
-void  Monochromator::FillRotMatrixFoc()
+
+/*********************************************************************************************************************/
+
+/* fills rotations matrices for the surface and the reflecting planes of the central CE (= monochromator) 
+   and the surfaces of all CEs for a given Orientation of the rotating monochromator */
+void  Monochromator::fillRotMatrices(double MonoHor)
 {
   int i, j ;
   double rotH, rotV, RotMatrix[3][3] ;
+
+  /* computes rotation matrixes corresponding to Bragg angles */
+  FillRotMatrixZY(RotMatrixCE0, SrfcVert, SrfcHor+MonoHor) ;
+
+  /* computes rotation matrixes corresponding to Bragg angles */
+  FillRotMatrixZY(RotMatrixBragg, BraggVert, BraggHor+MonoHor) ;
 
   for(i=0; i < NumberCE[0]; i++)
   {
     for(j=0; j < NumberCE[1]; j++)
       {
-	      rotH = RotHoriz_F[i][j] ;
-	      rotV = RotVert_F[i][j] ;
+	      rotH = RotCEhor_F[i][j] + MonoHor;
+	      rotV = RotCEvert_F[i][j] ;
 	      FillRotMatrixZY(RotMatrix, rotV, rotH) ;
 	      CopyMatrixToMatrices(i, j, RotMatrix, RotMatrixCE_F) ;
       }
@@ -401,160 +549,17 @@ void  Monochromator::FillRotMatrixFoc()
   return;
 }
 
-
-/* ReadParameterFile() reads the parameters from "crys.par" */
-void Monochromator::ReadParameterFile()
-{
-  // double mosaic_range, d_range;
-  FILE* pParFile = fopen(ParFileName, "r");
-
-  if (pParFile==NULL)
-	{
-	  fprintf(LogFilePtr, "\nERROR: parameter file '%s' not found!", ParFileName);
-	  exit(0);
-	}
-  else
-  {
-    /* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
-    PosCE0[0]=ReadParF(pParFile);  PosCE0[1]=ReadParF(pParFile); PosCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-    RotHoriz=ReadParF(pParFile);   RotVert=ReadParF(pParFile);   ReadParComment(pParFile) ;
-    BraggHoriz=ReadParF(pParFile); BraggVert=ReadParF(pParFile); ReadParComment(pParFile) ;
-    DimCE0[0]=ReadParF(pParFile);  DimCE0[1]=ReadParF(pParFile); DimCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-    d_spacing=ReadParF(pParFile);  OrderReflection=ReadParI(pParFile) ; ReadParComment(pParFile) ;
-    // mosaic_range=ReadParF(pParFile) ; d_range=ReadParF(pParFile) ;  ReadParComment(pParFile) ;   data not in parameter file
-    bUser = ReadParI(pParFile);    ReadParComment(pParFile) ;
-
-    // reads data for user defined output frame
-    if (bUser==TRUE)
-    { Transl[0]=ReadParF(pParFile) ;   Transl[1]=ReadParF(pParFile);   Transl[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-      AnglFocHoriz=ReadParF(pParFile); AnglFocVert=ReadParF(pParFile); ReadParComment(pParFile) ;
-    }
-    else
-    // calculated values for output frame, unless transmission is treated
-    { if (bTransm==FALSE)  
-      {
-        /* computes default rotation matrix and angles corresponding to the output frame: */
-        AnglesOutputFrame(BraggHoriz, BraggVert, &AnglFocHoriz, &AnglFocVert);
-
-        /* shift output frame origin to center of focussing geometry */
-        CopyVector(PosCE0, Transl) ;
-      }
-      else
-      { Transl[0]=Transl[1]=Transl[2]=0.0;
-        AnglFocHoriz=AnglFocVert=0.0;
-      }
-    }
-
-    // initializes vectors to chosen CE element
-    CopyVector(PosCE0, PosCE);
-    CopyVector(DimCE0, DimCE);
-
-    /* print parameters to log file for verification */
-    fprintf(LogFilePtr, "\ndata from parameter file: '%s'", ParFileName) ;
-    fprintf(LogFilePtr, "\nd-spacing =%9.4f\n order of reflection =   %d",	d_spacing, OrderReflection) ;
-
-    fprintf(LogFilePtr, "\n	main position X, Y, Z	=  %9.4f, %9.4f, %9.4f\n	thickness, width, height	= %9.4f, %9.4f, %9.4f\n	horizontal offset		=  %9.4f\n	vertical offset		= %9.4f\n	horizontal Bragg		=  %9.4f\n	vertical Bragg	       = %9.4f\n	cutoff probability		=    %8.1e",
-	                      PosCE0[0], PosCE0[1], PosCE0[2], DimCE0[0], DimCE0[1], DimCE0[2], RotHoriz, RotVert, BraggHoriz, BraggVert, wei_min) ;
-
-    if (bUser==TRUE) 
-      fprintf(LogFilePtr,"\nuser defined frame:") ;
-    else  
-      fprintf(LogFilePtr,"\nstandard frame generation:") ;
-
-    fprintf(LogFilePtr, "\n	horizontal angle		=  %9.4f\n	vertical angle	 = %9.4f\n	X',Y',Z'			=  %9.4f, %9.4f, %9.4f\n\n",
-	                      AnglFocHoriz, AnglFocVert, Transl[0], Transl[1], Transl[2]);
-
-    fclose(pParFile);
-  }
-
-  return;
-
-}/* End ReadParameterFile */
-
-
-/* ReadFocFile() reads the parameters from geometry file */
-void Monochromator::ReadFocFile()
-{
-  int	i, j;
-  
-  pGeomFile = fopen(GeomFileName, "r");
-
-  if (pGeomFile==NULL)
-	{
-	  NumberCE[0]=0; 
-    NumberCE[1]=0;
-	  fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
-    exit(0);
-	}     
-  else
-  { // reads the from file by using ReadParF() and ReadParComment()
-    // number of columns and rows
-    NumberCE[0] = ReadParI(pGeomFile) ; NumberCE[1] = ReadParI(pGeomFile) ; ReadParComment(pGeomFile) ;
-
-    // loop over all crystal elements (1 line for each element)
-    // reads 3 position deviations, 3 size deviations and 2 orientation deviations in each line
-    // and adds these values to those  given for the monochromator center or central element resp.
-    for(i=0; i<NumberCE[0]; i++)
-    {
-      std::vector <double> tempVector;
-      PosCE_F[0].push_back(tempVector);
-      PosCE_F[1].push_back(tempVector);
-      PosCE_F[2].push_back(tempVector);
-      DimCE_F[0].push_back(tempVector);
-      DimCE_F[1].push_back(tempVector);
-      DimCE_F[2].push_back(tempVector);
-      RotHoriz_F.push_back(tempVector);
-      RotVert_F.push_back(tempVector);
-
-      for(j=0; j<NumberCE[1]; j++)
-	    {
-	      PosCE_F[0][i].push_back(ReadParF(pGeomFile)); PosCE_F[1][i].push_back(ReadParF(pGeomFile)); PosCE_F[2][i].push_back(ReadParF(pGeomFile));
-	      DimCE_F[0][i].push_back(ReadParF(pGeomFile)); DimCE_F[1][i].push_back(ReadParF(pGeomFile)); DimCE_F[2][i].push_back(ReadParF(pGeomFile));
-	      RotHoriz_F[i].push_back(ReadParF(pGeomFile)); RotVert_F [i].push_back(ReadParF(pGeomFile));
-	    }
-    }
-
-    fclose(pGeomFile);
-  }
-  return;
-}/* End ReadFocFile */
-
-
-void Monochromator::addDev2Std()
-{
-  int i,j,k;  // indices
-
-  for(i=0; i<NumberCE[0]; i++)
-  {
-    for(j=0; j<NumberCE[1]; j++)
-	  {
-	    /* converts degs in radian etc. */
-	    RotHoriz_F[i][j] *= M_PI/180. ;
-	    RotVert_F [i][j] *= M_PI/180. ;
-
-	    /* ads main parameters */
-	    for(k=0;k<3;k++)
-	    {
-	      PosCE_F[k][i][j] += PosCE0[k] ;
-	      DimCE_F[k][i][j] += DimCE0[k] ;
-	    }
-
-	    RotHoriz_F[i][j] += RotHoriz ;
-	    RotVert_F [i][j] += RotVert ;
-	  }
-  }
-  return;
-}
-
-
+/* calculates angles corresponding to the output frame from the Bragg angles */
 void Monochromator::AnglesOutputFrame(double RotH, double RotV, double *AnglFocH, double *AnglFocV)
 {
-  FillRotMatrixZY(RotMatrixCE, M_PI/180.*RotV, M_PI/180.*RotH) ;
+  double RotMatrix[3][3];
+
+  FillRotMatrixZY(RotMatrix, M_PI/180.*RotV, M_PI/180.*RotH) ;
 
   VectorType n={1, 0, 0};
-  RotVector(RotMatrixCE, n) ; /* components of a vector parallel to X in the frame of the CE */
+  RotVector(RotMatrix, n) ; /* components of a vector parallel to X in the frame of the CE */
   n[0] *= -1. ; /* reflection on the CE */
-  RotBackVector(RotMatrixCE, n) ;  /* new components in the frame of input */
+  RotBackVector(RotMatrix, n) ;  /* new components in the frame of input */
 
   CartesianToEulerZY(n, AnglFocV, AnglFocH) ;
 
@@ -620,23 +625,33 @@ void Monochromator::FindPeakLambdaSortMosaicityDistr(double RotH, double RotV)
 void Monochromator::NormFunction()
 {
 
-  const int nBins = 500;
+  const int nBins=500;   // number of bins in array y[]
+  int       index=  0;   // index in array y
+
+  double expo  = 0.0,    // exponent in Gaussian intensity distribution
+         ytemp = 0.0,    // intensity for ?
+         x21   = 0.0,    // ? 
+         sum   = 0.0,    // sum of the intensities * ? 
+         weight= 0.0,    // sum of the intensities
+         mean  = 0.0;    // mean reflectivity before normalization
 
   double y[nBins];
-  for (int i = 0; i < nBins; i++) y[i] = 0;
+  for (int i = 0; i < nBins; i++) y[i] = 0.0;
 
   double sigma1 = dSpacingSpreadParams[2];
   double x1_incr = sigma1/100.;
-  if (x1_incr == 0) x1_incr = 1.;
+  if (x1_incr == 0) 
+    x1_incr = 1.;
 
   double sigma2 = fRndm[2];
   double x2_incr = sigma2/100.;
-  if (x2_incr == 0) x2_incr = 1.;
+  if (x2_incr == 0) 
+    x2_incr = 1.;
 
   double minSC = Min(sin(axisPhi), cos(axisPhi));
   maxDeviation = (1. + 2.*minSC - (minSC/sin(M_PI_2/2.)))*braggAngleTot;
 
-  fprintf(LogFilePtr,"\n braggTot =%9.4f, sigma1 =   %f, sigma2 = %f, maxDev = %f", (M_PI_2 - braggAngleTot)*180./M_PI, sigma1, sigma2, maxDeviation*180./M_PI);
+  fprintf(LogFilePtr,"braggTot =%9.4f, sigma1 = %f, sigma2 = %f, maxDev = %f\n", (M_PI_2 - braggAngleTot)*180./M_PI, sigma1, sigma2, maxDeviation*180./M_PI);
 
   for (double x1 = d_spacing - 2.975*sigma1; x1 <= d_spacing + 2.975*sigma1; x1 += x1_incr) 
   {
@@ -655,31 +670,28 @@ void Monochromator::NormFunction()
     {
       if (fabs(x2) > maxDeviation) continue;
 
-      double ytemp = prob_dspacing * fRndm[0]*exp(-sq(x2 - fRndm[1])/(2.*sq(sigma2)));
-      double x21 = 0;
+      ytemp = prob_dspacing * fRndm[0]*exp(-sq(x2 - fRndm[1])/(2.*sq(sigma2)));
+      x21 = 0;
       
       DetermineMosaicAngle(braggAngleDev, x2, x21);
-         
-      int index = ((int)(fNorm[0]*exp(-sq(x21 - fNorm[1])/(2.*sq(fNorm[2])))*nBins));
+
+      expo = -sq(x21 - fNorm[1]) / (2.*sq(fNorm[2]));   
+      index = mini((long)(fNorm[0] * exp(expo) * nBins), nBins-1);
       y[index] += ytemp;      
-      
     }
   }
-
-  double sum = 0;
-  double weight = 0;
 
   for (int i = 0; i < nBins; i++) 
   {
     double x = 1./(2.*nBins) + (1./nBins)*((double) i);
-    sum += x*y[i];
-    weight += y[i];
-
+    sum    += x*y[i];
+    weight +=   y[i];
   }
 
-  double mean;
-  if (weight > 0) mean = sum/weight;
-  else mean = 1.;
+  if (weight > 0) 
+    mean = sum/weight;
+  else 
+    mean = 1.;
 
   // Here the reflectivity is incorporated into the norm of the 
   // mosaicity Gaussian that is used to look up the absolute weight
@@ -741,12 +753,15 @@ void  Monochromator::DetermineMosaicAngle(double angleDiff, double mosaicAngle1,
 }
 
 
+/*********************************************************************************************************************/
+
 // In this function the trajectory is propagated to the monochromator,
 // reflected off the corresponding CE and weighted with the reflection probability
 void Monochromator::processNeutron(Neutron* pNeutIn)
 {
   bool    bHit=false;
-  int     iRep=0;       // index of repetition
+  int     iRep=0,          // index of repetition
+          kHit=0, lHit=0;  // (expected) index of column and row of CE that is hit
   double  DelX, V0, Vx, Path;
   Neutron NeutInCE,     // data of the incoming neutron          (in the frame of the refl. plane
           NeutCES,      // data of the neutron on the CE surface (in the frame of the module)
@@ -762,8 +777,20 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
   // Set the vector magnitude to unity
   pNeutIn->Vector[0] = sqrt(1.0 - sq(pNeutIn->Vector[1]) - sq(pNeutIn->Vector[2])) ;
 
-  // selects CE on which the neutron is reflected and returns variables in the frame of CE
-  bHit=selectCE(pNeutIn, &NeutInCE) ;
+  // rotates monochromator if applicable, selects CE on which the neutron is reflected and returns variables in the frame of CE
+  // 'rotateMonochr()' returns already information which CE is hit
+  // 'selectCE()' is needed to calculate the neutron parameters in the CE frame
+  if (Freq != 0.0)
+  { bHit = rotateMonochr(kHit, lHit, pNeutIn);
+    if (bHit) 
+    { bHit = selectCE(pNeutIn, &NeutInCE, kHit, lHit);
+      if (!bHit)                                    // check all CEs if the last rotation step changed the CE 
+        bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);  // which is in fact very unlikely
+    }
+  }
+  else
+  { bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);
+  }
 
   if (bHit==false)  // no CE was found
   {
@@ -794,8 +821,6 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
     // If a CE was found,  'NeutInCE' contains now position and direction of the incoming neutron in the frame of the reflecting crystal element.
     // Now 'NeutPlCE' ís calculated which contains the properties of the neutron when arriving at the point of reflection 
     // (in the frame of the reflecting crystal element)
-
-    /* new version */
     DelX = 0.0 - NeutInCE.Position[0];
     V0   = V_FROM_LAMBDA(NeutInCE.Wavelength);
     Vx   = V0 * NeutInCE.Vector[0];
@@ -807,13 +832,6 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
     NeutPlCE.Time += TOF;
     for (int i = 0; i < 3; i++)
       NeutPlCE.Position[i] += NeutPlCE.Vector[i] * Path; //
-
-    /* old version 
-    VectorType PathV;
-    NeutInCE.Time -= NeutInCE.Position[0]  / fabs(NeutInCE.Vector[0]) /V_FROM_LAMBDA(NeutInCE.Wavelength);
-    CopyVector(NeutInCE.Vector, PathV) ;
-    MultiplyByScalar(PathV, - NeutInCE.Position[0]/ NeutInCE.Vector[0] ) ;
-    AddVector(NeutInCE.Position, PathV) ; // Path = displacement vector */
 
     // for flat option (eGeomOption=1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position
     if (eGeomOption==1)
@@ -877,8 +895,8 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
       // Rotate the Vectors to the output frame 
       if (bTransm==FALSE)
       { SubVector(NeutReflOut.Position, Transl);
-        RotVector(RotMatrixFoc, NeutReflOut.Position);
-        RotVector(RotMatrixFoc, NeutReflOut.Vector);
+        RotVector(RotMatrixOut, NeutReflOut.Position);
+        RotVector(RotMatrixOut, NeutReflOut.Vector);
       }
 
       /* writes output binary file */
@@ -899,19 +917,135 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
   return;
 }
 
+// for a rotating monochromator: rotate and 
+bool Monochromator::rotateMonochr(int& kLast, int& lLast, const Neutron* pNeutIn)
+{
+  bool   bHit=false;
+  int    k=0,l=0;                // indices for columns (k, hor) and rows (l, vert)
+  double omega,                  // angular frequency of the monochromator rotation
+         zeta0, zetaN, zetaO,    // initial, current and previous value of the rotation phase [rad]
+         DelZeta,                // and their difference                                      [deg]
+         ToFM=0.0,               // TOF from entrance to monochromator
+         ToF0=pNeutIn->Time;     // TOF from source to entrance
+
+  // init
+  omega = 2.0*M_PI*Freq;
+  zeta0 = Zeta0 * M_PI / 180.0;
+  kLast = lLast = -1;
+   
+  // initial time estimation from monochromator center
+  checkCE(ToFM, MathVector(PosCE0), DimCE0, MathMatrix(RotMatrixCE0), pNeutIn);
+  zetaN = zeta0 + omega * (ToF0+ToFM)/1000.0;   // total TOF in sec
+  fillRotMatrices(zetaN);
+
+  do
+  { 
+    zetaO=zetaN;
+    
+    // try if it hits the same element as in the previous step
+    if (kLast >=0 && lLast >= 0)
+    { CopyVectorsToVector (kLast, lLast, PosCE_F, PosCE) ;
+      CopyVectorsToVector (kLast, lLast, DimCE_F, DimCE) ;
+      CopyMatricesToMatrix(kLast, lLast, RotMatrixCE_F, RotMatrixCE) ;
+
+      bHit=checkCE(ToFM, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
+      if (bHit)
+      {
+        zetaN = zeta0 + omega * (ToF0+ToFM)/1000.0;   // total TOF in sec
+        fillRotMatrices(zetaN);
+      }
+    }
+
+    if (bHit==false)
+    { // loop over all crystal elements
+      for (k=0; k < NumberCE[0]; k++) 
+      {
+        for (l=0; l < NumberCE[1]; l++) 
+        {
+          // copies position, size and orientation data for the current CE
+          CopyVectorsToVector (k, l, PosCE_F, PosCE) ;
+          CopyVectorsToVector (k, l, DimCE_F, DimCE) ;
+          CopyMatricesToMatrix(k, l, RotMatrixCE_F, RotMatrixCE) ;
+
+          bHit=checkCE(ToFM, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
+          if (bHit)
+          {
+            kLast=k; lLast=l;
+            zetaN = zeta0 + omega * (ToF0+ToFM)/1000.0;   // total TOF in sec
+            fillRotMatrices(zetaN);
+            goto check_rot;
+          }
+        }
+      }
+    }
+
+  check_rot:
+    DelZeta = fabs(zetaN-zetaO) * 180.0 / M_PI;
+  }
+  while (bHit && DelZeta > DelZetaMax);
+
+  return bHit;
+}
+
+// checks if neutron hits a plane and calculates flight time until arrival   [ms]
+bool Monochromator::checkCE(double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut)
+{
+  bool       bHit=false;
+  double     t,          // time parameter
+             dist;       // Distance between plane of reflection and incoming neutron
+  MathVector vPos,                                        // neutron position in monochromator plane
+             vPosRel,                                     // neutron position in the CE frame
+             vNmlCE,                                      // plane normal 
+             vPos0  = MathVector(pNeut->Position),        // initial neutron position 
+             vDir0  = MathVector(pNeut->Vector),          // initial neutron fight direction
+             vUnit  = MathVector(1.0, 0.0, 0.0);          // unit vector
+  MathMatrix MrotInv= Mrot;
+
+  Time = 0.0;
+  MrotInv.transpose();     // rotation matrices are defined to rotate the frame,
+                           // to rotate a vector, the inverse matrix must be used, 
+                           // which is identical with the transposed matrix for rotation matrices
+  vNmlCE = MrotInv * vUnit;
+
+  dist = vPosCE * vNmlCE; 
+  if (checkPlaneIntersect(vPos0, vDir0, vNmlCE, dist, t))
+  { 
+    vPos = vPos0 + vDir0*t;
+    Time = t / V_FROM_LAMBDA(pNeut->Wavelength);
+
+    vPosRel = Mrot * (vPos - vPosCE);
+    bHit = isNeutInCE(vPosRel, SizeCE);
+  }
+
+  return bHit;
+}
+
+
+bool Monochromator::isNeutInCE(MathVector vPosN, const VectorType SizeCE)
+{
+  bool bIn = false;
+
+  if (fabs(vPosN.getX()) <= 0.5*SizeCE[0] &&
+      fabs(vPosN.getY()) <= 0.5*SizeCE[1] &&
+      fabs(vPosN.getZ()) <= 0.5*SizeCE[2]   )
+    bIn=true;
+
+  return bIn;
+}
+
 /***********************************************************************
 * Monochromator::selectCE
 *
 * in : pNeutIn  : neutron data in the local co-ordinate system of the monochromator module
 * out: pNeutInCE: same neutron data in the co-ordinate system of the reflecting plane
-
+*
 * calculated: PathLenTrans, PathLenRefl
 * determined: PosCE, RotMatrixCE, 
 *             DimCE, RotMatrixBragg
 *
 * return: CE hit? true or false
-*/
-bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE)
+*************************************************************************/
+bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE, int kStart, int lStart)
 {
   bool       bFound=false;
   int		     k, l;            // indices of crystal elements
@@ -922,9 +1056,9 @@ bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE)
   CopyNeutron(pNeutIn, pNeutInCE);
 
   // loop over all crystal elements
-  for (k=0; k<NumberCE[0]; k++) 
+  for (k=kStart; k<NumberCE[0]; k++) 
   {
-    for (l=0; l<NumberCE[1]; l++) 
+    for (l=lStart; l<NumberCE[1]; l++) 
     {
       // copies position, size and orientation data for the current CE
       CopyVectorsToVector (k, l, PosCE_F, PosCE) ;
@@ -954,7 +1088,7 @@ bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE)
         if (eMonoMode==1) 
           PathLenRefl = 2.0*(Depth[0]-Pos1[0]) * PathLenTrans/(Pos2[0]-Pos1[0]);  // reflection geometry, approximation, correct only for planes parallel to surface
         else 
-          PathLenRefl = PathLenTrans;                                     // transmission geometry approximation, correct only for planes parallel to surface
+          PathLenRefl = PathLenTrans;                                             // transmission geometry approximation, correct only for planes parallel to surface
 
         SubVector (pos, Depth);                 // neutron position in the frame of the reflecting surface
         CopyVector(pos, pNeutInCE->Position);
@@ -1272,29 +1406,404 @@ void Monochromator::transmitNeutron(const Neutron* pNeutIn, Neutron* pNeutOut)
   return;
 }
 
-double Monochromator::CalculateRotationOffset()
+/*********************************************************************************************************************/
+
+/*******************************************************/
+/* 'lambda-focusing' option                            */
+/*******************************************************/
+void Monochromator::crys_geomLambda()
 {
-  double     xOffset1, xOffset2;
-  VectorType vec1, vec2;
 
-  vec1[0] = DimCE0[0]/2.;
-  vec1[1] = DimCE0[1]/2;
-  vec1[2] = DimCE0[2]/2.;
+  int		m, j, k ;
+  double	b, c, R1, R11, R2, R20, RotView[3][3] ;
+  double	Psi, PsiC, Theta, DeltaTheta;
 
-  vec2[0] = DimCE0[0]/2.;
-  vec2[1] = DimCE0[1]/2;
-  vec2[2] = -DimCE0[2]/2.;
+  VectorType	r, Step_H, Step_V ;
 
-  RotVector(RotMatrixSurf, vec1);
-  RotVector(RotMatrixSurf, vec2);
+  fprintf(LogFilePtr,"geometry: vertical lambda focussing\n\n") ;
 
-  xOffset1 = fabs(vec1[0]);
-  xOffset2 = fabs(vec2[0]);
+  FillRotMatrixZY(RotMatrixCE, - SrfcVert, - SrfcHor) ;
+  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
 
-  return Max(xOffset1, xOffset2);
+  if (RadV == 0.)
+  {
+    fprintf(LogFilePtr,"\nERROR: radius must be > 0 !\n") ;
+    exit(0) ;
+  }
+
+
+  Psi0 *= M_PI / 180. ;
+  R20 = 0. ;
+
+  /* computes CE parameters */
+  b   = -DimCE0[2] * cos(M_PI_2 + SrfcVert);
+  c   = - ( sq(RadV) + RadV * DimCE0[2] * cos(M_PI_2 + SrfcVert) );
+  R2  = ( - b + sqrt(sq(b) - 4. * c) ) / 2.;
+  R11 = sqrt( sq(RadV) + sq(DimCE0[2] / 2.) + RadV * DimCE0[2] * cos(M_PI_2 + SrfcVert) ) ;
+
+  PsiC =  acos( (sq(RadV) + sq(R11) - sq(DimCE0[2] / 2.)) / 2. / RadV / R11 )
+        + acos( (sq(R11) + sq(R2) - sq(DimCE0[2] / 2.)) / 2. / R11 / R2 );
+
+  for (m=0; m < NumberCE[0]; m++)		/* step horizontal */
+  {
+    R2 = RadV /* initial R1 */ ;
+    Psi = M_PI_2 - Psi0 + PsiC ;
+    DeltaTheta = 2. * atan(DimCE0[1] / 2. / R2) ;
+    Theta = ((NumberCE[0] - 1) / 2. - m) * DeltaTheta ;
+
+    declareVectors();
+
+    for (j=0; j < NumberCE[1]; j++)	/* step vertical */
+    {
+	    R1  = R2 ;
+	    b   = - DimCE0[2] * cos(M_PI_2 + SrfcVert) ;
+	    c   = - ( sq(R1) + R1 * DimCE0[2] * cos(M_PI_2 + SrfcVert) ) ;
+	    R2  = ( - b + sqrt(sq(b) - 4. * c) ) / 2.  ;
+	    R11 = sqrt( sq(R1) + sq(DimCE0[2] / 2.) + R1 * DimCE0[2] * cos(M_PI_2 + SrfcVert) ) ;
+
+	    Psi = Psi	- acos( (sq(R1) + sq(R11) - sq(DimCE0[2] / 2.)) / 2. / R1 / R11 )
+	                  - acos( (sq(R11) + sq(R2) - sq(DimCE0[2] / 2.)) / 2. / R11 / R2 ) ;
+
+	    /* computes x translation at the end */
+	    if (fabs(Psi - M_PI_2) <= atan(DimCE0[2] / 2. / R2))
+        R20 = R2 ;
+
+	    /* output focussing geometry parameters */
+	    PosCE_F[0][m].push_back( R2 * sin(Psi) * cos(Theta) );
+	    PosCE_F[1][m].push_back( R2 * sin(Psi) * sin(Theta) );
+	    PosCE_F[2][m].push_back( R2 * cos(Psi) );
+
+
+	    if (m!=0 && j!=0)
+	    {
+        for(k=0;k<3;k++)
+	      {
+		      Step_H[k] = PosCE_F[k][m][j] - PosCE_F[k][m-1][j] ;
+		      Step_V[k] = PosCE_F[k][m][j] - PosCE_F[k][m][j-1] ;
+	      }
+
+	      DimCE_F[0][m].push_back(0.0) ;
+	      DimCE_F[1][m].push_back(0.9 * (LengthVector(Step_H) - DimCE0[1]));
+	      DimCE_F[2][m].push_back(0.9 * (LengthVector(Step_V) - DimCE0[2]));
+
+	    } 
+	    else 
+      {
+	      for(k=0;k<3;k++) DimCE_F[k][m].push_back(0.) ;
+	    }
+
+	    RotCEhor_F[m].push_back( (Theta) * 180. / M_PI           + MonteCarlo(-0.5*DevH, 0.5*DevH));
+	    RotCEvert_F [m].push_back((M_PI_2 - Psi) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));
+
+	  }
+  }
+
+  for(m=0; m < NumberCE[0]; m++)		/* step horizontal */
+  {
+    for(j=0; j < NumberCE[1]; j++)	/* step vertical */
+    {
+	    PosCE_F[0][m][j] -= R20 ;/**/
+
+	    /* rotate  */
+	    CopyVectorsToVector(m, j, PosCE_F, r) ;
+	    RotVector(RotMatrixCE, r) ;
+	    CopyVectorToVectors(m, j, r, PosCE_F) ;
+    }
+  }
+
+  /* print to file */
+  writeFocData();
+
+  return ;
 }
 
 
+/*******************************************************/
+/* 'sphere-focusing' option                            */
+/*******************************************************/
+void	Monochromator::crys_geomSphere()
+{
+  int	    m, j, k, q ;
+  double  R,                          // radius of the sphere
+          Psi, Theta,                 // vertical and horizontal orientation of the crystal element
+          DelPsi, DeltaTheta,         // Angular dfferences between neighboring rows/columns 
+          RotView[3][3], 
+          DistRows, DistCols;         // distance between 2 rows/columns (= element height/width  + gap)  ;
+  VectorType	r, Step_H, Step_V ;
+
+  fprintf(LogFilePtr,"geometry: focussing sphere\n\n") ;
+
+  DistRows = DimCE0[2] + GapV;   // vertical
+  DistCols = DimCE0[1] + GapH;   // horizontal
+
+  FillRotMatrixZY(RotMatrixCE, - SrfcVert, - SrfcHor) ; 
+  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
+
+  if (RadV == 0.)
+  {
+    fprintf(LogFilePtr,"\nERROR: radius must be > 0 !\n") ;
+    exit(0) ;
+  }
+
+  Psi0		= Psi0 * M_PI / 180. ;
+  R = RadV;                        // = sqrt(sq(RadV) - sq(DistRows / 2.)) ; 
+  DelPsi = 2.0 * asin(0.5 * DistRows / R);    // vertical
+  DeltaTheta = 2.0 * asin(0.5 * DistCols / R);    // horizontal
+
+  /*computes CE parameters */
+  for(m = 0;m<NumberCE[0];m++)		/* step horizontal */
+  {
+    Psi = M_PI_2 - Psi0;
+    Theta = ((NumberCE[0]-1) / 2. - m) * DeltaTheta ;
+
+    declareVectors();  
+
+    for(j = 0;j<NumberCE[1];j++)	/* step vertical */
+	  {
+	    /* output focussing geometry parameters */
+	    r[0] = R * sin(Psi) * cos(Theta) - R ;
+	    r[1] = R * sin(Psi) * sin(Theta) ;
+	    r[2] = R * cos(Psi) ;
+
+	    for(q=0;q<3;q++) PosCE_F[q][m].push_back(r[q]) ;
+
+	    if( (m != 0) && (j != 0) )
+	    {
+	      for(k=0;k<3;k++)
+		    {
+		      Step_H[k] = PosCE_F[k][m][j] - PosCE_F[k][m-1][j] ;
+		      Step_V[k] = PosCE_F[k][m][j] - PosCE_F[k][m][j-1] ;
+		    }
+
+	      DimCE_F[0][m].push_back(0.) ;	
+	      DimCE_F[1][m].push_back(0.9 * (LengthVector(Step_H) - DimCE0[1]));	
+	      DimCE_F[2][m].push_back(0.9 * (LengthVector(Step_V) - DimCE0[2]));
+	    } 
+	    else 
+      {
+	      for(k=0;k<3;k++) DimCE_F[k][m].push_back( 0.) ;	
+	    }
+
+	    RotCEhor_F[m].push_back((Theta) * 180. / M_PI            + MonteCarlo(-0.5*DevH, 0.5*DevH));
+	    RotCEvert_F[m].push_back( (M_PI_2 - Psi) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));
+
+ 	    Psi = Psi - DelPsi;
+    }
+  }
+
+  rotateCEs();
+
+  /* print to file */
+  writeFocData();
+
+  return ;
+}/* End Crys_GeomSphere */
+
+
+/*******************************************************/
+/* 'vertical cylinder-focusing' option                 */
+/*******************************************************/
+void   Monochromator::crys_geomVertCyl()
+{
+  int		m, j, k, q ;
+  double	R,                // Radius
+          Psi, DelPsi,      // vertical angles
+          RotView[3][3], 
+          DistRows;         // distance between 2 rows (= slab height + gap)  ;
+  VectorType	r ;
+
+  fprintf(LogFilePtr,"geometry: vertically focussing cylinder\n\n") ;
+
+  DistRows = DimCE0[2] + GapV;
+
+  FillRotMatrixZY(RotMatrixCE, - SrfcVert, - SrfcHor) ; 
+  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
+
+  if(RadV == 0.)
+    Error("ERROR: radius must be > 0");
+
+  Psi0 = Psi0 * M_PI / 180. ;
+  R =  RadV;
+
+  /*computes CE parameters */
+  m = 0;		// only 1 column
+  DelPsi = 2.0 * asin(0.5 * DistRows / R);    // vertical
+  Psi    = M_PI_2 - Psi0;
+
+  declareVectors();
+
+  for (j=0; j<NumberCE[1]; j++)	/* step vertical */
+  {
+    /* output focussing geometry parameters */
+    r[0] = R * sin(Psi) - R ;
+    r[1] = 0. ;
+    r[2] = R * cos(Psi) ;
+
+    for(q=0;q<3;q++) PosCE_F[q][m].push_back (r[q]) ;
+
+    for(k=0;k<3;k++) DimCE_F[k][m].push_back ( 0.) ;	
+
+    RotCEhor_F[m].push_back(MonteCarlo(-0.5*DevH, 0.5*DevH));
+    RotCEvert_F[m].push_back (MonteCarlo(-0.5*DevV, 0.5*DevV) + (M_PI_2 - Psi) * 180. / M_PI );
+
+    Psi -= DelPsi ;
+  }
+
+  /*rotate CEs and print to file */
+  NumberCE[0]=1;
+  rotateCEs();
+  writeFocData();
+
+  return ;
+
+}/* End Crys_GeomVertCyl */
+
+
+/*******************************************************/
+/* 'double focussing cylinder' option                  */
+/*******************************************************/
+void   Monochromator::crys_geomDoubleCyl()
+{
+
+	int	    m, j, k, q ; 
+	double	    CE_Width,    /* width and height of one monochromator element */
+	            CE_Height,
+	            Psi,         /* vertical angle to monochromator slab under consideration */
+	            Theta;       /* horizontal angle to monochromator slab under consideration */
+
+	VectorType  r;
+
+	fprintf(LogFilePtr,"geometry: cylinder focussing vertically and horizontally\n\n") ;
+
+	FillRotMatrixZY(RotMatrixCE, - SrfcVert, - SrfcHor) ; 
+
+	CE_Width  = DimCE0[1];
+	CE_Height = DimCE0[2];
+
+	if(RadV == 0.0 && RadH==0.0)
+		Warning("both radii are zero");
+
+	/*computes CE parameters */
+	for(m = 0;m<NumberCE[0];m++)	   /* step horizontal, loop over columns */
+	{
+		r[0] =  0.0 ;
+		r[1] = (NumberCE[0] - 1 - 2*m)/2.0 * (CE_Width + GapH);
+		if (RadH > 0.0)	Theta = atan(r[1] / RadH);
+		else Theta = 0.0;
+
+		declareVectors();
+		
+		for(j = 0;j<NumberCE[1];j++)	/* step vertical,   loop over rows */
+		{
+			/* output focusing geometry parameters */
+			r[2] = (NumberCE[1] - 1 - 2*j)/2.0 * (CE_Height + GapV);
+		
+			if (RadV > 0.0)
+				Psi = atan(r[2] / RadV);
+			else
+				Psi = 0.0;
+
+			for(q=0;q<3;q++) PosCE_F[q][m].push_back( r[q]) ;
+			for(k=0;k<3;k++) DimCE_F[k][m].push_back(0.0 );	
+
+			RotCEhor_F [m].push_back(Theta * 180./M_PI + MonteCarlo(-0.5*DevH, 0.5*DevH));
+			RotCEvert_F[m].push_back(Psi   * 180./M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));		}
+	}
+
+  rotateCEs();
+
+	/* print to file */
+  writeFocData();
+
+	return ;
+
+}/* End crys_geomDoubleCyl */
+
+
+/******************************************************************/
+/* rotateCEs() rotates CE positions to module frame               */
+/* addDev2Std() adds the deviations of each CE to standard values */
+/* writeFocData() writes calculated crystal data to file          */
+/******************************************************************/
+//
+void Monochromator::rotateCEs()
+{
+  int m, j;
+  VectorType r;
+
+  for(m=0; m < NumberCE[0]; m++)		/* step horizontal */
+  { for(j=0; j < NumberCE[1]; j++)	/* step vertical */
+	  {
+	    /*PosCE_F[0][m][j] += R ;*/
+	    /* rotate  */
+	    CopyVectorsToVector(m, j, PosCE_F, r) ;
+	    RotVector(RotMatrixCE, r) ;
+	    CopyVectorToVectors(m, j, r, PosCE_F) ;
+	  }
+  }
+
+  return;
+}
+
+void Monochromator::addDev2Std()
+{
+  int i,j,k;  // indices
+
+  for(i=0; i<NumberCE[0]; i++)
+  {
+    for(j=0; j<NumberCE[1]; j++)
+	  {
+	    /* converts degs in radian etc. */
+	    RotCEhor_F[i][j] *= M_PI/180. ;
+	    RotCEvert_F [i][j] *= M_PI/180. ;
+
+	    /* adds main parameters */
+	    for(k=0;k<3;k++)
+	    {
+	      PosCE_F[k][i][j] += PosCE0[k] ;
+	      DimCE_F[k][i][j] += DimCE0[k] ;
+	    }
+
+	    RotCEhor_F[i][j] += SrfcHor ;
+	    RotCEvert_F [i][j] += SrfcVert ;
+	  }
+  }
+  return;
+}
+
+void Monochromator::writeFocData()
+{
+  int m, j;
+
+  // open geometry file to save calculated data
+  pGeomFile = OpenOutputFile(GeomFileName, FALSE, "w") ;
+
+  if (pGeomFile != NULL)
+  { 
+    fprintf(pGeomFile,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
+
+    for (m=0; m < NumberCE[0]; m++)		/* step horizontal */
+    { for (j=0; j < NumberCE[1]; j++)	/* step vertical */
+	    {
+	      fprintf(pGeomFile,"%8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f\n",
+                          PosCE_F[0][m][j], PosCE_F[1][m][j], PosCE_F[2][m][j], DimCE_F[0][m][j], DimCE_F[1][m][j], DimCE_F[2][m][j], RotCEhor_F[m][j], RotCEvert_F[m][j] ) ;
+	    }
+    }
+
+    fclose(pGeomFile) ;
+  }
+  else
+  {
+    Warning("Geometry file could not be opened. Calculated data are not written to a file.");
+  }
+
+  return;
+}
+
+
+/*********************************************************************************************************************/
+// 4 functions to copy rotation matrices or vectors to arrays and get them out again 
+//
 void Monochromator::CopyMatricesToMatrix(int i, int j, std::vector < std::vector<double> >  Matrix[3][3], double Result[3][3])
 {
 
@@ -1373,6 +1882,7 @@ void Monochromator::CopyVectorToVectors(int i, int j, double Vector[3], std::vec
 
 }
 
+// initializes arrays
 void Monochromator::declareVectors()
 {
 
@@ -1383,380 +1893,33 @@ void Monochromator::declareVectors()
   DimCE_F[0].push_back(tempVector);
   DimCE_F[1].push_back(tempVector);
   DimCE_F[2].push_back(tempVector);
-  RotHoriz_F.push_back(tempVector);
-  RotVert_F.push_back(tempVector);
+  RotCEhor_F.push_back(tempVector);
+  RotCEvert_F.push_back(tempVector);
   
   return;
 
 }
 
-
-/*******************************************************/
-/* 'lambda-focusing' option                            */
-/*******************************************************/
-void Monochromator::crys_geomLambda()
+// calculates intersection point of straight line through point with plane
+bool Monochromator::checkPlaneIntersect(const MathVector vLineOffset,  const MathVector vLineDir,
+                                        const MathVector vPlaneNormal, const double PlaneDistance, double& t)
 {
-
-  int		m, j, k ;
-  double	b, c, R1, R11, R2, R20, RotView[3][3] ;
-  double	Psi, PsiC, Theta, DeltaTheta;
-
-  VectorType	r, Step_H, Step_V ;
-
-  fprintf(LogFilePtr,"\ngeometry: vertical lambda focussing\n\n") ;
-
-  FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ;
-  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
-
-  if (RadV == 0.)
-  {
-    fprintf(LogFilePtr,"\nERROR: radius must be > 0 !\n") ;
-    exit(0) ;
-  }
-
-
-  Psi0 *= M_PI / 180. ;
-  R20 = 0. ;
-
-  /* computes CE parameters */
-  b   = -DimCE0[2] * cos(M_PI_2 + RotVert);
-  c   = - ( sq(RadV) + RadV * DimCE0[2] * cos(M_PI_2 + RotVert) );
-  R2  = ( - b + sqrt(sq(b) - 4. * c) ) / 2.;
-  R11 = sqrt( sq(RadV) + sq(DimCE0[2] / 2.) + RadV * DimCE0[2] * cos(M_PI_2 + RotVert) ) ;
-
-  PsiC =  acos( (sq(RadV) + sq(R11) - sq(DimCE0[2] / 2.)) / 2. / RadV / R11 )
-        + acos( (sq(R11) + sq(R2) - sq(DimCE0[2] / 2.)) / 2. / R11 / R2 );
-
-  for (m=0; m < NumberCE[0]; m++)		/* step horizontal */
-  {
-    R2 = RadV /* initial R1 */ ;
-    Psi = M_PI_2 - Psi0 + PsiC ;
-    DeltaTheta = 2. * atan(DimCE0[1] / 2. / R2) ;
-    Theta = ((NumberCE[0] - 1) / 2. - m) * DeltaTheta ;
-
-    declareVectors();
-
-    for (j=0; j < NumberCE[1]; j++)	/* step vertical */
-    {
-	    R1  = R2 ;
-	    b   = - DimCE0[2] * cos(M_PI_2 + RotVert) ;
-	    c   = - ( sq(R1) + R1 * DimCE0[2] * cos(M_PI_2 + RotVert) ) ;
-	    R2  = ( - b + sqrt(sq(b) - 4. * c) ) / 2.  ;
-	    R11 = sqrt( sq(R1) + sq(DimCE0[2] / 2.) + R1 * DimCE0[2] * cos(M_PI_2 + RotVert) ) ;
-
-	    Psi = Psi	- acos( (sq(R1) + sq(R11) - sq(DimCE0[2] / 2.)) / 2. / R1 / R11 )
-	                  - acos( (sq(R11) + sq(R2) - sq(DimCE0[2] / 2.)) / 2. / R11 / R2 ) ;
-
-	    /* computes x translation at the end */
-	    if (fabs(Psi - M_PI_2) <= atan(DimCE0[2] / 2. / R2))
-        R20 = R2 ;
-
-	    /* output focussing geometry parameters */
-	    PosCE_F[0][m].push_back( R2 * sin(Psi) * cos(Theta) );
-	    PosCE_F[1][m].push_back( R2 * sin(Psi) * sin(Theta) );
-	    PosCE_F[2][m].push_back( R2 * cos(Psi) );
-
-
-	    if (m!=0 && j!=0)
-	    {
-        for(k=0;k<3;k++)
-	      {
-		      Step_H[k] = PosCE_F[k][m][j] - PosCE_F[k][m-1][j] ;
-		      Step_V[k] = PosCE_F[k][m][j] - PosCE_F[k][m][j-1] ;
-	      }
-
-	      DimCE_F[0][m].push_back(0.0) ;
-	      DimCE_F[1][m].push_back(0.9 * (LengthVector(Step_H) - DimCE0[1]));
-	      DimCE_F[2][m].push_back(0.9 * (LengthVector(Step_V) - DimCE0[2]));
-
-	    } 
-	    else 
-      {
-	      for(k=0;k<3;k++) DimCE_F[k][m].push_back(0.) ;
-	    }
-
-	    RotHoriz_F[m].push_back( (Theta) * 180. / M_PI           + MonteCarlo(-0.5*DevH, 0.5*DevH));
-	    RotVert_F [m].push_back((M_PI_2 - Psi) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));
-
-	  }
-  }
-
-  for(m=0; m < NumberCE[0]; m++)		/* step horizontal */
-  {
-    for(j=0; j < NumberCE[1]; j++)	/* step vertical */
-    {
-	    PosCE_F[0][m][j] -= R20 ;/**/
-
-	    /* rotate  */
-	    CopyVectorsToVector(m, j, PosCE_F, r) ;
-	    RotVector(RotMatrixCE, r) ;
-	    CopyVectorToVectors(m, j, r, PosCE_F) ;
-    }
-  }
-
-  /* print to file */
-  writeFocData();
-
-  return ;
-}
-
-
-/*******************************************************/
-/* 'sphere-focusing' option                            */
-/*******************************************************/
-void	Monochromator::crys_geomSphere()
-{
-  int	    m, j, k, q ;
-  double  R,                          // radius of the sphere
-          Psi, Theta,                 // vertical and horizontal orientation of the crystal element
-          DelPsi, DeltaTheta,         // Angular dfferences between neighboring rows/columns 
-          RotView[3][3], 
-          DistRows, DistCols;         // distance between 2 rows/columns (= element height/width  + gap)  ;
-  VectorType	r, Step_H, Step_V ;
-
-  fprintf(LogFilePtr,"\ngeometry: focussing sphere\n\n") ;
-
-  DistRows = DimCE0[2] + GapV;   // vertical
-  DistCols = DimCE0[1] + GapH;   // horizontal
-
-  FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
-  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
-
-  if (RadV == 0.)
-  {
-    fprintf(LogFilePtr,"\nERROR: radius must be > 0 !\n") ;
-    exit(0) ;
-  }
-
-  Psi0		= Psi0 * M_PI / 180. ;
-  R = RadV;                        // = sqrt(sq(RadV) - sq(DistRows / 2.)) ; 
-  DelPsi = 2.0 * asin(0.5 * DistRows / R);    // vertical
-  DeltaTheta = 2.0 * asin(0.5 * DistCols / R);    // horizontal
-
-  /*computes CE parameters */
-  for(m = 0;m<NumberCE[0];m++)		/* step horizontal */
-  {
-    Psi = M_PI_2 - Psi0;
-    Theta = ((NumberCE[0]-1) / 2. - m) * DeltaTheta ;
-
-    declareVectors();  
-
-    for(j = 0;j<NumberCE[1];j++)	/* step vertical */
-	  {
-	    /* output focussing geometry parameters */
-	    r[0] = R * sin(Psi) * cos(Theta) - R ;
-	    r[1] = R * sin(Psi) * sin(Theta) ;
-	    r[2] = R * cos(Psi) ;
-
-	    for(q=0;q<3;q++) PosCE_F[q][m].push_back(r[q]) ;
-
-	    if( (m != 0) && (j != 0) )
-	    {
-	      for(k=0;k<3;k++)
-		    {
-		      Step_H[k] = PosCE_F[k][m][j] - PosCE_F[k][m-1][j] ;
-		      Step_V[k] = PosCE_F[k][m][j] - PosCE_F[k][m][j-1] ;
-		    }
-
-	      DimCE_F[0][m].push_back(0.) ;	
-	      DimCE_F[1][m].push_back(0.9 * (LengthVector(Step_H) - DimCE0[1]));	
-	      DimCE_F[2][m].push_back(0.9 * (LengthVector(Step_V) - DimCE0[2]));
-	    } 
-	    else 
-      {
-	      for(k=0;k<3;k++) DimCE_F[k][m].push_back( 0.) ;	
-	    }
-
-	    RotHoriz_F[m].push_back((Theta) * 180. / M_PI            + MonteCarlo(-0.5*DevH, 0.5*DevH));
-	    RotVert_F[m].push_back( (M_PI_2 - Psi) * 180. / M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));
-
- 	    Psi = Psi - DelPsi;
-    }
-  }
-
-  rotateCEs();
-
-  /* print to file */
-  writeFocData();
-
-  return ;
-}/* End Crys_GeomSphere */
-
-
-/*******************************************************/
-/* 'vertical cylinder-focusing' option                 */
-/*******************************************************/
-void   Monochromator::crys_geomVertCyl()
-{
-  int		m, j, k, q ;
-  double	R,                // Radius
-          Psi, DelPsi,      // vertical angles
-          RotView[3][3], 
-          DistRows;         // distance between 2 rows (= slab height + gap)  ;
-  VectorType	r ;
-
-  fprintf(LogFilePtr,"\ngeometry: vertically focussing cylinder\n\n") ;
-
-  DistRows = DimCE0[2] + GapV;
-
-  FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
-  FillRotMatrixZY(RotView, 10 * M_PI / 180., -95 * M_PI / 180.) ;
-
-  if(RadV == 0.)
-  {
-    fprintf(LogFilePtr,"\nERROR: radius must be > 0 !\n") ;
-    exit(0) ;
-  }
-
-  Psi0 = Psi0 * M_PI / 180. ;
-  R =  RadV;
-
-  /*computes CE parameters */
-  m = 0;		// only 1 column
-  DelPsi = 2.0 * asin(0.5 * DistRows / R);    // vertical
-  Psi    = M_PI_2 - Psi0;
-
-  declareVectors();
-
-  for (j=0; j<NumberCE[1]; j++)	/* step vertical */
-  {
-    /* output focussing geometry parameters */
-    r[0] = R * sin(Psi) - R ;
-    r[1] = 0. ;
-    r[2] = R * cos(Psi) ;
-
-    for(q=0;q<3;q++) PosCE_F[q][m].push_back (r[q]) ;
-
-    for(k=0;k<3;k++) DimCE_F[k][m].push_back ( 0.) ;	
-
-    RotHoriz_F[m].push_back(MonteCarlo(-0.5*DevH, 0.5*DevH));
-    RotVert_F[m].push_back (MonteCarlo(-0.5*DevV, 0.5*DevV) + (M_PI_2 - Psi) * 180. / M_PI );
-
-    Psi -= DelPsi ;
-  }
-
-  /*rotate CEs and print to file */
-  NumberCE[0]=1;
-  rotateCEs();
-  writeFocData();
-
-  return ;
-
-}/* End Crys_GeomVertCyl */
-
-
-/*******************************************************/
-/* 'double focussing cylinder' option                  */
-/*******************************************************/
-void   Monochromator::crys_geomDoubleCyl()
-{
-
-	int	    m, j, k, q ; 
-	double	    CE_Width,    /* width and height of one monochromator element */
-	            CE_Height,
-	            Psi,         /* vertical angle to monochromator slab under consideration */
-	            Theta;       /* horizontal angle to monochromator slab under consideration */
-
-	VectorType  r;
-
-	fprintf(LogFilePtr,"\ngeometry: cylinder focussing vertically and horizontally\n\n") ;
-
-	FillRotMatrixZY(RotMatrixCE, - RotVert, - RotHoriz) ; 
-
-	CE_Width  = DimCE0[1];
-	CE_Height = DimCE0[2];
-
-	if(RadV == 0.0 && RadH==0.0)
-		Warning("both radii are zero");
-
-	/*computes CE parameters */
-	for(m = 0;m<NumberCE[0];m++)	   /* step horizontal, loop over columns */
-	{
-		r[0] =  0.0 ;
-		r[1] = (NumberCE[0] - 1 - 2*m)/2.0 * (CE_Width + GapH);
-		if (RadH > 0.0)	Theta = atan(r[1] / RadH);
-		else Theta = 0.0;
-
-		declareVectors();
-		
-		for(j = 0;j<NumberCE[1];j++)	/* step vertical,   loop over rows */
-		{
-			/* output focusing geometry parameters */
-			r[2] = (NumberCE[1] - 1 - 2*j)/2.0 * (CE_Height + GapV);
-		
-			if (RadV > 0.0)
-				Psi = atan(r[2] / RadV);
-			else
-				Psi = 0.0;
-
-			for(q=0;q<3;q++) PosCE_F[q][m].push_back( r[q]) ;
-			for(k=0;k<3;k++) DimCE_F[k][m].push_back(0.0 );	
-
-			RotHoriz_F[m].push_back(Theta * 180./M_PI + MonteCarlo(-0.5*DevH, 0.5*DevH));
-			RotVert_F [m].push_back(Psi   * 180./M_PI + MonteCarlo(-0.5*DevV, 0.5*DevV));		}
-	}
-
-  rotateCEs();
-
-	/* print to file */
-  writeFocData();
-
-	return ;
-
-}/* End crys_geomDoubleCyl */
-
-
-/**********************************************************/
-/* rotateCEs() rotates CE positions to module frame       */
-/* writeFocData() writes calculated crystal data to file  */
-/**********************************************************/
-
-void Monochromator::rotateCEs()
-{
-  int m, j;
-  VectorType r;
-
-  for(m=0; m < NumberCE[0]; m++)		/* step horizontal */
-  { for(j=0; j < NumberCE[1]; j++)	/* step vertical */
-	  {
-	    /*PosCE_F[0][m][j] += R ;*/
-	    /* rotate  */
-	    CopyVectorsToVector(m, j, PosCE_F, r) ;
-	    RotVector(RotMatrixCE, r) ;
-	    CopyVectorToVectors(m, j, r, PosCE_F) ;
-	  }
-  }
-
-  return;
-}
-
-void Monochromator::writeFocData()
-{
-  int m, j;
-
-  // open geometry file to save calculated data
-  pGeomFile = fopen(GeomFileName, "w") ;
-
-  if (pGeomFile != NULL)
-  { 
-    fprintf(pGeomFile,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
-
-    for (m=0; m < NumberCE[0]; m++)		/* step horizontal */
-    { for (j=0; j < NumberCE[1]; j++)	/* step vertical */
-	    {
-	      fprintf(pGeomFile,"%8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f\n",
-                          PosCE_F[0][m][j], PosCE_F[1][m][j], PosCE_F[2][m][j], DimCE_F[0][m][j], DimCE_F[1][m][j], DimCE_F[2][m][j], RotHoriz_F[m][j], RotVert_F[m][j] ) ;
-	    }
-    }
-
-    fclose(pGeomFile) ;
+  bool   rc;
+  double sp = vLineDir * vPlaneNormal;
+
+  if (sp==0.0)
+  { rc=false;
+    t = 0.0;
   }
   else
-  {
-    Warning("Geometry file could not be opened. Calculated data are not written to a file.");
+  { rc= true;
+    t = (PlaneDistance - (vLineOffset * vPlaneNormal))/sp;
   }
 
-  return;
+  return rc;
 }
 
+
 #endif
+
+
