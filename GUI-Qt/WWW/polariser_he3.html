@@ -1,0 +1,146 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Polarizer He-3</title>
+</head>
+  <body>  
+<h1> VITESS Module Polarizer He-3</h1>
+<p>
+This module simulates a He-3 gas polarizer/filter. Inside the cylindrical 
+He-3 gas chamber the field component is homogeneous. The guide field is added
+to the total field. <br>
+The spin precessions are first approximated classically i.e. we first rotate
+the spin vectors belonging to the trajectories in order to simulate dephasing
+in function of flight time through the magnetic field. Then we use the known
+quantummechanical formulas to define the new spin orientation if the "Up"
+and "Down" mixed states weights will change due to the interaction with the
+He-3 gas: </p>
+<p>{ <br>
+&nbsp; CartesianToSpherical(SpinVector, &amp;the, &amp;phi); </p>
+<p>&nbsp; pDown = sqrt(1. - polardata[datanumber]); </p>
+<p>&nbsp; the = 2. * (double) asin(pDown *(double) sin(the/2.)) ; </p>
+<p>&nbsp; SphericalToCartesian(SpinVector, &amp;the, &amp;phi); <br>
+} </p>
+<p>where polardata[datanumber] gives the polarization belonging to the wavelength
+bin (numero 'datanumber') as read from the 'polarization file'. <br>
+The probability weight is multiplied by the transmission in function of the
+wavelength. <br>
+As result, the <b>average</b> polarization and transmission per wavelength 
+of the trajectories will depend on the wavelength as given in the polarization 
+and transmission files. </p>
+<p>In the case of choosing the analytical option, the neutron polarization&nbsp;<img
+ src="img00005.gif" height="29" width="48" align="middle">
+ and transmission&nbsp;<img src="img00006.gif" height="28" width="46"
+ align="middle">
+ are given by the formulas: </p>
+<center> 
+<p><img src="img00007.gif" height="64" width="414">
+,</p>
+</center>
+  
+<p>where&nbsp;<img src="img00008.gif" height="22" width="26"
+ align="middle">
+ is the He-3 polarization,&nbsp;<img src="img00009.gif" height="29"
+ width="161" align="middle">
+- cross section (barn) if <i>E<sub>n</sub></i> is given in eV, <i>n</i> and 
+<i>l</i> are the He-3 number density and polarizer thickness (cm) respectively. 
+<p>
+<h3>Module parameters</h3>
+<p>
+<table border="1" width="81%">
+ <tbody>
+    <tr>
+ <td><b>Parameter</b> <br>
+      <b>Unit</b></td>
+  <td><b>Description</b></td>
+  <td><b>Command option</b></td>
+ </tr>
+  <tr>
+ <td>wavelength dependence</td>
+  <td>wavelength dependence option (1= analytical input, else= numerical input)
+choise between analytical or numerical definition of the wavelength dependence
+of the polarization and transmission&nbsp;</td>
+  <td>-a&nbsp;</td>
+ </tr>
+  <tr>
+ <td>polarization He3&nbsp; <br>
+[%]&nbsp;</td>
+  <td>active if a=1, polarization of the He-3 gas</td>
+  <td>&nbsp;-b</td>
+ </tr>
+  <tr>
+ <td>polarization xsection [barn]</td>
+  <td>active if a=1, polarization cross section of the neutrons in the He-3 
+      <br>
+(users may examine small variations/uncertainty)</td>
+  <td>-c</td>
+ </tr>
+  <tr>
+ <td>density He3 <br>
+[cm<sup>-3</sup>]</td>
+  <td>active if a=1, density of the He3 gas <br>
+(users may examine small variations)</td>
+  <td>-d</td>
+ </tr>
+  <tr>
+ <td>polarization file</td>
+  <td>input(a=0) or output(a=1) data file for the wavelength dependent polarization; 
+it gives a single column of numbers between 0 and 1 in function of wavelength, 
+starting with 0.01, 0.02, 0.03, 0.04... Angstrom.</td>
+  <td>-P</td>
+ </tr>
+  <tr>
+ <td>transmission file</td>
+  <td>input (a=0) or output (a=1) data file for the wavelength dependent transmission;
+it gives a single column of numbers between 0 and 1 in function of wavelength,
+starting with 0.01, 0.02, 0.03, 0.04... Angstrom.</td>
+  <td>-T</td>
+ </tr>
+  <tr>
+ <td>position main X,Y,Z <br>
+[cm]</td>
+  <td>center position of the cylindrical He-3 gas chamber</td>
+  <td>-k, -l, -m</td>
+ </tr>
+  <tr>
+ <td>cylinder length, radius <br>
+[cm]</td>
+  <td>length and radius of the cylindrical He-3 gas chamber</td>
+  <td>-X, -Y</td>
+ </tr>
+  <tr>
+ <td>guide field X, Y, Z <br>
+[Oe]</td>
+  <td>components of the guide field</td>
+  <td>-G, -H, -K</td>
+ </tr>
+  <tr>
+ <td>pol.&nbsp; field X, Y, Z <br>
+[Oe]</td>
+  <td>components of the magnetic field in the chamber which is added to the 
+guide field</td>
+  <td>-M, -N, -O</td>
+ </tr>
+  <tr>
+ <td>output X, Y, Z <br>
+[cm]</td>
+  <td>position of the output frame (in the input frame)</td>
+  <td>-p, -r, -s</td>
+ </tr>
+ 
+  </tbody>
+</table>
+<p>
+<hr> 
+<p>
+<a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
+<p><!-- hhmts start --><font size="-1">Last modified: Tue Jul 23 17:26:10 
+MEST 2002, G. Zs.</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end --> 
+</p>
+<br>
+</body>
+</html>

@@ -1,22 +1,29 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#include <QWidget>
+#include "basemodule.h"
 
 namespace Ui {
 class Filter;
 }
 
-class Filter : public QWidget
+class Filter : public BaseModule
 {
     Q_OBJECT
 
 public:
-    explicit Filter(QWidget *parent = nullptr);
+    Q_INVOKABLE explicit Filter(BaseModule *parent = nullptr);
     ~Filter();
 
 private:
     Ui::Filter *ui;
+    QMap<QString,QString> map = {
+        {"test", "testval"}
+    };
+    void writeValues(YAML::Node& config);
+    void readValues(YAML::Node& config);
+    void writePipe(QTextStream& out);
+    void writeCmd(QString& cmd);
 };
 
 #endif // FILTER_H

@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Elliptical Mirror</title>
+</head>
+ <body>
+ 
+<h1>VITESS Module Elliptical Mirror</h1>
+<br>
+The module <b>mirror_elliptical</b> simulates the neutron flight path through a ellipsoidal mirror calculating the intensity loss for each reflection (in dependence of the neutron wavelength and the incident angle). 
+One needs to give three semi axes to describe the ellipsoid (please see the well known mathematical ellipsoid equation).  
+One also has to give the center position of the ellipsoid. The ellipsoid can be rotated about one of the coordinate axis. 
+Please choose X, Y and Z limits for the elliptical mirror. In this case, the ellipsoid will be cut by 6 planes X=Xmin, X=Xmax, Y=Ymin, Y=Ymax, Z=Zmin, Z=Zmax. 
+So it is possible to create one or two mirrors or even an elliptical guide.
+The position of the origin for the next module has to be given as well. <br />
+Spin-up and spin-down neutrons can have different reflectivity curves. In this way, also polarisation can be treated. 
+Additionally, the attenuation of the neutron beam in air of a certain humidity can be taken into account.
+Surface waviness is also considered.
+A visualization of the trajectories is possible (see figure).<br> 
+
+   
+<p><img src="ElliMirror.jpg" name="Grafik" border="0" height="372" width="433" align="bottom">
+   </p>
+Figure: Elliptical mirror
+<br />
+<br>
+<h3><font size="+2"> Parameters for module 'quadr_field' </font></h3>
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">semi axis X, Y, Z<br>[cm]</td>
+       <td valign="top">semi axes of the elliptic mirror in x-direction (beam), y-direction (left) and z-direction (up) </td>
+       <td valign="top">&gt;0</td>
+       <td valign="top">-a -b -c</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Center position main X, Y, Z<br>[cm]</td>
+       <td valign="top">x-, y- and z-component of the center of the ellipsoid</td>
+       <td valign="top">any</td>
+       <td valign="top">-d -e -k</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Rotation angle<br>[deg]</td>
+       <td valign="top">angle of rotation of the ellipsoid</td>
+       <td valign="top">[-90°,90°]</td>
+       <td valign="top">-g </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Rotate around the axisfield range file</td>
+       <td valign="top">axis about which the ellipsoid is rotated</td>
+       <td valign="top">'OX'<br>'OY'<br>'OZ'</td>
+       <td valign="top">-g </td>
+     </tr>
+
+     <tr>
+       <td valign="top">X_MIN, X_MAX<br>[cm]</td>
+       <td valign="top">range (over which the mirror exists) in beam direction (x-axis)</td>
+       <td valign="top">-Axis_x&lt;XMIN&lt;XMAX&lt;Axis_x</td>
+       <td valign="top">-A -C</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Y_MIN, Y_MAX<br>[cm]</td>
+       <td valign="top">range (over which the mirror exists) in horizontal direction perpendiculat to the beam (y-axis)</td>
+       <td valign="top">-Axis_y&lt;YMIN&lt;YMAX&lt;Axis_y</td>
+       <td valign="top">-D -E</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Z_MIN, Z_MAX<br>[cm]</td>
+       <td valign="top">range (over which the mirror exists) in vertical direction (z-axis)</td>
+       <td valign="top">-Axis_z&lt;ZMIN&lt;ZMAX&lt;Axis_z</td>
+       <td valign="top">-H -K</td>
+     </tr>
+
+     <tr>
+       <td valign="top">output X, Y, Z<br>[cm]</td>
+       <td valign="top">x-, y- and z-component of the origin of the output frame (in the input frame)</td>
+       <td valign="top">any</td>
+       <td valign="top">-s -t -w</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Activate visualisation</td>
+       <td valign="top">activation of visualisation of the neutron trajectories (see figure)</td>
+       <td valign="top">'yes'<br>'no'</td>
+       <td valign="top">-y </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Type of visualisation</td>
+       <td valign="top">plane to which the trajectories are projected for visualisation</td>
+       <td valign="top">'XZ'<br>'XY'<br>'YZ'</td>
+       <td valign="top">-Y </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Full visualisation</td>
+       <td valign="top">yes: visualisation of all neutrons paths  <br />
+                        no:  only reflected neutrons are shown </td>
+       <td valign="top">'yes'<br>'no'</td>
+       <td valign="top">-v </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Output device</td>
+       <td valign="top">for Unix only: choice of output format</td>
+       <td valign="top">'x-windows'<br>'ps file'</td>
+       <td valign="top">-l </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Spin_up-/down reflectivity file</td>
+       <td valign="top">input data file containing the reflectivity curve R(Q) for spin-up and for spin-down neutrons resp. (in the same form as it is used in the guide module) </td>
+       <td valign="top"> - </td>
+       <td valign="top">-i<br />-I</td>
+     </tr>
+
+     <tr>
+       <td valign="top">surface waviness<br>[deg]</td>
+       <td valign="top">amplitude of waviness of a rectangular distribution <br>
+                        this value is the maximal angle of deviation of the surface normal from the ideal normal. </td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-q</td>
+     </tr>
+
+     <tr>
+       <td valign="top">Reflected neutrons</td>
+       <td valign="top">yes: only reflected neutrons are treated further on <br>
+                        no : all neutrons are treated further on          </td>
+       <td valign="top">'yes'<br>'no'</td>
+       <td valign="top">-u </td>
+     </tr>
+
+     <tr>
+       <td valign="top">Ideal reflection</td>
+       <td valign="top">yes: ideal reflection (R=1) <br>
+                        no: reflectivity from files</td>
+       <td valign="top">'yes'<br>'no'</td>
+       <td valign="top">-R </td>
+     </tr>
+
+     <tr>
+       <td valign="top">polarisation</td>
+       <td valign="top">yes: split into spin-down and spin-up reflectivity  <br />
+	                      no: spin-up reflectivity for all neutrons           </td>
+       <td valign="top">'yes'<br>'no'</td>
+       <td valign="top">-p </td>
+     </tr>
+
+     <tr>
+       <td valign="top">neutron spin axis</td>
+       <td valign="top">axis for spin quantization</td>
+       <td valign="top">'OX'<br>'OY'<br>'OZ'</td>
+       <td valign="top">-V </td>
+     </tr>
+
+     <tr>
+       <td valign="top">air humidity<br>[%]</td>
+       <td valign="top">for 'air attenuation'='yes': relative air humidiy (at 293 K), used to calculate beam attenuation in air</td>
+       <td valign="top">[0,100]</td>
+       <td valign="top">-r </td>
+     </tr>
+
+     <tr>
+       <td valign="top">air attenuation</td>
+       <td valign="top">no:  no attenuation of the neutron beam in air  <br />
+                        yes: activation of attenuation of the neutron beam in air for T=293 K and the given humidity</td>
+       <td valign="top">'no'<br/>'yes'</td>
+       <td valign="top">-z </td>
+     </tr>
+   
+  </tbody> 
+</table>
+<br> 
+<br>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>

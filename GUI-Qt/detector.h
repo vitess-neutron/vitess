@@ -1,22 +1,28 @@
 #ifndef DETECTOR_H
 #define DETECTOR_H
 
-#include <QScrollArea>
+#include "basemodule.h"
 
 namespace Ui {
 class Detector;
 }
-
-class Detector : public QScrollArea
+class Detector : public BaseModule
 {
     Q_OBJECT
 
 public:
-    explicit Detector(QWidget *parent = nullptr);
+    Q_INVOKABLE explicit Detector(BaseModule *parent = nullptr);
     ~Detector();
 
 private:
     Ui::Detector *ui;
+    QMap<QString,QString> map = {
+        {"test", "testval"}
+    };
+    void writeValues(YAML::Node& config);
+    void readValues(YAML::Node& config);
+    void writePipe(QTextStream& out);
+    void writeCmd(QString& cmd);
 };
 
 #endif // DETECTOR_H

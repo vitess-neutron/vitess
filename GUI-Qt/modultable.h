@@ -21,23 +21,26 @@ public:
 
     QStringList module[1000];
     int linenum;
-
+    void loadModule(QString text);
+    void cleanModules();
+    void addNewRow();
 signals:
-    void changedCombo(QString text);
+    void arrowPressed(int row);
+    void changedComboVal(QString text, int curRow);
+    void removeCombo(int index);
+    void insertCombo(int index);
 
 private slots:
     void comboModulItemChanged(QString);
     void arrowButtonPressed(bool);
     void showContextMenu(const QPoint&);
     void removeRow(int);
-    void insertModule();
     void removeModule();
+    void insertModule();
     void infoModule();
-
 private:
     Ui::ModulTable *ui;
     QStringList modNames;
-    void addNewRow();
     QVector<QComboBox *> comboModule;
     QVector<QToolButton *> arrowButton;
     QIcon *arrow;

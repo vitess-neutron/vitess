@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Spin Reset</title>
+</head>
+ <body>
+<h1>VITESS Module Spin Reset</h1>
+<p>
+The module <b>spin_reset</b> (folder 'trajectories') is meant to reset the <b>quantization direction of the spin</b> at any point of the instrument.
+The quantization direction is set in the source module. If the beamline is bent, this direction is not the same any more relative to the beamline.
+Example: If one sets the quantization direction to the x-direction (beam direction) in the source and has a curved guide of 5°, 
+these directions will deviate by 5° after the curved guide.
+But some modules require certain quantization directions relative to the surface.
+If the module <b>spin_reset</b> is used after the curved guide, the quantization direction can now be set along the beamline again, i.e. into the new x-direction.
+<p>
+A second option has been added to the module <b>spin_reset</b>: the <b>colour</b> marking certain trajectories can be <b>reset</b>.
+The property 'colour' of the neutron trajectories is used in many modules to mark trajectories in order to distinguish them later on, 
+e.g. by monitoring or evaluating only trajectories of a certain colour.<br />
+Examples are: <br />
+source&ensp;: mark the moderator that the trajectory comes from  <br />
+chopper: mark the window that the trajectory passes <br />
+guide&ensp;&ensp;: count the number of reflections         <br />
+sample (environment): distinguish between different scattering events  <br />
+<br />
+As one might investigate more than one of these effects in an instrument, it is necessary to reset the colour.
+If you give '1' as 'number of colours', all trajectories will set to colour 1.
+If you give 'N' colours, trajectory i (i&gt;=1) will get colour (i mod N), 
+i.e. the first will get colour 1, the second colour 2, ... the Nthe number 'N', the (N+1)th again colour 1, and so on.
+<p>
+<h3>Parameters for module 'spin_reset'</h3>
+<p>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">degree of polarization<br>[%] </td>
+       <td valign="top">percentage of polarisation: 0% unpolarized, 100% all spins point into the same direction </td>
+       <td valign="top">[0,100]</td>
+       <td valign="top">-P     </td>
+     </tr>
+
+     <tr>
+       <td valign="top">polarisation direction X Y Z</td>
+       <td valign="top">X-, Y and Z-component of the polarisation direction, the norm of the vector should be 1</td>
+       <td valign="top">[0,1]   </td>
+       <td valign="top">-X -Y -Z</td>
+     </tr>
+
+     <tr>
+       <td valign="top">number of colours</td>
+       <td valign="top">if zero, nothing happens <br />
+                        if greater zero, the colour of the trajectories will be reset (to a value between 1 and this number)<br />
+                        (for details see text above) </td>
+       <td valign="top">&gt;=0</td>
+       <td valign="top">-c     </td>
+     </tr>
+   
+  </tbody> 
+</table>
+<br> 
+<br>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>

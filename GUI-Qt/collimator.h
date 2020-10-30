@@ -1,22 +1,29 @@
 #ifndef COLLIMATOR_H
 #define COLLIMATOR_H
 
-#include <QWidget>
+#include "basemodule.h"
 
 namespace Ui {
 class Collimator;
 }
 
-class Collimator : public QWidget
+class Collimator : public BaseModule
 {
     Q_OBJECT
 
 public:
-    explicit Collimator(QWidget *parent = nullptr);
+    Q_INVOKABLE explicit Collimator(BaseModule *parent = nullptr);
     ~Collimator();
 
 private:
     Ui::Collimator *ui;
+    QMap<QString,QString> map = {
+        {"test", "testval"}
+    };
+    void writeValues(YAML::Node& config);
+    void readValues(YAML::Node& config);
+    void writePipe(QTextStream& out);
+    void writeCmd(QString& cmd);
 };
 
 #endif // COLLIMATOR_H

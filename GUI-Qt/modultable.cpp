@@ -8,12 +8,14 @@
 #include <QTextStream>
 #include <iostream>
 #include <QDebug>
+#include <QMessageBox>
+#include <QDesktopServices>
+#include <QUrl>
 
 ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ModulTable)
 {
-
     modNames = s1;
     arrow = new QIcon(":/resources/images/arrow-right.xpm");
     ui->setupUi(this);
@@ -22,11 +24,12 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(1,20);
 
+    //Menu in module table
     header = ui->tableWidget->verticalHeader();
     header->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(header, SIGNAL(customContextMenuRequested(const QPoint&)),this, SLOT(showContextMenu(const QPoint&)));
 
-    // get maximum width of list entries
+    //Get maximum width of list entries
     minWidth = 0;
     foreach (QString s, modNames)
     {
@@ -49,50 +52,98 @@ ModulTable::~ModulTable()
 void ModulTable::showContextMenu(const QPoint& pos)
 {
     QPoint globalPos = header->mapToGlobal(pos);
-    QMenu myMenu;
-    myMenu.addAction("Move Down",this,SLOT(insertModule()));
-    myMenu.addAction("Remove Module",this,SLOT(removeModule()));
-    myMenu.addSeparator();
-    myMenu.addAction("Edit here",this,SLOT(infoModule()));
-    myMenu.addAction("Separat Window",this,SLOT(infoModule()));
-    myMenu.addSeparator();
-    myMenu.addAction("Disable Module",this,SLOT(infoModule()));
-    myMenu.addAction("Enable",this,SLOT(infoModule()));
-    myMenu.addAction("Enable all",this,SLOT(infoModule()));
-    myMenu.addSeparator();
-    myMenu.addAction("Info",this,SLOT(infoModule()));
-    myMenu.exec(globalPos);
+    QMenu moduleMenu;
+    moduleMenu.addAction("Move Down",this,SLOT(insertModule()));
+    moduleMenu.addAction("Remove Module",this,SLOT(removeModule()));
+    moduleMenu.addSeparator();
+    moduleMenu.addAction("Edit here",this,SLOT(infoModule()));
+    moduleMenu.addAction("Separat Window",this,SLOT(infoModule()));
+    moduleMenu.addSeparator();
+    moduleMenu.addAction("Disable Module",this,SLOT(infoModule()));
+    moduleMenu.addAction("Enable",this,SLOT(infoModule()));
+    moduleMenu.addAction("Enable all",this,SLOT(infoModule()));
+    moduleMenu.addSeparator();
+    moduleMenu.addAction("Info",this,SLOT(infoModule()));
+    moduleMenu.exec(globalPos);
 }
 
 void ModulTable::removeRow(int index)
 {
-    std::cout <<"removeRow" << std::endl;
     ui->tableWidget->removeRow(index);
 }
 
 void ModulTable::insertModule()
 {
-    std::cout <<"insertRow" << std::endl;
+    int index=ui->tableWidget->currentRow();
+    ui->tableWidget->insertRow(index);
+    QComboBox *cb = new QComboBox();
+    cb->addItem("--inactive--");
+    cb->addItems(modNames);
+    cb->setCurrentIndex(0);
+    cb->view()->setMinimumWidth(minWidth);    // width of modullist
+    connect(cb,SIGNAL(currentTextChanged(QString)),this,SLOT(comboModulItemChanged(QString)));
+    comboModule.insert(index,cb);
+    QToolButton *tb = new QToolButton();
+    tb->setIcon(*arrow);
+    tb->setEnabled(false);
+    connect(tb,SIGNAL(clicked(bool)),this,SLOT(arrowButtonPressed(bool)));
+    arrowButton.insert(index,tb);
+    ui->tableWidget->setCellWidget(index,0,cb);
+    ui->tableWidget->setCellWidget(index,1,tb);
+    emit insertCombo(index);
+}
+
+//called from mainwindow when reading yaml file
+void ModulTable::loadModule(QString text)
+{
+    foreach (QString s, modNames)
+    {
+        if (!s.endsWith(":"))
+            switch ( s.indexOf(text) )
+            {
+                case 0: // main entry
+                case 2: // subentry
+                    std::cout << "1111111 modultable loadmodule: " << s.toStdString() << std::endl;
+                    comboModule.last()->view()->setMinimumWidth(minWidth);    // width of modullist
+                    comboModule.last()->setCurrentText(s);
+                    arrowButton.last()->setEnabled(true);
+                    return;
+            }
+    }
 }
 
 void ModulTable::infoModule()
 {
-    std::cout <<"not implemented" << std::endl;
+    int index=ui->tableWidget->currentRow();
+    QString wwwFile = comboModule[index]->currentText().toLower();
+    if (comboModule[index]->currentText().contains(QChar(0x2514)))
+       wwwFile = wwwFile.mid(2);
+    std::cout << wwwFile.toStdString() << std::endl;
+    QDesktopServices::openUrl(QUrl("/home/jcns/source/qt/test/WWW/" + wwwFile + ".html"));
 }
+
 
 void ModulTable::removeModule()
 {
-    std::cout <<"deleteRow" << std::endl;
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->removeRow(index);
     comboModule.remove(index);
     arrowButton.remove(index);
+    emit removeCombo(index);
 }
 
+
+void ModulTable::cleanModules()
+{
+    comboModule.clear();
+    arrowButton.clear();
+
+    ui->tableWidget->setRowCount(0);
+    std::cout << "cleanModules vor addNewRow" << std::endl;
+    addNewRow();
+}
 void ModulTable::addNewRow()
 {
-    std::cout <<"addNewRow" << std::endl;
-
     // new Combobox
     QComboBox *cb = new QComboBox();
     cb->addItem("--inactive--");
@@ -101,7 +152,6 @@ void ModulTable::addNewRow()
     cb->view()->setMinimumWidth(minWidth);    // width of modullist
     connect(cb,SIGNAL(currentTextChanged(QString)),this,SLOT(comboModulItemChanged(QString)));
     comboModule << cb;
-
     // new disabled ToolButton
     QToolButton *tb = new QToolButton();
     tb->setIcon(*arrow);
@@ -111,10 +161,10 @@ void ModulTable::addNewRow()
 
     // new row in table with elements
     int row = ui->tableWidget->rowCount();
+    std::cout << "!!!! in addrow   rowCount: " << row << std::endl;
     ui->tableWidget->setRowCount( row+1 );
     ui->tableWidget->setCellWidget(row,0,cb);
     ui->tableWidget->setCellWidget(row,1,tb);
-
 }
 
 void ModulTable::comboModulItemChanged(QString text)
@@ -126,20 +176,23 @@ void ModulTable::comboModulItemChanged(QString text)
         return;
     }
 
-    emit changedCombo(text);
     int curRow = 0;
     for ( ; curRow<comboModule.size(); curRow++ )
+    {
         if ( comboModule.at(curRow) == cb )
+           {
             break;
+           }
+    }
     if ( cb->currentIndex() == 0 )
     {   // --inactive-- choosen toolbutton disabled
         arrowButton.at(curRow)->setEnabled(false);
         return;
     }
     arrowButton.at(curRow)->setEnabled(true);
-    // in last row then add new row
     if ( curRow == ui->tableWidget->rowCount()-1 )
         addNewRow();
+    emit changedComboVal(text,curRow);
 }
 
 
@@ -152,10 +205,9 @@ void ModulTable::arrowButtonPressed(bool)
     for ( ; curRow<arrowButton.size(); curRow++ )
 
         if ( ui->tableWidget->cellWidget(curRow,1) == tb )
-
         {   // give mainwindow name of selected module class
-            emit changedCombo(static_cast<QComboBox*>(ui->tableWidget->cellWidget(curRow,0))->currentText());
+//            emit arrowPressed(static_cast<QComboBox*>(ui->tableWidget->cellWidget(curRow,0))->currentText(),curRow);
+            emit arrowPressed(curRow);
             break;
         }
 }
-

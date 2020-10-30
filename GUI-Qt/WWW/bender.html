@@ -1,0 +1,438 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Universal Module Bender</title>
+</head>
+<body bgcolor="#DCE2FE">
+
+<h1>
+VITESS Universal Module Bender</h1>
+The module <b>Bender</b> is similar to the module Guide using the bender
+option. The main difference is that the 'bended guide' consists of several
+straight parts that form a polygon section. In contrast, the bender surfaces
+are circles (but straight surfaces also possible). Also the module <b>Bender</b>  
+simulates converging (diverging) bender-polarizator with possibility of 
+enabled or disabled of polarising neutrons. The 2-D visualization of surfaces 
+and trace of neutrons path are included (using PGPLOT and G2 graphic libraries).
+Only first 10000 trajectories will be visualised. Also you can choose the device
+for visualisation: display, file or both.<br>
+Additionally there is a possibility to have spacing inside the bender.
+
+<br>THE SURFACES IS SITUATED IN  XZ PLANE.
+
+<p><img SRC="Guide2.GIF" height=286 width=568>
+<br>&nbsp;
+Picture 1. One channel of the bender
+<br>&nbsp;
+<h3>
+Simulation parameters</h3>
+The effect of gravity is considered in this module, if this option is chosen.
+Neutrons with a probability/current less than the 'minimal weight' are
+taken out of the simulation. The possibility take into account the rough of 
+reflected surface of guide is included also. Abutment loss feature is 
+rejecting neutrons, which have got reflection near edges (exit) of bender. 
+If last path of neutron (before exit plane) is smaller than given value, such 
+neutron is rejected. User also must to input this value. The polarizing of neutrons 
+may be enabled or disabled. For each spin direction (-1 or 1) user must be input 
+individual reflectivity file for left, right planes of bender 
+(This is not actually for top and bottom planes, but it is possible too). 
+If polarization is included, neutrons, which has another quantization 
+is rejected.
+
+<br>&nbsp;
+<h3>
+Bender Geometry characteristics</h3>
+
+The geometry of bender is defining by following parameters:
+<br>1. Entrance height (along vertical axis 0Z).
+<br>2. Exit height (along vertical axis 0Z).
+<br>3. Length of the bender. 
+<br>4. Radius of curvature; 
+Angle beta=(Length of bender)/(Radius of curvature) is defining angle 
+of decline of exit sufrace  concerning  entrance surface of the bender so the bender 
+axis is part of circle.
+If radius of curvature is zero, the central axis of bender is a straight line
+and so angle beta is zero. The parameters which are describing arrangement of vertical surfaces in the 
+horizontal plane (XY - plane) are reading from the parameter file, which have name - surface file.
+
+<p>Please NOTE! Subsequent modules always refer to the new origin, which 
+is defined as the middle of the exit window. It is generated automatically 
+by the program, also in the case of curvature (the orientation of the 
+frame follows the curvature).
+<br>&nbsp;
+<h3>
+Reflectivity Files</h3>
+The reflectivity files describe the reflection properties of the coating:
+<pre>mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0)
+mirr1a.dat: theta_Ni coating&nbsp;&nbsp; (theta_Ni = 0.099138 deg)
+mirr1b.dat: theta_Ni_58 coating (theta_Ni_58 = 0.11456 deg)
+mirr2.dat: super-mirror coating (2 theta_Ni)
+mirr2linear.dat: supermirror coating,
+&nbsp; reflecitivity 0.99 -> 0.9 from theta_Ni to 2 theta_Ni; cutoff at 2 theta_Ni;
+mirr3+.dat: super-mirror coating (3.5 theta_Ni)</pre>
+The reflectivity file contains the probability of reflection in dependence
+of the incident angle for neutrons with a wavelength of 1 &Aring;. Each
+row contains 10 data points and covers 0.01 deg, i.e. each point gives
+the probability average over an angular interval of 0.001 deg (the second
+row covers 0.01-0.02 deg a.s.o.). The number of data points may vary between
+1 and 1000. If end of file is reached (e.g. only 52 values are given) the
+probability to reflect 1 &Aring; neutrons for higher angles is set to 0.
+If no reflectivity file is given as an input or mirr0.dat file is given, the guide operates in total
+absorption mode, i.e. each neutron is hitting a guide wall is lost or transmited
+in the next channel (depending from mode).
+<br>There are files for the left (= inner) side, for the right (= outer
+side) and for the top and bottom of the bender (channels); in each case
+there is one for spin-up and one for spin-down neutrons. This is necessary for
+simulation of polarizing devices.
+<br>&nbsp;
+<h3>
+Surface File </h3>
+The entrance and exit position of each surface and its radius have to be
+given in a file, called surface file. All benders that can be described 
+in that way can be simulated. Surface file must be written by user and to input 
+with option -u. 
+
+The format of parameter file, which describing surfaces is:
+<br>
+<br>Displacement in the entrance surface (cm), Displacement in the exit surface(cm), Raduis of curvature (cm)
+...Another surfaces.............................................
+
+<br>Example (11 surfaces, converging bender):
+
+
+<br>-10.0          -5.0           2000.0
+<br>-8.0           -4.0           2000.0
+<br>-6.0           -3.0           2000.0
+<br>-4.0           -2.0           2000.0
+<br>-2.0           -1.0           2000.0
+<br>0.0             0.0           2000.0
+<br>2.0             1.0           2000.0
+<br>4.0             2.0           2000.0
+<br>6.0             3.0           2000.0
+<br>8.0             4.0           2000.0
+<br>10.0            5.0           2000.0
+
+<br>Please NOTE! For positive value of radius of curvature the circle 
+will be concave. If radius of curvature of sufrace is zero, 
+the straigth line will be used instead arc line. This is useful for 
+simualtions of some soller collimators. If negative value of radius 
+of curvature is given, the circle will be convex. Such features are giving the
+possibility for simulating of many types of benders and collimators!
+
+<br>The number of surfaces must be less than 200. 
+
+The module defines the number of lines in the parameter files automaticly. 
+Number of lines equally numbers of surfaces in multiple collimator. Please do
+not to writing incorrect data in the parameter file (For example, description of
+hole without radius, Line: -10	  -5.0   empty). The entrance and exit width of
+bender is defining automaticly. Also user must be chosen the thickness of surfaces.
+
+<h3> Information file </h3>
+This file generates after run of simulations and contains some useful information
+about geometry of the bender. 
+
+<h3> Visualisation </h3>
+
+The visualization of the bender, which desciribing  above-mentioned  file is given
+at the picture 2. (Length 2m, Radius of curvature 20m, thickness of surfaces is
+neglecting). During simualtions, the neutron flight paths will be appeared. After
+first reflection, the color of neutron path is changing, so this is giving the possibility 
+for exploring background of fast neutrons and "straight line" gamma-rays. 
+<br> For UNIX operation systems (Linux, SunOS, Solaris, OSF1,..) the PGPLOT graphic
+library is used
+<br> For Windows operation system the PGPLOT and G2 graphics libraries are used.
+
+<br>
+<br>
+<br>
+<img src="vib.gif"><p>
+
+
+Picture 2. Visualisation of bender channels, view from above
+
+
+<br>
+<br>
+<h3>
+Module parameters:</h3>
+&nbsp;
+<table BORDER WIDTH="90%" >
+<tr>
+<td><b><h2>Parameter Unit</h2></b>
+</td>
+
+<td><b><h2>Description</h2></b></td>
+
+<td><b><h2>Command option</h2></b></td>
+</tr>
+
+<tr>
+<td><b>entrance height</b>
+<br>[cm]</td>
+
+<td>size of the guide entrance (in z-direction)</td>
+
+<td>-h</td>
+</tr>
+
+<tr>
+<td><b>exit height</b>
+<br>[cm]</td>
+
+<td>size of the guide exit (in z-direction)</td>
+
+<td>-H</td>
+</tr>
+
+<tr>
+<td><b>substrate width</b>
+<br>[cm]</td>
+
+<td>thickness of the material that separates two neighbouring channels,
+<br>usually the small part of the neutrons is passing in the next channel via that
+<br> material </td>
+
+<td>-s</td>
+</tr>
+
+<tr>
+<td><b>length</b>
+<br>[cm]</td>
+
+<td>length of the bender</td>
+
+<td>-l</td>
+</tr>
+
+<tr>
+<td><b>spin up:</b>
+<br>left, right, top/bottom plane</td>
+
+<td>reflectivity file for the coating of the guide on the inner side (left),
+on the
+<br>outer side (right) and on the top and bottom plane for spin up neutrons</td>
+
+<td>-i, -m, -k</td>
+</tr>
+
+<tr>
+<td><b>spin down:</b>
+<br>left, right, top/bottom plane</td>
+
+<td>reflectivity file for the coating of the guide on the inner side (left),
+on the
+<br>outerside (right) and on the top and bottom plane for spin down neutrons</td>
+
+<td>-I, -M, -K</td>
+</tr>
+
+<tr>
+<td><b>surface file</b></td>
+
+<td>file which is containing the entrance and exit positions of the channel borders
+and
+<br>their radii</td>
+
+<td>-u</td>
+</tr>
+
+<tr>
+<td><b>surface waviness</b>
+<br>[deg]</td>
+
+<td>waviness of the inner guide surface, i.e. deviations from a perfectly
+<br>plane surface</td>
+
+<td>-r</td>
+</tr>
+
+<tr>
+<td><b>abutment loss length</b></td>
+
+<td>neutrons that hit the surface close to one of the ends of the
+guide(<= length) is rejected.
+</td>
+
+<td>-a</td>
+</tr>
+
+<tr>
+<td><b>visualisation</b></td>
+
+<td>yes: graphics of the neutron paths will be stored on the given device during the simulation
+<br>no : no graphics stored</td>
+
+<td>-y</td>
+</tr>
+
+<tr>
+<td><b>device</b></td>
+
+<td>Choose the device for graphic visualisation: 1-display, 2-file, 3-both</td>
+
+<td>-o</td>
+</tr>
+
+
+<tr>
+<td><b>polarisation</b></td>
+
+<td>yes: splitting into spin-up and spin-down and using different reflectivity
+files depending on the spin state
+<br>no : no polarisation considered, spin-up reflectivity files used for
+all neutrons</td>
+
+<td>-p</td>
+</tr>
+
+
+<tr>
+<td><b>unreflected neutrons</b></td>
+
+<td>Value 0(No) : neutrons that are not reflected are absorbed.
+<br>Value 1(Yes):  neutrons that are not reflected are transmitted with attenuation
+<br>according absorption material (see options -z and -w), neutrons 
+<br>which transmitted via extreme surfaces (left and right) are absorbed.
+</td>
+
+<td>-g</td>
+</tr>
+
+
+<tr>
+<td><b>test of bender geometry</b></td>
+
+<td> if activated (value 1) the test of bender geometry is carried, else is not carried. This is useful for bender 
+<br> with non-standart geometry. If you have received a warning message, please contact with the author of module: manoshin@nf.jinr.ru
+</td>
+
+<td>-t</td>
+</tr>
+
+
+<tr>
+<td><b>number of axis for spin quantization</b></td>
+
+<td> this feature using with polarising neutrons. if spin of neutron is parallel (antiparallel) of axis
+<br> 0X or 0Y or 0Z, this value must be 0 or 1 or 2 accordingly. The default value is 0 (axis 0X),
+<br> so the magnetic field is parallel of axis OX.
+</td>
+
+<td>-V</td>
+</tr>
+
+
+<tr>
+<td><b>information file</b></td>
+<td>name of file, which contain some information about geometry of bender</td>
+<td>-A</td>
+</tr>
+
+<tr>
+<td><b>radius of curvature</b></td>
+<td>Radius of curvature of base circle-axis of bender 
+<br>(if zero - bender axis is straight line)</td>
+<td>-R</td>
+</tr>
+
+
+<tr>
+<td><b>absorption material in the channel</b></td>
+<td>the absorption coefficient of the material inside of the bender channel
+<br>Active, if neutrons are transmitting between channels of bender: Option -g1 </td>
+
+<td>-c</td>
+</tr>
+
+
+<tr>
+<td><b>transmission file of bender channel</b></td>
+<td>File, which characterized the transmission of 
+<br>material inside bender channel.
+<br>Active, if options -g is unit => -g1 and -c is zero => -c0.
+</td>
+<td>-C</td>
+</tr>
+
+
+<tr>
+<td><b>first absorption material </b></td>
+<td>Absorption material in the inner(left) side of the channel
+<br>See from bender entrance - left side.
+<br>Active, if neutrons are transmit between channels: Option -g1 </td>
+<td>-z</td>
+</tr>
+
+<tr>
+<td><b>transmission file of left side of channel</b></td>
+<td>File, which characterized the transmission of 
+<br>material in the left side of channel, see from entrance.
+<br>Active, if options -g is unit => -g1 and -z is zero => -z0.
+</td>
+<td>-T</td>
+</tr>
+
+
+<tr>
+<td><b>second absorption material </b></td>
+<td>Absorbpion material in the outer(right) side of the channel
+<br>See from bender entrance - right side. 
+<br>Active, if neutrons are transmit between channels: Option -g1 </td>
+<td>-w</td>
+</tr>
+
+<tr>
+<td><b>transmission file of right side of channel</b></td>
+<td>File, which characterized the transmission of 
+<br>material in the right side of channel, see from entrance.
+<br>Active, if options -g is unit => -g1 and -w is zero => -w0.
+</td>
+<td>-O</td>
+</tr>
+</table>
+<br>
+<br>
+<br>
+<b>List of absorption materials, which were included in the module 
+(for the options -c, -z and -w):</b>
+<br>Value 0 - Read data from file, which was created by user
+<br>Value 1 - Gd: Gadolinium.
+<br>Value 2 - Cd: Cadmium.
+<br>Value 3 - B: Bor10.
+<br>Value 4 - Eu
+<br>Value 5 - Si: Silicon.
+<br>Value 6 - Vaccum, no attenuation
+<br>For values 1-4 wavelength range must be between 0.3 ... 28 A in the source module or virtual source.
+<br>Foe value 5 wavelength range must be between 1 .. 20 A in the source module or virtual source too.
+<br>This datas were given by Thomas Krist, HMI, Berlin.
+<br>
+<br>
+The format of file, which description the transmission is:
+<br>Wavelength, A            Value MU, cm^(-1)
+<br>................        .......................
+<br>
+<br>The wavelength values in the table must be increased!
+<br>The number of rows must be less that 500!
+<br>Then, the transmission is calculated by formula:
+"Transmission" = exp(-MU*Distance); 
+<br> where Distance is length of flight of neutron in given material in cm, which 
+calculated automaticly. During passing the neutrons via material, the "Transmission" value
+is multipling in neutron probability.
+<br>The wavelength range must be from smallest to longest wavelength in the table. 
+If you have used material from list and material from file, please choose the 
+minimal and maximum wavelength values in the source module (or virtual source), 
+which do not extend the wavelength range of transmission materials for left and right
+sides and for bender channel material. Otherwise, the simulation process will be 
+cancelled automaticly.
+
+<p>
+<hr><a href="vitess.html">Back to VITESS overview</a>
+<br><a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de, manoshin@nf.jinr.ru , klaus.lieutenant@helmholtz-berlin.de</a>
+<p><!-- hhmts start -->Last modified: 30.09.2003 &nbsp;<!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+</body>
+</html>
+
+	

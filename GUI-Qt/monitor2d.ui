@@ -1,0 +1,1495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Monitor2D</class>
+ <widget class="QWidget" name="Monitor2D">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>501</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>-308</y>
+        <width>770</width>
+        <height>793</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="4" column="1">
+        <layout class="QGridLayout" name="gridLayout_47">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_101">
+           <property name="text">
+            <string>minimal</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MinParB">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_102">
+           <property name="text">
+            <string>y-value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <layout class="QGridLayout" name="gridLayout_38">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_82">
+           <property name="text">
+            <string>maximal</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MaxParA">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_83">
+           <property name="text">
+            <string>x-value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <layout class="QGridLayout" name="gridLayout_35">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_76">
+           <property name="text">
+            <string>maximal</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MaxParB">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_77">
+           <property name="text">
+            <string>y-value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="0">
+        <layout class="QGridLayout" name="gridLayout_44">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_95">
+           <property name="text">
+            <string>number</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="nBinParA">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="inputMask">
+            <string>9999</string>
+           </property>
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_96">
+           <property name="text">
+            <string>of x-bins</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <layout class="QGridLayout" name="gridLayout_43">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_93">
+           <property name="text">
+            <string>number</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="nBinParB">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="inputMask">
+            <string>9999</string>
+           </property>
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_94">
+           <property name="text">
+            <string>of y-bins</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0">
+        <layout class="QGridLayout" name="gridLayout_41">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_89">
+           <property name="text">
+            <string>probability</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_90">
+           <property name="text">
+            <string>weight</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="bPropWt">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>NO</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>YES</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <layout class="QGridLayout" name="gridLayout_48">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_103">
+           <property name="text">
+            <string>exclusive</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_104">
+           <property name="text">
+            <string>counts</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="bExclude">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>NO</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>YES</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="0">
+        <layout class="QGridLayout" name="gridLayout_51">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_110">
+           <property name="text">
+            <string>filter lambda</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="LmbdMin">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_111">
+           <property name="text">
+            <string>min [A]</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="1">
+        <layout class="QGridLayout" name="gridLayout_53">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_114">
+           <property name="text">
+            <string>filter lambda</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="LmbdMax">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_115">
+           <property name="text">
+            <string>max[A]</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="0">
+        <layout class="QGridLayout" name="gridLayout_50">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_108">
+           <property name="text">
+            <string>filter</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_109">
+           <property name="text">
+            <string>parameter 1</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="IdFilt1">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>NONE</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_X</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LAMBDA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ENERGY</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TIME</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_R</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_THETA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_VERT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_HOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COLOR</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="1">
+        <layout class="QGridLayout" name="gridLayout_52">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_112">
+           <property name="text">
+            <string>filter</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_113">
+           <property name="text">
+            <string>parameter 2</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="IdFilt2">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>NONE</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_X</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LAMBDA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ENERGY</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TIME</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_R</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_THETA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_VERT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_HOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COLOR</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="11" column="0">
+        <layout class="QGridLayout" name="gridLayout_57">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_122">
+           <property name="text">
+            <string>filter 1</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MinFilt1">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_123">
+           <property name="text">
+            <string>min value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="11" column="1">
+        <layout class="QGridLayout" name="gridLayout_54">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_116">
+           <property name="text">
+            <string>filter1</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MaxFilt1">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_117">
+           <property name="text">
+            <string>max value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="12" column="0">
+        <layout class="QGridLayout" name="gridLayout_55">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_118">
+           <property name="text">
+            <string>filter 2</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MinFilt2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_119">
+           <property name="text">
+            <string>min value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="12" column="1">
+        <layout class="QGridLayout" name="gridLayout_56">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_120">
+           <property name="text">
+            <string>filter 2</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MaxFilt2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>-1.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_121">
+           <property name="text">
+            <string>max value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="14" column="0">
+        <layout class="QGridLayout" name="gridLayout_58">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_125">
+           <property name="text">
+            <string>polarisation</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_126">
+           <property name="text">
+            <string>analysis</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="bPolAna">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>NO</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>YES</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="16" column="0">
+        <layout class="QGridLayout" name="gridLayout_60">
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="PolDirX">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" rowspan="2">
+          <widget class="QLabel" name="label_129">
+           <property name="text">
+            <string>direction
+x</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <layout class="QGridLayout" name="gridLayout_37">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_80">
+           <property name="text">
+            <string>parameter</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_81">
+           <property name="text">
+            <string>on x-axis</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="IdParA">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>POS_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_X</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LAMBDA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ENERGY</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TIME</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_R</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_THETA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_VERT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_HOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COLOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_HOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_VERT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COLOR</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <layout class="QGridLayout" name="gridLayout_39">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_84">
+           <property name="text">
+            <string>parameter</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_85">
+           <property name="text">
+            <string>on y-axis</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="IdParB">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>POS_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_X</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIV_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LAMBDA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ENERGY</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TIME</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Y</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K_Z</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_R</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>POS_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_PHI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DIR_THETA</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_VERT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COL_HOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>COLOR</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="2" colspan="2">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="0">
+        <layout class="QGridLayout" name="gridLayout_46">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_99">
+           <property name="text">
+            <string>minimal</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="MinParA">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_100">
+           <property name="text">
+            <string>x-value</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="16" column="1">
+        <layout class="QGridLayout" name="gridLayout_59">
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="PolDirY">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" rowspan="2">
+          <widget class="QLabel" name="label_127">
+           <property name="text">
+            <string>direction
+y</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="2">
+        <layout class="QGridLayout" name="gridLayout_62">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_134">
+           <property name="text">
+            <string>file</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_135">
+           <property name="text">
+            <string>format</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="eFormat">
+           <property name="minimumSize">
+            <size>
+             <width>135</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>MATRIX</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>XYZ</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="2">
+        <layout class="QGridLayout" name="gridLayout_49">
+         <item row="0" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_106">
+           <property name="text">
+            <string>filter</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_107">
+           <property name="text">
+            <string>combination</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" rowspan="2">
+          <widget class="QComboBox" name="FiltComb">
+           <property name="minimumSize">
+            <size>
+             <width>136</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>OR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>AND</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" colspan="4">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>parameter file</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="MonFile"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="Browse">
+           <property name="maximumSize">
+            <size>
+             <width>67</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="BrowseN">
+           <property name="maximumSize">
+            <size>
+             <width>67</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>BrowseN</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="Edit">
+           <property name="maximumSize">
+            <size>
+             <width>67</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="Plot">
+           <property name="maximumSize">
+            <size>
+             <width>67</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Plot</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="16" column="2">
+        <layout class="QGridLayout" name="gridLayout_61">
+         <item row="0" column="1" rowspan="2">
+          <widget class="QLineEdit" name="PolDirZ">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0.0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" rowspan="2">
+          <widget class="QLabel" name="label_131">
+           <property name="text">
+            <string>direction
+z</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="13" column="0" colspan="4">
+        <widget class="QLabel" name="label_124">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Polarisation analysis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0" colspan="4">
+        <widget class="QLabel" name="label_133">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Analysis direction</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="4">
+        <widget class="QLabel" name="label_105">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Filter selection</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="4">
+        <widget class="QLabel" name="label_88">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Monitor2D</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>             name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="name">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

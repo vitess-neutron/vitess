@@ -1,0 +1,102 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <title>VITESS Tool Generate Series</title>
+</head>
+  <body>
+        
+<h1>VITESS Tool Generate Series</h1>
+To do a series of simulations, you start with an instrument you have
+developed using the GUI. Let's call it the 'standard instrument'. When you 
+have completed this, you choose the menu "File"-&gt;"Generate Series".
+<p>
+With the item 'Iterations' you give the number of desired simulations.
+<br>
+Then you have to list parameters that are variable for the simulation. 
+All parameters that are not mentioned here have constant
+values, those of the the standard instrument. 
+<br>
+To select a variable parameter you identify the module by its number,
+and the item by the command option letter. It is possible to name 
+the parameter here.
+<img src="series1.png">
+<p>
+Instead of typing the name, you can just click on the item text in 
+the GUI, and the number:option:name triple appears in the list.
+<p>
+In the example list two parameters are separated by white space characters:
+<pre>
+1:M:max_wavelength 2:p:len_guide_piece
+</pre>
+means that the parameter defined by the command option -M of the first module 
+will be changed, and it will be given the name max_wavelength on the following 
+window. (If the first module is the 'source' module, this is the maximal wavelength.)
+Additionally, the parameter defined by the command option -p of the second
+module will be a variable identified by the name length.  (If the second
+module is the 'guide' module, this is the piece length.)
+<p>
+When the list is complete, you switch to the next window by clicking the 
+'&gt;&gt;' button. Here you'll find a table with as many columns as variable 
+parameters and as many rows as the number of &nbsp;simulations (or iterations) 
++ 3 heading rows for:
+<ol>
+<li>name of parameter (e.g. max_wavelength),
+<li>the combination defining the parameter (e.g. 1:M) and 
+<li>a value 'delta'
+</ol>
+<img src="series2.png">
+<p>
+The table is to be filled with values then. To make things more convenient, empty cells
+of the table are interpreted as having the value of the standard instrument.
+<BR>
+You may load the table from a file generated with other means. VITESS accepts
+a space, tab, or semicolon separated text file.
+<p>
+You may define a whole column according to:
+<pre>
+value_i = value_1 + (i-1)*delta
+</pre>
+where i is the row number. To fill the column, the first value must be given. Then 'delta'
+has to be set and Enter be pressed, while the cursor is inside the delta cell.
+If the delta input is empty, pressing Enter repeats the first entry value to the
+whole column.
+<p>
+To save the results of simulation runs, you give a list of expected
+output file names, separated by white space, that shall be copied. 
+"Copy Target Directory" names a directory, to be created if necessary,
+in the example this is the subdirectory Series.
+Listed result files are copied to newly named files 's1 _filename.ext', 's2_filename.ext', 
+etc. in the copy target directory.
+<br>
+Other result files could be overwritten by following simulation runs.
+<p>
+When the table is filled, the series of simulations can be started and 
+executed under GUI control.
+<p>
+If you save the series to a tcl-file, you may execute that tcl file from a tcl shell.
+<p>
+When editing the "Generate Series" parameters, you may easily switch back and 
+forth between GUI windows (click  '&lt;&lt;' and '&gt;&gt;') without losing
+information. It is  possible to go back to the first window and extend or change the series.
+In order to continue your work on the series, maybe after a change of standard instrument, you just
+choose the menu "File"-&gt;"Generate Series" again and continue where you
+have stopped.
+<p>
+ Restrictions:<pre>
+   max. number of modules:              40
+   max. number of variable parameters:  25
+   max. number of simulations:          100
+   max. number of files to be copied:   10
+</pre>
+<hr>
+<a href="vitess.html">Back to VITESS overview</a> <br>
+<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> <br>
+
+<!-- Created: Mon Sep 27 14:55:48 MEST 2010 -->
+<!-- hhmts start -->
+Last modified: Wed Mar 28 13:46:54 MEST 2012
+<!-- hhmts end -->   
+</body>
+</html>

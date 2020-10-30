@@ -1,0 +1,2441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Moderator</class>
+ <widget class="QDialog" name="Moderator">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>790</width>
+    <height>725</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_6">
+   <item>
+    <layout class="QFormLayout" name="formLayout_4">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>number of moderators</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="nrMod">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>4</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea_2">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>760</width>
+        <height>2450</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QWidget" name="ModWin_1" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QFrame" name="frame_10">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_16">
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_9">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Moderator 1</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_7">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_71">
+                 <property name="text">
+                  <string>name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="ModName_1"/>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_15">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>            shape</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eShape_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>RECTANGULAR</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>CIRCULAR</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="3">
+              <layout class="QFormLayout" name="formLayout_3">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>             type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eType_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>COUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>DECOUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>POISONED</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>        moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>164</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="4" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>diameter or</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Width_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>width</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="3">
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Hight_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>height</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="4">
+              <layout class="QGridLayout" name="gridLayout_3">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>spatial</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Order_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>order</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QLabel" name="label_19">
+               <property name="text">
+                <string>  center of moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="6" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrX_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_21">
+                 <property name="text">
+                  <string>           x [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="3">
+              <layout class="QGridLayout" name="gridLayout_8">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrY_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_22">
+                 <property name="text">
+                  <string>y [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="4">
+              <layout class="QGridLayout" name="gridLayout_9">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrZ_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_24">
+                 <property name="text">
+                  <string>    z [cm]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_26">
+               <property name="text">
+                <string>         total flux</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="8" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_10">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_27">
+                 <property name="text">
+                  <string>at moderator</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Flux_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_28">
+                 <property name="text">
+                  <string>[n/(cm^2s)]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="3">
+              <layout class="QGridLayout" name="gridLayout_11">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_29">
+                 <property name="text">
+                  <string>neutron</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Current_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_30">
+                 <property name="text">
+                  <string>current [n/s]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="4">
+              <layout class="QGridLayout" name="gridLayout_12">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>perform</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="PfmFact_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>factor</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="9" column="0" colspan="5">
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QLabel" name="label_20">
+                 <property name="text">
+                  <string>   wavelength dist. file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="LmbdFile_1"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="Browse_WFile_1">
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>              temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Temp_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="3">
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_34">
+                 <property name="text">
+                  <string>          colour</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Color_1">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="11" column="0" colspan="5">
+              <widget class="QFrame" name="frame">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_12">
+                  <property name="text">
+                   <string>wavelen time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1" colspan="4">
+                 <widget class="QLineEdit" name="TimeFile_1"/>
+                </item>
+                <item row="0" column="1" colspan="4">
+                 <widget class="QLineEdit" name="L_T_File_1"/>
+                </item>
+                <item row="1" column="1" rowspan="2">
+                 <widget class="QLineEdit" name="tau_1_1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QPushButton" name="Browse_TFile_1">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_10">
+                  <property name="text">
+                   <string>             time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4" rowspan="2">
+                 <widget class="QLineEdit" name="tau_2_1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="3" rowspan="2">
+                 <widget class="QLabel" name="label_13">
+                  <property name="text">
+                   <string>tau_2 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" rowspan="2" alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="label_11">
+                  <property name="text">
+                   <string>tau_1 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QPushButton" name="Browse_L_T_1">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="ModWin_2" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QFrame" name="frame_11">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_17">
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_61">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Moderator 2</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_12">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_82">
+                 <property name="text">
+                  <string>name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="ModName_2"/>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_17">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_84">
+                 <property name="text">
+                  <string>            shape</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eShape_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>RECTANGULAR</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>CIRCULAR</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="3">
+              <layout class="QFormLayout" name="formLayout_11">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_79">
+                 <property name="text">
+                  <string>             type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eType_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>COUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>DECOUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>POISONED</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_62">
+               <property name="text">
+                <string>        moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>164</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="4" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_33">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_74">
+                 <property name="text">
+                  <string>diameter or</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Width_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_75">
+                 <property name="text">
+                  <string>width</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="3">
+              <layout class="QGridLayout" name="gridLayout_37">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Hight_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_83">
+                 <property name="text">
+                  <string>height</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="4">
+              <layout class="QGridLayout" name="gridLayout_31">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_69">
+                 <property name="text">
+                  <string>spatial</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Order_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_70">
+                 <property name="text">
+                  <string>order</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QLabel" name="label_68">
+               <property name="text">
+                <string>center of moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <spacer name="horizontalSpacer_12">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="6" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_35">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrX_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_78">
+                 <property name="text">
+                  <string>           x [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="3">
+              <layout class="QGridLayout" name="gridLayout_36">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrY_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_81">
+                 <property name="text">
+                  <string>y [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="4">
+              <layout class="QGridLayout" name="gridLayout_32">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrZ_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_73">
+                 <property name="text">
+                  <string>    z [cm]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_63">
+               <property name="text">
+                <string>         total flux</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="8" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_34">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_76">
+                 <property name="text">
+                  <string>at moderator</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Flux_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_77">
+                 <property name="text">
+                  <string>[n/(cm^2s)]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="3">
+              <layout class="QGridLayout" name="gridLayout_29">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_59">
+                 <property name="text">
+                  <string>neutron</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Current_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_60">
+                 <property name="text">
+                  <string>current [n/s]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="4">
+              <layout class="QGridLayout" name="gridLayout_28">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_56">
+                 <property name="text">
+                  <string>perform</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="PfmFact_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_57">
+                 <property name="text">
+                  <string>factor</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="9" column="0" colspan="5">
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_80">
+                 <property name="text">
+                  <string>   wavelength dist. file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="LmbdFile_2"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="Browse_WFile_2">
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_9">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>              temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Temp_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="3">
+              <layout class="QFormLayout" name="formLayout_10">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_58">
+                 <property name="text">
+                  <string>          colour</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Color_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="11" column="0" colspan="5">
+              <widget class="QFrame" name="frame_3">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_30">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_64">
+                  <property name="text">
+                   <string>wavelen time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1" colspan="4">
+                 <widget class="QLineEdit" name="TimeFile_2"/>
+                </item>
+                <item row="0" column="1" colspan="4">
+                 <widget class="QLineEdit" name="L_T_File_2"/>
+                </item>
+                <item row="1" column="1" rowspan="2">
+                 <widget class="QLineEdit" name="tau_1_2">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QPushButton" name="Browse_TFile_2">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_65">
+                  <property name="text">
+                   <string>             time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4" rowspan="2">
+                 <widget class="QLineEdit" name="tau_2_2">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="3" rowspan="2">
+                 <widget class="QLabel" name="label_66">
+                  <property name="text">
+                   <string>tau_2 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" rowspan="2" alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="label_67">
+                  <property name="text">
+                   <string>tau_1 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QPushButton" name="Browse_L_T_2">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="ModWin_3" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QFrame" name="frame_19">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_18">
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_91">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Moderator 3</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_19">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_110">
+                 <property name="text">
+                  <string>name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="ModName_3"/>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_20">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_112">
+                 <property name="text">
+                  <string>            shape</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eShape_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>RECTANGULAR</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>CIRCULAR</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="3">
+              <layout class="QFormLayout" name="formLayout_18">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_107">
+                 <property name="text">
+                  <string>             type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eType_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>COUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>DECOUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>POISONED</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_92">
+               <property name="text">
+                <string>        moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <spacer name="horizontalSpacer_13">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>164</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="4" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_43">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_102">
+                 <property name="text">
+                  <string>diameter or</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Width_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_103">
+                 <property name="text">
+                  <string>width</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="3">
+              <layout class="QGridLayout" name="gridLayout_47">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Hight_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_111">
+                 <property name="text">
+                  <string>height</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="4">
+              <layout class="QGridLayout" name="gridLayout_41">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_99">
+                 <property name="text">
+                  <string>spatial</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Order_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_100">
+                 <property name="text">
+                  <string>order</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QLabel" name="label_98">
+               <property name="text">
+                <string>center of moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <spacer name="horizontalSpacer_16">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="6" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_45">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrX_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_106">
+                 <property name="text">
+                  <string>           x [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="3">
+              <layout class="QGridLayout" name="gridLayout_46">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrY_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_109">
+                 <property name="text">
+                  <string>y [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="4">
+              <layout class="QGridLayout" name="gridLayout_42">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrZ_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_101">
+                 <property name="text">
+                  <string>    z [cm]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_93">
+               <property name="text">
+                <string>         total flux</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <spacer name="horizontalSpacer_15">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="8" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_44">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_104">
+                 <property name="text">
+                  <string>at moderator</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Flux_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_105">
+                 <property name="text">
+                  <string>[n/(cm^2s)]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="3">
+              <layout class="QGridLayout" name="gridLayout_39">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_89">
+                 <property name="text">
+                  <string>neutron</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Current_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_90">
+                 <property name="text">
+                  <string>current [n/s]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="4">
+              <layout class="QGridLayout" name="gridLayout_38">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_86">
+                 <property name="text">
+                  <string>perform</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="PfmFact_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_87">
+                 <property name="text">
+                  <string>factor</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="9" column="0" colspan="5">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QLabel" name="label_108">
+                 <property name="text">
+                  <string>   wavelength dist. file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="LmbdFile_3"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="Browse_WFile_3">
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_13">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_85">
+                 <property name="text">
+                  <string>              temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Temp_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="3">
+              <layout class="QFormLayout" name="formLayout_14">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_88">
+                 <property name="text">
+                  <string>          colour</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Color_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="11" column="0" colspan="5">
+              <widget class="QFrame" name="frame_4">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_40">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_94">
+                  <property name="text">
+                   <string>wavelen time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1" colspan="4">
+                 <widget class="QLineEdit" name="TimeFile_3"/>
+                </item>
+                <item row="0" column="1" colspan="4">
+                 <widget class="QLineEdit" name="L_T_File_3"/>
+                </item>
+                <item row="1" column="1" rowspan="2">
+                 <widget class="QLineEdit" name="tau_1_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QPushButton" name="Browse_TFile_3">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_95">
+                  <property name="text">
+                   <string>             time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4" rowspan="2">
+                 <widget class="QLineEdit" name="tau_2_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer_14">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="3" rowspan="2">
+                 <widget class="QLabel" name="label_96">
+                  <property name="text">
+                   <string>tau_2 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" rowspan="2" alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="label_97">
+                  <property name="text">
+                   <string>tau_1 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QPushButton" name="Browse_L_T_3">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="ModWin_4" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QFrame" name="frame_20">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_19">
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_119">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Moderator 4</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_24">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_138">
+                 <property name="text">
+                  <string>name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="ModName_4"/>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_25">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_140">
+                 <property name="text">
+                  <string>            shape</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eShape_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>RECTANGULAR</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>CIRCULAR</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="3">
+              <layout class="QFormLayout" name="formLayout_23">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_135">
+                 <property name="text">
+                  <string>             type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="eType_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>COUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>DECOUPLED</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>POISONED</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_120">
+               <property name="text">
+                <string>        moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <spacer name="horizontalSpacer_17">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>164</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="4" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_53">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_130">
+                 <property name="text">
+                  <string>diameter or</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Width_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_131">
+                 <property name="text">
+                  <string>width</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="3">
+              <layout class="QGridLayout" name="gridLayout_57">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Hight_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_139">
+                 <property name="text">
+                  <string>height</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="4" column="4">
+              <layout class="QGridLayout" name="gridLayout_51">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_127">
+                 <property name="text">
+                  <string>  spatial</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Order_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_128">
+                 <property name="text">
+                  <string>order</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QLabel" name="label_126">
+               <property name="text">
+                <string>center of moderator</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <spacer name="horizontalSpacer_20">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="6" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_55">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrX_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_134">
+                 <property name="text">
+                  <string>           x [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="3">
+              <layout class="QGridLayout" name="gridLayout_56">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrY_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QLabel" name="label_137">
+                 <property name="text">
+                  <string>y [cm]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="4">
+              <layout class="QGridLayout" name="gridLayout_52">
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="CntrZ_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_129">
+                 <property name="text">
+                  <string>   z [cm]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_121">
+               <property name="text">
+                <string>         total flux</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <spacer name="horizontalSpacer_19">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="8" column="0" colspan="3">
+              <layout class="QGridLayout" name="gridLayout_54">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_132">
+                 <property name="text">
+                  <string>at moderator</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Flux_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_133">
+                 <property name="text">
+                  <string>[n/(cm^2s)]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="3">
+              <layout class="QGridLayout" name="gridLayout_49">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_117">
+                 <property name="text">
+                  <string>neutron</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="Current_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_118">
+                 <property name="text">
+                  <string>current [n/s]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="4">
+              <layout class="QGridLayout" name="gridLayout_48">
+               <item row="0" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_114">
+                 <property name="text">
+                  <string>perform</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" rowspan="2">
+                <widget class="QLineEdit" name="PfmFact_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="label_115">
+                 <property name="text">
+                  <string>factor</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="9" column="0" colspan="5">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
+                <widget class="QLabel" name="label_136">
+                 <property name="text">
+                  <string>   wavelength dist. file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="LmbdFile_4"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="Browse_WFile_4">
+                 <property name="text">
+                  <string>Browse</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="0" colspan="3">
+              <layout class="QFormLayout" name="formLayout_21">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_113">
+                 <property name="text">
+                  <string>               temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Temp_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="10" column="3">
+              <layout class="QFormLayout" name="formLayout_22">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_116">
+                 <property name="text">
+                  <string>          colour</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="Color_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="11" column="0" colspan="5">
+              <widget class="QFrame" name="frame_5">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_50">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_122">
+                  <property name="text">
+                   <string>wavelen time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1" colspan="4">
+                 <widget class="QLineEdit" name="TimeFile_4"/>
+                </item>
+                <item row="0" column="1" colspan="4">
+                 <widget class="QLineEdit" name="L_T_File_4"/>
+                </item>
+                <item row="1" column="1" rowspan="2">
+                 <widget class="QLineEdit" name="tau_1_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QPushButton" name="Browse_TFile_4">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_123">
+                  <property name="text">
+                   <string>             time dist file</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4" rowspan="2">
+                 <widget class="QLineEdit" name="tau_2_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer_18">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="3" rowspan="2">
+                 <widget class="QLabel" name="label_124">
+                  <property name="text">
+                   <string>tau_2 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" rowspan="2" alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="label_125">
+                  <property name="text">
+                   <string>tau_1 [us]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QPushButton" name="Browse_L_T_4">
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1187</width>
-    <height>851</height>
+    <height>865</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,6 +27,70 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Instrumentname:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="InstName">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>250</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -84,13 +148,16 @@
             <property name="text">
              <string>input directory</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="lineIndir"/>
+           <widget class="QLineEdit" name="InDir"/>
           </item>
           <item row="0" column="2">
-           <widget class="QPushButton" name="pushBrowseIndir">
+           <widget class="QPushButton" name="pushIndir">
             <property name="text">
              <string>Browse</string>
             </property>
@@ -108,13 +175,16 @@
             <property name="text">
              <string>output directory</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="lineOutdir"/>
+           <widget class="QLineEdit" name="OutDir"/>
           </item>
           <item row="1" column="2">
-           <widget class="QPushButton" name="pushBrowseOutdir">
+           <widget class="QPushButton" name="pushOutdir">
             <property name="text">
              <string>Browse</string>
             </property>
@@ -134,12 +204,25 @@
           <item>
            <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>random seed</string>
+             <string>     random seed</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineRandomseed"/>
+           <widget class="QLineEdit" name="RndSeed"/>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
@@ -149,7 +232,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboRandomopt">
+           <widget class="QComboBox" name="RndNoGen">
             <item>
              <property name="text">
               <string>ran3</string>
@@ -158,14 +241,17 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>min. neutron options</string>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineNeutronopt"/>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
            <widget class="QLabel" name="label_5">
@@ -175,7 +261,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboGravity">
+           <widget class="QComboBox" name="bGravity">
+            <item>
+             <property name="text">
+              <string>off</string>
+             </property>
+            </item>
             <item>
              <property name="text">
               <string>on</string>
@@ -190,8 +281,18 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="verticalSpacing">
+       <number>5</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="pushFresh">
+        <property name="text">
+         <string>Fresh</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
        <widget class="QWidget" name="widget_modul" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -211,21 +312,30 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <property name="topMargin">
           <number>4</number>
          </property>
          <property name="bottomMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <item>
           <widget class="QStackedWidget" name="stackedWidget">
            <property name="enabled">
             <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <property name="font">
             <font>
@@ -350,12 +460,12 @@
          <enum>Qt::Vertical</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Preferred</enum>
+         <enum>QSizePolicy::Expanding</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
-          <height>70</height>
+          <height>80</height>
          </size>
         </property>
        </spacer>
@@ -406,7 +516,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd"/>
+    <addaction name="actionNewInst"/>
     <addaction name="separator"/>
     <addaction name="actionSave_to_dir"/>
     <addaction name="separator"/>
@@ -445,6 +555,29 @@
     <property name="title">
      <string>Options</string>
     </property>
+    <widget class="QMenu" name="menunBuffer">
+     <property name="title">
+      <string>Buffersize</string>
+     </property>
+     <addaction name="action1000"/>
+     <addaction name="action5000"/>
+     <addaction name="action10000"/>
+     <addaction name="action20000"/>
+     <addaction name="action50000"/>
+     <addaction name="action100000"/>
+    </widget>
+    <widget class="QMenu" name="menuMinWght">
+     <property name="title">
+      <string>Min. neutron weight</string>
+     </property>
+     <addaction name="action0_0"/>
+     <addaction name="action1_0e_25"/>
+     <addaction name="action1_0e_20"/>
+     <addaction name="action1_0e_15"/>
+     <addaction name="action1_0e_10"/>
+     <addaction name="action1_0e_05"/>
+     <addaction name="action1_0"/>
+    </widget>
     <addaction name="actionSmaller_fonts"/>
     <addaction name="actionBigger_fonts"/>
     <addaction name="actionFonts"/>
@@ -453,7 +586,8 @@
     <addaction name="actionSave_Instr_mode"/>
     <addaction name="actionOutput_compression"/>
     <addaction name="actionExecution_mode"/>
-    <addaction name="actionBuffersize"/>
+    <addaction name="menunBuffer"/>
+    <addaction name="menuMinWght"/>
     <addaction name="actionPlot_mode"/>
     <addaction name="actionTrajectories"/>
     <addaction name="actionBrowse_selection"/>
@@ -514,7 +648,6 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad">
    <property name="text">
     <string>LOAD Instument</string>
@@ -530,7 +663,7 @@
     <string>SAVE As</string>
    </property>
   </action>
-  <action name="actionAdd">
+  <action name="actionNewInst">
    <property name="text">
     <string>New Instrument</string>
    </property>
@@ -720,11 +853,6 @@
     <string>Execution mode</string>
    </property>
   </action>
-  <action name="actionBuffersize">
-   <property name="text">
-    <string>Buffersize</string>
-   </property>
-  </action>
   <action name="actionPlot_mode">
    <property name="text">
     <string>Plot mode</string>
@@ -833,6 +961,118 @@
   <action name="actionModules_S_Z">
    <property name="text">
     <string>Modules S-Z</string>
+   </property>
+  </action>
+  <action name="action1000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1000</string>
+   </property>
+  </action>
+  <action name="action5000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>5000</string>
+   </property>
+  </action>
+  <action name="action10000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>10000</string>
+   </property>
+  </action>
+  <action name="action20000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>20000</string>
+   </property>
+  </action>
+  <action name="action50000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>50000</string>
+   </property>
+  </action>
+  <action name="action100000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>100000</string>
+   </property>
+  </action>
+  <action name="action200000">
+   <property name="text">
+    <string>200000</string>
+   </property>
+  </action>
+  <action name="action0_0">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>0.0</string>
+   </property>
+  </action>
+  <action name="action1_0e_25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-25</string>
+   </property>
+  </action>
+  <action name="action1_0e_20">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-20</string>
+   </property>
+  </action>
+  <action name="action1_0e_15">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-15</string>
+   </property>
+  </action>
+  <action name="action1_0e_10">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-10</string>
+   </property>
+  </action>
+  <action name="action1_0e_05">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-05</string>
+   </property>
+  </action>
+  <action name="action1_0">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0</string>
    </property>
   </action>
  </widget>

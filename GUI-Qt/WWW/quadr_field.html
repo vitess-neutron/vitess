@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Quadrangular Field</title>
+</head>
+ <body>
+ 
+<h1>VITESS Module Quadrangular Field</h1>
+<br>
+The module <b>quadr_field</b> simulates a magnetic field of constant field intensity in the shape of a a quadrangular or triangular prism. 
+Outside this range, a zero magnetic field is assumed.
+If the edges ABCD and EFGH (cf. Figure) lie on planes each, which are not parallel, it can be treated as well.<br />
+The 3 components of the magnetic field and the origin of the new co-ordinate system have to be given (cf. figure).
+<br />
+   
+<p><img src="quadr_field.png" name="Grafik" border="0" height="272"
+ width="433" align="bottom">
+   </p>
+Figure: quadrangular field
+<br />
+<br />
+The positions of the 8 points marking the vertices of the prism have to be given in a file that looks like that:<br />
+<pre>
+#   x     y     z
+#---------------------------------
+  20.0 -30.0   5.0   # A
+  60.0 -35.0   5.0   # B
+  50.0  40.0   5.0   # C
+  30.0  30.0   5.0   # D
+  20.0 -30.0  -5.0   # E
+  60.0 -35.0  -5.0   # F
+  50.0  40.0  -5.0   # G
+  30.0  30.0  -5.0   # H
+</pre>
+For a triangular prism, points D and H have to be set identical to C and G (see figure).
+Everything behind a '#' symbol is treated as a comment.
+<br>
+<br>
+<h3><font size="+2"> Parameters for module 'quadr_field' </font></h3>
+<br>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">field range file</td>
+       <td valign="top">input data file containing the edges of the magnetic field (see text and figure)</td>
+       <td valign="top"> - </td>
+       <td valign="top">-P </td>
+     </tr>
+
+     <tr>
+       <td valign="top">magnetic field X, Y, Z<br>[Oe]</td>
+       <td valign="top">x-, y- and z-component of the magnetic field inside the edges<br />
+                        Outside this range, a zero magnetic field is assumed.</td>
+       <td valign="top">any</td>
+       <td valign="top">-F -G -H</td>
+     </tr>
+
+     <tr>
+       <td valign="top">output X, Y, Z<br>[cm]</td>
+       <td valign="top">x-, y- and z-position of the output frame (in the input frame) (see figure) </td>
+       <td valign="top">any</td>
+       <td valign="top">-q -r -s</td>
+     </tr>
+   
+  </tbody> 
+</table>
+<br> 
+<br>
+ 
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Collimator</title>
+</head>
+ <body>
+<h1>VITESS Modules Collimator, Soller Collimator and Radial Collimator</h1>
+<p>
+<h3>VITESS Module Collimator</h3>
+<p>
+The module <b>collimator</b> simulates a soller collimator of a certain length, width and height consisting of a number of channels separated by blades of a certain thickness.
+Exit width and height can be different from entrance width and height.
+For each trajectory, it is checked whether the neutron is outside the exit or entrance area and if a channel wall is hit; in these cases the trajectory is removed.
+Otherwise it is propagated to the collimator exit (without loss in intensity).
+This is a realistic description of a Soller collimator and is therefore the recommended choice.<br>
+
+<h3>VITESS Module Soller Collimator</h3>
+<p> In contrast, the module <b>collimator_soller</b> simulates a collimator by allowing a certain divergence range (in the x-y-plane) which is described by a triangular distribution
+characterising the probability that a neutron of a certain divergence passes through the collimator.&nbsp; The maximal possible divergence d_phi then corresponds to the width
+w and length l of a soller collimator channel, i.e. tan d_phi = w/l. The FWHM of the probability distribution (the peak is centered at divergence 0) is also d_phi.
+The module <b>collimator_soller</b> does neither change the neutron position or direction nor the frame of reference.&nbsp;<br>
+This method of simulating collimation is a good approximation. If the module is used, entrance and exit area should be simulated in addition using either the module <b>slit</b>
+or <b>spacewindow</b> to allow for the limitation in solid angle and take care of the propagation.</p>
+This module can also be used to simulate a radial collimator. In this case, the direction of the first channel, the number of channels and the 'additional angular spacing'
+have to be given: <br/>
+Each collimation center is defined by an angle corresponding to divergence 0. The first centre is defined by the 'minimum of angle range'.
+The following centers (always higher angles) are calculated by considering a gap of (2*allowed_div_fwhm + additional_spacing) between two centers.
+'allowed_div_fwhm' is the FWHM value of the triangular shape. 'additional_spacing' is the additional angular distance between the collimation centers
+due to the size of collimator spacers. Therefore, the maximal direction of the last center can be calculated as:
+<p>
+&nbsp;&nbsp;&nbsp;angle_max = angle_min + (num_centers - 1)*(2*allowed_div_fwhm + additional_spacing)
+<p>
+<h3>VITESS Module Radial Collimator</h3>
+<p>A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>.
+As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits the absorbing walls.
+It considers also the height of the collimator and propagates the neutrons to the end of the radial collimator. <br />
+Furthermore, an oscillation of the collimator can be treated. If this is used, the orientation of the collimator (at the time the neutron is passing)
+is determined by a random choice within a range given. In this way, the shadowing effect of the blades can be simulated and the extent of this effect estimated.
+<p>
+<h3>Parameters for module 'collimator_soller'</h3>
+<p>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">angular collimation</td>
+       <td valign="top">yes: radial collimation with several collimation centers (= directions regarded as zero-divergence directions)<br/>
+                        no : normal Soller collimator (only 1 zero-divergence direction) </td>
+       <td valign="top">'yes', 'no'</td>
+       <td valign="top">-k         </td>
+     </tr>
+
+     <tr>
+       <td valign="top">collimator divergence<br>[deg]</td>
+       <td valign="top">allowed x-y divergence (FWHM of the triangular shape)  </td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-d      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">peak transmission </td>
+       <td valign="top">maximal probability for passing through the soller collimator
+                        (corresponds to an average loss due to blocking neutrons by the finite size of the Soller collimator) </td>
+       <td valign="top">]0, 1] </td>
+       <td valign="top">-e    </td>
+     </tr>
+
+     <tr>
+       <td valign="top">minimum of angle range<br>[deg]</td>
+       <td valign="top">The lowest angle defining a zero-divergence direction               <br/>
+	           &nbsp;&nbsp;0 deg: direction of the beam impinging on the sample (= x-axis) <br/>
+	                      90 deg: to the left (= y-axis)                                   <br/>
+                        The following centers (always higher angles) are calculated by considering
+                        a gap of (2*allowed_div_fwhm + angle_spacing) between two centers.     </td>
+       <td valign="top">[-180°, 180°[  </td>
+       <td valign="top">-m       </td>
+     </tr>
+
+     <tr>
+       <td valign="top">number of collimation centers   </td>
+       <td valign="top">number of orientations corresponding to divergence 0 (or to peak transmission resp.).
+                        The difference between two collimation centers is: 2*allowed_div_fwhm + angle_spacing </td>
+       <td valign="top">&gt;= 1 </td>
+       <td valign="top">-n<br>
+       </td>
+     </tr>
+
+     <tr>
+       <td valign="top">angle spacing <br/>[deg]</td>
+       <td valign="top">additional angular distance between the collimation centers due to the size of collimator spacers </td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-a      </td>
+     </tr>
+
+  </tbody>
+</table>
+<p>
+<h3>Parameters for module 'collimator'</h3>
+<p>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">entrance width<br>exit width<br>[cm]     </td>
+       <td valign="top">total width of the collimator entrance and exit (between the two walls defining beginning of first and end of last channel) </td>
+       <td valign="top">&gt;= 0    </td>
+       <td valign="top">-w<br>-W   </td>
+     </tr>
+
+     <tr>
+       <td valign="top">entrance height<br>exit height<br>[cm]    </td>
+       <td valign="top">entrance and exit height of the collimator</td>
+       <td valign="top">&gt;= 0       </td>
+       <td valign="top">-h<br>-H      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">length<br>[cm]<br>       </td>
+       <td valign="top">length of the collimator </td>
+       <td valign="top">&gt;= 0  </td>
+       <td valign="top">-l       </td>
+     </tr>
+
+     <tr>
+       <td valign="top">number of channels            </td>
+       <td valign="top">number of collimator channels </td>
+       <td valign="top">&gt;= 1 </td>
+       <td valign="top">-n      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">blade width<br/>[cm]</td>
+       <td valign="top">thickness of the material dividing the collimator into channels</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-s      </td>
+     </tr>
+  </tbody>
+</table>
+<p>
+<h3>Parameters for module 'collimator_radial'</h3>
+<p>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+   <tbody>
+     <tr>
+       <td valign="top"><b>Parameter<br> Unit<br></b></td>
+       <td valign="top"><b>Description<br>      </b></td>
+       <td valign="top"><b>Range or Values<br>  </b></td>
+       <td valign="top"><b>Command Option<br>   </b></td>
+     </tr>
+
+     <tr>
+       <td valign="top">theta<br>[deg]      </td>
+       <td valign="top">hor. direction to the center of the collimator <br/>
+	                       0 deg: direction of the beam impinging on the sample (= x-axis)          <br/>
+	                      90 deg: to the left (= y-axis)</td>
+       <td valign="top">[-180°,180°]</td>
+       <td valign="top">-a   </td>
+     </tr>
+
+     <tr>
+       <td valign="top">width<br>[deg]      </td>
+       <td valign="top">angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel) </td>
+       <td valign="top">[0°,360°]</td>
+       <td valign="top">-w   </td>
+     </tr>
+
+     <tr>
+       <td valign="top">oscillation width<br>[deg]      </td>
+       <td valign="top">full width amplitude of oscillation of the radial collimator <br/>
+                        the orientation of the collimator for a certain trajectory is randomly chosen within this range</td>
+       <td valign="top">&gt;= 0</td>
+       <td valign="top">-a   </td>
+     </tr>
+
+     <tr>
+       <td valign="top">entrance height<br/>exit height<br>[cm]</td>
+       <td valign="top">entrance and exit height of the radial collimator</td>
+       <td valign="top">&gt;= 0       </td>
+       <td valign="top">-h<br>-H      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">distance<br>[cm]<br>       </td>
+       <td valign="top">distance of the collimator entrance from the origin (usually the center of the sample) </td>
+       <td valign="top">&gt;= 0  </td>
+       <td valign="top">-d       </td>
+     </tr>
+
+     <tr>
+       <td valign="top">length<br>[cm]<br>       </td>
+       <td valign="top">length of the collimator channels </td>
+       <td valign="top">&gt;= 0  </td>
+       <td valign="top">-l       </td>
+     </tr>
+
+     <tr>
+       <td valign="top">number of channels            </td>
+       <td valign="top">number of collimator channels </td>
+       <td valign="top">&gt;= 1 </td>
+       <td valign="top">-n      </td>
+     </tr>
+
+     <tr>
+       <td valign="top">blade width<br/>[cm]</td>
+       <td valign="top">thickness of the material dividing the collimator into channels</td>
+       <td valign="top">&gt;= 0 </td>
+       <td valign="top">-s      </td>
+     </tr>
+
+  </tbody>
+</table>
+ <p>
+
+<hr><a href="vitess.html">Back to VITESS overview</a><br>
+ <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
+<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+MET DST 2001 <!-- hhmts end --></font> </p>
+<br>
+</body>
+</html>

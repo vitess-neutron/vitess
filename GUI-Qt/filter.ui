@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>696</width>
+    <width>697</width>
     <height>421</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
           <string>           filter</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -53,7 +53,7 @@
           <string>combination</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -72,7 +72,7 @@
           <string>filter</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -166,7 +166,7 @@
           <string>parameter 1</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -219,7 +219,7 @@
           <string>filter</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -308,7 +308,7 @@
           <string>parameter 2</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -322,7 +322,7 @@
           <string>filter</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -411,7 +411,7 @@
           <string>parameter 3</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -425,7 +425,7 @@
           <string>filter</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -514,7 +514,7 @@
           <string>parameter 4</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
         </widget>
        </item>
@@ -543,7 +543,7 @@
         <string>   filter 1</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -556,7 +556,7 @@
         <string>     min value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -583,12 +583,19 @@
         <string>   filter 1</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
      <item row="0" column="1" rowspan="2">
-      <widget class="QLineEdit" name="lineMaxval1"/>
+      <widget class="QLineEdit" name="lineMaxval1">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_30">
@@ -596,7 +603,7 @@
         <string>    max value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -623,7 +630,7 @@
         <string>   filter 2</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -636,7 +643,7 @@
         <string>    min value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -663,7 +670,7 @@
         <string>   filter 2</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -676,7 +683,7 @@
         <string>    max value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -703,7 +710,7 @@
         <string>   filter 3</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -716,7 +723,7 @@
         <string>    min value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -743,7 +750,7 @@
         <string>   filter 3</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -756,7 +763,7 @@
         <string>    max value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -783,7 +790,7 @@
         <string>   filter 4</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -796,7 +803,7 @@
         <string>    min value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -823,7 +830,7 @@
         <string>   filter 4</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -836,7 +843,7 @@
         <string>    max value</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
