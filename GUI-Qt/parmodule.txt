@@ -1,7 +1,0 @@
---inactive--
-Beamstop
-Detector
-Chopper Chopper_disc Chopper_fermi_str
-Collimator
-Flipper Flipper_coil Flipper_radiant
-Filter

@@ -19,7 +19,7 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     modNames = s1;
     arrow = new QIcon(":/resources/images/arrow-right.xpm");
     ui->setupUi(this);
-    ui->tableWidget->setColumnWidth(0,165);
+    ui->tableWidget->setColumnWidth(0,170);
     ui->tableWidget->setRowCount(0);
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(1,20);
