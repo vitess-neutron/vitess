@@ -69,8 +69,8 @@
 /*                                non-shape-by-file geometries used with add. plane angles  */
 /* 3.8   Jul 2019  K. Lieutenant  Tidying up and length compression in visualization        */
 /* 3.9   Jul 2019  K. Lieutenant  Curved divergent/convergent guide                         */
-/* 3.10  Sep 2019  A. Szakal      Inclusion of calculation of prompt gamma production       */
-/*                                  and storing in MCPL file                                */
+/* 3.10  Sep 2019  K. Lieutenant  new standard reflectivities                               */
+/* 3.11  Mar 2020  A. Szakal      Calculating prompt gamma production, storing in MCPL file */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
   int i, needPreRand;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "3.10");
+  PrintModuleName(_eModule, "3.11");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
