@@ -1,69 +1,86 @@
 flipper_coil:
    Name    : 
+     descr: "name" 
      type: "string" 
    PosX    :                  # -k    0.0  [cm]   x-position of the centre of the coil
      type: "float" 
+     descr: "position\nmain X [cm]"
      column: 0                     
      prefix: "-k"     
    PosY    :                  # -l    0.0  [cm]   y-position of the centre of the coil
      type: "float" 
+     descr: "position\nmain Y [cm]"
      column: 1                     
      prefix: "-l"     
    PosZ    :                  # -m    0.0  [cm]   z-position of the centre of the coil
      type: "float" 
+     descr: "position\nmain Z [cm]"
      column: 2                     
      prefix: "-m"     
    CoilDir :                  # -y    Y    [-]    orientation of the coil axis
      type: "combo" 
+     descr: "coil axis\nshows"
      column: 0                     
      default: ["Y","Z"]
      prefix: "-y"     
    AnglHor :                  # -i    0.0 [deg]   horizontal (first) rotation angle of the coil axis
-     type: "float" 
+     type: "float"
+     descr: "offset\nhoriz. [deg]" 
      column: 0                     
      prefix: "-i"     
    AnglVert:                  # -j    0.0 [deg]   vertical (second) rotation angle of the coil axis
      type: "float" 
+     descr: "offset\nvert. [deg]"
      column: 1                     
      prefix: "-j"     
    Depth   :             # -X    0.0  [cm]   x-component of the size of the coil 
      type: "float" 
+     descr: "dimension\nX [cm]"
      column: 0                     
      prefix: "-X"     
    Width   :             # -Y    0.0  [cm]   y-component of the size of the coil 
      type: "float" 
+     descr: "dimension\nY [cm]"
      column: 1                     
      prefix: "-Y"     
    Height  :              # -V    0.0  [cm]   z-component of the size of the coil 
      type: "float" 
+     descr: "dimension\nZ [cm]"
      column: 2                     
      prefix: "-V"     
    FldGuide:             # -G    0.0  [Oe]   strength of the guide magnetic field which is considered parallel to the beam axis
      type: "float" 
+     descr: "guide\nfield [Oe]"
      column: 0                     
      prefix: "-G"     
    FldCoil :              # -H    0.0  [Oe]   strength of the coil magnetic field which is considered parallel to the coil axis
      type: "float" 
+     descr: "coil field\ncomponent [Oe]"
      column: 0                     
      prefix: "-H"     
    Thicknes:              # -t    0.0  [cm]   thickness of the coil wire (wall)
      type: "float" 
+     descr: "wall\nthickness [cm]"
      column: 1                     
      prefix: "-t"     
    nDomainX:                # -N   98    [-]    number of 'boxes' along the beam in which the field is devided (max:100)
      type: "int" 
+     descr: "field mesh\nsteps"
      column: 2                     
      prefix: "-N"     
    OutX    :              # -p    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
      type: "float" 
+     descr: "output\nX [cm]"
      column: 0                     
      prefix: "-p"     
    OutY    :              # -r    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
      type: "float" 
+     descr: "output\nY [cm]"
      column: 1                     
      prefix: "-r"     
    OutZ    :              # -s    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
      type: "float" 
+     descr: "output\nZ [cm]"
      column: 2                     
      prefix: "-s"     
 

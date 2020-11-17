@@ -37,6 +37,8 @@ private slots:
 
         void finishedLast();
 
+        void checkIsValide();
+
         void on_actionLoad_triggered();
         void on_actionSave_as_triggered();
         void on_actionSave_triggered();
@@ -54,6 +56,8 @@ private slots:
         void on_pushStart_clicked();
         void on_pushKill_clicked();
         void on_pushStop_clicked();
+        void browseBut_clicked();
+        void editBut_clicked();
 
         void BufferSize_triggered();
         void minNeutWeight_triggered();
@@ -66,7 +70,8 @@ private:
     QLabel *label;
     QLineEdit *lEdit;
     QComboBox *cBox;
-
+    QPushButton *browseBut, *editBut;
+    QValidator *validator;
     QMap<QString, QStringList> mapHeader = {
         {"RndSeed" , {"--Z"}, },
 //        {"RndNoGen", {"???"}},
@@ -94,11 +99,13 @@ private:
     QString str;
     QString nBuffer;
     QString MinWght;
+    QPalette palette;
     int minWidth;
     bool pipeActive = false;
-
+    bool flag,ok;
     YAML::Node config, configChildren;
 
+    QString openFileName();
     void getHeader(QTextStream& out);
     void loadHeader(YAML::Node& config);
     void getModulParam(YAML::Node& config,QString modulName);

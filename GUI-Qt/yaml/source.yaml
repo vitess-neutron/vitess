@@ -1,35 +1,43 @@
 source:
    SimName : 
+     descr: "simulation\nname"
      type:  "string"
      default: "First Simulation" 
      column: 0                     #0-2
    SrcName :                       # -N   ""    [-]   name of the source
+     descr: "source\nname" 
      type: "combo" 
      default: ["FRM2","ILL","HMI","ISIS","SNS","IPNS","CSNS","ESS"] 
      column: 0                     
      prefix: "-N"     
    eType   :                       # -S         [-]   enum: source type:  CWS  SPSS  LPSS 
+     descr: "source type"
      type: "combo" 
      default: ["CWS","SPSS","LPSS"] 
      column: 1                     
      prefix: "-S"     
    ModFile:                        #moderator description file         kommt wieder raus  
+     descr: "moderator\ndescription file"  
      type: "file" 
      prefix: "-a"     
    Freq    :                       # -R        [Hz]   pulse frequency 
+     descr: "pulse repetition\nrate [Hz]"
      type: "float" 
      default: 24.0 
      column: 0                     
      prefix: "-R"     
    Length  :                       # -p   2.0  [ms]   proton pulse length  
+     descr: "analytical flux\ncalculation for"
      type: "float" 
      column: 1                     
      prefix: "-p"     
    Power   :                       # -L   2.0  [MW]   average source power
+     descr: "source power\n[MW]"
      type: "float" 
      column: 2                     
      prefix: "-L"     
    DataVsn :                       # -v   1     [-]   version of the data base
+     descr: "data base"
      type: "combo" 
      default: "1" 
      column: 0                     
@@ -39,33 +47,41 @@ source:
      default: "Restriction"
    nTraj   :                       # -n   1.0e6 [-]   number of neutron trajectories (events)  
      type: "int" 
+     descr : "number of\ntrajectories"
      column: 0                     
      prefix: "-n"     
    Lmin    :                       # -m        [Ang]  minimum of the wavelength range 
+     descr: "min. wave-\nlength [A]"
      type: "float" 
      column: 0                     
      prefix: "-m"     
    Tmin    :                       # -t        [ms]   minimum of the time frame to start neutrons 
+     descr: "min. time [ms]"   
      type: "float" 
      column: 1                     
      prefix: "-t"     
    Divmin  :                       # -y        [deg]  maximum horizontal divergence (half of angular spread x-y-plane) 
+     descr: "max. divergence\nx <-> y [deg]"
      type: "float" 
      column: 2                     
      prefix: "-y"     
    Lmax    :                       # -M        [Ang]  maximum of the wavelength range 
+     descr: "max. wave-\nlength [A]"
      type: "float" 
      column: 0                     
      prefix: "-M"     
    Tmax    :                       # -T        [ms]   maximum of the time frame to start neutrons 
+     descr: "max. time [ms]"
      type: "float" 
      column: 1                     
      prefix: "-T"     
    Divmax  :                       # -z        [deg]  maximum vertical divergence   (half of angular spread x-z-plane) 
+     descr: "max. divergence\nx <-> z [deg]"
      type: "float" 
      column: 2                     
      prefix: "-z"     
    eDir    :                       # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
+     descr: "direction\ndefined"
      type: "combo" 
      default: ["WINDOW","DIVERGENCE"] 
      column: 0                     
@@ -74,22 +90,27 @@ source:
      type: "title" 
      default: "Propagation"
    TDist   :                       # -D   0.0  [cm]   distance moderator - target window 
+     descr: "distance to\nwindow [cm]"
      type: "float" 
      column: 0                     
      prefix: "-D"     
    TWidth  :                       # -w  10.0  [cm]   width of the target window 
+     descr: "window\nwidth [cm]"
      type: "float" 
      column: 1                     
      prefix: "-w"     
    THeight :                       # -h  10.0  [cm]   height of the target window 
+     descr: "window\nheight [cm]"
      type: "float" 
      column: 2                     
      prefix: "-h"     
    Beamline:                        # -B         [-]   name of the beamline  
+     descr: "beamline"
      type: "float" 
      column: 0                     
      prefix: "-B"     
    Decl    :                       # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
+     descr: "declination\n[deg]"
      type: "float" 
      column: 0                     
      prefix: "-i"     
@@ -97,14 +118,17 @@ source:
      type: "title" 
      default: "Time window"
    TofDist :                       # -s   0.0  [cm]   distance moderator - position of time window   
+     descr: "distance to\ntime window [cm]"
      type: "float" 
      column: 0                     
      prefix: "-s"     
    TofMin  :                       # -f  -1e10 [cm]   min TOF allowed in time window  
+     descr: "min. TOF to\ntime window [ms]"
      type: "float" 
      column: 1                     
      prefix: "-f"     
    TofMax  :                       # -F   1e10 [cm]   max TOF allowed in time window 
+     descr: "max. TOF to\ntime window [ms]"
      type: "float" 
      column: 2                     
      prefix: "-F"     
@@ -112,18 +136,22 @@ source:
      type: "title" 
      default: "Polarization"
    PolVecX :                       # -X   0.0  [cm]   x-component of the polarisation 
+     descr: "polarisation\ndirection X"
      type: "float" 
      column: 0                     
      prefix: "-X"     
    PolVecY :                       # -Y   0.0  [cm]   y-component of the polarisation
+     descr: "Y"
      type: "float" 
      column: 1                     
      prefix: "-Y"     
    PolVecZ :                       # -V   0.0  [cm]   z-component of the polarisation
+     descr: "Z"
      type: "float" 
      column: 2                     
      prefix: "-V"     
    PolDeg  :                       # -P   0.0  [cm]   degree of polarization [%] 
+     descr: "degree of pola-\nrization [%]"
      type: "float" 
      column: 0                     
      prefix: "-P"     
@@ -131,17 +159,21 @@ source:
      type: "title" 
      default: "Special simulation parameters"
    TimeMeas:                       # -A   0.0   [s]   time of measurement in second
+     descr: "time of\nmeasurement [s]"
      type: "float" 
      column: 0                     
      prefix: "-A"     
    LmbdWant:                       # -W   0.0  [Ang]  desired wavelength           
+     descr: "desired\nwavelength [A]"
      type: "float" 
      column: 1                     
      prefix: "-W"     
    TrcFile :                       # -r         [-]   name of the file containing the IDs for tracing
+     descr: "raytracing file"
      type: "file" 
      prefix: "-r"     
    eTrcMode:                       # -k   0           mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
+     descr: "kind of\nraytracing"
      type: "combo" 
      default: ["NO_TRACING","WRITE_TRC_FILES","ONLY_TRC_TRAJ"] 
      column: 0                     
