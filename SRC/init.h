@@ -69,8 +69,8 @@ void WriteWWP         (Neutron* pNeutron, VtReason eReason);
 
 void WriteInstrData   (VectorType EndPos);
 long ReadInstrData    (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
-void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq);
-void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq);
+void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj);
+void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj);
 void WriteGeomData    (VectorType vBegPos, double Length);
 
 void DefineColors     (FILE* pGeomFile);

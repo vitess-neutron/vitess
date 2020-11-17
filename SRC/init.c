@@ -1436,20 +1436,21 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
 }
 
 
-void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq)
+void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj)
 {
   FILE*  pFile;
 
   pFile = OpenOutputFile("simulation.inf", FALSE, "w");
   if (pFile)
-  { fprintf(pFile, "%15.5e   # measuring time     [s]\n", dTimeMeas);
-    fprintf(pFile, "%10.5f        # desired wavelength [Ang]\n", dLmbdWant);
-    fprintf(pFile, "%10.5f        # source frequency   [Hz]\n", dFreq);
+  { fprintf(pFile, "%14.5e   # measuring time     [s]\n", dTimeMeas);
+    fprintf(pFile, "%10.5f       # desired wavelength [Ang]\n", dLmbdWant);
+    fprintf(pFile, "%10.5f       # source frequency   [Hz]\n", dFreq);
+    fprintf(pFile, "%14.5e   #number of trajectories \n", nTraj);
     fclose(pFile);
   }
 }
 
-void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
+void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj)
 {
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
@@ -1468,6 +1469,9 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq)
     /* Third line - frequency */
     ReadLine(pFile, sLine, sizeof(sLine)-1);
     sscanf(sLine, "%lf", pFreq);
+    /* fourth line - number of trjectories */
+    ReadLine(pFile, sLine, sizeof(sLine)-1);
+    sscanf(sLine, "%le", pTraj);
 
     fclose(pFile);
   }
