@@ -890,7 +890,7 @@ proc fDialogTypes {operation ext ifile def types} {
     }
     return [tk_getOpenFile -filetypes $types]
   }
-  if {$ext == ""} {set ext txt}
+  
   set ifile [file tail $ifile]
   if {$def != ""} {
     set rc [tk_getSaveFile -filetypes $types  \

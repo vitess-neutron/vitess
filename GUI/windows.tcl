@@ -146,7 +146,7 @@ proc saveText {} {
   set wt $w.a.t;		# $w.a.t is text area
   set s [$wt get 1.0 end]
   if {$s == ""} return
-  if {0 == [set f [openWriteFile txt]]} return
+  if {0 == [set f [openWriteFile ""]]} return
   puts $f $s
   close $f
 }
