@@ -342,10 +342,12 @@ In this case, neutrons coming from the center of the source without divergence p
 Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
-  {scale float ""
-    {"total flux\nat moderator\n[n/(cm^2s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cmÂýs)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+  {totflux float   "" {"total flux\nat moderator\n[n/(cm^2 s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
-  {perform float "" {"performance\nfactor" "Factor allowing for losses by aging or engineering design details not included in the model"}}
+  {perform float 1.0 {"performance\nfactor" "Factor allowing for losses by aging or engineering design details not included in the model"}}
+  {flux_um float 0.0 {"total flux\nundermoderated\n[n/(cm^2 s)]" "Flux of under-moderated neutrons on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+  {chi_um  float 0.9 {"wavelength factor\nundermoderated\n[1/Ang]" "factor for the wavelength dependence of under-moderated neutrons [1/Ang]"}}
+  {kap_um  float 2.2 {"scaling factor\nundermoderated" "scaling factor for the flux of under-moderated neutrons"}}
 }
 
 set m2 {
@@ -361,10 +363,10 @@ set m2 {
 set m3 {
   {}
   {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂý s str Ang)]"}}
-  {tau1 float ""
-    {"tau_1 [us]" "First time constant of the pulse in microseconds (this is thought to be the smaller one of the two time constants).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
-  {tau2 float ""
-    {"tau_2 [us]" "Second time constant of the pulse in microseconds (this is thought to be the larger of the two time constants). In this case it describes the decay of the pulse (for t >> tau_1).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
+  {tau1 float "" {"tau_1 [us]" "Ascent time constant of the pulse in microseconds (this is supposed to be the smaller one of the two time constants).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
+  {tau2 float "" {"tau_2 [us]" "Decay time constant of the pulse in microseconds (this is supposed to be the larger of the two time constants). In this case it describes the decay of the pulse (for t >> tau_1).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
+  {tau1_um float "" {"tau_1\nundermoderated\n[us]" "Ascent time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
+  {tau2_um float "" {"tau_2\nundermoderated\n[us]" "Decay time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
   {}
   {tfile pareditablefile "" {"user time\ndist. file" "Name of the file that contains the time distribution function F(t) for the moderator used.
   units: [ms], M(lambda) * F(t) must have the unit [n/(cmÂý s str Ang)]
@@ -469,21 +471,18 @@ set smASET {
   {}
   {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
   {min_time float "" {"min. time [ms]" "minimal time in ms of time window at moderator" "" t}}
-  {phi float 0.5 {
-    "max. divergence\nx <-> y [deg]"
-    "max divergence phi [deg] (half of angular spread x-y-plane)"
-    "" y} le90}
   {}
   {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
   {max_time float "" {"max. time [ms]" "maximal time in ms of time window at moderator" "" T}}
-  {theta float 0.5 {
-    "max. divergence\nx <-> z [deg]"
-    "maximal divergence theta [deg] (half of angular spread x-z-plane)"
-    "" z} le90}
   {dirdet radio "by window" {"direction\ndefined" "The distribution of flight directions can be given by the maximal divergence from the straight flight direction (items 'max. divergence').
-  Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
-  In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
+    Alternatively, the directions can defined by MC choices of positions where they pass the window (see 'Propagation') in addition to the starting point on the moderator surface.
+    In this case the given values in 'max. divergence ...' are ignored. Virtual window means that the neutrons are NOT propagated to the window, but remain on the moderator surface instead." "" d}
     {"by divergence" "by window" "by virtual window"} {0 1 2}}
+  {}
+  {min_phi float 0.0 {"min. divergence\nx <-> y [deg]" "minimal horizontal divergence [deg] (absolute value)" "" b} ge0}
+  {max_phi float 0.5 {"max. divergence\nx <-> y [deg]" "maximal horizontal divergence [deg] (half of angular spread x-y-plane if min. value is zero)" "" y} le90}
+  {min_the float 0.0 {"min. divergence\nx <-> z [deg]" "minimal vertical divergence [deg] (absolute value)" "" c} ge0}
+  {max_the float 0.5 {"max. divergence\nx <-> z [deg]" "maximal vertical divergence [deg] (half of angular spread x-z-plane if min. value is zero)" "" z} le90}
   {}
 }
 

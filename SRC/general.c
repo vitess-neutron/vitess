@@ -373,26 +373,26 @@ McCompID Name2CompID (const char* sCompName)
 /* dHorAngle : horizontal angle in radians */
 /* dVertAngle: horizontal angle in radians */
 /*                                         */
-double SolidAngle(const double dHorAngle, const double dVertAngle)
+double SolidAngle(const double HorAngle, const double VertAngle)
 {
 
-  if (dVertAngle < 0.55)
+  if (VertAngle < 0.55)
     /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
-    return 4 * dHorAngle  * (tan(dVertAngle) - pow(tan(dVertAngle),3)/3.0);
+    return 4 * HorAngle  * (tan(VertAngle) - pow(tan(VertAngle),3)/3.0);
 	
-  if (dHorAngle < 0.55)
+  if (HorAngle < 0.55)
     /* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2 theta */
-    return 4 * dVertAngle * (tan(dHorAngle)  - pow(tan(dHorAngle),3)/3.0);
+    return 4 * VertAngle * (tan(HorAngle)  - pow(tan(HorAngle),3)/3.0);
 
   /* empirical approximation for large angles */
-  return 4 * sqrt(dHorAngle * sin(dHorAngle) * dVertAngle * sin(dVertAngle));
+  return 4 * sqrt(HorAngle * sin(HorAngle) * VertAngle * sin(VertAngle));
 
 }
 
 
-double TrueSolidAngle(const double dHorAngle, const double dVertAngle)
+double TrueSolidAngle(const double HorAngle, const double VertAngle)
 {
-  return (4 * asin(dHorAngle* dVertAngle));
+  return (4 * asin(HorAngle* VertAngle));
 }
 
 

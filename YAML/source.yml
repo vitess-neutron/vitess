@@ -6,8 +6,10 @@ source:
       Lmax    :    2.4              # -M        [Ang]  maximum of the wavelength range 
       Tmin    :    0.0              # -t        [ms]   minimum of the time frame to start neutrons 
       Tmax    :    2.5              # -T        [ms]   maximum of the time frame to start neutrons 
-      Divmin  :    0.0              # -y        [deg]  maximum horizontal divergence (half of angular spread x-y-plane) 
-      Divmax  :    0.0              # -z        [deg]  maximum vertical divergence   (half of angular spread x-z-plane) 
+      DivHmin :    0.0              # -y        [deg]  minimum horizontal divergence (absolute value) 
+      DivHmax :    0.0              # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
+      DivVmin :    0.0              # -y        [deg]  minimum vertical divergence (absolute value)
+      DivVmax :    0.0              # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
 
       eDir    :  WINDOW             # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
       TDist   :  200.0              # -D   0.0  [cm]   distance moderator - target window 
