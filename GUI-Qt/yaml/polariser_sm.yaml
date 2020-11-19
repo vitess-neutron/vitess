@@ -3,8 +3,6 @@ polariser_sm:
     type:  "string"    #   Type:title, file, string, float, int, combo, 
     descr: "name"
     default: "Supermirror-Polarizer" 
-    column: 0          #0-2 columns
-    prefix: "-V"     
   sReflUp :                  # -U         [-]    name of the reflectivity file for the spin-up neutrons
     type:  "file"     
     descr: "Up-reflectivity\nfile"

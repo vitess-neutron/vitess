@@ -1,0 +1,20 @@
+space:
+   Name    :
+     descr: "name" 
+     type: "string" 
+   Distance:                  # -d   0.0  [cm]   length of the free flight path along the x-axis 
+     type: "float" 
+     descr: "distance [cm]"
+     column: 0                     
+     prefix: "-d"     
+   MyScat  :                  # -M   0.0 [1/cm]  macroscopic scattering coefficient 
+     type: "float" 
+     descr: "total scat-\ntering [1/cm]"
+     column: 1                     
+     prefix: "-M"     
+   MyAbs   :                  # -m   0.0 [1/cm]  macroscopic absorption coefficient 
+     type: "float" 
+     descr: "absorption\n[1/cm]"
+     column: 2                     
+     prefix: "-m"     
+

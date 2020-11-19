@@ -61,11 +61,14 @@ flipper_coil:
    Thicknes:              # -t    0.0  [cm]   thickness of the coil wire (wall)
      type: "float" 
      descr: "wall\nthickness [cm]"
+     min: 0.0 
      column: 1                     
      prefix: "-t"     
    nDomainX:                # -N   98    [-]    number of 'boxes' along the beam in which the field is devided (max:100)
      type: "int" 
      descr: "field mesh\nsteps"
+     min: 0
+     max: 99
      column: 2                     
      prefix: "-N"     
    OutX    :              # -p    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)

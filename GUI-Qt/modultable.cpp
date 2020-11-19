@@ -103,7 +103,6 @@ void ModulTable::loadModule(QString text)
             {
                 case 0: // main entry
                 case 2: // subentry
-                    std::cout << "1111111 modultable loadmodule: " << s.toStdString() << std::endl;
                     comboModule.last()->view()->setMinimumWidth(minWidth);    // width of modullist
                     comboModule.last()->setCurrentText(s);
                     arrowButton.last()->setEnabled(true);
@@ -118,7 +117,6 @@ void ModulTable::infoModule()
     QString wwwFile = comboModule[index]->currentText().toLower();
     if (comboModule[index]->currentText().contains(QChar(0x2514)))
        wwwFile = wwwFile.mid(2);
-    std::cout << wwwFile.toStdString() << std::endl;
     QDesktopServices::openUrl(QUrl("/home/jcns/source/qt/test/WWW/" + wwwFile + ".html"));
 }
 
@@ -139,7 +137,6 @@ void ModulTable::cleanModules()
     arrowButton.clear();
 
     ui->tableWidget->setRowCount(0);
-    std::cout << "cleanModules vor addNewRow" << std::endl;
     addNewRow();
 }
 void ModulTable::addNewRow()
@@ -161,7 +158,6 @@ void ModulTable::addNewRow()
 
     // new row in table with elements
     int row = ui->tableWidget->rowCount();
-    std::cout << "!!!! in addrow   rowCount: " << row << std::endl;
     ui->tableWidget->setRowCount( row+1 );
     ui->tableWidget->setCellWidget(row,0,cb);
     ui->tableWidget->setCellWidget(row,1,tb);

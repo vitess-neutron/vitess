@@ -13,35 +13,35 @@ source:
    eType   :                       # -S         [-]   enum: source type:  CWS  SPSS  LPSS 
      descr: "source type"
      type: "combo" 
-     default: ["CWS","SPSS","LPSS"] 
+     default: ["None","CWS","SPSS","LPSS"] 
      column: 1                     
      prefix: "-S"     
    ModFile:                        #moderator description file         kommt wieder raus  
      descr: "moderator\ndescription file"  
      type: "file" 
      prefix: "-a"     
-   Freq    :                       # -R        [Hz]   pulse frequency 
-     descr: "pulse repetition\nrate [Hz]"
-     type: "float" 
-     default: 24.0 
-     column: 0                     
-     prefix: "-R"     
-   Length  :                       # -p   2.0  [ms]   proton pulse length  
-     descr: "analytical flux\ncalculation for"
-     type: "float" 
-     column: 1                     
-     prefix: "-p"     
-   Power   :                       # -L   2.0  [MW]   average source power
-     descr: "source power\n[MW]"
-     type: "float" 
-     column: 2                     
-     prefix: "-L"     
-   DataVsn :                       # -v   1     [-]   version of the data base
-     descr: "data base"
-     type: "combo" 
-     default: "1" 
-     column: 0                     
-     prefix: "-v"     
+#   Freq    :                       # -R        [Hz]   pulse frequency 
+#     descr: "pulse repetition\nrate [Hz]"
+#     type: "float" 
+#     default: 24.0 
+#     column: 0                     
+#     prefix: "-R"     
+#   Length  :                       # -p   2.0  [ms]   proton pulse length  
+#     descr: "analytical flux\ncalculation for"
+#     type: "float" 
+#     column: 1                     
+#     prefix: "-p"     
+#   Power   :                       # -L   2.0  [MW]   average source power
+#     descr: "source power\n[MW]"
+#     type: "float" 
+#     column: 2                     
+#     prefix: "-L"     
+#   DataVsn :                       # -v   1     [-]   version of the data base
+#     descr: "data base"
+#     type: "combo" 
+#     default: "1" 
+#     column: 0                     
+#     prefix: "-v"     
    titel_1 :                       
      type: "title" 
      default: "Restriction"
@@ -126,12 +126,12 @@ source:
      descr: "min. TOF to\ntime window [ms]"
      type: "float" 
      column: 1                     
-     prefix: "-f"     
+#     prefix: "-f"     
    TofMax  :                       # -F   1e10 [cm]   max TOF allowed in time window 
      descr: "max. TOF to\ntime window [ms]"
      type: "float" 
      column: 2                     
-     prefix: "-F"     
+#     prefix: "-F"     
    titel_4 :                       
      type: "title" 
      default: "Polarization"
@@ -171,7 +171,7 @@ source:
    TrcFile :                       # -r         [-]   name of the file containing the IDs for tracing
      descr: "raytracing file"
      type: "file" 
-     prefix: "-r"     
+#     prefix: "-r"     
    eTrcMode:                       # -k   0           mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
      descr: "kind of\nraytracing"
      type: "combo" 
