@@ -1,0 +1,312 @@
+guide:
+   Name: 
+     type: "string" 
+     descr: "name" 
+     column: 0                     
+   Title_Shape : 
+     type: "title" 
+     default: "Shape and size of guide"                     
+   eShapeY :                 # -Y CONSTANT [-]   shape of the guide in horizontal direction    
+     type: "combo" 
+     descr: "horizontal\nshape"
+     default: ["CONSTANT","LINEAR","CURVED","PARABOLIC","ELLIPTIC","FROM FILE"]
+     column: 0                     
+     prefix: "-Y"  
+   eShapeZ :                 # -Z CONSTANT [-]   shape of the guide in vertical direction             
+     type: "combo" 
+     descr: "vertical\nshape"
+     default: ["CONSTANT","LINEAR","PARABOLIC","ELLIPTIC","FROM FILE"]
+     column: 1                     
+     prefix: "-Z"  
+   sShapeFN:                 # -S "guide_shape.dat" [-]   name of the file containing the sizes of the guide, output or input file
+     type: "file" 
+     descr: "guide shape" 
+     prefix: "-S"  
+   ExitHite:                 # -w    0.0  [cm]   width of the guide entrance  
+     type: "float" 
+     descr: "entrance\nwidth [cm]"
+     min: 0.0001 
+     column: 0                     
+     prefix: "-w" 
+   EntrHite:                 # -h    0.0  [cm]   height of the guide entrance           
+     type: "float" 
+     descr: "entrance\nheight [cm]"
+     min: 0.0001 
+     column: 1                     
+     prefix: "-h"   
+   ExitWdth:                 # -W    0.0  [cm]   width of the guide exit  
+     type: "float" 
+     descr: "exit\nwidth [cm]"
+     min: 0.0001 
+     column: 0                     
+     prefix: "-W"   
+   EntrWdth:                 # -H    0.0  [cm]   height of the guide exit              
+     type: "float" 
+     descr: "exit\nheight [cm]"  
+     min: 0.0001 
+     column: 1                     
+     prefix: "-H"   
+   Title_Character: 
+     type: "title" 
+     default: "Guide characteristics"
+   PieceLen:                 # -p    0.0  [cm]   length of 1 piece of the guide 
+     type: "float" 
+     descr: "piece\nlength [cm]"
+     min: 0.0
+     column: 0                     
+     prefix: "-p"  
+   nPieces :                 # -N    1     [-]   number of pieces
+     type: "int" 
+     descr: "number of\npieces"
+     min: 1
+     column: 1                     
+     prefix: "-N"  
+   Radius  :                 # -R    0.0   [m]   radius of a guide that is curved (in horizontal plane)       
+     type: "float" 
+     descr: "curvature\n(radius) [m]"
+     column: 2                     
+     prefix: "-R"  
+   D_Foc2Y :                 # -f    0.0  [cm]   pos. of 2nd focal point in horizontal direction (for elliptic shape) 
+     type: "float" 
+     descr: "hor. focus dist.\nof ellipse [cm]"
+     min: 0 
+     column: 0                     
+     prefix: "-f"  
+   D_Foc2Z :                 # -F    0.0  [cm]   pos. of 2nd focal point in vertical direction (for elliptic shape) 
+     type: "float" 
+     descr: "vert. focus dist.\nof ellipse [cm]"
+     min: 0.0
+     column: 1                     
+     prefix: "-F"  
+   Title_Reflect: 
+     type: "title" 
+     default: "Reflectivity"
+   m_Left  :                 # -L    1.0   [-]   m-value for left wall 
+     type: "float" 
+     descr: "m-value left\nplane"
+     min: 0.0
+     column: 0                     
+     prefix: "-L"  
+   m_Right :                 # -Q    1.0   [-]   m-value for right wall 
+     type: "float" 
+     descr: "right\nplane"  
+     min: 0.0
+     column: 1                     
+     prefix:  "-Q" 
+   m_TopBot:                 # -G    1.0   [-]   m-value for top and bottom wall 
+     type: "float" 
+     descr: "top/bottom\nplane" 
+     min: 0.0
+     column: 2                     
+     prefix: "-G"  
+   sReflL  :                 # -i          [-]   name of the reflectivity file for the left wall
+     type: "file" 
+     descr: "file\nleft plane"
+     prefix: "-i"  
+   sReflR  :                 # -I          [-]   name of the reflectivity file for the right wall 
+     type: "file" 
+     descr: "right plane"
+     prefix: "-I"  
+   sReflT  :                 # -j          [-]   name of the reflectivity file for the top wall
+     type: "file" 
+     descr: "top plane"
+     prefix:   "-j"
+   sReflB  :                 # -J          [-]   name of the reflectivity file for the bottom wall
+     type: "file" 
+     descr: "bottom plane"
+     prefix:   "-J"
+   Title_Channel: 
+     type: "title" 
+     default: "Channel option"
+   nChannel:                 # -b    1     [-]   number of (vertical) channels 
+     type: "int" 
+     descr: "number of\nchannels"
+     min: 0
+     column: 0                     
+     prefix: "-b"  
+   BladeThi:                 # -s    0.0  [cm]   thickness of the blades dividing the channels         
+     type: "float" 
+     descr: "blade\nthickness [cm]"
+     min: 0.0
+     column: 1                     
+     prefix:  "-s"
+   Title_Special: 
+     type: "title" 
+     default: "Special options"
+   MuTotSca:                 # -M    0.0 [1/cm]  total macroscopic scattering coeff.
+     type: "float" 
+     descr: "total scat-\ntering [1/cm]" 
+     min: 0.0
+     column: 0                     
+     prefix: "-M"  
+   MuAbs   :                 # -m    0.0 [1/cm]  macroscopic absorption coeff. 
+     type: "float" 
+     descr: "absorption\n[1/cm]"
+     min: 0.0
+     column: 1                     
+     prefix:  "-m" 
+   nColour :                 # -g   -1     [-]   colour necessary for the trajectory to be regarded   colour -1 means all trajectories are regarded       
+     type: "int" 
+     descr: "color"
+     min: -1
+     column: 0                     
+     prefix:  "-g" 
+   AddToCol:                 # -A    0     [-]   value added to the color for each reflection
+     type: "float" 
+     descr: "add to\ncolor"
+     column: 1                     
+     prefix:  "-A" 
+   bAbutLos:                 # -a    0     [-]   flag: abutment loss  0: no  1: yes 
+     type: "combo" 
+     descr: "abutment\nloss" 
+     default: ["NO","YES"] 
+     column: 0                     
+     prefix:  "-a" 
+   eWaviDis:                 # -q RECTANGULAR [-] shape of the waviness distribution   RECTANGULAR   GAUSSIAN
+     type: "combo" 
+     descr: "waviness\ndistr."
+     default: ["RECTANGULAR","GAUSSIAN"]
+     column: 1                     
+     prefix: "-q"  
+   AbutLen :                 # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 
+     type: "float" 
+     descr: "abutment\nloss area [cm]"
+     column: 0                     
+     min: 0.0
+     prefix:  "-l" 
+   Waviness:                 # -r    0.0  [deg]  maximal deviation from normal of the waviness of the guide surface 
+     type: "float" 
+     descr: "surface\nwaviness [deg]"
+     min: 0.0
+     column: 1                     
+     prefix:  "-r" 
+   RotPlane:                 # -n    0.0  [deg]  rotation angle to create additional planes
+     type: "float" 
+     descr: "add. plane\nangle [deg]"
+     column: 0                     
+     prefix:  "-n"
+   Title_Reflection: 
+     type: "title" 
+     default: "Reflection list options"
+   sLstFN  :                 # -o          [-]   name of the list file for writing each reflection 
+     type: "file" 
+     descr: "filename"
+     prefix: "-o"   
+   eLstPar :                 # -O LEAVING  [-]   Trajectories to be written out: LEAVING  REFLECTED   SCATTERED    ALL  
+     type: "combo" 
+     descr: "format" 
+     default: ["LEAVING", "REFLECTED", "SCATTERED", "ALL"]
+     column: 0                     
+     prefix: "-O"  
+   bLstVbs :                 # -v    0     [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. 
+     type: "combo" 
+     descr: "verbose\nlist"
+     default: ["NO","YES"]
+     column: 1                     
+     prefix: "-v"  
+   nLstMin :                 # -e    0     [-]   Minimum number of reflections within the guide for reflection list output 
+     type: "int" 
+     descr:  "minimum number\nof reflections" 
+     min: 0
+     column: 0                     
+     prefix: "-e"  
+   nLstMax :                 # -E    0     [-]   Maximum number of reflections within the guide for reflection list output 
+     type: "int" 
+     descr: "maximum number\nof reflections" 
+     min: 0
+     column: 1                     
+     prefix: "-E"  
+   nLstMinY:                 # -c    0     [-]   Minimum number of reflections on the horizontal guide for reflection list output 
+     type: "int" 
+     descr: "minimum number\nof horiz. refl."
+     min: 0
+     column: 0                     
+     prefix: "-c"  
+   nLstMaxY:                 # -C    0     [-]   Maximum number of reflections on the horizontal guide for reflection list output 
+     type: "int" 
+     descr: "maximum number\nof horiz. refl."
+     min: 0
+     column: 1                     
+     prefix:  "-C" 
+   nLstMinZ:                 # -d    0     [-]   Minimum number of reflections on the vertical guide for reflection list output 
+     type: "int" 
+     descr: "minimum number\nof vert. refl." 
+     min: 0
+     column: 0                     
+     prefix:  "-d" 
+   nLstMaxZ:                 # -D    0     [-]   Maximum number of reflections on the vertical guide for reflection list output 
+     type: "int" 
+     descr: "maximum number\nof vert. refl."
+     min: 0
+     column: 1                     
+     prefix: "-D"  
+   Title_ReflectPlot: 
+     type: "title" 
+     default: "Reflection plot options" 
+   sPlotFN :                 # -P          [-]   name of the file for writing each reflection as plot
+     type: "file" 
+     descr: "filename"
+     prefix: "-P"  
+   bPlotPar:                 # -B   ALL    [-]   Plot filter:  ALL   SCATTERED   DIED 
+     type: "combo" 
+     descr: "filter" 
+     default: ["ALL", "SCATTERED", "DIED"]
+     column: 0                     
+     prefix: "-B"  
+   ePlotX  :                 # -t  POS_X   [-]   key defining x parameter for reflection plot
+     type: "combo" 
+     descr: "X values"
+     default: ["REF.ANGLE","M","RECLECTIVITY","DIV_Y","DIV_Z","COLOR","TOF","WAVELENGTH","PROBABILITY",
+               "POS_X","POS_Y","POS_Z","VEC_X","VEC_Y","VEC_Z","SPIN_X","SPIN_Y","SPIN_Z","SCATTERED"] 
+     column: 0                     
+     prefix: "-t"  
+   ePlotY  :                 # -T  M_VAL   [-]   key defining y parameter for reflection plot
+     type: "combo" 
+     descr: "Y values"
+     default: ["REF.ANGLE","M","RECLECTIVITY","DIV_Y","DIV_Z","COLOR","TOF","WAVELENGTH","PROBABILITY",
+               "POS_X","POS_Y","POS_Z","VEC_X","VEC_Y","VEC_Z","SPIN_X","SPIN_Y","SPIN_Z","SCATTERED"] 
+     column: 1                     
+     prefix: "-T"  
+   ePlotPrb:                 # -V  PROB    [-]   key for probability weighting for reflection plot
+     type: "combo" 
+     descr: "Weight"
+     default: ["NONE","REF.ANGLE","M","RECLECTIVITY","DIV_Y","DIV_Z","COLOR","TOF","WAVELENGTH","PROBABILITY",
+               "POS_X","POS_Y","POS_Z","VEC_X","VEC_Y","VEC_Z","SPIN_X","SPIN_Y","SPIN_Z","SCATTERED"] 
+     column: 2                     
+     prefix: "-V"  
+   nPlotX  :                 # -k  100     [-]   number of X bins in reflection plot
+     type: "int" 
+     descr: "number\nof bins in X"
+     min: 1
+     max: 10000 
+     column: 0                     
+     prefix: "-k"  
+   xPlotMin:                 # -x    0.0  [var]  lower bound of X range in reflection plot
+     type: "float" 
+     descr: "minimum X" 
+     column: 1                     
+     prefix: "-x"  
+   xPlotMax:                 # -X   10.0  [var]  upper bound of X range in reflection plot
+     type: "float" 
+     descr: "maximum X"
+     column: 2                     
+     prefix: "-X"  
+   nPlotY  :                 # -K  100     [-]   number of Y bins in reflection plot 
+     type: "int" 
+     descr: "number\nof bins in Y"
+     min: 1
+     max: 10000 
+     column: 0                     
+     prefix: "-K"  
+   yPlotMin:                 # -u    0.0  [var]  lower bound of Y range in reflection plot
+     type: "float" 
+     descr:  "minimum Y" 
+     column: 1                     
+     prefix: "-u"  
+   yPlotMax:                 # -U   10.0  [var]  upper bound of Y range in reflection plot
+     type: "float" 
+     descr:  "maximum Y"
+     column: 2                     
+     prefix:  "-U" 
+
+

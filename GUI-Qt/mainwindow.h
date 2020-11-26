@@ -72,6 +72,7 @@ private:
     QComboBox *cBox;
     QPushButton *browseBut, *editBut;
     QValidator *validator;
+    QScrollArea *scrollArea;
     QMap<QString, QStringList> mapHeader = {
         {"RndSeed" , {"--Z"}, },
 //        {"RndNoGen", {"???"}},
@@ -88,6 +89,8 @@ private:
     QMap <QString,QMap<QString,QStringList>> mapVitess;
     QMap<QString,QString> Module;
     QMap<QString,QScrollArea *> modulGui;
+
+    QMap<QString,int> modindex;
 
     QList<QLineEdit  *> allLineEdits;
     QList<QComboBox *>  allComboBoxes;
@@ -108,6 +111,7 @@ private:
     QString openFileName();
     void getHeader(QTextStream& out);
     void loadHeader(YAML::Node& config);
+    void designModul(QString modulName);
     void getModulParam(YAML::Node& config,QString modulName);
     void writeHeader(YAML::Node& config);
     void saveFile(QString instrumentName);

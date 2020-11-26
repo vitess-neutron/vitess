@@ -1,0 +1,85 @@
+sample_reflectom:
+   Name    :
+     type: "string"
+     descr: "name" 
+   SmplFile:                 # -P         [-]    sample parameter file name 
+     type: "file" 
+     descr: "parameter\nfile"  
+     prefix: "-P"
+   ReflFile:                 # -I         [-]    name of the file containing the sample reflectometry
+     type: "file" 
+     descr: "reflectivity\nfile"  
+     prefix: "-I"
+   Mode    :                 # -O  SAMPLE [-]    enum mode  1 reflection of SAMPLE   2 reflection of REFERENCE  
+     type: "combo" 
+     descr: "Offspecular\nscattering" 
+     default: ["SAMPLE", "REFERENCE"]   
+     index: [1,2]
+     column: 0                     
+     prefix: "-O"   
+   RotAxis :                 # -R   "Y"   [-]    rotation axis of sample "Y" or"Z"  
+     type: "combo" 
+     default: ["Y", "Z"]   
+     descr:  "axis of\nrotation"
+     column: 1                     
+     prefix: "-R"   
+   RotAngle:                 # -a    0.0 [deg]   min. value of angle or reflection 
+     type: "float" 
+     descr:  "reflection\nangle [deg]"
+     column: 0                     
+     prefix: "-a"   
+   Title_OffSpect: 
+     type: "title" 
+     default: "Offspecular scattering"
+   bOffSpec:                 # -o   NO    [-]    flag: offspecular scattering (NO YES)  
+     type: "combo" 
+     descr: "Offspecular\nscattering" 
+     default: ["NO", "YES"]   
+     column: 0                     
+     prefix: "-o"   
+   Title_IncScat: 
+     type: "title" 
+     default: "Incoherent scattering"
+   bIncScat:                # -B   NO    [-]    flag: incoherent scattering  (NO YES)  
+     type: "combo" 
+     descr: "Incoherent\nscattering" 
+     default: ["NO", "YES"]   
+     column: 0                     
+     prefix: "-B"   
+   MuIncSca:                 # -X    0.0 [1/cm]  macroscopic incoherent scattering cross section of the sample 
+     type: "float" 
+     descr: "Incoherent\npathlength"
+     column: 0                     
+     prefix: "-X"   
+   DetDist :                 # -d    1.0  [cm]   Distance to the detector for solid angle for incoherent scattering 
+     type: "float" 
+     descr:  "Detector\ndistance"
+     column: 0                     
+     prefix: "-d"   
+   DetWidth:                 # -p    0.0  [cm]   Width of the detector for solid angle for incoherent scattering 
+     type: "float" 
+     descr:  "Detector\nwidth"
+     column: 1                     
+     prefix: "-p"   
+   DetHite :                  # -t    0.0  [cm]   Height of the detector for solid angle for incoherent scattering 
+     type: "float" 
+     descr:  "Detector\nheight"
+     column: 2                     
+     prefix: "-t"   
+   StoNArea:                 # -S    1.0  [cm]   Relates the area on the detector with signal counts to total detector area
+     type: "float" 
+     descr:  "Norm factor"
+     column: 0                     
+     prefix: "-S"   
+ 
+#   PosX    :   20.0           # file  0.0  [cm]   center x position of the sample 
+#   PosY    :    0.0           # file  0.0  [cm]   center y position of the sample 
+#   PosZ    :    0.0           # file  0.0  [cm]   center z position of the sample 
+#   Thicknes:    0.02          # file  0.0  [cm]   thickness of the reflecting surface
+#   Width   :    2.0           # file  0.0  [cm]   width of the sample
+#   Length  :    4.0           # file  0.0  [cm]   length of the sample
+#   OutX    :  150.0           # file  0.0  [-]    x coordinate in output frame 
+#   OutY    :    0.0           # file  0.0  [-]    y coordinate in output frame 
+#   OutZ    :    0.0           # file  0.0  [-]    x coordinate in output frame 
+#   OutHor  :    0.0           # file  0.0  [-]    horizontal angular coordinate in output frame 
+#   OutVert :    0.0           # file  0.0  [-]    vertical angular coordinate in output frame 

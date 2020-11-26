@@ -1,0 +1,70 @@
+#input fields so far
+#type: title, file, string, float, int, combo (for selection list)
+#descr: description of the parameter lable
+#default: Value for title, values for selection list, optional default values
+#min: minimum value optional
+#max: maximum value optional
+#column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#prefix: prefix for parameter in pipe
+read_in:
+   Name    : 
+     type: "string"
+     descr: "name" 
+   File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
+     type: "file" 
+     descr: "ASCII input\nfile 1"
+     prefix: "-A"
+   File2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
+     type: "file" 
+     descr: "ASCII input\nfile 2" 
+     prefix: "-B"
+   File3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
+     type: "file" 
+     descr: "ASCII input\nfile 3"  
+     prefix: "-D"
+   RiFrc1:                 # -a    1.0  [-]  
+     type: "float" 
+     descr:  "weight of traj.\nin file 1"
+     column: 0                     
+     prefix: "-a"   
+   RiFrc2:                 # -b    0.0  [-]   
+     type: "float" 
+     descr:  "weight of traj.\nin file 2"
+     column: 1                     
+     prefix: "-b"   
+   RiFrc3:                 # -d    0.0  [-] 
+     type: "float" 
+     descr:  "weight of traj.\nin file 3"
+     column: 2                     
+     prefix: "-d"   
+   RiFact:                 # -I    1.0  [-] 
+     type: "float" 
+     descr:  "Intensity factor\nfor MCNPX"
+     column: 0                     
+     prefix: "-I"   
+   eInPrgf:                 # -f   VITESS   [-]     
+     type: "combo" 
+     descr: "data format" 
+     default: ["VITESS", "McStas", "MCPL", "MCNPX"]   
+     index: [1,2,3,4] 
+     column: 0                     
+     prefix: "-f"   
+   bInForm:                 # -F   FLOAT   [-]   format of double values in the input file, TRUE: float, FALSE exp  
+     type: "combo" 
+     descr: "VITESS\nstorage format" 
+     default: ["EXP", "FLOAT"]   
+     column: 1                     
+     prefix: "-F"   
+   nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
+     type: "int" 
+     descr:  "read in color" 
+     column: 0                     
+     prefix: "-C"   
+   nInRep:                   # -R     1  Number of times that the events are read 
+     type: "int" 
+     descr:  "repetition" 
+     column: 1                     
+     prefix: "-R"   
+
+
+

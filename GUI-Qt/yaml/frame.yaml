@@ -1,0 +1,71 @@
+frame:
+   Name    : 
+     type: "string" 
+     descr: "name"
+   Title_1 : 
+     type: "title" 
+     default: "transformation"
+   Sequence:              # -S  RTM    [-]   sequence of operations RTM RMT TRM TMR MTR MRT
+     type: "combo"  
+     descr: "sequence"
+     default: ["RTM","RMT","TRM",TMR","MTR",MRT"]
+     column: 0                     
+     prefix: "-S"     
+   Title_2 : 
+     type: "title" 
+     default: "rotation"
+   RotX    :               # -A   0.0  [deg]  rotation angle about x-axis
+     type: "float" 
+     descr: "rot. angle [deg]\naround x axis" 
+     column: 0                     
+     prefix: "-A"     
+   RotY    :               # -V   0.0  [deg]  rotation angle about y-axis
+     type: "float" 
+     descr: "rot. angle [deg]\naround y axis"
+     column: 1                     
+     prefix: "-V"     
+   RotZ    :               # -H   0.0  [deg]  rotation angle about z-axis
+     type: "float" 
+     descr: "rot. angle [deg]\naround z axis"
+     column: 2                     
+     prefix: "-H"     
+   Title_3 : 
+     type: "title" 
+     default: "translation"
+   TransX  :               # -x   0.0   [cm]  x-component of the translation vector
+     type: "float" 
+     descr: "x [cm]"
+     column: 0                     
+     prefix: "-x"     
+   TransY  :               # -y   0.0   [cm]  y-component of the translation vector
+     type: "float" 
+     descr: "y [cm]"
+     column: 1                    
+     prefix: "-y"     
+   TransZ  :               # -z   0.0   [cm]  z-component of the translation vector 
+     type: "float" 
+     descr: "z [cm]"
+     column: 2                    
+     prefix: "-z"     
+   Title_4 : 
+     type: "title" 
+     default: "mirror"
+   MirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
+     type: "combo" 
+     descr: "mirror at\nyz plane"
+     default: ["NO","YES"]
+     column: 0                     
+     prefix: "-i"     
+   MirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
+     type: "combo" 
+     descr: "mirror at\nxz plane"
+     default: ["NO","YES"]
+     column: 1                     
+     prefix: "-j"     
+   MirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
+     type: "combo" 
+     descr: "mirror at\nxy plane"
+     default: ["NO","YES"]
+     column: 2                     
+     prefix: "-k"     
+

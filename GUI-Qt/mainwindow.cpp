@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     #else    //_WIN32 _WIN64
        syspar =".exe";
     #endif
+
     ui->RndSeed->setValidator(new QDoubleValidator);
     while ( ui->stackedWidget->count() > 0 )
         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fList = directory.entryList({"*.yaml"});
     for(int i=0; i<fList.count();i++ )
     {
+
        QString modulFile = directory.path()+"/"+fList[i];
        QFile file(modulFile);
        if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -50,23 +52,27 @@ MainWindow::MainWindow(QWidget *parent) :
         //list of modulNames for comboBox in tableWidget
        modulList << QString::fromStdString(config.begin()->first.as<string>());
        //map modulname and filename
+       modindex[modulList[i]] = 0;
        Module[modulList[i]] = modulFile;
        mapModul.clear();
 
+       designModul(modulList[i]);
+/*
        //scrollArea for modul
-       QScrollArea *scrollArea = new QScrollArea;
+       scrollArea = new QScrollArea;
        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
        QWidget *modulWindow = new QWidget;
        gridLayout = new QGridLayout;
        modulWindow->setLayout(gridLayout);
        scrollArea->setWidget(modulWindow);
+       scrollArea->setObjectName(modulList[i]);
        for(int col=0; col<3; col++)  gridLayout->setColumnMinimumWidth(col,230);
        scrollArea->setWidgetResizable(true);
 
        //set parameters and their value definition to mapModul
        YAML::Node configParam = config.begin()->second;
        getModulParam(configParam, modulList[i]);
-
+*/
        // map of modulname and moduldesign
        modulGui[modulList[i]] = scrollArea;
 
@@ -121,16 +127,27 @@ void MainWindow::changeModulWidget(QString modul,int row)
 {
     allLineEdits.clear();
     allComboBoxes.clear();
-    cout << "modul:  " << modul.toStdString() << "  File:  " << Module[modul].toStdString() << endl;
-
     if (row != ui->stackedWidget->count())
     {
         ui->stackedWidget->removeWidget(ui->stackedWidget->widget(row));
-        ui->stackedWidget->insertWidget(row,modulGui[modul]);
+        if (modindex[modul] == 0)
+            ui->stackedWidget->insertWidget(row,modulGui[modul]);
+        else
+        {
+            designModul(modul);
+            ui->stackedWidget->insertWidget(row,scrollArea);
+        }
         ui->stackedWidget->setCurrentIndex(row);
     }
     else {
-        ui->stackedWidget->addWidget(modulGui[modul]);
+        if (modindex[modul] == 0)
+            ui->stackedWidget->addWidget(modulGui[modul]);
+        else
+        {
+            designModul(modul);
+            ui->stackedWidget->addWidget(scrollArea);
+        }
+        modindex[modul]++;
         ui->stackedWidget->setCurrentIndex(ui->stackedWidget->count()-1);
     }
     ui->stackedWidget->show();
@@ -265,6 +282,8 @@ void MainWindow::on_pushFresh_clicked()
     modultab->cleanModules();
     while ( ui->stackedWidget->count() > 0 )
          ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
+    instrumentName = "";
+    ui->InstName->setText(instrumentName);
 }
 
 void MainWindow::on_pushClear_clicked()
@@ -603,8 +622,7 @@ void MainWindow::saveFile(QString instrumentName)
     {
       allLineEdits.clear();
       allComboBoxes.clear();
-      std::string key = modulGui.key(qobject_cast<QScrollArea *>(ui->stackedWidget->widget(i))).toStdString();
-      cout << "key:  " << key << endl;
+      std::string key = ui->stackedWidget->widget(i)->objectName().toStdString();
       allLineEdits <<  ui->stackedWidget->widget(i)->findChildren< QLineEdit *>();
       allComboBoxes <<  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
 
@@ -620,7 +638,22 @@ void MainWindow::saveFile(QString instrumentName)
     file.close();
 }
 
+void MainWindow::designModul(QString modulName)
+{
+    scrollArea = new QScrollArea;
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    QWidget *modulWindow = new QWidget;
+    gridLayout = new QGridLayout;
+    modulWindow->setLayout(gridLayout);
+    scrollArea->setWidget(modulWindow);
+    scrollArea->setObjectName(modulName);
+    for(int col=0; col<3; col++)  gridLayout->setColumnMinimumWidth(col,230);
+    scrollArea->setWidgetResizable(true);
+    YAML::Node config = YAML::LoadFile(Module[modulName].toStdString());
+    YAML::Node configParam = config.begin()->second;
+    getModulParam(configParam, modulName);
 
+}
 
 void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
 {
@@ -770,7 +803,7 @@ void MainWindow::browseBut_clicked()
 {
     QString fileName = openFileName();
     // cut browse_ from sender
-    this->findChild<QLineEdit *>(
+    ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(
                 qobject_cast<QPushButton *>(sender())->objectName().mid(7))
                 ->setText(fileName);
 }

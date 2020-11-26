@@ -1,0 +1,143 @@
+#input fields so far:
+#type:    title, file, string, float, int, combo (for selection list or switch)
+#descr:   description of the parameter lable
+#default: Value for title, values for selection list, optional default values
+#min:     minimum value optional
+#max:     maximum value optional
+#column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#prefix:  prefix for parameter in pipe
+monitor1:
+   sName   :
+     type: "string"
+     descr: "name" 
+   sMonFile:                 # -O    [-]   Monitor output file containing intensity as a function of the chosen parameter
+     type: "file"
+     descr: "monitor file" 
+     prefix: "-O"   
+   nBins:                    # -n    [-]   number of bins
+     type: "int" 
+     descr: "number\nof bins" 
+     default: 100
+     column: 0                     
+     prefix: "-n"  
+   iColour:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColour >= 0 
+                             #                    for bAllFile=TRUE  max. color to which additional monitor files are generated             
+     type: "int" 
+     descr: "color" 
+     column: 1                     
+     prefix: "-C"   
+   sRefFile:                 # -R    [-]   Reference input file containing data to normalize the monitor data
+     type: "file"
+     descr: "reference file" 
+     prefix: "-R"   
+   MinY    :                 # -m   [var]  lower bound lambda, time or div. window [A], [ms], [deg]
+     type: "float" 
+     descr: "minimal\n[A] [ms] [deg]" 
+     default: 0.0
+     column: 0                     
+     prefix: "-m"  
+   MaxY    :                 # -M   [var]  upper bound lambda, time or div. window [A], [ms], [deg]
+     type: "float" 
+     descr: "maximal\n[A] [ms] [deg]" 
+     column: 1                     
+     default: 10.0
+     prefix: "-M"   
+   EvalMin :                 # -t    [ms]  minimal TOF to be taken into account
+     type: "float" 
+     descr: "time interval\nbegin [ms]" 
+     column: 0                     
+     prefix: "-t"  
+   EvalMax :                 # -T    [ms]  maximal TOF to be taken into account
+     type: "float" 
+     descr: "time interval\nend [ms]" 
+     column: 1                     
+     prefix:  "-T" 
+   RotMin  :                 # -a   [deg]  lower bound rotation projection angle
+     type: "float" 
+     descr: "rot. angle\nmin [deg]" 
+     column: 0                     
+     prefix: "-a"  
+   RotMax  :                 # -A   [deg]  upper bound rotation projection angle
+     type: "float" 
+     descr: "rot. angle\nmax [deg]" 
+     column: 1                     
+     prefix: "-A"  
+   RotStep :                 # -s   [deg]  rotation projection angle step
+     type: "float" 
+     descr: "rot. angle\nstep [deg]" 
+     column: 2                     
+     prefix: "-s" 
+   eNorm   :                 # -f    [-]   enum  NO_NORM    intensities of the neutron trajctories distributed unchanged into channels 
+                             #                   NORM_SIZE  intensities normalized to bin size
+                             #                   NORM_REF   intensities normalized to reference file
+     type: "combo" 
+     descr: "normalize" 
+     default: ["NO_NORM","NORM_SIZE","NORM_REF"]   
+     column: 0                     
+     prefix: "-f"    
+   bAllFile:                 # -c    [-]   flag: generates additional files for colour:0, 1, ..., iColour
+     type: "combo" 
+     descr: "all files" 
+     default: ["NO","YES"]   
+     column: 1                     
+     prefix: "-c"   
+   ePar    :                 # -k    [-]   enum: ID for parameter, as a function of which the intensity is shown (values: VtMonPar)
+     type: "combo" 
+     descr: "variable\nparameter" 
+     default: ["NO_PAR","MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z","MON_ENERGY","MON_DIV_YZ"] 
+     column: 2                     
+     prefix: "-k"   
+
+   bProbWt :                 # -p    [-]   flag: Probability weight (YES) or number of trajectories (NO)
+     type: "combo" 
+     descr: "probability\nweight" 
+     default: ["NO","YES"]   
+     column: 0                     
+     prefix: "-p"   
+   bSplitWt:                 # -P    [-]   flag for yz: split weight (YES) or multiplication by number of detection angles (NO)
+     type: "combo" 
+     descr: "split\nweight" 
+     default: ["NO","YES"]   
+     column: 1                     
+     prefix: "-P"    
+   bExclude:                 # -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written NO: all are written
+     type: "combo" 
+     descr: "exclusive\ncounts" 
+     default: ["NO","YES"]   
+     column: 2                     
+     prefix: "-e"   
+
+   title_FilSelect: 
+     type: "title" 
+     default: "Filter selection"
+   FlmbdMin:                 # -l   [Ang]  lower bound value of wavelength filter
+     type: "float" 
+     descr: "filter lambda\nmin [A]"  
+     column: 0                     
+     prefix: "-l"  
+   FlmbdMax:                 # -L   [Ang]  upper bound value of wavelength filter
+     type: "float" 
+     descr: "filter lambda\nmin [A]" 
+     column: 1                     
+     prefix: "-L"   
+   FyMin   :                 # -y    [cm]  lower bound value of horizontal position filter
+     type: "float" 
+     descr: "filter y pos.\nmin [cm]"  
+     column: 0                     
+     prefix: "-y"  
+   FyMax   :                 # -Y    [cm]  upper bound value of horizontal position filter
+     type: "float" 
+     descr: "filter y pos.\nmax [cm]"  
+     column: 1                     
+     prefix: "-Y"  
+   FzMin   :                 # -z    [cm]  lower bound value of vertical position filter
+     type: "float" 
+     descr:  "filter z pos.\nmin [cm]" 
+     column: 0                     
+     prefix: "-z"   
+   FzMax   :                 # -Z    [cm]  upper bound value of vertical position filter
+     type: "float" 
+     descr: "filter z pos.\nmax [cm]"  
+     column: 1                     
+     prefix: "-Z"  
+
