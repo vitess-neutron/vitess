@@ -1,0 +1,121 @@
+#input fields so far:
+#type:    title, file, string, float, int, combo(for selection list),switch (Set: Yes)
+#descr:   description of the parameter lable
+#tooltip: detailed description shown when mouse cursor remains over label 
+#default: Value for title, values for selection list, optional default values
+#index:   indexlist for comboBox, if related values not in default order (0,1,2..)
+#min:     minimum value optional
+#max:     maximum value optional
+#column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#prefix:  prefix for parameter in pipe
+mon2_div:                 # source module that will be executed
+   sName   :
+     type:    "string" 
+     descr:   "name"
+   sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position
+     type:    "file" 
+     descr:   "monitor file"
+     tooltip: "monitor output file containing intensity as a function of y- and z-position"
+     default: "sample.div"
+     prefix:  "-O"  
+   
+   DivYmin :              #     -w  "min. y-value\n[deg]"       "minimal horizontal divergence to be monitored"
+     type:    "float" 
+     descr:   "min. y-value\n[deg]" 
+     tooltip: "minimal horizontal divergence to be monitored"
+     default: -5.0
+     column:  0                     
+     prefix:  "-w"  
+   DivYmax :              #     -W  "max. y-value\n[deg]"       "maximal horizontal divergence to be monitored"
+     type:    "float" 
+     descr:   "max. y-value\n[deg]"
+     tooltip: "maximal horizontal divergence to be monitored"
+     default: 5.0
+     column:  1                     
+     prefix:  "-W"  
+   nBinsY  :               # >=1 -y  "number\nof y-bins"         "number of monitor channels in horizontal direction"
+     type:    "int" 
+     descr:   "number\nof y-bins"
+     tooltip: "number of monitor channels in horizontal direction"
+     default: 50
+     min:     1
+     column:  2                     
+     prefix:  "-y"  
+   DivZmin :               #     -h  "min. z-value\n[deg]"       "minimal vertical divergence to be monitored"
+     type:    "float" 
+     descr:   "min. z-value\n[deg]"
+     tooltip: "minimal vertical divergence to be monitored"
+     default: -5.0
+     column:  0                     
+     prefix:  "-h"  
+   DivZmax :               #     -H  "max. z-value\n[deg]"       "maximal vertical divergence to be monitored"
+     type:    "float" 
+     descr:   "max. z-value\n[deg]"  
+     tooltip: "maximal vertical divergence to be monitored"
+     default: 5.0
+     column:  1                     
+     prefix:  "-H"  
+   nBinsZ  :               # >=1 -z  "number\nof z-bins"         "number of monitor channels in vertical direction"
+     type:    "int" 
+     descr:   "number\nof z-bins" 
+     tooltip: "number of monitor channels in vertical direction"
+     default: 50
+     column:  2                     
+     prefix:  "-z"  
+   bProbWt :               #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+     type:    "switch" 
+     descr:   "probability\nweight" 
+     tooltip: "YES: Beam intensity   NO: number of trajectories"
+     default: "YES"
+     column:  0                     
+     prefix:  "-p"  
+   bExclude:              #     -e  "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+     type:    "switch" 
+     descr:   "exclusive\ncounts"  
+     tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+     column:  1                     
+     prefix:  "-e"  
+   eFormat :              #     -F  "file format"               "file format for output:  MATRIX: 2D matrix   XYZ: xyz"
+     type:    "combo" 
+     descr:   "file format" 
+     tooltip: "file format for output:  MATRIX: 2D matrix   XYZ: xyz"
+     default: ["MATRIX","XYZ"]
+     column:  2                     
+     prefix:  "-F"  
+   FlmbdMin:              #     -l  "lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
+     type:    "float" 
+     descr:   "lambda\nmin [Ang]" 
+     tooltip: "minimal wavelength to be taken into account"
+     column:  0                     
+     prefix:  "-m"  
+   FlmbdMax:              #     -L  "lambda\nmin [Ang]"  "maximal wavelength to be taken into account"
+     type:    "float" 
+     descr:   "lambda\nmin [Ang]" 
+     tooltip: "maximal wavelength to be taken into account"
+     column:  1                     
+     prefix:  "-L"  
+   FwidtMin:              #     -u  "y-pos\nmin [cm]     "minimal horizontal position to be taken into account"
+     type:    "float" 
+     descr:   "y-pos\nmin [cm]" 
+     tooltip: "minimal horizontal position to be taken into account"
+     column:  0                     
+     prefix:  "-m"  
+   FwidtMax:              #     -U  "y-pos\nmax [cm]     "maximal horizontal position to be taken into account"
+     type:    "float" 
+     descr:   "y-pos\nmax [cm]" 
+     tooltip: "maximal horizontal position to be taken into account" 
+     column:  1                     
+     prefix:  "-U"  
+   FhiteMin :             #     -v  "z-pos\nmin [cm]     "minimal vertical position to be taken into account"
+     type:    "float" 
+     descr:   "z-pos\nmin [cm]"
+     tooltip: "minimal vertical position to be taken into account"
+     column:  0                     
+     prefix:  "-v"  
+   FhiteMax :             #     -V  "z-pos\nmax [cm]     "maximal vertical position to be taken into account"
+     type:    "float" 
+     descr:   "z-pos\nmax [cm]" 
+     tooltip: "maximal vertical position to be taken into account" 
+     column:  1                     
+     prefix:  "-V"  
+

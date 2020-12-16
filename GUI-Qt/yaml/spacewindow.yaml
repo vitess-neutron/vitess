@@ -1,6 +1,7 @@
 #input fields so far
-#type: title, file, string, float, int, combo (for selection list)
+#type: title, file, string, float, int, switch (NO,YES), combo (for selection list)
 #descr: description of the parameter lable
+#tooltip: longer description of the parameter
 #default: Value for title, values for selection list, optional default values
 #min: minimum value optional
 #max: maximum value optional
@@ -8,133 +9,169 @@
 #prefix: prefix for parameter in pipe
 spacewindow:
    Name    : 
-     type: "string"
-     descr: "name" 
+     type:    "string"
+     descr:   "name" 
    Distance:                 # -l    0.0  [cm]  Distance from origin to the window (along the x-axis) 
-     type: "float" 
-     descr:  "distance orig.\n<-> win. [cm]" 
-     column: 0                     
-     prefix: "-l"   
+     type:    "float" 
+     descr:   "distance orig.\n<-> win. [cm]" 
+     tooltip: "distance from origin to the window (along the x-axis)"
+     default: 0.0
+     column:  0                     
+     prefix:  "-l"   
    bCircWnd:                 # -R   YES   [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
-     type: "combo" 
-     descr: "window shape"  
+     type:    "combo" 
+     descr:   "window shape"  
+     tooltip: "Flag: kind of window, TRUE: circular, FALSE rectangular" 
      default: ["RECTANGULAR","CIRCULAR"]   
-     column: 1                     
-     prefix: "-R"   
+     column:  1                     
+     prefix:  "-R"   
+
    Title_cir: 
-     type: "title"
+     type:    "title"
      default: "circular window coordinates" 
    Radius  :                 # -r    0.0  [cm]  radius of circular window                             
-     type: "float" 
-     descr: "radius" 
-     column: 0                     
-     prefix: "-r"   
+     type:    "float" 
+     descr:   "radius" 
+     tooltip: "radius of circular window"
+     default: 0.0
+     column:  0                     
+     prefix:  "-r"   
    CntrY   :                 # -y    0.0  [cm]  y coordinate: center of window                        
-     type: "float" 
-     descr: "center y" 
-     column: 1                     
-     prefix: "-y"   
+     type:    "float" 
+     descr:   "center y" 
+     tooltip: "y coordinate: center of window"
+     default: 0.0
+     column:  1                     
+     prefix:  "-y"   
    CntrZ   :                 # -z    0.0  [cm]  z coordinate: center of window                        
-     type: "float" 
-     descr: "center z"  
-     column: 2                     
-     prefix: "-z"   
+     type:    "float" 
+     descr:   "center z"  
+     tooltip: "z coordinate: center of window"
+     default: 0.0 
+     column:  2                     
+     prefix:  "-z"   
+
    Title_rect : 
-     type: "title"
+     type:    "title"
      default: "rectangular window coordinates" 
    Wmin    :                 # -w    0.0  [cm]  y-coordinate: lower frame value of rectangular window 
-     type: "float" 
-     descr:  "min. y [cm]"  
-     column: 0                     
-     prefix: "-w"   
+     type:    "float" 
+     descr:   "min. y [cm]"  
+     tooltip: "y-coordinate: lower frame value of rectangular window" 
+     default: 0.0 
+     column:  0                     
+     prefix:  "-w"   
    Wmax    :                 # -W    0.0  [cm]  y-coordinate: higher frame value of rectangular window
-     type: "float" 
-     descr: "max. y [cm]" 
-     column: 1                     
-     prefix: "-W" 
+     type:    "float" 
+     descr:   "max. y [cm]" 
+     tooltip: "y-coordinate: higher frame value of rectangular window"
+     default: 0.0 
+     column:  1                     
+     prefix:  "-W" 
    Hmin    :                 # -h    0.0  [cm]  z-coordinate: bottom of rectangular window            
-     type: "float" 
-     descr: "min. z [cm]"  
-     column: 0                     
-     prefix: "-h"   
+     type:    "float" 
+     descr:   "min. z [cm]"  
+     tooltip: "z-coordinate: bottom of rectangular window"  
+     default: 0.0 
+     column:  0                     
+     prefix:  "-h"   
    Hmax    :                 # -H    0.0  [cm]  z-coordinate: top of rectangular window               
-     type: "float" 
-     descr: "max. z [cm]" 
-     column: 1                     
-     prefix: "-H"   
+     type:    "float" 
+     descr:   "max. z [cm]" 
+     tooltip: "z-coordinate: top of rectangular window" 
+     default: 0.0 
+     column:  1                     
+     prefix:  "-H"   
    RotAng  :                 # -A    0.0  [deg] Rotation angle
-     type: "float" 
-     descr: "rot. angle [Âø]"  
-     column: 0                     
-     prefix: "-A"   
+     type:    "float" 
+     descr:   "rot. angle [deg]"  
+     tooltip: "Rotation angle"
+     default: 0.0 
+     column:  0                     
+     prefix:  "-A"   
    bBeamStp:                 # -S   NO    [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
-     type: "combo" 
-     descr: "used as\nbeamstop"  
-     default: ["NO","YES"]   
-     column: 0                     
-     prefix: "-S"   
+     type:    "switch" 
+     descr:   "used as\nbeamstop"  
+     tooltip: "TRUE: beamstop, FALSE normal window"
+     column:  0                     
+     prefix:  "-S"   
    bPFrame:                  # -F   NO    [-]   Flag: use previous frame        TRUE: yes, FALSE no
-     type: "combo" 
-     descr: "used previous\nframe"  
-     default: ["NO","YES"]   
-     column: 2                     
-     prefix: "-F"   
+     type:    "switch" 
+     descr:   "used previous\nframe"  
+     tooltip: "Flag: use previous frame        TRUE: yes, FALSE no"
+     column:  2                     
+     prefix:  "-F"   
+
    Title_filter : 
-     type: "title"
+     type:    "title"
      default: "Filter options" 
    TreatCol:                 # -f ANYCOLOR [-]   Treat only neutrons with this color
-     type: "float" 
-     descr:  "tread color" 
-     column: 0                     
-     prefix: "-f"   
+     type:    "float" 
+     descr:   "tread color" 
+     tooltip: "treat only neutrons with this color"
+     column:  0                     
+     prefix:  "-f"   
    bRemOthr:                 # -d   NO    [-]   Flag: Neutrons that are not treated are removed
-     type: "combo" 
-     descr: "remove other\ncolors"
-     default: ["NO","YES"]   
-     column: 0                     
-     prefix: "-d"     
+     type:    "switch" 
+     descr:   "remove other\ncolors"
+     tooltip: "Flag: Neutrons that are not treated are removed" 
+     column:  2                     
+     prefix:  "-d"     
+ 
    Title_add : 
-     type: "title"
+     type:    "title"
      default: "Additional window options" 
    PhiMin  :                 # -p   -1.0  [deg] min. and 
-     type: "float" 
-     descr:  "min. phi [Âø]" 
-     column: 0                     
-     prefix: "-p"   
+     type:    "float" 
+     descr:   "min. phi [deg]" 
+     tooltip: "Minimum angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value"
+     default: -1.0
+     column:  0                     
+     prefix:  "-p"   
    PhiMax  :                 # -P   -1.0  [deg] max. angle in y-z-plane
-     type: "float" 
-     descr:  "max. phi [Âø]" 
-     column: 1                     
-     prefix: "-P"   
+     type:    "float" 
+     descr:   "max. phi [deg]" 
+     tooltip: "Maximum angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value."
+     default: -1.0
+     column:  1                     
+     prefix:  "-P"   
+
    Title_out : 
-     type: "title"
+     type:    "title"
      default: "Outer Material" 
    FileOut :                 # -C   NULL   [-]  file describing the transmission of the window frame material
-     type: "file" 
-     descr: "material\ndescription file" 
-     prefix: "-C"
+     type:    "file" 
+     descr:   "material\ndescription file" 
+     tooltip: "file describing the transmission of the window frame material"
+     prefix:  "-C"
    ThickOut:                 # -t    0.0  [cm]  thickness of the frame material    
-     type: "float" 
-     descr: "thickness of\nmaterial [cm]" 
-     column: 0                     
-     prefix: "-t"   
+     type:    "float" 
+     descr:   "thickness of\nmaterial [cm]" 
+     tooltip: "thickness of the frame material" 
+     default: 0.0
+     column:  0                     
+     prefix:  "-t"   
    eMatrial:                 # -c IDEAL_ABS [-] Frame material: FROM_FILE, GADOLINIUM, CADMIUM, BOR10, EU, SILICON, IDEAL_ABS
-     type: "combo" 
-     descr: "material"  
+     type:    "combo" 
+     descr:   "material"  
+     tooltip: "Frame material: FROM_FILE, GADOLINIUM, CADMIUM, BOR10, EU, SILICON, IDEAL_ABS"
      default: ["FROM_FILE", "GADOLINIUM", "CADMIUM", "BOR10", "EU", "SILICON", "IDEAL_ABS"]
-     column: 1                     
-     prefix: "-c" 
+     column:  1                     
+     prefix:  "-c" 
+
    Title_in : 
-     type: "title"
+     type:    "title"
      default: "Inner Material" 
    FileIn  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window
-     type: "file" 
-     descr: "material\ndescription file"  
-     prefix: "-m"   
+     type:    "file" 
+     descr:   "material\ndescription file"  
+     tooltip: "file describing the transmission of the material in the open part of window"
+     prefix:  "-m"   
    ThickIn :                 # -T    0.0  [cm]  thickness of the pane material      
-     type: "float" 
-     descr: "thickness of\nmaterial [cm]"  
-     column: 0                     
-     prefix: "-T"    
-
+     type:    "float" 
+     descr:   "thickness of\nmaterial [cm]"  
+     tooltip: "thickness of the pane material"
+     default: 0.0
+     column:  0                     
+     prefix:  "-T"    
 

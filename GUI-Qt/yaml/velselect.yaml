@@ -1,0 +1,59 @@
+velselect:
+   Name: 
+     type:    "string" 
+     descr:   "name" 
+     column:  0                     
+   Length  :            # -l   30.0  [cm]   length of the velocity selector 
+     type:    "float" 
+     descr:   "length of\nvelselect [cm]"  
+     tooltip: "length of velocity selector [cm]"
+     default: 30.0
+     min:     0.00001
+     column:  0                     
+     prefix:  "-l" 
+   Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
+     type:    "float" 
+     descr:   "rotations\nper sec."  
+     tooltip: "number of rotations per second"
+     default: 250.0 
+     column:  1                     
+     prefix:  "-s" 
+   winnum  :                # -w   90     [-]   number of windows 
+     type:    "int" 
+     descr:   "number of\nchannels" 
+     tooltip: "number of velocity selector channels"
+     default: 72    
+     min:     1 
+     column:  2                     
+     prefix:  "-w" 
+   Twist   :             # -c   45.0  [deg]  twist of the velocity selector channels
+     type:    "float" 
+     descr:   "twist [deg]"  
+     tooltip: "twist of velocity selector channels "
+     default: 45.0 
+     column:  0                     
+     prefix:  "-c" 
+   Radius  :             # -r   20.0  [cm]   radius of the velocity selector 
+     type:    "float" 
+     descr:   "radius [cm]"
+     tooltip: "radius of the velocity selector front"
+     min:     0.00001
+     default: 20.0
+     column:  1                     
+     prefix:  "-r" 
+   DistAxle:            # -o   15.0  [cm]   distance origin - axle of the velocity selector
+     type:    "float" 
+     descr:   "vert. distance\naxle-orig. [cm]"
+     tooltip: "distance (along z-axis) between axle of velocity selector and the origin\n(generally the center of the neutron guide end from the last module),
+              preferably <= radius - 0.5*height of guide"   
+     default: 15.0
+     column:  2                     
+     prefix: "-o"  
+   Spacer  :            # -d    0.0  [cm]   blade thickness   
+     type:    "float" 
+     descr:   "spacer\nwidth [cm]"  
+     tooltip: "width of a spacer which separates the channels of the velocity selector"
+     default: 0.0
+     column:  0                     
+     prefix: "-d"  
+

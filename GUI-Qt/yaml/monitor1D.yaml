@@ -1,178 +1,228 @@
 #input fields so far:
-#type:    title, file, string, float, int, combo (for selection list or switch)
+#type:    title, file, string, float, int, combo(for selection list),switch (Set: Yes)
 #descr:   description of the parameter lable
+#tooltip: detailed descriction shown when mouse cursor remains over label 
 #default: Value for title, values for selection list, optional default values
+#index:   indexlist for comboBox, if related values not in default order (0,1,2..)
 #min:     minimum value optional
 #max:     maximum value optional
 #column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 #prefix:  prefix for parameter in pipe
-monitor1D:
-   Name    :                 #                  name of the component
-     type: "string" 
-     column: 0                     
-   MonFile :                 # -O "NoFile" [-]  common part of the output file names, up to 3 files possible with x-parameter A, B and C
-     type: "file" 
-     descr: "monitor file" 
-   IdParA  :                 # -X  -1    [-]    parameter A to be shown on the x axis 
-     type: "combo" 
-     descr: "1st parameter\non x-axis"
-     default: ["POS_Y", "POS_Z", "POS_X", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
+
+monitor1D:                   # source module that will be executed 
+   Name    :                 #              name of the component
+     type:    "string" 
+     default: "name"
+     column:  0                     
+
+   sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
+     type:    "file" 
+     descr:   "monitor file" 
+     default: "monitor1D.dat" 
+     tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
+
+   eParA  :                 # -X            x-axis parameter for the first 1D monitor file 
+     type:    "combo" 
+     descr:   "1st parameter\non x-axis"
+     tooltip: "x-axis parameter for the first 1D monitor file"
+     default: ["NO_PAR","POS_X","POS_Y", "POS_Z", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
                "DIR_PHI", "DIR_THETA", "COL_VERT", "COL_HOR", "COLOR"]
-     column: 0                     
-     prefix: "-X"   
-   IdParB  :                 # -Y  -1    [-]    parameter B to be shown on the x axis 
-     type: "combo" 
-     descr: "2nd parameter\non x-axis" 
-     default: ["NONE", "POS_Y", "POS_Z", "POS_X", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
+     index:   [0,17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 12, 13, 14]
+     column:  0                     
+     prefix:  "-X"   
+
+   eParB  :                 # -Y           x-axis parameter for the second 1D monitor file 
+     type:    "combo" 
+     descr:   "2nd parameter\non x-axis" 
+     tooltip: "x-axis parameter for the second 1D monitor file"
+     default: ["NO_PAR","POS_X", "POS_Y", "POS_Z", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
                "DIR_PHI", "DIR_THETA", "COL_VERT", "COL_HOR", "COLOR"]
-     column: 1                     
-     prefix: "-Y"  
-   IdParC  :                 # -Z  -1    [-]    parameter C to be shown on the x axis 
-     type: "combo" 
-     descr: "3rd parameter\non x-axis" 
-     default: ["NONE", "POS_Y", "POS_Z", "POS_X", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
+     index:   [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 12, 13, 14] 
+     column:  1                     
+     prefix:  "-Y"  
+
+   eParC  :                 # -Z           x-axis parameter for the third 1D monitor file 
+     type:    "combo" 
+     descr:   "3rd parameter\non x-axis" 
+     tooltip: "x-axis parameter for the third 1D monitor file"
+     default: ["NO_PAR","POS_X", "POS_Y", "POS_Z",  "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
                "DIR_PHI", "DIR_THETA", "COL_VERT", "COL_HOR", "COLOR"]
-     column: 2                     
-     prefix: "-Z"  
-   MinParA :                 # -w  -1   [var]   minimum x value 
-     type: "float" 
-     descr: "1st minimal\nx-value"  
-     column: 0                     
-     prefix: "-w"  
-   MinParB :                 # -f  -1   [var]   minimum x value 
-     type: "float" 
-     descr: "2nd minimal\nx-value" 
-     column: 1                     
-     prefix: "-f"  
-   MinParC :                 # -g  -1   [var]   minimum x value 
-     type: "float" 
-     descr: "3rd minimal\nx-value" 
-     column: 2                     
-     prefix: "-g"  
-   MaxParA :                 # -W  -1   [var]   maximum x value 
-     type: "float" 
-     descr: "1st maximal\nx-value"
-     column: 0                     
-     prefix: "-W"  
-   MaxParB :                 # -F  -1   [var]   maximum x value 
-     type: "float" 
-     descr: "2nd maximal\nx-value" 
-     column: 1                     
-     prefix: "-F"   
-   MaxParC :                 # -G  -1   [var]   maximum x value 
-     type: "float" 
-     descr: "3nd maximal\nx-value" 
-     column: 2                     
-     prefix: "-G"  
-   nBinParA:                 # -x   0    [-]    number of x bins 
-     type: "int" 
-     descr: "1st number\nof x-bins" 
-     column: 0                     
-     prefix: "-x"  
-   nBinParB:                 # -y   0    [-]    number of x bins 
-     type: "int" 
-     descr: "2nd number\nof x-bins" 
-     column: 1                     
-     prefix: "-y"   
-   nBinParC:                 # -z   0    [-]    number of x bins 
-     type: "int" 
-     descr: "3rd number\nof x-bins" 
-     column: 2                     
-     prefix: "-z"   
-   bProbWt :                 # -p  YES   [-]    use eigher actual probability of trajectories or 1 for all trajectories
-     type: "combo" 
-     descr: "probability\nweight" 
-     default: ["NO", "YES"]
-     column: 0                     
-     prefix: "-p"  
-   bExclude:                 # -e  NO    [-]    do not forward neutrons to the pipe that do not contribute to the monitor data
-     type: "combo" 
-     descr: "exclusive\ncounts" 
-     default: ["NO", "YES"]
-     column: 1                     
-     prefix: "-e"  
+     index:   [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 12, 13, 14]
+     column:  2                     
+     prefix:  "-Z"  
+
+   nBinParA:                 # -x   100    number of x channels for the first 1D monitor file 
+     type:    "int" 
+     descr:   "number of bins\n1st par." 
+     tooltip: "number of x channels for the first 1D monitor file" 
+     default: 100
+     min:     1
+     column:  0                     
+     prefix:  "-x"  
+   nBinParB:                 # -y          number of x channels for the second 1D monitor file 
+     type:    "int" 
+     descr:   "number of bins\n2st par."
+     tooltip: "number of x channels for the second 1D monitor file"
+     min:     1
+     column:  1                     
+     prefix:  "-y"   
+   nBinParC:                 # -z          number of x channels for the third 1D monitor file 
+     type:    "int" 
+     descr:   "number of bins\n3st par." 
+     tooltip: "number of x channels for the third 1D monitor file" 
+     min:     1
+     column:  2                     
+     prefix:  "-z"   
+
+   MinParA :                 # -w          minimal x value for the first 1D monitor file
+     type:    "float" 
+     descr:   "min. x value\n1st par." 
+     tooltip: "minimal x value for the first 1D monitor file"
+     default: 0.0
+     column:  0                     
+     prefix:  "-w"  
+   MinParB :                 # -f          minimal x value for the first 2D monitor file 
+     type:    "float" 
+     descr:   "min. x value\n2st par."
+     tooltip: "minimal x value for the second 1D monitor file"
+     column:  1                     
+     prefix:  "-f"  
+   MinParC :                 # -g          minimal x value for the first 3D monitor file
+     type:    "float" 
+     descr:   "min. x value\n3st par."
+     tooltip: "minimal x value for the third 1D monitor file"
+     column:  2                     
+     prefix:  "-g"  
+
+   MaxParA :                 # -W  10.0   maximal x value for the first 1D monitor file 
+     type:    "float" 
+     descr:   "max. x value\n1st par."
+     tooltip: "maximal x value for the first 1D monitor file"
+     default: 10.0
+     column:  0                     
+     prefix:  "-W"  
+   MaxParB :                 # -F        maximal x value for the second 1D monitor file
+     type:    "float" 
+     descr:   "max. x value\n2st par." 
+     tooltip: "maximal x value for the second 1D monitor file"
+     column:  1                     
+     prefix:  "-F"   
+   MaxParC :                 # -G        maximal x value for the second 1D monitor file
+     type:    "float" 
+     descr:   "max. x value\n3st par." 
+     tooltip: "maximal x value for the third 1D monitor file"
+     column:  2                     
+     prefix:  "-G"  
+
+
+   bProbWt :                 # -p  YES   Display  : YES: Beam intensity   NO: number of trajectories
+     type:    "switch" 
+     descr:   "probability\nweight" 
+     tooltip: "YES: Beam intensity  NO: number of trajectories"
+     default: "YES"
+     column:  0                     
+     prefix:  "-p"  
+   bExclude:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+     type:    "switch" 
+     descr:   "exclusive\ncounts" 
+     tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+     column:  1                     
+     prefix:  "-e"  
  
-   # optional input parameters (filters and polarisation analysis)
    title_FilSelect: 
-     type: "title" 
+     type:    "title" 
      default: "Filter selection"
-   LmbdMin :                 # -l  -1.0 [Ang]   minimum wavelength, filter for the monitor
-     type: "float" 
-     descr: "filter lambda\nmin [A]"  
-     column: 0                     
-     prefix: "-l"   
-   LmbdMax :                 # -L  -1.0 [Ang]   maximum wavelength, filter for the monitor
-     type: "float" 
-     descr: "filter lambda\nmax [A]" 
-     column: 1                     
-     prefix: "-L"  
-   IdFilt1 :                 # -I  -1    [-]    filter parameter 1
-     type: "combo" 
-     descr: "filter\nparameter 1"  
-     default: ["NONE", "POS_Y", "POS_Z", "POS_X", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
+   LmbdMin :                 # -l       minimum wavelength to be taken into account [Ang]
+     type:    "float" 
+     descr:   "lambda\nmin [Ang]"  
+     tooltip: "minimum wavelength to be taken into account [Ang]"
+     column:  1                     
+     prefix:  "-l"   
+   LmbdMax :                 # -L       maximum wavelength to be taken into account [Ang]
+     type:    "float" 
+     descr:   "lambda\nmax [A]" 
+     tooltip: "maximum wavelength to be taken into account [Ang]" 
+     column:   2                     
+     prefix:  "-L"  
+
+   eFilt1 :                 # -I NO_PAR filter parameter 1
+     type:    "combo" 
+     descr:   "filter\nparameter 1"  
+     tooltip: "filter parameter 1"
+     default: ["NO_PAR", "POS_X", "POS_Y", "POS_Z",  "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
                "DIR_PHI", "DIR_THETA", "COL_VERT", "COL_HOR", "COLOR"]
-     column: 0                     
-     prefix: "-I"  
-   IdFilt2 :                 # -J  -1    [-]    filter parameter 2
-     type: "combo" 
-     descr:  "filter\nparameter 2"
-     default: ["NONE", "POS_Y", "POS_Z", "POS_X", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
+     index:   [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 12, 13, 14]
+     column:  0                     
+     prefix:  "-I"  
+   MinFilt1:                # -u        minimum value of filter parameter 1 to be taken into account
+     type:    "float" 
+     descr:   "filter 1\nmin value" 
+     tooltip: "minimum value of filter parameter 1 to be taken into account"
+     column:  1                     
+     prefix:  "-u"  
+   MaxFilt1:                 # -U       maximum value of filter parameter 1 to be taken into account 
+     type:    "float" 
+     descr:   "filter 1\nmax value" 
+     column:  2                     
+     prefix:  "-U"  
+
+   FiltComb:                 # -C  AND  filter 1 and 2 combined with AND or OR
+     type:    "combo" 
+     descr:   "filter\ncombination" 
+     tooltip: "filter 1 and 2 combined with AND or OR"
+     default: ["AND", "OR"]
+     index:   [1,0]
+     column:  0                     
+     prefix:  "-C"  
+
+   eFilt2 :                 # -J  NO_PAR filter parameter 2
+     type:    "combo" 
+     descr:   "filter\nparameter 2"
+     tooltip: "filter parameter 2"
+     default: ["NO_PAR", "POS_X", "POS_Y", "POS_Z", "DIV_Y", "DIV_Z", "LAMBDA", "ENERGY", "TIME", "K_Y", "K_Z", "POS_R", "POS_PHI",
                "DIR_PHI", "DIR_THETA", "COL_VERT", "COL_HOR", "COLOR"]
-     column: 1                    
-     prefix: "-J"  
-   FiltComb:                 # -C  -1    [-]    filter 1 and 2 combined with AND or OR
-     type: "combo" 
-     descr: "filter\ncombination" 
-     default: ["OR", "AND"]
-     column: 2                     
-     prefix: "-C"  
-   MinFilt1:                 # -u  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-     type: "float" 
-     descr: "filter 1\nmin value" 
-     column: 0                     
-     prefix: "-u"  
-   MaxFilt1:                 # -U  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-     type: "float" 
-     descr: "filter 1\nmax value" 
-     column: 1                     
-     prefix: "-U"  
-   MinFilt2:                 # -v  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-     type: "float" 
-     descr: "filter 2\nmin value"  
-     column: 0                     
-     prefix: "-v"  
-   Maxfilt2:                 # -V  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-     type: "float" 
-     descr:  "filter 2\nmax value"
-     column: 1                     
-     prefix: "-V"  
+     index:   [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 12, 13, 14]
+     column:  0                    
+     prefix:  "-J"  
+   MinFilt2:                 # -v        minimum value of parameter 2 to be taken into account
+     type:    "float" 
+     descr:   "filter 2\nmin value"  
+     tooltip: "minimum value of parameter 2 to be taken into account" 
+     column:  1                     
+     prefix:  "-v"  
+   Maxfilt2:                 # -V        maximum value of parameter 2 to be taken into account
+     type:    "float" 
+     tooltip: "maximum value of parameter 2 to be taken into account"
+     descr:   "filter 2\nmax value"
+     column:  2                     
+     prefix:  "-V"  
 
    title_Pol: 
-     type: "title" 
+     type:    "title" 
      default: "Polarisation analysis"
-   bPolAna :                 # -P  NO    [-]    switched on if polarisation analysis desired
-     type: "combo" 
-     descr: "Polarisation\nanalysis" 
-     default: ["NO","YES"]
-     column: 0                     
-     prefix: "-P"  
+   bPolAna :                 # -P  NO    YES: polarisation monitored   NO: intensity monitored
+     type:    "switch" 
+     descr:   "Polarisation\nanalysis" 
+     tooltip: "YES: polarisation monitored   NO: intensity monitored"
+     column:  0                     
+     prefix:  "-P"  
 
-   title_AnaDir: 
-     type: "title" 
-     default: "Analysis direction"
-   PolDirX :                 # -r   0.0  [-]    x-component of the polarisation analysis vector
-     type: "float" 
-     descr: "direction\nX" 
-     column: 0                     
-     prefix: "-r"  
-   PolDirY :                 # -s   0.0  [-]    y-component polarisation analysis vector
-     type: "float" 
-     descr: "direction\nY" 
-     column: 1                     
-     prefix: "-s"  
-   PolDirZ :                 # -t   0.0  [-]    z-component polarisation analysis vector
-     type: "float" 
-     descr: "direction\nZ" 
-     column: 2                     
-     prefix: "-t"   
+   PolDirX :                 # -r        x-component of the vector defining the quantization direction
+     type:    "float" 
+     descr:   "direction\nX" 
+     tooltip: "x-component of the vector defining the quantization direction"
+     column:  0                     
+     prefix:  "-r"  
+   PolDirY :                 # -s        y-component of the vector defining the quantization direction 
+     type:    "float" 
+     descr:   "direction\nY" 
+     tooltip: "y-component of the vector defining the quantization direction"
+     column:  1                     
+     prefix:  "-s"  
+   PolDirZ :                 # -t        z-component of the vector defining the quantization direction  
+     type:    "float" 
+     descr:   "direction\nZ" 
+     tooltip: "z-component of the vector defining the quantization direction"
+     column:  2                     
+     prefix:  "-t"  
 

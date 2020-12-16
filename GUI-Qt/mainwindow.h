@@ -9,9 +9,12 @@
 #include <QProcess>
 #include <QLabel>
 #include <QToolButton>
+#include <QButtonGroup>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QFormLayout>
+#include <QStyleFactory>
 #include <QScrollArea>
 #include "yaml-cpp/yaml.h"
 
@@ -26,6 +29,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev);
 
 private slots:
 
@@ -64,12 +70,17 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    QString VitessDir = "/home/jcns/Downloads/vitess3.4";
+
     ModulTable* modultab;
     QFormLayout *formLayout;
     QGridLayout *gridLayout;
-    QLabel *label;
+    QLabel *label,*headerLabel;
     QLineEdit *lEdit;
     QComboBox *cBox;
+    QCheckBox *checkBox;
+    QButtonGroup *groupBox;
     QPushButton *browseBut, *editBut;
     QValidator *validator;
     QScrollArea *scrollArea;
@@ -87,16 +98,18 @@ private:
     };
     QMap<QString, QStringList> mapModul;
     QMap <QString,QMap<QString,QStringList>> mapVitess;
-    QMap<QString,QString> Module;
+//    QMap<QString,QString> Module;
+    QMap<QString,QStringList> Module;
     QMap<QString,QScrollArea *> modulGui;
 
     QMap<QString,int> modindex;
 
     QList<QLineEdit  *> allLineEdits;
     QList<QComboBox *>  allComboBoxes;
+    QList<QCheckBox *>  allCheckBoxes;
     QList < QProcess *> procList;
     QStringList fList,strList,cmdList;
-    QStringList typeList = {"file","string", "float", "int", "combo"};
+    QStringList typeList = {"file","string", "float", "int", "combo","switch"};
     QString instrumentName;
     QString syspar;
     QString str;

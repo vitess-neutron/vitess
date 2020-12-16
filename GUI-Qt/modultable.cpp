@@ -8,6 +8,8 @@
 #include <QTextStream>
 #include <iostream>
 #include <QDebug>
+#include <QScrollBar>
+#include <QStyleFactory>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
@@ -19,15 +21,9 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     modNames = s1;
     arrow = new QIcon(":/resources/images/arrow-right.xpm");
     ui->setupUi(this);
-    ui->tableWidget->setColumnWidth(0,170);
-    ui->tableWidget->setRowCount(0);
-    ui->tableWidget->setColumnCount(2);
-    ui->tableWidget->setColumnWidth(1,20);
 
-    //Menu in module table
-    header = ui->tableWidget->verticalHeader();
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, SIGNAL(customContextMenuRequested(const QPoint&)),this, SLOT(showContextMenu(const QPoint&)));
+   //for setting color of tableHeaderItems
+    ui->tableWidget->verticalHeader()->setStyle(QStyleFactory::create("fusion"));
 
     //Get maximum width of list entries
     minWidth = 0;
@@ -38,7 +34,19 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
         if ( minWidth < w )
             minWidth = w;
     }
-    minWidth += 10;  // some more space
+    minWidth+=15;
+    ui->tableWidget->verticalHeader()->setMinimumWidth(25);
+    ui->tableWidget->setColumnWidth(0,minWidth);
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setColumnWidth(1,20);
+    ui->tableWidget->adjustSize();
+    oldRow = 0;
+
+    //Menu in module table
+    header = ui->tableWidget->verticalHeader();
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, SIGNAL(customContextMenuRequested(const QPoint&)),this, SLOT(showContextMenu(const QPoint&)));
 
     addNewRow();
 }
@@ -59,17 +67,36 @@ void ModulTable::showContextMenu(const QPoint& pos)
     moduleMenu.addAction("Edit here",this,SLOT(infoModule()));
     moduleMenu.addAction("Separat Window",this,SLOT(infoModule()));
     moduleMenu.addSeparator();
-    moduleMenu.addAction("Disable Module",this,SLOT(infoModule()));
-    moduleMenu.addAction("Enable",this,SLOT(infoModule()));
-    moduleMenu.addAction("Enable all",this,SLOT(infoModule()));
+    moduleMenu.addAction("Disable Module",this,SLOT(disableModule()));
+    moduleMenu.addAction("Enable",this,SLOT(enableModule()));
+    moduleMenu.addAction("Enable all",this,SLOT(enableAllModules()));
     moduleMenu.addSeparator();
     moduleMenu.addAction("Info",this,SLOT(infoModule()));
     moduleMenu.exec(globalPos);
 }
 
-void ModulTable::removeRow(int index)
+void ModulTable::disableModule()
 {
-    ui->tableWidget->removeRow(index);
+    int index=ui->tableWidget->currentRow();
+    disableFlag[index] = true;
+    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
+}
+
+void ModulTable::enableModule()
+{
+    int index=ui->tableWidget->currentRow();
+    disableFlag[index] = false;
+    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::black);
+}
+
+void ModulTable::enableAllModules()
+{
+    for (int index=0; index < ui->tableWidget->rowCount()-2; index++)
+    {
+        disableFlag[index] = true;
+        ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::black);
+    }
+    ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::red);
 }
 
 void ModulTable::insertModule()
@@ -77,6 +104,8 @@ void ModulTable::insertModule()
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->insertRow(index);
     QComboBox *cb = new QComboBox();
+    cb->setFocusPolicy(Qt::StrongFocus);  //no wheel change
+    cb->installEventFilter(this);
     cb->addItem("--inactive--");
     cb->addItems(modNames);
     cb->setCurrentIndex(0);
@@ -90,6 +119,11 @@ void ModulTable::insertModule()
     arrowButton.insert(index,tb);
     ui->tableWidget->setCellWidget(index,0,cb);
     ui->tableWidget->setCellWidget(index,1,tb);
+    for (int ind=index;ind < ui->tableWidget->rowCount();ind++)
+    {
+        QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
+        ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
+    }
     emit insertCombo(index);
 }
 
@@ -125,6 +159,15 @@ void ModulTable::removeModule()
 {
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->removeRow(index);
+    for (int ind=index; ind < ui->tableWidget->rowCount();ind++)
+    {
+        QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
+        ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
+    }
+    ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
+    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::red);
+    ui->tableWidget->setCurrentCell(index,0);
+    oldRow = index;
     comboModule.remove(index);
     arrowButton.remove(index);
     emit removeCombo(index);
@@ -135,7 +178,7 @@ void ModulTable::cleanModules()
 {
     comboModule.clear();
     arrowButton.clear();
-
+    oldRow = 0;
     ui->tableWidget->setRowCount(0);
     addNewRow();
 }
@@ -143,6 +186,9 @@ void ModulTable::addNewRow()
 {
     // new Combobox
     QComboBox *cb = new QComboBox();
+    cb->setFocusPolicy(Qt::StrongFocus);
+    cb->installEventFilter(this);
+    //cb->setFixedWidth(minWidth);
     cb->addItem("--inactive--");
     cb->addItems(modNames);
     cb->setCurrentIndex(0);
@@ -161,22 +207,31 @@ void ModulTable::addNewRow()
     ui->tableWidget->setRowCount( row+1 );
     ui->tableWidget->setCellWidget(row,0,cb);
     ui->tableWidget->setCellWidget(row,1,tb);
+    QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(row+1));
+    ui->tableWidget->setVerticalHeaderItem(row,vertItem);
+    // oldRow = row;
+
+    disableFlag << false;
 }
 
 void ModulTable::comboModulItemChanged(QString text)
 {
     QComboBox *cb = static_cast<QComboBox*>(sender());
+    cb->setFocusPolicy(Qt::StrongFocus);  //no wheel change
+    cb->installEventFilter(this);
     if ( text.endsWith(":") )
     {   // if top of menu selected get first sunmenu entry
         cb->setCurrentIndex( cb->currentIndex()+1 );
         return;
     }
-
     int curRow = 0;
     for ( ; curRow<comboModule.size(); curRow++ )
     {
         if ( comboModule.at(curRow) == cb )
            {
+            ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
+            ui->tableWidget->verticalHeaderItem(curRow)->setTextColor(Qt::red);
+            oldRow = curRow;
             break;
            }
     }
@@ -201,9 +256,22 @@ void ModulTable::arrowButtonPressed(bool)
     for ( ; curRow<arrowButton.size(); curRow++ )
 
         if ( ui->tableWidget->cellWidget(curRow,1) == tb )
-        {   // give mainwindow name of selected module class
-//            emit arrowPressed(static_cast<QComboBox*>(ui->tableWidget->cellWidget(curRow,0))->currentText(),curRow);
+        {
+            ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
+            ui->tableWidget->verticalHeaderItem(curRow)->setTextColor(Qt::red);
+            ui->tableWidget->setCurrentCell(curRow,0);
+            oldRow = curRow;
             emit arrowPressed(curRow);
             break;
         }
+}
+bool ModulTable::eventFilter(QObject *obj, QEvent *ev)
+{
+    if(ev->type()== QEvent::Wheel)
+    {
+        QComboBox* combo = qobject_cast<QComboBox*>(obj);
+        if (combo && !combo->hasFocus())
+        return true;
+    }
+    return false;
 }

@@ -20,10 +20,15 @@ public:
     ~ModulTable();
 
     QStringList module[1000];
+    QVector<bool> disableFlag;
     int linenum;
     void loadModule(QString text);
     void cleanModules();
     void addNewRow();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev);
+
 signals:
     void arrowPressed(int row);
     void changedComboVal(QString text, int curRow);
@@ -34,7 +39,9 @@ private slots:
     void comboModulItemChanged(QString);
     void arrowButtonPressed(bool);
     void showContextMenu(const QPoint&);
-    void removeRow(int);
+    void disableModule();
+    void enableModule();
+    void enableAllModules();
     void removeModule();
     void insertModule();
     void infoModule();
@@ -45,6 +52,7 @@ private:
     QVector<QToolButton *> arrowButton;
     QIcon *arrow;
     int minWidth;
+    int oldRow;
     QMenu *context;
     QHeaderView *header;
 };

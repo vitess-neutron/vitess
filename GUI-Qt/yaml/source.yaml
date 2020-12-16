@@ -13,7 +13,8 @@ source:
    eType   :                       # -S         [-]   enum: source type:  CWS  SPSS  LPSS 
      descr: "source type"
      type: "combo" 
-     default: ["None","CWS","SPSS","LPSS"] 
+     default: ["CWS","SPSS","LPSS"] 
+     index: [1,2,3]
      column: 1                     
      prefix: "-S"     
    ModFile:                        #moderator description file         kommt wieder raus  
@@ -46,8 +47,9 @@ source:
      type: "title" 
      default: "Restriction"
    nTraj   :                       # -n   1.0e6 [-]   number of neutron trajectories (events)  
-     type: "int" 
+     type: "float" 
      descr : "number of\ntrajectories"
+     default: 1000000 
      column: 0                     
      prefix: "-n"     
    Lmin    :                       # -m        [Ang]  minimum of the wavelength range 
@@ -84,6 +86,7 @@ source:
      descr: "direction\ndefined"
      type: "combo" 
      default: ["WINDOW","DIVERGENCE"] 
+     index: [1,2]
      column: 0                     
      prefix: "-d"     
    titel_2 :                       
