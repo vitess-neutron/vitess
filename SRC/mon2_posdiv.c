@@ -9,6 +9,7 @@
 /* 1.2a JAN 2010  A. Houben      Added wavelength and yz position filter                    */
 /* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.3a Nov 2020  K. Lieutenant  new 'mon2_header'                                          */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -16,9 +17,10 @@
 #include <string.h>
 #include <math.h>
 #include "init.h"
-#include "softabort.h"
-#include "general.h"
 
+#include "softabort.h"
+#include "defines.h"
+#include "general.h"
 #include "mon2_header.h"
 
 
@@ -27,33 +29,39 @@
 /*********************************/
 McCompID _eModule=MCN_MON2_POSDIV;
 
-FILE*  fMonitor   = NULL;
-char*  MonFileName= NULL;
-short  bProbactiv = TRUE,
-       bExclusive = FALSE; 
-int    index_yz= 1;
-long   nbin_pos= 0, 
-       nbin_div= 0,
-       format  = 0;
-double pos_min = 0.0,
-       pos_max = 0.0,
-       div_min = 0.0,
-       div_max = 0.0;
-double filtLambdaMin=-1.0,          /* filter      */
-       filtLambdaMax=-1.0,
-       filtYMin     =-1.0e10,
-       filtYMax     = 1.0e10,
-       filtZMin     =-1.0e10,
-       filtZMax     = 1.0e10;
-static 
-double bdiv_[BINSIZE],
-       bpos_[BINSIZE];
+// Input parameters
+char*  MonFileName  = NULL;      // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
+short  bProbactiv   = TRUE,      // -p    [-]   flag Display:   YES: Probability weight   NO: number of trajectories
+       bExclusive   = FALSE;     // -e    [-]   flag Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+int    index_yz     = Y_AXIS;    // -q    [-]   enum direction:  Y_AXIS  Z_AXIS   
+long   nbin_pos     = 1,         // -y    [-]   number of position bins
+       nbin_div     = 1,         // -z    [-]   number of divergence bins
+       format       = MATRIX;    // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+double pos_min      = 0.0,       // -w   [cm]   min. position to be monitored
+       pos_max      = 0.0,       // -W   [cm]   max. position to be monitored
+       div_min      = 0.0,       // -h   [deg]  min. divergence to be monitored
+       div_max      = 0.0;       // -H   [deg]  max. divergence to be monitored
+double filtLambdaMin=-1.0,       // -l   [Ang]  filter: lower bound value of the wavelength range
+       filtLambdaMax=-1.0,       // -L   [Ang]  filter: upper bound value of the wavelength range
+       filtYMin     =-1.0e10,    // -u   [cm]   filter: left edge position of the monitored area
+       filtYMax     = 1.0e10,    // -U   [cm]   filter: right edge position of the monitored area
+       filtZMin     =-1.0e10,    // -v   [cm]   filter: bottom position of the monitored area
+       filtZMax     = 1.0e10;    // -V   [cm]   filter: top position of the monitored area
+
+// Variables determined from input parameters
+FILE*  fMonitor     = NULL;
+
+double BinPosY   [BINSIZE];           // edges of the bins of the first parameter 
+double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter 
+double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
+double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
+long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void OwnInit(int argc, char *argv[]);
+void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
 
 
 /******************************/
@@ -63,36 +71,33 @@ void OwnInit(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
   short  bRegistered=FALSE;
-  int		 dpos=0, ddiv=0;
+  int		 iPos=0, jDiv=0;
   long	 i=0;
   double pos_=0.0, 
          div_=0.0, 
-         bintc=0.0,
-         prob =0.0;
+         bintc=0.0,  // Total intensitiy within monitor limits
+         prob =0.0;  // Intensitiy of a trajectory
   
   // reading of input data and initilisation
   // ---------------------------------------
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
 
-   //New pointers allowing for global write out
-  by = bpos_;
-  bz = bdiv_;
-
-  for(dpos = 0; dpos<nbin_pos+1; dpos++)
+  // initializes arrays
+  for(iPos = 0; iPos<nbin_pos+1; iPos++)
   {
-    bpos_[dpos] = pos_min + (pos_max-pos_min) * dpos / (double)nbin_pos;
+    BinPosY[iPos] = pos_min + (pos_max-pos_min) * iPos / (double)nbin_pos;
 
-    for(ddiv = 0;ddiv<(nbin_div+1); ddiv++)
+    for(jDiv = 0;jDiv<(nbin_div+1); jDiv++)
 	  {
-	    bdiv_[ddiv]       = div_min + (div_max-div_min)  * ddiv / (double) nbin_div;
-	    binyz[dpos][ddiv] = 0.0;
-	    binyzerror[dpos][ddiv] =0.;
-	    binyzcounts[dpos][ddiv]=0;
+	    BinPosZ         [jDiv] = div_min + (div_max-div_min)  * jDiv / (double) nbin_div;
+	    IntYZ     [iPos][jDiv] = 0.0;
+	    IntYZError[iPos][jDiv] = 0.0;
+	    nTrajYZ   [iPos][jDiv] = 0;
 	  }
   }
 
@@ -124,7 +129,7 @@ int main(int argc, char *argv[])
 
 	    pos_ = InputNeutrons[i].Position[index_yz];
 
-	    if (index_yz == 1) 
+	    if (index_yz == Y_AXIS) 
       {
 	      if (InputNeutrons[i].Vector[0] >=0) 
           div_ = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
@@ -132,20 +137,25 @@ int main(int argc, char *argv[])
           div_ = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
 	      div_ *= 180.0/M_PI;
 	    }
-	    else 
+	    else if (index_yz == Z_AXIS) 
       {
 	      div_  = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
 	      div_ *= 180.0/M_PI;
 	    }
-	    dpos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
-	    ddiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
+      else
+      {
+        Error("Analysis direction does not have a proper value");
+      }
+
+      iPos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
+	    jDiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
-	    if (((dpos>=0)&&(dpos<nbin_pos))&&((ddiv>=0)&&(ddiv<nbin_div)))
+	    if (((iPos>=0)&&(iPos<nbin_pos))&&((jDiv>=0)&&(jDiv<nbin_div)))
       {	
-	      binyz[dpos][ddiv] = binyz[dpos][ddiv] +  prob ;
-	      bintc = bintc + prob;
+	      nTrajYZ[iPos][jDiv]++;
+	      IntYZ [iPos][jDiv] += prob ;
+	      bintc              += prob;
 	      bRegistered=1;
-	      binyzcounts[dpos][ddiv]++;
 	    }
 	  
 	    if((bExclusive==1) && (bRegistered==1))
@@ -157,10 +167,16 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  if (index_yz==1)
-    WriteOutput (fMonitor, format, bProbactiv, nbin_pos, nbin_div, " Y [cm]", "divergence Y [deg]");
+ if (index_yz==Y_AXIS)
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nbin_pos, " Y [cm]", nbin_div, "divergence Y [deg]");
+  else if (index_yz == Z_AXIS) 
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nbin_pos, " Z [cm]", nbin_div, "divergence Z [deg]");
   else
-    WriteOutput (fMonitor, format, bProbactiv, nbin_pos, nbin_div, " Z [cm]", "divergence Z [deg]");
+    Error("Analysis direction does not have a proper value");
+  // WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY,        nbin_div, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
+  WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY, BINSIZE,  nbin_div, BinPosZ,  
+                         (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+  fclose(fMonitor);
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -192,25 +208,25 @@ void  OwnInit(int argc, char *argv[])
         case 'y':
 	        nbin_pos = atol(&argv[i][2]); /* number of bins horizontal axis*/
 	        if(nbin_pos>BINSIZE)
-	          {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
+	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
         case 'z':
 	        nbin_div = atol(&argv[i][2]); /* number of bins vertical axis*/
 	        if(nbin_div>BINSIZE)
-	          {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
+	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
 
-        case 'h':
-	        div_min =  atof(&argv[i][2]);   /* bottom position window */
-	        break;
         case 'w':
-	        pos_min = atof(&argv[i][2]);		/* left edge position window */
-	        break;
-        case 'H':
-	        div_max =  atof(&argv[i][2]);   /* top position window  */
+	        pos_min = atof(&argv[i][2]);		/* min. position to be monitored */
 	        break;
         case 'W':
-	        pos_max = atof(&argv[i][2]);		/* right edge position window  */
+	        pos_max = atof(&argv[i][2]);		/* max. position to be monitored  */
+	        break;
+        case 'h':
+	        div_min =  atof(&argv[i][2]);   /* min. divergence to be monitored */
+	        break;
+        case 'H':
+	        div_max =  atof(&argv[i][2]);   /* max. divergence to be monitored  */
 	        break;
 
         case 'p':
@@ -246,9 +262,8 @@ void  OwnInit(int argc, char *argv[])
           break;
 
         default:
-	        fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
+	        fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
 	        exit(-1);
-	        break;
       }
     }
   }
@@ -256,7 +271,7 @@ void  OwnInit(int argc, char *argv[])
   // opens monitor file
   if (MonFileName==NULL)
   {
-    fprintf(LogFilePtr,"\n you must define a MonitorOutputFile");
+    fprintf(LogFilePtr,"ERROR: you must define a MonitorOutputFile\n");
     exit(99);
   }
   else

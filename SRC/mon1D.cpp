@@ -1,33 +1,35 @@
 #ifndef MON1D_CPP
 #define MON1D_CPP
 
-
 #include "mon1D.h"
 
 
+/******************************/
+/** Constructor              **/
+/******************************/
 Mon1D::Mon1D()
 {
   eModule = MCN_MONITOR1;
 
   for (int i = 0; i < 3; i++) 
   {
-    dataArray[i] = 0;
-    dataArrayPolWeights[i] = 0;
-    dataArrayError[i] = 0;
-    dataArrayCounts[i] = 0;
+    dataArray[i] = NULL;
+    dataArrayError[i]  = NULL;
+    dataArrayCounts[i] = NULL;
+    dataArrayPolWeights[i] = NULL;
     
     xMin[i] = -1;
     xMax[i] = -1;
     
     nBinsX[i] = 0;
     
-    xBinSize[i] = 0;
+    xBinSize[i] = 0.0;
   
-    xParam[i] = -1;
+    eParX[i] = -1;
 
     monSwitchedOn[i] = 0;
 
-    fMonitor[i] = 0;
+    fMonitor[i] = NULL;
   }
 
   fMonitorFilename = "NoFile";
@@ -37,8 +39,8 @@ Mon1D::Mon1D()
 
   analysePol = 0;
 
-  polAnalysisVector = 0;
-  polAnalysisRotMatrix = 0;  
+  polAnalysisVector    = NULL;
+  polAnalysisRotMatrix = NULL;  
 
   filterVarMin1 = -1;
   filterVarMin2 = -1;
@@ -51,30 +53,32 @@ Mon1D::Mon1D()
 
   // normalise = -1; 
 
-  pWeight = 1;
+  bWeight = 1;
   exclCounts = 0;
 
-  weightTag[0] = "";
-  weightTag[1] = "weight";
-
-  sParameterNames[0] = "pos_y";
-  sParameterNames[1] = "pos_z";
-  sParameterNames[2] = "div_y";
-  sParameterNames[3] = "div_z";
-  sParameterNames[4] = "lambda";
-  sParameterNames[5] = "energy"; 
-  sParameterNames[6] = "time"; 
-  sParameterNames[7] = "k_y";
-  sParameterNames[8] = "k_z"; 
-  sParameterNames[9] = "r"; 
-  sParameterNames[10] = "phi";
+  sParameterNames [0] = "pos_y";
+  sParameterNames [1] = "pos_z";
+  sParameterNames [2] = "div_y";
+  sParameterNames [3] = "div_z";
+  sParameterNames [4] = "lambda";
+  sParameterNames [5] = "energy"; 
+  sParameterNames [6] = "time"; 
+  sParameterNames [7] = "k_y";
+  sParameterNames [8] = "k_z"; 
+  sParameterNames [9] = "pos_r"; 
+  sParameterNames[10] = "pos_phi";
   sParameterNames[11] = "col_vert"; 
   sParameterNames[12] = "col_hor"; 
-  sParameterNames[13] ="color"; 
+  sParameterNames[13] = "color"; 
+  sParameterNames[14] = "dir_phi";
+  sParameterNames[15] = "dir_theta";
+  sParameterNames[16] = "pos_x";
+}       
 
-}
 
-
+/**************************************************/
+/** Reads input parameters and sets parameters   **/
+/**************************************************/
 void Mon1D::OwnInit(int argc, char* argv[])
 {
   // Read the command line arguments
@@ -89,7 +93,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'X':
-	        xParam[0] = atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
+	        eParX[0] = atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
 	        break;
 	  
         case 'x':
@@ -104,7 +108,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'Y':
-	        xParam[1] = atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
+	        eParX[1] = atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'y':
@@ -119,7 +123,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;   
 
         case 'Z':
-	        xParam[2] = atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
+	        eParX[2] = atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'z':
@@ -147,7 +151,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
           break;
 
         case 'p':
-	        pWeight  = atof(&argv[i][2]);
+	        bWeight  = atof(&argv[i][2]);
 	        /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
 	        break;
 
@@ -205,8 +209,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 
   if (fMonitorFilename=="")
   {
-    fprintf(LogFilePtr,"\n you must define a MonitorOutputFile");
-    exit(99);
+    Error("you must define a MonitorOutputFile");
   }
 
 
@@ -215,20 +218,20 @@ void Mon1D::OwnInit(int argc, char* argv[])
 
   for (int ii = 0; ii < 3; ii++) 
   {
-    if (xParam[ii] > 0) numberFiles++;
+    if (eParX[ii] > 0) numberFiles++;
   }
 
   if (numberFiles > 1) multipleFiles = true;
 
-  if (pWeight != 1) pWeight = 0;
+  if (bWeight != 1) bWeight = 0;
 
   for (int ii = 0; ii < 3; ii++) 
   {
 
-    if (xParam[ii] < 1) continue;
+    if (eParX[ii] < 1) continue;
 
     string fullFileName = fMonitorFilename;
-    if (multipleFiles) fullFileName = fullFileName + "_" + sParameterNames[xParam[ii]-1] + ".mon";
+    if (multipleFiles) fullFileName = fullFileName + "_" + sParameterNames[eParX[ii]-1] + ".mon";
     
     fMonitor[ii] = OpenOutputFile(fullFileName.c_str(), FALSE, "w");
     if (fMonitor[ii] ==NULL)
@@ -271,6 +274,9 @@ void Mon1D::OwnInit(int argc, char* argv[])
 }
 
 
+/**************************************************/
+/** Fill all monitors chosen                     **/
+/**************************************************/
 int Mon1D::FillMonitorArray(Neutron* n)
 {
   int passed = 1;
@@ -284,12 +290,14 @@ int Mon1D::FillMonitorArray(Neutron* n)
 }
 
 
-// Fill the monitor with the data of the neutron under study
+/***********************************************************/
+/** Fill the monitor with the data of the current neutron **/
+/***********************************************************/
 int Mon1D::FillMonitor(Neutron* n, int counter)
 {
   
   // Find or calculate the parameter set for the x-axis, dismiss if outside the range
-  double xValue = DetermineParameter(xParam[counter], n);  
+  double xValue = DetermineParameter(eParX[counter], n);  
   int binX = (int)((xValue - xMin[counter])/xBinSize[counter]);
   if (binX < 0 || binX >= nBinsX[counter]) return 0;
   
@@ -325,7 +333,7 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
   // Fill the monitor data if no polarisation analysis required
   if (!analysePol) 
   {
-    if (pWeight) dataArray[counter][binX] += n->Probability;
+    if (bWeight) dataArray[counter][binX] += n->Probability;
     else dataArray[counter][binX] += 1.0;
   }
   // If polarisation analysis required, include additional weight 
@@ -335,7 +343,7 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
     MathVector spinVector (n->Spin[0], n->Spin[1], n->Spin[2]);
     MathVector spinVectorProj = (*polAnalysisRotMatrix)*spinVector;
 
-    if (pWeight) 
+    if (bWeight) 
     {
       dataArray[counter][binX] += n->Probability*spinVectorProj.x[0];
       dataArrayPolWeights[counter][binX] += n->Probability;
@@ -353,7 +361,9 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
 }
 
 
-
+/*******************************************************/
+/** Determine, which parameter has to be calculated   **/
+/*******************************************************/
 double Mon1D::DetermineParameter(int id, Neutron* n)
 {
 
@@ -378,7 +388,7 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
       paramValue = n->Position[2]; // z-pos
       break;
     
-      case 3:   
+    case 3:   
       if (neutronVector.x[0] >= 0) 
         paramValue = atan2(neutronVector.x[1], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI; //y divergence
       else 
@@ -458,7 +468,10 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
   return paramValue;
 }
 
-// Write output file
+
+/******************************/
+/** Write output file        **/
+/******************************/
 void Mon1D::WriteOut()
 {
   for (int ii = 0; ii < 3; ii++) 
@@ -476,12 +489,15 @@ void Mon1D::WriteOut()
       
     }
  
-    fprintf(fMonitor[ii],"#Monitor %s\n", weightTag[pWeight].c_str());
-    fprintf(fMonitor[ii], "#x\ty\tDelta_y\tCounts\n");      
+    if (analysePol) 
+      WriteHeader1D(fMonitor[ii], "polarisation", bWeight, nBinsX[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+    else
+      WriteHeader1D(fMonitor[ii], "intensity",    bWeight, nBinsX[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+
     for(int binx = 0; binx < nBinsX[ii]; binx++) 
     {
-      fprintf(fMonitor[ii],"%5.3f\t%5.3E\t%5.3E\t%d\n", ((xMin[ii] + xBinSize[ii]*binx) + (xMin[ii] + xBinSize[ii]*(binx+1.)))/2.0, 
-	                                                       dataArray[ii][binx], dataArrayError[ii][binx], dataArrayCounts[ii][binx]);       
+      fprintf(fMonitor[ii],"%10.3f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*binx) + (xMin[ii] + xBinSize[ii]*(binx+1.)))/2.0, 
+	                                                           dataArray[ii][binx], dataArrayError[ii][binx], dataArrayCounts[ii][binx]);       
     }
     if (fMonitor[ii]!=NULL)
       fclose(fMonitor[ii]);
@@ -489,6 +505,9 @@ void Mon1D::WriteOut()
 }
 
 
+/******************************/
+/** Free allocated memory    **/
+/******************************/
 void Mon1D::FreeMemory()
 {
   for (int ii = 0; ii < 3; ii++) 

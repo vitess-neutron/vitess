@@ -465,7 +465,8 @@ void ReadChopperData()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
-  long   nModuleNo;   /* number of the previous module (not needed) */
+  long   nModuleNo,   /* number of the previous module (not needed) */
+         nBndl;       /* number of bundles started     (not needed) */
   short  dir=0,
          k;           /* index of the chopper window  */
   double time,        /* time of flight*/
@@ -474,6 +475,7 @@ void SetGeometry(char* sColor)
   double TimeMeas,    /* measuring time     (from simulation.inf, not needed here) */
          LmbdWanted,  /* desired wavelength (from simulation.inf)                  */
          Freq,        /* source frequency   (from simulation.inf, not needed here) */
+         nTraj,       /* number of trajectories started per bundle (not needed here) */
          Length,      /* length of the instrument until chopper module */
          RotZ, RotY;  /* orientation of the output of the previous component (not needed) */
   VectorType EndPos;   /* position of the output of the previous component (not needed) */
@@ -485,7 +487,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    ReadSimData  (&TimeMeas, &LmbdWanted, &Freq);
+    ReadSimData  (&TimeMeas, &LmbdWanted, &Freq, &nTraj, &nBndl);
     if (LmbdWanted > 0.0)
     {	nModuleNo=ReadInstrData(0, EndPos, &Length, &RotZ, &RotY, sInstrInfIn);
       time = (Length-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(LmbdWanted)); /* velocity in m/s instead of cm/ms */

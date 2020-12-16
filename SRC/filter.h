@@ -25,6 +25,6 @@ double filterVarMin[4];
 double filterVarMax[4];
 int    filterComb;
 
-void OwnInit(int argc, char *argv[]);
-int CheckFilter(Neutron* n);
-double DetermineParameter(int id, Neutron* n);
+void   OwnInit(int argc, char *argv[]);            // Reads input parameters and sets global variables
+int    CheckFilter(Neutron* n);                    // Checks if neutron complies with combination of filters
+double DetermineParameter(int id, Neutron* n);     // Returns the parameter value identified by 'id'

@@ -595,6 +595,6 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-     SetSampleGeometry(&Sample);
+    SetSampleGeometry(&Sample);
   }
 }

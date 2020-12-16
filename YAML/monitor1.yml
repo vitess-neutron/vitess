@@ -1,0 +1,30 @@
+monitor1:
+   sName   :
+   sMonFile: "TOF.dat"  # -O    [-]   Monitor output file containing intensity as a function of the chosen parameter
+   sRefFile:            # -R    [-]   Reference input file containing data to normalize the monitor data
+
+   ePar    : NO_PAR     # -k    [-]   enum: ID for parameter, as a function of which the intensity is shown (values: VtMonPar)
+   eNorm   : NO_NORM    # -f    [-]   enum: NO_NORM : intensities of the neutron trajctories distributed unchanged into channels 
+                        #                   NORM_SIZE: intensities normalized to bin size
+                        #                   NORM_REF : intensities normalized to reference file
+   bAllFile: NO         # -c    [-]   flag: generates additional files for colour:0, 1, ..., iColour
+   bProbWt : YES        # -p    [-]   flag: Probability weight (YES) or number of trajectories (NO)
+   bSplitWt: YES        # -P    [-]   flag for yz: split weight (YES) or multiplication by number of detection angles (NO)
+   bExclude: NO         # -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written NO: all are written
+   iColour : ANY_COLOR  # -C    [-]   index: for bAllFile=FALSE: excludes all neutrons with diff. color from monitoring, if iColour >= 0 
+                        #                    for bAllFile=TRUE : max. color to which additional monitor files are generated             
+
+   nBins   : 100        # -n    [-]   number of bins
+   MinY    :   0.0      # -m   [var]  lower bound lambda, time or div. window [A], [ms], [deg]
+   MaxY    :  10.0      # -M   [var]  upper bound lambda, time or div. window [A], [ms], [deg]
+   FlmbdMin:            # -l   [Ang]  lower bound value of wavelength filter
+   FlmbdMax:            # -L   [Ang]  upper bound value of wavelength filter
+   FyMin   :            # -y    [cm]  lower bound value of horizontal position filter
+   FyMax   :            # -Y    [cm]  upper bound value of horizontal position filter
+   FzMin   :            # -z    [cm]  lower bound value of vertical position filter
+   FyMax   :            # -Z    [cm]  upper bound value of vertical position filter
+   EvalMin :            # -t    [ms]  minimal TOF to be taken into account
+   EvalMax :            # -T    [ms]  maximal TOF to be taken into account
+   RotMin  :            # -a   [deg]  lower bound rotation projection angle
+   RotMax  :            # -A   [deg]  upper bound rotation projection angle
+   RotStep :            # -s   [deg]  rotation projection angle step

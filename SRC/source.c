@@ -104,7 +104,8 @@ McCompID _eModule=MCN_SOURCE;
 // Input parameters
 // -----------------
 // simulation parameters
-double    NumberOfNeutrons=0;   // -n    1.0e6  [-]   number of neutron trajectories (events) 
+double    NumberOfNeutrons=0;   // -n    1.0e6  [-]   number of neutron trajectories (events) per bundle
+long      nBundles=1;           //              [-]   number of bundles 
 TrajParam stTraj  [NUM_MOD];    // -m -M       [Ang]  min. and max. of the wavelength range 
                                 // -t -T       [ms]   min. and max. of the time frame to start neutrons
                                 // -b -c       [deg]  min. horizontal and vertical divergence (absolute value) 
@@ -477,7 +478,7 @@ int main(int argc, char *argv[])
 
    if (!bVisTraj) 
      WriteInstrData(NullPos);
-   WriteSimData(dTimeMeas, dLmbdWant, stSrc.PulseFreq, NumberOfNeutrons);
+   WriteSimData(dTimeMeas, dLmbdWant, stSrc.PulseFreq, NumberOfNeutrons, nBundles);
 
    /* Propagation, Polarisation */
    if (pBeamline!=NULL)

@@ -16,9 +16,11 @@
 #include <math.h>
 #include <iostream>
 
-extern "C" {
-#include "general.h"
-#include "init.h"
+extern "C" 
+{
+ #include "general.h"
+ #include "init.h"
+ #include "mon2_header.h"
 }
 
 #include "mathvector.h"
@@ -44,9 +46,9 @@ class Mon2D
   double yMin;             // -h  mininum y value
   double yMax;             // -H  maximum y value
 
-  int    pWeight;          // -p  use eigher actual probability of trajectories or 1 for all trajectories
+  int    bWeight;          // -p  use eigher actual probability of trajectories or 1 for all trajectories
   int    exclCounts;       // -e  do not forward neutrons to the pipe that do not contribute to the monitor data
-  int    format;           // -F  format for the output file, '0' for matrix, '1' xyz presentation (3 columns)
+  VtFormat2D format;       // -F  file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
 
   // optional input parameters (filters and polarisation analysis)
   double lambdaMin;        // -l  minimum wavelength, filter for the monitor
@@ -64,38 +66,40 @@ class Mon2D
     polAnalysisVector;     // -r -s -t  polarisation analysis vector
 
   // input parameters that are not (yet) implemented
-//  int normalise; // normaisation of the histogram by the size of x bins, input parameter
-//  int colour;     // if switched on, display only neutrons of specific colour
+  // int normalise;   // normaisation of the histogram by the size of x bins, input parameter
+  // int colour;      // if switched on, display only neutrons of specific colour
 
   // Variables determined from input parameters or trajectory data
+  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
+
   FILE* fMonitor;          // pointer to output file
 
   double xBinSize;         // size of x bins 
   double yBinSize;         // size of y bons
 
-  string weightTag[2];     // text: parameter
-  string formatTag[2];     // text: format
-
-  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
-
   // arrays for data storage
-  double** dataArray;           // here the monitor data is stored
-  double** dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
-  double** dataArrayError;
-  int** dataArrayCounts;
+  double* BinPosX;             // edges of the bins of the first parameter
+  double* BinPosY;             // edges of the bins of the second parameter
+  double* dataArray;           // here the monitor data is stored
+  double* dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
+  double* dataArrayError;
+  long*   dataArrayCounts;
 
-//  Neutron* currentNeutron;
+  // string weightTag[2];     // text: parameter
+  // string formatTag[2];     // text: format
+  // Neutron* currentNeutron;
 
   // constructor and destructor
   Mon2D();
   virtual ~Mon2D() {};
 
   // operations
-  void   OwnInit(int argc, char* argv[]);        // Read in the monitor parameters from the command line
-  double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
-  int    FillMonitor(Neutron* n);                // Fill monitor, if the neutron fulfills all constraints
-  void   WriteOut();                             // Write output file
-  void   FreeMemory();                           // Free allocated memory
+  void   OwnInit(int argc, char* argv[]);         // Read in the monitor parameters from the command line
+  double DetermineParameter(int id, Neutron* n);  // Determine, which parameter has to be calculated
+  int    FillMonitor(Neutron* n);                 // Fill monitor, if the neutron fulfills all constraints
+  void   WriteOut();                              // Write output file
+  void   ParId2Text(char* sName, const int ePar); // Convert parameter ID to text
+  void   FreeMemory();                            // Free allocated memory
 };
 
 

@@ -1,34 +1,36 @@
 monitor1D:
-   # input parameters
-   Name    :  "MonAtSample"   #                  name of the component
-   MonFile :  "sample"        # -O "NoFile" [-]  common part of the output file names, up to 3 files possible with x-parameter A, B and C
-   IdParA  :   WAVELENGTH     # -X  -1    [-]    parameter A to be shown on the x axis 
-   nBinParA:  100             # -x   0    [-]    number of x bins 
-   MinParA :    0.0           # -w  -1   [var]   minimum x value 
-   MaxParA :   10.0           # -W  -1   [var]   maximum x value 
-   IdParB  :   TIME           # -Y  -1    [-]    parameter B to be shown on the x axis 
-   nBinParB:   50             # -y   0    [-]    number of x bins 
-   MinParB :    0.0           # -f  -1   [var]   minimum x value 
-   MaxParB :   50.0           # -F  -1   [var]   maximum x value 
-   IdParC  :   -1             # -Z  -1    [-]    parameter C to be shown on the x axis 
-   nBinParC:    0             # -z   0    [-]    number of x bins 
-   MinParC :   -1             # -g  -1   [var]   minimum x value 
-   MaxParC :   -1             # -G  -1   [var]   maximum x value 
-   bProbWt :   YES            # -p  YES   [-]    use eigher actual probability of trajectories or 1 for all trajectories
-   bExclude:   NO             # -e  NO    [-]    do not forward neutrons to the pipe that do not contribute to the monitor data
-  
-   # optional input parameters (filters and polarisation analysis)
-   LmbdMin :   -1.0           # -l  -1.0 [Ang]   minimum wavelength, filter for the monitor
-   LmbdMax :   -1.0           # -L  -1.0 [Ang]   maximum wavelength, filter for the monitor
-   IdFilt1 :   COLOR          # -I  -1    [-]    filter parameter 1
-   IdFilt2 :   COLOR          # -J  -1    [-]    filter parameter 2
-   FiltComb:   OR             # -C  -1    [-]    filter 1 and 2 combined with AND or OR
-   MinFilt1:    2             # -u  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-   MaxFilt1:    2             # -U  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-   MinFilt2:    4             # -v  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-   Maxfilt2:    4             # -V  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-  
-   bPolAna :   YES            # -P  NO    [-]    switched on if polarisation analysis desired
-   PolDirX :    1.0           # -r   0.0  [-]    x-component of the polarisation analysis vector
-   PolDirY :    0.0           # -s   0.0  [-]    y-component polarisation analysis vector
-   PolDirZ :    0.0           # -t   0.0  [-]    z-component polarisation analysis vector
+   # param.    default      col limit par     label                             help text         
+   Name    :               #               "component"                 "name of the component""
+   sMonFile:  "sample"     #          -O   "common name"               "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
+   eParA   :  NO_PAR       #          -X   "1st x-axis\nparameter"     "x-axis parameter for the first 1D monitor file " (see VtPar)
+   eParB   :               #          -Y   "2nd x-axis\nparameter"     "x-axis parameter for the second 1D monitor file" 
+   eParC   :               #          -Z   "3rd x-axis\nparameter"     "x-axis parameter for the third 1D monitor file "
+   nBinParA:  100          #     >=1  -x   "number of bins\n1st par."  "number of x channels for the first 1D monitor file " 
+   nBinParB:               #     >=1  -y   "number of bins\n2nd par."  "number of x channels for the second 1D monitor file" 
+   nBinParC:               #     >=1  -z   "number of bins\n3rd par."  "number of x channels for the third 1D monitor file "
+   MinParA :    0.0        #          -w   "min. x value\n1st par."    "minimal x value for the first 1D monitor file "
+   MinParB :               #          -f   "min. x value\n2nd par."    "minimal x value for the second 1D monitor file"
+   MinParC :               #          -g   "min. x value\n3rd par."    "minimal x value for the third 1D monitor file "
+   MaxParA :   10.0        #          -W   "max. x value\n1st par."    "maximal x value for the first 1D monitor file "
+   MaxParB :               #          -F   "max. x value\n2nd par."    "maximal x value for the second 1D monitor file"
+   MaxParC :               #          -G   "max. x value\n3rd par."    "maximal x value for the third 1D monitor file "
+   bProbWt :   YES         #          -p   "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+   bExclude:   NO          #          -e   "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+                                           
+   # filters                  
+   LmbdMin :               #  1       -l   "lambda\nmin [Ang]"         "minimal wavelength to be taken into account [Ang]"
+   LmbdMax :               #  2       -L   "lambda\nmax [Ang]"         "maximal wavelength to be taken into account [Ang]"
+   eFilt1  :   NO_PAR      #  0       -I   "filter\nparameter 1"       "filter parameter 1"
+   MinFilt1:               #  1       -u   "filter 1\nmin value"                "minimum value of filter parameter 1 to be taken into account"
+   MaxFilt1:               #  2       -U   "filter 1\nmax value"                "minimum value of filter parameter 1 to be taken into account""
+   FiltComb:   AND         #  0       -C   "filter\ncombination"       "filter 1 and 2 combined with AND or OR"
+   eFilt2  :   NO_PAR      #  0       -J   "filter\nparameter 2"       "filter parameter 2"
+   MinFilt2:               #  1       -v   "filter 2\nmin value"       "minimal value of filter parameter 1 to be taken into account"
+   Maxfilt2:               #  2       -V   "filter 2\nmax value"       "maximal value of filter parameter 1 to be taken into account"
+                                                                       
+   # polarisation analysis    
+   bPolAna :   NO          #  0       -P   "polarisation\nanalysis"    "YES: polarisation monitored   NO: intensity monitored"
+   PolDirX :               #  1       -r   "direction X"               "x-component of the vector defining the quantization direction"
+   PolDirY :               #  2       -s   "direction Y"               "y-component of the vector defining the quantization direction"
+   PolDirZ :               #  3       -t   "direction Z"               "z-component of the vector defining the quantization direction"
+                                               

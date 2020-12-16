@@ -12,10 +12,11 @@
 
 #include <math.h>
 
-extern "C" {
-#include "init.h"
-#include "softabort.h"
-#include "general.h"
+extern "C" 
+{
+ #include "init.h"
+ #include "softabort.h"
+ #include "general.h"
 }
 
 /**************************************************/
@@ -94,62 +95,62 @@ void OwnInit(int argc, char *argv[])
   {
     if(argv[i][0]!='+') 
     {
-	    switch(argv[i][1])
-	    {
-	      case 'I':  
-	        filterParam[0] = atoi(&argv[i][2]); // filter parameter 1, input parameter
-	        break;
-	      case 'J':  
-	        filterParam[1] = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
-	        break;
-	      case 'K':  
-	        filterParam[2] = atoi(&argv[i][2]); // filter parameter 3, optional input parameter
-	        break; 
-	      case 'L':  
-	        filterParam[3] = atoi(&argv[i][2]); // filter parameter 4, optional input parameter
-	        break; 
+      switch(argv[i][1])
+      {
+        case 'I':  
+          filterParam[0] = atoi(&argv[i][2]); // filter parameter 1, input parameter
+          break;
+        case 'J':  
+          filterParam[1] = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+          break;
+        case 'K':  
+          filterParam[2] = atoi(&argv[i][2]); // filter parameter 3, optional input parameter
+          break; 
+        case 'L':  
+          filterParam[3] = atoi(&argv[i][2]); // filter parameter 4, optional input parameter
+          break; 
 
-	      case 'C':  
-	        filterComb = atoi(&argv[i][2]); // filter combination (AND,OR)
-	        break;
+        case 'C':  
+          filterComb = atoi(&argv[i][2]); // filter combination (AND,OR)
+          break;
 	    
-	      case 'u':
-	        filterVarMin[0] = atof(&argv[i][2]);   /* minimum value of filter parameter 1 */
-	        break;
+        case 'u':
+          filterVarMin[0] = atof(&argv[i][2]);   /* minimum value of filter parameter 1 */
+          break;
         case 'U':
-	        filterVarMax[0] = atof(&argv[i][2]);   /* maximum value of filter parameter 1 */
-	        break;
+          filterVarMax[0] = atof(&argv[i][2]);   /* maximum value of filter parameter 1 */
+          break;
 	    
-	      case 'v':
-	        filterVarMin[1] = atof(&argv[i][2]);   /* minimum value of filter parameter 2 */
-	        break;
-	      case 'V':
-	        filterVarMax[1] = atof(&argv[i][2]);   /* maximum value of filter parameter 2 */
-	        break;
+        case 'v':
+          filterVarMin[1] = atof(&argv[i][2]);   /* minimum value of filter parameter 2 */
+          break;
+        case 'V':
+          filterVarMax[1] = atof(&argv[i][2]);   /* maximum value of filter parameter 2 */
+          break;
 
-	      case 'w':
-	        filterVarMin[2] = atof(&argv[i][2]);   /* minimum value of filter parameter 3 */
-	        break;
-	      case 'W':
-	        filterVarMax[2] = atof(&argv[i][2]);   /* maximum value of filter parameter 3 */
-	        break;
+        case 'w':
+          filterVarMin[2] = atof(&argv[i][2]);   /* minimum value of filter parameter 3 */
+          break;
+        case 'W':
+          filterVarMax[2] = atof(&argv[i][2]);   /* maximum value of filter parameter 3 */
+          break;
 
-	      case 'x':
-	        filterVarMin[3] = atof(&argv[i][2]);   /* minimum value of filter parameter 4 */
-	        break;
-	      case 'X':
-	        filterVarMax[3] = atof(&argv[i][2]);   /* maximum value of filter parameter 4 */
-	        break;
+        case 'x':
+          filterVarMin[3] = atof(&argv[i][2]);   /* minimum value of filter parameter 4 */
+          break;
+        case 'X':
+          filterVarMax[3] = atof(&argv[i][2]);   /* maximum value of filter parameter 4 */
+          break;
 
-	      default:
-	        fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
-	        exit(-1);
-	        break;
-	    }
+        default:
+          fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
     }
   }
 
- return;
+  return;
 }
 
 

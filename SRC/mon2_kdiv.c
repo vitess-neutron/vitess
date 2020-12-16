@@ -7,6 +7,7 @@
 /* 1.0  Feb 2006  K. Lieutenant                                                             */
 /* 1.0a JAN 2010  A. Houben      xyz output                                                 */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.3a Nov 2020  K. Lieutenant  new 'mon2_header'                                          */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -14,6 +15,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "defines.h"
 #include "init.h"
 #include "softabort.h"
 #include "general.h"
@@ -26,26 +28,32 @@
 /*********************************/
 McCompID _eModule=MCN_MON2_KDIV;
 
-FILE*  fMonitor   = NULL;
-char*  MonFileName= NULL;
-short  bProbactiv = TRUE,
-       bExclusive = FALSE; 
-long	 nbiny   = 20, 
-       nbinz   = 20,
-       format  =  0;
-double DivYmin =  0.0, 
-       DivYmax =  0.0, 
-       DivZmin =  0.0, 
-       DivZmax =  0.0;
-static 
-double bdivz[BINSIZE],
-       bdivy[BINSIZE];
+// Input parameters
+char*  MonFileName= NULL;      // -O    [-]    Monitor output file containing intensity as a function of y- and z-position   
+short  bProbactiv = TRUE,      // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
+       bExclusive = FALSE;     // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written
+long	 nbiny    =  1,          // -y    [-]    number of bins in horizontal direction
+       nbinz    =  1,          // -z    [-]    number of bins in vertical direction
+       format   =  MATRIX;     // -F    [-]    file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+double DivKyMin =  0.0,        // -w  [1/Ang]  min. horizontal divergence to be monitored
+       DivKyMax =  0.0,        // -W  [1/Ang]  max. horizontal divergence to be monitored
+       DivKzMin =  0.0,        // -h  [1/Ang]  min. vertical divergence to be monitored
+       DivKzMax =  0.0;        // -H  [1/Ang]  max. vertical divergence to be monitored
   
+// Variables determined from input parameters
+FILE*  fMonitor   = NULL;
+
+double BinPosY   [BINSIZE];           // edges of the bins of the first parameter 
+double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter 
+double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
+double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
+long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
+
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void OwnInit(int argc, char *argv[]);
+void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
 
 
 /******************************/
@@ -54,7 +62,7 @@ void OwnInit(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
   short  bRegistered=FALSE;
-  int	   dy=0, dz=0;
+  int	   iY=0, jZ=0;
   long	 i=0;
   double Divy =0.0, 
          Divz =0.0, 
@@ -66,26 +74,23 @@ int main(int argc, char *argv[])
   // reading of input data and initilisation
   // ---------------------------------------
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
 
-  //New pointers allowing for global write out
-  by = bdivy;
-  bz = bdivz;
-
-  for(dy = 0; dy < nbiny+1; dy++)
+  // initializes arrays
+  for(iY = 0; iY < nbiny+1; iY++)
   {
-    bdivy[dy] = DivYmin + (DivYmax-DivYmin) * dy / (double)nbiny;
+    BinPosY[iY] = DivKyMin + (DivKyMax-DivKyMin) * iY / (double)nbiny;
 
-    for(dz = 0;dz<(nbinz+1); dz++)
+    for(jZ = 0;jZ<(nbinz+1); jZ++)
     {
-	    bdivz[dz] = DivZmin + (DivZmax-DivZmin)  * dz / (double) nbinz;
-	    binyz[dy][dz] = 0.0;
-	    binyzerror[dy][dz]=0.;
-	    binyzcounts[dy][dz]=0;
+	    BinPosZ       [jZ] = DivKzMin + (DivKzMax-DivKzMin)  * jZ / (double) nbinz;
+	    IntYZ     [iY][jZ] = 0.0;
+	    IntYZError[iY][jZ] = 0.0;
+	    nTrajYZ   [iY][jZ] = 0;
     }
   }
 
@@ -115,15 +120,15 @@ int main(int argc, char *argv[])
       DivKy = Divy * 2.0 * M_PI / InputNeutrons[i].Wavelength;
 	    DivKz = Divz * 2.0 * M_PI / InputNeutrons[i].Wavelength;
 
-	    dy = (int)floor(nbiny*(DivKy-DivYmin)/(DivYmax-DivYmin));
-	    dz = (int)floor(nbinz*(DivKz-DivZmin)/(DivZmax-DivZmin));
+	    iY = (int)floor(nbiny*(DivKy-DivKyMin)/(DivKyMax-DivKyMin));
+	    jZ = (int)floor(nbinz*(DivKz-DivKzMin)/(DivKzMax-DivKzMin));
 			
-	    if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
+	    if (((iY>=0)&&(iY<nbiny))&&((jZ>=0)&&(jZ<nbinz)))
 	    {	
-	      binyz[dy][dz] = binyz[dy][dz] + prob ;
-	      bintc = bintc + prob;
-	      bRegistered=1;
-	      binyzcounts[dy][dz]++;
+	      nTrajYZ[iY][jZ]++;
+	      IntYZ  [iY][jZ]+= prob;
+	      bintc          += prob;
+	      bRegistered = 1;
 	    }
 	  
 	    if ((bExclusive==0) || (bRegistered==1))
@@ -135,7 +140,11 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  WriteOutput (fMonitor, format, bProbactiv, nbiny, nbinz, "kY [1/Ang]", "kZ [1/Ang]");
+  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,  nbiny, "kY [1/Ang]", nbinz, "kZ [1/Ang]");
+  // WriteOutput2D(fMonitor, format,           bProbactiv,  nbiny, BinPosY,           nbinz, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
+  WriteOutput2D(fMonitor, format,              bProbactiv,  nbiny, BinPosY, BINSIZE,  nbinz, BinPosZ,  
+                         (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+  fclose(fMonitor);
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -164,25 +173,25 @@ void  OwnInit(int argc, char *argv[])
 	      case 'y':
 	        nbiny = atol(&argv[i][2]); /* number of bins horizontal axis */
 	        if(nbiny>BINSIZE)
-	          {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
+	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
 	      case 'z':
 	        nbinz = atol(&argv[i][2]); /* number of bins vertical axis */
 	        if(nbinz>BINSIZE)
-	          {fprintf(LogFilePtr,"\n number of bins must be <= %d", BINSIZE); exit(99);}
+	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
 
 	      case 'h':
-	        DivZmin =  atof(&argv[i][2]);   /* bottom position window */
+	        DivKzMin =  atof(&argv[i][2]);   /* bottom position window */
 	        break;
 	      case 'w':
-	        DivYmin = atof(&argv[i][2]);		/* left edge position window */
+	        DivKyMin = atof(&argv[i][2]);		/* left edge position window */
 	        break;
 	      case 'H':
-	        DivZmax =  atof(&argv[i][2]);   /* top position window */
+	        DivKzMax =  atof(&argv[i][2]);   /* top position window */
 	        break;
 	      case 'W':
-	        DivYmax = atof(&argv[i][2]);		/* right edge position window */
+	        DivKyMax = atof(&argv[i][2]);		/* right edge position window */
 	        break;
 
 	      case 'p':
@@ -200,9 +209,8 @@ void  OwnInit(int argc, char *argv[])
             break;
 
 	      default:
-	        fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
+	        fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
 	        exit(-1);
-	        break;
 	    }
     }
   }
@@ -210,8 +218,7 @@ void  OwnInit(int argc, char *argv[])
   // opens monitor file
   if (MonFileName==NULL)
   {
-    fprintf(LogFilePtr,"\n you must define a MonitorOutputFile");
-    exit(99);
+    Error("You must define a MonitorOutputFile");
   }
   else
   { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");

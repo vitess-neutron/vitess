@@ -48,8 +48,9 @@
 /***************************************************************************************************/
 extern FILE* LogFilePtr;     /* pointer to the log file stream              */
 
-const char *sInstrInfOut = "instrument.inf";
-const char *sInstrInfIn  = "instrument.inf";
+const 
+char *sInstrInfOut = "instrument.inf"; /* instrument file that is written ('instrument.inf')      */
+char *sInstrInfIn  = "instrument.inf"; /* instrument file that is read (default 'instrument.inf') */
 
 double   CmprFact=1.0;       /* Factor, by which the length is compressed for certain modules in the visualization */  
 long     BufferSize;         /* size of the neutron input and output buffer */
@@ -693,9 +694,11 @@ void Init(int argc, char **argv, const McCompID eModule)
 void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
              double dHorizAngle, double dVertAngle)
 {
-  double dTimeMeas=0.0, dLmbdWant=0.0, dFreq=0.0, nNoNeutrons,
-	       dCntRateErr;
-  int    l;
+  double TimeMeas=0.0, LmbdWant=0.0, Freq=0.0, 
+         nNumNeutr=0.0, nNumNeutrSrc=0.0,
+	       CntRateErr=0.0;
+  long   nBndl=0;
+  int    l=0;
   VectorType Shift,  /* Shift of end position        [m] */
              EndPos; /* end position of this module  [m] */
 
@@ -714,7 +717,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
 
-    ReadSimData  (&dTimeMeas, &dLmbdWant, &dFreq);
+    ReadSimData  (&TimeMeas, &LmbdWant, &Freq, &nNumNeutrSrc, &nBndl);
     // nModuleNo++;
     Shift[0]= dShiftX;
     Shift[1]= dShiftY;
@@ -767,24 +770,23 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
        sqrt((<I_s²> - <I_s>²)/(N-1))
      as independent contributions */
   if (NumNeutWritten > 1)
-    dCntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
+    CntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
                       + (NumNeutWritten*dProbQuad-sq(dProbTotal[0])) / (NumNeutWritten-1) );
   else
-    dCntRateErr = dProbTotal[0];
+    CntRateErr = dProbTotal[0];
 
   fprintf(LogFilePtr, "%2ld number of trajectories read         : %11.0f\n", nModuleNo, NumNeutRead);
   fprintf(LogFilePtr, "%2ld number of trajectories written      : %11.0f\n", iModuleId, NumNeutWritten);
-  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], dCntRateErr);
+  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], CntRateErr);
   for (l=1; l<=MAX_COL; l++)
   { if (dProbTotal[l] > 0)
       fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", l, dProbTotal[l]);
   }
 
-  if (dTimeMeas > 0.0)
+  if (TimeMeas > 0.0)
   {
-    nNoNeutrons = floor(dProbTotal[0]*dTimeMeas + 0.5);
-    fprintf(LogFilePtr, "number of neutrons in %8.0f seconds : %11.4e  \n",
-	    dTimeMeas, nNoNeutrons);
+    nNumNeutr = floor(dProbTotal[0]*TimeMeas + 0.5);
+    fprintf(LogFilePtr, "number of neutrons in %8.0f seconds : %11.4e  \n", TimeMeas, nNumNeutr);
   }
 
   if (LogFileName) fclose(LogFilePtr);
@@ -1436,7 +1438,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
 }
 
 
-void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj)
+void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj, long  nBundles)
 {
   FILE*  pFile;
 
@@ -1446,16 +1448,18 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj
     fprintf(pFile, "%10.5f       # desired wavelength [Ang]\n", dLmbdWant);
     fprintf(pFile, "%10.5f       # source frequency   [Hz]\n", dFreq);
     fprintf(pFile, "%14.5e   #number of trajectories \n", nTraj);
+    fprintf(pFile, "%4ld               #number of bundles \n", nBundles);
     fclose(pFile);
   }
 }
 
-void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj)
+void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles)
 {
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
 
-  *pTimeMeas = 0.0;
+  *pFreq = 0.0; *pTimeMeas = 0.0; 
+  *pTraj = 0.0; *pLmbdWant = 0.0; *pBundles = 0;
 
   pFile = OpenOutputFile("simulation.inf", FALSE, "r");
   if (pFile)
@@ -1469,9 +1473,12 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pT
     /* Third line - frequency */
     ReadLine(pFile, sLine, sizeof(sLine)-1);
     sscanf(sLine, "%lf", pFreq);
-    /* fourth line - number of trjectories */
+    /* fourth line - number of trajectories per bundle */
     ReadLine(pFile, sLine, sizeof(sLine)-1);
     sscanf(sLine, "%le", pTraj);
+    /* fifth line - number of bundles */
+    ReadLine(pFile, sLine, sizeof(sLine)-1);
+    sscanf(sLine, "%ld", pBundles);
 
     fclose(pFile);
   }

@@ -20,6 +20,10 @@ extern "C" {
 
 #include "mon2D.h"
 
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char *argv[])
 {
   long	i;

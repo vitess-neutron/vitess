@@ -15,12 +15,12 @@
 
 
 /* global variables */
-char*     __pTraceFileName=NULL; // name of the file containing the trajectories to be traced or started
-TotalID*  __pTrace=NULL;         // table of trajectory IDs for tracing
-long      __nLinesTr=0;          // Number of lines in the trace file  
-short     __eTraceMode=0;        // mode 0: no tracing 
-                                 // mode 1: write trace files for traj. of interest
-                                 // mode 2: simulation only with traj. of interest 
+char*     __sTraceFileName=NULL;   // name of the file containing the trajectories to be traced or started
+TotalID*  __pTrace=NULL;           // table of trajectory IDs for tracing
+long      __nLinesTr=0;            // Number of lines in the trace file  
+short     __eTraceMode=NO_TRACING; // NO_TRACING     : no tracing 
+                                   // WRITE_TRC_FILES: write trace files for traj. of interest
+                                   // ONLY_TRC_TRAJ  : simulation only with traj. of interest 
 
 void   LoadTraceFile();
 char   GetTraceState(TotalID stID);
@@ -35,10 +35,10 @@ void LoadTraceFile()
   FILE* pTraceFile=NULL;
 
   /* If there is a trace file go and load the file */
-  if (__pTraceFileName!=NULL) 
+  if (__sTraceFileName!=NULL) 
    {
       /* opens distribution file */
-      if ((pTraceFile = OpenInputFile(__pTraceFileName, FALSE, "rt"))!=NULL) 
+      if ((pTraceFile = OpenInputFile(__sTraceFileName, FALSE, "rt"))!=NULL) 
       {
         long i;
 
@@ -56,7 +56,7 @@ void LoadTraceFile()
         fclose(pTraceFile) ;
       } 
       else 
-      { fprintf(LogFilePtr, "\nERROR: Can't open %s to read trace file\n", __pTraceFileName);
+      { fprintf(LogFilePtr, "\nERROR: Can't open %s to read trace file\n", __sTraceFileName);
         exit (-1);
       }
    }

@@ -196,7 +196,7 @@ double spacer=0.0,                 // -s  [cm]   width of the blades dividing th
        MuScat=0.0,                 // -M [1/cm]  total macroscopic scattering coeff.
        MuAbs =0.0,                 // -m [1/cm]  macroscopic absorption coeff. 
        rotplane = 0.0;             // -n  [deg]  rotation angle to create additional planes
-VtDistr eWaviDistr=VT_RECTANGULAR; // -q   [-]   shape of the waviness distribution   RECTANGULAR   GAUSSIAN
+VtWaviDistr eWaviDistr=VT_RECTANGULAR; // -q   [-]   shape of the waviness distribution   RECTANGULAR   GAUSSIAN
 
 // Reflection list
 char  *ReflParamFileName=NULL;     // -o   [-]   name of the file for writing each reflection 
@@ -648,7 +648,7 @@ void OwnInit   (int argc, char *argv[])
       AddToColor = atoi(arg); /* value added to the color for each reflection  */
       break;
     case 'q':
-      eWaviDistr = (VtDistr) atoi(arg);  /* enum: waviness distribution: 1: rectangular (default), 2: Gaussian  */
+      eWaviDistr = (VtWaviDistr) atoi(arg);  /* enum: waviness distribution: 1: rectangular (default), 2: Gaussian  */
       break;
     case 'r':
       surfacerough  =  atof(arg);               /* Maximal angle of deviation from normal in degre */

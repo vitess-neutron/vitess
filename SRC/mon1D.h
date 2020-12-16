@@ -16,9 +16,11 @@
 #include <math.h>
 #include <iostream>
 
-extern "C" {
-#include "general.h"
-#include "init.h"
+extern "C" 
+{
+ #include "general.h"
+ #include "init.h"
+ #include "mon2_header.h"
 }
 
 #include "mathvector.h"
@@ -33,11 +35,11 @@ class Mon1D
 
   // input parameters
   string fMonitorFilename;        // -O        common part of the output file names 
-  int    xParam[3];               // -X -Y -Z  parameter to be shown on the x axis 
+  int    eParX [3];               // -X -Y -Z  parameter to be shown on the x axis 
   int    nBinsX[3];               // -x -y -z  number of x bins 
   double xMin[3];                 // -w -f -g  minimum x value 
   double xMax[3];                 // -W -F -G  maximum x value 
-  int    pWeight;                 // -p        use eigher actual probability of trajectories or 1 for all trajectories
+  int    bWeight;                 // -p        use either actual probability of trajectories or 1 for all trajectories
   int    exclCounts;              // -e        do not forward neutrons to the pipe that do not contribute to the monitor data
 
   // optional input parameters (filters and polarisation analysis)
@@ -61,8 +63,8 @@ class Mon1D
   FILE*       fMonitor[3];           // pointer to output file
   double      xBinSize[3];           // size of x bins 
   int         monSwitchedOn[3];      // Switches are activated if parameter 1, 2 or 3 should be stored.
-  string      sParameterNames[14];   // text: parameter
-  string      weightTag[2];          // text: probability weight
+  string      sParameterNames[18];   // text: parameter
+  // string      weightTag[2];          // text: probability weight
   MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
 
   // arrays for data storage
@@ -78,8 +80,8 @@ class Mon1D
   // operations
   void   OwnInit(int argc, char* argv[]);        // Read in the monitor parameters from the command line
   double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
-  int    FillMonitorArray(Neutron* n);
-  int    FillMonitor(Neutron* n, int counter);   // Fill monitor, if the neutron fulfills all constraints
+  int    FillMonitorArray(Neutron* n);           // Fill all monitors chosen
+  int    FillMonitor(Neutron* n, int counter);   // Fill one monitor, if the neutron fulfills all constraints
   void   WriteOut();                             // Write output file
   void   FreeMemory();                           // Free allocated memory
 };

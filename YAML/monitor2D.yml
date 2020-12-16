@@ -1,31 +1,33 @@
 monitor2D:
-   # input parameters
-   Name    :  "PSDAtSample"   #                  name of the component
-   MonFile :  "sample.pos"    # -O "NoFile" [-]  common part of the output file names, up to 3 files possible with x-parameter A, B and C
-   IdParA  :   POS_Y          # -X  -1    [-]    parameter A to be shown on the x axis 
-   nBinParA:  100             # -x   0    [-]    number of x bins 
-   MinParA :   -2.5           # -w  -1   [var]   minimum x value 
-   MaxParA :    2.5           # -W  -1   [var]   maximum x value 
-   IdParB  :   POS_Z          # -Y  -1    [-]    parameter B to be shown on the x axis 
-   nBinParB:  100             # -y   0    [-]    number of x bins 
-   MinParB :   -2.5           # -f  -1   [var]   minimum x value 
-   MaxParB :    2.5           # -F  -1   [var]   maximum x value 
-   bProbWt :   YES            # -p  YES   [-]    use eigher actual probability of trajectories or 1 for all trajectories
-   bExclude:   NO             # -e  NO    [-]    do not forward neutrons to the pipe that do not contribute to the monitor data
-   eFormat :   XYZ            # -F MATRIX [-]    format for output file: MATRIX (2 dim.), XYZ (3 columns)
+   # param.    default      col limit par     label                             help text         
+   Name    :               #               "component"                 "name of the component""
+   MonFile :  "sample.pos" #          -O   "monitor file"              "name of the output file"
+   eParX   :  NO_PAR       #  0       -X   "x-axis\nparameter"         "parameter to be shown on the x axis"                   // enum VtPar
+   eParY   :  NO_PAR       #  1       -Y   "y-axis\nparameter"         "parameter to be shown on the y axis" 
+   nBinParX:  100          #  0  >=1  -x   "number of\nx bins"         "number of channels for the parameter in x-direction" 
+   nBinParY:  100          #  1  >=1  -y   "number of\ny bins"         "number of channels for the parameter in y-direction" 
+   MinParX :   -5.0        #  0       -w   "minimal\nx value "         "minimal value  for the parameter in x-direction"
+   MinParY :   -5.0        #  1       -f   "minimal\ny value "         "minimal value  for the parameter in y-direction"
+   MaxParX :    5.0        #  0       -W   "maximal\nx value "         "maximal value  for the parameter in x-direction"
+   MaxParY :    5.0        #  1       -F   "maximal\ny value "         "maximal value  for the parameter in y-direction"
+   bProbWt :   YES         #          -p   "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+   bExclude:   NO          #          -e   "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+   eFormat :   MATRIX      #          -F   "file format"               "format for output file: MATRIX (2 dim.), XYZ (3 columns), MATR_CMPT, XYZ_CMPT (same in compact form)  // enum VtFormat2D
   
-   # optional input parameters (filters and polarisation analysis)
-   LmbdMin :    1.0           # -l  -1.0 [Ang]   minimum wavelength, filter for the monitor
-   LmbdMax :    4.0           # -L  -1.0 [Ang]   maximum wavelength, filter for the monitor
-   IdFilt1 :   -1             # -I  -1    [-]    filter parameter 1
-   IdFilt2 :   -1             # -J  -1    [-]    filter parameter 2
-   FiltComb:   -1             # -C  -1    [-]    filter 1 and 2 combined with AND or OR
-   MinFilt1:   -1.0           # -u  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-   MaxFilt1:   -1.0           # -U  -1.0 [var]   minimum value of parameter 1, additional filter for the monitor
-   MinFilt2:   -1.0           # -v  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-   Maxfilt2:   -1.0           # -V  -1.0 [var]   maximum value of parameter 2, additional filter for the monitor
-  
-   bPolAna :   NO             # -P  NO    [-]    switched on if polarisation analysis desired
-   PolDirX :    0.0           # -r   0.0  [-]    x-component of the polarisation analysis vector
-   PolDirY :    0.0           # -s   0.0  [-]    y-component polarisation analysis vector
-   PolDirZ :    0.0           # -t   0.0  [-]    z-component polarisation analysis vector
+   # filters
+   LmbdMin :               #  1       -l   "lambda\nmin [Ang]"         "minimal wavelength to be taken into account"
+   LmbdMax :               #  2       -L   "lambda\nmax [Ang]"         "maximal wavelength to be taken into account"
+   eFilt1  :   NO_PAR      #  0       -I   "filter\nparameter 1"       "filter parameter 1"
+   MinFilt1:               #  1       -u   "filter 1\nmin value"       "minimum value of filter parameter 1 to be taken into account"
+   MaxFilt1:               #  2       -U   "filter 1\nmax value"       "minimum value of filter parameter 1 to be taken into account""
+   FiltComb:   AND         #  0       -C   "filter\ncombination"       "filter 1 and 2 combined with AND or OR"
+   eFilt2  :   NO_PAR      #  0       -J   "filter\nparameter 2"       "filter parameter 2"
+   MinFilt2:               #  1       -v   "filter 2\nmin value"       "minimal value of filter parameter 1 to be taken into account"
+   Maxfilt2:               #  2       -V   "filter 2\nmax value"       "maximal value of filter parameter 1 to be taken into account"
+                                                                       
+   # polarisation analysis
+   bPolAna :   NO          #  0       -P   "polarisation\nanalysis"    "YES: polarisation monitored   NO: intensity monitored"
+   PolDirX :               #  0       -r   "direction X"               "x-component of the vector defining the quantization direction"
+   PolDirY :               #  1       -s   "direction Y"               "y-component of the vector defining the quantization direction"
+   PolDirZ :               #  2       -t   "direction Z"               "z-component of the vector defining the quantization direction"
+                                               

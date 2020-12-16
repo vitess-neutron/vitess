@@ -7,16 +7,26 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.4  Nov 2020  K. Lieutenant  preparation for tranfer to version 4                       */
 /********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "defines.h"
 #include "init.h"
 #include "softabort.h"
 #include "general.h"
 #include "matrix.h"
+#include "mon2_header.h"
+
+
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
+#define MAX_KIND  8
 
 
 /*********************************/
@@ -24,22 +34,26 @@
 /*********************************/
 McCompID _eModule=MCN_MON1_POL;
 
+// Input parameters
+char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
+short  bProbactiv = TRUE,   // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
+       bExclusive = FALSE;  // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+VtMonPar ePar = NO_PAR;     // -k    [-]   ID for parameter, as a function of which the intensity is shown
+long   nbiny  = 1;          // -n    [-]   number of monitor channels
+double xMin   = 0.0,        // -m   [var]  lower bound value of the monitored range 
+       xMax   = 0.0,        // -M   [var]  upper bound value of the monitored range
+       analysis_dir[3]      // -a -b -c    components of the quantization direction in x-, y- and z-direction
+           ={0.0,0.0,1.0};
+
+// Variables determined from input parameters
 FILE*  fMonitor   = NULL;
-char*  MonFileName= NULL;
-short  bProbactiv = TRUE,
-       bExclusive = FALSE,
-       kind       = 1; 
-long   nbiny      = 0;
-double RotMatrixAnalysis[3][3], 
-       analysis_dir[3],
-       xMin = 0.0,
-       xMax = 0.0;
-       
+double RotMatrixAnalysis[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
+
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void OwnInit(int argc, char *argv[]);
+void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
 
 
 /******************************/
@@ -48,6 +62,12 @@ void OwnInit(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
+  char   sCompName  [21]="",
+         sModVsnName[40]="";
+  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
+         sParN[MAX_KIND+1][22]={"", "wavelength", "time",
+                               "horizontal divergence", "vertical divergence",
+                               "horizontal position",   "vertical position", "energy", "divergence yz"};
   char   weightTag[2][7] = {"", "weight"};
   short  bRegistered=FALSE;
   int	   dy=0, 
@@ -66,19 +86,23 @@ int main(int argc, char *argv[])
   // reading of input data and initilisation
   // ---------------------------------------
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
+
+  CompID2Name (sCompName, _eModule);
+  sprintf(sModuleName, "%s_%s",     sCompName, sParN[ePar]);
+  sprintf(sModVsnName, "%s_%s 1.4", sCompName, sParN[ePar]);
+  print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
   
   // initializes arrays
-  for (dy=0;dy<nbiny+1;dy++)
+  for (dy=0; dy < nbiny+1; dy++)
   {
-    bpost[dy]=xMin+((xMax-xMin)*dy/(double)nbiny);
-    bint[dy]=0.0;
-    bintch[dy]=0.0;
-    binerror[dy]=0.;
+    bpost[dy] = xMin + ((xMax-xMin)*dy/(double)nbiny);
+    bint     [dy]=0.0;
+    bintch   [dy]=0.0;
+    binerror [dy]=0.0;
     bincounts[dy]=0;
   }
 
@@ -101,9 +125,9 @@ int main(int argc, char *argv[])
 	    /* calculate spin vector in the direction of the analysis */
 	    RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
-	    switch (kind) 
+	    switch (ePar) 
       {
-	      case 1:
+	      case MON_LAMBDA:
 	        dy = (int) floor((double)nbiny*(InputNeutrons[i].Wavelength - xMin)/(xMax-xMin));
 	    
 	        if ((dy>=0)&&(dy<nbiny))
@@ -116,7 +140,7 @@ int main(int argc, char *argv[])
 	        }
 	        break;
 	    
-	      case 2:
+	      case MON_TIME:
 	        dy = (int) floor(nbiny*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
 	        if ((dy>=0)&&(dy<nbiny))
 	        {
@@ -128,7 +152,7 @@ int main(int argc, char *argv[])
 	        }
 	        break;
 	    
-	      case 3:
+	      case MON_DIV_Y:
 	        Divy  = atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
 	        Divy *= 180.0/M_PI;
 	        if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
@@ -145,7 +169,7 @@ int main(int argc, char *argv[])
 	        }
 	        break;
 	    
-	      case 4:
+	      case MON_DIV_Z:
 	        Divz  = atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
 	        Divz *= 180.0/M_PI;
 	        if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
@@ -162,7 +186,7 @@ int main(int argc, char *argv[])
 	        }
 		    break;
 
-	      case 5:
+	      case MON_Y:
 	        dy = (int)floor(nbiny*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
 	        if ((dy>=0)&&(dy<nbiny))
 	        {
@@ -174,7 +198,7 @@ int main(int argc, char *argv[])
 	        }
 	        break;
 	    
-	      case 6:
+	      case MON_Z:
 	        dy = (int)floor(nbiny*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
 	        if ((dy>=0)&&(dy<nbiny))
 	        {
@@ -185,6 +209,10 @@ int main(int argc, char *argv[])
 		        bRegistered=1;
 	        }
 	        break;
+
+        default:
+          fprintf(LogFilePtr,"Parameter not handled in %s", sCompName);
+          exit(-1);
 	    }
 	  
 	    if((dy>=0)&&(dy<nbiny)) bincounts[dy]++;
@@ -201,20 +229,22 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  fprintf(fMonitor,"#Monitor %s\n", weightTag[bProbactiv]);
+  WriteHeader1D(fMonitor, "polarization", bProbactiv, nbiny, sParN[ePar], sUnit[ePar]);
   for (dy = 0; dy<(nbiny); dy++)
   {
-    if(bintch[dy]!=0.) 
+    if (bintch[dy]!=0.0 && bincounts[dy] > 0) 
     {
 	    binerror[dy] = (bint[dy]/bintch[dy])*sqrt(1./bincounts[dy]);
-	    fprintf(fMonitor, "%7.7f\t%5.3E\t%5.3E\t%d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
     }
+    fprintf(fMonitor, "%10.3f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
   }
 
   fclose(fMonitor);
 
+  fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nbiny, xMin, xMax, sUnit[ePar]);
+  fprintf(LogFilePtr, "File     : %s\n", MonFileName);
   if(bintc != 0.) 
-    fprintf(LogFilePtr,"\npolarization: %3.5f \n", binpol/bintc);
+    fprintf(LogFilePtr,"average polarization: %3.5f \n", binpol/bintc);
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -253,15 +283,14 @@ void  OwnInit(int argc, char *argv[])
 		      break;
 
 	      case 'k':
-	        kind = atol(&argv[i][2]);       /* 1= monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 5=monitory, 6=monitorz */
+	        ePar = atol(&argv[i][2]);       /* 1= monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 5=monitory, 6=monitorz */
 	        break;
-
 
 	      case 'n':
 	        nbiny = atol(&argv[i][2]);      /* number of bins */
 	        if (nbiny > 10000)
-	          {fprintf(LogFilePtr,"\n number of bins must be <= 10000"); exit(99);}
-	        break;
+	          Error("number of bins must be <= 10000");
+          break;
 
 	      case 'm':
 	        xMin = atof(&argv[i][2]);       /* lower bound lambda, time or div. window [A], [ms], [deg]*/
@@ -273,7 +302,6 @@ void  OwnInit(int argc, char *argv[])
 	      case 'p':
 	        bProbactiv = atof(&argv[i][2]);	/* p=1 means probabilities activated, else neutron weight is set to 1.0 */
 	        break;
-
 	      case 'e':
 	        if(argv[i][2]=='1')
 	          bExclusive = 1;               /* if activated, only neutrons meeting the monitor conditions are considered further on */
@@ -282,14 +310,12 @@ void  OwnInit(int argc, char *argv[])
     	  default:
 	        fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
 	        exit(-1);
-	        break;
 	    }
     }
   }
 
   if (MonFileName==NULL)
-  { fprintf(LogFilePtr,"\n you must define a MonitorOutputFile"); 
-    exit(99);
+  { Error("you must define a MonitorOutputFile"); 
   }
   else
   { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");

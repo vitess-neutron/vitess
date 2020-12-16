@@ -20,6 +20,10 @@ extern "C" {
 
 #include "mon1D.h"
 
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char *argv[])
 {
   long	i=0;
@@ -28,7 +32,7 @@ int main(int argc, char *argv[])
   bExclusive = FALSE;
   bRegistered= FALSE;
 
-  // This is the class for a generic 1D monitor. It handles 11 parameter at the moment
+  // This is the class for a generic 1D monitor. It handles 17 parameter at the moment
   Mon1D templateMonitor;
 
   // initialisation

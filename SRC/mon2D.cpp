@@ -1,65 +1,63 @@
 #ifndef MON2D_CPP
 #define MON2D_CPP
 
-
 #include "mon2D.h"
 
 
+/******************************/
+/** Constructor              **/
+/******************************/
 Mon2D::Mon2D()
 {
   eModule = MCN_MONITOR2;
-
-  dataArray = 0;
-  dataArrayPolWeights = 0;
-
-  xMin = -1;
-  xMax = -1;
-  yMin = -1;
-  yMax = -1;
+  fMonitorFilename = "NoFile";
 
   nBinsX = 0;
   nBinsY = 0;
-
-  xBinSize = 0;
-  yBinSize = 0;
-
   xParam = -1;
   yParam = -1;
 
-  fMonitor = 0;
-  fMonitorFilename = "NoFile";
+  xMin = -1.0;
+  xMax = -1.0;
+  yMin = -1.0;
+  yMax = -1.0;
 
-  weightTag[0] = "";
-  weightTag[1] = "weight";
-
-  formatTag[0] = "matrix";
-  formatTag[1] = "xyz";
+  bWeight = 1;
+  exclCounts = 0;
+  format = NO_FORMAT;
 
   lambdaMin = -1;
   lambdaMax = -1;
-
-  analysePol = 0;
-
-  polAnalysisVector = 0;
-  polAnalysisRotMatrix = 0;  
-
-  filterVarMin1 = -1;
-  filterVarMin2 = -1;
-  filterVarMax1 = -1;
-  filterVarMax2 = -1;
-
   filterParam1 = -1;
   filterParam2 = -1;
   filterComb = -1;
+  filterVarMin1 = -1.0;
+  filterVarMin2 = -1.0;
+  filterVarMax1 = -1.0;
+  filterVarMax2 = -1.0;
 
-  pWeight = 1;
-  exclCounts = 0;
-  format = -1;
-//  normalise = -1;
+  analysePol = 0;
 
+  polAnalysisVector    = NULL;
+  polAnalysisRotMatrix = NULL;  
+
+  fMonitor = NULL;
+
+  xBinSize = 0.0;
+  yBinSize = 0.0;
+
+  BinPosX   = NULL;
+  BinPosY   = NULL;
+  dataArray = NULL;
+  dataArrayError  = NULL;
+  dataArrayCounts = NULL;
+  dataArrayPolWeights = NULL;
 }
 
 
+/**************************************************/
+/** Reads input parameters and sets parameters   **/
+/**************************************************/
 void Mon2D::OwnInit(int argc, char* argv[])
 {
   // Read the command line arguments
@@ -113,7 +111,7 @@ void Mon2D::OwnInit(int argc, char* argv[])
 	        break;
 
 	      case 'p':
-	        pWeight  = atof(&argv[i][2]);
+	        bWeight  = atoi(&argv[i][2]);
 	        /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
 	        break;
 
@@ -161,8 +159,8 @@ void Mon2D::OwnInit(int argc, char* argv[])
           filterVarMax2 = atof(&argv[i][2]);   /* maximum value of filter parameter 2 */
           break;
 	
-          case 'F':
-          format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz, gnuplot readable */
+        case 'F':
+          format = (VtFormat2D) atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz, gnuplot readable */
           break;
 
 	      default:
@@ -175,8 +173,7 @@ void Mon2D::OwnInit(int argc, char* argv[])
 
   if (fMonitorFilename=="")
   {
-    fprintf(LogFilePtr,"\n you must define a MonitorOutputFile");
-    exit(99);
+    Error("you must define a MonitorOutputFile");
   }
   else
   {	
@@ -193,24 +190,23 @@ void Mon2D::OwnInit(int argc, char* argv[])
   yBinSize = (yMax - yMin)/nBinsY;
 
   // Allocate the memory for the monitor data
-  dataArray       = (double**) malloc(nBinsX * sizeof(double*));
-  dataArrayError  = (double**) malloc(nBinsX * sizeof(double*));
-  dataArrayCounts =    (int**) malloc(nBinsX * sizeof(int*));
-  for (int i = 0; i < nBinsX; i++) 
-  {
-    dataArray[i]       = (double*) malloc(nBinsY * sizeof(double));
-    dataArrayError[i]  = (double*) malloc(nBinsY * sizeof(double));
-    dataArrayCounts[i] =    (int*) malloc(nBinsY * sizeof(int));
-  }
+  BinPosX         = (double*) malloc((nBinsX+1) * sizeof(double));
+  BinPosY         = (double*) malloc((nBinsY+1) * sizeof(double));
+  dataArray       = (double*) malloc(nBinsY * nBinsX * sizeof(double));
+  dataArrayError  = (double*) malloc(nBinsY * nBinsX * sizeof(double));
+  dataArrayCounts =   (long*) malloc(nBinsY * nBinsX * sizeof(long));
+
+  for (int i = 0; i <= nBinsX; i++)  BinPosX[i] = xMin + (xMax - xMin) * i / (double)nBinsX;
+  for (int j = 0; j <= nBinsY; j++)  BinPosY[j] = yMin + (yMax - yMin) * j / (double)nBinsY;
 
   for (int i = 0; i < nBinsX; i++) 
   {
     for (int j = 0; j < nBinsY; j++)
     {
-      dataArray[i][j]=0.;
-      dataArrayError[i][j]=0.;
-      dataArrayCounts[i][j]=0;
-
+      int k = nBinsX * i + j; 
+      dataArray[k]=0.;
+      dataArrayError[k]=0.;
+      dataArrayCounts[k]=0;
     }
   }
 
@@ -219,14 +215,14 @@ void Mon2D::OwnInit(int argc, char* argv[])
   {
     polAnalysisRotMatrix =  MathMatrix::RotMatrixXFromVector(polAnalysisVector);
     
-    dataArrayPolWeights = (double**) malloc(nBinsX * sizeof(double*));
-    for (int i = 0; i < nBinsX; i++) dataArrayPolWeights[i] = (double*) malloc(nBinsY * sizeof(double));
+    dataArrayPolWeights = (double*) malloc(nBinsY * nBinsX * sizeof(double));
     
     for (int i = 0; i < nBinsX; i++) 
     {
       for (int j = 0; j < nBinsY; j++) 
       {
-	    	dataArrayPolWeights[i][j]=0;
+        int k = nBinsX * i + j; 
+	    	dataArrayPolWeights[k]=0;
       }
     }
   }
@@ -235,7 +231,10 @@ void Mon2D::OwnInit(int argc, char* argv[])
 
 }
 
-// Fill the monitor with the data of the neutron under study
+
+/***********************************************************/
+/** Fill the monitor with the data of the current neutron **/
+/***********************************************************/
 int Mon2D::FillMonitor(Neutron* n)
 {
   
@@ -249,60 +248,71 @@ int Mon2D::FillMonitor(Neutron* n)
   int binY = (int)((yValue - yMin)/yBinSize);
   if (yValue < yMin || yValue > yMax) return 0;
 
+  int kBinXY = nBinsX * binX + binY; 
+
   // Dismiss if outside the wavelength range, if defined
-  if (lambdaMin >= 0 || lambdaMax > 0) {
+  if (lambdaMin >= 0 || lambdaMax > 0) 
+  {
     if (n->Wavelength < lambdaMin || n->Wavelength > lambdaMax) return 0;
   }
 
   // Dismiss if outside the range of filter parameter 1, if defined (independent of filter 2: combined with AND)
-  if (filterParam1 > 0 && (filterParam2 <= 0 || filterComb==1)) {
+  if (filterParam1 > 0 && (filterParam2 <= 0 || filterComb==1)) 
+  {
     double filterValue1 = DetermineParameter(filterParam1, n);
     if (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) return 0;  
-}
+  }
 
   // Dismiss if outside the range of filter parameter 2, if defined (independent of filter 1: combined with AND)
-  if (filterParam2 > 0 && (filterParam1 <= 0 || filterComb==1)) {
+  if (filterParam2 > 0 && (filterParam1 <= 0 || filterComb==1)) 
+  {
     double filterValue2 = DetermineParameter(filterParam2, n);
     if (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2) return 0;
   }
 
   // Dismiss if outside the range of filter parameter 1 and 2 (pass if fulfilled 1 OR 2)
-  if (filterComb==0 && filterParam1 > 0 && filterParam2 > 0) {
+  if (filterComb==0 && filterParam1 > 0 && filterParam2 > 0) 
+  {
     double filterValue1 = DetermineParameter(filterParam1, n);
     double filterValue2 = DetermineParameter(filterParam2, n);
     if ( (filterValue1 < filterVarMin1 || filterValue1 > filterVarMax1) && (filterValue2 < filterVarMin2 || filterValue2 > filterVarMax2)) return 0;  
-}
+  }
 
   // Fill the monitor data if no polarisation analysis required
-  if (!analysePol) {
-    if (pWeight) dataArray[binX][binY] += n->Probability;
-    else dataArray[binX][binY] += 1.0;
+  if (!analysePol) 
+  {
+    if (bWeight) dataArray[kBinXY] += n->Probability;
+    else dataArray[kBinXY] += 1.0;
   }
 
   // If polarisation analysis required, include additional weight 
   // being the neutron spin component parallel to the analysis direction
-  else {
-
+  else 
+  {
     MathVector spinVector (n->Spin[0], n->Spin[1], n->Spin[2]);
     MathVector spinVectorProj = (*polAnalysisRotMatrix)*spinVector;
 
-    if (pWeight) {
-      dataArray[binX][binY] += n->Probability*spinVectorProj.x[0];
-      dataArrayPolWeights[binX][binY] += n->Probability;
+    if (bWeight) 
+    {
+      dataArray[kBinXY] += n->Probability*spinVectorProj.x[0];
+      dataArrayPolWeights[kBinXY] += n->Probability;
     }
-    else {
-      dataArray[binX][binY] += spinVectorProj.x[0];
-      dataArrayPolWeights[binX][binY] += 1.0;
+    else 
+    {
+      dataArray[kBinXY] += spinVectorProj.x[0];
+      dataArrayPolWeights[kBinXY] += 1.0;
     }
   }
 
-  dataArrayCounts[binX][binY]++;
+  dataArrayCounts[kBinXY]++;
 
   return 1;
-
 }
 
 
+/*******************************************************/
+/** Determine, which parameter has to be calculated   **/
+/*******************************************************/
 double Mon2D::DetermineParameter(int id, Neutron* n)
 {
 
@@ -404,80 +414,86 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
 
 }
 
-// Write output file
+
+/******************************/
+/** Write output file        **/
+/******************************/
 void Mon2D::WriteOut()
 {
+  char *sParX=NULL, *sParY=NULL;
+
+  ParId2Text(sParX, xParam);
+  ParId2Text(sParY, yParam);
+
   // For polarisation analysis, divide the value in each bin by the sum of spin weights
   for(int binx = 0; binx < nBinsX; binx++) 
   {
     for(int biny = 0; biny < nBinsY; biny++) 
     {
-      if (dataArray[binx][biny] > 0) 
+      int kBinXY = nBinsX * binx + biny; 
+      if (dataArray[kBinXY] > 0) 
       {
-        dataArrayError[binx][biny] = dataArray[binx][biny]*sqrt(1./dataArrayCounts[binx][biny]);
-        if (analysePol && dataArrayPolWeights[binx][biny] > 0) {
-	        dataArray[binx][biny]/=dataArrayPolWeights[binx][biny];
+        dataArrayError[kBinXY] = dataArray[kBinXY]*sqrt(1./dataArrayCounts[kBinXY]);
+        if (analysePol && dataArrayPolWeights[kBinXY] > 0) 
+        {
+	        dataArray[kBinXY]/=dataArrayPolWeights[kBinXY];
         }
       }
     }
   }
 
- 
-  fprintf(fMonitor, "#Monitor %s %s\n", formatTag[format].c_str(), weightTag[pWeight].c_str());
-  
-  switch (format) 
-  {
-    case 0: // matrix format
-      for(int binx = 0; binx < nBinsX; binx++)
-      {
-	        fprintf(fMonitor,"%5.3f\t",((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0);
-      }
-      for(int biny = 0; biny < nBinsY; biny++)
-      {
-	      fprintf(fMonitor,"\n %5.3f\t",((yMin + yBinSize*biny) + (yMin + yBinSize*(biny+1.)))/2.0);
-	      for(int binx = 0; binx < nBinsX; binx++)
-	      {
-	        fprintf(fMonitor,"%5.3E\t",dataArray[binx][biny]);
-	      }
-      }
-      break;
+  if (analysePol) 
+    WriteHeader2D(fMonitor, format, "polarisation", bWeight,  nBinsX, sParX,           nBinsY, sParY);
+  else
+    WriteHeader2D(fMonitor, format, "Intensity",    bWeight,  nBinsX, sParX,           nBinsY, sParY);
 
-    case 1: // xyz format
-      fprintf(fMonitor, "#x  y  z\n");
-      for(int biny = 0; biny < nBinsY; biny++) 
-      {
-        for(int binx = 0; binx < nBinsX; binx++) 
-        {
-		      fprintf(fMonitor,"%5.3f\t%5.3f\t%5.3E\t%5.3E\t%d\n", 
-		      ((xMin + xBinSize*binx) + (xMin + xBinSize*(binx+1.)))/2.0, 
-		      ((yMin + yBinSize*biny) + (yMin + yBinSize*(biny+1.)))/2.0,
-		      dataArray[binx][biny], dataArrayError[binx][biny], dataArrayCounts[binx][biny]);
-        }
-        fprintf(fMonitor, "\n");
-      }
-      break;
-  }
+  WriteOutput2D  (fMonitor, format,                 bWeight,  nBinsX, BinPosX, nBinsX, nBinsY, BinPosY,  dataArray, dataArrayError, dataArrayCounts);
+
   if (fMonitor!=NULL)
     fclose(fMonitor);
 }
 
 
+/***********************************/
+/** Convert parameter ID to text  **/
+/***********************************/
+void Mon2D::ParId2Text(char* sParName, const int ePar)
+{
+  switch (ePar)
+  { 
+    case  0: strcpy(sParName, "pos_y");     break;
+	  case  1: strcpy(sParName, "pos_z");     break;
+	  case  2: strcpy(sParName, "div_y");     break;
+	  case  3: strcpy(sParName, "div_z");     break;
+	  case  4: strcpy(sParName, "lambda");    break;
+	  case  5: strcpy(sParName, "energy");    break; 
+	  case  6: strcpy(sParName, "time");      break; 
+	  case  7: strcpy(sParName, "k_y");       break;
+	  case  8: strcpy(sParName, "k_z");       break; 
+	  case  9: strcpy(sParName, "pos_r");     break; 
+	  case 10: strcpy(sParName, "pos_phi");   break;
+	  case 11: strcpy(sParName, "col_vert");  break; 
+	  case 12: strcpy(sParName, "col_hor");   break; 
+	  case 13: strcpy(sParName, "color");     break; 
+	  case 14: strcpy(sParName, "dir_phi");   break;
+	  case 15: strcpy(sParName, "dir_theta"); break;
+	  case 16: strcpy(sParName, "pos_x");     break;
+  }
+}
+
+
+/******************************/
+/** Free allocated memory    **/
+/******************************/
 void Mon2D::FreeMemory()
 {
   // Give back the memory space
-  for (int i = 0; i < nBinsX; i++) 
-  {
-    free(dataArray[i]);
-    free(dataArrayError[i]);
-    free(dataArrayCounts[i]);
-  }
-  free (dataArray);
+  free(dataArray);
   free(dataArrayError);
   free(dataArrayCounts);
 
   if (analysePol) 
   {
-     for (int i = 0; i < nBinsX; i++) free(dataArrayPolWeights[i]);
      free (dataArrayPolWeights);
   }
 

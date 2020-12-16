@@ -63,81 +63,80 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit(int argc, char *argv[]);
-void  OwnCleanup();
-void  SetFormatsAndHeader(int iSsep, const char *sSep);
-short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv, const VectorType Direction);
+void  OwnInit(int argc, char *argv[]);                                           // Reads input parameters and sets global variables
+void  OwnCleanup();                                                              // Does module specific cleanup
+void  SetFormatsAndHeader(int iSsep, const char *sSep);                          // Defines format for variables in output file and print headline
+short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
+                     const VectorType Direction);                                
+short McStasParameters();                                                        // Sets output parameters for McStas  
+short MCNPParameters();                                                         // Sets output parameters for MCNPX  
+short ConvertVitess2McStas(McNeutron*       pMcNeut,   const Neutron* pVitNeut); // Conversion from VITESS to McStas trajectory
+short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCPL  trajectory
+short ConvertVitess2MCNP  (McnpNeutron*     pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNP  trajectory
 
-short McStasParameters();
-short MCNPXParameters();
-short ConvertVitess2McStas(McNeutron*       pMcNeutron,   const Neutron* pVitNeutron);
-short ConvertVitess2MCNPX (McnpNeutron*     pMcnpNeutron, const Neutron* pVitNeutron);
-short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeutron, const Neutron* pVitNeutron);
-
-void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);
-
-char* FullParName(const char* filename);   // function in init.c
+void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);            // Vector transfer from VITESS to McStas co-ordinate system
+                                                                               
+char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name 
 
 
 /******************************/
-/** Global Variables    **/
+/** Global Variables         **/
 /******************************/
 McCompID       _eModule=MCN_WRITEOUT;
 
-FILE*          pOutFile;  // pointer to output file
-mcpl_outfile_t hOutFile;  // handle to output file for MCPL format
+// Input parameters
+char*        sOutFileName=NULL;         //  -A   [-]   output file name
+short        bActive=TRUE;              //  -a   [-]   flag: YES: writeout is active   NO: output file is not written
+VtPrgFormat  ePrgFormat=VT_VITESS_ASC;  //  -f   [-]   output format: VT_VITESS_FMT: VITESS ASCII format   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP_FMT: MCNP   VT_VITESS_BIN: VITESS binary format)
+short        iDetectColor = -1;         //  -C   [-]   write out only neutrons with a given color, -1 means any
+short        bF_cID=TRUE,               //  -c   [-]   string containing 9 flags to determine which parameters are written: ID, trace flag, color, TOF, wavelength, intensity, position, direction, spin.
+             bF_cTrc=TRUE,
+             bF_cColor=TRUE,
+             bF_cTOF=TRUE,
+             bF_cLambda=TRUE,
+             bF_cCounts=TRUE,
+             bF_cPosition=TRUE,
+             bF_cDirection=TRUE,
+             bF_cSpin=TRUE;
 
-char form[15][15];        // formats to print data of the different parameters using VITESS
-char* outform;            // format for the whole line using McStas or MCNPX
-char* header;             // header: parameters of the event file
-char* units;              // header: units used in the event file
-char* sOutFileName=NULL; // output file name
+VtDataFormat eDatFormat=VT_FLOAT;       //  -F   [-]   output format (exponential, float)
+VtSeparator  eSeparator=VT_BLANK;       //  -S   [-]   separator between columns (space, tab)
+double       FactInt   = 1.0;           //  -I   [-]   Factor to normalize to the source intensity from MCNPX data
 
+double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
+             filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
+             filtYMin     =-1.0e10,     //  -y   [cm]  minimal horizontal position to be taken into account
+             filtYMax     = 1.0e10,     //  -Y   [cm]  maximal horizontal position to be taken into account
+             filtZMin     =-1.0e10,     //  -z   [cm]  minimal vertical position to be taken into account
+             filtZMax     = 1.0e10,     //  -Z   [cm]  maximal vertical position to be taken into account
+             filtYDivMin  =-1.0e10,     //  -e  [deg]  minimal horizontal divergence to be taken into account
+             filtYDivMax  = 1.0e10,     //  -d  [deg]  maximal horizontal divergence to be taken into account
+             filtZDivMin  =-1.0e10,     //  -E  [deg]  minimal vertical divergence to be taken into account
+             filtZDivMax  = 1.0e10,     //  -D  [deg]  maximal vertical divergence to be taken into account
+             filtDivMin   =-1.0e10,     //  -E  [deg]  minimal divergence to be taken into account
+             filtDivMax   = 1.0e10;     //  -D  [deg]  maximal divergence to be taken into account
 
-VtPrgFormat  ePrgFormat=VT_VITESS_FMT; // output format (VITESS, McStas, MCNPX)
-VtDataFormat eDatFormat=VT_FLOAT;      // output format (exponential, float)
-VtSeparator  eSeparator=VT_BLANK;      // separator between columns (space, tab)
-
-double FactInt=1.0;         // Factor to normalize to the source intensity from MCNPX data
-short  DetectColor  = 0;    // WriteOut only neutrons with a given color, -1 means any
-int    calcDivY = 0,        // boolean: calculation of hor. divergence 
-       calcDivZ = 0;        //                      or vert. divergence necessary
-
-short bF_cID=TRUE,
-      bF_cTrc=TRUE,
-      bF_cColor=TRUE,
-      bF_cTOF=TRUE,
-      bF_cLambda=TRUE,
-      bF_cCounts=TRUE,
-      bF_cPosition=TRUE,
-      bF_cDirection=TRUE,
-      bF_cSpin=TRUE,
-      bF_Active=TRUE;
-
-double filtLambdaMin=-1.0,   // filter
-       filtLambdaMax=-1.0,
-       filtYMin     =-1.0e10,
-       filtYMax     = 1.0e10,
-       filtZMin     =-1.0e10,
-       filtZMax     = 1.0e10,
-       filtYDivMin  =-1.0,
-       filtZDivMin  =-1.0,
-       filtDivMin   =-1.0,
-       filtYDivMax  =-1.0,
-       filtZDivMax  =-1.0,
-       filtDivMax   =-1.0;
+// Variables determined from input parameters or trajectory data
+FILE*          pOutFile=NULL;           //             pointer to output file
+mcpl_outfile_t hOutFile;                //             handle to output file for MCPL format
+char*          sOutform=NULL;           //             format for the whole line using McStas or MCNPX
+char*          sHeader =NULL;           //             header: parameters of the event file
+char*          sUnits  =NULL;           //             header: units used in the event file
+short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
+               bCalcDivZ = FALSE;       //                               or vert. divergence necessary
+char           form[15][15]={"","","","","","","","","","","","","","",""};            
+                                        // formats to print data of the different parameters using VITESS
 
 
 /******************************/
-/** Program                  **/
+/**  Main Program            **/
 /******************************/
 int main(int argc, char **argv)
 {
-  int             i=0,              // index of trajectories
-                  iSep=0,           // index of formats
-                  nBytesW=0;        // number of bytes written to output file
-  const char*     pSep=NULL;        // separator
-  double          Divy, Divz, Div;  // divergence of the current trajectory
+  int             i=0,               // index of trajectories
+                  nBytesW=0;         // number of bytes written to output file
+  double          Divy=0.0, 
+                  Divz=0.0, Div=0.0; // divergence of the current trajectory
   Neutron         OutNeutron;
   McNeutron       OutMcNeutron;
   McnpNeutron     OutMpNeutron;
@@ -149,56 +148,15 @@ int main(int argc, char **argv)
   memset(&OutMpNeutron, '\0', sizeof(McnpNeutron));
   memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
-  // Initialize the program according to the parameters given 
-  // --------------------------------------------------------
+  // Initialization 
+  // --------------
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.10");
   OwnInit(argc, argv);
   
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
-  if (bVisInstr)
-    stGeometry.pDescr = "writeout:white";
-  
-  if (eSeparator==VT_TABULATOR) 
-    pSep = "\t"; 
-  else if (eSeparator==VT_BLANK) 
-    pSep = " ";
-  else
-    Error("Separator has unknown value");
-
-  // define format for variables in output file and print headline
-  if (bF_Active)
-  {
-    switch (ePrgFormat)
-    { case VT_MCSTAS_FMT:
-        header  = "#     weight        pos_x     pos_y      pos_z      speed_x      speed_y      speed_z        TOF       S_x  S_y  S_z \n";  
-        units   = "#      [n/s]         [m]       [m]        [m]        [m/s]        [m/s]        [m/s]         [s]       [1]  [1]  [1] \n";  
-        outform = "%15.3f  %9.6f %9.6f %10.6f  %12.2f %12.2f %12.2f  %11.9f  %4.1f %4.1f %4.1f";
-	      fprintf(pOutFile,"#Trajectories writeout_McStas \n");
-        fprintf(pOutFile, "%s%s", header, units);
-        break;
-      case VT_MCPL_FMT:
-        mcpl_hdr_set_srcname    (hOutFile, "VITESS 3.4  module writeout 1.10"); /* Name of the generating application         */
-        mcpl_hdr_add_comment    (hOutFile, "first test");                       /* Add one or more human-readable comments    */
-        mcpl_enable_polarisation(hOutFile);                                     /* to write the "polarisation" info           */
-        break;
-      case VT_MCNPX_FMT:
-        header  = "#    pos_x          pos_y          pos_z          dir_x          dir_y          dir_z            E           weight          time  \n";  
-        units   = "#     [cm]           [cm]           [cm]           [1]            [1]            [1]           [MeV]           [1]         [1e-8s] \n";  
-        outform = "%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e";
-	      fprintf(pOutFile,"#Trajectories writeout_MCNPX \n");
-        fprintf(pOutFile, "%s%s", header, units);
-        break;
-      case VT_VITESS_BIN:
-        // nothing to do for VITESS binary output
-        break;
-      default:   
-        // VITESS ASCII output
-	      fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
-        SetFormatsAndHeader(iSep, pSep);
-    }
-  }
+  // if (bVisInstr) stGeometry.pDescr = "writeout:white";
  
   DECLARE_ABORT;
 
@@ -214,7 +172,7 @@ int main(int argc, char **argv)
 	    WriteNeutron(&(InputNeutrons[i]));
 
       // skip the rest if the module is not active 
-	    if (!bF_Active) continue;
+	    if (!bActive) continue;
 
 	    // Filter wavelength and position
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
@@ -243,20 +201,20 @@ int main(int argc, char **argv)
         case VT_MCPL_FMT:
           ConvertVitess2MCPL (&OutParticle,   &InputNeutrons[i]);
           break;
-        case VT_MCNPX_FMT:
-          ConvertVitess2MCNPX(&OutMpNeutron,  &InputNeutrons[i]);
+        case VT_MCNP_FMT:
+          ConvertVitess2MCNP(&OutMpNeutron,  &InputNeutrons[i]);
           break;
         default:   // nothing to do for VITESS
           memcpy(&OutNeutron, &InputNeutrons[i], sizeof(Neutron));
       }
 
       // write out neutrons of proper colour
-      if (DetectColor < 0 || OutNeutron.Color == DetectColor) 
+      if (iDetectColor < 0 || OutNeutron.Color == iDetectColor) 
       {
         switch (ePrgFormat)
         {
           case VT_MCSTAS_FMT:
-            fprintf(pOutFile, outform, OutMcNeutron.Weight, 
+            fprintf(pOutFile, sOutform, OutMcNeutron.Weight, 
 			                                 OutMcNeutron.Position[0], OutMcNeutron.Position[1], OutMcNeutron.Position[2],
 			                                 OutMcNeutron.Speed   [0], OutMcNeutron.Speed   [1], OutMcNeutron.Speed   [2],
 		                                   OutMcNeutron.Time,        
@@ -267,8 +225,8 @@ int main(int argc, char **argv)
             mcpl_add_particle(hOutFile, &OutParticle);
             break;
 
-          case VT_MCNPX_FMT:
-            fprintf(pOutFile, outform, OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
+          case VT_MCNP_FMT:
+            fprintf(pOutFile, sOutform, OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
 			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
 		                                   OutNeutron.Wavelength,  OutNeutron.Probability, OutNeutron.Time);
             break;
@@ -323,12 +281,14 @@ int main(int argc, char **argv)
 }
 
 
-// ------------------------------
-// module specific initialization
-// ------------------------------
+/*******************************************************/
+/** Reads input parameters and sets global parameters **/
+/*******************************************************/
 void  OwnInit(int argc, char *argv[]) 
 {
-  int i;
+  int         i=0,         // index of parameter list  
+              iSep=0;      // index of formats
+  const char* pSep=NULL;   // separator
 
   for(i=1; i<argc; i++) 
   { if(argv[i][0]!='+') 
@@ -338,13 +298,13 @@ void  OwnInit(int argc, char *argv[])
           sOutFileName = &argv[i][2];
           break;
         case 'a':
-          sscanf(&(argv[i][2]),"%hd", &bF_Active);
+          sscanf(&(argv[i][2]),"%hd", &bActive);
           break;
         case 'c':
           sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
           break;
         case 'C':
-          DetectColor = (short) atoi(&argv[i][2]);
+          iDetectColor = (short) atoi(&argv[i][2]);
           break;
         case 'I':
           FactInt    = atof(&argv[i][2]);
@@ -380,17 +340,17 @@ void  OwnInit(int argc, char *argv[])
           filtZMax = atof(&argv[i][2]);       /* filter Z */
           break;
 	    
-        case 'd':
-          filtYDivMax = atof(&argv[i][2]);    /* filter DivYMax, -1 means any */
-          break;
-        case 'D':
-          filtZDivMax = atof(&argv[i][2]);    /* filter DivZMax, -1 means any */
-          break;
         case 'e':
           filtYDivMin = atof(&argv[i][2]);    /* filter DivYMin, -1 means any */
           break;
+        case 'd':
+          filtYDivMax = atof(&argv[i][2]);    /* filter DivYMax, -1 means any */
+          break;
         case 'E':
           filtZDivMin = atof(&argv[i][2]);    /* filter DivZMin, -1 means any */
+          break;
+        case 'D':
+          filtZDivMax = atof(&argv[i][2]);    /* filter DivZMax, -1 means any */
           break;
         case 'g':
           filtDivMin = atof(&argv[i][2]);     /* filter DivMin,  -1 means any */
@@ -406,11 +366,11 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
-  calcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
-  calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  bCalcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  bCalcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
   if (sOutFileName != NULL)
-  { if (bF_Active) 
+  { if (bActive) 
     { if (ePrgFormat== VT_MCPL_FMT)
       { hOutFile = mcpl_create_outfile(FullParName(sOutFileName));
       }
@@ -420,22 +380,64 @@ void  OwnInit(int argc, char *argv[])
       else  
       { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
       }
+      fprintf(LogFilePtr,"Trajectories written to output file %s\n", FullParName(sOutFileName));
     }
   } 
   else 
   { fputs("ERROR: The option -A to give the ascii file name is mandatory!\n", LogFilePtr);
     exit(-1);
   }
+  
+  if (eSeparator==VT_TABULATOR) 
+    pSep = "\t"; 
+  else if (eSeparator==VT_BLANK) 
+    pSep = " ";
+  else
+    Error("Separator has unknown value");
+
+  // define format for variables in output file and print headline
+  if (bActive)
+  {
+    switch (ePrgFormat)
+    { case VT_MCSTAS_FMT:
+        sHeader  = "#     weight        pos_x     pos_y      pos_z      speed_x      speed_y      speed_z        TOF       S_x  S_y  S_z \n";  
+        sUnits   = "#      [n/s]         [m]       [m]        [m]        [m/s]        [m/s]        [m/s]         [s]       [1]  [1]  [1] \n";  
+        sOutform = "%15.3f  %9.6f %9.6f %10.6f  %12.2f %12.2f %12.2f  %11.9f  %4.1f %4.1f %4.1f";
+	      fprintf(pOutFile,"#Trajectories writeout_McStas \n");
+        fprintf(pOutFile, "%s%s", sHeader, sUnits);
+        break;
+      case VT_MCPL_FMT:
+        mcpl_hdr_set_srcname    (hOutFile, "VITESS 3.4  module writeout 1.10"); /* Name of the generating application         */
+        mcpl_hdr_add_comment    (hOutFile, "first test");                       /* Add one or more human-readable comments    */
+        mcpl_enable_polarisation(hOutFile);                                     /* to write the "polarisation" info           */
+        break;
+      case VT_MCNP_FMT:
+        sHeader  = "#    pos_x          pos_y          pos_z          dir_x          dir_y          dir_z            E           weight          time  \n";  
+        sUnits   = "#     [cm]           [cm]           [cm]           [1]            [1]            [1]           [MeV]           [1]         [1e-8s] \n";  
+        sOutform = "%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e";
+	      fprintf(pOutFile,"#Trajectories writeout_MCNPX \n");
+        fprintf(pOutFile, "%s%s", sHeader, sUnits);
+        break;
+      case VT_VITESS_BIN:
+        // nothing to do for VITESS binary output
+        break;
+      default:   
+        // VITESS ASCII output
+	      fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
+        SetFormatsAndHeader(iSep, pSep);
+    }
+  }
+
 }
 
 
-// -----------------------
-// module specific cleanup
-// -----------------------
+/***************************************************/
+/**  Does module specific cleanup                 **/
+/***************************************************/
 void OwnCleanup()
 {
   /* close the file if it was openend */
-  if (bF_Active) 
+  if (bActive) 
   { if (ePrgFormat== VT_MCPL_FMT)
     {
       mcpl_close_outfile(hOutFile);
@@ -447,31 +449,31 @@ void OwnCleanup()
 }
 
 
-// -----------------------------------------------
-// calculation of divergence from flight direction
-// in : Direction: normalized flight direction
-// out: Div    : total divergence
-//    : HorDiv : horizontal divergence
-//    : VrtDiv : vertical divergence
-// return: rc  : TRUE/FALSE
-// -----------------------------------------------
+/***************************************************
+** calculation of divergence from flight direction
+** in : Direction: normalized flight direction
+** out: Div    : total divergence
+**    : HorDiv : horizontal divergence
+**    : VrtDiv : vertical divergence
+** return: rc  : TRUE/FALSE
+****************************************************/
 short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const VectorType Direction)
 {
   short rc=FALSE;
 
-  if (calcDivY) 
+  if (bCalcDivY) 
   { *pHorDiv  = atan2(Direction[1], Direction[0]);
     *pHorDiv *= 180.0/M_PI;
     if ((Direction[1]==0.0) && (Direction[0]==0.0))
       *pHorDiv=0.0;
     rc=TRUE;
   }
-  if (calcDivZ) 
+  if (bCalcDivZ) 
   { *pVrtDiv  = atan2(Direction[2], Direction[0]);
     *pVrtDiv *= 180.0/M_PI;
     if ((Direction[2]==0.0) && (Direction[0]==0.0))
       *pVrtDiv=0.0;
-    if (calcDivY) *pDiv = sqrt(sq(*pHorDiv) + sq(*pVrtDiv));
+    if (bCalcDivY) *pDiv = sqrt(sq(*pHorDiv) + sq(*pVrtDiv));
     rc=TRUE;
   }
 
@@ -479,14 +481,14 @@ short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const Vecto
 }
 
 
-// -------------------------------------------------------------
-// define format for variables in output file and print headline
-// -------------------------------------------------------------
+/**********************************************************************/
+/**  Defines format for variables in output file and print headline  **/
+/**********************************************************************/
 void SetFormatsAndHeader(int iSep, const char *pSep)
 {
   switch (ePrgFormat)
   { case VT_MCSTAS_FMT: McStasParameters(); break;
-    case VT_MCNPX_FMT : MCNPXParameters();  break;
+    case VT_MCNP_FMT  : MCNPParameters();   break;
     default: ; // nothing to do for VITESS
   }
 
@@ -592,7 +594,9 @@ void SetFormatsAndHeader(int iSep, const char *pSep)
 }
 
 
-
+/********************************************************/
+/**  Sets output parameters for McStas and MCNPX resp. **/
+/********************************************************/
 short McStasParameters()
 {
   bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
@@ -601,7 +605,7 @@ short McStasParameters()
   return(TRUE);
 }
 
-short MCNPXParameters()
+short MCNPParameters()
 {
   bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
   bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
@@ -610,9 +614,9 @@ short MCNPXParameters()
 }
 
 
-// --------------------------------------------
-//  Conversion from VITESS to McStas trajectory 
-// --------------------------------------------
+/***************************************************/
+/**  Conversion from VITESS to McStas trajectory  **/
+/***************************************************/
 short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
 {
 	double  velocity;      // velocity of the neutron  [m/s]
@@ -634,9 +638,9 @@ short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
   return(TRUE);
 }
 
-// ------------------------------------------
-// conversion from VITESS to MCPL parameters
-// ------------------------------------------
+/**************************************************/
+/** Conversion from VITESS to MCPL parameters    **/
+/**************************************************/
 short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron)
 {
 	// initialization			                      
@@ -654,10 +658,10 @@ short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutr
   return(TRUE);
 }
 
-// ------------------------------------------
-// conversion from VITESS to MCNPX parameters
-// ------------------------------------------
-short ConvertVitess2MCNPX (McnpNeutron* pMcnpNeutron, const Neutron* pVitNeutron)
+/**************************************************/
+/**  Conversion from VITESS to MCNPX parameters  **/
+/**************************************************/
+short ConvertVitess2MCNP(McnpNeutron* pMcnpNeutron, const Neutron* pVitNeutron)
 {
   CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
   CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
@@ -669,6 +673,9 @@ short ConvertVitess2MCNPX (McnpNeutron* pMcnpNeutron, const Neutron* pVitNeutron
 }
 
 
+/****************************************************************/
+/**  Vector transfer from VITESS to McStas co-ordinate system  **/
+/****************************************************************/
 void RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector)
 {
 	(*pMcVector)[0] = (*pVitVector)[1];

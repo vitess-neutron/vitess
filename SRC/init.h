@@ -11,7 +11,7 @@
 #define MAXWORKER 32
 #define MOD_NAME_LEN  20   // length of module name
 
-extern const char *sInstrInfIn;
+extern char*    sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
 extern double   CmprFact;       /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
@@ -69,8 +69,8 @@ void WriteWWP         (Neutron* pNeutron, VtReason eReason);
 
 void WriteInstrData   (VectorType EndPos);
 long ReadInstrData    (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
-void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj);
-void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj);
+void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj, long  nBundles);
+void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles);
 void WriteGeomData    (VectorType vBegPos, double Length);
 
 void DefineColors     (FILE* pGeomFile);

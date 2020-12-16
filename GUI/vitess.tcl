@@ -786,9 +786,9 @@ set external_commandESET {
 ###
 set read_inESET {
   {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
-  {fname pareditablefile "ascii_in.dat" {"ASCII input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
-  {fname2 pareditablefile "" {"ASCII input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories." "" B} r}
-  {fname3 pareditablefile "" {"ASCII input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories." "" D} r}
+  {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
+  {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories.\n(Not for MCPL format)" "" B} r}
+  {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories.\n(Not for MCPL format)" "" D} r}
   {}
   {ri_frc1 float "1.0" {"weight of traj.\nin file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
   {ri_frc2 float "0.0" {"weight of traj.\nin file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
@@ -2429,8 +2429,8 @@ set pA {
 
 set FA {
   {fileformat radio matrix {
-    "file\nformat" "file format for output. matrix is the established format. The xyz column format is new." "" F}
-    {matrix xyz} {0 1}}
+    "file\nformat" "file format for the 2D output" "" F}
+    {matrix xyz "matrix compact" "xyz compact"} {0 1 2 3}}
 }
 
 set tA {
@@ -2882,7 +2882,8 @@ proc genFE {n} {
 set mA1 {
   {parameter1 radio pos_y {
     "1st parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} 
+    {  1     2     17    3     4      5     6      7   8   9   10     11      15      16          12    13    14}}
   {parameter2 radio none {
     "2nd parameter\non x-axis" "choose the 2nd parameter to be shown on the x-axis,\na separate file will be created." "" Y}
     {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {0 1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}

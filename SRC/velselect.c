@@ -30,21 +30,21 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 McCompID _eModule=MCN_VEL_SELECT;
 
 // Input parameters
-double  Radius  =  20.0,    // -r  [cm]   radius of the velocity selector 
-        Length  =  30.0,    // -l  [cm]   length of the velocity selector 
-        Spacer  =   0.0,    // -d  [cm]   blade thickness   
-        Freq    = 250.0,    // -s  [Hz]   number of velocity selector rotations per second
-        Twist   =  45.0,    // -c  [deg]  twist of the velocity selector channels
-        DistAxle=  15.0;    // -o  [cm]   distance origin - axle of the velocity selector
-long    winnum  =  90;      // -w   [-]   number of windows 
+double  Radius   = 0.0,    // -r  [cm]   radius of the velocity selector 
+        Length   = 0.0,    // -l  [cm]   length of the velocity selector 
+        Spacer   = 0.0,    // -d  [cm]   blade thickness   
+        Freq     = 0.0,    // -s  [Hz]   number of velocity selector rotations per second
+        Twist    = 0.0,    // -c  [deg]  twist of the velocity selector channels
+        DistAxle = 0.0;    // -o  [cm]   distance origin - axle of the velocity selector
+long    nChannels= 1;      // -w   [-]   number of selector channels
                                     
 // Variables determined from input parameters or trajectory data
 double* pAngIn;	            //            array: orientation of the blades
-double  BladeAng,           //     [rad]  angular width of a blade at the origin
-        WndWidth,           //     [cm]   inner width of a window at the origin
-        WndAng,             //     [rad]  angular inner width of a window
-        nRot,               //    [1/ms]  number of velsel. rotations per millisecond
-        Curve;              //     [rad]  twist of the velocity selector channels
+double  BladeAng=0.0,       //     [rad]  angular width of a blade at the origin
+        WndWidth=0.0,       //     [cm]   inner width of a window at the origin
+        WndAng=0.0,         //     [rad]  angular inner width of a window
+        nRot =0.0,          //    [1/ms]  number of velocity selector rotations per millisecond
+        Curve=0.0;          //     [rad]  twist of the velocity selector channels
 
 
 /******************************/
@@ -77,12 +77,12 @@ int main(int argc, char *argv[])
     {
       Velocity = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
       globalz = DistAxle + InputNeutrons[i].Position[2];  /* Distance axle velsel. neutron (z-direction)*/
-      if (globalz<0.0) {fprintf(LogFilePtr," error1, wrong geometry"); exit(99);}
+      if (globalz < 0.0) Error("wrong geometry: neutron was found below axle");
   
       /* calculation  of  angle: z-axis; center velsel.; neutron position */
       neutAng = atan(InputNeutrons[i].Position[1]/globalz);
-      if (fabs(neutAng) > M_PI) {fprintf(LogFilePtr," error2, wrong geometry"); exit(99);}
-  
+      if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
+
       /* Rotation angle of velsel. corresponding to neutron time */
       Rotang = 2.0*M_PI*nRot*InputNeutrons[i].Time;
   
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
       while (Rotang < -M_PI) Rotang+=2.0*M_PI;
   
       /* Loop over all windows of the velsel. */
-      for(n=0; n<winnum;n++)
+      for(n=0; n<nChannels;n++)
       {
         CHECK
   
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
             goto Getnewneutron;
   
           neutAng = atan(InputNeutrons[i].Position[1]/globalz);
-          if (fabs(neutAng) > M_PI) {fprintf(LogFilePtr," error3, wrong geometry"); exit(99);}
+          if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
   
           /* update TrailingEdge and Leading Edge for the channel under consideration*/
           deltaRot = (ToF*2.0*M_PI*nRot) - Curve;
@@ -159,7 +159,8 @@ int main(int argc, char *argv[])
 // Finish: print parameters, write geometry and instrument file, free memory
 // -----------------------------------------------------
 my_exit:
-  free(pAngIn);
+  if (pAngIn!=NULL)
+    free(pAngIn);
   
   SetGeometry("grey");                       // write geometry data for visualization
   Cleanup(Length,0.0,0.0, 0.0,0.0);          // print intensity, write instrument.inf, free memory
@@ -173,8 +174,7 @@ my_exit:
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-  int i;
-  bVisInstalled = TRUE;
+  int i=0, k=0;
 
   for(i=1; i<argc; i++)
   {
@@ -192,7 +192,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'w':
-          winnum = atol(&argv[i][2]); /* number of windows */
+          nChannels = atol(&argv[i][2]); /* number of windows */
           break;
 
         case 'd':
@@ -221,16 +221,16 @@ void OwnInit(int argc, char *argv[])
   }
   
   /* definition of mean window width, corresponding angle and angle with respect to blade thickness */
-  WndWidth = (2.0*M_PI*DistAxle/(double)winnum) - 2.0*DistAxle*asin(Spacer/(2.0*DistAxle));
+  WndWidth = (2.0*M_PI*DistAxle/(double)nChannels) - 2.0*DistAxle*asin(Spacer/(2.0*DistAxle));
   WndAng   = WndWidth/DistAxle;
   BladeAng = 2.0*DistAxle*asin(Spacer/(2.0*DistAxle))/DistAxle;
   
   /* definition of window "coordinates" */
-  pAngIn = calloc(winnum, sizeof(double));
+  pAngIn = calloc(nChannels, sizeof(double));
   
-  for (i=0; i<winnum; i++)
+  for (k=0; k<nChannels; k++)
   {	
-    pAngIn[i] = i*(WndAng + BladeAng);
+    pAngIn[k] = k*(WndAng + BladeAng);
   }
 
   return;
