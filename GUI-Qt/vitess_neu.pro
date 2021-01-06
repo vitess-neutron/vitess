@@ -8,8 +8,11 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = vitess_neu
+TARGET = Vitess-Qt
 TEMPLATE = app
+
+OBJECTS_DIR = .obj
+MOC_DIR = .moc
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings

@@ -2,8 +2,9 @@
 #include "ui_mainwindow.h"
 
 #include <QFileDialog>
-#include  <QPushButton>
+#include <QPushButton>
 #include <QTextStream>
+#include <QScrollBar>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <iostream>
@@ -32,10 +33,10 @@ MainWindow::MainWindow(QWidget *parent) :
     while ( ui->stackedWidget->count() > 0 )
         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
     ui->stackedWidget->hide();
-    cout << "currentpath:" << QDir::currentPath().toStdString() << endl;
-    QString yamlPath = QApplication::applicationDirPath().
-                       left(QApplication::applicationDirPath().lastIndexOf("/"))+"/yaml/";
-    QDir directory (yamlPath);
+    VitessDir = QApplication::applicationDirPath().
+               left(QApplication::applicationDirPath().lastIndexOf("/"));
+    instrumentDir = VitessDir;
+    QDir directory (VitessDir+"/yaml/");
     QStringList modulList;
     // List of all configuration yaml files
     fList = directory.entryList({"*.yaml"});
@@ -59,14 +60,14 @@ MainWindow::MainWindow(QWidget *parent) :
        Module[modulList[i]] <<  modulFile << QString::fromStdString(config.begin()->first.as<string>());
        //count same modules in table
        modindex[modulList[i]] = 0;
-       mapModul.clear();
+       mapModule.clear();
 
        designModul(modulList[i]);
        // map of modulname and moduldesign
        modulGui[modulList[i]] = scrollArea;
 
        //map of modulname and map of modulparameter and their definitions
-       mapVitess[modulList[i]] = mapModul;
+       mapVitess[modulList[i]] = mapModule;
     }
 
     modultab = new ModulTable(modulList, ui->modWidget);
@@ -182,17 +183,21 @@ void MainWindow::insertModule(int row)
 void MainWindow::on_actionLoad_triggered()
 {
 
-   instrumentName = QFileDialog::getOpenFileName(this,"Open Instrument",VitessDir,
+   instrumentName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir,
                                                  tr("YAML (*.yaml *.yml)"));
    QFileInfo fileinfo(instrumentName);
    ui->InstName->setText(fileinfo.baseName());
    QFile file(instrumentName);
    if (!file.open(QFile::ReadOnly | QFile::Text))
    {
-       QMessageBox::information(this,"Warning cannot open: ",instrumentName);
+       QMessageBox::information(this,"Load Instrumnet","Warning cannot open: ",instrumentName);
        return;
    }
-
+   QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                 "Load Instrument",
+                                 "Set default directory to\n"+ fileinfo.path(),
+                                 QMessageBox::Yes|QMessageBox::No);
+   if (reply == QMessageBox::Yes) instrumentDir=fileinfo.path();
    modultab->cleanModules();
    while ( ui->stackedWidget->count() > 0 )
         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
@@ -234,7 +239,7 @@ void MainWindow::on_actionSave_triggered()
 {
     if (instrumentName == "")                          //no filename set
     {
-        instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument",VitessDir,
+        instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument",instrumentDir,
                                                      "Files (*.yaml *.yml)");
         //filename without extension
         if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
@@ -246,7 +251,7 @@ void MainWindow::on_actionSave_triggered()
 void MainWindow::on_actionSave_as_triggered()
 {
 
-    instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument as",VitessDir,
+    instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument as",instrumentDir,
                                                   tr("Files (*.yaml *.yml)"));
     if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
         instrumentName += ".yml";
@@ -281,7 +286,7 @@ void MainWindow::on_actionGeneral_Information_triggered()
 void MainWindow::on_actionTutorial_triggered()
 {
     //open pdf in webbrowser
-    QDesktopServices::openUrl(QUrl("/home/jcns/source/qt/test/help/tutorial.pdf"));     // tutorial.pdf
+    QDesktopServices::openUrl(QUrl(VitessDir+"/WWW/tutorial.pdf"));     // tutorial.pdf
 
 }
 
@@ -303,7 +308,7 @@ void MainWindow::on_pushClear_clicked()
 void MainWindow::on_pushSave_clicked()
 {
 
-    QString logFile = QFileDialog::getSaveFileName(this,"Save logfile as",VitessDir,
+    QString logFile = QFileDialog::getSaveFileName(this,"Save logfile as",instrumentDir,
                                                    tr("Files (*.*)"));
     QFile file(logFile);
     if (!file.open(QFile::WriteOnly | QFile::Text))        //open file
@@ -449,7 +454,7 @@ void MainWindow::loadHeader(YAML::Node& nodeGlobal)
             this->findChild<QComboBox *>(childName)
                 ->setCurrentText(QString::fromStdString(iter->second.as<string>()));
 
-        else if(childName == "MinWght" | childName == "nBuffer")
+        else if((childName == "MinWght") | (childName == "nBuffer"))
         {
             if (childName == "MinWght")
             {
@@ -516,25 +521,25 @@ void MainWindow::on_pushCheck_clicked()
             cmd += " --L/home/jcns/source/testlog" + QString::number(enableIndex+1);
            foreach(QString param, mapVitess[modulName].keys())
            {
-            if (mapVitess[modulName][param][7] != "")       //prefix
+            if (mapVitess[modulName][param]["prefix"] != "")       //prefix
             {
               if ((ui->stackedWidget->widget(i)->findChild< QLineEdit *>(param)) &&
                  (ui->stackedWidget->widget(i)->findChild< QLineEdit *>(param)->text() != ""))
               {
-                 cmd += " " + mapVitess[modulName][param][7];
+                 cmd += " " + mapVitess[modulName][param]["prefix"];
                  cmd += ui->stackedWidget->widget(i)->findChild< QLineEdit *>(param)->text();
               }
               else if (ui->stackedWidget->widget(i)->findChild< QComboBox *>(param))
               {
-                 cmd += " " + mapVitess[modulName][param][7];
+                 cmd += " " + mapVitess[modulName][param]["prefix"];
                  int curInd = ui->stackedWidget->widget(i)->findChild< QComboBox *>(param)->currentIndex();
-                 if (mapVitess[modulName][param][8] != "")         //index
-                      cmd += mapVitess[modulName][param][8].split(",")[curInd];
+                 if (mapVitess[modulName][param]["index"] != "")         //index
+                      cmd += mapVitess[modulName][param]["index"].split(",")[curInd];
                  else cmd += QString::number(curInd);
               }
               else if (ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param))
               {
-                 cmd += " " + mapVitess[modulName][param][7];
+                 cmd += " " + mapVitess[modulName][param]["prefix"];
                  cmd += QString::number(ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param)->isChecked());
               }
             }
@@ -542,10 +547,12 @@ void MainWindow::on_pushCheck_clicked()
            cmdList.append(cmd);
            if (i < ui->stackedWidget->count()-1) cmd += " | ";
            ui->textBrowser->append(cmd);
+           ui->textBrowser->verticalScrollBar()->
+                   setValue(ui->textBrowser->verticalScrollBar()->maximum());
+
            enableIndex++;
         }
     }
-
 }
 
 
@@ -659,7 +666,7 @@ void MainWindow::saveFile(QString instrumentName)
       allLineEdits.clear();
       allComboBoxes.clear();
       allCheckBoxes.clear();
-      std::string key = ui->stackedWidget->widget(i)->objectName().toStdString();
+      string key = ui->stackedWidget->widget(i)->objectName().toStdString();       //std::string
       allLineEdits <<  ui->stackedWidget->widget(i)->findChildren< QLineEdit *>();
       allComboBoxes <<  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
       allCheckBoxes <<  ui->stackedWidget->widget(i)->findChildren< QCheckBox *>();
@@ -710,78 +717,54 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
 
         QString parName = QString::fromStdString(it->first.as<string>());
         //list of the single parameter definitions: type,descr,default,min,max,column,prefix
-        QStringList parDef = {};
-
         //definitions of one parameter
-        YAML::Node configParamDef = it->second;
-        if (configParamDef["type"]) parDef << QString::fromStdString(configParamDef["type"].as<string> ());
-        else parDef << "";
-        if (configParamDef["descr"])
-            parDef << QString::fromStdString(configParamDef["descr"].as<string> ());
-        else parDef << "";
-        if (configParamDef["tooltip"])
-            parDef << QString::fromStdString(configParamDef["tooltip"].as<string> ());
-        else parDef << "";
-        if (configParamDef["default"])
-        {
-          if ( configParamDef["default"].size() > 1)
-          {
-            strList.clear();
-            for(int i=0; i<static_cast<int>(configParamDef["default"].size()); i++)
-               strList << QString::fromStdString(configParamDef["default"][i].as<string>());
-            parDef << strList.join(",");
-          }else parDef << QString::fromStdString(configParamDef["default"].as<string>());
-        }else parDef << "";
-        if (configParamDef["min"]) parDef << QString::fromStdString(configParamDef["min"].as<string> ());
-        else parDef << "";
-        if (configParamDef["max"]) parDef << QString::fromStdString(configParamDef["max"].as<string> ());
-        else parDef << "";
-        if (configParamDef["column"]) parDef << QString::fromStdString(configParamDef["column"].as<string> ());
-        else parDef << "";
-        if (configParamDef["prefix"]) parDef << QString::fromStdString(configParamDef["prefix"].as<string> ());
-        else parDef << "";
-        if (configParamDef["index"])
-        {
-           strList.clear();
-           for(int i=0; i<static_cast<int>(configParamDef["index"].size()); i++)
-             strList << QString::fromStdString(configParamDef["index"][i].as<string>());
-           parDef << strList.join(",");
-        }else parDef << "";
 
-        mapModul[parName] = parDef;
+        YAML::Node configParamDef = it->second;
+        foreach(QString key,mapParam.keys())
+        {
+            if (configParamDef[key.toStdString()])
+                if ( configParamDef[key.toStdString()].size() > 1)
+                {
+                   strList.clear();
+                   for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
+                      strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
+                   mapParam[key] = strList.join(",");
+                }else  mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
+            else mapParam[key] = "";
+        }
+        mapModule[parName] = mapParam;
 
         //add parameter to grid
-        if (mapModul[parName][0] == "title")
+        if (mapModule[parName]["type"] == "title")                          //type
         {
-           label = new QLabel("<b>" + mapModul[parName][3] + "</b>\n");       //default
+           label = new QLabel("<b>" + mapModule[parName]["default"] + "</b>\n");
            gridLayout->addWidget(label,iGritRow+1,0,1,3,Qt::AlignHCenter);
            iGritRow+=2;
         }else
         {
-           if ( mapModul[parName][6] == "" ||                         //column
-                mapModul[parName][6].toInt() == 0 ||
-                mapModul[parName][6].toInt() >2 )
+           if ( mapModule[parName]["column"] == "" ||                       //column
+                mapModule[parName]["column"].toInt() == 0 ||
+                mapModule[parName]["column"].toInt() >2 )
            {
                iGritRow++;
                index = 0;
            }
-           else index = mapModul[parName][6].toInt();
-
-           //label = new QLabel(parName);
-           label = new QLabel(mapModul[parName][1]);                 //label desription
+           else index = mapModule[parName]["column"].toInt();
+           label = new QLabel(mapModule[parName]["descr"]);                 //label desription
            label->setMinimumWidth(120);
            label->setAlignment(Qt::AlignRight);
-           label->setToolTip(mapModul[parName][2]);                  //toolTip
+           label->setToolTip(mapModule[parName]["tooltip"]);                //toolTip
            formLayout = new QFormLayout ;
-//           validator = nullptr;
            flag= false;
-           //        file,string, float, int, combo
-           switch (typeList.indexOf(mapModul[parName][0]))            //check type
+           //        file, string, float, int, combo, switch
+
+
+           switch (typeList.indexOf(mapModule[parName]["type"]))            //check type
            {
            case 0:                                        //file
                lEdit = new QLineEdit();
                lEdit->setObjectName(parName);
-               lEdit->setText(mapModul[parName][3]);    //default
+               lEdit->setText(mapModule[parName]["default"]);    //default
                formLayout->addRow(label,lEdit);
                gridLayout->addLayout(formLayout,iGritRow,0,1,2,Qt::AlignRight);    //span over 2 columns
                formLayout = new QFormLayout;
@@ -805,25 +788,23 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
                if (flag == false)
                {
                    validator = new QDoubleValidator(this);
-                   //wenn nur float Darstellung
+                   //wenn nur float Darstellung (nicht exponential)
                    //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
-                   double val = mapModul[parName][4].toDouble(&ok);   //min    minimum
+                   double val = mapModule[parName]["min"].toDouble(&ok);          //min    minimum
                    if (ok) static_cast<QDoubleValidator*>(validator)->setBottom(val);
-                   val = mapModul[parName][5].toDouble(&ok);          //max    maximum
+                   val = mapModule[parName]["max"].toDouble(&ok);                 //max    maximum
                    if (ok) static_cast<QDoubleValidator*>(validator)->setTop(val);
                    validator->setLocale(QLocale::C);
                    flag = true;
                }
-           case 3:                                       //int
+           case 3:                                                               //int
                if (flag == false)
                {
                    QIntValidator *intValidator = new QIntValidator(this);
-                   if (mapModul[parName][4].toInt())   //min    minimum
-                        intValidator->setBottom( mapModul[parName][4].toInt());
-                   if (mapModul[parName][5].toInt())   //max    maximum
-                        intValidator->setTop( mapModul[parName][5].toInt());
-
-                  //      validator = new QIntValidator(this);
+                   if (mapModule[parName]["min"].toInt())
+                        intValidator->setBottom( mapModule[parName]["min"].toInt());
+                   if (mapModule[parName]["max"].toInt())
+                        intValidator->setTop( mapModule[parName]["max"].toInt());
                    validator = intValidator;
                    //validator->setLocale(QLocale::C);
                }
@@ -831,49 +812,49 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
                lEdit->setObjectName(parName);
                lEdit->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
                lEdit->setValidator(validator);
-               lEdit->setText(mapModul[parName][3]);    //default
+               lEdit->setText(mapModule[parName]["default"]);                    //default
                connect(lEdit, SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
                //lEdit->setMaximumWidth(130);
                formLayout->addRow(label,lEdit);
                gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
                break;
-           case 4:                                       //combo      comboBox
+           case 4:                                                               //combo     comboBox
                cBox = new QComboBox();
                cBox->setFocusPolicy(Qt::StrongFocus);
                cBox->installEventFilter(this);
                cBox->setObjectName(parName);
                //combo items in default
-               foreach (QString str, mapModul[parName][3].split(","))  cBox->addItem(str);
+               foreach (QString str, mapModule[parName]["default"].split(",")) cBox->addItem(str);
                formLayout->addRow(label,cBox);
                gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
                break;
-           case 5:                                       //switch     checkBox
-              /*
-               QCheckBox *noBox  = new QCheckBox("NO");
-               //noBox ->setStyleSheet("QCheckBox::indicator{background-color:white;border:2px solid black}");
-               noBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
-               noBox->setStyle(QStyleFactory::create("fusion"));
-               noBox->setChecked(true);
-               //noBox->setStyle(QStyleFactory::create("windows"));
-               QCheckBox *yesBox = new QCheckBox("YES");
-               yesBox->setStyle(QStyleFactory::create("fusion"));
-               yesBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
+           case 5:                                                              //switch     checkBox
+               // QCheckBox *noBox  = new QCheckBox("NO");
+               // //noBox ->setStyleSheet("QCheckBox::indicator{background-color:white;border:2px solid black}");
+               // noBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
+               // noBox->setStyle(QStyleFactory::create("fusion"));
+               // noBox->setChecked(true);
+               // //noBox->setStyle(QStyleFactory::create("windows"));
+               // QCheckBox *yesBox = new QCheckBox("YES");
+               // yesBox->setStyle(QStyleFactory::create("fusion"));
+               // yesBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
 
-               groupBox = new QButtonGroup;
-               groupBox->exclusive();
-               groupBox->addButton(noBox);
-               groupBox->addButton(yesBox);
-               groupBox->setObjectName(parName);
-               QVBoxLayout *boxLayout = new QVBoxLayout;
-               boxLayout->addWidget(noBox);
-               boxLayout->addWidget(yesBox);
-               boxLayout->setSpacing(0);
-               formLayout->addRow(label,boxLayout);
-             */
+               // groupBox = new QButtonGroup;
+               // groupBox->exclusive();
+               // groupBox->addButton(noBox);
+               // groupBox->addButton(yesBox);
+               // groupBox->setObjectName(parName);
+               // QVBoxLayout *boxLayout = new QVBoxLayout;
+               // boxLayout->addWidget(noBox);
+               // boxLayout->addWidget(yesBox);
+               // boxLayout->setSpacing(0);
+               // formLayout->addRow(label,boxLayout);
                checkBox  = new QCheckBox(" ");
                checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
                checkBox->setStyle(QStyleFactory::create("fusion"));
                checkBox->setObjectName(parName);
+               if (mapModule[parName]["default"].toUpper() == "YES")
+                       checkBox->setChecked(true);
                formLayout->addRow(label,checkBox);
                formLayout->setSpacing(10);
                gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
@@ -887,7 +868,6 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
         gridLayout->addItem( new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding),iGritRow,0);
     }
 }
-
 
 void MainWindow::browseBut_clicked()
 {
@@ -904,12 +884,10 @@ void MainWindow::editBut_clicked()
 
 QString MainWindow::openFileName()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",VitessDir);
-//    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument","/home/jcns/Downloads/vitess3.4",
-//                                                  tr("YAML (*.yaml *.yml)"));
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
-//    if (!file.open(QFile::ReadWrite | QFile::Text))
+    //if (!file.open(QFile::ReadWrite | QFile::Text))
     {
         QMessageBox::information(this,"Warning cannot open: ",fileName);
         return fileName="";
@@ -934,4 +912,44 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
         return true;
     }
     return false;
+}
+
+void MainWindow::on_actionPlot_File_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    string cmd_filename = "testgnu.txt";
+    ofstream f(cmd_filename.c_str());        //std::ofstream
+    f <<
+           "set terminal qt\n"
+           // "unset pm3d\n"
+           "set title \"Example\"\n"
+           "set xlabel \"X coordinate\"\n"
+           "set ylabel \"Y coordinate\"\n"
+           "plot \"" << fileName.toStdString() << "\"\n";
+
+
+     QProcess *gnuProc = new QProcess;
+     //  connect(gnuProc,SIGNAL(error(QProcess::ProcessError)),this,SLOT(handleError(QProcess::ProcessError)));
+     //  gnuProc->setArguments(QStringList() << "testgnu.txt");
+     gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
+}
+
+void MainWindow::on_action2D_Plot_File_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    string cmd_filename = "testgnu.txt";
+    ofstream f(cmd_filename.c_str());
+    f <<
+         "set terminal qt\n"
+         "set pm3d map\n"
+         "set title \"" << fileName.toStdString() << "\"\n"
+         "set xlabel \"X coordinate\"\n"
+         "set ylabel \"Y coordinate\"\n"
+         "splot \"" << fileName.toStdString() << "\"\n";
+
+     QProcess *gnuProc = new QProcess;
+     //  connect(gnuProc,SIGNAL(error(QProcess::ProcessError)),this,SLOT(handleError(QProcess::ProcessError)));
+     //  gnuProc->setArguments(QStringList() << "testgnu.txt");
+     gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
+
 }

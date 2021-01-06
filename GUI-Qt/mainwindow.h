@@ -52,6 +52,9 @@ private slots:
         void on_actionExit_triggered();
         void on_actionGeneral_Information_triggered();
         void on_actionTutorial_triggered();
+        void on_actionPlot_File_triggered();
+        void on_action2D_Plot_File_triggered();
+
         void on_pushFresh_clicked();
         void on_pushClear_clicked();
         void on_pushSave_clicked();
@@ -71,7 +74,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QString VitessDir = "/home/jcns/Downloads/vitess3.4";
+    QString VitessDir; 
+    QString instrumentDir, instrumentName;
 
     ModulTable* modultab;
     QFormLayout *formLayout;
@@ -96,9 +100,20 @@ private:
 //        {"LogFile" , {"--L",}},
 //        {"Modnum"  , {"--N",}},
     };
-    QMap<QString, QStringList> mapModul;
-    QMap <QString,QMap<QString,QStringList>> mapVitess;
-//    QMap<QString,QString> Module;
+    QMap<QString,QString> mapParam = {
+        {"type", ""},
+        {"descr", ""},
+        {"tooltip", ""},
+        {"default", ""},
+        {"index", ""},
+        {"min", ""},
+        {"max", ""},
+        {"column", ""},
+        {"prefix", ""},
+    };
+    QMap<QString, QMap<QString,QString>> mapModule;
+    QMap <QString,QMap<QString,QMap<QString,QString>>> mapVitess;
+
     QMap<QString,QStringList> Module;
     QMap<QString,QScrollArea *> modulGui;
 
@@ -110,7 +125,6 @@ private:
     QList < QProcess *> procList;
     QStringList fList,strList,cmdList;
     QStringList typeList = {"file","string", "float", "int", "combo","switch"};
-    QString instrumentName;
     QString syspar;
     QString str;
     QString nBuffer;

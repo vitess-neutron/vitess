@@ -151,7 +151,9 @@ void ModulTable::infoModule()
     QString wwwFile = comboModule[index]->currentText().toLower();
     if (comboModule[index]->currentText().contains(QChar(0x2514)))
        wwwFile = wwwFile.mid(2);
-    QDesktopServices::openUrl(QUrl("/home/jcns/source/qt/test/WWW/" + wwwFile + ".html"));
+    QString VitessDir = QApplication::applicationDirPath().
+                    left(QApplication::applicationDirPath().lastIndexOf("/"));
+    QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + wwwFile + ".html"));
 }
 
 
