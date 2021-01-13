@@ -1,13 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QFileDialog>
-#include <QPushButton>
 #include <QTextStream>
 #include <QScrollBar>
-#include <QMessageBox>
 #include <QDesktopServices>
-#include <iostream>
 #include <unistd.h>
 #include <fstream>
 
@@ -699,15 +695,15 @@ void MainWindow::designModul(QString modulName)
     //YAML::Node config = YAML::LoadFile(Module[modulName].toStdString());
     YAML::Node config = YAML::LoadFile(Module[modulName][0].toStdString());
     YAML::Node configParam = config.begin()->second;
-    getModulParam(configParam, modulName);
+    getModulParameter(configParam, modulName);
 
 }
 
-void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
+void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
 {
     int iGritRow = 0;
     int index = 0;
-    headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
+    QLabel *headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
     headerLabel->setObjectName("headerLabel");
     gridLayout->addWidget(headerLabel,iGritRow+1,0,1,3,Qt::AlignHCenter);
     iGritRow+=2;
@@ -733,134 +729,20 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
             else mapParam[key] = "";
         }
         mapModule[parName] = mapParam;
+        getWidgetDesign(parName,mapParam, gridLayout,iGritRow,index);
 
-        //add parameter to grid
-        if (mapModule[parName]["type"] == "title")                          //type
+        if( scrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
+            connect(scrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
+                    SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
+        else if( scrollArea->widget()->findChild<QPushButton*>(parName))
         {
-           label = new QLabel("<b>" + mapModule[parName]["default"] + "</b>\n");
-           gridLayout->addWidget(label,iGritRow+1,0,1,3,Qt::AlignHCenter);
-           iGritRow+=2;
-        }else
-        {
-           if ( mapModule[parName]["column"] == "" ||                       //column
-                mapModule[parName]["column"].toInt() == 0 ||
-                mapModule[parName]["column"].toInt() >2 )
-           {
-               iGritRow++;
-               index = 0;
-           }
-           else index = mapModule[parName]["column"].toInt();
-           label = new QLabel(mapModule[parName]["descr"]);                 //label desription
-           label->setMinimumWidth(120);
-           label->setAlignment(Qt::AlignRight);
-           label->setToolTip(mapModule[parName]["tooltip"]);                //toolTip
-           formLayout = new QFormLayout ;
-           flag= false;
-           //        file, string, float, int, combo, switch
-
-
-           switch (typeList.indexOf(mapModule[parName]["type"]))            //check type
-           {
-           case 0:                                        //file
-               lEdit = new QLineEdit();
-               lEdit->setObjectName(parName);
-               lEdit->setText(mapModule[parName]["default"]);    //default
-               formLayout->addRow(label,lEdit);
-               gridLayout->addLayout(formLayout,iGritRow,0,1,2,Qt::AlignRight);    //span over 2 columns
-               formLayout = new QFormLayout;
-               browseBut = new QPushButton();
-               connect(browseBut,SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
-               browseBut->setObjectName("browse_" + parName);
-               browseBut->setMinimumWidth(80);
-               browseBut->setText("Browse");
-               editBut = new QPushButton;
-               editBut->setObjectName("edit_" + parName);
-               editBut->setMinimumWidth(80);
-               editBut->setText("Edit");
-               formLayout->addRow(browseBut,editBut);
-               gridLayout->addLayout(formLayout,iGritRow,2,1,1,Qt::AlignRight);    //span over 1 column
-               iGritRow++;
-               break;
-           case 1:                                       //string
-               validator = nullptr;
-               flag = true;
-           case 2:                                       //float
-               if (flag == false)
-               {
-                   validator = new QDoubleValidator(this);
-                   //wenn nur float Darstellung (nicht exponential)
-                   //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
-                   double val = mapModule[parName]["min"].toDouble(&ok);          //min    minimum
-                   if (ok) static_cast<QDoubleValidator*>(validator)->setBottom(val);
-                   val = mapModule[parName]["max"].toDouble(&ok);                 //max    maximum
-                   if (ok) static_cast<QDoubleValidator*>(validator)->setTop(val);
-                   validator->setLocale(QLocale::C);
-                   flag = true;
-               }
-           case 3:                                                               //int
-               if (flag == false)
-               {
-                   QIntValidator *intValidator = new QIntValidator(this);
-                   if (mapModule[parName]["min"].toInt())
-                        intValidator->setBottom( mapModule[parName]["min"].toInt());
-                   if (mapModule[parName]["max"].toInt())
-                        intValidator->setTop( mapModule[parName]["max"].toInt());
-                   validator = intValidator;
-                   //validator->setLocale(QLocale::C);
-               }
-               lEdit = new QLineEdit();
-               lEdit->setObjectName(parName);
-               lEdit->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-               lEdit->setValidator(validator);
-               lEdit->setText(mapModule[parName]["default"]);                    //default
-               connect(lEdit, SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
-               //lEdit->setMaximumWidth(130);
-               formLayout->addRow(label,lEdit);
-               gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
-               break;
-           case 4:                                                               //combo     comboBox
-               cBox = new QComboBox();
-               cBox->setFocusPolicy(Qt::StrongFocus);
-               cBox->installEventFilter(this);
-               cBox->setObjectName(parName);
-               //combo items in default
-               foreach (QString str, mapModule[parName]["default"].split(",")) cBox->addItem(str);
-               formLayout->addRow(label,cBox);
-               gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
-               break;
-           case 5:                                                              //switch     checkBox
-               // QCheckBox *noBox  = new QCheckBox("NO");
-               // //noBox ->setStyleSheet("QCheckBox::indicator{background-color:white;border:2px solid black}");
-               // noBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
-               // noBox->setStyle(QStyleFactory::create("fusion"));
-               // noBox->setChecked(true);
-               // //noBox->setStyle(QStyleFactory::create("windows"));
-               // QCheckBox *yesBox = new QCheckBox("YES");
-               // yesBox->setStyle(QStyleFactory::create("fusion"));
-               // yesBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Preferred);
-
-               // groupBox = new QButtonGroup;
-               // groupBox->exclusive();
-               // groupBox->addButton(noBox);
-               // groupBox->addButton(yesBox);
-               // groupBox->setObjectName(parName);
-               // QVBoxLayout *boxLayout = new QVBoxLayout;
-               // boxLayout->addWidget(noBox);
-               // boxLayout->addWidget(yesBox);
-               // boxLayout->setSpacing(0);
-               // formLayout->addRow(label,boxLayout);
-               checkBox  = new QCheckBox(" ");
-               checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
-               checkBox->setStyle(QStyleFactory::create("fusion"));
-               checkBox->setObjectName(parName);
-               if (mapModule[parName]["default"].toUpper() == "YES")
-                       checkBox->setChecked(true);
-               formLayout->addRow(label,checkBox);
-               formLayout->setSpacing(10);
-               gridLayout->addLayout(formLayout,iGritRow,index,1,1,Qt::AlignRight);
-               break;
-           }
+            paramWindow.append( new Parameter);
+            connect(scrollArea->widget()->findChild<QPushButton*>(parName),
+                    SIGNAL(clicked()),this,SLOT(paramBut_clicked()));
         }
+        else if( scrollArea->widget()->findChild<QLineEdit*>(parName))
+                connect(scrollArea->widget()->findChild<QLineEdit*>(parName),
+                    SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
     }
     if (iGritRow <= 10)
     {
@@ -869,9 +751,26 @@ void MainWindow::getModulParam(YAML::Node& configParam,QString modulName)
     }
 }
 
+void MainWindow::paramBut_clicked()
+{
+    QString yamlPath = QApplication::applicationDirPath().
+                       left(QApplication::applicationDirPath().lastIndexOf("/"))+"/yaml/parameter/";
+    QString param = qobject_cast<QPushButton *>(sender())->text();
+    QString filename = yamlPath + param.toLower() + ".yaml";
+    paramWindow[ui->stackedWidget->currentIndex()]->designParameterWin(filename);
+    paramWindow[ui->stackedWidget->currentIndex()]->show();
+}
+
+
 void MainWindow::browseBut_clicked()
 {
-    QString fileName = openFileName();
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::information(this,"Warning cannot open: ",fileName);
+        return;
+    }
     // cut browse_ from sender
     ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(
                 qobject_cast<QPushButton *>(sender())->objectName().mid(7))
@@ -882,18 +781,6 @@ void MainWindow::editBut_clicked()
 {
 }
 
-QString MainWindow::openFileName()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    //if (!file.open(QFile::ReadWrite | QFile::Text))
-    {
-        QMessageBox::information(this,"Warning cannot open: ",fileName);
-        return fileName="";
-    }
-    return fileName;
-}
 void MainWindow::checkIsValide()
 {
     QLineEdit *testEdit = qobject_cast<QLineEdit *>(sender());

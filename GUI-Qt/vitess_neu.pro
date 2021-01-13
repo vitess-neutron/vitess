@@ -31,16 +31,21 @@ SOURCES += \
         help.cpp \
         main.cpp \
         mainwindow.cpp \
-        modultable.cpp
+        modultable.cpp \
+        parameter.cpp \
+        tools.cpp
 
 HEADERS += \
         help.h \
         mainwindow.h \
-        modultable.h
+        modultable.h \
+        parameter.h \
+        tools.h
 FORMS += \
         help.ui \
         mainwindow.ui \
-        modultable.ui
+        modultable.ui \
+        parameter.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

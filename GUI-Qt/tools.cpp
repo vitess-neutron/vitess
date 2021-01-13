@@ -1,0 +1,124 @@
+#include "tools.h"
+
+
+void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
+                                 QGridLayout *gridLayout,int &row,int &index)
+{
+    QLabel *label;
+    QLineEdit *lEdit;
+    QComboBox *cBox;
+    QCheckBox *checkBox;
+    QPushButton *browseBut, *editBut;
+    QValidator *validator;
+    QFormLayout *formLayout;
+    bool ok;
+    //add parameter to grid
+    if (mapParameter["type"] == "title")                          //type
+    {
+       label = new QLabel("<b>" + mapParameter["default"] + "</b>\n");
+       gridLayout->addWidget(label,row+1,0,1,3,Qt::AlignHCenter);
+       row+=2;
+    }else
+    {
+       if ( mapParameter["column"] == "" ||                       //column
+            mapParameter["column"].toInt() == 0 ||
+            mapParameter["column"].toInt() >2 )
+       {
+            row++;
+            index = 0;
+       }
+       else index = mapParameter["column"].toInt();
+       label = new QLabel(mapParameter["descr"]);                 //label desription
+       label->setMinimumWidth(120);
+       label->setAlignment(Qt::AlignRight);
+       label->setToolTip(mapParameter["tooltip"]);                //toolTip
+       formLayout = new QFormLayout ;
+       bool flag= false;
+       //        file, string, float, int, combo, switch
+
+
+       switch (typeList.indexOf(mapParameter["type"]))            //check type
+       {
+       case 0:                                        //file
+           lEdit = new QLineEdit();
+           lEdit->setObjectName(parName);
+           lEdit->setText(mapParameter["default"]);    //default
+           formLayout->addRow(label,lEdit);
+           gridLayout->addLayout(formLayout,row,0,1,2,Qt::AlignRight);    //span over 2 columns
+           formLayout = new QFormLayout;
+           browseBut = new QPushButton();
+           browseBut->setObjectName("browse_" + parName);
+           browseBut->setMinimumWidth(80);
+           browseBut->setText("Browse");
+           editBut = new QPushButton;
+           editBut->setObjectName("edit_" + parName);
+           editBut->setMinimumWidth(80);
+           editBut->setText("Edit");
+           formLayout->addRow(browseBut,editBut);
+           gridLayout->addLayout(formLayout,row,2,1,1,Qt::AlignRight);    //span over 1 column
+           row++;
+           break;
+       case 1:                                       //string
+           validator = nullptr;
+           flag = true;
+       case 2:                                       //float
+           if (flag == false)
+           {
+               validator = new QDoubleValidator;
+               double val = mapParameter["min"].toDouble(&ok);          //min    minimum
+               if (ok) static_cast<QDoubleValidator*>(validator)->setBottom(val);
+               val = mapParameter["max"].toDouble(&ok);                 //max    maximum
+               if (ok) static_cast<QDoubleValidator*>(validator)->setTop(val);
+               validator->setLocale(QLocale::C);
+               flag = true;
+           }
+       case 3:                                                               //int
+           if (flag == false)
+           {
+               QIntValidator *intValidator = new QIntValidator;
+               if (mapParameter["min"].toInt())
+                  intValidator->setBottom( mapParameter["min"].toInt());
+               if (mapParameter["max"].toInt())
+                  intValidator->setTop( mapParameter["max"].toInt());
+               validator = intValidator;
+           }
+           lEdit = new QLineEdit();
+           lEdit->setObjectName(parName);
+           lEdit->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+           lEdit->setValidator(validator);
+           lEdit->setText(mapParameter["default"]);                    //default
+           formLayout->addRow(label,lEdit);
+           gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
+           break;
+       case 4:                                                               //combo     comboBox
+           cBox = new QComboBox();
+           cBox->setFocusPolicy(Qt::StrongFocus);
+           //cBox->installEventFilter(this);
+           cBox->setObjectName(parName);
+           //combo items in default
+           foreach (QString str, mapParameter["default"].split(",")) cBox->addItem(str);
+           formLayout->addRow(label,cBox);
+           gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
+           break;
+       case 5:                                                              //switch     checkBox
+           checkBox = new QCheckBox(" ");
+           checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
+           checkBox->setStyle(QStyleFactory::create("fusion"));
+           checkBox->setObjectName(parName);
+           if (mapParameter["default"].toUpper() == "YES")
+               checkBox->setChecked(true);
+           formLayout->addRow(label,checkBox);
+           formLayout->setSpacing(10);
+           gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
+           break;
+       case 6:
+           QPushButton *paramBut = new QPushButton;
+           paramBut->setObjectName(parName);
+           paramBut->setMinimumWidth(80);
+           paramBut->setText(parName);
+           formLayout->addRow(paramBut);
+           gridLayout->addLayout(formLayout,row,1,1,1,Qt::AlignRight);    //span over 1 column
+           break;
+       }
+    }
+}

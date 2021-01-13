@@ -4,19 +4,12 @@
 #include <QMainWindow>
 #include "modultable.h"
 #include "help.h"
+#include "parameter.h"
+
 #include <QTreeWidgetItem>
 #include <QTableWidget>
 #include <QProcess>
-#include <QLabel>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QFormLayout>
-#include <QStyleFactory>
 #include <QScrollArea>
-#include "yaml-cpp/yaml.h"
 
 namespace Ui {
 class MainWindow;
@@ -65,29 +58,26 @@ private slots:
         void on_pushStart_clicked();
         void on_pushKill_clicked();
         void on_pushStop_clicked();
+
         void browseBut_clicked();
         void editBut_clicked();
-
+        void paramBut_clicked();
         void BufferSize_triggered();
         void minNeutWeight_triggered();
 
 private:
     Ui::MainWindow *ui;
 
+    Parameter paramWin;
+    QList <Parameter *> paramWindow;
+
     QString VitessDir; 
-    QString instrumentDir, instrumentName;
+    QString instrumentName;
 
     ModulTable* modultab;
-    QFormLayout *formLayout;
     QGridLayout *gridLayout;
-    QLabel *label,*headerLabel;
-    QLineEdit *lEdit;
-    QComboBox *cBox;
-    QCheckBox *checkBox;
-    QButtonGroup *groupBox;
-    QPushButton *browseBut, *editBut;
-    QValidator *validator;
     QScrollArea *scrollArea;
+
     QMap<QString, QStringList> mapHeader = {
         {"RndSeed" , {"--Z"}, },
 //        {"RndNoGen", {"???"}},
@@ -99,17 +89,6 @@ private:
 //        {"OutDir"  , {"--O",}},
 //        {"LogFile" , {"--L",}},
 //        {"Modnum"  , {"--N",}},
-    };
-    QMap<QString,QString> mapParam = {
-        {"type", ""},
-        {"descr", ""},
-        {"tooltip", ""},
-        {"default", ""},
-        {"index", ""},
-        {"min", ""},
-        {"max", ""},
-        {"column", ""},
-        {"prefix", ""},
     };
     QMap<QString, QMap<QString,QString>> mapModule;
     QMap <QString,QMap<QString,QMap<QString,QString>>> mapVitess;
@@ -123,8 +102,8 @@ private:
     QList<QComboBox *>  allComboBoxes;
     QList<QCheckBox *>  allCheckBoxes;
     QList < QProcess *> procList;
-    QStringList fList,strList,cmdList;
-    QStringList typeList = {"file","string", "float", "int", "combo","switch"};
+    QStringList fList,cmdList;
+    
     QString syspar;
     QString str;
     QString nBuffer;
@@ -132,14 +111,12 @@ private:
     QPalette palette;
     int minWidth;
     bool pipeActive = false;
-    bool flag,ok;
     YAML::Node config, configChildren;
 
-    QString openFileName();
     void getHeader(QTextStream& out);
     void loadHeader(YAML::Node& config);
     void designModul(QString modulName);
-    void getModulParam(YAML::Node& config,QString modulName);
+    void getModulParameter(YAML::Node& config,QString modulName);
     void writeHeader(YAML::Node& config);
     void saveFile(QString instrumentName);
 };
