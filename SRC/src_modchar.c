@@ -38,10 +38,22 @@ static short   _eSource=ANYSOURCE,  /* _eSource    : ANYSOURCE, ESS, SNS, CSNS  
 /* global functions              */
 /*********************************/
 
-/***************************************/
-/* Initializes the Moderator structure */
-/***************************************/
-void   InitModerator(Moderator*   pMod)
+/**********************************************/
+/* Initialize source and moderator structures */
+/**********************************************/
+void InitSource(Source* pSrc)
+{
+  pSrc->eSrcKind   =NO_SRC_KIND;
+  pSrc->eSrcType   =NO_TYPE;
+  pSrc->pSrcName   =NULL;
+  pSrc->nSource    =ANYSOURCE;
+  pSrc->PulseFreq  =0.0;   
+  pSrc->PulsePeriod=0.0; 
+  pSrc->PulseLength=0.001;   // 1 ms 
+  pSrc->Power      =0.0;       
+}
+
+void InitModerator(Moderator*   pMod)
 {
   pMod->ModTemp    =0.0;
   pMod->nBackground=0;
@@ -56,7 +68,7 @@ void   InitModerator(Moderator*   pMod)
   pMod->Area       =0.0;            
   pMod->DistModWnd =0.0;      
   pMod->WndFact    =0.0;         
-  pMod->TotalFlux  =0.0;       
+  pMod->TotFluxMod =0.0;       
   pMod->Current    =0.0;         
   pMod->NormInt    =1.0;         
   pMod->PfmcFact   =1.0;
@@ -64,19 +76,19 @@ void   InitModerator(Moderator*   pMod)
   strcpy(pMod->sTFileName ,"");
   strcpy(pMod->sLTFileName,"");
   pMod->eModType   =COUPLED;
-  pMod->TauAscent  = 12.5;       
-  pMod->TauDecay   =125.0;        
+  pMod->TauAscMod  = 12.5;       
+  pMod->TauDecMod  =125.0;        
+  pMod->FUAmpMod   =  0.0;          
+  pMod->eIsisTS    =  FALSE;	  
   pMod->TotFluxUM  =  0.0;       
   pMod->Chi        =  2.5;             
   pMod->Kappa      =  2.2;           
   pMod->TauAscUM   =  2.4;        
   pMod->TauDecUM   = 12.0;        
-  pMod->FUAmpl     =  0.0;          
   pMod->FUAmpUM    =  0.0;          
-  pMod->eIsisTS    =  1;	        
 }
 
-void   InitTrajRange(TrajParam* pTrj)
+void InitTrajRange(TrajParam* pTrj)
 { pTrj->LambdaMin  = 0.0;
   pTrj->LambdaMax  = 0.0;
   pTrj->MinDivY    = 0.0;
@@ -87,7 +99,7 @@ void   InitTrajRange(TrajParam* pTrj)
   pTrj->TimeFrmMax = 0.0;
 }
 
-void   CopyTrajRange(const TrajParam* pSrc, TrajParam* pDest)
+void CopyTrajRange(const TrajParam* pSrc, TrajParam* pDest)
 { pDest->LambdaMin  = pSrc->LambdaMin ;
   pDest->LambdaMax  = pSrc->LambdaMax ;
   pDest->MinDivY    = pSrc->MinDivY   ;
@@ -426,6 +438,31 @@ double Maxwellian(const double lambda, const double Temp)
 	return M;
 }
 
+/***********************************************************************************************************/
+/* NotMaxwell represents a spectrum of under-moderated neutrons (integral depends on lower limit, about 2) */
+/***********************************************************************************************************/
+double NotMaxwell(const double lambda, const double chi, const double kappa)
+{
+	// lambda: wavelength           [Ang]   
+	// chi   : line shape parameter [1/Ang] 
+	// kappa : line shape parameter [ ]     
+  //     N = 1/lambda / (1+exp(chi*lambda-kappa))
+
+	double N=0.0;
+	
+	if (lambda > 0.0)
+	{
+		N = 1.0 / (1.0 + exp(chi*lambda - kappa)) / lambda;
+	}
+	else if (lambda < 0.0)
+	{	fprintf(LogFilePtr,"ERROR: wrong parameter in NotMaxwell(): Lambda = %10.4e Ang\n",
+		                   lambda);
+		exit(99);
+	}
+
+	return N;
+}
+
 
 /**********************************************************************************************/
 /* LeakageFct : empirical flux corrections for ESS data base 3ff                              */
@@ -455,32 +492,6 @@ double EmpCorrFact(double lmbd)
     factor *= 4.3369 - 1.8367*lmbd + 0.2524*sq(lmbd);
 
   return factor;              
-}
-
-
-/***********************************************************************************************************/
-/* NotMaxwell represents a spectrum of under-moderated neutrons (integral depends on lower limit, about 2) */
-/***********************************************************************************************************/
-double NotMaxwell(const double lambda, const double chi, const double kappa)
-{
-	// lambda: wavelength           [Ang]   
-	// chi   : line shape parameter [1/Ang] 
-	// kappa : line shape parameter [ ]     
-  //     N = 1/lambda / (1+exp(chi*lambda-kappa))
-
-	double N=0.0;
-	
-	if (lambda > 0.0)
-	{
-		N = 1.0 / (1.0 + exp(chi*lambda - kappa)) / lambda;
-	}
-	else if (lambda < 0.0)
-	{	fprintf(LogFilePtr,"ERROR: wrong parameter in NotMaxwell(): Lambda = %10.4e Ang\n",
-		                   lambda);
-		exit(99);
-	}
-
-	return N;
 }
 
 

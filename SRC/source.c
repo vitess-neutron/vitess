@@ -51,6 +51,7 @@
 /* 1.25  Dec  2017  K. Lieutenant  new ESS Butterfly moderator, performance factor           */
 /* 1.26  Jan  2020  K. Lieutenant  tidy up, correction reading ISIS moderator data from file */
 /* 1.27  Sep  2020  K. Lieutenant  undermoderated neutrons for all moderators, par. renamed  */
+/* 1.28  Dez  2020  K. Lieutenant  bundles included                                          */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -103,67 +104,100 @@ McCompID _eModule=MCN_SOURCE;
 
 // Input parameters
 // -----------------
+
 // simulation parameters
-double    NumberOfNeutrons=0;   // -n    1.0e6  [-]   number of neutron trajectories (events) per bundle
-long      nBundles=1;           //              [-]   number of bundles 
-TrajParam stTraj  [NUM_MOD];    // -m -M       [Ang]  min. and max. of the wavelength range 
-                                // -t -T       [ms]   min. and max. of the time frame to start neutrons
-                                // -b -c       [deg]  min. horizontal and vertical divergence (absolute value) 
-                                // -y -z       [deg]  max. horizontal and vertical divergence (half of angular spread, if min. value is zero) 
-VtDirect  eDirDet=VT_VIRT_WND;  // -d   WINDOW  [-]   enum: mode to determine neutron directions: VT_DIVERGENCE  VT_VIRT_WND  VT_REAL_WND 
-double    WindowDist  =  0.0,   // -D     0.0  [cm]   distance moderator - target window 
-          WindowWidth = 10.0,   // -w    10.0  [cm]   width of the propagation window 
-          WindowHeight= 10.0;   // -h    10.0  [cm]   height of the propagation window 
-double    TofWndDist  =  0.0,   // -s     0.0  [cm]   distance moderator - position of time window (e.g. chopper)   
-          TofMinWnd   =-1.0e10, // -f    -1e10 [cm]   min and 
-          TofMaxWnd   = 1.0e10; // -F     1e10 [cm]   max TOF allowed in time window 
+long      nBundles  =1,         // EPICS -l    1        [-]   number of bundles 
+          nNeutBndl =0;         // EPICS -n    1.0e6    [-]   number of neutron trajectories (events) per bundle
 
-double    dTimeMeas   =  0.0,   // -A     0.0   [s]   time of measurement in second
-          dLmbdWant   =  0.0;   // -W     0.0  [Ang]  desired wavelength           
+TrajParam stTraj  [NUM_MOD];    // EPICS -m -M [1,5]   [Ang]  min. and max. of the wavelength range 
+                                // EP C  -t -T [0,1]   [ms]   min. and max. of the time frame to start neutrons
+                                // EP C  -b -c         [deg]  min. horizontal and vertical divergence (absolute value) 
+                                // EP C  -y -z         [deg]  max. horizontal and vertical divergence (half of angular spread, if min. value is zero) 
+VtDirect  eDirDet=VT_VIRT_WND;  // EPIC  -d VT_VIRT_WND [-]   enum: mode to determine neutron directions: VT_DIVERGENCE  VT_VIRT_WND  VT_REAL_WND 
 
-// polarisation and trace parameters
-double    PolVecX     =  0.0,   // -X     0.0  [cm]   x-component of the polarisation 
-          PolVecY     =  0.0,   // -Y     0.0  [cm]   y-component of the polarisation
-          PolVecZ     =  0.0,   // -V     0.0  [cm]   z-component of the polarisation
-          PolDegree   =  0.0;   // -P     0.0  [cm]   degree of polarization [%] 
+                                // source, moderator and beamline parameters  
+Source    stSrc;                // EPICS -S             [-]   enum: type of source: CWS SPSS LPSS
+                                // EPICS -K             [-]   enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+                                // EPICS -N             [-]   name of the source 
+                                // EPI   -R   50       [Hz]   pulse frequency
+                                // EP    -p    1.0     [ms]   proton pulse length 
+                                // EP C  -L    0.1     [MW]   average source power
+EssModVsn iDataVsn=NO_VERSION;  // E     -v BUTTERFLY1_2016   version of the data base (MEZEI_2001  ZANINI_2012  SCHOENFELDT_2013  VARHEIGHT_2013  BUTTERFLY2_2015  BUTTERFLY1_2016)
+char*     sModFileName=NULL;    // EPIC  -a                   name of the file containing moderator parameter
+char*     pBeamline=NULL;       // E I   -B             [-]   name of the beamline 
+double    Declination = 0.0;    // EP C  -i    0.0     [deg]  declination between moderator surface normal and propagation window 
 
-char*     sTraceFileName=NULL;  // -r           [-]   name of the file containing the IDs for tracing
-short     eTraceMode=0;         /* -k           [-]   NO_TRACING     : no tracing 
-                                                      WRITE_TRC_FILES: write trace files for traj. of interest
-                                                      ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
-// source, moderator and beamline parameters
-Source    stSrc;                // -N -S        [-]   name and type of the source 
-                                // -R -L      [Hz/MW] pulse frequency and average source power
-                                // -p          [ms]   proton pulse length  
-short     iDataVsn=1;           // -v     1     [-]   version of the data base
+// Moderator parameters read from file or from input
+// -------------------------------------------------
+Moderator stMod   [NUM_MOD];    //   I   -Z -0S               target station
+                                //  P CS -E -nr   2.0  [cm]   diameter of the source
+                                // EPICS -G -nw        [cm]   width of the source 
+                                // EPICS -H -nh        [cm]   height of the source 
+                                //  PICS -I -nW               wavelength distribution file
+                                // EP CS -C -nT  50    [K]    moderator temperature  
+                                //  P CS -J -nF 1e13 [n/cm²/s] total (average) flux on the moderator surface
+                                //  P    -o -nA  30    [µs]   ascent time constant of the moderated neutrons in the pulse
+                                //  P    -O -nD 150    [µs]   decay time constant of the moderated neutrons in the pulse 
+                                //  P C  -j -nf     [n/cm²/s] total CW-flux of the under-moderated neutrons on the moderator surface
+                                //  P C  -x -nx       [1/Ang] factor for the wavelength dependence of under-moderated neutrons 
+                                //  P C  -q -nk        [-]    scaling factor for the flux of under-moderated neutrons        
+                                //  P    -u -na        [µs]   ascent time constant of the under-moderated neutrons in the pulse
+                                //  P    -U -nd        [µs]   decay time constant of the under-moderated neutrons in the pulse
+                                // ----------------------------------------------------------------------------------------
+                                // E        -nt COUPLED[-]    moderator type 
+                                // E        -np  1.0          performance factor considering losses by the technical realization   
+                                // EP C     -no        [-]    index: order of moderators: higher number is in background
+                                // EP C     -nc        [-]    index: colour for the neutrons leaving this moderator
+                                // EPIC     -nX  0.0   [cm]   x-component of the center fo the moderator
+                                // EPIC     -nY  0.0   [cm]   y-component of the center fo the moderator
+                                // EPIC     -nZ  0.0   [cm]   z-component of the center fo the moderator
+                                // EP C     -nI        [n/s]  mean neutron current leaving the moderator  
+                                //  P       -nV               time distribution file 
+                                //  PI      -nU               wavelength-time distribution file 
 
-char*     sModFileName=NULL;    // -a           [-]   name of the file containing moderator parameter
-char*     pBeamline=NULL;       // -B           [-]   name of the beamline 
-double    Declination =  0.0;   // -i     0.0  [deg]  declination between moderator surface normal and propagation window 
+// propagation
+double    WindowDist  =  0.0,   // EPICS -D   100.0    [cm]   distance moderator - target window 
+          WindowWidth =  0.0,   // EPICS -w     3.0    [cm]   width of the propagation window 
+          WindowHeight=  0.0;   // EPICS -h     3.0    [cm]   height of the propagation window 
 
-// Parameters read from file
-// -------------------------
-Moderator stMod   [NUM_MOD];    // file               moderator characteristics read from file
+// time window          
+double    TofWndDist  =  0.0,   // EPIC  -s            [cm]   distance moderator - position of time window (e.g. chopper)   
+          TofMinWnd   =-1.0e10, // EPIC  -f            [cm]   min and 
+          TofMaxWnd   = 1.0e10; // EPIC  -F            [cm]   max TOF allowed in time window 
+                                                
+// polarisation and special parameters          
+double    PolVecX     =  1.0,   // EPIC  -X            [cm]   x-component of the polarisation 
+          PolVecY     =  0.0,   // EPIC  -Y            [cm]   y-component of the polarisation
+          PolVecZ     =  0.0,   // EPIC  -V            [cm]   z-component of the polarisation
+          PolDegree   =  0.0;   // EPIC  -P            [cm]   degree of polarization [%] 
+                                                
+double    TimeMeas   =  0.0,    // EPIC  -A             [s]   time of measurement in second
+          LmbdWant   =  0.0;    // EPIC  -W            [Ang]  desired wavelength           
+char*     sTraceFileName=NULL;  // EPIC  -r             [-]   name of the file containing the IDs for tracing
+short     eTraceMode=0;         /* EPIC  -k             [-]   NO_TRACING     : no tracing 
+                                                              WRITE_TRC_FILES: write trace files for traj. of interest
+                                                              ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
 
 // Variables determined from input parameters or trajectory data
 // -------------------------------------------------------------
-double    dDecCos,              //                    cosinus and sinus of the declination of the moderator
-          dDecSin;              //                    to the instrument direction 
-double    FracPolDir  =  0.0;   //                    fraction of neutrons in polarization direction 
-                                                      
-Plane     Endpoint,             //                    structure describing (virtual) window position
-          TofWnd;               //                    structure describing time window position
-                                                      
-FctTable  stFluxT [NUM_MOD],    //                    data of time distr.      
-          stFluxL [NUM_MOD],    //                    data of wavelength distr.
-          stFluxLT[NUM_MOD];    //                    data of wavelength & time distr.
-                                                      
-TotalID*  aTrace=NULL;          //                    array of trajectory IDs for tracing 
-long      nLinesTr=0;           //                    number of lines in the trace file   
-                                                      
-short     nNumMod=0,            //                    number of moderators in moderator system
-          imod=0,               //                    index of current moderators in moderator system 
-          ColorByLmbd=FALSE;    //                    option: set color depending on wavelength  (only for ESS Butterfly-1)
+double    NumberOfNeutrons=0;   //                    [-]   total number of neutron trajectories (events) 
+double    dDecCos=1.0,          //                          cosinus and sinus of the declination of the moderator
+          dDecSin=0.0;          //                          to the instrument direction 
+double    FracPolDir = 0.0;     //                          fraction of neutrons in polarization direction 
+                                                            
+Plane     Endpoint,             //                          structure describing (virtual) window position
+          TofWnd;               //                          structure describing time window position
+                                                            
+FctTable  stFluxT [NUM_MOD],    //                          data of time distr.      
+          stFluxL [NUM_MOD],    //                          data of wavelength distr.
+          stFluxLT[NUM_MOD];    //                          data of wavelength & time distr.
+                                                            
+TotalID*  aTrace=NULL;          //                          array of trajectory IDs for tracing 
+long      nLinesTr=0;           //                          number of lines in the trace file   
+                                                            
+short     nNumMod=0,            //                          number of moderators in moderator system
+          imod=0,               //                          index of current moderators in moderator system 
+          ColorByLmbd=FALSE;    //                          option: set color depending on wavelength  (only for ESS Butterfly-1)
 
 
 /*******************************************************/
@@ -177,362 +211,362 @@ short     nNumMod=0,            //                    number of moderators in mo
 /******************************/
 int main(int argc, char *argv[])
 {
-   unsigned long i=0;
-   char    ig1='A', ig2='A',
-           sText[50]="";
-   long    TransmittedNeutrons=0,
-           BufferIndex;
-   double  test,
-           TimeAtModerator,
-           TimeAtWnd,         /* time of arrival a time window  */
-           No,
-           SolAngle=0.0,      /* solid angle of the neutron beam at the moderator              */
-           Phi, Theta,        /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
-           WndY, WndZ,        /* position where trajectory passes window 
+  unsigned long i=0;          /* index of the all neutron trajectories  */
+  char    ig1='A', ig2='A';   /* part of the ID of the trajectory */
+  long    iBndl=0,            /* index of the bundles */
+          iNeut=0;            /* index of the neutron trajectories within the bundle */
+  double  prob=0.0,           /* weight of the trajectory */
+          TimeAtModerator=0.0,
+          TimeAtWnd=0.0,      /* time of arrival a time window  */
+          SolAngle=0.0,       /* solid angle of the neutron beam at the moderator              */
+          Phi=0.0, Theta=0.0, /* angles of div. from x-dir. in x-y- and x-z-plane (MC choice)  */
+          WndY, WndZ,         /* position where trajectory passes window 
                                  (MC choice for option eDirDet = VT_REAL_WND or VT_VIRT_WND)   */
-           Y0,                /* y-position of the starting point of the neutron in the frame of the moderator */
-           Path,              /* flight path between moderator and window                      */
-           TimeOF,            /* time of flight from moderator to window                       */
-           CenterX, CenterY,  /* averaged values                                               */
-           CenterZ, AveTimeOF,/*     at window                                                 */
-           SumProb,           /* sum of probabilities (counts) used to calculate average values*/
-           FactWnd =    1.0,  /* for 'direction by window' */
-           IsisNorm=    1.0,
-           PolNorm =    0.0;
+          Y0      = 0.0,      /* y-position of the starting point of the neutron in the frame of the moderator */
+          Path    = 0.0,      /* flight path between moderator and window                      */
+          TimeOF  = 0.0,      /* time of flight from moderator to window                       */
+          CenterX = 0.0, 
+          CenterY = 0.0,      /* averaged values                                               */
+          CenterZ = 0.0,      /*     at window                                                 */
+          AveTOF  = 0.0,
+          SumProb = 0.0,      /* sum of probabilities (counts) used to calculate average values*/
+          FactWnd = 1.0,      /* for 'direction by window' */
+          IsisNorm= 1.0;
 
-   Moderator* pMod;
-   VectorType NullPos={0.0,0.0,0.0};
-   Neutron    Input, 
-              TestNeutron;
-     
-   // ISIS specific parameter
-   double ISISflux=0.0;
+  Moderator* pMod=NULL;
+  VectorType NullPos={0.0,0.0,0.0};
+  Neutron    Input, 
+             TestNeutron;
+    
+  // ISIS specific parameter
+  double ISISflux=0.0;
 
-   // --------------
-   // Initialisation
-   // --------------
-   Init(argc,argv, _eModule);
-   PrintModuleName(_eModule, "1.26");
-   OwnInit(argc, argv);
+  // --------------
+  // Initialisation
+  // --------------
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.28");
+  OwnInit(argc, argv);
 
-   bVisInstalled = TRUE;
-   if (bVisInstr) 
-     bLengthCmpr = TRUE;
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
-   CenterX   = 0.0; 
-   CenterY   = 0.0;
-   CenterZ   = 0.0; 
-   SumProb   = 0.0;
-   AveTimeOF = 0.0;
-   nNumMod   = ReadModData(sModFileName);
+  InitNeutron(&TestNeutron);
 
-   /* load trace file */
-   LoadTraceFile();
+  /* reads data */
+  nNumMod = ReadModData(sModFileName);
 
-   /* normalise polarization direction */
-   PolNorm= sqrt(PolVecX*PolVecX + PolVecY*PolVecY + PolVecZ*PolVecZ);
-   if(PolNorm==0.0) Error("you have to give a polarization direction"); 
-   PolVecX=PolVecX/PolNorm;
-   PolVecY=PolVecY/PolNorm;
-   PolVecZ=PolVecZ/PolNorm;
+  LoadTraceFile();
 
 
-   /* simulation parameters and source characteristics */
-   fprintf(LogFilePtr, "\n> Simulation of ");
-   if (stSrc.eSrcType == CWS)
-   {  
-      fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
-   }
-   else	
-   {  
-      if (stSrc.eSrcType==SPSS)
-      {  
-         fprintf(LogFilePtr, "short pulse spallation source %s <\n", stSrc.pSrcName);
-      }
-      else
-      {  
-         fprintf(LogFilePtr, "long pulse spallation source %s <\n", stSrc.pSrcName);
-         fprintf(LogFilePtr, "pulse length                 : %7.3f ms \n", 1000.*stSrc.PulseLength);
-      }
-      fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.PulseFreq);
+  // ---------------------------------------------------------
+  //  Normalisation of all moderators and writing to log file
+  // ---------------------------------------------------------
+  /* simulation parameters and source characteristics */
+  fprintf(LogFilePtr, "\n> Simulation of ");
+  if (stSrc.eSrcType == CWS)
+  {  
+    fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
+  }
+  else	
+  {  
+    if (stSrc.eSrcType==SPSS)
+    {  
+      fprintf(LogFilePtr, "short pulse spallation source %s <\n", stSrc.pSrcName);
+    }
+    else
+    {  
+      fprintf(LogFilePtr, "long pulse spallation source %s <\n", stSrc.pSrcName);
+      fprintf(LogFilePtr, "pulse length                 : %7.3f ms \n", 1000.*stSrc.PulseLength);
+    }
+    fprintf(LogFilePtr, "pulse frequency              : %7.3f Hz \n",   stSrc.PulseFreq);
+    if (stSrc.Power > 0.0)
       fprintf(LogFilePtr, "average power                : %7.3f MW \n",   stSrc.Power/1000000.);
+    if (iDataVsn!=NO_VERSION)
       fprintf(LogFilePtr, "data base version            : %3d      \n\n", iDataVsn);
-   }
+  }
 
-   /* for all moderators in the system */
-   for (imod=0; imod < nNumMod; imod++)
-   {
-      pMod = &(stMod[imod]);
+  /* for all moderators in the system */
+  for (imod=0; imod < nNumMod; imod++)
+  {
+    pMod = &(stMod[imod]);
 
-      if (pMod->nColour != NO_COLOR || pMod->nBackground!=0)
-         fprintf(LogFilePtr, "colour %d   spatial order %d\n", pMod->nColour, pMod->nBackground);
+    if (pMod->nColour != NO_COLOR || pMod->nBackground!=0)
+      fprintf(LogFilePtr, "colour %d   spatial order %d\n", pMod->nColour, pMod->nBackground);
 
-      /* load wavelength distribution and time distribution of pulse */
-      if(strlen(pMod->sLTFileName) > 0)
-      { 
-        if (pMod->eIsisTS > 0) 
-        {
-          // set up ISIS specific parameters and values
-          FILE* IFptr;
-          IFptr = openFile(pMod->sLTFileName);
-          ISISflux=LoadIsisDistrib(IFptr,stTraj->LambdaMin,stTraj->LambdaMax);
-          fclose(IFptr);
-          fprintf(LogFilePtr,"Isis moderator - target station %d \n", pMod->eIsisTS);
-
-          // normalisation of ISIS data, which are for 60 µA, and division through frequency
-          if (pMod->eIsisTS == 1)
-            IsisNorm = 160.0/60.0/40.0;  // 60 µA -> 160 µA;   40 Hz
-          else
-            IsisNorm =  40.0/60.0/10.0;  // 60 µA ->  40 µA;   10 Hz
-        }
-        else 
-        {
-          LoadWavelengthTimeDistrib(&stMod[imod], &stTraj[imod], &stFluxLT[imod]);
-        }
-      }
-      else
+    /* load wavelength distribution and time distribution of pulse */
+    if(strlen(pMod->sLTFileName) > 0)
+    { 
+      if (pMod->eIsisTS > 0) 
       {
-         LoadWavelengthDistribution(&stMod[imod], &stTraj[imod], &stFluxL[imod]);  
-         if (stSrc.eSrcType != CWS)
-            LoadTimeDistribution(&stMod[imod], &stTraj[imod], &stFluxT[imod]);
-      }
+        // set up ISIS specific parameters and values
+        FILE* IFptr;
+        IFptr = openFile(pMod->sLTFileName);
+        ISISflux=LoadIsisDistrib(IFptr,stTraj->LambdaMin,stTraj->LambdaMax);
+        fclose(IFptr);
+        fprintf(LogFilePtr,"Isis moderator - target station %d \n", pMod->eIsisTS);
 
-      /* solid angle [sterad], under which the neutrons leave the moderator */
-      if ((eDirDet==VT_REAL_WND || eDirDet==VT_VIRT_WND) && pMod->DistModWnd > 0.0)
-      {	 if (pMod->bCircle)
-         {	SolAngle = AveSolidAngleC(pMod->Diameter, WindowWidth, WindowHeight, pMod->DistModWnd);
-            pMod->WndFact = AveWeightC(pMod->CntrY, pMod->CntrZ, pMod->Diameter,
-                                              WindowWidth, WindowHeight, pMod->DistModWnd);
-         }
-         else
-         {
-            // calculate ISIS specific Solid Angle correction
-            if (pMod->eIsisTS > 0)
-            {
-               SolAngle=strArea(pMod->Width/100.0, pMod->Height/100.0,
-                                pMod->DistModWnd/100.0, WindowWidth/100.0, WindowHeight/100.0);
-               pMod->WndFact=1.0; 
-               //fprintf(stderr,"ISIS solid angle %g \n",SolAngle);
-            }
-            else
-            {
-               SolAngle = AveSolidAngleR(pMod->Width, pMod->Height, WindowWidth, WindowHeight, pMod->DistModWnd);
-               /* normalisation factor for 'direction by window' */
-               pMod->WndFact = AveWeightR(pMod->CntrY, pMod->CntrZ,
-                                                 pMod->Width, pMod->Height, WindowWidth, WindowHeight, pMod->DistModWnd);
-            }
-         }
-      }
-      else
-      {
-      /*   if (pMod->eIsisTS > 0) 
-         {
-            fprintf(LogFilePtr, "ERROR: ISIS moderator can only be used with direction defined by propagation window.\n");
-            //	    exit(-1);
-         } 
-         else 
-         { */
-            SolAngle =  SolidAngle(stTraj[imod].MaxDivY, stTraj[imod].MaxDivZ) -
-                      - SolidAngle(stTraj[imod].MinDivY, stTraj[imod].MinDivZ);
-         //}
-      }
-
-      /* calculate flux and mean current of the neutron beam */
-      if (stSrc.eSrcType == CWS)
-      {  
-         if (pMod->TotalFlux==0.0)
-           pMod->TotalFlux = 2*M_PI * stFluxL[imod].Int;
-      }
-      else
-      {	
-         /* case: flux(lambda,t) was given in a file */
-         if (strlen(pMod->sLTFileName) > 0)
-         {
-            if (pMod->eIsisTS > 0)
-            {
-               // try and give flux in n/s/cm2
-               pMod->TotalFlux = ISISflux*3.744905847e14*1.1879451;
-               pMod->FUAmpl    = pMod->TotalFlux / (2*M_PI * stSrc.PulseFreq);
-            }
-            else
-            {
-               if (pMod->TotalFlux==0.0)
-                  pMod->TotalFlux = 2*M_PI * stFluxLT[imod].Int * stSrc.PulseFreq;
-               if (stSrc.PulseFreq != 0.0)
-                  pMod->FUAmpl = pMod->TotalFlux / (2*M_PI * stSrc.PulseFreq);
-            }
-         }
-         /* case ESS, SNS */
-         else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
-         {  
-            if      (stSrc.nSource==ESS && iDataVsn == 5)
-	           pMod->FUAmpl = EssTotFU2015(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength);
-	        else if (stSrc.nSource==ESS && iDataVsn == 6)
-	           pMod->FUAmpl = EssTotFU2016(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength, stMod[0].PfmcFact, stMod[1].PfmcFact);
-	        else
-               pMod->FUAmpl = TotalFU(pMod->ModTemp, stSrc.nSource, pMod->eModType, stSrc.Power, stSrc.PulsePeriod, stSrc.PulseLength);
-
-            pMod->TotalFlux = 2*M_PI * pMod->FUAmpl * stSrc.PulseFreq ;
-         }
-        /* case CSNS */
-         else if (stSrc.nSource==CSNS)
-         {  pMod->FUAmpl    = CsnsTotalFU(pMod->ModTemp, pMod->eModType, stSrc.Power);
-            pMod->TotalFlux = 2*M_PI * pMod->FUAmpl * stSrc.PulseFreq ;
-         }
-         else
-         {  if (pMod->TotalFlux==0.0)
-               pMod->TotalFlux = 2*M_PI * stFluxL[imod].Int * stFluxT[imod].Int * stSrc.PulseFreq;
-            if (stSrc.PulseFreq != 0.0)
-               pMod->FUAmpl = pMod->TotalFlux / (2*M_PI * stSrc.PulseFreq) ;
-         }
-
-         switch(pMod->eModType)
-         {  case MULT_SPEC: fprintf(LogFilePtr, "multi-spectral moderator\n"); break;
-            case POISONED : fprintf(LogFilePtr, "decoupled poisoned moderator\n"); break;
-            case DECOUPLED: fprintf(LogFilePtr, "decoupled unpoisoned moderator\n"); break;
-            case COUPLED  : fprintf(LogFilePtr, "coupled moderator\n"); break;
-         }
-      }
-
-      /* current not given => current calculated from flux */
-      if (pMod->Current==0.0)
-      {  pMod->Current = (pMod->TotalFlux + pMod->TotFluxUM) * pMod->Area * SolAngle / (2*M_PI);
-      }
-      /* current given => flux calculated from current, if possible */
-      else if ((pMod->Area * SolAngle) > 0.0)
-      {  if (pMod->TotFluxUM > 0.0)
-         { pMod->TotalFlux = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle) * pMod->TotalFlux /(pMod->TotalFlux + pMod->TotFluxUM);
-           pMod->TotFluxUM = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle) * pMod->TotFluxUM /(pMod->TotalFlux + pMod->TotFluxUM);
-         }
-         else
-         { pMod->TotalFlux = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle);
-         }
+        // normalisation of ISIS data, which are for 60 µA, and division through frequency
+        if (pMod->eIsisTS == 1)
+          IsisNorm = 160.0/60.0/40.0;  // 60 µA -> 160 µA;   40 Hz
+        else
+          IsisNorm =  40.0/60.0/10.0;  // 60 µA ->  40 µA;   10 Hz
       }
       else 
-      {  pMod->TotalFlux = 0.0;
+      {
+        LoadWavelengthTimeDistrib(&stMod[imod], &stTraj[imod], &stFluxLT[imod]);
       }
+    }
+    else
+    {
+       LoadWavelengthDistribution(&stMod[imod], &stTraj[imod], &stFluxL[imod]);  
+       if (stSrc.eSrcType != CWS)
+         LoadTimeDistribution(&stMod[imod], &stTraj[imod], &stFluxT[imod]);
+    }
 
-      /* factor for normalisation (times in seconds) */
-      if (stSrc.eSrcType == CWS)
-      { pMod->NormTrj = pMod->Area * SolAngle * (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) / (NumberOfNeutrons/nNumMod);
-        pMod->NormInt = pMod->Current *         (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) / (NumberOfNeutrons/nNumMod);
+    /* solid angle [sterad], under which the neutrons leave the moderator */
+    if ((eDirDet==VT_REAL_WND || eDirDet==VT_VIRT_WND) && pMod->DistModWnd > 0.0)
+    {	if (pMod->bCircle)
+      {	SolAngle = AveSolidAngleC(pMod->Diameter, WindowWidth, WindowHeight, pMod->DistModWnd);
+         pMod->WndFact = AveWeightC(pMod->CntrY, pMod->CntrZ, pMod->Diameter,
+                                           WindowWidth, WindowHeight, pMod->DistModWnd);
       }
       else
-      { pMod->NormTrj = pMod->Area * SolAngle * stSrc.PulseFreq * (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) * (stTraj[imod].TimeFrmMax - stTraj[imod].TimeFrmMin)/1000.0 / (NumberOfNeutrons/nNumMod);
-        pMod->NormInt = pMod->Current *                           (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) * (stTraj[imod].TimeFrmMax - stTraj[imod].TimeFrmMin)/1000.0 / (NumberOfNeutrons/nNumMod);
+      {
+        // calculate ISIS specific Solid Angle correction
+        if (pMod->eIsisTS > 0)
+        {
+          SolAngle=strArea(pMod->Width/100.0, pMod->Height/100.0,
+                           pMod->DistModWnd/100.0, WindowWidth/100.0, WindowHeight/100.0);
+          pMod->WndFact=1.0; 
+          //fprintf(stderr,"ISIS solid angle %g \n",SolAngle);
+        }
+        else
+        {
+          SolAngle = AveSolidAngleR(pMod->Width, pMod->Height, WindowWidth, WindowHeight, pMod->DistModWnd);
+          /* normalisation factor for 'direction by window' */
+          pMod->WndFact = AveWeightR(pMod->CntrY, pMod->CntrZ,
+                                            pMod->Width, pMod->Height, WindowWidth, WindowHeight, pMod->DistModWnd);
+        }
       }
-      if (pMod->NormTrj==0.0)
-        pMod->NormTrj = 1.0 / (pMod->FUAmpl * NumberOfNeutrons/nNumMod);
-      test = pMod->FUAmpl * pMod->NormTrj; 
+    }
+    else
+    { double Tmax = TrueSolidAngle(stTraj[imod].MaxDivY, stTraj[imod].MaxDivZ),
+             Tmin = TrueSolidAngle(stTraj[imod].MinDivY, stTraj[imod].MinDivZ);
+      SolAngle = Tmax - Tmin;
+    }
 
-      /* write data to output file */
+    /* calculate flux and mean current of the neutron beam */
+    if (stSrc.eSrcType == CWS)
+    {  
+       if (pMod->TotFluxMod==0.0)
+         pMod->TotFluxMod = 2*M_PI * stFluxL[imod].Int;
+       pMod->FUAmpMod = pMod->TotFluxMod / (2*M_PI);
+       pMod->FUAmpUM  = pMod->TotFluxUM  / (2*M_PI);
+    }
+    else
+    {	
+      /* case: flux(lambda,t) was given in a file */
       if (strlen(pMod->sLTFileName) > 0)
-      {  fprintf(LogFilePtr, "wavelength-time distr. file  : %s \n",                pMod->sLTFileName);
+      {
+        if (pMod->eIsisTS > 0)
+        {
+          // try and give flux in n/s/cm2
+          pMod->TotFluxMod = ISISflux*3.744905847e14*1.1879451;
+          pMod->FUAmpMod   = pMod->TotFluxMod / (2*M_PI * stSrc.PulseFreq);
+          pMod->FUAmpUM    = pMod->TotFluxUM  / (2*M_PI * stSrc.PulseFreq);
+        }
+        else
+        {
+          if (pMod->TotFluxMod==0.0)
+            pMod->TotFluxMod = 2*M_PI * stFluxLT[imod].Int * stSrc.PulseFreq;
+          if (stSrc.PulseFreq != 0.0)
+          { pMod->FUAmpMod  = pMod->TotFluxMod / (2*M_PI * stSrc.PulseFreq);
+            pMod->FUAmpUM   = pMod->TotFluxUM  / (2*M_PI * stSrc.PulseFreq);
+          }
+          else
+          { pMod->FUAmpMod  = pMod->TotFluxMod / (2*M_PI);
+            pMod->FUAmpUM   = pMod->TotFluxUM  / (2*M_PI);
+          }
+        }
       }
-      else	
-      {	if (strlen(pMod->sTFileName) > 0)
-         {  fprintf(LogFilePtr, "time distribution file       : %s \n",             pMod->sTFileName);
-         }
-         else if (stSrc.eSrcType != CWS && stSrc.nSource==ANYSOURCE)
-         {  fprintf(LogFilePtr, "time constants of the pulse  : %7.3f us  , %7.3f us \n",pMod->TauAscent *1.0e6, 
-            pMod->TauDecay*1.0e6);
-         }
+      /* case ESS, SNS */
+      else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
+      {  
+       if (stSrc.nSource==ESS && iDataVsn == 5)
+	       pMod->FUAmpMod = EssTotFU2015(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength);
+	     else if (stSrc.nSource==ESS && iDataVsn == 6)
+	       pMod->FUAmpMod = EssTotFU2016(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength, stMod[0].PfmcFact, stMod[1].PfmcFact);
+	     else
+         pMod->FUAmpMod = TotalFU(pMod->ModTemp, stSrc.nSource, pMod->eModType, stSrc.Power, stSrc.PulsePeriod, stSrc.PulseLength);
 
-         if (strlen(pMod->sLFileName) > 0)
-         {  fprintf(LogFilePtr, "wavelength distribution file : %s \n",             pMod->sLFileName);
-         }
-         else
-         {  char text[10]="";
-            fprintf(LogFilePtr, "moderator temperature        : %7.3f K\n",         pMod->ModTemp);
-            sprintf(text, "%5.1f K", pMod->ModTemp);
-            if (imod > 0) 
-               strcat (sText, " + ");
-            strcat(sText, text);
-         }
+       pMod->TotFluxMod = 2*M_PI * pMod->FUAmpMod * stSrc.PulseFreq ;
       }
-      fprintf(LogFilePtr,   "performance factor           : %7.3f \n",                   pMod->PfmcFact);
-      if (pMod->TotalFlux > 0)
-         fprintf(LogFilePtr,"total neutron flux (in 2*pi) :%14.4e n/(cm^2s) \n",         pMod->TotalFlux);
-      fprintf(LogFilePtr,   "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", pMod->CntrX, pMod->CntrY, pMod->CntrZ);
-      if (pMod->bCircle)
-        fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",                pMod->Diameter);
+      /* case CSNS */
+      else if (stSrc.nSource==CSNS)
+      { pMod->FUAmpMod   = CsnsTotalFU(pMod->ModTemp, pMod->eModType, stSrc.Power);
+        pMod->TotFluxMod = 2*M_PI * pMod->FUAmpMod * stSrc.PulseFreq ;
+      }
       else
-        fprintf(LogFilePtr, "moderator size (W x H)       : %7.3f cm  x %7.3f cm \n",    pMod->Width, pMod->Height);
+      { if (pMod->TotFluxMod==0.0)
+          pMod->TotFluxMod = 2*M_PI * stFluxL[imod].Int * stFluxT[imod].Int * stSrc.PulseFreq;
+        if (stSrc.PulseFreq != 0.0)
+        { pMod->FUAmpMod = pMod->TotFluxMod / (2*M_PI * stSrc.PulseFreq);
+          pMod->FUAmpUM  = pMod->TotFluxUM  / (2*M_PI * stSrc.PulseFreq);
+        }
+        else
+        { pMod->FUAmpMod = pMod->TotFluxMod / (2*M_PI);
+          pMod->FUAmpUM  = pMod->TotFluxUM  / (2*M_PI);
+        }
+      }
 
-      /* if (eDirDet==VT_REAL_WND)
-         fprintf(LogFilePtr, "divergence defined by propagation window \n");
-      else if (eDirDet==VT_VIRT_WND)
-         fprintf(LogFilePtr, "divergence defined by virtual propagation window \n");
+      switch (pMod->eModType)
+      { case MULT_SPEC: fprintf(LogFilePtr, "multi-spectral moderator\n"); break;
+        case POISONED : fprintf(LogFilePtr, "decoupled poisoned moderator\n"); break;
+        case DECOUPLED: fprintf(LogFilePtr, "decoupled unpoisoned moderator\n"); break;
+        case COUPLED  : fprintf(LogFilePtr, "coupled moderator\n"); break;
+      }
+    }
+
+    /* current not given => current calculated from flux */
+    if (pMod->Current==0.0)
+    {  pMod->Current = (pMod->TotFluxMod + pMod->TotFluxUM) * pMod->Area * SolAngle / (2*M_PI);
+    }
+    /* current given => flux calculated from current, if possible */
+    else if ((pMod->Area * SolAngle) > 0.0)
+    { if (pMod->TotFluxUM > 0.0)
+      { pMod->TotFluxMod = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle) * pMod->TotFluxMod /(pMod->TotFluxMod + pMod->TotFluxUM);
+        pMod->TotFluxUM  = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle) * pMod->TotFluxUM  /(pMod->TotFluxMod + pMod->TotFluxUM);
+      }
       else
-         fprintf(LogFilePtr, "angle of opening used        : %7.3f     x %7.3f deg \n", 2*180*stTraj[imod].MaxDivY/M_PI, 2*180*stTraj[imod].MaxDivZ/M_PI);*/
-      fprintf(LogFilePtr,    "time averaged neutron current:%14.4e n/s in%9.6f str \n", pMod->Current, SolAngle);
-      fprintf(LogFilePtr,    "wavelength band used         : %7.3f Ang - %7.3f Ang \n", stTraj[imod].LambdaMin, stTraj[imod].LambdaMax);
-      if (stSrc.eSrcType != CWS)
-         fprintf(LogFilePtr, "time interval used           : %7.3f ms  - %7.3f ms \n", stTraj[imod].TimeFrmMin, stTraj[imod].TimeFrmMax);
-      if (pMod->Current*(stTraj[imod].LambdaMax-stTraj[imod].LambdaMin)==0.0)
-         Warning("The calculated absolute neutron flux for the given parameter set is zero,\n"
-                 "probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)\n"
-                 "the simulation is performed with a flux normalized to a max. value of 1 n/(cm^2s) \n\n");
-      fprintf(LogFilePtr, "\n");
-   }  // end loop over moderators
+      { pMod->TotFluxMod = pMod->Current * (2*M_PI) / (pMod->Area * SolAngle);
+      }
+    }
+    else 
+    {  pMod->TotFluxMod = 0.0;
+    }
 
-   if (!bVisTraj) 
-     WriteInstrData(NullPos);
-   WriteSimData(dTimeMeas, dLmbdWant, stSrc.PulseFreq, NumberOfNeutrons, nBundles);
+    /* factor for normalisation (times in seconds) */
+    if (stSrc.eSrcType == CWS)
+    { pMod->NormTrj = pMod->Area * SolAngle * (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) / (NumberOfNeutrons/nNumMod);
+      pMod->NormInt = pMod->Current *         (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) / (NumberOfNeutrons/nNumMod);
+    }
+    else
+    { pMod->NormTrj = pMod->Area * SolAngle * stSrc.PulseFreq * (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) * (stTraj[imod].TimeFrmMax - stTraj[imod].TimeFrmMin)/1000.0 / (NumberOfNeutrons/nNumMod);
+      pMod->NormInt = pMod->Current *                           (stTraj[imod].LambdaMax - stTraj[imod].LambdaMin) * (stTraj[imod].TimeFrmMax - stTraj[imod].TimeFrmMin)/1000.0 / (NumberOfNeutrons/nNumMod);
+    }
+    if (pMod->NormTrj==0.0)
+      pMod->NormTrj = 1.0 / (pMod->FUAmpMod * NumberOfNeutrons/nNumMod);
+    // test = (pMod->FUAmpMod + pMod->FUAmpUM) * pMod->NormTrj;    // check: test = NormInt ? 
 
-   /* Propagation, Polarisation */
-   if (pBeamline!=NULL)
-     fprintf(LogFilePtr, "Beamline %s\n", pBeamline);
-   if (eDirDet==VT_DIVERGENCE)
-   { fprintf(LogFilePtr, "direction by divergence      : %7.3f - %7.3f  x  %7.3f - %7.3f  deg\n  propagation distance       : %7.3f m\n",
-                         2.0*180.0*stTraj[0].MinDivY/M_PI, 2.0*180.0*stTraj[0].MaxDivY/M_PI, 
-                         2.0*180.0*stTraj[0].MinDivZ/M_PI, 2.0*180.0*stTraj[0].MaxDivZ/M_PI, WindowDist/100.0);
-   }
-   else
-   { fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n  in a distance of           : %7.3f m\n",
-                         (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), WindowWidth, WindowHeight, WindowDist/100.);
-   }
-   fprintf(LogFilePtr, "  Declination                : %7.3f deg\n", Declination);
+    /* write data to output file */
+    if (strlen(pMod->sLTFileName) > 0)
+    {  fprintf(LogFilePtr, "wavelength-time distr. file  : %s \n",                pMod->sLTFileName);
+    }
+    else	
+    {	if (strlen(pMod->sTFileName) > 0)
+      {  fprintf(LogFilePtr, "time distribution file       : %s \n",             pMod->sTFileName);
+      }
+      else if (stSrc.eSrcType != CWS && stSrc.nSource==ANYSOURCE)
+      {  fprintf(LogFilePtr, "time constants of the pulse  : %7.3f us  , %7.3f us \n",pMod->TauAscMod *1.0e6, 
+         pMod->TauDecMod*1.0e6);
+      }
 
-   if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
-    fprintf(LogFilePtr, "  time window                : %7.3f ms  - %7.3f ms\n", TofMinWnd, TofMaxWnd);
+      if (strlen(pMod->sLFileName) > 0)
+        fprintf(LogFilePtr, "wavelength distribution file : %s \n",             pMod->sLFileName);
+      else
+        fprintf(LogFilePtr, "moderator temperature        :%8.3f K\n",          pMod->ModTemp);
+    }
+    fprintf(LogFilePtr,   "performance factor           : %7.3f \n",                   pMod->PfmcFact);
+    if (pMod->TotFluxMod > 0)
+       fprintf(LogFilePtr,"total neutron flux (in 2*pi) :%13.4e n/(cm^2s) \n",         pMod->TotFluxMod);
+    fprintf(LogFilePtr,   "moderator position           :(%7.3f  %7.3f  %7.3f) cm \n", pMod->CntrX, pMod->CntrY, pMod->CntrZ);
+    if (pMod->bCircle)
+      fprintf(LogFilePtr, "moderator diameter           : %7.3f cm \n",                pMod->Diameter);
+    else
+      fprintf(LogFilePtr, "moderator size (W x H)       : %7.3f cm  x %7.3f cm \n",    pMod->Width, pMod->Height);
 
-   fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
-                      PolDegree, PolVecX, PolVecY, PolVecZ);
-   if (sTraceFileName!=NULL)
-      fprintf(LogFilePtr, "trace file used              : %s\n", sTraceFileName);
+    /* if (eDirDet==VT_REAL_WND)
+       fprintf(LogFilePtr, "divergence defined by propagation window \n");
+    else if (eDirDet==VT_VIRT_WND)
+       fprintf(LogFilePtr, "divergence defined by virtual propagation window \n");
+    else
+       fprintf(LogFilePtr, "angle of opening used        : %7.3f     x %7.3f deg \n", 2*180*stTraj[imod].MaxDivY/M_PI, 2*180*stTraj[imod].MaxDivZ/M_PI);*/
+    fprintf(LogFilePtr,    "time averaged neutron current:%13.4e n/s in%9.6f sr  \n", pMod->Current, SolAngle);
+    fprintf(LogFilePtr,    "wavelength band used         : %7.3f Ang - %7.3f Ang \n", stTraj[imod].LambdaMin, stTraj[imod].LambdaMax);
+    if (stSrc.eSrcType != CWS)
+       fprintf(LogFilePtr, "time interval used           : %7.3f ms  - %7.3f ms \n", stTraj[imod].TimeFrmMin, stTraj[imod].TimeFrmMax);
+    if (pMod->Current*(stTraj[imod].LambdaMax-stTraj[imod].LambdaMin)==0.0)
+       Warning("The calculated absolute neutron flux for the given parameter set is zero,\n"
+               "probably because one parameter has a zero range (e.g. delta_lambda = 0, mod_area = 0, ...)\n"
+               "the simulation is performed with a flux normalized to a max. value of 1 n/(cm^2s) \n\n");
+    fprintf(LogFilePtr, "\n");
+  }  // end loop over moderators
 
-   /* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
-   FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
+  if (!bVisTraj) 
+    WriteInstrData(NullPos);
+  WriteSimData(TimeMeas, LmbdWant, stSrc.PulseFreq, nNeutBndl, nBundles);
 
-   /* General simulation settings */
-   if(keygrav == 1)
-      fprintf(LogFilePtr,"\nGravity is enabled \n");
-   else
-      fprintf(LogFilePtr,"\nGravity is disabled \n");
-   fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
-   // fprintf(LogFilePtr,"random seed                  : %ld \n",  idum);
+  /* Propagation, Polarisation */
+  if (pBeamline!=NULL)
+    fprintf(LogFilePtr, "Beamline %s\n", pBeamline);
+  if (eDirDet==VT_DIVERGENCE)
+  { 
+    fprintf(LogFilePtr, "direction by divergence      :\n");
+    if (stTraj[0].MinDivY==0.0) fprintf(LogFilePtr, "  horizontal                 : %7.3f deg - %7.3f deg\n", -180.0*stTraj[0].MaxDivY/M_PI,  180.0*stTraj[0].MaxDivY/M_PI);
+    else                        fprintf(LogFilePtr, "  horizontal : %7.3f - %7.3f and %6.3f - %6.3f deg\n",   -180.0*stTraj[0].MaxDivY/M_PI, -180.0*stTraj[0].MinDivY/M_PI,
+                                                                                                               180.0*stTraj[0].MinDivY/M_PI,  180.0*stTraj[0].MaxDivY/M_PI);
+    if (stTraj[0].MinDivZ==0.0) fprintf(LogFilePtr, "  vertical                   : %7.3f deg - %7.3f deg\n", -180.0*stTraj[0].MaxDivZ/M_PI,  180.0*stTraj[0].MaxDivZ/M_PI);
+    else                        fprintf(LogFilePtr, "  vertical   : %7.3f - %7.3f and %6.3f - %6.3f deg\n",   -180.0*stTraj[0].MaxDivZ/M_PI, -180.0*stTraj[0].MinDivZ/M_PI,
+                                                                                                               180.0*stTraj[0].MinDivZ/M_PI,  180.0*stTraj[0].MaxDivZ/M_PI);
+    fprintf(LogFilePtr, "  propagation distance       : %7.3f m\n", WindowDist/100.0);
+  }
+  else
+  { fprintf(LogFilePtr, "%s (W x H)       : %7.3f cm  x %7.3f cm\n  in a distance of           : %7.3f m\n",
+                        (eDirDet==VT_VIRT_WND ? "virtual window" : "real window   "), WindowWidth, WindowHeight, WindowDist/100.);
+  }
+  fprintf(LogFilePtr, "  Declination                : %7.3f deg\n", Declination);
 
-   dDecCos = cos(Declination*M_PI/180.0);
-   dDecSin = sin(Declination*M_PI/180.0);
+  if (TofMinWnd > -1.0e10 || TofMaxWnd < 1.0e10)
+   fprintf(LogFilePtr, "  time window                : %7.3f ms  - %7.3f ms\n", TofMinWnd, TofMaxWnd);
 
-   if (NThreads > 0)
-     setDetachedWrite();
+  fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
+                     PolDegree, PolVecX, PolVecY, PolVecZ);
+  if (sTraceFileName!=NULL)
+     fprintf(LogFilePtr, "trace file used              : %s\n", sTraceFileName);
+
+  /* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
+  FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
+
+  /* General simulation settings */
+  if(keygrav == 1)
+     fprintf(LogFilePtr,"\nGravity is enabled \n");
+  else
+     fprintf(LogFilePtr,"\nGravity is disabled \n");
+  fprintf(LogFilePtr,"Cutoff probability per traj. : %10.3e \n", wei_min);
+  // fprintf(LogFilePtr,"random seed                  : %ld \n",  idum);
+
+  dDecCos = cos(Declination*M_PI/180.0);
+  dDecSin = sin(Declination*M_PI/180.0);
+
+  if (NThreads > 0)
+    setDetachedWrite();
  
-   DECLARE_ABORT;
+  DECLARE_ABORT;
 
-   // -------------------------------
-   //   Generate neutron trajectories
-   // -------------------------------
-   for (No=BufferIndex=TransmittedNeutrons=0; No<NumberOfNeutrons; No++) 
-   {
-      double prob;
-
+  // -------------------------------
+  //   Generate neutron trajectories
+  // -------------------------------
+  for (iBndl=0; iBndl < nBundles; iBndl++) 
+  {
+    for (iNeut=0; iNeut < nNeutBndl; iNeut++) 
+    {
       CHECK;
 
       // provide data for progress meter
       if ((i & 0xff) == 0) 
-      {
+      { double No = (double)iBndl * (double)nNeutBndl + (double)iNeut; 
         adjustProgress((int)(100.0 * No / NumberOfNeutrons));
       }
 
@@ -552,6 +586,7 @@ int main(int argc, char *argv[])
       {  i++;
       }
 
+      InitNeutron(&Input);
       Input.ID.IDGrp[0] = ig1;
       Input.ID.IDGrp[1] = ig2;
       Input.ID.IDNo     = i;
@@ -590,10 +625,11 @@ int main(int argc, char *argv[])
       {
          int im;
          for (im=0; im<nNumMod; im++)
-         if (im!=imod && PosBehindMod(im, Y0, Input.Position[2])) 
-         {
-           im = -1;
-           break;
+         { if (im!=imod && PosBehindMod(im, Y0, Input.Position[2])) 
+           {
+             im = -1;
+             break;
+           }
          }
          if (im < 0) continue; 
       }
@@ -623,10 +659,9 @@ int main(int argc, char *argv[])
       	
       /* Calculation of intensity expressed by a count rate for this trajectory referring to SPSS, LPSS or CWS */
       if (stSrc.eSrcType == CWS)
-      {   prob =                  pMod->NormInt * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int;
-          test =  pMod->FUAmpl  * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int 
-                + pMod->FUAmpUM * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa);
-      }
+      { prob =  pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int 
+              + pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa);
+      } 
       else 
       {  
          TimeAtModerator = Input.Time;
@@ -649,29 +684,32 @@ int main(int argc, char *argv[])
          {  // case ESS, SNS
             if (stSrc.nSource==ESS && iDataVsn == 5)
             {  prob = EssModFU_Butterfly2015(pMod->Height, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
-               prob = prob / pMod->FUAmpl * pMod->NormInt;
+               prob = prob / pMod->FUAmpMod * pMod->NormInt;
                Input.Color=GetColour_ESSbutterfly2015(Input.Position[1], Declination);
             }
             else if (stSrc.nSource==ESS && iDataVsn == 6)
             {  prob = EssModFU_Butterfly2016(pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
-               prob = prob / pMod->FUAmpl * pMod->NormInt;
+               prob = prob / pMod->FUAmpMod * pMod->NormInt;
                if (ColorByLmbd) 
                  Input.Color=GetColour_ESSbutterfly2016(Input.Wavelength);
             }
             else 
-            {  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.PulseLength) / pMod->FUAmpl * pMod->NormInt;
+            {  prob = EssModFU(Input.Wavelength, TimeAtModerator, stSrc.PulseLength) / pMod->FUAmpMod * pMod->NormInt;
             }
          }
          else if (stSrc.nSource==CSNS)
          {  // case CSNS
-            prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / pMod->FUAmpl * pMod->NormInt;
+            prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / pMod->FUAmpMod * pMod->NormInt;
          }
          else
-         {  prob =                  pMod->NormInt * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecay, pMod->TauDecay/pMod->TauAscent, stSrc.PulseLength) / stFluxT[imod].Int;
-            test =  pMod->FUAmpl  * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecay, pMod->TauDecay/pMod->TauAscent, stSrc.PulseLength) / stFluxT[imod].Int
-                  + pMod->FUAmpUM * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa                        * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM, pMod->TauDecUM/pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int);
+         {  // prob =  pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecMod, pMod->TauDecMod/pMod->TauAscMod, stSrc.PulseLength) / stFluxT[imod].Int
+            //       + pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa                        * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM,  pMod->TauDecUM /pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int);
+            double
+              prob1 = pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecMod, pMod->TauDecMod/pMod->TauAscMod, stSrc.PulseLength) / stFluxT[imod].Int,
+              prob2 = pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa                        * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM,  pMod->TauDecUM /pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int);
+            prob = prob1 + prob2;
          }
-      }
+      }  
 
       if(prob <= 0.0) continue; 
 
@@ -761,7 +799,7 @@ int main(int argc, char *argv[])
       CenterX   += prob*Input.Position[0];
       CenterY   += prob*Input.Position[1];
       CenterZ   += prob*Input.Position[2]; 
-      AveTimeOF += prob*Input.Time;
+      AveTOF += prob*Input.Time;
       SumProb   += prob;
       Input.Probability = prob;
 
@@ -780,7 +818,8 @@ int main(int argc, char *argv[])
 
       if (!bTest && (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
          WriteNeutron(&Input);
-   }  // end loop over trajectories
+    }
+  }  // end loop over trajectories
 
    // ------------------------------------------------------------
    // Finish: write log, geometry and instrument file, free memory
@@ -789,16 +828,16 @@ int main(int argc, char *argv[])
    if (SumProb != 0.0) 
    {
       CenterX /= SumProb;  CenterY   /= SumProb;
-      CenterZ /= SumProb;  AveTimeOF /= SumProb; 
+      CenterZ /= SumProb;  AveTOF /= SumProb; 
       fprintf(LogFilePtr,"Center of beam at window     :(%7.3f  %7.3f  %7.3f) cm \n", CenterX, CenterY, CenterZ);
-      fprintf(LogFilePtr,"Average TOF                  : %7.3f ms \n", AveTimeOF);
+      fprintf(LogFilePtr,"Average TOF                  : %7.3f ms \n", AveTOF);
    }
    else
    {
       fprintf(LogFilePtr,"\nNo neutrons on the exit of this module \n");
    }	
 
-   fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f\n", NumberOfNeutrons);
+   fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f = %ld x %ld\n", NumberOfNeutrons, nBundles, nNeutBndl);
 
   /* write geometry file */
    SetGeometry("yellow");
@@ -818,199 +857,320 @@ int main(int argc, char *argv[])
 /*******************************************************/
 void OwnInit(int argc, char **argv)
 {
-  int  i,j;
-   char  *arg=NULL;
+  int    i=0, j=0;
+  double PolNorm = 0.0;
 
-   /* Initialize */
-   stSrc.PulseLength = 0.002;      /* [s] LPSS pulse length 2 ms            */ 
-   stSrc.pSrcName     = "";
-   InitTrajRange(&stTraj[0]);
+  char  *arg=NULL;
 
-   for(i=1; i<argc; i++)
-   {
-      if(argv[i][0]!='+') 
+  // Initialize
+  InitSource   (&stSrc);
+  InitTrajRange(&stTraj[0]);
+  for(int iM=0; iM<NUM_MOD; iM++)
+  { 
+    InitModerator(&stMod[iM]);
+
+    // initialize array pointers
+    stFluxL [iM].pTabX=NULL;
+    stFluxL [iM].pTabF=NULL;
+    stFluxT [iM].pTabX=NULL;
+    stFluxT [iM].pTabF=NULL;
+    stFluxLT[iM].pTabX=NULL;
+    stFluxLT[iM].pTabY=NULL;
+    stFluxLT[iM].pTabF=NULL;
+  }
+
+  for(i=1; i<argc; i++)  // src uses            : a A b B c   d D      f F     h   i       k K l L m M n N     p P     r R s S t T     v V w W   X y Y z  
+  {                      // Vsn. 2:
+    if(argv[i][0]!='+')  //   mod uses          :           C        E       G   H   I j J                 o O     q               u U         x         Z     
+    {                    // free                :                  e       g                                         Q 
+      arg=&argv[i][2];   // Vsn. 1
+                         //   mod uses as -1aVal: a A     c   d D      f F     h     I     k               o   p       r     S t T   U   V w W x X   Y   Z                    
+      switch(argv[i][1]) //   mod A free        :     b B   C     e E      g G   H     j J   K l L m M n N   O   P q Q   R s       u   v           y   z                                
       {
-        arg=&argv[i][2];   //free:           C     e E     g G   H   I j J   K l           o O     q Q             u U         x         Z
-        switch(argv[i][1]) //used: a A b B c   d D     f F     h   i       k     L m M n N     p P     r R s S t T     v V w W   X y Y z  
-        {
-            /* Simulation */
-          case 'n':
-            NumberOfNeutrons = atof(arg);
-            break;
+        /* Simulation */
+        case 'l':
+          nBundles = atol(arg);
+          break;
+        case 'n':
+          nNeutBndl = atol(arg);
+          break;
 
-          case 'r':
-            sTraceFileName=arg;  
-            break;
-          case 'k':
-            eTraceMode = (short) atol(arg); 
-            break;
+        /* neutron parameters */
+        case 'm':
+          stTraj[0].LambdaMin = (double)atof(arg); /* [A] */
+          break;
+        case 'M':
+          stTraj[0].LambdaMax = (double)atof(arg);  /* [A] */
+          break;
+        case 't':
+          stTraj[0].TimeFrmMin = (double)atof(arg); /* TimeFrame [TimeFrameMin;TimeFrameMax] at Moderator [ms]*/
+          break;
+        case 'T':
+          stTraj[0].TimeFrmMax = (double)atof(arg);
+          break;
 
-          case 'd':
-            j = atol(arg); 
-            if (j < 0 || j > 2)
-              Error("Wrong parameter for 'direction determination'");
-            else
-              eDirDet = (VtDirect) j;
-            break;
+        case 'd':
+          j = atol(arg); 
+          if (j < 0 || j > 2)
+            Error("Wrong parameter for 'direction determination'");
+          else
+            eDirDet = (VtDirect) j;
+          break;
 
-          case 'A':
-            dTimeMeas = (double) atof(arg); /* [s] */
-            break;
-          case 'W':
-            dLmbdWant = (double) atof(arg); /* [Ang] */
-            break;
+        case 'b':
+          stTraj[0].MinDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
+          break;
+        case 'y':
+          stTraj[0].MaxDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
+          break;
+        case 'c':
+          stTraj[0].MinDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
+          break;
+        case 'z':
+          stTraj[0].MaxDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
+          break;
 
+        /* source and moderator */
+        case 'S':
+          stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+          break;
+        case 'K':
+          stSrc.eSrcKind = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+          break;
+        case 'N':
+          stSrc.pSrcName = arg;
+          if (strcmp(arg,"ESS")==0)
+            stSrc.nSource = ESS;
+          else if (strcmp(arg,"SNS")==0)
+            stSrc.nSource  = SNS;
+          else if (strcmp(arg,"ISIS")==0)
+            stSrc.nSource  = ISIS;
+          else if (strcmp(arg,"CSNS")==0)
+            stSrc.nSource  = CSNS;
+          if (strcmp(arg,"HBS")==0)
+            stSrc.nSource = HBS;
+          if (strcmp(arg,"ILL")==0)
+            stSrc.nSource = ILL;
+          else 
+            stSrc.nSource = ANYSOURCE;	     /* no specific source given */
+          break;
+        case 'v':
+          iDataVsn = (short)atoi(arg);       /* version of the data base */
+          break;
 
-            /* source and moderator */
-          case 'S':
-            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
-            fprintf(LogFilePtr,"Source type                  : %d \n", stSrc.eSrcType);
-            break;
-          case 'N':
-            stSrc.pSrcName = arg;
-            if (strcmp(arg,"ESS")==0)
-              stSrc.nSource = ESS;
-            else if (strcmp(arg,"SNS")==0)
-              stSrc.nSource  = SNS;
-            else if (strcmp(arg,"ISIS")==0)
-              stSrc.nSource  = ISIS;
-            else if (strcmp(arg,"CSNS")==0)
-              stSrc.nSource  = CSNS;
-            else 
-              stSrc.nSource = ANYSOURCE;	     /* no specific source given */
-            break;
-          case 'v':
-            iDataVsn = (short)atoi(arg);       /* version of the data base */
-            break;
+        case 'R':
+          stSrc.PulseFreq = (double)atof(arg);         /* pulse repetition rate   [Hz] */
+          if (stSrc.PulseFreq > 0.0)
+            stSrc.PulsePeriod = 1000./stSrc.PulseFreq; /* time between two pulses [ms] */
+          else
+            stSrc.PulsePeriod = 0.0;
+          break;
+        case 'p':
+          stSrc.PulseLength = (double)atof(arg);    /* LPSS: proton pulselength [ms]  */
+          stSrc.PulseLength*=0.001;                 /* pulse length              [s]  */
+          break;
+        case 'L':
+          stSrc.Power = (double)atof(arg);          /* average source power [MW];  */
+          stSrc.Power*= 1.0e6;                      /* power                [W];   */
+          break;
 
-          case 'R':
-            stSrc.PulseFreq = (double)atof(arg);          /* pulse repetition rate   [Hz] */
-            if (stSrc.PulseFreq > 0.0)
-              stSrc.PulsePeriod = 1000./stSrc.PulseFreq; /* time between two pulses [ms] */
-            else
-              stSrc.PulsePeriod = 0.0;
-            break;
-          case 'L':
-            stSrc.Power = (double)atof(arg);          /* average source power [MW];  */
-            stSrc.Power*= 1.0e6;                      /* power                [W];   */
-            break;
-          case 'p':
-            stSrc.PulseLength = (double)atof(arg);    /* LPSS: proton pulselength [ms]  */
-            stSrc.PulseLength*=0.001;                 /* pulse length              [s]  */
-            break;
+        case 'a':
+          sModFileName=arg;  
+          break;
+        case 'B':
+          pBeamline=arg;  
+          break;
+        case 'i':
+          Declination = (double)atof(arg);   // angle between moderator surface normal and beamline [deg]
+          break;
 
-          case 'a':
-            sModFileName=arg;  
-            break;
-          case 'B':
-            pBeamline=arg;  
-            break;
+        case 'E':
+          stMod[0].Diameter = (double) atof(arg);   //   [cm]    diameter of the source
+          break;
+        case 'G':
+          stMod[0].Width = (double) atof(arg);      //   [cm]    width of the source 
+          break;
+        case 'H':
+          stMod[0].Height = (double) atof(arg);     //   [cm]    height of the source 
+          break;
 
-            /* neutron parameters */
-          case 'm':
-            stTraj[0].LambdaMin = (double)atof(arg); /* [A] */
-            break;
-          case 'M':
-            stTraj[0].LambdaMax = (double)atof(arg);  /* [A] */
-            break;
+        case 'I':
+          strcpy(stMod[0].sLFileName, arg);         //           wavelength distribution file
+          break;
+        case 'C':
+          stMod[0].ModTemp = (double) atof(arg);    //     [K]   moderator temperature  
+          break;
+        case 'J':
+          stMod[0].TotFluxMod = (double) atof(arg);  // [n/cm²/s] total (average) flux on the moderator surface
+          break;
 
-          case 't':
-            stTraj[0].TimeFrmMin = (double)atof(arg); /* TimeFrame [TimeFrameMin;TimeFrameMax] at Moderator [ms]*/
-            break;
-          case 'T':
-            stTraj[0].TimeFrmMax = (double)atof(arg);
-            break;
+        case 'o':
+          stMod[0].TauAscMod = (double) atof(arg);  //    [µs]   ascent time constant of the moderated neutrons in the pulse
+          stMod[0].TauAscMod /= 1.0e06;             //    [µs] -> [s] 
+          break;
+        case 'O':
+          stMod[0].TauDecMod = (double) atof(arg);   //    [µs]   decay time constant of the moderated neutrons in the pulse 
+          stMod[0].TauDecMod /= 1.0e06;              //    [µs] -> [s] 
+          break;
 
-          case 'b':
-            stTraj[0].MinDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
-            break;
-          case 'y':
-            stTraj[0].MaxDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
-            break;
-          case 'c':
-            stTraj[0].MinDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
-            break;
-          case 'z':
-            stTraj[0].MaxDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
-            break;
+        case 'Z':
+          stMod[0].eIsisTS = (short) atoi(arg);     //    [-]    Isis Target station: 1  or  2
+          break;
 
-            /*polarization*/
-          case 'X':
-            PolVecX = atof(arg);  
-            break;
-          case 'Y':
-            PolVecY = atof(arg);  
-            break;
-          case 'V':
-            PolVecZ = atof(arg);  
-            break;
-          case 'P':
-            PolDegree = atof(arg); 
-            if(fabs(PolDegree) > 100.)
-            Error("polarization degree must be <= 100 ");
-            break;
+        case 'j':
+          stMod[0].FUAmpUM = (double) atof(arg);    // [n/cm²/s] total CW-flux of the under-moderated neutrons on the moderator surface
+          break;
+        case 'x':
+          stMod[0].Chi = (double) atof(arg);        // [1/Ang]   factor for the wavelength dependence of under-moderated neutrons
+          break;
+        case 'q':
+          stMod[0].Kappa = (double) atof(arg);      //   [1]     scaling factor for the flux of under-moderated neutrons
+          break;
+        case 'u':
+          stMod[0].TauAscUM = (double) atof(arg);   //   [µs]    ascent time constant of the under-moderated neutrons in the pulse
+          stMod[0].TauAscUM /= 1.0e06;              //   [µs] -> [s] 
+          break;
+        case 'U':
+          stMod[0].TauDecUM = (double) atof(arg);   //   [µs]    decay time constant of the under-moderated neutrons in the pulse
+          stMod[0].TauDecUM /= 1.0e06;              //   [µs] -> [s] 
+          break;
 
-          /* propagation */
-          case 'D':									           //  distance moderator propagation window [cm]
-            WindowDist = (double) atof(arg);
-            if (WindowDist < 0.0)
-              Error("Distance from moderator to window must have be greater equal zero");
-            break;
-          case 'i':
-            Declination = (double)atof(arg);   // angle between moderator surface normal and beamline [deg]
-            break;
-          case 'w':
-            WindowWidth = (double)atof(arg);   // width of propagation window [cm]
-            break;
-          case 'h':
-            WindowHeight = (double)atof(arg);  // height of propagation window [cm]
-            break;
+        /* propagation */
+        case 'D':									           //  distance moderator propagation window [cm]
+          WindowDist = (double) atof(arg);
+          if (WindowDist < 0.0)
+            Error("Distance from moderator to window must have be greater equal zero");
+          break;
+        case 'w':
+          WindowWidth = (double)atof(arg);   // width of propagation window [cm]
+          break;
+        case 'h':
+          WindowHeight = (double)atof(arg);  // height of propagation window [cm]
+          break;
 
-          /* time focusing */
-          case 's':									           //  distance from moderator to position of time window [cm]
-            TofWndDist = (double) atof(arg);
-            if (TofWndDist < 0.0)
-              Error("Distance from moderator to position of time window must have be greater equal zero");
-            break;
-          case 'f':
-            TofMinWnd = (double)atof(arg);     // min. TOF to position to time window [cm]
-            break;
-          case 'F':
-            TofMaxWnd = (double)atof(arg);     // max. TOF to position to time window [cm]
-            break;
+        /* time focusing */
+        case 's':									           //  distance from moderator to position of time window [cm]
+          TofWndDist = (double) atof(arg);
+          if (TofWndDist < 0.0)
+            Error("Distance from moderator to position of time window must have be greater equal zero");
+          break;
+        case 'f':
+          TofMinWnd = (double)atof(arg);     // min. TOF to position to time window [cm]
+          break;
+        case 'F':
+          TofMaxWnd = (double)atof(arg);     // max. TOF to position to time window [cm]
+          break;
 
-          default:
-            fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-            exit(-1);
-            break;
-        }
+        /* polarization*/
+        case 'X':
+          PolVecX = atof(arg);  
+          break;
+        case 'Y':
+          PolVecY = atof(arg);  
+          break;
+        case 'V':
+          PolVecZ = atof(arg);  
+          break;
+        case 'P':
+          PolDegree = atof(arg); 
+          if(fabs(PolDegree) > 100.)
+          Error("polarization degree must be <= 100 ");
+          break;
+
+        /* simulation parameters */ 
+        case 'A':
+          TimeMeas = (double) atof(arg); /* [s] */
+          break;
+        case 'W':
+          LmbdWant = (double) atof(arg); /* [Ang] */
+          break;
+
+        /* special ray-tracing options */
+        case 'r':
+          sTraceFileName=arg;  
+          break;
+        case 'k':
+          eTraceMode = (short) atoi(arg); 
+          break;
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
       }
-   }
+    }
+  }
 
-   if (PolVecX==0.0 && PolVecY==0.0 && PolVecZ==0.0)
-      PolVecX=1.0;
+  NumberOfNeutrons = (double)nBundles * (double)nNeutBndl;
 
-   if (WindowDist == 0.0 && eDirDet!=VT_DIVERGENCE)
-      Error("Direction can only be defined by window, if distance from moderator to window is greater zero ");
-   Endpoint.A = 1.0;
-   Endpoint.B = 0.0;
-   Endpoint.C = 0.0;
-   if (eDirDet == VT_VIRT_WND)
-      Endpoint.D = 0.0;
-   else
-      Endpoint.D = -WindowDist;
+  // source type
+  if (stSrc.eSrcType==NO_TYPE)
+  {
+    switch (stSrc.eSrcKind)
+    {
+      case SRC_SIMPLE:
+      case SRC_CWS   : 
+        stSrc.eSrcType=CWS; 
+        break;
+      case SRC_PULSED:
+        if (stSrc.PulseLength==0.0) stSrc.eSrcType=SPSS; 
+        else                        stSrc.eSrcType=LPSS;   
+        break;
+      case SRC_ISIS:
+        stSrc.eSrcType=SPSS;
+        break;
+      case SRC_ESS:
+        stSrc.eSrcType=LPSS;
+        break;
+      default: 
+        Error("Kind of source not defined");
+    }
+  }
 
-    memcpy(&TofWnd, &Endpoint, sizeof(Endpoint));
-    TofWnd.D = -TofWndDist;
+  if (stSrc.PulseFreq > 0.0)
+    stMod[0].FUAmpUM    = stMod[0].TotFluxUM / (2.0 * M_PI) / stSrc.PulseFreq;
+  else 
+    stMod[0].FUAmpUM    = stMod[0].TotFluxUM / (2.0 * M_PI);
 
-   // For ESS declination can be calculated from the beamport
-   if (pBeamline!=NULL)
-   { double theta;
-     if (Declination==0.0 && stSrc.nSource==ESS)
-     { theta       = CalcTheta(pBeamline);
-       Declination = CalcDecl (theta);
-     }
-   }
+  if (PolVecX==0.0 && PolVecY==0.0 && PolVecZ==0.0)
+    PolVecX=1.0;
+
+  if (WindowDist == 0.0 && eDirDet!=VT_DIVERGENCE)
+     Error("Direction can only be defined by window, if distance from moderator to window is greater zero ");
+  Endpoint.A = 1.0;
+  Endpoint.B = 0.0;
+  Endpoint.C = 0.0;
+  if (eDirDet == VT_VIRT_WND)
+    Endpoint.D = 0.0;
+  else
+    Endpoint.D = -WindowDist;
+
+  memcpy(&TofWnd, &Endpoint, sizeof(Endpoint));
+  TofWnd.D = -TofWndDist;
+
+  // For ESS declination can be calculated from the beamport
+  if (pBeamline!=NULL)
+  { double theta;
+    if (Declination==0.0 && stSrc.nSource==ESS)
+    { theta       = CalcTheta(pBeamline);
+      Declination = CalcDecl (theta);
+    }
+  }
+
+  // normalise polarization direction
+  PolNorm= sqrt(PolVecX*PolVecX + PolVecY*PolVecY + PolVecZ*PolVecZ);
+  if(PolNorm==0.0) Error("you have to give a polarization direction"); 
+  PolVecX=PolVecX/PolNorm;
+  PolVecY=PolVecY/PolNorm;
+  PolVecZ=PolVecZ/PolNorm;
+
+  // ranges for wavelength and time
+  if (stTraj[0].LambdaMax <= stTraj[0].LambdaMin)
+    Warning("Wavelength range zero or negative");
+  if (stSrc.PulseFreq > 0.0 && stTraj[0].TimeFrmMax <= stTraj[0].TimeFrmMin)
+    Warning("Time range zero or negative");
+
+  return;
 }
  
 
@@ -1049,6 +1209,7 @@ short ReadModData(char* sFileName)
 {
   char  sShape   [2]="S",
         sBuffer [CHAR_BUF_LENGTH];
+  short iM=0;
   FILE* pFileR;
 
   pFileR = OpenInputFile(sFileName, TRUE,"rt");
@@ -1056,64 +1217,61 @@ short ReadModData(char* sFileName)
   /* Read a line for each moderator */
   while (ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1)==TRUE)
   { 
-    stMod[imod].eIsisTS   = 0;    // default: no ISIS moderator 
-    stMod[imod].PfmcFact = 1.0;  //          performance factor = 1
     if (stSrc.nSource==ISIS)
     { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %hd %lf %lf  %hd  %lf %lf %lf  %lf %lf", 
-                      &stMod[imod].ModTemp,     &stMod[imod].nColour,     sShape,  
-                      &stMod[imod].CntrX,       &stMod[imod].CntrY,      &stMod[imod].CntrZ,  
-                      &stMod[imod].Width,       &stMod[imod].Height,   
-                      &stMod[imod].nBackground, &stMod[imod].TotalFlux,  &stMod[imod].Current, 
-                       stMod[imod].sLFileName,   stMod[imod].sTFileName,  stMod[imod].sLTFileName, 
-                      &stMod[imod].eModType,    &stMod[imod].TauAscent , &stMod[imod].TauDecay,
-                      &stMod[imod].eIsisTS,
-                      &stMod[imod].TotFluxUM,   &stMod[imod].Chi,        &stMod[imod].Kappa,
-                      &stMod[imod].TauAscUM,    &stMod[imod].TauDecUM);
+                      &stMod[iM].ModTemp,     &stMod[iM].nColour,     sShape,  
+                      &stMod[iM].CntrX,       &stMod[iM].CntrY,      &stMod[iM].CntrZ,  
+                      &stMod[iM].Width,       &stMod[iM].Height,   
+                      &stMod[iM].nBackground, &stMod[iM].TotFluxMod, &stMod[iM].Current, 
+                       stMod[iM].sLFileName,   stMod[iM].sTFileName,  stMod[iM].sLTFileName, 
+                      &stMod[iM].eModType,    &stMod[iM].TauAscMod , &stMod[iM].TauDecMod,
+                      &stMod[iM].eIsisTS,
+                      &stMod[iM].TotFluxUM,   &stMod[iM].Chi,        &stMod[iM].Kappa,
+                      &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
     }
     else
     { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %hd %lf %lf  %lf  %lf %lf %lf  %lf %lf", 
-                      &stMod[imod].ModTemp,     &stMod[imod].nColour,      sShape,  
-                      &stMod[imod].CntrX,       &stMod[imod].CntrY,       &stMod[imod].CntrZ,  
-                      &stMod[imod].Width,       &stMod[imod].Height,   
-                      &stMod[imod].nBackground, &stMod[imod].TotalFlux,   &stMod[imod].Current, 
-                       stMod[imod].sLFileName,   stMod[imod].sTFileName,   stMod[imod].sLTFileName, 
-                      &stMod[imod].eModType,    &stMod[imod].TauAscent ,  &stMod[imod].TauDecay,
-                      &stMod[imod].PfmcFact,
-                      &stMod[imod].TotFluxUM,   &stMod[imod].Chi,         &stMod[imod].Kappa,
-                      &stMod[imod].TauAscUM,    &stMod[imod].TauDecUM);
+                      &stMod[iM].ModTemp,     &stMod[iM].nColour,     sShape,  
+                      &stMod[iM].CntrX,       &stMod[iM].CntrY,      &stMod[iM].CntrZ,  
+                      &stMod[iM].Width,       &stMod[iM].Height,   
+                      &stMod[iM].nBackground, &stMod[iM].TotFluxMod, &stMod[iM].Current, 
+                       stMod[iM].sLFileName,   stMod[iM].sTFileName,  stMod[iM].sLTFileName, 
+                      &stMod[iM].eModType,    &stMod[iM].TauAscMod , &stMod[iM].TauDecMod,
+                      &stMod[iM].PfmcFact,
+                      &stMod[iM].TotFluxUM,   &stMod[iM].Chi,        &stMod[iM].Kappa,
+                      &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
     }
 
-    CopyTrajRange(&stTraj[0], &stTraj[imod]);
+    CopyTrajRange(&stTraj[0], &stTraj[iM]);
 
-    stMod[imod].TauAscent  /= 1.0e06;
-    stMod[imod].TauDecay   /= 1.0e06;
-    stMod[imod].TauAscUM   /= 1.0e06;
-    stMod[imod].TauDecUM   /= 1.0e06;
+    stMod[iM].TauAscMod /= 1.0e06;
+    stMod[iM].TauDecMod /= 1.0e06;
+    stMod[iM].TauAscUM  /= 1.0e06;
+    stMod[iM].TauDecUM  /= 1.0e06;
 
-    if (strcmp(stMod[imod].sLFileName, "none")==0 || strcmp(stMod[imod].sLFileName, "0")==0) 
-      strcpy(stMod[imod].sLFileName, "");
-    if (strcmp(stMod[imod].sTFileName, "none")==0 || strcmp(stMod[imod].sTFileName, "0")==0) 
-      strcpy(stMod[imod].sTFileName, "");
-    if (strcmp(stMod[imod].sLTFileName,"none")==0 || strcmp(stMod[imod].sLTFileName,"0")==0) 
-      strcpy(stMod[imod].sLTFileName,"");
+    if (strcmp(stMod[iM].sLFileName, "none")==0 || strcmp(stMod[iM].sLFileName, "0")==0) 
+      strcpy(stMod[iM].sLFileName, "");
+    if (strcmp(stMod[iM].sTFileName, "none")==0 || strcmp(stMod[iM].sTFileName, "0")==0) 
+      strcpy(stMod[iM].sTFileName, "");
+    if (strcmp(stMod[iM].sLTFileName,"none")==0 || strcmp(stMod[iM].sLTFileName,"0")==0) 
+      strcpy(stMod[iM].sLTFileName,"");
 
     if (strcmp(sShape, "C")==0)
-    { stMod[imod].Diameter = stMod[imod].Width;
-      stMod[imod].Width  = 0.0;
-      stMod[imod].Height = 0.0;
-      stMod[imod].Area   = M_PI * sq(stMod[imod].Diameter) / 4.0;
-      stMod[imod].bCircle = TRUE;
+    { stMod[iM].Diameter = stMod[iM].Width;
+      stMod[iM].Width  = 0.0;
+      stMod[iM].Height = 0.0;
+      stMod[iM].Area   = M_PI * sq(stMod[iM].Diameter) / 4.0;
+      stMod[iM].bCircle = TRUE;
     }
     else
-    { stMod[imod].Diameter = 0.0;
-      stMod[imod].Area     = stMod[imod].Height * stMod[imod].Width;        
-      stMod[imod].bCircle  = FALSE;
+    { stMod[iM].Diameter = 0.0;
+      stMod[iM].Area     = stMod[iM].Height * stMod[iM].Width;        
+      stMod[iM].bCircle  = FALSE;
     }
-    stMod[imod].DistModWnd = WindowDist-stMod[imod].CntrX;
-    stMod[imod].WndFact    = 0.0;
-    stMod[imod].FUAmpUM    = stMod[imod].TotFluxUM / (2.0 * M_PI) / stSrc.PulseFreq;
+    stMod[iM].DistModWnd = WindowDist-stMod[iM].CntrX;
+    stMod[iM].WndFact    = 0.0;
 
-    imod++;
+    iM++;
   }
 
   fclose(pFileR);
@@ -1152,7 +1310,7 @@ short ReadModData(char* sFileName)
       stMod[1].CntrY = (Declination>0) ? (stMod[0].Width + stMod[1].Width) / 2.0       : -(stMod[0].Width + stMod[1].Width) / 2.0 ;
       stMod[0].Area  = stMod[0].Height * stMod[0].Width;        
       stMod[1].Area  = stMod[1].Height * stMod[1].Width;        
-      imod=2;
+      iM=2;
 
       fprintf(LogFilePtr,"For ESS moderator description, both thermal and cold moderator are simulated and set to default values: \n"); 
       fprintf(LogFilePtr,"  thermal: at (0.0,%6.2f,0.0), %5.2f cm wide; colour: 1 \n", stMod[0].CntrY, stMod[0].Width);
@@ -1188,7 +1346,7 @@ short ReadModData(char* sFileName)
     // add second cold for the theta=0 view:
     if (iDataVsn==5 && fabs(Declination) < 0.01)
     {
-      imod=3;
+      iM=3;
       stMod[2].ModTemp = 50.0;
       stMod[2].Width =  stMod[1].Width;
       stMod[2].CntrY = -stMod[1].CntrY;
@@ -1210,23 +1368,14 @@ short ReadModData(char* sFileName)
       fprintf(LogFilePtr,"3rd moderator was added because of 90° position.\n");
     }
   }
-
-  /* initialize array pointers */
-  stFluxL [imod].pTabX=NULL;
-  stFluxL [imod].pTabF=NULL;
-  stFluxT [imod].pTabX=NULL;
-  stFluxT [imod].pTabF=NULL;
-  stFluxLT[imod].pTabX=NULL;
-  stFluxLT[imod].pTabY=NULL;
-  stFluxLT[imod].pTabF=NULL;
 	
   // set automatic color option
-  if (  imod==1 && stMod[0].nColour==0
-     || imod==2 && stMod[0].nColour==0 && stMod[1].nColour==0
-     || imod==3 && stMod[0].nColour==0 && stMod[1].nColour==0 && stMod[2].nColour==0) 
+  if (  iM==1 && stMod[0].nColour==0
+     || iM==2 && stMod[0].nColour==0 && stMod[1].nColour==0
+     || iM==3 && stMod[0].nColour==0 && stMod[1].nColour==0 && stMod[2].nColour==0) 
     ColorByLmbd=TRUE;
 
-  return imod;
+  return iM;
 }
 
 

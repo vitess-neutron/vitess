@@ -180,7 +180,7 @@ proc makeModuleSets {} {
     {sm_ensemble {} sm_ensemble}
     {source {source_const_wave source_ILL source_FRM2 source_HMI
       source_short_pulsed source_SNS source_JPARC source_ISIS source_IPNS source_CSNS
-      source_long_pulsed source_ESS_LPTS source_HBS} source}
+      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -337,12 +337,10 @@ set m1 {
     "moderator\nheight [cm]" "moderator height in cm"} ge0 "" 1}
   {spaord int "" {"spatial\norder" "By this parameter it can be defined that one moderator is behind another. The higher the number the more it is in the background."} 0 32767}
   {}
-  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0).
-In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected).
-Deviations of the moderator center from this position must be given here."}}
+  {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0). In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected). Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
-  {totflux float   "" {"total flux\nat moderator\n[n/(cm^2 s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+  {totflux float "" {"total flux\nat moderated\n[n/(cm^2 s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
   {perform float 1.0 {"performance\nfactor" "Factor allowing for losses by aging or engineering design details not included in the model"}}
   {flux_um float 0.0 {"total flux\nundermoderated\n[n/(cm^2 s)]" "Flux of under-moderated neutrons on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
@@ -365,8 +363,9 @@ set m3 {
   {wtfile pareditablefile "" {"user wavelength\ntime dist. file" "Name of the file that contains the wavelength-time distribution function F(lambda,t) for the moderator used. Unit: [n/(cmÂý s str Ang)]"}}
   {tau1 float "" {"tau_1 [us]" "Ascent time constant of the pulse in microseconds (this is supposed to be the smaller one of the two time constants).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
   {tau2 float "" {"tau_2 [us]" "Decay time constant of the pulse in microseconds (this is supposed to be the larger of the two time constants). In this case it describes the decay of the pulse (for t >> tau_1).\nThe time constants are only used, if no time distribution file is given. See help file for details."} ge0}
-  {tau1_um float "" {"tau_1\nundermoderated\n[us]" "Ascent time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
-  {tau2_um float "" {"tau_2\nundermoderated\n[us]" "Decay time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
+  {}
+  {tau1_um float "" {"tau_1 [us]\nundermoderated" "Ascent time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
+  {tau2_um float "" {"tau_2 [us]\nundermoderated" "Decay time constant of the undermoderated neutrons in the pulse in microseconds."} ge0}
   {}
   {tfile pareditablefile "" {"user time\ndist. file" "Name of the file that contains the time distribution function F(t) for the moderator used.
   units: [ms], M(lambda) * F(t) must have the unit [n/(cmÂý s str Ang)]
@@ -466,10 +465,10 @@ set BigFramelmo 1
 
 set smASET {
   {"Restriction of sampling trajectories" header}
-  {number_of_neutrons float 1000000 {
-    "number of\ntrajectories" "" "" n} ge0 "" 1}
+  {number_of_neutrons float 1000000 {"number of traj.\nper bundle" "" "" n} ge0 "" 1}
+  {number_of_bundles int 1 {"number of\nbundles" "" "" l} ge1 "" 1}
   {}
-  {min_wavelength float 1.0 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
+  {min_wavelength float 1 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
   {min_time float "" {"min. time [ms]" "minimal time in ms of time window at moderator" "" t}}
   {}
   {max_wavelength float 10 {"max. wave-\nlength [A]" "" "" M} gt0 "" 1}
@@ -480,8 +479,9 @@ set smASET {
     {"by divergence" "by window" "by virtual window"} {0 1 2}}
   {}
   {min_phi float 0.0 {"min. divergence\nx <-> y [deg]" "minimal horizontal divergence [deg] (absolute value)" "" b} ge0}
-  {max_phi float 0.5 {"max. divergence\nx <-> y [deg]" "maximal horizontal divergence [deg] (half of angular spread x-y-plane if min. value is zero)" "" y} le90}
   {min_the float 0.0 {"min. divergence\nx <-> z [deg]" "minimal vertical divergence [deg] (absolute value)" "" c} ge0}
+  {}
+  {max_phi float 0.5 {"max. divergence\nx <-> y [deg]" "maximal horizontal divergence [deg] (half of angular spread x-y-plane if min. value is zero)" "" y} le90}
   {max_the float 0.5 {"max. divergence\nx <-> z [deg]" "maximal vertical divergence [deg] (half of angular spread x-z-plane if min. value is zero)" "" z} le90}
   {}
 }
@@ -658,24 +658,23 @@ proc sore2 {s p} {
 
 set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
 set fl [sore1 14 2.857]
-set sp [sore2 ESS 2.0]
+set sp [sore2 ESS 2.0 ]
 set source_ESS_LPTSESET [concat {
     {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
-  } $sp $fl [list $al] $smASET $cwsASET]
+  } $fl $sp [list $al] $smASET $cwsASET]
 set source_ESS_2012ESET [concat {
     {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
-  } $sp $fl [list $al] $smASET $cwsASET]
+  } $fl $sp [list $al] $smASET $cwsASET]
 
 set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
 set fl [sore1 96 0.208]
-set sp [sore2 HBS 0.1]
-set source_HBSESET [concat $sp $fl [list $al] $smASET $cwsASET]
+set source_HBSESET [concat $fl [list $al] $smASET $cwsASET]
 
 set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
 set fl [sore1 24 0.833]
 set source_long_pulsedESET [concat $fl [list $al] $smASET $cwsASET]
 
-foreach s {long_pulsed ESS_LPTS ESS_2010 HBS} {
+foreach s {long_pulsed ESS_LPTS ESS_2012 HBS} {
 
   proc source_${s}CheckErr {{app _}} {
     foreach l {tau1 tau2 name}  {
@@ -4990,8 +4989,8 @@ proc convert2String {ll} {
 }
 
 proc convert2Code {ll app} {
-#0:temp 1:color 2:shape 3:cx 4:cy 5:cz 6:width 7:height 8:spaord 9:scale 10:current
-#11:wfile 12:tfile 13:wtfile 14:modtype 15:tau1 16:tau2 17:perform
+#0:temp 1:color 2:shape 3:cx 4:cy 5:cz 6:width 7:height 8:spaord 9:totflux 10:current
+#11:wfile 12:tfile 13:wtfile 14:modtype 15:tau1 16:tau2 17:perform 18:flux_um 19: chi_um 20:kap_um 21: tau1_um 22:tau2_um
   set s ""
   set i -1
   foreach e $ll {
@@ -5023,8 +5022,8 @@ proc convert2Code {ll app} {
 # read / write moderator description file
 
 proc serializeModFile {f mode var app} {
-  set al {temp color shape cx cy cz width height spaord scale current
-    wfile tfile wtfile modtype tau1 tau2 perform}
+  set al {temp color shape cx cy cz width height spaord totflux current
+    wfile tfile wtfile modtype tau1 tau2 perform flux_um chi_um kap_um tau1_um tau2_um}
   set il1 [prepList $al 1]
   set il2 [prepList $al 2]
   set il3 [prepList $al 3]
@@ -5048,29 +5047,35 @@ proc serializeModFile {f mode var app} {
       if {$fi == ""} continue
       if {[string index $fi 0] == "#"} continue
       switch [incr imode] {
-	0 {set tl $il1}
-	1 {set tl $il2
-	  set umod2 used
-	}
-	2 {set tl $il3
-	  set umod3 used
-	}
+        0 {set tl $il1}
+        1 {set tl $il2
+	        set umod2 used
+        }
+        2 {set tl $il3
+	        set umod3 used
+        }
       }
       set len1 [llength $ll]
       set len2 [llength $tl]
       set ll [convert2String $ll]
       if {$len1 != $len2} {
         if {$len1 + 1 == $len2} {
-           # last variable perform has not been given
-          lappend ll 0
+           # last variable (perform) has not been given
+          lappend ll 1.0
+        } elseif {$len1 + 5 == $len2} {
+           # last 5 variables (undermoderated) have not been given
+          lappend ll 0.0 0.9 2.2 0.0 0.0
+        } elseif {$len1 + 6 == $len2} {
+           # last 6 variables (perform, UM) have not been given
+          lappend ll 1.0 0.0 0.9 2.2 0.0 0.0
         } else {
           # silently ignore this line
           continue
         }
       }
       foreach item $tl i $ll {
-	set r $i
-	catch {eval "set $item \$r"}
+        set r $i
+        catch {eval "set $item \$r"}
       }
     }
   } else {
@@ -5080,8 +5085,8 @@ proc serializeModFile {f mode var app} {
       if {[info exist $l] == 0} {set $l 0}
     }
     puts $f "# Source
-# Moderators:  center size  distribution files  time
-# Temp. col shape  x    y    z  wid|dia height order tot_flux curr w-file t-file wt-file  Mod tau_a tau_d   pfmc"
+# Moderators:        center          size                           distribution files           time                undermoderated neutrons
+# Temp. col shape  x    y    z  wid|dia height order tot_flux curr w-file t-file wt-file  Mod tau_a tau_d   pfmc  um_flux chi kappa tau_a tau_d"
     puts $f [convert2Code $il1 $app]
     if {$umod2 == "used"} {
       puts $f [convert2Code $il2 $app]
@@ -5104,7 +5109,7 @@ proc serializeSmoFile {f mode var app} {
 
 proc serializeImoFile {f mode var app} {
   set il {cx cy cz width wtfile tstat}
-  set al {temp color shape cx cy cz width height spaord scale current
+  set al {temp color shape cx cy cz width height spaord totflux current
     wfile tfile wtfile modtype tau1 tau2 tstat}
 
   if {$mode == "r"} {

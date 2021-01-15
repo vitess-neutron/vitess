@@ -368,14 +368,11 @@ McCompID Name2CompID (const char* sCompName)
 }
 
 
-/* Calculation of solid angle from horizontal and vertical opening angle */
-/*                                         */
-/* dHorAngle : horizontal angle in radians */
-/* dVertAngle: horizontal angle in radians */
-/*                                         */
-double SolidAngle(const double HorAngle, const double VertAngle)
+/* Approximation and exact calculation of the solid angle from horizontal and vertical opening angle */
+/*   HorAngle : [rad] half of the opening in horizontal direction */
+/*   VertAngle: [rad] half of the opening in vertical direction   */
+double ApprSolidAngle(const double HorAngle, const double VertAngle)
 {
-
   if (VertAngle < 0.55)
     /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
     return 4 * HorAngle  * (tan(VertAngle) - pow(tan(VertAngle),3)/3.0);
@@ -386,13 +383,11 @@ double SolidAngle(const double HorAngle, const double VertAngle)
 
   /* empirical approximation for large angles */
   return 4 * sqrt(HorAngle * sin(HorAngle) * VertAngle * sin(VertAngle));
-
 }
-
 
 double TrueSolidAngle(const double HorAngle, const double VertAngle)
 {
-  return (4 * asin(HorAngle* VertAngle));
+  return (4 * asin(sin(HorAngle) * sin(VertAngle)));
 }
 
 
@@ -949,16 +944,7 @@ void Wait(float WaitTime)
 /*  Functions for Reading of Input Data                                                 */
 /****************************************************************************************/
 
-/* ReadLine reads next line from file 'pFile' into string 'pLine' that is
-     not empty and not a comment line (beginning with #)
-	  returning TRUE if line is found and FALSE otherwise
-   it strips comments at the end, leading and succeeding blanks, line feeds, tabs anc cr
-   the maximal number of characters in the string must be given in 'nStrLen'
-*/
-
-/********************************************************************/
-/* counts the number of lines in a text file and rewinds it         */
-/********************************************************************/
+/*  LinesInFile(FILE *pIn) counts the number of lines in a text file and rewinds it  */
 long LinesInFile(FILE *pIn)
 {
   char Buffer[CHAR_BUF_LARGE]="";
@@ -974,10 +960,7 @@ long LinesInFile(FILE *pIn)
 }
 
 
-/***********************************************************/
-/* Function for counting the number of columns in a file   */
-/*   pFile: pointer to file of interest                    */
-/***********************************************************/
+/* ColumnsInFile(FILE *pIn) counts the number of columns in a text file by analyzing the line found using 'ReadLine()' and rewinds it  */
 long ColumnsInFile(FILE* pFile)
 {
   int i,v, nLns, isin;
@@ -1000,9 +983,12 @@ long ColumnsInFile(FILE* pFile)
 }
 
 
-int
-ReadLine(FILE* pFile, char* pLine, int nStrLen) {
-
+/* ReadLine() reads the next line from the file 'pFile' into string 'pLine' that is not empty and not a comment line (beginning with #)
+	  returning TRUE if a line is found and FALSE otherwise
+   it strips comments at the end, leading and succeeding blanks, line feeds, tabs and cr
+   the maximal number of characters in the string must be given in 'nStrLen'   */
+int ReadLine(FILE* pFile, char* pLine, int nStrLen) 
+{
   if (pFile)
     while (fgets (pLine, nStrLen, pFile)) {
       int v, k, kanf, kmax;
@@ -1034,7 +1020,6 @@ ReadLine(FILE* pFile, char* pLine, int nStrLen) {
 
 
 /*  ReadParString(FILE *fpt) reads one string value from parameter file */
-
 void ReadParString(FILE *fpt, char *stringvar)
 {
   fscanf(fpt,"%s", stringvar) ;
@@ -1042,7 +1027,6 @@ void ReadParString(FILE *fpt, char *stringvar)
 
 
 /*  ReadParF(FILE *fpt) reads one double value from parameter file */
-
 double ReadParF(FILE *fpt)
 {
   double value;
@@ -1051,7 +1035,6 @@ double ReadParF(FILE *fpt)
 
 
 /*  ReadParI(FILE *fpt) reads one integer value from parameter file */
-
 int ReadParI(FILE *fpt)
 {
   int value;
@@ -1060,7 +1043,6 @@ int ReadParI(FILE *fpt)
 
 
 /* ReadParComment(FILE *fpt) reads comment line */
-
 void ReadParComment(FILE *fpt)
 {
   char comment[100];
@@ -1073,8 +1055,7 @@ void ReadParComment(FILE *fpt)
 /**********************************************************/
 
 /* Copy 'nLen' bytes of 'sOrigin' into the new string 'sCopy' */
-void
-StrgCopy(char* sCopy, const char* sOrigin, int nLen)
+void StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 {
 	strncpy(sCopy, sOrigin, nLen);
 	sCopy[nLen]='\0';
@@ -1082,8 +1063,7 @@ StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 
 
 /* Shift string 'sStr' 'kWidth' bytes to the left */
-void
-StrgLShift(char* sStr, int kWidth)
+void StrgLShift(char* sStr, int kWidth)
 {
 	int k, ke;
 
@@ -1096,8 +1076,7 @@ StrgLShift(char* sStr, int kWidth)
 
 /* Scan string 'sStr' and copy all values (but maximally 'nMax')
    to list 'pTab' of double values,  beginning with value number 'nStart'*/
-long
-StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
+long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 {
 	int k, n=0;
 	const char *pStr;

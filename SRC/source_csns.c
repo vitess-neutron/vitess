@@ -66,7 +66,7 @@ double CsnsModFU(const double dLambda, const double dTime, const double dPosY, c
   double dFuA,         // amplitude of the flux    [n/(cm²  sterad Ang]
          dFu=0.0;      // actualflux value         [n/(cm²s sterad Ang]
 
-  dFuA = stMod[imod].FUAmpl * Maxwellian(dLambda, stMod[imod].ModTemp);
+  dFuA = stMod[imod].FUAmpMod * Maxwellian(dLambda, stMod[imod].ModTemp);
 
   if      (stMod[imod].eModType==COUPLED   && stMod[imod].ModTemp < 100.0)
     dFu = dFuA * ShortPulseShape(dTime, 2.9e-04, 20.0);
