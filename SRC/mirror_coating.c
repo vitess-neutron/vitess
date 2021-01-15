@@ -58,7 +58,7 @@ void   GetActDate(char* sDate);                      // Gets current date from s
 void   Mode2Text (char* sReflMode, VtInMod iMode);   // Converts enum for reflectivity calculation to text
 
 char*  FullInName(const char* filename);             // returns path\name.ext for input directory   located in init.c
-
+void   setParDirectory (char *a);
 
 /******************************/
 /** Program                  **/
@@ -80,17 +80,19 @@ int main(int argc, char* argv[])
   double  aM[ROFQ_MAX],     // array of m values read from 2 column file
           aQ[ROFQ_MAX],     // array of Q values read from 2 column file
           aR[ROFQ_MAX];     // array of R values read from 2 column file
-  int     nVals=0;          // number of Q and R values from 2 column file
+  int     nVals=0,len=0;    // number of Q and R values from 2 column file
   VtInMod eMode=VT_PAR_IN;  // mode of reflectivity calculation
 	long    i, nLen=0;
 	FILE   *pFileIn, 
          *pFileOut;
-	char   *sDash="---------------------------------------------------------------------------------------------",
+	char   *pFullName,
+         *sDash="---------------------------------------------------------------------------------------------",
           sMode[CHAR_BUF_SMALL]="",
           sText[CHAR_BUF_SMALL]="",
           sFileIn [50]="",
           sFileOut[50]="";
 
+  // printf("%d %s %s", argc, argv[0], argv[1]);
 	Init(argc, argv, _eModule);
   for (i=1; i < ROFQ_MAX; i++)
   { aQ[i]=0.0;
@@ -98,7 +100,7 @@ int main(int argc, char* argv[])
   }
   thetaNi = Degrees(asin(QC_NI/(4*PI)));
 
-	printf("%s\nGeneration of a reflectivity file as used in 'Guide' and 'Bender'\n%s\n", sDash, sDash);
+  printf("%s\nGeneration of a reflectivity file as used in 'Guide' and 'Bender'\n%s\n", sDash, sDash);
 //	printf("                                              ");
 //	printf("    |                                         ");
 //	printf(" R_0|_____________                            ");
@@ -189,8 +191,23 @@ int main(int argc, char* argv[])
   {
 	  /* write to input directory */
 	  GetString(sFileOut, "Name of the output mirror file         ");
-	  pFileOut = OpenInputFile(sFileOut, FALSE, "w");
+    pFullName = FullInName(sFileOut);
 
+    /*  pFileOut = OpenInputFile(sFileOut, FALSE, "w");
+    if (ParDirectory!=NULL)
+    { len = strlen(ParDirectory);
+      printf("\nParDirectory: %d %s\n", len, ParDirectory); 
+    }
+	  if (sFileOut!=NULL)
+    { len = strlen(sFileOut);
+      printf("FileOut     : %d %s\n", len, sFileOut); 
+    }
+	  if (pFullName!=NULL)
+    { len = strlen(pFullName);
+      printf("pFullName   : %d %s\n\n", len, pFullName); 
+    } */
+			
+    pFileOut = fopen(pFullName, "w"); 
 	  if (pFileOut!=NULL)
 	  {
       // Header
@@ -230,10 +247,10 @@ int main(int argc, char* argv[])
 		  }
 		  fclose(pFileOut);
 
-		  printf("\n%s\nData written to %s\n", sText, FullInName(sFileOut));
+		  printf("\n%s\nData written to %s\n", sText, pFullName); 
 	  }
 	  else
-	  {	printf("\nERROR: Output file could not be generated\n(%s)", FullInName(sFileOut));
+	  {	printf("\nERROR: Output file %s could not be generated\n", pFullName);
 	  }
   }
   else

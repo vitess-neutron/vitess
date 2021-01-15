@@ -1674,8 +1674,8 @@ static void setParDirectory (char *a)
     {
       memcpy ((ParDirectory = (char *) malloc(len+2)), a, len);
       ParDirectory[len++] = cSlash;
-      ParDirectory[len] = 0;
     }
+    ParDirectory[len] = 0;
     ParDirLength = len;
   }
 }
@@ -1684,7 +1684,7 @@ static char* conCat (const char *sFile, const char* sSubDir, int sel)
 {
   char *pResult=NULL, 
        *pDir=NULL;
-  int  LenD, LenF, LenS;
+  int  LenD=0, LenF=0, LenS=0;
 
   // no file, no full file name 
   if (sFile == NULL)
@@ -1701,8 +1701,8 @@ static char* conCat (const char *sFile, const char* sSubDir, int sel)
   switch (sel)
   { case 0: pDir = ParDirectory;     LenD = ParDirLength;      break;
     case 1: pDir = InstallDirectory; LenD = InstallDirLength;  break;
-    case 2: pDir = InputDir;         LenD = strlen(InputDir);  break;
-    case 3: pDir = OutputDir;        LenD = strlen(OutputDir); break;
+    case 2: pDir = InputDir;  if (InputDir !=NULL) LenD = strlen(InputDir);  break;
+    case 3: pDir = OutputDir; if (OutputDir!=NULL) LenD = strlen(OutputDir); break;
     default: LenD = 0;
   }
 
