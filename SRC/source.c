@@ -248,7 +248,6 @@ int main(int argc, char *argv[])
   // --------------
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.29");
-  nMod = ModInit(argc, argv);                 // Order essential: Init() and ModInit() before SrcInit()   !!!
   SrcInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -256,10 +255,12 @@ int main(int argc, char *argv[])
     bLengthCmpr = TRUE;
 
   /* reads moderator and ray-tracing data */
-  LoadTraceFile();
+  nMod = ModInit(argc, argv);
   if (nMod==0)
     nMod = ReadModData(sModFileName);
   CompleteModData();
+
+  LoadTraceFile();
 
   InitNeutron(&TestNeutron);
 
@@ -1001,165 +1002,168 @@ void SrcInit(int argc, char **argv)
   {                      
     if(argv[i][0]!='+')
     {                   
-      arg=&argv[i][2];  
-                         // used: a A b B c   d D      f F     h   i       k K l L m M n N     p P     r R s S t T     v V w W   X y Y z                  
-      switch(argv[i][1]) // free:           C      e E     g G   H   I j J                 o O     q Q             u U         x         Z                              
-      {
-        /* Simulation */
-        case 'l':
-          nBundles = atol(arg);
-          break;
-        case 'n':
-          nNeutBndl = atol(arg);
-          break;
+      if (isalpha(argv[i][1]))  
+      { 
+        arg=&argv[i][2];  
+                           // used: a A b B c   d D      f F     h   i       k K l L m M n N     p P     r R s S t T     v V w W   X y Y z                  
+        switch(argv[i][1]) // free:           C      e E     g G   H   I j J                 o O     q Q             u U         x         Z                              
+        {
+          /* Simulation */
+          case 'l':
+            nBundles = atol(arg);
+            break;
+          case 'n':
+            nNeutBndl = atol(arg);
+            break;
 
-        /* neutron parameters */
-        case 'm':
-          stTraj[0].LambdaMin = (double)atof(arg); /* [A] */
-          break;
-        case 'M':
-          stTraj[0].LambdaMax = (double)atof(arg);  /* [A] */
-          break;
-        case 't':
-          stTraj[0].TimeFrmMin = (double)atof(arg); /* TimeFrame [TimeFrameMin;TimeFrameMax] at Moderator [ms]*/
-          break;
-        case 'T':
-          stTraj[0].TimeFrmMax = (double)atof(arg);
-          break;
+          /* neutron parameters */
+          case 'm':
+            stTraj[0].LambdaMin = (double)atof(arg); /* [A] */
+            break;
+          case 'M':
+            stTraj[0].LambdaMax = (double)atof(arg);  /* [A] */
+            break;
+          case 't':
+            stTraj[0].TimeFrmMin = (double)atof(arg); /* TimeFrame [TimeFrameMin;TimeFrameMax] at Moderator [ms]*/
+            break;
+          case 'T':
+            stTraj[0].TimeFrmMax = (double)atof(arg);
+            break;
 
-        case 'd':
-          j = atol(arg); 
-          if (j < 0 || j > 2)
-            Error("Wrong parameter for 'direction determination'");
-          else
-            eDirDet = (VtDirect) j;
-          break;
+          case 'd':
+            j = atol(arg); 
+            if (j < 0 || j > 2)
+              Error("Wrong parameter for 'direction determination'");
+            else
+              eDirDet = (VtDirect) j;
+            break;
 
-        case 'b':
-          stTraj[0].MinDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
-          break;
-        case 'y':
-          stTraj[0].MaxDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
-          break;
-        case 'c':
-          stTraj[0].MinDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
-          break;
-        case 'z':
-          stTraj[0].MaxDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
-          break;
+          case 'b':
+            stTraj[0].MinDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
+            break;
+          case 'y':
+            stTraj[0].MaxDivY = M_PI*(double)atof(arg)/180.0; /* [deg] */
+            break;
+          case 'c':
+            stTraj[0].MinDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
+            break;
+          case 'z':
+            stTraj[0].MaxDivZ = M_PI*(double)atof(arg)/180.0;  /* [deg] */
+            break;
 
-        /* source */
-        case 'S':
-          stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
-          break;
-        case 'K':
-          stSrc.eSrcKind = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
-          break;
-        case 'N':
-          stSrc.pSrcName = arg;
-          if      (strcmp(arg,"ESS") ==0) stSrc.nSource = ESS;
-          else if (strcmp(arg,"SNS") ==0) stSrc.nSource = SNS;
-          else if (strcmp(arg,"ISIS")==0) stSrc.nSource = ISIS;
-          else if (strcmp(arg,"CSNS")==0) stSrc.nSource = CSNS;
-          else if (strcmp(arg,"IPNS")==0) stSrc.nSource = IPNS;
-          else if (strcmp(arg,"HBS") ==0) stSrc.nSource = HBS;
-          else if (strcmp(arg,"ILL") ==0) stSrc.nSource = ILL;
-          else if (strcmp(arg,"HMI") ==0) stSrc.nSource = HMI;
-          else if (strcmp(arg,"FRM2")==0) stSrc.nSource = FRM2;
-          else                            stSrc.nSource = ANYSOURCE;	     /* no specific source given */
-          break;
-        case 'v':
-          iDataVsn = (short)atoi(arg);       /* version of the data base */
-          break;
+          /* source */
+          case 'S':
+            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            break;
+          case 'K':
+            stSrc.eSrcKind = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            break;
+          case 'N':
+            stSrc.pSrcName = arg;
+            if      (strcmp(arg,"ESS") ==0) stSrc.nSource = ESS;
+            else if (strcmp(arg,"SNS") ==0) stSrc.nSource = SNS;
+            else if (strcmp(arg,"ISIS")==0) stSrc.nSource = ISIS;
+            else if (strcmp(arg,"CSNS")==0) stSrc.nSource = CSNS;
+            else if (strcmp(arg,"IPNS")==0) stSrc.nSource = IPNS;
+            else if (strcmp(arg,"HBS") ==0) stSrc.nSource = HBS;
+            else if (strcmp(arg,"ILL") ==0) stSrc.nSource = ILL;
+            else if (strcmp(arg,"HMI") ==0) stSrc.nSource = HMI;
+            else if (strcmp(arg,"FRM2")==0) stSrc.nSource = FRM2;
+            else                            stSrc.nSource = ANYSOURCE;	     /* no specific source given */
+            break;
+          case 'v':
+            iDataVsn = (short)atoi(arg);       /* version of the data base */
+            break;
 
-        case 'R':
-          stSrc.PulseFreq = (double)atof(arg);         /* pulse repetition rate   [Hz] */
-          if (stSrc.PulseFreq > 0.0)
-            stSrc.PulsePeriod = 1000./stSrc.PulseFreq; /* time between two pulses [ms] */
-          else
-            stSrc.PulsePeriod = 0.0;
-          break;
-        case 'p':
-          stSrc.PulseLength = (double)atof(arg);    /* LPSS: proton pulselength [ms]  */
-          stSrc.PulseLength*=0.001;                 /* pulse length              [s]  */
-          break;
-        case 'L':
-          stSrc.Power = (double)atof(arg);          /* average source power [MW];  */
-          stSrc.Power*= 1.0e6;                      /* power                [W];   */
-          break;
+          case 'R':
+            stSrc.PulseFreq = (double)atof(arg);         /* pulse repetition rate   [Hz] */
+            if (stSrc.PulseFreq > 0.0)
+              stSrc.PulsePeriod = 1000./stSrc.PulseFreq; /* time between two pulses [ms] */
+            else
+              stSrc.PulsePeriod = 0.0;
+            break;
+          case 'p':
+            stSrc.PulseLength = (double)atof(arg);    /* LPSS: proton pulselength [ms]  */
+            stSrc.PulseLength*=0.001;                 /* pulse length              [s]  */
+            break;
+          case 'L':
+            stSrc.Power = (double)atof(arg);          /* average source power [MW];  */
+            stSrc.Power*= 1.0e6;                      /* power                [W];   */
+            break;
 
-        case 'a':
-          sModFileName=arg;  
-          break;
-        case 'B':
-          pBeamline=arg;  
-          break;
-        case 'i':
-          Declination = (double)atof(arg);   // angle between moderator surface normal and beamline [deg]
-          break;
+          case 'a':
+            sModFileName=arg;  
+            break;
+          case 'B':
+            pBeamline=arg;  
+            break;
+          case 'i':
+            Declination = (double)atof(arg);   // angle between moderator surface normal and beamline [deg]
+            break;
 
-        /* propagation */
-        case 'D':									           //  distance moderator propagation window [cm]
-          WindowDist = (double) atof(arg);
-          if (WindowDist < 0.0)
-            Error("Distance from moderator to window must have be greater equal zero");
-          break;
-        case 'w':
-          WindowWidth = (double)atof(arg);   // width of propagation window [cm]
-          break;
-        case 'h':
-          WindowHeight = (double)atof(arg);  // height of propagation window [cm]
-          break;
+          /* propagation */
+          case 'D':									           //  distance moderator propagation window [cm]
+            WindowDist = (double) atof(arg);
+            if (WindowDist < 0.0)
+              Error("Distance from moderator to window must have be greater equal zero");
+            break;
+          case 'w':
+            WindowWidth = (double)atof(arg);   // width of propagation window [cm]
+            break;
+          case 'h':
+            WindowHeight = (double)atof(arg);  // height of propagation window [cm]
+            break;
 
-        /* time focusing */
-        case 's':									           //  distance from moderator to position of time window [cm]
-          TofWndDist = (double) atof(arg);
-          if (TofWndDist < 0.0)
-            Error("Distance from moderator to position of time window must have be greater equal zero");
-          break;
-        case 'f':
-          TofMinWnd = (double)atof(arg);     // min. TOF to position to time window [cm]
-          break;
-        case 'F':
-          TofMaxWnd = (double)atof(arg);     // max. TOF to position to time window [cm]
-          break;
+          /* time focusing */
+          case 's':									           //  distance from moderator to position of time window [cm]
+            TofWndDist = (double) atof(arg);
+            if (TofWndDist < 0.0)
+              Error("Distance from moderator to position of time window must have be greater equal zero");
+            break;
+          case 'f':
+            TofMinWnd = (double)atof(arg);     // min. TOF to position to time window [cm]
+            break;
+          case 'F':
+            TofMaxWnd = (double)atof(arg);     // max. TOF to position to time window [cm]
+            break;
 
-        /* polarization*/
-        case 'X':
-          PolVecX = atof(arg);  
-          break;
-        case 'Y':
-          PolVecY = atof(arg);  
-          break;
-        case 'V':
-          PolVecZ = atof(arg);  
-          break;
-        case 'P':
-          PolDegree = atof(arg); 
-          if(fabs(PolDegree) > 100.)
-          Error("polarization degree must be <= 100 ");
-          break;
+          /* polarization*/
+          case 'X':
+            PolVecX = atof(arg);  
+            break;
+          case 'Y':
+            PolVecY = atof(arg);  
+            break;
+          case 'V':
+            PolVecZ = atof(arg);  
+            break;
+          case 'P':
+            PolDegree = atof(arg); 
+            if(fabs(PolDegree) > 100.)
+            Error("polarization degree must be <= 100 ");
+            break;
 
-        /* simulation parameters */ 
-        case 'A':
-          TimeMeas = (double) atof(arg); /* [s] */
-          break;
-        case 'W':
-          LmbdWant = (double) atof(arg); /* [Ang] */
-          break;
+          /* simulation parameters */ 
+          case 'A':
+            TimeMeas = (double) atof(arg); /* [s] */
+            break;
+          case 'W':
+            LmbdWant = (double) atof(arg); /* [Ang] */
+            break;
 
-        /* special ray-tracing options */
-        case 'r':
-          sTraceFileName=arg;  
-          break;
-        case 'k':
-          eTraceMode = (short) atoi(arg); 
-          break;
+          /* special ray-tracing options */
+          case 'r':
+            sTraceFileName=arg;  
+            break;
+          case 'k':
+            eTraceMode = (short) atoi(arg); 
+            break;
 
-        default:
-          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-          exit(-1);
-          break;
+          default:
+            fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+            exit(-1);
+            break;
+        }
       }
     }
   }
