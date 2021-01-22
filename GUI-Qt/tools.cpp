@@ -112,12 +112,23 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
            break;
        case 6:
+           label->setText(parName);
+           lEdit = new QLineEdit();
+           lEdit->setObjectName(parName.toLower()+"_file");
+           formLayout->addRow(label,lEdit);
+           gridLayout->addLayout(formLayout,row,0,1,2,Qt::AlignRight);    //span over 2 columns
+           formLayout = new QFormLayout;
+           browseBut = new QPushButton();
+           browseBut->setObjectName("browse_" + parName);
+           browseBut->setMinimumWidth(80);
+           browseBut->setText("Browse");
+
            QPushButton *paramBut = new QPushButton;
            paramBut->setObjectName(parName);
-           paramBut->setMinimumWidth(80);
+           paramBut->setMinimumWidth(120);
            paramBut->setText(parName);
-           formLayout->addRow(paramBut);
-           gridLayout->addLayout(formLayout,row,1,1,1,Qt::AlignRight);    //span over 1 column
+           formLayout->addRow(browseBut,paramBut);
+           gridLayout->addLayout(formLayout,row,2,1,1,Qt::AlignRight);    //span over 2 columns
            break;
        }
     }

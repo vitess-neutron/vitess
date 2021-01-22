@@ -7,8 +7,6 @@
 #include <unistd.h>
 #include <fstream>
 
-#include "string.h"
-
 using namespace YAML;
 using namespace std;
 
@@ -53,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
        //list of modulNames for comboBox in tableWidget
        //map modulname with filename and name of used c-module
-       Module[modulList[i]] <<  modulFile << QString::fromStdString(config.begin()->first.as<string>());
+       Module[modulList[i]] << modulFile << QString::fromStdString(config.begin()->first.as<string>());
        //count same modules in table
        modindex[modulList[i]] = 0;
        mapModule.clear();
@@ -73,7 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(modultab,SIGNAL(arrowPressed(int)),this,SLOT(showSelectedModul(int)));
 
     //Modul comboBox Value changed
-    connect(modultab,SIGNAL(changedComboVal(QString,int)),this,SLOT(changeModulWidget(QString,int)));
+    connect(modultab,SIGNAL(changedComboVal(QString,int)),this,
+                     SLOT(changeModulWidget(QString,int)));
 
     //Remove module from modultable
     connect(modultab,SIGNAL(removeCombo(int)),this,SLOT(removeModule(int)));
@@ -223,6 +222,25 @@ void MainWindow::on_actionLoad_triggered()
                else if (modulWidget->findChild<QCheckBox *>(childName))
                    modulWidget->findChild<QCheckBox *>(childName)
                               ->setChecked(it->second.as<bool>());
+               else if (modulWidget->findChild<QPushButton *>(childName))
+               {
+                   QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
+                   QFile file(fileName);
+                   if (!file.open(QFile::ReadWrite | QFile::Text))
+                   {
+                       QMessageBox::information(this,"Warning cannot open: ",fileName);
+                       return;
+                   }
+                   //stream to write to file
+                   ofstream fout(fileName.toStdString());       // using namespace std
+                   YAML::Node paramWin;
+                   paramWin[childName.toStdString()] =
+                              configChildren[childName.toStdString()];
+                   fout << paramWin;
+                   file.close();
+                   modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
+                              ->setText(fileName);
+               }
            }
         }
    }
@@ -388,10 +406,11 @@ void MainWindow::finishedLast()
     pipeActive = false;
     for (int i=0; i < procList.count(); i++)
     {
-       QFile file("/home/jcns/source/testlog" + QString::number(i+1));
+       QFile file("/tmp/testlog" + QString::number(i+1));
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
-           QMessageBox::information(this,"Warning cannot open: ","/home/jcns/source/testlog" + QString::number(i+1));
+           QMessageBox::information(this,"Warning cannot open: ",
+                                    "/tmp/testlog" + QString::number(i+1));
            return;
        }
        ui->textBrowser->append(file.readAll());
@@ -425,9 +444,11 @@ void MainWindow::writeHeader(YAML::Node& config)
     foreach(QString entry, mapHeader.keys())
     {
         if (this->findChild<QLineEdit *>(entry))
-            config[gPara][entry.toStdString()] = this->findChild<QLineEdit *>(entry)->text().toStdString();
+            config[gPara][entry.toStdString()] =
+                    this->findChild<QLineEdit *>(entry)->text().toStdString();
         else if (this->findChild<QComboBox *>(entry))
-            config[gPara][entry.toStdString()] = this->findChild<QComboBox *>(entry)->currentText().toStdString();
+            config[gPara][entry.toStdString()] =
+                    this->findChild<QComboBox *>(entry)->currentText().toStdString();
     }
     config[gPara]["nBuffer"] = nBuffer.toStdString();
     config[gPara]["MinWght"] = MinWght.toStdString();
@@ -514,7 +535,7 @@ void MainWindow::on_pushCheck_clicked()
 
             cmd += " --N" + QString::number(i+1);    //Modnum
             cmd += headerStr;
-            cmd += " --L/home/jcns/source/testlog" + QString::number(enableIndex+1);
+            cmd += " --L/tmp/testlog" + QString::number(enableIndex+1);
            foreach(QString param, mapVitess[modulName].keys())
            {
             if (mapVitess[modulName][param]["prefix"] != "")       //prefix
@@ -528,7 +549,8 @@ void MainWindow::on_pushCheck_clicked()
               else if (ui->stackedWidget->widget(i)->findChild< QComboBox *>(param))
               {
                  cmd += " " + mapVitess[modulName][param]["prefix"];
-                 int curInd = ui->stackedWidget->widget(i)->findChild< QComboBox *>(param)->currentIndex();
+                 int curInd = ui->stackedWidget->widget(i)
+                                       ->findChild< QComboBox *>(param)->currentIndex();
                  if (mapVitess[modulName][param]["index"] != "")         //index
                       cmd += mapVitess[modulName][param]["index"].split(",")[curInd];
                  else cmd += QString::number(curInd);
@@ -536,9 +558,39 @@ void MainWindow::on_pushCheck_clicked()
               else if (ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param))
               {
                  cmd += " " + mapVitess[modulName][param]["prefix"];
-                 cmd += QString::number(ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param)->isChecked());
+                 cmd += QString::number(ui->stackedWidget->widget(i)
+                                       ->findChild< QCheckBox *>(param)->isChecked());
               }
             }
+            else if ((ui->stackedWidget->widget(i)->findChild< QPushButton *>(param)) &&
+                     (ui->stackedWidget->widget(i)
+                        ->findChild< QLineEdit *>(param.toLower()+"_file")->text() != ""))
+            {
+                QString fileName = ui->stackedWidget->widget(i)
+                        ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
+                QFile file(fileName);
+                if (!file.open(QFile::ReadOnly | QFile::Text))
+                {
+                    QMessageBox::information(this,"Warning cannot open: ",fileName);
+                    return;
+                }
+                config = YAML::LoadFile(fileName.toStdString());
+                YAML::Node config_paramWin = config[config.begin()->first.as<string>()];
+                for (unsigned i=0; i < config_paramWin.size(); i++)
+                {
+                   for(YAML::const_iterator it=config_paramWin[i].begin(); it!=config_paramWin[i].end(); ++it)
+                   {
+                      QString paramKey = QString::fromStdString(it->first.as<std::string>());      //key
+                      QString paramVal = QString::fromStdString(it->second.as<std::string>());      //value
+                      QString prefix = paramWindow[param]->mapModule[paramKey]["prefix"];
+                      if ( paramWindow[param]->findChild<QComboBox *>(paramKey) &&
+                           paramWindow[param]->mapModule[paramKey]["index"]!="")
+                         paramVal = paramWindow[param]->mapModule[paramKey]["index"][paramVal.toInt()];
+                      if (prefix != "")
+                         cmd += " " + prefix[0] + QString::number(i) + prefix[1] + paramVal;
+                   }
+                }
+             }
            }
            cmdList.append(cmd);
            if (i < ui->stackedWidget->count()-1) cmd += " | ";
@@ -662,18 +714,36 @@ void MainWindow::saveFile(QString instrumentName)
       allLineEdits.clear();
       allComboBoxes.clear();
       allCheckBoxes.clear();
+      allPushButtons.clear();
+
       string key = ui->stackedWidget->widget(i)->objectName().toStdString();       //std::string
       allLineEdits <<  ui->stackedWidget->widget(i)->findChildren< QLineEdit *>();
       allComboBoxes <<  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
       allCheckBoxes <<  ui->stackedWidget->widget(i)->findChildren< QCheckBox *>();
+      allPushButtons << ui->stackedWidget->widget(i)->findChildren< QPushButton *>();
 
       for(int ii=0 ; ii < allLineEdits.size(); ii++)
-        config[key][allLineEdits[ii]->objectName().toStdString()] = allLineEdits[ii]->text().toStdString();
+        if (allLineEdits[ii]->text() != "" && !allLineEdits[ii]->objectName().endsWith("_file"))
+           config[key][allLineEdits[ii]->objectName().toStdString()] =
+                                      allLineEdits[ii]->text().toStdString();
       for(int ii=0 ; ii<allComboBoxes.size(); ii++)
-        config[key][allComboBoxes[ii]->objectName().toStdString()] = allComboBoxes[ii]->currentText().toStdString();
+        config[key][allComboBoxes[ii]->objectName().toStdString()] =
+                                      allComboBoxes[ii]->currentText().toStdString();
       for(int ii=0 ; ii<allCheckBoxes.size(); ii++)
-        config[key][allCheckBoxes[ii]->objectName().toStdString()] = allCheckBoxes[ii]->isChecked();
-
+        config[key][allCheckBoxes[ii]->objectName().toStdString()] =
+                                      allCheckBoxes[ii]->isChecked();
+      for(int ii=0 ; ii<allPushButtons.size(); ii++)
+      {
+          QString butName = allPushButtons[ii]->objectName();
+          if(paramWindow.keys().indexOf(butName) != -1)
+             if( ui->stackedWidget->widget(i)
+                  ->findChild<QLineEdit *>(butName.toLower()+"_file")->text() != "")
+             {
+                QString parFile = ui->stackedWidget->widget(i)
+                      ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
+                paramWindow[butName]->saveData(config,key,butName,parFile);
+             }
+      }
       fout << config;
       fout << "\n";
       config.reset();
@@ -692,7 +762,6 @@ void MainWindow::designModul(QString modulName)
     scrollArea->setObjectName(modulName);
     for(int col=0; col<3; col++)  gridLayout->setColumnMinimumWidth(col,230);
     scrollArea->setWidgetResizable(true);
-    //YAML::Node config = YAML::LoadFile(Module[modulName].toStdString());
     YAML::Node config = YAML::LoadFile(Module[modulName][0].toStdString());
     YAML::Node configParam = config.begin()->second;
     getModulParameter(configParam, modulName);
@@ -725,7 +794,8 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
                    for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
                       strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
                    mapParam[key] = strList.join(",");
-                }else  mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
+                }else
+                   mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
             else mapParam[key] = "";
         }
         mapModule[parName] = mapParam;
@@ -734,9 +804,17 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
         if( scrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
             connect(scrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
                     SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
-        else if( scrollArea->widget()->findChild<QPushButton*>(parName))
+        if( scrollArea->widget()->findChild<QPushButton*>(parName))
         {
-            paramWindow.append( new Parameter);
+            paramWindow[parName] = new Parameter();
+            paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
+            QString yamlPath = QApplication::applicationDirPath().
+                               left(QApplication::applicationDirPath().lastIndexOf("/"))
+                               + "/yaml/parameter/";
+            QString filename = yamlPath + parName.toLower() + ".yaml";
+            paramWindow[parName]->designParameterWin(filename);
+            connect(paramWindow[parName],SIGNAL(changedParamWidget(QString,QString)),
+                                     this,SLOT(changeParamWidget(QString,QString)));
             connect(scrollArea->widget()->findChild<QPushButton*>(parName),
                     SIGNAL(clicked()),this,SLOT(paramBut_clicked()));
         }
@@ -753,14 +831,13 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
 
 void MainWindow::paramBut_clicked()
 {
-    QString yamlPath = QApplication::applicationDirPath().
-                       left(QApplication::applicationDirPath().lastIndexOf("/"))+"/yaml/parameter/";
     QString param = qobject_cast<QPushButton *>(sender())->text();
-    QString filename = yamlPath + param.toLower() + ".yaml";
-    paramWindow[ui->stackedWidget->currentIndex()]->designParameterWin(filename);
-    paramWindow[ui->stackedWidget->currentIndex()]->show();
+    QString fileName = ui->stackedWidget->currentWidget()
+                         ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
+    if (fileName != "")
+       paramWindow[param]->loadFile(fileName);
+    paramWindow[param]->show();
 }
-
 
 void MainWindow::browseBut_clicked()
 {
@@ -772,9 +849,9 @@ void MainWindow::browseBut_clicked()
         return;
     }
     // cut browse_ from sender
-    ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(
-                qobject_cast<QPushButton *>(sender())->objectName().mid(7))
-                ->setText(fileName);
+    QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(7);
+    ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str.toLower()+"_file")
+                     ->setText(fileName);
 }
 
 void MainWindow::editBut_clicked()
@@ -839,4 +916,11 @@ void MainWindow::on_action2D_Plot_File_triggered()
      //  gnuProc->setArguments(QStringList() << "testgnu.txt");
      gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
 
+}
+
+void MainWindow::changeParamWidget(QString filename,QString initName)
+{
+    QFileInfo fileinfo(filename);
+    int curInd = ui->stackedWidget->currentIndex();
+    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(filename);
 }

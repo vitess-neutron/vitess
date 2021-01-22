@@ -132,16 +132,13 @@ void ModulTable::loadModule(QString text)
 {
     foreach (QString s, modNames)
     {
-        if (!s.endsWith(":"))
-            switch ( s.indexOf(text) )
-            {
-                case 0: // main entry
-                case 2: // subentry
-                    comboModule.last()->view()->setMinimumWidth(minWidth);    // width of modullist
-                    comboModule.last()->setCurrentText(s);
-                    arrowButton.last()->setEnabled(true);
-                    return;
-            }
+        if ( s.indexOf(text) == 0)
+        {
+           comboModule.last()->view()->setMinimumWidth(minWidth);    // width of modullist
+           comboModule.last()->setCurrentText(s);
+           arrowButton.last()->setEnabled(true);
+           return;
+        }
     }
 }
 

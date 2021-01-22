@@ -15,17 +15,25 @@ class Parameter : public QWidget
 public:
     explicit Parameter(QWidget *parent = nullptr);
     ~Parameter();
+    QMap<QString, QMap<QString,QString>> mapModule;
+    void designParameterWin(QString filename);
+    void loadFile(QString filename);
+    void saveData(YAML::Node& config,std::string key,QString param,QString parFile);
 
 private:
     Ui::Parameter *ui;
     QScrollArea *winScrollArea;
     QGridLayout *gridLayout;
-    QMap<QString, QMap<QString,QString>> mapModule;
-    void getModulSubParameter(YAML::Node& config,QString modulName);
     QPalette palette;
-    QString fname;
-public:
-    void designParameterWin(QString filename);
+    QString initFile;
+    QList<QLineEdit *>  allLineEdits;
+    QList<QComboBox *>  allComboBoxes;
+    QList<QCheckBox *>  allCheckBoxes;
+    void getModulSubParameter(YAML::Node& config,QString modulName);
+    void getData(YAML::Node& configWin, int i);
+
+signals:
+    void changedParamWidget(QString fileName, QString initName);
 
 private slots:
     void on_numberEdit_returnPressed();
@@ -34,6 +42,7 @@ private slots:
     void browseBut_clicked();
     void checkIsValide();
     void on_pushClose_clicked();
+    void on_pushSave_clicked();
 };
 
 #endif // PARAMETER_H

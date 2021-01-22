@@ -1,5 +1,6 @@
 #include "parameter.h"
 #include "ui_parameter.h"
+#include <fstream>
 
 using namespace YAML;
 using namespace std;
@@ -8,6 +9,7 @@ Parameter::Parameter(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Parameter)
 {
+    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     ui->setupUi(this);
     ui->numberEdit->setValidator(new QIntValidator(1,20,this));
 }
@@ -17,33 +19,30 @@ Parameter::~Parameter()
     delete ui;
 }
 
-
 void Parameter::on_numberEdit_returnPressed()
 {
     if ( ui->numberEdit->text().toInt() <= ui->stackedWidget->count())
-       ui->stackedWidget->setCurrentIndex( ui->numberEdit->text().toInt()-1);
+         ui->stackedWidget->setCurrentIndex( ui->numberEdit->text().toInt()-1);
     else ui->numberEdit->setText( QString::number( ui->stackedWidget->currentIndex()+1));
 
 }
 
-
 void Parameter::on_butMinus_clicked()
 {
-   ui->stackedWidget->removeWidget(ui->stackedWidget->currentWidget());
-   ui->labelNum->setText( QString::number( ui->stackedWidget->count()));
-   ui->numberEdit->setText( QString::number( ui->stackedWidget->count()));
+    ui->stackedWidget->removeWidget(ui->stackedWidget->currentWidget());
+    ui->labelNum->setText( QString::number( ui->stackedWidget->count()));
+    ui->numberEdit->setText( QString::number( ui->stackedWidget->count()));
 }
-
 
 void Parameter::on_butPlus_clicked()
 {
-    designParameterWin(fname);
+    designParameterWin(initFile);
 
 }
 
 void Parameter::designParameterWin(QString filename)
 {
-    fname = filename;
+    initFile = filename;
     winScrollArea = new QScrollArea;
     winScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     QWidget *paramWindow = new QWidget;
@@ -72,7 +71,6 @@ void Parameter::designParameterWin(QString filename)
     ui->stackedWidget->setCurrentIndex(ui->stackedWidget->count()-1);
     ui->numberEdit->setText( QString::number( ui->stackedWidget->count()));
 }
-
 
 void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 {
@@ -119,12 +117,10 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
         iGritRow++;
         gridLayout->addItem( new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding),iGritRow,0);
     }
-
 }
 
 void Parameter::browseBut_clicked()
 {
-
     QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -136,7 +132,6 @@ void Parameter::browseBut_clicked()
     ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(
                 qobject_cast<QPushButton *>(sender())->objectName().mid(7))
                 ->setText(fileName);
-
 }
 
 void Parameter::checkIsValide()
@@ -146,11 +141,96 @@ void Parameter::checkIsValide()
     if (!testEdit->hasAcceptableInput() && testEdit->text() != "" )
         palette.setColor(QPalette::Base,Qt::red);
     testEdit->setPalette(palette);
-
 }
 
 void Parameter::on_pushClose_clicked()
 {
+    while ( ui->stackedWidget->count() > 1 )
+        ui->stackedWidget->removeWidget( ui->stackedWidget->widget(1) );
+    ui->labelNum->setText( QString::number( ui->stackedWidget->count()));
+    ui->numberEdit->setText( QString::number( ui->stackedWidget->count()));
     this->close();
 }
 
+void Parameter::on_pushSave_clicked()
+{
+    QFileInfo fileinfo(initFile);
+    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instrumentDir,
+                                                    tr("YAML (*.yaml *.yml)"));
+    QFile file(fileName);
+    if (!file.open(QFile::ReadWrite | QFile::Text))
+    {
+        QMessageBox::information(this,"Warning cannot open: ",fileName);
+        return;
+    }
+    //stream to write to file
+    ofstream fout(fileName.toStdString());       // using namespace std
+    //write yaml file
+    YAML::Node config;
+    for (int i=0; i<ui->stackedWidget->count(); i++)
+    {
+        YAML::Node configWin;
+        getData(configWin,i);
+        config[this->windowTitle().toStdString()][i] = configWin;
+    }
+    fout << config;
+    file.close();
+    emit changedParamWidget(fileName,fileinfo.baseName());
+    while ( ui->stackedWidget->count() > 1 )
+        ui->stackedWidget->removeWidget( ui->stackedWidget->widget(1) );
+    ui->labelNum->setText( QString::number( ui->stackedWidget->count()));
+    ui->numberEdit->setText( QString::number( ui->stackedWidget->count()));
+    this->close();
+}
+
+void Parameter::loadFile(QString fileName)
+{
+    YAML::Node config = YAML::LoadFile(fileName.toStdString());
+    YAML::Node config_paramWin = config[config.begin()->first.as<string>()];
+    for (unsigned i=1; i < config_paramWin.size(); i++)
+        designParameterWin(initFile);
+    for (unsigned i=0; i < config_paramWin.size(); i++)
+    {
+       int ind = static_cast <int> (i);
+       for(YAML::const_iterator it=config_paramWin[ind].begin(); it!=config_paramWin[i].end(); ++it)
+       {
+          QString paramKey = QString::fromStdString(it->first.as<std::string>());      //key
+          QString paramVal = QString::fromStdString(it->second.as<std::string>());      //value
+          if (ui->stackedWidget->widget(ind)->findChild<QLineEdit *>(paramKey))
+             ui->stackedWidget->widget(ind)->findChild<QLineEdit *>(paramKey)->setText(paramVal);
+          if (ui->stackedWidget->widget(ind)->findChild<QComboBox *>(paramKey))
+             ui->stackedWidget->widget(ind)->findChild<QComboBox *>(paramKey)
+                      ->setCurrentIndex(paramVal.toInt());
+       }
+    }
+}
+
+void Parameter::saveData(YAML::Node& config,std::string key,QString param,QString parFile)
+{
+    loadFile(parFile);
+    YAML::Node configWin;
+    for (int i=0; i<ui->stackedWidget->count(); i++)
+    {
+        getData(configWin,i);
+        config[key][param.toStdString()][i] = configWin;
+        configWin.reset();
+    }
+}
+
+void Parameter::getData(YAML::Node& configWin, int i)
+{
+    allLineEdits  =  ui->stackedWidget->widget(i)->findChildren< QLineEdit *>();
+    allComboBoxes =  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
+    allCheckBoxes =  ui->stackedWidget->widget(i)->findChildren< QCheckBox *>();
+
+    for(int ii=0 ; ii < allLineEdits.size(); ii++)
+       if (allLineEdits[ii]->text() != "")
+          configWin[allLineEdits[ii]->objectName().toStdString()] =
+                            allLineEdits[ii]->text().toStdString();
+    for(int ii=0 ; ii<allComboBoxes.size(); ii++)
+       configWin[allComboBoxes[ii]->objectName().toStdString()] =
+                            allComboBoxes[ii]->currentIndex();
+    for(int ii=0 ; ii<allCheckBoxes.size(); ii++)
+       configWin[allCheckBoxes[ii]->objectName().toStdString()] =
+                            allCheckBoxes[ii]->isChecked();
+}

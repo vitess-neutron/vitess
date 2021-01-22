@@ -30,6 +30,7 @@ private slots:
 
         void showSelectedModul(int);
         void changeModulWidget(QString modul,int row);
+        void changeParamWidget(QString filename,QString initName);
 
         void removeModule(int);
         void insertModule(int);
@@ -69,7 +70,7 @@ private:
     Ui::MainWindow *ui;
 
     Parameter paramWin;
-    QList <Parameter *> paramWindow;
+    QMap <QString, Parameter *> paramWindow;
 
     QString VitessDir; 
     QString instrumentName;
@@ -101,6 +102,7 @@ private:
     QList<QLineEdit  *> allLineEdits;
     QList<QComboBox *>  allComboBoxes;
     QList<QCheckBox *>  allCheckBoxes;
+    QList<QPushButton *>  allPushButtons;
     QList < QProcess *> procList;
     QStringList fList,cmdList;
     
