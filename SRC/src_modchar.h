@@ -16,9 +16,12 @@
 #define SNS       2
 #define ISIS      3
 #define CSNS      4
-#define HBS       5
+#define IPNS      5
+#define HBS       6
 #define ILL      10
 #define HMI      11
+#define FRM2     12
+
 
 // Type of source
 #define NO_TYPE   0
@@ -31,7 +34,7 @@
 #define COUPLED    3   /* moderator coupled                   */
 #define MULT_SPEC  4   /* effective spectrum of a moderator consisting of a cold and thermal part      */
 
-#define NUM_MOD    5   /* max. number of moderators in the moderator system */
+#define NUM_MOD   10   /* max. number of moderators in the moderator system */
 
 #define FNL      101
 

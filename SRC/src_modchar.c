@@ -49,7 +49,7 @@ void InitSource(Source* pSrc)
   pSrc->nSource    =ANYSOURCE;
   pSrc->PulseFreq  =0.0;   
   pSrc->PulsePeriod=0.0; 
-  pSrc->PulseLength=0.001;   // 1 ms 
+  pSrc->PulseLength=0.0;  
   pSrc->Power      =0.0;       
 }
 
@@ -58,7 +58,7 @@ void InitModerator(Moderator*   pMod)
   pMod->ModTemp    =0.0;
   pMod->nBackground=0;
   pMod->nColour    =NO_COLOR;
-  pMod->bCircle    =TRUE; 
+  pMod->bCircle    =FALSE; 
   pMod->CntrX      =0.0;
   pMod->CntrY      =0.0;
   pMod->CntrZ      =0.0;
@@ -76,15 +76,15 @@ void InitModerator(Moderator*   pMod)
   strcpy(pMod->sTFileName ,"");
   strcpy(pMod->sLTFileName,"");
   pMod->eModType   =COUPLED;
-  pMod->TauAscMod  = 12.5;       
-  pMod->TauDecMod  =125.0;        
+  pMod->TauAscMod  =  0.0;       
+  pMod->TauDecMod  =  0.0;        
   pMod->FUAmpMod   =  0.0;          
-  pMod->eIsisTS    =  FALSE;	  
+  pMod->eIsisTS    =  0;	  
   pMod->TotFluxUM  =  0.0;       
-  pMod->Chi        =  2.5;             
-  pMod->Kappa      =  2.2;           
-  pMod->TauAscUM   =  2.4;        
-  pMod->TauDecUM   = 12.0;        
+  pMod->Chi        =  0.0;             
+  pMod->Kappa      =  0.0;           
+  pMod->TauAscUM   =  0.0;        
+  pMod->TauDecUM   =  0.0;        
   pMod->FUAmpUM    =  0.0;          
 }
 
