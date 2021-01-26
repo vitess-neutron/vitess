@@ -5,7 +5,12 @@
 #include <QComboBox>
 #include <QToolButton>
 #include <QStringList>
+#include <QMessageBox>
+#include <QScrollBar>
 #include <QHeaderView>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QStyleFactory>
 
 namespace Ui {
 class ModulTable;

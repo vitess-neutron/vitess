@@ -1,18 +1,10 @@
 #include "modultable.h"
 #include "ui_modultable.h"
 #include <QStandardItemModel>
-#include <QComboBox>
 #include <QTableWidgetItem>
-#include <QToolButton>
 #include <QMenu>
 #include <QTextStream>
 #include <iostream>
-#include <QDebug>
-#include <QScrollBar>
-#include <QStyleFactory>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
 
 ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     QWidget(parent),
@@ -57,6 +49,7 @@ ModulTable::~ModulTable()
     delete ui;
 }
 
+//right mouse pressed on vertical table header
 void ModulTable::showContextMenu(const QPoint& pos)
 {
     QPoint globalPos = header->mapToGlobal(pos);

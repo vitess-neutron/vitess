@@ -64,6 +64,7 @@ void Parameter::designParameterWin(QString filename)
     ui->labelNumText->setText("currently set "+fileinfo.baseName()+"s:");
     YAML::Node config = YAML::LoadFile(filename.toStdString());
     YAML::Node configParam = config.begin()->second;
+    //configure parameter window
     getModulSubParameter(configParam, "");
 
     ui->stackedWidget->addWidget(winScrollArea);
@@ -74,6 +75,7 @@ void Parameter::designParameterWin(QString filename)
 
 void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 {
+    //configure parameter window
     int iGritRow = 0;
     int index = 0;
     QLabel *headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
@@ -154,6 +156,7 @@ void Parameter::on_pushClose_clicked()
 
 void Parameter::on_pushSave_clicked()
 {
+    //save parameter values in file
     QFileInfo fileinfo(initFile);
     QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instrumentDir,
                                                     tr("YAML (*.yaml *.yml)"));
@@ -207,6 +210,7 @@ void Parameter::loadFile(QString fileName)
 
 void Parameter::saveData(YAML::Node& config,std::string key,QString param,QString parFile)
 {
+    //called if instrument is saved
     loadFile(parFile);
     YAML::Node configWin;
     for (int i=0; i<ui->stackedWidget->count(); i++)
