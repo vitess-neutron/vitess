@@ -1,0 +1,68 @@
+#input fields so far:
+#type:    title, file, string, float, int, combo(for selection list),switch (Set: Yes)
+#descr:   description of the parameter lable
+#tooltip: detailed description shown when mouse cursor remains over label 
+#default: Value for title, values for selection list, optional default values
+#index:   indexlist for comboBox, if related values not in default order (0,1,2..)
+#min:     minimum value optional
+#max:     maximum value optional
+#column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#prefix:  prefix for parameter in pipe
+
+Moderator:
+   ModName :
+     descr:   "name"
+     type:    "string"
+     column:  0                #0-2
+
+   eShape  :                   #   [-]    enum: moderator shape: RECTANGULAR CIRCULAR 
+     type:    "combo" 
+     descr:   "shape"
+     tooltip: "moderator shape"
+     default: ["CIRCULAR", "RECTANGULAR"] 
+     index:   ['C','R']
+     column:  0                     
+     prefix:  "-s"    
+
+   Diameter:                   #   [cm]   diameter of the moderator 
+     type:    "float" 
+     descr:   "diameter [cm]"
+     tooltip: "diameter of the moderator"
+     default: 2.0
+     column:  0                     
+     prefix:  "-r"     
+   Width   :                   #   [cm]   width  of the moderator 
+     type:    "float" 
+     descr:   "width [cm]"
+     tooltip: "width of the moderator"
+     column:  1                     
+     prefix:  "-w" 
+   Height  :                   #   [cm]   height of the moderator 
+     type:    "float" 
+     descr:   "height [cm]"
+     tooltip: "height of the moderator"
+     column:  2                     
+     prefix:  "-h"     
+     
+   Flux    :                   # [n/cm²/s] Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength 
+     type:    "float" 
+     descr:   "total flux mod.\n[n/cm²/s]"
+     tooltip: "Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength"
+     min:     0.0
+     default: 1.0e13
+     column:  0                     
+     prefix: "-F"    
+   Temp    :                   #   [K]    temperature of a Maxwellian distribution 
+     type:    "float" 
+     descr:   "temperature [K]"
+     tooltip: "Temperature of a Maxwellian distribution"
+     min:      0.1
+     default: 50.0
+     column:  1                   
+     prefix: "-T"      
+
+   LmbdFile:                   #   [-]    file containing the wavelength distribution function 
+     type:    "file" 
+     descr:   "wavelength\ndist file"
+     tooltip: "File containing the wavelength distribution function"
+     prefix: "-W"     
