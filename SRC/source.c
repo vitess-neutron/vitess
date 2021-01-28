@@ -709,12 +709,8 @@ int main(int argc, char *argv[])
             prob = CsnsModFU(Input.Wavelength, TimeAtModerator, Input.Position[1], Input.Position[2]) / pMod->FUAmpMod * pMod->NormInt;
          }
          else
-         {  // prob =  pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecMod, pMod->TauDecMod/pMod->TauAscMod, stSrc.PulseLength) / stFluxT[imod].Int
-            //       + pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa                        * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM,  pMod->TauDecUM /pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int);
-            double
-              prob1 = pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecMod, pMod->TauDecMod/pMod->TauAscMod, stSrc.PulseLength) / stFluxT[imod].Int,
-              prob2 = pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa                        * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM,  pMod->TauDecUM /pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int);
-            prob = prob1 + prob2;
+         {  prob =  pMod->FUAmpMod * pMod->NormTrj * stFluxL[imod].pDisFct(Input.Wavelength, pMod->ModTemp) / stFluxL[imod].Int * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecMod, pMod->TauDecMod/pMod->TauAscMod, stSrc.PulseLength) / stFluxT[imod].Int
+                  + pMod->FUAmpUM  * pMod->NormTrj * NotMaxwell(Input.Wavelength, pMod->Chi, pMod->Kappa)                       * stFluxT[imod].pDisFct(TimeAtModerator, pMod->TauDecUM,  pMod->TauDecUM /pMod->TauAscUM,  stSrc.PulseLength) / stFluxT[imod].Int;
          }
       }  
 
