@@ -812,12 +812,12 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {outprgf radio VITESS_ASCII {"data format" "format of the output data" "" f} {VITESS_ASCII McStas MCPL MCNPX VITESS_Binary} {1 2 3 4 5}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX VITESS_Binary} {1 2 3 4 5}}
   {}
   {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
   {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
   {}
-  {"VITESS_ASCII parameters" header}
+  {"VITESS ASCII parameters" header}
   {outform radio float {"storage format" "format of float values in writeout file" "" F} {exp float} {0 1}}
   {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
