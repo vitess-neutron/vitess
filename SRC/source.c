@@ -53,6 +53,7 @@
 /* 1.27  Sep  2020  K. Lieutenant  undermoderated neutrons for all moderators, par. renamed  */
 /* 1.28  Dez  2020  K. Lieutenant  bundles included                                          */
 /* 1.29  Jan  2021  K. Lieutenant  moderator data readable from input string                 */
+/* 1.30  Feb  2021  K. Lieutenant  trace functions from 'trace.c'                            */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -65,6 +66,7 @@
 #include "source_csns.h"
 #include "source_ess.h"
 #include "message.h"
+#include "trace.h"
 
 
 /******************************/
@@ -90,8 +92,6 @@ void  SetGeometry(char* sColor);                                                
 void  LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL); // loads wavelength distribution from file or sets wavelength distribution function
 void  LoadTimeDistribution      (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT); // loads time distribution for the pulse from file or sets time distribution function 
 void  LoadWavelengthTimeDistrib (Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL); // loads 2D wavelength-time distribution from file
-void  LoadTraceFile();                                                                 // loads list of trajectories that shall be traced
-char  GetTraceState(TotalID stID);                                                     // looks if trajectory shall be traced
 int   PosBehindMod(const int i, const double Y, const double Z);                       // Checks if position of actual moderator is behind another moderator
 
 // ISIS specific funciton 
@@ -148,8 +148,9 @@ double    PolVecX     =  1.0,   // EPIC  -X            [cm]   x-component of the
                                                 
 double    TimeMeas   =  0.0,    // EPIC  -A             [s]   time of measurement in second
           LmbdWant   =  0.0;    // EPIC  -W            [Ang]  desired wavelength           
-char*     sTraceFileName=NULL;  // EPIC  -r             [-]   name of the file containing the IDs for tracing
-short     eTraceMode=0;         /* EPIC  -k             [-]   NO_TRACING     : no tracing 
+
+extern char* _sTraceFileName;   // EPIC  -r             [-]   name of the file containing the trajectory IDs to be traced
+extern short _eTraceMode;       /* EPIC  -k             [-]   NO_TRACING     : no tracing 
                                                               WRITE_TRC_FILES: write trace files for traj. of interest
                                                               ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
 // Moderator parameters read from file or from input
@@ -193,9 +194,6 @@ Plane     Endpoint,             //                          structure describing
 FctTable  stFluxT [NUM_MOD],    //                          data of time distr.      
           stFluxL [NUM_MOD],    //                          data of wavelength distr.
           stFluxLT[NUM_MOD];    //                          data of wavelength & time distr.
-                                                            
-TotalID*  aTrace=NULL;          //                          array of trajectory IDs for tracing 
-long      nLinesTr=0;           //                          number of lines in the trace file   
                                                             
 short     nMod=0,               //                          number of moderators in moderator system
           imod=0,               //                          index of current moderators in moderator system 
@@ -247,7 +245,7 @@ int main(int argc, char *argv[])
   // Initialisation
   // --------------
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.29");
+  PrintModuleName(_eModule, "1.30");
   SrcInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -540,8 +538,8 @@ int main(int argc, char *argv[])
 
   fprintf(LogFilePtr,  "polarization                 : %7.3f %%  X: %5.3f Y: %5.3f Z: %5.3f\n",
                      PolDegree, PolVecX, PolVecY, PolVecZ);
-  if (sTraceFileName!=NULL)
-     fprintf(LogFilePtr, "trace file used              : %s\n", sTraceFileName);
+  if (_sTraceFileName!=NULL)
+     fprintf(LogFilePtr, "trace file used              : %s\n", _sTraceFileName);
 
   /* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
   FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
@@ -597,7 +595,7 @@ int main(int argc, char *argv[])
       Input.ID.IDGrp[0] = ig1;
       Input.ID.IDGrp[1] = ig2;
       Input.ID.IDNo     = i;
-      Input.Debug       = eTraceMode==WRITE_TRC_FILES ? GetTraceState(Input.ID) : 'N';
+      Input.Debug       = _eTraceMode==WRITE_TRC_FILES ? GetTraceState(Input.ID) : 'N';
 
       /* choose moderator, if there are more than 1 */
       if (nMod > 1)
@@ -819,7 +817,7 @@ int main(int argc, char *argv[])
       }
       Input.Position[0]=0.0;
 
-      if (!bTest && (eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
+      if (!bTest && (_eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
          WriteNeutron(&Input);
     }
   }  // end loop over trajectories
@@ -1149,10 +1147,10 @@ void SrcInit(int argc, char **argv)
 
           /* special ray-tracing options */
           case 'r':
-            sTraceFileName=arg;  
+            _sTraceFileName=arg;  
             break;
           case 'k':
-            eTraceMode = (short) atoi(arg); 
+            _eTraceMode = (short) atoi(arg); 
             break;
 
           default:
@@ -1257,7 +1255,7 @@ void OwnCleanup()
     if (stFluxLT[m].pTabY!=NULL) free(stFluxLT[m].pTabY);
     if (stFluxLT[m].pTabF!=NULL) free(stFluxLT[m].pTabF);
   }
-  if (aTrace!=NULL) free(aTrace);
+  if (_aTrace!=NULL) free(_aTrace);
 }
 
 
@@ -1858,83 +1856,6 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
   { fprintf(LogFilePtr,"ERROR: You have to specify the parameters -m and -M as well as -t and -T properly!\n");
     exit(-1);
   }
-}
-
-
-/********************************************************/
-/* loads list of trajectories that shall be traced      */
-/********************************************************/
-void LoadTraceFile()
-{
-  char  sBuffer[CHAR_BUF_LENGTH]; 
-  FILE* pTraceFile=NULL;
-
-  /* If there is a trace file go and load the file */
-  if(sTraceFileName!=NULL) 
-   {
-      /* opens distribution file */
-      if ((pTraceFile = OpenInputFile(sTraceFileName, FALSE,"rt")) != NULL) 
-      {
-        long i;
-
-        /* reads number of lines, allocates memory and then reads distribution file */
-        nLinesTr = LinesInFile(pTraceFile);
-        aTrace   = (TotalID*) calloc(nLinesTr, sizeof(TotalID));
-
-        for(i=0; i<nLinesTr; i++)
-        {  
-          ReadLine(pTraceFile, sBuffer, CHAR_BUF_LENGTH-1);
-          sscanf  (sBuffer, "%c%c%lu", &aTrace[i].IDGrp[0], &aTrace[i].IDGrp[1], &aTrace[i].IDNo);
-        }
-
-        /* closes trace file */
-        fclose(pTraceFile) ;
-      } 
-      else 
-      { fprintf(LogFilePtr, "\nERROR: Can't open %s to read trace file\n", sTraceFileName);
-        exit (-1);
-      }
-   }
-}
-
-
-/********************************************************/
-/* looks if trajectory shall be traced                  */
-/********************************************************/
-char GetTraceState(TotalID stID)
-{
-  char cRet = 'N'; 
-
-  if (nLinesTr > 0) {	
-    long   i, il=nLinesTr-1;  /* lines in Table */
-    double nS, nL;              /* numbers got by conversion from IDs */
-    double gS, gL;
-
-    gS = (aTrace[il].IDGrp[0]-'A')*1.117e11;
-    gL = (aTrace[il].IDGrp[1]-'A')*4.295e09;
-    nS = (stID.IDGrp[0]-'A')*1.117e11 + (stID.IDGrp[1]-'A')*4.295e09 + stID.IDNo;
-    //nL = (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[il].IDNo;
-    nL = gS                                   + gL                                   + aTrace[il].IDNo;
-    i = (long) (il * nS / nL + 0.5);
-    if (i > il) i = il;
-
-    /*while ( (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[i].IDNo < nS  &&  i < il ) 
-      i++;
-      while ( (aTrace[il].IDGrp[0]-'A')*1.117e11 + (aTrace[il].IDGrp[1]-'A')*4.295e09 + aTrace[i].IDNo > nS  &&  i > 0 ) 
-      i--;
-    */
-
-    while ( (i < il) && (gS + gL + aTrace[i].IDNo < nS) ) 
-      i++;
-    while ( (i > 0) && (i <= il) && (gS + gL + aTrace[i].IDNo > nS) ) 
-      i--;
-
-    // set 'tracing', if IDs are identical
-    if (memcmp(stID.IDGrp, aTrace[i].IDGrp, 2)==0 && stID.IDNo==aTrace[i].IDNo)
-      cRet='T'; 
-  }
-  
-  return cRet;
 }
 
 

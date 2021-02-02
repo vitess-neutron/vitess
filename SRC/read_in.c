@@ -64,8 +64,8 @@ double       FactInt=1.0,                // -I        Factor to normalize to the
 VtPrgFormat  ePrgFormat=VT_VITESS_ASC;   // -f        format of data to read (VT_VITESS_FMT: VITESS ASCII format   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP_FMT: MCNP   VT_VITESS_BIN: VITESS binary format)
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf') 
-extern char* __sTraceFileName;           // -T        name of the file containing the trajectories to be traced or started
-extern short __eTraceMode;               // -t        NO_TRACING     : no tracing 
+extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
+extern short _eTraceMode;                // -t        NO_TRACING     : no tracing 
                                          //           WRITE_TRC_FILES: write trace files for traj. of interest
                                          //           ONLY_TRC_TRAJ  : simulation only with traj. of interest 
 
@@ -140,8 +140,8 @@ int main(int argc, char **argv)
             switch (ePrgFormat)
             {
               case VT_VITESS_ASC: Nt=ScanVitessTraj(&InNeutron, sLine, Weight[m]); 
-                                  InNeutron.Debug = __eTraceMode==WRITE_TRC_FILES ? GetTraceState(InNeutron.ID) : 'N';
-                                  if (__eTraceMode==ONLY_TRC_TRAJ && GetTraceState(InNeutron.ID)=='N' || iDetectColor > -1 && InNeutron.Color!=iDetectColor) 
+                                  InNeutron.Debug = _eTraceMode==WRITE_TRC_FILES ? GetTraceState(InNeutron.ID) : 'N';
+                                  if (_eTraceMode==ONLY_TRC_TRAJ && GetTraceState(InNeutron.ID)=='N' || iDetectColor > -1 && InNeutron.Color!=iDetectColor) 
                                     Nt=0;                                        
                                   break;
               case VT_MCSTAS_FMT: Nt=ScanMcStasTraj(&InNeutron, sLine, Weight[m]); break;
@@ -220,10 +220,10 @@ void OwnInit(int argc, char *argv[])
           FactInt =   (double)atof(&argv[i][2]);
           break;
         case 't':
-          __eTraceMode = atoi(&argv[i][2]);
+          _eTraceMode = atoi(&argv[i][2]);
           break;
         case 'T':
-          __sTraceFileName = &argv[i][2];  
+          _sTraceFileName = &argv[i][2];  
           break;
 
         case 'f':
@@ -277,11 +277,11 @@ void OwnInit(int argc, char *argv[])
     }
   }
 
-  if (__eTraceMode==ONLY_TRC_TRAJ && __sTraceFileName!=NULL)
+  if (_eTraceMode==ONLY_TRC_TRAJ && _sTraceFileName!=NULL)
     LoadTraceFile();
   
-  if (__sTraceFileName!=NULL)
-    fprintf(LogFilePtr, "trace file used              : %s\n", __sTraceFileName);
+  if (_sTraceFileName!=NULL)
+    fprintf(LogFilePtr, "trace file used              : %s\n", _sTraceFileName);
 }
 
 
@@ -302,6 +302,8 @@ void OwnCleanup()
       if (pInFile[m])
         fclose(pInFile[m]);
   }
+
+  if (_aTrace!=NULL) free(_aTrace);
 }
 
 
