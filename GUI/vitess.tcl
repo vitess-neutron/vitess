@@ -789,9 +789,9 @@ set read_inESET {
   {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories.\n(Not for MCPL format)" "" B} r}
   {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories.\n(Not for MCPL format)" "" D} r}
   {}
-  {ri_frc1 float "1.0" {"weight of traj.\nin file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
-  {ri_frc2 float "0.0" {"weight of traj.\nin file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
-  {ri_frc3 float "0.0" {"weight of traj.\nin file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
+  {ri_frc1 float "1.0" {"weight\nfor file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
+  {ri_frc2 float "0.0" {"weight\nfor file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
+  {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {}
   {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
@@ -2309,63 +2309,51 @@ set fA {
 }
 
 set fA1 {
-  {filter_param1 radio none {
-    "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
+  {filter_param1 radio none {"filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 set fA2 {
-  {filter_param2 radio none {
-    "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
+  {filter_param2 radio none {"filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 set fA3 {
-  {filter_param3 radio none {
-    "filter\nparameter 3" "choose filter parameter 3 (optional)" "" K}
+  {filter_param3 radio none {"filter\nparameter 3" "choose filter parameter 3 (optional)" "" K}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 set fA4 {
-  {filter_param4 radio none {
-    "filter\nparameter 4" "choose filter parameter 4 (optional)" "" L}
+  {filter_param4 radio none {"filter\nparameter 4" "choose filter parameter 4 (optional)" "" L}
     {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
 }
 
-
 set fComb {
-  {filter_comb radio OR {
+  {}
+  {filter_comb radio AND {
       "filter\ncombination" "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)" "" C}
     {OR AND AND_OR_AND} {0 1 2}}
 }
 
 set fPAi {
   {}
-  {filtIMin float "" {
-    "filter 1\nmin value" "min value of filter parameter 1" "" u}}
-  {filtIMax float "" {
-    "filter 1\nmax value" "max value of filter parameter 1" "" U}}
+  {filtIMin float "" {"filter 1\nmin value" "min value of filter parameter 1" "" u}}
+  {filtIMax float "" {"filter 1\nmax value" "max value of filter parameter 1" "" U}}
 }
 set fPAj {
   {}
-  {filtJMin float "" {
-    "filter 2\nmin value" "min value of filter parameter 2" "" v}}
-  {filtJMax float "" {
-    "filter 2\nmax value" "max value of filter parameter 2" "" V}}
+  {filtJMin float "" {"filter 2\nmin value" "min value of filter parameter 2" "" v}}
+  {filtJMax float "" {"filter 2\nmax value" "max value of filter parameter 2" "" V}}
 }
 set fPAk {
   {}
-  {filtKMin float "" {
-    "filter 3\nmin value" "min value of filter parameter 3" "" w}}
-  {filtKMax float "" {
-    "filter 3\nmax value" "max value of filter parameter 3" "" W}}
+  {filtKMin float "" {"filter 3\nmin value" "min value of filter parameter 3" "" w}}
+  {filtKMax float "" {"filter 3\nmax value" "max value of filter parameter 3" "" W}}
 }
 set fPAl {
   {}
-  {filtLMin float "" {
-    "filter 4\nmin value" "min value of filter parameter 4" "" x}}
-  {filtLMax float "" {
-    "filter 4\nmax value" "max value of filter parameter 4" "" X}}
+  {filtLMin float "" {"filter 4\nmin value" "min value of filter parameter 4" "" x}}
+  {filtLMax float "" {"filter 4\nmax value" "max value of filter parameter 4" "" X}}
 }
 
-set filterESET [concat $fA $fA1 $fA2 $fA3 $fA4 $fComb $fPAi $fPAj $fPAk $fPAl]
+set filterESET [concat $fA $fA1 $fPAi $fA2 $fPAj $fA3 $fPAk $fA4 $fPAl $fComb]
 unset fA fA1 fA2 fA3 fA4 fComb fPAi fPAj fPAk fPAl
 
 
