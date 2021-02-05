@@ -28,8 +28,7 @@
 /*********************************************/
 /* global and static variables               */
 /*********************************************/
-extern char  cSlash,
-             cQuot,         
+extern char  cQuot,         
              cNL,  
              cShort,
              sInstr   [FN_LEN], // file of the initial instrument
@@ -110,7 +109,6 @@ short ReadSimPar(char* pParFct, short* pFileNo)
     strcpy(sCopy ,"copy");
     strcpy(sDel  ,"erase");
     strcpy(sCall ,"call");
-    cSlash = '\\';
     cNL    = '\n';
     cQuot  = ' ';
  #else
@@ -118,7 +116,6 @@ short ReadSimPar(char* pParFct, short* pFileNo)
     strcpy(sCopy ,"cp");
     strcpy(sDel  ,"rm");
     strcpy(sCall ,"time");
-    cSlash = '/';
     cNL    = '\n';
 		cQuot  = '\"';
  #endif
@@ -258,19 +255,19 @@ short ReadCmdFile(short bPrtCmd)
 /************************************************/
 /* Writing the command pipe to 'Simlations.bat' */
 /************************************************/
-void WriteCommand(FILE* pFile, short nModNo, short bEcho)
+void WriteCommand(FILE* pFile, short nMod, short bEcho)
 {
 	short m;
 	
 	if (bEcho)
 	{	fprintf(pFile, "%c", cNL);
-		for (m=0; m < nModNo; m++)
+		for (m=0; m < nMod; m++)
 		{	fprintf(pFile, "echo %s >> %sHistory.txt%c", sLine[m], sPDir, cNL);
 		}
 	}
 
 	fprintf(pFile, "%s", sLine[0]);
-	for (m=1; m < nModNo; m++)
+	for (m=1; m < nMod; m++)
 	{	
 		fprintf(pFile, " | %s", sLine[m]);
 	}
@@ -328,7 +325,7 @@ short ChangeParam(short iSim)
 /* Change and shortening of one part of the pipe command */
 /*********************************************************/
 void
-StripCmdLine(char* const pLine, char cShort)
+StripCmdLine(char* const pLine, char cSh)
 {
 	char  *pBlank, *pSlash, sLocBuf[BUF_LEN]="";
 	int   kBlank;
@@ -409,7 +406,7 @@ StripCmdLine(char* const pLine, char cShort)
 #endif
 
 	// Shorten the command
-	if (cShort=='V')
+	if (cSh=='V')
 		StrgChange(pLine, " --B10000", "");	
 }
 
@@ -426,21 +423,6 @@ SubstPar(char* pLine, short kBeg, const char* pEnd, const char* pVar)
 		strcpy(sRightPart, pEnd);
 	StrgCopy  (sLeftPart,  pLine, kBeg);
 	sprintf(pLine, "%s%s%s", sLeftPart, pVar, sRightPart);
-}
-
-
-/**************************************************************/
-/* Change of the Slashes to the right ones, e.g. '\' to '/'   */
-/**************************************************************/
-void ChangeSlash(char* pStr)
-{
-	int k, klen;
-
-	klen = strlen(pStr);
-	for (k=0; k < klen; k++)
-	{	if (pStr[k]=='/' || pStr[k]=='\\')
-			pStr[k]=cSlash;
-	}
 }
 
 

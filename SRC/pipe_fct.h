@@ -17,7 +17,6 @@ void  WriteCommand (FILE*  pFile, short nModNo, short bEcho);
 
 void  StripCmdLine  (char* const pLine, char cShort);
 void  SubstPar      (char* pLine, short kBeg, const char* pEnd, const char* pVar);
-void  ChangeSlash   (char* pStr);
 void  EraseEndSlash (char* pStr, char* const pStrSl);
 short StrgChange    (char* sStr, const char* sOut, const char* sIn);
 char* StrgFind      (char* sStr, const char* sSearch);

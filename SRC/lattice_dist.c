@@ -41,11 +41,12 @@ int main(int argc, char* argv[])
 {
 	double dA,             // lattice constant
 	       dB1, dB2,       // Scattering lengths of Atom 1 and 2 
-	       dStrFac,        // Structure Factor without Debye-Waller-faktor
+	       dStrFac=0.0,    // Structure Factor without Debye-Waller-faktor
 	       dStrFacDw,
 	       dStrFacDwS,
 	       dStrFacSum,     // Structure Factors incl. Debye-Waller-faktor
-	       dDist,dDistOld, // Distance of planes
+	       dDist=0.0,
+         dDistOld=0.0,   // Distance of planes
 	       dFdw,           // Debye-Waller-faktor
 	       dT,             // sample temperature
 	       dTd,            // Debye temperature
@@ -53,7 +54,7 @@ int main(int argc, char* argv[])
 	       Mav,            // average mass of an atom [kg]
          rho,            // density          [kg/l]
          ucv,            // unit cell volume [Ang^3]
-	       dQ;             // momentum transfer
+	       dQ=0.0;         // momentum transfer
 	short  h=0, k=0, l=0, nHaeuf, rc;
 	long   nSumMax;
 	char   cGitter='A',
@@ -63,7 +64,7 @@ int main(int argc, char* argv[])
 	FILE  *pPdFile=NULL,
         *pSxFile=NULL;
 
-	Init(argc, argv, VT_TOOL);
+	Init(argc, argv, MCN_TOOL_LAT_DST);
 
 	printf("-------------------------------------------------------------------------------\n");
 	printf("Generation of structure factor files for 'sample_powder' and 'sample_singcryst'\n");
@@ -91,8 +92,8 @@ int main(int argc, char* argv[])
   dA  = pow(ucv, 1.0/3.0);
 
 	/* write to parameter directory */
-	pPdFile = fopen(FullParName(sPdFileName), "w");
-	pSxFile = fopen(FullParName(sSxFileName), "w");
+	pPdFile = OpenInputFile(sPdFileName, TRUE, "w");
+	pSxFile = OpenInputFile(sSxFileName, TRUE, "w");
 	if (pPdFile!=NULL) 
           {	PrintHeader(pPdFile, sSample, dTd, dT, dA, Mamu, TRUE);
 		fprintf (pPdFile, "# distance   Sigma  ( h  k  l) \n");

@@ -1,6 +1,6 @@
 /*********************************************************************************************/
 /* Tool SurfaceFile:                                                                         */
-/*  Generates the surface file for the bender module for a bender consisting of thin layers. */                         */ 
+/*  Generates the surface file for the bender module for a bender consisting of thin layers. */
 /*   Channels can exist that are separated at the entrance or the exit                       */
 /*                                                                                           */
 /* The free non-commercial use of these routines is granted provided due credit is given to  */

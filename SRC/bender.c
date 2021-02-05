@@ -198,6 +198,13 @@ FILE  *refl_filetbdo=NULL; /* file for describing top and bottom planes of bende
 FILE	*surfaces_file=NULL; /* file for describing of surfaces of converging bender*/
 FILE  *AsciiFile=NULL; /* file for output characteristics of bender surfaces */
 
+  /* MF: visualisation for Windows and generation of file for the picture */
+#ifdef DO_WIN32
+  const char *GraphDev = "bender.ps";
+#else
+  const char *GraphDev = "bender.png";
+#endif
+
 
 /******************************/
 /**      MAIN Program        **/
@@ -213,13 +220,6 @@ int main(int argc, char *argv[])
   /* Anything not directly commented is an InputNeutrons or an output routine.                 */
   /********************************************************************************************/
   long	i, j, numberch = 0;
-
-  /* MF: visualisation for Windows and generation of file for the picture */
-#ifdef DO_WIN32
-  const char *GraphDev = "bender.ps";
-#else
-  const char *GraphDev = "bender.png";
-#endif
 
   mNumber[0][0] = -1; mNumber[0][1] = -1; mNumber[0][2] = -1;
   mNumber[1][0] = -1; mNumber[1][1] = -1; mNumber[1][2] = -1;
@@ -428,7 +428,9 @@ void  OwnInit(int argc, char *argv[])
 {
   long i, count;
   long	k, counter;
-
+#ifdef VT_GRAPH
+  double temp1=0.0, temp2=0.0;
+#endif
   double dX, dZ, 
          X1, Y1, xr, yr; /* for defining base circle */
 

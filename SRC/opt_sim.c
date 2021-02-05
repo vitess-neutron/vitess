@@ -5,9 +5,9 @@
 /* 2.0  Mar 2013  K. Lieutenant  2nd version - simulation routine is main program           */
 /********************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "opt_fct.h"
 #include "init.h"
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	short       bCont=0, bIni=FALSE;
 	VtFitMethod eMethod=VT_METHOD_NN;
 
-	Init   (argc, argv, MCN_OPT);
+	Init   (argc, argv, MCN_OPT_MAIN);
 	OwnInit(argc, argv);
 	if (strcmp(sIniFile,"")!=0) bIni=TRUE;		
 
@@ -163,15 +163,15 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 /*******************************************************************/
 /* Function to read control parameters and                         */
 /*          initial, min., max. P-values and DeltaP                */
-/*  input : sParFile:  input file name (default:'opt_param.ini')   */
-/*  output: *pP     :  initial parameter set                       */
-/*          *pPmin  :  minimal values for components of vector P   */
-/*          *pPmax  :  minimal values for components of vector P   */
-/*          *pDelP  :  step siye for numerical differiation        */
-/*  return: nP      :  number of fit parameters                    */
+/*  input : sInFile:  input file name (default:'opt_param.ini')    */
+/*  output: *pP    :  initial parameter set                        */
+/*          *pPmin :  minimal values for components of vector P    */
+/*          *pPmax :  minimal values for components of vector P    */
+/*          *pDelP :  step siye for numerical differiation         */
+/*  return: nP     :  number of fit parameters                     */
 /*******************************************************************/
 short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption, 
-                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFile)
+                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sInFile)
 {	
 	short i, j, ind,    // indices
         nHeadlines=5, // number of lines in Header
@@ -187,7 +187,7 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 		pDelP[j]=0.0;
 	}
 	
-	pParFile = fileOpen(sParFile, "r");
+	pParFile = fileOpen(sInFile, "r");
 
 	if (pParFile!=NULL)
 	{	

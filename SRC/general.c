@@ -16,14 +16,15 @@
 /* Change: A.H.  2009 OCT, new routine: RoundP for rounding after given decimal position    */
 /********************************************************************************************/
 
-#include "general.h"
-#include "ctype.h"
-#include "time.h"
+#include <ctype.h>
+#include <time.h>
 
 #ifndef RND_SIMPLE
  #include "gsl/gsl_rng.h"
  gsl_rng * vit_gsl_rng;
 #endif
+
+#include "general.h"
 
 
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
@@ -269,13 +270,22 @@ void CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_RUNTIME      : strcpy(sCompName, "RunTime");           break;          
 	  case MCN_TOOL_A2B     : strcpy(sCompName, "Tool_Ascii2Bin");    break;             
 	  case MCN_TOOL_CAS     : strcpy(sCompName, "Tool_CrysAnaSpec");  break;             
+	  case MCN_TOOL_CHOP    : strcpy(sCompName, "Tool_ChopPhase");    break;             
 	  case MCN_TOOL_DEF_DIR : strcpy(sCompName, "Tool_DefineDir");    break;             
+	  case MCN_TOOL_DIR_VIEW: strcpy(sCompName, "Tool_DirectView");   break;             
+	  case MCN_TOOL_GEN_BAT : strcpy(sCompName, "Tool_GenBatch");     break;             
 	  case MCN_TOOL_GEN_COAT: strcpy(sCompName, "Tool_GenCoating");   break;             
 	  case MCN_TOOL_GEN_EXTR: strcpy(sCompName, "Tool_GenExtrSys");   break;             
 	  case MCN_TOOL_GEN_SURF: strcpy(sCompName, "Tool_GenSurface");   break;             
+	  case MCN_TOOL_STD_DEV : strcpy(sCompName, "Tool_StdDeviat");    break;             
+	  case MCN_TOOL_LAT_DST : strcpy(sCompName, "Tool_LatticeDist");  break;             
 	  case MCN_TOOL_GUIDE   : strcpy(sCompName, "Tool_GuideShape");   break;             
-	  case MCN_TOOL_PHASE   : strcpy(sCompName, "Tool_ChopPhase");    break;             
-    default:               strcpy(sCompName, "unknown component"); 
+	  case MCN_TOOL_DST_TIME: strcpy(sCompName, "Tool_DistTimePlot"); break;             
+	  case MCN_TOOL_ANLZ_2D : strcpy(sCompName, "Tool_AnalyzeMon2D"); break;             
+	  case MCN_OPT_MAIN     : strcpy(sCompName, "Opt_Main");          break;             
+	  case MCN_OPT_PIPE     : strcpy(sCompName, "Opt_GenerPipe");     break;             
+	  case MCN_OPT_FOM      : strcpy(sCompName, "Opt_FoM");           break;             
+    default:                strcpy(sCompName, "unknown component"); 
   }
 }
 
@@ -356,12 +366,21 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "RunTime"))           eComp=MCN_RUNTIME      ; 
   else if (strcmp(sCompName, "Tool_Ascii2Bin"))    eComp=MCN_TOOL_A2B     ; 
   else if (strcmp(sCompName, "Tool_CrysAnaSpec"))  eComp=MCN_TOOL_CAS     ; 
+  else if (strcmp(sCompName, "Tool_ChopPhase"))    eComp=MCN_TOOL_CHOP    ; 
   else if (strcmp(sCompName, "Tool_DefineDir"))    eComp=MCN_TOOL_DEF_DIR ; 
+  else if (strcmp(sCompName, "Tool_DirectView"))   eComp=MCN_TOOL_DIR_VIEW; 
+  else if (strcmp(sCompName, "Tool_GenBatch"))     eComp=MCN_TOOL_GEN_BAT; 
   else if (strcmp(sCompName, "Tool_GenCoating"))   eComp=MCN_TOOL_GEN_COAT; 
   else if (strcmp(sCompName, "Tool_GenExtrSys"))   eComp=MCN_TOOL_GEN_EXTR; 
   else if (strcmp(sCompName, "Tool_GenSurface"))   eComp=MCN_TOOL_GEN_SURF; 
+  else if (strcmp(sCompName, "Tool_StdDeviat"))    eComp=MCN_TOOL_STD_DEV ; 
+  else if (strcmp(sCompName, "Tool_LatticeDist"))  eComp=MCN_TOOL_LAT_DST ; 
   else if (strcmp(sCompName, "Tool_GuideShape"))   eComp=MCN_TOOL_GUIDE   ; 
-  else if (strcmp(sCompName, "Tool_ChopPhase"))    eComp=MCN_TOOL_PHASE   ; 
+  else if (strcmp(sCompName, "Tool_DistTimePlot")) eComp=MCN_TOOL_DST_TIME; 
+  else if (strcmp(sCompName, "Tool_AnalyzeMon2D")) eComp=MCN_TOOL_ANLZ_2D ; 
+  else if (strcmp(sCompName, "Opt_Main"))          eComp=MCN_OPT_MAIN     ; 
+  else if (strcmp(sCompName, "Opt_GenerPipe"))     eComp=MCN_OPT_PIPE     ; 
+  else if (strcmp(sCompName, "Opt_FoM"))           eComp=MCN_OPT_FOM      ; 
   else                                             eComp=MCN_COMP_UNKNOWN ; 
 
   return eComp; 

@@ -5,9 +5,9 @@
 /* 2.0  Mar 2013  K. Lieutenant  2nd version - simulation routine is main program           */
 /********************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "general.h"
 #include "opt_fct.h"

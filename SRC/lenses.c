@@ -223,6 +223,7 @@ int main(int argc, char *argv[])
 
       /* Make ray-tracing visualisation after lenses */
   #ifdef VT_GRAPH
+      long  raytraceALcur=0; /* current counter of trajectories for ray-tracing after lense */
 
       if (do_visualise)
       {

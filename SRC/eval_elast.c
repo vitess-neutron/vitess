@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
   DECLARE_ABORT
 
-	// loop over trajectories
+  // loop over trajectories
   // ----------------------
   while (ReadNeutrons())
   {	

@@ -274,7 +274,7 @@ extern double RotMatrixS[3][3],    //            matrix to rotate from abs. co-o
 
 // Extended FROM FILE 
 ReflFile* pReflFiles = {NULL};     //      [-]   structure containing information about the reflectivity file
-long      cReflFiles = 0;          //      [-]   number of reflectivity files read or calculated
+long      nReflFiles = 0;          //      [-]   number of reflectivity files read or calculated
 
 // Reflection Plot variables
 double *bpostX,  *bpostY;          //      [-]   limits of the bins
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
   int i, needPreRand;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "3.11");
+  PrintModuleName(_eModule, "3.11a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -754,13 +754,13 @@ void OwnInit   (int argc, char *argv[])
     pFile = OpenInputFile(ShapeFileName, FALSE, "r");
     if (pFile) {
       nPieces = LinesInFile(pFile) - 1;
-      cReflFiles = (nPieces+1) * 4;
+      nReflFiles = (nPieces+1) * 4;
     } else
       myExit1("ERROR: Input file %s could not be read !\n", ShapeFileName);
   } else
-    cReflFiles = 4;
+    nReflFiles = 4;
 
-  pReflFiles = (ReflFile*) calloc(cReflFiles, sizeof(ReflFile));
+  pReflFiles = (ReflFile*) calloc(nReflFiles, sizeof(ReflFile));
   if (!pReflFiles)
     myExit("ERROR: Not enough memory for reflecitvity data!\n");
 
@@ -1075,7 +1075,7 @@ void showAndCompleteSetup() {
   if (Radius != 0.0)  // curved guide
     fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each", nPieces-1, 180.0/M_PI*beta);
   
-  for(i=0; i < cReflFiles; i++)
+  for(i=0; i < nReflFiles; i++)
     if (pReflFiles[i].filename) {
       fprintf(LogFilePtr,"\nReflectivity file  : %s\n", pReflFiles[i].filename);
       if (pReflFiles[i].pfile) {
@@ -1693,42 +1693,48 @@ void SetGeometry(char* sColor)
 // Reads guide data; data are encoded as reflectivities corresponding to 0.000,0.001, 0.002, ... deg,
 // reference wavelength 1 A
 /******************************************************************************/
-ReflFile* GetReflData(double MValue, char *Filename, FILE *file) 
+ReflFile* GetReflData(double MValue, char *sFilename, FILE *file) 
 {
-  long  cFiles = 0;
+  int iFile = 0;    // index of already loaded reflectivity files
 
-  if (Filename==NULL && MValue==0.0)
+  if (sFilename==NULL && MValue==0.0)
     return NULL;
 
   // check if this coating already exists in the list
-  for (cFiles = 0; cFiles < cReflFiles; cFiles++) 
+  for (iFile = 0; iFile < nReflFiles; iFile++) 
   {
-    if (pReflFiles[cFiles].filename == NULL && pReflFiles[cFiles].MValue==0.0) break;
-    if (pReflFiles[cFiles].filename != NULL && Filename != NULL)
-#ifdef _MSC_VER
-      if (_stricmp(pReflFiles[cFiles].filename, Filename)==0)
-        return &pReflFiles[cFiles];
-#else
-      if (strcasecmp(pReflFiles[cFiles].filename, Filename)==0)
-        return &pReflFiles[cFiles];
-#endif
-    if (MValue > 0.0 && pReflFiles[cFiles].MValue==MValue)
-      return &pReflFiles[cFiles];
+    // if the name is given, m values are ignored, compare filenames
+    if (sFilename!=NULL)
+    { if (pReflFiles[iFile].filename != NULL)
+       #ifdef _MSC_VER
+         if (_stricmp(pReflFiles[iFile].filename, sFilename)==0)
+           return &pReflFiles[iFile];
+       #else
+         if (strcasecmp(pReflFiles[iFile].filename, sFilename)==0)
+           return &pReflFiles[iFile];
+       #endif
+    }
+    // otherwise m-values are compared
+    else  
+    {
+      if (MValue > 0.0 && pReflFiles[iFile].MValue==MValue)
+        return &pReflFiles[iFile];
+    }
   }
 
   // not found
-  if (pReflFiles[cFiles].filename == NULL) 
+  if (pReflFiles[iFile].filename == NULL) 
   {
-    if (Filename != NULL)
-    { pReflFiles[cFiles].filename = Filename;
-      if (file) pReflFiles[cFiles].pfile = file;
-      LoadReflFile(&pReflFiles[cFiles]);
+    if (sFilename != NULL)
+    { pReflFiles[iFile].filename = sFilename;
+      if (file) pReflFiles[iFile].pfile = file;
+      LoadReflFile(&pReflFiles[iFile]);
     }
     else
-    { pReflFiles[cFiles].MValue = MValue;
-      CalcReflData(&pReflFiles[cFiles]);
+    { pReflFiles[iFile].MValue = MValue;
+      CalcReflData(&pReflFiles[iFile]);
     }
-    return &pReflFiles[cFiles];
+    return &pReflFiles[iFile];
   }
   return NULL;
 }
@@ -1753,7 +1759,15 @@ void   LoadReflFile(ReflFile* pReflFile)
     if (pReflFile->pfile != NULL) 
     {
       nColumns=ColumnsInFile(pReflFile->pfile);
-      if (nColumns==10)
+      if (nColumns==2)
+      { 
+        double aQ[ROFQ_MAX], aR[ROFQ_MAX];  // Q and reflectivity values given in the file
+        nVals = ReadRofQ(pReflFile->pfile, aQ, aR);
+        pReflFile->maxdata = NumDataPtsQ(aQ[nVals-1]);
+        pReflFile->MValue  = 0.0;
+        SetReflData(pReflFile->Rdata, aQ, aR, nVals);
+      }
+      else
       { 
         nLines = LinesInFile  (pReflFile->pfile);
         pReflFile->Rdata = (double*) calloc(10*nLines, sizeof(double));
@@ -1763,18 +1777,6 @@ void   LoadReflFile(ReflFile* pReflFile)
           i += StrgScanLF(sBuffer, &pReflFile->Rdata[10*count], 10*(nLines-count), 0);
         }
         pReflFile->maxdata = i;
-      }
-      else if (nColumns==2)
-      { 
-        double aQ[ROFQ_MAX], aR[ROFQ_MAX];  // Q and reflectivity values given in the file
-        nVals = ReadRofQ(pReflFile->pfile, aQ, aR);
-        pReflFile->maxdata = NumDataPtsQ(aQ[nVals-1]);
-        pReflFile->MValue  = 0.0;
-        SetReflData(pReflFile->Rdata, aQ, aR, nVals);
-      }
-      else
-      {
-        Error("Reflectivity file in has unexpected number of columns");
       }
 
       fclose(pReflFile->pfile);

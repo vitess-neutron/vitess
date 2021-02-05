@@ -3,37 +3,56 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.00  Oct 2009  A. Houben      initial version                                            */
+/* 1.0  Oct 2009  A. Houben      initial version                                             */
+/* 1.1  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
 /*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
 
-void OwnInit(int argc, char *argv[]);
-void OwnCleanup();
+
+/*********************************/
+/** Global Variables            **/
+/*********************************/
+McCompID _eModule=MCN_EVAL1_ELAST;
 
 
+/******************************/
+/** Prototypes               **/
+/******************************/
+void OwnInit(int argc, char *argv[]);  // Reads input parameters and sets global variables
+void OwnCleanup();                     // Does module specific cleanup
+
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char **argv)
 {
-  int i;
+  int i=0;
   time_t start = time(NULL);
   time_t end = 0;
   double seconds = 0.;
 
-  /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_RUNTIME);
-  print_module_name("runtime 1.00");
-
-  /* module specific initialization */
+  // reading of input data and initilisation
+  // ---------------------------------------
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.0");
   OwnInit(argc, argv);
  
-  /* Get the neutrons from the file */
+  bVisInstalled = FALSE;
+  bLengthCmpr   = FALSE;
+ 
   DECLARE_ABORT;
   
+  // loop over trajectories
+  // ----------------------
+  /* Get the neutrons from the file */
   while((ReadNeutrons())!= 0)
   {
     CHECK;    
@@ -53,10 +72,10 @@ int main(int argc, char **argv)
   seconds = ((double)end - (double)start);
   fprintf(LogFilePtr, 
          "Seconds   : %12.1f\n"
-		 "Minutes   : %12.3f\n"
-		 "Hours     : %12.3f\n"
-		 "Days      : %12.3f\n\n", 
-		 seconds, seconds/60., seconds/3600., seconds/86400.);
+         "Minutes   : %12.3f\n"
+         "Hours     : %12.3f\n"
+         "Days      : %12.3f\n\n", 
+         seconds, seconds/60., seconds/3600., seconds/86400.);
   
   /* Do the general cleanup */
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -67,19 +86,19 @@ int main(int argc, char **argv)
 
 void  OwnInit(int argc, char *argv[]) 
 {
-  int i;
+  int i=0;
 
   for(i=1; i<argc; i++) 
   { if(argv[i][0]!='+') 
     { switch(argv[i][1])
       { 
-		/*case 'A':
-			CaptArea = atof(&argv[i][2]);  
-			break;*/
-       default:
-         fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
-         exit(-1);
-         break;
+      /*case 'A':
+          CaptArea = atof(&argv[i][2]);  
+          break;*/
+        default:
+          fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
       }
     }
   }
