@@ -1,23 +1,23 @@
 slit:
-   Name    :
-     descr: "name" 
-     type: "string" 
-   Distance:                  # -d    0.0  [cm]   length of the free flight path along the x-axis 
-     type: "float" 
-     descr: "distance\nto slit [cm]"
-     min: 0.0
-     column: 0                     
-     prefix: "-d"     
-   Width   :                  # -W    0.0  [cm]   width of the slit
-     type: "float" 
-     descr: "width [cm]"
-     min: 0.0
-     column: 1                     
-     prefix: "-W"     
-   Height  :                  # -H    0.0  [cm]   height of the slit
-     type: "float" 
-     descr: "height [cm]"
-     min: 0.0
-     column: 2                     
-     prefix: "-H"     
+  - Name    :
+      descr: "name" 
+      type: "string" 
+  - Distance:                  # -d    0.0  [cm]   length of the free flight path along the x-axis 
+      type: "float" 
+      descr: "distance\nto slit [cm]"
+      min: 0.0
+      column: 0                     
+      prefix: "-d"     
+  - Width   :                  # -W    0.0  [cm]   width of the slit
+      type: "float" 
+      descr: "width [cm]"
+      min: 0.0
+      column: 1                     
+      prefix: "-W"     
+  - Height  :                  # -H    0.0  [cm]   height of the slit
+      type: "float" 
+      descr: "height [cm]"
+      min: 0.0
+      column: 2                     
+      prefix: "-H"     
 

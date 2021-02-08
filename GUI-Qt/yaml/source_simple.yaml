@@ -1,101 +1,101 @@
 source:
-   SimName : 
-     descr:   "simulation\nname"
-     type:    "string"
-     default: "First Simulation" 
-     column:  0                       #0-2
-   eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-     type:    "combo"                        # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
-     default: ["SRC_SIMPLE", "SRC_SIMPLE"] 
-     index:   [1,1]
-     prefix:  "-K"     
+  - SimName : 
+      descr:   "simulation\nname"
+      type:    "string"
+      default: "First Simulation" 
+      column:  0                       #0-2
+  - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+      type:    "combo"                        # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+      default: ["SRC_SIMPLE", "SRC_SIMPLE"] 
+      index:   [1,1]
+      prefix:  "-K"     
 
-   Moderator_simple:
-     type:    "window"
-     descr:   "moderator"
-     tooltip: "moderator description parameter"   
+  - Moderator_simple:
+      type:    "window"
+      descr:   "moderator"
+      tooltip: "moderator description parameter"   
 #     default: "moderator.yaml"
 
-   titel_1 :                       
-     type:    "title" 
-     default: "Simulation parameters"
-   nBundle:                            # -n   10 [-]   number of bundles  
-     type:    "int" 
-     descr :  "number of\nbundels"  
-     tooltip: "number of packages into which the whole simulation is separated"
-     default: 10
-     column:  0                     
-     prefix:  "-l"     
-   nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
-     type:    "int" 
-     descr :  "number of traj.\nper bundle"
-     tooltip: "number of neutron trajectories (events) created in each bundle"
-     default: 1000000 
-     column:  1                     
-     prefix:  "-n"     
+  - titel_1 :                       
+      type:    "title" 
+      default: "Simulation parameters"
+  - nBundle:                            # -n   10 [-]   number of bundles  
+      type:    "int" 
+      descr :  "number of\nbundels"  
+      tooltip: "number of packages into which the whole simulation is separated"
+      default: 10
+      column:  0                     
+      prefix:  "-l"     
+  - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
+      type:    "int" 
+      descr :  "number of traj.\nper bundle"
+      tooltip: "number of neutron trajectories (events) created in each bundle"
+      default: 1000000 
+      column:  1                     
+      prefix:  "-n"     
 
-   Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
-     type:    "float" 
-     descr:   "min. wave-\nlength [Ang]"
-     tooltip: "minimum of the wavelength range"
-     min    : 0.0
-     default: 1.0
-     column:  0                     
-     prefix:  "-m"     
-   Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
-     type:    "float" 
-     descr:   "max. wave-\nlength [Ang]"
-     tooltip: "maximum of the wavelength range" 
-     default: 5.0
-     column:  1                     
-     prefix:  "-M"     
+  - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
+      type:    "float" 
+      descr:   "min. wave-\nlength [Ang]"
+      tooltip: "minimum of the wavelength range"
+      min    : 0.0
+      default: 1.0
+      column:  0                     
+      prefix:  "-m"     
+  - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
+      type:    "float" 
+      descr:   "max. wave-\nlength [Ang]"
+      tooltip: "maximum of the wavelength range" 
+      default: 5.0
+      column:  1                     
+      prefix:  "-M"     
 
-   eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
-     type:    "combo" 
-     descr:   "direction\ndefined"
-     tooltip: "mode to determine neutron directions" 
-     default: ["VT_VIRT_WND", "VT_REAL_WND", "VT_DIVERGENCE"] 
-     index:   [2,1,0]
-     column:  0                     
-     prefix:  "-d"     
+  - eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
+      type:    "combo" 
+      descr:   "direction\ndefined"
+      tooltip: "mode to determine neutron directions" 
+      default: ["VT_VIRT_WND", "VT_REAL_WND", "VT_DIVERGENCE"] 
+      index:   [2,1,0]
+      column:  0                     
+      prefix:  "-d"     
 
-   DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
-     type:    "float" 
-     descr:   "max. divergence\nx <-> y [deg]"
-     tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
-     column:  0                     
-     prefix:  "-y"     
-   DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
-     type:    "float" 
-     descr:   "max. divergence\nx <-> z [deg]"
-     tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
-     column:  1                     
-     prefix:  "-z"     
+  - DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
+      type:    "float" 
+      descr:   "max. divergence\nx <-> y [deg]"
+      tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
+      column:  0                     
+      prefix:  "-y"     
+  - DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
+      type:    "float" 
+      descr:   "max. divergence\nx <-> z [deg]"
+      tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
+      column:  1                     
+      prefix:  "-z"     
 
-   titel_2 :                       
-     type:    "title" 
-     default: "Propagation"
-   TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
-     type:    "float" 
-     descr:   "distance to\nwindow [cm]"
-     tooltip: "distance moderator - target window" 
-     min    :   0.0
-     default: 100.0
-     column:  0                     
-     prefix:  "-D"     
-   TWidth  :                          # -w   3.0  [cm]   width of the target window 
-     type:    "float" 
-     descr:   "window\nwidth [cm]"
-     tooltip: "width of the target window" 
-     min    : 0.0
-     default: 3.0
-     column:  1                     
-     prefix:  "-w"     
-   THeight :                          # -h   3.0  [cm]   height of the target window 
-     type:    "float" 
-     descr:   "window\nheight [cm]"
-     tooltip: "height of the target window"
-     min    : 0.0
-     default: 3.0
-     column:  2                     
-     prefix:  "-h"     
+  - titel_2 :                       
+      type:    "title" 
+      default: "Propagation"
+  - TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
+      type:    "float" 
+      descr:   "distance to\nwindow [cm]"
+      tooltip: "distance moderator - target window" 
+      min    :   0.0
+      default: 100.0
+      column:  0                     
+      prefix:  "-D"     
+  - TWidth  :                          # -w   3.0  [cm]   width of the target window 
+      type:    "float" 
+      descr:   "window\nwidth [cm]"
+      tooltip: "width of the target window" 
+      min    : 0.0
+      default: 3.0
+      column:  1                     
+      prefix:  "-w"     
+  - THeight :                          # -h   3.0  [cm]   height of the target window 
+      type:    "float" 
+      descr:   "window\nheight [cm]"
+      tooltip: "height of the target window"
+      min    : 0.0
+      default: 3.0
+      column:  2                     
+      prefix:  "-h"     

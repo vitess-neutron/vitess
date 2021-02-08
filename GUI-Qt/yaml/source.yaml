@@ -1,57 +1,57 @@
 source:
-   SimName : 
+  - SimName : 
      descr:   "simulation\nname"
      type:    "string"
      default: "First Simulation" 
      column:  0                       #0-2
 
-   SrcName :                          # -N   ""    [-]   name of the source
+  - SrcName :                          # -N   ""    [-]   name of the source
      type:    "combo" 
      descr:   "source\nname" 
      default: ["FRM2","ILL","HMI","ISIS","SNS","IPNS","CSNS","ESS"] 
      tooltip: "name of the source"
      column:  0                     
      prefix:  "-N"     
-   eType   :                          # -S         [-]   enum: source type:  CWS  SPSS  LPSS 
+  - eType   :                          # -S         [-]   enum: source type:  CWS  SPSS  LPSS 
      type:    "combo" 
      descr:   "source type"
      default: ["CWS","SPSS","LPSS"] 
      index:   [1,2,3]
      column:  1                     
      prefix:  "-S"     
-   ModFile:                           #moderator description file         kommt wieder raus  
+  - ModFile:                           #moderator description file         kommt wieder raus  
      descr:   "moderator\ndescription file"  
      type:    "file" 
      prefix:  "-a"
 
-   Moderator:
+  - Moderator:
      type:    "window"
      descr:   "moderator"
      tooltip: "moderator description parameter"   
-     default: "moderator.yaml"
+#     default: "moderator.yaml"
 
-   Freq    :                          # -R        [Hz]   pulse frequency 
+  - Freq    :                          # -R        [Hz]   pulse frequency 
      type:    "float" 
      descr:   "pulse repetition\nrate [Hz]"
      tooltip: "pulse frequency" 
      default: 0 
      column:  0                     
      prefix:  "-R"     
-   Length  :                          # -p   2.0  [ms]   proton pulse length  
+  - Length  :                          # -p   2.0  [ms]   proton pulse length  
      type:    "float" 
      descr:   "analytical flux\ncalculation for"
      tooltip: "proton pulse length"
      default: 2.0 
      column:  1                     
      prefix:  "-p"     
-   Power   :                          # -L   2.0  [MW]   average source power
+  - Power   :                          # -L   2.0  [MW]   average source power
      type:    "float" 
      descr:   "source power\n[MW]"
      tooltip: "average source power"
      default: 2.0
      column:  2                     
      prefix:  "-L"     
-   DataVsn :                          # -v   1     [-]   version of the data base
+  - DataVsn :                          # -v   1     [-]   version of the data base
      type:    "combo" 
      descr:   "data base"
      tooltip: "version of the data base"
@@ -59,67 +59,67 @@ source:
      column:  0                     
      prefix:  "-v"     
 
-   titel_1 :                       
+  - titel_1 :                       
      type:    "title" 
      default: "Restriction"
-   nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
+  - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
      type:    "float" 
      descr :  "number of\ntrajectories"
      tooltip: "number of neutron trajectories"
      default: 1000000 
      column:  0                     
      prefix:  "-n"     
-   Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
+  - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
      type:    "float" 
      descr:   "min. wave-\nlength [Ang]"
      tooltip: "minimum of the wavelength range"
      column:  0                     
      prefix:  "-m"     
-   Tmin    :                          # -t        [ms]   minimum of the time frame to start neutrons 
+  - Tmin    :                          # -t        [ms]   minimum of the time frame to start neutrons 
      type:    "float" 
      descr:   "min. time [ms]"   
      tooltip: "minimum of the time frame to start neutrons"
      column:  1                     
      prefix:  "-t"     
-   DivHmin :                          # -y        [deg]  minimum horizontal divergence (absolute value) 
+  - DivHmin :                          # -y        [deg]  minimum horizontal divergence (absolute value) 
      type:    "float" 
      descr:   "min. divergence\nx <-> y [deg]"   
      tooltip: "minimum horizontal divergence (absolute value)" 
      column:  2                     
      prefix:  "-y"     
-   Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
+  - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
      type:    "float" 
      descr:   "max. wave-\nlength [Ang]"
      tooltip: "maximum of the wavelength range" 
      column:  0                     
      prefix:  "-M"     
-   Tmax    :                          # -T        [ms]   maximum of the time frame to start neutrons 
+  - Tmax    :                          # -T        [ms]   maximum of the time frame to start neutrons 
      type:    "float" 
      descr:   "max. time [ms]"
      tooltip: "maximum of the time frame to start neutrons" 
      column:  1                     
      prefix:  "-T"     
-   DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
+  - DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
      type:    "float" 
      descr:   "max. divergence\nx <-> y [deg]"
      tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
      column:  2                     
      prefix:  "-z"     
 
-   DivVmin :                          # -y        [deg]  minimum vertical divergence (absolute value)
+  - DivVmin :                          # -y        [deg]  minimum vertical divergence (absolute value)
      type:    "float"    
      descr:   "min. divergence\nx <-> z [deg]"
      tooltip: "minimum vertical divergence (absolute value)"
      column:  0                     
      prefix:  "-y"     
-   DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
+  - DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
      type:    "float" 
      descr:   "max. divergence\nx <-> z [deg]"
      tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
      column:  1                     
      prefix:  "-z"     
 
-   eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
+  - eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
      type:    "combo" 
      descr:   "direction\ndefined"
      tooltip: "mode to determine neutron directions" 
@@ -128,37 +128,37 @@ source:
      column:  0                     
      prefix:  "-d"     
 
-   titel_2 :                       
+  - titel_2 :                       
      type:    "title" 
      default: "Propagation"
-   TDist   :                          # -D   0.0  [cm]   distance moderator - target window 
+  - TDist   :                          # -D   0.0  [cm]   distance moderator - target window 
      type:    "float" 
      descr:   "distance to\nwindow [cm]"
      tooltip: "distance moderator - target window" 
      default: 0.0
      column:  0                     
      prefix:  "-D"     
-   TWidth  :                          # -w  10.0  [cm]   width of the target window 
+  - TWidth  :                          # -w  10.0  [cm]   width of the target window 
      type:    "float" 
      descr:   "window\nwidth [cm]"
      tooltip: "width of the target window" 
      default: 10.0
      column:  1                     
      prefix:  "-w"     
-   THeight :                          # -h  10.0  [cm]   height of the target window 
+  - THeight :                          # -h  10.0  [cm]   height of the target window 
      type:    "float" 
      descr:   "window\nheight [cm]"
      tooltip: "height of the target window"
      default: 10.0
      column:  2                     
      prefix:  "-h"     
-   Beamline:                          # -B         [-]   name of the beamline  
+  - Beamline:                          # -B         [-]   name of the beamline  
      type:    "float" 
      descr:   "beamline"
      tooltip: "name of the beamline" 
      column:  0                     
      prefix:  "-B"     
-   Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
+  - Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
      type:    "float" 
      descr:   "declination\n[deg]"
      tooltip: "declination between moderator surface normal and propagation window" 
@@ -166,23 +166,23 @@ source:
      column:  0                     
      prefix:  "-i"     
 
-   titel_3 :                       
+  - titel_3 :                       
      type:    "title" 
      default: "Time window"
-   TofDist :                          # -s   0.0  [cm]   distance moderator - position of time window   
+  - TofDist :                          # -s   0.0  [cm]   distance moderator - position of time window   
      type:    "float" 
      descr:   "distance to\ntime window [cm]"
      tooltip: "distance moderator - position of time window"
      default: 0.0 
      column:  0                     
      prefix:  "-s"     
-   TofMin  :                          # -f  -1e10 [cm]   min TOF allowed in time window  
+  - TofMin  :                          # -f  -1e10 [cm]   min TOF allowed in time window  
      type:    "float"    
      descr:   "min. TOF to\ntime window [ms]"
      tooltip: "min TOF allowed in time window" 
      column:  1                     
      prefix:  "-f"     
-   TofMax  :                          # -F   1e10 [cm]   max TOF allowed in time window 
+  - TofMax  :                          # -F   1e10 [cm]   max TOF allowed in time window 
      type:    "float" 
      descr:   "max. TOF to\ntime window [ms]"
      tooltip: "max TOF allowed in time window" 
@@ -190,30 +190,30 @@ source:
      column:  2                     
      prefix:  "-F"     
 
-   titel_4 :                       
+  - titel_4 :                       
      type:    "title" 
      default: "Polarization"
-   PolVecX :                          # -X   0.0  [cm]   x-component of the polarisation 
+  - PolVecX :                          # -X   0.0  [cm]   x-component of the polarisation 
      type:    "float" 
      descr:   "polarisation\ndirection X"
      tooltip: "x-component of the polarisation" 
      column:  0                     
      prefix:  "-X"        
-   PolVecY :                          # -Y   0.0  [cm]   y-component of the polarisation
+  - PolVecY :                          # -Y   0.0  [cm]   y-component of the polarisation
      descr:   "Y"
      type:    "float" 
      tooltip: "y-component of the polarisation"
      default: 0.0
      column:  1                     
      prefix:  "-Y"     
-   PolVecZ :                          # -V   0.0  [cm]   z-component of the polarisation
+  - PolVecZ :                          # -V   0.0  [cm]   z-component of the polarisation
      type:    "float" 
      descr:   "Z"
      tooltip: "z-component of the polarisation"
      default: 0.0
      column:  2                     
      prefix:  "-V"     
-   PolDeg  :                          # -P   0.0  [cm]   degree of polarization [%] 
+  - PolDeg  :                          # -P   0.0  [cm]   degree of polarization [%] 
      type:    "float" 
      descr:   "degree of pola-\nrization [%]"
      tooltip: "degree of polarization [%]" 
@@ -221,29 +221,29 @@ source:
      column:  0                     
      prefix:  "-P"     
 
-   titel_5 :                       
+  - titel_5 :                       
      type:    "title" 
      default: "Special simulation parameters"
-   TimeMeas:                          # -A   0.0   [s]   time of measurement in second
+  - TimeMeas:                          # -A   0.0   [s]   time of measurement in second
      type:    "float" 
      descr:   "time of\nmeasurement [s]"
      tooltip: "time of measurement in second"
      default: 0.0
      column:  0                     
      prefix:  "-A"     
-   LmbdWant:                          # -W   0.0  [Ang]  desired wavelength           
+  - LmbdWant:                          # -W   0.0  [Ang]  desired wavelength           
      type:    "float"   
      descr:   "desired\nwavelength [Ang]"
      tooltip: "desired wavelength" 
      default: 0.0 
      column:  1                     
      prefix:  "-W"     
-   TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing
+  - TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing
      type:    "file" 
      descr:   "raytracing file"
      tooltip: "name of the file containing the IDs for tracing"
      prefix:  "-r"     
-   eTrcMode:                          # -k   0           mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
+  - eTrcMode:                          # -k   0           mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
      type:    "combo" 
      descr:   "kind of\nraytracing"
      tooltip: "mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ"

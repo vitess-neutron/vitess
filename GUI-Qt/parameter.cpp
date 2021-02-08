@@ -63,9 +63,9 @@ void Parameter::designParameterWin(QString filename)
     ui->labelShow->setText("show "+fileinfo.baseName());
     ui->labelNumText->setText("currently set "+fileinfo.baseName()+"s:");
     YAML::Node config = YAML::LoadFile(filename.toStdString());
-    YAML::Node configParam = config.begin()->second;
+
     //configure parameter window
-    getModulSubParameter(configParam, "");
+    getModulSubParameter(config, "");
 
     ui->stackedWidget->addWidget(winScrollArea);
     ui->labelNum->setText( QString::number( ui->stackedWidget->count()));
@@ -83,36 +83,40 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
     gridLayout->addWidget(headerLabel,iGritRow+1,0,1,3,Qt::AlignHCenter);
     iGritRow+=2;
     //loop all modul parameters
-    for(YAML::const_iterator it=configParam.begin(); it!=configParam.end(); ++it)
+    YAML::Node configParameter = configParam[configParam.begin()->first.as<string>()];
+    for(unsigned int ipipe = 0; ipipe < configParameter.size(); ipipe++)
     {
-
-        QString parName = QString::fromStdString(it->first.as<string>());
-        //list of the single parameter definitions: type,descr,default,min,max,column,prefix
-        //definitions of one parameter
-
-        YAML::Node configParamDef = it->second;
-        foreach(QString key,mapParam.keys())
+        for(YAML::const_iterator it=configParameter[ipipe].begin(); it!=configParameter[ipipe].end(); ++it)
         {
-            if (configParamDef[key.toStdString()])
-                if ( configParamDef[key.toStdString()].size() > 1)
-                {
-                   strList.clear();
-                   for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
-                      strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
-                   mapParam[key] = strList.join(",");
-                }else  mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
-            else mapParam[key] = "";
+           QString parName = QString::fromStdString(it->first.as<string>());
+           //list of the single parameter definitions: type,descr,default,min,max,column,prefix
+           //definitions of one parameter
+
+           YAML::Node configParamDef = it->second;
+           foreach(QString key,mapParam.keys())
+           {
+              if (configParamDef[key.toStdString()])
+                  if ( configParamDef[key.toStdString()].size() > 1)
+                  {
+                     strList.clear();
+                     for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
+                        strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
+                     mapParam[key] = strList.join(",");
+                  }else  mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
+              else mapParam[key] = "";
+           }
+           mapModule[parName] = mapParam;
+
+           getWidgetDesign(parName,mapParam, gridLayout,iGritRow,index);
+
+           if( winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
+               connect(winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
+                       SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
+           else if( winScrollArea->widget()->findChild<QLineEdit*>(parName))
+                    connect(winScrollArea->widget()->findChild<QLineEdit*>(parName),
+                           SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
+
         }
-        mapModule[parName] = mapParam;
-
-        getWidgetDesign(parName,mapParam, gridLayout,iGritRow,index);
-
-        if( winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
-            connect(winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
-                    SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
-        else if( winScrollArea->widget()->findChild<QLineEdit*>(parName))
-                connect(winScrollArea->widget()->findChild<QLineEdit*>(parName),
-                    SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
     }
     if (iGritRow <= 10)
     {

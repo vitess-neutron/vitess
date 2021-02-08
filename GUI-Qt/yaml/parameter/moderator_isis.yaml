@@ -10,57 +10,57 @@
 #prefix:  prefix for parameter in pipe
 
 Moderator:
-   ModName :
-     descr:   "name"
-     type:    "string"
-     column:  0                #0-2
+  - ModName :
+      descr:   "name"
+      type:    "string"
+      column:  0                #0-2
 
-   eTS     :                   #   [-]    index: target station
-     type:    "combo" 
-     descr:   "target station"
-     tooltip: "target station"
-     default: [TS1,TS2] 
-     index:   [1,2] 
-     column:  0                     
-     prefix:  "-S"    
+  - eTS     :                   #   [-]    index: target station
+      type:    "combo" 
+      descr:   "target station"
+      tooltip: "target station"
+      default: [TS1,TS2] 
+      index:   [1,2] 
+      column:  0                     
+      prefix:  "-S"    
 
-   Width   :                   #   [cm]   width  of the moderator 
-     type:    "float" 
-     descr:   "width [cm]"
-     tooltip: "width of the moderator"
-     column:  0                     
-     prefix:  "-w" 
-   Height  :                   #   [cm]   height of the moderator 
-     type:    "float" 
-     descr:   "height [cm]"
-     tooltip: "height of the moderator"
-     column:  1                     
-     prefix:  "-h"     
+  - Width   :                   #   [cm]   width  of the moderator 
+      type:    "float" 
+      descr:   "width [cm]"
+      tooltip: "width of the moderator"
+      column:  0                     
+      prefix:  "-w" 
+  - Height  :                   #   [cm]   height of the moderator 
+      type:    "float" 
+      descr:   "height [cm]"
+      tooltip: "height of the moderator"
+      column:  1                     
+      prefix:  "-h"     
     
-   CntrX   :                   #   [cm]   x coordinate of the center of the moderator 
-     type:    "float" 
-     descr:   "center x [cm]"
-     tooltip: "x coordinate of the center of the moderator"
-     default: 0.0
-     column:  0                     
-     prefix:  "-X"     
-   CntrY   :                   #   [cm]   y coordinate of the center of the moderator 
-     type:    "float" 
-     descr:   "center y [cm]"
-     tooltip: "y coordinate of the center of the moderator"
-     default: 0.0
-     column:  1                    
-     prefix:  "-Y"    
-   CntrZ   :                   #   [cm]   z coordinate of the center of the moderator 
-     type:    "float" 
-     descr:   "center z [cm]"
-     tooltip: "z coordinate of the center of the moderator"
-     default: 0.0
-     column:  2                     
-     prefix:  "-Z"
+  - CntrX   :                   #   [cm]   x coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center x [cm]"
+      tooltip: "x coordinate of the center of the moderator"
+      default: 0.0
+      column:  0                     
+      prefix:  "-X"     
+  - CntrY   :                   #   [cm]   y coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center y [cm]"
+      tooltip: "y coordinate of the center of the moderator"
+      default: 0.0
+      column:  1                    
+      prefix:  "-Y"    
+  - CntrZ   :                   #   [cm]   z coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center z [cm]"
+      tooltip: "z coordinate of the center of the moderator"
+      default: 0.0
+      column:  2                     
+      prefix:  "-Z"
 
-   L_T_File:                   #   [-]    file containing the wavelength-time distribution function 
-     type:    "file" 
-     descr:   "wavelength-time\ndist file"
-     tooltip: "File containing the wavelength-time distribution function"
-     prefix: "-U"    
+  - L_T_File:                   #   [-]    file containing the wavelength-time distribution function 
+      type:    "file" 
+      descr:   "wavelength-time\ndist file"
+      tooltip: "File containing the wavelength-time distribution function"
+      prefix: "-U"    

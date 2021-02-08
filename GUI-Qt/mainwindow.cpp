@@ -212,9 +212,14 @@ void MainWindow::on_actionLoad_triggered()
         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
 
    //get yaml instrument configuration
-   config = YAML::LoadFile(instrumentName.toStdString());
-   for(YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
+   YAML::Node pipe = YAML::LoadFile(instrumentName.toStdString());
+
+   config = pipe[pipe.begin()->first.as<string>()];
+
+   for(unsigned int ipipe = 0; ipipe < config.size();ipipe++)
    {
+     for(YAML::const_iterator it=config[ipipe].begin(); it!=config[ipipe].end(); ++it)
+     {
        configChildren.reset();
        configChildren = it->second;
        //get module name
@@ -229,41 +234,42 @@ void MainWindow::on_actionLoad_triggered()
            //put values in gui
            for(YAML::const_iterator it=configChildren.begin(); it!=configChildren.end(); ++it)
            {
-               QString childName = QString::fromStdString(it->first.as<string>());      //key
-               QWidget *modulWidget = ui->stackedWidget->widget(ui->stackedWidget->count()-1);
-               if (modulWidget->findChild<QLineEdit *>(childName))
-                   modulWidget->findChild<QLineEdit *>(childName)
-                              ->setText(QString::fromStdString(it->second.as<string>()));
-               else if (modulWidget->findChild<QComboBox *>(childName))
-                   modulWidget->findChild<QComboBox *>(childName)
-                              ->setCurrentText(QString::fromStdString(it->second.as<string>()));
-               else if (modulWidget->findChild<QCheckBox *>(childName))
-                   modulWidget->findChild<QCheckBox *>(childName)
-                              ->setChecked(it->second.as<bool>());
-               else if (modulWidget->findChild<QPushButton *>(childName))
-               {
-                   //write subparameter yaml data to seperat file,that will be opened when
-                   //button is pressed
-                   QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
-                   QFile file(fileName);
-                   if (!file.open(QFile::ReadWrite | QFile::Text))
-                   {
-                       QMessageBox::information(this,"Warning cannot open: ",fileName);
-                       return;
-                   }
-                   //stream to write to file
-                   ofstream fout(fileName.toStdString());       // using namespace std
-                   YAML::Node paramWin;
-                   paramWin[childName.toStdString()] =
-                              configChildren[childName.toStdString()];
-                   fout << paramWin;
-                   file.close();
-                   //set filename to lineEdit
-                   modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
-                              ->setText(fileName);
-               }
+              QString childName = QString::fromStdString(it->first.as<string>());      //key
+              QWidget *modulWidget = ui->stackedWidget->widget(ui->stackedWidget->count()-1);
+              if (modulWidget->findChild<QLineEdit *>(childName))
+                  modulWidget->findChild<QLineEdit *>(childName)
+                             ->setText(QString::fromStdString(it->second.as<string>()));
+              else if (modulWidget->findChild<QComboBox *>(childName))
+                  modulWidget->findChild<QComboBox *>(childName)
+                             ->setCurrentText(QString::fromStdString(it->second.as<string>()));
+              else if (modulWidget->findChild<QCheckBox *>(childName))
+                  modulWidget->findChild<QCheckBox *>(childName)
+                             ->setChecked(it->second.as<bool>());
+              else if (modulWidget->findChild<QPushButton *>(childName))
+              {
+                  //write subparameter yaml data to seperat file,that will be opened when
+                  //button is pressed
+                  QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
+                  QFile file(fileName);
+                  if (!file.open(QFile::ReadWrite | QFile::Text))
+                  {
+                      QMessageBox::information(this,"Warning cannot open: ",fileName);
+                      return;
+                  }
+                  //stream to write to file
+                  ofstream fout(fileName.toStdString());       // using namespace std
+                  YAML::Node paramWin;
+                  paramWin[childName.toStdString()] =
+                                  configChildren[childName.toStdString()];
+                  fout << paramWin;
+                  file.close();
+                  //set filename to lineEdit
+                  modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
+                             ->setText(fileName);
+              }
            }
-        }
+       }
+     }
    }
    file.close();
    //to do: error case
@@ -738,10 +744,10 @@ void MainWindow::saveFile(QString instrumentName)
     //stream to write to file
     ofstream fout(instrumentName.toStdString());       // using namespace std
     //write yaml file
-    config = YAML::LoadFile(instrumentName.toStdString());
+    YAML::Node pipe = YAML::LoadFile(instrumentName.toStdString());
+    config.reset();
     writeHeader(config);
-    fout << config;
-    fout << "\n";
+    pipe[fileinfo.baseName().toStdString()][0]=config;
     config.reset();
     for (int i=0; i<ui->stackedWidget->count(); i++)
     {
@@ -778,10 +784,10 @@ void MainWindow::saveFile(QString instrumentName)
                 paramWindow[butName]->saveData(config,key,butName,parFile);
              }
       }
-      fout << config;
-      fout << "\n";
+      pipe[fileinfo.baseName().toStdString()][i+1]=config;
       config.reset();
     }
+    fout << pipe;
     file.close();
 }
 
@@ -797,9 +803,9 @@ void MainWindow::designModul(QString modulName)
     scrollArea->setObjectName(modulName);
     for(int col=0; col<3; col++)  gridLayout->setColumnMinimumWidth(col,230);
     scrollArea->setWidgetResizable(true);
+    //load modul yaml configuration file
     YAML::Node config = YAML::LoadFile(Module[modulName][0].toStdString());
-    YAML::Node configParam = config.begin()->second;
-    getModulParameter(configParam, modulName);
+    getModulParameter(config, modulName);
 
 }
 
@@ -813,54 +819,57 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
     gridLayout->addWidget(headerLabel,iGritRow+1,0,1,3,Qt::AlignHCenter);
     iGritRow+=2;
     //loop all modul parameters
-    for(YAML::const_iterator it=configParam.begin(); it!=configParam.end(); ++it)
+    YAML::Node configParameter = configParam[configParam.begin()->first.as<string>()];
+
+    for(unsigned int ipipe = 0; ipipe < configParameter.size(); ipipe++)
     {
-
-        QString parName = QString::fromStdString(it->first.as<string>());
-
-        //list of the single parameter definition keys: type,descr,default,min,max,column,prefix
-        //definitions of one parameter
-        YAML::Node configParamDef = it->second;
-        foreach(QString key,mapParam.keys())
+        for(YAML::const_iterator it=configParameter[ipipe].begin(); it!=configParameter[ipipe].end(); ++it)
         {
-            if (configParamDef[key.toStdString()])
-                if ( configParamDef[key.toStdString()].size() > 1)    //list
-                {
-                   strList.clear();
-                   for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
-                      strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
-                   mapParam[key] = strList.join(",");
-                }else
-                   mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
-            else mapParam[key] = "";
-        }
-        mapModule[parName] = mapParam;     //map for one parameter
+            QString parName = QString::fromStdString(it->first.as<string>());
+            //list of the single parameter definition keys: type,descr,default,min,max,column,prefix
+            //definitions of one parameter
+            YAML::Node configParamDef = it->second;
+            foreach(QString key,mapParam.keys())
+            {
+              if (configParamDef[key.toStdString()])
+                  if ( configParamDef[key.toStdString()].size() > 1)    //list
+                  {
+                     strList.clear();
+                     for(int i=0; i<static_cast<int>(configParamDef[key.toStdString()].size()); i++)
+                        strList << QString::fromStdString(configParamDef[key.toStdString()][i].as<string>());
+                     mapParam[key] = strList.join(",");
+                  }else
+                     mapParam[key] = QString::fromStdString(configParamDef[key.toStdString()].as<string>());
+              else mapParam[key] = "";
+            }
+            mapModule[parName] = mapParam;     //map for one parameter
 
-        getWidgetDesign(parName,mapParam, gridLayout,iGritRow,index);
+            getWidgetDesign(parName,mapParam, gridLayout,iGritRow,index);
 
-        if( scrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
-            connect(scrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
-                    SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
-        if( scrollArea->widget()->findChild<QPushButton*>(parName))
-        {
-            //create widget for subparameter
-            paramWindow[parName] = new Parameter();
-            paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
-            //get configuration yaml file for subparameter in subdirectory
-            QString yamlPath = QApplication::applicationDirPath().
+            if( scrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
+                connect(scrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
+                        SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
+            if( scrollArea->widget()->findChild<QPushButton*>(parName))
+            {
+                //create widget for subparameter
+                paramWindow[parName] = new Parameter();
+                paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
+                //get configuration yaml file for subparameter in subdirectory
+                QString yamlPath = QApplication::applicationDirPath().
                                left(QApplication::applicationDirPath().lastIndexOf("/"))
                                + "/yaml/parameter/";
-            QString filename = yamlPath + parName.toLower() + ".yaml";
-            //design subwidget
-            paramWindow[parName]->designParameterWin(filename);
-            connect(paramWindow[parName],SIGNAL(changedParamWidget(QString,QString)),
+                QString filename = yamlPath + parName.toLower() + ".yaml";
+                //design subwidget
+                paramWindow[parName]->designParameterWin(filename);
+                connect(paramWindow[parName],SIGNAL(changedParamWidget(QString,QString)),
                                      this,SLOT(changeParamWidget(QString,QString)));
-            connect(scrollArea->widget()->findChild<QPushButton*>(parName),
-                    SIGNAL(clicked()),this,SLOT(paramBut_clicked()));
-        }
-        else if( scrollArea->widget()->findChild<QLineEdit*>(parName))
+                connect(scrollArea->widget()->findChild<QPushButton*>(parName),
+                        SIGNAL(clicked()),this,SLOT(paramBut_clicked()));
+             }
+             else if( scrollArea->widget()->findChild<QLineEdit*>(parName))
                 connect(scrollArea->widget()->findChild<QLineEdit*>(parName),
-                    SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
+                        SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
+        }
     }
     if (iGritRow <= 10)
     {

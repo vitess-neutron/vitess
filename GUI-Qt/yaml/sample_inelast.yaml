@@ -1,72 +1,72 @@
 sample_inelast:
-   Name    : 
-     type: "string" 
-     descr: "name" 
-   Title    : 
-     type: "title" 
-     default: "inelastic scattering" 
-   SmplFile:                 # -P         [-]    sample parameter file name 
-     type: "file" 
-     descr: "parameter file"
-     prefix: "-P"     
-   Title_param    : 
-     type: "title" 
-     default: "S(q,w):  main (P) and dispersion (D) parameters"
-   P1      :                 # -a    0.0 [ueV]   reference energy (: peak position for vanishing energy dispersion)
-     type: "float" 
-     descr: "P1 [microeV]"
-     column: 0                     
-     prefix: "-a"     
-   P2      :                 # -b    0.0 [ueV]   Lorentzian width (HWHM)
-     type: "float" 
-     descr: "P2 [microeV]"
-     min: 0.0
-     column: 1                     
-     prefix: "-b"     
-   P3      :                 # -c    0.0  [-]    scaling factor (for both peaks)
-     type: "float" 
-     descr: "P3"
-     min: 0.0001
-     column: 2                     
-     prefix: "-c"     
-   P4      :                 # -d    0.0  [-]    intensity of the second peak relative to the first
-     type: "float" 
-     descr: "P4"
-     column: 0                     
-     prefix: "-d"     
-   Temp    :                 # -T    0.0  [cm]   temperature of the sample
-     type: "float" 
-     descr: "temperature [K]"
-     min: 0.0001
-     column: 1                     
-     prefix: "-T"     
-   Repete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
-     type: "int" 
-     descr: "repetition" 
-     min: 1
-     column: 2                     
-     prefix: "-A"     
-   D1      :                 # -x    0.0  [cm]   linear energy dispersion coefficient of momentum component 
-     type: "float" 
-     descr: "D1 [microeV*A]"
-     column: 0                     
-     prefix: "-x"     
-   D2      :                 # -y    0.0 [deg]   linear energy dispersion coefficient of momentum component y
-     type: "float" 
-     descr: "D2 [microeV*A]"
-     column: 1                     
-     prefix: "-y"     
-   D3      :                 # -z    0.0 [deg]   linear energy dispersion coefficient of momentum component z
-     type: "float" 
-     descr: "D3 [microeV*A]"
-     column: 2                     
-     prefix: "-z"     
-   bBoseFac:                 # -D    NO  [deg]   flag: multiplication with the Bose factor
-     type: "combo" 
-     descr: "Bose factor?" 
-     default: ["NO","YES"]
-     column: 0                     
-     prefix: "-D"     
+  - Name    : 
+      type: "string" 
+      descr: "name" 
+  - Title    : 
+      type: "title" 
+      default: "inelastic scattering" 
+  - SmplFile:                 # -P         [-]    sample parameter file name 
+      type: "file" 
+      descr: "parameter file"
+      prefix: "-P"     
+  - Title_param    : 
+      type: "title" 
+      default: "S(q,w):  main (P) and dispersion (D) parameters"
+  - P1      :                 # -a    0.0 [ueV]   reference energy (: peak position for vanishing energy dispersion)
+      type: "float" 
+      descr: "P1 [microeV]"
+      column: 0                     
+      prefix: "-a"     
+  - P2      :                 # -b    0.0 [ueV]   Lorentzian width (HWHM)
+      type: "float" 
+      descr: "P2 [microeV]"
+      min: 0.0
+      column: 1                     
+      prefix: "-b"     
+  - P3      :                 # -c    0.0  [-]    scaling factor (for both peaks)
+      type: "float" 
+      descr: "P3"
+      min: 0.0001
+      column: 2                     
+      prefix: "-c"     
+  - P4      :                 # -d    0.0  [-]    intensity of the second peak relative to the first
+      type: "float" 
+      descr: "P4"
+      column: 0                     
+      prefix: "-d"     
+  - Temp    :                 # -T    0.0  [cm]   temperature of the sample
+      type: "float" 
+      descr: "temperature [K]"
+      min: 0.0001
+      column: 1                     
+      prefix: "-T"     
+  - Repete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
+      type: "int" 
+      descr: "repetition" 
+      min: 1
+      column: 2                     
+      prefix: "-A"     
+  - D1      :                 # -x    0.0  [cm]   linear energy dispersion coefficient of momentum component 
+      type: "float" 
+      descr: "D1 [microeV*A]"
+      column: 0                     
+      prefix: "-x"     
+  - D2      :                 # -y    0.0 [deg]   linear energy dispersion coefficient of momentum component y
+      type: "float" 
+      descr: "D2 [microeV*A]"
+      column: 1                     
+      prefix: "-y"     
+  - D3      :                 # -z    0.0 [deg]   linear energy dispersion coefficient of momentum component z
+      type: "float" 
+      descr: "D3 [microeV*A]"
+      column: 2                     
+      prefix: "-z"     
+  - bBoseFac:                 # -D    NO  [deg]   flag: multiplication with the Bose factor
+      type: "combo" 
+      descr: "Bose factor?" 
+      default: ["NO","YES"]
+      column: 0                     
+      prefix: "-D"     
 
 #   ScatLmbd:    6.0           # file  0.0 [Ang]   average wavelength Lmbd of the scattered neutrons
 #   ScatHor :    0.0           # file  0.0 [deg]   horizontal rotation defining the main scattering direction

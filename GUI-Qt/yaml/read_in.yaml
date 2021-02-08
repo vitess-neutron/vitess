@@ -7,82 +7,80 @@
 #column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 #prefix: prefix for parameter in pipe
 read_in:
-   Name    : 
-     type:    "string"
-     descr:   "name" 
-   File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
-     type:    "file" 
-     descr:   "ASCII input\nfile 1"
-     tooltip: "ASCII 1st input file containing trajectories"
-     prefix:  "-A"
-   File2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
-     type:    "file" 
-     descr:   "ASCII input\nfile 2" 
-     tooltip: "ASCII 2nd input file containing trajectories"
-     prefix:  "-B"
-   File3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
-     type:    "file" 
-     descr:   "ASCII input\nfile 3"  
-     tooltip: "ASCII 3nd input file containing trajectories"
-     prefix:  "-D"
-   RiFrc1:                 # -a    1.0  [-]  
-     type:    "float" 
-     descr:   "weight of traj.\nin file 1"
-     tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
-     default: 1.0
-     column:  0                     
-     prefix:  "-a"   
-   RiFrc2:                 # -b    0.0  [-]   
-     type:    "float" 
-     descr:   "weight of traj.\nin file 2"
-     tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
-     default: 0.0
-     column:  1                     
-     prefix:  "-b"   
-   RiFrc3:                 # -d    0.0  [-] 
-     type:    "float" 
-     descr:   "weight of traj.\nin file 3"
-     tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
-     default: 0.0
-     column:  2                     
-     prefix:  "-d"   
-   RiFact:                 # -I    1.0  [-] 
-     type:    "float" 
-     descr:   "intensity factor\nfor MCNPX"
-     tooltip: "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnpx-events"
-     default: 1.0
-     column:  0                     
-     prefix:  "-I"   
-   eInPrgf:                 # -f   VITESS   [-]     
-     type:    "combo" 
-     descr:   "data format" 
-     tooltip: "Format in which the input was written"
-     default: ["VITESS", "McStas", "MCPL", "MCNPX"]   
-     index:   [1,2,3,4] 
-     column:  0                     
-     prefix:  "-f"   
-   bInForm:                 # -F   FLOAT   [-]   format of double values in the input file, TRUE: float, FALSE exp  
-     type:    "combo" 
-     descr:   "VITESS\nstorage format" 
-     tooltip: "format of double values in the input file"
-     default: ["EXP", "FLOAT"]   
-     column:  1                     
-     prefix:  "-F"   
-   nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
-     type:    "int" 
-     descr:   "read in color" 
-     tooltip: "Read only events with a given color. A negative number means any color" 
-     default: -1
-     column:  0                     
-     prefix:  "-C"   
-   nInRep:                   # -R     1  Number of times that the events are read 
-     type:    "int" 
-     descr:   "repetition" 
-     tooltip: "Number of times that the events are read"
-     default: 1
-     min:     1
-     column:  1                     
-     prefix:  "-R"   
-
-
+  - Name    : 
+      type:    "string"
+      descr:   "name" 
+  - File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
+      type:    "file" 
+      descr:   "ASCII input\nfile 1"
+      tooltip: "ASCII 1st input file containing trajectories"
+      prefix:  "-A"
+  - File2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
+      type:    "file" 
+      descr:   "ASCII input\nfile 2" 
+      tooltip: "ASCII 2nd input file containing trajectories"
+      prefix:  "-B"
+  - File3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
+      type:    "file" 
+      descr:   "ASCII input\nfile 3"  
+      tooltip: "ASCII 3nd input file containing trajectories"
+      prefix:  "-D"
+  - RiFrc1:                 # -a    1.0  [-]  
+      type:    "float" 
+      descr:   "weight of traj.\nin file 1"
+      tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
+      default: 1.0
+      column:  0                     
+      prefix:  "-a"   
+  - RiFrc2:                 # -b    0.0  [-]   
+      type:    "float" 
+      descr:   "weight of traj.\nin file 2"
+      tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
+      default: 0.0
+      column:  1                     
+      prefix:  "-b"   
+  - RiFrc3:                 # -d    0.0  [-] 
+      type:    "float" 
+      descr:   "weight of traj.\nin file 3"
+      tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
+      default: 0.0
+      column:  2                     
+      prefix:  "-d"   
+  - RiFact:                 # -I    1.0  [-] 
+      type:    "float" 
+      descr:   "intensity factor\nfor MCNPX"
+      tooltip: "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnpx-events"
+      default: 1.0
+      column:  0                     
+      prefix:  "-I"   
+  - eInPrgf:                 # -f   VITESS   [-]     
+      type:    "combo" 
+      descr:   "data format" 
+      tooltip: "Format in which the input was written"
+      default: ["VITESS", "McStas", "MCPL", "MCNPX"]   
+      index:   [1,2,3,4] 
+      column:  0                     
+      prefix:  "-f"   
+  - bInForm:                 # -F   FLOAT   [-]   format of double values in the input file, TRUE: float, FALSE exp  
+      type:    "combo" 
+      descr:   "VITESS\nstorage format" 
+      tooltip: "format of double values in the input file"
+      default: ["EXP", "FLOAT"]   
+      column:  1                     
+      prefix:  "-F"   
+  - nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
+      type:    "int" 
+      descr:   "read in color" 
+      tooltip: "Read only events with a given color. A negative number means any color" 
+      default: -1
+      column:  0                     
+      prefix:  "-C"   
+  - nInRep:                   # -R     1  Number of times that the events are read 
+      type:    "int" 
+      descr:   "repetition" 
+      tooltip: "Number of times that the events are read"
+      default: 1
+      min:     1
+      column:  1                     
+      prefix:  "-R"   
 

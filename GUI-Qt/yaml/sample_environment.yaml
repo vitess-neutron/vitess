@@ -1,77 +1,77 @@
 sample_environment:
-   Name    :
-    type:  "string"    #   Type:title, file, string, float, int, combo, 
-    descr: "name"
-   ParFile :                  # -F         [-]    parameter file name 
-    type:  "file"    
-    descr: "parameter file"
-    prefix: "-F"     
-   PosMainX:                  # -x    0.0  [cm]   center position X of the sample environment 
-    type:  "float"    
-    descr: "X [cm]"
-    column: 0       
-    prefix: "-x"     
-   PosMainY:                  # -y    0.0  [cm]   center position Y of the sample environment 
-    type:  "float"    
-    descr: "Y [cm]"
-    column: 1       
-    prefix: "-y"     
-   PosMainZ:                  # -z    0.0  [cm]   center position Z of the sample environment 
-    type:  "float"    
-    descr: "Z [cm]"
-    column: 2       
-    prefix: "-z"     
-   nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
-    type:  "int"    
-    descr: "colour"
-    min: 0 
-    column: 0       
-    prefix: "-c"     
-   eDirEnv :                  # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
-    type:  "combo"    
-    descr: "direction"
-    default: ["IN","OUT"]
-    column: 0       
-    prefix: "-r"     
-   StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
-    type:  "file"    
-    descr: "structure\nfactor file"
-   Title: 
-    type:  "title"    
-    default: "Scattering"
-   Thicknes:                  # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
-    type:  "float"    
-    descr: "thickness [cm]"
-    min: 0.0001
-    column: 0       
-   Diameter:                  # file 10.0  [cm]   outer diameter of the sample environment  (: 2*R_out)
-    type:  "float"    
-    descr: "diameter [cm]"
-    min: 0.0001
-    column: 1       
-   Height  :                  # file 20.0  [cm]   outer height of the sample environment
-    type:  "float"    
-    descr: "height [cm]"
-    min: 0.0001
-    column: 2       
-   MuScaInc:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
-    type:  "float"    
-    descr: "incoherent scat-\ntering [1/cm]"
-    min: 0.0
-    column: 0       
-   MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
-    type:  "float"    
-    descr: "total scat-\ntering [1/cm]"
-    min: 0.0
-    column: 1       
-   MuAbs   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
-    type:  "float"    
-    descr: "absorption\n[1/cm]"
-    min: 0.0
-    column: 2       
-   UCV     :                  # file 50.0 [Ang^3] unit cell volume of the sample environment material
-    type:  "float"    
-    descr: "unit cell\nvolume [A^3]"
-    min: 0.0001
-    column: 0       
+  - Name    :
+      type:  "string"    #   Type:title, file, string, float, int, combo, 
+      descr: "name"
+  - ParFile :                  # -F         [-]    parameter file name 
+      type:  "file"    
+      descr: "parameter file"
+      prefix: "-F"     
+  - PosMainX:                  # -x    0.0  [cm]   center position X of the sample environment 
+      type:  "float"    
+      descr: "X [cm]"
+      column: 0       
+      prefix: "-x"     
+  - PosMainY:                  # -y    0.0  [cm]   center position Y of the sample environment 
+      type:  "float"    
+      descr: "Y [cm]"
+      column: 1       
+      prefix: "-y"     
+  - PosMainZ:                  # -z    0.0  [cm]   center position Z of the sample environment 
+      type:  "float"    
+      descr: "Z [cm]"
+      column: 2       
+      prefix: "-z"     
+  - nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
+      type:  "int"    
+      descr: "colour"
+      min: 0 
+      column: 0       
+      prefix: "-c"     
+  - eDirEnv :                  # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
+      type:  "combo"    
+      descr: "direction"
+      default: ["IN","OUT"]
+      column: 0       
+      prefix: "-r"     
+  - StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
+      type:  "file"    
+      descr: "structure\nfactor file"
+  - Title: 
+      type:  "title"    
+      default: "Scattering"
+  - Thicknes:                  # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
+      type:  "float"    
+      descr: "thickness [cm]"
+      min: 0.0001
+      column: 0       
+  - Diameter:                  # file 10.0  [cm]   outer diameter of the sample environment  (: 2*R_out)
+      type:  "float"    
+      descr: "diameter [cm]"
+      min: 0.0001
+      column: 1       
+  - Height  :                  # file 20.0  [cm]   outer height of the sample environment
+      type:  "float"    
+      descr: "height [cm]"
+      min: 0.0001
+      column: 2       
+  - MuScaInc:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
+      type:  "float"    
+      descr: "incoherent scat-\ntering [1/cm]"
+      min: 0.0
+      column: 0       
+  - MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
+      type:  "float"    
+      descr: "total scat-\ntering [1/cm]"
+      min: 0.0
+      column: 1       
+  - MuAbs   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
+      type:  "float"    
+      descr: "absorption\n[1/cm]"
+      min: 0.0
+      column: 2       
+  - UCV     :                  # file 50.0 [Ang^3] unit cell volume of the sample environment material
+      type:  "float"    
+      descr: "unit cell\nvolume [A^3]"
+      min: 0.0001
+      column: 0       
 

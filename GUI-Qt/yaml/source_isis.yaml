@@ -1,194 +1,194 @@
 source:
-   SimName : 
-     descr:   "simulation\nname"
-     type:    "string"
-     default: "First Simulation" 
-     column:  0                       #0-2
-   eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-     type:    combo                   # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
-     descr:   "source type" 
-     default: ["SRC_ISIS","SRC_ISIS"] 
-     index:   [4,4]
-     prefix:  "-K"     
+  - SimName : 
+      descr:   "simulation\nname"
+      type:    "string"
+      default: "First Simulation" 
+      column:  0                       #0-2
+  - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+      type:    combo                   # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+      descr:   "source type" 
+      default: ["SRC_ISIS","SRC_ISIS"] 
+      index:   [4,4]
+      prefix:  "-K"     
 
-   titel_0 :                       
-     type:    "title" 
-     default: "Source, moderator and beamline parameters"
+  - titel_0 :                       
+      type:    "title" 
+      default: "Source, moderator and beamline parameters"
 
-   Moderator_isis:
-     type:    "window"
-     descr:   "moderator"
-     tooltip: "moderator description parameter"   
+  - Moderator_isis:
+      type:    "window"
+      descr:   "moderator"
+      tooltip: "moderator description parameter"   
 #     default: "moderator.yaml"
 
-   Freq    :                          # -R        [Hz]   pulse frequency 
-     type:    "float" 
-     descr:   "frequency [Hz]"
-     tooltip: "pulse repetition rate" 
-     default: 50 
-     column:  0                     
-     prefix:  "-R"     
-   Beamline:                          # -B         [-]   name of the beamline  
-     type:    "float" 
-     descr:   "beamline"
-     tooltip: "name of the beamline" 
-     column:  1                     
-     prefix:  "-B"     
-   Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
-     type:    "float" 
-     descr:   "declination\n[deg]"
-     tooltip: "declination between moderator surface normal and propagation window" 
-     default: 0.0
-     column:  2                     
-     prefix:  "-i"     
+  - Freq    :                          # -R        [Hz]   pulse frequency 
+      type:    "float" 
+      descr:   "frequency [Hz]"
+      tooltip: "pulse repetition rate" 
+      default: 50 
+      column:  0                     
+      prefix:  "-R"     
+  - Beamline:                          # -B         [-]   name of the beamline  
+      type:    "float" 
+      descr:   "beamline"
+      tooltip: "name of the beamline" 
+      column:  1                     
+      prefix:  "-B"     
+  - Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
+      type:    "float" 
+      descr:   "declination\n[deg]"
+      tooltip: "declination between moderator surface normal and propagation window" 
+      default: 0.0
+      column:  2                     
+      prefix:  "-i"     
 
-   titel_1 :                       
-     type:    "title" 
-     default: "Simulation parameters"
-   nBundle :                          # -n   10 [-]   number of bundles  
-     type:    "int" 
-     descr :  "number of\nbundels"
-     tooltip: "number of packages into which the whole simulation is separated"
-     default: 10
-     column:  0                     
-     prefix:  "-l"     
-   nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
-     type:    "int" 
-     descr :  "number of traj.\nper bundle"
-     tooltip: "number of neutron trajectories (events) created in each bundle"
-     default: 1000000 
-     column:  1                     
-     prefix:  "-n"     
+  - titel_1 :                       
+      type:    "title" 
+      default: "Simulation parameters"
+  - nBundle :                          # -n   10 [-]   number of bundles  
+      type:    "int" 
+      descr :  "number of\nbundels"
+      tooltip: "number of packages into which the whole simulation is separated"
+      default: 10
+      column:  0                     
+      prefix:  "-l"     
+  - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
+      type:    "int" 
+      descr :  "number of traj.\nper bundle"
+      tooltip: "number of neutron trajectories (events) created in each bundle"
+      default: 1000000 
+      column:  1                     
+      prefix:  "-n"     
 
-   Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
-     type:    "float" 
-     descr:   "min. wave-\nlength [Ang]"
-     tooltip: "minimum of the wavelength range"
-     min    : 0.0
-     default: 1.0
-     column:  0                     
-     prefix:  "-m"     
-   Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
-     type:    "float" 
-     descr:   "max. wave-\nlength [Ang]"
-     tooltip: "maximum of the wavelength range" 
-     default: 5.0
-     column:  1                     
-     prefix:  "-M"     
+  - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
+      type:    "float" 
+      descr:   "min. wave-\nlength [Ang]"
+      tooltip: "minimum of the wavelength range"
+      min    : 0.0
+      default: 1.0
+      column:  0                     
+      prefix:  "-m"     
+  - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
+      type:    "float" 
+      descr:   "max. wave-\nlength [Ang]"
+      tooltip: "maximum of the wavelength range" 
+      default: 5.0
+      column:  1                     
+      prefix:  "-M"     
 
-   titel_2 :                       
-     type:    "title" 
-     default: "Propagation"
-   eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
-     type:    "combo" 
-     descr:   "direction\ndefined"
-     tooltip: "mode to determine neutron directions" 
-     default: ["VT_VIRT_WND", "VT_REAL_WND"] 
-     index:   [2,1]
-     column:  0                     
-     prefix:  "-d"     
+  - titel_2 :                       
+      type:    "title" 
+      default: "Propagation"
+  - eDir    :                          # -d  WINDOW [-]   enum: mode to determine neutron directions: DIVERGENCE  WINDOW 
+      type:    "combo" 
+      descr:   "direction\ndefined"
+      tooltip: "mode to determine neutron directions" 
+      default: ["VT_VIRT_WND", "VT_REAL_WND"] 
+      index:   [2,1]
+      column:  0                     
+      prefix:  "-d"     
 
-   TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
-     type:    "float" 
-     descr:   "distance to\nwindow [cm]"
-     tooltip: "distance moderator - target window" 
-     min    :   0.0
-     default: 100.0
-     column:  0                     
-     prefix:  "-D"     
-   TWidth  :                          # -w   3.0  [cm]   width of the target window 
-     type:    "float" 
-     descr:   "window\nwidth [cm]"
-     tooltip: "width of the target window" 
-     min    : 0.0
-     default: 3.0
-     column:  1                     
-     prefix:  "-w"     
-   THeight :                          # -h   3.0  [cm]   height of the target window 
-     type:    "float" 
-     descr:   "window\nheight [cm]"
-     tooltip: "height of the target window"
-     min    : 0.0
-     default: 3.0
-     column:  2                     
-     prefix:  "-h"     
+  - TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
+      type:    "float" 
+      descr:   "distance to\nwindow [cm]"
+      tooltip: "distance moderator - target window" 
+      min    :   0.0
+      default: 100.0
+      column:  0                     
+      prefix:  "-D"     
+  - TWidth  :                          # -w   3.0  [cm]   width of the target window 
+      type:    "float" 
+      descr:   "window\nwidth [cm]"
+      tooltip: "width of the target window" 
+      min    : 0.0
+      default: 3.0
+      column:  1                     
+      prefix:  "-w"     
+  - THeight :                          # -h   3.0  [cm]   height of the target window 
+      type:    "float" 
+      descr:   "window\nheight [cm]"
+      tooltip: "height of the target window"
+      min    : 0.0
+      default: 3.0
+      column:  2                     
+      prefix:  "-h"     
 
-   titel_3 :                       
-     type:    "title" 
-     default: "Time window"
-   TofDist :                          # -s        [cm]   distance moderator - position of time window   
-     type:    "float" 
-     descr:   "distance to\ntime window [cm]"
-     tooltip: "distance moderator - position of time window"
-     column:  0                     
-     prefix:  "-s"     
-   TofMin  :                          # -f        [cm]   min TOF allowed in time window  
-     type:    "float"    
-     descr:   "min. TOF to\ntime window [ms]"
-     tooltip: "min TOF allowed in time window" 
-     column:  1                     
-     prefix:  "-f"     
-   TofMax  :                          # -F        [cm]   max TOF allowed in time window 
-     type:    "float" 
-     descr:   "max. TOF to\ntime window [ms]"
-     tooltip: "max TOF allowed in time window" 
-     column:  2                     
-     prefix:  "-F"     
+  - titel_3 :                       
+      type:    "title" 
+      default: "Time window"
+  - TofDist :                          # -s        [cm]   distance moderator - position of time window   
+      type:    "float" 
+      descr:   "distance to\ntime window [cm]"
+      tooltip: "distance moderator - position of time window"
+      column:  0                     
+      prefix:  "-s"     
+  - TofMin  :                          # -f        [cm]   min TOF allowed in time window  
+      type:    "float"    
+      descr:   "min. TOF to\ntime window [ms]"
+      tooltip: "min TOF allowed in time window" 
+      column:  1                     
+      prefix:  "-f"     
+  - TofMax  :                          # -F        [cm]   max TOF allowed in time window 
+      type:    "float" 
+      descr:   "max. TOF to\ntime window [ms]"
+      tooltip: "max TOF allowed in time window" 
+      column:  2                     
+      prefix:  "-F"     
 
-   titel_4 :                       
-     type:    "title" 
-     default: "Polarization"
-   PolVecX :                          # -X        [cm]   x-component of the polarisation 
-     type:    "float" 
-     descr:   "polarisation\ndirection X"
-     tooltip: "x-component of the polarisation" 
-     column:  0                     
-     prefix:  "-X"        
-   PolVecY :                          # -Y        [cm]   y-component of the polarisation
-     descr:   "Y"
-     type:    "float" 
-     tooltip: "y-component of the polarisation"
-     column:  1                     
-     prefix:  "-Y"     
-   PolVecZ :                          # -V        [cm]   z-component of the polarisation
-     type:    "float" 
-     descr:   "Z"
-     tooltip: "z-component of the polarisation"
-     column:  2                     
-     prefix:  "-V"     
-   PolDeg  :                          # -P        [cm]   degree of polarization [%] 
-     type:    "float" 
-     descr:   "degree of pola-\nrization [%]"
-     tooltip: "degree of polarization [%]" 
-     column:  0                     
-     prefix:  "-P"     
+  - titel_4 :                       
+      type:    "title" 
+      default: "Polarization"
+  - PolVecX :                          # -X        [cm]   x-component of the polarisation 
+      type:    "float" 
+      descr:   "polarisation\ndirection X"
+      tooltip: "x-component of the polarisation" 
+      column:  0                     
+      prefix:  "-X"        
+  - PolVecY :                          # -Y        [cm]   y-component of the polarisation
+      descr:   "Y"
+      type:    "float" 
+      tooltip: "y-component of the polarisation"
+      column:  1                     
+      prefix:  "-Y"     
+  - PolVecZ :                          # -V        [cm]   z-component of the polarisation
+      type:    "float" 
+      descr:   "Z"
+      tooltip: "z-component of the polarisation"
+      column:  2                     
+      prefix:  "-V"     
+  - PolDeg  :                          # -P        [cm]   degree of polarization [%] 
+      type:    "float" 
+      descr:   "degree of pola-\nrization [%]"
+      tooltip: "degree of polarization [%]" 
+      column:  0                     
+      prefix:  "-P"     
 
-   titel_5 :                       
-     type:    "title" 
-     default: "Special simulation parameters"
-   TimeMeas:                          # -A         [s]   time of measurement in second
-     type:    "float" 
-     descr:   "time of\nmeasurement [s]"
-     tooltip: "time of measurement in second (used for detector counts)"
-     column:  0                     
-     prefix:  "-A"     
-   LmbdWant:                          # -W        [Ang]  desired wavelength           
-     type:    "float"   
-     descr:   "desired\nwavelength [Ang]"
-     tooltip: "desired wavelength (can be used for chopper phasing)" 
-     column:  1                     
-     prefix:  "-W"     
-   eTrcMode:                          # -k                mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
-     type:    "combo" 
-     descr:   "kind of\nraytracing"
-     tooltip: "mode of tracing:\nWRITE_TRC_FILES: write files for traj. of interest\n ONLY_TRC_TRAJ: simulation only with traj. of interest"
-     default: ["NO_TRACING","WRITE_TRC_FILES","ONLY_TRC_TRAJ"] 
-     index:   [0,1,2]
-     column:  0                     
-     prefix:  "-k"     
-   TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing
-     type:    "file" 
-     descr:   "raytracing file"
-     tooltip: "name of the file containing the IDs for tracing"
-     prefix:  "-r"     
+  - titel_5 :                       
+      type:    "title" 
+      default: "Special simulation parameters"
+  - TimeMeas:                          # -A         [s]   time of measurement in second
+      type:    "float" 
+      descr:   "time of\nmeasurement [s]"
+      tooltip: "time of measurement in second (used for detector counts)"
+      column:  0                     
+      prefix:  "-A"     
+  - LmbdWant:                          # -W        [Ang]  desired wavelength           
+      type:    "float"   
+      descr:   "desired\nwavelength [Ang]"
+      tooltip: "desired wavelength (can be used for chopper phasing)" 
+      column:  1                     
+      prefix:  "-W"     
+  - eTrcMode:                          # -k                mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
+      type:    "combo" 
+      descr:   "kind of\nraytracing"
+      tooltip: "mode of tracing:\nWRITE_TRC_FILES: write files for traj. of interest\n ONLY_TRC_TRAJ: simulation only with traj. of interest"
+      default: ["NO_TRACING","WRITE_TRC_FILES","ONLY_TRC_TRAJ"] 
+      index:   [0,1,2]
+      column:  0                     
+      prefix:  "-k"     
+  - TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing
+      type:    "file" 
+      descr:   "raytracing file"
+      tooltip: "name of the file containing the IDs for tracing"
+      prefix:  "-r"     
 

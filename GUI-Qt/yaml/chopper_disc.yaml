@@ -1,58 +1,58 @@
 chopper_disc:
-   Name    : 
-     descr: "name" 
-     type: "string" 
-   Rpm     :                     # -s       [1/min] rotation speed 
-     type: "float" 
-     descr: "rounds / min."
-     column: 0                     
-     prefix: "-s"     
-   Offset  :                     # -o        [deg]  orientation of the chopper at t=0 
-     type: "float" 
-     descr: "Offset [deg]"
-     column: 1                     
-     prefix: "-o"     
-   Dist    :                     # -l        [cm]   distance of the chopper from the end of the previous component 
-     type: "float" 
-     descr: "distance to\nprev. module [cm]"
-     column: 2                     
-     prefix: "-l"     
-   eAbs    :                     # -g  IDEAL  [-]   enum: absorption in chopper: IDEAL  GADOLINIUM  BOR 
-     type: "combo" 
-     descr: "absorption"
-     column: 0                     
-     default: ["IDEAL","GADOLINIUM","BOR"]
-     prefix: "-g"     
-   bZeroT  :                     # -z   NO    [-]   flag: chopper sets neutron time to zero 
-     type: "combo" 
-     descr: "set zero time"
-     column: 1                     
-     default: ["NO","YES"]
-     prefix: "-z"     
-   bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
-     type: "combo" 
-     descr: "treat neutrons\npassing by"
-     column: 2                     
-     default: ["NO","YES"]
-     prefix: "-p"     
-   bColor  :                     # -c   YES   [-]   flag: chopper sets colour to window number 
-     type: "combo" 
-     descr: "set colour"
-     column: 0                     
-     default: ["NO","YES"]
-     prefix: "-c"     
-   Radius  :                     #     35.0  [cm]   radius of the chopper 
-     type: "float" 
-     descr: "radius [cm]"
-     column: 0                     
-   HorPos  :                     #      0.0  [cm]   y-component of the centre of the chopper 
-     type: "float" 
-     descr: "horiz. position\nof axle [cm]"
-     column: 1                     
-   VerPos  :                #    -25.0  [cm]   z-component of the centre of the chopper 
-     type: "float" 
-     descr: "vert. position\nof axle [cm]"
-     column: 2                     
+  - Name    : 
+      descr: "name" 
+      type: "string" 
+  - Rpm     :                     # -s       [1/min] rotation speed 
+      type: "float" 
+      descr: "rounds / min."
+      column: 0                     
+      prefix: "-s"     
+  - Offset  :                     # -o        [deg]  orientation of the chopper at t=0 
+      type: "float" 
+      descr: "Offset [deg]"
+      column: 1                     
+      prefix: "-o"     
+  - Dist    :                     # -l        [cm]   distance of the chopper from the end of the previous component 
+      type: "float" 
+      descr: "distance to\nprev. module [cm]"
+      column: 2                     
+      prefix: "-l"     
+  - eAbs    :                     # -g  IDEAL  [-]   enum: absorption in chopper: IDEAL  GADOLINIUM  BOR 
+      type: "combo" 
+      descr: "absorption"
+      column: 0                     
+      default: ["IDEAL","GADOLINIUM","BOR"]
+      prefix: "-g"     
+  - bZeroT  :                     # -z   NO    [-]   flag: chopper sets neutron time to zero 
+      type: "combo" 
+      descr: "set zero time"
+      column: 1                     
+      default: ["NO","YES"]
+      prefix: "-z"     
+  - bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
+      type: "combo" 
+      descr: "treat neutrons\npassing by"
+      column: 2                     
+      default: ["NO","YES"]
+      prefix: "-p"     
+  - bColor  :                     # -c   YES   [-]   flag: chopper sets colour to window number 
+      type: "combo" 
+      descr: "set colour"
+      column: 0                     
+      default: ["NO","YES"]
+      prefix: "-c"     
+  - Radius  :                     #     35.0  [cm]   radius of the chopper 
+      type: "float" 
+      descr: "radius [cm]"
+      column: 0                     
+  - HorPos  :                     #      0.0  [cm]   y-component of the centre of the chopper 
+      type: "float" 
+      descr: "horiz. position\nof axle [cm]"
+      column: 1                     
+  - VerPos  :                #    -25.0  [cm]   z-component of the centre of the chopper 
+      type: "float" 
+      descr: "vert. position\nof axle [cm]"
+      column: 2                     
 #   Window  :
 #      - WndPos  :    0.0         #           [deg]  angular position of the window center 
 #        WndWidth:   10.0         #           [deg]  angular opening of the chopper window 
