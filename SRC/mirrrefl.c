@@ -31,7 +31,7 @@ double  PathThroughMirrorGravOrder2(Neutron *ThisNeutron, MirrorSecond MyMirror,
 #ifdef VT_GRAPH
   if (do_visualise)
   {
-    double tempx, tempy;
+    double tempx=0.0, tempy=0.0;
 
     cpgsci(6);
 
@@ -190,7 +190,7 @@ double  PathThroughMirrorGravOrder2(Neutron *ThisNeutron, MirrorSecond MyMirror,
     #ifdef VT_GRAPH
       if (do_visualise)
       {
-        double tempx, tempy;
+        double tempx=0.0, tempy=0.0;
         if (vistype == 0)
         {
           tempx = ThisNeutron->Position[0] + PosMain[0];
@@ -316,7 +316,7 @@ double  PathThroughMirrorGravOrder2(Neutron *ThisNeutron, MirrorSecond MyMirror,
   #ifdef VT_GRAPH
     if (do_visualise)
     {
-      double tempx, tempy;
+      double tempx=0.0, tempy=0.0;
       /* visual path begin */
 
       if (vistype == 0)

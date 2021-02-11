@@ -21,6 +21,7 @@
 /* 1.19    Jul 2007  S. Manoshin    scattering cross section is added to the absorption CS  */
 /* 1.20    Sep 2009  M. Fromme      adopted to newer vitess environment                     */  
 /* 1.21    Apr 2020  K. Lieutenant  tidy up, new central visualization parameters           */
+/* 1.22    Feb 2021  K. Lieutenant  correction for visualization                            */
 /********************************************************************************************/
 
 #include "softabort.h"
@@ -81,8 +82,11 @@ double Materialsz[16];      // database for attenuation indexes, mu
 double Refract=1.0;         // Calculated Refraction coeff for the lense material 
 double Atten  =1.0;         // Calculated Attenuation coeff for the lense material
 
+long  idwin1=0, idwin2=0;   // IDs for plot windows
+
 LenseSecond MyLense;
 Plane       Endpoint;       // plane for flight after lense
+Plane       EndpointRTAL;   // same for visualization
 
 
 /******************************/
@@ -98,18 +102,22 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 int main(int argc, char *argv[])
 {
-  long	i,j;
-  long  CurrentLense; 
-  long  NeutronLoss = 0; /* key for neutron loss */
-  long  keyraytraceALoff=0; /* additional key for disactivation of ray-tracing */
+  long	i=0, j=0;
+  long  CurrentLense= 0; 
+  long  NeutronLoss = 0;            /* key for neutron loss */
+  long  keyraytraceALoff=0;         /* additional key for disactivation of ray-tracing */
+  long  raytracecolor=1;            /* color of trajectories for ray-tracing after lenses */
 
-  double temp1;     /* temporary variable */
-  double TimeOF1, TimeOF1t; /* tof variables */
-  double TimeOFspace; /* time of flight after lense */
+  double raytryz=0.0;               /* internal var for ray-tracing after lense */
+
+  double temp1=0.0, tmptmp=0.0;     /* temporary variables */
+  double TimeOF1=0.0, TimeOF1t=0.0; /* tof variables */
+  double TimeOFspace=0.0;           /* time of flight after lense */
 
   Neutron  Output, OutputRTAL;
 
-  static long  idwin1, idwin2;
+  InitNeutron(&Output);
+  InitNeutron(&OutputRTAL);
 
   /* DATEBASE: Index delta (for wavelength 1.8 Angs) for diff. materials.
      C.D. Dewhurst and I. Anderson, ILL
@@ -145,7 +153,7 @@ int main(int argc, char *argv[])
   // initialisation
   // --------------
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.23");
+  PrintModuleName(_eModule, "1.22");
 	OwnInit(argc, argv);
 
   bVisInstalled = FALSE;    // needs to be done still
@@ -331,7 +339,7 @@ int main(int argc, char *argv[])
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int i;
+  int i=0;
 
   for(i=1; i<argc; i++) 
   {
@@ -486,12 +494,14 @@ void  OwnInit(int argc, char *argv[])
 /********************************************************************/
 void  CalcAndWritePar()
 {
-  double   FocalLength; /* Calculated analytical focal length */
-  double   FocalLength_thin; /* Calculated analytical focal length for thin lense */
-  double   RadiusT; 
-  double   Radius1_c, Radius2_c, Refract_c; /* For analytical calculation */
-  double   XCEN1, XCEN2;
-  double   Par1, Par2, Shift1, Shift2, Sign1=0, Sign2; /* additional pars for describing */
+  double   FocalLength=0.0;                                   /* Calculated analytical focal length */
+  double   FocalLength_thin=0.0;                              /* Calculated analytical focal length for thin lense */
+  double   RadiusT=0.0; 
+  double   Radius1_c=0.0, Radius2_c=0.0, Refract_c=0.0;       /* For analytical calculation */
+  double   zmin=0.0, zmax=0.0, zstep=0.0, zcur=0.0, xcur=0.0; /* for plotting */
+  double   XCEN1=0.0, XCEN2=0.0;
+  double   Par1=0.0, Par2=0.0, Shift1=0.0, Shift2=0.0, 
+           Sign1=0, Sign2=0.0;                                /* additional parameters */
 
   if (ServiceInfoK == 1)
   {

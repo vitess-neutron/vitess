@@ -489,6 +489,7 @@ void  CalcAndWritePar()
 #ifdef DO_WIN32
     char *GraphDev = "ellipticmirror.ps";
 #else
+    char *GraphDev;
     if (visoutput == 0)
     {
       GraphDev = "/xs";
