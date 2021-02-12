@@ -30,6 +30,7 @@ public:
     void loadModule(QString text);
     void cleanModules();
     void addNewRow();
+    void setDisabled();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);

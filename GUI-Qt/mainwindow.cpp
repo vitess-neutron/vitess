@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <unistd.h>
 #include <fstream>
+#include <QDate>
 
 using namespace YAML;
 using namespace std;
@@ -230,6 +231,8 @@ void MainWindow::on_actionLoad_triggered()
        {
            //put module in tabelle, this sends signal changedComboVal and
            //slot changeModulWidget is executed
+           if (configChildren["disabled"])
+               modultab->disableFlag[int(ipipe-1)]=true;
            modultab->loadModule(module);
            //put values in gui
            for(YAML::const_iterator it=configChildren.begin(); it!=configChildren.end(); ++it)
@@ -272,6 +275,7 @@ void MainWindow::on_actionLoad_triggered()
      }
    }
    file.close();
+   modultab->setDisabled();
    //to do: error case
    ui->textBrowser->setText("Successfully loaded intrument:  "+fileinfo.baseName());
 }
@@ -431,23 +435,47 @@ void MainWindow::on_pushDryrun_clicked()
 
 void MainWindow::finishedLast()
 {
+    QDate curDate = QDate::currentDate();
+    QString fileName = instrumentDir+"/XC"+QString::number(curDate.year())+
+            QString::number(curDate.dayOfYear())+".log";
+
+    QFile protFile(fileName);
+    if (!protFile.open(QFile::ReadWrite | QIODevice::Append | QFile::Text))
+    {
+       QMessageBox::information(this,"Warning cannot open: ",fileName);
+       return;
+    }
+    //write cmdList to protocolfile
+    foreach(QString pipe,cmdList)
+        protFile.write((pipe+"\n").toStdString().c_str());
+    protFile.write("\n\n");
+
     //write contents of logfiles to textbrowser
     pipeActive = false;
     for (int i=0; i < procList.count(); i++)
     {
-       QFile file("/tmp/testlog" + QString::number(i+1));
+       QString logName = "/tmp/testlog" + QString::number(i+1);
+       QFile file(logName);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
            QMessageBox::information(this,"Warning cannot open: ",
                                     "/tmp/testlog" + QString::number(i+1));
            return;
        }
-       ui->textBrowser->append(file.readAll());
+       QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hhmmss")+ "\n\n";
+       QByteArray arr = file.readAll();
+       ui->textBrowser->append(arr);
+
+       //write to daily protocol file
+       protFile.write(createTime.toStdString().c_str());
+       protFile.write(arr);
+       protFile.write("\n\n");
        file.close();
        procList[i]->close();
 
        //toDo write to daily protocol file
     }
+    protFile.close();
 
 }
 
@@ -683,24 +711,36 @@ void MainWindow::on_pushStart_clicked()
     //create process list
     procList.clear();
     for (int i=0; i<ui->stackedWidget->count(); i++)
-       procList.append(new QProcess());
+        //do not create process if modul if disabled
+        if (!modultab->disableFlag[i])
+           procList.append(new QProcess());
+
     connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
     pipeActive = true;
+    int enableIndex = 0;
     for (int i=0; i<ui->stackedWidget->count(); i++)
     {
-        if (i < ui->stackedWidget->count()-1)
-            procList[i]->setStandardOutputProcess(procList[i+1]);     //pipe commands
-        procList[i]->start(cmdList[i]);
-        if (!procList[i]->waitForStarted())
+        if (!modultab->disableFlag[i])
         {
-            ui->textBrowser->setTextColor(Qt::red);
-            ui->textBrowser->append( "Error with start module: " + QString::number(i));
-            ui->textBrowser->setTextColor(Qt::black);
-            pipeActive = false;
-            return;
+            //start processes of enabled modules in chain
+            if (enableIndex < procList.count()-1 )
+            {
+                //Output of process is input of next process
+                procList[enableIndex]->setStandardOutputProcess(procList[enableIndex+1]);     //pipe commands
+                //toDo error handling
+            }
+            procList[enableIndex]->start(cmdList[enableIndex]);
+            if (!procList[enableIndex]->waitForStarted())
+            {
+               ui->textBrowser->setTextColor(Qt::red);
+               ui->textBrowser->append( "Error with start module: " + QString::number(i));
+               ui->textBrowser->setTextColor(Qt::black);
+               pipeActive = false;
+               return;
+            }
+            enableIndex++;
         }
     }
-
 }
 
 void MainWindow::on_pushKill_clicked()
@@ -761,6 +801,8 @@ void MainWindow::saveFile(QString instrumentName)
       allComboBoxes <<  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
       allCheckBoxes <<  ui->stackedWidget->widget(i)->findChildren< QCheckBox *>();
       allPushButtons << ui->stackedWidget->widget(i)->findChildren< QPushButton *>();
+
+      if ( modultab->disableFlag[i]) config[key]["disabled"]=true;
 
       for(int ii=0 ; ii < allLineEdits.size(); ii++)
         if (allLineEdits[ii]->text() != "" && !allLineEdits[ii]->objectName().endsWith("_file"))

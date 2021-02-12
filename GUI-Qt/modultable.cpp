@@ -75,6 +75,13 @@ void ModulTable::disableModule()
     ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
 }
 
+void ModulTable::setDisabled()
+{
+    for (int index=0; index < disableFlag.size(); index++)
+        if (disableFlag[index])
+           ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
+}
+
 void ModulTable::enableModule()
 {
     int index=ui->tableWidget->currentRow();
@@ -112,10 +119,13 @@ void ModulTable::insertModule()
     arrowButton.insert(index,tb);
     ui->tableWidget->setCellWidget(index,0,cb);
     ui->tableWidget->setCellWidget(index,1,tb);
+    disableFlag.insert(index,false);
     for (int ind=index;ind < ui->tableWidget->rowCount();ind++)
     {
         QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
         ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
+        if (disableFlag[ind])
+           ui->tableWidget->verticalHeaderItem(ind)->setTextColor(Qt::lightGray);
     }
     emit insertCombo(index);
 }
@@ -151,10 +161,13 @@ void ModulTable::removeModule()
 {
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->removeRow(index);
+    disableFlag.remove(index);
     for (int ind=index; ind < ui->tableWidget->rowCount();ind++)
     {
         QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
         ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
+        if (disableFlag[ind])
+           ui->tableWidget->verticalHeaderItem(ind)->setTextColor(Qt::lightGray);
     }
     ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
     ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::red);
@@ -168,6 +181,7 @@ void ModulTable::removeModule()
 
 void ModulTable::cleanModules()
 {
+    disableFlag.clear();
     comboModule.clear();
     arrowButton.clear();
     oldRow = 0;
