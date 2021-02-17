@@ -382,10 +382,10 @@ void MainWindow::on_pushDryrun_clicked()
         return;
     }
     // first module should be a source module
-    if ((cmdList[0].indexOf("source_") < 0) & (cmdList[0].indexOf("read_in_") < 0))
+    if (cmdList[0].indexOf("source_") < 0)
     {
         ui->textBrowser->setTextColor(Qt::red);
-        ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
+        ui->textBrowser->append("First module should be a source module");
         ui->textBrowser->setTextColor(Qt::black);
         return;
     }
@@ -410,6 +410,11 @@ void MainWindow::on_pushDryrun_clicked()
     connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
     pipeActive = true;
     int enableIndex = 0;
+
+    //setup progressDialog and start elapsed timer
+    progress();
+    timer->start();
+
     for (int i=0; i< ui->stackedWidget->count(); i++)
     {
        if (!modultab->disableFlag[i])
@@ -435,6 +440,10 @@ void MainWindow::on_pushDryrun_clicked()
 
 void MainWindow::finishedLast()
 {
+    //close progressDialog
+    dialog->close();
+
+    //daily protocol file
     QDate curDate = QDate::currentDate();
     QString fileName = instrumentDir+"/XC"+QString::number(curDate.year())+
             QString::number(curDate.dayOfYear())+".log";
@@ -472,9 +481,11 @@ void MainWindow::finishedLast()
        protFile.write("\n\n");
        file.close();
        procList[i]->close();
-
-       //toDo write to daily protocol file
-    }
+   }
+    //measurment time in sec min 1
+    QString str = QString::number(
+                static_cast<int>(timer->elapsed()/1000 >0) ? static_cast<int>(timer->elapsed()/1000) : 1);
+    ui->textBrowser->append("Measurement took: " + str + " sec");
     protFile.close();
 
 }
@@ -700,11 +711,11 @@ void MainWindow::on_pushStart_clicked()
         ui->textBrowser->setTextColor(Qt::black);
         return;
     }
-    // first module should be a source module
-    if (cmdList[0].indexOf("source_") < 0)
+    // first module should be a source or read_in module
+    if ((cmdList[0].indexOf("source_") < 0) & (cmdList[0].indexOf("read_in_") < 0))
     {
         ui->textBrowser->setTextColor(Qt::red);
-        ui->textBrowser->append("First module should be a source module");
+        ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
         ui->textBrowser->setTextColor(Qt::black);
         return;
     }
@@ -718,6 +729,10 @@ void MainWindow::on_pushStart_clicked()
     connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
     pipeActive = true;
     int enableIndex = 0;
+    //create progressDialog and eleapsed timer to get measurment time
+    progress();
+    timer->start();
+
     for (int i=0; i<ui->stackedWidget->count(); i++)
     {
         if (!modultab->disableFlag[i])
@@ -1019,4 +1034,17 @@ void MainWindow::changeParamWidget(QString filename,QString initName)
     QFileInfo fileinfo(filename);
     int curInd = ui->stackedWidget->currentIndex();
     ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(filename);
+}
+
+//create progressDialog
+void MainWindow::progress()
+{
+    dialog = new QProgressDialog;
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->resize(dialog->size()+QSize(150,150));
+    dialog->setCancelButton(nullptr);
+    dialog->setRange(0,0);
+    QFileInfo fileinfo(instrumentName);
+    dialog->setWindowTitle(fileinfo.baseName());
+    dialog->show();
 }

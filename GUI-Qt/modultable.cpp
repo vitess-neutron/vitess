@@ -26,6 +26,30 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
         if ( minWidth < w )
             minWidth = w;
     }
+    //Menu for table toolbuttons
+    menu= new QMenu();
+    for (int index=0; index < menuTitle.size(); index++)
+    {
+        subMenu << new QMenu();
+        subMenu[index]->setTitle(menuTitle[index]);
+    }
+    bool sMenu;
+    foreach (QString s, modNames)
+    {
+        sMenu = false;
+        QAction *newAction = new QAction(s,this);
+        //connect(newAction,SIGNAL(triggered()),this,SLOT(toolAction()));
+        for (int index=0; index < menuSearch.size(); index++)
+            if (s.startsWith(menuSearch[index]))
+            {
+                subMenu[index]->addAction(newAction);
+                menu->addMenu(subMenu[index]);
+                sMenu = true;
+                break;
+            }
+        if (!sMenu) menu->addAction(newAction);
+    }
+
     minWidth+=15;
     ui->tableWidget->verticalHeader()->setMinimumWidth(25);
     ui->tableWidget->setColumnWidth(0,minWidth);
@@ -103,21 +127,19 @@ void ModulTable::insertModule()
 {
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->insertRow(index);
-    QComboBox *cb = new QComboBox();
-    cb->setFocusPolicy(Qt::StrongFocus);  //no wheel change
-    cb->installEventFilter(this);
-    cb->addItem("--inactive--");
-    cb->addItems(modNames);
-    cb->setCurrentIndex(0);
-    cb->view()->setMinimumWidth(minWidth);    // width of modullist
-    connect(cb,SIGNAL(currentTextChanged(QString)),this,SLOT(comboModulItemChanged(QString)));
-    comboModule.insert(index,cb);
+    QToolButton *tBut = new QToolButton();
+    tBut->setText("--inactive--");
+    tBut->setMenu(menu);
+    tBut->setPopupMode(QToolButton::InstantPopup);
+    connect(tBut,SIGNAL(triggered(QAction*)),this,SLOT(butModulItemChanged(QAction*)));
+    tBut->setMinimumWidth(minWidth);    // width of modullist
+    butModule.insert(index,tBut);
     QToolButton *tb = new QToolButton();
     tb->setIcon(*arrow);
     tb->setEnabled(false);
     connect(tb,SIGNAL(clicked(bool)),this,SLOT(arrowButtonPressed(bool)));
     arrowButton.insert(index,tb);
-    ui->tableWidget->setCellWidget(index,0,cb);
+    ui->tableWidget->setCellWidget(index,0,tBut);
     ui->tableWidget->setCellWidget(index,1,tb);
     disableFlag.insert(index,false);
     for (int ind=index;ind < ui->tableWidget->rowCount();ind++)
@@ -137,9 +159,11 @@ void ModulTable::loadModule(QString text)
     {
         if ( s.indexOf(text) == 0)
         {
-           comboModule.last()->view()->setMinimumWidth(minWidth);    // width of modullist
-           comboModule.last()->setCurrentText(s);
+           butModule.last()->setMinimumWidth(minWidth);    // width of modullist
+           butModule.last()->setText(s);
            arrowButton.last()->setEnabled(true);
+           emit changedComboVal(text,butModule.size()-1);
+           addNewRow();
            return;
         }
     }
@@ -148,9 +172,7 @@ void ModulTable::loadModule(QString text)
 void ModulTable::infoModule()
 {
     int index=ui->tableWidget->currentRow();
-    QString wwwFile = comboModule[index]->currentText().toLower();
-    if (comboModule[index]->currentText().contains(QChar(0x2514)))
-       wwwFile = wwwFile.mid(2);
+    QString wwwFile = butModule[index]->text().toLower();
     QString VitessDir = QApplication::applicationDirPath().
                     left(QApplication::applicationDirPath().lastIndexOf("/"));
     QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + wwwFile + ".html"));
@@ -173,7 +195,7 @@ void ModulTable::removeModule()
     ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::red);
     ui->tableWidget->setCurrentCell(index,0);
     oldRow = index;
-    comboModule.remove(index);
+    butModule.remove(index);
     arrowButton.remove(index);
     emit removeCombo(index);
 }
@@ -182,7 +204,7 @@ void ModulTable::removeModule()
 void ModulTable::cleanModules()
 {
     disableFlag.clear();
-    comboModule.clear();
+    butModule.clear();
     arrowButton.clear();
     oldRow = 0;
     ui->tableWidget->setRowCount(0);
@@ -190,18 +212,15 @@ void ModulTable::cleanModules()
 }
 void ModulTable::addNewRow()
 {
-    // new Combobox
-    QComboBox *cb = new QComboBox();
-    cb->setFocusPolicy(Qt::StrongFocus);
-    cb->installEventFilter(this);
-    //cb->setFixedWidth(minWidth);
-    cb->addItem("--inactive--");
-    cb->addItems(modNames);
-    cb->setCurrentIndex(0);
-    cb->view()->setMinimumWidth(minWidth);    // width of modullist
-    connect(cb,SIGNAL(currentTextChanged(QString)),this,SLOT(comboModulItemChanged(QString)));
-    comboModule << cb;
-    // new disabled ToolButton
+    // new ToolButton
+    QToolButton *tBut = new QToolButton();
+    tBut->setText("--inactive--");
+    tBut->setMenu(menu);
+    tBut->setPopupMode(QToolButton::InstantPopup);
+    connect(tBut,SIGNAL(triggered(QAction*)),this,SLOT(butModulItemChanged(QAction*)));
+    butModule << tBut;
+
+    // new disabled arrow ToolButton
     QToolButton *tb = new QToolButton();
     tb->setIcon(*arrow);
     tb->setEnabled(false);
@@ -211,7 +230,7 @@ void ModulTable::addNewRow()
     // new row in table with elements
     int row = ui->tableWidget->rowCount();
     ui->tableWidget->setRowCount( row+1 );
-    ui->tableWidget->setCellWidget(row,0,cb);
+    ui->tableWidget->setCellWidget(row,0,tBut);
     ui->tableWidget->setCellWidget(row,1,tb);
     QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(row+1));
     ui->tableWidget->setVerticalHeaderItem(row,vertItem);
@@ -220,20 +239,14 @@ void ModulTable::addNewRow()
     disableFlag << false;
 }
 
-void ModulTable::comboModulItemChanged(QString text)
+void ModulTable::butModulItemChanged(QAction* action )
 {
-    QComboBox *cb = static_cast<QComboBox*>(sender());
-    cb->setFocusPolicy(Qt::StrongFocus);  //no wheel change
-    cb->installEventFilter(this);
-    if ( text.endsWith(":") )
-    {   // if top of menu selected get first sunmenu entry
-        cb->setCurrentIndex( cb->currentIndex()+1 );
-        return;
-    }
+    QToolButton *toolBut = static_cast<QToolButton*>(sender());
+    toolBut->setText(action->text());
     int curRow = 0;
-    for ( ; curRow<comboModule.size(); curRow++ )
+    for ( ; curRow<butModule.size(); curRow++ )
     {
-        if ( comboModule.at(curRow) == cb )
+        if ( butModule.at(curRow) == toolBut )
            {
             ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
             ui->tableWidget->verticalHeaderItem(curRow)->setTextColor(Qt::red);
@@ -241,15 +254,16 @@ void ModulTable::comboModulItemChanged(QString text)
             break;
            }
     }
-    if ( cb->currentIndex() == 0 )
+    if ( toolBut->text() == "--inactive--" )
     {   // --inactive-- choosen toolbutton disabled
         arrowButton.at(curRow)->setEnabled(false);
         return;
     }
     arrowButton.at(curRow)->setEnabled(true);
+
     if ( curRow == ui->tableWidget->rowCount()-1 )
         addNewRow();
-    emit changedComboVal(text,curRow);
+    emit changedComboVal(action->text(),curRow);
 }
 
 
@@ -270,14 +284,4 @@ void ModulTable::arrowButtonPressed(bool)
             emit arrowPressed(curRow);
             break;
         }
-}
-bool ModulTable::eventFilter(QObject *obj, QEvent *ev)
-{
-    if(ev->type()== QEvent::Wheel)
-    {
-        QComboBox* combo = qobject_cast<QComboBox*>(obj);
-        if (combo && !combo->hasFocus())
-        return true;
-    }
-    return false;
 }

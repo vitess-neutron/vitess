@@ -32,9 +32,6 @@ public:
     void addNewRow();
     void setDisabled();
 
-protected:
-    bool eventFilter(QObject *obj, QEvent *ev);
-
 signals:
     void arrowPressed(int row);
     void changedComboVal(QString text, int curRow);
@@ -42,7 +39,7 @@ signals:
     void insertCombo(int index);
 
 private slots:
-    void comboModulItemChanged(QString);
+    void butModulItemChanged(QAction*);
     void arrowButtonPressed(bool);
     void showContextMenu(const QPoint&);
     void disableModule();
@@ -54,13 +51,18 @@ private slots:
 private:
     Ui::ModulTable *ui;
     QStringList modNames;
-    QVector<QComboBox *> comboModule;
+    QVector<QToolButton *> butModule;
     QVector<QToolButton *> arrowButton;
     QIcon *arrow;
     int minWidth;
     int oldRow;
     QMenu *context;
     QHeaderView *header;
+
+    QMenu* menu;
+    QStringList menuSearch = {"source", "sample", "mon"};
+    QStringList menuTitle  = {"source", "sample", "monitor"};
+    QVector<QMenu *> subMenu;
 };
 
 #endif // MODULTABLE_H

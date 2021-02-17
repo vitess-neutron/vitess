@@ -10,6 +10,8 @@
 #include <QTableWidget>
 #include <QProcess>
 #include <QScrollArea>
+#include <QElapsedTimer>
+#include <QProgressDialog>
 
 namespace Ui {
 class MainWindow;
@@ -99,6 +101,9 @@ private:
 
     QMap<QString,int> modindex;
 
+    QElapsedTimer *timer;
+    QProgressDialog *dialog;
+
     QList<QLineEdit  *> allLineEdits;
     QList<QComboBox *>  allComboBoxes;
     QList<QCheckBox *>  allCheckBoxes;
@@ -121,6 +126,7 @@ private:
     void getModulParameter(YAML::Node& config,QString modulName);
     void writeHeader(YAML::Node& config);
     void saveFile(QString instrumentName);
+    void progress();
 };
 
 #endif // MAINWINDOW_H
