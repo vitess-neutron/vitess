@@ -34,6 +34,19 @@ typedef struct
 }
 McnpNeutron;
 
+typedef struct
+{
+  double         History;
+  double         ID;
+  double         Counts;
+  double         Energy;
+	double         Shakes;
+	VectorType     Position;
+	VectorType     Vector;
+  double         Unknown;
+}
+McnpxNeutron;
+
 
 /***********************/
 /** Enums             **/
@@ -42,11 +55,11 @@ McnpNeutron;
 #define VT_EOF -1
 
 typedef enum
-{ VT_VITESS_ASC = 1,
+{ VT_VITESS_FMT = 1,
   VT_MCSTAS_FMT = 2,
   VT_MCPL_FMT   = 3,
   VT_MCNP_FMT   = 4,
-  VT_VITESS_BIN = 5
+  VT_MCNPX_FMT  = 5
 }
 VtPrgFormat;
 

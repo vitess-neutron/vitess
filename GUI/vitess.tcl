@@ -784,7 +784,9 @@ set external_commandESET {
 ### Read_In
 ###
 set read_inESET {
-  {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP MCNPX} {1 2 3 4 5}}
+  {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
+  {}
   {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
   {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories.\n(Not for MCPL format)" "" B} r}
   {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories.\n(Not for MCPL format)" "" D} r}
@@ -792,12 +794,12 @@ set read_inESET {
   {ri_frc1 float "1.0" {"weight\nfor file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
   {ri_frc2 float "0.0" {"weight\nfor file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
-  {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {}
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNPX} {1 2 3 4}}
-  {}
-  {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
+  {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
+  {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
+  {}
+  {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
   {}
   {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
                      1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
@@ -812,20 +814,22 @@ set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX VITESS_Binary} {1 2 3 4 5}}
+  {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
-  {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
-  {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP MCNPX} {1 2 3 4 5}}
+  {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
+  {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
-  {"VITESS ASCII parameters" header}
-  {outform radio float {"storage format" "format of float values in writeout file" "" F} {exp float} {0 1}}
-  {outSeparator radio Space {"separator" "Separator for output" "" S} {Space Tabulator} {0 1}}
+  {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
+  {"VITESS ASCII output selection" header}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
   {}
-  {"Filter selection" header}
-  {filtLambdaMin float "-1.0" {
+  {"Filter: selection of trajectories" header}
+  {detectcolor int -1 {"writeout color" "Write only events with the given color. -1 number means any color." "" C}}
+  {}
+  {filtLambdaMin float "" {
     "filter lambda\nmin [A]" "begin of lambda interval to be filtered, -1.0 means any" "" l}}
-  {filtLambdaMax float "-1.0" {
+  {filtLambdaMax float "" {
     "filter lambda\nmax [A]" "end of lambda interval to be filtered, -1.0 means any" "" L}}
   {}
   {filtYMin float "" {
@@ -838,19 +842,19 @@ set writeoutESET {
   {filtZMax float "" {
     "filter Z pos.\nmax [cm]" "end of Z position interval to be filtered" "" Z}}
   {}
-  {filtYDivMin float "-1.0" {
-    "filter horz. div.\nmin [deg]" "min horz. divergency, -1.0 means any" "" e}}
-  {filtYDiv float "-1.0" {
-    "filter horz. div.\nmax [deg]" "max horz. divergency, -1.0 means any" "" d}}
+  {filtYDivMin float "" {
+    "filter hor. div.\nmin [deg]" "min hor. divergency, -1.0 means any" "" e}}
+  {filtYDiv float "" {
+    "filter hor. div.\nmax [deg]" "max hor. divergency, -1.0 means any" "" d}}
   {}
-  {filtZDivMin float "-1.0" {
+  {filtZDivMin float "" {
     "filter vert. div.\nmin [deg]" "min vert. divergency, -1.0 means any" "" E}}
-  {filtZDiv float "-1.0" {
+  {filtZDiv float "" {
     "filter vert. div.\nmax [deg]" "max vert. divergency, -1.0 means any" "" D}}
   {}
-  {filtDivMin float "-1.0" {
+  {filtDivMin float "" {
     "filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
-  {filtDivMax float "-1.0" {
+  {filtDivMax float "" {
     "filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
 
@@ -1200,10 +1204,6 @@ proc guideCheckErr {{app _}} {
   set enwi [entryVal enter_width $app]
   set exwi [entryVal exit_width $app]
   set cur  [entryVal rad_curve $app]
-  if {$enwi != $exwi && $cur != 0} {
-    showText "Curvature and horizontal (de-)compression is not supported"
-    return 1
-  }
   return 0
 }
 
