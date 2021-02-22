@@ -97,6 +97,7 @@ void ModulTable::disableModule()
     int index=ui->tableWidget->currentRow();
     disableFlag[index] = true;
     ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
+    ui->tableWidget->verticalHeader()->update();
 }
 
 void ModulTable::setDisabled()
@@ -115,9 +116,9 @@ void ModulTable::enableModule()
 
 void ModulTable::enableAllModules()
 {
-    for (int index=0; index < ui->tableWidget->rowCount()-2; index++)
+    for (int index=0; index < ui->tableWidget->rowCount()-1; index++)
     {
-        disableFlag[index] = true;
+        disableFlag[index] = false;
         ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::black);
     }
     ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::red);

@@ -65,6 +65,8 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            if (flag == false)
            {
                validator = new QDoubleValidator;
+               //wenn nur float Darstellung (nicht exponential)
+               //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
                double val = mapParameter["min"].toDouble(&ok);          //min    minimum
                if (ok) static_cast<QDoubleValidator*>(validator)->setBottom(val);
                val = mapParameter["max"].toDouble(&ok);                 //max    maximum
@@ -132,4 +134,39 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            break;
        }
     }
+}
+void pythonScript(QString instrumentDir, QStringList cmdList)
+{
+    QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  python script as",instrumentDir);
+    if (!fileName.endsWith(".py")) fileName += ".py";
+    QFile file(fileName);
+    file.open(QFile::WriteOnly | QFile::Text);
+    //stream to write to file
+    std::ofstream fout(fileName.toStdString());
+    fout <<
+         "import os\n"
+         "def pwrite(fn,pattern):\n"
+         " f=open(fn, 'w')\n"
+         " for i in range(1," << cmdList.size()+1 <<"):\n"
+         "  name = pattern+str(i)\n"
+         "  for line in open(name):\n"
+         "   f.write(line)\n"
+         " f.close\n";
+    fout << "cmd = \"" << cmdList.join(" | ").toStdString() << " --Fno_file\"\n" ;
+    fout << "os.system( \"export GSL_RNG_SEED='1' GSL_RNG_TYPE='ran3' ;\" + cmd )\n";
+    fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', '/tmp/testlog')";
+}
+
+void shellScript(QString instrumentDir, QStringList cmdList)
+{
+    QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  python script as",instrumentDir);
+    if (!fileName.endsWith(".sh")) fileName += ".sh";
+    QFile file(fileName);
+    file.open(QFile::WriteOnly | QFile::Text);
+    //stream to write to file
+    std::ofstream fout(fileName.toStdString());
+    fout << "#!/bin/sh\n";
+    fout <<  cmdList.join(" | ").toStdString() << " --Fno_file\n" ;
+    fout << "cat /tmp/testlog? > " << instrumentDir.toStdString() << "/result.txt\n";
+    fout << "cat /tmp/testlog?? >> " << instrumentDir.toStdString() << "/result.txt\n";
 }

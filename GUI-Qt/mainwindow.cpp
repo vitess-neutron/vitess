@@ -5,7 +5,6 @@
 #include <QScrollBar>
 #include <QDesktopServices>
 #include <unistd.h>
-#include <fstream>
 #include <QDate>
 
 using namespace YAML;
@@ -601,6 +600,7 @@ void MainWindow::on_pushCheck_clicked()
             //create first part of pipe string with c-module and global parameters
             cmd = VitessDir + "/MODULES/";
             QString modulName = ui->stackedWidget->widget(i)->objectName();
+
             //Module  key:modulename  value:filename,c-module
             cmd += Module[modulName][1].toLower() + syspar;
             cmd += " --N" + QString::number(i+1);           //Modnum   number of modul
@@ -1047,4 +1047,16 @@ void MainWindow::progress()
     QFileInfo fileinfo(instrumentName);
     dialog->setWindowTitle(fileinfo.baseName());
     dialog->show();
+}
+
+void MainWindow::on_actionPy_Python_script_triggered()
+{
+    ui->pushCheck->clicked();
+    pythonScript(instrumentDir,cmdList);
+}
+
+void MainWindow::on_actionBat_shell_triggered()
+{
+    ui->pushCheck->clicked();
+    shellScript(instrumentDir,cmdList);
 }

@@ -50,6 +50,9 @@ private slots:
         void on_actionTutorial_triggered();
         void on_actionPlot_File_triggered();
         void on_action2D_Plot_File_triggered();
+        void on_actionPy_Python_script_triggered();
+        void on_actionBat_shell_triggered();
+
 
         void on_pushFresh_clicked();
         void on_pushClear_clicked();

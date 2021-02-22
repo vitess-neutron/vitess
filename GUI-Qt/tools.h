@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QMap>
 #include <iostream>
+#include <fstream>
 
 #include "string.h"
 #include "yaml-cpp/yaml.h"
@@ -36,5 +37,7 @@ static QMap<QString,QString> mapParam = {
 };
 void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
                      QGridLayout *gridLayout,int &row,int &index);
+void pythonScript(QString instDir,QStringList cmdList);
+void shellScript(QString instDir,QStringList cmdList);
 
 #endif // TOOLS_H
