@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <unistd.h>
 #include <QDate>
+#include <QPlainTextEdit>
 
 using namespace YAML;
 using namespace std;
@@ -234,42 +235,7 @@ void MainWindow::on_actionLoad_triggered()
                modultab->disableFlag[int(ipipe-1)]=true;
            modultab->loadModule(module);
            //put values in gui
-           for(YAML::const_iterator it=configChildren.begin(); it!=configChildren.end(); ++it)
-           {
-              QString childName = QString::fromStdString(it->first.as<string>());      //key
-              QWidget *modulWidget = ui->stackedWidget->widget(ui->stackedWidget->count()-1);
-              if (modulWidget->findChild<QLineEdit *>(childName))
-                  modulWidget->findChild<QLineEdit *>(childName)
-                             ->setText(QString::fromStdString(it->second.as<string>()));
-              else if (modulWidget->findChild<QComboBox *>(childName))
-                  modulWidget->findChild<QComboBox *>(childName)
-                             ->setCurrentText(QString::fromStdString(it->second.as<string>()));
-              else if (modulWidget->findChild<QCheckBox *>(childName))
-                  modulWidget->findChild<QCheckBox *>(childName)
-                             ->setChecked(it->second.as<bool>());
-              else if (modulWidget->findChild<QPushButton *>(childName))
-              {
-                  //write subparameter yaml data to seperat file,that will be opened when
-                  //button is pressed
-                  QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
-                  QFile file(fileName);
-                  if (!file.open(QFile::ReadWrite | QFile::Text))
-                  {
-                      QMessageBox::information(this,"Warning cannot open: ",fileName);
-                      return;
-                  }
-                  //stream to write to file
-                  ofstream fout(fileName.toStdString());       // using namespace std
-                  YAML::Node paramWin;
-                  paramWin[childName.toStdString()] =
-                                  configChildren[childName.toStdString()];
-                  fout << paramWin;
-                  file.close();
-                  //set filename to lineEdit
-                  modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
-                             ->setText(fileName);
-              }
-           }
+           pasteCurModul(configChildren, ui->stackedWidget->count()-1);
        }
      }
    }
@@ -806,46 +772,93 @@ void MainWindow::saveFile(QString instrumentName)
     config.reset();
     for (int i=0; i<ui->stackedWidget->count(); i++)
     {
-      allLineEdits.clear();
-      allComboBoxes.clear();
-      allCheckBoxes.clear();
-      allPushButtons.clear();
+        string key = ui->stackedWidget->widget(i)->objectName().toStdString();       //std::string
+        if ( modultab->disableFlag[i]) config[key]["disabled"]=true;
 
-      string key = ui->stackedWidget->widget(i)->objectName().toStdString();       //std::string
-      allLineEdits <<  ui->stackedWidget->widget(i)->findChildren< QLineEdit *>();
-      allComboBoxes <<  ui->stackedWidget->widget(i)->findChildren< QComboBox *>();
-      allCheckBoxes <<  ui->stackedWidget->widget(i)->findChildren< QCheckBox *>();
-      allPushButtons << ui->stackedWidget->widget(i)->findChildren< QPushButton *>();
+        readCurModul(config,i);
 
-      if ( modultab->disableFlag[i]) config[key]["disabled"]=true;
-
-      for(int ii=0 ; ii < allLineEdits.size(); ii++)
-        if (allLineEdits[ii]->text() != "" && !allLineEdits[ii]->objectName().endsWith("_file"))
-           config[key][allLineEdits[ii]->objectName().toStdString()] =
-                                      allLineEdits[ii]->text().toStdString();
-      for(int ii=0 ; ii<allComboBoxes.size(); ii++)
-        config[key][allComboBoxes[ii]->objectName().toStdString()] =
-                                      allComboBoxes[ii]->currentText().toStdString();
-      for(int ii=0 ; ii<allCheckBoxes.size(); ii++)
-        config[key][allCheckBoxes[ii]->objectName().toStdString()] =
-                                      allCheckBoxes[ii]->isChecked();
-      for(int ii=0 ; ii<allPushButtons.size(); ii++)
-      {
-          QString butName = allPushButtons[ii]->objectName();
-          if(paramWindow.keys().indexOf(butName) != -1)
-             if( ui->stackedWidget->widget(i)
-                  ->findChild<QLineEdit *>(butName.toLower()+"_file")->text() != "")
-             {
-                QString parFile = ui->stackedWidget->widget(i)
-                      ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
-                paramWindow[butName]->saveData(config,key,butName,parFile);
-             }
-      }
-      pipe[fileinfo.baseName().toStdString()][i+1]=config;
-      config.reset();
+        pipe[fileinfo.baseName().toStdString()][i+1]=config;
+        config.reset();
     }
     fout << pipe;
     file.close();
+}
+
+void MainWindow::readCurModul(YAML::Node& curModule,int index)
+{
+    allLineEdits.clear();
+    allComboBoxes.clear();
+    allCheckBoxes.clear();
+    allPushButtons.clear();
+
+    string key = ui->stackedWidget->widget(index)->objectName().toStdString();       //std::string
+    allLineEdits <<  ui->stackedWidget->widget(index)->findChildren< QLineEdit *>();
+    allComboBoxes <<  ui->stackedWidget->widget(index)->findChildren< QComboBox *>();
+    allCheckBoxes <<  ui->stackedWidget->widget(index)->findChildren< QCheckBox *>();
+    allPushButtons << ui->stackedWidget->widget(index)->findChildren< QPushButton *>();
+
+    for(int ii=0 ; ii < allLineEdits.size(); ii++)
+        if (allLineEdits[ii]->text() != "" && !allLineEdits[ii]->objectName().endsWith("_file"))
+           curModule[key][allLineEdits[ii]->objectName().toStdString()] =
+                                      allLineEdits[ii]->text().toStdString();
+    for(int ii=0 ; ii<allComboBoxes.size(); ii++)
+        curModule[key][allComboBoxes[ii]->objectName().toStdString()] =
+                                      allComboBoxes[ii]->currentText().toStdString();
+    for(int ii=0 ; ii<allCheckBoxes.size(); ii++)
+        curModule[key][allCheckBoxes[ii]->objectName().toStdString()] =
+                                      allCheckBoxes[ii]->isChecked();
+    for(int ii=0 ; ii<allPushButtons.size(); ii++)
+    {
+        QString butName = allPushButtons[ii]->objectName();
+        if(paramWindow.keys().indexOf(butName) != -1)
+           if( ui->stackedWidget->widget(index)
+                ->findChild<QLineEdit *>(butName.toLower()+"_file")->text() != "")
+           {
+              QString parFile = ui->stackedWidget->widget(index)
+                    ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
+              paramWindow[butName]->saveData(config,key,butName,parFile);
+           }
+    }
+}
+
+void MainWindow::pasteCurModul(YAML::Node curModule,int index)
+{
+    for(YAML::const_iterator it=curModule.begin(); it!=curModule.end(); ++it)
+    {
+        QString childName = QString::fromStdString(it->first.as<string>());      //key
+        QWidget *modulWidget = ui->stackedWidget->widget(index);
+        if (modulWidget->findChild<QLineEdit *>(childName))
+            modulWidget->findChild<QLineEdit *>(childName)
+                       ->setText(QString::fromStdString(it->second.as<string>()));
+        else if (modulWidget->findChild<QComboBox *>(childName))
+                 modulWidget->findChild<QComboBox *>(childName)
+                            ->setCurrentText(QString::fromStdString(it->second.as<string>()));
+        else if (modulWidget->findChild<QCheckBox *>(childName))
+                 modulWidget->findChild<QCheckBox *>(childName)
+                            ->setChecked(it->second.as<bool>());
+        else if (modulWidget->findChild<QPushButton *>(childName))
+        {
+            //write subparameter yaml data to seperat file,that will be opened when
+            //button is pressed
+            QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
+            QFile file(fileName);
+            if (!file.open(QFile::ReadWrite | QFile::Text))
+            {
+                QMessageBox::information(this,"Warning cannot open: ",fileName);
+                return;
+            }
+            //stream to write to file
+            ofstream fout(fileName.toStdString());       // using namespace std
+            YAML::Node paramWin;
+            paramWin[childName.toStdString()] =
+                       configChildren[childName.toStdString()];
+            fout << paramWin;
+            file.close();
+            //set filename to lineEdit
+            modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
+                       ->setText(fileName);
+        }
+    }
 }
 
 void MainWindow::designModul(QString modulName)
@@ -906,6 +919,9 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
             if( scrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
                 connect(scrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
                         SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
+            if( scrollArea->widget()->findChild<QPushButton*>("edit_" + parName))
+                connect(scrollArea->widget()->findChild<QPushButton*>("edit_" + parName),
+                        SIGNAL(clicked()),this,SLOT(editBut_clicked()));
             if( scrollArea->widget()->findChild<QPushButton*>(parName))
             {
                 //create widget for subparameter
@@ -958,12 +974,27 @@ void MainWindow::browseBut_clicked()
     }
     // cut browse_ from sender
     QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(7);
-    ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str.toLower()+"_file")
+    if (ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str))
+        ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->setText(fileName);
+    else ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str.toLower()+"_file")
                      ->setText(fileName);
 }
 
 void MainWindow::editBut_clicked()
 {
+     QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(5);
+     QString fileName = ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->text();
+     if (fileName == "") return;
+     QFile file(instrumentDir+"/"+fileName);
+     if (!file.open(QFile::ReadOnly | QFile::Text))
+     {
+         QMessageBox::information(this,"Warning cannot open: ",fileName);
+         return;
+     }
+     QPlainTextEdit* textEdit = new QPlainTextEdit();
+     textEdit->resize(700,350);
+     textEdit->setPlainText(file.readAll());
+     textEdit->show();
 }
 
 void MainWindow::checkIsValide()
@@ -1059,4 +1090,18 @@ void MainWindow::on_actionBat_shell_triggered()
 {
     ui->pushCheck->clicked();
     shellScript(instrumentDir,cmdList);
+}
+
+void MainWindow::on_actionCopy_Module_Parameters_triggered()
+{
+    curModul.reset();
+    readCurModul(curModul,ui->stackedWidget->currentIndex());
+}
+
+void MainWindow::on_actionPaste_Module_Parameters_triggered()
+{
+    int index = ui->stackedWidget->currentIndex();
+    string key = ui->stackedWidget->widget(index)->objectName().toStdString();       //std::string
+    if (curModul.begin()->first.as<string>() == key)
+        pasteCurModul(curModul[key],index);
 }

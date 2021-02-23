@@ -52,6 +52,8 @@ private slots:
         void on_action2D_Plot_File_triggered();
         void on_actionPy_Python_script_triggered();
         void on_actionBat_shell_triggered();
+        void on_actionCopy_Module_Parameters_triggered();
+        void on_actionPaste_Module_Parameters_triggered();
 
 
         void on_pushFresh_clicked();
@@ -122,6 +124,7 @@ private:
     int minWidth;
     bool pipeActive = false;
     YAML::Node config, configChildren;
+    YAML::Node curModul;
 
     void getHeader(QTextStream& out);
     void loadHeader(YAML::Node& config);
@@ -129,6 +132,8 @@ private:
     void getModulParameter(YAML::Node& config,QString modulName);
     void writeHeader(YAML::Node& config);
     void saveFile(QString instrumentName);
+    void readCurModul(YAML::Node& curModule,int index);
+    void pasteCurModul(YAML::Node curModule,int index);
     void progress();
 };
 
