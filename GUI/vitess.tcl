@@ -1082,31 +1082,31 @@ set guideESET {
     {constant linear parabolic elliptic "from file"} {0 1 3 4 5}}
   {}
   {shape_file mneditablefile guide_shape.dat
-    {"guide shape" "File containing position, width and height of beginning and end of each piece\ninput or output file depending on option" "" S}}
+    {"guide shape" "File describing geometry (and coating) of the guide (for details see help file)\ninput or output file depending on shape options" "" S}}
   {}
-  {enter_width float 6 {"entrance\nwidth [cm]" "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
-  {enter_height float 10 {"entrance\nheight [cm]" "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {enter_width float 3 {"entrance\nwidth [cm]" "entrance of guide: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
+  {enter_height float 3 {"entrance\nheight [cm]" "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
   {}
-  {exit_width float 6 {"exit\nwidth [cm]" "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
-  {exit_height float 10 {"exit\nheight [cm]" "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
+  {exit_width float 3 {"exit\nwidth [cm]" "exit of guide: width in cm (center of exit window = new origin)"  "" W} gt0 "" 1}
+  {exit_height float 3 {"exit\nheight [cm]" "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
   {"Guide characteristics" header}
-  {len_guide_piece float "" {"piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
-  {number_pieces int 1 {"number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
-  {rad_curve float 0 {"curvature\n(radius) [m]" "radius of curvature [m] (0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
+  {len_guide_piece float 50 {"piece\nlength [cm]" "length of a guide piece [cm]" "" p} ge0 "" 1}
+  {number_pieces int 10 {"number of\npieces" "number of guide pieces" "" N} gt0 "" 1}
+  {rad_curve float "" {"curvature\n(radius) [m]" "radius of curvature [m]\n(0 means no curvature, > 0 to the left,\n< 0 to the right)" "" R}}
   {}
-  {h_focus_pnt float 0 {"hor. focus dist.\nof ellipse [cm]"
+  {h_focus_pnt float "" {"hor. focus dist.\nof ellipse [cm]"
     "only for elliptic shape: distance between guide exit and focus point of ellipse for horizontal focussing"  "" f} ge0}
-  {v_focus_pnt float 0 {"vert. focus dist.\nof ellipse [cm]"
+  {v_focus_pnt float "" {"vert. focus dist.\nof ellipse [cm]"
     "only for elliptic shape: distance between guide exit and focus point of ellipse for vertical focussing"  "" F} ge0}
   {"Reflectivity" header}
-  {lrefl_m float 1 {"m-value left\nplane" "m-value for the reflectivity of the left plane (where y>0) using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the left plane is given"  "" L} ge0}
-  {rrefl_m float 1 {"right\nplane"         "m-value for the reflectivity of the right plane (where y<0) using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the right plane is given"  "" Q} ge0}
-  {tbrefl_m float 1 {"top/bottom\nplane"  "m-value for the reflectivity of the top and bottom plane using the quadratic SN description (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflecivity file for the top/bottom plane is given"  "" G} ge0}
+  {lrefl_m float 1 {"m-value left\nplane" "m-value for the reflectivity of the left plane (where y>0) using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given"  "" L} ge0}
+  {rrefl_m float 1 {"right\nplane"        "m-value for the reflectivity of the right plane (where y<0) using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the right plane is given"  "" Q} ge0}
+  {tbrefl_m float 1 {"top/bottom\nplane"  "m-value for the reflectivity of the top and bottom plane using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the top/bottom plane is given"  "" G} ge0}
   {}
-  {lrefl_filename pareditablefile mirr1a.dat  {"file\nleft plane" "Reflectivity file for left plane (where y>0)" "" i} r dat}
-  {rrefl_filename pareditablefile mirr1a.dat {"right plane" "Reflectivity file for right plane (where y<0)" "" I} r dat}
-  {tbrefl_filename pareditablefile mirr1a.dat  {"top plane" "Reflectivity file for top (and bottom) plane" "" j} r dat}
-  {brefl_filename pareditablefile "" {"bottom plane" "Reflectivity file for bottom plane" "" J} r dat}
+  {lrefl_filename pareditablefile "" {"file\nleft plane" "Reflectivity file for left plane (where y>0)\nIt overwrites the m-value given for this plane." "" i} r dat}
+  {rrefl_filename pareditablefile "" {"right plane" "Reflectivity file for right plane (where y<0)\nIt overwrites the m-value given for this plane." "" I} r dat}
+  {tbrefl_filename pareditablefile "" {"top plane" "Reflectivity file for top (and bottom) plane\nIt overwrites the m-value given for this plane." "" j} r dat}
+  {brefl_filename pareditablefile "" {"bottom plane" "Reflectivity file for bottom plane\nIf no file is given here, the file of the top plane is used.\nBoth overwrite the m-value given for this plane." "" J} r dat}
   {"Channel option" header}
   {num_channels int "" {
     "number of\nchannels" "number of channels (lying in the x-z-plane)" "" b} ge0}
@@ -1122,7 +1122,7 @@ set specoptAdd {
   {gd_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ang [1/cm]" "" m} ge0}
   {}
   {keyabut radio no {"abutment\nloss"
-    "Neutrons hitting the surface close to the connection of guide segment are absorbed." "" a}
+    "Neutrons hitting the surface close to the connection of guide segments are absorbed." "" a}
     {yes no} {1 0}}
   {wavi_dis radio rectangular {"waviness\ndistr."
     "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
@@ -1130,72 +1130,66 @@ set specoptAdd {
   {eval_colour int -1 {
     "color" "color necessary for the trajectory to be treated\ncolor -1 means: all trajectories are treated.\nNot machting neutrons will stay unchanged and passed to the next module." "" g} -1 32768}
   {addtocolor int 0 {
-    "add to\ncolor" "Add value to neutron color on each reflection." "" A} ""}
+    "add to\ncolor" "Value added to the color of the neutron trajectory on each reflection." "" A} ""}
   {}
   {abutlen float 0
-    {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are removed." "" l} ge0}
+    {"abutment\nloss area [cm]" "Neutrons hitting the surface in a range of this length around the connection of guide segments are absorbed." "" l} ge0}
   {waviness float 0
     {"surface\nwaviness [deg]" "This parameter controls the simulation of surface waviness. For a rectangular distribution, this value is the maximal angle of deviation of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value." "" r} ge0}
-  {}
   {addplane float 0 {
     "add. plane\nangle [deg]" "Adds additional planes by rotating the top/bottom or left/right planes by the given angle around the x axis. If the angle is positive the top/bottom planes are duplicated. For negative angles the left/right planes are duplicated. The reflectivity files are taken from the original plane and may not be altered seperately. The height and width still define the outer dimensions. Example: 45 means an octagon shape by copying the top/bottom planes and rotating them by 45 deg around the x axis. -60 gives a hexagon with plain top/bottom and declined left/right walls." "" n} ""}
   {}
+  {"MCPL output" header}
+  {mcpl_filename pareditablefile ""
+    {"MCPL file" "Filename for writing gamma and neutron events (e.g. after neutron absorption)  in MCPL format.\n Giving a filename activates this option." "" Z}}
+  {}
   {"Reflection list options" header}
   {reflparam_filename pareditablefile ""
-    {"filename" "Filename for saving all reflections with parameters like position, divergency, ... along the guide." "" o}}
+    {"filename" "Filename for saving reflections with parameters like position, divergency, ... along the guide.\n Giving a filename activates this option." "" o}}
   {keyreflparam radio "Trajectories passing the guide end (with linefeed)" {"format"
     "Choose which trajectories will be printed. This option also affects reflection plot options below!!!\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
     {"Trajectories passing the guide end" "Trajectories passing the guide end (with linefeed)" "Only successful reflections" "Only successful reflections (with linefeed)" "Trajectories with at least one successful reflection" "Trajectories with at least one successful reflection (with linefeed)" "All trajectories" "All trajectories (with linefeed)"} {1 -1 2 -2 3 -3 4 -4}}
   {keyreflverbose radio no {"verbose\nlist"
-    "Trajectories are written for each reflection and at the end of each guide piece." "" v}
-    {yes "enter & exit" no} {1 2 0}}
+    "Additional trajectories are written at the entry and the exit of the guide (enter & exit) or each guide piece (yes)." "" v}
+    {no yes "enter & exit"} {0 1 2}}
   {}
   {keyreflmin int 0 {
     "minimum number\nof reflections" "Minimum number of reflections." "" e} ge0 "" 0}
   {keyreflmax int 0 {
-    "maximum number\nof reflections" "Maximum number of reflections. Use 0 for infinity." "" E} ge0 "" 0}
+    "maximum number\nof reflections" "Maximum number of reflections." "" E} ge0 "" 0}
   {}
   {keyreflminY int 0 {
     "minimum number\nof horiz. refl." "Minimum number of reflections on the horizontal guides." "" c} ge0 "" 0}
   {keyreflmaxY int 0 {
-    "maximum number\nof horiz. refl." "Maximum number of reflections on the horizontal guides. Use 0 for infinity." "" C} ge0 "" 0}
+    "maximum number\nof horiz. refl." "Maximum number of reflections on the horizontal guides." "" C} ge0 "" 0}
   {}
   {keyreflminZ int 0 {
     "minimum number\nof vert. refl." "Minimum number of reflections on the vertical guides." "" d} ge0 "" 0}
   {keyreflmaxZ int 0 {
-    "maximum number\nof vert. refl." "Maximum number of reflections on the vertical guides. Use 0 for infinity." "" D} ge0 "" 0}
+    "maximum number\nof vert. refl." "Maximum number of reflections on the vertical guides." "" D} ge0 "" 0}
   {}
   {"Reflection plot options" header}
   {reflplot_filename pareditablefile ""
-    {"filename" "Filename for saving all reflections for plotting x, m, intensity, wavelength along the guide." "" P}}
+    {"filename" "Filename for saving reflections for plotting x, m, intensity, wavelength along the guide.\n Giving a filename activates this option." "" P}}
   {}
   {keyplotparam radio "All" {"filter"
-    "Choose which trajectories will be binned. This option is also affectd by format option above!!!\n0 = all events;\n1 = only scattered neutrons;\n2 = only died neutrons." "" B}
+    "Choose which trajectories will be binned. This option is also affected by the format option above!!!\n0 = all neutrons;\n1 = only scattered neutrons;\n2 = only died neutrons." "" B}
     {"All" "Only scattered" "Only died"} {0 1 2}}
   {}
-  {keyX radio "Position X" {"X values"
-    "Choose the property for the x bin." "" t}
+  {keyX radio "Position X" {"X values" "Choose the parameter for the x axis of the plot." "" t}
     {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
-  {keyY radio "m" {"Y values"
-    "Choose the property for the y bin." "" T}
+  {keyY radio "m" {"Y values" "Choose the parameter for the y axis of the plot." "" T}
     {"Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
-  {keyProb radio "Probability" {"Weight"
-    "Choose the property for the weighting." "" V}
+  {keyProb radio "Probability" {"Weight" "Choose the parameter for the 'weighting' f(x,y)." "" V}
     {"None" "Ref. Angle" "m" "Reflectivity" "DivY" "DivZ" "Color" "TOF" "Wavelength" "Probability" "Position X" "Position Y" "Position Z" "Vector X" "Vector Y" "Vector Z" "Spin X" "Spin Y" "Spin Z" "Scattered (Mode)"} {0 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 1}}
   {}
-  {nbins int 1000 {
-    "number\nof bins in X" "number of bins determines the segmentation of the X interval" "" k} 1 10000}
-  {minaX float 0 {
-    "minimum X" "lower bound of the evaluation interval" "" x} 1}
-  {maxaX float 10000 {
-    "maximum X" "upper bound of the evaluation interval" "" X} 1}
+  {nbins int 1000 {"number\nof bins in X" "number of bins determines the segmentation of the x interval" "" k} 1 10000}
+  {minaX float 0 {"minimum X" "lower bound of the evaluation interval for x" "" x} 1}
+  {maxaX float 10000 {"maximum X" "upper bound of the evaluation interval for x" "" X} 1}
   {}
-  {mbins int 100 {
-    "number\nof bins in Y" "number of bins determines the segmentation of the Y interval" "" K} 1 10000}
-  {minaY float 0 {
-    "minimum Y" "lower bound of the evaluation interval" "" u} 1}
-  {maxaY float 10 {
-    "maximum Y" "upper bound of the evaluation interval" "" U} 1}
+  {mbins int 100 {"number\nof bins in Y" "number of bins determines the segmentation of the y interval" "" K} 1 10000}
+  {minaY float 0 {"minimum Y" "lower bound of the evaluation interval for y" "" u} 1}
+  {maxaY float 10 {"maximum Y" "upper bound of the evaluation interval for y" "" U} 1}
 }
 
 set guideESET [concat $guideESET $specoptAdd]

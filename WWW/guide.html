@@ -9,285 +9,293 @@
   <body>
 <h1> VITESS Module Guide</h1>
 <p>
-The module <b>guide</b> simulates the neutron flight path through a
-mirrored   guide calculating the intensity loss for each reflection (in dependence
- of the neutron wavelength and the incident angle). It can be straight, diverging
-  or converging,&nbsp;or consist of several straight parts that form a polygon
-  section with a certain curvature. It can also consist of several vertical
-  channels (bender option).&nbsp; In this case, the module   bender must
-be used.<br>
-     Subsequent modules always refer to the new origin, which is defined
-as  the  middle of the exit window. It is generated automatically by the
-program,  also in the case of curvature (the orientation of the frame follows
-the curvature).
-<p>
-<p><img src="Guide2.GIF" height="286" width="568">
-<p>
+  The module <b>guide</b> simulates the neutron flight path through a mirrored guide calculating the intensity loss for each reflection (in dependence of the neutron wavelength and the incident angle). 
+  It can be straight, diverging or converging, or consist of several straight parts that form a polygon section with a certain curvature or an elliptic or parabolic shape. 
+  It can also consist of several vertical channels.<br>
+  Subsequent modules always refer to the new origin, which is defined as the middle of the exit window; it is generated automatically by the program.
+  This applies also for the orientation of the co-ordinate system, which follows the curvature. 
+</p>
+<p><img src="Guide2.GIF" height="286" width="568"></p>
+
 <h3>Simulation parameters</h3>
 <p>
-The effect of gravity is considered in this module, if this option
-is chosen.  Trajectories with a probability/count rate less than the 'minimal
- weight'  are taken out of the simulation.
-<p>
+  The effect of gravity is considered in this module, if this option is switched on for the instrument.  
+  Trajectories with a probability/count rate less than the 'minimal weight' are taken out of the simulation.
+</p>
+
 <h3> Guide shapes</h3>
 <p>
-The guide consists of one or several planar pieces. The number of
-pieces and the length of <b>each</b> piece are input parameters.
-Each piece may be converging or diverging.
-Elliptical and parabolic guide shapes can be chosen; these shapes are approached
-by several planar pieces. Converging and diverging as well as guides of constant
-cross-section can be simulated as one piece. Convergence or divergence
-is then defined by input and output width and height. This is identical to using several
-pieces if there is no abutment loss (see Table below) included and runs faster.
-Special guide shapes can be realized using the option 'shape from file' that allows any
-symmetric shape and an individual coating for each piece.</p>
-
+  The guide consists of one or several planar pieces. The number of pieces and the length of a piece are input parameters. Each piece may be converging or diverging.
+  Elliptical and parabolic guide shapes can be chosen; these shapes are approached by several planar pieces. 
+  Linearly converging and diverging as well as guides of constant cross-section can be simulated as one piece. 
+  Convergence or divergence is then defined by input and output width and height. This is identical to using several pieces if there is no abutment loss (see Table below) included and runs faster.
+  Special guide shapes can be realized using the option 'shape from file' that allows any symmetric shape and an individual coating for each wall of each piece.
+</p>
 <p> A curved guide is described by a polygon. In this case, a radius of curvature (unequal zero) must
-  be given. The co-ordinate system is rotated by an angle&nbsp;</p>
+  be given. The co-ordinate system is rotated by an angle
+</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; beta = 2.0*arcsin(length/(2*radius))</p>
+<p>between two succeeding pieces. The first piece is aligned to the preceding module, the last piece is aligned to the following module. 
+   The algorithm used here works for guides of constant width and linearly decreasing/increasing width. </p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; beta = 2.0*arcsin(length/(2*radius))&nbsp;</p>
+<h3> Channel option</h3>
+<p>The guide can be divided into channels (in the x-z-plane). The entrance width of each channel is determined by: </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   W<sub>chan</sub> = [W<sub>entry</sub> - (N<sub>chan</sub> - 1) * W<sub>blade</sub>] / N<sub>chan</sub> </p>
 
-<p>between two succeeding pieces. The first piece is aligned to the preceding
-   module, the last piece is aligned to the following module. The algorithm
-  used here works properly only for guides with constant width. Therefore
-<i>the  combination of curvature and horizontal converging/diverging is not
-supported!</i>&nbsp;</p>
+<h3> MCPL output</h3>
+<p>
+  A new option allows saving events of gamma and neutron generation caused by absorption, scattering etc. of the neutrons treated in the simulation. 
+  The output is in MCPL format and can be used as a source for shielding calculations using MCNP or similar programs.
+</p>
 
 <h3> Mathematical description </h3>
 <p>Each piece is described by 5 planes: left, right, top , bottom and exit.
-   Each plane is described by an equation of first order: </p>
+   Each plane is described by an equation of first order: 
+</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ax + by + cz + d = 0&nbsp;
+</p>
+<p>The coefficients a,b,c,d are calculated from guide length as well as width and height of entrance and exit. 
+   The trajectory is calculated until the exit  plane is reached, taking into account the intensity loss for each reflection.
+   A warning is given, if trajectories are found out of the exit area.
+</p>
+<p>If the real guide does not consist of straight pieces, a large number of pieces must be used for a good simulation. 
+   Alternatively, the module 'bender' or the module 'guide_ideal' can be used.
+   The module 'bender' uses arcs instead of planes for the surface of the guide.
+   The module 'guide_ideal' uses a real elliptic shape. </p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ax + by + cz + d = 0&nbsp;</p>
-
-<p>The coefficients a,b,c,d are calculated from guide length as well as width
-  and height of entrance and exit. The trajectory is calculated until the
-exit  plane is reached, taking into account the intensity loss for each reflection.
-  A warning is given, if a trajectory is found out of the exit area.<br>
-
-<p>If the real guide does not consist of straight pieces, a large number
-of pieces must be used for a good simulation. Alternatively, the module 'bender'
-  can be used. The module 'bender' uses arcs instead of planes for the surface
-  of the guide. 
-
-<h3> Bender option</h3>
-      The guide can be divided into channels (in the x-z-plane). The entrance
-  width of each channel is determined by: <br>
-     [entrance_width - (number_of_channels - 1) * spacer_width] / number_of_channels.
-   <p>
-<h3> Reflectivity Files</h3>
-      The reflectivity files describe the reflection properties of the
-coating. They can be produced with the tool <i>Generate Mirror
-  Files</i>. Some examples can be found in FILES/reflectivity_files:
-
-<pre>mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0)
-<br> mirr1a.dat: Ni coating&nbsp;&nbsp;  (theta_Ni    = 0.099138 deg/&Aring;*lambda)
-<br> mirr1b.dat: Ni-58 coating (theta_Ni-58 = 0.11456  deg/&Aring;*lambda)
-<br> mirr2linear.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.9 from theta_Ni to 2 theta_Ni; cutoff at 2 theta_Ni;
-<br> mirr30opt.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.80 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;
-<br> mirr30std.dat: supermirror coating,<br>&nbsp; reflectivity 0.99 -&gt; 0.75 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;
-<br> mirr3sn.dat: supermirror coating of Swiss Neutronics,<br>&nbsp; reflectivity 0.99 -&gt; 0.88 from theta_Ni to 3 theta_Ni; cutoff at 3 theta_Ni;
-<br> mirr4.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.80 from theta_Ni to 4 theta_Ni; cutoff at 4 theta_Ni;
-<br> mirr5.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.71 from theta_Ni to 5 theta_Ni; cutoff at 5 theta_Ni;
-<br> mirr6.dat: supermirror coating, <br>&nbsp; reflectivity 0.99 -&gt; 0.53 from theta_Ni to 6 theta_Ni; cutoff at 6 theta_Ni;
-<br> mirr23FeCo.dat: supermirror coating of FeCo-Si, <br>&nbsp; reflectivity 0.99 -&gt; 0.77 from theta_Ni to 2.3 theta_Ni; cutoff at 2.3 theta_Ni;
-<br> mirr[m]_quadrSN.dat: supermirror coating, <br>&nbsp; non-linear reflectivity produced with tool <i>Generate Mirror Files</i> using <i>quadratic
-  Swiss Neutronics</i> description (see tool description);
-<br> <br></pre>
-
-      The reflectivity file contains the probability of reflection in dependence
-   of the incident angle for neutrons with a wavelength of 1 &Aring;. Each
- row contains 10 data points and covers 0.01 deg, i.e. each point gives the
- probability average over an angular interval of 0.001 deg (the second row
- covers 0.01-0.02 deg a.s.o.). The number of data points may vary between
-1 and 1000. If end of file is reached (e.g. only 52 values are given) the
-probability to reflect 1 &Aring; neutrons for higher angles is set to 0.
-If no reflectivity file is given as an input, the guide operates in total
-absorption mode, i.e. each neutron hitting a guide wall is lost. <br>
-     There is one file for the left (= inner) side, one for the right (=
-outer   side) and one for the top and bottom of the bender (channels).
+<h3> Reflectivity</h3>
 <p>
+  There is one reflectivity curve for the left side, one for the right side and one for the top and bottom of the guide.
+  For special cases, there is the option to choose a separate file for the bottom plane, otherwise the one for the top plane is used also for the bottom plane.
+  The reflectivity of the coating can be given in 3 different ways, by the m-value or two kinds of reflectivity files describing the reflection properties of the coating.
+</p>
+
+<h4> Vitess reflectivity files</h4>
+<p>
+  This reflectivity file contains the probability of reflection in dependence of the incident angle for neutrons with a wavelength of 1 &Aring;.
+  Each row contains 10 data points covering 0.01 deg, i.e. each point gives the probability average over an angular interval of 0.001 deg.
+  The first row contains values for 0.000 to 0.009 deg, the second for 0.010-0.019 deg a.s.o.). The number of data points may vary between 3 and 1000.
+  If end of file is reached before finding the corresponding value, the probability of reflection is set to 0.
+  This kind of files can be generated using  the tool <a href="mirror_coating.html">GenerateMirrorFiles</a>. 
+</p>
+<p> Some examples can be found in FILES/reflectivity_files: <br />
+  &nbsp;&nbsp; mirr0.dat:&nbsp; absorbing coating&nbsp; (reflectivity = 0.0) <br>
+  &nbsp;&nbsp; mirr1a.dat: Ni coating&nbsp;&nbsp;  (theta_Ni    = 0.099138 deg/&Aring;*lambda) <br>
+  &nbsp;&nbsp; mirr1b.dat: Ni-58 coating (theta_Ni-58 = 0.11456  deg/&Aring;*lambda)
+</p>
+
+<h4> R(Q) files</h4>
+<p>
+  A second possibility is to give the reflectivity of the coating in a 2 column file with the momentum transfer Q in 1/&Aring; in the first and the reflectivity in the second column.
+</p>
+
+<h4> Calculation from m-values</h4>
+<p>
+  A third possibility is to calculate the reflectivity as a function of the m-value. From version 3.5 on, VITESS uses the 'General 2020 Approach' described in <a href="mirror_coating.html">mirror_coating.html</a>.
+  Up to version 3.4, the 'Quadratic SwissNeutronics Equation' was used. 
+  This change reflects in progress in the reflectivity of high m-coatings, which drops linearly nowadays and does not differ much from low m-coatings for the same Q-values.<br>
+  If a m-value and file are given for the same wall, the file is used. If a file is given for the 'top' plane, it is also overwrites the m-value for the bottom plane. <br>
+
+</p>
+
 <h2>Module parameters:</h2>
 <p>
 <table border="1" width="90%">
-      <tbody>
-         <tr>
-      <td><b>Parameter</b> <br>
-           <b>Unit</b></td>
-       <td><b>Description</b></td>
-       <td><b>Command option</b></td>
-      </tr>
-       <tr>
-      <td valign="top">Horizontal / vertical shape<br>
+  <tbody>
+    <tr>
+      <td>
+        <b>Parameter</b> <br>
+        <b>Unit</b>
       </td>
-      <td valign="top">shape of the guide: <br>
-      <b>constant</b>: same cross-section on the whole length (usually 1
-piece)<br>
-      <b>linear</b> : &nbsp;linearly converging or diverging between entrance
-and exit (usually 1 piece)<br>
-      <b>curved</b> (only in <b>horizontal</b> plane): several pieces form
-part of a regular polygon . The first piece is aligned to the preceding,
-the last to the succeeding module. The radius of the circle through the polygon
-corners and the number or pieces need to be given.<br>
-      <b>parabolic</b>: the guide consists of several straight pieces &nbsp;that
-approach a parabola, which is defined by entrance and exit width. The number
-or pieces need to be given.<br>
-      <b>elliptic</b>: the guide consists of several straight pieces &nbsp;that
-approach an ellipse, which is defined by entrance and exit width, and an
-angle describing the position of the ellipse. This angle and the number or
-pieces need to be given (see below). <br>
-      <b>from file</b>: the guide consists of several straight pieces of that might
-have different length and different coating and can be converging or diverging.
-Each piece is described by one line in the file; the parameters that have to be given are:
-Position, width and height of the beginning of the piece, reflectivity files for left,
-right, top and bottom plane. <br>
+      <td><b>Description</b></td>
+      <td><b>Command option</b></td>
+    </tr>
+    <tr>
+      <td valign="top">
+        Horizontal / vertical shape<br>
+      </td>
+      <td valign="top">
+        shape of the guide: <br>
+        <b>constant</b>: same cross-section on the whole length (usually 1 piece)<br>
+        <b>linear</b> : &nbsp;linearly converging or diverging between entrance and exit (usually 1 piece)<br>
+        <b>curved</b> (only in <b>horizontal</b> plane): several pieces form part of a regular polygon . The first piece is aligned to the preceding, the last to the succeeding module.
+        The radius of the circle through the polygon corners and the number or pieces need to be given.<br>
+        <b>parabolic</b>: the guide consists of several straight pieces &nbsp;that approach a parabola, which is defined by entrance and exit width. The number or pieces need to be given.<br>
+        <b>elliptic</b>: the guide consists of several straight pieces &nbsp;that approach an ellipse, which is defined by entrance and exit width, and an angle describing the position of the ellipse.
+        This angle and the number or pieces need to be given (see below). <br>
+        <b>from file</b>: the guide consists of several straight pieces of that might have different length and different coating and can be converging or diverging.
+        Each piece is described by one line in the file; the parameters that have to be given are:
+        Position, width and height of the beginning of the piece, reflectivity files for left, right, top and bottom plane. <br>
+        <b>curved+linear</b> (only in <b>horizontal</b> plane): the same as curved except that entrance and exit width are different.<br>
       </td>
       <td valign="top">-Y, -Z</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>guide shape</td>
-      <td>for 'shape from file': input file for shape and coating of the file (see example below) <br>
-          otherwise: output file into which position, width and height if each piece is written </td>
+      <td>
+        For 'shape from file': input file for shape and coating of the file (see example below) <br>
+        - if coating files are given here, the coating given for the whole guide is ignored.    <br>
+        - positions can be given relative to the beginning of the guide or in absolute values   <br>
+        Otherwise: output file into which position, width and height of each piece is written
+      </td>
       <td>-S</td>
-      </tr>
+    </tr>
 
-      <tr>
+    <tr>
       <td>entrance width, height <br>[cm]</td>
       <td>size of the guide entrance (in y- and z-direction)</td>
       <td>-w, -h</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>exit width, height <br>[cm]</td>
       <td>size of the guide exit (in y- and z-direction)</td>
       <td>&nbsp;-W, -H</td>
-      </tr>
+    </tr>
 
-      <tr>
+    <tr>
       <td>piece length <br>[cm]</td>
       <td>length of <b>one</b> piece of&nbsp; the guide</td>
       <td>-p</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>number of pieces</td>
-      <td>number of pieces that build the polygon section</td>
+      <td>number of pieces in this guide, i.e. to form a polygon or to approach elliptic shape</td>
       <td>-n</td>
-      </tr>
+    </tr>
+    <tr>
+      <td>curvature (radius) <br>[m]</td>
+      <td>
+        radius of a circle through the polygon<br>
+        R > 0: to the left, R	< 0: to the right, R = 0 (or item left blank): straight guide
+      </td>
+      <td>-R</td>
+    </tr>
+    <tr>
+      <td valign="top">focus dist. of ellipse<br>[cm]</td>
+      <td>
+        only needed for elliptic shape:<br>
+        The elliptical shape of the guide is defined by 3 parameters: the entrance width/height, the exit widht/height
+        and the distance from the guide exit to the (2nd) focal point in horizontal/vertical direction.
+        This distance has to be given here. All other parameters are calculated, some are given in the log file.
+      </td>
+      <td valign="top">-f, -F</td>
+    </tr>
 
-      <tr>
-      <td>total scattering<br>[1/cm]</td>
-      <td>macroscopic total scattering cross-section of the gas in the guide</td>
-      <td>-M</td>
-      </tr>
-
-      <tr>
-      <td>absorption<br>[1/cm]</td>
-      <td>macroscopic absorption cross-section of the gas in the guide</td>
-      <td>-m</td>
-      </tr>
-
-      <tr>
+    <tr>
       <td>m-value left, right, top/bottom plane</td>
-      <td>m-value of the reflectivity of the guide coating on the inner side (left), on the outer side (right), and on top and bottom plane.<br>
-          The whole reflectivity curve is calculated from this value using the quadratic equation described in <a href="mirror_coating.html">mirror_coating.html</a>
-          It is only used if no file for the particular plane is given.<br> </td>
+      <td>
+        m-value of the reflectivity of the guide coating on the left side (y > 0), on the right side (y < 0), and on top and bottom plane.<br>
+        The whole reflectivity curve is calculated from this value using the 'general 2020 approach' described in <a href="mirror_coating.html">mirror_coating.html</a>
+        It is only used if no file for the particular plane is given.<br>
+      </td>
       <td>-L, -Q, -G</td>
-      </tr>
-      <tr>
-      <td>left, right, top, bottom plane</td>
-      <td>reflectivity file for the guide coating on the inner side (left), on the outer side (right), on the top and on the bottom plane.<br>
-          Giving a file name here overwrites the correspondent m-value; if you want to use the m-value leave blank the item with the file name.<br>
-          If no file for the bottom plane is given, the file of the top plane is used for the bottom.<br> </td>
+    </tr>
+    <tr>
+      <td>file left, right, top, bottom plane</td>
+      <td>
+        reflectivity file for the guide coating on the left side (y > 0), on the right side (y < 0), on the top and on the bottom plane.<br>
+        Giving a file name here overwrites the correspondent m-value; if you want to use the m-value leave blank the item with the file name.<br>
+        If no file for the bottom plane is given, the file of the top plane is used for the bottom.<br>
+      </td>
       <td>-i, -I, -j, -J</td>
-      </tr>
+    </tr>
 
-      <tr>
+    <tr>
       <td>number of channels</td>
       <td>number of <b>vertical</b> channels, into which the guide is divided</td>
       <td>-b</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>blade thickness<br>[cm]</td>
       <td>thickness of the material that separates two neighbouring channels</td>
       <td>-s</td>
-      </tr>
+    </tr>
 
-      <tr>
-      <td>curvature (radius) <br>[m]</td>
-      <td>radius of a circle through the polygon<br>
-          R > 0: to the left, R	< 0: to the right, R = 0 (or item left blank): straight guide</td>
-      <td>-R</td>
-      </tr>
+    <tr>
+      <td>total scattering<br>[1/cm]</td>
+      <td>macroscopic total scattering cross-section of the gas in the guide</td>
+      <td>-M</td>
+    </tr>
+    <tr>
+      <td>absorption<br>[1/cm]</td>
+      <td>macroscopic absorption cross-section of the gas in the guide for 1.798 Ang</td>
+      <td>-m</td>
+    </tr>
 
-      <tr>
-      <td valign="top">focus dist. of ellipse<br>[cm]</td>
-      <td>only needed for elliptic shape:<br>
-          The elliptical shape of the guide is defined by 3 parameters: the entrance width/height, the exit widht/height
-          and the distance from the guide exit to the (2nd) focal point in horizontal/vertical direction.
-          This distance has to be given here. All other parameters are calculated, some are given in the log file.   </td>
-      <td valign="top">-f, -F</td>
-      </tr>
-      
-      <tr>
-      <td>Add to color</td>
-      <td>Add value to neutron color on each reflection.</td>
-      <td>-A</td>
-      </tr>
-      
-      <tr>
+    <tr>
       <td>color</td>
-      <td>Propagate only neutrons with the given color. All other neutrons are written but stay untouched. 
-          This allows to have different guides for, e.g., thermal and cold neutrons (bispectral extraction). 
-          With color equal to -1 (default) all neutrons are propagated. </td>
+      <td>
+        Propagate only neutrons with the given color. All other neutrons are written but stay untouched.
+        This allows having different guides for, e.g., thermal and cold neutrons (bispectral extraction).
+        With color equal to -1 (default) all neutrons are propagated.
+      </td>
       <td>-g</td>
-      </tr>
-      
-      <tr>
-      <td valign="top">Additional plane angle<br>[deg]</td>
-      <td>Adds additional planes by rotating the top/bottom or left/right planes 
-	        by the given angle around the x axis. If the angle is positive the 
-        	top/bottom planes are duplicated. For negative angles the left/right 
-	        planes are duplicated. The reflectivity files are taken from the 
-	        original plane and may not be altered seperately. The height and width 
-	        still define the outer dimensions. Example: 45 means an octagon shape by 
-	        copying the top/bottom planes and rotating them by 45 deg around the x 
-	        axis. -60 gives a hexagon with plain top/bottom and declined left/right 
-	        walls.</td>
-      <td valign="top">-n</td>
-      </tr>
+    </tr>
+    <tr>
+      <td>Add to color</td>
+      <td>Value added to the color of the neutron trajectory on each reflection.</td>
+      <td>-A</td>
+    </tr>
 
-      <tr>
+    <tr>
       <td>abutment loss</td>
-      <td>yes: neutrons that hit the surface close to one of the ends of the guide (or a guide segment) are removed.&nbsp; <br>
-          no: neutrons are treated with the given reflectivity in the whole guide</td>
+      <td>
+        yes: neutrons hitting the surface close to one of the ends of the guide (or a guide segment) are removed.&nbsp; <br>
+        no: neutrons are treated with the given reflectivity in the whole guide
+      </td>
       <td>-a</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>abutment loss area<br>cm</td>
       <td>Neutrons hitting the surface in a range of this length around the connection of guide segments are removed</td>
       <td>-l</td>
-      </tr>
+    </tr>
 
-      <tr>
+    <tr>
       <td>waviness distr.</td>
-      <td>Distribution of waviness: rectangular or Gaussian<br>
-          (waviness is the deviation from a perfectly plane surface of the inner guide surface) </td>
+      <td>
+        Distribution of waviness: rectangular or Gaussian<br>
+        (waviness is the deviation from a perfectly plane surface of the inner guide surface)
+      </td>
       <td>-q</td>
-      </tr>
-
-      <tr>
+    </tr>
+    <tr>
       <td>surface waviness<br>[deg]</td>
-      <td>amplitude of waviness<br> For a rectangular distribution, this value is the maximal angle of deviation
-	        of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value. </td>
+      <td>
+        amplitude of the waviness<br> For a rectangular distribution, this value is the maximal angle of deviation
+        of the surface normal from the ideal normal. For a Gaussian distribution, this is the RMS value.
+      </td>
       <td>-r</td>
-      </tr>
+    </tr>
+
+    <tr>
+      <td valign="top">Additional plane angle<br>[deg]</td>
+      <td>
+        Adds additional planes by rotating the top/bottom or left/right planes
+        by the given angle around the x axis. If the angle is positive the
+        top/bottom planes are duplicated. For negative angles the left/right
+        planes are duplicated. The reflectivity files are taken from the
+        original plane and may not be altered seperately. The height and width
+        still define the outer dimensions. Example: 45 means an octagon shape by
+        copying the top/bottom planes and rotating them by 45 deg around the x
+        axis. -60 gives a hexagon with plain top/bottom and declined left/right
+        walls.
+      </td>
+      <td valign="top">-n</td>
+    </tr>
+
+    <tr>
+      <td>MCPL file</td>
+      <td>filename for saving events of gamma and neutron generation caused by absorption, scattering etc. of the neutrons treated in the simulation. 
+          The output is in MCPL format and can be used as a source for shielding calculations using MCNP or similar programs<br />
+          Giving a filename activates this option.</td>
+      <td>-Z</td>
+    </tr>
 
   </tbody>
 </table>
 <p>
+
 <h3>Reflection list parameters:</h3>
 <table border="1" width="90%">
       <tbody>
@@ -300,35 +308,35 @@ right, top and bottom plane. <br>
       
       <tr>
       <td>filename</td>
-      <td>Give the output filename to activate the evaluation on a reflection base. The reflections are saved with parameters like position, 
+      <td>Give the output filename to activate writing out reflections. The reflections are saved with parameters like position, 
 	        divergency, ... along the guide.</td>
       <td>-o</td>
       </tr>
       
       <tr>
       <td>format</td>
-      <td>Choose which trajectories will be printed. This option also affects 
-	reflection plot options below!!!<br>
-	1 = only those leaving the guide<br>
-	2 = all successfull reflections; no matter if the trajectory reaches the 
-	guide end<br>
-	3 = only those with at least one successful scattering event 
-	(tracjectory may end with an unsuccessfull event)<br>
-	4 = all<br>
-	A negative number adds a line feed between each trajectory.</td>
+      <td>Choose which trajectories will be printed. This option also affects 	reflection plot options below!!!<br>
+	        1 = only those leaving the guide<br>
+	        2 = all successfull reflections; no matter if the trajectory reaches the 	guide end<br>
+	        3 = only those with at least one successful scattering event 	(tracjectory may end with an unsuccessfull event)<br>
+	        4 = all<br>
+	        A negative number adds a line feed between each trajectory.</td>
       <td>-O</td>
       </tr>
       
       <tr>
       <td>verbose list</td>
-      <td>Trajectories are written for each reflection (yes) and the end & exit and at the end of each 
-	guide piece (no).</td>
+      <td>
+        In addition to the reflections, it can be written out, where trajectories enter and exit the guide (piece) <br>
+        no:         no addditional output <br>
+        yes:        at the guide enty and exit of each guide piece <br>
+        entry&exit: at entry and exit of the guide      </td>
       <td>-v</td>
       </tr>
       
       <tr>
       <td>number of reflections</td>
-      <td>The evaluation can be restrained to a number of reflections the neutron has to have.<br>The range can be given for any, for horizonal or vertical direction.</td>
+      <td>The evaluation can be restricted to a number of reflections the neutron has to have.<br>The range can be given for any, for horizonal or vertical direction.</td>
       <td>-e, -E,<br>-c, -C,<br>-d, -D</td>
       </tr>
       
@@ -338,55 +346,51 @@ right, top and bottom plane. <br>
 <h3>Reflection plot parameters:</h3>
 <p>
 <table border="1" width="90%">
-      <tbody>
-         <tr>
+  <tbody>
+    <tr>
       <td><b>Parameter</b> <br>
            <b>Unit</b></td>
        <td><b>Description</b></td>
        <td><b>Command option</b></td>
-      </tr>
+    </tr>
       
-      <tr>
+    <tr>
       <td>filename</td>
-      <td>Giving the filename for saving all reflections for plotting x, m, intensity, 
-	wavelength along the guide will activate the evaluation.</td>
+      <td>Giving the filename for saving all reflections for plotting x, m, intensity, wavelength along the guide will activate the evaluation.</td>
       <td>-P</td>
-      </tr>
-      
-      <tr>
-      <td>format</td>
-      <td>Choose which trajectories will be binned. This option is also affectd by 
-	format option above!!!<br>
-	0 = all events;<br>
-	1 = only scattered neutrons;<br>
-	2 = only died neutrons.</td>
+    </tr>
+    <tr>
+      <td>filter</td>
+      <td>Choose which trajectories will be binned. This option is also affected by the format option above!!!<br>
+	        0 = all events;<br>
+	        1 = only scattered neutrons;<br>
+	        2 = only died neutrons.</td>
       <td>-B</td>
-      </tr>
+    </tr>
       
-      <tr>
+    <tr>
       <td>X, Y, Weight values</td>
-      <td>Choose the property for the x and y bin and the weighting. Any choice is possible.
-        <br>If only a 1D binning is needed choose any second parameter. The output will contain a 2D binning and a 1D binning for each X and Y parameter (see sections in output file ==XData== and ==YData==).</td>
+      <td>Choose the parameter for the x and y axis of the plot and the 'weighting' f(x,y). Any choice is possible.<br>
+        If only a 1D graph is needed choose any second parameter. The output will contain a 2D binning and a 1D binning for each X and Y parameter (see sections in output file ==XData== and ==YData==).</td>
       <td>-t, -T<br>-V</td>
-      </tr>
+    </tr>
       
-      <tr>
-      <td>number of bins in X, Y</td>
-      <td>The number of bins determines the segmentation of the X and Y interval.</td>
-      <td>-k, -K</td>
-      </tr>
-      
-      <tr>
+    <tr>
       <td>minimum and maximum X, Y</td>
-      <td>Lower (minimum) and upper (maximum) bounds of the evaluation intervals for X and Y.</td>
+      <td>Lower (minimum) and upper (maximum) bound of the evaluation intervals for x and y.</td>
       <td>-x, -X<br>-u, -U</td>
-      </tr>
-      
-        </tbody>
+    </tr>
+    <tr>
+      <td>number of bins in X, Y</td>
+      <td>The number of bins determines the segmentation of the x and y interval.</td>
+      <td>-k, -K</td>
+    </tr>
+  </tbody>
 </table>
 <p>
 <h2> Output of reflection list option </h2>
-A detailed description of this option will be published in 2012.<br>The following table is taken from this publication and shows the colums of the output file:
+  A detailed description of this option was published [1].<br>
+  The following table is taken from this publication and shows the colums of the output file:
 <br><br>
 <table border=1 cellspacing=0 cellpadding=0 width=619
  style='width:464.3pt;border-collapse:collapse;border:none'>
@@ -503,8 +507,8 @@ A detailed description of this option will be published in 2012.<br>The followin
 
 <h2>Output of reflection plot option</h2>
 <p>
-A detailed description of this option will be published in 2012.<br>
-The output file contains several data blocks introduced in comment lines using the following keywords:<br>
+  This option is also published in the paper mentioned above [1].<br>
+  The output file contains several data blocks introduced in comment lines using the following keywords:<br>
 <ul>
   <li><b>#==Data==</b> holds a 2D binning</li>
   <li><b>#==DataX==</b> and <b>#==DataY==</b> are 1D binnings</li>
@@ -888,41 +892,29 @@ The following table is taken from this publication and shows the colums of the o
  </tr>
 </table>
 <p>
-<h2> Example for guide shape from file </h2>
+<h2> Example for a guide shape and from file </h2>
 <pre>
-# position [m]  width [cm]  height [cm]   coating L    coating R    coating T    coating B
-#-------------------------------------------------------------------------------------------
-     0.000       12.007       12.007       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     0.137       12.692       12.692       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     0.294       13.424       13.424       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     0.471       14.205       14.205       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     0.674       15.037       15.037       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     0.904       15.923       15.923       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     1.165       16.864       16.864       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     1.463       17.862       17.862       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     1.801       18.919       18.919       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     2.186       20.035       20.035       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     2.624       21.211       21.211       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     3.122       22.447       22.447       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     3.688       23.742       23.742       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     4.332       25.093       25.093       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     5.065       26.496       26.496       m60w.dat     m60w.dat     m60w.dat     m60w.dat
-     5.899       27.946       27.946       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-     6.847       29.434       29.434       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-     7.925       30.948       30.948       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-     9.151       32.471       32.471       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    10.546       33.980       33.980       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    12.133       35.444       35.444       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    13.937       36.824       36.824       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    15.990       38.061       38.061       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    18.324       39.080       39.080       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    20.980       39.775       39.775       m30w.dat     m30w.dat     m30w.dat     m30w.dat
-    24.000       39.995       39.995       m30w.dat     m30w.dat     m30w.dat     m30w.dat
+# position     width      height                 reflectivity files 
+#    [m]       [cm]        [cm]        left       right      top       bottom
+#-----------------------------------------------------------------------------------------
+    9.815     3.57947     4.74530    m_4.0.dat  m_4.0.dat  m_3.0.dat  m_3.0.dat 
+   10.290     3.77560     4.82805    m_4.0.dat  m_4.0.dat  m_3.0.dat  m_3.0.dat 
+   10.790     3.96479     4.91063    m_4.0.dat  m_4.0.dat  m_3.0.dat  m_3.0.dat 
+   11.290     4.13867     4.98879    m_4.0.dat  m_4.0.dat  m_3.0.dat  m_3.0.dat 
+   11.790     4.29909     5.06274    m_3.5.dat  m_3.5.dat  m_3.0.dat  m_3.0.dat 
+   12.290     4.44751     5.13267    m_3.5.dat  m_3.5.dat  m_3.0.dat  m_3.0.dat 
+   12.790     4.58509     5.19872    m_3.5.dat  m_3.5.dat  m_3.0.dat  m_3.0.dat 
+   13.000     4.63988     5.22535    m_3.5.dat  m_3.5.dat  m_3.0.dat  m_3.0.dat
 </pre>
+</p>
+
+<h2> Literature </h2>
 <p>
-<hr>
-<a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
+  [1] A. Houben, W. Schweika. Th. Brückel, R. Dronskowski, <i>New neutron-guide concepts and simulation results for the POWTEX instrument</i>, NIMA 680 (2012) 124-133.
+</p>
+  <hr>
+  <a href="vitess.html">Back to VITESS overview</a> <br>
+  <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
 
 </body>
 </html>

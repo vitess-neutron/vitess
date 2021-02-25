@@ -44,7 +44,7 @@
     <b>read_in</b> and <b>writeout</b> will replace <i>input file</i> and <i>output file</i> from VITESS 4.0 on.
   </p>
   <p>
-    To read and write data in MCPL format, the utiliy <b>mcpl</b> by Thomas Kittelmann is used (see at https://mctools.github.io/mcpl/), 
+    To read and write data in MCPL format, the utiliy <b>mcpl</b> by Thomas Kittelmann is used (see <a href="https://mctools.github.io/mcpl/">MCPL-Homepage</a>)
     which stores the trajectories in binary format.
     The interface does not allow options like using several input files, ASCII format, etc.
   </p>
@@ -158,7 +158,7 @@ column
         <td valign="top">Intensity factor for MCNPX<br />[n/s]</td>
         <td valign="top">
           The weight of each neutron trajectory from the MCNPX simulation will be multiplied by this factor to yield correct absolute source flux values.<br />
-          The factor is: F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub>
+          This factor  F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub>  can be calculated as the ratio of proton current to the number of protons simulated.
         </td>
         <td valign="top">&gt;0 <br />typical 1.0e8<br />default: 1.0</td>
         <td valign="top">-I  </td>
