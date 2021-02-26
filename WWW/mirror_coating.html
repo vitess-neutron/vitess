@@ -6,98 +6,140 @@
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>VITESS Tool Generate Mirror Files</title>
 </head>
-  <body>
-  
-<h1>VITESS Tool Generate Mirror Files</h1>
- This tool generates reflectivity files that are used in the modules 'guide' 
-and 'bender'. Two options are available: a linear decrease of reflectivity with
-scattering angle, or a description using an additional quadratic term. In both
-cases, an output filename has to be given. If no path is included in that
-filename, the generated reflectivity file will be written to the parameter directory.
+<body>
 
-<h3>Quadratic Swiss Neutronics description </h3>
-If this option is chosen, the only additional input parameter necessary is the m-value of
-the supermirror coating. The reflectivity is the calculated as
-<p>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
-  (1 - a(Q - Q<sub>c</sub>) + b(Q - Q<sub>c</sub>)<sup>2</sup>)
-</p>
-where R<sub>0</sub>=0.99 and W, a, b and m<sub>2</sub> are linear functions of m: <br>
-<pre>
-W  = -0.0002*m +  0.0022 
-a  =  0.1204*m +  5.0944  <b>if</b> m>3, else a=m 
-b  = -7.6251*m + 68.1137  <b>if</b> m>3, else b=0 
-m<sub>2</sub> =  0.9853*m +  0.1978
-</pre>
-The parameters used here are the results of fits to experimental data
-(H. Jacobsen). The reflectivity curve gained for m=4 is shown by the black line in figure 1.
+  <h1> VITESS Tool Generate Reflectivity Files </h1>
+  <p>
+    This tool generates reflectivity files as they are used in the modules 'guide' and 'bender'.
+    Five options are available: two of them only use the m-value as input, two transfer if from another file format and one calculates it from 5 input parameters.
+    In all cases, an output filename has to be given.
+    If no path is included in that filename, the generated reflectivity file will be written to the output directory.
+  </p><br>
 
-<h3>Linear description </h3> 
-If <i>quadratic Swiss Neutronic description</i> is answered with <i>no</i>, the
-parameters m, R<sub>0</sub>, R<sub>m</sub>, Q<sub>c</sub> and W (s. table) have
-to be given in addition to the filename. <br>
-For W=0 the reflectivity curve consists of linear functions and a sharp cut-off
-at Q = m Q<sub>c,Ni</sub>. The red line in figure 1 shows an example for m=4. <br>
-For W > 0 and Q > Q<sub>c</sub>, the reflectivity R is calculated as
-<p>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) 
-  (1 - a(Q - Q<sub>c</sub>))
-</p>
-using 
-<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Symbol">a</font> = (R<sub>m</sub> - R<sub>0</sub>) / 
-(m Q<sub>c,Ni</sub> - Q<sub>c</sub>)
-<br> 
-<br>
-The product m Q<sub>c,Ni</sub> must be greater or equal Q<sub>c</sub>, because m is meant to extent the Q range 
-to values greater than Q<sub>c</sub>. <br>
-An example for m=4 and W=0.003 is shown by the green line in figure 1.
-<br> 
-<br>
-<br> 
+  <h3> VITESS reflectivity file format </h3>
+  <p>
+    VITESS uses a special file format: The file contains the probability of reflection in dependence of the incident angle for neutrons with a wavelength of 1 &Aring;.
+    Each row contains 10 data points covering 0.01 deg, i.e. each point gives the probability average over an angular interval of 0.001 deg.
+    The first row contains values for 0.000 to 0.009 deg, the second for 0.010-0.019 deg a.s.o.). The number of data points may vary between 2 and 1000.
+  </p><br>
 
+  <h3>Linear 5 parameter description </h3>
+    The reflectivity curve of a supermirror is determined by the 5 parameters m, R<sub>0</sub>, R<sub>m</sub>, Q<sub>c</sub> and W (s. table).<br>
+    For W=0, the reflectivity curve consists of linear functions and a sharp cut-off at Q = m Q<sub>c,Ni</sub>.
+    The red line in figure 1 shows an example for m=4. <br>
+    For W > 0 and Q > Q<sub>c</sub>, the reflectivity R is calculated as
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) (1 - a(Q - Q<sub>c</sub>))
+  </p>
+    with the slope <i>a</i> given by
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;a = (R<sub>m</sub> - R<sub>0</sub>) / (m Q<sub>c,Ni</sub> - Q<sub>c</sub>)
+  </p>
+  <p>
+    The product m Q<sub>c,Ni</sub> must be greater or equal Q<sub>c</sub>, because m is meant to extent the Q range to values greater than Q<sub>c</sub>. <br>
+    An example for m=4 and W=0.003 is shown by the green line in figure 1.
+  </p><br>
 
-<table border="1" width="90%">
- <tbody>
-    <tr>
- <td><b>Parameter</b> <br>
-      <b>Unit</b></td>
-  <td><b>Description</b></td>
-  <td><b>typical values</b></td>
- </tr>
-  <tr>
- <td>R<sub>0</sub></td>  <td>reflectivity for 0 &lt;= Q &lt;=Q<sub>c</sub></td>  <td>0.99</td>
- </tr>
-  <tr>
- <td>m</td>  <td>factor of supermirror</td>  <td>1 ... 4</td>
- </tr>
-  <tr>
- <td>Q<sub>c</sub><br>[Ang<sup>-1</sup>]</td>  <td>crit. momentum transfer</td> 
-  <td>0.0217 </td>
- </tr>
-  <tr>
- <td>R<sub>m</sub></td>  <td>reflectivity for Q = m Q<sub>c</sub>(Ni) for a sharp cut-off (W=0)</td>  <td>0.6 .... 0.95</td>
- </tr>
-  <tr>
- <td>W<br>[Ang<sup>-1</sup>]</td>  <td>width of the cut-off range<br>W=0 causes a sharp cut-off</td>  
- <td>0 ... 0.004</td>
- </tr>
-  <tr>
- <td>mirror file</td>  <td>name of the file into which the reflectivity curve is written</td>  <td>-</td>
- </tr>
-  </tbody>
-</table>
-<br>
+  <h3> Linear 2020 Approach </h3>
+    To facilitate the use of reflectivity functions, the attempt was made to describe the whole curve only by the parameter m.
+    This was first done by H. Jacobsen [1] using the <i>Quadratic Swiss Neutronics description</i> (see below) to describe reflectivity curves measured by SwissNeutronics. <br>
+    Advances in coating technology between 2010 and 2020 could reduce the descent in R(Q) and achieved a nearly constant slope again,
+    so that the formula above can used to describe the reflectivity curve by only one parameter.
+    Data delivered by Swissneutronics, S-DH and Mirrortron for their products with nominal coating m<sub>n</sub> were fitted using the equation above and the resulting parameters averaged resuting in <br>
+  <pre>
+    &nbsp;&nbsp;&nbsp;&nbsp;R<sub>0</sub> = 0.995
+    &nbsp;&nbsp;&nbsp;&nbsp;W  = 0.00157
+    &nbsp;&nbsp;&nbsp;&nbsp;R<sub>m</sub> = Min(R0, 1.096 - 0.0758*m<sub>n</sub>)
+    &nbsp;&nbsp;&nbsp;&nbsp;m  = m<sub>n</sub> + 0.14
+  </pre>
 
-<p><img src="ReflectivityFilesBspFormulae.png" height="400" width="600">
-<caption align="top" style="font-style: italic;" >Figure 1: Reflectivity curves
-  obtained with the tool for m=4 using different options.</caption>
-</p>
+  <h3> Quadratic Swiss Neutronics description </h3>
+    As for the <i>Linear 2020 Approach</i>, the only input parameter necessary is the m-value of the supermirror coating.
+    The reflectivity is calculated as
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;R = 1/2 R<sub>0</sub> (1 - tanh((Q - m Q<sub>c,Ni</sub>)/W) (1 - a(Q - Q<sub>c</sub>) + b(Q - Q<sub>c</sub>)<sup>2</sup>)
+  </p>
+  where R<sub>0</sub> is constant and W, a, b and m are linear functions of m<sub>n</sub> [1]: <br>
+  <pre>
+    &nbsp;&nbsp;&nbsp;&nbsp;R<sub>0</sub> = 0.99
+    &nbsp;&nbsp;&nbsp;&nbsp;W = -0.0002*m<sub>n</sub> +  0.0022 
+    &nbsp;&nbsp;&nbsp;&nbsp;a =  0.1204*m<sub>n</sub> +  5.0944  <b>if</b> m<sub>n</sub> > 3, else a = m<sub>n</sub> 
+    &nbsp;&nbsp;&nbsp;&nbsp;b = -7.6251*m<sub>n</sub> + 68.1137  <b>if</b> m<sub>n</sub> > 3, else b = 0 
+    &nbsp;&nbsp;&nbsp;&nbsp;m =  0.9853*m<sub>n</sub> +  0.1978
+  </pre>
+    The parameters used here are the results of fits to experimental data.
+    The reflectivity curve gained for m=4 is shown by the black line in figure 1. <br>
+    Note that this describes well the reflectivity of high m coatings produced around 2010,
+    while a smaller descent with a constant slope in Q as used in the 'Linear 2020 approach' could be achieved afterwards.
+  <br><br>
 
-<hr>
-<a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+  <h3> R(m) and R(Q) files </h3>
+  <p>
+    If the reflectivity curve exists as 2 column file R(Q) or R(m) with Q or m resp. in the first and the reflectivity R in the 2nd column, it can be transferred to the VITESS reflectivity file format. <br>
+    Note that R(Q) can also be used in the module <b>guide</b>, but not in <b>guide_ideal</b> or <b>bender</b>.
+    R(m) needs to be transferred in any case.
+  </p><br>
+
+  <h3> Parameter description </h3>
+  <table border="1" width="90%">
+    <tbody>
+      <tr>
+        <td>
+          <b>Parameter</b> <br>
+          <b>Unit</b>
+        </td>
+        <td><b>Description</b></td>
+        <td><b>typical values</b></td>
+      </tr>
+      <tr>
+        <td>R<sub>0</sub></td>
+        <td>reflectivity for 0 &lt;= Q &lt;=Q<sub>c</sub></td>
+        <td>0.99</td>
+      </tr>
+      <tr>
+        <td>m</td>
+        <td>factor of supermirror</td>
+        <td>1 ... 4</td>
+      </tr>
+      <tr>
+        <td>Q<sub>c</sub><br>[Ang<sup>-1</sup>]</td>
+        <td>crit. momentum transfer</td>
+        <td>0.0217 </td>
+      </tr>
+      <tr>
+        <td>R<sub>m</sub></td>
+        <td>reflectivity for Q = m Q<sub>c</sub>(Ni) for a sharp cut-off (W=0)</td>
+        <td>0.6 .... 0.95</td>
+      </tr>
+      <tr>
+        <td>W<br>[Ang<sup>-1</sup>]</td>
+        <td>width of the cut-off range<br>W=0 causes a sharp cut-off</td>
+        <td>0 ... 0.004</td>
+      </tr>
+      <tr>
+        <td>mirror file</td>
+        <td>name of the file into which the reflectivity curve is written</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+
+  <h3> Plot of reflectivity curves </h3>
+  <p>
+    <img src="ReflectivityFilesBspFormulae.png" height="400" width="600">
+    <br>
+    <caption align="top" style="font-style: italic;">Figure 1: Reflectivity curves obtained using the tool <i>Generate Reflectivity Files</i> for m=4 using different options.</caption>
+  </p><br>
+
+  <h3> Literature </h3>
+  <p>
+    [1] H. Jacobsen, K. Lieutenant, C. Zendler, K. Lefmann, <i>Bi-spectral extraction through elliptic neutron guides</i>, Nucl. Instr. Meth. Phys. Res. A 717 (2013) 69-76.
+  </p><br>
+
+  <hr>
+  <a href="vitess.html">Back to VITESS overview</a> <br>
+  <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
 
 </body>
 </html>

@@ -74,7 +74,7 @@
 <p>
   This reflectivity file contains the probability of reflection in dependence of the incident angle for neutrons with a wavelength of 1 &Aring;.
   Each row contains 10 data points covering 0.01 deg, i.e. each point gives the probability average over an angular interval of 0.001 deg.
-  The first row contains values for 0.000 to 0.009 deg, the second for 0.010-0.019 deg a.s.o.). The number of data points may vary between 3 and 1000.
+  The first row contains values for 0.000 to 0.009 deg, the second for 0.010-0.019 deg a.s.o.). The number of data points may vary between 2 and 1000.
   If end of file is reached before finding the corresponding value, the probability of reflection is set to 0.
   This kind of files can be generated using  the tool <a href="mirror_coating.html">GenerateMirrorFiles</a>. 
 </p>
@@ -91,7 +91,7 @@
 
 <h4> Calculation from m-values</h4>
 <p>
-  A third possibility is to calculate the reflectivity as a function of the m-value. From version 3.5 on, VITESS uses the 'General 2020 Approach' described in <a href="mirror_coating.html">mirror_coating.html</a>.
+  A third possibility is to calculate the reflectivity as a function of the m-value. From version 3.5 on, VITESS uses the 'Linear 2020 Approach' described in <a href="mirror_coating.html">mirror_coating.html</a>.
   Up to version 3.4, the 'Quadratic SwissNeutronics Equation' was used. 
   This change reflects in progress in the reflectivity of high m-coatings, which drops linearly nowadays and does not differ much from low m-coatings for the same Q-values.<br>
   If a m-value and file are given for the same wall, the file is used. If a file is given for the 'top' plane, it is also overwrites the m-value for the bottom plane. <br>
@@ -185,7 +185,7 @@
       <td>m-value left, right, top/bottom plane</td>
       <td>
         m-value of the reflectivity of the guide coating on the left side (y > 0), on the right side (y < 0), and on top and bottom plane.<br>
-        The whole reflectivity curve is calculated from this value using the 'general 2020 approach' described in <a href="mirror_coating.html">mirror_coating.html</a>
+        The whole reflectivity curve is calculated from this value using the 'Linear 2020 Approach' described in <a href="mirror_coating.html">mirror_coating.html</a>
         It is only used if no file for the particular plane is given.<br>
       </td>
       <td>-L, -Q, -G</td>
