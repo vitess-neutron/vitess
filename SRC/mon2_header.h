@@ -6,6 +6,10 @@
 #include "general.h"
 #include "defines.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void WriteHeader1D(FILE* fMonitor, const char *sType, int bWeight, int nBinsX,           // Writes header for 1D monitor file
                    const char* sPar, const char* sUnit);   
 void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, int bWeight,   // Writes header for 1D monitor file
@@ -17,5 +21,9 @@ int  WriteOutput2D(FILE* fMonitor, int eFormat, int bWeight,                    
 
 void printFloatItem(double v, FILE*f);                                                  // Writes one float value to the 2D monitor file
 void OutFmt2Txt    (VtFormat2D eFormat);                                                // converts 2D output format to text
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif

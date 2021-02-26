@@ -43,17 +43,17 @@ my @C = qw(ascii2bin monitor1
            capture_flux runtime fom gener_pipe opt_sim);
 
 # modules which need ITOOL (=TOOL + intersection)
-my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator_soller collimator
+my @CI = qw(chopper_disc chopper_fermi chopper_fermi_parallel collimator
 	    slit grid source spacewindow_multiple space lenses beamstop);
 
 # modules which need MTOOL (=ITOOL + matrix)
 my @CM = qw(detector eval_elast eval_elast2 eval_inelast eval_sans frame
 	    monitorpol_1d monitorpol_pos
 	    monochr_analyser
-	    polariser_sm polariser_sm_parallel
+	    polariser_sm
 	    polariser_he3 flipper_coil
 	    pol_mirror
-	    collimator_radial
+	    collimator_radial collimator_soller
 	    precessionfield sesans_field
 	    define_direction
 	    cas_v40
@@ -84,7 +84,10 @@ my @Gexe = qw(bender visual sm_ensemble_parallel dist_time);
 my @PTool = qw(chop_phases standard_deviation direct_view sortiap merge_spectra);
 
 # modules with helper thread support
-my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel guide_parallel);
+my @ParMod =  qw(chopper_fermi_parallel sm_ensemble_parallel polariser_sm_parallel);
+
+#modules with mon_healder
+my @MonMod = qw(mon2_div mon2_kdiv mon2_pos mon2_posdiv mon2_rdiv mon2_tofwl mon2_wldiv mon_brilliance monitor1 monitorpol_1d monitorpol_pos);
 
 my %Macro;
 $Macro{$_} = '$(TOOL)' foreach ('visual', 'dist_time', @C);
@@ -96,11 +99,10 @@ $Macro{$_} = '$(MGTOOL)' foreach (@CMG);
 $Macro{$_} = '$(STOOL)' foreach @CS;
 
 my %dep = (			# needed objects for a module
-	   source => 'src_modchar source_csns source_ess',
+	   source => 'src_modchar source_csns source_ess trace',
 	   sample_s_q => 'sq_calc',
 	   monochr_analyser => 'ma_functions ma_geom',
-           monochromator => 'monochrclass',
-	   precessionfield => 'magneticmap',
+           monochromator => 'monochrclass mathvector mathmatrix',
 	   gener_batch => 'gener_fct',
 	   gener_pipe => 'pipe_fct',
 	   opt_sim => 'opt_grad opt_grad_mc opt_metro opt_swarm opt_fct calc_sim_fom',
@@ -111,12 +113,14 @@ my %dep = (			# needed objects for a module
 	   lenses => 'lensetr cpgplot',
 	   mirror_elliptical => 'mirrrefl',
            sample_nxs => 'nxs sgclib sgfind sghkl sgio sgsi',
-           monitor1D => 'mon1D',
-           monitor2D => 'mon2D',
-           read_in => 'mcpl',
-           writeout => 'mcpl'
+           monitor1D => 'mon2_header mon1D',
+           monitor2D => 'mon2_header mon2D',
+           read_in => 'mcpl trace',
+           writeout => 'mcpl',
+           guide_parallel => 'threadHelper mcpl'
 	  );
 $dep{$_} = 'threadHelper' foreach (@ParMod);
+$dep{$_} = 'mon2_header' foreach (@MonMod);
 
 # objects necessary for some modules, to be compiled separately
 # remember in %K we already have these
@@ -312,7 +316,7 @@ EOS
   print OF "GRALIB = -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I. -Lrng/$subdir -lgslran -I$_ -L$_";
   print OF " -L$_" foreach @LPath;
   print OF " -lX11 -lg2 -lgd -l$libpng -lz -lfreetype -lXpm";
-  print OF ' -lttf' if $sys ne 'Darwin' && $suse_version < 13;
+  print OF ' -lttf' if $sys ne 'Darwin' && $suse_version ne '' && $suse_version < 13;
   print OF ' -lm';
 
   print OF <<'EOS';
