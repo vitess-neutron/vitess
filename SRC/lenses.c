@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   PrintModuleName(_eModule, "1.22");
 	OwnInit(argc, argv);
 
-  bVisInstalled = FALSE;    // needs to be done still
+  bVisInstalled = MISSING;    // needs to be done still
   if (bVisInstr) 
     bLengthCmpr = TRUE;
 

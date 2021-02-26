@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   InitVector(domain_field);
   InitNeutron(&Neutrons);
 
-  bVisInstalled = FALSE;
+  bVisInstalled = MISSING;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 

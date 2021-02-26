@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   PrintModuleName(_eModule, "1.05");
   OwnInit(argc, argv);
 
-  bVisInstalled = FALSE;
+  bVisInstalled = MISSING;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 

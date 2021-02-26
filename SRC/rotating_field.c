@@ -129,7 +129,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
   EvalInput();
 
-  bVisInstalled = FALSE;
+  bVisInstalled = MISSING;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 

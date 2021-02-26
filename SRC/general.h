@@ -57,6 +57,7 @@ extern "C" {
 
 #define TRUE 		    1
 #define FALSE 		  0
+#define MISSING 	 -1
 
 #define UP          1
 #define DOWN        0

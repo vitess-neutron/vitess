@@ -1161,17 +1161,18 @@ void WriteGeomData(VectorType vBegPos, double Length)
     }
     CopyVector(vNull, vBegPos);
   }
-  /* each other module appends a line */
+  /* each other module representing hardware appends a line */
   else if (stGeometry.eModule < MCN_MONITOR1)
   { pGeomFile = OpenOutputFile(pGeomFileName, TRUE, "a");
   }
-  else {
+  else 
+  {
     return;
   }
 
   if (pGeomFile)
   {
-    if (bVisInstalled)
+    if (bVisInstalled==TRUE)
     {
       /* Circles */
       for (k=0; k < stGeometry.nCircles; k++)
@@ -1329,13 +1330,15 @@ void WriteGeomData(VectorType vBegPos, double Length)
 		                            stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi, stGeometry.pCylSlice[k].OpenAngle);
 
       }
-
-    } else {
+    }
+    else if (bVisInstalled==MISSING)
+    {
       // if visualisation is not yet implemented draw square or cylinder
       char description[40];
       Transform (vDir, vX, vNull);
 
-      if (Length > 0.0) {
+      if (Length > 0.0) 
+      {
         CopyVector      (vX, vRelPos);
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
