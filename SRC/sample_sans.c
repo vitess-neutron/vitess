@@ -67,9 +67,9 @@ double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 /***********************************/
 /** Prototypes of local functions **/
 /***********************************/
-void   OwnInit   (int argc, char *argv[]);   // reads input parameters and sets global 
-void   OwnCleanup();                         // Does module specific cleanup
-void   GetSample (SampleType *pSample);      // Reads sample parameters from file
+void   OwnInit   (int argc, char *argv[]);   // reads input parameters and sets global variables
+void   OwnCleanup();                         // does module specific cleanup
+void   GetSample (SampleType *pSample);      // reads sample parameters from file
 void   WritePar();                           // writes input parameters to log file
 void   SetGeometry(char* sColor);            // fills the structure stGeometry for visualization    missing
 
