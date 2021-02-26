@@ -308,10 +308,16 @@ void   GetString(char* pString, const char* pText)
 /*******************************************************/
 void GetActDate(char* sDate)
 {
-  struct tm time;
+  time_t t;
+  struct tm *tmp;
 
-  _getsystime(&time);
-  sprintf(sDate, "%4d-%02d-%02d", time.tm_year+1900, time.tm_mon+1, time.tm_mday);
+  t = time(NULL);
+  tmp = localtime(&t);
+  if (tmp != NULL) {
+    strftime(sDate, CHAR_BUF_SMALL, "%Y-%m-%d", tmp);
+  } else {
+    strncpy(sDate, "Error getting time", CHAR_BUF_SMALL);
+  }
 }
 
 

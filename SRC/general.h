@@ -6,6 +6,10 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************/
 /** Definitions              **/
 /******************************/
@@ -507,6 +511,10 @@ long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nS
 
 void  ChangeSlash(char* pStr);
 void  AddSlash   (char* pStr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif
 
