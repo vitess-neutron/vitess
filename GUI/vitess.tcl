@@ -1621,7 +1621,7 @@ set chop1Add {
   {a float 5 {"height [cm]" "height of the Fermi chopper" "" a} gt0}
   {b float 4 {"width [cm]" "width of the Fermi chopper" "" b} gt0}
   {c float 3 {"channel\nlength [cm]" "channel length of the Fermi chopper (not active for channel shape option 'ideal')" "" c} gt0}
-  {chans int 20 {"number of\nchannels" "number of straight channels" "" l} ge1}
+  {chans int 20 {"number of\nchannels" "number of channels" "" l} ge1}
   {wall float 0.02 {"wall\nthickness [cm]" "thickness of the wall between channels" "" m} ge0}
   {dia float 7.1 {"diameter [cm]" "diameter of the shadowing cylinder" "" r} gt0}
   {rot float 500 {"rotations\nper second" "frequency of rotation" "" n}}
