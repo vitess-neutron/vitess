@@ -284,8 +284,8 @@ proc controlMenu {w} {
       {c "Define Instrument Digest" genDigest}
 
   set clist {ascii2bin
-    define_direction direct_view gener_batch mirror_coating surface_file gener_bispectral
-    standard_deviation rvitess lattice_dist guide_shape
+    define_direction direct_view guide_shape mirror_coating surface_file gener_bispectral
+    standard_deviation rvitess lattice_dist 
   }
   set htmlist $clist
   lappend htmlist crysanalyzerspec chop_phases chop_phases dist_time
@@ -293,9 +293,9 @@ proc controlMenu {w} {
 
   set nlist {"Convert Ascii to Binary"
     "Define Direction"
-    "Direct View" "Generate Batches" "Generate Mirror Files" "Generate Surface Files" "Generate Extraction System"
+    "Direct View" "Guide Shape" "Generate Reflectivity Files" "Generate Surface Files" "Generate Extraction System"
     "Standard Deviation" "Read and Visualise Output"
-    "Lattice Distances" "Guide Shape"
+    "Lattice Distances" 
     "Cryst. Analyzer Spectrom."
     "Compute Chopper Phases" "Design Chopper System"
     "Distance Time Plot"
