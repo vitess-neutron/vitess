@@ -95,7 +95,7 @@
 // original code and visualisation
 void     OwnInit   (int argc, char *argv[]);           // reads input parameters and sets global variables
 void     showAndCompleteSetup(void);                   // evaluates and writes the input parameters
-void     processNeutron(int neutron_i, int thread_i);  // process 1 neutron trajectory
+void     processNeutron(int neutron_i, int thread_i);  // processes 1 neutron trajectory
 void     OwnCleanup();                                 // does module specific cleanup
 void     SetGeometry(char* sColor);                    // fills the structure stGeometry for visualization
 
