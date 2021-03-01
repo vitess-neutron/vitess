@@ -271,16 +271,14 @@ void MainWindow::on_actionSave_as_triggered()
 void MainWindow::on_actionNewInst_triggered()
 {
 
-    while ( ui->stackedWidget->count() > 0 )
-        ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
-    ui->stackedWidget->hide();
-    modultab->cleanModules();
+    ui->pushFresh->clicked();
+    ui->textBrowser->clear();
 
 }
 
 void MainWindow::on_actionExit_triggered()
 {
-    close();
+    QApplication::closeAllWindows();
 }
 
 void MainWindow::on_actionGeneral_Information_triggered()
@@ -378,7 +376,7 @@ void MainWindow::on_pushDryrun_clicked()
 
     //setup progressDialog and start elapsed timer
     progress();
-    timer->start();
+    timer.start();
 
     for (int i=0; i< ui->stackedWidget->count(); i++)
     {
@@ -407,7 +405,6 @@ void MainWindow::finishedLast()
 {
     //close progressDialog
     dialog->close();
-
     //daily protocol file
     QDate curDate = QDate::currentDate();
     QString fileName = instrumentDir+"/XC"+QString::number(curDate.year())+
@@ -449,7 +446,7 @@ void MainWindow::finishedLast()
    }
     //measurment time in sec min 1
     QString str = QString::number(
-                static_cast<int>(timer->elapsed()/1000 >0) ? static_cast<int>(timer->elapsed()/1000) : 1);
+                static_cast<int>(timer.elapsed()/1000 >0) ? static_cast<int>(timer.elapsed()/1000) : 1);
     ui->textBrowser->append("Measurement took: " + str + " sec");
     protFile.close();
 
@@ -691,14 +688,12 @@ void MainWindow::on_pushStart_clicked()
         //do not create process if modul if disabled
         if (!modultab->disableFlag[i])
            procList.append(new QProcess());
-
     connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
     pipeActive = true;
     int enableIndex = 0;
     //create progressDialog and eleapsed timer to get measurment time
     progress();
-    timer->start();
-
+    timer.start();
     for (int i=0; i<ui->stackedWidget->count(); i++)
     {
         if (!modultab->disableFlag[i])
@@ -1104,4 +1099,38 @@ void MainWindow::on_actionPaste_Module_Parameters_triggered()
     string key = ui->stackedWidget->widget(index)->objectName().toStdString();       //std::string
     if (curModul.begin()->first.as<string>() == key)
         pasteCurModul(curModul[key],index);
+}
+
+void MainWindow::on_actionShow_inf_File_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,"Open inf file",
+                                                    instrumentDir,tr("INF (*.inf)"));
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::information(this,"Warning cannot open: ",fileName);
+        return;
+    }
+    QPlainTextEdit* textEdit = new QPlainTextEdit();
+    textEdit->resize(700,350);
+    textEdit->setPlainText(file.readAll());
+    textEdit->show();
+
+}
+
+void MainWindow::on_actionSet_Instrument_Name_triggered()
+{
+    instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument as",instrumentDir,
+                                                  tr("Files (*.yaml *.yml)"));
+    if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
+        instrumentName += ".yml";
+    QFile file(instrumentName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(this,"Cannot open file: ",instrumentName);
+        return;
+    }
+    QFileInfo fileinfo(instrumentName);
+    ui->InstName->setText(fileinfo.baseName());
+
 }

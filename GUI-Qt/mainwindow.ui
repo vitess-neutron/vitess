@@ -158,22 +158,27 @@
           </item>
           <item row="0" column="2">
            <widget class="QPushButton" name="pushIndir">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
              <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QPushButton" name="pushBrowseIndirN">
-            <property name="text">
-             <string>BrowseN</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>output directory</string>
+             <string>  output directory</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -190,13 +195,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="pushBrowseOutdirN">
-            <property name="text">
-             <string>BrowseN</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
@@ -204,50 +202,31 @@
           <item>
            <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>     random seed</string>
+             <string>       random seed</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="RndSeed"/>
+           <widget class="QLineEdit" name="RndSeed">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>random number options</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="RndNoGen">
-            <item>
-             <property name="text">
-              <string>ran3</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
+              <width>80</width>
               <height>20</height>
              </size>
             </property>
@@ -274,6 +253,19 @@
             </item>
            </widget>
           </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </item>
        </layout>
@@ -288,7 +280,7 @@
       <item row="1" column="0">
        <widget class="QPushButton" name="pushFresh">
         <property name="text">
-         <string>Fresh</string>
+         <string>New</string>
         </property>
        </widget>
       </item>
@@ -513,9 +505,7 @@
      <property name="title">
       <string>Export as </string>
      </property>
-     <addaction name="actionEid_Instrument"/>
      <addaction name="actionPy_Python_script"/>
-     <addaction name="actionPI_Perl_script"/>
      <addaction name="actionBat_shell"/>
     </widget>
     <addaction name="actionLoad"/>
@@ -524,29 +514,20 @@
     <addaction name="separator"/>
     <addaction name="actionNewInst"/>
     <addaction name="separator"/>
-    <addaction name="actionSave_to_dir"/>
-    <addaction name="separator"/>
-    <addaction name="actionImport_Pipe"/>
     <addaction name="menu_Export_as"/>
     <addaction name="separator"/>
-    <addaction name="actionVariations_2"/>
-    <addaction name="separator"/>
-    <addaction name="actionEdit_inf_File"/>
+    <addaction name="actionShow_inf_File"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Variations</string>
     </property>
-    <addaction name="actionRecover_Instument"/>
-    <addaction name="separator"/>
     <addaction name="actionCopy_Module_Parameters"/>
     <addaction name="actionPaste_Module_Parameters"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Instrument_Name"/>
-    <addaction name="separator"/>
-    <addaction name="actionGenerate_Series_2"/>
    </widget>
    <widget class="QMenu" name="menuPlot">
     <property name="title">
@@ -584,43 +565,60 @@
      <addaction name="action1_0e_05"/>
      <addaction name="action1_0"/>
     </widget>
-    <addaction name="actionSmaller_fonts"/>
-    <addaction name="actionBigger_fonts"/>
-    <addaction name="actionFonts"/>
-    <addaction name="separator"/>
-    <addaction name="actionCheck_mode"/>
-    <addaction name="actionSave_Instr_mode"/>
-    <addaction name="actionOutput_compression"/>
-    <addaction name="actionExecution_mode"/>
+    <widget class="QMenu" name="menurandom_number_generator">
+     <property name="title">
+      <string>random number generator</string>
+     </property>
+     <addaction name="actionran3"/>
+     <addaction name="actiontaus"/>
+     <addaction name="actiongfsr4"/>
+     <addaction name="actionmt19937"/>
+     <addaction name="actionranlux"/>
+    </widget>
+    <widget class="QMenu" name="menuTrajectories">
+     <property name="title">
+      <string>Trajectories</string>
+     </property>
+     <addaction name="actionX3D"/>
+     <addaction name="actionSVG_XZ"/>
+     <addaction name="actionSVG_xy"/>
+     <addaction name="actiontext_file"/>
+    </widget>
+    <addaction name="menurandom_number_generator"/>
     <addaction name="menunBuffer"/>
     <addaction name="menuMinWght"/>
-    <addaction name="actionPlot_mode"/>
-    <addaction name="actionTrajectories"/>
-    <addaction name="actionBrowse_selection"/>
+    <addaction name="menuTrajectories"/>
     <addaction name="actionScrollbar_width"/>
     <addaction name="separator"/>
-    <addaction name="actionXcontrol"/>
-    <addaction name="actionRecovery"/>
     <addaction name="separator"/>
     <addaction name="actionX3D_options"/>
-    <addaction name="actionapplications"/>
+    <addaction name="actionGraphics_tools"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
+    <widget class="QMenu" name="menuTools_2">
+     <property name="title">
+      <string>Tools</string>
+     </property>
+     <addaction name="actionConvert"/>
+     <addaction name="actionDefine_Direction_2"/>
+     <addaction name="actionGenerate_Mirror_Files_2"/>
+     <addaction name="actionGenerate_Surface_Files_2"/>
+     <addaction name="actionGenerate_Extraction_System_2"/>
+     <addaction name="actionGuide_Shape_2"/>
+     <addaction name="actionCryst_Analayzer_Spectrom_2"/>
+     <addaction name="actionCompute_Chopper_Phases_2"/>
+    </widget>
     <addaction name="actionGeneral_Information"/>
     <addaction name="actionTutorial"/>
     <addaction name="actionUser_Interface"/>
     <addaction name="actionGenerate_Series_3"/>
     <addaction name="actionExternal_Commands"/>
-    <addaction name="actionRay_tracing"/>
     <addaction name="actionVisualization"/>
     <addaction name="actionOptimization"/>
-    <addaction name="actionTools"/>
-    <addaction name="separator"/>
-    <addaction name="actionXcontrol_2"/>
-    <addaction name="separator"/>
+    <addaction name="menuTools_2"/>
     <addaction name="actionModules_A_L"/>
     <addaction name="actionModules_M"/>
     <addaction name="actionModules_N_R"/>
@@ -704,9 +702,9 @@
     <string>New *.inf File</string>
    </property>
   </action>
-  <action name="actionEdit_inf_File">
+  <action name="actionShow_inf_File">
    <property name="text">
-    <string>Edit *.inf File</string>
+    <string>Show *.inf File</string>
    </property>
   </action>
   <action name="actionExit">
@@ -864,11 +862,6 @@
     <string>Plot mode</string>
    </property>
   </action>
-  <action name="actionTrajectories">
-   <property name="text">
-    <string>Trajectories</string>
-   </property>
-  </action>
   <action name="actionBrowse_selection">
    <property name="text">
     <string>Browse selection</string>
@@ -921,7 +914,7 @@
   </action>
   <action name="actionExternal_Commands">
    <property name="text">
-    <string>External Commands</string>
+    <string>User Module</string>
    </property>
   </action>
   <action name="actionRay_tracing">
@@ -937,11 +930,6 @@
   <action name="actionOptimization">
    <property name="text">
     <string>Optimization</string>
-   </property>
-  </action>
-  <action name="actionTools">
-   <property name="text">
-    <string>Tools</string>
    </property>
   </action>
   <action name="actionXcontrol_2">
@@ -1079,6 +1067,96 @@
    </property>
    <property name="text">
     <string>1.0</string>
+   </property>
+  </action>
+  <action name="actionran3">
+   <property name="text">
+    <string>ran3</string>
+   </property>
+  </action>
+  <action name="actiontaus">
+   <property name="text">
+    <string>taus</string>
+   </property>
+  </action>
+  <action name="actiongfsr4">
+   <property name="text">
+    <string>gfsr4</string>
+   </property>
+  </action>
+  <action name="actionmt19937">
+   <property name="text">
+    <string>mt19937</string>
+   </property>
+  </action>
+  <action name="actionranlux">
+   <property name="text">
+    <string>ranlux</string>
+   </property>
+  </action>
+  <action name="actionX3D">
+   <property name="text">
+    <string>X3D</string>
+   </property>
+  </action>
+  <action name="actionSVG_XZ">
+   <property name="text">
+    <string>SVG xz</string>
+   </property>
+  </action>
+  <action name="actionSVG_xy">
+   <property name="text">
+    <string>SVG xy</string>
+   </property>
+  </action>
+  <action name="actiontext_file">
+   <property name="text">
+    <string>text file</string>
+   </property>
+  </action>
+  <action name="actionGraphics_tools">
+   <property name="text">
+    <string>Graphics tools</string>
+   </property>
+  </action>
+  <action name="actionConvert">
+   <property name="text">
+    <string>Convert Ascii to Binary</string>
+   </property>
+  </action>
+  <action name="actionDefine_Direction_2">
+   <property name="text">
+    <string>Define Direction</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Mirror_Files_2">
+   <property name="text">
+    <string>Generate Mirror Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Surface_Files_2">
+   <property name="text">
+    <string>Generate Surface Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Extraction_System_2">
+   <property name="text">
+    <string>Generate Extraction System</string>
+   </property>
+  </action>
+  <action name="actionGuide_Shape_2">
+   <property name="text">
+    <string>Guide Shape</string>
+   </property>
+  </action>
+  <action name="actionCryst_Analayzer_Spectrom_2">
+   <property name="text">
+    <string>Cryst.Analayzer Spectrom.</string>
+   </property>
+  </action>
+  <action name="actionCompute_Chopper_Phases_2">
+   <property name="text">
+    <string>Compute Chopper Phases</string>
    </property>
   </action>
  </widget>

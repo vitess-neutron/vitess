@@ -5,6 +5,7 @@
 #include "modultable.h"
 #include "help.h"
 #include "parameter.h"
+//#include "convert.h"
 
 #include <QTreeWidgetItem>
 #include <QTableWidget>
@@ -54,6 +55,8 @@ private slots:
         void on_actionBat_shell_triggered();
         void on_actionCopy_Module_Parameters_triggered();
         void on_actionPaste_Module_Parameters_triggered();
+        void on_actionShow_inf_File_triggered();
+        void on_actionSet_Instrument_Name_triggered();
 
 
         void on_pushFresh_clicked();
@@ -106,7 +109,7 @@ private:
 
     QMap<QString,int> modindex;
 
-    QElapsedTimer *timer;
+    QElapsedTimer timer;
     QProgressDialog *dialog;
 
     QList<QLineEdit  *> allLineEdits;
