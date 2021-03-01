@@ -1,7 +1,9 @@
 #input fields so far
 #type: title, file, string, float, int, combo (for selection list)
 #descr: description of the parameter lable
+#tooltip: detailed description shown when mouse cursor remains over label 
 #default: Value for title, values for selection list, optional default values
+#index:   indexlist for comboBox, if related values not in default order (0,1,2..)
 #min: minimum value optional
 #max: maximum value optional
 #column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
@@ -10,6 +12,22 @@ read_in:
   - Name    : 
       type:    "string"
       descr:   "name" 
+  - eInPrgf:                 # -f   VITESS   [-]   see 'VtPrgFormat' in 'in_out.h'   
+      type:    "combo" 
+      descr:   "data format" 
+      tooltip: "data format of the program"
+      default: ["VITESS", "McStas", "MCPL", "MCNP", "MCNPX"]   
+      index:   [1,2,3,4,5] 
+      column:  0                     
+      prefix:  "-f"   
+  - eInForm:                 # -F   FLOAT   [-]    see 'VtDataFormat' in 'in_out.h'
+      type:    "combo" 
+      descr:   "storage format" 
+      tooltip: "format of the data to read: 'exp': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
+      default: ["float", "exponential", "binary"]   
+      index:   [1,0,2] 
+      column:  1                     
+      prefix:  "-F"   
   - File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
       type:    "file" 
       descr:   "ASCII input\nfile 1"
@@ -46,35 +64,9 @@ read_in:
       default: 0.0
       column:  2                     
       prefix:  "-d"   
-  - RiFact:                 # -I    1.0  [-] 
-      type:    "float" 
-      descr:   "intensity factor\nfor MCNPX"
-      tooltip: "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnpx-events"
-      default: 1.0
-      column:  0                     
-      prefix:  "-I"   
-  - eInPrgf:                 # -f   VITESS   [-]     
-      type:    "combo" 
-      descr:   "data format" 
-      tooltip: "Format in which the input was written"
-      default: ["VITESS", "McStas", "MCPL", "MCNPX"]   
-      index:   [1,2,3,4] 
-      column:  0                     
-      prefix:  "-f"   
-  - bInForm:                 # -F   FLOAT   [-]   format of double values in the input file, TRUE: float, FALSE exp  
-      type:    "combo" 
-      descr:   "VITESS\nstorage format" 
-      tooltip: "format of double values in the input file"
-      default: ["EXP", "FLOAT"]   
-      column:  1                     
-      prefix:  "-F"   
-  - nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
-      type:    "int" 
-      descr:   "read in color" 
-      tooltip: "Read only events with a given color. A negative number means any color" 
-      default: -1
-      column:  0                     
-      prefix:  "-C"   
+  - Title_1:
+      type:    "title"
+      default: " " 
   - nInRep:                   # -R     1  Number of times that the events are read 
       type:    "int" 
       descr:   "repetition" 
@@ -82,5 +74,38 @@ read_in:
       default: 1
       min:     1
       column:  1                     
-      prefix:  "-R"   
+      prefix:  "-R" 
+  
+  - RiFact:                 # -I    1.0  [-] 
+      type:    "float" 
+      descr:   "intensity factor\nfor MCNPX"
+      tooltip: "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnpx-events"
+      default: 1.0
+      column:  0                     
+      prefix:  "-I"   
+  - nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
+      type:    "int" 
+      descr:   "read in color" 
+      tooltip: "Read only events with a given color. A negative number means any color" 
+      default: -1
+      column:  0                     
+      prefix:  "-C"   
+  - InstFile:                 # 
+      type:    "file" 
+      descr:   "instrument\ninput file"
+      tooltip: "Specifies the instrument file of the previous part of the simulation."
+      prefix:  "--I"
+  - TrcFile:                  # 
+      type:    "file" 
+      descr:   "raytracing\nfile"
+      tooltip: "Name of the file that contains the IDs of the trajectories for tracing."
+      prefix:  "-T"
+  - eTrcMode:                 #  see defines in general.h
+      type:    "combo" 
+      descr:   "raytracing mode" 
+      tooltip: "NO_TRACING     : no tracing\nWRITE_TRC_FILES: write a files for each traj. of interest\nONLY_TRC_TRAJ  : simulation only with traj. of interest"
+      default: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]   
+      index:   [0,1,2] 
+      column:  1                     
+      prefix:  "-t"   
 
