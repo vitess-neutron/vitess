@@ -1,7 +1,7 @@
 #ifndef SAMPLE_REFL_H 
 #define SAMPLE_REFL_H
 
-#include "common.h"
+#include "defines.h"
 #include "general.h"
 
 

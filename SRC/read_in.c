@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include "general.h"
 #include "init.h"
-#include "in_out.h"
 #include "softabort.h"
 #include "mcpl.h"
 #include "trace.h"
