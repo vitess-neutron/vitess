@@ -1120,7 +1120,7 @@ void MainWindow::on_actionShow_inf_File_triggered()
 
 void MainWindow::on_actionSet_Instrument_Name_triggered()
 {
-    instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument as",instrumentDir,
+    instrumentName = QFileDialog::getSaveFileName(this,"Set Instrumentname",instrumentDir,
                                                   tr("Files (*.yaml *.yml)"));
     if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
         instrumentName += ".yml";
@@ -1132,5 +1132,53 @@ void MainWindow::on_actionSet_Instrument_Name_triggered()
     }
     QFileInfo fileinfo(instrumentName);
     ui->InstName->setText(fileinfo.baseName());
+    QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                  "Instrument",
+                                  "Set default directory to\n"+ fileinfo.path(),
+                                  QMessageBox::Yes|QMessageBox::No);
+    //set new working dir
+    if (reply == QMessageBox::Yes) instrumentDir=fileinfo.path();
 
+}
+
+void MainWindow::on_actionConvert_Ascii_to_Binary_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/ascii2bin" + syspar);
+}
+
+void MainWindow::on_actionDefine_Direction_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/define_direction" + syspar);
+}
+
+void MainWindow::on_actionGenerate_Mirror_Files_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/mirror_coating" + syspar);
+}
+
+void MainWindow::on_actionGenerate_Surface_Files_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/surface_file" + syspar);
+}
+
+void MainWindow::on_actionGenerate_Extraction_System_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/gener_bispectral" + syspar);
+}
+
+void MainWindow::on_actionGuide_Shape_triggered()
+{
+    QProcess *toolProcess = new QProcess();
+    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+                                       "/MODULES/guide_shape" + syspar);
 }

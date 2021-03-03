@@ -58,6 +58,13 @@ private slots:
         void on_actionShow_inf_File_triggered();
         void on_actionSet_Instrument_Name_triggered();
 
+        void on_actionConvert_Ascii_to_Binary_triggered();
+        void on_actionDefine_Direction_triggered();
+        void on_actionGenerate_Mirror_Files_triggered();
+        void on_actionGenerate_Surface_Files_triggered();
+        void on_actionGenerate_Extraction_System_triggered();
+        void on_actionGuide_Shape_triggered();
+
 
         void on_pushFresh_clicked();
         void on_pushClear_clicked();
