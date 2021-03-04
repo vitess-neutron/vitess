@@ -1443,7 +1443,7 @@ void CompleteModData()
 
       CopyTrajRange(&stTraj[0], &stTraj[2]);
 
-      fprintf(LogFilePtr,"3rd moderator was added because of 90° position.\n");
+      fprintf(LogFilePtr,"3rd moderator was added because of 90 deg position.\n");
     }
 	
   // set automatic color option

@@ -305,9 +305,9 @@ int main(int argc, char* argv[])
     fprintf(pFile,"Input file for sm_ensemble, generated with Tool 'Generate Extraction System' v1.1: ");
     
     if(newFileFormat)
-      fprintf(pFile,"new file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z    H/°   V/°    h/°   v/°   d/cm    m_up    m_down   Name \n");
+      fprintf(pFile,"new file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z   H/deg V/deg  h/deg v/deg  d/cm    m_up    m_down   Name \n");
     else
-      fprintf(pFile,"old file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z    H/°   V/°    h/°   v/° Up: th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
+      fprintf(pFile,"old file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z   H/deg V/deg  h/deg v/deg Up:th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
 
     for(int i=0; i<Nmirr; i++){
       const char* ctypeName=Name.at(i).c_str();

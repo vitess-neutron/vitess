@@ -551,7 +551,7 @@ void OwnInit(int argc, char *argv[])
   if (Option==1) coef_pi=1.; 
   else           coef_pi=2.;  
   
-  fprintf(LogFilePtr,"Phase set is %f°.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI)); 
+  fprintf(LogFilePtr,"Phase set is %f deg.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI)); 
 
 }/* End OwnInit */
 

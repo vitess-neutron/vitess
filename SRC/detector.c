@@ -605,7 +605,7 @@ void  OwnInit(int argc, char *argv[])
   {	/* cylinder */
     if(Detector.DG.Cyl.axis==0 && fabs(Detector.Theta-M_PI/2)>0.0001)
     {
-      fprintf(LogFilePtr,"\n WARNING: Theta is set to 90° for cylinder in x direction!");
+      fprintf(LogFilePtr,"\n WARNING: Theta is set to 90 deg for cylinder in x direction!");
       Detector.Theta=M_PI/2;
     }
 

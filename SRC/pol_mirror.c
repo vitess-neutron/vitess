@@ -388,13 +388,13 @@ void OwnInit(int argc, char *argv[])
 
   fprintf(LogFilePtr, "mirror: \n");
   fprintf(LogFilePtr, " position           : (%10.4f,%10.4f,%10.4f) cm\n",  PosSM[0], PosSM[1], PosSM[2]);
-  fprintf(LogFilePtr, " orientation horiz. :  %10.4f°, vertical:%10.4f°\n", AngleSMHoriz, AngleSMVert) ;
+  fprintf(LogFilePtr, " orientation horiz. :  %10.4f deg, vertical:%10.4f deg\n", AngleSMHoriz, AngleSMVert) ;
   fprintf(LogFilePtr, " length width height:  %10.4f,%10.4f,%10.4f  cm\n",  DimSM[0], DimSM[1], DimSM[2]);
   // fprintf(LogFilePtr, "guide_field         : (%10.4f,%10.4f,%10.4f) Oe\n",  guide_field[0],  guide_field[1], guide_field[2]);
   fprintf(LogFilePtr, "analysis_dir        : (%10.4f,%10.4f,%10.4f)\n",     analysis_dir[0], analysis_dir[1], analysis_dir[2]);
   fprintf(LogFilePtr, "output frame:\n");
   fprintf(LogFilePtr, " translation        : (%10.4f,%10.4f,%10.4f) cm\n",  TranslOut[0], TranslOut[1], TranslOut[2]); 
-  fprintf(LogFilePtr, " rotation horizontal:  %10.4f°, vertical:%10.4f°\n", AnglOutHoriz, AnglOutVert) ;
+  fprintf(LogFilePtr, " rotation horizontal:  %10.4f deg, vertical:%10.4f deg\n", AnglOutHoriz, AnglOutVert) ;
 
   /* converts degs in radian etc. */
   AngleSMHoriz *= M_PI/180. ;

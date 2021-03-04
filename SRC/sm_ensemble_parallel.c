@@ -166,7 +166,7 @@ int main(int argc, char **argv)
   if (eVisual==1)
   {
     COLLFILE = OpenOutputFile(COLLFILEName, TRUE, "w");
-    fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/°\n\n");
+    fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm          dir y/deg     dir z/deg\n\n");
   }
 
   // no helper threads when plotting or writing to file per neutron

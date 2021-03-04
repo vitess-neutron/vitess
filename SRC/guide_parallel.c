@@ -1132,7 +1132,7 @@ void showAndCompleteSetup()
   }
   else 
   {
-    fprintf(LogFilePtr,"The walls have a waviness of %10.3e°\n", atan(WaviAmpl)*180.0/M_PI);
+    fprintf(LogFilePtr,"The walls have a waviness of %10.3e deg\n", atan(WaviAmpl)*180.0/M_PI);
     if (eWaviDistr==VT_GAUSSIAN)
       fprintf(LogFilePtr,"rms Gaussian distribution\n");
     else
