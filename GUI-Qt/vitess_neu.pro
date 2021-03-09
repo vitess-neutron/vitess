@@ -28,6 +28,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        chopperphases.cpp \
+        chrystanalyzer.cpp \
         help.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -36,12 +38,16 @@ SOURCES += \
         tools.cpp
 
 HEADERS += \
+        chopperphases.h \
+        chrystanalyzer.h \
         help.h \
         mainwindow.h \
         modultable.h \
         parameter.h \
         tools.h
 FORMS += \
+        chopperphases.ui \
+        chrystanalyzer.ui \
         help.ui \
         mainwindow.ui \
         modultable.ui \

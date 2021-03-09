@@ -1014,6 +1014,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
     return false;
 }
 
+void MainWindow::closeEvent( QCloseEvent *ev)
+{
+    QApplication::closeAllWindows();
+}
+
 void MainWindow::on_actionPlot_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
@@ -1181,4 +1186,20 @@ void MainWindow::on_actionGuide_Shape_triggered()
     QProcess *toolProcess = new QProcess();
     toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
                                        "/MODULES/guide_shape" + syspar);
+}
+
+void MainWindow::on_actionCryst_Analayzer_Spectrom_triggered()
+{
+    QStringList modulSpec;
+    modulSpec << VitessDir << syspar << instrumentDir;
+    Chrystanalyzer *analyzerWin = new Chrystanalyzer(modulSpec);
+    analyzerWin->show();
+}
+
+void MainWindow::on_actionCompute_Chopper_Phases_triggered()
+{
+    QString cmd = VitessDir + "/MODULES/chop_phases" + syspar;
+    cmd += " -o/tmp/chop_phases ";
+    ChopperPhases *chopperPhases = new ChopperPhases(cmd);
+    chopperPhases->show();
 }

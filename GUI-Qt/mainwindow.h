@@ -5,6 +5,8 @@
 #include "modultable.h"
 #include "help.h"
 #include "parameter.h"
+#include "chrystanalyzer.h"
+#include "chopperphases.h"
 //#include "convert.h"
 
 #include <QTreeWidgetItem>
@@ -64,6 +66,8 @@ private slots:
         void on_actionGenerate_Surface_Files_triggered();
         void on_actionGenerate_Extraction_System_triggered();
         void on_actionGuide_Shape_triggered();
+        void on_actionCryst_Analayzer_Spectrom_triggered();
+        void on_actionCompute_Chopper_Phases_triggered();
 
 
         void on_pushFresh_clicked();
@@ -145,6 +149,7 @@ private:
     void readCurModul(YAML::Node& curModule,int index);
     void pasteCurModul(YAML::Node curModule,int index);
     void progress();
+    void closeEvent(QCloseEvent *ev);
 };
 
 #endif // MAINWINDOW_H
