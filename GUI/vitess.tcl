@@ -340,7 +340,7 @@ set m1 {
   {cx float "" {"center of\nmoderator\nX [cm]" "The center of the source is usually (0.0,0.0,0.0). In this case, neutrons coming from the center of the source without divergence pass the center of the window (if gravity is neglected). Deviations of the moderator center from this position must be given here."}}
   {cy float "" {"center Y [cm]" "center of moderator y component (for further description see x component)"}}
   {cz float "" {"center Z [cm]" "center of moderator z component (for further description see x component)"}}
-  {totflux float "" {"total flux\nat moderated\n[n/(cm^2 s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
+  {totflux float "" {"total flux\nmoderated\n[n/(cm^2 s)]" "Flux on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
   {current float "" {"neutron\ncurrent [n/s]" "The current into the chosen solid angle is usually calculated as\ncurrent = total_flux * mod_area * solid_angle / (2*pi)\nand thus need not be given.\nIf moderator area or solid angle are chosen to be zero, it can be useful to give a value for the current (into the solid angle). Otherwise the spectrum is normalized to have an integral of 1.\nWarning: If a current value is given, the 'total flux' value is ignored!"}}
   {perform float 1.0 {"performance\nfactor" "Factor allowing for losses by aging or engineering design details not included in the model"}}
   {flux_um float 0.0 {"total flux\nundermoderated\n[n/(cm^2 s)]" "Flux of under-moderated neutrons on moderator surface into solid angle 2*pi integrated over wavelength [n/(cm^2 s)]\nMaxwellian or flux distribution from file are normalized to this value, (unless 'neutron current' is given)."}}
@@ -465,8 +465,8 @@ set BigFramelmo 1
 
 set smASET {
   {"Restriction of sampling trajectories" header}
-  {number_of_neutrons float 1000000 {"number of traj.\nper bundle" "" "" n} ge0 "" 1}
-  {number_of_bundles int 1 {"number of\nbundles" "" "" l} ge1 "" 1}
+  {number_of_neutrons float 1000000 {"number of traj.\nper bundle" "The total number of trajectories is the product of 'number of bundles' and 'number of traj. per bundle'\nIt determines the accuracy of the simulation, but not the flux (for details see Help)" "" n} ge0 "" 1}
+  {number_of_bundles int 1 {"number of\nbundles" "After each bundle an update of the monitor output files will be triggered." "" l} ge1 "" 1}
   {}
   {min_wavelength float 1 {"min. wave-\nlength [A]" "" "" m} ge0 "" 1}
   {min_time float "" {"min. time [ms]" "minimal time in ms of time window at moderator" "" t}}

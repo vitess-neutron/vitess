@@ -155,31 +155,31 @@ extern short _eTraceMode;       /* EPIC  -k             [-]   NO_TRACING     : n
                                                               ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
 // Moderator parameters read from file or from input
 // -------------------------------------------------
-Moderator stMod   [NUM_MOD];    //   I   -0S  TS1          index: target station
-                                // E     -nt COUPLED [-]   enum: moderator type (POISONED,  DECOUPLED, COUPLED, MULT_SPEC)
-                                //  P CS -ns   'C'  [cm]   shape of the moderator (RECTANGULAR, CIRCULAR) 
-                                //  P CS -nr   2.0  [cm]   diameter of the moderator
-                                // EPICS -nw        [cm]   width of the moderator
-                                // EPICS -nh        [cm]   height of the moderator
-                                // EPIC  -nX  0.0   [cm]   x-component of the center fo the moderator
-                                // EPIC  -nY  0.0   [cm]   y-component of the center fo the moderator
-                                // EPIC  -nZ  0.0   [cm]   z-component of the center fo the moderator
-                                // EP C  -no        [-]    index: order of moderators: higher number is in background
-                                // EP C  -nc        [-]    index: colour for the neutrons leaving this moderator
-                                // EP C  -nI        [n/s]  mean neutron current leaving the moderator  
-                                //  P CS -nF 1e13 [n/cm²/s] total (average) flux on the moderator surface
-                                // EP CS -nT  50    [K]    moderator temperature  
-                                // E     -np   1.0         performance factor considering losses by the technical realization   
-                                //  P C  -nf   0.0 [n/cm²/s] total CW-flux of the under-moderated neutrons on the moderator surface
-                                //  P C  -nx   0.9  [1/Ang]  factor for the wavelength dependence of under-moderated neutrons 
-                                //  P C  -nk   2.2   [-]   scaling factor for the flux of under-moderated neutrons        
-                                //  P    -nA  30.0  [µs]   ascent time constant of the moderated neutrons in the pulse
-                                //  P    -nD 150.0  [µs]   decay time constant of the moderated neutrons in the pulse 
-                                //  P    -na   2.4  [µs]   ascent time constant of the under-moderated neutrons in the pulse
-                                //  P    -nd  12.0  [µs]   decay time constant of the under-moderated neutrons in the pulse
-                                //  PICS -nW               wavelength distribution file
-                                //  P    -nV               time distribution file 
-                                //  PI   -nU               wavelength-time distribution file 
+Moderator stMod   [NUM_MOD];    //   I   -0S  TS1             index: target station
+                                // E     -nt COUPLED [-]      enum: moderator type (POISONED,  DECOUPLED, COUPLED, MULT_SPEC)
+                                //  P CS -ns   'C'  [cm]      shape of the moderator (RECTANGULAR, CIRCULAR) 
+                                //  P CS -nr   2.0  [cm]      diameter of the moderator
+                                // EPICS -nw        [cm]      width of the moderator
+                                // EPICS -nh        [cm]      height of the moderator
+                                // EPIC  -nX  0.0   [cm]      x-component of the center fo the moderator
+                                // EPIC  -nY  0.0   [cm]      y-component of the center fo the moderator
+                                // EPIC  -nZ  0.0   [cm]      z-component of the center fo the moderator
+                                // EP C  -no        [-]       index: order of moderators: higher number is in background
+                                // EP C  -nc        [-]       index: colour for the neutrons leaving this moderator
+                                // EP C  -nI        [n/s]     mean neutron current leaving the moderator  
+                                //  P CS -nF 1e13 [n/cm²/s]   total (average) flux on the moderator surface
+                                // EP CS -nT  50    [K]       moderator temperature  
+                                // E     -np   1.0            performance factor considering losses by the technical realization   
+                                //  P C  -nf   0.0 [n/cm²/s]  total CW-flux of the under-moderated neutrons on the moderator surface
+                                //  P C  -nx   0.9  [1/Ang]   factor for the wavelength dependence of under-moderated neutrons 
+                                //  P C  -nk   2.2   [-]      scaling factor for the flux of under-moderated neutrons        
+                                //  P    -nA  30.0  [µs]      ascent time constant of the moderated neutrons in the pulse
+                                //  P    -nD 150.0  [µs]      decay time constant of the moderated neutrons in the pulse 
+                                //  P    -na   2.4  [µs]      ascent time constant of the under-moderated neutrons in the pulse
+                                //  P    -nd  12.0  [µs]      decay time constant of the under-moderated neutrons in the pulse
+                                //  PICS -nW                  wavelength distribution file
+                                //  P    -nV                  time distribution file 
+                                //  PI   -nU                  wavelength-time distribution file 
 
 // Variables determined from input parameters or trajectory data
 // -------------------------------------------------------------

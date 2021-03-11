@@ -82,7 +82,7 @@ void InitModerator(Moderator*   pMod)
   pMod->eIsisTS    =  0;	  
   pMod->TotFluxUM  =  0.0;       
   pMod->Chi        =  0.0;             
-  pMod->Kappa      =  0.0;           
+  pMod->Kappa      =  2.2;           
   pMod->TauAscUM   =  0.0;        
   pMod->TauDecUM   =  0.0;        
   pMod->FUAmpUM    =  0.0;          
