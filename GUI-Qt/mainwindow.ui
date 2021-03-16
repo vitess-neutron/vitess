@@ -598,7 +598,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <widget class="QMenu" name="menuTools_2">
+    <widget class="QMenu" name="menuHelpTools">
      <property name="title">
       <string>Tools</string>
      </property>
@@ -607,18 +607,17 @@
      <addaction name="actionGenerate_Mirror_Files_2"/>
      <addaction name="actionGenerate_Surface_Files_2"/>
      <addaction name="actionGenerate_Extraction_System_2"/>
-     <addaction name="actionGuide_Shape_2"/>
      <addaction name="actionCryst_Analayzer_Spectrom_2"/>
      <addaction name="actionCompute_Chopper_Phases_2"/>
     </widget>
     <addaction name="actionGeneral_Information"/>
     <addaction name="actionTutorial"/>
     <addaction name="actionUser_Interface"/>
-    <addaction name="actionGenerate_Series_3"/>
+    <addaction name="actionGenerate_Series"/>
     <addaction name="actionExternal_Commands"/>
     <addaction name="actionVisualization"/>
     <addaction name="actionOptimization"/>
-    <addaction name="menuTools_2"/>
+    <addaction name="menuHelpTools"/>
     <addaction name="actionModules_A_L"/>
     <addaction name="actionModules_M"/>
     <addaction name="actionModules_N_R"/>
@@ -814,7 +813,7 @@
   </action>
   <action name="actionCryst_Analayzer_Spectrom">
    <property name="text">
-    <string>Cryst.Analayzer Spectrom.</string>
+    <string>Cryst.Analyzer Spectrom.</string>
    </property>
   </action>
   <action name="actionCompute_Chopper_Phases">
@@ -907,7 +906,7 @@
     <string>User Interface</string>
    </property>
   </action>
-  <action name="actionGenerate_Series_3">
+  <action name="actionGenerate_Series">
    <property name="text">
     <string>Generate Series</string>
    </property>
@@ -1151,7 +1150,7 @@
   </action>
   <action name="actionCryst_Analayzer_Spectrom_2">
    <property name="text">
-    <string>Cryst.Analayzer Spectrom.</string>
+    <string>Cryst.Analyzer Spectrom.</string>
    </property>
   </action>
   <action name="actionCompute_Chopper_Phases_2">

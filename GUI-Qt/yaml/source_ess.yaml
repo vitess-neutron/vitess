@@ -6,8 +6,8 @@ source:
       column:  0                       #0-2
   - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
       type:    combo                   # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
-      default: ["SRC_ESS","SRC_ESS"] 
-      index:   [5,5]
+      default: "SRC_ESS" 
+      index:   5
       prefix:  "-K"     
 
   - titel_0 :                       
@@ -81,7 +81,7 @@ source:
       column:  0                     
       prefix:  "-l"     
   - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
-      type:    "int" 
+      type:    "float" 
       descr :  "number of traj.\nper bundle"
       tooltip: "number of neutron trajectories (events) created in each bundle"
       default: 1000000 

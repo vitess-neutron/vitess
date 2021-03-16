@@ -100,6 +100,9 @@ MainWindow::MainWindow(QWidget *parent) :
     foreach(QAction * act, ui->menuMinWght->actions())
         connect(act,SIGNAL(triggered()),this,SLOT(minNeutWeight_triggered()));
     MinWght = "0.0";
+
+    foreach(QAction * act, ui->menuHelpTools->actions())
+        connect(act,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
 }
 
 MainWindow::~MainWindow()
@@ -266,6 +269,7 @@ void MainWindow::on_actionSave_as_triggered()
     if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
         instrumentName += ".yml";
     saveFile(instrumentName);
+    ui->textBrowser->append("Instrument is saved as: " +instrumentName);
 }
 
 void MainWindow::on_actionNewInst_triggered()
@@ -468,6 +472,12 @@ void MainWindow::minNeutWeight_triggered()
     MinWght = this->findChild<QAction *>(sender()->objectName())->text();
 }
 
+void MainWindow::helpTools_triggered()
+{
+     QString text = this->findChild<QAction *>(sender()->objectName())->text();
+     QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + helpTools[text] + ".html"));
+}
+
 
 void MainWindow::writeHeader(YAML::Node& config)
 {
@@ -508,7 +518,8 @@ void MainWindow::loadHeader(YAML::Node& nodeGlobal)
             if (childName == "MinWght")
             {
                 MinWght = QString::fromStdString(iter->second.as<string>());
-                str = MinWght.replace(QRegularExpression("[.|-]+"),"_");
+                str = MinWght;
+                str.replace(QRegularExpression("[.|-]+"),"_");
             }else
             {
                 nBuffer = QString::fromStdString(iter->second.as<string>());
@@ -1149,42 +1160,42 @@ void MainWindow::on_actionSet_Instrument_Name_triggered()
 void MainWindow::on_actionConvert_Ascii_to_Binary_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/ascii2bin" + syspar);
 }
 
 void MainWindow::on_actionDefine_Direction_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/define_direction" + syspar);
 }
 
 void MainWindow::on_actionGenerate_Mirror_Files_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/mirror_coating" + syspar);
 }
 
 void MainWindow::on_actionGenerate_Surface_Files_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/surface_file" + syspar);
 }
 
 void MainWindow::on_actionGenerate_Extraction_System_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/gener_bispectral" + syspar);
 }
 
 void MainWindow::on_actionGuide_Shape_triggered()
 {
     QProcess *toolProcess = new QProcess();
-    toolProcess->start("/usr/bin/xterm",QStringList()<< VitessDir +
+    toolProcess->start("xterm",QStringList()<< VitessDir +
                                        "/MODULES/guide_shape" + syspar);
 }
 

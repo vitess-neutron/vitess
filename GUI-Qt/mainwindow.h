@@ -86,6 +86,7 @@ private slots:
         void paramBut_clicked();
         void BufferSize_triggered();
         void minNeutWeight_triggered();
+        void helpTools_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -106,11 +107,20 @@ private:
         {"bGravity", {"--G"},},
         {"nBuffer" , {"--B"},},
         {"MinWght" , {"--U"},},
-//        {"InDir"   , {"--I"}},
+//        {"InDir"   , {"--i"}},
         {"InDir"   , {"--P",}},
-//        {"OutDir"  , {"--O",}},
+//        {"OutDir"  , {"--o",}},
 //        {"LogFile" , {"--L",}},
 //        {"Modnum"  , {"--N",}},
+    };
+    QMap<QString,QString> helpTools = {
+        { "Convert Ascii to Binary" , "ascii2bin"},
+        { "Define Direction", "define_direction"},
+        { "Generate Mirror Files", "mirror_coating"},
+        { "Generate Surface Files", "surface_file"},
+        { "Generate Extraction System",  "gener_bispectral"},
+        { "Cryst.Analyzer Spectrom.", "crysanalyzerspec"},
+        { "Compute Chopper Phases", "chop_phases"}
     };
     QMap<QString, QMap<QString,QString>> mapModule;
     QMap <QString,QMap<QString,QMap<QString,QString>>> mapVitess;
