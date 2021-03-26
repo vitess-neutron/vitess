@@ -31,8 +31,6 @@
 /*********************************/
 /** Global Variables            **/
 /*********************************/
-McCompID _eModule=MCN_EVAL1_INELAST;
-
 FILE		*FilePtrTOF=NULL,  *FilePtrEnergy=NULL;
 char		*FileNameTOF=NULL, *FileNameEnergy=NULL;
 short    eGeomOption,      // geometry option:   0: direct geometry   1: indirect geometry
@@ -62,10 +60,10 @@ double   alpha, beta;
 /******************************/
 /** Prototypes               **/
 /******************************/
-double TransformFactor(double DeltaE);
-double BoseFactor(double T, double w);
-void   OwnInit(int argc, char *argv[]) ;
-void   OwnCleanup() ;
+double TransformFactor(double DeltaE);    // Transform factor     
+double BoseFactor(double T, double w);    // Bose factor
+void   OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
+void   OwnCleanup();                      // closes files   
 
 
 /******************************/
@@ -81,6 +79,8 @@ int main(int argc, char **argv)
 
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_EVAL1_INELAST;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
@@ -114,52 +114,58 @@ int main(int argc, char **argv)
     {
       CHECK;
 	
-      // check color and flight direction
-      if (iColor != ANY_COLOR  &&  iColor != InputNeutrons[i].Color) goto no_match;
-
-      CartesianToEulerZY(InputNeutrons[i].Vector, &roty, &rotz);
-      if (rotz < (Angle - AngleRange) || rotz > (Angle + AngleRange) ) goto no_match;
-
-      /* determine estimated TOF from source to detector */
-      TofToDet = InputNeutrons[i].Time - TimeOffset;
-
-      /* energy transfer corresponding to total flight time to detector */
-      if (eGeomOption == 0) 
-      { 
-        if (bTofCorr)       // Flight distance correction
-          PathToDetection = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-        else
-          PathToDetection = SecondaryFlightPath;
-        DelE = 0.001*ENERGY_FROM_V(PathToDetection / (TofToDet - TofRef)) - EnergyRef;          // direct geometry
-      }
-      else if (eGeomOption == 1) 
-      { DelE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (TofToDet - TofRef));
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { Error ("Wrong geometry option");
-      }
+      { 
+        // check color and flight direction
+        if (iColor != ANY_COLOR  &&  iColor != InputNeutrons[i].Color) goto no_match;
 
-      /* binning process  */
-      for(k=0; k<NoBins; k++)
-      {
-        if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
-        { prob_t[k] += InputNeutrons[i].Probability; 
-          TotIntTof += InputNeutrons[i].Probability; 
-          nperbint[k] += 1 ;
+        CartesianToEulerZY(InputNeutrons[i].Vector, &roty, &rotz);
+        if (rotz < (Angle - AngleRange) || rotz > (Angle + AngleRange) ) goto no_match;
+
+        /* determine estimated TOF from source to detector */
+        TofToDet = InputNeutrons[i].Time - TimeOffset;
+
+        /* energy transfer corresponding to total flight time to detector */
+        if (eGeomOption == 0) 
+        { 
+          if (bTofCorr)       // Flight distance correction
+            PathToDetection = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+          else
+            PathToDetection = SecondaryFlightPath;
+          DelE = 0.001*ENERGY_FROM_V(PathToDetection / (TofToDet - TofRef)) - EnergyRef;          // direct geometry
         }
-        if( (DelE > e[k]) && (DelE <= e[k+1]) )
-        { prob_e[k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
-          TotIntE   += InputNeutrons[i].Probability; 
-          nperbine[k] += 1 ;
+        else if (eGeomOption == 1) 
+        { DelE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (TofToDet - TofRef));
         }
+        else
+        { Error ("Wrong geometry option");
+        }
+
+        /* binning process  */
+        for(k=0; k<NoBins; k++)
+        {
+          if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
+          { prob_t[k] += InputNeutrons[i].Probability; 
+            TotIntTof += InputNeutrons[i].Probability; 
+            nperbint[k] += 1 ;
+          }
+          if( (DelE > e[k]) && (DelE <= e[k+1]) )
+          { prob_e[k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
+            TotIntE   += InputNeutrons[i].Probability; 
+            nperbine[k] += 1 ;
+          }
+        }
+
+        /* continues here if neutron is not considered */
+	     no_match: ;
+
+        /* writes output binary file */
+        WriteNeutron(&(InputNeutrons[i]));
       }
-
-      /* continues here if neutron is not considered */
-	   no_match: ;
-
-      /* writes output binary file */
-      WriteNeutron(&(InputNeutrons[i]));
-
     } // end loop over trajectories
   }
 
@@ -432,7 +438,7 @@ void OwnInit(int argc, char *argv[])
 
 
 /*******************************************************/
-/* OwnCleanup: close files                             */
+/* closes files                                        */
 /*******************************************************/
 void OwnCleanup()
 {

@@ -18,12 +18,6 @@
 #include "intersection.h"
 
 
-/************************************/
-/** Definitions, structures, enums **/
-/************************************/
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
-
-
 /******************************/
 /** Prototypes               **/
 /******************************/
@@ -34,8 +28,6 @@ void   OwnCleanup() ;
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID   _eModule=MCN_MIRROR_POL;
-
 FILE       *pReflUpFile,              //        pointer to the file containing reflectivity data for spin up neutrons
            *pReflDownFile;            //        pointer to the file containing reflectivity data for spin down neutrons
 char       *ReflUpFileName,           // -U     name of the file containing reflectivity data for spin up neutrons
@@ -78,6 +70,8 @@ int main(int argc, char **argv)
 
   // initialisation
   // --------------
+  _eModule=MCN_MIRROR_POL;
+
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.1");
 	OwnInit(argc, argv);
@@ -100,123 +94,130 @@ int main(int argc, char **argv)
     { 
 			CHECK
 
-      Neutrons = InputNeutrons[i]; 
-      CopyVector(Neutrons.Position, Pos) ;
-      CopyVector(Neutrons.Vector, Dir) ;
-      CopyVector(Neutrons.Spin, Spin) ; 
-
-      /* translates into frame of the mirror */
-      SubVector(Pos, PosSM) ;
-      RotVector(RotMatrixSM, Pos) ;
-      RotVector(RotMatrixSM, Dir) ;
-      // RotVector(RotMatrixSM, Spin) ;
-
-      /* transfers spin into frame in which analysis direction is along x-axis */
-      RotVector(RotMatrixAnalysis, Spin);
-      CartesianToSpherical(Spin, &the, &phi);
-
-      /* calculate intersection point with mirror plane, 
-      check if mirror is hit and transfer neutron to intersection point */
-      bIS = (short) PlaneLineIntersect(Pos, Dir, vMirrNormal, 0.0, vItsPnt);
-      if (bIS==TRUE && (fabs(vItsPnt[nD]) < DimSM[nD]/2.) 
-                    && (fabs(vItsPnt[ 0]) < DimSM[ 0]/2.) && (Dir[0] > 0.))
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        /* calculate inclination angle, reflectivity for spin up and down neutrons */
-        dIncl      = fabs(asin(Dir[3-nD])); 
-        datanumber = (int) floor(dIncl * 180./M_PI * 1000./Neutrons.Wavelength + 0.5); 
-        if (datanumber > nDataMax) 
-        {	
-          aUU      = 0.0;
-          aDD      = 0.0;
-          ProbRefl = 0.0; 
-        }
-        else
-        {	
-          aUU = sqrt(aReflUp[datanumber]) ;
-          aDD = sqrt(aReflDn[datanumber]) ;
-          ProbRefl = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.)) ;
-        }
-
-        /* TOF until intersection point with mirror,  
-        new position, direction, spin orientation, change in count rate */
-        TOFip = (vItsPnt[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
-        CopyVector(vItsPnt, Pos);
-        if (bTransm)
-        {	
-          if (aUU == 1.0 && aDD == 1.0)
-          { 
-            goto getlost;
-          }
-          else	
-          { 
-            Neutrons.Probability *= (1.0 - ProbRefl);
-            the  =  2.0 * atan2((1.0-aDD)*tan(the/2.0), (1.0-aUU));
-          }
-        }
-        else
-        {
-          if (aUU == 0.0 && aDD == 0.0)
-          {	
-            goto getlost;
-          }
-          else	
-          {	
-            Neutrons.Probability *= ProbRefl;
-            Dir[3-nD] *= -1.0;			
-            the  =  2.0 * atan2(aDD*tan(the/2.0), aUU);
-          }
-        }
-      } 
-      else 
-      {	
-        goto getlost;                      
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        Neutrons = InputNeutrons[i]; 
+        CopyVector(Neutrons.Position, Pos) ;
+        CopyVector(Neutrons.Vector, Dir) ;
+        CopyVector(Neutrons.Spin, Spin) ; 
 
-      if (Neutrons.Probability <= wei_min) goto getlost ;
+        /* translates into frame of the mirror */
+        SubVector(Pos, PosSM) ;
+        RotVector(RotMatrixSM, Pos) ;
+        RotVector(RotMatrixSM, Dir) ;
+        // RotVector(RotMatrixSM, Spin) ;
 
-      /* translates back to cartesian representation of spin */
-      SphericalToCartesian(Spin, &the, &phi);
-      RotBackVector(RotMatrixAnalysis, Spin);
+        /* transfers spin into frame in which analysis direction is along x-axis */
+        RotVector(RotMatrixAnalysis, Spin);
+        CartesianToSpherical(Spin, &the, &phi);
 
-      /* translates into initial frame   */
-      RotBackVector(RotMatrixSM, Pos) ;
-      RotBackVector(RotMatrixSM, Dir) ;
-      RotBackVector(RotMatrixSM, Spin) ;
-      AddVector(Pos, PosSM) ;
+        /* calculate intersection point with mirror plane, 
+        check if mirror is hit and transfer neutron to intersection point */
+        bIS = (short) PlaneLineIntersect(Pos, Dir, vMirrNormal, 0.0, vItsPnt);
+        if (bIS==TRUE && (fabs(vItsPnt[nD]) < DimSM[nD]/2.) 
+                      && (fabs(vItsPnt[ 0]) < DimSM[ 0]/2.) && (Dir[0] > 0.))
+        {
+          /* calculate inclination angle, reflectivity for spin up and down neutrons */
+          dIncl      = fabs(asin(Dir[3-nD])); 
+          datanumber = (int) floor(dIncl * 180./M_PI * 1000./Neutrons.Wavelength + 0.5); 
+          if (datanumber > nDataMax) 
+          {	
+            aUU      = 0.0;
+            aDD      = 0.0;
+            ProbRefl = 0.0; 
+          }
+          else
+          {	
+            aUU = sqrt(aReflUp[datanumber]) ;
+            aDD = sqrt(aReflDn[datanumber]) ;
+            ProbRefl = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.)) ;
+          }
 
-      /* computes neutron variables in the output frame */
-      SubVector(Pos, TranslOut) ;
-      RotVector(RotMatrixOut, Pos) ;
-      RotVector(RotMatrixOut, Dir) ;
-      RotVector(RotMatrixOut, Spin) ;
+          /* TOF until intersection point with mirror,  
+          new position, direction, spin orientation, change in count rate */
+          TOFip = (vItsPnt[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
+          CopyVector(vItsPnt, Pos);
+          if (bTransm)
+          {	
+            if (aUU == 1.0 && aDD == 1.0)
+            { 
+              goto getlost;
+            }
+            else	
+            { 
+              Neutrons.Probability *= (1.0 - ProbRefl);
+              the  =  2.0 * atan2((1.0-aDD)*tan(the/2.0), (1.0-aUU));
+            }
+          }
+          else
+          {
+            if (aUU == 0.0 && aDD == 0.0)
+            {	
+              goto getlost;
+            }
+            else	
+            {	
+              Neutrons.Probability *= ProbRefl;
+              Dir[3-nD] *= -1.0;			
+              the  =  2.0 * atan2(aDD*tan(the/2.0), aUU);
+            }
+          }
+        } 
+        else 
+        {	
+          goto getlost;                      
+        }
 
-      /* translates neutrons to output plane (x'=0) */
-      TOFprec = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
-      CopyVector(Dir, Path) ;
-      MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-      AddVector(Pos, Path) ;  
+        if (Neutrons.Probability <= wei_min) goto getlost ;
 
-      /* precession in the guide field */
-      /* transfers into frame in which guide field is along x-axis and calculates phase shift */
-      // RotVector(RotMatrixField, Spin) ; 
-      // PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]) ;  
-      // NumberPrecessions = PhaseShift/2./M_PI ;
-      /* rotates about this x-axis */
-      // FillRotMatrixYX(LarmorMatrix, PhaseShift, 0) ;
-      // RotVector      (LarmorMatrix, Spin) ;
-      /* transfers back to output frame */
-      // RotBackVector  (RotMatrixField, Spin) ;
+        /* translates back to cartesian representation of spin */
+        SphericalToCartesian(Spin, &the, &phi);
+        RotBackVector(RotMatrixAnalysis, Spin);
 
-      /* transmit coordinates which were not changed, the rest overwrite below */
-      Neutrons.Time += (TOFip+TOFprec);
-      CopyVector(Pos,  Neutrons.Position) ;
-      CopyVector(Dir,  Neutrons.Vector) ;
-      CopyVector(Spin, Neutrons.Spin) ;
+        /* translates into initial frame   */
+        RotBackVector(RotMatrixSM, Pos) ;
+        RotBackVector(RotMatrixSM, Dir) ;
+        RotBackVector(RotMatrixSM, Spin) ;
+        AddVector(Pos, PosSM) ;
 
-      /* writes output binary file */
-      WriteNeutron(&Neutrons) ;
+        /* computes neutron variables in the output frame */
+        SubVector(Pos, TranslOut) ;
+        RotVector(RotMatrixOut, Pos) ;
+        RotVector(RotMatrixOut, Dir) ;
+        RotVector(RotMatrixOut, Spin) ;
 
-   getlost:;
+        /* translates neutrons to output plane (x'=0) */
+        TOFprec = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
+        CopyVector(Dir, Path) ;
+        MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
+        AddVector(Pos, Path) ;  
+
+        /* precession in the guide field */
+        /* transfers into frame in which guide field is along x-axis and calculates phase shift */
+        // RotVector(RotMatrixField, Spin) ; 
+        // PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]) ;  
+        // NumberPrecessions = PhaseShift/2./M_PI ;
+        /* rotates about this x-axis */
+        // FillRotMatrixYX(LarmorMatrix, PhaseShift, 0) ;
+        // RotVector      (LarmorMatrix, Spin) ;
+        /* transfers back to output frame */
+        // RotBackVector  (RotMatrixField, Spin) ;
+
+        /* transmit coordinates which were not changed, the rest overwrite below */
+        Neutrons.Time += (TOFip+TOFprec);
+        CopyVector(Pos,  Neutrons.Position) ;
+        CopyVector(Dir,  Neutrons.Vector) ;
+        CopyVector(Spin, Neutrons.Spin) ;
+
+        /* writes output binary file */
+        WriteNeutron(&Neutrons) ;
+
+      getlost:;
+      }
     }
   }
    
@@ -420,10 +421,6 @@ void OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
   fprintf(LogFilePtr," \n") ;
-
-  /* set description for instrument plot */
-  stPicture.dWPar = DimSM[1];
-  stPicture.dHPar = DimSM[2];
 
   /* free allocated memory */
   if (aReflUp!=NULL) free(aReflUp);

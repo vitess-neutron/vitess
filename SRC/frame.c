@@ -21,8 +21,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID   _eModule=MCN_FRAME;
-
 // input parameters
 char		   S1='x', S2, S3;             // -S       [-]   sequence of operations RTM RMT TRM TMR MTR MRT
 int 		   MirrX=FALSE,                // -i       [-]   flag: mirror trajectories at yz-plane            
@@ -58,6 +56,8 @@ int main(int argc, char **argv)
 
   // Initialize the program according to the parameters given
   // --------------------------------------------------------
+  _eModule=MCN_FRAME;
+
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.3");
 	OwnInit(argc, argv);
@@ -74,42 +74,50 @@ int main(int argc, char **argv)
   {
     for(i=0;i<NumNeutGot;i++)
     {
-      CHECK;	
-      CopyNeutron(&InputNeutrons[i], &OutNeutron);
+      CHECK;
 
-      if ((S1 == 'R') && (S2 == 'T') && (S3 == 'M'))
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        Rotation(&OutNeutron); SubVector(OutNeutron.Position, Translate); Mirroring(&OutNeutron); goto output;
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        CopyNeutron(&InputNeutrons[i], &OutNeutron);
 
-      if ((S1 == 'R') && (S2 == 'M') && (S3 == 'T'))
-      {
-        Rotation(&OutNeutron); Mirroring(&OutNeutron); SubVector(OutNeutron.Position, Translate); goto output;
+        if ((S1 == 'R') && (S2 == 'T') && (S3 == 'M'))
+        {
+          Rotation(&OutNeutron); SubVector(OutNeutron.Position, Translate); Mirroring(&OutNeutron); goto output;
+        }
+
+        if ((S1 == 'R') && (S2 == 'M') && (S3 == 'T'))
+        {
+          Rotation(&OutNeutron); Mirroring(&OutNeutron); SubVector(OutNeutron.Position, Translate); goto output;
+        }
+
+        if ((S1 == 'T') && (S2 == 'R') && (S3 == 'M'))
+        {
+          SubVector(OutNeutron.Position, Translate); Rotation(&OutNeutron); Mirroring(&OutNeutron); goto output;
+        }
+
+        if ((S1 == 'M') && (S2 == 'R') && (S3 == 'T'))
+        {
+          Mirroring(&OutNeutron); Rotation(&OutNeutron); SubVector(OutNeutron.Position, Translate); goto output;
+        }
+
+        if ((S1 == 'T') && (S2 == 'M') && (S3 == 'R'))
+        {
+          SubVector(OutNeutron.Position, Translate); Mirroring(&OutNeutron); Rotation(&OutNeutron); goto output;
+        }
+
+        if ((S1 == 'M') && (S2 == 'T') && (S3 == 'R'))
+        {
+          Mirroring(&OutNeutron); SubVector(OutNeutron.Position, Translate); Rotation(&OutNeutron);  goto output;
+        }
+
+        /* writes output binary file */
+       output:
+        WriteNeutron(&OutNeutron);
       }
-
-      if ((S1 == 'T') && (S2 == 'R') && (S3 == 'M'))
-      {
-        SubVector(OutNeutron.Position, Translate); Rotation(&OutNeutron); Mirroring(&OutNeutron); goto output;
-      }
-
-      if ((S1 == 'M') && (S2 == 'R') && (S3 == 'T'))
-      {
-        Mirroring(&OutNeutron); Rotation(&OutNeutron); SubVector(OutNeutron.Position, Translate); goto output;
-      }
-
-      if ((S1 == 'T') && (S2 == 'M') && (S3 == 'R'))
-      {
-        SubVector(OutNeutron.Position, Translate); Mirroring(&OutNeutron); Rotation(&OutNeutron); goto output;
-      }
-
-      if ((S1 == 'M') && (S2 == 'T') && (S3 == 'R'))
-      {
-        Mirroring(&OutNeutron); SubVector(OutNeutron.Position, Translate); Rotation(&OutNeutron);  goto output;
-      }
-
-      /* writes output binary file */
-     output:
-      WriteNeutron(&OutNeutron);
     }
   }
 

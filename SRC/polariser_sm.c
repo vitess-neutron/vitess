@@ -25,7 +25,6 @@
 /************************************/
 #define	FLD_SIZE	    1000
 #define	STRING_BUFFER   50
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
 
 
 /**************************/
@@ -41,8 +40,6 @@ void  ReadReflFile(char* sFilename, double* pData); // Reads reflectivity data f
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID   _eModule=MCN_POL_SM;
-
 // Input parameters
 char      *ParameterFileName=NULL,     // -P        [-]   pointer to the name of the parameter file  
           *ReflUpFileName=NULL,        // -U        [-]   pointer to the name of the reflectivity file for spin-up neutrons 
@@ -95,6 +92,8 @@ int main(int argc, char **argv)
 
   // initialization
   // --------------
+  _eModule=MCN_POL_SM;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
@@ -121,172 +120,179 @@ int main(int argc, char **argv)
     { 
       CHECK;
 
-      /* InputNeutrons[i].Position[0]	= 0.0; */
-      TOF  = InputNeutrons[i].Time;
-      WL   = InputNeutrons[i].Wavelength;
-      Prob = InputNeutrons[i].Probability;
-
-      CopyVector(InputNeutrons[i].Position, Pos);
-      CopyVector(InputNeutrons[i].Vector,   Dir);
-      CopyVector(InputNeutrons[i].Spin, SpinVector); 
-
-      InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
-
-      /* translates into frame of the SM  */
-      SubVector(Pos, PosSM);
-      RotVector(RotMatrixSM, Pos);
-      RotVector(RotMatrixSM, Dir);
-
-      /* calculate spin vector in the direction of the analysis */
-      RotVector(RotMatrixAnalysis, SpinVector);
-      CartesianToSpherical(SpinVector, &the, &phi);
-
-      /* select channel and shift vertically to its frame */n[1]=n[2]=0.;n[0]=1.;
-      if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[0]/2., posbot) == TRUE)&&(fabs(posbot[1]) < DimSM[1]/2.)&&(fabs(posbot[2]) < DimSM[2]/2.)&&(Dir[0] > 0.))
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        double epsilonZ = (posbot[2] + DimSM[2]/2.) / DimSM[2] * (double) NoCh;
-        int    No = (int) floor(epsilonZ)+1; 
-
-        shift = (WidthCh + WallTh) *(- (NoCh -1)/2. + (No - 1));
-        Pos[2] += - shift; 
-
-        if (fabs(posbot[2]-shift) > WidthCh/2.) 
-          goto getlost;
-      } 
-      else 
-      { goto getlost;                      
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        /* InputNeutrons[i].Position[0]	= 0.0; */
+        TOF  = InputNeutrons[i].Time;
+        WL   = InputNeutrons[i].Wavelength;
+        Prob = InputNeutrons[i].Probability;
 
-      TOFprec = 0.0;
+        CopyVector(InputNeutrons[i].Position, Pos);
+        CopyVector(InputNeutrons[i].Vector,   Dir);
+        CopyVector(InputNeutrons[i].Spin, SpinVector); 
 
-      /* reflecting in channels top/bottom */
-      for (m = 1; m < 1000; m++)		
-      {
-        int r=0; 
+        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
-        CHECK;
-        /* reflection on top/bottom */n[0]=n[1]=0.;n[2]=1.;
-	
-        if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
+        /* translates into frame of the SM  */
+        SubVector(Pos, PosSM);
+        RotVector(RotMatrixSM, Pos);
+        RotVector(RotMatrixSM, Dir);
+
+        /* calculate spin vector in the direction of the analysis */
+        RotVector(RotMatrixAnalysis, SpinVector);
+        CartesianToSpherical(SpinVector, &the, &phi);
+
+        /* select channel and shift vertically to its frame */n[1]=n[2]=0.;n[0]=1.;
+        if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[0]/2., posbot) == TRUE)&&(fabs(posbot[1]) < DimSM[1]/2.)&&(fabs(posbot[2]) < DimSM[2]/2.)&&(Dir[0] > 0.))
         {
-          /* polarizing */
-	        szog= fabs((double) asin(Dir[2])); 
+          double epsilonZ = (posbot[2] + DimSM[2]/2.) / DimSM[2] * (double) NoCh;
+          int    No = (int) floor(epsilonZ)+1; 
 
-          datanumber = (int) (szog *180./M_PI * 1000./WL); 
-          if (datanumber > 1000) goto getlost; 
+          shift = (WidthCh + WallTh) *(- (NoCh -1)/2. + (No - 1));
+          Pos[2] += - shift; 
 
-          aUU = sqrt(rupdata  [datanumber]);
-          aDD = sqrt(rdowndata[datanumber]);
-
-          if ((aUU == 0.0) && (aDD == 0.0)) goto getlost;
-			
-          thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
-          phinew = phi /* + Phipol */;
-
-          Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
-
-          TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-
-          CopyVector(postop, Pos);
-          Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
-          the = thenew; phi = phinew;
-
-          goto contin;  
+          if (fabs(posbot[2]-shift) > WidthCh/2.) 
+            goto getlost;
         } 
-
-        if ((PlaneLineIntersect(Pos, Dir, n, - WidthCh/2., posbot) == TRUE)&&(posbot[0] > (Pos[0]+0.1))&&(fabs(posbot[0]) < DimSM[0]/2.)&&(Dir[2] < 0.))
-        {
-          /* polarizing */
-          szog= fabs((double) asin(Dir[2]));
-
-          datanumber = (int) (szog *180./M_PI * 1000./WL);
-          if (datanumber > 1000) goto getlost;  
-
-          aUU = rupdata  [datanumber];
-          aDD = rdowndata[datanumber];
-
-          if ((aUU == 0.)&&(aDD == 0.)) goto getlost;
-			
-          thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
-          phinew = phi /* + Phipol */;
-
-          Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
-
-          TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-
-          CopyVector(posbot, Pos);
-          Dir[2] *= -1; r=1;			
-          the = thenew; phi = phinew;
-
-          goto contin;  
+        else 
+        { goto getlost;                      
         }
 
-      contin:;	
-        /* absorption on the sides */
-        n[0]=n[2]=0.0; n[1]=1.0;
+        TOFprec = 0.0;
+
+        /* reflecting in channels top/bottom */
+        for (m = 1; m < 1000; m++)		
+        {
+          int r=0; 
+
+          CHECK;
+          /* reflection on top/bottom */n[0]=n[1]=0.;n[2]=1.;
 	
-        if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.)) {goto getlost;} 
-	      if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.)) {goto getlost;} 
+          if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
+          {
+            /* polarizing */
+	          szog= fabs((double) asin(Dir[2])); 
+
+            datanumber = (int) (szog *180./M_PI * 1000./WL); 
+            if (datanumber > 1000) goto getlost; 
+
+            aUU = sqrt(rupdata  [datanumber]);
+            aDD = sqrt(rdowndata[datanumber]);
+
+            if ((aUU == 0.0) && (aDD == 0.0)) goto getlost;
+			
+            thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
+            phinew = phi /* + Phipol */;
+
+            Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+
+            TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
+            CopyVector(postop, Pos);
+            Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
+            the = thenew; phi = phinew;
+
+            goto contin;  
+          } 
+
+          if ((PlaneLineIntersect(Pos, Dir, n, - WidthCh/2., posbot) == TRUE)&&(posbot[0] > (Pos[0]+0.1))&&(fabs(posbot[0]) < DimSM[0]/2.)&&(Dir[2] < 0.))
+          {
+            /* polarizing */
+            szog= fabs((double) asin(Dir[2]));
+
+            datanumber = (int) (szog *180./M_PI * 1000./WL);
+            if (datanumber > 1000) goto getlost;  
+
+            aUU = rupdata  [datanumber];
+            aDD = rdowndata[datanumber];
+
+            if ((aUU == 0.)&&(aDD == 0.)) goto getlost;
+			
+            thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
+            phinew = phi /* + Phipol */;
+
+            Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+
+            TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
+            CopyVector(posbot, Pos);
+            Dir[2] *= -1; r=1;			
+            the = thenew; phi = phinew;
+
+            goto contin;  
+          }
+
+        contin:;	
+          /* absorption on the sides */
+          n[0]=n[2]=0.0; n[1]=1.0;
 	
-        if (r==0) goto leave; /* cannot be reflected anymore */
+          if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.)) {goto getlost;} 
+	        if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.)) {goto getlost;} 
+	
+          if (r==0) goto leave; /* cannot be reflected anymore */
+        }
+
+        /* leave channel and shift vertically back to main SM frame */
+      leave:;
+	
+        Pos[2] += shift;
+
+        SphericalToCartesian(SpinVector, &the, &phi);
+
+        /*n[0]=1.;n[1]=0.;n[2]=0.;
+        if((PlaneLineIntersect(Pos, Dir, n, + DimSM[0]/2., posbot) == TRUE)) CopyVector(posbot, Pos); */
+
+        if (Prob <= ProbCutoff) goto getlost;
+
+        IntegralIntensity += Prob;
+        NumOut++;
+
+        /* translates into initial frame   */
+        RotBackVector(RotMatrixSM, Pos);
+        RotBackVector(RotMatrixSM, Dir);
+        AddVector(Pos, PosSM);
+
+        /* computes neutron variables in the output frame */
+        SubVector(Pos, TranslOut);
+        RotVector(RotMatrixOut, Pos);
+        RotVector(RotMatrixOut, Dir);
+        RotVector(RotMatrixOut, SpinVector);
+
+        /* translates neutron variables for output - X'=0. */
+        TOFprec += -Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
+        CopyVector(Dir, Path);
+        MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
+        AddVector(Pos, Path);  
+
+        /* precession in the guide field */
+        RotVector(RotMatrixField, SpinVector); 
+        PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]);  
+        NumberPrecessions = PhaseShift/2./M_PI;
+
+        FillRotMatrixYX(LarmorMatrix, PhaseShift, 0);
+        RotVector    (LarmorMatrix, SpinVector);
+        RotBackVector(RotMatrixField, SpinVector);
+
+        /* transmit coordinates which were not changed, the rest overwrite below */
+        Neutrons = InputNeutrons[i]; 
+        Neutrons.Time = TOF + TOFprec;
+        Neutrons.Probability = Prob;
+
+        CopyVector(Pos, Neutrons.Position);
+        CopyVector(Dir, Neutrons.Vector);
+        CopyVector(SpinVector, Neutrons.Spin);
+
+        /* writes output binary file */
+        WriteNeutron(&Neutrons);
+
+      getlost: ;
       }
-
-      /* leave channel and shift vertically back to main SM frame */
-    leave:;
-	
-      Pos[2] += shift;
-
-      SphericalToCartesian(SpinVector, &the, &phi);
-
-      /*n[0]=1.;n[1]=0.;n[2]=0.;
-      if((PlaneLineIntersect(Pos, Dir, n, + DimSM[0]/2., posbot) == TRUE)) CopyVector(posbot, Pos); */
-
-      if (Prob <= ProbCutoff) goto getlost;
-
-      IntegralIntensity += Prob;
-      NumOut++;
-
-      /* translates into initial frame   */
-      RotBackVector(RotMatrixSM, Pos);
-      RotBackVector(RotMatrixSM, Dir);
-      AddVector(Pos, PosSM);
-
-      /* computes neutron variables in the output frame */
-      SubVector(Pos, TranslOut);
-      RotVector(RotMatrixOut, Pos);
-      RotVector(RotMatrixOut, Dir);
-      RotVector(RotMatrixOut, SpinVector);
-
-      /* translates neutron variables for output - X'=0. */
-      TOFprec += -Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-
-      CopyVector(Dir, Path);
-      MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
-      AddVector(Pos, Path);  
-
-      /* precession in the guide field */
-      RotVector(RotMatrixField, SpinVector); 
-      PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]);  
-      NumberPrecessions = PhaseShift/2./M_PI;
-
-      FillRotMatrixYX(LarmorMatrix, PhaseShift, 0);
-      RotVector    (LarmorMatrix, SpinVector);
-      RotBackVector(RotMatrixField, SpinVector);
-
-      /* transmit coordinates which were not changed, the rest overwrite below */
-      Neutrons = InputNeutrons[i]; 
-      Neutrons.Time = TOF + TOFprec;
-      Neutrons.Probability = Prob;
-
-      CopyVector(Pos, Neutrons.Position);
-      CopyVector(Dir, Neutrons.Vector);
-      CopyVector(SpinVector, Neutrons.Spin);
-
-      /* writes output binary file */
-      WriteNeutron(&Neutrons);
-
-    getlost: ;
-
     }
   }
    

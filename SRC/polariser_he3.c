@@ -24,7 +24,6 @@
 /** Definitions, structures, enums **/
 /************************************/
 #define	FLD_SIZE	    5000
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
 
 
 /**************************/
@@ -40,8 +39,6 @@ void  ReadPolAndTrans();                            // Reads polarization and tr
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID   _eModule=MCN_POL_HE3;
-
 // Input parameters
 int        Option=0;                   // -a        [-]    flag: analytical calculation of polarization and tranmission data
 double     polHe3=0.0,                 // -b        [%]    polarisation of the He3 (for analytical calculation)
@@ -94,6 +91,8 @@ int main(int argc, char **argv)
 
   // initialization
   // --------------
+  _eModule=MCN_POL_HE3;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
@@ -121,128 +120,135 @@ int main(int argc, char **argv)
     { 
       CHECK;
 
-      /*InputNeutrons[i].Position[0]	= 0.;*/
-      TOF = InputNeutrons[i].Time;
-      WL = InputNeutrons[i].Wavelength;
-      Prob = InputNeutrons[i].Probability;
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        /*InputNeutrons[i].Position[0]	= 0.;*/
+        TOF = InputNeutrons[i].Time;
+        WL = InputNeutrons[i].Wavelength;
+        Prob = InputNeutrons[i].Probability;
 
-      CopyVector(InputNeutrons[i].Position, Pos);
-      CopyVector(InputNeutrons[i].Vector, Dir);
-      CopyVector(InputNeutrons[i].Spin, SpinVector); 
+        CopyVector(InputNeutrons[i].Position, Pos);
+        CopyVector(InputNeutrons[i].Vector, Dir);
+        CopyVector(InputNeutrons[i].Spin, SpinVector); 
 
-      InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
-      /* compute polarization and transmission location corresponding to the wavelength */
-      datanumber = (int) (WL * 100.); 
-      if(datanumber > FLD_SIZE) goto getlost;   
+        /* compute polarization and transmission location corresponding to the wavelength */
+        datanumber = (int) (WL * 100.); 
+        if(datanumber > FLD_SIZE) goto getlost;   
 
-      /* translates into frame of the field domain */
-      SubVector(Pos, PosMain); 
+        /* translates into frame of the field domain */
+        SubVector(Pos, PosMain); 
 
-      /* calculate entrance end exit coordinates of domain*/
+        /* calculate entrance end exit coordinates of domain*/
 
-      /* rotates into the frame of the field domain   */
-      CopyVector(Pos, pos);	
-      CopyVector(Dir, dir);
+        /* rotates into the frame of the field domain   */
+        CopyVector(Pos, pos);	
+        CopyVector(Dir, dir);
 	
-      RotVector(RotMatrixMain, pos); 	
-      RotVector(RotMatrixMain, dir); 
+        RotVector(RotMatrixMain, pos); 	
+        RotVector(RotMatrixMain, dir); 
 
-      /* gives intersection positions with domain */	
-      if(IntersectionWithCylinder(DimMain, pos, dir, Pos1, Pos2) == 0) goto getlost; 
+        /* gives intersection positions with domain */	
+        if(IntersectionWithCylinder(DimMain, pos, dir, Pos1, Pos2) == 0) goto getlost; 
 
-      /* rotates coordinates to previous frame */
-      RotBackVector(RotMatrixMain, Pos1 );
-      RotBackVector(RotMatrixMain, Pos2);
+        /* rotates coordinates to previous frame */
+        RotBackVector(RotMatrixMain, Pos1 );
+        RotBackVector(RotMatrixMain, Pos2);
 
-      /* ordering */
-      if(Pos1[0] > Pos2[0]) 	
-      {	CopyVector(Pos1, V);	CopyVector(Pos2, Pos1);	CopyVector(V, Pos2);}
+        /* ordering */
+        if(Pos1[0] > Pos2[0]) 	
+        {	CopyVector(Pos1, V);	CopyVector(Pos2, Pos1);	CopyVector(V, Pos2);}
 
-      /* time of precession in the guide field - precession calculated in the field frame */
-      TOF1 = fabs(Pos1[0] - Pos[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-      PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)); NumberPrecessions1 = PhaseShift/2./M_PI;
+        /* time of precession in the guide field - precession calculated in the field frame */
+        TOF1 = fabs(Pos1[0] - Pos[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)); NumberPrecessions1 = PhaseShift/2./M_PI;
 
-      FillRotMatrixZY(LarmorMatrix, PhaseShift, 0); 
+        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0); 
 
-      RotVector(RotMatrixG_Field, SpinVector); 
-      RotVector(LarmorMatrix, SpinVector);
-      RotBackVector(RotMatrixG_Field, SpinVector); 
+        RotVector(RotMatrixG_Field, SpinVector); 
+        RotVector(LarmorMatrix, SpinVector);
+        RotBackVector(RotMatrixG_Field, SpinVector); 
 
-      /* moment of arriving at the domain wall, new position */
-      TOF += TOF1;
+        /* moment of arriving at the domain wall, new position */
+        TOF += TOF1;
 
-      CopyVector(Pos1, Pos);
+        CopyVector(Pos1, Pos);
 
-      /* time of precession in the domain field - precession calculated in the field frame */
-      RotVector(RotMatrixGM_Field, SpinVector); 
+        /* time of precession in the domain field - precession calculated in the field frame */
+        RotVector(RotMatrixGM_Field, SpinVector); 
 
-      TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-      PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  NumberPrecessions2 = PhaseShift/2./M_PI;
+        TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  NumberPrecessions2 = PhaseShift/2./M_PI;
 
-      FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
+        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
 
-      RotVector(LarmorMatrix, SpinVector);
-      RotBackVector(RotMatrixGM_Field, SpinVector);
+        RotVector(LarmorMatrix, SpinVector);
+        RotBackVector(RotMatrixGM_Field, SpinVector);
 
-      /* moment of exiting at the domain wall, new position */
-      TOF += TOF2;
+        /* moment of exiting at the domain wall, new position */
+        TOF += TOF2;
 
-      CopyVector(Pos2, Pos);
+        CopyVector(Pos2, Pos);
 
-      /* translates into original frame */
-      AddVector(Pos, PosMain); 
+        /* translates into original frame */
+        AddVector(Pos, PosMain); 
 
-      /* computes neutron variables in the output frame */
-      SubVector(Pos, TranslOut);
-      RotVector(RotMatrixOut, Pos);
-      RotVector(RotMatrixOut, Dir);
-      RotVector(RotMatrixOut, SpinVector);
+        /* computes neutron variables in the output frame */
+        SubVector(Pos, TranslOut);
+        RotVector(RotMatrixOut, Pos);
+        RotVector(RotMatrixOut, Dir);
+        RotVector(RotMatrixOut, SpinVector);
 
-      /* translates neutron variables for output - X'=0. */
-      TOF3 =  - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+        /* translates neutron variables for output - X'=0. */
+        TOF3 =  - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-      CopyVector(Dir, Path);
-      MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
-      AddVector(Pos, Path);  
+        CopyVector(Dir, Path);
+        MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
+        AddVector(Pos, Path);  
 
-      /* time of precession in the guide field again - precession calculated in the field frame */
-      RotVector(RotMatrixG_Field, SpinVector);
+        /* time of precession in the guide field again - precession calculated in the field frame */
+        RotVector(RotMatrixG_Field, SpinVector);
 
-      PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  NumberPrecessions3 = PhaseShift/2./M_PI;
+        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  NumberPrecessions3 = PhaseShift/2./M_PI;
 
-      FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
-      RotVector(LarmorMatrix, SpinVector);
-      RotBackVector(RotMatrixG_Field, SpinVector);
+        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
+        RotVector(LarmorMatrix, SpinVector);
+        RotBackVector(RotMatrixG_Field, SpinVector);
 	
-      /* flipping process at some time */ 
-      CartesianToSpherical(SpinVector, &the, &phi);
+        /* flipping process at some time */ 
+        CartesianToSpherical(SpinVector, &the, &phi);
 
-      pDown = sqrt(1. - polardata[datanumber]);
-      the = 2. * (double) asin(pDown *(double) sin(the/2.));
+        pDown = sqrt(1. - polardata[datanumber]);
+        the = 2. * (double) asin(pDown *(double) sin(the/2.));
 
-      SphericalToCartesian(SpinVector, &the, &phi);
+        SphericalToCartesian(SpinVector, &the, &phi);
 
-      /* Output matters */
-      Prob *= transdata[datanumber]; 
-      if(Prob <= ProbCutoff) goto getlost;
+        /* Output matters */
+        Prob *= transdata[datanumber]; 
+        if(Prob <= ProbCutoff) goto getlost;
 
-      IntegralIntensity += Prob;
-      NumOut++;							/*goto jumpwrite;	jumpwrite :;*/
+        IntegralIntensity += Prob;
+        NumOut++;							/*goto jumpwrite;	jumpwrite :;*/
 
-      /* transmit coordinates which were not changed, the rest overwrite below */
-      Neutrons = InputNeutrons[i]; 
-      Neutrons.Time = TOF+TOF3;
-      Neutrons.Probability = Prob;
+        /* transmit coordinates which were not changed, the rest overwrite below */
+        Neutrons = InputNeutrons[i]; 
+        Neutrons.Time = TOF+TOF3;
+        Neutrons.Probability = Prob;
 
-      CopyVector(Pos, Neutrons.Position);
-      CopyVector(SpinVector, Neutrons.Spin);
+        CopyVector(Pos, Neutrons.Position);
+        CopyVector(SpinVector, Neutrons.Spin);
 
-      /* writes output binary file */ 
-      WriteNeutron(&Neutrons);
+        /* writes output binary file */ 
+        WriteNeutron(&Neutrons);
 
-  getlost:;
-
+      getlost:;
+      }
     }
   }
    

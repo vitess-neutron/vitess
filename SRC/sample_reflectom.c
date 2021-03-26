@@ -35,8 +35,6 @@
 /**************************************************/
 /* global variables and constants                 */
 /**************************************************/
-McCompID _eModule=MCN_SMPL_REFL;
-
 FILE	*pReflFile;            //       pointer on file for theoretical spectrum 
 char  *sReflFileName;        // -I    name of file for theoretical spectrum  
 char  *SampleFileName;       // -P    pointer to the name of the sample file  
@@ -96,6 +94,8 @@ int main(int argc, char **argv)
 
   // initialisation
   // --------------
+  _eModule = MCN_SMPL_REFL;
+
   Init   (argc, argv, _eModule);
   PrintModuleName(_eModule, "3.2");
   OwnInit(argc, argv);
@@ -139,64 +139,73 @@ int main(int argc, char **argv)
     for(i=0; i<NumNeutGot; i++)
     {
       double mod;
+
       CHECK;
 
-      mod = sqrt(  sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1]) + sq(InputNeutrons[i].Vector[2]));	  
-
-      /* copies input data to output data */
-      Neutrons   = InputNeutrons[i];
-	  
-      Neutrons.Vector[0] = Neutrons.Vector[0]/mod;
-      Neutrons.Vector[1] = Neutrons.Vector[1]/mod;
-      Neutrons.Vector[2] = Neutrons.Vector[2]/mod;
-	  
-      ProbIn  = InputNeutrons[i].Probability ;
-      ProbOut = 0.0;	      
-	      
-      /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
-      nIndex = Reflect(&Neutrons, 1) ;
-	  
-      if(nIndex == 0) /* no CE was found */
-      continue;
-	  
-      /* moment of arriving at the sample plane (x=0.0), new position */
-      Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
-      CopyVector(Neutrons.Vector, vPath) ;
-	  
-      MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
-      AddVector  (Neutrons.Position, vPath) ; /* vPath = displacement vector */
-	  
-      // Save the neutron with primary direction and weight for offspecular scattering
-      parentNeutron = Neutrons;	  	  
-	    
-      // Here, the specular reflection case is treated
-      if (doReflection) 
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        resultScattering = ScatterSpecular(arg, &InputNeutrons[i], &Neutrons);
-        if (resultScattering == 0) continue;
-	    
-        // Here, the incoherent scattering is treated
-        if (doIncoherent) 
-        {
-          Neutrons   = InputNeutrons[i];
-          /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
-          Reflect(&Neutrons, 1) ;
-
-          /* moment of arriving at the sample plane (x=0.0), new position */
-          Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
-          CopyVector(Neutrons.Vector, vPath) ;  /* vPath = displacement vector */
-	  
-          MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
-          AddVector  (Neutrons.Position, vPath) ;
-
-          ScatterIncoherent(&Neutrons);
-        }
-
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        mod = sqrt(  sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1]) + sq(InputNeutrons[i].Vector[2]));	  
+
+        /* copies input data to output data */
+        Neutrons   = InputNeutrons[i];
 	  
-      // Here, the offspecular scattering is treated
-      else if (doOffspecular) 
-        ScatterOffspecular(arg, &InputNeutrons[i], &parentNeutron, &Neutrons);
+        Neutrons.Vector[0] = Neutrons.Vector[0]/mod;
+        Neutrons.Vector[1] = Neutrons.Vector[1]/mod;
+        Neutrons.Vector[2] = Neutrons.Vector[2]/mod;
+	  
+        ProbIn  = InputNeutrons[i].Probability ;
+        ProbOut = 0.0;	      
+	      
+        /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
+        nIndex = Reflect(&Neutrons, 1) ;
+	  
+        if(nIndex == 0) /* no CE was found */
+        continue;
+	  
+        /* moment of arriving at the sample plane (x=0.0), new position */
+        Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
+        CopyVector(Neutrons.Vector, vPath) ;
+	  
+        MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
+        AddVector  (Neutrons.Position, vPath) ; /* vPath = displacement vector */
+	  
+        // Save the neutron with primary direction and weight for offspecular scattering
+        parentNeutron = Neutrons;	  	  
+	    
+        // Here, the specular reflection case is treated
+        if (doReflection) 
+        {
+          resultScattering = ScatterSpecular(arg, &InputNeutrons[i], &Neutrons);
+          if (resultScattering == 0) continue;
+	    
+          // Here, the incoherent scattering is treated
+          if (doIncoherent) 
+          {
+            Neutrons   = InputNeutrons[i];
+            /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
+            Reflect(&Neutrons, 1) ;
+
+            /* moment of arriving at the sample plane (x=0.0), new position */
+            Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
+            CopyVector(Neutrons.Vector, vPath) ;  /* vPath = displacement vector */
+	  
+            MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
+            AddVector  (Neutrons.Position, vPath) ;
+
+            ScatterIncoherent(&Neutrons);
+          }
+
+        }
+	  
+        // Here, the offspecular scattering is treated
+        else if (doOffspecular) 
+          ScatterOffspecular(arg, &InputNeutrons[i], &parentNeutron, &Neutrons);
+      }
     }
   }
   

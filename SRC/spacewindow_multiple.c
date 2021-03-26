@@ -29,18 +29,6 @@
 
 
 /******************************/
-/** Definitions              **/
-/******************************/
-typedef enum
-{	
-	VT_AUTO_SHAPE = 0,
-	VT_CIRCLE     = 1,
-	VT_RECTANGLE  = 2
-}
-VtWndGeom;
-
-
-/******************************/
 /** Prototypes               **/
 /******************************/
 void  OwnInit    (int argc, char *argv[]);         // reads input parameters and initializes global variables
@@ -52,8 +40,6 @@ void  SetGeometry(char* sColor, int nHoles);       // fills the structure stGeom
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID  _eModule=MCN_WND_MULT;
-
 Plane	    Endpoint,         // Planes through window for zero thickness and
           EndPointO,        // end of the Outer and end of the Inner wall
 	        EndPointI;        // Endpoint.D: distance to window along x-axis        [cm]
@@ -113,21 +99,11 @@ int main(int argc, char *argv[])
 
   Neutron Output;           // trajectory as it is written to the output
 
- 	
-  /******************************************/
-  /** Initialisation and Parameter Input   **/
-  /******************************************/
-  memset(&Output, '\0', sizeof(Neutron));
-  
-  for(j=0; j<=100; j++)
-  {
-    ywincenter[j] = 0.0; 
-    zwincenter[j] = 0.0;
-    winradius [j] = 0.0; 
-    winwidth  [j] = 0.0; 
-    winheight [j] = 0.0; 
-    eWinShape [j] = VT_AUTO_SHAPE;
-  }	
+  InitNeutron(&Output);
+
+  // Initialisation and Parameter Input 
+  // -----------------------------------
+  _eModule = MCN_WND_MULT;
   
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "2.23");
@@ -154,110 +130,118 @@ int main(int argc, char *argv[])
     {
       CHECK
       
-      // Remove neutrons with wrong direction or wavelength
-      // --------------------------------------------------
-      if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-      if (InputNeutrons[i].Wavelength == 0.0) continue;
-      VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
-      if (VelocityReal <= 0.0) continue;
-			
-      // Write intersection point
-      // ------------------------
-			WriteIAP(&InputNeutrons[i], VT_ENTERED);
-			
-      // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
-      // -----------------------------------------------------------------------------
-      if (keygrav == 1)
-        TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
       else
-        TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-
-			// Calculate average position
-      // --------------------------
-      InputNeutrons[i].Time += TimeOF;
-      CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-      CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-      CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
-      SumProb   += InputNeutrons[i].Probability;
-
-      // window test
-      // -----------
-      NewPositionY = InputNeutrons[i].Position[1];
-      NewPositionZ = InputNeutrons[i].Position[2];
-      DistSquared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;
-	    TOF3 = 0.0;
-				
-      if (DistSquared <= OuterRadius*OuterRadius) 
-      {
-	      key_abs = 1;
-		
-        for(j=1; j<=NumberOfHoles; j++) 
-        {
-          if (eWinShape[j]==VT_CIRCLE)
-          {	DistSquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) 
-                         + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-            if (DistSquared <= winradius[j]*winradius[j]) 
-              key_abs = 0;
-          }
-          else
-          {	if (fabs(NewPositionY - ywincenter[j]) < 0.5*winwidth [j]  && 
-                fabs(NewPositionZ - zwincenter[j]) < 0.5*winheight[j]    ) 
-              key_abs = 0;
-          }
-        }
-		
-        if (key_abs == 1) // absorbed
-        {
-          if (KeymaterialO == 6)
-            continue;
-				
-          if (keygrav == 1)
-            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
-          else
-            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
-  			
-          /* Attenuation during pass of window material */
-          N_Wavelength = InputNeutrons[i].Wavelength;    
-          mu = Interpolation(N_Wavelength, KeymaterialO, WavO, MuO, nValFO);
-          if (mu == -10000.0)
-          { // sprintf(sBuffer, "Attenuation coefficient of plate material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-            // Error(sBuffer);
-            CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-          }
-          prob = exp(-mu*TOF3*VelocityReal);	
-          InputNeutrons[i].Probability *= prob;
-          InputNeutrons[i].Time        += TOF3;	
-        }
-	    }
-		
-      if (key_abs == 0) // passed through hole or outside plate
-      {
-		    /* case of transmission neutron */
+      { 
+        // Remove neutrons with wrong direction or wavelength
+        // --------------------------------------------------
+        if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+        if (VelocityReal <= 0.0) continue;
+			
+        // Write intersection point
+        // ------------------------
+			  WriteIAP(&InputNeutrons[i], VT_ENTERED);
+			
+        // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
+        // -----------------------------------------------------------------------------
         if (keygrav == 1)
-          TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
+          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
         else
-          TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
+          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
 
-        if ((KeymaterialI == 0)&&(DistSquared <= OuterRadius*OuterRadius))				 
+			  // Calculate average position
+        // --------------------------
+        InputNeutrons[i].Time += TimeOF;
+        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
+        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
+        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+        SumProb   += InputNeutrons[i].Probability;
+
+        // window test
+        // -----------
+        NewPositionY = InputNeutrons[i].Position[1];
+        NewPositionZ = InputNeutrons[i].Position[2];
+        DistSquared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;
+	      TOF3 = 0.0;
+				
+        if (DistSquared <= OuterRadius*OuterRadius) 
         {
-	        /* Attenuation during pass of open window material */
-          N_Wavelength = InputNeutrons[i].Wavelength;    
-          mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
-          if (mu == -10000.0)
-          { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-            // Error(sBuffer);
-            CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+	        key_abs = 1;
+		
+          for(j=1; j<=NumberOfHoles; j++) 
+          {
+            if (eWinShape[j]==VT_CIRCLE)
+            {	DistSquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) 
+                           + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
+              if (DistSquared <= winradius[j]*winradius[j]) 
+                key_abs = 0;
+            }
+            else
+            {	if (fabs(NewPositionY - ywincenter[j]) < 0.5*winwidth [j]  && 
+                  fabs(NewPositionZ - zwincenter[j]) < 0.5*winheight[j]    ) 
+                key_abs = 0;
+            }
           }
-          prob = exp(-mu*TOF3*VelocityReal);	
-          InputNeutrons[i].Probability *= prob;
-          InputNeutrons[i].Time        += TOF3;	
-        }
-      }    	 
+		
+          if (key_abs == 1) // absorbed
+          {
+            if (KeymaterialO == 6)
+              continue;
+				
+            if (keygrav == 1)
+              TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            else
+              TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+  			
+            /* Attenuation during pass of window material */
+            N_Wavelength = InputNeutrons[i].Wavelength;    
+            mu = Interpolation(N_Wavelength, KeymaterialO, WavO, MuO, nValFO);
+            if (mu == -10000.0)
+            { // sprintf(sBuffer, "Attenuation coefficient of plate material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+              // Error(sBuffer);
+              CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+            }
+            prob = exp(-mu*TOF3*VelocityReal);	
+            InputNeutrons[i].Probability *= prob;
+            InputNeutrons[i].Time        += TOF3;	
+          }
+	      }
+		
+        if (key_abs == 0) // passed through hole or outside plate
+        {
+		      /* case of transmission neutron */
+          if (keygrav == 1)
+            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
+          else
+            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
+
+          if ((KeymaterialI == 0)&&(DistSquared <= OuterRadius*OuterRadius))				 
+          {
+	          /* Attenuation during pass of open window material */
+            N_Wavelength = InputNeutrons[i].Wavelength;    
+            mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
+            if (mu == -10000.0)
+            { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+              // Error(sBuffer);
+              CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+            }
+            prob = exp(-mu*TOF3*VelocityReal);	
+            InputNeutrons[i].Probability *= prob;
+            InputNeutrons[i].Time        += TOF3;	
+          }
+        }    	 
 					
-      InputNeutrons[i].Time += (double)TOF3;							
-      InputNeutrons[i].Position[0] = 0.0;	
-      Output = InputNeutrons[i];
-      WriteNeutron(&Output);
+        InputNeutrons[i].Time += (double)TOF3;							
+        InputNeutrons[i].Position[0] = 0.0;	
+        Output = InputNeutrons[i];
+        WriteNeutron(&Output);
+      }
     }
   }
 
@@ -374,6 +358,16 @@ short ReadWndFile()
 	char  sLine[256];
 	short j, Nholes;            // index over holes and number of holes
 	FILE  *coll_file;
+
+  for(j=0; j<=100; j++)
+  {
+    ywincenter[j] = 0.0; 
+    zwincenter[j] = 0.0;
+    winradius [j] = 0.0; 
+    winwidth  [j] = 0.0; 
+    winheight [j] = 0.0; 
+    eWinShape [j] = VT_AUTO_SHAPE;
+  }	
 
 	if (CollFileName !=NULL)
 	{	if( (coll_file = OpenInputFile(CollFileName, FALSE, "r"))==NULL)

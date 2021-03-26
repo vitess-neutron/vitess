@@ -13,18 +13,20 @@
 
 extern char*    sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
+extern McCompID _eModule;       /* ID of the module                */
 extern double   CmprFact;       /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
 extern long     OutNeutPtr;     /* points to the next free position in OutputNeutrons */
 extern long     CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
-extern ModProp  stPicture;      /* additional information for 'instrument.inf' */
 extern VtModGeom stGeometry;    /* data needed to draw a picture of the component represented by the module */
 
 extern long     NumNeutGot;     /* number of neutrons read in the current batch */
 extern double   NumNeutRead;    /* number of neutrons read in total */
 extern double   NumNeutWritten; /* number of neutrons written in total */
+extern long     NumEobRead;     /* number of 'EndOfBunch' data sets read in total */
+extern long     NumEobWritten;  /* number of trajectories written in total */
 
 extern FILE*    InputFilePtr;   /* stream from which the neutrons are read */
 extern FILE*    OutputFilePtr;  /* stream to which the neutrons are written */
@@ -63,15 +65,17 @@ void PrintModuleName  (const McCompID eModule, const char* sVsn);
 void adjustProgress   (int spercent);
 int  ReadNeutrons     ();
 void WriteNeutron     (Neutron* OutNeutron);
+void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
 void WriteWWP         (Neutron* pNeutron, VtReason eReason);
 
-void WriteInstrData   (VectorType EndPos);
-long ReadInstrData    (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
-void WriteSimData     (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj, long  nBundles);
-void ReadSimData      (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles);
-void WriteGeomData    (VectorType vBegPos, double Length);
+void  WriteInstrData  (VectorType EndPos);
+long  ReadInstrData   (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
+void  WriteSimData    (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj, long  nBundles);
+short ReadSimData     (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles);
+void  WriteGeomData   (VectorType vBegPos, double Length);
+long  ReadNumBndl     (void);
 
 void DefineColors     (FILE* pGeomFile);
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
@@ -92,7 +96,13 @@ void DrawCylSlice     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
 void  CopyNeutron     (const Neutron* source, Neutron* dest);
 void  InitNeutron     (Neutron* pNeut);
 
-void setDetachedWrite();
+void  SetEOB          (Neutron* pNeut);
+short IsEOB           (Neutron* pNeut);
+short CheckEOB        (Neutron* pNeut);
+
+double GetTotInt       (short iMon);
+void  OutputBufferFlush(int final);
+void  setDetachedWrite ();
 
 #include <gsl/gsl_rng.h>
 extern gsl_rng * vit_gsl_rng;

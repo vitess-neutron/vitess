@@ -24,8 +24,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_POL_POS;
-
 // Input parameters
 char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of y- and z-position   
 short  bProbactiv = TRUE,   // -p    [-]   flag Display  : YES: Probability weight   NO: number of trajectories
@@ -41,11 +39,7 @@ double analysis_dir[3]      // -a -b -c    components of the quantization direct
 
 // Variables determined from input parameters
 FILE*  fMonitor     = NULL;
-double RotMatrixAnalysis[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}, 
-       bposz   [BINSIZE],
-       bposy   [BINSIZE],
-       binyz   [BINSIZE][BINSIZE], 
-       binyzpol[BINSIZE][BINSIZE];
+double RotMatrixAnalysis[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}; 
 
 
 /******************************/
@@ -66,10 +60,16 @@ int main(int argc, char *argv[])
   double bintc   =0.0, 
          bintcpol=0.0,
          prob    =0.0;
+  double bposz   [BINSIZE],
+         bposy   [BINSIZE],
+         binyz   [BINSIZE][BINSIZE], 
+         binyzpol[BINSIZE][BINSIZE];
   VtFormat2D  eFormat = MATRIX;   // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
   
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_MON2_POL_POS;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
@@ -78,11 +78,11 @@ int main(int argc, char *argv[])
   bLengthCmpr   = FALSE;
 
   // initializes arrays
-  for(dy = 0; dy<nbiny+1; dy++)
+  for(dy=0; dy < nbiny+1; dy++)
   {
     bposy[dy] = widthmin + (widthmax-widthmin) * dy / (double)nbiny;
 
-    for(dz = 0;dz<(nbinz+1); dz++)
+    for(dz=0; dz < (nbinz+1); dz++)
 	  {
 	    bposz   [dz]     = heightmin + (heightmax-heightmin)  * dz / (double) nbinz;
 	    binyz   [dy][dz] = 0.0;
@@ -98,34 +98,43 @@ int main(int argc, char *argv[])
   {
     for(i=0; i<NumNeutGot; i++)
 	  {
-      CHECK;	  
-      bRegistered=0;
+      CHECK;	
 
-	    if(bProbactiv==1.0) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        bRegistered=0;
 
-	    /* calculate spin vector in the direction of the analysis */
-	    RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
+	      if(bProbactiv==1.0) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
 
-	    dy = (int)floor(nbiny*(InputNeutrons[i].Position[1]-widthmin)/(widthmax-widthmin));
-	    dz = (int)floor(nbinz*(InputNeutrons[i].Position[2]-heightmin)/(heightmax-heightmin));
+	      /* calculate spin vector in the direction of the analysis */
+	      RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
+
+	      dy = (int)floor(nbiny*(InputNeutrons[i].Position[1]-widthmin)/(widthmax-widthmin));
+	      dz = (int)floor(nbinz*(InputNeutrons[i].Position[2]-heightmin)/(heightmax-heightmin));
 			
-	    if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
-	    {	
-	      binyzpol[dy][dz] = binyzpol[dy][dz] +  prob * InputNeutrons[i].Spin[0];
-	      bintcpol = bintcpol + prob * InputNeutrons[i].Spin[0];
-	      binyz[dy][dz] = binyz[dy][dz] +  prob;
-	      bintc = bintc + prob;
-	      bRegistered=1;
-	    }
+	      if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
+	      {	
+	        binyzpol[dy][dz] = binyzpol[dy][dz] +  prob * InputNeutrons[i].Spin[0];
+	        bintcpol = bintcpol + prob * InputNeutrons[i].Spin[0];
+	        binyz[dy][dz] = binyz[dy][dz] +  prob;
+	        bintc = bintc + prob;
+	        bRegistered=1;
+	      }
 	  
-	    /* calculate spin vector in the original direction */
-	    RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
+	      /* calculate spin vector in the original direction */
+	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
-	    if ((bExclusive==0)||(bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+	      if ((bExclusive==0)||(bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
     }
   }
 

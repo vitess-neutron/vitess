@@ -32,8 +32,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON1_POL;
-
 // Input parameters
 char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
 short  bProbactiv = TRUE,   // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
@@ -68,7 +66,6 @@ int main(int argc, char *argv[])
          sParN[MAX_KIND+1][22]={"", "wavelength", "time",
                                "horizontal divergence", "vertical divergence",
                                "horizontal position",   "vertical position", "energy", "divergence yz"};
-  char   weightTag[2][7] = {"", "weight"};
   short  bRegistered=FALSE;
   int	   dy=0, 
          bincounts[10001];
@@ -85,6 +82,8 @@ int main(int argc, char *argv[])
   
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_MON1_POL;
+
   Init(argc, argv, _eModule);
   OwnInit(argc, argv);
 
@@ -115,113 +114,122 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++)
 	  {
       CHECK;	  
-      bRegistered=0;
 
-	    if (bProbactiv==TRUE) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
-	  
-	    /* calculate spin vector in the direction of the analysis */
-	    RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
-
-	    switch (ePar) 
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-	      case MON_LAMBDA:
-	        dy = (int) floor((double)nbiny*(InputNeutrons[i].Wavelength - xMin)/(xMax-xMin));
-	    
-	        if ((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0];
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-	        break;
-	    
-	      case MON_TIME:
-	        dy = (int) floor(nbiny*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
-	        if ((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-	        break;
-	    
-	      case MON_DIV_Y:
-	        Divy  = atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
-	        Divy *= 180.0/M_PI;
-	        if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	          Divy=0.0;
-	    
-	        dy = (int)floor(nbiny*(Divy - xMin)/(xMax-xMin));	      
-	        if((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-	        break;
-	    
-	      case MON_DIV_Z:
-	        Divz  = atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
-	        Divz *= 180.0/M_PI;
-	        if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
-	          Divz=0.0;
-	    
-	        dy = (int)floor(nbiny*(Divz - xMin)/(xMax-xMin));
-	        if ((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-		    break;
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        bRegistered=0;
 
-	      case MON_Y:
-	        dy = (int)floor(nbiny*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
-	        if ((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-	        break;
-	    
-	      case MON_Z:
-	        dy = (int)floor(nbiny*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
-	        if ((dy>=0)&&(dy<nbiny))
-	        {
-		        bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		        bintch[dy] = bintch[dy] + prob;
-		        binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		        bintc      = bintc + prob;
-		        bRegistered=1;
-	        }
-	        break;
-
-        default:
-          fprintf(LogFilePtr,"Parameter not handled in %s", sCompName);
-          exit(-1);
-	    }
+	      if (bProbactiv==TRUE) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
 	  
-	    if((dy>=0)&&(dy<nbiny)) bincounts[dy]++;
+	      /* calculate spin vector in the direction of the analysis */
+	      RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
-	    /* calculate spin vector in the original direction */
-	    RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
+	      switch (ePar) 
+        {
+	        case MON_LAMBDA:
+	          dy = (int) floor((double)nbiny*(InputNeutrons[i].Wavelength - xMin)/(xMax-xMin));
+	    
+	          if ((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0];
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+	          break;
+	    
+	        case MON_TIME:
+	          dy = (int) floor(nbiny*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
+	          if ((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+	          break;
+	    
+	        case MON_DIV_Y:
+	          Divy  = atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
+	          Divy *= 180.0/M_PI;
+	          if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+	            Divy=0.0;
+	    
+	          dy = (int)floor(nbiny*(Divy - xMin)/(xMax-xMin));	      
+	          if((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+	          break;
+	    
+	        case MON_DIV_Z:
+	          Divz  = atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
+	          Divz *= 180.0/M_PI;
+	          if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
+	            Divz=0.0;
+	    
+	          dy = (int)floor(nbiny*(Divz - xMin)/(xMax-xMin));
+	          if ((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+		      break;
 
-	    if ((bExclusive==0)||(bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+	        case MON_Y:
+	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
+	          if ((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+	          break;
+	    
+	        case MON_Z:
+	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
+	          if ((dy>=0)&&(dy<nbiny))
+	          {
+		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
+		          bintch[dy] = bintch[dy] + prob;
+		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
+		          bintc      = bintc + prob;
+		          bRegistered=1;
+	          }
+	          break;
+
+          default:
+            fprintf(LogFilePtr,"Parameter not handled in %s", sCompName);
+            exit(-1);
+	      }
+	  
+	      if((dy>=0)&&(dy<nbiny)) bincounts[dy]++;
+
+	      /* calculate spin vector in the original direction */
+	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
+
+	      if ((bExclusive==0)||(bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
     }
 	}
 

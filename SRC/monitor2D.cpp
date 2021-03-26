@@ -5,6 +5,7 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0  Oct 2011  D. Nekrassov   initial version                                            */
 /* 1.1  Feb 2020  K. Lieutenant  new central visualization parameters                       */
+/* 1.2  Mar 2021  K. Lieutenant  update after each bundle                                   */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -26,19 +27,20 @@ extern "C" {
 /******************************/
 int main(int argc, char *argv[])
 {
-  long	i;
-  short bExclusive, bRegistered;
-  
-  bExclusive = FALSE;
-  bRegistered= FALSE;
+  long	i=0,
+        iBndl=0;            // current bundle
+  short bExclusive = FALSE, 
+        bRegistered= FALSE;
 
   // This is the class for a generic 2D monitor. It handles 11 parameter at the moment
   Mon2D templateMonitor;
 
   // initialisation
   // --------------
-	Init(argc, argv, templateMonitor.eModule);
-  PrintModuleName(templateMonitor.eModule, "1.1");
+	_eModule=templateMonitor.eModule;
+
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.2");
   templateMonitor.OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
@@ -56,17 +58,28 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++)
 	  {
       CHECK;
-      // bRegistered = 1 if neutron was considered in the monitor
-	    bRegistered=templateMonitor.FillMonitor(&InputNeutrons[i]);
+
+      // Update monitor output if EOB line is found
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      { 
+        iBndl++;
+        templateMonitor.WriteOut(iBndl);
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      {
+        // bRegistered = 1 if neutron was considered in the monitor
+	      bRegistered=templateMonitor.FillMonitor(&InputNeutrons[i]);
 	  
-	    if ((bExclusive==0) || (bRegistered==1)) 
-	      WriteNeutron(&(InputNeutrons[i]));
+	      if ((bExclusive==0) || (bRegistered==1)) 
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
     }
   }
 
 my_exit:
   // Stores the information in the output file, closes the file and releases memory.
-  templateMonitor.WriteOut();
+  templateMonitor.WriteOut(templateMonitor.nBundle);
   templateMonitor.FreeMemory();
 
   // releases memmory and writes to instrument and log file

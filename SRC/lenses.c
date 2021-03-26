@@ -32,7 +32,6 @@
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_LENSE;
 //                             1    2      3    4     5    6     7      8     9      10      11      12     13     14    15
 const char *MaterialName[] = {"O", "CO2", "C", "Be", "F", "Bi", "MgO", "Pb", "MgF", "SiO2", "ZrO2", "Mg",  "Si",  "Zr", "Al"};
 const char *GraphDev= "/xs"; /* for PGPLOT */
@@ -152,6 +151,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule=MCN_LENSE;
+
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.22");
 	OwnInit(argc, argv);
@@ -172,141 +173,148 @@ int main(int argc, char *argv[])
     {
       CHECK
 
-      TimeOF1 = 0.0;
-      TimeOF1t = 0.0;
-      NeutronLoss = 0;
-      InputNeutrons[i].Position[0] = 0.0;
-
-      /* cycle for calculation of a lot of lenses */
-      for(j = 1; j <= NumberOfLenses; j++)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        CurrentLense = j;
-
-        TimeOF1 = PathThroughLenseOrder2(&InputNeutrons[i], MyLense, Radius1, Radius2, RadiusMain,
-	                                        Thickness, Refract, Atten, AttScattering, PosMain, TransOut, wei_min, surfacerough, keygrav, NeutronLoss,
-	                                        Attenkey, CurrentLense, LenseForOut, LenseForOutVis,  ServiceInfoK, COLLFILE, LenseType);
-        if (TimeOF1 == -1.0)
-        {
-          NeutronLoss = 1;
-        }
-
-        TimeOF1t = TimeOF1t + TimeOF1;
+        WriteNeutron(&(InputNeutrons[i]));
       }
-      /* end cycle a lot of lenses */
+      else
+      { 
+        TimeOF1 = 0.0;
+        TimeOF1t = 0.0;
+        NeutronLoss = 0;
+        InputNeutrons[i].Position[0] = 0.0;
 
-      /* exclude such neutron */
-      if (TimeOF1 == -1.0)  continue;
-      if (NeutronLoss == 1) continue;
-      if (InputNeutrons[i].Probability <= wei_min) continue;
-
-      /* transform into output frame */
-      InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] - TransOut[1];
-      InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] - TransOut[2];
-
-      /* Copy */
-      Output = InputNeutrons[i];
-      /****************************************************************************************/
-      /* Add the time needed to travel inside Lense.                                   */
-      /****************************************************************************************/
-      Output.Time += TimeOF1t;
-      /****************************************************************************************/
-      /* Count this as a success.                                                             */
-      /****************************************************************************************/
-      OutputRTAL = InputNeutrons[i];
-
-      /* activate diaphragm, if necessary */
-      keyraytraceALoff = 0;
-
-      if ((DiafRadius1 > 0.0)||(DiafRadius2 > 0.0))
-      {
-        temp1 =  InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]
-               + InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2];
-        temp1 = sqrt(temp1);
-        if ((temp1 < DiafRadius1)||(temp1 > DiafRadius2))
+        /* cycle for calculation of a lot of lenses */
+        for(j = 1; j <= NumberOfLenses; j++)
         {
-          keyraytraceALoff = 1;
-          continue;
-        }
-      }
+          CurrentLense = j;
 
-      /* Make ray-tracing visualisation after lenses */
-  #ifdef VT_GRAPH
-      long  raytraceALcur=0; /* current counter of trajectories for ray-tracing after lense */
-
-      if (do_visualise)
-      {
-        if (raytraceALcur <= raytraceALnum)
-        {
-          if ((keyraytraceAL == 1)||(keyraytraceAL == 2))
+          TimeOF1 = PathThroughLenseOrder2(&InputNeutrons[i], MyLense, Radius1, Radius2, RadiusMain,
+	                                          Thickness, Refract, Atten, AttScattering, PosMain, TransOut, wei_min, surfacerough, keygrav, NeutronLoss,
+	                                          Attenkey, CurrentLense, LenseForOut, LenseForOutVis,  ServiceInfoK, COLLFILE, LenseType);
+          if (TimeOF1 == -1.0)
           {
-            raytraceALcur++;
+            NeutronLoss = 1;
+          }
 
-            if (keyraytraceAL == 1) raytryz = OutputRTAL.Position[2];
-            if (keyraytraceAL == 2) raytryz = OutputRTAL.Position[1];
+          TimeOF1t = TimeOF1t + TimeOF1;
+        }
+        /* end cycle a lot of lenses */
 
-            raytracecolor = (long)(raytryz/(RadiusMain/7.0));
+        /* exclude such neutron */
+        if (TimeOF1 == -1.0)  continue;
+        if (NeutronLoss == 1) continue;
+        if (InputNeutrons[i].Probability <= wei_min) continue;
 
-            cpgslct(idwin2);
-            cpgsci(1+abs(raytracecolor));
+        /* transform into output frame */
+        InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] - TransOut[1];
+        InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] - TransOut[2];
 
-            if (keyraytraceAL == 1) /* XZ */
-	          {
-              cpgpt1(OutputRTAL.Position[0], OutputRTAL.Position[2], -2);
-	          }
+        /* Copy */
+        Output = InputNeutrons[i];
+        /****************************************************************************************/
+        /* Add the time needed to travel inside Lense.                                   */
+        /****************************************************************************************/
+        Output.Time += TimeOF1t;
+        /****************************************************************************************/
+        /* Count this as a success.                                                             */
+        /****************************************************************************************/
+        OutputRTAL = InputNeutrons[i];
 
-            if (keyraytraceAL == 2) /* XY */
-	          {
-              cpgpt1(OutputRTAL.Position[0], OutputRTAL.Position[1], -2);
-	          }
+        /* activate diaphragm, if necessary */
+        keyraytraceALoff = 0;
 
-            /* Additional raytracing after lenses */
-            if (keygrav == 1)
-	          {
-              tmptmp = NeutronPlaneIntersectionGrav(&OutputRTAL, EndpointRTAL);
-	          }
-            else
-	          {
-              tmptmp = NeutronPlaneIntersection1(&OutputRTAL, EndpointRTAL);
-	          }
-
-            if (keyraytraceAL == 1) /* XZ */
-	          {
-              cpgdraw(OutputRTAL.Position[0], OutputRTAL.Position[2]);
-            }
-
-            if (keyraytraceAL == 2) /* XY */
-	          {
-              cpgdraw(OutputRTAL.Position[0], OutputRTAL.Position[1]);
-	          }
-
-            cpgslct(idwin1);
+        if ((DiafRadius1 > 0.0)||(DiafRadius2 > 0.0))
+        {
+          temp1 =  InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]
+                 + InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2];
+          temp1 = sqrt(temp1);
+          if ((temp1 < DiafRadius1)||(temp1 > DiafRadius2))
+          {
+            keyraytraceALoff = 1;
+            continue;
           }
         }
-      }
-    #endif
 
-      /* Additional flight on focus distance according analytical calculations */
-      if (keyfocusflight == 1)
-      {
-        if (Output.Vector[0] <= 0.0) continue;
+        /* Make ray-tracing visualisation after lenses */
+    #ifdef VT_GRAPH
+        long  raytraceALcur=0; /* current counter of trajectories for ray-tracing after lense */
 
-        TimeOFspace = 0.0;
-        if (keygrav == 1)
+        if (do_visualise)
         {
-          TimeOFspace = NeutronPlaneIntersectionGrav(&Output, Endpoint);
-          if (TimeOFspace < 0.0) continue;
+          if (raytraceALcur <= raytraceALnum)
+          {
+            if ((keyraytraceAL == 1)||(keyraytraceAL == 2))
+            {
+              raytraceALcur++;
+
+              if (keyraytraceAL == 1) raytryz = OutputRTAL.Position[2];
+              if (keyraytraceAL == 2) raytryz = OutputRTAL.Position[1];
+
+              raytracecolor = (long)(raytryz/(RadiusMain/7.0));
+
+              cpgslct(idwin2);
+              cpgsci(1+abs(raytracecolor));
+
+              if (keyraytraceAL == 1) /* XZ */
+	            {
+                cpgpt1(OutputRTAL.Position[0], OutputRTAL.Position[2], -2);
+	            }
+
+              if (keyraytraceAL == 2) /* XY */
+	            {
+                cpgpt1(OutputRTAL.Position[0], OutputRTAL.Position[1], -2);
+	            }
+
+              /* Additional raytracing after lenses */
+              if (keygrav == 1)
+	            {
+                tmptmp = NeutronPlaneIntersectionGrav(&OutputRTAL, EndpointRTAL);
+	            }
+              else
+	            {
+                tmptmp = NeutronPlaneIntersection1(&OutputRTAL, EndpointRTAL);
+	            }
+
+              if (keyraytraceAL == 1) /* XZ */
+	            {
+                cpgdraw(OutputRTAL.Position[0], OutputRTAL.Position[2]);
+              }
+
+              if (keyraytraceAL == 2) /* XY */
+	            {
+                cpgdraw(OutputRTAL.Position[0], OutputRTAL.Position[1]);
+	            }
+
+              cpgslct(idwin1);
+            }
+          }
         }
-        else
+      #endif
+
+        /* Additional flight on focus distance according analytical calculations */
+        if (keyfocusflight == 1)
         {
-          TimeOFspace = NeutronPlaneIntersection1(&Output, Endpoint);
-          if (TimeOFspace < 0.0) continue;
+          if (Output.Vector[0] <= 0.0) continue;
+
+          TimeOFspace = 0.0;
+          if (keygrav == 1)
+          {
+            TimeOFspace = NeutronPlaneIntersectionGrav(&Output, Endpoint);
+            if (TimeOFspace < 0.0) continue;
+          }
+          else
+          {
+            TimeOFspace = NeutronPlaneIntersection1(&Output, Endpoint);
+            if (TimeOFspace < 0.0) continue;
+          }
+
+          Output.Time = Output.Time + TimeOFspace;
+          Output.Position[0]=0.0;
         }
 
-        Output.Time = Output.Time + TimeOFspace;
-        Output.Position[0]=0.0;
+        WriteNeutron(&Output);
       }
-
-      WriteNeutron(&Output);
     }
   }
 

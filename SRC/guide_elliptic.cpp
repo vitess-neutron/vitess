@@ -16,9 +16,6 @@
 #include "guide_elliptic.h"
 
 
-McCompID _eModule=MCN_GUIDE_IDEAL;
-
-
 /******************************/
 /** Program                  **/
 /******************************/
@@ -30,6 +27,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule=MCN_GUIDE_IDEAL;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
@@ -46,16 +45,23 @@ int main(int argc, char *argv[])
     {
       CHECK;
 
-      bRegistered=ProcessNeutron(&InputNeutrons[i]);
-
-      if (bRegistered==TRUE) 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
         WriteNeutron(&(InputNeutrons[i]));
-      else 
-        neutronsLost++;
+      }
+      else
+      { 
+        bRegistered=ProcessNeutron(&InputNeutrons[i]);
+
+        if (bRegistered==TRUE) 
+          WriteNeutron(&(InputNeutrons[i]));
+        else 
+          neutronsLost++;
+      }
     }
   }
   
-  fprintf(LogFilePtr,"Neutrons lost straight: %d \n", neutronsKilledStraight);
+  fprintf(LogFilePtr,"Neutrons lost straight : %d \n", neutronsKilledStraight);
   fprintf(LogFilePtr,"Neutrons lost parabolic: %d \n", neutronsKilledParabolic);
   fprintf(LogFilePtr,"Simultaneous collisions: %d \n", simultaneousCollisions);
   fprintf(LogFilePtr,"Bad neutrons: %d \n", badNeutrons);
@@ -576,6 +582,7 @@ int ProcessNeutron(Neutron* n)
   double xMin = startPoint;
   double tof = 0.;
   //  double startPosition = n->Position[0];
+
   n->Position[0] = xMin;
   
   // Check if neutron misses the guide entrance

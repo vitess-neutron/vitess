@@ -22,9 +22,6 @@
 #include "intersection.h"
 
 
-McCompID _eModule=MCN_MONO_ANA;
-
-
 /******************************/
 /** Main Program             **/
 /******************************/
@@ -34,6 +31,8 @@ int main(int argc, char **argv)
 
   // initialisation
   // --------------
+  _eModule=MCN_MONO_ANA;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.10");
   OwnInit(argc, argv);
@@ -45,239 +44,246 @@ int main(int argc, char **argv)
   /* Get the neutrons from the file */
   DECLARE_ABORT;
 
-  while (ReadNeutrons())  {
+  while (ReadNeutrons())  
+  {
     int i;
     /* double startTime; */
     /* VectorType startPosition; */
     /* VectorType startVector; */
 
     CHECK;
-    for (i=0; i<NumNeutGot; i++) {
+    for (i=0; i<NumNeutGot; i++) 
+    {
       CHECK;
 
-      InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
-
-      /* selects CE on which the neutron is reflected and gives global variables
-	 in	the frame of CE */
-
-      /* startTime = InputNeutrons[i].Time; */
-
-      /* for (ii = 0; ii < 3; ii++) { */
-      /* 	startVector[ii] = InputNeutrons[i].Vector[ii]; */
-      /* 	startPosition[ii] = InputNeutrons[i].Position[ii]; */
-      /* } */
-
-      SelectCE(&Index, i) ;
-
-      if (Index == 0./* no CE was found */) goto getlost ;
-
-	  // if CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
-	  // in the frame of the reflecting crystal element.
-
-	  /* moment of arriving at the crystal plane, new position */   
-      InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
-
-
-      CopyVector(InputNeutrons[i].Vector, Path) ;
-      MultiplyByScalar(Path, - InputNeutrons[i].Position[0]/ InputNeutrons[i].Vector[0] ) ;
-	  AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
-
-	  // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
-	  // in the frame of the reflecting crystal element.
-
-      /* for flat option (Option =1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position */
-
-      RotBackVector(RotMatrixCE, InputNeutrons[i].Vector) ;  // Vector is now back to the original frame
-
-	  // write intersection point
-	  Neutrons = InputNeutrons[i];
-	  RotBackVector(RotMatrixCE, Neutrons.Position) ;  
-	  AddVector(Neutrons.Position, PosCE);
-	  Neutrons.Probability = InputNeutrons[i].Probability * (1.0 - Reflectivity);
-	  WriteIAP(&Neutrons, VT_REFLECTED);   // Reflectivity fehlt
- 
-      RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
-
-      for(repet=0;repet<Repetition;repet++) {
-        CHECK;
-        TOF = InputNeutrons[i].Time ;
-
-        WL = InputNeutrons[i].Wavelength ;
-
-        Prob = InputNeutrons[i].Probability / Repetition ;
-
-        CopyVector(InputNeutrons[i].Position, Pos) ;
-
-        CopyVector(InputNeutrons[i].Vector, Dir) ;
-
-
-        /* start here if no mosaic */
-	// CAN NEVER OCCUR, mosaic_fwhm[k] is set to 10^-3
-        if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
-	
-          double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
-
-          CartesianToSpherical(Dir, &theta_Bragg, &phi_Bragg);
-
-          theta_refl = M_PI - theta_Bragg ;
-
-          phi_refl = phi_Bragg ;
-
-          SphericalToCartesian(Dir, &theta_refl, &phi_refl) ;
-
-          d_sp = WL * OrderReflection / 2 / (double) cos(theta_Bragg) ;
-
-          /* probability of reflection */
-
-          Prob *= Reflectivity ;
-
-          if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_sp) ;
-          if(d_spr_option == 2) Prob *= dSpreadGaussian(d_sp) ;
-
-          if(Prob <= wei_min) goto getlost2 ;
-
-          IntegralIntensity += Prob ;
-
-          /** end here if no mosaic **/}
-
-        /** start here if mosaic **/
-        if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.) 	{
-
-          /* random d-spacing */
-
-          d_ran_min = d_spacing - d_range/2. * d_fwhm ;
-
-          d_ran_max = d_spacing + d_range/2. * d_fwhm ;
-
-          d_ran = MonteCarlo(d_ran_min, d_ran_max) ;
-
-          arg = WL * OrderReflection / 2. / d_ran ;
-
-          if (arg > 1.) goto getlost2 ;/* wavelength to large */
-
-          /* computes reflection angle corresponding to d_ran */
-
-          thr = (double) acos(arg) ;
-
-          /* computes mosaic orientation of maximum probability in "Bragg" frame which is the
-             frame obtained when rotating the original frame until diffraction plane normal vector gets parallel
-             to X axis (normal vector of Bragg planes showing in flight direction) */
-
-          MosaicMaxProb(Dir, &thr, Mosaic) ;
-
-          /* ... in frame of neutron which is the frame obtained when rotating the original frame
-             until wave vector gets parallel to X axis*/
-
-          RotMatrixX(Dir, Matrix) ;
-
-          RotVector(Matrix, Mosaic) ;
-
-          CartesianToSpherical(Mosaic, &thrmax, &phrmax) ;
-
-          /*	computes random mosaic normal in the frame of neutron close to the maximum probability */
-
-          deltaphr = mosaic_range * Min(mosaic_fwhm[0], mosaic_fwhm[1]) ;
-
-          if(deltaphr > M_PI) deltaphr = M_PI ;
-
-          phr = MonteCarlo(phrmax - deltaphr, phrmax + deltaphr) ;
-
-          SphericalToCartesian(Mosaic, &thr, &phr) ;
-
-          /* computes mosaic normal in the "Bragg" frame */
-
-          RotMatrixX(Dir, Matrix) ;
-
-          RotBackVector(Matrix, Mosaic) ;
-
-          /* probability of reflection from mosaic */
-
-          Prob *= Reflectivity ;
-
-          Prob *= Mosaicity(Mosaic) ;
-
-          if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_ran) ;
-          if(d_spr_option == 2) Prob *= dSpreadGaussian(d_ran) ;
-
-          if(Prob <= wei_min && mode==1) goto getlost2 ;
-
-          IntegralIntensity += Prob ;
-
-          /*	 computes reflected direction in the frame of neutron */
-
-          thr = M_PI - 2 * thr ;
-          phr = M_PI + phr ;
-
-          SphericalToCartesian(Dir, &thr, &phr) ;
-
-          /* computes reflected direction in the "Bragg"(Option=1) or CE frame (Option !=1)*/
-
-          RotBackVector(Matrix, Dir) ;
-	
-          /** end here if mosaic **/
-        }
-
-        /* if (mode == 2) { */
-        /*   InputNeutrons[i].Probability -= Prob; */
-        /*   InputNeutrons[i].Time = startTime; */
-        /*   ii = 0; */
-        /*   for (ii = 0; ii < 3; ii++) { */
-        /*     InputNeutrons[i].Vector[ii] = startVector[ii]; */
-        /*     InputNeutrons[i].Position[ii] = startPosition[ii]; */
-        /*   } */
-        /*   TransmitNeutron(&InputNeutrons[i]); */
-        /*   continue; */
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+
+        /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
+
+        /* startTime = InputNeutrons[i].Time; */
+
+        /* for (ii = 0; ii < 3; ii++) { */
+        /* 	startVector[ii] = InputNeutrons[i].Vector[ii]; */
+        /* 	startPosition[ii] = InputNeutrons[i].Position[ii]; */
         /* } */
 
-        /* computes neutron variables in the initial frame */
+        SelectCE(&Index, i) ;
 
-        RotBackVector(RotMatrixBragg, Dir);
+        if (Index == 0./* no CE was found */) goto getlost ;
 
-        RotBackVector(RotMatrixCE, Pos) ;
+	    // if CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
+	    // in the frame of the reflecting crystal element.
 
-        AddVector(Pos, PosCE) ;
-
-        /* makes depth correction to get back to the old frame for Depth != 0 */
-
-        RotBackVector(RotMatrixCE, Depth) ;
-
-        AddVector(Pos, Depth) ;
-
-        /* computes neutron variables in the output frame */
-
-        SubVector(Pos, TranslFoc) ;
-
-        RotVector(RotMatrixFoc, Pos) ;
-
-        RotVector(RotMatrixFoc, Dir) ;
-
-        /* transmit coordinates which were not changed, the rest overwrite below */
-
-        Neutrons = InputNeutrons[i];
-
-        Neutrons.Time = TOF ;
-
-        Neutrons.Probability = Prob ;
-
-        CopyVector(Pos, Neutrons.Position) ;
-
-        CopyVector(Dir, Neutrons.Vector) ;
-
-        /* writes output binary file */
-
-        NumOut++ ;
-
-        WriteNeutron(&Neutrons) ;
-
-      getlost2: ;
-
-      }/*repetition*/
+	    /* moment of arriving at the crystal plane, new position */   
+        InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
 
-      /* here continues if neutron gets lost */
+        CopyVector(InputNeutrons[i].Vector, Path) ;
+        MultiplyByScalar(Path, - InputNeutrons[i].Position[0]/ InputNeutrons[i].Vector[0] ) ;
+	    AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
 
-    getlost: ;
+	    // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
+	    // in the frame of the reflecting crystal element.
 
+        /* for flat option (Option =1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position */
+
+        RotBackVector(RotMatrixCE, InputNeutrons[i].Vector) ;  // Vector is now back to the original frame
+
+	    // write intersection point
+	    Neutrons = InputNeutrons[i];
+	    RotBackVector(RotMatrixCE, Neutrons.Position) ;  
+	    AddVector(Neutrons.Position, PosCE);
+	    Neutrons.Probability = InputNeutrons[i].Probability * (1.0 - Reflectivity);
+	    WriteIAP(&Neutrons, VT_REFLECTED);   // Reflectivity fehlt
+ 
+        RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
+
+        for(repet=0;repet<Repetition;repet++) {
+          CHECK;
+          TOF = InputNeutrons[i].Time ;
+
+          WL = InputNeutrons[i].Wavelength ;
+
+          Prob = InputNeutrons[i].Probability / Repetition ;
+
+          CopyVector(InputNeutrons[i].Position, Pos) ;
+
+          CopyVector(InputNeutrons[i].Vector, Dir) ;
+
+
+          /* start here if no mosaic */
+	  // CAN NEVER OCCUR, mosaic_fwhm[k] is set to 10^-3
+          if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
+	
+            double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
+
+            CartesianToSpherical(Dir, &theta_Bragg, &phi_Bragg);
+
+            theta_refl = M_PI - theta_Bragg ;
+
+            phi_refl = phi_Bragg ;
+
+            SphericalToCartesian(Dir, &theta_refl, &phi_refl) ;
+
+            d_sp = WL * OrderReflection / 2 / (double) cos(theta_Bragg) ;
+
+            /* probability of reflection */
+
+            Prob *= Reflectivity ;
+
+            if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_sp) ;
+            if(d_spr_option == 2) Prob *= dSpreadGaussian(d_sp) ;
+
+            if(Prob <= wei_min) goto getlost2 ;
+
+            IntegralIntensity += Prob ;
+
+            /** end here if no mosaic **/}
+
+          /** start here if mosaic **/
+          if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.) 	{
+
+            /* random d-spacing */
+
+            d_ran_min = d_spacing - d_range/2. * d_fwhm ;
+
+            d_ran_max = d_spacing + d_range/2. * d_fwhm ;
+
+            d_ran = MonteCarlo(d_ran_min, d_ran_max) ;
+
+            arg = WL * OrderReflection / 2. / d_ran ;
+
+            if (arg > 1.) goto getlost2 ;/* wavelength to large */
+
+            /* computes reflection angle corresponding to d_ran */
+
+            thr = (double) acos(arg) ;
+
+            /* computes mosaic orientation of maximum probability in "Bragg" frame which is the
+               frame obtained when rotating the original frame until diffraction plane normal vector gets parallel
+               to X axis (normal vector of Bragg planes showing in flight direction) */
+
+            MosaicMaxProb(Dir, &thr, Mosaic) ;
+
+            /* ... in frame of neutron which is the frame obtained when rotating the original frame
+               until wave vector gets parallel to X axis*/
+
+            RotMatrixX(Dir, Matrix) ;
+
+            RotVector(Matrix, Mosaic) ;
+
+            CartesianToSpherical(Mosaic, &thrmax, &phrmax) ;
+
+            /*	computes random mosaic normal in the frame of neutron close to the maximum probability */
+
+            deltaphr = mosaic_range * Min(mosaic_fwhm[0], mosaic_fwhm[1]) ;
+
+            if(deltaphr > M_PI) deltaphr = M_PI ;
+
+            phr = MonteCarlo(phrmax - deltaphr, phrmax + deltaphr) ;
+
+            SphericalToCartesian(Mosaic, &thr, &phr) ;
+
+            /* computes mosaic normal in the "Bragg" frame */
+
+            RotMatrixX(Dir, Matrix) ;
+
+            RotBackVector(Matrix, Mosaic) ;
+
+            /* probability of reflection from mosaic */
+
+            Prob *= Reflectivity ;
+
+            Prob *= Mosaicity(Mosaic) ;
+
+            if(d_spr_option == 1) Prob *= dSpreadLorentzian(d_ran) ;
+            if(d_spr_option == 2) Prob *= dSpreadGaussian(d_ran) ;
+
+            if(Prob <= wei_min && mode==1) goto getlost2 ;
+
+            IntegralIntensity += Prob ;
+
+            /*	 computes reflected direction in the frame of neutron */
+
+            thr = M_PI - 2 * thr ;
+            phr = M_PI + phr ;
+
+            SphericalToCartesian(Dir, &thr, &phr) ;
+
+            /* computes reflected direction in the "Bragg"(Option=1) or CE frame (Option !=1)*/
+
+            RotBackVector(Matrix, Dir) ;
+	
+            /** end here if mosaic **/
+          }
+
+          /* if (mode == 2) { */
+          /*   InputNeutrons[i].Probability -= Prob; */
+          /*   InputNeutrons[i].Time = startTime; */
+          /*   ii = 0; */
+          /*   for (ii = 0; ii < 3; ii++) { */
+          /*     InputNeutrons[i].Vector[ii] = startVector[ii]; */
+          /*     InputNeutrons[i].Position[ii] = startPosition[ii]; */
+          /*   } */
+          /*   TransmitNeutron(&InputNeutrons[i]); */
+          /*   continue; */
+          /* } */
+
+          /* computes neutron variables in the initial frame */
+
+          RotBackVector(RotMatrixBragg, Dir);
+
+          RotBackVector(RotMatrixCE, Pos) ;
+
+          AddVector(Pos, PosCE) ;
+
+          /* makes depth correction to get back to the old frame for Depth != 0 */
+
+          RotBackVector(RotMatrixCE, Depth) ;
+
+          AddVector(Pos, Depth) ;
+
+          /* computes neutron variables in the output frame */
+
+          SubVector(Pos, TranslFoc) ;
+
+          RotVector(RotMatrixFoc, Pos) ;
+
+          RotVector(RotMatrixFoc, Dir) ;
+
+          /* transmit coordinates which were not changed, the rest overwrite below */
+
+          Neutrons = InputNeutrons[i];
+
+          Neutrons.Time = TOF ;
+
+          Neutrons.Probability = Prob ;
+
+          CopyVector(Pos, Neutrons.Position) ;
+
+          CopyVector(Dir, Neutrons.Vector) ;
+
+          /* writes output binary file */
+
+          NumOut++ ;
+
+          WriteNeutron(&Neutrons) ;
+
+        getlost2: ;
+
+        }/*repetition*/
+
+
+        /* here continues if neutron gets lost */
+
+      getlost: ;
+      }
     }
   }
 

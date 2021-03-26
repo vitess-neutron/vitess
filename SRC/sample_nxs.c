@@ -60,8 +60,6 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-McCompID _eModule=MCN_SMPL_NXS;
-
 // Input parameters
 char  *SampleFileName;      // -S    name of the sample parameter file      
 double Theta    = M_PI/2.0, // -D    these angles determine orientation and solid angles covered by the detector
@@ -133,6 +131,8 @@ int main(int argc, char *argv[])
   
   // initialisation
   // --------------
+  _eModule = MCN_SMPL_NXS;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
@@ -236,143 +236,152 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
-      /* First, shift the origin of the system to the middle of the sample   */
-      SubVector(InputNeutrons[i].Position, Sample.Position);
 
-      /* Do anything to be done for the Scattering */
-      if( NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN) && nxs_init_success )
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        double norm, xsect_coherent, xsect_incoherent, xsect_absorption, xsect_total, p_transmit;
-        if (nisp < 2)
-          CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        /* First, shift the origin of the system to the middle of the sample   */
+        SubVector(InputNeutrons[i].Position, Sample.Position);
 
-        /* the neutron may be scattered between InISP[0] and InISP[1] */
-        /* Lfb full path length in the sample before scattering       */
-        Lbf = DistVector(InISP[0], InISP[1]);
+        /* Do anything to be done for the Scattering */
+        if( NeutronIntersectsSample(&(InputNeutrons[i]), &Sample, RotMatrixSmpl, InISP, &nisp, VT_IN) && nxs_init_success )
+        {
+          double norm, xsect_coherent, xsect_incoherent, xsect_absorption, xsect_total, p_transmit;
+          if (nisp < 2)
+            CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
 
-        /* MONTE CARLO CHOICE: Where is the neutron scattered         */
-        /* Distance Ls between entrance of the neutron InISP[0] and   */
-        /* the scattering point SP               */
-        Ls = MonteCarlo(0, Lbf);
+          /* the neutron may be scattered between InISP[0] and InISP[1] */
+          /* Lfb full path length in the sample before scattering       */
+          Lbf = DistVector(InISP[0], InISP[1]);
 
-        /* which is the corresponding scattering point    */
-        /*   SP = InISP[0] + Ls * OutNeutron.Vector       */
-        for(j=0; j<3; j++)
-          SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
+          /* MONTE CARLO CHOICE: Where is the neutron scattered         */
+          /* Distance Ls between entrance of the neutron InISP[0] and   */
+          /* the scattering point SP               */
+          Ls = MonteCarlo(0, Lbf);
 
-        /* Determine the rotation matrix to point the neutron along the +x axis */
-        NormVector(InputNeutrons[i].Vector);
-        RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
+          /* which is the corresponding scattering point    */
+          /*   SP = InISP[0] + Ls * OutNeutron.Vector       */
+          for(j=0; j<3; j++)
+            SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
 
-        norm = InputNeutrons[i].Wavelength*InputNeutrons[i].Wavelength * 1E-2 / (2.0*uc.volume);
+          /* Determine the rotation matrix to point the neutron along the +x axis */
+          NormVector(InputNeutrons[i].Vector);
+          RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
 
-        xsect_coherent = nxs_CoherentElastic(InputNeutrons[i].Wavelength, &uc );
-        xsect_incoherent = nxs_IncoherentElastic(InputNeutrons[i].Wavelength, &uc ) +
-          nxs_IncoherentInelastic(InputNeutrons[i].Wavelength, &uc ) +
-          nxs_CoherentInelastic(InputNeutrons[i].Wavelength, &uc );
-        xsect_absorption = nxs_Absorption(InputNeutrons[i].Wavelength, &uc );
-        xsect_total = xsect_coherent + xsect_incoherent + xsect_absorption;
+          norm = InputNeutrons[i].Wavelength*InputNeutrons[i].Wavelength * 1E-2 / (2.0*uc.volume);
+
+          xsect_coherent = nxs_CoherentElastic(InputNeutrons[i].Wavelength, &uc );
+          xsect_incoherent = nxs_IncoherentElastic(InputNeutrons[i].Wavelength, &uc ) +
+            nxs_IncoherentInelastic(InputNeutrons[i].Wavelength, &uc ) +
+            nxs_CoherentInelastic(InputNeutrons[i].Wavelength, &uc );
+          xsect_absorption = nxs_Absorption(InputNeutrons[i].Wavelength, &uc );
+          xsect_total = xsect_coherent + xsect_incoherent + xsect_absorption;
   
 
-        /* Lbf is in [cm] already */
-        p_transmit = exp( -xsect_total * mu_factor * Lbf );
+          /* Lbf is in [cm] already */
+          p_transmit = exp( -xsect_total * mu_factor * Lbf );
 
-        /* Handle transmission only (imaging mode) */
-        if (bTransOnly)
-        {
-          /* make mu = 0 and prob = p_transmit to make sure that ProcessNeutronToEnd function works properly */
-          MuTot = MuAbs = 0.0;
-          ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, p_transmit, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
-        }
-
-        /* ...also handle scattering events */
-        else
-        {
-          /* check if neutron transmits through or interacts with the sample */
-          if( p_transmit > MonteCarlo(0, 1) )
+          /* Handle transmission only (imaging mode) */
+          if (bTransOnly)
           {
-            /* TRANSMIT (no scattering) */
-            /* make mu = 0 and prob = 1 to make sure that ProcessNeutronToEnd function works properly */
+            /* make mu = 0 and prob = p_transmit to make sure that ProcessNeutronToEnd function works properly */
             MuTot = MuAbs = 0.0;
-            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, 1, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, p_transmit, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
           }
+
+          /* ...also handle scattering events */
           else
           {
-            double roulette_ball = MonteCarlo(0, xsect_total);
-
-            // SCATTER coherently
-            // ------------------
-            if (roulette_ball <= xsect_coherent)
+            /* check if neutron transmits through or interacts with the sample */
+            if( p_transmit > MonteCarlo(0, 1) )
             {
-              double contrib;
-              /* determine lattice plane (for scattering) */
-              roulette_ball = MonteCarlo(0, xsect_coherent / norm);
-              contrib = 0.0;
-              for( j=0; j<uc.nHKL; j++ )
+              /* TRANSMIT (no scattering) */
+              /* make mu = 0 and prob = 1 to make sure that ProcessNeutronToEnd function works properly */
+              MuTot = MuAbs = 0.0;
+              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, 1, 1, 0.0, 0.0, &Sample, RotMatrixNeut, RotMatrixSmpl);
+            }
+            else
+            {
+              double roulette_ball = MonteCarlo(0, xsect_total);
+
+              // SCATTER coherently
+              // ------------------
+              if (roulette_ball <= xsect_coherent)
               {
-                contrib += uc.hklList[j].FSquare * uc.hklList[j].multiplicity * uc.hklList[j].dhkl;
-                if( roulette_ball < contrib )
-                  break;
+                double contrib;
+                /* determine lattice plane (for scattering) */
+                roulette_ball = MonteCarlo(0, xsect_coherent / norm);
+                contrib = 0.0;
+                for( j=0; j<uc.nHKL; j++ )
+                {
+                  contrib += uc.hklList[j].FSquare * uc.hklList[j].multiplicity * uc.hklList[j].dhkl;
+                  if( roulette_ball < contrib )
+                    break;
+                }
+
+                /* get scattering angle */
+                ScTheta = 2.0*asin( InputNeutrons[i].Wavelength / 2.0 / uc.hklList[j].dhkl );
+                if( ISNAN(ScTheta) )
+                  ScTheta = M_PI;
+
+                if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta)
+                {
+                  InputNeutrons[i].Color = (short)(nColor);
+                  /* Bring the neutron several times on the cone */
+                  for(iGen=0; iGen<GenNeutrons; iGen++)
+                  {
+                    /* ScPhi is the angle of the scattered neutron with the +y-axis */
+                    ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+
+                    /* Ok, now everything needed is known, put it together */
+                    /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
+                    MuTot = xsect_total * mu_factor;
+                    MuAbs = 0.0;
+                    ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, 1.0, ScTheta, ScPhi,
+                                        &Sample, RotMatrixNeut, RotMatrixSmpl);
+                  }
+                } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
               }
 
-              /* get scattering angle */
-              ScTheta = 2.0*asin( InputNeutrons[i].Wavelength / 2.0 / uc.hklList[j].dhkl );
-              if( ISNAN(ScTheta) )
-                ScTheta = M_PI;
-
-              if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta)
+              // SCATTER incoherently 
+              // --------------------
+              else if (roulette_ball <= xsect_coherent+xsect_incoherent)
               {
-                InputNeutrons[i].Color = (short)(nColor);
-                /* Bring the neutron several times on the cone */
-                for(iGen=0; iGen<GenNeutrons; iGen++)
+                /* check the incoherent switch */
+                if (bIncohScat)
                 {
-                  /* ScPhi is the angle of the scattered neutron with the +y-axis */
-                  ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+                  InputNeutrons[i].Color = (short)(nColor+1);
+                  for(iGen=0; iGen<GenNeutrons; iGen++)
+                  {
+                    /* Determine the scattering angle */
+                    ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+                    ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
 
-                  /* Ok, now everything needed is known, put it together */
-                  /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
-                  MuTot = xsect_total * mu_factor;
-                  MuAbs = 0.0;
-                  ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, 1.0, ScTheta, ScPhi,
-                                      &Sample, RotMatrixNeut, RotMatrixSmpl);
-                }
-              } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
-            }
+                    /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
+                    MuTot = xsect_total * mu_factor;
+                    MuAbs = 0.0;
+                    ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, 1.0/GenNeutrons,
+                                        ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
+                  }
+                } /* end of if (bIncohScat) */
 
-            // SCATTER incoherently 
-            // --------------------
-            else if (roulette_ball <= xsect_coherent+xsect_incoherent)
-            {
-              /* check the incoherent switch */
-              if (bIncohScat)
-              {
-                InputNeutrons[i].Color = (short)(nColor+1);
-                for(iGen=0; iGen<GenNeutrons; iGen++)
-                {
-                  /* Determine the scattering angle */
-                  ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-                  ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+              } /* end of if( roulette_ball <= xsect_coherent ) */
 
-                  /* in order to use ProcessNeutronToEnd set MuTot and MuAbs properly */
-                  MuTot = xsect_total * mu_factor;
-                  MuAbs = 0.0;
-                  ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, 1.0/GenNeutrons,
-                                      ScTheta, ScPhi, &Sample, RotMatrixNeut,  RotMatrixSmpl);
-                }
-              } /* end of if (bIncohScat) */
+              // else /* ABSORPTION & and do not call WriteNeutron(&OutNeut) */
 
-            } /* end of if( roulette_ball <= xsect_coherent ) */
+            } /* end of if( p_transmit < MonteCarlo(0, 1) ) */
 
-            // else /* ABSORPTION & and do not call WriteNeutron(&OutNeut) */
-
-          } /* end of if( p_transmit < MonteCarlo(0, 1) ) */
-
-        } /* end of if (bTransOnly) */
-      }
-      /* check if neutron passing the sample shall be treated */
-      else if (bTreatAll==TRUE)
-      {
-        WriteNeutron(&InputNeutrons[i]);
+          } /* end of if (bTransOnly) */
+        }
+        /* check if neutron passing the sample shall be treated */
+        else if (bTreatAll==TRUE)
+        {
+          WriteNeutron(&InputNeutrons[i]);
+        }
       }
     }
   }

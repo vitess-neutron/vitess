@@ -28,8 +28,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_TOFWL;
-
 // Input parameters
 char*  MonFileName= NULL;      // -O    [-]    Monitor output file containing intensity as a function of y- and z-position  
 short  bProbactiv = TRUE,      // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
@@ -71,6 +69,8 @@ int main(int argc, char *argv[])
   
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_MON2_TOFWL;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
@@ -100,26 +100,35 @@ int main(int argc, char *argv[])
   {
     for(i=0; i<NumNeutGot; i++)
 	  {
-	    bRegistered=0;
       CHECK;
-	    if (bProbactiv==1.0) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
 
-	    dy = (int)floor(nbiny*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
-	    dz = (int)floor(nbinz*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        bRegistered=0;
+	      if (bProbactiv==1.0) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
+
+	      dy = (int)floor(nbiny*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
+	      dz = (int)floor(nbinz*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
 			
-  	  if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
-	    {	
-	      nTrajYZ[dy][dz]++;
-	      IntYZ  [dy][dz]+= prob;
-	      bintc          += prob;
-	      bRegistered=1;
-	    }
+  	    if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
+	      {	
+	        nTrajYZ[dy][dz]++;
+	        IntYZ  [dy][dz]+= prob;
+	        bintc          += prob;
+	        bRegistered=1;
+	      }
 	  
-  	  if ((bExclusive==0)||(bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+  	    if ((bExclusive==0)||(bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
 	  }
   }
 

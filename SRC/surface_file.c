@@ -31,12 +31,6 @@
 #define PI     3.14159265358
 
 
-/*********************************/
-/** Global and Static Variables **/
-/*********************************/
-McCompID _eModule=MCN_TOOL_GEN_SURF;
-
-
 /******************************/
 /** Prototypes               **/
 /******************************/
@@ -66,6 +60,7 @@ int main(int argc, char* argv[])
 	char   sFileName[50], sConcentr[9];
 	FILE*  pSurfaceFile;
 
+  _eModule = MCN_TOOL_GEN_SURF;
 	Init(argc, argv, _eModule);
 
 	printf (">> Generation of the surface file for the bender module <<\n"

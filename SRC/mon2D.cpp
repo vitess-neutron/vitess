@@ -43,6 +43,10 @@ Mon2D::Mon2D()
 
   fMonitor = NULL;
 
+  nBundle  = 1;
+  nTrajTot = 0;
+  IntTot   = 0.0;  
+
   xBinSize = 0.0;
   yBinSize = 0.0;
 
@@ -60,6 +64,8 @@ Mon2D::Mon2D()
 /**************************************************/
 void Mon2D::OwnInit(int argc, char* argv[])
 {
+  nBundle = ReadNumBndl();
+
   // Read the command line arguments
   for (int i=1; i<argc; i++)
   {
@@ -172,18 +178,7 @@ void Mon2D::OwnInit(int argc, char* argv[])
   }
 
   if (fMonitorFilename=="")
-  {
     Error("you must define a MonitorOutputFile");
-  }
-  else
-  {	
-    fMonitor = OpenOutputFile(fMonitorFilename.c_str(), FALSE, "w");
-    if (fMonitor ==NULL)
-	  {
-	    fprintf(LogFilePtr,"\nFile %s could not be opened for monitor2D output\n", fMonitorFilename.c_str());
-	    exit(-1);
-	  }
-  }
 
   // Calculate the bin size for x- and y-axis
   xBinSize = (xMax - xMin)/nBinsX;
@@ -203,9 +198,9 @@ void Mon2D::OwnInit(int argc, char* argv[])
   {
     for (int j = 0; j < nBinsY; j++)
     {
-      int k = nBinsX * i + j; 
-      dataArray[k]=0.;
-      dataArrayError[k]=0.;
+      int k = nBinsY * i + j; 
+      dataArray      [k]=0.0;
+      dataArrayError [k]=0.0;
       dataArrayCounts[k]=0;
     }
   }
@@ -221,8 +216,8 @@ void Mon2D::OwnInit(int argc, char* argv[])
     {
       for (int j = 0; j < nBinsY; j++) 
       {
-        int k = nBinsX * i + j; 
-	    	dataArrayPolWeights[k]=0;
+        int k = nBinsY * i + j; 
+	    	dataArrayPolWeights[k]=0.0;
       }
     }
   }
@@ -248,7 +243,7 @@ int Mon2D::FillMonitor(Neutron* n)
   int binY = (int)((yValue - yMin)/yBinSize);
   if (yValue < yMin || yValue > yMax) return 0;
 
-  int kBinXY = nBinsX * binX + binY; 
+  int kBinXY = nBinsY * binX + binY; 
 
   // Dismiss if outside the wavelength range, if defined
   if (lambdaMin >= 0 || lambdaMax > 0) 
@@ -305,6 +300,8 @@ int Mon2D::FillMonitor(Neutron* n)
   }
 
   dataArrayCounts[kBinXY]++;
+  nTrajTot++;
+  IntTot += n->Probability;
 
   return 1;
 }
@@ -418,19 +415,21 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
 /******************************/
 /** Write output file        **/
 /******************************/
-void Mon2D::WriteOut()
+void Mon2D::WriteOut(long iBndl)
 {
-  char *sParX=NULL, *sParY=NULL;
+  char sParX[10]="", 
+       sParY[10]="";
+  double fNorm  = 1.0;               // ratio of total to processed bundles after treating current bundle
 
   ParId2Text(sParX, xParam);
   ParId2Text(sParY, yParam);
 
   // For polarisation analysis, divide the value in each bin by the sum of spin weights
-  for(int binx = 0; binx < nBinsX; binx++) 
+  for (int binx = 0; binx < nBinsX; binx++) 
   {
-    for(int biny = 0; biny < nBinsY; biny++) 
+    for (int biny = 0; biny < nBinsY; biny++) 
     {
-      int kBinXY = nBinsX * binx + biny; 
+      int kBinXY = nBinsY * binx + biny; 
       if (dataArray[kBinXY] > 0) 
       {
         dataArrayError[kBinXY] = dataArray[kBinXY]*sqrt(1./dataArrayCounts[kBinXY]);
@@ -442,15 +441,22 @@ void Mon2D::WriteOut()
     }
   }
 
-  if (analysePol) 
-    WriteHeader2D(fMonitor, format, "polarisation", bWeight,  nBinsX, sParX,           nBinsY, sParY);
-  else
-    WriteHeader2D(fMonitor, format, "Intensity",    bWeight,  nBinsX, sParX,           nBinsY, sParY);
-
-  WriteOutput2D  (fMonitor, format,                 bWeight,  nBinsX, BinPosX, nBinsX, nBinsY, BinPosY,  dataArray, dataArrayError, dataArrayCounts);
-
+  fMonitor = OpenOutputFile(fMonitorFilename.c_str(), TRUE, "w");
   if (fMonitor!=NULL)
+	{
+    fNorm = (double) nBundle / (double) iBndl;
+
+    if (analysePol) 
+      WriteHeader2DB(fMonitor, format, "polarisation", bWeight, iBndl, nBundle, IntTot, nTrajTot,  nBinsX, sParX,           nBinsY, sParY);
+    else
+      WriteHeader2DB(fMonitor, format, "Intensity",    bWeight, iBndl, nBundle, IntTot, nTrajTot,  nBinsX, sParX,           nBinsY, sParY);
+
+    WriteOutput2DB  (fMonitor, format,                 bWeight,  nBinsX, BinPosX, nBinsX, nBinsY, BinPosY,  fNorm, dataArray, dataArrayError, dataArrayCounts);
+
     fclose(fMonitor);
+  }
+
+  return;
 }
 
 

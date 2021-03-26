@@ -18,18 +18,17 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_RESET;
+// Input parameters
+short  nColors    = 0;      // -c   [cm]    number of colours to assign   
+double PolVecX    = 0.0,    // -X  [1/cm]   x-componont of the polarisation  
+       PolVecY    = 0.0,    // -Y  [1/cm] 
+       PolVecZ    = 0.0,    // -Z  [1/cm] 
+       PolDegree  = 0.0;    // -P   [%]     degree of polarization  
 
-short  nColors     =  0,
-       iColor,  
-       bSetColor   =  FALSE,
-       bSetPol     =  FALSE;
-double PolVecX     =  0.0,  /* polarisation            */
-       PolVecY     =  0.0, 
-       PolVecZ     =  0.0,
-       PolNorm,             /* length of polarization vector given by user    */
-       PolDegree   =  0.0,  /* degree of polarization [%]                     */
-       FracPolDir  =  0.0;  /* fraction of neutrons in polarization direction */
+// Variables determined from input parameters or trajectory data
+short  bSetColor  = FALSE,  //      [-]     flag: color will be set
+       bSetPol    = FALSE;  //      [-]     flag: polarisation is set
+double PolNorm    = 1.0;    //      [-]     length of polarization vector given by user 
 
 
 /******************************/
@@ -44,9 +43,13 @@ void OwnCleanup();                        // Does module specific cleanup
 /******************************/
 int main(int argc, char **argv)
 {
-	int i;
+  int   i=0;
+  short iColor=0;           // color set to a trajectory  
+	double FracPolDir = 0.0;  // fraction of neutrons in polarization direction
 
 	/* Initialize the program according to the parameters given   */
+  _eModule = MCN_RESET;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);    // module specific initialization
@@ -67,30 +70,39 @@ int main(int argc, char **argv)
 		for(i=0; i<NumNeutGot; i++) 
 		{
   		CHECK;    
-			if (bSetPol) 
-			{	/* Polarization - spin vectors selected for each trajectory 
-				   from one of the eigenvectors  in the polarisation direction */
-				if (Vran() <= FracPolDir) 
-				{	/* spin eigenvector No 1 */
-					InputNeutrons[i].Spin[0]= PolVecX; 
-					InputNeutrons[i].Spin[1]= PolVecY; 
-					InputNeutrons[i].Spin[2]= PolVecZ; 
-				}
-				else
-				{	/* spin eigenvector No 2 */
-					InputNeutrons[i].Spin[0]= -PolVecX; 
-					InputNeutrons[i].Spin[1]= -PolVecY; 
-					InputNeutrons[i].Spin[2]= -PolVecZ; 
-				} 
-			}
 
-			if (bSetColor)
-			{	iColor = (short) (i % nColors)+1;
-				InputNeutrons[i].Color = iColor;
-			}
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+			  if (bSetPol) 
+			  {	/* Polarization - spin vectors selected for each trajectory 
+				     from one of the eigenvectors  in the polarisation direction */
+				  if (Vran() <= FracPolDir) 
+				  {	/* spin eigenvector No 1 */
+					  InputNeutrons[i].Spin[0]= PolVecX; 
+					  InputNeutrons[i].Spin[1]= PolVecY; 
+					  InputNeutrons[i].Spin[2]= PolVecZ; 
+				  }
+				  else
+				  {	/* spin eigenvector No 2 */
+					  InputNeutrons[i].Spin[0]= -PolVecX; 
+					  InputNeutrons[i].Spin[1]= -PolVecY; 
+					  InputNeutrons[i].Spin[2]= -PolVecZ; 
+				  } 
+			  }
 
-			WriteNeutron(&(InputNeutrons[i]));
-		}
+			  if (bSetColor)
+			  {	iColor = (short) (i % nColors)+1;
+				  InputNeutrons[i].Color = iColor;
+			  }
+
+			  WriteNeutron(&(InputNeutrons[i]));
+		  }
+    }
 	}
   
   // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
@@ -111,7 +123,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void  OwnInit(int argc, char *argv[]) 
 {
-  int i;
+  int i=0;
 
 	for(i=1; i<argc; i++) 
 	{	if(argv[i][0]!='+') 
@@ -134,7 +146,7 @@ void  OwnInit(int argc, char *argv[])
 				  break;
 				case 'P':
 				  PolDegree = atof(&argv[i][2]); 
-				  if(fabs(PolDegree) > 100.)
+				  if (fabs(PolDegree) > 100.)
 				   Error("polarization degree must be <= 100 ");
 				  break;
 

@@ -23,6 +23,8 @@ Mon1D::Mon1D()
     
     nBinsX[i] = 0;
     
+    nTrajTot[i] = 0;
+    IntTot  [i] = 0.0;  
     xBinSize[i] = 0.0;
   
     eParX[i] = -1;
@@ -34,6 +36,8 @@ Mon1D::Mon1D()
 
   fMonitorFilename = "NoFile";
 
+  bMultFiles= false;
+  nBundle   =  1;
   lambdaMin = -1;
   lambdaMax = -1;
 
@@ -81,6 +85,8 @@ Mon1D::Mon1D()
 /**************************************************/
 void Mon1D::OwnInit(int argc, char* argv[])
 {
+  nBundle = ReadNumBndl();
+
   // Read the command line arguments
   for (int i=1; i<argc; i++)
   {
@@ -207,13 +213,11 @@ void Mon1D::OwnInit(int argc, char* argv[])
     }
   }
 
+  // check for needed file name
   if (fMonitorFilename=="")
-  {
     Error("you must define a MonitorOutputFile");
-  }
 
-
-  bool multipleFiles = false;
+  // check if more than 1 file is wanted
   int numberFiles = 0;
 
   for (int ii = 0; ii < 3; ii++) 
@@ -221,24 +225,16 @@ void Mon1D::OwnInit(int argc, char* argv[])
     if (eParX[ii] > 0) numberFiles++;
   }
 
-  if (numberFiles > 1) multipleFiles = true;
+  if (numberFiles > 1) 
+    bMultFiles = true;
 
+  // allocate memory and initialize
   if (bWeight != 1) bWeight = 0;
 
   for (int ii = 0; ii < 3; ii++) 
   {
 
     if (eParX[ii] < 1) continue;
-
-    string fullFileName = fMonitorFilename;
-    if (multipleFiles) fullFileName = fullFileName + "_" + sParameterNames[eParX[ii]-1] + ".mon";
-    
-    fMonitor[ii] = OpenOutputFile(fullFileName.c_str(), FALSE, "w");
-    if (fMonitor[ii] ==NULL)
-    {
-      fprintf(LogFilePtr,"\nFile %s could not be opened for monitor1D output\n", fullFileName.c_str());
-      exit(-1);
-    }
     
     // Calculate the bin size for x- and y-axis
     xBinSize[ii] = (xMax[ii] - xMin[ii])/nBinsX[ii];
@@ -250,7 +246,8 @@ void Mon1D::OwnInit(int argc, char* argv[])
     
     for (int i = 0; i < nBinsX[ii]; i++) 
     {
-      dataArray[ii][i]=0;
+      dataArray      [ii][i]=0.0;
+      dataArrayError [ii][i]=0.0;
       dataArrayCounts[ii][i]=0;
     }
     
@@ -356,6 +353,7 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
   }
 
   dataArrayCounts[counter][binX]++;
+  nTrajTot[counter]++;
 
   return 1;
 }
@@ -472,12 +470,16 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
 /******************************/
 /** Write output file        **/
 /******************************/
-void Mon1D::WriteOut()
+void Mon1D::WriteOut(long iBndl)
 {
+  int    nBinPol[3]={0,0,0};
+  string fullFileName = fMonitorFilename + ".dat";
+
   for (int ii = 0; ii < 3; ii++) 
   {
     if (!monSwitchedOn[ii]) continue;
 
+    IntTot[ii] = 0.0;
     for(int binx = 0; binx < nBinsX[ii]; binx++) 
     {    
       if (dataArrayCounts[ii][binx]>0) 
@@ -485,22 +487,33 @@ void Mon1D::WriteOut()
       
       // For polarisation analysis, divide the value in each bin by the sum of spin weights
       if (analysePol) 
-        if (dataArrayPolWeights[ii][binx] > 0) dataArray[ii][binx]/=dataArrayPolWeights[ii][binx];	     
-      
+      { if (dataArrayPolWeights[ii][binx] > 0) 
+        { dataArray[ii][binx] /= dataArrayPolWeights[ii][binx];	
+          nBinPol[ii]++;
+        }
+      }
+      IntTot[ii] += dataArray[ii][binx];
     }
- 
-    if (analysePol) 
-      WriteHeader1D(fMonitor[ii], "polarisation", bWeight, nBinsX[ii], sParameterNames[eParX[ii]-1].c_str(), "");
-    else
-      WriteHeader1D(fMonitor[ii], "intensity",    bWeight, nBinsX[ii], sParameterNames[eParX[ii]-1].c_str(), "");
 
-    for(int binx = 0; binx < nBinsX[ii]; binx++) 
-    {
-      fprintf(fMonitor[ii],"%10.3f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*binx) + (xMin[ii] + xBinSize[ii]*(binx+1.)))/2.0, 
-	                                                           dataArray[ii][binx], dataArrayError[ii][binx], dataArrayCounts[ii][binx]);       
-    }
+    if (bMultFiles) 
+      fullFileName = fMonitorFilename + "_" + sParameterNames[eParX[ii]-1] + ".dat";
+    
+    fMonitor[ii] = OpenOutputFile(fullFileName.c_str(), TRUE, "w");
     if (fMonitor[ii]!=NULL)
+    {
+      if (analysePol) 
+        WriteHeader1DB(fMonitor[ii], "polarisation", ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii]/nBinPol[ii], nTrajTot[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+      else
+        WriteHeader1DB(fMonitor[ii], "intensity",    ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+
+      for(int binx = 0; binx < nBinsX[ii]; binx++) 
+      {
+        fprintf(fMonitor[ii],"%10.3f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*binx) + (xMin[ii] + xBinSize[ii]*(binx+1.)))/2.0, 
+	                                                             dataArray[ii][binx], dataArrayError[ii][binx], dataArrayCounts[ii][binx]);       
+      }
+       
       fclose(fMonitor[ii]);
+    }
   }
 }
 

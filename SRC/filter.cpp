@@ -33,8 +33,10 @@ int main(int argc, char *argv[])
   short  bRegistered=FALSE;
   long	 i=0 ;
 
-  // reading of input data and initilisation
-  // ---------------------------------------
+  // reading of input data and initialisation
+  // ----------------------------------------
+  _eModule=MCN_FILTER;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
@@ -50,12 +52,19 @@ int main(int argc, char *argv[])
     {
       CHECK;
       
-      // bRregistered = TRUE if neutron was considered in the monitor
-      bRegistered=CheckFilter(&InputNeutrons[i]);
-	  
-      if (bRegistered) 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        // bRregistered = TRUE if neutron was considered in the monitor
+        bRegistered=CheckFilter(&InputNeutrons[i]);
+	  
+        if (bRegistered) 
+        {
+          WriteNeutron(&(InputNeutrons[i]));
+        }
       }
     }
   }

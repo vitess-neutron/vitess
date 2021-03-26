@@ -26,8 +26,6 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_SLIT;
-
 double Width=0.0,               // -W   [cm]  width of the (rectangular) slit 
        Height=0.0,              // -H   [cm]  height of the (rectangular) slit 
        DistMove=0.0;            // -d   [cm]  distance between starting point and slit 
@@ -40,14 +38,16 @@ Plane  Endpoint;                //      [cm]  Endpoint.D: distance to end of fre
 /******************************/
 int main(int argc, char *argv[])
 {
-	long  i;
+	long  i=0;
 
-	double VelocityReal,          // velocity of the neutron    
-         TimeOF,                // time of flight of the neutron to the window 
-	       NewPosY, NewPosZ;      // hor. and vert. position of neutron at slit 
+	double VelocityReal=0.0,          // velocity of the neutron    
+         TimeOF=0.0,                // time of flight of the neutron to the window 
+	       NewPosY=0.0, NewPosZ=0.0;  // hor. and vert. position of neutron at slit 
 
   // initialisation
   // --------------
+  _eModule = MCN_SLIT;
+
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
 	OwnInit(argc, argv);
@@ -66,39 +66,47 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
-			// 	Move neutron to end of space and calculate Time of Flight (ms)
-			// ---------------------------------------------------------------
-			if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			if (InputNeutrons[i].Wavelength == 0.0) continue;
-			VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-			if (VelocityReal <= 0.0) continue;
-			
-			if (keygrav == 1)
-			{
-				TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			}
-			else
-			{
-				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-			}
-
-
-			// Calculate  and  writeout new data set, if slit is hit
-			// -----------------------------------------------------
-			NewPosY = InputNeutrons[i].Position[1];
-			NewPosZ = InputNeutrons[i].Position[2];
-			
-			if (fabs(NewPosY) < 0.5*Width  &&  fabs(NewPosZ) < 0.5*Height)
-			{	
-        WriteIAP(&InputNeutrons[i], VT_PASSED);
-
-				InputNeutrons[i].Time += (double)TimeOF;
-				InputNeutrons[i].Position[0]=0.0;
-
-				WriteNeutron(&InputNeutrons[i]);
-			}
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
       else
-      { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+      { 
+			  // 	Move neutron to end of space and calculate Time of Flight (ms)
+			  // ---------------------------------------------------------------
+			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+			  if (InputNeutrons[i].Wavelength == 0.0) continue;
+			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+			  if (VelocityReal <= 0.0) continue;
+			
+			  if (keygrav == 1)
+			  {
+				  TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+			  }
+			  else
+			  {
+				  TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+			  }
+
+
+			  // Calculate  and  writeout new data set, if slit is hit
+			  // -----------------------------------------------------
+			  NewPosY = InputNeutrons[i].Position[1];
+			  NewPosZ = InputNeutrons[i].Position[2];
+			
+			  if (fabs(NewPosY) < 0.5*Width  &&  fabs(NewPosZ) < 0.5*Height)
+			  {	
+          WriteIAP(&InputNeutrons[i], VT_PASSED);
+
+				  InputNeutrons[i].Time += (double)TimeOF;
+				  InputNeutrons[i].Position[0]=0.0;
+
+				  WriteNeutron(&InputNeutrons[i]);
+			  }
+        else
+        { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+        }
       }
 		}
 	}	
@@ -121,7 +129,9 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-	int i;
+	int i=0;
+
+  InitPlane(&Endpoint);
 
 	for (i=1; i<argc; i++)
 	{
@@ -148,9 +158,7 @@ void  OwnInit(int argc, char *argv[])
 		}
 	}
 
-	Endpoint.A = 1.0;
-	Endpoint.B = 0.0;
-	Endpoint.C = 0.0;
+	Endpoint.A =  1.0;
 	Endpoint.D = -1.0*DistMove;
 }
 

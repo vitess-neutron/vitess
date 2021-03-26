@@ -108,8 +108,6 @@ void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorTy
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_BENDER;
-
 const double lengthGeomPiece = 50.; //Length of a geometry element in cm a surface consists of for x3d visualisation
 int   numberRectangles;
 int   numberTriangles;
@@ -230,7 +228,7 @@ int main(int argc, char *argv[])
 
   // reading of input data and initialisation
   // ----------------------------------------
-  bVisInstalled = TRUE;
+  _eModule=MCN_BENDER;
 
   Init(argc, argv,_eModule);
   PrintModuleName(_eModule, "1.9");
@@ -279,129 +277,136 @@ int main(int argc, char *argv[])
 
       CHECK
 
-      TimeOF1 = 0.0;
-
-      /*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
-      /****************************************************************************************/
-      /* Check to see if the neutron is initially in the entrance to the bender...             */
-      /****************************************************************************************/
-
-      if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
-
-      /****************choose the channel******************/
-      /* include thickness	*/
-
-      for (j=1;j<=(NumberOfSurfaces-1);j++)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        rightend=YENR[j];
-        leftend=YENL[j];
-        if((rightend<InputNeutrons[i].Position[1])&&(leftend>InputNeutrons[i].Position[1]))
-        {
-          numberch = j;
-          break;
-        }
-      }
-
-      //      	fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
-
-      if(j==NumberOfSurfaces)
-        continue;  /*neutron blocked by spacer*/
-
-
-      /* Check the quantization of polarization */
-
-      if (keypol == 1)
-        if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
-        {
-          fprintf(LogFilePtr,"ERROR: Illegal Spin Quantisation!!! Check the Spin value \n");
-          exit(-1);
-        }
-
-
-
-      /******************************************************************************************/
-      /* Pass a pointer to the neutron and the Bender structure variable to a subroutine to do  */
-      /* the donkey work. The return value is the total value of the time of flight through the */
-      /* Bender, or -1.0 if it missed all plates and the exit (should be impossible).           */
-      /******************************************************************************************/
-
-      /* Choose the behavior of neutrons between channels */
-
-      if (bAbsTransCrit == 0)
-      {
-        /* Neutrons travel WITHOUT crosstalk between channels */
-        TimeOF1 = PathThroughChannelGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
-        rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
-        keygrav, keypol, qspin,
-        entrancediscenter, exitdiscenter, spacer);
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {
-        /* Neutrons travel WITH crosstalk between channels */
-        TimeOF1 = PathThroughBenderGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
-                                              rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
-                                              keygrav, keypol, qspin,
-                                              entrancediscenter, exitdiscenter, spacer,
-                                              keymaterial0, keymaterial1, keymaterial2,
+      { 
+        TimeOF1 = 0.0;
 
-        WAVS, MUS, ntfs,
-        WAVL, MUL, ntfl,
-        WAVR, MUR, ntfr);
+        /*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
+        /****************************************************************************************/
+        /* Check to see if the neutron is initially in the entrance to the bender...             */
+        /****************************************************************************************/
+
+        if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
+
+        /****************choose the channel******************/
+        /* include thickness	*/
+
+        for (j=1;j<=(NumberOfSurfaces-1);j++)
+        {
+          rightend=YENR[j];
+          leftend=YENL[j];
+          if((rightend<InputNeutrons[i].Position[1])&&(leftend>InputNeutrons[i].Position[1]))
+          {
+            numberch = j;
+            break;
+          }
+        }
+
+        //      	fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
+
+        if(j==NumberOfSurfaces)
+          continue;  /*neutron blocked by spacer*/
+
+
+        /* Check the quantization of polarization */
+
+        if (keypol == 1)
+          if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
+          {
+            fprintf(LogFilePtr,"ERROR: Illegal Spin Quantisation!!! Check the Spin value \n");
+            exit(-1);
+          }
+
+
+
+        /******************************************************************************************/
+        /* Pass a pointer to the neutron and the Bender structure variable to a subroutine to do  */
+        /* the donkey work. The return value is the total value of the time of flight through the */
+        /* Bender, or -1.0 if it missed all plates and the exit (should be impossible).           */
+        /******************************************************************************************/
+
+        /* Choose the behavior of neutrons between channels */
+
+        if (bAbsTransCrit == 0)
+        {
+          /* Neutrons travel WITHOUT crosstalk between channels */
+          TimeOF1 = PathThroughChannelGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
+          rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
+          keygrav, keypol, qspin,
+          entrancediscenter, exitdiscenter, spacer);
+        }
+        else
+        {
+          /* Neutrons travel WITH crosstalk between channels */
+          TimeOF1 = PathThroughBenderGravOrder2(&InputNeutrons[i], BenderMy, BenderCh, numberch, NumberOfSurfaces, wei_min, disabut,
+                                                rdatalup, rdatarup, rdatatbup, rdataldo, rdatardo, rdatatbdo, surfacerough,
+                                                keygrav, keypol, qspin,
+                                                entrancediscenter, exitdiscenter, spacer,
+                                                keymaterial0, keymaterial1, keymaterial2,
+
+          WAVS, MUS, ntfs,
+          WAVL, MUL, ntfl,
+          WAVR, MUR, ntfr);
+        }
+
+        if(TimeOF1 == -1.0)  continue;
+        if(TimeOF1 == -10000.0) exit(-1);
+
+
+        /****************************************************************************************/
+        /* Transform the coordinates.   					         	      */
+        /* X must be always renormalized to zero...                                                  */
+        /****************************************************************************************/
+
+        /* KL: correction: recursion found in calculation of InputNeutrons[i].Position[1], ...Vector[1]
+          InputNeutrons[i].Position[0], ...Vector[0]  were already changed !           */
+
+        Output = InputNeutrons[i];
+
+        /* KL: correction: transformation: move coordinate system to the center of rotation
+	                      rotate
+    	                      move coordinate system back       */
+        /*          InputNeutrons[i].Position[1] -= Radius;
+        Output.Position[0] =  (InputNeutrons[i].Position[0])*COSB + (InputNeutrons[i].Position[1])*SINB;
+        Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
+        Output.Position[1] += Radius;  */
+
+        /* SM: Similar */
+
+        Output.Position[0] =  (InputNeutrons[i].Position[0]-X2)*COSB + (InputNeutrons[i].Position[1]-Y2)*SINB;
+        Output.Position[1] = -(InputNeutrons[i].Position[0]-X2)*SINB + (InputNeutrons[i].Position[1]-Y2)*COSB;
+
+        Output.Vector[0] =  (InputNeutrons[i].Vector[0])*COSB + (InputNeutrons[i].Vector[1])*SINB;
+        Output.Vector[1] = -(InputNeutrons[i].Vector[0])*SINB + (InputNeutrons[i].Vector[1])*COSB;
+
+
+        //      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f \n",Output.Position[0], Output.Position[1], Output.Position[2]);
+
+
+        if (fabs(Output.Position[2])>BenderExitHeight/2.0) continue;
+
+
+        /****************************************************************************************/
+        /* Add the time needed to travel inside Bender.                                   */
+        /****************************************************************************************/
+        Output.Time = Output.Time + TimeOF1;
+        /****************************************************************************************/
+        /* Count this as a success.                                                             */
+        /****************************************************************************************/
+
+  #ifdef VT_GRAPH
+        if (do_visualise)
+        {
+          number_vis_tr = number_vis_tr + 1;
+        }
+  #endif
+
+        WriteNeutron(&Output);
       }
-
-      if(TimeOF1 == -1.0)  continue;
-      if(TimeOF1 == -10000.0) exit(-1);
-
-
-      /****************************************************************************************/
-      /* Transform the coordinates.   					         	      */
-      /* X must be always renormalized to zero...                                                  */
-      /****************************************************************************************/
-
-      /* KL: correction: recursion found in calculation of InputNeutrons[i].Position[1], ...Vector[1]
-        InputNeutrons[i].Position[0], ...Vector[0]  were already changed !           */
-
-      Output = InputNeutrons[i];
-
-      /* KL: correction: transformation: move coordinate system to the center of rotation
-	                    rotate
-    	                    move coordinate system back       */
-      /*          InputNeutrons[i].Position[1] -= Radius;
-      Output.Position[0] =  (InputNeutrons[i].Position[0])*COSB + (InputNeutrons[i].Position[1])*SINB;
-      Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
-      Output.Position[1] += Radius;  */
-
-      /* SM: Similar */
-
-      Output.Position[0] =  (InputNeutrons[i].Position[0]-X2)*COSB + (InputNeutrons[i].Position[1]-Y2)*SINB;
-      Output.Position[1] = -(InputNeutrons[i].Position[0]-X2)*SINB + (InputNeutrons[i].Position[1]-Y2)*COSB;
-
-      Output.Vector[0] =  (InputNeutrons[i].Vector[0])*COSB + (InputNeutrons[i].Vector[1])*SINB;
-      Output.Vector[1] = -(InputNeutrons[i].Vector[0])*SINB + (InputNeutrons[i].Vector[1])*COSB;
-
-
-      //      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f \n",Output.Position[0], Output.Position[1], Output.Position[2]);
-
-
-      if (fabs(Output.Position[2])>BenderExitHeight/2.0) continue;
-
-
-      /****************************************************************************************/
-      /* Add the time needed to travel inside Bender.                                   */
-      /****************************************************************************************/
-      Output.Time = Output.Time + TimeOF1;
-      /****************************************************************************************/
-      /* Count this as a success.                                                             */
-      /****************************************************************************************/
-
-#ifdef VT_GRAPH
-      if (do_visualise)
-      {
-        number_vis_tr = number_vis_tr + 1;
-      }
-#endif
-
-      WriteNeutron(&Output);
     }
   }
 
@@ -1738,7 +1743,7 @@ void FillReflContainer(double array[1000], double m)
 
   if (m < 0) 
   {
-    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!");
+    fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!\n");
     exit(-1);
   }
 

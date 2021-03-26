@@ -10,6 +10,7 @@
 /* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.3a Nov 2020  K. Lieutenant  new 'mon2_header'                                          */
+/* 1.4  Mar 2021  K. Lieutenant  update after each bundle                                   */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,8 +29,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_DIV;
-
 // Input parameters
 char*  MonFileName = NULL;       // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
 short  bProbactiv  = TRUE,       // -p    [-]   flag Display  : YES: Probability weight   NO: number of trajectories
@@ -48,20 +47,22 @@ double FiltLmbdMin =-1.0,        // -l   [Ang]  filter: lower bound value of the
        FiltZMin    =-1.0e10,     // -v   [cm]   filter: bottom position of the monitored area
        FiltZMax    = 1.0e10;     // -V   [cm]   filter: top position of the monitored area
 
-// Variables determined from input parameters
-FILE*  fMonitor     = NULL;
-
+// Variables determined from input parameters or simulation file
+long   nBundle = 1;                   // number of bundles started
 double BinPosY   [BINSIZE];           // edges of the bins of the first parameter 
 double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter 
 double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
 double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
 long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
+long   nTrajTot=0;                     // total number of traj. within monitor limits
+double TotInt  =0.0;                   // total intensitiy within monitor limits
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);    // Reads input parameters and sets global parameters
+void UpdateMon(long iBndl);              // Updates monitor output file 
 
 
 /******************************/
@@ -71,29 +72,33 @@ int main(int argc, char *argv[])
 {
   short  bRegistered=FALSE;
   int	   iY=0, jZ=0;
-  long	 i=0 ;
+  long	 iBndl=0,      // current bundle
+         i=0 ;
   double Divy  =0.0, 
          Divz  =0.0, 
-         TotInt=0.0,  // Total intensitiy within monitor limits
-         prob  =0.0;  // Intensitiy of a trajectory
+         prob  =0.0;   // Intensitiy of a trajectory
    
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule = MCN_MON2_DIV;
+
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3a");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
 
+  nBundle = ReadNumBndl();
+
   // initializes arrays
-  for (iY = 0; iY<nBinsY+1; iY++)
+  for (iY=0; iY < nBinsY+1; iY++)
   {
     BinPosY[iY] = DivYmin + (DivYmax-DivYmin) * iY / (double)nBinsY;
 
     for(jZ = 0;jZ<(nBinsZ+1); jZ++)
 	  {
-	    BinPosZ       [jZ] = DivZmin + (DivZmax-DivZmin)  * jZ / (double) nBinsZ;
+	    BinPosZ       [jZ] = DivZmin + (DivZmax-DivZmin) * jZ / (double) nBinsZ;
 	    IntYZ     [iY][jZ] = 0.0;
 	    IntYZError[iY][jZ] = 0.0;
 	    nTrajYZ   [iY][jZ] = 0;
@@ -111,55 +116,62 @@ int main(int argc, char *argv[])
       CHECK;
 	    bRegistered = 0;
 
-	    if (bExclusive==0) 
-		    WriteNeutron(&(InputNeutrons[i]));
+      // Update monitor output if EOB line is found
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      { 
+        iBndl++;
+        UpdateMon(iBndl);
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      {
+	      if (bExclusive==0) 
+		      WriteNeutron(&(InputNeutrons[i]));
 
-	    if (FiltLmbdMin >= 0. && InputNeutrons[i].Wavelength < FiltLmbdMin) continue;
-	    if (FiltLmbdMax >= 0. && InputNeutrons[i].Wavelength > FiltLmbdMax) continue;
-	    if (InputNeutrons[i].Position[1] < FiltYMin) continue;
-	    if (InputNeutrons[i].Position[1] > FiltYMax) continue;
-	    if (InputNeutrons[i].Position[2] < FiltZMin) continue;
-	    if (InputNeutrons[i].Position[2] > FiltZMax) continue;
+	      if (FiltLmbdMin >= 0. && InputNeutrons[i].Wavelength < FiltLmbdMin) continue;
+	      if (FiltLmbdMax >= 0. && InputNeutrons[i].Wavelength > FiltLmbdMax) continue;
+	      if (InputNeutrons[i].Position[1] < FiltYMin) continue;
+	      if (InputNeutrons[i].Position[1] > FiltYMax) continue;
+	      if (InputNeutrons[i].Position[2] < FiltZMin) continue;
+	      if (InputNeutrons[i].Position[2] > FiltZMax) continue;
 
-	    if (bProbactiv==TRUE) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob = 1.0;
+	      if (bProbactiv==TRUE) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob = 1.0;
 
-	    if (InputNeutrons[i].Vector[0] >= 0) 
-        Divy = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
-	    else 
-        Divy = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
-	    Divy*=180.0/M_PI;
+	      if (InputNeutrons[i].Vector[0] >= 0) 
+          Divy = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	      else 
+          Divy = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	      Divy*=180.0/M_PI;
 
-	    Divz = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));
-	    Divz*= 180.0/M_PI;
+	      Divz = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));
+	      Divz*= 180.0/M_PI;
 
-	    iY = (int)floor(nBinsY*(Divy-DivYmin)/(DivYmax-DivYmin));
-	    jZ = (int)floor(nBinsZ*(Divz-DivZmin)/(DivZmax-DivZmin));
+	      iY = (int)floor(nBinsY*(Divy-DivYmin)/(DivYmax-DivYmin));
+	      jZ = (int)floor(nBinsZ*(Divz-DivZmin)/(DivZmax-DivZmin));
 			
-	    if (((iY>=0)&&(iY<nBinsY))&&((jZ>=0)&&(jZ<nBinsZ))) 
-      {	
-	      nTrajYZ[iY][jZ]++;
-	      IntYZ  [iY][jZ]+= prob;
-	      TotInt         += prob;
-	      bRegistered=1;
-	    }
+	      if (((iY>=0)&&(iY<nBinsY))&&((jZ>=0)&&(jZ<nBinsZ))) 
+        {	
+	        nTrajYZ[iY][jZ]++;
+          nTrajTot++;
+	        IntYZ  [iY][jZ]+= prob;
+	        TotInt         += prob;
+	        bRegistered=1;
+	      }
 	  
-	    if ((bExclusive==1) && (bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+	      if ((bExclusive==1) && (bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
     }
   }
 
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
 my_exit:
-  // writes and closes monitor file 
-  WriteHeader2D(fMonitor, eFormat, "Intensity", bProbactiv,  nBinsY, "divergence Y [cm]", nBinsZ, "divergence Z [cm]");
-  // WriteOutput2D(fMonitor, eFormat,              bProbactiv,  nBinsY, BinPosY,           nBinsZ, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
-  WriteOutput2D(fMonitor, eFormat,              bProbactiv,  nBinsY, BinPosY,  BINSIZE, nBinsZ, BinPosZ,  
-                          (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
-  fclose(fMonitor);
+  // writes final monitor output
+  UpdateMon(nBundle);  // final monitor output
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -248,17 +260,39 @@ void  OwnInit(int argc, char *argv[])
       }
     }
 
-  // opens monitor file
+  // check for file name
   if (MonFileName==NULL)
-  {
-    Error("you must define a MonitorOutputFile");
-  }
-  else
-  { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");
-  }
+    Error("You must define a monitor output file");
 
   if (bProbactiv != 1)
     bProbactiv = 0;
 
   return;
+}
+
+
+/*******************************************************/
+/**  Updates main monitor output file                 **/
+/*******************************************************/
+void UpdateMon(long iBndl)
+{
+  double f_norm  = 1.0;               // ratio of total to processed bundles after treating current bundle
+  FILE*  fMonitor= NULL;              // pointer to output file
+
+  // opens monitor file
+  fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");
+
+  if (fMonitor)
+  {
+    f_norm = (double) nBundle / (double) iBndl;
+
+    // writes header and data
+    WriteHeader2DB(fMonitor, eFormat, "Intensity", bProbactiv, iBndl, nBundle, TotInt, nTrajTot,  
+                   nBinsY, "divergence Y [cm]", nBinsZ, "divergence Z [cm]");
+
+    WriteOutput2DB(fMonitor, eFormat,              bProbactiv,  nBinsY, BinPosY,  BINSIZE, nBinsZ, BinPosZ,  
+                   f_norm, (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+
+    fclose(fMonitor);
+  }
 }

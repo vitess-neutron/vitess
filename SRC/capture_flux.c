@@ -23,8 +23,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_CAPTURE;
-
 double CaptArea=1.0;
 double ReferenceWavelength=1.798;
 double heightmin  = 0.0,              /* z-coordinate: bottom of rectangular window             [cm] */
@@ -52,11 +50,13 @@ void OwnCleanup();                        // Does module specific cleanup
 /******************************/
 int main(int argc, char **argv)
 {
-  int i, Ntot=0;
+  int    i=0, Ntot=0;
   double CaptInt=0.0, CaptQuad=0.0, CaptErr=0.0;
   short  bOutOfWindow = FALSE, bOutOfLambda = FALSE;
 
 	/* Initialize the program according to the parameters given   */
+  _eModule=MCN_CAPTURE;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.13");
   OwnInit(argc, argv);    // module specific initialization
@@ -75,49 +75,56 @@ int main(int argc, char **argv)
     {
       CHECK;
 
-      switch (WindowType)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        case 1:
-          bOutOfWindow = (winradius*winradius < 
-          ((InputNeutrons[i].Position[1] - ywincenter)*(InputNeutrons[i].Position[1] - ywincenter) + 
-          (InputNeutrons[i].Position[2] - zwincenter)*(InputNeutrons[i].Position[2] - zwincenter)));
-          break;
-        case 2:
-          bOutOfWindow = ((widthmin  > InputNeutrons[i].Position[1]) || (widthmax < InputNeutrons[i].Position[1]) ||
-          (heightmin > InputNeutrons[i].Position[2]) || (heightmax < InputNeutrons[i].Position[2]));
-          break;
+        WriteNeutron(&(InputNeutrons[i]));
       }
-
-      if (lambdamin != 0. && lambdamax != 0.)
-        bOutOfLambda = (InputNeutrons[i].Wavelength < lambdamin || InputNeutrons[i].Wavelength > lambdamax);
       else
-        bOutOfLambda = FALSE;
-
-
-      if (!bOutOfWindow && !bOutOfLambda) 
-      {
-        double col;
-
-        if (ReferenceWavelength <= 0.) 
+      { 
+        switch (WindowType)
         {
-          CaptInt  +=    InputNeutrons[i].Probability;
-          CaptQuad += sq(InputNeutrons[i].Probability);
-        } 
-        else 
-        {
-          CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
-          CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
+          case 1:
+            bOutOfWindow = (winradius*winradius < 
+            ((InputNeutrons[i].Position[1] - ywincenter)*(InputNeutrons[i].Position[1] - ywincenter) + 
+            (InputNeutrons[i].Position[2] - zwincenter)*(InputNeutrons[i].Position[2] - zwincenter)));
+            break;
+          case 2:
+            bOutOfWindow = ((widthmin  > InputNeutrons[i].Position[1]) || (widthmax < InputNeutrons[i].Position[1]) ||
+            (heightmin > InputNeutrons[i].Position[2]) || (heightmax < InputNeutrons[i].Position[2]));
+            break;
         }
 
-        //colour counting: sum (horizontal+vertical)
-        col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
-        avColor += col;
-        avwColor += col*InputNeutrons[i].Probability;
+        if (lambdamin != 0. && lambdamax != 0.)
+          bOutOfLambda = (InputNeutrons[i].Wavelength < lambdamin || InputNeutrons[i].Wavelength > lambdamax);
+        else
+          bOutOfLambda = FALSE;
 
-        Ntot++;
+
+        if (!bOutOfWindow && !bOutOfLambda) 
+        {
+          double col;
+
+          if (ReferenceWavelength <= 0.) 
+          {
+            CaptInt  +=    InputNeutrons[i].Probability;
+            CaptQuad += sq(InputNeutrons[i].Probability);
+          } 
+          else 
+          {
+            CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
+            CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
+          }
+
+          //colour counting: sum (horizontal+vertical)
+          col= (InputNeutrons[i].Color - InputNeutrons[i].Color%100)  / 100 + (InputNeutrons[i].Color %100);
+          avColor += col;
+          avwColor += col*InputNeutrons[i].Probability;
+
+          Ntot++;
+        }
+
+        WriteNeutron(&(InputNeutrons[i]));
       }
-
-      WriteNeutron(&(InputNeutrons[i]));
     }
   }
 

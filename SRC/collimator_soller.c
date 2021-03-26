@@ -41,8 +41,6 @@ void  SetGeometry(char* sColor);                 // fills the structure stGeomet
 /******************************/
 /** Global variables         **/
 /******************************/
-McCompID _eModule=MCN_COLL_VIRT;
-
 short   bAngColl=FALSE;      //       flag: angular collimation
 long    nAngles =1;          //       number of collimation channels = Angle grid
 double  PeakTransm=1.0,      //       maximal probability for passing through the collimator (considers effectively the blocking due to the width of collimator blades
@@ -66,9 +64,12 @@ int main(int argc, char *argv[])
   double* pAngle;            // [deg] (pointer to) array of angles of maximal transition
 	Neutron Output;            //       trajectory written to the output (to be read by the next module)
 
+  InitNeutron(&Output);
 
 	// Reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_COLL_VIRT;
+
   Init(argc, argv, _eModule);
   if (bAngColl)
 	  print_module_name("Virtual angular Collimator 1.2");
@@ -112,30 +113,37 @@ int main(int argc, char *argv[])
 		{
 			CHECK;
 
-			HorDiv = Degrees(atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]));
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+			  HorDiv = Degrees(atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]));
 
-			bTransmit=FALSE;
+			  bTransmit=FALSE;
 
-			for(j=0;j<nAngles; j++)
-			{
-				if (fabs(pAngle[j]-HorDiv) < HorCollDiv)
-				{ 	
-          CollimProb = PeakTransm*(1.0 - (fabs(pAngle[j]-HorDiv) / HorCollDiv));
-					bTransmit=TRUE;
-					break;
-				}
-			}
+			  for(j=0;j<nAngles; j++)
+			  {
+				  if (fabs(pAngle[j]-HorDiv) < HorCollDiv)
+				  { 	
+            CollimProb = PeakTransm*(1.0 - (fabs(pAngle[j]-HorDiv) / HorCollDiv));
+					  bTransmit=TRUE;
+					  break;
+				  }
+			  }
 
-			if (bTransmit) 
-			{	
-  			Output = InputNeutrons[i];
-        Output.Probability *= CollimProb;
-			}
-			else 
-			{	continue;
-			}
+			  if (bTransmit) 
+			  {	
+  			  Output = InputNeutrons[i];
+          Output.Probability *= CollimProb;
+			  }
+			  else 
+			  {	continue;
+			  }
 
-			WriteNeutron(&Output);
+			  WriteNeutron(&Output);
+      }
 		}
 	}
 

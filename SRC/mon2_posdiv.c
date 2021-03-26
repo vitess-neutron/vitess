@@ -27,8 +27,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_POSDIV;
-
 // Input parameters
 char*  MonFileName  = NULL;      // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
 short  bProbactiv   = TRUE,      // -p    [-]   flag Display:   YES: Probability weight   NO: number of trajectories
@@ -80,6 +78,8 @@ int main(int argc, char *argv[])
   
   // reading of input data and initilisation
   // ---------------------------------------
+ _eModule=MCN_MON2_POSDIV;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
@@ -110,56 +110,64 @@ int main(int argc, char *argv[])
 	  for(i=0; i<NumNeutGot; i++)
 	  {
       CHECK;
-	    bRegistered = FALSE;
-       
-	    if(bExclusive==0) 
-	      WriteNeutron(&(InputNeutrons[i]));
 
-	    if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	    if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
-	    if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	    if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	    if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	    if (InputNeutrons[i].Position[2] > filtZMax) continue;
-
-	    if (bProbactiv==TRUE) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
-
-	    pos_ = InputNeutrons[i].Position[index_yz];
-
-	    if (index_yz == Y_AXIS) 
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-	      if (InputNeutrons[i].Vector[0] >=0) 
-          div_ = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
-	      else 
-          div_ = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
-	      div_ *= 180.0/M_PI;
-	    }
-	    else if (index_yz == Z_AXIS) 
-      {
-	      div_  = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
-	      div_ *= 180.0/M_PI;
-	    }
-      else
-      {
-        Error("Analysis direction does not have a proper value");
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        bRegistered = FALSE;
+	      if(bExclusive==0) 
+	        WriteNeutron(&(InputNeutrons[i]));
 
-      iPos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
-	    jDiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
+	      if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	      if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+	      if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	      if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	      if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	      if (InputNeutrons[i].Position[2] > filtZMax) continue;
+
+	      if (bProbactiv==TRUE) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
+
+	      pos_ = InputNeutrons[i].Position[index_yz];
+
+	      if (index_yz == Y_AXIS) 
+        {
+	        if (InputNeutrons[i].Vector[0] >=0) 
+            div_ = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	        else 
+            div_ = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
+	        div_ *= 180.0/M_PI;
+	      }
+	      else if (index_yz == Z_AXIS) 
+        {
+	        div_  = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
+	        div_ *= 180.0/M_PI;
+	      }
+        else
+        {
+          Error("Analysis direction does not have a proper value");
+        }
+
+        iPos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
+	      jDiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
 			
-	    if (((iPos>=0)&&(iPos<nbin_pos))&&((jDiv>=0)&&(jDiv<nbin_div)))
-      {	
-	      nTrajYZ[iPos][jDiv]++;
-	      IntYZ [iPos][jDiv] += prob ;
-	      bintc              += prob;
-	      bRegistered=1;
-	    }
+	      if (((iPos>=0)&&(iPos<nbin_pos))&&((jDiv>=0)&&(jDiv<nbin_div)))
+        {	
+	        nTrajYZ[iPos][jDiv]++;
+	        IntYZ [iPos][jDiv] += prob ;
+	        bintc              += prob;
+	        bRegistered=1;
+	      }
 	  
-	    if((bExclusive==1) && (bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+	      if((bExclusive==1) && (bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
 	  }
   }
 
@@ -173,7 +181,8 @@ my_exit:
     WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nbin_pos, " Z [cm]", nbin_div, "divergence Z [deg]");
   else
     Error("Analysis direction does not have a proper value");
-  // WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY,        nbin_div, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
+
+ // WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY,        nbin_div, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
   WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY, BINSIZE,  nbin_div, BinPosZ,  
                          (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
   fclose(fMonitor);

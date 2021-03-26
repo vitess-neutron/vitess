@@ -23,8 +23,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_RDIV;
-
 // Input parameters
 char*  MonFileName  = NULL;      // -O    [-]   Monitor output file containing intensity as a function of radius and radial divergence   
 short  bProbactiv   = TRUE,      // -p    [-]   flag Display  : YES: Probability weight   NO: number of trajectories
@@ -77,6 +75,8 @@ int main(int argc, char *argv[])
   
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_MON2_RDIV;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
@@ -106,42 +106,50 @@ int main(int argc, char *argv[])
   {
     for (i=0; i<NumNeutGot; i++)
 	  {
-        CHECK;
-	    bRegistered=0;
+      CHECK;
 
-	    if (bExclusive==0)
-		    WriteNeutron(&(InputNeutrons[i]));
-
-	    if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	    if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
-	    if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	    if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	    if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	    if (InputNeutrons[i].Position[2] > filtZMax) continue;
-
-	    if (bProbactiv==1.0) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
-
-	    radius = sqrt(sq(InputNeutrons[i].Position[1])+sq(InputNeutrons[i].Position[2]));
-	    CopyVector(InputNeutrons[i].Vector, kvec);
-	    NormVector(kvec);
-	    phi = acos(ScalarProduct(xvec, kvec))/M_PI*180.;
-
-	    iR   = (int)floor(nbiny*(radius-rmin)/(rmax-rmin));
-	    jPhi = (int)floor(nbinz*(phi-phimin)/(phimax-phimin));
-			
-	    if (((iR>=0)&&(iR<nbiny))&&((jPhi>=0)&&(jPhi<nbinz)))
-      {	
-	      nTrajYZ[iR][jPhi]++;
-	      IntYZ  [iR][jPhi]+= prob;
-	      bintc            += prob;
-	      bRegistered=1;
-	    }
-	  
-	    if ((bExclusive==1) && (bRegistered==1))
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
         WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+	      bRegistered=0;
+	      if (bExclusive==0)
+		      WriteNeutron(&(InputNeutrons[i]));
+
+	      if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
+	      if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+	      if (InputNeutrons[i].Position[1] < filtYMin) continue;
+	      if (InputNeutrons[i].Position[1] > filtYMax) continue;
+	      if (InputNeutrons[i].Position[2] < filtZMin) continue;
+	      if (InputNeutrons[i].Position[2] > filtZMax) continue;
+
+	      if (bProbactiv==1.0) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
+
+	      radius = sqrt(sq(InputNeutrons[i].Position[1])+sq(InputNeutrons[i].Position[2]));
+	      CopyVector(InputNeutrons[i].Vector, kvec);
+	      NormVector(kvec);
+	      phi = acos(ScalarProduct(xvec, kvec))/M_PI*180.;
+
+	      iR   = (int)floor(nbiny*(radius-rmin)/(rmax-rmin));
+	      jPhi = (int)floor(nbinz*(phi-phimin)/(phimax-phimin));
+			
+	      if (((iR>=0)&&(iR<nbiny))&&((jPhi>=0)&&(jPhi<nbinz)))
+        {	
+	        nTrajYZ[iR][jPhi]++;
+	        IntYZ  [iR][jPhi]+= prob;
+	        bintc            += prob;
+	        bRegistered=1;
+	      }
+	  
+	      if ((bExclusive==1) && (bRegistered==1))
+          WriteNeutron(&(InputNeutrons[i]));
+      }
     }
   }
 

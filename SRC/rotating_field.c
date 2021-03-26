@@ -35,8 +35,7 @@
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID   _eModule=MCN_FIELD_ROT;
-/* input parameters */char       *Monitp=NULL,                // -O        [-]   output file for the polarization components  
+/* input parameters */char       *Monitp=NULL,                // -O        [-]   output file for the polarization components  
            *Monitf=NULL;                // -N        [-]   output file for the magnetic field 
 double      depth =100.0,               // -X        [cm]  x-component of the size of the homogeneous magnetic field 
             width =100.0,               // -Y        [cm]  y-component of the size of the homogeneous magnetic field 
@@ -124,7 +123,8 @@ int main(int argc, char **argv)
 
   /* initialisation */
   /* -------------- */
-  Init(argc,argv, _eModule);
+  _eModule=MCN_FIELD_ROT;
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
   EvalInput();
@@ -167,247 +167,272 @@ int main(int argc, char **argv)
   {
     for (i=0; i<NumNeutGot; i++)
     { 
-      CHECK;	/* here is what happens to the neutron */
-
-      /*InputNeutrons[i].Position[0]	= 0.;*/
-      TOF = InputNeutrons[i].Time;
-      WL = InputNeutrons[i].Wavelength;
-      Prob = InputNeutrons[i].Probability;
-
-      CopyVector(InputNeutrons[i].Position, Pos);
-      CopyVector(InputNeutrons[i].Vector, Dir);
-	
-      /* Check incorrect neutrons */
-      if ((Dir[0] <= 0.0)||(WL == 0.0)) goto getlost;
-      if (TOF < 0.0) goto getlost;
-      /* improve calculations, renormalize */
-      InputNeutrons[i].Vector[0]	= (double) sqrt(fabs(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])));
-
-      CopyVector(InputNeutrons[i].Spin, SpinVector); 
-
-      /* translates into frame of the main field and rotates coordinates  */
-      //		fprintf(LogFilePtr,"AAAAAAAA Pos before rot  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
-	
-      /* Move neutron in the precession volume */
-      NeutronAdd1.Position[0] = Pos[0];
-      NeutronAdd1.Position[1] = Pos[1];
-      NeutronAdd1.Position[2] = Pos[2];
-	
-      NeutronAdd1.Vector[0] = Dir[0];
-      NeutronAdd1.Vector[1] = Dir[1];
-      NeutronAdd1.Vector[2] = Dir[2];
-	
-      NeutronAdd1.Wavelength = WL;
-	
-      EndPoint1.A = cos(AnglMainHoriz);
-      EndPoint1.B = sin(AnglMainHoriz);
-      EndPoint1.C = 0.0;
-      EndPoint1.D = 0.5*depth-PosMain[0]*cos(AnglMainHoriz);
-	
-      TOF1 = NeutronPlaneIntersection1(&NeutronAdd1, EndPoint1);	
-      if (TOF1 < 0.0) goto getlost;
-	
-      Pos[0] = NeutronAdd1.Position[0];
-      Pos[1] = NeutronAdd1.Position[1];
-      Pos[2] = NeutronAdd1.Position[2];
-	
-      Dir[2] = NeutronAdd1.Vector[2];
-	
-      TOF = TOF + TOF1;
-
-      SubVector(Pos, PosMain);				
-      RotVector(RotMatrixMain, Pos ); 
-      RotVector(RotMatrixMain, Dir ); 
-
-      //		fprintf(LogFilePtr,"TOF1  =  %f  \n", TOF1);		
-      //		fprintf(LogFilePtr,"AAAAAA Pos after rot  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
-
-      /* looks for first domain if dimension of domain changes only along X axis */
-      DimDomain[0] = depth/ind_x_max; 
-      DimDomain[1] = width/ind_y_max; 
-      DimDomain[2] = height/ind_z_max; 
-
-      ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2;
-      if((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost;
-      ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2;
-      if((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost;
-      ind_x = 1; 
-
-      /******************** starts to scan ******************************/
-      nPrecTrj = 0;
-      Number_NOP = 0.0;
-      TimeR = 0.0;
-      indp = 1;
-	
-      RR[0] = 0.0;
-      RR[1] = 0.0;
-      RR[2] = 0.0;
-	
-      /* Use the previous TOF for rotating(os) field, synhro!, corrected */
-	
-      if (keyphase == 1)
+      CHECK;	
+      
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        TOFP = InputNeutrons[i].Time + TOF1;
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {
-        TOFP = 0.0;
-      }
+      { 
+        /* here is what happens to the neutron */
+        TOF = InputNeutrons[i].Time;
+        WL = InputNeutrons[i].Wavelength;
+        Prob = InputNeutrons[i].Probability;
 
-      while (ind_x != (ind_x_max +1)) 
-      {
-        /* Generate geometry of magnetic field for precession */
+        CopyVector(InputNeutrons[i].Position, Pos);
+        CopyVector(InputNeutrons[i].Vector, Dir);
+	
+        /* Check incorrect neutrons */
+        if ((Dir[0] <= 0.0)||(WL == 0.0)) goto getlost;
+        if (TOF < 0.0) goto getlost;
+        /* improve calculations, renormalize */
+        InputNeutrons[i].Vector[0]	= (double) sqrt(fabs(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])));
 
-        /* generate fieldsph domain size: uniform  */
+        CopyVector(InputNeutrons[i].Spin, SpinVector); 
+
+        /* translates into frame of the main field and rotates coordinates  */
+        //		fprintf(LogFilePtr,"AAAAAAAA Pos before rot  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
+	
+        /* Move neutron in the precession volume */
+        NeutronAdd1.Position[0] = Pos[0];
+        NeutronAdd1.Position[1] = Pos[1];
+        NeutronAdd1.Position[2] = Pos[2];
+	
+        NeutronAdd1.Vector[0] = Dir[0];
+        NeutronAdd1.Vector[1] = Dir[1];
+        NeutronAdd1.Vector[2] = Dir[2];
+	
+        NeutronAdd1.Wavelength = WL;
+	
+        EndPoint1.A = cos(AnglMainHoriz);
+        EndPoint1.B = sin(AnglMainHoriz);
+        EndPoint1.C = 0.0;
+        EndPoint1.D = 0.5*depth-PosMain[0]*cos(AnglMainHoriz);
+	
+        TOF1 = NeutronPlaneIntersection1(&NeutronAdd1, EndPoint1);	
+        if (TOF1 < 0.0) goto getlost;
+	
+        Pos[0] = NeutronAdd1.Position[0];
+        Pos[1] = NeutronAdd1.Position[1];
+        Pos[2] = NeutronAdd1.Position[2];
+	
+        Dir[2] = NeutronAdd1.Vector[2];
+	
+        TOF = TOF + TOF1;
+
+        SubVector(Pos, PosMain);				
+        RotVector(RotMatrixMain, Pos ); 
+        RotVector(RotMatrixMain, Dir ); 
+
+        //		fprintf(LogFilePtr,"TOF1  =  %f  \n", TOF1);		
+        //		fprintf(LogFilePtr,"AAAAAA Pos after rot  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
+
+        /* looks for first domain if dimension of domain changes only along X axis */
         DimDomain[0] = depth/ind_x_max; 
         DimDomain[1] = width/ind_y_max; 
         DimDomain[2] = height/ind_z_max; 
 
-        /* generate position */
-        PosDomain[0] = ((ind_x -1)-(ind_x_max /2 - 0.5)) * DimDomain[0];
-        PosDomain[1] = ((ind_y -1)-(ind_y_max /2 - 0.5)) * DimDomain[1];
-        PosDomain[2] = ((ind_z -1)-(ind_z_max /2 - 0.5)) * DimDomain[2];
+        ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2;
+        if((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost;
+        ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2;
+        if((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost;
+        ind_x = 1; 
 
-        if ((ind_x == 1)||(wall_2 == 2)) /* if for changing slice */
+        /******************** starts to scan ******************************/
+        nPrecTrj = 0;
+        Number_NOP = 0.0;
+        TimeR = 0.0;
+        indp = 1;
+	
+        RR[0] = 0.0;
+        RR[1] = 0.0;
+        RR[2] = 0.0;
+	
+        /* Use the previous TOF for rotating(os) field, synhro!, corrected */
+	
+        if (keyphase == 1)
         {
-          /* Choose the law of amplitude distribution of rotating(os) magnetic field */
+          TOFP = InputNeutrons[i].Time + TOF1;
+        }
+        else
+        {
+          TOFP = 0.0;
+        }
 
-          switch(DevLawAmpl)
+        while (ind_x != (ind_x_max +1)) 
+        {
+          /* Generate geometry of magnetic field for precession */
+
+          /* generate fieldsph domain size: uniform  */
+          DimDomain[0] = depth/ind_x_max; 
+          DimDomain[1] = width/ind_y_max; 
+          DimDomain[2] = height/ind_z_max; 
+
+          /* generate position */
+          PosDomain[0] = ((ind_x -1)-(ind_x_max /2 - 0.5)) * DimDomain[0];
+          PosDomain[1] = ((ind_y -1)-(ind_y_max /2 - 0.5)) * DimDomain[1];
+          PosDomain[2] = ((ind_z -1)-(ind_z_max /2 - 0.5)) * DimDomain[2];
+
+          if ((ind_x == 1)||(wall_2 == 2)) /* if for changing slice */
           {
-            case 0:
+            /* Choose the law of amplitude distribution of rotating(os) magnetic field */
+
+            switch(DevLawAmpl)
             {
-              /* Perform Gauss randomization the amplitude rotating or oscilating magnetic fields */		
-              if (FieldValueDevPer > 0.0)
-              FieldValue = DistrGauss(FieldValueInit, SigmaField);
-              break;
-            }
-		
-            case 1:	
-            {
-              /* Perform Uniform randomization the amplitude rotating or oscilating magnetic fields */		
-              if (FieldValueDevPer > 0.0)
-              FieldValue = MonteCarlo(FieldValueA, FieldValueB);
-              break;
-            }
-		
-            case 2:
-            {
-              /* Perform Normal distribution of amplitude */
-              FieldValue = FieldValueInit*exp(Pos[0]*Pos[0]/(-2.0*SigmaField*SigmaField));
-              break;
-            }
-		
-            case 3:
-            {
-              /* Perform Uniform distribution of amplitude */
-              FieldValue = FieldValueInit;
-              break;
-            }
-		
-            case 4:
-            {
-              /* Calculate distribution according datas, which was taken from file */
-              code = 0;
-			    
-              for(j = 0; j < (ntfl-1); j++)
+              case 0:
               {
-                //		     fprintf(LogFilePtr,"%ld  ", j);
-                if ((Pos[0] >= PosD[j])&&(Pos[0] <= PosD[j+1]))  
-                {
-                  X1 = PosD[j];
-                  X2 = PosD[j+1];
-                  Y1 = FieldD[j];
-                  Y2 = FieldD[j+1];
-                  code = j;
-                  break;
-                }
+                /* Perform Gauss randomization the amplitude rotating or oscilating magnetic fields */		
+                if (FieldValueDevPer > 0.0)
+                FieldValue = DistrGauss(FieldValueInit, SigmaField);
+                break;
               }
-    
-              /* Check interval */
-              if (!((Pos[0] >= PosD[code])&&(Pos[0] <= PosD[code+1])))
+		
+              case 1:	
               {
-                fprintf(LogFilePtr,"ERROR: Current x position outside the precession volume. Exit!\n");
-                exit(-1);
-              }	
-    
-              if (X1 == X2) 
+                /* Perform Uniform randomization the amplitude rotating or oscilating magnetic fields */		
+                if (FieldValueDevPer > 0.0)
+                FieldValue = MonteCarlo(FieldValueA, FieldValueB);
+                break;
+              }
+		
+              case 2:
               {
-                fprintf(LogFilePtr,"ERROR: Interpolation: Warning! Incorrect values for positions \n");
-                exit(-1);
-              }	
- 
-              /* Linear interpolation */
-              FieldValue = Y1 + ((Y2-Y1)*(Pos[0]-X1)/(X2-X1));
+                /* Perform Normal distribution of amplitude */
+                FieldValue = FieldValueInit*exp(Pos[0]*Pos[0]/(-2.0*SigmaField*SigmaField));
+                break;
+              }
+		
+              case 3:
+              {
+                /* Perform Uniform distribution of amplitude */
+                FieldValue = FieldValueInit;
+                break;
+              }
+		
+              case 4:
+              {
+                /* Calculate distribution according datas, which was taken from file */
+                code = 0;
 			    
-              break;
-            }
-
-            default:
-            {
-              fprintf(LogFilePtr,"ERROR: No Law! Correct option -e \n");
-              exit(-1);
-              break;
-            }
-          }	
-
-          switch(DevLawFreq)
-          {
-            case 0:
-            {
-              /* Perform Gauss randomization the frequency of rotating or oscilating magnetic fields */
-              if (OmegaDevPer > 0.0)
-              Omega = DistrGauss(OmegaInit, SigmaOmega);
-              break;
-            }
-		
-            case 1:	
-            {
-              /* Perform Uniform randomization the frequency of rotating or oscilating magnetic fields */
-              if (OmegaDevPer > 0.0)
-              Omega = MonteCarlo(OmegaA, OmegaB);
-              break;
-            }
-		
-            case 2:
-            {
-              /* Uniform distribution */
-              Omega = OmegaInit;		
-              break;
-            }
-
-            default:
-            {
-              fprintf(LogFilePtr,"ERROR: No Law! Correct option -v \n");
-              exit(-1);
-              break;
-            }
-          }
-
-          /*    fprintf(LogFilePtr,"FV = %f  Omega = %f  \n", FieldValue, Omega); */
+                for(j = 0; j < (ntfl-1); j++)
+                {
+                  //		     fprintf(LogFilePtr,"%ld  ", j);
+                  if ((Pos[0] >= PosD[j])&&(Pos[0] <= PosD[j+1]))  
+                  {
+                    X1 = PosD[j];
+                    X2 = PosD[j+1];
+                    Y1 = FieldD[j];
+                    Y2 = FieldD[j+1];
+                    code = j;
+                    break;
+                  }
+                }
     
-          /* Activate permanent magnetic field */
-          FieldValue0[0] = FieldValue0Init[0];
-          FieldValue0[1] = FieldValue0Init[1];
-          FieldValue0[2] = FieldValue0Init[2];	
+                /* Check interval */
+                if (!((Pos[0] >= PosD[code])&&(Pos[0] <= PosD[code+1])))
+                {
+                  fprintf(LogFilePtr,"ERROR: Current x position outside the precession volume. Exit!\n");
+                  exit(-1);
+                }	
+    
+                if (X1 == X2) 
+                {
+                  fprintf(LogFilePtr,"ERROR: Interpolation: Warning! Incorrect values for positions \n");
+                  exit(-1);
+                }	
+ 
+                /* Linear interpolation */
+                FieldValue = Y1 + ((Y2-Y1)*(Pos[0]-X1)/(X2-X1));
+			    
+                break;
+              }
 
-          /* Perform random of the  permanent magentic field */
-          if (FieldValue0Dev > 0.0)
-          {
-            // VLL = vector3rand(&VX, &VY, &VZ);
-            gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
-            FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
-            FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
-            FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
-          }	
+              default:
+              {
+                fprintf(LogFilePtr,"ERROR: No Law! Correct option -e \n");
+                exit(-1);
+                break;
+              }
+            }	
+
+            switch(DevLawFreq)
+            {
+              case 0:
+              {
+                /* Perform Gauss randomization the frequency of rotating or oscilating magnetic fields */
+                if (OmegaDevPer > 0.0)
+                Omega = DistrGauss(OmegaInit, SigmaOmega);
+                break;
+              }
+		
+              case 1:	
+              {
+                /* Perform Uniform randomization the frequency of rotating or oscilating magnetic fields */
+                if (OmegaDevPer > 0.0)
+                Omega = MonteCarlo(OmegaA, OmegaB);
+                break;
+              }
+		
+              case 2:
+              {
+                /* Uniform distribution */
+                Omega = OmegaInit;		
+                break;
+              }
+
+              default:
+              {
+                fprintf(LogFilePtr,"ERROR: No Law! Correct option -v \n");
+                exit(-1);
+                break;
+              }
+            }
+
+            /*    fprintf(LogFilePtr,"FV = %f  Omega = %f  \n", FieldValue, Omega); */
+    
+            /* Activate permanent magnetic field */
+            FieldValue0[0] = FieldValue0Init[0];
+            FieldValue0[1] = FieldValue0Init[1];
+            FieldValue0[2] = FieldValue0Init[2];	
+
+            /* Perform random of the  permanent magentic field */
+            if (FieldValue0Dev > 0.0)
+            {
+              // VLL = vector3rand(&VX, &VY, &VZ);
+              gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
+              FieldValue0[0] = FieldValue0[0] + fabs(FieldValue0Dev)*VX;
+              FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
+              FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
+            }	
 	 
-          //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
-          //	fprintf(LogFilePtr,"indx = %d  Pos0w  =  %f  I Pos1 = %f  Pos2 = %f \n", ind_x, Pos[0], Pos1[0], Pos2[0]);
+            //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
+            //	fprintf(LogFilePtr,"indx = %d  Pos0w  =  %f  I Pos1 = %f  Pos2 = %f \n", ind_x, Pos[0], Pos1[0], Pos2[0]);
 
-          /*	Calculate magnetic field components */        	
-          /* 	Activate simulation of bootstrap  */	
-          if (keybootstrap == 1)
-          {
-            if (ind_x <= (ind_x_max/2))
+            /*	Calculate magnetic field components */        	
+            /* 	Activate simulation of bootstrap  */	
+            if (keybootstrap == 1)
+            {
+              if (ind_x <= (ind_x_max/2))
+              {
+                /* using initial frequency and permanent components */
+                for(j=0;j<3;j++)
+                {
+                  FieldValue00[j] = FieldValue0[j];
+                }
+                keyexit = CalculateField(keyrotos, keyaxis, FieldValue, FieldValue00, Omega, TimeR, TOFP, phi0, RR);	
+              }
+              else
+              {    
+                /* make negative ! */
+                for(j=0;j<3;j++)
+                {
+                  FieldValue00[j] = -1.0*FieldValue0[j];
+                }	
+                keyexit = CalculateField(keyrotos, keyaxis, FieldValue, FieldValue00, (-1.0*Omega), TimeR, TOFP, phi0, RR);	
+              }    
+            }    
+            else
             {
               /* using initial frequency and permanent components */
               for(j=0;j<3;j++)
@@ -416,218 +441,200 @@ int main(int argc, char **argv)
               }
               keyexit = CalculateField(keyrotos, keyaxis, FieldValue, FieldValue00, Omega, TimeR, TOFP, phi0, RR);	
             }
-            else
-            {    
-              /* make negative ! */
-              for(j=0;j<3;j++)
-              {
-                FieldValue00[j] = -1.0*FieldValue0[j];
-              }	
-              keyexit = CalculateField(keyrotos, keyaxis, FieldValue, FieldValue00, (-1.0*Omega), TimeR, TOFP, phi0, RR);	
-            }    
-          }    
-          else
-          {
-            /* using initial frequency and permanent components */
-            for(j=0;j<3;j++)
-            {
-              FieldValue00[j] = FieldValue0[j];
-            }
-            keyexit = CalculateField(keyrotos, keyaxis, FieldValue, FieldValue00, Omega, TimeR, TOFP, phi0, RR);	
-          }
 
-          if (keyexit == -1)  exit(-1);
-        }/* end if for changing slice */
+            if (keyexit == -1)  exit(-1);
+          }/* end if for changing slice */
     		
-        /* process field */	
-        RRS[0] = RR[0];
-        RRS[1] = RR[1];
-        RRS[2] = RR[2];
+          /* process field */	
+          RRS[0] = RR[0];
+          RRS[1] = RR[1];
+          RRS[2] = RR[2];
 	    
-        RR1[0] = RR[0]; 
-        RR1[1] = RR[1]; 
-        RR1[2] = RR[2];
+          RR1[0] = RR[0]; 
+          RR1[1] = RR[1]; 
+          RR1[2] = RR[2];
 	    
-        CartesianToEulerZY(RR, &Rroty, &Rrotz);
+          CartesianToEulerZY(RR, &Rroty, &Rrotz);
 
-        /*	Saturation of amplitude of total magnetic field is activated */
-        F_MODULE = LengthVector(RR);
+          /*	Saturation of amplitude of total magnetic field is activated */
+          F_MODULE = LengthVector(RR);
  	    
-        if (F_MODULE <= FieldValueSat)
-        {
-          domain_field[0] = F_MODULE;
-          FieldCorr = 1.0;
-        }
-        else
-        {
-          domain_field[0] = FieldValueSat;
-          if (F_MODULE != 0.0)
+          if (F_MODULE <= FieldValueSat)
           {
-            FieldCorr = FieldValueSat/F_MODULE;
+            domain_field[0] = F_MODULE;
+            FieldCorr = 1.0;
           }
           else
           {
-            FieldCorr = 0.0;
-          }
-        }	
+            domain_field[0] = FieldValueSat;
+            if (F_MODULE != 0.0)
+            {
+              FieldCorr = FieldValueSat/F_MODULE;
+            }
+            else
+            {
+              FieldCorr = 0.0;
+            }
+          }	
  	    
 	    
-        domain_field[1] = Rrotz;
-        domain_field[2] = Rroty;
-        //	    fprintf(LogFilePtr,"Field: roty = %f rotz = %f\n",Rroty,Rrotz);
+          domain_field[1] = Rrotz;
+          domain_field[2] = Rroty;
+          //	    fprintf(LogFilePtr,"Field: roty = %f rotz = %f\n",Rroty,Rrotz);
     
-        /* Rotating option */
-        FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]); 
+          /* Rotating option */
+          FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]); 
 
-        /* translates into frame of the field domain */
-        SubVector(Pos, PosDomain);
+          /* translates into frame of the field domain */
+          SubVector(Pos, PosDomain);
 
-        /* calculate entrance end exit coordinates of domain*/
-        { 
-          VectorType pos, dir, V;	
-          int wall;
+          /* calculate entrance end exit coordinates of domain*/
+          { 
+            VectorType pos, dir, V;	
+            int wall;
 
-          CopyVector(Pos, pos);	
-          CopyVector(Dir, dir);
+            CopyVector(Pos, pos);	
+            CopyVector(Dir, dir);
 	
-          /* gives intersection positions with domain */
-          if (IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost; 
+            /* gives intersection positions with domain */
+            if (IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost; 
 
-          if (wall_2 == 0) goto getlost;
+            if (wall_2 == 0) goto getlost;
 
-          /* ordering */
-          if(Pos1[0] > Pos2[0]) 	
+            /* ordering */
+            if(Pos1[0] > Pos2[0]) 	
 		
-        	CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2); 	
-		      wall = wall_1;       wall_1 = wall_2;        wall_2 = wall;
+        	  CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2); 	
+		        wall = wall_1;       wall_1 = wall_2;        wall_2 = wall;
 
+          }
+
+          /* moment of arriving at the domain wall, new position */
+          CopyVector(Pos1, Pos);
+
+          /* time of precession in the domain field - precession calculated in the field frame */
+          TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+
+          RotVector(RotMatrixField, SpinVector); 
+          RotVector(RotMatrixField, RR1);
+          //	fprintf(LogFilePtr,"RR1  X = %f Y = %f  Z = %f\n",RR1[0],RR1[1],RR1[2]);
+
+          PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]);
+          PhaseShift0 = PhaseShift/(2.0*(M_PI));  
+          nPrecTrj = nPrecTrj + PhaseShift0;
+          Number_NOP = Number_NOP + 1.0;
+
+          FillRotMatrixYX(LarmorMatrix, PhaseShift, 0);
+
+          RotVector(LarmorMatrix, SpinVector);
+          RotBackVector(RotMatrixField, SpinVector);
+
+          PolX[indp] = PolX[indp] + Prob*SpinVector[0];
+          PolY[indp] = PolY[indp] + Prob*SpinVector[1];
+          PolZ[indp] = PolZ[indp] + Prob*SpinVector[2];
+          ProbM[indp] = ProbM[indp] + Prob;
+	
+          FldX[indp] = FldX[indp] + (FieldCorr*RRS[0]);
+          FldY[indp] = FldY[indp] + (FieldCorr*RRS[1]);
+          FldZ[indp] = FldZ[indp] + (FieldCorr*RRS[2]);
+          FldM[indp] = FldM[indp] + 1.0;
+	
+          indp = indp + 1;
+
+          /* moment of exiting at the domain wall, new position */
+          TimeR = TimeR + TOF2;
+          TOF += TOF2;
+
+          CopyVector(Pos2, Pos);
+
+          /* translates back into main frame */
+          AddVector(Pos, PosDomain);
+
+          /* searching new domain */ 
+          if(wall_2 == 1) goto getlost;
+          if(wall_2 == 2) {ind_x += 1; }
+          if(wall_2 == 3) {ind_y += -1; }
+          if(wall_2 == 4) {ind_y += 1; }
+          if(wall_2 == 5) {ind_z += -1; }
+          if(wall_2 == 6) {ind_z += 1;}
+
+          /*if(ind_x > ind_x_max) goto exitfield; */
+          if(ind_y == 0) goto exitfield; 
+          if(ind_y > ind_y_max) goto exitfield; 
+          if(ind_z == 0) goto exitfield; 
+          if(ind_z > ind_z_max) goto exitfield;
+
+          /*goto newdomain;*/
         }
 
-        /* moment of arriving at the domain wall, new position */
-        CopyVector(Pos1, Pos);
+      exitfield:;
 
-        /* time of precession in the domain field - precession calculated in the field frame */
-        TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-        RotVector(RotMatrixField, SpinVector); 
-        RotVector(RotMatrixField, RR1);
-        //	fprintf(LogFilePtr,"RR1  X = %f Y = %f  Z = %f\n",RR1[0],RR1[1],RR1[2]);
+        /*******************************************************************************/
+        nPrecTot =  nPrecTot + nPrecTrj;
 
-        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]);
-        PhaseShift0 = PhaseShift/(2.0*(M_PI));  
-        nPrecTrj = nPrecTrj + PhaseShift0;
-        Number_NOP = Number_NOP + 1.0;
+        if (Number_NOP != 0.0)
+        {
+          nPrecDom =  nPrecDom + nPrecTrj/Number_NOP;
+        }
 
-        FillRotMatrixYX(LarmorMatrix, PhaseShift, 0);
+        /* Output matters */
+        NumOut++;
 
-        RotVector(LarmorMatrix, SpinVector);
-        RotBackVector(RotMatrixField, SpinVector);
+        RotBackVector(RotMatrixMain, Pos ); 
+        RotBackVector(RotMatrixMain, Dir ); 
 
-        PolX[indp] = PolX[indp] + Prob*SpinVector[0];
-        PolY[indp] = PolY[indp] + Prob*SpinVector[1];
-        PolZ[indp] = PolZ[indp] + Prob*SpinVector[2];
-        ProbM[indp] = ProbM[indp] + Prob;
+        AddVector(Pos, PosMain);	
+        /* computes neutron variables in the output frame */ 
+        SubVector(Pos, TranslOut);
+
+        /* translates neutron variables for output - X'=0. */
+        NeutronAdd2.Position[0] = Pos[0];
+        NeutronAdd2.Position[1] = Pos[1];
+        NeutronAdd2.Position[2] = Pos[2];
 	
-        FldX[indp] = FldX[indp] + (FieldCorr*RRS[0]);
-        FldY[indp] = FldY[indp] + (FieldCorr*RRS[1]);
-        FldZ[indp] = FldZ[indp] + (FieldCorr*RRS[2]);
-        FldM[indp] = FldM[indp] + 1.0;
+        NeutronAdd2.Vector[0] = Dir[0];
+        NeutronAdd2.Vector[1] = Dir[1];
+        NeutronAdd2.Vector[2] = Dir[2];
 	
-        indp = indp + 1;
-
-        /* moment of exiting at the domain wall, new position */
-        TimeR = TimeR + TOF2;
-        TOF += TOF2;
-
-        CopyVector(Pos2, Pos);
-
-        /* translates back into main frame */
-        AddVector(Pos, PosDomain);
-
-        /* searching new domain */ 
-        if(wall_2 == 1) goto getlost;
-        if(wall_2 == 2) {ind_x += 1; }
-        if(wall_2 == 3) {ind_y += -1; }
-        if(wall_2 == 4) {ind_y += 1; }
-        if(wall_2 == 5) {ind_z += -1; }
-        if(wall_2 == 6) {ind_z += 1;}
-
-        /*if(ind_x > ind_x_max) goto exitfield; */
-        if(ind_y == 0) goto exitfield; 
-        if(ind_y > ind_y_max) goto exitfield; 
-        if(ind_z == 0) goto exitfield; 
-        if(ind_z > ind_z_max) goto exitfield;
-
-        /*goto newdomain;*/
-      }
-
-    exitfield:;
-
-
-      /*******************************************************************************/
-      nPrecTot =  nPrecTot + nPrecTrj;
-
-      if (Number_NOP != 0.0)
-      {
-        nPrecDom =  nPrecDom + nPrecTrj/Number_NOP;
-      }
-
-      /* Output matters */
-      NumOut++;
-
-      RotBackVector(RotMatrixMain, Pos ); 
-      RotBackVector(RotMatrixMain, Dir ); 
-
-      AddVector(Pos, PosMain);	
-      /* computes neutron variables in the output frame */ 
-      SubVector(Pos, TranslOut);
-
-      /* translates neutron variables for output - X'=0. */
-      NeutronAdd2.Position[0] = Pos[0];
-      NeutronAdd2.Position[1] = Pos[1];
-      NeutronAdd2.Position[2] = Pos[2];
+        NeutronAdd2.Wavelength = WL;
 	
-      NeutronAdd2.Vector[0] = Dir[0];
-      NeutronAdd2.Vector[1] = Dir[1];
-      NeutronAdd2.Vector[2] = Dir[2];
-	
-      NeutronAdd2.Wavelength = WL;
-	
-      EndPoint2.A = 1.0;
-      EndPoint2.B = 0.0;
-      EndPoint2.C = 0.0;
-      EndPoint2.D = 0.0;
+        EndPoint2.A = 1.0;
+        EndPoint2.B = 0.0;
+        EndPoint2.C = 0.0;
+        EndPoint2.D = 0.0;
 
-      TOF3 = NeutronPlaneIntersection1(&NeutronAdd2, EndPoint2);	
+        TOF3 = NeutronPlaneIntersection1(&NeutronAdd2, EndPoint2);	
 	
-      Pos[0] = NeutronAdd2.Position[0];
-      Pos[1] = NeutronAdd2.Position[1];
-      Pos[2] = NeutronAdd2.Position[2];
+        Pos[0] = NeutronAdd2.Position[0];
+        Pos[1] = NeutronAdd2.Position[1];
+        Pos[2] = NeutronAdd2.Position[2];
 	
-      Dir[2] = NeutronAdd2.Vector[2];
+        Dir[2] = NeutronAdd2.Vector[2];
 		
-      TOF = TOF + TOF3;
+        TOF = TOF + TOF3;
 
-      //	fprintf(LogFilePtr,"BBBBBB PRECESSION Pos after rota transl X =  %f  Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
-      //	fprintf(LogFilePtr,"===================================================================================================\n");
+        //	fprintf(LogFilePtr,"BBBBBB PRECESSION Pos after rota transl X =  %f  Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
+        //	fprintf(LogFilePtr,"===================================================================================================\n");
 		
-      Neutrons.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
-      Neutrons.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
-      Neutrons.ID.IDNo=InputNeutrons[i].ID.IDNo;
-      Neutrons.Debug=InputNeutrons[i].Debug;
+        Neutrons.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
+        Neutrons.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
+        Neutrons.ID.IDNo=InputNeutrons[i].ID.IDNo;
+        Neutrons.Debug=InputNeutrons[i].Debug;
 
-      Neutrons.Time = TOF;
-      Neutrons.Wavelength = WL;
-      Neutrons.Probability = Prob;
+        Neutrons.Time = TOF;
+        Neutrons.Wavelength = WL;
+        Neutrons.Probability = Prob;
 
-      CopyVector(Pos, Neutrons.Position);
-      CopyVector(Dir, Neutrons.Vector);
-      CopyVector(SpinVector, Neutrons.Spin);
+        CopyVector(Pos, Neutrons.Position);
+        CopyVector(Dir, Neutrons.Vector);
+        CopyVector(SpinVector, Neutrons.Spin);
 
 
-      /* writes output binary file */
-      WriteNeutron(&Neutrons);
+        /* writes output binary file */
+        WriteNeutron(&Neutrons);
       getlost:;
+      }
     }
   }
    

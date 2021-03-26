@@ -25,8 +25,6 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-McCompID _eModule=MCN_SMPL_S_Q;
-
 FILE  *pStrFacFile=NULL;      //            pointer to structure factor file
 char   sStrucFileName[200],   // file       structure factor file name  
        cFunction = ' ',       // file       parameter of the S(Q) function: F: analytical function   D: data from file 
@@ -99,6 +97,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule = MCN_SMPL_S_Q;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.4");
 
@@ -132,108 +132,116 @@ int main(int argc, char *argv[])
     {
       CHECK;
 
-      /* First, shift the origin of the system to the center of the sample */
-      SubVector(InputNeutrons[i].Position, stSample.Position);
-
-      /* Test if the Neutron hits the stSample */
-      if (NeutronIntersectsSample(&(InputNeutrons[i]), &stSample, RotMatrixSmpl, InISP, &nisp, VT_IN))
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        if (nisp < 2)
-          CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
-				
-        /* the neutron may be scattered between InISP[0] and InISP[1] */
-        /* Lfb full path length in the sample before scattering       */
-        Lbf=DistVector(InISP[0], InISP[1]);
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        /* First, shift the origin of the system to the center of the sample */
+        SubVector(InputNeutrons[i].Position, stSample.Position);
 
-        /* MONTE CARLO CHOICE: Where is the neutron scattered         */
-        /* Distance Ls between entrance of the neutron InISP[0] and   */
-        /* the scattering point SP                                    */
-        Ls = MonteCarlo(0, Lbf);
-
-        /* which is the corresponding scattering point     */
-        /* SP = InISP[0] + Ls*InputNeutrons[i].Vector	   */
-        for(j=0; j<3; j++)
-          SP[j] = InISP[0][j] + Ls*InputNeutrons[i].Vector[j];
-
-				
-        //   First the coherent scattering           
-        //--------------------------------
-        /* determine Theta and Phi of the neutrons direction */
-        /* Theta should be small                             */
-        NormVector          (InputNeutrons[i].Vector);
-        CartesianToSpherical(InputNeutrons[i].Vector, &neutTheta, &neutPhi);
-
-        /* Determine the rotation matrix to point the neutron along the +x axis */
-        RotMatrixX(InputNeutrons[i].Vector,RotMatrixNeut);
-
-        /* Determine min. and max. scattering angle (due to the detector coverage */
-        ThetaMin = Theta-DelTheta;
-        ThetaMax = Theta+DelTheta;
-
-        CHECK
-
-        // Choose the scattering angle and calculate Q-value 
-        ScTheta = MonteCarlo(ThetaMin, ThetaMax);
-        qValue  = 4.0*M_PI*sin(ScTheta/2.0)/InputNeutrons[i].Wavelength;
-
-        // Determine the probability for this scattering angle
-        ScProb  = sin(ScTheta);
-
-        /* OutTheta is the angle of the scattered neutron with its */
-        /* original flight path 				     */
-        OutTheta=ScTheta;
-
-        /* ScProb corresponds to the sample form factor considering hard sphere scattering */
-        switch (cFunction)
+        /* Test if the Neutron hits the stSample */
+        if (NeutronIntersectsSample(&(InputNeutrons[i]), &stSample, RotMatrixSmpl, InISP, &nisp, VT_IN))
         {
-          case 'F': 
-            ScProb *= CalcStructureFactor(qValue)*Lbf*MuCoh / GenNeutrons;
-            break;
-          case 'D': 
-            ScProb *= GetStructureFactor (qValue,i)*Lbf*MuCoh / GenNeutrons;
-            break;
-          default:
-            ScProb = 0.0; 
-        }
-
-        /* Response modulation */
-        if (Freq > 0.0)
-        { 
-          /* flight path inside this module until scattering and absolute time of scattering */
-          Lbs      = DistVector(InputNeutrons[i].Position, SP);                 
-          TimeScat = (InputNeutrons[i].Time + Lbs / V_FROM_LAMBDA(InputNeutrons[i].Wavelength)) / 1000.0; // [ms] -> s
-          ModFact  = 0.5*(1.0 + cos(2*M_PI*Freq*TimeScat + Radians(Offset)));
-          ScProb  *= ModFact;
-        }
-
-        /* Bring the neutron several times on the cone           */
-        for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
-        {
-          /* OutPhi is the angle of the scattered neutron with the +y-axis */
-          /* The expression for the focussin is not staight forward,       */
-          /* rather lengthy (and probably buggy) it may take a while       */
-          OutPhi = MonteCarlo(Phi-DelPhi, Phi+DelPhi);
-
-          /* Ok, now everthing needed is known, put it together */
-          ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb,
-                              OutTheta, OutPhi, &stSample, RotMatrixNeut, RotMatrixSmpl);
-        }
+          if (nisp < 2)
+            CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
 				
-        // Second the incoherent scattering 
-        //--------------------------------
-        if (bIncohScat)
-        { 
+          /* the neutron may be scattered between InISP[0] and InISP[1] */
+          /* Lfb full path length in the sample before scattering       */
+          Lbf=DistVector(InISP[0], InISP[1]);
+
+          /* MONTE CARLO CHOICE: Where is the neutron scattered         */
+          /* Distance Ls between entrance of the neutron InISP[0] and   */
+          /* the scattering point SP                                    */
+          Ls = MonteCarlo(0, Lbf);
+
+          /* which is the corresponding scattering point     */
+          /* SP = InISP[0] + Ls*InputNeutrons[i].Vector	   */
+          for(j=0; j<3; j++)
+            SP[j] = InISP[0][j] + Ls*InputNeutrons[i].Vector[j];
+
+				
+          //   First the coherent scattering           
+          //--------------------------------
+          /* determine Theta and Phi of the neutrons direction */
+          /* Theta should be small                             */
+          NormVector          (InputNeutrons[i].Vector);
+          CartesianToSpherical(InputNeutrons[i].Vector, &neutTheta, &neutPhi);
+
+          /* Determine the rotation matrix to point the neutron along the +x axis */
+          RotMatrixX(InputNeutrons[i].Vector,RotMatrixNeut);
+
+          /* Determine min. and max. scattering angle (due to the detector coverage */
+          ThetaMin = Theta-DelTheta;
+          ThetaMax = Theta+DelTheta;
+
+          CHECK
+
+          // Choose the scattering angle and calculate Q-value 
+          ScTheta = MonteCarlo(ThetaMin, ThetaMax);
+          qValue  = 4.0*M_PI*sin(ScTheta/2.0)/InputNeutrons[i].Wavelength;
+
+          // Determine the probability for this scattering angle
+          ScProb  = sin(ScTheta);
+
+          /* OutTheta is the angle of the scattered neutron with its */
+          /* original flight path 				     */
+          OutTheta=ScTheta;
+
+          /* ScProb corresponds to the sample form factor considering hard sphere scattering */
+          switch (cFunction)
+          {
+            case 'F': 
+              ScProb *= CalcStructureFactor(qValue)*Lbf*MuCoh / GenNeutrons;
+              break;
+            case 'D': 
+              ScProb *= GetStructureFactor (qValue,i)*Lbf*MuCoh / GenNeutrons;
+              break;
+            default:
+              ScProb = 0.0; 
+          }
+
+          /* Response modulation */
+          if (Freq > 0.0)
+          { 
+            /* flight path inside this module until scattering and absolute time of scattering */
+            Lbs      = DistVector(InputNeutrons[i].Position, SP);                 
+            TimeScat = (InputNeutrons[i].Time + Lbs / V_FROM_LAMBDA(InputNeutrons[i].Wavelength)) / 1000.0; // [ms] -> s
+            ModFact  = 0.5*(1.0 + cos(2*M_PI*Freq*TimeScat + Radians(Offset)));
+            ScProb  *= ModFact;
+          }
+
+          /* Bring the neutron several times on the cone           */
           for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
           {
-            /* Determine the scattering angle */
-            OutPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-            OutTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+            /* OutPhi is the angle of the scattered neutron with the +y-axis */
+            /* The expression for the focussin is not staight forward,       */
+            /* rather lengthy (and probably buggy) it may take a while       */
+            OutPhi = MonteCarlo(Phi-DelPhi, Phi+DelPhi);
 
-            /* Scattering probability */
-            ScProb = Lbf*MuInc * sin(OutTheta)/GenNeutrons;
+            /* Ok, now everthing needed is known, put it together */
+            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb,
+                                OutTheta, OutPhi, &stSample, RotMatrixNeut, RotMatrixSmpl);
+          }
+				
+          // Second the incoherent scattering 
+          //--------------------------------
+          if (bIncohScat)
+          { 
+            for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
+            {
+              /* Determine the scattering angle */
+              OutPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+              OutTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
 
-            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
-                                OutTheta, OutPhi, &stSample, OneMatrix,  RotMatrixSmpl);
+              /* Scattering probability */
+              ScProb = Lbf*MuInc * sin(OutTheta)/GenNeutrons;
+
+              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
+                                  OutTheta, OutPhi, &stSample, OneMatrix,  RotMatrixSmpl);
+            }
           }
         }
       }

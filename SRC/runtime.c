@@ -16,12 +16,6 @@
 #include "softabort.h"
 
 
-/*********************************/
-/** Global Variables            **/
-/*********************************/
-McCompID _eModule=MCN_EVAL1_ELAST;
-
-
 /******************************/
 /** Prototypes               **/
 /******************************/
@@ -41,8 +35,10 @@ int main(int argc, char **argv)
 
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_RUNTIME;
+
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.0");
+  PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;

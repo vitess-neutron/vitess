@@ -30,17 +30,15 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit     (int argc, char *argv[]);
-short ReadGridFile();
-void  EvalInput   ();
-void  SetGeometry (char* sColor, int nHoles);
+void  OwnInit     (int argc, char *argv[]);    // Reads input parameters and sets them as global variables
+void  EvalInput   ();                          // Analyses input parameters and prepares attenuation
+short ReadGridFile();                          // Reads the file describing the grid geometry
+void  SetGeometry (char* sColor, int nHoles);  // Fills the structure stGeometry for visualization
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_GRID;
-
 long    eKeyMaterial=6;                   // Material of grid element: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 - Bor10,      
                                           //                         4 - Eu,        5 - Silicon,    6 - ideal absorber
 long    eKeyShape=0;                      // Form of grid elements 0 - square form; 1 - circle form 
@@ -72,6 +70,9 @@ double	DistanceAbs = 0.0;                // absolute distance from first grid, f
 double  TotalLength = 1200.0;             // total length of grid system, [cm]	    
 
 
+/******************************/
+/** Main Program             **/
+/******************************/
 int main(int argc, char *argv[])
 {
   long    i=0,               // index of trajectories
@@ -99,9 +100,9 @@ int main(int argc, char *argv[])
 
   /******************************************/
   /** Initialisation and parameter input   **/
-  /******************************************/
-  memset(&Output, '\0', sizeof(Neutron));
-    
+  /******************************************/  
+  _eModule=MCN_GRID;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
@@ -112,7 +113,9 @@ int main(int argc, char *argv[])
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = TRUE;
-    
+
+  memset(&Output, '\0', sizeof(Neutron));
+     
   Endpoint.A = 1.0;
   Endpoint.B = 0.0;
   Endpoint.C = 0.0;
@@ -141,116 +144,123 @@ int main(int argc, char *argv[])
     {
       CHECK
       
-      if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-      if (InputNeutrons[i].Wavelength == 0.0) continue;
-      VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-      if (VelocityReal <= 0.0) continue;
-      current_color = InputNeutrons[i].Color;
-      			
-      // Move neutron to beginning of grid element with gravity effect and calculate Time of Flight
-      // ------------------------------------------------------------------------------------------
-      if (keygrav == 1)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-      }
-      else
-      {
-        TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-      }
-      InputNeutrons[i].Time += (double)TimeOF;
-
-      /* windows test */
-      NewPositionY = InputNeutrons[i].Position[1] - ShiftHor;
-      NewPositionZ = InputNeutrons[i].Position[2] - ShiftVer;
-
-      key_abs = 0;		  // not absorbed
-
-      // shape of grid elements: 0 - square form
-      if (eKeyShape==0) 
-      {
-        if ((-0.5*OuterA < NewPositionY)&&(0.5*OuterA > NewPositionY)&&(-0.5*OuterB < NewPositionZ)&&(0.5*OuterB > NewPositionZ))
-        {
-          /*	Square form */
-          key_abs = 1;            // absorbed
-          for(j=1; j<=NumberOfHoles; j++) 
-          {
-            if ((-0.5*winradius[j] < (NewPositionY-ywincenter[j]))&&   // here the radius means half of the side length of a square
-                ( 0.5*winradius[j] > (NewPositionY-ywincenter[j]))&&
-                (-0.5*winradius[j] < (NewPositionZ-zwincenter[j]))&&
-                ( 0.5*winradius[j] > (NewPositionZ-zwincenter[j]))) 
-            {
-              key_abs = 0 ;       // not absorbed
-              current_hole = j ;
-            }		    
-          }		
-        }	
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
       { 
-        /*  1 - circle form	*/
-        dist_squared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;		
-        if (dist_squared <= OuterRadius*OuterRadius) 
+        if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+        if (VelocityReal <= 0.0) continue;
+        current_color = InputNeutrons[i].Color;
+      			
+        // Move neutron to beginning of grid element with gravity effect and calculate Time of Flight
+        // ------------------------------------------------------------------------------------------
+        if (keygrav == 1)
         {
-          key_abs = 1;            // absorbed
-          for(j=1; j<=NumberOfHoles; j++) 
+          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+        }
+        else
+        {
+          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+        }
+        InputNeutrons[i].Time += (double)TimeOF;
+
+        /* windows test */
+        NewPositionY = InputNeutrons[i].Position[1] - ShiftHor;
+        NewPositionZ = InputNeutrons[i].Position[2] - ShiftVer;
+
+        key_abs = 0;		  // not absorbed
+
+        // shape of grid elements: 0 - square form
+        if (eKeyShape==0) 
+        {
+          if ((-0.5*OuterA < NewPositionY)&&(0.5*OuterA > NewPositionY)&&(-0.5*OuterB < NewPositionZ)&&(0.5*OuterB > NewPositionZ))
           {
-            dist_squared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) +
-                           (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-            if (dist_squared <= winradius[j]*winradius[j]) 
+            /*	Square form */
+            key_abs = 1;            // absorbed
+            for(j=1; j<=NumberOfHoles; j++) 
             {
-              key_abs = 0;      // not absorbed
-              current_hole = j ;
-            }	
+              if ((-0.5*winradius[j] < (NewPositionY-ywincenter[j]))&&   // here the radius means half of the side length of a square
+                  ( 0.5*winradius[j] > (NewPositionY-ywincenter[j]))&&
+                  (-0.5*winradius[j] < (NewPositionZ-zwincenter[j]))&&
+                  ( 0.5*winradius[j] > (NewPositionZ-zwincenter[j]))) 
+              {
+                key_abs = 0 ;       // not absorbed
+                current_hole = j ;
+              }		    
+            }		
+          }	
+        }
+        else
+        { 
+          /*  1 - circle form	*/
+          dist_squared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;		
+          if (dist_squared <= OuterRadius*OuterRadius) 
+          {
+            key_abs = 1;            // absorbed
+            for(j=1; j<=NumberOfHoles; j++) 
+            {
+              dist_squared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) +
+                             (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
+              if (dist_squared <= winradius[j]*winradius[j]) 
+              {
+                key_abs = 0;      // not absorbed
+                current_hole = j ;
+              }	
+            }
           }
         }
-      }
 	
 				
-      // Move neutron to end of grid element with gravity effect and calculate Time of Flight
-      // ------------------------------------------------------------------------------------
-      if (keygrav == 1)
-      {
-        TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], EndpointCol);
-      }
-      else
-      {
-        TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], EndpointCol);
-      }
-      InputNeutrons[i].Time += TimeOF;
-
-
-      // In case of absorption: Attenuation in the grid material
-      // -------------------------------------------------------
-      if (key_abs == 1) 
-      {
-        if (eKeyMaterial == 6)
-        continue;
-        /* Attenuation during pass through grid material */
-        N_Wavelength = InputNeutrons[i].Wavelength;    
-        mu = Interpolation(N_Wavelength, eKeyMaterial, WAVS, MUS, nValF);
-        if (mu == -10000.0)
+        // Move neutron to end of grid element with gravity effect and calculate Time of Flight
+        // ------------------------------------------------------------------------------------
+        if (keygrav == 1)
         {
-          CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], EndpointCol);
         }
-        prob = exp(-mu*TimeOF*VelocityReal);	
-        InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-      }
+        else
+        {
+          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], EndpointCol);
+        }
+        InputNeutrons[i].Time += TimeOF;
 
-      if (eKeyColorTrack == 1)
-      {
-        if ((current_hole != current_color)&&(current_color != 0.0))
-        { 
-          CountMessageID(WND_CROSS_TALK, InputNeutrons[i].ID);
-          k++;
-          if (k < 20)
-            fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    current_hole:   %d   current_color:   %d    I \n", DistanceAbs, current_hole, current_color);
+
+        // In case of absorption: Attenuation in the grid material
+        // -------------------------------------------------------
+        if (key_abs == 1) 
+        {
+          if (eKeyMaterial == 6)
+          continue;
+          /* Attenuation during pass through grid material */
+          N_Wavelength = InputNeutrons[i].Wavelength;    
+          mu = Interpolation(N_Wavelength, eKeyMaterial, WAVS, MUS, nValF);
+          if (mu == -10000.0)
+          {
+            CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+          }
+          prob = exp(-mu*TimeOF*VelocityReal);	
+          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
         }
-      }    
+
+        if (eKeyColorTrack == 1)
+        {
+          if ((current_hole != current_color)&&(current_color != 0.0))
+          { 
+            CountMessageID(WND_CROSS_TALK, InputNeutrons[i].ID);
+            k++;
+            if (k < 20)
+              fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    current_hole:   %d   current_color:   %d    I \n", DistanceAbs, current_hole, current_color);
+          }
+        }    
 	
-      InputNeutrons[i].Color = current_hole;	 
-      InputNeutrons[i].Position[0] = 0.0;
-      Output = InputNeutrons[i];
-      WriteNeutron(&Output);
+        InputNeutrons[i].Color = current_hole;	 
+        InputNeutrons[i].Position[0] = 0.0;
+        Output = InputNeutrons[i];
+        WriteNeutron(&Output);
+      }
     }
   }
 
@@ -634,7 +644,7 @@ short ReadGridFile()
 
 
 /*******************************************************/
-/** fills the structure stGeometry for visualization  **/
+/** Fills the structure stGeometry for visualization  **/
 /*******************************************************/
 void  SetGeometry(char* sColor, int nHoles)
 {

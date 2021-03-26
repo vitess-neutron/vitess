@@ -29,8 +29,6 @@ void  OwnCleanup();                // Does module specific cleanup
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_TOOL_A2B;
-
 FILE* pAsciiFile;
 char  AsciiFileName [80]="";
 char  BinaryFileName[80]="";
@@ -49,6 +47,7 @@ int main(int argc, char **argv)
   short bFiles;
 
   /* Initialize the program according to the parameters given   */
+  _eModule=MCN_TOOL_A2B;
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   bFiles = OwnInit();             // module specific initialization

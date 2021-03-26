@@ -37,8 +37,6 @@ typedef struct
 /*********************************/
 /** Global Variables            **/
 /*********************************/
-McCompID _eModule=MCN_EVAL2_ELAST;
-
 FILE  *fSpectra=NULL;
 
 int    bProbActive=TRUE,     /* bProbActive=1 means probabilities activated, else neutron weight is set to 1.0         */
@@ -116,6 +114,8 @@ int main(int argc, char *argv[])
 
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_EVAL2_ELAST;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.9");
   OwnInit(argc, argv);
@@ -207,63 +207,70 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
-      dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
-
-      if (bScatAng==0) { //use direction cosine
-        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-      } else {
-        /* select traj. according to colour: (nColour=0 means: all colours accepted) */
-        TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
+
+        if (bScatAng==0) { //use direction cosine
+          CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+        } else {
+          /* select traj. according to colour: (nColour=0 means: all colours accepted) */
+          TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
+        }
       
-			prob     = bProbActive ? InputNeutrons[i].Probability : 1.0;
-			time     = InputNeutrons[i].Time - TimeOffset;
-      //if (bTOFcorr==TRUE) time = time*sdpath/dist;
-      //if (bTOFcorr==TRUE) time = time*Flightpath/(Flightpath-sdpath+dist);
-			//lambda   = bTOF ? 395.60346/(Flightpath/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
-      lambda   = bTOF ? 395.60346/((bTOFcorr ? Flightpath-sdpath+dist : Flightpath)/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
+			  prob     = bProbActive ? InputNeutrons[i].Probability : 1.0;
+			  time     = InputNeutrons[i].Time - TimeOffset;
+        //if (bTOFcorr==TRUE) time = time*sdpath/dist;
+        //if (bTOFcorr==TRUE) time = time*Flightpath/(Flightpath-sdpath+dist);
+			  //lambda   = bTOF ? 395.60346/(Flightpath/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
+        lambda   = bTOF ? 395.60346/((bTOFcorr ? Flightpath-sdpath+dist : Flightpath)/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
 
-			/* Writing out all neutrons, if 'exclusive counts = no' is set */
-			if (bExclCount==FALSE)		
-				WriteNeutron(&InputNeutrons[i]);
+			  /* Writing out all neutrons, if 'exclusive counts = no' is set */
+			  if (bExclCount==FALSE)		
+				  WriteNeutron(&InputNeutrons[i]);
 
-			/* trajectories within deadspot */
-			if (bDeadSpot && TwoTheta <= deadspotangle) continue;
+			  /* trajectories within deadspot */
+			  if (bDeadSpot && TwoTheta <= deadspotangle) continue;
 
-			/* traj. out of time of evaluation */
-			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
+			  /* traj. out of time of evaluation */
+			  if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
-			if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
-			if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
+			  /* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
+			  if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
+			  if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
+			  if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
 
-			/* Writing out the neutrons that comply with the requirements, if 'exclusive counts = yes' is set */
-			if (bExclCount==TRUE)
-				WriteNeutron(&InputNeutrons[i]);
+			  /* Writing out the neutrons that comply with the requirements, if 'exclusive counts = yes' is set */
+			  if (bExclCount==TRUE)
+				  WriteNeutron(&InputNeutrons[i]);
 			
-			TwoThetaDeg = TwoTheta*180.0/M_PI;
-			//qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
-			switch (kind) 
-			{
-				case 1:	// scattering angle + lambda
-					ibinXY = FindIndexXY(&TwoThetaDeg, &lambda, &ibinX, &ibinY);
-					break;
-				case 2:	// scattering angle + TOF
-					ibinXY = FindIndexXY(&TwoThetaDeg, &time, &ibinX, &ibinY);
-					break;
-			}
-			if (ibinXY >= 0)
-			{
-				if (bin[ibinXY] == NULL)
-				{
-          CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
-				}
-				bin[ibinXY]->Counts++;
-				bin[ibinXY]->Int += prob;
+			  TwoThetaDeg = TwoTheta*180.0/M_PI;
+			  //qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
+			  switch (kind) 
+			  {
+				  case 1:	// scattering angle + lambda
+					  ibinXY = FindIndexXY(&TwoThetaDeg, &lambda, &ibinX, &ibinY);
+					  break;
+				  case 2:	// scattering angle + TOF
+					  ibinXY = FindIndexXY(&TwoThetaDeg, &time, &ibinX, &ibinY);
+					  break;
+			  }
+			  if (ibinXY >= 0)
+			  {
+				  if (bin[ibinXY] == NULL)
+				  {
+            CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
+				  }
+				  bin[ibinXY]->Counts++;
+				  bin[ibinXY]->Int += prob;
 
-				bintc += prob;
-			}
+				  bintc += prob;
+			  }
+      }
 		}
 	}
 

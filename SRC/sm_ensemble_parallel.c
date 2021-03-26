@@ -83,8 +83,6 @@ static double
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID   _eModule=MCN_SM_ENSEMBLE;
-
 FILE       *COLLFILE;
 char       *ParameterFileName, *ReflUpFileName, *ReflDownFileName;
 const char *COLLFILEName = "collision.dat";
@@ -155,11 +153,17 @@ static void drawIt(VectorType P) {
 /******************************/
 int main(int argc, char **argv)
 {
-  int   m;
+  int   m=0;
+
+  _eModule = MCN_SM_ENSEMBLE;
 
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "2.1");
   OwnInit(argc, argv);
+
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bLengthCmpr = TRUE;
 
   ReadParameterFile(ParameterFileName);
 
@@ -201,199 +205,205 @@ int main(int argc, char **argv)
 }
 
 
-void processNeutron (int i, int thread_i) {
-
-  VectorType
-    Pos, Dir, SpinVector,
-    pos[MAX_MIRR+1], dir[MAX_MIRR+1], spin[MAX_MIRR+1];
-  double
-    TOF, WL, Prob, Path0, Path,
-    prob[MAX_MIRR+1],
-    PathA[MAX_MIRR+1];
-  int j,m, nocol;
-
-  // dmf test
-  memset(PathA, 0, sizeof(double)*(MAX_MIRR+1));
-
-  if (eVisual > 1 && number_vis_tr == 1000)
-    eVisual = 100;  // stop plotting trajectories
-
-  InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
-
-  TOF  = InputNeutrons[i].Time;
-  WL   = InputNeutrons[i].Wavelength;
-  Prob = InputNeutrons[i].Probability;
-
-  CopyVector(InputNeutrons[i].Position, Pos);
-  CopyVector(InputNeutrons[i].Vector, Dir);
-  CopyVector(InputNeutrons[i].Spin, SpinVector);
-
-  /*  compute hit positions on the walls */
-
-  Path0 = 0.;
-  m = nocol = 0;
-
-  if (eVisual) {
-    if (eVisual==1)
-      fprintf(COLLFILE,
-	      "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
-	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
-	      InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
-	      Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
-
-#ifdef VT_GRAPH
-    else if (eVisual>=2 && eVisual<=4) {
-      cpgsci((int)(InputNeutrons[i].Color));
-      if(Prob > wei_min1)
-	moveIt(Pos);
-    }
-#endif
+void processNeutron (int i, int thread_i) 
+{
+  // Only write out event if EOB line is found, otherwise process trajectory
+  if (IsEOB(&(InputNeutrons[i]))==TRUE)
+  {
+    WriteNeutronParallel(&(InputNeutrons[i]), thread_i);
   }
+  else
+  { 
+    VectorType Pos, Dir, SpinVector,
+               pos[MAX_MIRR+1], dir[MAX_MIRR+1], spin[MAX_MIRR+1];
+    double     TOF, WL, Prob, Path0, Path,
+               prob [MAX_MIRR+1],
+               PathA[MAX_MIRR+1];
+    int j,m, nocol;
 
-  Path = 0;
+    // dmf test
+    memset(PathA, 0, sizeof(double)*(MAX_MIRR+1));
 
-  for (j=0; j<1000; j++) { // loop over at most 1000 collisions
-    int im, l;
+    if (eVisual > 1 && number_vis_tr == 1000)
+      eVisual = 100;  // stop plotting trajectories
 
-    CHECK;
+    InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
-    for (l=1; l<=max_mirr; l++) { // loop over mirrors
-      CopyVector(Pos, pos[l]);
-      CopyVector(Dir, dir[l]);
-      CopyVector(SpinVector, spin[l]);
-      prob[l]= Prob;
-      if (m != l) {
-	PathA[l] = CollideWall(thread_i, WL, SpinVector,
-			       &prob[l], pos[l], dir[l], spin[l], l);
+    TOF  = InputNeutrons[i].Time;
+    WL   = InputNeutrons[i].Wavelength;
+    Prob = InputNeutrons[i].Probability;
+
+    CopyVector(InputNeutrons[i].Position, Pos);
+    CopyVector(InputNeutrons[i].Vector, Dir);
+    CopyVector(InputNeutrons[i].Spin, SpinVector);
+
+    /*  compute hit positions on the walls */
+
+    Path0 = 0.;
+    m = nocol = 0;
+
+    if (eVisual) {
+      if (eVisual==1)
+        fprintf(COLLFILE,
+	        "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
+	        InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
+	        InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+	        Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+
+  #ifdef VT_GRAPH
+      else if (eVisual>=2 && eVisual<=4) {
+        cpgsci((int)(InputNeutrons[i].Color));
+        if(Prob > wei_min1)
+	  moveIt(Pos);
       }
-      else
-	PathA[l] = 99999;
-    }                            // end loop over mirrors
-
-    for (im=1; im <= max_mirr; im++)
-      if (PathA[im] != 99999.0)
-	break;
-
-    if (im > max_mirr) {
-      // all PathA are 99999
-      Path = 99999.0;
-      break; // leave collsions loop
+  #endif
     }
 
-    for (l=1; l<=max_mirr; l++) { // loop over mirrors
-      Neutron myneutron, *n;
-      n = &myneutron;
-      CopyNeutron(&InputNeutrons[i], n);
+    Path = 0;
 
-      if (m == l) continue;
-      for (im=1; im<=max_mirr; im++)
-	if (im != l && PathA[l] > PathA[im])
+    for (j=0; j<1000; j++) { // loop over at most 1000 collisions
+      int im, l;
+
+      CHECK;
+
+      for (l=1; l<=max_mirr; l++) { // loop over mirrors
+        CopyVector(Pos, pos[l]);
+        CopyVector(Dir, dir[l]);
+        CopyVector(SpinVector, spin[l]);
+        prob[l]= Prob;
+        if (m != l) {
+	  PathA[l] = CollideWall(thread_i, WL, SpinVector,
+			         &prob[l], pos[l], dir[l], spin[l], l);
+        }
+        else
+	  PathA[l] = 99999;
+      }                            // end loop over mirrors
+
+      for (im=1; im <= max_mirr; im++)
+        if (PathA[im] != 99999.0)
 	  break;
 
-      if (im <= max_mirr) continue; // next mirror, because PathA[l] > PathA[im]
-
-      CopyVector(pos[l], Pos);
-      CopyVector(dir[l], Dir);
-      Path = PathA[l];
-      Prob = prob[l];
-      m = l;
-      nocol++;
-	  
-      CopyVector(Pos, n->Position);
-      CopyVector(Dir, n->Vector);
-      WriteIAP(n, VT_REFLECTED);
-      if (increaseColor) InputNeutrons[i].Color++;
-
-      if (eVisual) {
-	if (eVisual==1)
-	  fprintf(COLLFILE,
-		  "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
-		  InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
-		  InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug, InputNeutrons[i].Color, i,
-		  ((int) SpinVector[quant_dir]),
-		  m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
-#ifdef VT_GRAPH
-	else if (Prob > wei_min1)
-	  drawIt(Pos);
-#endif
+      if (im > max_mirr) {
+        // all PathA are 99999
+        Path = 99999.0;
+        break; // leave collsions loop
       }
 
-      //     fprintf(LogFilePtr, "ID: %d, End position: %f %f %f  Mirror: %d\n", InputNeutrons[i].ID.IDNo, n->Position[0], n->Position[1], n->Position[2], l);
-    }                             // end loop over mirrors
+      for (l=1; l<=max_mirr; l++) { // loop over mirrors
+        Neutron myneutron, *n;
+        n = &myneutron;
+        CopyNeutron(&InputNeutrons[i], n);
+
+        if (m == l) continue;
+        for (im=1; im<=max_mirr; im++)
+	  if (im != l && PathA[l] > PathA[im])
+	    break;
+
+        if (im <= max_mirr) continue; // next mirror, because PathA[l] > PathA[im]
+
+        CopyVector(pos[l], Pos);
+        CopyVector(dir[l], Dir);
+        Path = PathA[l];
+        Prob = prob[l];
+        m = l;
+        nocol++;
+	  
+        CopyVector(Pos, n->Position);
+        CopyVector(Dir, n->Vector);
+        WriteIAP(n, VT_REFLECTED);
+        if (increaseColor) InputNeutrons[i].Color++;
+
+        if (eVisual) {
+	  if (eVisual==1)
+	    fprintf(COLLFILE,
+		    "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
+		    InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
+		    InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug, InputNeutrons[i].Color, i,
+		    ((int) SpinVector[quant_dir]),
+		    m, Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+  #ifdef VT_GRAPH
+	  else if (Prob > wei_min1)
+	    drawIt(Pos);
+  #endif
+        }
+
+        //     fprintf(LogFilePtr, "ID: %d, End position: %f %f %f  Mirror: %d\n", InputNeutrons[i].ID.IDNo, n->Position[0], n->Position[1], n->Position[2], l);
+      }                             // end loop over mirrors
 
     
 	
-    if (nocol == nocolM)
-      break; // leave collsions loop
+      if (nocol == nocolM)
+        break; // leave collsions loop
+
+      if (Prob < wei_min) return;
+
+      Path0 += Path;
+
+    }  // end loop over collisions
 
     if (Prob < wei_min) return;
 
-    Path0 += Path;
+    /* transform into output frame */
+    SubVector(Pos, TranslOutput);
+    RotVector(RotMatrixOut, Pos);
+    RotVector(RotMatrixOut, Dir);
 
-  }  // end loop over collisions
+    /* translate neutron variables for output - X'=0. */
+    {
+      VectorType path; // displacement vector
 
-  if (Prob < wei_min) return;
+      if (Pos[0] > 0.0) return; // Filter if collision after output YZ plane
 
-  /* transform into output frame */
-  SubVector(Pos, TranslOutput);
-  RotVector(RotMatrixOut, Pos);
-  RotVector(RotMatrixOut, Dir);
-
-  /* translate neutron variables for output - X'=0. */
-  {
-    VectorType path; // displacement vector
-
-    if (Pos[0] > 0.0) return; // Filter if collision after output YZ plane
-
-    TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+      TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
       	
-    CopyVector(Dir, path);
-    MultiplyByScalar(path, - Pos[0] / Dir[0]);
-    AddVector(Pos, path);
-  }
+      CopyVector(Dir, path);
+      MultiplyByScalar(path, - Pos[0] / Dir[0]);
+      AddVector(Pos, path);
+    }
 
-  if (eVisual>0) {
-    /* transform into input frame to give the exit positions here */
-    VectorType posex, direx;
-    CopyVector(Pos, posex);
-    CopyVector(Dir, direx);
-    RotBackVector(RotMatrixOut, direx);
-    RotBackVector(RotMatrixOut, posex);
-    AddVector(posex, TranslOutput);
+    if (eVisual>0) {
+      /* transform into input frame to give the exit positions here */
+      VectorType posex, direx;
+      CopyVector(Pos, posex);
+      CopyVector(Dir, direx);
+      RotBackVector(RotMatrixOut, direx);
+      RotBackVector(RotMatrixOut, posex);
+      AddVector(posex, TranslOutput);
 
-    if (eVisual == 1)
-      fprintf(COLLFILE,
-	      "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
-	      InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
-	      InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
-	      posex[0], posex[1], posex[2],
-	      180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
-#ifdef VT_GRAPH
-    else if (Prob > wei_min1)
-      drawIt(posex);
-#endif
-  }
+      if (eVisual == 1)
+        fprintf(COLLFILE,
+	        "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
+	        InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
+	        InputNeutrons[i].Debug,       InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+	        posex[0], posex[1], posex[2],
+	        180./M_PI * atan2(direx[1],direx[0]), 180./M_PI * atan2(direx[2], direx[0]));
+  #ifdef VT_GRAPH
+      else if (Prob > wei_min1)
+        drawIt(posex);
+  #endif
+    }
 	
-  /* transmit coordinates which were not changed, overwrite the rest below */
-  { Neutron neutron = InputNeutrons[i];
+    /* transmit coordinates which were not changed, overwrite the rest below */
+    { Neutron neutron = InputNeutrons[i];
 
-    neutron.Time = TOF + Path0 / V_FROM_LAMBDA(WL);
-    neutron.Probability = Prob;
+      neutron.Time = TOF + Path0 / V_FROM_LAMBDA(WL);
+      neutron.Probability = Prob;
 
-    CopyVector(Pos, neutron.Position);
-    CopyVector(Dir, neutron.Vector);
+      CopyVector(Pos, neutron.Position);
+      CopyVector(Dir, neutron.Vector);
 
-    neutron.Vector[0] = sqrt(1 - sq(neutron.Vector[1]) - sq(neutron.Vector[2]));
+      neutron.Vector[0] = sqrt(1 - sq(neutron.Vector[1]) - sq(neutron.Vector[2]));
 
-    CopyVector(SpinVector, neutron.Spin);
+      CopyVector(SpinVector, neutron.Spin);
 
-    if (eVisual) number_vis_tr++;
+      if (eVisual) number_vis_tr++;
 
-    WriteNeutronParallel(&neutron, thread_i);
+      WriteNeutronParallel(&neutron, thread_i);
+    }
+    if (eVisual==1) fprintf(COLLFILE, "\n");
+
+  my_exit:;
   }
-  if (eVisual==1) fprintf(COLLFILE, "\n");
-
- my_exit:;
 }
 
 

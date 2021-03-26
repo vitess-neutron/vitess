@@ -778,13 +778,13 @@ double Area(const VectorType v1, const VectorType v2)
 }
 
 
-/* sets plane to zero */
+/* sets plane to (1,0,0,0) */
 void InitPlane(Plane* pPlane)
 {
-  pPlane->A=0.0;
-  pPlane->B=0.0;
-  pPlane->C=0.0;
-  pPlane->D=0.0;
+  pPlane->A = 1.0;
+  pPlane->B = 0.0;
+  pPlane->C = 0.0;
+  pPlane->D = 0.0;
 }
 
 
@@ -1008,32 +1008,37 @@ long ColumnsInFile(FILE* pFile)
    the maximal number of characters in the string must be given in 'nStrLen'   */
 int ReadLine(FILE* pFile, char* pLine, int nStrLen) 
 {
-  if (pFile)
-    while (fgets (pLine, nStrLen, pFile)) {
-      int v, k, kanf, kmax;
+  int v=0, k=0, kanf=0, kmax=0;
 
+  if (pFile)
+  { while (fgets (pLine, nStrLen, pFile)) 
+    {
       /* substitute line feeds, tabs and carriage returns with blanks */
-      for (k=0; (v = pLine[k]) && v != '#'; k++) {
-	if (v=='\n' || v=='\t' || v=='\r')
-	  pLine[k] = ' ';
+      for (k=0; (v = pLine[k]) && v != '#'; k++) 
+      {
+        if (v=='\n' || v=='\t' || v=='\r')
+         pLine[k] = ' ';
       }
       if (k <= 0) continue;
-
+   
       /* strip the comments and leading and succeeding blanks */
       for (kanf = 0; pLine[kanf] == ' '; kanf++) ;
       for (kmax = k-1; kmax >= kanf && pLine[kmax] == ' '; kmax--) ;
       if (kmax < kanf) continue;
-      if (kanf == 0) {
-	pLine[kmax+1] = 0;
-      } else {
-	for (k = 0; kanf <= kmax; k++, kanf++)
-	  pLine[k] = pLine[kanf];
-	pLine[k] = 0;
+      if (kanf == 0) 
+      {
+        pLine[kmax+1] = 0;
+      } 
+      else 
+      {
+        for (k = 0; kanf <= kmax; k++, kanf++)
+          pLine[k] = pLine[kanf];
+        pLine[k] = 0;
       }
       return TRUE;
     }
-
-  *pLine = 0;
+  }
+  strcpy (pLine, "");
   return FALSE;
 }
 
@@ -1094,7 +1099,8 @@ void StrgLShift(char* sStr, int kWidth)
 
 
 /* Scan string 'sStr' and copy all values (but maximally 'nMax')
-   to list 'pTab' of double values,  beginning with value number 'nStart'*/
+   to list 'pTab' of double values,  beginning with value number 'nStart'
+   returns the number of values found                                    */
 long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 {
 	int k, n=0;
@@ -1129,6 +1135,44 @@ long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart
 }
 
 
+/*******************************************************/
+/** Gets current date or time from system             **/
+/*******************************************************/
+void GetActDate(char* sDate)
+{
+  time_t t;
+  struct tm *tmp;
+
+  t = time(NULL);
+  tmp = localtime(&t);
+  if (tmp != NULL) 
+  {
+    strftime(sDate, CHAR_BUF_SMALL, "%Y-%m-%d", tmp);
+  } 
+  else 
+  {
+    strncpy(sDate, "Error getting time", CHAR_BUF_SMALL);
+  }
+}
+
+void GetActTime(char* sTime)
+{
+  time_t t;
+  struct tm *tmp;
+
+  t = time(NULL);
+  tmp = localtime(&t);
+  if (tmp != NULL) 
+  {
+    strftime(sTime, CHAR_BUF_SMALL, "%T", tmp);
+  } 
+  else 
+  {
+    strncpy(sTime, "Error getting time", CHAR_BUF_SMALL);
+  }
+}
+
+
 /**************************************************************/
 /* Change of the Slashes to the right ones, e.g. '\' to '/'   */
 /**************************************************************/
@@ -1148,8 +1192,7 @@ void AddSlash(char* pStr)
   int kLen = strlen(pStr);
 
   if (pStr[kLen-1]!=cSlash)
-  { pStr[kLen-1]=cSlash;
-    pStr[kLen]  ='\0';
+  { pStr[kLen]   = cSlash;
+    pStr[kLen+1] ='\0';
   }
-
 }

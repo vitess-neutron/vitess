@@ -23,8 +23,6 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-McCompID _eModule=MCN_SMPL_ENVIRO;
-
 char   StructFileName[99];  // file  structure factor file name
 char  *SampleFileName;      // -F    parameter file name (located in argv)
 short  nColor   = NO_COLOR; // -c    colour of the neutrons scattered from the environment
@@ -84,6 +82,8 @@ int main(int argc, char **argv)
   double     RotMatrixNeut[3][3];
 
   /* Initialize the program according to the parameters given   */
+  _eModule = MCN_SMPL_ENVIRO;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
 
@@ -119,114 +119,122 @@ int main(int argc, char **argv)
     {
       CHECK;
 
-      /* First, shift the origin of the system to the middle of the sample   */
-      SubVector(InputNeutrons[i].Position, stEnvironment.Position);
-      OutNeutron=InputNeutrons[i];
-
-      /* Do anything to be done for the Scattering */
-      if (NeutronIntersectsSample(&(OutNeutron), &stEnvironment, RotMatrixSmpl, InISP, &nisp, eDirEnv))
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        if (eDirEnv==VT_IN && nisp < 2)
-          CountMessageID(ENV_TRAJ_INSIDE, OutNeutron.ID);
-        else if (eDirEnv==VT_INSIDE && nisp < 1)
-          CountMessageID(ENV_TRAJ_OUTSIDE, OutNeutron.ID);
-
-        /* the neutron may be scattered between InISP[0] and InISP[1] */
-        /* Lfb full path length in the sample before scattering       */
-        Lbf = DistVector(InISP[0], InISP[1]);
-
-        /* MONTE CARLO CHOICE: Where is the neutron scattered         */
-        /* Distance Ls between entrance of the neutron InISP[0] and   */
-        /* the scattering point SP 				      */
-        Ls = MonteCarlo(0, Lbf);
-
-        /* which is the corresponding scattering point  	   */
-        /*   SP = InISP[0] + Ls * OutNeutron.Vector		      */
-        for(j=0; j<3; j++)
-          SP[j] = InISP[0][j] + Ls*OutNeutron.Vector[j];
-
-        /* Determine the rotation matrix to point the neutron along the +x axis   */
-        NormVector(OutNeutron.Vector);
-        RotMatrixX(OutNeutron.Vector, RotMatrixNeut);
-
-        //   First the coherent scattering           
-        //--------------------------------
-        /* Helpfac contains the non direction dependent term                         */
-        /* G.L. Squires, "Introduction to the theory of thermal neutron scattering", */
-        /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
-        HelpFac = Lbf*pow(OutNeutron.Wavelength,3)/(4.0*UCV*UCV);
-
-        OutNeutron.Color = nColor;
-        if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
-        if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
-
-        /* choose one suitable |F(k)| for Bragg scattering */
-        Nth=ChooseBraggReflex(&Nrefl, NumStrucFac, &pStrucFac, OutNeutron.Wavelength);
-
-        /* ScTheta is the angle of the scattered neutron with its original flight path */
-        ScTheta = 2.0*asin(OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0]));
-
-        /* Only trajectories between Theta-DelTheta and Theta+DelTheta are regarded. 
-        The deviation from straight direction (neutTheta) of the incoming neutrons
-        is supposed to be neglectible                            */
-        if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
-        {
-          /* ScProb is the scattering-cross section (Squires 3.103) */
-          /*  devided by the sample area                            */
-          /* as I_sc = sigma * flux = sigma / area * current        */
-          /* it contains the d-spacing dependent terms              */
-          /*  and the d-spacing independent HelpFac terms s.o.      */
-          ScProbF =  Nrefl * HelpFac / sin(0.5*ScTheta) * pStrucFac[Nth][1];
-
-          /* ScPhi is the angle of the scattered neutron with the +y-axis */
-          /*  of the neutron co-ordinate system                           */
-          ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
-
-          /* Ok, now everthing needed is known, put it together */
-          ProcessNeutronToEnd(&(OutNeutron), SP, Ls, DetFacCoh, ScProbF,
-          ScTheta, ScPhi, &stEnvironment, RotMatrixNeut, RotMatrixSmpl);
-        } 
-
-        /* determine the total scattering cross-section */
-        ScProbCoh = 0.0;
-        for (Nth=0; Nth < Nrefl; Nth++)
-          ScProbCoh += (HelpFac / (OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0])) * pStrucFac[Nth][1]);
-
-        //  Then the incoherent scattering
-        //--------------------------------
-        /* Determine the scattering angle and the probability */
-        OutNeutron.Color = (short)(nColor+1);
-        if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
-        if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
-     
-        ScPhi     = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-        ScTheta   = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
-        ScProbInc = Lbf*MuInc * sin(ScTheta);
-
-        ProcessNeutronToEnd(&OutNeutron, SP, Ls, DetFacInc, ScProbInc,
-        ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
-
-        // The transmitted neutrons  
-        //-----------------------------
-        // move the neutron a little bit into the sample environment 
-        // to avoid problems with wrong sign
-        for(j=0; j<3; j++)
-          SP[j] = InISP[0][j] + 1.0E-08*OutNeutron.Vector[j];
-
-        /* Keep the flight direction and calculate the transmission probability */
-        ScTheta = 0.0;
-        ScPhi   = 0.0;
-        ScProbT = Max(0.0, 1.0 - ScProbCoh - ScProbInc);
-        if (ScProbT <= 0.0)
-        CountMessageID(ALL_NEGATIVE_INT, OutNeutron.ID);
-
-        ProcessNeutronToEnd(&InputNeutrons[i], SP, 1.0E-08, 1.0, ScProbT,
-        ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
-			
-      } // end 'NeutronIntersect...         
+        WriteNeutron(&(InputNeutrons[i]));
+      }
       else
-      {	if (eDirEnv==VT_OUT)
-          WriteNeutron(&OutNeutron);			
+      { 
+        /* First, shift the origin of the system to the middle of the sample   */
+        SubVector(InputNeutrons[i].Position, stEnvironment.Position);
+        OutNeutron=InputNeutrons[i];
+
+        /* Do anything to be done for the Scattering */
+        if (NeutronIntersectsSample(&(OutNeutron), &stEnvironment, RotMatrixSmpl, InISP, &nisp, eDirEnv))
+        {
+          if (eDirEnv==VT_IN && nisp < 2)
+            CountMessageID(ENV_TRAJ_INSIDE, OutNeutron.ID);
+          else if (eDirEnv==VT_INSIDE && nisp < 1)
+            CountMessageID(ENV_TRAJ_OUTSIDE, OutNeutron.ID);
+
+          /* the neutron may be scattered between InISP[0] and InISP[1] */
+          /* Lfb full path length in the sample before scattering       */
+          Lbf = DistVector(InISP[0], InISP[1]);
+
+          /* MONTE CARLO CHOICE: Where is the neutron scattered         */
+          /* Distance Ls between entrance of the neutron InISP[0] and   */
+          /* the scattering point SP 				      */
+          Ls = MonteCarlo(0, Lbf);
+
+          /* which is the corresponding scattering point  	   */
+          /*   SP = InISP[0] + Ls * OutNeutron.Vector		      */
+          for(j=0; j<3; j++)
+            SP[j] = InISP[0][j] + Ls*OutNeutron.Vector[j];
+
+          /* Determine the rotation matrix to point the neutron along the +x axis   */
+          NormVector(OutNeutron.Vector);
+          RotMatrixX(OutNeutron.Vector, RotMatrixNeut);
+
+          //   First the coherent scattering           
+          //--------------------------------
+          /* Helpfac contains the non direction dependent term                         */
+          /* G.L. Squires, "Introduction to the theory of thermal neutron scattering", */
+          /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
+          HelpFac = Lbf*pow(OutNeutron.Wavelength,3)/(4.0*UCV*UCV);
+
+          OutNeutron.Color = nColor;
+          if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
+          if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
+
+          /* choose one suitable |F(k)| for Bragg scattering */
+          Nth=ChooseBraggReflex(&Nrefl, NumStrucFac, &pStrucFac, OutNeutron.Wavelength);
+
+          /* ScTheta is the angle of the scattered neutron with its original flight path */
+          ScTheta = 2.0*asin(OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0]));
+
+          /* Only trajectories between Theta-DelTheta and Theta+DelTheta are regarded. 
+          The deviation from straight direction (neutTheta) of the incoming neutrons
+          is supposed to be neglectible                            */
+          if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
+          {
+            /* ScProb is the scattering-cross section (Squires 3.103) */
+            /*  devided by the sample area                            */
+            /* as I_sc = sigma * flux = sigma / area * current        */
+            /* it contains the d-spacing dependent terms              */
+            /*  and the d-spacing independent HelpFac terms s.o.      */
+            ScProbF =  Nrefl * HelpFac / sin(0.5*ScTheta) * pStrucFac[Nth][1];
+
+            /* ScPhi is the angle of the scattered neutron with the +y-axis */
+            /*  of the neutron co-ordinate system                           */
+            ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+
+            /* Ok, now everthing needed is known, put it together */
+            ProcessNeutronToEnd(&(OutNeutron), SP, Ls, DetFacCoh, ScProbF,
+            ScTheta, ScPhi, &stEnvironment, RotMatrixNeut, RotMatrixSmpl);
+          } 
+
+          /* determine the total scattering cross-section */
+          ScProbCoh = 0.0;
+          for (Nth=0; Nth < Nrefl; Nth++)
+            ScProbCoh += (HelpFac / (OutNeutron.Wavelength/(2.0*pStrucFac[Nth][0])) * pStrucFac[Nth][1]);
+
+          //  Then the incoherent scattering
+          //--------------------------------
+          /* Determine the scattering angle and the probability */
+          OutNeutron.Color = (short)(nColor+1);
+          if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
+          if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
+     
+          ScPhi     = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+          ScTheta   = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+          ScProbInc = Lbf*MuInc * sin(ScTheta);
+
+          ProcessNeutronToEnd(&OutNeutron, SP, Ls, DetFacInc, ScProbInc,
+          ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
+
+          // The transmitted neutrons  
+          //-----------------------------
+          // move the neutron a little bit into the sample environment 
+          // to avoid problems with wrong sign
+          for(j=0; j<3; j++)
+            SP[j] = InISP[0][j] + 1.0E-08*OutNeutron.Vector[j];
+
+          /* Keep the flight direction and calculate the transmission probability */
+          ScTheta = 0.0;
+          ScPhi   = 0.0;
+          ScProbT = Max(0.0, 1.0 - ScProbCoh - ScProbInc);
+          if (ScProbT <= 0.0)
+          CountMessageID(ALL_NEGATIVE_INT, OutNeutron.ID);
+
+          ProcessNeutronToEnd(&InputNeutrons[i], SP, 1.0E-08, 1.0, ScProbT,
+          ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
+			
+        } // end 'NeutronIntersect...         
+        else
+        {	if (eDirEnv==VT_OUT)
+            WriteNeutron(&OutNeutron);			
+        }
       }
     }
   }

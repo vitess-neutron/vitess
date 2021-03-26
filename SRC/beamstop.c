@@ -25,8 +25,6 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_BEAMSTOP;
-
 Plane  Endpoint;                 // vertical Plane through the position of the beamstop
                                  //  (Endpoint.D = distance to end of free flight path along x-axis [cm]) 
 double VelocityReal=0.0,         // velocity of the neutron 
@@ -36,7 +34,7 @@ double VelocityReal=0.0,         // velocity of the neutron
        DistMove=0.0,             // distance between starting point and beamstop 
        CenterY =0.0, CenterZ=0.0;// center of the beamstop position
 short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, FALSE rectangular 
-       bOnBeamstop,              // criterion: beamstop hit or not 
+       bOnBeamstop=FALSE,        // criterion: beamstop hit or not 
        bProp=FALSE;              // criterion: propagate to beamstop  0: no,  1: yes
 
 
@@ -45,15 +43,14 @@ short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, 
 /******************************/
 int main(int argc, char *argv[])
 {
-  long    i=0;                   // index of trajectories
-  double  TimeOF,                // time of flight of the neutron to the window
-          NewPosY, NewPosZ;      // hor. and vert. position of neutron at slit
+  long    i=0;                      // index of trajectories
+  double  TimeOF=0.0,               // time of flight of the neutron to the window
+          NewPosY=0.0, NewPosZ=0.0; // hor. and vert. position of neutron at slit
   Neutron TestNeutron;
 
-  /******************/
-  /* initialisation */
-  /******************/
-  bVisInstalled = TRUE;
+  // Initialisation
+  // --------------
+  _eModule=MCN_BEAMSTOP;
 
   Init(argc,argv, _eModule);
 	PrintModuleName(_eModule, "1.1");
@@ -65,73 +62,78 @@ int main(int argc, char *argv[])
 
   DECLARE_ABORT
 
+  // Loop over all trajectories
+  // --------------------------
   while(ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
     {
       CHECK
 
-      if (InputNeutrons[i].Wavelength == 0.0) continue;
-      VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
-      if (VelocityReal <= 0.0) continue;
-
-      /*************************************************************************/
-      /* 	Check if neutron would hit the beamstop                              */
-      /*************************************************************************/
-      TestNeutron=InputNeutrons[i]; //memcpy(&TestNeutron, &InputNeutrons[i], sizeof(Neutron));
-
-      if (keygrav == 1)
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        TimeOF = NeutronPlaneIntersectionGrav(&TestNeutron, Endpoint);
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {
-        TimeOF = NeutronPlaneIntersection1(&TestNeutron, Endpoint);
-      }
-
-      /* If plane through beamstop surface is reached:                   */
-      /*  Calculate position on beamstop  and  decide if beamstop is hit */
-      if (TimeOF >= 0.0)
-      { NewPosY = TestNeutron.Position[1];
-        NewPosZ = TestNeutron.Position[2];
-
-        if(bCircularWindow==TRUE)
-        {	
-          DistCenter = sqrt(sq(NewPosY - CenterY) + sq(NewPosZ - CenterZ));
-          if (DistCenter <= Radius)
-            bOnBeamstop=TRUE;
-          else
-            bOnBeamstop=FALSE;
-        }
-        else
-        { 
-          if (fabs(NewPosY - CenterY) <= 0.5*Width  &&  fabs(NewPosZ - CenterZ) <= 0.5*Height)
-            bOnBeamstop=TRUE;
-			    else
-				    bOnBeamstop=FALSE;
-        }
-      }
-      else
-      { bOnBeamstop=FALSE;
-      }
-
-      /*************************************************************************/
-      /* if beamstop is missed: writeout original data set for 'progation'=no  */
-      /*                                   or new data set for 'progation'=yes */
-      /*************************************************************************/      
-      if (!bOnBeamstop)
       { 
-        if (bProp)
-          WriteNeutron(&TestNeutron);
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+        if (VelocityReal <= 0.0) continue;
+
+        // 	Check if neutron would hit the beamstop 
+        TestNeutron=InputNeutrons[i]; //memcpy(&TestNeutron, &InputNeutrons[i], sizeof(Neutron));
+
+        if (keygrav == 1)
+        {
+          TimeOF = NeutronPlaneIntersectionGrav(&TestNeutron, Endpoint);
+        }
         else
-          WriteNeutron(&InputNeutrons[i]);
+        {
+          TimeOF = NeutronPlaneIntersection1(&TestNeutron, Endpoint);
+        }
+
+        /* If plane through beamstop surface is reached:                   */
+        /*  Calculate position on beamstop  and  decide if beamstop is hit */
+        if (TimeOF >= 0.0)
+        { NewPosY = TestNeutron.Position[1];
+          NewPosZ = TestNeutron.Position[2];
+
+          if(bCircularWindow==TRUE)
+          {	
+            DistCenter = sqrt(sq(NewPosY - CenterY) + sq(NewPosZ - CenterZ));
+            if (DistCenter <= Radius)
+              bOnBeamstop=TRUE;
+            else
+              bOnBeamstop=FALSE;
+          }
+          else
+          { 
+            if (fabs(NewPosY - CenterY) <= 0.5*Width  &&  fabs(NewPosZ - CenterZ) <= 0.5*Height)
+              bOnBeamstop=TRUE;
+			      else
+				      bOnBeamstop=FALSE;
+          }
+        }
+        else
+        { bOnBeamstop=FALSE;
+        }
+
+        /* if beamstop is missed: writeout original data set for 'progation'=no  */
+        /*                                   or new data set for 'progation'=yes */
+        if (!bOnBeamstop)
+        { 
+          if (bProp)
+            WriteNeutron(&TestNeutron);
+          else
+            WriteNeutron(&InputNeutrons[i]);
+        }
       }
     }
   }	
 
-/******************************************************************************/
-/* Finish: print parameters, write geometry and instrument file, free memory  */
-/******************************************************************************/
+  // Finish: print parameters, write geometry and instrument file, free memory
+  // -------------------------------------------------------------------------
 my_exit:
   if (bCircularWindow)
     fprintf(LogFilePtr, "Beamstop of %6.2f cm diameter in a distance of %7.2f cm \n",             2.0*Radius, DistMove);

@@ -85,8 +85,6 @@ char* FullParName(const char* filename);                                        
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID       _eModule=MCN_WRITEOUT;
-
 // Input parameters
 char*        sOutFileName=NULL;         //  -A   [-]   output file name
 short        bActive=TRUE;              //  -a   [-]   flag: YES: writeout is active   NO: output file is not written
@@ -147,7 +145,6 @@ int main(int argc, char **argv)
   McnpxNeutron    OutMpxNeutron;
   mcpl_particle_t OutParticle;
 
-  Divy = Divz = Div = 0.0;
   memset(&OutNeutron,   '\0', sizeof(Neutron));
   memset(&OutMcNeutron, '\0', sizeof(McNeutron));
   memset(&OutMpNeutron, '\0', sizeof(McnpNeutron));
@@ -156,6 +153,8 @@ int main(int argc, char **argv)
 
   // Initialization 
   // --------------
+  _eModule=MCN_WRITEOUT;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.12");
   OwnInit(argc, argv);
@@ -326,8 +325,10 @@ void  OwnInit(int argc, char *argv[])
   const char* pSep=NULL;   // separator
 
   for(i=1; i<argc; i++) 
-  { if(argv[i][0]!='+') 
-    { switch(argv[i][1])
+  { 
+    if(argv[i][0]!='+') 
+    { 
+      switch(argv[i][1])
       { 
         case 'A':
           sOutFileName = &argv[i][2];

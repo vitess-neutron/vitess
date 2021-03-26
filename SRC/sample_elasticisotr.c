@@ -44,8 +44,6 @@ void   OutputTransform(VectorType Pos, VectorType Dir); // Co-ordinate transform
 /******************************/
 /**   Global Variables       **/
 /******************************/
-McCompID _eModule=MCN_SMPL_EL_ISO;
-
 char      *SampleFileName=NULL;     // -P     [-]   pointer to the name of the sample file  
 long       Repetition=1;            // -A     [-]   repetitions (how many trajectories to generate per incoming trajectory)
 short      iColor=ANY_COLOR;        // -c     [-]   enum color: if != ANY_COLOR, only neutrons of this colour are treated 
@@ -87,6 +85,8 @@ int main(int argc, char **argv)
   
   // initialisation
   // --------------
+ _eModule = MCN_SMPL_EL_ISO;
+
   Init   (argc, argv, _eModule);
   PrintModuleName(_eModule, "2.7");
   OwnInit(argc, argv);
@@ -112,241 +112,249 @@ int main(int argc, char **argv)
     {
       CHECK;
 
-      if (iColor==ANY_COLOR || iColor==InputNeutrons[i].Color)
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        MaxPathLengthHol = PathLengthHol = 0.; 
-            
-        InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
-        
-        /* translates and rotates into frame of the sample  */
-        SubVector(InputNeutrons[i].Position, PosSample) ;
-        RotVector(RotMatrixSample, InputNeutrons[i].Position) ;
-        RotVector(RotMatrixSample, InputNeutrons[i].Vector) ;
-        
-        /* gives intersection positions with sample */
-        if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
-           goto getlost ;
-
-        if (Option[1] == 'o')
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        if (iColor==ANY_COLOR || iColor==InputNeutrons[i].Color)
         {
-          if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0) 
-          { goto getlost ; 
-          }
-          else 
-          {
-            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0) 
-              CopyVector(Pos4f, Pos2f);
-
-            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 1)
-            { double r=MonteCarlo(-1.,1);
-
-              if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==1)) 
-                goto getlost;
-      	
-              if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==0))
-              {
-                if (r > 0.0)
-                { 
-                  SubVector(Pos2f, Pos1f);
-                  PathLengthHol = LengthVector(Pos2f); 
-                  CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 
-                  MaxPathLengthHol = PathLengthHol; 				
-                }
-                else 
-                {
-                  SubVector(Pos4f, Pos3f);
-                  MaxPathLengthHol = LengthVector(Pos4f); 
-                  PathLengthHol    = 0.;
-                } 
-              }
-              if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==1))
-              {
-                PathLengthHol    = 0.; 
-                MaxPathLengthHol = 0.;
-              }
-              if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==0))
-              {
-                CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 
-                PathLengthHol    = 0.; 
-                MaxPathLengthHol = 0.;
-              }
-            }
-          }
-        }
-
-        if(Option[1] == 'u' && IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
-          goto getlost ; 
-	      
-        if(Option[1] == 'a' && IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
-          goto getlost ; 
-	      
-        for (repet=0;repet<Repetition;repet++) 
-        {
-          CHECK;
-
-          CopyVector(Pos1f, Pos1v) ;
-          CopyVector(Pos2f, Pos2v) ;
-          CopyVector(Pos3f, Pos3v) ;
-          CopyVector(Pos4f, Pos4v) ;
-              
-          TOF  = InputNeutrons[i].Time ;
-          WL   = InputNeutrons[i].Wavelength ;
-          Prob = InputNeutrons[i].Probability ;
-
-          CopyVector(InputNeutrons[i].Position, Pos) ;
-          CopyVector(InputNeutrons[i].Vector, Dir) ;
-
-          /* scattering position and TOF untill scattering */	
-
-          SubVector(Pos2v, Pos1v) ;					/*maximal path vector*/ 
-          MaxPathLength = LengthVector(Pos2v) + MaxPathLengthHol ; 
-
-          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.)) ;	 /*random path vector in cylinder untill scattering */
-
-          PathLength = LengthVector(Pos2v) + PathLengthHol;
-          AddVector(Pos1v, Pos2v) ;
-
-          { VectorType propag;
-
-            CopyVector(Pos1v, propag);
-            SubVector(propag, Pos);
-
-            TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
-          }
-
-          CopyVector(Pos1v, Pos) ;						/*scattering position */
-
-          /* attenuation untill scattering normalized to maximal path */
-
-          // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
-          Prob *= (double) exp( - PathLength * (AbsorptionC * WL));
-          Prob *= MaxPathLength * ScatteringC ; 
-
-          /* scattering: new neutron variables*/ 
-          {
-            double	dir_fin[3], DeltaHoriz, DeltaVert ;
+          MaxPathLengthHol = PathLengthHol = 0.; 
             
-            /* new random direction  */
-            
-            DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatterRange[1]/2. * M_PI/180. ;
-            DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatterRange[2]/2. * M_PI/180. ;
-             
-            EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
-            
-            RotBackVector(RotMatrixScatter, dir_fin) ; CopyVector(dir_fin, Dir) ; 
-            RotVector    (RotMatrixSample, Dir) ;
-          }
+          InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+        
+          /* translates and rotates into frame of the sample  */
+          SubVector(InputNeutrons[i].Position, PosSample) ;
+          RotVector(RotMatrixSample, InputNeutrons[i].Position) ;
+          RotVector(RotMatrixSample, InputNeutrons[i].Vector) ;
+        
+          /* gives intersection positions with sample */
+          if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+             goto getlost ;
 
-
-          /* Attenuation succeeding scattering */
-
-          if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
-            goto getlost2 ; 
-		
-          if(Option[1] == 'o')
+          if (Option[1] == 'o')
           {
-          	
-            if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0)
-            {
-              goto getlost2 ; 
+            if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0) 
+            { goto getlost ; 
             }
             else 
             {
-              if (IntersectionWithCylinder(DimSampleHol, Pos, Dir, Pos2v, Pos3v) == 0) 
-              { 
-                CopyVector(Pos4v, Pos2v);
-              }
-              else
-              { VectorType Propag; 
+              if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0) 
+                CopyVector(Pos4f, Pos2f);
 
-                CopyVector(Pos2v, Propag); 
-                SubVector (Propag, Pos);
+              if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 1)
+              { double r=MonteCarlo(-1.,1);
 
-                if (CompareVectors(Pos3v, Pos4v)==0)
+                if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==1)) 
+                  goto getlost;
+      	
+                if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==0))
                 {
-                  if (ScalarProduct(Propag, Dir) > 0.)
-                  { VectorType Propag1;
-
-                    CopyVector(Pos4v, Propag1);
-                    SubVector (Propag1, Pos3v);
-                    PathLengthHol = LengthVector(Propag1); 
+                  if (r > 0.0)
+                  { 
+                    SubVector(Pos2f, Pos1f);
+                    PathLengthHol = LengthVector(Pos2f); 
+                    CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 
+                    MaxPathLengthHol = PathLengthHol; 				
                   }
                   else 
                   {
-                    PathLengthHol = 0.; 
-                    CopyVector(Pos3v, Pos1v); 
-                    CopyVector(Pos4v, Pos2v);
-                  }
+                    SubVector(Pos4f, Pos3f);
+                    MaxPathLengthHol = LengthVector(Pos4f); 
+                    PathLengthHol    = 0.;
+                  } 
                 }
-                else
+                if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==1))
                 {
-                  PathLengthHol = 0.; 
+                  PathLengthHol    = 0.; 
+                  MaxPathLengthHol = 0.;
+                }
+                if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==0))
+                {
+                  CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 
+                  PathLengthHol    = 0.; 
+                  MaxPathLengthHol = 0.;
                 }
               }
             }
           }
 
-          if (Option[1] == 'u' && IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
-            goto getlost2 ; 
-        	
-          if (Option[1] == 'a' && IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
-            goto getlost2 ; 
-
-
-          /* path in the sample after scattering */
+          if(Option[1] == 'u' && IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+            goto getlost ; 
+	      
+          if(Option[1] == 'a' && IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+            goto getlost ; 
+	      
+          for (repet=0;repet<Repetition;repet++) 
           {
-            VectorType Pos_final ;
-            
-            CopyVector(Pos2v, Pos_final) ;	  
-            SubVector (Pos_final, Pos) ;	  
-            PathLength = LengthVector(Pos_final) + PathLengthHol;  
-          }
+            CHECK;
 
-          if(PathLengthHol != 0.) CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
-
-          /* Test: set output to scattering positions:  CopyVector(Pos, Pos2v); */
-
-          // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
-          Prob *= (double) exp( - PathLength * (AbsorptionC * WL));
-
-          /* Output matters */
-          { VectorType propag;
-
-            CopyVector(Pos2v, propag);
-            SubVector(propag, Pos);
-
-            TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
-          }
-
-          OutputTransform(Pos2v, Dir) ;
-		
-          Prob *= ScatterRange[1]/180. * sin(ScatterRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
-          if (Prob <= ProbCutoff) goto getlost2 ;
-
-          /* transmit coordinates which were not changed, the rest overwrite below */
-          Neutrons = InputNeutrons[i]; 
-
-          Neutrons.Time = TOF ;	
-          Neutrons.Probability = Prob/Repetition ;
-
-          CopyVector(Pos2v, Neutrons.Position) ;	
-          CopyVector(Dir, Neutrons.Vector) ;	
-
-          /* writes output binary file */
-          WriteNeutron(&Neutrons) ;
-
-        getlost2: ;
-
-        }  /*repetition*/
-            /* here continues if neutron gets lost */
+            CopyVector(Pos1f, Pos1v) ;
+            CopyVector(Pos2f, Pos2v) ;
+            CopyVector(Pos3f, Pos3v) ;
+            CopyVector(Pos4f, Pos4v) ;
               
-      getlost: ;   
-      }
-      else  // icolor != 0
-      {
-        Neutrons = InputNeutrons[i]; 
-        SubVector(Neutrons.Position, PosSample) ;
-        WriteNeutron(&Neutrons) ;
+            TOF  = InputNeutrons[i].Time ;
+            WL   = InputNeutrons[i].Wavelength ;
+            Prob = InputNeutrons[i].Probability ;
+
+            CopyVector(InputNeutrons[i].Position, Pos) ;
+            CopyVector(InputNeutrons[i].Vector, Dir) ;
+
+            /* scattering position and TOF untill scattering */	
+
+            SubVector(Pos2v, Pos1v) ;					/*maximal path vector*/ 
+            MaxPathLength = LengthVector(Pos2v) + MaxPathLengthHol ; 
+
+            MultiplyByScalar(Pos2v, MonteCarlo(0.,1.)) ;	 /*random path vector in cylinder untill scattering */
+
+            PathLength = LengthVector(Pos2v) + PathLengthHol;
+            AddVector(Pos1v, Pos2v) ;
+
+            { VectorType propag;
+
+              CopyVector(Pos1v, propag);
+              SubVector(propag, Pos);
+
+              TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
+            }
+
+            CopyVector(Pos1v, Pos) ;						/*scattering position */
+
+            /* attenuation untill scattering normalized to maximal path */
+
+            // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
+            Prob *= (double) exp( - PathLength * (AbsorptionC * WL));
+            Prob *= MaxPathLength * ScatteringC ; 
+
+            /* scattering: new neutron variables*/ 
+            {
+              double	dir_fin[3], DeltaHoriz, DeltaVert ;
+            
+              /* new random direction  */
+            
+              DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatterRange[1]/2. * M_PI/180. ;
+              DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatterRange[2]/2. * M_PI/180. ;
+             
+              EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
+            
+              RotBackVector(RotMatrixScatter, dir_fin) ; CopyVector(dir_fin, Dir) ; 
+              RotVector    (RotMatrixSample, Dir) ;
+            }
+
+
+            /* Attenuation succeeding scattering */
+
+            if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+              goto getlost2 ; 
+		
+            if(Option[1] == 'o')
+            {
+          	
+              if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0)
+              {
+                goto getlost2 ; 
+              }
+              else 
+              {
+                if (IntersectionWithCylinder(DimSampleHol, Pos, Dir, Pos2v, Pos3v) == 0) 
+                { 
+                  CopyVector(Pos4v, Pos2v);
+                }
+                else
+                { VectorType Propag; 
+
+                  CopyVector(Pos2v, Propag); 
+                  SubVector (Propag, Pos);
+
+                  if (CompareVectors(Pos3v, Pos4v)==0)
+                  {
+                    if (ScalarProduct(Propag, Dir) > 0.)
+                    { VectorType Propag1;
+
+                      CopyVector(Pos4v, Propag1);
+                      SubVector (Propag1, Pos3v);
+                      PathLengthHol = LengthVector(Propag1); 
+                    }
+                    else 
+                    {
+                      PathLengthHol = 0.; 
+                      CopyVector(Pos3v, Pos1v); 
+                      CopyVector(Pos4v, Pos2v);
+                    }
+                  }
+                  else
+                  {
+                    PathLengthHol = 0.; 
+                  }
+                }
+              }
+            }
+
+            if (Option[1] == 'u' && IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+              goto getlost2 ; 
+        	
+            if (Option[1] == 'a' && IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+              goto getlost2 ; 
+
+
+            /* path in the sample after scattering */
+            {
+              VectorType Pos_final ;
+            
+              CopyVector(Pos2v, Pos_final) ;	  
+              SubVector (Pos_final, Pos) ;	  
+              PathLength = LengthVector(Pos_final) + PathLengthHol;  
+            }
+
+            if(PathLengthHol != 0.) CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
+
+            /* Test: set output to scattering positions:  CopyVector(Pos, Pos2v); */
+
+            // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
+            Prob *= (double) exp( - PathLength * (AbsorptionC * WL));
+
+            /* Output matters */
+            { VectorType propag;
+
+              CopyVector(Pos2v, propag);
+              SubVector(propag, Pos);
+
+              TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
+            }
+
+            OutputTransform(Pos2v, Dir) ;
+		
+            Prob *= ScatterRange[1]/180. * sin(ScatterRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
+            if (Prob <= ProbCutoff) goto getlost2 ;
+
+            /* transmit coordinates which were not changed, the rest overwrite below */
+            Neutrons = InputNeutrons[i]; 
+
+            Neutrons.Time = TOF ;	
+            Neutrons.Probability = Prob/Repetition ;
+
+            CopyVector(Pos2v, Neutrons.Position) ;	
+            CopyVector(Dir, Neutrons.Vector) ;	
+
+            /* writes output binary file */
+            WriteNeutron(&Neutrons) ;
+
+          getlost2: ;
+
+          }  /*repetition*/
+              /* here continues if neutron gets lost */
+              
+        getlost: ;   
+        }
+        else  // icolor != 0
+        {
+          Neutrons = InputNeutrons[i]; 
+          SubVector(Neutrons.Position, PosSample) ;
+          WriteNeutron(&Neutrons) ;
+        }
       }
     }   // for loop over trajectories
   }     // do loop, read trajectories

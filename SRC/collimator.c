@@ -34,8 +34,6 @@ int   NumBlds         (int nChanTot, int iHull);                                
 /******************************/
 /** Global variables         **/
 /******************************/
-McCompID _eModule=MCN_COLLIMATOR;
-
 double CollEntrWidth =0.0,      // collimator width and height at entrance
        CollEntrHeight=0.0,
        CollExitWidth =0.0,      // collimator width and height at exit
@@ -44,7 +42,7 @@ double CollEntrWidth =0.0,      // collimator width and height at entrance
        BladeWidth    =0.0;      // thickness of the blades separating the channels
 long   nChannels=1;             // number of collimator channels  
 
-double ChanWin, ChanWout;       // width of channel at entrance and exit
+double ChanWin=0.0, ChanWout=0.0;       // width of channel at entrance and exit
 
 
 /******************************/
@@ -52,19 +50,21 @@ double ChanWin, ChanWout;       // width of channel at entrance and exit
 /******************************/
 int main(int argc, char *argv[])
 {
-  long    i=0;                     // index of trajectories
-  int     iChanIn=0, iChanOut=0;   // channel where neutron enters and leaves    
-  short   bReach=FALSE;            // boolean: hits exit or not          
-  double  ChanDistIn, ChanDistOut, // distance between neighbouring channels at entrance and exit
-          ChanMinIn,  ChanMinOut,  // minimal y-position for channel determination    
-          ToF=0.0;                 // time-of-flight from entrance to exit of the collimator 
+  long    i=0;                             // index of trajectories
+  int     iChanIn=0, iChanOut=0;           // channel where neutron enters and leaves    
+  short   bReach=FALSE;                    // boolean: hits exit or not          
+  double  ChanDistIn=0.0, ChanDistOut=0.0, // distance between neighbouring channels at entrance and exit
+          ChanMinIn=0.0,  ChanMinOut=0.0,  // minimal y-position for channel determination    
+          ToF=0.0;                         // time-of-flight from entrance to exit of the collimator 
   
-  Plane   CollExit;                // plane determined by the exit area of the the collimator
-  Neutron OutNeutron;              // trajectory written to the output (to be read by the next module)
+  Plane   CollExit;                        // plane determined by the exit area of the the collimator
+  Neutron OutNeutron;                      // trajectory written to the output (to be read by the next module)
 
 
 	// reading of input data and initialisation
   // ----------------------------------------
+  _eModule=MCN_COLLIMATOR;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   if (bVisInstr) 
     bLengthCmpr = TRUE;
 
-  memset(&OutNeutron,'\0', sizeof(Neutron));
+  InitNeutron(&OutNeutron);
   ChanDistIn  =  ChanWin  + BladeWidth;
   ChanDistOut =  ChanWout + BladeWidth;
   ChanMinIn   = -(CollEntrWidth+BladeWidth)/2.0;
@@ -95,48 +95,55 @@ int main(int argc, char *argv[])
     {
       CHECK;
 	  
-      // Check to see if the neutron is initially in the entrance to the collimator
-      // --------------------------------------------------------------------------
-      if (fabs(InputNeutrons[i].Position[1]) > CollEntrWidth/2.0)  continue;
-      if (fabs(InputNeutrons[i].Position[2]) > CollEntrHeight/2.0) continue;
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        // Check to see if the neutron is initially in the entrance to the collimator
+        // --------------------------------------------------------------------------
+        if (fabs(InputNeutrons[i].Position[1]) > CollEntrWidth/2.0)  continue;
+        if (fabs(InputNeutrons[i].Position[2]) > CollEntrHeight/2.0) continue;
 	  
-      OutNeutron = InputNeutrons[i];
+        OutNeutron = InputNeutrons[i];
 	  
-      // find out the entrance channel   (channel = 0 means 'blade position')
-      iChanIn = DetermineChannel(OutNeutron.Position[1], ChanMinIn, ChanDistIn);
+        // find out the entrance channel   (channel = 0 means 'blade position')
+        iChanIn = DetermineChannel(OutNeutron.Position[1], ChanMinIn, ChanDistIn);
 	  
-      if (iChanIn > 0)
-      {	
-        // Pass a pointer to the neutron and the collimator structure to a subroutine to
-        // calculate the propagation inside  collimator frame                           
-        // Check if neutron leaves inside the exit area and determine the channel       
-        // ------------------------------------------------------------------------------
-        bReach = PathThroughColl(&ToF, &OutNeutron, CollExit, keygrav);
+        if (iChanIn > 0)
+        {	
+          // Pass a pointer to the neutron and the collimator structure to a subroutine to
+          // calculate the propagation inside  collimator frame                           
+          // Check if neutron leaves inside the exit area and determine the channel       
+          // ------------------------------------------------------------------------------
+          bReach = PathThroughColl(&ToF, &OutNeutron, CollExit, keygrav);
 	      
-        if (bReach)
-        {
-          if (fabs(OutNeutron.Position[1]) <= CollExitWidth/2.0  &&  
-              fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
-          {	
-            // find out the exit channel   (channel = 0 means 'blade position')
-            iChanOut = DetermineChannel(OutNeutron.Position[1], ChanMinOut, ChanDistOut);
+          if (bReach)
+          {
+            if (fabs(OutNeutron.Position[1]) <= CollExitWidth/2.0  &&  
+                fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
+            {	
+              // find out the exit channel   (channel = 0 means 'blade position')
+              iChanOut = DetermineChannel(OutNeutron.Position[1], ChanMinOut, ChanDistOut);
+            }
+            else
+            {	
+              iChanOut = -1;
+            }
           }
-          else
-          {	
-            iChanOut = -1;
+
+          // Writeout new data set, if neutron enters and leaves through the same channel */
+          // ------------------------------------------------------------------------------
+          if (iChanIn==iChanOut)
+          {
+            OutNeutron.Position[0]=0.0;
+            OutNeutron.Time += ToF;
+
+            WriteNeutron(&OutNeutron);
           }
-        }
-
-        // Writeout new data set, if neutron enters and leaves through the same channel */
-        // ------------------------------------------------------------------------------
-        if (iChanIn==iChanOut)
-        {
-          OutNeutron.Position[0]=0.0;
-          OutNeutron.Time += ToF;
-
-          WriteNeutron(&OutNeutron);
-        }
-      } 
+        } 
+      }
     }
   }
 

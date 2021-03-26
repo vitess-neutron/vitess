@@ -26,8 +26,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_MON2_KDIV;
-
 // Input parameters
 char*  MonFileName= NULL;      // -O    [-]    Monitor output file containing intensity as a function of y- and z-position   
 short  bProbactiv = TRUE,      // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
@@ -73,6 +71,8 @@ int main(int argc, char *argv[])
   
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_MON2_KDIV;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
@@ -103,36 +103,44 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++)
 	  {
       CHECK;	  
-      bRegistered=0;
 
-	    if(bProbactiv==1.0) 
-        prob = InputNeutrons[i].Probability;
-	    else 
-        prob=1.0;
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        bRegistered=0;
+	      if(bProbactiv==1.0) 
+          prob = InputNeutrons[i].Probability;
+	      else 
+          prob=1.0;
 
-	    if (InputNeutrons[i].Vector[0] >=0) 
-        Divy = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
-	    else 
-        Divy = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	 
+	      if (InputNeutrons[i].Vector[0] >=0) 
+          Divy = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
+	      else 
+          Divy = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	 
 
-	    Divz = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));  
+	      Divz = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));  
 	   
-      DivKy = Divy * 2.0 * M_PI / InputNeutrons[i].Wavelength;
-	    DivKz = Divz * 2.0 * M_PI / InputNeutrons[i].Wavelength;
+        DivKy = Divy * 2.0 * M_PI / InputNeutrons[i].Wavelength;
+	      DivKz = Divz * 2.0 * M_PI / InputNeutrons[i].Wavelength;
 
-	    iY = (int)floor(nbiny*(DivKy-DivKyMin)/(DivKyMax-DivKyMin));
-	    jZ = (int)floor(nbinz*(DivKz-DivKzMin)/(DivKzMax-DivKzMin));
+	      iY = (int)floor(nbiny*(DivKy-DivKyMin)/(DivKyMax-DivKyMin));
+	      jZ = (int)floor(nbinz*(DivKz-DivKzMin)/(DivKzMax-DivKzMin));
 			
-	    if (((iY>=0)&&(iY<nbiny))&&((jZ>=0)&&(jZ<nbinz)))
-	    {	
-	      nTrajYZ[iY][jZ]++;
-	      IntYZ  [iY][jZ]+= prob;
-	      bintc          += prob;
-	      bRegistered = 1;
-	    }
+	      if (((iY>=0)&&(iY<nbiny))&&((jZ>=0)&&(jZ<nbinz)))
+	      {	
+	        nTrajYZ[iY][jZ]++;
+	        IntYZ  [iY][jZ]+= prob;
+	        bintc          += prob;
+	        bRegistered = 1;
+	      }
 	  
-	    if ((bExclusive==0) || (bRegistered==1))
-	      WriteNeutron(&(InputNeutrons[i]));
+	      if ((bExclusive==0) || (bRegistered==1))
+	        WriteNeutron(&(InputNeutrons[i]));
+      }
 	  }
   }
 

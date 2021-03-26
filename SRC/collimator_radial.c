@@ -17,16 +17,6 @@
 #include "intersection.h"
 
 
-/************************************/
-/** Definitions, structures, enums **/
-/************************************/
-typedef enum
-{	VT_OFF       = 0,
-	VT_RND_PHASE = 1,
-}
-VtOsc;
-
-
 /******************************/
 /** Prototypes               **/
 /******************************/
@@ -40,7 +30,6 @@ int    DetermineChannel(double Angle, double AngleMin, double AngleSep, double R
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_COLL_RADIAL;
 VtOsc    _eOscColl=VT_OFF;       /* option: oscillating collimator  
                                       0: no             
                                       1: yes, but only random phase   */
@@ -82,7 +71,7 @@ int main(int argc, char *argv[])
 
 	// reading of input data and initilisation
   // ---------------------------------------
-  bVisInstalled = TRUE;
+  _eModule=MCN_COLL_RADIAL;
 
   Init(argc,argv, _eModule);
 	PrintModuleName(_eModule, "1.2");
@@ -104,72 +93,79 @@ int main(int argc, char *argv[])
 		{
 			CHECK
 
-			// Move neutron to the beginning of the collimator and determine position
-			// ----------------------------------------------------------------------			
-			if (InputNeutrons[i].Wavelength <= 0.0) continue;
-			VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+			  // Move neutron to the beginning of the collimator and determine position
+			  // ----------------------------------------------------------------------			
+			  if (InputNeutrons[i].Wavelength <= 0.0) continue;
+			  VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
 
-			OutNeutron = InputNeutrons[i];
+			  OutNeutron = InputNeutrons[i];
 
-			bHit1 = AdvanceToCylinderSurface(&ToF1, &OutNeutron, Distance, EntrHeight, VelocityReal); 
+			  bHit1 = AdvanceToCylinderSurface(&ToF1, &OutNeutron, Distance, EntrHeight, VelocityReal); 
 
-			if (bHit1)
-			{	
-				if (_eOscColl==VT_RND_PHASE)
-				{	AngCntrAct = MonteCarlo(AngCentre-0.5*OscWidth, AngCentre+0.5*OscWidth);
-					AngMinAct  = AngCntrAct - 0.5*AngWidth;
-				}
-				NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
-				NewPosZ = OutNeutron.Position[2];
-        CopyNeutron(&OutNeutron, &EnterNeutron);
+			  if (bHit1)
+			  {	
+				  if (_eOscColl==VT_RND_PHASE)
+				  {	AngCntrAct = MonteCarlo(AngCentre-0.5*OscWidth, AngCentre+0.5*OscWidth);
+					  AngMinAct  = AngCntrAct - 0.5*AngWidth;
+				  }
+				  NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
+				  NewPosZ = OutNeutron.Position[2];
+          CopyNeutron(&OutNeutron, &EnterNeutron);
 				
-				// Follow neutron through the collimator if it enters into one of the channels
-  			// ---------------------------------------------------------------------------			
-				if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*EntrHeight)
-				{	
-					// find out entrance channel   (channel = 0 means 'blade position')
-					iChanIn = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance);
+				  // Follow neutron through the collimator if it enters into one of the channels
+  			  // ---------------------------------------------------------------------------			
+				  if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*EntrHeight)
+				  {	
+					  // find out entrance channel   (channel = 0 means 'blade position')
+					  iChanIn = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance);
 
-					if (iChanIn > 0)
-					{	
-						bHit2 = AdvanceToCylinderSurface(&ToF2, &OutNeutron, Distance+Length, ExitHeight, VelocityReal); 
+					  if (iChanIn > 0)
+					  {	
+						  bHit2 = AdvanceToCylinderSurface(&ToF2, &OutNeutron, Distance+Length, ExitHeight, VelocityReal); 
 
-						if (bHit2)
-						{
-							NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
-							NewPosZ = OutNeutron.Position[2];
+						  if (bHit2)
+						  {
+							  NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
+							  NewPosZ = OutNeutron.Position[2];
 
-							// Writeout new data set, if neutron leaves inside the exit area through the same channel
-        			// ----------------------------------------------------------------------			
-							if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*ExitHeight)
-							{	
-								// find out exit channel   (channel = 0 means 'blade position')
-								iChanOut = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance+Length);
+							  // Writeout new data set, if neutron leaves inside the exit area through the same channel
+        			  // ----------------------------------------------------------------------			
+							  if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*ExitHeight)
+							  {	
+								  // find out exit channel   (channel = 0 means 'blade position')
+								  iChanOut = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance+Length);
 
-								if (iChanIn==iChanOut)
-								{
-									OutNeutron.Time += (ToF1 + ToF2);
-									// WriteNeutron(&OutNeutron);
-									WriteNeutron(&InputNeutrons[i]);
-                  // WriteIAP(&OutNeutron, VT_EXITED);
-								}
-                else
-                { // estimate point inside the collimator for absorption
-                  // might be exchanged by the position where it hits the blade
-            			// ----------------------------------------------------------------------			
-                  double prc;
-                  int k,
-                      N2 = 2 * abs(iChanOut - iChanIn); 
-                  prc = (double) (N2-1)/N2;
-                  for (k=0; k < 3; k++)
-                    OutNeutron.Position[k] -= prc*(OutNeutron.Position[k] - EnterNeutron.Position[k]);
-                  WriteIAP(&OutNeutron, VT_ABSORBED);
-                }
-							}
-						} // bHit2
-					}
-				}
-			} // bHit1
+								  if (iChanIn==iChanOut)
+								  {
+									  OutNeutron.Time += (ToF1 + ToF2);
+									  // WriteNeutron(&OutNeutron);
+									  WriteNeutron(&InputNeutrons[i]);
+                    // WriteIAP(&OutNeutron, VT_EXITED);
+								  }
+                  else
+                  { // estimate point inside the collimator for absorption
+                    // might be exchanged by the position where it hits the blade
+            			  // ----------------------------------------------------------------------			
+                    double prc;
+                    int k,
+                        N2 = 2 * abs(iChanOut - iChanIn); 
+                    prc = (double) (N2-1)/N2;
+                    for (k=0; k < 3; k++)
+                      OutNeutron.Position[k] -= prc*(OutNeutron.Position[k] - EnterNeutron.Position[k]);
+                    WriteIAP(&OutNeutron, VT_ABSORBED);
+                  }
+							  }
+						  } // bHit2
+					  }
+				  }
+			  } // bHit1
+      }
 		}
 	}	
 

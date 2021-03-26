@@ -44,8 +44,7 @@ static double FMin(double a, double b) { return a < b ? a : b; }  // return mini
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_TOOL_CHOP;
-
+McCompID  _eModule = MCN_TOOL_CHOP;
 char   sBuffer[129];
 double dRpm, dRotFreq,     // Rotat. frequency in rpm and Hz                     
        dRepRate,           // Repetition rate of the pulse in Hz                     

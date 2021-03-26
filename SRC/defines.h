@@ -54,7 +54,7 @@
 #define LAMBDA_MIN            0.001
 #define LAMBDA_MAX          100.0
 
-#define BUFFER_SIZE       50000
+#define BUFFER_SIZE       10000
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
@@ -63,6 +63,8 @@
 #define NAME_LEN            256  // maximal length of path + filename
 
 #define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
+
+#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */
 
 #define NO_TRACING      0
 #define WRITE_TRC_FILES 1
@@ -206,6 +208,15 @@ typedef enum
 }
 VtWaviDistr;
 
+// source
+// ------
+typedef enum
+{	VT_DIVERGENCE = 0,
+	VT_REAL_WND   = 1,
+	VT_VIRT_WND   = 2,
+}
+VtDirect;
+
 // monochromator
 // -------------
 typedef enum
@@ -231,6 +242,22 @@ typedef enum
   DBL_FOC    = 4
 }
 VtMonoFocus;
+
+// windows + collimators
+// ---------------------
+typedef enum
+{	VT_OFF       = 0,
+	VT_RND_PHASE = 1,
+}
+VtOsc;
+
+typedef enum
+{	
+	VT_AUTO_SHAPE = 0,
+	VT_CIRCLE     = 1,
+	VT_RECTANGLE  = 2
+}
+VtWndGeom;
 
 // monitors
 // --------
@@ -278,6 +305,20 @@ typedef enum
   NORM_REF  = 2    // relative to reference file
 }
 VtMonNorm;
+
+typedef enum
+{
+  VT_NOT_DEF =0,
+  VT_LAMBDA  =1,
+  VT_TIME    =2,
+  VT_POS_Y   =3,
+  VT_POS_Z   =4,
+  VT_DIV_HOR =5,
+  VT_DIV_VERT=6,
+  VT_DIV_RAD =7,
+  VT_ENERGY  =8
+}
+VtBrlPar;
 
 typedef enum
 {
@@ -336,6 +377,26 @@ typedef enum
   VT_TABULATOR = 1
 }
 VtSeparator;
+
+typedef enum
+{ PAR_DIR   = 0,
+  INSTL_DIR = 1,
+  IN_DIR    = 2,
+  OUT_DIR   = 3
+}
+VtDirType;
+
+// Tools
+// -----
+typedef enum
+{	
+	VT_REFL_STD = 1,
+	VT_M_R_COL  = 2,
+	VT_Q_R_COL  = 3,
+	VT_SN_QUD   = 4,
+	VT_PAR_IN   = 5,
+}
+VtInMod;
 
 
 /***********************/
@@ -460,6 +521,29 @@ typedef struct
   double         Unknown;
 }
 McnpxNeutron;
+
+// choppers
+// --------
+typedef struct
+{
+	double  Pos;
+	double  Left, Right;
+	double  Bottom;
+	double  Opening;
+}
+ChopperWindow;
+
+typedef struct
+{
+	short          NumberOfWindows;
+	CartesianPoint Centre;          /* centre of the chopper in the coordinate system of the beamline [cm] */
+	double         Radius;          /* radius of the chopper  [cm] */
+	double         Frequency;       /* rot.freq 2*pi*60*rpm  */
+	double         Angle;           /* orientation of the center of beamline in the chopper system */
+	ChopperWindow  *Window;
+}
+Chopper;
+
 
 // Visualization
 // -------------
@@ -624,18 +708,6 @@ typedef struct
 }
 VtModGeom;
 
-// obsolete
-// --------
-typedef struct
-{
-  McCompID eModule;
-  double   dWPar;    /* width, ...             */
-  double   dHPar;    /* height, end width, ... */
-  double   dRPar;    /* radius, ...            */
-  long     nNumber;  /* number of ....         */
-  short    eType;    /* shape, mon. par., ...  */
-}
-ModProp;
 
 #endif
 

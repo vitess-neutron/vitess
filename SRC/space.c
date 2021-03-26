@@ -21,20 +21,17 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit(int argc, char *argv[]);
+void  OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global parameters
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_SPACE;
-
-long   ntfs=0, count, k;    	      
-double VelocityReal,        /* speed of the neutron                             [km/s]  */
-       Length=0.0,          /* distance to end of free flight path along x-axis  [cm]   */
-       MuScat=0.0,          /* macroscopic scattering coeff.                    [1/cm]  */
-       MuAbs=0.0;           /* macroscopic absorption coeff.                    [1/cm]  */
-Plane  Endpoint;            /* plane vertical to x-axis through end of free flight path */  
+double Length=0.0,        // -d   [cm]   /* distance to end of free flight path along x-axis  [cm]   */
+       MuScat=0.0,        // -M  [1/cm]  /* macroscopic scattering coeff.                    [1/cm]  */
+       MuAbs=0.0;         // -m  [1/cm]  /* macroscopic absorption coeff.                    [1/cm]  */
+                       
+Plane  Endpoint;          //      [cm]   /* plane vertical to x-axis through end of free flight path */  
 
 
 /******************************/
@@ -42,12 +39,16 @@ Plane  Endpoint;            /* plane vertical to x-axis through end of free flig
 /******************************/
 int main(int argc, char *argv[])
 {
-  long  i;
+  double VelocityReal=0.0;        // speed of the neutron  [km/s] 
+  long  i=0;
 
-  double TimeOF,AveTimeOF;
-  double CenterX, CenterY, CenterZ, SumProb;
+  double TimeOF=0.0,  AveTimeOF=0.0;
+  double CenterX=0.0, CenterY=0.0, CenterZ=0.0, SumProb=0.0;
 
-  /* initialisation */
+  // Initialisation
+  // --------------
+  _eModule = MCN_SPACE;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
@@ -57,65 +58,64 @@ int main(int argc, char *argv[])
   { bLengthCmpr = TRUE;
     stGeometry.pDescr = "space";
   }
-	
-  CenterX   = 0.0; 
-  CenterY   = 0.0; 
-  CenterZ   = 0.0; 
-  SumProb   = 0.0;
-  AveTimeOF = 0.0;
 
   DECLARE_ABORT
 
+  // Loop over all trajectories
+  // --------------------------
   while(ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
     {
       CHECK
 
-      /*************************************************************************/
-      /* 	Move neutron to end of space and calculate Time of Flight (ms).    */
-      /*************************************************************************/
-			
-      if (InputNeutrons[i].Vector[0]  <= 0.0) continue;
-      if (InputNeutrons[i].Wavelength <= 0.0) continue;
-
-      if (fabs(Length) > 0.0)
-      {	
-        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
-				
-        if (keygrav == 1)
-        {
-          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-        }
-        else
-        {
-          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-        }
-        InputNeutrons[i].Time += TimeOF;
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        // 	Move neutron to end of space and calculate Time of Flight (ms)
+        // ---------------------------------------------------------------
+        if (InputNeutrons[i].Vector[0]  <= 0.0) continue;
+        if (InputNeutrons[i].Wavelength <= 0.0) continue;
 
-      /*************************************************************************/
-      /* Calculate center of beam  and  writeout new data set                  */
-      /*************************************************************************/
+        if (fabs(Length) > 0.0)
+        {	
+          VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+				
+          if (keygrav == 1)
+          {
+            TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+          }
+          else
+          {
+            TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+          }
+          InputNeutrons[i].Time += TimeOF;
+        }
 
-      InputNeutrons[i].Probability*=exp(-(MuScat+MuAbs*InputNeutrons[i].Wavelength/1.798)*Length);
+        // Calculate center of beam  and  writeout new data set
+        // ----------------------------------------------------
+        InputNeutrons[i].Probability*=exp(-(MuScat+MuAbs*InputNeutrons[i].Wavelength/1.798)*Length);
 
-      AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
-      CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-      CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-      CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
-      SumProb   += InputNeutrons[i].Probability;
+        AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
+        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
+        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
+        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+        SumProb   += InputNeutrons[i].Probability;
 			
-      WriteIAP(&InputNeutrons[i], VT_EXITED);
-      InputNeutrons[i].Position[0]=0.0;
+        WriteIAP(&InputNeutrons[i], VT_EXITED);
+        InputNeutrons[i].Position[0]=0.0;
 
-      WriteNeutron(&InputNeutrons[i]);
+        WriteNeutron(&InputNeutrons[i]);
+      }
     }
   }	
 
-/******************************************************************************/
-/* Finish: print parameters, write instrument file, free memory               */
-/******************************************************************************/
+  // Finish: print parameters, write geometry and instrument file, free memory
+  // -------------------------------------------------------------------------
 my_exit:
   /* Writeout */
   if (SumProb != 0.0)
@@ -144,7 +144,9 @@ my_exit:
 /***************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int i;
+  int i=0;
+
+  InitPlane(&Endpoint);
 
   for(i=1; i<argc; i++)
   {
@@ -171,8 +173,6 @@ void  OwnInit(int argc, char *argv[])
   }
 
   Endpoint.A = 1.0;
-  Endpoint.B = 0.0;
-  Endpoint.C = 0.0;
   Endpoint.D = -Length;
 
   fprintf(LogFilePtr,"Distance between entrance and exit plane: %8.3f  cm \n", Length);

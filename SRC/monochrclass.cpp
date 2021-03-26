@@ -110,9 +110,6 @@ void Monochromator::OwnInit(int argc, char* argv[])
          sTr[2][ 8]={"blocked",    "treated"},
          sSO[2][11]={"Lorentzian", "Gaussian  "};
 
-
-  bVisInstalled = TRUE;
-
   while(argc>1)
   {
     switch(argv[1][1])

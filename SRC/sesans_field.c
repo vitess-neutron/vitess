@@ -41,8 +41,6 @@ void  Invert        (double Ni[NMAX+1][NMAX+1], double Nm[NMAX+1][NMAX+1]);     
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID   _eModule=MCN_FIELD_SESANS;
-     
 // input parameters
 char*       FieldFileName=NULL;         // -P        [-]   name of the file containing the corners of the magnetic field range
 double      field_hom[3]={0.0,0.0,50.0};// -F -G -H  [Oe]  x-, y- and z-component of the magnetic field
@@ -79,6 +77,8 @@ int main(int argc, char **argv)
 
   // initialisation
   // --------------
+  _eModule = MCN_FIELD_SESANS;
+     
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.0");
   OwnInit(argc, argv);
@@ -93,121 +93,128 @@ int main(int argc, char **argv)
   // --------------------------
   while (ReadNeutrons() != 0)
   {
-    CHECK;	
-
     for (i=0; i<NumNeutGot; i++)
     { 
-      InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+      CHECK;	
 
-      InNeutron   = InputNeutrons[i]; 
-      Out1Neutron = InputNeutrons[i]; 
-      Out2Neutron = InputNeutrons[i]; 
-
-      lambda = InNeutron.Wavelength ;
-
-      /* translatation into the frame of the main field and rotates coordinates 
-      SubVector(InNeutron.Position, PosMain);
-      RotVector(RotMatrixMain, InNeutron.Position); 
-      RotVector(RotMatrixMain, InNeutron.Vector); 
-      RotVector(RotMatrixMain, InNeutron.Spin);  */
-
-      /* propagation to intersection with magnetic field walls */
-      TOF1 = 1.0E99;
-      kHit = 0; 
-      for (k=0; k < nWalls; k++)
-      {	
-        TestNeutron = InNeutron;
-
-        if (keygrav == 1)
-        TOF = NeutronPlaneIntersectionGrav(&TestNeutron, vWall[k]);
-        else
-        TOF = NeutronPlaneIntersection1   (&TestNeutron, vWall[k]);
-
-        if (TOF > 0.0 && TOF < TOF1 && IsPointInside(TestNeutron.Position, iCorner[k][0], iCorner[k][1], iCorner[k][2], iCorner[k][3]))
-        {	
-          kHit++;
-          if (kHit==2) 
-          {	// if H-field range is hit twice with t2 < t1, then the first hit must have been be the exit
-            TOF2 = TOF1-TOF;
-            Out2Neutron = Out1Neutron;
-            TOF1 = TOF;
-            Out1Neutron = TestNeutron;
-            k=nWalls;                // there are only 2 intersection points possible
-          }
-          else
-          {
-            TOF1 = TOF;
-            Out1Neutron = TestNeutron;
-          }
-        }
-      }
-      if (kHit == 0) goto getlost;
-			
-      Out1Neutron.Time += TOF1;
-
-      /* propagation through the magnetic field */
-      if (kHit == 2) 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        Out2Neutron.Time += TOF1;
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {	
-        InNeutron = Out1Neutron; 
-        TOF2 = 1.0E99;
+      { 
+        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+
+        InNeutron   = InputNeutrons[i]; 
+        Out1Neutron = InputNeutrons[i]; 
+        Out2Neutron = InputNeutrons[i]; 
+
+        lambda = InNeutron.Wavelength ;
+
+        /* translatation into the frame of the main field and rotates coordinates 
+        SubVector(InNeutron.Position, PosMain);
+        RotVector(RotMatrixMain, InNeutron.Position); 
+        RotVector(RotMatrixMain, InNeutron.Vector); 
+        RotVector(RotMatrixMain, InNeutron.Spin);  */
+
+        /* propagation to intersection with magnetic field walls */
+        TOF1 = 1.0E99;
+        kHit = 0; 
         for (k=0; k < nWalls; k++)
         {	
-          TestNeutron = InNeutron; 
+          TestNeutron = InNeutron;
 
           if (keygrav == 1)
           TOF = NeutronPlaneIntersectionGrav(&TestNeutron, vWall[k]);
           else
           TOF = NeutronPlaneIntersection1   (&TestNeutron, vWall[k]);
 
-          if (TOF > 0.0 && TOF < TOF2 && IsPointInside(TestNeutron.Position, iCorner[k][0], iCorner[k][1], iCorner[k][2], iCorner[k][3]))
+          if (TOF > 0.0 && TOF < TOF1 && IsPointInside(TestNeutron.Position, iCorner[k][0], iCorner[k][1], iCorner[k][2], iCorner[k][3]))
           {	
-            TOF2 = TOF;
-            Out2Neutron = TestNeutron;
-            k=nWalls;                    // there is only one exit possible
+            kHit++;
+            if (kHit==2) 
+            {	// if H-field range is hit twice with t2 < t1, then the first hit must have been be the exit
+              TOF2 = TOF1-TOF;
+              Out2Neutron = Out1Neutron;
+              TOF1 = TOF;
+              Out1Neutron = TestNeutron;
+              k=nWalls;                // there are only 2 intersection points possible
+            }
+            else
+            {
+              TOF1 = TOF;
+              Out1Neutron = TestNeutron;
+            }
           }
         }
-        if (TOF2 > 1.0E98) goto getlost;
-      }
+        if (kHit == 0) goto getlost;
+			
+        Out1Neutron.Time += TOF1;
 
-      Out2Neutron.Time += TOF2;
+        /* propagation through the magnetic field */
+        if (kHit == 2) 
+        {
+          Out2Neutron.Time += TOF1;
+        }
+        else
+        {	
+          InNeutron = Out1Neutron; 
+          TOF2 = 1.0E99;
+          for (k=0; k < nWalls; k++)
+          {	
+            TestNeutron = InNeutron; 
 
-      /* precession in the magnetic field */
-      PhaseShift  = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]);
-      Precessions = PhaseShift/2./M_PI; 
-      FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
+            if (keygrav == 1)
+            TOF = NeutronPlaneIntersectionGrav(&TestNeutron, vWall[k]);
+            else
+            TOF = NeutronPlaneIntersection1   (&TestNeutron, vWall[k]);
 
-      /* precession carried out in the field frame */
-      RotVector    (RotMatrixField, Out2Neutron.Spin); 
-      RotVector    (LarmorMatrix,   Out2Neutron.Spin);
-      RotBackVector(RotMatrixField, Out2Neutron.Spin);
+            if (TOF > 0.0 && TOF < TOF2 && IsPointInside(TestNeutron.Position, iCorner[k][0], iCorner[k][1], iCorner[k][2], iCorner[k][3]))
+            {	
+              TOF2 = TOF;
+              Out2Neutron = TestNeutron;
+              k=nWalls;                    // there is only one exit possible
+            }
+          }
+          if (TOF2 > 1.0E98) goto getlost;
+        }
 
-      /* translatation back into the original frame 
-      AddVector(Out2Neutron.Position, PosMain) ;
-      RotBackVector(RotMatrixMain, Out2Neutron.Position); 
-      RotBackVector(RotMatrixMain, Out2Neutron.Vector);  
-      RotBackVector(RotMatrixMain, Out2Neutron.Spin);    */
+        Out2Neutron.Time += TOF2;
 
-      /* propagation to a plane through the new origin */ 
-      if (keygrav == 1)
-        TOF3 = NeutronPlaneIntersectionGrav(&Out2Neutron, vExit);
-      else
-        TOF3 = NeutronPlaneIntersection1   (&Out2Neutron, vExit);
+        /* precession in the magnetic field */
+        PhaseShift  = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]);
+        Precessions = PhaseShift/2./M_PI; 
+        FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
 
-      /* computation of co-ordinates in the output frame (x'=0) */
-      Out2Neutron.Time += TOF3;
-      SubVector(Out2Neutron.Position, TranslOut);
+        /* precession carried out in the field frame */
+        RotVector    (RotMatrixField, Out2Neutron.Spin); 
+        RotVector    (LarmorMatrix,   Out2Neutron.Spin);
+        RotBackVector(RotMatrixField, Out2Neutron.Spin);
 
-      /* output binary file and statistics */
-      WriteNeutron(&Out2Neutron);
+        /* translatation back into the original frame 
+        AddVector(Out2Neutron.Position, PosMain) ;
+        RotBackVector(RotMatrixMain, Out2Neutron.Position); 
+        RotBackVector(RotMatrixMain, Out2Neutron.Vector);  
+        RotBackVector(RotMatrixMain, Out2Neutron.Spin);    */
 
-      NumOut++;
-      TotNumPrec += Precessions;
+        /* propagation to a plane through the new origin */ 
+        if (keygrav == 1)
+          TOF3 = NeutronPlaneIntersectionGrav(&Out2Neutron, vExit);
+        else
+          TOF3 = NeutronPlaneIntersection1   (&Out2Neutron, vExit);
+
+        /* computation of co-ordinates in the output frame (x'=0) */
+        Out2Neutron.Time += TOF3;
+        SubVector(Out2Neutron.Position, TranslOut);
+
+        /* output binary file and statistics */
+        WriteNeutron(&Out2Neutron);
+
+        NumOut++;
+        TotNumPrec += Precessions;
 
       getlost: ;
+      }
     }
   }
    

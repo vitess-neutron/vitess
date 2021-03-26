@@ -70,17 +70,6 @@
 
 
 /******************************/
-/** Structures               **/
-/******************************/
-typedef enum
-{	VT_DIVERGENCE = 0,
-	VT_REAL_WND   = 1,
-	VT_VIRT_WND   = 2,
-}
-VtDirect;
-
-
-/******************************/
 /** Prototypes               **/
 /******************************/
 short ModInit(int argc, char **argv);                                                  // Reads input parameters and sets global variables of the moderator data
@@ -103,8 +92,6 @@ double   calcFraction(double, double, double, double);
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_SOURCE;
-
 // Input parameters
 // -----------------
 
@@ -244,6 +231,8 @@ int main(int argc, char *argv[])
   // --------------
   // Initialisation
   // --------------
+  _eModule = MCN_SOURCE;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.30");
   SrcInit(argc, argv);
@@ -788,7 +777,7 @@ int main(int argc, char *argv[])
       // Write interaction point
 		  WriteIAP(&Input, VT_CREATED);
 
-      /* propagation between Moderator and window */
+      /* propagation between moderator and window */
       if (keygrav==ON)
          TimeOF = NeutronPlaneIntersectionGrav(&Input,Endpoint);
       else
@@ -820,6 +809,11 @@ int main(int argc, char *argv[])
       if (!bTest && (_eTraceMode!=ONLY_TRC_TRAJ || GetTraceState(Input.ID)=='T'))
          WriteNeutron(&Input);
     }
+
+    // writes data set marking the end of the bundle
+    if (iBndl < nBundles - 1)
+      WriteEOB();
+
   }  // end loop over trajectories
 
    // ------------------------------------------------------------

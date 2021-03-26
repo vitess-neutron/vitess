@@ -50,8 +50,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_CHOP_FERMI;
-
 // Input parameters
 int    Option=1;               //   -O     [-]   type of Fermi chopper: 1: straight   2: curved  
 const char *GeomFileName;      //   -G     [-]   output file of the curved channel geometry 
@@ -102,6 +100,8 @@ int main(int argc, char **argv)
 {
   /* Initialize the program according to the parameters given  */
   /* --------------------------------------------------------  */
+  _eModule=MCN_CHOP_FERMI;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.20");
   OwnInit(argc, argv);
@@ -135,84 +135,90 @@ void processNeutron (int i, int thread_i)
   VectorType Pos, Dir, Path;
   Neutron neutron;
 
-  TOF = InputNeutrons[i].Time;
-  WL  = InputNeutrons[i].Wavelength;
+  if (IsEOB(&(InputNeutrons[i]))==TRUE)
+  {
+    WriteNeutronParallel(&(InputNeutrons[i]), thread_i);
+  }
+  else
+  { 
+    TOF = InputNeutrons[i].Time;
+    WL  = InputNeutrons[i].Wavelength;
 
-  CopyVector(InputNeutrons[i].Position, Pos);
-  CopyVector(InputNeutrons[i].Vector, Dir);
+    CopyVector(InputNeutrons[i].Position, Pos);
+    CopyVector(InputNeutrons[i].Vector, Dir);
 
-  Dir[0] = sqrt(1 - sq(Dir[1]) - sq(Dir[2]));
+    Dir[0] = sqrt(1 - sq(Dir[1]) - sq(Dir[2]));
 
-  /* shift to center of Fermi-Chopper */
-  SubVector(Pos, pos_ch);
+    /* shift to center of Fermi-Chopper */
+    SubVector(Pos, pos_ch);
 
-  /*trajectories which do not intersect the entrance and exit window */
-  n[0] = 1.;
-  n[1] = n[2] = 0.;
+    /*trajectories which do not intersect the entrance and exit window */
+    n[0] = 1.;
+    n[1] = n[2] = 0.;
 
-  if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) return;
+    if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) return;
 
-  if (pos[2] >= height/2.   || pos[2] <= - height/2. ||
-      pos[1] >= diameter/2. || pos[1] <= - diameter/2.) return;
+    if (pos[2] >= height/2.   || pos[2] <= - height/2. ||
+        pos[1] >= diameter/2. || pos[1] <= - diameter/2.) return;
 
-  if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1) return;
+    if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1) return;
 
-  if( pos[2] >= height/2.   || pos[2] <= - height/2. ||
-      pos[1] >= diameter/2. || pos[1]<= - diameter/2.) return;	
+    if( pos[2] >= height/2.   || pos[2] <= - height/2. ||
+        pos[1] >= diameter/2. || pos[1]<= - diameter/2.) return;	
 
-  /* translates neutron variables for X'= - diameter/2.  */
+    /* translates neutron variables for X'= - diameter/2.  */
 
-  TOF += (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+    TOF += (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 			
-  if (TOF<0 && Nchannels==1)
-    Error("Single-slit Fermi chopper needs positive flight time at the chopper position!");
+    if (TOF<0 && Nchannels==1)
+      Error("Single-slit Fermi chopper needs positive flight time at the chopper position!");
 
-  CopyVector(Dir, Path);
-  MultiplyByScalar(Path, (- diameter/2. - Pos[0]) / Dir[0]);
-  AddVector(Pos, Path);  /*	 Path = displacement vector */
+    CopyVector(Dir, Path);
+    MultiplyByScalar(Path, (- diameter/2. - Pos[0]) / Dir[0]);
+    AddVector(Pos, Path);  /*	 Path = displacement vector */
 								
-  /* calculate time entering-edge and exiting-edge of gates along the channels */
-  phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI);
+    /* calculate time entering-edge and exiting-edge of gates along the channels */
+    phase0 = fmod(Phase + omega*TOF, coef_pi*M_PI);
 
-  /* return (get lost) if the neutron is out of phase */
-  if (! inPhase(GatesNumber, phase0, WL, Dir, Pos)) 
-  {
-    /* try one turn earlier */
-    if (phase0 > 0 && omega > 0) 
+    /* return (get lost) if the neutron is out of phase */
+    if (! inPhase(GatesNumber, phase0, WL, Dir, Pos)) 
     {
-      if (! inPhase(GatesNumber, phase0 - coef_pi*M_PI, WL, Dir, Pos))
-        return;
-    } 
-    else if (phase0 < 0 && omega < 0) 
-    {
-      if (! inPhase(GatesNumber, phase0 + coef_pi*M_PI, WL, Dir, Pos))
-        return;
-    } 
-    else
-    { return;
+      /* try one turn earlier */
+      if (phase0 > 0 && omega > 0) 
+      {
+        if (! inPhase(GatesNumber, phase0 - coef_pi*M_PI, WL, Dir, Pos))
+          return;
+      } 
+      else if (phase0 < 0 && omega < 0) 
+      {
+        if (! inPhase(GatesNumber, phase0 + coef_pi*M_PI, WL, Dir, Pos))
+          return;
+      } 
+      else
+      { return;
+      }
     }
-  }
 
-  /* Output matters */
-  /* transmit coordinates which were not changed, the rest overwrite below */
-  neutron = InputNeutrons[i];
+    /* Output matters */
+    /* transmit coordinates which were not changed, the rest overwrite below */
+    neutron = InputNeutrons[i];
 
-  /* translates neutron variables for output - X'= 0. . */
-  neutron.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL);
+    /* translates neutron variables for output - X'= 0. . */
+    neutron.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL);
 			
-  if (zerotime==1)
-  {
-    neutron.Time = fabs(fmod(neutron.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega))
-                   - coef_pi*M_PI/2./omega ;
+    if (zerotime==1)
+    {
+      neutron.Time = fabs(fmod(neutron.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega))
+                     - coef_pi*M_PI/2./omega ;
+    }
+
+    CopyVector(Dir, Path);
+    MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
+    AddVector(Pos, Path);                             /* Path = displacement vector */		
+    CopyVector(Pos, neutron.Position);
+
+    WriteNeutronParallel(&neutron, thread_i);
   }
-
-  CopyVector(Dir, Path);
-  MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
-  AddVector(Pos, Path);                             /* Path = displacement vector */		
-  CopyVector(Pos, neutron.Position);
-
-  WriteNeutronParallel(&neutron, thread_i);
-
 }
 
 

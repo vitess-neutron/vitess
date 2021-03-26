@@ -61,10 +61,13 @@ class Mon1D
 
   // Variables determined from input parameters or trajectory data
   FILE*       fMonitor[3];           // pointer to output file
+  bool        bMultFiles;            // flag: more than 1 monitor file wanted
+  long        nBundle;               // number of bundles started
+  long        nTrajTot[3];           // total number of trajectories within monitor limits
+  double      IntTot  [3];           // total intensity within monitor limits
   double      xBinSize[3];           // size of x bins 
   int         monSwitchedOn[3];      // Switches are activated if parameter 1, 2 or 3 should be stored.
   string      sParameterNames[18];   // text: parameter
-  // string      weightTag[2];          // text: probability weight
   MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
 
   // arrays for data storage
@@ -82,7 +85,7 @@ class Mon1D
   double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
   int    FillMonitorArray(Neutron* n);           // Fill all monitors chosen
   int    FillMonitor(Neutron* n, int counter);   // Fill one monitor, if the neutron fulfills all constraints
-  void   WriteOut();                             // Write output file
+  void   WriteOut(long iBndl);                   // Write output file
   void   FreeMemory();                           // Free allocated memory
 };
 

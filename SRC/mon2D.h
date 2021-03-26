@@ -27,7 +27,6 @@ extern "C"
 #include "mathmatrix.h"
 
 
-
 class Mon2D 
 {
  public:
@@ -72,10 +71,14 @@ class Mon2D
   // Variables determined from input parameters or trajectory data
   MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
 
-  FILE* fMonitor;          // pointer to output file
-
-  double xBinSize;         // size of x bins 
-  double yBinSize;         // size of y bons
+  FILE*  fMonitor;             // pointer to output file
+                           
+  long   nBundle;              // number of bundles started 
+  long   nTrajTot;             // total number of trajectories within monitor limits
+  double IntTot;               // total intensity within monitor limits
+                           
+  double xBinSize;             // size of x bins 
+  double yBinSize;             // size of y bons
 
   // arrays for data storage
   double* BinPosX;             // edges of the bins of the first parameter
@@ -97,7 +100,7 @@ class Mon2D
   void   OwnInit(int argc, char* argv[]);         // Read in the monitor parameters from the command line
   double DetermineParameter(int id, Neutron* n);  // Determine, which parameter has to be calculated
   int    FillMonitor(Neutron* n);                 // Fill monitor, if the neutron fulfills all constraints
-  void   WriteOut();                              // Write output file
+  void   WriteOut(long iBndl);                    // Write output file
   void   ParId2Text(char* sName, const int ePar); // Convert parameter ID to text
   void   FreeMemory();                            // Free allocated memory
 };

@@ -39,8 +39,7 @@ void  SetGeometry(char* sColor);          // fills the structure stGeometry for 
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_WINDOW;
-
+// Input parameters
 short  bCircularWindow=TRUE,  // -R  [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
        bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
        bRemoveOtherCol=FALSE, // -d  [-]   Flag: Neutrons that are not treated are removed
@@ -63,6 +62,7 @@ char	*sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of th
 long   KeymaterialO=6;        // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
 	                            //                                  4 - Eu,        5 - Silicon,    6 - ideal absorber
 
+// Variables determined from input parameters or trajectory data
 long   KeymaterialI=1;        //           Window pane material:  0 - from file  1 - no(default) 
 FILE	*pTransFileO=NULL;      //           pointer to window frame transmission file 
 FILE  *pTransFileI=NULL;      //           pointer to window pane transmission file 
@@ -72,12 +72,9 @@ double WavO[MAX_MU],          //           wavelength and attenuation values of 
        MuI [MAX_MU];          
 long   nValFO=0;              //           number of attenuation values in file (for window frame material)
 long   nValFI=0;              //           number of attenuation values in file (for window pane material)
-
-Plane  Endpoint,              //           Planes through window for zero thickness and
+Plane  EndPoint,              //           Planes through window for zero thickness and
        EndPointO,             //             end of the Outer and end of the Inner wall
-       EndPointI;             //           Endpoint.D: distance to window along x-axis         [cm]  
-
-
+       EndPointI;             //           EndPoint.D: distance to window along x-axis         [cm]  
 
 
 /******************************/
@@ -105,12 +102,13 @@ int main(int argc, char *argv[])
 
   Neutron Output;            // trajectory as it is written to the output
 
-  /**********************/
-  /** Initialisation   **/
-  /**********************/
-  memset(&Output, '\0', sizeof(Neutron));
+  InitNeutron(&Output);
 
-	Init(argc,argv, _eModule);
+  // Initialisation
+  // --------------
+	_eModule=MCN_WINDOW;
+
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "2.25");
   OwnInit(argc, argv);
   MsgInit();
@@ -119,205 +117,211 @@ int main(int argc, char *argv[])
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = TRUE;
-
+  
 	DECLARE_ABORT
 
-  /******************************/
-  /** Loop over trajectories   **/
-  /******************************/
+  // Loop over all trajectories
+  // --------------------------
   while(ReadNeutrons()!= 0)
 	{
 		for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
       
-      // Remove neutrons with wrong color
-      // --------------------------------
-      if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) 
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        Output = InputNeutrons[i];
-        if (!bRemoveOtherCol) 
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        // Remove neutrons with wrong color
+        // --------------------------------
+        if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) 
         {
+          Output = InputNeutrons[i];
+          if (!bRemoveOtherCol) 
+          {
     	      WriteIAP(&Output, VT_EXITED);
     	      WriteNeutron(&Output);
-        }
-        continue;
-      }
-			
-      // Remove neutrons with wrong direction ro wavelength
-      // --------------------------------------------------
-			if (bOldFrame==FALSE)
-      {
-			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			  if (InputNeutrons[i].Wavelength == 0.0) continue;
-			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
-			  if (VelocityReal <= 0.0) continue;
-			} 
-			else 
-      {
-			  Output = InputNeutrons[i];			
-			}
-			
-      // Write intersection point
-      // ------------------------
-			WriteIAP(&InputNeutrons[i], VT_ENTERED);
-
-      // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
-      // ----------------------------------------------------------------------------------------
-			if (keygrav == 1)
-			  TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			else
-				TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-      
-			// Calculate average position
-      // --------------------------
-			InputNeutrons[i].Time += (double)TimeOF;
-			CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
-			CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
-			CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
-			SumProb   += InputNeutrons[i].Probability;
-			TOF3 = 0.0;
-
-			// window test
-      // -----------
-      if (rotang != 0.0) 
-      {   /*x' = x cos f - y sin f
-			      y' = y cos f + x sin f */
-				NewPositionY = InputNeutrons[i].Position[1] * cos(-rotang) - InputNeutrons[i].Position[2] * sin(-rotang);
-				NewPositionZ = InputNeutrons[i].Position[2] * cos(-rotang) + InputNeutrons[i].Position[1] * sin(-rotang);
-			} 
-      else
-      {
-				NewPositionY = InputNeutrons[i].Position[1];
-				NewPositionZ = InputNeutrons[i].Position[2];
-			}
-
-      if (minPhi >= 0 && maxPhi <= 360) 
-      { 
-        Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
-        if (Phi < minPhi || Phi > maxPhi)
-        {
-	        WriteIAP(&Output, VT_ABSORBED);
-	        continue;
-	      }
-      }
-
-      // Test if window is hit
-      if (bCircularWindow==TRUE)
-      {	DistSquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
-                     + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
-        if (winradius*winradius < DistSquared)
-          bOutOfWindow=TRUE;
-        else
-        bOutOfWindow=FALSE;
-      }
-      else
-      {	if ((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
-            (heightmin > NewPositionZ) || (heightmax < NewPositionZ)  )
-          bOutOfWindow=TRUE;
-        else
-          bOutOfWindow=FALSE;
-      }
-
-      /* ok, if out of beamstop or in window */
-      if ((bBeamStop==TRUE  && bOutOfWindow==TRUE) ||
-          (bBeamStop==FALSE && bOutOfWindow==FALSE))
-      {
-        if (keygrav == 1)
-        {
-          TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
-        }
-        else
-        {
-          TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
-        }
-
-        if (KeymaterialI == 0)
-        {
-          /* Attenuation during pass of open window material */
-          N_Wavelength = InputNeutrons[i].Wavelength;
-          mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
-          if (mu == -10000.0)
-          { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-            // Error(sBuffer);
-            CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
           }
-          prob = exp(-mu*TOF3*VelocityReal);
-          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+          continue;
+        }
+			
+        // Remove neutrons with wrong direction ro wavelength
+        // --------------------------------------------------
+			  if (bOldFrame==FALSE)
+        {
+			    if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+			    if (InputNeutrons[i].Wavelength == 0.0) continue;
+			    VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
+			    if (VelocityReal <= 0.0) continue;
+			  } 
+			  else 
+        {
+			    Output = InputNeutrons[i];			
+			  }
+			
+        // Write intersection point
+        // ------------------------
+			  WriteIAP(&InputNeutrons[i], VT_ENTERED);
+
+        // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
+        // ----------------------------------------------------------------------------------------
+			  if (keygrav == 1)
+			    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], EndPoint);
+			  else
+				  TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], EndPoint);
+      
+			  // Calculate average position
+        // --------------------------
+			  InputNeutrons[i].Time += (double)TimeOF;
+			  CenterX  += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
+			  CenterY  += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
+			  CenterZ  += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
+			  SumProb  += InputNeutrons[i].Probability;
+			  TOF3 = 0.0;
+
+			  // window test
+        // -----------
+        if (rotang != 0.0) 
+        {   /*x' = x cos f - y sin f
+			        y' = y cos f + x sin f */
+				  NewPositionY = InputNeutrons[i].Position[1] * cos(-rotang) - InputNeutrons[i].Position[2] * sin(-rotang);
+				  NewPositionZ = InputNeutrons[i].Position[2] * cos(-rotang) + InputNeutrons[i].Position[1] * sin(-rotang);
+			  } 
+        else
+        {
+				  NewPositionY = InputNeutrons[i].Position[1];
+				  NewPositionZ = InputNeutrons[i].Position[2];
+			  }
+
+        if (minPhi >= 0 && maxPhi <= 360) 
+        { 
+          Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
+          if (Phi < minPhi || Phi > maxPhi)
+          {
+	          WriteIAP(&Output, VT_ABSORBED);
+	          continue;
+	        }
         }
 
-        if (bOldFrame==FALSE) 
-        {
-          WriteIAP(&InputNeutrons[i], VT_EXITED);
-          InputNeutrons[i].Position[0]=0.0;
-          InputNeutrons[i].Time += (double)TOF3 ;
-          Output = InputNeutrons[i];
-        } 
-        else 
-        {
-          InputNeutrons[i]=Output;
-          WriteIAP(&InputNeutrons[i], VT_EXITED);
+        // Test if window is hit
+        if (bCircularWindow==TRUE)
+        {	DistSquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
+                       + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
+          if (winradius*winradius < DistSquared)
+            bOutOfWindow=TRUE;
+          else
+          bOutOfWindow=FALSE;
         }
-        WriteNeutron(&Output);
-      }
-      else /* else, if hitting beamstop or out of window */
-      {
-        if (KeymaterialO != 6)
+        else
+        {	if ((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
+              (heightmin > NewPositionZ) || (heightmax < NewPositionZ)  )
+            bOutOfWindow=TRUE;
+          else
+            bOutOfWindow=FALSE;
+        }
+
+        /* ok, if out of beamstop or in window */
+        if ((bBeamStop==TRUE  && bOutOfWindow==TRUE) ||
+            (bBeamStop==FALSE && bOutOfWindow==FALSE))
         {
           if (keygrav == 1)
           {
-            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
           }
           else
           {
-            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
           }
 
-          /* Attenuation during pass through window material */
-          N_Wavelength = InputNeutrons[i].Wavelength;
-          mu = Interpolation(N_Wavelength,KeymaterialO,WavO,MuO,nValFO);
-          if (mu == -10000.0)
-          { // sprintf(sBuffer, "Attenuation coefficient of window frame material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-            // Error(sBuffer);
-            CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-          }
-          prob = exp(-mu*TOF3*VelocityReal);
-          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-          InputNeutrons[i].Time += TOF3;
-          InputNeutrons[i].Position[0]=DistMove;
-          Output = InputNeutrons[i];
-          if (InputNeutrons[i].Probability <= wei_min) 
+          if (KeymaterialI == 0)
           {
-            WriteIAP(&Output, VT_ABSORBED);
+            /* Attenuation during pass of open window material */
+            N_Wavelength = InputNeutrons[i].Wavelength;
+            mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
+            if (mu == -10000.0)
+            { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+              // Error(sBuffer);
+              CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+            }
+            prob = exp(-mu*TOF3*VelocityReal);
+            InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+          }
+
+          if (bOldFrame==FALSE) 
+          {
+            WriteIAP(&InputNeutrons[i], VT_EXITED);
+            InputNeutrons[i].Position[0]=0.0;
+            InputNeutrons[i].Time += (double)TOF3 ;
+            Output = InputNeutrons[i];
+          } 
+          else 
+          {
+            InputNeutrons[i]=Output;
+            WriteIAP(&InputNeutrons[i], VT_EXITED);
+          }
+          WriteNeutron(&Output);
+        }
+        else /* else, if hitting beamstop or out of window */
+        {
+          if (KeymaterialO != 6)
+          {
+            if (keygrav == 1)
+            {
+              TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            }
+            else
+            {
+              TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+            }
+
+            /* Attenuation during pass through window material */
+            N_Wavelength = InputNeutrons[i].Wavelength;
+            mu = Interpolation(N_Wavelength,KeymaterialO,WavO,MuO,nValFO);
+            if (mu == -10000.0)
+            { // sprintf(sBuffer, "Attenuation coefficient of window frame material could not be determined for wavelength %6.3f Ang", N_Wavelength);
+              // Error(sBuffer);
+              CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+            }
+            prob = exp(-mu*TOF3*VelocityReal);
+            InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+            InputNeutrons[i].Time += TOF3;
+            InputNeutrons[i].Position[0]=DistMove;
+            Output = InputNeutrons[i];
+            if (InputNeutrons[i].Probability <= wei_min) 
+            {
+              WriteIAP(&Output, VT_ABSORBED);
+            }
+            else 
+            {
+              WriteIAP(&Output, VT_EXITED);
+              WriteNeutron(&Output);
+            }
           }
           else 
           {
-            WriteIAP(&Output, VT_EXITED);
-            WriteNeutron(&Output);
+            if (keygrav == 1)
+            {
+              TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            }
+            else
+            {
+              TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+            }
+            InputNeutrons[i].Probability = 0.;
+            InputNeutrons[i].Position[0]=DistMove;
+            InputNeutrons[i].Time += TOF3;
+            WriteIAP(&InputNeutrons[i], VT_ABSORBED);
           }
-        }
-        else 
-        {
-          if (keygrav == 1)
-          {
-            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
-          }
-          else
-          {
-            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
-          }
-          InputNeutrons[i].Probability = 0.;
-          InputNeutrons[i].Position[0]=DistMove;
-          InputNeutrons[i].Time += TOF3;
-          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
         }
       }
     }
   }
 
-/******************************************************************************/
-/* Finish: print parameters, write geometry and instrument file, free memory  */
-/******************************************************************************/
+  // Finish: print parameters, write geometry and instrument file, free memory
+  // -------------------------------------------------------------------------
 my_exit:
 	if (bCircularWindow)
 	  fprintf(LogFilePtr,"Window of %6.2f cm diameter in a distance of %7.2f cm \n", 2.0*winradius, DistMove);
@@ -355,11 +359,25 @@ my_exit:
 /**************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-	int i;
+	int   i=0, j=0;
 	short bOFrame=FALSE; /* default for window 'new frame' */
 
+  // initialize
 	bOldFrame = -1;      /* no default for frame in general */
 
+  InitPlane(&EndPoint);
+  InitPlane(&EndPointI);
+  InitPlane(&EndPointO);
+
+  for(j=0; j<MAX_MU; j++)
+	{	
+		WavO[j] = 0.0;
+		MuO [j] = 0.0;
+		WavI[j] = 0.0;
+		MuI [j] = 0.0;
+	}
+
+  // read parameters
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]!='+')
@@ -452,24 +470,13 @@ void  OwnInit(int argc, char *argv[])
 		}
 	}
 
-	/* take default value for frame, if not explicitely set */
+	// take default value for frame, if not explicitely set
 	if (bOldFrame==-1)
 		bOldFrame=bOFrame;
 
   // Fill structures defining the planes
-	Endpoint.A =  1.0;
-	Endpoint.B =  0.0;
-	Endpoint.C =  0.0;
-	Endpoint.D = -1.0 * DistMove;
-  
-	EndPointI.A =  1.0;
-	EndPointI.B =  0.0;
-	EndPointI.C =  0.0;
+	EndPoint.D  = -1.0 * DistMove;
 	EndPointI.D = -1.0 *(DistMove + ThicknessI);
-   
-	EndPointO.A =  1.0;
-	EndPointO.B =  0.0;
-	EndPointO.C =  0.0;
 	EndPointO.D = -1.0 *(DistMove + ThicknessO);
 
   return;
@@ -482,7 +489,7 @@ void  OwnInit(int argc, char *argv[])
 void EvalInput()
 {
   char sLine[CHAR_BUF_SMALL]="";
-	long i,                        // index of arrays for wavelength and attenuation 
+	long i=0,                        // index of arrays for wavelength and attenuation 
 	     nVal=0;                   // number of wavelength and attenuation values in the array
 
   // Checks
@@ -508,16 +515,6 @@ void EvalInput()
 	if (ThicknessO != ThicknessI)
 	{
 		fprintf(LogFilePtr,"WARNING: It is recommeded to have outer and inner thickness EQUAL! \n");
-	}
-	
-	// Init
-  // ----
-	for(i=0; i<MAX_MU; i++)
-	{	
-		WavO[i] = 0.0;
-		MuO [i] = 0.0;
-		WavI[i] = 0.0;
-		MuI [i] = 0.0;
 	}
 	
 	// Case: zero thickness

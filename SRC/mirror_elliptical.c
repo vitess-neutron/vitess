@@ -21,8 +21,6 @@
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_MIRROR_ELLI;
-
 FILE  *refl_filelup=NULL;           //           pointer to file for spin up reflectivity  
 FILE  *refl_fileldo=NULL;           //           pointer to file for spin down reflectivity
 
@@ -80,6 +78,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule=MCN_MIRROR_ELLI;
+
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.23");
 	OwnInit(argc, argv);
@@ -100,83 +100,90 @@ int main(int argc, char *argv[])
     {
       CHECK
 	
-      TimeOF1 = 0.0;
-      reflp = 0;
-	
-      //	InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
-
-      /* Check the quantization of polarization */
-      if (keypol == 1)
-        if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
-        {	
-          fprintf(LogFilePtr,"WARNING! Illegal Spin Quantisation!!! Check the Spin value\n");
-          exit(-1);
-        }
-
-      /******************************************************************************************/
-      /* Pass a pointer to the neutron and the Mirror structure variable to a subroutine to do  */
-      /* the donkey work. The return value is the total value of the time of flight through the */
-      /* Mirror, or -1.0 if it missed all plates and the exit (should be impossible).           */
-      /******************************************************************************************/
-      InputNeutrons[i].Position[0] = InputNeutrons[i].Position[0] - PosMain[0];
-      InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] - PosMain[1];
-      InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] - PosMain[2];
-
-      /* Choose the behavior of neutrons between channels */
-
-      /* Neutrons are travels WITHOUT crosstalk between channels */
-      TimeOF1 = PathThroughMirrorGravOrder2(&InputNeutrons[i], MyMirror, X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX, halfaxis, PosMain,
-                                            wei_min, rdatalup, rdataldo, surfacerough, keygrav, keypol,
-                                            qspin, vistype, keyVisAll, keyreflect, &reflp, RotMatrixMirror, keyfluxair, mu1, mu2);
-
-      if(TimeOF1 == -1.0)  continue;
-
-      InputNeutrons[i].Position[0] = InputNeutrons[i].Position[0] + PosMain[0];
-      InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] + PosMain[1];
-      InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] + PosMain[2];	
-
-      /****************************************************************************************/
-      /* Transform the coordinates.   					         	      */
-      /* X must be always renormalized to zero...                                                  */
-      /****************************************************************************************/
-      Output = InputNeutrons[i];
-
-      Pos[0] = InputNeutrons[i].Position[0];
-      Pos[1] = InputNeutrons[i].Position[1];
-      Pos[2] = InputNeutrons[i].Position[2];
-
-      Dir[0] = InputNeutrons[i].Vector[0];
-      Dir[1] = InputNeutrons[i].Vector[1];
-      Dir[2] = InputNeutrons[i].Vector[2];
-
-      /* computes neutron variables in the output frame */
-      SubVector(Pos, TransOut);
-	
-      Output.Position[0] = Pos[0];
-      Output.Position[1] = Pos[1];
-      Output.Position[2] = Pos[2];	
-	
-      Output.Vector[0] = Dir[0];
-      Output.Vector[1] = Dir[1];
-      Output.Vector[2] = Dir[2];	
-
-      /*      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f\n",Output.Position[0], Output.Position[1], Output.Position[2]); */
-
-      /****************************************************************************************/
-      /* Add the time needed to travel inside Mirror.                                   */
-      /****************************************************************************************/
-      Output.Time = Output.Time + TimeOF1;
-
-      /****************************************************************************************/
-      /* Count this as a success.                                                             */
-      /****************************************************************************************/
-      if (keyExcl == 0)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        WriteNeutron(&Output);
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {
-        if (reflp == 1) WriteNeutron(&Output);
+      { 
+        TimeOF1 = 0.0;
+        reflp = 0;
+	
+        //	InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+
+        /* Check the quantization of polarization */
+        if (keypol == 1)
+          if (fabs(InputNeutrons[i].Spin[qspin]) != 1.0)
+          {	
+            fprintf(LogFilePtr,"WARNING! Illegal Spin Quantisation!!! Check the Spin value\n");
+            exit(-1);
+          }
+
+        /******************************************************************************************/
+        /* Pass a pointer to the neutron and the Mirror structure variable to a subroutine to do  */
+        /* the donkey work. The return value is the total value of the time of flight through the */
+        /* Mirror, or -1.0 if it missed all plates and the exit (should be impossible).           */
+        /******************************************************************************************/
+        InputNeutrons[i].Position[0] = InputNeutrons[i].Position[0] - PosMain[0];
+        InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] - PosMain[1];
+        InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] - PosMain[2];
+
+        /* Choose the behavior of neutrons between channels */
+
+        /* Neutrons are travels WITHOUT crosstalk between channels */
+        TimeOF1 = PathThroughMirrorGravOrder2(&InputNeutrons[i], MyMirror, X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX, halfaxis, PosMain,
+                                              wei_min, rdatalup, rdataldo, surfacerough, keygrav, keypol,
+                                              qspin, vistype, keyVisAll, keyreflect, &reflp, RotMatrixMirror, keyfluxair, mu1, mu2);
+
+        if(TimeOF1 == -1.0)  continue;
+
+        InputNeutrons[i].Position[0] = InputNeutrons[i].Position[0] + PosMain[0];
+        InputNeutrons[i].Position[1] = InputNeutrons[i].Position[1] + PosMain[1];
+        InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] + PosMain[2];	
+
+        /****************************************************************************************/
+        /* Transform the coordinates.   					         	      */
+        /* X must be always renormalized to zero...                                                  */
+        /****************************************************************************************/
+        Output = InputNeutrons[i];
+
+        Pos[0] = InputNeutrons[i].Position[0];
+        Pos[1] = InputNeutrons[i].Position[1];
+        Pos[2] = InputNeutrons[i].Position[2];
+
+        Dir[0] = InputNeutrons[i].Vector[0];
+        Dir[1] = InputNeutrons[i].Vector[1];
+        Dir[2] = InputNeutrons[i].Vector[2];
+
+        /* computes neutron variables in the output frame */
+        SubVector(Pos, TransOut);
+	
+        Output.Position[0] = Pos[0];
+        Output.Position[1] = Pos[1];
+        Output.Position[2] = Pos[2];	
+	
+        Output.Vector[0] = Dir[0];
+        Output.Vector[1] = Dir[1];
+        Output.Vector[2] = Dir[2];	
+
+        /*      fprintf(LogFilePtr,"Out x = %f  y = %f  z = %f\n",Output.Position[0], Output.Position[1], Output.Position[2]); */
+
+        /****************************************************************************************/
+        /* Add the time needed to travel inside Mirror.                                   */
+        /****************************************************************************************/
+        Output.Time = Output.Time + TimeOF1;
+
+        /****************************************************************************************/
+        /* Count this as a success.                                                             */
+        /****************************************************************************************/
+        if (keyExcl == 0)
+        {
+          WriteNeutron(&Output);
+        }
+        else
+        {
+          if (reflp == 1) WriteNeutron(&Output);
+        }
       }
     }
   }

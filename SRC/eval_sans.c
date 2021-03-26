@@ -28,8 +28,6 @@
 /*********************************/
 /** Global Variables            **/
 /*********************************/
-McCompID _eModule=MCN_EVAL1_SANS;
-
 FILE *pSpectrum=NULL,        // pointer to the file containing the SANS spectrum
      *pReference=NULL;       // pointer to the file containing the reference (=isotropic scattering) spectrum
 
@@ -61,8 +59,8 @@ double referenceWavelength,  /* reference Wavelength for crystal monochromator (
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit    (int argc, char *argv[]);
-short ReadRefSpec(double* pRefBin, double* pRefVal);
+void  OwnInit    (int argc, char *argv[]);            // Reads input parameters and sets global variables
+short ReadRefSpec(double* pRefBin, double* pRefVal);  // function to read reference spectrum 
 
 
 /******************************/
@@ -98,6 +96,8 @@ int main(int argc, char *argv[])
 
   // reading of input data and initilisation
   // ---------------------------------------
+  _eModule=MCN_EVAL1_SANS;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
@@ -154,49 +154,56 @@ int main(int argc, char *argv[])
     {
       CHECK
 
-      CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-
-      // flightpath correction if detector distance is given
-      if (bPathCor)
-      { // origin of co-ordinate system in sample center
-        DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-        Flightpath = Flightpath0 + DetPath - DetDist;
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { Flightpath = Flightpath0;
-      }
+      { 
+        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
 
-      prob     = InputNeutrons[i].Probability;
-      time     = InputNeutrons[i].Time - TimeOffset;
-      lambda   = bTOF ? 395.60346/(Flightpath/time) : referenceWavelength;
+        // flightpath correction if detector distance is given
+        if (bPathCor)
+        { // origin of co-ordinate system in sample center
+          DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
+          Flightpath = Flightpath0 + DetPath - DetDist;
+        }
+        else
+        { Flightpath = Flightpath0;
+        }
 
-      /* Writing out all neutrons, if 'exclusive counts = no' is set */
-      // if (bExclCount==FALSE)		
-      WriteNeutron(&InputNeutrons[i]);
+        prob     = InputNeutrons[i].Probability;
+        time     = InputNeutrons[i].Time - TimeOffset;
+        lambda   = bTOF ? 395.60346/(Flightpath/time) : referenceWavelength;
 
-      /* trajectories within deadspot */
-      if (bDeadSpot && TwoTheta <= deadspotangle) continue;
+        /* Writing out all neutrons, if 'exclusive counts = no' is set */
+        // if (bExclCount==FALSE)		
+        WriteNeutron(&InputNeutrons[i]);
 
-      /* traj. out of time of evaluation */
-      if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
+        /* trajectories within deadspot */
+        if (bDeadSpot && TwoTheta <= deadspotangle) continue;
 
-      /* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
-      if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
+        /* traj. out of time of evaluation */
+        if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
 
-      /* Writing out the neutrons that comply with the requirements, 
-      if 'exclusive counts = yes' is set */
-      /* if (bExclCount==TRUE)		
-	      WriteNeutron(&InputNeutrons[i]); */
+        /* exclude traj. with wrong colour: (nColour=-1 means: all colours accepted) */
+        if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
-      Q = 4.0 * M_PI * sin(TwoTheta/2.0) / lambda;
+        /* Writing out the neutrons that comply with the requirements, 
+        if 'exclusive counts = yes' is set */
+        /* if (bExclCount==TRUE)		
+	        WriteNeutron(&InputNeutrons[i]); */
 
-      for(ibin = 0; ibin<nbins; ibin++)
-      {	if (bpost[ibin] <= Q && Q < bpost[ibin+1])
-        {
-          bcnt[ibin]++;
-          bint[ibin] = bint[ibin] + prob;
-          bintc = bintc + prob;
-          break;
+        Q = 4.0 * M_PI * sin(TwoTheta/2.0) / lambda;
+
+        for(ibin = 0; ibin<nbins; ibin++)
+        {	if (bpost[ibin] <= Q && Q < bpost[ibin+1])
+          {
+            bcnt[ibin]++;
+            bint[ibin] = bint[ibin] + prob;
+            bintc = bintc + prob;
+            break;
+          }
         }
       }
     }

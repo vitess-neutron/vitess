@@ -46,13 +46,15 @@
 /* ----------------                                                                                */
 /* This file contains several global variables which are essential to each VITESS program module   */
 /***************************************************************************************************/
-extern FILE* LogFilePtr;     /* pointer to the log file stream              */
+extern FILE*    LogFilePtr;  /* pointer to the log file stream  */
+
 
 const 
 char *sInstrInfOut = "instrument.inf"; /* instrument file that is written ('instrument.inf')      */
 char *sInstrInfIn  = "instrument.inf"; /* instrument file that is read (default 'instrument.inf') */
 
-double   CmprFact=1.0;       /* Factor, by which the length is compressed for certain modules in the visualization */  
+McCompID _eModule=MCN_COMP_UNKNOWN;    /* ID of the module                */
+double   CmprFact;           /* Factor, by which the length is compressed for certain modules in the visualization */  
 long     BufferSize;         /* size of the neutron input and output buffer */
 long     CompressedSize;     /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
 int      CompressionMode;    /* if > 0, data compression mode 1 (nodebug) 2(float) */
@@ -60,12 +62,14 @@ Neutron* InputNeutrons;      /* input neutron Buffer */
 Neutron* OutputNeutrons;     /* output neutron buffer */
 Neutron *OutNeutronsCopy;    /* if this has been allocated in source.c, it may be used for double buffering */
 long     OutNeutNum;         /* number of the next free position in OutputNeutrons */
-ModProp  stPicture;          /* additional information for 'instrument.inf' */
+// ModProp  stPicture;          /* additional information for 'instrument.inf' */
 VtModGeom stGeometry;        /* data needed to draw a picture of the component represented by the module */
 
-long     NumNeutGot;         /* number of trajectories read in the current batch */
-double   NumNeutRead;        /* number of trajectories read in total */
-double   NumNeutWritten;     /* number of trajectories written in total */
+long     NumNeutGot=0;       /* number of trajectories read in the current batch */
+double   NumNeutRead=0.0;    /* number of trajectories read in total */
+double   NumNeutWritten=0.0; /* number of trajectories written in total */
+long     NumEobRead=0;       /* number of 'EndOfBunch' data sets read in total */
+long     NumEobWritten=0;    /* number of trajectories written in total */
 
 FILE*    InputFilePtr;       /* stream from which the neutrons are read */
 FILE*    OutputFilePtr;      /* stream to which the neutrons are written */
@@ -75,8 +79,8 @@ char*    OutputFileName;     /* file to write neutrons */
 char*    LogFileName;        /* log file name  */
 const char *pGeomFileName="geometry.inf"; /* name of instrument geometry file */
 char*    pTrajFileName=NULL; /* trajectory file name  */
-char*    ParDirectory;       /* parameter directory */
-char*    InstallDirectory;
+char*    ParDir;       /* parameter directory */
+char*    InstallDir;
 char     sModuleName[MOD_NAME_LEN+1]="";
 char     sVisDescrpt[MOD_NAME_LEN+9]="";
 
@@ -117,7 +121,7 @@ static char*      InputDir =NULL;       //  [PATH_LEN]="";
 static char*      OutputDir=NULL;       //  [PATH_LEN]="";
 
 static long       TracePoints=FALSE;     /* creates dot for every written output buffer if TRUE */
-static double     dProbTotal[MAX_COL+1], /* sum of the count rates of all trajectories [n/s]    */
+static double     dProbTotal[MAX_COL+2], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
 static int        ParDirLength, 
@@ -136,12 +140,11 @@ unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
 /* PROTOTYPES OF LOCAL FUNCTIONS                              */
 /**************************************************************/
 static void  setInstallDirectory(char *arg);
-static void  setParDirectory    (char *arg);
+static char* setDir (char *arg);
 static char* conCat (const char *sFile, const char* sSubDir, int sel);
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
 static int   readCompressedNeutrons();
-static void  OutputBufferFlush(int final);
 static void  WriteTraceLine   (Neutron* Neut);
 
 // these function should only be used exceptionally outside init.c
@@ -404,17 +407,17 @@ void Init(int argc, char **argv, const McCompID eModule)
   InputFileName  = NULL;
   OutputFileName = NULL;
   LogFileName    = NULL;
-  ParDirectory   = NULL;
+  ParDir   = NULL;
   CmprFact       = 1.0;
   BufferSize     = BUFFER_SIZE;
   OutNeutNum     = 0;
   TracePoints    = FALSE;
-  for (l=0; l<=MAX_COL; l++)
+  for (l=0; l<=MAX_COL+1; l++)
     dProbTotal[l] = 0.0;
 
-  memset(&stPicture, '\0', sizeof(ModProp));
+  /* memset(&stPicture, '\0', sizeof(ModProp));
   stPicture.eModule= eModule;
-  stPicture.nNumber= 1L;
+  stPicture.nNumber= 1L; */
 
   memset(&stGeometry, '\0', sizeof(VtModGeom));
   stGeometry.eModule= eModule;
@@ -470,13 +473,13 @@ void Init(int argc, char **argv, const McCompID eModule)
       break;
 
     case 'P':                   // parameter (= default) directory
-      setParDirectory(arg);
+      ParDir=setDir(arg);
       break;
     case 'i':                   // input directory
-      InputDir=arg;
+      InputDir=setDir(arg);
       break;
     case 'o':                   // output directory
-      OutputDir=arg;
+      OutputDir=setDir(arg);
       break;
 
     case 't' :
@@ -527,8 +530,8 @@ void Init(int argc, char **argv, const McCompID eModule)
   }
 
   // The parameter directory is used, if no specific input and output directories are given
-  if (InputDir ==NULL) InputDir  = ParDirectory;
-  if (OutputDir==NULL) OutputDir = ParDirectory;
+  if (InputDir ==NULL) InputDir  = ParDir;
+  if (OutputDir==NULL) OutputDir = ParDir;
 
   // First of all try to open the log file, if it has been requested.
   if (LogFileName!=NULL) 
@@ -704,7 +707,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 
   /* update 'instrument.inf' */
   if (!bVisTraj)
-  { if (stPicture.eModule == MCN_SOURCE)
+  { if (_eModule == MCN_SOURCE)
     { nModuleNo = 1;
       BegPosM[0]= BegPosM[1] = BegPosM[2] = 0.0;
       BlnLen=0.0;
@@ -755,10 +758,10 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     free(InputNeutrons);
   if (OutputNeutrons!=NULL)
     free(OutputNeutrons);
-  if (ParDirectory != NULL)
-    free(ParDirectory);
-  if (InstallDirectory != NULL)
-    free(InstallDirectory);
+  if (ParDir != NULL)
+    free(ParDir);
+  if (InstallDir != NULL)
+    free(InstallDir);
 
   /* free GNU gsl rng state var */
   gsl_rng_free (vit_gsl_rng);
@@ -769,6 +772,10 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
      - of the average count rate of each trajectory I_s = I_tot/N:
        sqrt((<I_s²> - <I_s>²)/(N-1))
      as independent contributions */
+  // subtract number of dummy data sets first
+  NumNeutRead    -= NumEobRead;
+  NumNeutWritten -= NumEobWritten;
+
   if (NumNeutWritten > 1)
     CntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
                       + (NumNeutWritten*dProbQuad-sq(dProbTotal[0])) / (NumNeutWritten-1) );
@@ -778,9 +785,9 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   fprintf(LogFilePtr, "%2ld number of trajectories read         : %11.0f\n", nModuleNo, NumNeutRead);
   fprintf(LogFilePtr, "%2ld number of trajectories written      : %11.0f\n", iModuleId, NumNeutWritten);
   fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], CntRateErr);
-  for (l=1; l<=MAX_COL; l++)
-  { if (dProbTotal[l] > 0)
-      fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", l, dProbTotal[l]);
+  for (l=0; l<=MAX_COL; l++)
+  { if (dProbTotal[l+1] > 0)
+      fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", l, dProbTotal[l+1]);
   }
 
   if (TimeMeas > 0.0)
@@ -945,24 +952,26 @@ int ReadNeutrons()
 
   for(i=0; i<NumNeutGot; i++)
   {
-
     WriteTraceLine(&InputNeutrons[i]);
+    if (IsEOB(&InputNeutrons[i])) 
+      NumEobRead++;
 
-    if (stPicture.eModule < MCN_MONITOR1)
+    /* normalization of direction vector for modules representing hardware */
+    if (_eModule < MCN_MONITOR1)
       NormVector(InputNeutrons[i].Vector);
-    else continue;
-    // Check if a neutron with such an ID has been here before
+
+    // Check if a neutron with such an ID has been seen before
     // If neutrons with same IDs arriving, shift the ID!
-    if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) {
+    if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) 
+    {
       WriteIAP(&InputNeutrons[i], VT_ENTERED);
       tempID = InputNeutrons[i].ID;
     }
-    else {
+    else 
+    {
       ChangeNeutronID(&InputNeutrons[i]);
       WriteIAP(&InputNeutrons[i], VT_ENTERED);
     }
-    /* normalization of direction vector for modules representing hardware */
-
   }
 
   NumNeutRead += NumNeutGot;
@@ -992,15 +1001,17 @@ void WriteNeutron(Neutron *OutNeutron)
   int    col_write =0;
   double tx = OutNeutron->Probability;
   // some modules may produce unreasonable probabilities
-  if (ISNAN(tx) || tx < 0) {
+  if (ISNAN(tx) || tx < 0) 
+  {
     OutNeutron->Probability = 0;
-  } else {
+  } else 
+  {
     dProbTotal[0] +=    tx;
     dProbQuad     += sq(tx);
     //use colorTB+colorLR in case they are counted separately (by guide)
     col_write=(OutNeutron->Color - OutNeutron->Color%100)  / 100 + (OutNeutron->Color %100);
-    if (bSepRate && col_write >= 1 && col_write <= MAX_COL)
-      dProbTotal[col_write] += tx;
+    if (bSepRate && col_write >= 0 && col_write <= MAX_COL)
+      dProbTotal[col_write+1] += tx;
   }
 
   if (OutputFilePtr)
@@ -1010,8 +1021,22 @@ void WriteNeutron(Neutron *OutNeutron)
     OutputBufferFlush(0);  // flush to stream, and give trace marks
 
   WriteTraceLine(OutNeutron);
+  if (IsEOB(OutNeutron)) 
+    NumEobWritten++;
 }
 
+void WriteEOB()
+{
+  Neutron OutEOB;
+
+  InitNeutron(&OutEOB);
+  SetEOB(&OutEOB);
+
+  CopyNeutron(&OutEOB, OutputNeutrons + OutNeutNum);
+  OutNeutNum++;
+  NumEobWritten++;
+  OutputBufferFlush(0);  // flush to stream, and give trace marks
+}
 
 /**********************************************************************************/
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
@@ -1037,7 +1062,7 @@ void WriteInstrData(VectorType Pos)
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
   } 
-  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || stPicture.eModule==MCN_READ_IN) 
+  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
   {
     // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
     char *inp;
@@ -1078,7 +1103,7 @@ void WriteInstrData(VectorType Pos)
     char cNF=' ';
     if (bOldFrame) cNF='F';
     fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
-                   iModId, stPicture.eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
+                   iModId, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
                    180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
     /* mark end of actual part */
     if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
@@ -1371,7 +1396,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
   *pRotY   = 0.0;
   *pRotZ   = 0.0;
 
-  if (stPicture.eModule==MCN_READ_IN)
+  if (_eModule==MCN_READ_IN)
     pFile = OpenInputFile (pInstrFile, FALSE, "r");
   else
     pFile = OpenOutputFile(pInstrFile, FALSE, "r");
@@ -1450,14 +1475,15 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj
   { fprintf(pFile, "%14.5e   # measuring time     [s]\n", dTimeMeas);
     fprintf(pFile, "%10.5f       # desired wavelength [Ang]\n", dLmbdWant);
     fprintf(pFile, "%10.5f       # source frequency   [Hz]\n", dFreq);
-    fprintf(pFile, "%14.5e   #number of trajectories \n", nTraj);
-    fprintf(pFile, "%4ld               #number of bundles \n", nBundles);
+    fprintf(pFile, "%14.5e   # number of trajectories \n", nTraj);
+    fprintf(pFile, "%4ld             # number of bundles \n", nBundles);
     fclose(pFile);
   }
 }
 
-void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles)
+short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles)
 {
+  short rc=FALSE;
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
 
@@ -1484,7 +1510,24 @@ void ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pT
     sscanf(sLine, "%ld", pBundles);
 
     fclose(pFile);
+    rc=TRUE;
   }
+
+  return rc;
+}
+
+long ReadNumBndl(void)
+{
+  double TimeMeas=0.0,       /* measuring time     (from simulation.inf, not needed) */
+         LmbdWant=0.0,       /* desired wavelength (from simulation.inf, not needed) */
+         Freq    =0.0,       /* source frequency   (from simulation.inf)   */
+         nTraj   =0.0;       /* number of trajectories started per bundle  */
+  long   nBndl  = 0;         // number of bundles started 
+
+  if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBndl)==FALSE)
+    nBndl  = 1;
+
+  return nBndl;
 }
 
 
@@ -1628,6 +1671,56 @@ void InitNeutron(Neutron* pNeut)
   }
 }
 
+
+/****************************************************************/
+/* Handles the 'EndOfBunch' data set                            */
+/****************************************************************/
+void  SetEOB(Neutron* pNeut)
+{
+  pNeut->Debug='B';
+}
+
+short IsEOB(Neutron* pNeut)
+{
+  if (pNeut->Debug=='B')
+    return TRUE;
+  else
+    return FALSE;
+}
+
+short CheckEOB(Neutron* pNeut)
+{
+  short rc=IsEOB(pNeut);
+
+  if (rc)
+  {
+     NumEobRead++;
+     WriteNeutron(pNeut);
+  }
+  return rc;
+}
+
+
+double GetTotInt(short iCol)
+{
+  return dProbTotal[iCol+1];
+}
+
+
+void OutputBufferFlush(int final)
+{
+  if (OutputFilePtr) {
+    if (compressModeW == 0)
+      fwritePar(OutputNeutrons, sizeof(Neutron), OutNeutNum, OutputFilePtr, final);
+    else
+      writeCompressed();
+  }
+  NumNeutWritten += OutNeutNum;
+  OutNeutNum = 0;
+  if (TracePoints) fprintf(LogFilePtr,".");
+}
+
+
 void setDetachedWrite() 
 {
   initParWrite(sizeof(Neutron), BufferSize);
@@ -1638,7 +1731,7 @@ void setDetachedWrite()
 /* LOCAL FUNCTIONS                                            */
 /**************************************************************/
 static void setInstallDirectory (char *arg) {
-  // We need the InstallDirectory path for implicitly referenced data files.
+  // We need the InstallDir path for implicitly referenced data files.
   // For gridrun we take this from the VITESSROOT environment variable.
   // Normally we use the executable path of the module, which  contains the installation path;
   // We assume it to be that string part before MODULES .
@@ -1647,7 +1740,7 @@ static void setInstallDirectory (char *arg) {
   // gridrun works with unix only
   char *s = getenv("VITESSROOT");
   if (s) {
-    InstallDirectory = strdup(s);
+    InstallDir = strdup(s);
     InstallDirLength = strlen(s);
     return;
   }
@@ -1658,32 +1751,27 @@ static void setInstallDirectory (char *arg) {
   InstallDirLength = (int)((long) mp - (long) arg);
   /* for pointers too big for long integers: */
   if (InstallDirLength < 0) InstallDirLength = -InstallDirLength;
-  InstallDirectory = (char *) malloc(InstallDirLength + 1);
-  memcpy(InstallDirectory, arg, InstallDirLength);
-  InstallDirectory[InstallDirLength] = 0;
+  InstallDir = (char *) malloc(InstallDirLength + 1);
+  memcpy(InstallDir, arg, InstallDirLength);
+  InstallDir[InstallDirLength] = 0;
 }
 
-static void setParDirectory (char *a) 
+static char* setDir (char *arg) 
 {
-  int len;
-  if ((len = strlen(a))) 
+  char* pDir=NULL; 
+  int len= strlen(arg);
+
+  if (len > 0) 
   {
-    /* last character should be a slash */
-    if (a[len-1] == cSlash) 
-    {
-      memcpy ((ParDirectory = (char *) malloc(len+1)), a, len);
-    } 
-    else 
-    {
-      memcpy ((ParDirectory = (char *) malloc(len+2)), a, len);
-      ParDirectory[len++] = cSlash;
-    }
-    ParDirectory[len] = 0;
-    ParDirLength = len;
+    pDir = (char *) malloc(len+2); 
+    strcpy(pDir, arg);
+    ChangeSlash(pDir);
+    AddSlash(pDir);
   }
+  return pDir;
 }
 
-static char* conCat (const char *sFile, const char* sSubDir, int sel) 
+static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel) 
 {
   char *pResult=NULL, 
        *pDir=NULL;
@@ -1702,10 +1790,10 @@ static char* conCat (const char *sFile, const char* sSubDir, int sel)
 #endif
 
   switch (sel)
-  { case 0: pDir = ParDirectory;     LenD = ParDirLength;      break;
-    case 1: pDir = InstallDirectory; LenD = InstallDirLength;  break;
-    case 2: pDir = InputDir;  if (InputDir !=NULL) LenD = strlen(InputDir);  break;
-    case 3: pDir = OutputDir; if (OutputDir!=NULL) LenD = strlen(OutputDir); break;
+  { case PAR_DIR  : pDir = ParDir;     LenD = ParDirLength;      break;
+    case INSTL_DIR: pDir = InstallDir; LenD = InstallDirLength;  break;
+    case IN_DIR   : pDir = InputDir;  if (InputDir !=NULL) LenD = strlen(InputDir);  break;
+    case OUT_DIR  : pDir = OutputDir; if (OutputDir!=NULL) LenD = strlen(OutputDir); break;
     default: LenD = 0;
   }
 
@@ -1925,19 +2013,6 @@ static int readCompressedNeutrons (void) {
   return ngot;
 }
 #undef GULP
-
-static void OutputBufferFlush(int final)
-{
-  if (OutputFilePtr) {
-    if (compressModeW == 0)
-      fwritePar(OutputNeutrons, sizeof(Neutron), OutNeutNum, OutputFilePtr, final);
-    else
-      writeCompressed();
-  }
-  NumNeutWritten += OutNeutNum;
-  OutNeutNum = 0;
-  if (TracePoints) fprintf(LogFilePtr,".");
-}
 
 /* Writing one line into the trace file */
 static void   WriteTraceLine(Neutron* pNeutron)

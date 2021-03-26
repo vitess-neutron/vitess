@@ -32,26 +32,6 @@
 /******************************/
 /** Structures               **/
 /******************************/
-typedef struct
-{
-	double  Pos;
-	double  Left, Right;
-	double  Bottom;
-	double  Opening;
-}
-ChopperWindow;
-
-typedef struct
-{
-	short          NumberOfWindows;
-	CartesianPoint Centre;          /* centre of the chopper in the coordinate system of the beamline [cm] */
-	double         Radius;          /* radius of the chopper  [cm] */
-	double         Frequency;       /* rot.freq 2*pi*60*rpm  */
-	double         Angle;           /* orientation of the center of beamline in the chopper system */
-	ChopperWindow  *Window;
-}
-Chopper;
-
 
 /******************************/
 /** Prototypes               **/
@@ -70,8 +50,6 @@ double         CalcMinTrnd     (void);                      // calculates a prop
 /***********************************/
 /** global and static variables   **/
 /***********************************/
-McCompID _eModule=MCN_CHOP_DISC;
-
 // Input parameters
 char	*ChopperFileName=NULL;     // -C  [-]    name of the file describing the chopper disc
 double Rpm=0.0,                  // -s [1/min] rotation speed 
@@ -125,6 +103,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule=MCN_CHOP_DISC;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.13");
   OwnInit(argc, argv);
@@ -150,106 +130,113 @@ int main(int argc, char *argv[])
     {
       CHECK
 
-      // Submit both the Neutron and the plane to a subroutine and find the intercept 
-      // ----------------------------------------------------------------------------
-      if (InputNeutrons[i].Position[0] > -Endpoint.D)
-      CountMessageID(ALL_BEHIND_COMPONENT, InputNeutrons[i].ID);
-
-      // 	Move neutron to window with gravity effect and calculate Time of Flight (ms)
-      // -----------------------------------------------------------------------------
-      if (keygrav == 1)
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+        WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      {
-        TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-      }
+      { 
+        // Submit both the Neutron and the plane to a subroutine and find the intercept 
+        // ----------------------------------------------------------------------------
+        if (InputNeutrons[i].Position[0] > -Endpoint.D)
+        CountMessageID(ALL_BEHIND_COMPONENT, InputNeutrons[i].ID);
 
-      if (bRndTof)
-        InputNeutrons[i].Time = MonteCarlo(TrndMin, TrndMax);
-      else
-        InputNeutrons[i].Time += (double)TimeOF;
-
-      OutNeutron = InputNeutrons[i];
-
-      AveTimeOF += OutNeutron.Probability*OutNeutron.Time;
-      CtrBeamX  += OutNeutron.Probability*OutNeutron.Position[0];
-      CtrBeamY  += OutNeutron.Probability*OutNeutron.Position[1];
-      CtrBeamZ  += OutNeutron.Probability*OutNeutron.Position[2];
-      SumProb   += OutNeutron.Probability;
-
-      OutNeutron.Position[0]=0.0;
-
-      // submit the neutron to a subroutine that works out if the chopper gets in the way
-      // --------------------------------------------------------------------------------
-      if (BlockedByChopper(&OutNeutron))
-      {
-        /* non perfect absorption */
-
-        switch (eAbsMaterial)
-        {	/* ideally absorbing material */
-          case 0:
-            WriteIAP(&InputNeutrons[i], VT_ABSORBED);
-            continue;
-            break;
-
-          /* gadolinium */
-          case 1:
-            if (OutNeutron.Wavelength <= 0.35)
-            {	prob = -0.1843*OutNeutron.Wavelength  + 1.0128;
-              if (prob > 0.961) prob = 0.961;
-            }
-            else if ( OutNeutron.Wavelength < 6.0)
-            {	double *pLmbdList=NULL, *pMuList=NULL;
-
-              mu   = Interpolation(OutNeutron.Wavelength, 1, pLmbdList, pMuList, 44);
-              prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */
-            }
-            else
-            {	prob = 0.0;
-            }
-            break;
-
-          /* Bor-10 */
-          case 2:
-            if (OutNeutron.Wavelength < 0.29)
-            {	double eV, mcnp;
-
-              eV   = 1.0e-06*ENERGY_FROM_LAMBDA(OutNeutron.Wavelength);
-              mcnp = 612.07/sqrt(eV);
-              mu   = mcnp * NA * 2.46E-24 / 10.811;
-              prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
-            }
-            else if ( OutNeutron.Wavelength < 6.0)
-            {	double *pLmbdList=NULL, *pMuList=NULL;
-
-              mu   = Interpolation(OutNeutron.Wavelength, 3, pLmbdList, pMuList, 44);
-              prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
-            }
-            else
-            {	prob = 0.0;
-            }
-            break;
-
-          default:
-            Error("This kind of absorption is not supported");
+        // 	Move neutron to window with gravity effect and calculate Time of Flight (ms)
+        // -----------------------------------------------------------------------------
+        if (keygrav == 1)
+        {
+          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
         }
-        OutNeutron.Probability *= prob;
-      }
+        else
+        {
+          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+        }
 
-      if (OutNeutron.Probability < 0.0)
-      {
-        Error("NeutronProbability < 0");
-      }
-      else if (OutNeutron.Probability < wei_min)
-      {
-        WriteIAP(&InputNeutrons[i], VT_ABSORBED);
-        continue;
-      }
-      else
-      {	WriteNeutron(&OutNeutron);
-        WriteIAP(&InputNeutrons[i], VT_PASSED);
+        if (bRndTof)
+          InputNeutrons[i].Time = MonteCarlo(TrndMin, TrndMax);
+        else
+          InputNeutrons[i].Time += (double)TimeOF;
+
+        OutNeutron = InputNeutrons[i];
+
+        AveTimeOF += OutNeutron.Probability*OutNeutron.Time;
+        CtrBeamX  += OutNeutron.Probability*OutNeutron.Position[0];
+        CtrBeamY  += OutNeutron.Probability*OutNeutron.Position[1];
+        CtrBeamZ  += OutNeutron.Probability*OutNeutron.Position[2];
+        SumProb   += OutNeutron.Probability;
+
+        OutNeutron.Position[0]=0.0;
+
+        // submit the neutron to a subroutine that works out if the chopper gets in the way
+        // --------------------------------------------------------------------------------
+        if (BlockedByChopper(&OutNeutron))
+        {
+          /* non perfect absorption */
+
+          switch (eAbsMaterial)
+          {	/* ideally absorbing material */
+            case 0:
+              WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+              continue;
+              break;
+
+            /* gadolinium */
+            case 1:
+              if (OutNeutron.Wavelength <= 0.35)
+              {	prob = -0.1843*OutNeutron.Wavelength  + 1.0128;
+                if (prob > 0.961) prob = 0.961;
+              }
+              else if ( OutNeutron.Wavelength < 6.0)
+              {	double *pLmbdList=NULL, *pMuList=NULL;
+
+                mu   = Interpolation(OutNeutron.Wavelength, 1, pLmbdList, pMuList, 44);
+                prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */
+              }
+              else
+              {	prob = 0.0;
+              }
+              break;
+
+            /* Bor-10 */
+            case 2:
+              if (OutNeutron.Wavelength < 0.29)
+              {	double eV, mcnp;
+
+                eV   = 1.0e-06*ENERGY_FROM_LAMBDA(OutNeutron.Wavelength);
+                mcnp = 612.07/sqrt(eV);
+                mu   = mcnp * NA * 2.46E-24 / 10.811;
+                prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
+              }
+              else if ( OutNeutron.Wavelength < 6.0)
+              {	double *pLmbdList=NULL, *pMuList=NULL;
+
+                mu   = Interpolation(OutNeutron.Wavelength, 3, pLmbdList, pMuList, 44);
+                prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
+              }
+              else
+              {	prob = 0.0;
+              }
+              break;
+
+            default:
+              Error("This kind of absorption is not supported");
+          }
+          OutNeutron.Probability *= prob;
+        }
+
+        if (OutNeutron.Probability < 0.0)
+        {
+          Error("NeutronProbability < 0");
+        }
+        else if (OutNeutron.Probability < wei_min)
+        {
+          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+          continue;
+        }
+        else
+        {	WriteNeutron(&OutNeutron);
+          WriteIAP(&InputNeutrons[i], VT_PASSED);
+        }
       }
     }
   }

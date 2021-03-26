@@ -48,8 +48,6 @@
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_DETECTOR;
-
 DetectorType Detector; 
 long       GenNeutrons=10,        // repetition: multiply neutrons to get diff. interaction lengths (probability from integration region L/GenNeutrons)
            lost=0,                // give Warning if neutron intersetcs tube detector but tube in which interaction happens is not found
@@ -96,6 +94,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule=MCN_DETECTOR;
+
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);    // module specific initialization
@@ -118,244 +118,251 @@ int main(int argc, char *argv[])
     {
       CHECK
 	
-      // drop neutrons that don't pass the color filter
-      if ( (Detector.minColor >= 0 && InputNeutrons[i].Color < Detector.minColor) ||
-           (Detector.maxColor >= 0 && InputNeutrons[i].Color > Detector.maxColor) ) 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        if (bKeepWrongColour==TRUE)
-        WriteNeutron(&InputNeutrons[i]);
-        continue;
+        WriteNeutron(&(InputNeutrons[i]));
       }
-
-      // pass on neutrons detected by previous detector parts,
-      // last detector in array removes tag and writes output file
-      if( floor(InputNeutrons[i].Color/10000)==1 )
-      {
-        if(!Detector.array)
+      else
+      { 
+        // drop neutrons that don't pass the color filter
+        if ( (Detector.minColor >= 0 && InputNeutrons[i].Color < Detector.minColor) ||
+             (Detector.maxColor >= 0 && InputNeutrons[i].Color > Detector.maxColor) ) 
         {
-          InputNeutrons[i].Color-=10000;
-          if(DetectorOutputFileName)
-          fprintf(outFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",InputNeutrons[i].Position[0],InputNeutrons[i].Position[1],InputNeutrons[i].Position[2],InputNeutrons[i].Time,InputNeutrons[i].Probability,InputNeutrons[i].Color);
+          if (bKeepWrongColour==TRUE)
+          WriteNeutron(&InputNeutrons[i]);
+          continue;
         }
-        WriteNeutron(&InputNeutrons[i]);
-        continue;
-      }
 
-        // Use a copy to work on
-      WorkNeutron = InputNeutrons[i];
-
-      /* First rotate the position and direction of the neutron to the detector frame */
-      RotVector(RotMatrix, WorkNeutron.Position);
-      RotVector(RotMatrix, WorkNeutron.Vector);
-
-      /* absorber/converter particle density in m^-3 */
-      N=(Detector.Absorbertype<2)?(Detector.GasPressure*1e5/(Detector.GasTemperature*kB)):(Detector.SolidAtomDensity*1E27);
-
-      if(NeutronIntersectsDetector(&(WorkNeutron),ISP)) 
-      {
-
-        /* determine the length of the path through the whole detector volume */
-        FullLengthInDetector = DistVector(ISP[0], ISP[1]);
-
-        /*correct for dead zones in tube geometry */
-        if(Detector.Geom==2)
-        { 
-          FullLengthInDetector=0;
-          for (l=1; l<=Detector.NLayers; l++)
+        // pass on neutrons detected by previous detector parts,
+        // last detector in array removes tag and writes output file
+        if( floor(InputNeutrons[i].Color/10000)==1 )
+        {
+          if(!Detector.array)
           {
-            z=0; DistanceTubeLayerExits=0;
-            if(NeutronIntersectsLayer(WorkNeutron.Vector,ISP[0],l,jISP))
-            {	      
-              CopyVector(jISP[0],kISP[1]);
-              while (DistVector(jISP[1],kISP[1])>0.001*Detector.PixelWidth[0])
-              {
-                if (fabs(DistanceTubeLayerExits-DistVector(jISP[1],kISP[1])) < 0.000001)
-                  break;
-                ++z; 
-                DistanceTubeLayerExits=DistVector(jISP[1],kISP[1]);
-                if(NeutronIntersectsTube(WorkNeutron.Vector,kISP[1],l,iISP,kISP))
-                  FullLengthInDetector+=DistVector(iISP[0],iISP[1]);
-                if (z>Detector.NLayers+1 && z>Detector.NColumns+1 && z>Detector.NRows+1)
-                  Error("tube with exit point close to layer exit not found!");
-              }
-            }		
-          } 
+            InputNeutrons[i].Color-=10000;
+            if(DetectorOutputFileName)
+            fprintf(outFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",InputNeutrons[i].Position[0],InputNeutrons[i].Position[1],InputNeutrons[i].Position[2],InputNeutrons[i].Time,InputNeutrons[i].Probability,InputNeutrons[i].Color);
+          }
+          WriteNeutron(&InputNeutrons[i]);
+          continue;
         }
-	
-        /* total cross-section (in m^2) */
-        sigma=GetXsec(Detector.Absorbertype,WorkNeutron.Wavelength);
 
-        if (Detector.usage==1)
-        GenNeutrons=1;
-        //------------------------------------------------------
+          // Use a copy to work on
+        WorkNeutron = InputNeutrons[i];
 
-        for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
+        /* First rotate the position and direction of the neutron to the detector frame */
+        RotVector(RotMatrix, WorkNeutron.Position);
+        RotVector(RotMatrix, WorkNeutron.Vector);
+
+        /* absorber/converter particle density in m^-3 */
+        N=(Detector.Absorbertype<2)?(Detector.GasPressure*1e5/(Detector.GasTemperature*kB)):(Detector.SolidAtomDensity*1E27);
+
+        if(NeutronIntersectsDetector(&(WorkNeutron),ISP)) 
         {
-          /* determine the interaction point in the detector volume and the detector signal point*/
-          LengthTillScattering = MonteCarlo(0,FullLengthInDetector); 
-          for(j=0; j<3; j++)
-            SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
 
-          /* find interaction point in tubes */
+          /* determine the length of the path through the whole detector volume */
+          FullLengthInDetector = DistVector(ISP[0], ISP[1]);
+
+          /*correct for dead zones in tube geometry */
           if(Detector.Geom==2)
           { 
-            LengthInAbsorberMaterial=0; FoundTube=0;
+            FullLengthInDetector=0;
             for (l=1; l<=Detector.NLayers; l++)
             {
               z=0; DistanceTubeLayerExits=0;
               if(NeutronIntersectsLayer(WorkNeutron.Vector,ISP[0],l,jISP))
               {	      
                 CopyVector(jISP[0],kISP[1]);
-                while (DistVector(jISP[1],kISP[1])>0.0001)
+                while (DistVector(jISP[1],kISP[1])>0.001*Detector.PixelWidth[0])
                 {
-                  if( fabs(DistanceTubeLayerExits-DistVector(jISP[1],kISP[1])) < 0.000001)
+                  if (fabs(DistanceTubeLayerExits-DistVector(jISP[1],kISP[1])) < 0.000001)
                     break;
                   ++z; 
                   DistanceTubeLayerExits=DistVector(jISP[1],kISP[1]);
                   if(NeutronIntersectsTube(WorkNeutron.Vector,kISP[1],l,iISP,kISP))
-                    LengthInAbsorberMaterial+=DistVector(iISP[0],iISP[1]);
-                  if(z>Detector.NLayers+1 && z>Detector.NColumns+1 && z>Detector.NRows+1)
+                    FullLengthInDetector+=DistVector(iISP[0],iISP[1]);
+                  if (z>Detector.NLayers+1 && z>Detector.NColumns+1 && z>Detector.NRows+1)
                     Error("tube with exit point close to layer exit not found!");
-                }
-                if(LengthInAbsorberMaterial>LengthTillScattering)
-                {
-                  FoundTube=1;
-                  for(j=0; j<3; j++)
-                  {
-                    SP[j]=iISP[1][j]-WorkNeutron.Vector[j]*(LengthInAbsorberMaterial-LengthTillScattering);
-                  }
-                  break;
                 }
               }		
             } 
           }
+	
+          /* total cross-section (in m^2) */
+          sigma=GetXsec(Detector.Absorbertype,WorkNeutron.Wavelength);
 
-          /* solid layers, only in non-tube geometry so far: cast SP onto solid layer for correct time quantization*/
-          if( (Detector.Absorbertype==2 || Detector.Absorbertype==3) && Detector.usage==0 )
-          {
-            CubeDetLayerSpot(SP);
-          }
+          if (Detector.usage==1)
+          GenNeutrons=1;
+          //------------------------------------------------------
 
-          CopyVector(SP,DetSignal);
-	  
-          /* resolution */
-          if(Detector.Resolution[1]>0 && (Detector.Geom==0 || !Detector.DG.Tube.vertTubeOrientation) )
-            DetSignal[1]=DistrGauss(DetSignal[1],Detector.Resolution[1]); 
-          if(Detector.Resolution[2]>0 && (Detector.Geom==0 || Detector.DG.Tube.vertTubeOrientation) )
-            DetSignal[2]=DistrGauss(DetSignal[2],Detector.Resolution[2]);
-          if(Detector.Resolution[0]>0 && Detector.Geom==0 )
-            DetSignal[0]=DistrGauss(DetSignal[0],Detector.Resolution[0]);
-	  
-          /* interaction probability */
-          if (Eff.maxdata > 0) 
-          { //efficiency from file
-            ScatteringProb = GetLambdaProbFromEff(WorkNeutron.Wavelength,WorkNeutron.ID)* Detector.EfficiencyMod;
-          } 
-          else 
+          for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
           {
-            switch(Detector.Absorbertype)
-            {
-              case 0:  //BF3
-              case 1:  //He3
-                ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100 * Detector.EfficiencyMod;
-                break;
-              case 2:  //solid B10
-              case 3:  // Li6
-                // solid layer approximation: scale length in material with layer_thickness/total_thickness
-                // 2 solid layers per tube/anode layer
-                LengthModifyer=2*Detector.NLayers*Detector.SolidAbsorberthickness/Detector.Thickness;
-                ScatteringProb = N*sigma*exp(-N*sigma*(LengthModifyer*LengthTillScattering)/100) * (LengthModifyer*FullLengthInDetector)/100* Detector.EfficiencyMod;
-                break; 
-              case 5:  // other; use wavelength-independent input eff
-                default:
-                NSigma=-log(1-Detector.EfficiencyMod)/Detector.Thickness;
-                ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * FullLengthInDetector;
-                break;
+            /* determine the interaction point in the detector volume and the detector signal point*/
+            LengthTillScattering = MonteCarlo(0,FullLengthInDetector); 
+            for(j=0; j<3; j++)
+              SP[j]= ISP[0][j] +LengthTillScattering*WorkNeutron.Vector[j];
+
+            /* find interaction point in tubes */
+            if(Detector.Geom==2)
+            { 
+              LengthInAbsorberMaterial=0; FoundTube=0;
+              for (l=1; l<=Detector.NLayers; l++)
+              {
+                z=0; DistanceTubeLayerExits=0;
+                if(NeutronIntersectsLayer(WorkNeutron.Vector,ISP[0],l,jISP))
+                {	      
+                  CopyVector(jISP[0],kISP[1]);
+                  while (DistVector(jISP[1],kISP[1])>0.0001)
+                  {
+                    if( fabs(DistanceTubeLayerExits-DistVector(jISP[1],kISP[1])) < 0.000001)
+                      break;
+                    ++z; 
+                    DistanceTubeLayerExits=DistVector(jISP[1],kISP[1]);
+                    if(NeutronIntersectsTube(WorkNeutron.Vector,kISP[1],l,iISP,kISP))
+                      LengthInAbsorberMaterial+=DistVector(iISP[0],iISP[1]);
+                    if(z>Detector.NLayers+1 && z>Detector.NColumns+1 && z>Detector.NRows+1)
+                      Error("tube with exit point close to layer exit not found!");
+                  }
+                  if(LengthInAbsorberMaterial>LengthTillScattering)
+                  {
+                    FoundTube=1;
+                    for(j=0; j<3; j++)
+                    {
+                      SP[j]=iISP[1][j]-WorkNeutron.Vector[j]*(LengthInAbsorberMaterial-LengthTillScattering);
+                    }
+                    break;
+                  }
+                }		
+              } 
             }
-          }
 
-          if(Detector.Geom==2 && !FoundTube)
-          {
-            ScatteringProb=0;
-            lost++;
-          }
+            /* solid layers, only in non-tube geometry so far: cast SP onto solid layer for correct time quantization*/
+            if( (Detector.Absorbertype==2 || Detector.Absorbertype==3) && Detector.usage==0 )
+            {
+              CubeDetLayerSpot(SP);
+            }
 
-          DetectorSpot(DetSignal, DetSpot);  
+            CopyVector(SP,DetSignal);
+	  
+            /* resolution */
+            if(Detector.Resolution[1]>0 && (Detector.Geom==0 || !Detector.DG.Tube.vertTubeOrientation) )
+              DetSignal[1]=DistrGauss(DetSignal[1],Detector.Resolution[1]); 
+            if(Detector.Resolution[2]>0 && (Detector.Geom==0 || Detector.DG.Tube.vertTubeOrientation) )
+              DetSignal[2]=DistrGauss(DetSignal[2],Detector.Resolution[2]);
+            if(Detector.Resolution[0]>0 && Detector.Geom==0 )
+              DetSignal[0]=DistrGauss(DetSignal[0],Detector.Resolution[0]);
+	  
+            /* interaction probability */
+            if (Eff.maxdata > 0) 
+            { //efficiency from file
+              ScatteringProb = GetLambdaProbFromEff(WorkNeutron.Wavelength,WorkNeutron.ID)* Detector.EfficiencyMod;
+            } 
+            else 
+            {
+              switch(Detector.Absorbertype)
+              {
+                case 0:  //BF3
+                case 1:  //He3
+                  ScatteringProb = N*sigma*exp(-N*sigma*LengthTillScattering/100) * FullLengthInDetector/100 * Detector.EfficiencyMod;
+                  break;
+                case 2:  //solid B10
+                case 3:  // Li6
+                  // solid layer approximation: scale length in material with layer_thickness/total_thickness
+                  // 2 solid layers per tube/anode layer
+                  LengthModifyer=2*Detector.NLayers*Detector.SolidAbsorberthickness/Detector.Thickness;
+                  ScatteringProb = N*sigma*exp(-N*sigma*(LengthModifyer*LengthTillScattering)/100) * (LengthModifyer*FullLengthInDetector)/100* Detector.EfficiencyMod;
+                  break; 
+                case 5:  // other; use wavelength-independent input eff
+                  default:
+                  NSigma=-log(1-Detector.EfficiencyMod)/Detector.Thickness;
+                  ScatteringProb = NSigma*exp(-NSigma*LengthTillScattering) * FullLengthInDetector;
+                  break;
+              }
+            }
 
-          TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
-          V_FROM_LAMBDA(WorkNeutron.Wavelength);
+            if(Detector.Geom==2 && !FoundTube)
+            {
+              ScatteringProb=0;
+              lost++;
+            }
 
-          /* everythings done, so rot back the vectors and put all together 
-          and set output data of the neutron */
-          OutNeutron             = WorkNeutron;
-          OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
-          OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
+            DetectorSpot(DetSignal, DetSpot);  
+
+            TimeTillScattering=DistVector(SP,WorkNeutron.Position)/
+            V_FROM_LAMBDA(WorkNeutron.Wavelength);
+
+            /* everythings done, so rot back the vectors and put all together 
+            and set output data of the neutron */
+            OutNeutron             = WorkNeutron;
+            OutNeutron.Time        = WorkNeutron.Time + TimeTillScattering;
+            OutNeutron.Probability = WorkNeutron.Probability * ScatteringProb / GenNeutrons;
 
 
-          // tag detected neutrons for detector array 
-          if(Detector.array)
-          OutNeutron.Color+=10000;
+            // tag detected neutrons for detector array 
+            if(Detector.array)
+            OutNeutron.Color+=10000;
  
-          RotBackVector(RotMatrix,SP);
-          RotBackVector(RotMatrix,DetSignal);
-          RotBackVector(RotMatrix,DetSpot);	
+            RotBackVector(RotMatrix,SP);
+            RotBackVector(RotMatrix,DetSignal);
+            RotBackVector(RotMatrix,DetSpot);	
 	      		      
-          if (Detector.usage==0) 
-          {           // normal
-            CopyVector(DetSpot, OutNeutron.Position);
-            NormVector(DetSpot);
-            CopyVector(DetSpot, OutNeutron.Vector);
-          }
-          else if (Detector.usage==1)
-          { //monitor only
-            OutNeutron.Probability = WorkNeutron.Probability;
-            CopyVector(SP, OutNeutron.Position);
-            RotBackVector(RotMatrix,OutNeutron.Vector);
-          }
-          else if (Detector.usage==2)
-          { // grid off
-            CopyVector(DetSignal, OutNeutron.Position);
-            NormVector(DetSignal);
-            CopyVector(DetSignal, OutNeutron.Vector);
-          }
+            if (Detector.usage==0) 
+            {           // normal
+              CopyVector(DetSpot, OutNeutron.Position);
+              NormVector(DetSpot);
+              CopyVector(DetSpot, OutNeutron.Vector);
+            }
+            else if (Detector.usage==1)
+            { //monitor only
+              OutNeutron.Probability = WorkNeutron.Probability;
+              CopyVector(SP, OutNeutron.Position);
+              RotBackVector(RotMatrix,OutNeutron.Vector);
+            }
+            else if (Detector.usage==2)
+            { // grid off
+              CopyVector(DetSignal, OutNeutron.Position);
+              NormVector(DetSignal);
+              CopyVector(DetSignal, OutNeutron.Vector);
+            }
 
-          // write out neutrons that shall be detected	
-          if ( OutNeutron.Probability>wei_min )  
-          {
-            if (Detector.addColor > 0) 
-            OutNeutron.Color += Detector.addColor;
-            WriteNeutron(&OutNeutron);	
-            NumDetected++;
-            FluxDetected+=OutNeutron.Probability;
-            if(!Detector.array && DetectorOutputFileName)
-              fprintf(outFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color);
-          }
+            // write out neutrons that shall be detected	
+            if ( OutNeutron.Probability>wei_min )  
+            {
+              if (Detector.addColor > 0) 
+              OutNeutron.Color += Detector.addColor;
+              WriteNeutron(&OutNeutron);	
+              NumDetected++;
+              FluxDetected+=OutNeutron.Probability;
+              if(!Detector.array && DetectorOutputFileName)
+                fprintf(outFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color);
+            }
 
-          // write interaction point - only once per incoming trajectory
-          if (NeutCount < 1)
-          {
-            DrawNeutron=OutNeutron;
-            CopyVector(SP, DrawNeutron.Position);
-            if(!Detector.array)
-            DrawNeutron.Color+=10000;
-            WriteIAP(&DrawNeutron, VT_DETECTED);
-          }
+            // write interaction point - only once per incoming trajectory
+            if (NeutCount < 1)
+            {
+              DrawNeutron=OutNeutron;
+              CopyVector(SP, DrawNeutron.Position);
+              if(!Detector.array)
+              DrawNeutron.Color+=10000;
+              WriteIAP(&DrawNeutron, VT_DETECTED);
+            }
 
-        } /* loop count */
-      } 
-      else /* if neutron does not intersect detector */ 
-      {
-	      if(Detector.array)
-          WriteNeutron(&InputNeutrons[i]);
-        else 
-        { //draw trajectories of undetected neutrons up to detector end
-          DrawNeutron=WorkNeutron;
-          RotBackVector(RotMatrix, DrawNeutron.Vector);
-          RotBackVector(RotMatrix, DrawNeutron.Position);
-          CopyVector(DrawNeutron.Vector, vShift);
-          MultiplyByScalar(vShift, (Detector.Distance+Detector.Thickness/2));
-          AddVector(DrawNeutron.Position,vShift);
-          WriteIAP(&DrawNeutron, VT_OUTSIDE);
+          } /* loop count */
+        } 
+        else /* if neutron does not intersect detector */ 
+        {
+	        if(Detector.array)
+            WriteNeutron(&InputNeutrons[i]);
+          else 
+          { //draw trajectories of undetected neutrons up to detector end
+            DrawNeutron=WorkNeutron;
+            RotBackVector(RotMatrix, DrawNeutron.Vector);
+            RotBackVector(RotMatrix, DrawNeutron.Position);
+            CopyVector(DrawNeutron.Vector, vShift);
+            MultiplyByScalar(vShift, (Detector.Distance+Detector.Thickness/2));
+            AddVector(DrawNeutron.Position,vShift);
+            WriteIAP(&DrawNeutron, VT_OUTSIDE);
+          }
         }
       }
     } //for(i=0; i<NumNeutGot; i++)
@@ -661,12 +668,6 @@ void OwnCleanup()
     fprintf(LogFilePtr,"WARNING: %ld neutrons lost between tubes\n",lost);
  
   // fprintf(LogFilePtr," \n");
-
-  /* set description for instrument plot */
-  stPicture.dWPar  = Detector.Width;
-  stPicture.dHPar  = Detector.Width/Detector.NColumns;
-  stPicture.dRPar  = Detector.Distance;
-  stPicture.eType  = (short) Detector.Geom;
 } 
 
 

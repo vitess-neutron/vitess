@@ -32,8 +32,6 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-McCompID _eModule=MCN_SMPL_POWDER;
-  
 // Input parameters
 char   StructFileName[200]; // file  structure factor file name 
 char  *SampleFileName;      // -S    pointer to the parameter file name (located in argv) 
@@ -92,6 +90,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
+  _eModule = MCN_SMPL_POWDER;
+  
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.9");
 
@@ -123,105 +123,113 @@ int main(int argc, char *argv[])
     {
       CHECK;
 
-      /* First, shift the origin of the system to the middle of the sample   */
-      SubVector(InputNeutrons[i].Position, stSample.Position);
-
-      /* Do anything to be done for the Scattering */
-      if (NeutronIntersectsSample(&(InputNeutrons[i]), &stSample, RotMatrixSmpl, InISP, &nisp, VT_IN))
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        if (nisp == 1)
-          CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        /* First, shift the origin of the system to the middle of the sample   */
+        SubVector(InputNeutrons[i].Position, stSample.Position);
 
-        /* the neutron may be scattered between InISP[0] and InISP[1] */
-        /* Lfb full path length in the sample before scattering       */
-        Lbf = DistVector(InISP[0], InISP[1]);
+        /* Do anything to be done for the Scattering */
+        if (NeutronIntersectsSample(&(InputNeutrons[i]), &stSample, RotMatrixSmpl, InISP, &nisp, VT_IN))
+        {
+          if (nisp == 1)
+            CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
 
-        /* MONTE CARLO CHOICE: Where is the neutron scattered         */
-        /* Distance Ls between entrance of the neutron InISP[0] and   */
-        /* the scattering point SP 				      */
-        Ls = MonteCarlo(0, Lbf);
+          /* the neutron may be scattered between InISP[0] and InISP[1] */
+          /* Lfb full path length in the sample before scattering       */
+          Lbf = DistVector(InISP[0], InISP[1]);
 
-        /* which is the corresponding scattering point  	   */
-        /*   SP = InISP[0] + Ls * OutNeutron.Vector		   */
-        for (j=0; j<3; j++)
-          SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
+          /* MONTE CARLO CHOICE: Where is the neutron scattered         */
+          /* Distance Ls between entrance of the neutron InISP[0] and   */
+          /* the scattering point SP 				      */
+          Ls = MonteCarlo(0, Lbf);
 
-        /* Determine the rotation matrix to point the neutron along the +x axis				      		    */
-        NormVector(InputNeutrons[i].Vector);
-        RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
+          /* which is the corresponding scattering point  	   */
+          /*   SP = InISP[0] + Ls * OutNeutron.Vector		   */
+          for (j=0; j<3; j++)
+            SP[j] = InISP[0][j]+Ls*InputNeutrons[i].Vector[j];
+
+          /* Determine the rotation matrix to point the neutron along the +x axis				      		    */
+          NormVector(InputNeutrons[i].Vector);
+          RotMatrixX(InputNeutrons[i].Vector, RotMatrixNeut);
 
 
-        //   First the coherent scattering           
-        //--------------------------------
-        /*   Scatter at each suitable |F(k)|            */
-        /* Helpfac contains the non direction dependent term                         */
-        /* G.L. Squires, "Introduction to the theory of thermal neutron scattering", */
-        /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
-        HelpFac = Lbf*pow(InputNeutrons[i].Wavelength,3)/(4.0*UCV*UCV);
+          //   First the coherent scattering           
+          //--------------------------------
+          /*   Scatter at each suitable |F(k)|            */
+          /* Helpfac contains the non direction dependent term                         */
+          /* G.L. Squires, "Introduction to the theory of thermal neutron scattering", */
+          /* (1978), equation (3.103)  (UCV is the unit cell volume)                   */
+          HelpFac = Lbf*pow(InputNeutrons[i].Wavelength,3)/(4.0*UCV*UCV);
 
-        if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
-          InputNeutrons[i].Color = nColor;
-
-        /* Do the scattering for each StrucFac */
-        for (Nth=0; StrucFac[Nth][0] > 0.5*InputNeutrons[i].Wavelength && Nth < NumStrucFac; Nth++)
-        { 
-          CHECK
-
-          /* ScTheta is the angle of the scattered neutron with its original flight path */
-          ScTheta = 2.0*asin(InputNeutrons[i].Wavelength/(2.0*StrucFac[Nth][0]));
-
-          /* Only trajectoris between Theta-DelTheta and Theta+DelTheta are regarded. 
-             The deviation from straight direction (neutTheta) of the incoming neutrons
-             is supposed to be neglectible                            */
-          if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
-          {
-            /* ScProb is the scattering-cross section (Squires 3.103) */
-            /*  devided by the sample area                            */
-            /* as I_sc = sigma * flux = sigma / area * current        */
-            /* it contains the d-spacing dependent terms              */
-            /*  and the d-spacing independent HelpFac terms s.o.      */
-            ScProb = HelpFac / sin(0.5*ScTheta) * StrucFac[Nth][1] / GenNeutrons;
-
-            /* Bring the neutron several times on the cone           */
-            for(iGen=0; iGen<GenNeutrons; iGen++)
-            { 
-              /* ScPhi is the angle of the scattered neutron with the +y-axis */
-              /* The expression for the focussing is not staight forward,       */
-              /* rather lengthy (and probably buggy) it may take a while       */
-              ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
-
-              /* Ok, now everthing needed is known, put it together */
-              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb,
-                                  ScTheta, ScPhi, &stSample, RotMatrixNeut, RotMatrixSmpl);
-            }
-          } 
-        }  
-
-        // Second the incoherent scattering 
-        //--------------------------------
-        if (bIncohScat)
-        { 
           if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
-            InputNeutrons[i].Color = (short)(nColor+1);
+            InputNeutrons[i].Color = nColor;
 
-          for(iGen=0; iGen<GenNeutrons; iGen++) 
-          {
-            /* Determine the scattering angle */
-            ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-            ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+          /* Do the scattering for each StrucFac */
+          for (Nth=0; StrucFac[Nth][0] > 0.5*InputNeutrons[i].Wavelength && Nth < NumStrucFac; Nth++)
+          { 
+            CHECK
 
-            /* Scattering probability */
-            ScProb = Lbf*MuInc * sin(ScTheta) / GenNeutrons;
+            /* ScTheta is the angle of the scattered neutron with its original flight path */
+            ScTheta = 2.0*asin(InputNeutrons[i].Wavelength/(2.0*StrucFac[Nth][0]));
 
-            ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
-                                ScTheta, ScPhi, &stSample, RotMatrixNeut,  RotMatrixSmpl);
+            /* Only trajectoris between Theta-DelTheta and Theta+DelTheta are regarded. 
+               The deviation from straight direction (neutTheta) of the incoming neutrons
+               is supposed to be neglectible                            */
+            if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) 
+            {
+              /* ScProb is the scattering-cross section (Squires 3.103) */
+              /*  devided by the sample area                            */
+              /* as I_sc = sigma * flux = sigma / area * current        */
+              /* it contains the d-spacing dependent terms              */
+              /*  and the d-spacing independent HelpFac terms s.o.      */
+              ScProb = HelpFac / sin(0.5*ScTheta) * StrucFac[Nth][1] / GenNeutrons;
+
+              /* Bring the neutron several times on the cone           */
+              for(iGen=0; iGen<GenNeutrons; iGen++)
+              { 
+                /* ScPhi is the angle of the scattered neutron with the +y-axis */
+                /* The expression for the focussing is not staight forward,       */
+                /* rather lengthy (and probably buggy) it may take a while       */
+                ScPhi = MonteCarlo(Phi-DelPhi,Phi+DelPhi);
+
+                /* Ok, now everthing needed is known, put it together */
+                ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb,
+                                    ScTheta, ScPhi, &stSample, RotMatrixNeut, RotMatrixSmpl);
+              }
+            } 
+          }  
+
+          // Second the incoherent scattering 
+          //--------------------------------
+          if (bIncohScat)
+          { 
+            if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
+              InputNeutrons[i].Color = (short)(nColor+1);
+
+            for(iGen=0; iGen<GenNeutrons; iGen++) 
+            {
+              /* Determine the scattering angle */
+              ScPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+              ScTheta  = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+
+              /* Scattering probability */
+              ScProb = Lbf*MuInc * sin(ScTheta) / GenNeutrons;
+
+              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
+                                  ScTheta, ScPhi, &stSample, RotMatrixNeut,  RotMatrixSmpl);
+            }
           }
-        }
-      } // end 'NeutronIntersect...
-		  else if (bTreatAll==TRUE)
-		  {	
-			  WriteNeutron(&InputNeutrons[i]);
-		  }
+        } // end 'NeutronIntersect...
+		    else if (bTreatAll==TRUE)
+		    {	
+			    WriteNeutron(&InputNeutrons[i]);
+		    }
+      }
     }
   }
 

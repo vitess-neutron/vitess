@@ -160,7 +160,6 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
 
 extern long iModuleId;
 
-McCompID _eModule=MCN_GUIDE;
 
 // input parameters
 // ----------------
@@ -340,15 +339,12 @@ static TotalID C_I[2][MAXWORKER];
 /******************************/
 int main(int argc, char *argv[])
 {
-  /********************************************************************************************/
-  /* This module reads in a file of neutron structures, and defines a neutron guide as a set  */
-  /* of five infinite planes with a global critical angle. It outputs the coordinates and time*/
-  /* displacement of any neutrons that pass through the guide without being absorbed.         */
-  /*                                                                                          */
-  /* Anything not directly commented is an InputNeutrons or an output routine.                */
-  /********************************************************************************************/
-
   int i=0, needPreRand=0;
+
+  /******************************************/
+  /** Initialisation and parameter input   **/
+  /******************************************/  
+  _eModule=MCN_GUIDE;
 
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "3.12");
@@ -1196,432 +1192,440 @@ void processNeutron(int neutron_i, int thread_i)
   Plane  *gW;
   Neutron *myneutron;
   NeutronGuide guide;
-  double TimeOF1, TimeOF2,
-         dDelYr, dDelYl,     // difference in y-position of the left and right side of a piece resp.
-         Length1,            // length of a piece incl. diff. in z-position resp.
-         Length2r,Length2l,  // length of a piece incl. diff. in y-position. for left and right side of a piece resp.
-         right_beg,left_beg, // right and left position of the beginning of a channel of a piece
-         right_end,left_end; // right and left position of the end of a channel of a piece
+  double TimeOF1=0.0, TimeOF2=0.0,
+         dDelYr =0.0, dDelYl=0.0,     // difference in y-position of the left and right side of a piece resp.
+         Length1=0.0,                 // length of a piece incl. diff. in z-position resp.
+         Length2r =0.0,Length2l=0.0,  // length of a piece incl. diff. in y-position. for left and right side of a piece resp.
+         right_beg=0.0,left_beg=0.0,  // right and left position of the beginning of a channel of a piece
+         right_end=0.0,left_end=0.0;  // right and left position of the end of a channel of a piece
 
   double dXpce = GdXpce;
   // double dDelY = GdDelY;
   double dDelZ = GdDelZ;
 
   myneutron = InputNeutrons + neutron_i;
-  if (nColour!=-1 && nColour!=myneutron->Color) goto dump; //Wrong color neutrons will be written!
 
-  /* myneutron->Position.X = 0.0;   !!!!!!!! */
-  CopyVector(BegPosM, BegPosS);
-  memcpy(RotMatrixS, RotMatrixM, sizeof(RotMatrixS));
+  if (IsEOB(myneutron)==TRUE)
+  {
+    WriteNeutronParallel(myneutron, thread_i);
+  }
+  else
+  { 
+    if (nColour!=-1 && nColour!=myneutron->Color) goto dump; //Wrong color neutrons will be written!
+
+    /* myneutron->Position.X = 0.0;   !!!!!!!! */
+    CopyVector(BegPosM, BegPosS);
+    memcpy(RotMatrixS, RotMatrixM, sizeof(RotMatrixS));
   
-  // Initialize the matrices for parallel MCPL output
-  if (sMCPLWrite !=0)
-  {
-    CopyVector(BegPosM, BegPosSThread[thread_i]);
-    for(int i=0; i<3; i++)
-    {
-      for(int k=0; k<3;k++)
-      {
-        RotMatrixSThread[thread_i*3+i][k] = RotMatrixM[i][k];
-      }
-    }
-    FillRMatrixZY(RotMatrixSThread[3*thread_i], 0, 0);  //TMP solution because RotMatrixM is not initialized.
-  }
-
-  // Check to see if the neutron is initially in the entrance to the guide
-  // ---------------------------------------------------------------------
-  if (fabs(myneutron->Position[1]) > GuideEntrWidth/2.0 ||
-      fabs(myneutron->Position[2]) > GuideEntrHeight/2.0)
-  { WriteIAP(myneutron, VT_OUTSIDE);
-    return;
-  }
-
-  test = TRUE;
-  kChan = 0;
-  TimeOF1 = 0.0;
-  TimeOF2 = 0.0;
-
-  if (TotalLength == 0.0) goto zerolength;
-
-  guide = TGuide[thread_i];
-  gW = &(guide.Wall[0]);
-
-  /************** start channel option *********************/
-  if (nChannels > 1) 
-  {
-    int k;
-    for (k=0; k < nChannels; k++) 
-    {
-      right_beg = -GuideEntrWidth/2.0 + k*(pPieces[0].Wchan + spacer);
-      left_beg  = right_beg + pPieces[0].Wchan;
-
-      if (    (right_beg < myneutron->Position[1]) 
-           && (left_beg  > myneutron->Position[1]))  
-      {
-        kChan = k;
-        myneutron->Color = (short)(k+1);
-        /* left and right walls of guide exchanged by the channel walls             */
-        /* for elliptical parabolic shape, this has to be calculated for each piece */
-        if (eGuideShapeY!=VT_PARABOLIC && eGuideShapeY!=VT_ELLIPTIC && eGuideShapeY!=VT_FROM_FILE) {
-          right_end = -GuideExitWidth/2.0 + kChan*(pPieces[nPieces].Wchan + spacer);
-          left_end  =  right_end + pPieces[nPieces].Wchan;
-          dDelYr    =  right_end - right_beg;
-          dDelYl    =  left_end  - left_beg;
-          Length2r  =  sqrt(dXpce*dXpce+dDelYr*dDelYr);
-          Length2l  =  sqrt(dXpce*dXpce+dDelYl*dDelYl);
-          gW[GW_LEFT].A = -dDelYl/Length2l;
-          gW[GW_LEFT].B =  dXpce /Length2l;
-          gW[GW_LEFT].D =  gW[GW_LEFT].B*(-left_beg);
-          gW[GW_RIGHT].A = -dDelYr/Length2r;
-          gW[GW_RIGHT].B =  dXpce /Length2r;
-          gW[GW_RIGHT].D =  gW[GW_RIGHT].B*(-right_beg);
-        }
-        break;
-      }
-    }
-    if (k==nChannels)
-    { WriteIAP(myneutron, VT_OUTSIDE); /* neutron blocked by spacer */
-      return;
-    }
-  }
-  /************** end channel option **************************/
-
-
-  /****************************************************************************************/
-  /* Pass a pointer to the neutron and the guide structure variable to a subroutine to do */
-  /* the donkey work. The return value is the total length of the flight path through the */
-  /* guide, or -1.0 if it missed all plates and the exit (should be impossible).          */
-  /****************************************************************************************/
-
-  PRefOut = GRefOut + thread_i;
-  PRefOut->RefCount = 0;
-  PRefOut->RefCountY = 0;
-  PRefOut->RefCountZ = 0;
-  PRefOut->insert_at = 0;
-  PRefOut->cneutrons = 0;
-
-  for (j=0; j < nPieces; j++) 
-  {
-    CHECK;
-
-    // In case of several pieces:
-    //   planes must be adjusted for each piece (depending on the guide shape)
-    if (nPieces > 1) 
-    {
-      dXpce = pPieces[j+1].Xpce - pPieces[j].Xpce;
-
-      switch (eGuideShapeY) 
-      {
-        case VT_CURVED:
-        case VT_LIN_CURV:
-          /* last piece has an output plane normal to the guide direction, the others are tilted  */
-          if (j == nPieces-1) 
-          {
-            gW[eGwExit].A =  1.0;
-            gW[eGwExit].B =  0.0;
-            gW[eGwExit].D = -dXpce;
-          } 
-          else 
-          {
-            gW[eGwExit].A =  dCosBetH;
-            gW[eGwExit].B =  dSinBetH;
-            gW[eGwExit].D = -gW[eGwExit].A * dXpce;
-          }
-          if (eGuideShapeY==VT_LIN_CURV)
-          { /* left and right walls are moved  */
-            gW[GW_LEFT].D  = -gW[GW_LEFT].B  * pPieces[j].Ypce;
-            gW[GW_RIGHT].D =  gW[GW_RIGHT].B * pPieces[j].Ypce;
-          }
-          break;
-
-        case VT_LINEAR:
-          /* left and right walls are moved  */
-          gW[GW_LEFT].D  = -gW[GW_LEFT].B * pPieces[j].Ypce;
-          gW[GW_RIGHT].D = gW[GW_RIGHT].B * pPieces[j].Ypce;
-          break;
-
-        case VT_PARABOLIC:
-        case VT_ELLIPTIC:
-        case VT_FROM_FILE:
-          /* left and right walls are moved  */
-          if (nChannels > 1) 
-          {
-            right_beg = -pPieces[j].Ypce   + kChan*(pPieces[j].Wchan + spacer);
-            left_beg  =  right_beg + pPieces[j].Wchan;
-            right_end = -pPieces[j+1].Ypce + kChan*(pPieces[j+1].Wchan + spacer);
-            left_end  =  right_end + pPieces[j+1].Wchan;
-            dDelYr    = right_end - right_beg;
-            dDelYl    = left_end  - left_beg;
-            Length2r  = sqrt(dXpce*dXpce+dDelYr*dDelYr);
-            Length2l  = sqrt(dXpce*dXpce+dDelYl*dDelYl);
-          } 
-          else 
-          {
-            right_beg = -pPieces[j].Ypce;
-            left_beg  =  pPieces[j].Ypce;
-            dDelYl    =  pPieces[j+1].Ypce-pPieces[j].Ypce;
-            dDelYr    = -dDelYl;
-            Length2l  = Length2r = sqrt(dXpce*dXpce+dDelYr*dDelYr);
-          }
-          gW[GW_LEFT].A = -dDelYl/Length2l;
-          gW[GW_LEFT].B =  dXpce /Length2l;
-          gW[GW_RIGHT].A = -dDelYr/Length2r;
-          gW[GW_RIGHT].B =  dXpce /Length2r;
-
-          gW[GW_LEFT].D = -gW[GW_LEFT].B *   left_beg;
-          gW[GW_RIGHT].D =  gW[GW_RIGHT].B *(-right_beg);
-
-          gW[eGwExit].D = -dXpce;
-          break;
-        default:;
-      }
-
-      switch (eGuideShapeZ) 
-      {
-        case VT_PARABOLIC:
-        case VT_ELLIPTIC:
-        case VT_FROM_FILE:
-          /* new shift is calculated to move walls */
-          dDelZ   = pPieces[j+1].Zpce-pPieces[j].Zpce;
-          Length1 = sqrt(dXpce*dXpce+dDelZ*dDelZ);
-          gW[GW_TOP].A =  dDelZ/Length1;
-          gW[GW_TOP].C = -dXpce/Length1;
-          gW[GW_BOTTOM].A = -dDelZ/Length1;
-          gW[GW_BOTTOM].C = -dXpce/Length1;
-          /* no break at this point !!! */
-        case VT_LINEAR:
-          /* top and bottom walls are moved */
-          gW[GW_TOP].D = -gW[GW_TOP].C * pPieces[j].Zpce;
-          gW[GW_BOTTOM].D = gW[GW_BOTTOM].C * pPieces[j].Zpce;
-          break;
-        default:;
-      }
-    }
-
-    // Option: Oktogonaler Guide
-    if (nPlanes > 4) 
-    {
-      double cx, sx, rot;
-      long cPlane;
-      rot = rotplane;
-      cPlane = GW_RIGHT;
-      while (fabs(rot) < 90.0 && cPlane < eGwExit) 
-      {
-        cx = cos(rot/180.*M_PI);
-        sx = sin(rot/180.*M_PI);
-        switch (keyAddPlane) 
-        {
-          case 1:
-            cPlane++;
-            gW[cPlane].A = gW[GW_TOP].A;
-            gW[cPlane].B = gW[GW_TOP].B* cx + gW[GW_TOP].C*-sx;
-            gW[cPlane].C = gW[GW_TOP].B* sx + gW[GW_TOP].C* cx;
-            gW[cPlane].D = gW[GW_TOP].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_TOP].A;
-            gW[cPlane].B = gW[GW_TOP].B* cx + gW[GW_TOP].C* sx;
-            gW[cPlane].C = gW[GW_TOP].B*-sx + gW[GW_TOP].C* cx;
-            gW[cPlane].D = gW[GW_TOP].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_BOTTOM].A;
-            gW[cPlane].B = gW[GW_BOTTOM].B* cx + gW[GW_BOTTOM].C*-sx;
-            gW[cPlane].C = gW[GW_BOTTOM].B* sx + gW[GW_BOTTOM].C* cx;
-            gW[cPlane].D = gW[GW_BOTTOM].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_BOTTOM].A;
-            gW[cPlane].B = gW[GW_BOTTOM].B* cx + gW[GW_BOTTOM].C* sx;
-            gW[cPlane].C = gW[GW_BOTTOM].B*-sx + gW[GW_BOTTOM].C* cx;
-            gW[cPlane].D = gW[GW_BOTTOM].D;
-            break;
-          case 2:
-            cPlane++;
-            gW[cPlane].A = gW[GW_LEFT].A;
-            gW[cPlane].B = gW[GW_LEFT].B* cx + gW[GW_LEFT].C*-sx;
-            gW[cPlane].C = gW[GW_LEFT].B* sx + gW[GW_LEFT].C* cx;
-            gW[cPlane].D = gW[GW_LEFT].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_LEFT].A;
-            gW[cPlane].B = gW[GW_LEFT].B* cx + gW[GW_LEFT].C* sx;
-            gW[cPlane].C = gW[GW_LEFT].B*-sx + gW[GW_LEFT].C* cx;
-            gW[cPlane].D = gW[GW_LEFT].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_RIGHT].A;
-            gW[cPlane].B = gW[GW_RIGHT].B* cx + gW[GW_RIGHT].C*-sx;
-            gW[cPlane].C = gW[GW_RIGHT].B* sx + gW[GW_RIGHT].C* cx;
-            gW[cPlane].D = gW[GW_RIGHT].D;
-            cPlane++;
-            gW[cPlane].A = gW[GW_RIGHT].A;
-            gW[cPlane].B = gW[GW_RIGHT].B* cx + gW[GW_RIGHT].C* sx;
-            gW[cPlane].C = gW[GW_RIGHT].B*-sx + gW[GW_RIGHT].C* cx;
-            gW[cPlane].D = gW[GW_RIGHT].D;
-            break;
-        }
-        rot += rotplane;
-      }
-      
-      /****************************************************************************************/
-      /* Check to see if the neutron is initially in the entrance to the guide...             */
-      /****************************************************************************************/
-      if (j == 0) 
-      {
-        double d = 0;
-        int k;
-        for (k=0; k < eGwExit; k++) 
-        {
-          d = (gW[k].B*myneutron->Position[1] + 
-               gW[k].C*myneutron->Position[2] + 
-               gW[k].D) / gW[k].D;
-          if (d < 0)
-            break;
-        }
-        if (d < 0) 
-        {
-          test=FALSE;
-          WriteIAP(myneutron, VT_OUTSIDE); 
-          break; // quit npieces loop
-        }
-      }
-    }
-    
-    if (keyReflVerbose != 0 && j == 0)
-      WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
-    if (j == 0)
-      WriteIAP(myneutron, VT_ENTERED); 
-    
-    // donkey work routine
-    TimeOF1 = PathThroughGuideGravOrder1(thread_i, myneutron, guide, &pPieces[j], PRefOut, j);
-
-    if (keyReflVerbose == 2 && j == nPieces-1)
-      WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwExit, 0., 0.);
-
-    if (TimeOF1 == -1.0) 
-    {
-      test=FALSE;
-      break; // trajectory is lost, quit npieces loop
-    }
-
-    /****************************************************************************************/
-    /* Update the coordinates.                                                              */
-    /****************************************************************************************/
-    myneutron->Position[0] -= dXpce;
-
-    /* Position vector for interaction points adjusted  */
-    if (bVisTraj)
-    {  
-      VectorType Shift={0.0,0.0,0.0};  /* Shift of end position  */
-
-      Shift[0]= dXpce;
-      RotBackVector(RotMatrixS, Shift);    // Transforms Shift from Section coord. syst. to Guide coord. system
-      AddVector(BegPosS, Shift);           // Increments BegPosS with Shift
-    }
-    
-    // Update BegPosS for absolute position calculations for MCPL output
+    // Initialize the matrices for parallel MCPL output
     if (sMCPLWrite !=0)
     {
-        VectorType Shift={dXpce, 0.0, 0.0};
-        RotBackVector(RotMatrixSThread[3*thread_i], Shift);
-        AddVector(BegPosSThread[thread_i], Shift);
-        //SERIAL RotBackVector(RotMatrixSThread, Shift);
-        //SERIAL AddVector(BegPosSThread, Shift);
-    }
-    //End of matrix update 
-
-	  /* For curved guide: frame rotated for next piece, but not after last piece */
-    if (Radius != 0.0)
-    { 
-      /* horizontal position and flight direction adjusted */
-      if (j < nPieces-1)
-      { 
-        RotVector(RotMatrix, myneutron->Position);
-        RotVector(RotMatrix, myneutron->Vector);
-        RotVector(RotMatrix, myneutron->Spin);
-
-        /* Rotation matrix for interaction points adjusted  */
-        if (bVisTraj)
-          FillRMatrixZY(RotMatrixS, RotY, RotZ+(j+1)*beta);
-
-        /* RotMatrixSThread must be updated for MCPL */
-        if (sMCPLWrite!=0)
-        {
-            FillRMatrixZY(RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta); 
-            //SERIAL FillRMatrixZY(RotMatrixSThread, RotY, RotZ+(j+1)*beta);
-        }
-      }
-    }
-
-    TimeOF2 += TimeOF1;
-
-  }  // end j nPieces loop
-
-  if ( (pReflParam || pReflPlot) &&
-       (abs(PRefOut->RefCount) >= nReflMinCnt && (abs(PRefOut->RefCount) <= nReflMaxCnt || nReflMaxCnt == 0)) &&
-       (PRefOut->RefCountY >= nReflMinCntY && (PRefOut->RefCountY <= nReflMaxCntY || nReflMaxCntY == 0)) &&
-       (PRefOut->RefCountZ >= nReflMinCntZ && (PRefOut->RefCountZ <= nReflMaxCntZ || nReflMaxCntZ == 0)) ) 
-  {
-    int condition;
-    switch (abs(keyReflParam)) 
-    {
-      case 1:  condition = (PRefOut->RefCount > 0); break;
-      case 2:
-      case 3:  condition = (PRefOut->RefCount != -1 && PRefOut->RefCount != 0); break;
-      default: condition = 1;
-    }
-    if (condition) 
-    {
-      if (pReflParam) 
+      CopyVector(BegPosM, BegPosSThread[thread_i]);
+      for(int i=0; i<3; i++)
       {
-        char *s = PRefOut->Output;
-        if (NThreads <= 0 || thread_i <= 0)
-          // in serial mode, or if we are thread 0: print to file
-          fprintf(pReflParam, keyReflParam < 0 ? "%s\n" : "%s", s);
-        else {
-          int len = PRefOut->insert_at;
-          if (keyReflParam < 0) 
-          {
-            s[len] = '\n';
-            len++;
-          }
-          addThreadOutput(thread_i, s, len);
+        for(int k=0; k<3;k++)
+        {
+          RotMatrixSThread[thread_i*3+i][k] = RotMatrixM[i][k];
         }
       }
-      if (pReflPlot && PRefOut->neutrons)
-        DoBin(PRefOut, thread_i);
+      FillRMatrixZY(RotMatrixSThread[3*thread_i], 0, 0);  //TMP solution because RotMatrixM is not initialized.
     }
-  }
 
-  if (test==FALSE) return;
+    // Check to see if the neutron is initially in the entrance to the guide
+    // ---------------------------------------------------------------------
+    if (fabs(myneutron->Position[1]) > GuideEntrWidth/2.0 ||
+        fabs(myneutron->Position[2]) > GuideEntrHeight/2.0)
+    { WriteIAP(myneutron, VT_OUTSIDE);
+      return;
+    }
 
-  if (fabs(myneutron->Position[1]) > 0.5*GuideExitWidth ||
-      fabs(myneutron->Position[2]) > 0.5*GuideExitHeight) 
-  {
-    CountMessageThread(thread_i, GUID_OUT_OF_EXIT, myneutron->ID);
-    WriteIAP(myneutron, VT_OUT_OF_WND);
-    return;
-  }
+    test = TRUE;
+    kChan = 0;
+    TimeOF1 = 0.0;
+    TimeOF2 = 0.0;
 
- zerolength:
-  /****************************************************************************************/
-  /* Add the time needed to travel all guide and writeout this trajectory                 */
-  /****************************************************************************************/
-  {
-    double pathlen;            // total neutron pathlength in the guide
-    Neutron Output = *myneutron;
+    if (TotalLength == 0.0) goto zerolength;
 
-    pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
+    guide = TGuide[thread_i];
+    gW = &(guide.Wall[0]);
 
-    Output.Position[0]=0.0;
-    Output.Time += TimeOF2;
-    Output.Probability *= exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
+    /************** start channel option *********************/
+    if (nChannels > 1) 
+    {
+      int k;
+      for (k=0; k < nChannels; k++) 
+      {
+        right_beg = -GuideEntrWidth/2.0 + k*(pPieces[0].Wchan + spacer);
+        left_beg  = right_beg + pPieces[0].Wchan;
 
-    WriteNeutronParallel(&Output, thread_i);
-  }
-  goto my_exit;
- dump:
- {
-    Neutron Output = *myneutron;
-    WriteNeutronParallel(&Output, thread_i);
- }
+        if (    (right_beg < myneutron->Position[1]) 
+             && (left_beg  > myneutron->Position[1]))  
+        {
+          kChan = k;
+          myneutron->Color = (short)(k+1);
+          /* left and right walls of guide exchanged by the channel walls             */
+          /* for elliptical parabolic shape, this has to be calculated for each piece */
+          if (eGuideShapeY!=VT_PARABOLIC && eGuideShapeY!=VT_ELLIPTIC && eGuideShapeY!=VT_FROM_FILE) {
+            right_end = -GuideExitWidth/2.0 + kChan*(pPieces[nPieces].Wchan + spacer);
+            left_end  =  right_end + pPieces[nPieces].Wchan;
+            dDelYr    =  right_end - right_beg;
+            dDelYl    =  left_end  - left_beg;
+            Length2r  =  sqrt(dXpce*dXpce+dDelYr*dDelYr);
+            Length2l  =  sqrt(dXpce*dXpce+dDelYl*dDelYl);
+            gW[GW_LEFT].A = -dDelYl/Length2l;
+            gW[GW_LEFT].B =  dXpce /Length2l;
+            gW[GW_LEFT].D =  gW[GW_LEFT].B*(-left_beg);
+            gW[GW_RIGHT].A = -dDelYr/Length2r;
+            gW[GW_RIGHT].B =  dXpce /Length2r;
+            gW[GW_RIGHT].D =  gW[GW_RIGHT].B*(-right_beg);
+          }
+          break;
+        }
+      }
+      if (k==nChannels)
+      { WriteIAP(myneutron, VT_OUTSIDE); /* neutron blocked by spacer */
+        return;
+      }
+    }
+    /************** end channel option **************************/
+
+
+    /****************************************************************************************/
+    /* Pass a pointer to the neutron and the guide structure variable to a subroutine to do */
+    /* the donkey work. The return value is the total length of the flight path through the */
+    /* guide, or -1.0 if it missed all plates and the exit (should be impossible).          */
+    /****************************************************************************************/
+
+    PRefOut = GRefOut + thread_i;
+    PRefOut->RefCount = 0;
+    PRefOut->RefCountY = 0;
+    PRefOut->RefCountZ = 0;
+    PRefOut->insert_at = 0;
+    PRefOut->cneutrons = 0;
+
+    for (j=0; j < nPieces; j++) 
+    {
+      CHECK;
+
+      // In case of several pieces:
+      //   planes must be adjusted for each piece (depending on the guide shape)
+      if (nPieces > 1) 
+      {
+        dXpce = pPieces[j+1].Xpce - pPieces[j].Xpce;
+
+        switch (eGuideShapeY) 
+        {
+          case VT_CURVED:
+          case VT_LIN_CURV:
+            /* last piece has an output plane normal to the guide direction, the others are tilted  */
+            if (j == nPieces-1) 
+            {
+              gW[eGwExit].A =  1.0;
+              gW[eGwExit].B =  0.0;
+              gW[eGwExit].D = -dXpce;
+            } 
+            else 
+            {
+              gW[eGwExit].A =  dCosBetH;
+              gW[eGwExit].B =  dSinBetH;
+              gW[eGwExit].D = -gW[eGwExit].A * dXpce;
+            }
+            if (eGuideShapeY==VT_LIN_CURV)
+            { /* left and right walls are moved  */
+              gW[GW_LEFT].D  = -gW[GW_LEFT].B  * pPieces[j].Ypce;
+              gW[GW_RIGHT].D =  gW[GW_RIGHT].B * pPieces[j].Ypce;
+            }
+            break;
+
+          case VT_LINEAR:
+            /* left and right walls are moved  */
+            gW[GW_LEFT].D  = -gW[GW_LEFT].B * pPieces[j].Ypce;
+            gW[GW_RIGHT].D = gW[GW_RIGHT].B * pPieces[j].Ypce;
+            break;
+
+          case VT_PARABOLIC:
+          case VT_ELLIPTIC:
+          case VT_FROM_FILE:
+            /* left and right walls are moved  */
+            if (nChannels > 1) 
+            {
+              right_beg = -pPieces[j].Ypce   + kChan*(pPieces[j].Wchan + spacer);
+              left_beg  =  right_beg + pPieces[j].Wchan;
+              right_end = -pPieces[j+1].Ypce + kChan*(pPieces[j+1].Wchan + spacer);
+              left_end  =  right_end + pPieces[j+1].Wchan;
+              dDelYr    = right_end - right_beg;
+              dDelYl    = left_end  - left_beg;
+              Length2r  = sqrt(dXpce*dXpce+dDelYr*dDelYr);
+              Length2l  = sqrt(dXpce*dXpce+dDelYl*dDelYl);
+            } 
+            else 
+            {
+              right_beg = -pPieces[j].Ypce;
+              left_beg  =  pPieces[j].Ypce;
+              dDelYl    =  pPieces[j+1].Ypce-pPieces[j].Ypce;
+              dDelYr    = -dDelYl;
+              Length2l  = Length2r = sqrt(dXpce*dXpce+dDelYr*dDelYr);
+            }
+            gW[GW_LEFT].A = -dDelYl/Length2l;
+            gW[GW_LEFT].B =  dXpce /Length2l;
+            gW[GW_RIGHT].A = -dDelYr/Length2r;
+            gW[GW_RIGHT].B =  dXpce /Length2r;
+
+            gW[GW_LEFT].D = -gW[GW_LEFT].B *   left_beg;
+            gW[GW_RIGHT].D =  gW[GW_RIGHT].B *(-right_beg);
+
+            gW[eGwExit].D = -dXpce;
+            break;
+          default:;
+        }
+
+        switch (eGuideShapeZ) 
+        {
+          case VT_PARABOLIC:
+          case VT_ELLIPTIC:
+          case VT_FROM_FILE:
+            /* new shift is calculated to move walls */
+            dDelZ   = pPieces[j+1].Zpce-pPieces[j].Zpce;
+            Length1 = sqrt(dXpce*dXpce+dDelZ*dDelZ);
+            gW[GW_TOP].A =  dDelZ/Length1;
+            gW[GW_TOP].C = -dXpce/Length1;
+            gW[GW_BOTTOM].A = -dDelZ/Length1;
+            gW[GW_BOTTOM].C = -dXpce/Length1;
+            /* no break at this point !!! */
+          case VT_LINEAR:
+            /* top and bottom walls are moved */
+            gW[GW_TOP].D = -gW[GW_TOP].C * pPieces[j].Zpce;
+            gW[GW_BOTTOM].D = gW[GW_BOTTOM].C * pPieces[j].Zpce;
+            break;
+          default:;
+        }
+      }
+
+      // Option: Oktogonaler Guide
+      if (nPlanes > 4) 
+      {
+        double cx, sx, rot;
+        long cPlane;
+        rot = rotplane;
+        cPlane = GW_RIGHT;
+        while (fabs(rot) < 90.0 && cPlane < eGwExit) 
+        {
+          cx = cos(rot/180.*M_PI);
+          sx = sin(rot/180.*M_PI);
+          switch (keyAddPlane) 
+          {
+            case 1:
+              cPlane++;
+              gW[cPlane].A = gW[GW_TOP].A;
+              gW[cPlane].B = gW[GW_TOP].B* cx + gW[GW_TOP].C*-sx;
+              gW[cPlane].C = gW[GW_TOP].B* sx + gW[GW_TOP].C* cx;
+              gW[cPlane].D = gW[GW_TOP].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_TOP].A;
+              gW[cPlane].B = gW[GW_TOP].B* cx + gW[GW_TOP].C* sx;
+              gW[cPlane].C = gW[GW_TOP].B*-sx + gW[GW_TOP].C* cx;
+              gW[cPlane].D = gW[GW_TOP].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_BOTTOM].A;
+              gW[cPlane].B = gW[GW_BOTTOM].B* cx + gW[GW_BOTTOM].C*-sx;
+              gW[cPlane].C = gW[GW_BOTTOM].B* sx + gW[GW_BOTTOM].C* cx;
+              gW[cPlane].D = gW[GW_BOTTOM].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_BOTTOM].A;
+              gW[cPlane].B = gW[GW_BOTTOM].B* cx + gW[GW_BOTTOM].C* sx;
+              gW[cPlane].C = gW[GW_BOTTOM].B*-sx + gW[GW_BOTTOM].C* cx;
+              gW[cPlane].D = gW[GW_BOTTOM].D;
+              break;
+            case 2:
+              cPlane++;
+              gW[cPlane].A = gW[GW_LEFT].A;
+              gW[cPlane].B = gW[GW_LEFT].B* cx + gW[GW_LEFT].C*-sx;
+              gW[cPlane].C = gW[GW_LEFT].B* sx + gW[GW_LEFT].C* cx;
+              gW[cPlane].D = gW[GW_LEFT].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_LEFT].A;
+              gW[cPlane].B = gW[GW_LEFT].B* cx + gW[GW_LEFT].C* sx;
+              gW[cPlane].C = gW[GW_LEFT].B*-sx + gW[GW_LEFT].C* cx;
+              gW[cPlane].D = gW[GW_LEFT].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_RIGHT].A;
+              gW[cPlane].B = gW[GW_RIGHT].B* cx + gW[GW_RIGHT].C*-sx;
+              gW[cPlane].C = gW[GW_RIGHT].B* sx + gW[GW_RIGHT].C* cx;
+              gW[cPlane].D = gW[GW_RIGHT].D;
+              cPlane++;
+              gW[cPlane].A = gW[GW_RIGHT].A;
+              gW[cPlane].B = gW[GW_RIGHT].B* cx + gW[GW_RIGHT].C* sx;
+              gW[cPlane].C = gW[GW_RIGHT].B*-sx + gW[GW_RIGHT].C* cx;
+              gW[cPlane].D = gW[GW_RIGHT].D;
+              break;
+          }
+          rot += rotplane;
+        }
+      
+        /****************************************************************************************/
+        /* Check to see if the neutron is initially in the entrance to the guide...             */
+        /****************************************************************************************/
+        if (j == 0) 
+        {
+          double d = 0;
+          int k;
+          for (k=0; k < eGwExit; k++) 
+          {
+            d = (gW[k].B*myneutron->Position[1] + 
+                 gW[k].C*myneutron->Position[2] + 
+                 gW[k].D) / gW[k].D;
+            if (d < 0)
+              break;
+          }
+          if (d < 0) 
+          {
+            test=FALSE;
+            WriteIAP(myneutron, VT_OUTSIDE); 
+            break; // quit npieces loop
+          }
+        }
+      }
+    
+      if (keyReflVerbose != 0 && j == 0)
+        WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
+      if (j == 0)
+        WriteIAP(myneutron, VT_ENTERED); 
+    
+      // donkey work routine
+      TimeOF1 = PathThroughGuideGravOrder1(thread_i, myneutron, guide, &pPieces[j], PRefOut, j);
+
+      if (keyReflVerbose == 2 && j == nPieces-1)
+        WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwExit, 0., 0.);
+
+      if (TimeOF1 == -1.0) 
+      {
+        test=FALSE;
+        break; // trajectory is lost, quit npieces loop
+      }
+
+      /****************************************************************************************/
+      /* Update the coordinates.                                                              */
+      /****************************************************************************************/
+      myneutron->Position[0] -= dXpce;
+
+      /* Position vector for interaction points adjusted  */
+      if (bVisTraj)
+      {  
+        VectorType Shift={0.0,0.0,0.0};  /* Shift of end position  */
+
+        Shift[0]= dXpce;
+        RotBackVector(RotMatrixS, Shift);    // Transforms Shift from Section coord. syst. to Guide coord. system
+        AddVector(BegPosS, Shift);           // Increments BegPosS with Shift
+      }
+    
+      // Update BegPosS for absolute position calculations for MCPL output
+      if (sMCPLWrite !=0)
+      {
+          VectorType Shift={dXpce, 0.0, 0.0};
+          RotBackVector(RotMatrixSThread[3*thread_i], Shift);
+          AddVector(BegPosSThread[thread_i], Shift);
+          //SERIAL RotBackVector(RotMatrixSThread, Shift);
+          //SERIAL AddVector(BegPosSThread, Shift);
+      }
+      //End of matrix update 
+
+	    /* For curved guide: frame rotated for next piece, but not after last piece */
+      if (Radius != 0.0)
+      { 
+        /* horizontal position and flight direction adjusted */
+        if (j < nPieces-1)
+        { 
+          RotVector(RotMatrix, myneutron->Position);
+          RotVector(RotMatrix, myneutron->Vector);
+          RotVector(RotMatrix, myneutron->Spin);
+
+          /* Rotation matrix for interaction points adjusted  */
+          if (bVisTraj)
+            FillRMatrixZY(RotMatrixS, RotY, RotZ+(j+1)*beta);
+
+          /* RotMatrixSThread must be updated for MCPL */
+          if (sMCPLWrite!=0)
+          {
+              FillRMatrixZY(RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta); 
+              //SERIAL FillRMatrixZY(RotMatrixSThread, RotY, RotZ+(j+1)*beta);
+          }
+        }
+      }
+
+      TimeOF2 += TimeOF1;
+
+    }  // end j nPieces loop
+
+    if ( (pReflParam || pReflPlot) &&
+         (abs(PRefOut->RefCount) >= nReflMinCnt && (abs(PRefOut->RefCount) <= nReflMaxCnt || nReflMaxCnt == 0)) &&
+         (PRefOut->RefCountY >= nReflMinCntY && (PRefOut->RefCountY <= nReflMaxCntY || nReflMaxCntY == 0)) &&
+         (PRefOut->RefCountZ >= nReflMinCntZ && (PRefOut->RefCountZ <= nReflMaxCntZ || nReflMaxCntZ == 0)) ) 
+    {
+      int condition;
+      switch (abs(keyReflParam)) 
+      {
+        case 1:  condition = (PRefOut->RefCount > 0); break;
+        case 2:
+        case 3:  condition = (PRefOut->RefCount != -1 && PRefOut->RefCount != 0); break;
+        default: condition = 1;
+      }
+      if (condition) 
+      {
+        if (pReflParam) 
+        {
+          char *s = PRefOut->Output;
+          if (NThreads <= 0 || thread_i <= 0)
+            // in serial mode, or if we are thread 0: print to file
+            fprintf(pReflParam, keyReflParam < 0 ? "%s\n" : "%s", s);
+          else {
+            int len = PRefOut->insert_at;
+            if (keyReflParam < 0) 
+            {
+              s[len] = '\n';
+              len++;
+            }
+            addThreadOutput(thread_i, s, len);
+          }
+        }
+        if (pReflPlot && PRefOut->neutrons)
+          DoBin(PRefOut, thread_i);
+      }
+    }
+
+    if (test==FALSE) return;
+
+    if (fabs(myneutron->Position[1]) > 0.5*GuideExitWidth ||
+        fabs(myneutron->Position[2]) > 0.5*GuideExitHeight) 
+    {
+      CountMessageThread(thread_i, GUID_OUT_OF_EXIT, myneutron->ID);
+      WriteIAP(myneutron, VT_OUT_OF_WND);
+      return;
+    }
+
+   zerolength:
+    /****************************************************************************************/
+    /* Add the time needed to travel all guide and writeout this trajectory                 */
+    /****************************************************************************************/
+    {
+      double pathlen;            // total neutron pathlength in the guide
+      Neutron Output = *myneutron;
+
+      pathlen = V_FROM_LAMBDA(Output.Wavelength)*TimeOF2;
+
+      Output.Position[0]=0.0;
+      Output.Time += TimeOF2;
+      Output.Probability *= exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
+
+      WriteNeutronParallel(&Output, thread_i);
+    }
+    goto my_exit;
+   dump:
+   {
+      Neutron Output = *myneutron;
+      WriteNeutronParallel(&Output, thread_i);
+   }
  my_exit:;
+  }
 }
 
 

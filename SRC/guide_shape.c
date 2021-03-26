@@ -49,8 +49,6 @@ char* FullInName      (const char* filename);                       // adds para
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_TOOL_GUIDE;
-
 short  eGuideShapeY, eGuideShapeZ;
 long   nPieces;
 double GuideEntranceHeight, GuideExitHeight, FocusZ, D_Foc1Z,
@@ -69,6 +67,8 @@ int main(int argc, char* argv[])
   FILE*   pFile;
   char    sString[9], sFileName[50],
          *pFullName;
+
+  _eModule=MCN_TOOL_GUIDE;
 
   Init(argc, argv, _eModule);
 

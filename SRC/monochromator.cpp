@@ -35,8 +35,9 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
-	Init(argc, argv, monochrom.eModule);
-  PrintModuleName(monochrom.eModule, "2.2");
+  _eModule=monochrom.eModule;
+	Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "2.2");
   monochrom.OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -50,8 +51,17 @@ int main(int argc, char *argv[])
   {
     for(i=0; i<NumNeutGot; i++)
     {
-      CHECK;
-      monochrom.processNeutron(&(InputNeutrons[i]));
+      CHECK
+
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      { 
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      {
+        monochrom.processNeutron(&(InputNeutrons[i]));
+      }
     }
   }
  my_exit:

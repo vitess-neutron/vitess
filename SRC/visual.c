@@ -49,8 +49,6 @@ void  OwnInit(int argc, char *argv[]);      // reads input parameters and initia
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_VISUAL;
-
 extern int gselec;            // -o   [-]   output option: 1: display only, 2: file only, 3: both    defined in cpgplot.c 
 
 long   keyw=0,                // -k   [-]   0: visualization ALL wavelength  1:  visualization only (wavemin..wavemax) wavelength
@@ -81,7 +79,8 @@ int main(int argc, char *argv[])
 
   // initialisation
   // --------------
-  gselec = 1 ; /* Activate visualisation device -screen */
+  _eModule = MCN_VISUAL;
+  gselec   = 1 ; /* Activate visualisation device -screen */
 
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.5");
@@ -102,58 +101,66 @@ int main(int argc, char *argv[])
 	     
       /* IMPORTANT! Module does not disturb the normal of the processing type */     
 
-      if (number_vis_tr <= BufferSize)
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        switch(visualizetype) 
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
+        if (number_vis_tr <= BufferSize)
         {
-          case 1:
-            if (((InputNeutrons[i].Wavelength >= wavemin)&&(InputNeutrons[i].Wavelength <= wavemax)) || (keyw == 0))
-            {    
-              cpgpt1((float)(InputNeutrons[i].Position[1]), (float)(InputNeutrons[i].Position[2]),-2);
+          switch(visualizetype) 
+          {
+            case 1:
+              if (((InputNeutrons[i].Wavelength >= wavemin)&&(InputNeutrons[i].Wavelength <= wavemax)) || (keyw == 0))
+              {    
+                cpgpt1((float)(InputNeutrons[i].Position[1]), (float)(InputNeutrons[i].Position[2]),-2);
 
-              CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-              CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-              CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+                CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
+                CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
+                CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+                AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
+                SumProb   += InputNeutrons[i].Probability;
+              }
+              break;
+	    
+            case 2:
+              if (((InputNeutrons[i].Wavelength >= wavemin)&&(InputNeutrons[i].Wavelength <= wavemax)) || (keyw == 0))
+              {
+                cpgpt1((float)(InputNeutrons[i].Position[1]), (float)(InputNeutrons[i].Position[2]),-2);
+	
+                CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
+                CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
+                CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+                AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
+                SumProb   += InputNeutrons[i].Probability;
+              }
+              break;
+	    
+            case 3:
+              cpgpt1((float)(InputNeutrons[i].Wavelength), (float)(InputNeutrons[i].Time),-2);
+	
               AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
               SumProb   += InputNeutrons[i].Probability;
-            }
-            break;
+              break;    
 	    
-          case 2:
-            if (((InputNeutrons[i].Wavelength >= wavemin)&&(InputNeutrons[i].Wavelength <= wavemax)) || (keyw == 0))
-            {
-              cpgpt1((float)(InputNeutrons[i].Position[1]), (float)(InputNeutrons[i].Position[2]),-2);
+	    
+            case 4:
+              cpgpt1((float)(InputNeutrons[i].Time), (float)(InputNeutrons[i].Wavelength),-2);
 	
-              CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-              CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-              CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
               AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
               SumProb   += InputNeutrons[i].Probability;
-            }
-            break;
-	    
-          case 3:
-            cpgpt1((float)(InputNeutrons[i].Wavelength), (float)(InputNeutrons[i].Time),-2);
-	
-            AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
-            SumProb   += InputNeutrons[i].Probability;
-            break;    
-	    
-	    
-          case 4:
-            cpgpt1((float)(InputNeutrons[i].Time), (float)(InputNeutrons[i].Wavelength),-2);
-	
-            AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
-            SumProb   += InputNeutrons[i].Probability;
-	          break;    
-        } /* end case */
+	            break;    
+          } /* end case */
     	
-      } /* end if */
+        } /* end if */
     
-      number_vis_tr = number_vis_tr + 1;
+        number_vis_tr = number_vis_tr + 1;
 	
-      /* Output neutrons in the pipe */    
-      WriteNeutron(&(InputNeutrons[i]));
+        /* Output neutrons in the pipe */    
+        WriteNeutron(&(InputNeutrons[i]));
+      }
     }
   }
 

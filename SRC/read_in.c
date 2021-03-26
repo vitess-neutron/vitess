@@ -15,7 +15,7 @@
 /* 1.3  May  2019  K. Lieutenant   option to read only trajectories marked for tracing       */
 /* 1.3a Jul  2019  K. Lieutenant   MCNPX format uses its own structure                       */
 /* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
-/* 1.4  Feb  2021  K. Lieutenant   option to read binary files and MCNPX files               */
+/* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNPX files; MCNPX renamed to MCNP    */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -55,8 +55,6 @@ extern char* FullParName(const char* filename);                                 
 /******************************/
 /** Global Variables    **/
 /******************************/
-McCompID     _eModule=MCN_READ_IN;
- 
 // Input parameters
 VtPrgFormat  ePrgFormat=VT_VITESS_FMT;   // -f        data format of the program (VT_VITESS_FMT: Vitess   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP_FMT: MCNP)
 VtDataFormat eDatFormat=VT_EXPONENTIAL;  // -F        format of the data to read (VT_EXPONENTIAL   VT_FLOAT   VT_BINARY)
@@ -96,6 +94,8 @@ int main(int argc, char **argv)
 
   // Initialisation
   // --------------
+  _eModule=MCN_READ_IN;
+ 
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);

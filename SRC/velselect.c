@@ -27,8 +27,6 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 /** Global Variables         **/
 /******************************/
-McCompID _eModule=MCN_VEL_SELECT;
-
 // Input parameters
 double  Radius   = 0.0,    // -r  [cm]   radius of the velocity selector 
         Length   = 0.0,    // -l  [cm]   length of the velocity selector 
@@ -39,12 +37,12 @@ double  Radius   = 0.0,    // -r  [cm]   radius of the velocity selector
 long    nChannels= 1;      // -w   [-]   number of selector channels
                                     
 // Variables determined from input parameters or trajectory data
-double* pAngIn;	            //            array: orientation of the blades
-double  BladeAng=0.0,       //     [rad]  angular width of a blade at the origin
-        WndWidth=0.0,       //     [cm]   inner width of a window at the origin
-        WndAng=0.0,         //     [rad]  angular inner width of a window
-        nRot =0.0,          //    [1/ms]  number of velocity selector rotations per millisecond
-        Curve=0.0;          //     [rad]  twist of the velocity selector channels
+double* pAngIn=NULL;	     //            array: orientation of the blades
+double  BladeAng=0.0,      //     [rad]  angular width of a blade at the origin
+        WndWidth=0.0,      //     [cm]   inner width of a window at the origin
+        WndAng=0.0,        //     [rad]  angular inner width of a window
+        nRot =0.0,         //    [1/ms]  number of velocity selector rotations per millisecond
+        Curve=0.0;         //     [rad]  twist of the velocity selector channels
 
 
 /******************************/
@@ -52,13 +50,17 @@ double  BladeAng=0.0,       //     [rad]  angular width of a blade at the origin
 /******************************/
 int main(int argc, char *argv[])
 {
-  long    i, n;
-  double  globalz, neutAng, Velocity, Rotang, 
-          TrailingEdge, LeadingEdge, ToF, deltaRot;
+  long    i=0, n=0;
+  double  globalz=0.0, neutAng=0.0, Velocity=0.0, Rotang=0.0, 
+          TrailingEdge=0.0, LeadingEdge=0.0, ToF=0.0, deltaRot=0.0;
   Neutron Output;
+
+  InitNeutron(&Output);
  
   // initialisation
   // --------------
+  _eModule = MCN_VEL_SELECT;
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
- 
+
   DECLARE_ABORT
  
   // loop over all trajectories
@@ -75,84 +77,94 @@ int main(int argc, char *argv[])
   {
     for (i=0; i<NumNeutGot; i++)
     {
-      Velocity = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
-      globalz = DistAxle + InputNeutrons[i].Position[2];  /* Distance axle velsel. neutron (z-direction)*/
-      if (globalz < 0.0) Error("wrong geometry: neutron was found below axle");
-  
-      /* calculation  of  angle: z-axis; center velsel.; neutron position */
-      neutAng = atan(InputNeutrons[i].Position[1]/globalz);
-      if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
+  		CHECK;    
 
-      /* Rotation angle of velsel. corresponding to neutron time */
-      Rotang = 2.0*M_PI*nRot*InputNeutrons[i].Time;
-  
-      /* all angles between -PI and PI; 0 corresponds to z-axis */
-      while (Rotang >= M_PI) Rotang-=2.0*M_PI;
-      while (Rotang < -M_PI) Rotang+=2.0*M_PI;
-  
-      /* Loop over all windows of the velsel. */
-      for(n=0; n<nChannels;n++)
+      // Only write out event if EOB line is found, otherwise process trajectory
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
-        CHECK
-  
-        /* angle region of window n [TrailingEdge;LeadingEdge] */
-        TrailingEdge = Rotang + pAngIn[n] + BladeAng;
-        while (TrailingEdge >= M_PI) TrailingEdge-=2.0*M_PI;
-        LeadingEdge = TrailingEdge + WndAng;
-  
-        if ((neutAng >TrailingEdge)&&(neutAng<LeadingEdge))
-        {	/* caclculation if exit window is hit */
-  
-          /* time for passing the velsel. */
-          ToF= Length/(Velocity*InputNeutrons[i].Vector[0]);
-  
-          globalz = DistAxle + InputNeutrons[i].Position[2];
-  
-          /* old coordinates and test if neutron hits the velselect front*/
-          if ((globalz*globalz +InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]) > Radius*Radius)
-            goto Getnewneutron;
-  
-          /* new coordinates and new neutron angle and test if cylinder walls absorbed the neutron*/
-          InputNeutrons[i].Position[0] += Velocity*ToF*InputNeutrons[i].Vector[0];
-          InputNeutrons[i].Position[1] += Velocity*ToF*InputNeutrons[i].Vector[1];
-          InputNeutrons[i].Position[2] += Velocity*ToF*InputNeutrons[i].Vector[2];
-  
-          InputNeutrons[i].Time+=ToF;
-          globalz = DistAxle + InputNeutrons[i].Position[2];
-  
-          if ((globalz*globalz +InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1])> Radius*Radius)
-            goto Getnewneutron;
-  
-          neutAng = atan(InputNeutrons[i].Position[1]/globalz);
-          if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
-  
-          /* update TrailingEdge and Leading Edge for the channel under consideration*/
-          deltaRot = (ToF*2.0*M_PI*nRot) - Curve;
-  
-          if (fabs(deltaRot) >= M_PI) break;
-  
-          TrailingEdge+=deltaRot;
-          while (TrailingEdge >= M_PI)  TrailingEdge-=2.0*M_PI;
-          while (TrailingEdge <= -M_PI) TrailingEdge+=2.0*M_PI;
-          LeadingEdge= WndAng+TrailingEdge;
-  
-          if ((neutAng >TrailingEdge)&&(neutAng<LeadingEdge)) 
-            goto Transmission;
-          else 
-            goto Getnewneutron;
-        }
-        /* loop over windows continued */
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        Velocity = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+        globalz = DistAxle + InputNeutrons[i].Position[2];  /* Distance axle velsel. neutron (z-direction)*/
+        if (globalz < 0.0) Error("wrong geometry: neutron was found below axle");
+  
+        /* calculation  of  angle: z-axis; center velsel.; neutron position */
+        neutAng = atan(InputNeutrons[i].Position[1]/globalz);
+        if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
 
-    Getnewneutron: 
-      continue; /* case of neutron blocked by spacers or absorbed within a channel */
+        /* Rotation angle of velsel. corresponding to neutron time */
+        Rotang = 2.0*M_PI*nRot*InputNeutrons[i].Time;
   
-    Transmission:
-      InputNeutrons[i].Position[0]=0.0;
+        /* all angles between -PI and PI; 0 corresponds to z-axis */
+        while (Rotang >= M_PI) Rotang-=2.0*M_PI;
+        while (Rotang < -M_PI) Rotang+=2.0*M_PI;
   
-      Output = InputNeutrons[i];
+        /* Loop over all windows of the velsel. */
+        for(n=0; n<nChannels;n++)
+        {
+          CHECK
   
-      WriteNeutron(&Output);
+          /* angle region of window n [TrailingEdge;LeadingEdge] */
+          TrailingEdge = Rotang + pAngIn[n] + BladeAng;
+          while (TrailingEdge >= M_PI) TrailingEdge-=2.0*M_PI;
+          LeadingEdge = TrailingEdge + WndAng;
+  
+          if ((neutAng >TrailingEdge)&&(neutAng<LeadingEdge))
+          {	/* caclculation if exit window is hit */
+  
+            /* time for passing the velsel. */
+            ToF= Length/(Velocity*InputNeutrons[i].Vector[0]);
+  
+            globalz = DistAxle + InputNeutrons[i].Position[2];
+  
+            /* old coordinates and test if neutron hits the velselect front*/
+            if ((globalz*globalz +InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]) > Radius*Radius)
+              goto Getnewneutron;
+  
+            /* new coordinates and new neutron angle and test if cylinder walls absorbed the neutron*/
+            InputNeutrons[i].Position[0] += Velocity*ToF*InputNeutrons[i].Vector[0];
+            InputNeutrons[i].Position[1] += Velocity*ToF*InputNeutrons[i].Vector[1];
+            InputNeutrons[i].Position[2] += Velocity*ToF*InputNeutrons[i].Vector[2];
+  
+            InputNeutrons[i].Time+=ToF;
+            globalz = DistAxle + InputNeutrons[i].Position[2];
+  
+            if ((globalz*globalz +InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1])> Radius*Radius)
+              goto Getnewneutron;
+  
+            neutAng = atan(InputNeutrons[i].Position[1]/globalz);
+            if (fabs(neutAng) > M_PI) Error("internal geometry wrong");
+  
+            /* update TrailingEdge and Leading Edge for the channel under consideration*/
+            deltaRot = (ToF*2.0*M_PI*nRot) - Curve;
+  
+            if (fabs(deltaRot) >= M_PI) break;
+  
+            TrailingEdge+=deltaRot;
+            while (TrailingEdge >= M_PI)  TrailingEdge-=2.0*M_PI;
+            while (TrailingEdge <= -M_PI) TrailingEdge+=2.0*M_PI;
+            LeadingEdge= WndAng+TrailingEdge;
+  
+            if ((neutAng >TrailingEdge)&&(neutAng<LeadingEdge)) 
+              goto Transmission;
+            else 
+              goto Getnewneutron;
+          }
+          /* loop over windows continued */
+        }
+
+      Getnewneutron: 
+        continue; /* case of neutron blocked by spacers or absorbed within a channel */
+  
+      Transmission:
+        InputNeutrons[i].Position[0]=0.0;
+  
+        Output = InputNeutrons[i];
+  
+        WriteNeutron(&Output);
+      }
     }
   }
   

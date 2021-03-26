@@ -151,8 +151,11 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
-void  ChangeSlash(char* pStr);
-void  AddSlash   (char* pStr);
+void   GetActDate(char* sDate);                      // Gets current date from system  
+void   GetActTime(char* sTime);                      // Gets current time from system  
+
+void   ChangeSlash(char* pStr);
+void   AddSlash   (char* pStr);
 
 #ifdef __cplusplus
 } /* extern "C" */
