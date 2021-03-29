@@ -96,7 +96,7 @@ private:
 
     QString VitessDir; 
     QString instrumentName;
-
+    QString logFname;
     ModulTable* modultab;
     QGridLayout *gridLayout;
     QScrollArea *scrollArea;
@@ -159,6 +159,7 @@ private:
     void readCurModul(YAML::Node& curModule,int index);
     void pasteCurModul(YAML::Node curModule,int index);
     void progress();
+    void toolCommand(QString prog);
     void closeEvent(QCloseEvent *ev);
 };
 

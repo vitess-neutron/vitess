@@ -18,11 +18,14 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     #ifdef Q_OS_WIN
-       syspar = ".exe"
+       syspar = ".exe";
+       logFname = "C:/tmp/logfile";
     #elif defined (Q_OS_DARWIN)
        syspar = "_Darwin_x86_64";
+       logFname = "/tmp/logfile";
     #elif defined (Q_OS_UNIX)
        syspar = "_Linux_x86_64";
+       logFname = "/tmp/logfile";
     #else
     {
        QMessageBox::information(this,"Platform not get supported ",QSysInfo::kernelType());
@@ -36,8 +39,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->stackedWidget->hide();
     VitessDir = QApplication::applicationDirPath().
                left(QApplication::applicationDirPath().lastIndexOf("/"));
+    //If Application is under debug or release
+    if (!QDir(  VitessDir+"/yaml/").exists())
+        VitessDir = VitessDir.left(VitessDir.lastIndexOf("/"));
     instrumentDir = VitessDir;
     QDir directory (VitessDir+"/yaml/");
+
     QStringList modulList;
     // List of all configuration yaml files
     fList = directory.entryList({"*.yaml"});
@@ -349,7 +356,7 @@ void MainWindow::on_pushDryrun_clicked()
         return;
     }
     // first module should be a source module
-    if (cmdList[0].indexOf("source_") < 0)
+    if (cmdList[0].indexOf("source") < 0)
     {
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("First module should be a source module");
@@ -429,12 +436,11 @@ void MainWindow::finishedLast()
     pipeActive = false;
     for (int i=0; i < procList.count(); i++)
     {
-       QString logName = "/tmp/testlog" + QString::number(i+1);
+       QString logName = logFname + QString::number(i+1);
        QFile file(logName);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
-           QMessageBox::information(this,"Warning cannot open: ",
-                                    "/tmp/testlog" + QString::number(i+1));
+           QMessageBox::information(this,"Warning cannot open: ", logName);
            return;
        }
        QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hhmmss")+ "\n\n";
@@ -579,7 +585,7 @@ void MainWindow::on_pushCheck_clicked()
             cmd += Module[modulName][1].toLower() + syspar;
             cmd += " --N" + QString::number(i+1);           //Modnum   number of modul
             cmd += headerStr;
-            cmd += " --L/tmp/testlog" + QString::number(enableIndex+1);  //logfile
+            cmd += " --L"+logFname + QString::number(enableIndex+1);  //logfile
 
 
             //second part in pipe string with all set parameters
@@ -656,18 +662,16 @@ void MainWindow::on_pushCheck_clicked()
 
 void MainWindow::on_pushIndir_clicked()
 {
-    QString userName = getenv("USER");
     QString InDir = QFileDialog::getExistingDirectory(this,"Set input directory",
-                                 "/home/"+ userName,QFileDialog::ShowDirsOnly);
+                                 VitessDir,QFileDialog::ShowDirsOnly);
     ui->InDir->setText(InDir);
 
 }
 
 void MainWindow::on_pushOutdir_clicked()
 {
-    QString userName = getenv("USER");
     QString OutDir = QFileDialog::getExistingDirectory(this,"Set output directory",
-                                  "/home/"+ userName,QFileDialog::ShowDirsOnly);
+                                  VitessDir,QFileDialog::ShowDirsOnly);
     ui->OutDir->setText(OutDir);
 
 }
@@ -686,7 +690,7 @@ void MainWindow::on_pushStart_clicked()
         return;
     }
     // first module should be a source or read_in module
-    if ((cmdList[0].indexOf("source_") < 0) & (cmdList[0].indexOf("read_in_") < 0))
+    if ((cmdList[0].indexOf("source") < 0) & (cmdList[0].indexOf("read_in_") < 0))
     {
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
@@ -934,9 +938,7 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
                 paramWindow[parName] = new Parameter();
                 paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
                 //get configuration yaml file for subparameter in subdirectory
-                QString yamlPath = QApplication::applicationDirPath().
-                               left(QApplication::applicationDirPath().lastIndexOf("/"))
-                               + "/yaml/parameter/";
+                QString yamlPath = VitessDir + "/yaml/parameter/";
                 QString filename = yamlPath + parName.toLower() + ".yaml";
                 //design subwidget
                 paramWindow[parName]->designParameterWin(filename);
@@ -1159,44 +1161,31 @@ void MainWindow::on_actionSet_Instrument_Name_triggered()
 
 void MainWindow::on_actionConvert_Ascii_to_Binary_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/ascii2bin" + syspar);
+    toolCommand("ascii2bin");
 }
 
 void MainWindow::on_actionDefine_Direction_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/define_direction" + syspar);
+    toolCommand("define_direction");
 }
 
 void MainWindow::on_actionGenerate_Mirror_Files_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/mirror_coating" + syspar);
+    toolCommand("mirror_coating");
 }
-
 void MainWindow::on_actionGenerate_Surface_Files_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/surface_file" + syspar);
+    toolCommand("surface_file");
 }
 
 void MainWindow::on_actionGenerate_Extraction_System_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/gener_bispectral" + syspar);
+    toolCommand("gener_bispectral");
 }
 
 void MainWindow::on_actionGuide_Shape_triggered()
 {
-    QProcess *toolProcess = new QProcess();
-    toolProcess->start("xterm",QStringList()<< VitessDir +
-                                       "/MODULES/guide_shape" + syspar);
+    toolCommand("guide_shape");
 }
 
 void MainWindow::on_actionCryst_Analayzer_Spectrom_triggered()
@@ -1210,7 +1199,18 @@ void MainWindow::on_actionCryst_Analayzer_Spectrom_triggered()
 void MainWindow::on_actionCompute_Chopper_Phases_triggered()
 {
     QString cmd = VitessDir + "/MODULES/chop_phases" + syspar;
-    cmd += " -o/tmp/chop_phases ";
+    cmd += " -o" +logFname.left(logFname.lastIndexOf("/")) + "/chop_phases";
     ChopperPhases *chopperPhases = new ChopperPhases(cmd);
     chopperPhases->show();
+}
+
+void MainWindow::toolCommand(QString prog)
+{
+    QProcess *toolProcess = new QProcess();
+    #ifdef Q_OS_WIN
+       toolProcess->start(VitessDir + "/MODULES/shelexec.exe /EXE " +VitessDir + "/MODULES/" + prog);
+    #else
+       toolProcess->start("xterm",QStringList()<< VitessDir + "/MODULES/" + prog + syspar);
+    #endif
+
 }

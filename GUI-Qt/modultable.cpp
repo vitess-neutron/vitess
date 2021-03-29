@@ -18,11 +18,12 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     ui->tableWidget->verticalHeader()->setStyle(QStyleFactory::create("fusion"));
 
     //Get maximum width of list entries
-    minWidth = 0;
+    minWidth = 140;
     foreach (QString s, modNames)
     {
         // length of string plus 1 pixel
-        int w = fontMetrics().width(s) + s.length();
+       // int w = fontMetrics().width(s) + s.length();
+        int w = fontMetrics().horizontalAdvance(s) + s.length();
         if ( minWidth < w )
             minWidth = w;
     }
@@ -96,7 +97,7 @@ void ModulTable::disableModule()
 {
     int index=ui->tableWidget->currentRow();
     disableFlag[index] = true;
-    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
+    ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::lightGray);
     ui->tableWidget->verticalHeader()->update();
 }
 
@@ -104,14 +105,14 @@ void ModulTable::setDisabled()
 {
     for (int index=0; index < disableFlag.size(); index++)
         if (disableFlag[index])
-           ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::lightGray);
+           ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::lightGray);
 }
 
 void ModulTable::enableModule()
 {
     int index=ui->tableWidget->currentRow();
     disableFlag[index] = false;
-    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::black);
+    ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::black);
 }
 
 void ModulTable::enableAllModules()
@@ -119,9 +120,9 @@ void ModulTable::enableAllModules()
     for (int index=0; index < ui->tableWidget->rowCount()-1; index++)
     {
         disableFlag[index] = false;
-        ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::black);
+        ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::black);
     }
-    ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::red);
+    ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::red);
 }
 
 void ModulTable::insertModule()
@@ -148,7 +149,7 @@ void ModulTable::insertModule()
         QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
         ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
         if (disableFlag[ind])
-           ui->tableWidget->verticalHeaderItem(ind)->setTextColor(Qt::lightGray);
+           ui->tableWidget->verticalHeaderItem(ind)->setForeground(Qt::lightGray);
     }
     emit insertCombo(index);
 }
@@ -190,10 +191,10 @@ void ModulTable::removeModule()
         QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(ind+1));
         ui->tableWidget->setVerticalHeaderItem(ind,vertItem);
         if (disableFlag[ind])
-           ui->tableWidget->verticalHeaderItem(ind)->setTextColor(Qt::lightGray);
+           ui->tableWidget->verticalHeaderItem(ind)->setForeground(Qt::lightGray);
     }
-    ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
-    ui->tableWidget->verticalHeaderItem(index)->setTextColor(Qt::red);
+    ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::black);
+    ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::red);
     ui->tableWidget->setCurrentCell(index,0);
     oldRow = index;
     butModule.remove(index);
@@ -215,6 +216,7 @@ void ModulTable::addNewRow()
 {
     // new ToolButton
     QToolButton *tBut = new QToolButton();
+    tBut->setStyleSheet("QToolButton::menu-indicator {image:none;}");
     tBut->setText("--inactive--");
     tBut->setMenu(menu);
     tBut->setPopupMode(QToolButton::InstantPopup);
@@ -249,8 +251,8 @@ void ModulTable::butModulItemChanged(QAction* action )
     {
         if ( butModule.at(curRow) == toolBut )
            {
-            ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
-            ui->tableWidget->verticalHeaderItem(curRow)->setTextColor(Qt::red);
+            ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::black);
+            ui->tableWidget->verticalHeaderItem(curRow)->setForeground(Qt::red);
             oldRow = curRow;
             break;
            }
@@ -278,8 +280,8 @@ void ModulTable::arrowButtonPressed(bool)
 
         if ( ui->tableWidget->cellWidget(curRow,1) == tb )
         {
-            ui->tableWidget->verticalHeaderItem(oldRow)->setTextColor(Qt::black);
-            ui->tableWidget->verticalHeaderItem(curRow)->setTextColor(Qt::red);
+            ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::black);
+            ui->tableWidget->verticalHeaderItem(curRow)->setForeground(Qt::red);
             ui->tableWidget->setCurrentCell(curRow,0);
             oldRow = curRow;
             emit arrowPressed(curRow);

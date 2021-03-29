@@ -30,7 +30,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
        else index = mapParameter["column"].toInt();
        label = new QLabel(mapParameter["descr"]);                 //label desription
        label->setMinimumWidth(120);
-       label->setAlignment(Qt::AlignRight);
+       label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
        label->setToolTip(mapParameter["tooltip"]);                //toolTip
        formLayout = new QFormLayout ;
        bool flag= false;
@@ -53,6 +53,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            editBut = new QPushButton;
            editBut->setObjectName("edit_" + parName);
            editBut->setMinimumWidth(80);
+           editBut->setFixedWidth(80);
            editBut->setText("Edit");
            formLayout->addRow(browseBut,editBut);
            gridLayout->addLayout(formLayout,row,2,1,1,Qt::AlignRight);    //span over 1 column
@@ -104,7 +105,8 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            break;
        case 5:                                                              //switch     checkBox
            checkBox = new QCheckBox(" ");
-           checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
+//           checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
+           checkBox->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
            checkBox->setStyle(QStyleFactory::create("fusion"));
            checkBox->setObjectName(parName);
            if (mapParameter["default"].toUpper() == "YES")

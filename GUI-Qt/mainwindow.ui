@@ -274,7 +274,7 @@
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_3">
-      <property name="verticalSpacing">
+      <property name="spacing">
        <number>5</number>
       </property>
       <item row="1" column="0">
@@ -294,7 +294,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>240</width>
+          <width>245</width>
           <height>410</height>
          </size>
         </property>
@@ -312,6 +312,12 @@
       <item row="0" column="1">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
          <property name="topMargin">
           <number>4</number>
          </property>
@@ -494,7 +500,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>28</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
