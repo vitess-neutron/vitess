@@ -81,7 +81,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //table to select moduls
     modultab = new ModulTable(modulList, ui->modWidget);
-
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(modultab);
+    layout->setContentsMargins(0,0,0,0);
+    ui->modWidget->setLayout(layout);
     //Connect signals to slots
     //An arrow was pressed
     connect(modultab,SIGNAL(arrowPressed(int)),this,SLOT(showSelectedModul(int)));
@@ -952,7 +955,7 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
                         SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
         }
     }
-    if (iGritRow <= 10)
+    if (iGritRow <= 15)
     {
         iGritRow++;
         gridLayout->addItem( new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding),iGritRow,0);

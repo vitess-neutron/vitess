@@ -2,6 +2,7 @@
 #include "ui_help.h"
 #include <iostream>
 #include <QFile>
+#include <QDir>
 #include <QTextStream>
 #include <QMessageBox>
 
@@ -10,8 +11,12 @@ Help::Help(QWidget *parent) :
     ui(new Ui::Help)
 {
     ui->setupUi(this);
-    helpFiles << "/home/jcns/source/qt/test/help/vitess-general.txt"
-              << "/home/jcns/source/qt/test/help/getting-started.txt";
+    QString helpDir = QApplication::applicationDirPath();
+    //If Application is under debug or release
+    if (!QDir(  helpDir+"/help/").exists())
+        helpDir = helpDir.left(helpDir.lastIndexOf("/"));
+    helpFiles << helpDir + "/help/vitess-general.txt"
+              << helpDir + "/help/getting-started.txt";
 }
 
 Help::~Help()
@@ -25,13 +30,11 @@ void Help::defaultHelp()
 
 void Help::on_comboBox_activated(const QString &arg1)
 {
-    std::cout << "help:" << arg1.toStdString() << std::endl;
     writeHelp(ui->comboBox->currentIndex());
 }
 
 void Help::writeHelp(int i)
 {
-//    QFile file(helpFiles[ui->comboBox->currentIndex()]);
     QFile file(helpFiles[i]);
     QTextStream text(&file);
     if (!file.open(QFile::ReadOnly))

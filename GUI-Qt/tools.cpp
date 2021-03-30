@@ -44,6 +44,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            lEdit->setObjectName(parName);
            lEdit->setText(mapParameter["default"]);    //default
            formLayout->addRow(label,lEdit);
+           formLayout->setAlignment(lEdit,Qt::AlignVCenter);
            gridLayout->addLayout(formLayout,row,0,1,2,Qt::AlignRight);    //span over 2 columns
            formLayout = new QFormLayout;
            browseBut = new QPushButton();
@@ -91,6 +92,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            lEdit->setValidator(validator);
            lEdit->setText(mapParameter["default"]);                    //default
            formLayout->addRow(label,lEdit);
+           formLayout->setAlignment(lEdit,Qt::AlignVCenter);
            gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
            break;
        case 4:                                                               //combo     comboBox
