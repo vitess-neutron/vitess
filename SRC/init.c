@@ -767,18 +767,17 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   gsl_rng_free (vit_gsl_rng);
 #endif
 
-  /* error for the given count rate calculated through adding squared errors
-     - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
-     - of the average count rate of each trajectory I_s = I_tot/N:
-       sqrt((<I_s²> - <I_s>²)/(N-1))
-     as independent contributions */
   // subtract number of dummy data sets first
   NumNeutRead    -= NumEobRead;
   NumNeutWritten -= NumEobWritten;
 
+  /* error for the given count rate calculated through adding squared errors
+     - of the number N of contributing traj.: sqrt(N) (Poisson distribution)
+     - of the average count rate of each trajectory I_s = I_tot/N: sqrt((<I_s²> - <I_s>²)/(N-1))
+     as independent contributions */
   if (NumNeutWritten > 1)
     CntRateErr = sqrt( sq(dProbTotal[0])/NumNeutWritten
-                      + (NumNeutWritten*dProbQuad-sq(dProbTotal[0])) / (NumNeutWritten-1) );
+                      +  (NumNeutWritten*dProbQuad-sq(dProbTotal[0])) / (NumNeutWritten-1) );
   else
     CntRateErr = dProbTotal[0];
 
