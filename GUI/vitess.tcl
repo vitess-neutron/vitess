@@ -899,14 +899,13 @@ set frameESET {
 ###
 set winAdd {
   {"Outer Material" header}
-  {thick float 0.0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for collimator." "" t} ge0}
-  {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
-    {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}
-    {0 1 2 3 4 5 6}}
-  {matfile browsefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of the collimator." "" C}}
+  {mat radio "ideal absorber" {"frame material" "Material used for the absorbing window frame" "" c}
+    {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}  {0 1 2 3 4 5 6}}
+  {thick float "" {"thickness of\nframe [cm]" "Thickness of the material used for the absorbing window frame" "" t} ge0}
+  {matfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)" "" C}}
   {"Inner Material" header}
-  {imatfile browsefile "" {"material\ndescription file" "File which characterizes the transmission of the inner material of the collimator." "" m}}
-  {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of inner material, which was used for the collimator." "" T} ge0}
+  {imathick float "" {"thickness of\nwindow[cm]" "Thickness of the material used for the window pane" "" T} ge0}
+  {imatfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)" "" m}}
 }
 
 set a {
@@ -928,11 +927,11 @@ set a {
     "min. z [cm]" "minimal z value [cm]" "" h}}
   {max_z float "" {
     "max. z [cm]" "maximal z value [cm]" "" H}}
-  {}
   {rotang float "0.0" {
-    "rot. angle [Âø]" "rotate window by [Âø]" "" A}}
+    "rot. angle [deg]" "rotate window by [deg]" "" A}}
+  {"Special options" header}
   {useasbstop radio no {
-    "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost." "" S}
+    "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost when it hits the window (and passes otherwise)." "" S}
     {no yes} {0 1}
   }
   {oldframe radio no {
@@ -941,15 +940,11 @@ set a {
   }
   {"Filter options" header}
   {treatcolor int -1 {
-    "treat color" "Treat only events with given color. A negative number means any color." "" f}}
-  {removecol radio no {
-    "remove other\ncolors" "Remove all other events not matching color." "" d}
-    {no yes} {0 1}}
-  {"Additional window options" header}
+    "treat color" "Treat only trajectories with the given color. A negative number means any color." "" f}}
   {phimin float -1 {
-    "min. phi [Âø]" "Filter for minimum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" p}}
+    "min. phi [deg]" "Filter for minimum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" p}}
   {phimax float -1 {
-    "max. phi [Âø]" "Filter for maximum phi angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value." "" P}}
+    "max. phi [deg]" "Filter for maximum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" P}}
 }
 
 set spacewindowESET [concat $a $winAdd]
@@ -998,18 +993,18 @@ set spacewindow_multipleESET [concat $a $winAdd]
 
 ### Space
 set spaceESET {
-  {dist float "" {"distance [cm]" "" "" d} ge0}
+  {dist float "" {"distance [cm]" "flight distance along the x-axis" "" d} ge0}
   {spc_scat float 0 {
     "total scat-\ntering [1/cm]" "macroscopic total scattering cross-section [1/cm]" "" M} ge0}
   {spc_abs float 0 {
-    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ãà [1/cm]" "" m} ge0}
+    "absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ang [1/cm]" "" m} ge0}
 }
 
 ### Slit
 set slitESET {
-  {dist_slit float "" {"distance\nto slit [cm]" "" "" d} ge0}
-  {width_slit float "" {"width [cm]" "width of rectangular slit [cm]" "" W} ge0}
-  {hite_slit  float "" {"height [cm]" "height of rectangular slit [cm]" "" H} ge0}
+  {dist_slit float "" {"distance\nto slit [cm]" "distance from the origin to slit (along the x-axis)" "" d} ge0}
+  {width_slit float "" {"width [cm]" "width of the rectangular slit [cm]" "" W} ge0}
+  {hite_slit  float "" {"height [cm]" "height of the rectangular slit [cm]" "" H} ge0}
 }
 
 ### Beamstop

@@ -42,7 +42,7 @@ void  SetGeometry(char* sColor);          // fills the structure stGeometry for 
 // Input parameters
 short  bCircularWindow=TRUE,  // -R  [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
        bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
-       bRemoveOtherCol=FALSE, // -d  [-]   Flag: Neutrons that are not treated are removed
+       bRemoveOtherCol=TRUE,  // -d  [-]   Flag: Neutrons that are not treated are removed
        TreatColor = -1;       // -f  [-]   Treat only neutrons with this color
 double DistMove =0.0;         // -l  [cm]  Distance from origin to the window (along the x-axis) 
 double heightmin=0.0,         // -h  [cm]  z-coordinate: bottom of rectangular window            
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
           Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
           if (Phi < minPhi || Phi > maxPhi)
           {
-	          WriteIAP(&Output, VT_ABSORBED);
+	          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
 	          continue;
 	        }
         }
@@ -459,6 +459,8 @@ void  OwnInit(int argc, char *argv[])
 				break;
       case 'P':
 				maxPhi = atof(&argv[i][2]);
+        if (maxPhi < 0.0)
+          maxPhi = 370.0;
 				/* in deg, max angle in yz plane */
 				break;
 
@@ -473,6 +475,9 @@ void  OwnInit(int argc, char *argv[])
 	// take default value for frame, if not explicitely set
 	if (bOldFrame==-1)
 		bOldFrame=bOFrame;
+
+  if (maxPhi < minPhi)
+    Error("Maximal phi angle must not be smaller than minimal phi angle");
 
   // Fill structures defining the planes
 	EndPoint.D  = -1.0 * DistMove;
