@@ -54,7 +54,7 @@ double heightmin=0.0,         // -h  [cm]  z-coordinate: bottom of rectangular w
        zwincenter=0.0,        // -z  [cm]  z coordinate: center of window                        
        rotang = 0.0;          // -A  [rad] Rotation angle (input parameter in [deg])
 double minPhi=-1.0,           // -p  [deg] min. and 
-       maxPhi=-1.0;           // -P  [deg] max. angle in y-z-plane
+       maxPhi=370.0;          // -P  [deg] max. angle in y-z-plane
 double ThicknessO=0.0,        // -t  [cm]  thickness of the frame material    
        ThicknessI=0.0;        // -T  [cm]  thickness of the pane material      
 char	*sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 				  NewPositionZ = InputNeutrons[i].Position[2];
 			  }
 
-        if (minPhi >= 0 && maxPhi <= 360) 
+        if (minPhi >= 0.0 && maxPhi <= 360.0) 
         { 
           Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
           if (Phi < minPhi || Phi > maxPhi)
