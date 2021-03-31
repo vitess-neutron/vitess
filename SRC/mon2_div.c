@@ -288,7 +288,7 @@ void UpdateMon(long iBndl)
 
     // writes header and data
     WriteHeader2DB(fMonitor, eFormat, "Intensity", bProbactiv, iBndl, nBundle, TotInt, nTrajTot,  
-                   nBinsY, "divergence Y [cm]", nBinsZ, "divergence Z [cm]");
+                   nBinsY, "y-divergence/deg", nBinsZ, "z-divergence/deg");
 
     WriteOutput2DB(fMonitor, eFormat,              bProbactiv,  nBinsY, BinPosY,  BINSIZE, nBinsZ, BinPosZ,  
                    f_norm, (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);

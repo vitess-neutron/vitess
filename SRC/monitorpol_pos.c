@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  WriteHeader2D(fMonitor, eFormat, "polarization", bProbactiv,  nbiny, "Y [cm]", nbinz, "Z [cm]");
+  WriteHeader2D(fMonitor, eFormat, "polarization", bProbactiv,  nbiny, "y/cm", nbinz, "z/cm");
   
   for (dy = 0; dy < nbiny; dy++)
   {

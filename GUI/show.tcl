@@ -171,10 +171,15 @@ proc show2Dfile {fname} {
 
   gets $f ins
 
-  # skip #Monitor line
-  if [regexp {^#Monitor} $ins] {
-    gets $f ins
-  }
+  # skip header
+  if [regexp {^# Monitor} $ins] {gets $f ins}
+  if [regexp {^# x-axis} $ins] {gets $f ins}
+  if [regexp {^# y-axis} $ins] {gets $f ins}
+  if [regexp {^# Date} $ins] {gets $f ins}
+  if [regexp {^# Total} $ins] {gets $f ins}
+  if [regexp {^# Within} $ins] {gets $f ins}
+  if [regexp {^# Bundles} $ins] {gets $f ins}
+  if [regexp {^# Data} $ins] {gets $f ins}
   
   set ll [eval list $ins]
   if [string compare "#x y z" "$ll"] {

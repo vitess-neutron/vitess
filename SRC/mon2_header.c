@@ -32,10 +32,10 @@ static char sFormat   [16]="";             // text describing the 2D output form
 void WriteHeader1D(FILE* fMonitor, const char *sType, short bWeight, 
                    int nBinsX, const char* sPar, const char* sUnit) 
 {
-  fprintf(fMonitor,"#1D %s monitor %s:  %d bins: %s [%s]\n", sType,
+  fprintf(fMonitor,"# Monitor 1D %s %s:  %d bins: %s/%s\n", sType,
           bWeight==FALSE ? "(events)" : "(weight)",
           nBinsX, sPar, sUnit);
-  fputs("#     x         F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+  fputs("# Data x        F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
 
   return;
 }
@@ -49,12 +49,12 @@ void WriteHeader1DB(FILE* fMonitor, const char *sType, short iCol, long iBndl, l
   GetActDate(sDate);
   GetActTime(sTime);
 
-  fprintf(fMonitor, "# 1D %s monitor:  %d bins: %s [%s]\n", sType, nBinsX, sPar, sUnit);
+  fprintf(fMonitor, "# Monitor 1D %s:  %d bins: %s/%s\n", sType, nBinsX, sPar, sUnit);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   fprintf(fMonitor, "# Total intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(iCol), NumNeutWritten - (double)NumEobWritten);
   fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
-  fprintf(fMonitor, "  %ld %ld  #  bundles written and total\n\n", iBndl, nBndl);
-  fprintf(fMonitor, "#     x         F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+  fprintf(fMonitor, "# Bundles: %ld of %ld written\n", iBndl, nBndl);
+  fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
 
   return;
 }
@@ -64,7 +64,7 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
 {
   OutFmt2Txt(eFormat);  // fills static string 'sFormat'
 
-  fprintf(fMonitor,"#2D %s monitor, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType,
+  fprintf(fMonitor,"# Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType,
           sFormat,
           bWeight==FALSE ? "(events)" : "(weight)",
           nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
@@ -72,15 +72,16 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
   switch (eFormat)
   {
     case MATRIX:
-      fputs("#      y        F(x,y) \n              ", fMonitor);
+      fputs("# Data y        F(x,y) \n              ", fMonitor);
       break;
 
     case XYZ:
-      fputs("#     x           y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("#x y z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("# x  y  z\n", fMonitor);
+      fputs("#x y z\n", fMonitor);
       break;
   }
 
@@ -100,24 +101,25 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
   if (bWeight==FALSE)
     strcpy(sEvents," (events)");
 
-  fprintf(fMonitor, "# 2D %s monitor%s, Format: %s \n#x-axis:%3d bins: %s  \n#y-axis:%3d bins: %s\n", sType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
+  fprintf(fMonitor, "# Monitor 2D %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(0), NumNeutWritten - (double)NumEobWritten);
   fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
-  fprintf(fMonitor, "  %ld %ld  #  bundles written and total\n\n", iBndl, nBndl);
+  fprintf(fMonitor, "# Bundles: %ld of %ld written\n", iBndl, nBndl);
 
   switch (eFormat)
   {
     case MATRIX:
-      fputs("#      y        F(x,y) \n              ", fMonitor);
+      fputs("# Data y        F(x,y) \n              ", fMonitor);
       break;
 
     case XYZ:
-      fputs("#     x           y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("#x y z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("# x  y  z\n", fMonitor);
+      fputs("#x y z\n", fMonitor);
       break;
   }
 
