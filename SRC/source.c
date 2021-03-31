@@ -998,10 +998,10 @@ void SrcInit(int argc, char **argv)
         {
           /* Simulation */
           case 'l':
-            nBundles = atol(arg);
+            nBundles  = (long) atof(arg);
             break;
           case 'n':
-            nNeutBndl = atol(arg);
+            nNeutBndl = (long) atof(arg);
             break;
 
           /* neutron parameters */
