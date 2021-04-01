@@ -515,7 +515,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -673,21 +673,37 @@
    </attribute>
   </widget>
   <action name="actionLoad">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/open.png</normaloff>:/resources/images/open.png</iconset>
+   </property>
    <property name="text">
     <string>LOAD Instument</string>
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/save.png</normaloff>:/resources/images/save.png</iconset>
+   </property>
    <property name="text">
     <string>SAVE Instrument</string>
    </property>
   </action>
   <action name="actionSave_as">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/save_as.png</normaloff>:/resources/images/save_as.png</iconset>
+   </property>
    <property name="text">
     <string>SAVE As</string>
    </property>
   </action>
   <action name="actionNewInst">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/new.png</normaloff>:/resources/images/new.png</iconset>
+   </property>
    <property name="text">
     <string>New Instrument</string>
    </property>
@@ -728,6 +744,10 @@
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/exit.png</normaloff>:/resources/images/exit.png</iconset>
+   </property>
    <property name="text">
     <string>Exit</string>
    </property>
@@ -758,11 +778,19 @@
    </property>
   </action>
   <action name="actionCopy_Module_Parameters">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/copy.png</normaloff>:/resources/images/copy.png</iconset>
+   </property>
    <property name="text">
     <string>Copy Module Parameters</string>
    </property>
   </action>
   <action name="actionPaste_Module_Parameters">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/paste.png</normaloff>:/resources/images/paste.png</iconset>
+   </property>
    <property name="text">
     <string>Paste Module Parameters</string>
    </property>
@@ -1181,6 +1209,8 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

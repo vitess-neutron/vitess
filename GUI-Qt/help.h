@@ -14,6 +14,7 @@ class Help : public QDialog
 public:
     explicit Help(QWidget *parent = nullptr);
     ~Help();
+    void guiHelp();
     void defaultHelp();
 
 private slots:
@@ -21,6 +22,7 @@ private slots:
 
 private:
     Ui::Help *ui;
+    QString helpDir;
     QStringList helpFiles;
     void writeHelp(int);
 };

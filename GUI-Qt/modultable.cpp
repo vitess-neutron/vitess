@@ -11,7 +11,8 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     ui(new Ui::ModulTable)
 {
     modNames = s1;
-    arrow = new QIcon(":/resources/images/arrow-right.xpm");
+//    arrow = new QIcon(":/resources/images/arrow-right.xpm");
+    arrow = new QIcon(":/resources/images/right_arrow.png");
     ui->setupUi(this);
 
    //for setting color of tableHeaderItems

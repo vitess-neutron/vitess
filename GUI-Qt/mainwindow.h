@@ -51,6 +51,8 @@ private slots:
         void on_actionExit_triggered();
         void on_actionGeneral_Information_triggered();
         void on_actionTutorial_triggered();
+        void on_actionUser_Interface_triggered();
+        void on_actionOptimization_triggered();
         void on_actionPlot_File_triggered();
         void on_action2D_Plot_File_triggered();
         void on_actionPy_Python_script_triggered();
@@ -88,6 +90,7 @@ private slots:
         void minNeutWeight_triggered();
         void helpTools_triggered();
 
+
 private:
     Ui::MainWindow *ui;
 
@@ -114,6 +117,7 @@ private:
 //        {"Modnum"  , {"--N",}},
     };
     QMap<QString,QString> helpTools = {
+        { "Generate Series", "sim_series"},
         { "Convert Ascii to Binary" , "ascii2bin"},
         { "Define Direction", "define_direction"},
         { "Generate Mirror Files", "mirror_coating"},

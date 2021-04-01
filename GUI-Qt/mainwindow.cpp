@@ -111,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(act,SIGNAL(triggered()),this,SLOT(minNeutWeight_triggered()));
     MinWght = "0.0";
 
+    connect(ui->actionGenerate_Series,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
     foreach(QAction * act, ui->menuHelpTools->actions())
         connect(act,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
 }
@@ -446,7 +447,7 @@ void MainWindow::finishedLast()
            QMessageBox::information(this,"Warning cannot open: ", logName);
            return;
        }
-       QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hhmmss")+ "\n\n";
+       QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hh:mm:ss")+ "\n\n";
        QByteArray arr = file.readAll();
        ui->textBrowser->append(arr);
 
@@ -1099,13 +1100,13 @@ void MainWindow::progress()
 void MainWindow::on_actionPy_Python_script_triggered()
 {
     ui->pushCheck->clicked();
-    pythonScript(instrumentDir,cmdList);
+    pythonScript(instrumentDir, cmdList, logFname);
 }
 
 void MainWindow::on_actionBat_shell_triggered()
 {
     ui->pushCheck->clicked();
-    shellScript(instrumentDir,cmdList);
+    shellScript(instrumentDir, cmdList, logFname);
 }
 
 void MainWindow::on_actionCopy_Module_Parameters_triggered()
@@ -1216,4 +1217,17 @@ void MainWindow::toolCommand(QString prog)
        toolProcess->start("xterm",QStringList()<< VitessDir + "/MODULES/" + prog + syspar);
     #endif
 
+}
+
+void MainWindow::on_actionUser_Interface_triggered()
+{
+    Help *help_general = new Help(this);
+    help_general->guiHelp();
+    help_general->show();
+
+}
+
+void MainWindow::on_actionOptimization_triggered()
+{
+    QDesktopServices::openUrl(QUrl(VitessDir+"/WWW/Optimization.pdf"));
 }

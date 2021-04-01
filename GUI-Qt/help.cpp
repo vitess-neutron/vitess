@@ -11,12 +11,14 @@ Help::Help(QWidget *parent) :
     ui(new Ui::Help)
 {
     ui->setupUi(this);
-    QString helpDir = QApplication::applicationDirPath();
     //If Application is under debug or release
-    if (!QDir(  helpDir+"/help/").exists())
-        helpDir = helpDir.left(helpDir.lastIndexOf("/"));
-    helpFiles << helpDir + "/help/vitess-general.txt"
-              << helpDir + "/help/getting-started.txt";
+    if (!QDir(  QApplication::applicationDirPath()+"/help/").exists())
+        helpDir = QApplication::applicationDirPath().
+                  left(QApplication::applicationDirPath().lastIndexOf("/")) + "/help/";
+    else
+        helpDir = QApplication::applicationDirPath() + "/help/";
+    helpFiles << helpDir + "vitess-general.txt"
+              << helpDir + "getting-started.txt";
 }
 
 Help::~Help()
@@ -43,3 +45,13 @@ void Help::writeHelp(int i)
     file.close();
 }
 
+void Help::guiHelp()
+{
+    ui->comboBox->hide();
+    QFile file(helpDir+"vitess-gui.txt");
+    QTextStream text(&file);
+    if (!file.open(QFile::ReadOnly))
+        QMessageBox::information(this, "info", file.errorString());
+    ui->textBrowser->setText(text.readAll());
+    file.close();
+}

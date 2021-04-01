@@ -139,7 +139,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
        }
     }
 }
-void pythonScript(QString instrumentDir, QStringList cmdList)
+void pythonScript(QString instrumentDir, QStringList cmdList, QString logfile)
 {
     QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  python script as",instrumentDir);
     if (!fileName.endsWith(".py")) fileName += ".py";
@@ -158,12 +158,13 @@ void pythonScript(QString instrumentDir, QStringList cmdList)
          " f.close\n";
     fout << "cmd = \"" << cmdList.join(" | ").toStdString() << " --Fno_file\"\n" ;
     fout << "os.system( \"export GSL_RNG_SEED='1' GSL_RNG_TYPE='ran3' ;\" + cmd )\n";
-    fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', '/tmp/testlog')";
+    //fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', 'C:/tmp/logfile')";
+    fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', '" << logfile.toStdString() << "')";
 }
 
-void shellScript(QString instrumentDir, QStringList cmdList)
+void shellScript(QString instrumentDir, QStringList cmdList, QString logfile)
 {
-    QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  python script as",instrumentDir);
+    QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  shell script as",instrumentDir);
     if (!fileName.endsWith(".sh")) fileName += ".sh";
     QFile file(fileName);
     file.open(QFile::WriteOnly | QFile::Text);
@@ -171,6 +172,8 @@ void shellScript(QString instrumentDir, QStringList cmdList)
     std::ofstream fout(fileName.toStdString());
     fout << "#!/bin/sh\n";
     fout <<  cmdList.join(" | ").toStdString() << " --Fno_file\n" ;
-    fout << "cat /tmp/testlog? > " << instrumentDir.toStdString() << "/result.txt\n";
-    fout << "cat /tmp/testlog?? >> " << instrumentDir.toStdString() << "/result.txt\n";
+//    fout << "cat C:/tmp/logfile? > " << instrumentDir.toStdString() << "/result.txt\n";
+//    fout << "cat C:/tmp/logfile?? >> " << instrumentDir.toStdString() << "/result.txt\n";
+    fout << "cat " << logfile.toStdString() << "? > " << instrumentDir.toStdString() << "/result.txt\n";
+    fout << "cat " << logfile.toStdString() << "?? >> " << instrumentDir.toStdString() << "/result.txt\n";
 }

@@ -19,6 +19,7 @@
 #include "string.h"
 #include "yaml-cpp/yaml.h"
 
+
 static QStringList typeList = {"file","string", "float", "int", "combo","switch","window"};
 static QStringList strList;
 static QString instrumentDir;
@@ -35,9 +36,10 @@ static QMap<QString,QString> mapParam = {
     {"prefix", ""},
 
 };
+
 void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
                      QGridLayout *gridLayout,int &row,int &index);
-void pythonScript(QString instDir,QStringList cmdList);
-void shellScript(QString instDir,QStringList cmdList);
+void pythonScript(QString instDir,QStringList cmdList, QString logfile);
+void shellScript(QString instDir,QStringList cmdList, QString logfile);
 
 #endif // TOOLS_H
