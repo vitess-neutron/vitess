@@ -13,9 +13,10 @@ spacewindow:
       descr:   "name" 
   - Distance:                 # -l    0.0  [cm]  Distance from origin to the window (along the x-axis) 
       type:    "float" 
-      descr:   "distance orig.\n<-> win. [cm]" 
-      tooltip: "distance from origin to the window (along the x-axis)"
+      descr:   "distance to\nwindow [cm]" 
+      tooltip: "distance from origin to window (along the x-axis)"
       default: 0.0
+      min:     0.0
       column:  0                     
       prefix:  "-l"   
   - bCircWnd:                 # -R   YES   [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
@@ -33,7 +34,7 @@ spacewindow:
       type:    "float" 
       descr:   "radius" 
       tooltip: "radius of circular window"
-      default: 0.0
+      min:     0.0
       column:  0                     
       prefix:  "-r"   
   - CntrY   :                 # -y    0.0  [cm]  y coordinate: center of window                        
@@ -58,120 +59,81 @@ spacewindow:
       type:    "float" 
       descr:   "min. y [cm]"  
       tooltip: "y-coordinate: lower frame value of rectangular window" 
-      default: 0.0 
       column:  0                     
       prefix:  "-w"   
   - Wmax    :                 # -W    0.0  [cm]  y-coordinate: higher frame value of rectangular window
       type:    "float" 
       descr:   "max. y [cm]" 
       tooltip: "y-coordinate: higher frame value of rectangular window"
-      default: 0.0 
       column:  1                     
       prefix:  "-W" 
   - Hmin    :                 # -h    0.0  [cm]  z-coordinate: bottom of rectangular window            
       type:    "float" 
       descr:   "min. z [cm]"  
       tooltip: "z-coordinate: bottom of rectangular window"  
-      default: 0.0 
       column:  0                     
       prefix:  "-h"   
   - Hmax    :                 # -H    0.0  [cm]  z-coordinate: top of rectangular window               
       type:    "float" 
       descr:   "max. z [cm]" 
       tooltip: "z-coordinate: top of rectangular window" 
-      default: 0.0 
       column:  1                     
       prefix:  "-H"   
   - RotAng  :                 # -A    0.0  [deg] Rotation angle
       type:    "float" 
       descr:   "rot. angle [deg]"  
-      tooltip: "Rotation angle"
-      default: 0.0 
-      column:  0                     
+      tooltip: "Rotation angle of the rectangular window (see Help file for details)"
+      column:  2                     
       prefix:  "-A"   
-  - bBeamStp:                 # -S   NO    [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
-      type:    "switch" 
-      descr:   "used as\nbeamstop"  
-      tooltip: "TRUE: beamstop, FALSE normal window"
-      column:  0                     
-      prefix:  "-S"   
-  - bPFrame:                  # -F   NO    [-]   Flag: use previous frame        TRUE: yes, FALSE no
-      type:    "switch" 
-      descr:   "used previous\nframe"  
-      tooltip: "Flag: use previous frame        TRUE: yes, FALSE no"
-      column:  2                     
-      prefix:  "-F"   
 
-  - Title_filter : 
-      type:    "title"
-      default: "Filter options" 
-  - TreatCol:                 # -f ANYCOLOR [-]   Treat only neutrons with this color
-      type:    "float" 
-      descr:   "tread color" 
-      tooltip: "treat only neutrons with this color"
-      column:  0                     
-      prefix:  "-f"   
-  - bRemOthr:                 # -d   NO    [-]   Flag: Neutrons that are not treated are removed
-      type:    "switch" 
-      descr:   "remove other\ncolors"
-      tooltip: "Flag: Neutrons that are not treated are removed" 
-      column:  2                     
-      prefix:  "-d"     
  
   - Title_add : 
       type:    "title"
-      default: "Additional window options" 
-  - PhiMin  :                 # -p   -1.0  [deg] min. and 
-      type:    "float" 
-      descr:   "min. phi [deg]" 
-      tooltip: "Minimum angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value"
-      default: -1.0
+      default: "Co-ordinate system" 
+  - bPFrame:                  # -F   NO    [-]   Flag: use previous frame        TRUE: yes, FALSE no
+      type:    "switch" 
+      descr:   "used previous\nframe"  
+      tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window plane (default)"
+      default: NO 
       column:  0                     
-      prefix:  "-p"   
-  - PhiMax  :                 # -P   -1.0  [deg] max. angle in y-z-plane
-      type:    "float" 
-      descr:   "max. phi [deg]" 
-      tooltip: "Maximum angle in yz-plane. The zero angle is equal to the negative z-axis. A negative number means any value."
-      default: -1.0
-      column:  1                     
-      prefix:  "-P"   
+      prefix:  "-F"   
 
   - Title_out : 
       type:    "title"
       default: "Outer Material" 
-  - FileOut :                 # -C   NULL   [-]  file describing the transmission of the window frame material
-      type:    "file" 
-      descr:   "material\ndescription file" 
-      tooltip: "file describing the transmission of the window frame material"
-      prefix:  "-C"
-  - ThickOut:                 # -t    0.0  [cm]  thickness of the frame material    
-      type:    "float" 
-      descr:   "thickness of\nmaterial [cm]" 
-      tooltip: "thickness of the frame material" 
-      default: 0.0
-      column:  0                     
-      prefix:  "-t"   
   - eMatrial:                 # -c IDEAL_ABS [-] Frame material: FROM_FILE, GADOLINIUM, CADMIUM, BOR10, EU, SILICON, IDEAL_ABS
       type:    "combo" 
-      descr:   "material"  
-      tooltip: "Frame material: FROM_FILE, GADOLINIUM, CADMIUM, BOR10, EU, SILICON, IDEAL_ABS"
+      descr:   "frame material"  
+      tooltip: "Material used for the absorbing window frame"
       default: ["FROM_FILE", "GADOLINIUM", "CADMIUM", "BOR10", "EU", "SILICON", "IDEAL_ABS"]
       column:  1                     
       prefix:  "-c" 
+  - ThickOut:                 # -t    0.0  [cm]  thickness of the frame material    
+      type:    "float" 
+      descr:   "thickness of\nframe [cm]" 
+      tooltip: "Thickness of the material used for the absorbing window frame" 
+      min:     0.0
+      column:  0                     
+      prefix:  "-t"   
+  - FileOut :                 # -C   NULL   [-]  file describing the transmission of the window frame material
+      type:    "file" 
+      descr:   "transmission\nfile" 
+      tooltip: "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)"
+      prefix:  "-C"
 
   - Title_in : 
       type:    "title"
       default: "Inner Material" 
-  - FileIn  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window
-      type:    "file" 
-      descr:   "material\ndescription file"  
-      tooltip: "file describing the transmission of the material in the open part of window"
-      prefix:  "-m"   
   - ThickIn :                 # -T    0.0  [cm]  thickness of the pane material      
       type:    "float" 
-      descr:   "thickness of\nmaterial [cm]"  
-      tooltip: "thickness of the pane material"
-      default: 0.0
+      descr:   "thickness of\nwindow [cm]"  
+      tooltip: "Thickness of the material used for the window pane"
+      min:     0.0
       column:  0                     
       prefix:  "-T"    
+  - FileIn  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window
+      type:    "file" 
+      descr:   "transmission\n file"  
+      tooltip: "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)"
+      prefix:  "-m"   
 
