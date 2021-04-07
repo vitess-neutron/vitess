@@ -7,6 +7,7 @@
 #include "parameter.h"
 #include "chrystanalyzer.h"
 #include "chopperphases.h"
+#include "progress.h"
 //#include "convert.h"
 
 #include <QTreeWidgetItem>

@@ -418,8 +418,6 @@ void MainWindow::on_pushDryrun_clicked()
 
 void MainWindow::finishedLast()
 {
-    //close progressDialog
-    dialog->close();
     //daily protocol file
     QDate curDate = QDate::currentDate();
     QString fileName = instrumentDir+"/XC"+QString::number(curDate.year())+
@@ -1087,14 +1085,7 @@ void MainWindow::changeParamWidget(QString filename,QString initName)
 //create progressDialog
 void MainWindow::progress()
 {
-    dialog = new QProgressDialog;
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->resize(dialog->size()+QSize(150,150));
-    dialog->setCancelButton(nullptr);
-    dialog->setRange(0,0);
-    QFileInfo fileinfo(instrumentName);
-    dialog->setWindowTitle(fileinfo.baseName());
-    dialog->show();
+    new Progress(ui->stackedWidget->count(),modultab->disableFlag,logFname,this);
 }
 
 void MainWindow::on_actionPy_Python_script_triggered()

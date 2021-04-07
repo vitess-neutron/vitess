@@ -35,6 +35,7 @@ SOURCES += \
         mainwindow.cpp \
         modultable.cpp \
         parameter.cpp \
+        progress.cpp \ 
         tools.cpp
 
 HEADERS += \
@@ -44,6 +45,7 @@ HEADERS += \
         mainwindow.h \
         modultable.h \
         parameter.h \
+        progress.h \
         tools.h
 FORMS += \
         chopperphases.ui \
