@@ -222,5 +222,7 @@ double AveWeightR    (const double ModCntrY, const double ModCntrZ,
 double IntAtan       (const double IntAnf,   const double IntEnd,    const double Param);
 double WeightDirByWnd(const double WndWidth, const double Dist,      const double ModPos);
 
+char*  FullModPath    (short eSource);
+
 #endif
 

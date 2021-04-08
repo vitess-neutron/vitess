@@ -784,7 +784,7 @@ set external_commandESET {
 ### Read_In
 ###
 set read_inESET {
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP MCNPX} {1 2 3 4 5}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNPX MCNP6} {1 2 3 4 5}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
   {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
@@ -796,7 +796,7 @@ set read_inESET {
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
-  {ri_fact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
+  {ri_fact float "1.0" {"Intensity factor\nfor MCNP" "The weight of each neutron trajectory from the MCNP simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
   {}
   {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
@@ -816,11 +816,11 @@ set writeoutESET {
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
-  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP MCNPX} {1 2 3 4 5}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNPX MCNP6} {1 2 3 4 5}}
   {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
   {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
-  {wofact float "1.0" {"Intensity factor\nfor MCNPX" "The weight of each neutron trajectory is divided by this factor to yield the counts in the MCNPX simulation: F = I_src/N_mcnpx-events" "" I}}
+  {wofact float "1.0" {"Intensity factor\nfor MCNP" "The weight of each neutron trajectory is divided by this factor to yield the counts in the MCNP simulation: F = I_src/N_mcnpx-events" "" I}}
   {"VITESS ASCII output selection" header}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
   {}

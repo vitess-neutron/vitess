@@ -14,8 +14,8 @@ Mon2D::Mon2D()
 
   nBinsX = 0;
   nBinsY = 0;
-  xParam = -1;
-  yParam = -1;
+  xParam = NO_PAR;
+  yParam = NO_PAR;
 
   xMin = -1.0;
   xMax = -1.0;
@@ -28,8 +28,8 @@ Mon2D::Mon2D()
 
   lambdaMin = -1;
   lambdaMax = -1;
-  filterParam1 = -1;
-  filterParam2 = -1;
+  filterParam1 = NO_PAR;
+  filterParam2 = NO_PAR;
   filterComb = -1;
   filterVarMin1 = -1.0;
   filterVarMin2 = -1.0;
@@ -78,10 +78,10 @@ void Mon2D::OwnInit(int argc, char* argv[])
 	        break;
 
 	      case 'X':
-	        xParam = atoi(&argv[i][2]); // parameter to be shown on the x axis, input parameter
+	        xParam = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the x axis, input parameter
 	        break;
 	      case 'Y':
-	        yParam = atoi(&argv[i][2]); // parameter to be shown on the y axis, input parameter
+	        yParam = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the y axis, input parameter
 
 	      case 'x':
 	         nBinsX = atol(&argv[i][2]); /* number of bins horizontal axis */
@@ -105,11 +105,11 @@ void Mon2D::OwnInit(int argc, char* argv[])
 	        break;
 
 	      case 'I':  
-	        filterParam1 = atoi(&argv[i][2]); // filter parameter 1, optional input parameter
+	        filterParam1 = (VtPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
 	        break;
 
 	      case 'J':  
-	        filterParam2 = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+	        filterParam2 = (VtPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	        break;
 
 	      case 'C':  
@@ -310,7 +310,7 @@ int Mon2D::FillMonitor(Neutron* n)
 /*******************************************************/
 /** Determine, which parameter has to be calculated   **/
 /*******************************************************/
-double Mon2D::DetermineParameter(int id, Neutron* n)
+double Mon2D::DetermineParameter(VtPar id, Neutron* n)
 {
 
   // Return the parameter value identified by 'id'
@@ -324,87 +324,81 @@ double Mon2D::DetermineParameter(int id, Neutron* n)
   double divy = 0;
   double divz = 0;
 
-  switch (id) {
-  case 1:
-    paramValue = n->Position[1]; // y-pos
-    break;
-    
-  case 2:
-    paramValue = n->Position[2]; // z-pos
-    break;
-    
-  case 3:   
-    if ( neutronVector.x[0] >= 0) paramValue = atan2(neutronVector.x[1], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI; //y divergence
-    else paramValue = atan2(neutronVector.x[1], -sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI;
-    break;
-    
-  case 4:
-    paramValue = atan2(neutronVector.x[2], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[1])))*180./M_PI; //z divergence
-    break;
-    
-  case 5:
-    paramValue = n->Wavelength; // wavelength
-    break;
-    
-  case 6:
-    paramValue = ENERGY_FROM_LAMBDA(n->Wavelength);  //energy
-    break;
-    
-  case 7:
-    paramValue = n->Time; // time
-    break;
-    
-  case 8:
-    divy = neutronVector.Phi();
-    paramValue = divy * 2. * M_PI / n->Wavelength; // ky: y component of the wave vector 
-    break;
-    
-  case 9:
-    neutronVector.x[1] = 0;
-    if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
-    else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
-    paramValue = divz * 2. * M_PI / n->Wavelength;  // kz: z component of the wave vector
-    break;
-    
-  case 10:
-    neutronPosition.x[0] = 0;
-    paramValue = neutronPosition.Mod(); // r: projection of the neutron vector on the y-z plane
-    break;
-    
-  case 11:
-    // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
-    paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
-    break;
-
-  case 12:
-    paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
-    break;
-
-  case 13:
-    paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
-    break;
-
-  case 14:
-    paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
-    break;
-    
-  case 15:  
-    paramValue = neutronVector.PhiSc()*180./M_PI;
-    break;
-
-   case 16:  
-    paramValue = neutronVector.ThetaSc()*180./M_PI;
-    break;
+  switch (id) 
+  {
+    case NO_PAR:  
+      Error("parameter not defined");
+      break;   
   
-    case 17:  
-    paramValue = neutronPosition.x[0];
-    break;   
+    case POS_X:  
+      paramValue = neutronPosition.x[0];
+      break;   
+    case POS_Y:
+      paramValue = n->Position[1]; // y-pos
+      break;
+    case POS_Z:
+      paramValue = n->Position[2]; // z-pos
+      break;
+    
+    case DIV_Y:   
+      if ( neutronVector.x[0] >= 0) paramValue = atan2(neutronVector.x[1], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI; //y divergence
+      else paramValue = atan2(neutronVector.x[1], -sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI;
+      break;
+    case DIV_Z:
+      paramValue = atan2(neutronVector.x[2], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[1])))*180./M_PI; //z divergence
+      break;
+    
+    case LAMBDA:
+      paramValue = n->Wavelength; // wavelength
+      break;
+    case ENERGY:
+      paramValue = ENERGY_FROM_LAMBDA(n->Wavelength);  //energy
+      break;
+    case TIME:
+      paramValue = n->Time; // time
+      break;
+    
+    case K_Y:
+      divy = neutronVector.Phi();
+      paramValue = divy * 2. * M_PI / n->Wavelength; // ky: y component of the wave vector 
+      break;
+    case K_Z:
+      neutronVector.x[1] = 0;
+      if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
+      else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
+      paramValue = divz * 2. * M_PI / n->Wavelength;  // kz: z component of the wave vector
+      break;
+    
+    case POS_R:
+      neutronPosition.x[0] = 0;
+      paramValue = neutronPosition.Mod(); // r: projection of the neutron vector on the y-z plane
+      break;
+    case POS_PHI:
+      // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
+      paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+      break;
+    
+    case DIR_PHI:  
+      paramValue = neutronVector.PhiSc()*180./M_PI;
+      break;
+    case DIR_THETA:  
+      paramValue = neutronVector.ThetaSc()*180./M_PI;
+      break;
 
-  default:
-    fprintf(LogFilePtr,"unknown parameter ID: %d\n", id);
-    exit(-1);
-    break;
+    case COL_VERT:
+      paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
+      break;
+    case COL_HOR:
+      paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
+      break;
+    case COLOR:
+      paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
+      break;
 
+    default:
+      fprintf(LogFilePtr,"unknown parameter ID: %d\n", id);
+      exit(-1);
+      break;
   }
 
   return paramValue;
@@ -463,27 +457,29 @@ void Mon2D::WriteOut(long iBndl)
 /***********************************/
 /** Convert parameter ID to text  **/
 /***********************************/
-void Mon2D::ParId2Text(char* sParName, const int ePar)
+void Mon2D::ParId2Text(char* sParName, const VtPar ePar)
 {
   switch (ePar)
   { 
-    case  0: strcpy(sParName, "pos_y");     break;
-	  case  1: strcpy(sParName, "pos_z");     break;
-	  case  2: strcpy(sParName, "div_y");     break;
-	  case  3: strcpy(sParName, "div_z");     break;
-	  case  4: strcpy(sParName, "lambda");    break;
-	  case  5: strcpy(sParName, "energy");    break; 
-	  case  6: strcpy(sParName, "time");      break; 
-	  case  7: strcpy(sParName, "k_y");       break;
-	  case  8: strcpy(sParName, "k_z");       break; 
-	  case  9: strcpy(sParName, "pos_r");     break; 
-	  case 10: strcpy(sParName, "pos_phi");   break;
-	  case 11: strcpy(sParName, "col_vert");  break; 
-	  case 12: strcpy(sParName, "col_hor");   break; 
-	  case 13: strcpy(sParName, "color");     break; 
-	  case 14: strcpy(sParName, "dir_phi");   break;
-	  case 15: strcpy(sParName, "dir_theta"); break;
-	  case 16: strcpy(sParName, "pos_x");     break;
+    case NO_PAR   : strcpy(sParName, "no_par");        break;
+	  case POS_X    : strcpy(sParName, "pos_x/cm");      break;
+    case POS_Y    : strcpy(sParName, "pos_y/cm");      break;
+	  case POS_Z    : strcpy(sParName, "pos_z/cm");      break;
+	  case DIV_Y    : strcpy(sParName, "div_y/deg");     break;
+	  case DIV_Z    : strcpy(sParName, "div_z/deg");     break;
+	  case LAMBDA   : strcpy(sParName, "lambda/Ang");    break;
+	  case ENERGY   : strcpy(sParName, "energy/µeV");    break; 
+	  case TIME     : strcpy(sParName, "time/ms");       break; 
+	  case K_Y      : strcpy(sParName, "k_y/(1/Ang)");   break;
+	  case K_Z      : strcpy(sParName, "k_z/(1/Ang)");   break; 
+	  case POS_R    : strcpy(sParName, "pos_r/cm");      break; 
+	  case POS_PHI  : strcpy(sParName, "pos_phi/deg");   break;
+	  case DIR_PHI  : strcpy(sParName, "dir_phi/deg");   break;
+	  case DIR_THETA: strcpy(sParName, "dir_theta/deg"); break;
+	  case COL_VERT : strcpy(sParName, "col_vert");      break; 
+	  case COL_HOR  : strcpy(sParName, "col_hor");       break; 
+	  case COLOR    : strcpy(sParName, "color");         break; 
+    default: strcpy(sParName, "");
   }
 }
 

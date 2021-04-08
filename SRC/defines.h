@@ -58,6 +58,7 @@
 #define CHAR_BUF_LENGTH    1024
 #define CHAR_BUF_LARGE     5120
 #define CHAR_BUF_SMALL      256
+#define CHAR_BUF_XS         128
 #define ROFQ_MAX            512
 #define PATH_LEN            128  // maximal length of path
 #define NAME_LEN            256  // maximal length of path + filename
@@ -360,8 +361,8 @@ typedef enum
 { VT_VITESS_FMT = 1,
   VT_MCSTAS_FMT = 2,
   VT_MCPL_FMT   = 3,
-  VT_MCNP_FMT   = 4,
-  VT_MCNPX_FMT  = 5
+  VT_MCNPX_FMT  = 4,
+  VT_MCNP6_FMT  = 5
 }
 VtPrgFormat;
 
@@ -507,7 +508,7 @@ typedef struct
 	double         Counts;
 	double         Shakes;
 }
-McnpNeutron;
+McnpxNeutron;
 
 typedef struct
 {
@@ -520,7 +521,7 @@ typedef struct
 	VectorType     Vector;
   double         Unknown;
 }
-McnpxNeutron;
+Mcnp6Neutron;
 
 // choppers
 // --------

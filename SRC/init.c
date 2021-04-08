@@ -36,7 +36,7 @@
 
 
 #define MAX_COL            6   // max. number of count rates written separately for different colours, 0 means no separate rates writable
-#define NUM_EOP            3   // number of end-of-part lines that can be treated in 'instrument.inf'
+#define NUM_EOP           30   // number of end-of-part lines that can be treated in 'instrument.inf'
 #define MAX_TRAJ        1200
 #define COMPRESSBUFLEN 65536
 
@@ -113,6 +113,8 @@ VectorType vNull={0.0,0.0,0.0},
            BegPosS={0.0,0.0,0.0}; /* [cm] end position of prev. section = origin of this section in absolute co-ordinate system */
 
 TotalID  tempID;
+McCompID eFirstMod=MCN_COMP_UNKNOWN;
+
 
 /**************************************************************/
 /* STATIC VARIABLES                                           */
@@ -142,6 +144,7 @@ unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
 static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
 static char* conCat (const char *sFile, const char* sSubDir, int sel);
+static McCompID GetModId(char* sBuffer);                                // return ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
 static int   readCompressedNeutrons();
@@ -1051,11 +1054,16 @@ void WriteInstrData(VectorType Pos)
   FILE*  pFile=NULL;
   char   *pBuffer;
   long   iModId=iModuleId;
+  int    m=0, mFst=0;
 
-  if (nModuleNo==0) 
+
+  if (nModuleNo==0)  // if 'instrument.inf' does not exist
   {
-    // source module writes header and line number '0'
-    iModId=0;
+    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1 
+    if (_eModule==MCN_SOURCE)
+      iModId=0;
+    else
+      nModuleNo++;
     pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
@@ -1065,15 +1073,18 @@ void WriteInstrData(VectorType Pos)
   {
     // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
     char *inp;
-    pBuffer = inp = (char*) malloc(CHAR_BUF_SMALL*(nModuleNo+3+NUM_EOP));
+    pBuffer = inp = (char*) malloc(CHAR_BUF_XS*(nModuleNo+3+NUM_EOP));
     pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
-    if (pFile) {
-      int m;
-      for (m=-2; m<nModuleNo; m++) {
-        if (fgets (inp, CHAR_BUF_SMALL-1, pFile)) {
-          if (memcmp(inp, "EOP", 3)==0)
-            fgets (inp, CHAR_BUF_SMALL-1, pFile);
-          inp += CHAR_BUF_SMALL;
+    if (pFile) 
+    {
+      if  (eFirstMod==MCN_READ_IN) mFst=1;
+      for (m=mFst; m<nModuleNo; m++) 
+      {
+        if (fgets (inp, CHAR_BUF_XS-1, pFile)) 
+        {
+          if (memcmp(inp, "EOP", 3)==0 || memcmp(inp, "#", 1)==0)
+            m--;
+          inp += CHAR_BUF_XS;
         }
       }
       fclose(pFile);
@@ -1083,7 +1094,7 @@ void WriteInstrData(VectorType Pos)
       char *p = pBuffer;
       while (p != inp) {
         fputs(p, pFile);
-        p += CHAR_BUF_SMALL;
+        p += CHAR_BUF_XS;
       }
       fputs("EOP\n", pFile);
     }
@@ -1424,21 +1435,15 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
       }
 
     }
-    else if (InputFilePtr==NULL || InputFilePtr==stdin)
-    // otherwise: read last line if this is the first part of the instrument (= no input file)
-    {
-      /* Read last line and copy content, except: lines containing F in 87. column, they have not a new frame) */
-      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
-      { nModNo++;
-        if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLine, sBuffer);
-      }
-
-    }
-    else
-    // read until end of previous part, if input file is used
+/*    else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
+    // read until end of previous part, if input file or read_in is used
     {
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
       {
+        if (eFirstMod==MCN_COMP_UNKNOWN)
+        { eFirstMod=GetModId(sBuffer);
+          if (eFirstMod==MCN_READ_IN) nModNo=1;
+        }
         if (memcmp(sBuffer, "EOP", 3)==0)
         {  strcpy(sLine, sLineH);
         }
@@ -1447,7 +1452,24 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
           if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLineH, sBuffer);
         }
       }
-      if (strlen(sLine)==0) {strcpy(sLine, sLineH);}
+      if (strlen(sLine)==0) 
+        strcpy(sLine, sLineH);
+    } */
+    else
+    // otherwise: read last line 
+    {
+      /* Read last line and copy content, except: lines containing F in 87. column, they have not a new frame) */
+      while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
+      { 
+        if (eFirstMod==MCN_COMP_UNKNOWN)
+        { eFirstMod=GetModId(sBuffer);
+          if (eFirstMod==MCN_READ_IN) nModNo=1;
+        }
+        if (memcmp(sBuffer, "EOP", 3)!=0)
+          nModNo++;
+        if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLine, sBuffer);
+      }
+
     }
 
     // extract data from line and change to radians and cm
@@ -1780,10 +1802,14 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   if (sFile == NULL)
     return NULL;
 
+  ChangeSlash(sSubDir);
+  ChangeSlash(sFile);
+
   /* Do not change an absolute path. */
 #ifdef _MSC_VER
   /* we consider a filename with : as absolute */
-  if (strstr(sFile, ":")) sel = -1;
+  // if (strstr(sFile, ":")) sel = -1;
+  if (sFile[1] == ':') sel = -1;
 #else
   if (sFile[0] == '/') sel = -1;
 #endif
@@ -1823,6 +1849,17 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
 
   return pResult;
 }
+
+static McCompID GetModId(char* sBuffer)
+{
+  long nDum;
+  McCompID eModule;
+
+  sscanf(sBuffer, "%ld %3d", &nDum, &eModule);
+
+  return eModule;
+}
+
 
 /***********************************************************************************************/
 /* Transform Vector from local co-ordinate system of the module to absolute co-ordinate system */ 

@@ -37,8 +37,8 @@ class Mon2D
 
   int    nBinsX;           // -x  number of x bins
   int    nBinsY;           // -y  number of y bins
-  int    xParam;           // -X  parameter to be shown on the x axis
-  int    yParam;           // -Y  parameter to be shown on the y axis
+  VtPar  xParam;           // -X  parameter to be shown on the x axis
+  VtPar  yParam;           // -Y  parameter to be shown on the y axis
 
   double xMin;             // -w  minimum x value
   double xMax;             // -w  maximum x value
@@ -52,8 +52,8 @@ class Mon2D
   // optional input parameters (filters and polarisation analysis)
   double lambdaMin;        // -l  minimum wavelength, filter for the monitor
   double lambdaMax;        // -L  maximum wavelength, filter for the monitor
-  int    filterParam1;     // -I  filter parameter 1
-  int    filterParam2;     // -J  filter parameter 2
+  VtPar  filterParam1;     // -I  filter parameter 1
+  VtPar  filterParam2;     // -J  filter parameter 2
   int    filterComb;       // -C  filter 1 and 2 combined with AND or OR
   double filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
   double filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
@@ -98,10 +98,10 @@ class Mon2D
 
   // operations
   void   OwnInit(int argc, char* argv[]);         // Read in the monitor parameters from the command line
-  double DetermineParameter(int id, Neutron* n);  // Determine, which parameter has to be calculated
+  double DetermineParameter(VtPar id, Neutron* n);  // Determine, which parameter has to be calculated
   int    FillMonitor(Neutron* n);                 // Fill monitor, if the neutron fulfills all constraints
   void   WriteOut(long iBndl);                    // Write output file
-  void   ParId2Text(char* sName, const int ePar); // Convert parameter ID to text
+  void   ParId2Text(char* sName, const VtPar ePar); // Convert parameter ID to text
   void   FreeMemory();                            // Free allocated memory
 };
 

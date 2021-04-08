@@ -27,7 +27,7 @@ Mon1D::Mon1D()
     IntTot  [i] = 0.0;  
     xBinSize[i] = 0.0;
   
-    eParX[i] = -1;
+    eParX[i] = NO_PAR;
 
     monSwitchedOn[i] = 0;
 
@@ -51,32 +51,33 @@ Mon1D::Mon1D()
   filterVarMax1 = -1;
   filterVarMax2 = -1;
 
-  filterParam1 = -1;
-  filterParam2 = -1;
-  filterComb = -1;
+  filterParam1 = NO_PAR;
+  filterParam2 = NO_PAR;
+  filterComb   = -1;
 
   // normalise = -1; 
 
   bWeight = 1;
   exclCounts = 0;
 
-  sParameterNames [0] = "pos_y";
-  sParameterNames [1] = "pos_z";
-  sParameterNames [2] = "div_y";
-  sParameterNames [3] = "div_z";
-  sParameterNames [4] = "lambda";
-  sParameterNames [5] = "energy"; 
-  sParameterNames [6] = "time"; 
-  sParameterNames [7] = "k_y";
-  sParameterNames [8] = "k_z"; 
-  sParameterNames [9] = "pos_r"; 
-  sParameterNames[10] = "pos_phi";
-  sParameterNames[11] = "col_vert"; 
-  sParameterNames[12] = "col_hor"; 
-  sParameterNames[13] = "color"; 
-  sParameterNames[14] = "dir_phi";
-  sParameterNames[15] = "dir_theta";
-  sParameterNames[16] = "pos_x";
+  sParName[NO_PAR   ] = "no_par";   sParUnit[NO_PAR   ] = "-";
+  sParName[POS_X    ] = "pos_x";    sParUnit[POS_X    ] = "cm";
+  sParName[POS_Y    ] = "pos_y";    sParUnit[POS_Y    ] = "cm";
+  sParName[POS_Z    ] = "pos_z";    sParUnit[POS_Z    ] = "cm";
+  sParName[DIV_Y    ] = "div_y";    sParUnit[DIV_Y    ] = "deg";
+  sParName[DIV_Z    ] = "div_z";    sParUnit[DIV_Z    ] = "deg";
+  sParName[LAMBDA   ] = "lambda";   sParUnit[LAMBDA   ] = "Ang";
+  sParName[ENERGY   ] = "energy";   sParUnit[ENERGY   ] = "µeV"; 
+  sParName[TIME     ] = "time";     sParUnit[TIME     ] = "ms"; 
+  sParName[K_Y      ] = "k_y";      sParUnit[K_Y      ] = "1/Ang";
+  sParName[K_Z      ] = "k_z";      sParUnit[K_Z      ] = "1/Ang"; 
+  sParName[POS_R    ] = "pos_r";    sParUnit[POS_R    ] = "cm"; 
+  sParName[POS_PHI  ] = "pos_phi";  sParUnit[POS_PHI  ] = "deg";
+  sParName[DIR_PHI  ] = "dir_phi";  sParUnit[DIR_PHI  ] = "deg";
+  sParName[DIR_THETA] = "dir_theta";sParUnit[DIR_THETA] = "deg";
+  sParName[COL_VERT ] = "col_vert"; sParUnit[COL_VERT ] = ""; 
+  sParName[COL_HOR  ] = "col_hor";  sParUnit[COL_HOR  ] = ""; 
+  sParName[COLOR    ] = "color";    sParUnit[COLOR    ] = ""; 
 }       
 
 
@@ -99,7 +100,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'X':
-	        eParX[0] = atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
+	        eParX[0] = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
 	        break;
 	  
         case 'x':
@@ -114,7 +115,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'Y':
-	        eParX[1] = atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
+	        eParX[1] = (VtPar)atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'y':
@@ -129,7 +130,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;   
 
         case 'Z':
-	        eParX[2] = atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
+	        eParX[2] = (VtPar)atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'z':
@@ -145,11 +146,11 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;   
  
         case 'I':  
-	        filterParam1 = atoi(&argv[i][2]); // filter parameter 1, optional input parameter
+	        filterParam1 = (VtPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
 	        break;
 
         case 'J':  
-	        filterParam2 = atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+	        filterParam2 = (VtPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	        break;
 
         case 'C':  
@@ -362,7 +363,7 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
 /*******************************************************/
 /** Determine, which parameter has to be calculated   **/
 /*******************************************************/
-double Mon1D::DetermineParameter(int id, Neutron* n)
+double Mon1D::DetermineParameter(VtPar id, Neutron* n)
 {
 
   // Return the parameter value identified by 'id'
@@ -378,43 +379,45 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
 
   switch (id) 
   {
-    case 1:
+    case NO_PAR:  
+      Error("parameter not defined");
+      break;   
+
+    case POS_X:  
+      paramValue = neutronPosition.x[0];
+      break;   
+    case POS_Y:
       paramValue = n->Position[1]; // y-pos
       break;
-    
-    case 2:
+    case POS_Z:
       paramValue = n->Position[2]; // z-pos
       break;
     
-    case 3:   
+    case DIV_Y:   
       if (neutronVector.x[0] >= 0) 
         paramValue = atan2(neutronVector.x[1], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI; //y divergence
       else 
         paramValue = atan2(neutronVector.x[1], -sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[2])))*180./M_PI;
       break;
-    
-    case 4:
+    case DIV_Z:
       paramValue = atan2(neutronVector.x[2], sqrt(sq(neutronVector.x[0]) + sq(neutronVector.x[1])))*180./M_PI; //z divergence
       break;
 
-    case 5:
+    case LAMBDA:
       paramValue = n->Wavelength; // wavelength
       break;
-    
-    case 6:
+    case ENERGY:
       paramValue = ENERGY_FROM_LAMBDA(n->Wavelength);  //energy
       break;
-    
-    case 7:
+    case TIME:
       paramValue = n->Time; // time
       break; 
     
-    case 8:
+    case K_Y:
       divy = neutronVector.Phi();
       paramValue = divy * 2. * M_PI / n->Wavelength; // ky: y component of the wave vector 
       break;
-    
-    case 9:
+    case K_Z:
       neutronVector.x[1] = 0;
       if (neutronVector.x[2] > 0) 
         divz = M_PI/2. -  neutronVector.Theta(); 
@@ -423,39 +426,31 @@ double Mon1D::DetermineParameter(int id, Neutron* n)
       paramValue = divz * 2. * M_PI / n->Wavelength;  // kz: z component of the wave vector
       break;
     
-    case 10:
+    case POS_R:
       neutronPosition.x[0] = 0;
       paramValue = neutronPosition.Mod(); // r: projection of the neutron vector on the y-z plane
       break;
-    
-    case 11:
+    case POS_PHI:
       // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
       paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
       break;
-
-    case 12:
-      paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
-      break;
-
-    case 13:
-      paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
-      break;
-
-    case 14:
-      paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
-      break;
     
-    case 15:  
+    case DIR_PHI:  
       paramValue = neutronVector.PhiSc()*180./M_PI;
       break;
-
-    case 16:  
+    case DIR_THETA:  
       paramValue = neutronVector.ThetaSc()*180./M_PI;
       break;  
 
-    case 17:  
-      paramValue = neutronPosition.x[0];
-      break;   
+    case COL_VERT:
+      paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
+      break;
+    case COL_HOR:
+      paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
+      break;
+    case COLOR:
+      paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)
+      break;
 
     default:
       fprintf(LogFilePtr,"unknown parameter ID: %d\n", id);
@@ -496,15 +491,15 @@ void Mon1D::WriteOut(long iBndl)
     }
 
     if (bMultFiles) 
-      fullFileName = fMonitorFilename + "_" + sParameterNames[eParX[ii]-1] + ".dat";
+      fullFileName = fMonitorFilename + "_" + sParName[eParX[ii]] + ".dat";
     
     fMonitor[ii] = OpenOutputFile(fullFileName.c_str(), TRUE, "w");
     if (fMonitor[ii]!=NULL)
     {
       if (analysePol) 
-        WriteHeader1DB(fMonitor[ii], "polarisation", ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii]/nBinPol[ii], nTrajTot[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+        WriteHeader1DB(fMonitor[ii], "polarisation", ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii]/nBinPol[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
       else
-        WriteHeader1DB(fMonitor[ii], "intensity",    ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParameterNames[eParX[ii]-1].c_str(), "");
+        WriteHeader1DB(fMonitor[ii], "intensity",    ANY_COLOR, iBndl, nBundle, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
 
       for(int binx = 0; binx < nBinsX[ii]; binx++) 
       {

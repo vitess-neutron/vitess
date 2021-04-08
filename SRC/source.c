@@ -1261,10 +1261,11 @@ short ReadModData(char* sFileName)
   char  sShape   [2]="S",
         sBuffer [CHAR_BUF_LENGTH];
   short iM=0;
-  FILE* pFileR;
+  FILE* pFileR=NULL;
 
-  pFileR = OpenInputFile(sFileName, TRUE,"rt");
-
+  pFileR = OpenInputFile(sFileName, FALSE,"rt");
+  if (pFileR==NULL)
+    pFileR = OpenPackInpFile(sFileName, FullModPath(stSrc.nSource), FALSE);
   if (pFileR!=NULL)
   {
     /* Read a line for each moderator */
@@ -1527,78 +1528,80 @@ void SetGeometry(char* sColor)
 /****************************************************************************************/
 void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxL)
 {
-   long   i;
-   double dDelX=0.0, dF=0.0;
-   char   sBuffer[CHAR_BUF_LENGTH]=""; 
-   FILE*  pDisFile=NULL;
+  long   i;
+  double dDelX=0.0, dF=0.0;
+  char   sBuffer[CHAR_BUF_LENGTH]=""; 
+  FILE*  pDisFile=NULL;
 
-   /* loading wavelength distribution file, if its name is given and range is set properly  */
-   if(strlen(pMod->sLFileName) > 0) 
-   {
-      if (pTraj->LambdaMin >= 0.0  &&  pTraj->LambdaMax > pTraj->LambdaMin)
+  /* loading wavelength distribution file, if its name is given and range is set properly  */
+  if(strlen(pMod->sLFileName) > 0) 
+  {
+    if (pTraj->LambdaMin >= 0.0  &&  pTraj->LambdaMax > pTraj->LambdaMin)
+    {
+      /* opening distribution file */
+      pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
+      if (pDisFile==NULL)
+        pDisFile = OpenPackInpFile(pMod->sLFileName, FullModPath(stSrc.nSource), FALSE);
+      if (pDisFile!=NULL) 
       {
-        /* opening distribution file */
-        pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
-        if (pDisFile!=NULL) 
+        /* reading number of lines, allocating memory and reading distribution file */
+        pFluxL->nLines = LinesInFile(pDisFile);
+        pFluxL->pTabX  = (double*) calloc(pFluxL->nLines, sizeof(double));
+        pFluxL->pTabF  = (double*) calloc(pFluxL->nLines, sizeof(double));
+
+        for(i=0; i < pFluxL->nLines; i++)
+        {  
+          ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
+          sscanf  (sBuffer, "%lf %le", &pFluxL->pTabX[i], &pFluxL->pTabF[i]);
+        }
+
+        /* definition of wavelength dist. function after check 
+           if wavelength range of the simulation is covered by data in file */
+        if (pTraj->LambdaMin >= pFluxL->pTabX[0] && pTraj->LambdaMax <= pFluxL->pTabX[pFluxL->nLines-1])
         {
-            /* reading number of lines, allocating memory and reading distribution file */
-            pFluxL->nLines = LinesInFile(pDisFile);
-            pFluxL->pTabX  = (double*) calloc(pFluxL->nLines, sizeof(double));
-            pFluxL->pTabF  = (double*) calloc(pFluxL->nLines, sizeof(double));
-
-            for(i=0; i < pFluxL->nLines; i++)
-            {  
-              ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
-              sscanf  (sBuffer, "%lf %le", &pFluxL->pTabX[i], &pFluxL->pTabF[i]);
-            }
-
-            /* definition of wavelength dist. function after check 
-               if wavelength range of the simulation is covered by data in file */
-            if (pTraj->LambdaMin >= pFluxL->pTabX[0] && pTraj->LambdaMax <= pFluxL->pTabX[pFluxL->nLines-1])
-            {
-               pFluxL->pDisFct = (double(*)()) UserLambdaDis;
-            } 
-            else 
-            {  fprintf(LogFilePtr,"ERROR: The wavelength range given in %s is smaller than that in the simulation\n", pMod->sLFileName);
-               exit(-1);
-            }
-
-            /* integration of function f(lambda) and storing of ln f */
-            pFluxL->Int=0.0;
-            for(i=1; i < pFluxL->nLines; i++)
-            {  
-              dDelX =  pFluxL->pTabX[i] - pFluxL->pTabX[i-1];
-              dF    = (pFluxL->pTabF[i] + pFluxL->pTabF[i-1])/2.0;
-              pFluxL->Int += dF*dDelX;
-            }
-            for(i=0; i < pFluxL->nLines; i++)
-            {  
-              if (pFluxL->pTabF[i] <= 0.0)
-                pFluxL->pTabF[i] = -100.0;
-              else
-                pFluxL->pTabF[i] = log(pFluxL->pTabF[i]);
-            }
-
-            /* closes distribution file */
-            fclose(pDisFile) ;
+           pFluxL->pDisFct = (double(*)()) UserLambdaDis;
         } 
         else 
-        { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength distribution\nPlease copy (from ...FILES/moderators/...) to input directory\n", 
-	                         pMod->sLFileName);
-          exit (-1);
+        {  fprintf(LogFilePtr,"ERROR: The wavelength range given in %s is smaller than that in the simulation\n", pMod->sLFileName);
+           exit(-1);
         }
+
+        /* integration of function f(lambda) and storing of ln f */
+        pFluxL->Int=0.0;
+        for(i=1; i < pFluxL->nLines; i++)
+        {  
+          dDelX =  pFluxL->pTabX[i] - pFluxL->pTabX[i-1];
+          dF    = (pFluxL->pTabF[i] + pFluxL->pTabF[i-1])/2.0;
+          pFluxL->Int += dF*dDelX;
+        }
+        for(i=0; i < pFluxL->nLines; i++)
+        {  
+          if (pFluxL->pTabF[i] <= 0.0)
+            pFluxL->pTabF[i] = -100.0;
+          else
+            pFluxL->pTabF[i] = log(pFluxL->pTabF[i]);
+        }
+
+        /* closes distribution file */
+        fclose(pDisFile) ;
       } 
       else 
-      { fprintf(LogFilePtr,"ERROR: You have to specify the wavelength range properly!\n");
-        exit(-1);
+      { fprintf(LogFilePtr,"ERROR: Can't open %s to read user given wavelength distribution\nPlease copy (from ...FILES/moderators/...) to input directory\n", 
+	                       pMod->sLFileName);
+        exit (-1);
       }
-   }
-   else
-   {
-    /* otherwise use Maxwellian distribution */
-    pFluxL->pDisFct = (double(*)()) Maxwellian;
-    pFluxL->Int    = 1.0 ;
-   }
+    } 
+    else 
+    { fprintf(LogFilePtr,"ERROR: You have to specify the wavelength range properly!\n");
+      exit(-1);
+    }
+  }
+  else
+  {
+   /* otherwise use Maxwellian distribution */
+   pFluxL->pDisFct = (double(*)()) Maxwellian;
+   pFluxL->Int    = 1.0 ;
+  }
 }
 
 
@@ -1618,7 +1621,9 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     if (pTraj->TimeFrmMax > pTraj->TimeFrmMin)
     {
       /* opening distribution file */
-      pDisFile = OpenInputFile(pMod->sTFileName, FALSE, "rt");
+      pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
+      if (pDisFile==NULL)
+        pDisFile = OpenPackInpFile(pMod->sTFileName, FullModPath(stSrc.nSource), FALSE);
       if (pDisFile!=NULL) 
       {
         /* reading number of lines, allocating memory and reading distribution file */
@@ -1722,7 +1727,9 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       pTraj->LambdaMax  > pTraj->LambdaMin  && pTraj->LambdaMin >= 0.0)
   {
     /* openíng distribution file */
-    pDisFile = OpenInputFile(pMod->sLTFileName, FALSE, "rt");
+    pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
+    if (pDisFile==NULL)
+      pDisFile = OpenPackInpFile(pMod->sLTFileName, FullModPath(stSrc.nSource), FALSE);
     if (pDisFile!=NULL) 
     {
       /* reading number of lines, allocating memory and reading distribution file */

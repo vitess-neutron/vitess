@@ -35,7 +35,7 @@ class Mon1D
 
   // input parameters
   string fMonitorFilename;        // -O        common part of the output file names 
-  int    eParX [3];               // -X -Y -Z  parameter to be shown on the x axis 
+  VtPar  eParX [3];               // -X -Y -Z  parameter to be shown on the x axis 
   int    nBinsX[3];               // -x -y -z  number of x bins 
   double xMin[3];                 // -w -f -g  minimum x value 
   double xMax[3];                 // -W -F -G  maximum x value 
@@ -45,8 +45,8 @@ class Mon1D
   // optional input parameters (filters and polarisation analysis)
   double lambdaMin;               // -l        minimum wavelength, filter for the monitor
   double lambdaMax;               // -L        maximum wavelength, filter for the monitor
-  int    filterParam1;            // -I        filter parameter 1
-  int    filterParam2;            // -J        filter parameter 2
+  VtPar  filterParam1;            // -I        filter parameter 1
+  VtPar  filterParam2;            // -J        filter parameter 2
   int    filterComb;              // -C        filter 1 and 2 combined with AND or OR
   double filterVarMin1;           // -u        minimum value of parameter 1, additional filter for the monitor
   double filterVarMax1;           // -U        minimum value of parameter 1, additional filter for the monitor
@@ -67,7 +67,8 @@ class Mon1D
   double      IntTot  [3];           // total intensity within monitor limits
   double      xBinSize[3];           // size of x bins 
   int         monSwitchedOn[3];      // Switches are activated if parameter 1, 2 or 3 should be stored.
-  string      sParameterNames[18];   // text: parameter
+  string      sParName[18];          // text: parameter name
+  string      sParUnit[18];          // text: parameter unit
   MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
 
   // arrays for data storage
@@ -82,7 +83,7 @@ class Mon1D
 
   // operations
   void   OwnInit(int argc, char* argv[]);        // Read in the monitor parameters from the command line
-  double DetermineParameter(int id, Neutron* n); // Determine, which parameter has to be calculated
+  double DetermineParameter(VtPar id, Neutron* n); // Determine, which parameter has to be calculated
   int    FillMonitorArray(Neutron* n);           // Fill all monitors chosen
   int    FillMonitor(Neutron* n, int counter);   // Fill one monitor, if the neutron fulfills all constraints
   void   WriteOut(long iBndl);                   // Write output file

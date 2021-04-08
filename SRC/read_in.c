@@ -11,11 +11,11 @@
 /* 1.0  Aug  2013  K. Lieutenant   correction read format %09lu -> %lu                       */
 /* 1.1  Sep  2013  K. Lieutenant   several input files                                       */
 /* 1.1a Apr  2014  K. Lieutenant   repetition corrected                                      */
-/* 1.2  Apr  2018  K. Lieutenant   MCPL and MCNP format                                      */
+/* 1.2  Apr  2018  K. Lieutenant   MCPL and MCNPX format                                     */
 /* 1.3  May  2019  K. Lieutenant   option to read only trajectories marked for tracing       */
 /* 1.3a Jul  2019  K. Lieutenant   MCNPX format uses its own structure                       */
 /* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
-/* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNPX files; MCNPX renamed to MCNP    */
+/* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNP6 files                           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -38,9 +38,9 @@ void  OwnCleanup();                                                             
                                                                                    
 short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads VITESS trajectory
 short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads McStas trajectory
-short ReadMcplTraj  (Neutron* pNeutron);                          // Reads MCPL trajectory 
-short ReadMcnpTraj  (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNP  trajectory 
-short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNPX trajectory 
+short ReadMcplTraj  (Neutron* pNeutron);                         // Reads MCPL trajectory 
+short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNPX  trajectory 
+short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNP6 trajectory 
                                                                                    
 short ConvertMcStas2Vitess(Neutron* pVitNeut, const McNeutron*       pMcNeut);     // Converts McStas to VITESS trajectory 
 short ConvertMcpl2Vitess  (Neutron* pVitNeut, const mcpl_particle_t* pMcplPtcl);   // Converts MCPL to VITESS trajectory 
@@ -56,11 +56,11 @@ extern char* FullParName(const char* filename);                                 
 /** Global Variables    **/
 /******************************/
 // Input parameters
-VtPrgFormat  ePrgFormat=VT_VITESS_FMT;   // -f        data format of the program (VT_VITESS_FMT: Vitess   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP_FMT: MCNP)
+VtPrgFormat  ePrgFormat=VT_VITESS_FMT;   // -f        data format of the program (VT_VITESS_FMT: Vitess   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNPX_FMT and VT_MCNP6_FMT: MCNP)
 VtDataFormat eDatFormat=VT_EXPONENTIAL;  // -F        format of the data to read (VT_EXPONENTIAL   VT_FLOAT   VT_BINARY)
 char*        sInputFileName[NF_MAX];     // -A -B -D  names of the NF_MAX input files
 double       Weight[NF_MAX];             // -a -b -d  Weights of the input files
-double       FactInt=1.0;                // -I        Factor to normalize to the source intensity from MCNPX data
+double       FactInt=1.0;                // -I        Factor to normalize to the source intensity from MCNP data
 short        iDetectColor=-1;            // -C        Only for VITESS format: Read only events with a given color.
 int          nRep=1;                     // -R        Number of times the input is read
 
@@ -147,8 +147,8 @@ int main(int argc, char **argv)
           {
             case VT_VITESS_FMT: rc=ReadVitessTraj(&InNeutron, &nT, pInFile[m]); break;
             case VT_MCSTAS_FMT: rc=ReadMcStasTraj(&InNeutron, &nT, pInFile[m]); break;
-            case VT_MCNP_FMT  : rc=ReadMcnpTraj  (&InNeutron, &nT, pInFile[m]); break;
             case VT_MCNPX_FMT : rc=ReadMcnpxTraj (&InNeutron, &nT, pInFile[m]); break;
+            case VT_MCNP6_FMT : rc=ReadMcnp6Traj (&InNeutron, &nT, pInFile[m]); break;
             default: Error("Data format is not (yet) implemented");
           }
           if (nT>=1) 
@@ -290,10 +290,14 @@ void OwnInit(int argc, char *argv[])
       case VT_VITESS_FMT: nHeader=   0; break;  // value > 0 requires code change in 'ReadVitessTraj'
       case VT_MCSTAS_FMT: nHeader=   0; break;  // value > 0 requires code change in 'ReadMcStasTraj'
       case VT_MCPL_FMT  : nHeader=   0; break;  // no influence, it is handled inside mcpl.c
-      case VT_MCNP_FMT  : nHeader=   0; break;
-      case VT_MCNPX_FMT : nHeader=2211; break;
+      case VT_MCNPX_FMT : nHeader=   0; Error  ("Binary input not properly implemented"); break;
+      case VT_MCNP6_FMT : nHeader=2211; Warning("Binary input file may be read wrongly"); break;
       default: Error("Data format is not (yet) implemented");
     }  
+  }
+  else
+  { if (ePrgFormat==VT_MCPL_FMT)
+      Note("Input and output of MCPL data is handled via module 'mcpl' which stores data in binary format.\nChoice of ASCII format ignored.");
   }
 
   if (_eTraceMode==ONLY_TRC_TRAJ && _sTraceFileName!=NULL)
@@ -335,6 +339,7 @@ short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
   short rcs, 
         rc=FALSE;   // tells if reading has worked
 
+	// initialization			                      
   *nTrj = 0;        // number of loaded and wanted trajectories (0 or 1)
   InitNeutron(pNeutron);
 
@@ -358,13 +363,19 @@ short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
 
   if (*nTrj > 0)
   {
-    // sets trace state 'Y' or 'N' for 'write trace files'
-    pNeutron->Debug = _eTraceMode==WRITE_TRC_FILES ? GetTraceState(pNeutron->ID) : 'N';
+    if (IsEOB(pNeutron))
+    {
+      NumEobRead++;
+    }
+    else
+    {
+      // sets trace state 'Y' or 'N' for 'write trace files'
+      pNeutron->Debug = _eTraceMode==WRITE_TRC_FILES ? GetTraceState(pNeutron->ID) : 'N';
 
-    // ignores trajectory if ID is not found in trace file if applicable  or  color is wrong
-    if (_eTraceMode==ONLY_TRC_TRAJ && GetTraceState(pNeutron->ID)=='N' || iDetectColor > -1 && pNeutron->Color!=iDetectColor) 
-      *nTrj=0;                                        
-
+      // ignores trajectory if ID is not found in trace file if applicable  or  color is wrong
+      if (_eTraceMode==ONLY_TRC_TRAJ && GetTraceState(pNeutron->ID)=='N' || iDetectColor > -1 && pNeutron->Color!=iDetectColor) 
+        *nTrj=0;                                        
+    }
     rc=TRUE;
   }
 
@@ -381,7 +392,9 @@ short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
   short     rcs=0,
             rc=FALSE;  // tells if reading has worked
 
+	// initialization			                      
   *nTrj = 0;           // number of loaded and wanted trajectories (0 or 1)
+	memset(&McNeutr, '\0', sizeof(McNeutron));        
 
   if (eDatFormat==VT_BINARY)
   { 
@@ -436,16 +449,18 @@ short ReadMcplTraj(Neutron* pNeutron)
 
 
 /******************************************/
-/**  Reads MCNPX trajectory              **/
+/**  Reads MCNP trajectory              **/
 /******************************************/
-short ReadMcnpTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
+short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
 {
-  McnpNeutron McnpNeutr;
-  short       rcs=0,
-              rc=FALSE;
+  McnpxNeutron McnpNeutr;
+  short        rcs=0,
+               rc=FALSE;
   static int   i=0;
 
+	// initialization			                      
   *nTrj = 0;           // number of loaded and wanted trajectories (0 or 1)
+	memset(&McnpNeutr, '\0', sizeof(McnpxNeutron));        
 
   if (eDatFormat==VT_BINARY)
   { 
@@ -453,7 +468,7 @@ short ReadMcnpTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     { sHeader[i] = fgetc(pFile);
       i++;
     }
-    *nTrj = fread(&McnpNeutr, sizeof(McnpNeutron), 1, pFile);
+    *nTrj = fread(&McnpNeutr, sizeof(McnpxNeutron), 1, pFile);
   }
   else
   {
@@ -483,14 +498,16 @@ short ReadMcnpTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
   return(rc);
 }
 
-short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
+short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
 {
-  McnpxNeutron McnpNeutr;
+  Mcnp6Neutron McnpNeutr;
   short        rcs=0,
                rc=FALSE;
   static int   i=0;
 
+	// initialization			                      
   *nTrj = 0;           // number of loaded and wanted trajectories (0 or 1)
+	memset(&McnpNeutr, '\0', sizeof(Mcnp6Neutron));        
 
   if (eDatFormat==VT_BINARY)
   { 
@@ -498,7 +515,7 @@ short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     { sHeader[i] = fgetc(pFile);
       i++;
     }
-    *nTrj   = fread(&McnpNeutr, sizeof(McnpxNeutron), 1, pFile);
+    *nTrj   = fread(&McnpNeutr, sizeof(Mcnp6Neutron), 1, pFile);
   }
   else
   {

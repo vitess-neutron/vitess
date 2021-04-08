@@ -516,8 +516,17 @@ void OpenFiles()
   // opens flux file
   if (FluxFileName!=NULL)
   { pFileFlux = OpenOutputFile(FluxFileName, FALSE, "at");
-    if (pFileFlux==NULL)
-      fprintf(LogFilePtr,"\nWARNING: Flux file %s could not be opened\n", FluxFileName);
+    if (pFileFlux!=NULL)
+    { if (ColumnsInFile(pFileFlux)==0)
+      {
+        fprintf(pFileFlux, "    lambda      y_pos      z_pos      div_y      div_z     div_rad      brl_avrg        brl_peak         brl_period     \n");
+        fprintf(pFileFlux, "     [Ang]      [cm]       [cm]       [deg]      [deg]      [deg]  [n/(cm²s Ang sr)] [n/(cm²s Ang sr)] [n/(cm²s Ang sr)]\n");
+        fprintf(pFileFlux, "------------------------------------------------------------------------------------------------------------------------\n");
+      }
+    }
+    else
+    { fprintf(LogFilePtr,"\nWARNING: Flux file %s could not be opened\n", FluxFileName);
+    }
   }
  
   return;

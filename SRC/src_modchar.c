@@ -951,3 +951,27 @@ double IntAtan(const double IntBeg, const double IntEnd, const double Param)
 
 	return Int;
 }
+
+
+/**********************************************************************************************/
+/* returns path to folder containing moderator data of facility 'eSource'                     */
+/**********************************************************************************************/
+char*  FullModPath(short eSource)
+{
+  static char sModPath[99]="FILES/moderators/";
+
+  switch (eSource)
+  {
+    case ESS : strcat(sModPath, "ESS/");    break; 
+    case SNS : strcat(sModPath, "SNS/");    break; 
+    case ISIS: strcat(sModPath, "ISIS/");   break; 
+    case CSNS: strcat(sModPath, "CSNS/");   break; 
+    case IPNS: strcat(sModPath, "IPNS/");   break; 
+    case HBS : strcat(sModPath, "HBS/");    break; 
+    case ILL : strcat(sModPath, "ILL/");    break; 
+    case HMI : strcat(sModPath, "HZB/");    break; 
+    case FRM2: strcat(sModPath, "FRM-II/"); break; 
+    default: Warning("Moderator path could not be generated");
+  }
+  return sModPath;  
+}
