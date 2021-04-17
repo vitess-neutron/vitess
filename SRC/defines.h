@@ -35,10 +35,6 @@
 
 #define NN  0
 
-#define X_AXIS 0
-#define Y_AXIS 1
-#define Z_AXIS 2
-
 #define VT_EOF -1
 
 #define GUIDEFLIGHT 1
@@ -67,10 +63,6 @@
 
 #define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */
 
-#define NO_TRACING      0
-#define WRITE_TRC_FILES 1
-#define ONLY_TRC_TRAJ   2
-
 typedef double VectorType[3];
 typedef double DoublePair[2];
 
@@ -81,24 +73,7 @@ typedef double DoublePair[2];
 
 // General
 // -------
-typedef enum
-{
-  NOT_EXIST = -1,  // module is completely ignored
-  INACTIVE  =  0,  // module is replaced by space, i.e. instrument length is kept constant
-  ACTIVE    =  1,  // module is treated normally
-  FIRST_PAR =  2,  // first of an array of parallel modules: lost neutrons are written with their input values, neutrons that passed are written with x > 0
-  MIDDLE_PAR=  3,  // module in between other parallel mod.: neutrons with x > 0 are ignored, lost neutrons are written with their input values, neutrons that passed are written with x > 0
-  LAST_PAR  =  4   // last of an array of parallel modules : neutrons with x > 0 are ignored, otherwise neutrons are treated normally
-}
-VtModAct;
-
-typedef enum
-{
-  LORENTZIAN = 1, 
-  GAUSSIAN   = 2
-}
-VtDistr;
-
+// Module ID
 typedef enum
 {
   MCN_COMP_UNKNOWN =   0,
@@ -194,23 +169,150 @@ typedef enum
 }
 McCompID;
 
-typedef enum
-{	VT_CUBE    = 1,
-	VT_CYL     = 2,
-	VT_SPHERE  = 3,
-	VT_HOL_CYL = 4
-}
-SampleGeom;
-
+// reason for writing interaction point
 typedef enum
 {	
-	VT_RECTANGULAR = 1,
-	VT_GAUSSIAN    = 2,
+  VT_NO_REASON =-1,
+	VT_CREATED   = 0,    // source
+	VT_OUTSIDE   = 1,    // guide
+	VT_OUT_OF_WND= 2,    // slit
+	VT_PASSED    = 3,    // chopper, slit
+	VT_ENTERED   = 4,    // guide
+	VT_TRANSIT   = 5,    // from one guide segment to the next
+	VT_REFLECTED = 6,    // guide or mirror surface
+	VT_SCATTERED = 7,    // sample
+	VT_ABSORBED  = 8,    // chopper, guide, collimator
+	VT_EXITED    = 9,    // guide
+	VT_DETECTED  = 10,   // detector
 }
-VtWaviDistr;
+VtReason;
 
-// source
-// ------
+// directory type
+typedef enum
+{ 
+  NO_DIR    =-1,
+  PAR_DIR   = 0,
+  INSTL_DIR = 1,
+  IN_DIR    = 2,
+  OUT_DIR   = 3
+}
+VtDirType;
+
+
+// Axis
+typedef enum
+{
+  X_AXIS = 0,
+  Y_AXIS = 1,
+  Z_AXIS = 2
+} 
+VtAxis;
+
+// Orientation
+typedef enum
+{
+  HORIZONTAL = 0,
+  VERTICAL   = 1
+} 
+VtOrient;
+
+// Frame generation
+typedef enum
+{
+  VT_FRAME_STD  = 1,
+  VT_FRAME_USER = 2
+} 
+VtFrameGen;
+
+// Shape
+typedef enum
+{	
+	VT_NO_SHAPE =-1,
+	VT_SQUARE   = 0,
+	VT_CIRCLE   = 1
+}
+VtShape;
+
+// Component Status
+typedef enum
+{
+  NOT_EXIST  = -1,  // module is completely ignored
+  INACTIVE   =  0,  // module is replaced by space, i.e. instrument length is kept constant
+  ACTIVE     =  1,  // module is treated normally
+  FIRST_PART =  2,  // first of an array of parallel modules: lost neutrons are written with their input values, neutrons that passed are written with x > 0
+  MIDDLE_PART=  3,  // module in between other parallel mod.: neutrons with x > 0 are ignored, lost neutrons are written with their input values, neutrons that passed are written with x > 0
+  LAST_PART  =  4   // last of an array of parallel modules : neutrons with x > 0 are ignored, otherwise neutrons are treated normally
+}
+VtCompAct;
+
+// Distribution function
+typedef enum
+{
+  LORENTZIAN = 1, 
+  GAUSSIAN   = 2
+}
+VtDistr;
+
+
+// Source and Moderators
+// ---------------------
+// name of source
+typedef enum
+{
+  ANYSOURCE=-1,
+  ESS      = 1,
+  SNS      = 2,
+  ISIS     = 3,
+  CSNS     = 4,
+  IPNS     = 5,
+  HBS      = 6,
+  ILL      =10,
+  HMI      =11,
+  FRM2     =12
+}
+VtSrcName;
+
+// type of source:  simple, ... pulsed ... (Vitess 4)
+typedef enum
+{
+  NO_SRC_KIND=0,
+  SRC_SIMPLE =1,
+  SRC_CWS    =2,
+  SRC_PULSED =3,
+  SRC_ISIS   =4,
+  SRC_ESS    =5
+}
+VtSrcKind;
+
+// Type of source: CWS, SPSS, LPSS         (Vitess 3)
+typedef enum
+{
+  NO_TYPE=0,
+  CWS    =1,
+  SPSS   =2,
+  LPSS   =3
+}
+VtSrcType;
+
+typedef enum
+{
+  NO_MOD_TYPE=0,
+  POISONED   =1,   /* moderator decoupled poisoned        */
+  DECOUPLED  =2,   /* moderator decoupled unpoisoned      */
+  COUPLED    =3,   /* moderator coupled                   */
+  MULT_SPEC  =4   /* effective spectrum of a moderator consisting of a cold and thermal part      */
+}
+VtModType;
+
+// window or moderator shape
+typedef enum
+{	
+  VT_MOD_SQUARE = 'R',
+	VT_MOD_CIRCLE = 'C'
+}
+VtModShape;
+
+// definition of flight direction 
 typedef enum
 {	VT_DIVERGENCE = 0,
 	VT_REAL_WND   = 1,
@@ -218,16 +320,138 @@ typedef enum
 }
 VtDirect;
 
-// monochromator
+// ESS version
+typedef enum
+{
+  NO_VERSION      =0,
+  MEZEI_2001      =1,
+  ZANINI_2012     =2,
+  SCHOENFELDT_2013=3,
+  VARHEIGHT_2013  =4,
+  BUTTERFLY2_2015 =5,
+  BUTTERFLY1_2016 =6
+}
+EssModVsn;
+
+
+// Reading and Writing Trajectories
+// --------------------------------
+// tracing options
+typedef enum
+{	
+  NO_TRACING     = 0,
+  WRITE_TRC_FILES= 1,
+  ONLY_TRC_TRAJ  = 2
+}
+VtTrace;
+
+// data format of the program
+typedef enum
+{ VT_VITESS_FMT = 1,
+  VT_MCSTAS_FMT = 2,
+  VT_MCPL_FMT   = 3,
+  VT_MCNPX_FMT  = 4,
+  VT_MCNP6_FMT  = 5
+}
+VtPrgFormat;
+
+// format used to store trajctories: float, exponential or binary
+typedef enum
+{ VT_EXPONENTIAL = 0,
+  VT_FLOAT       = 1,
+  VT_BINARY      = 2
+}
+VtDataFormat;
+
+// choice of separator in trajectory table
+typedef enum
+{ VT_BLANK     = 0,
+  VT_TABULATOR = 1
+}
+VtSeparator;
+
+
+// Frame
+// -----
+typedef enum
+{	
+	VT_NO_SEQ= 0,
+	VT_RTM   = 1,
+	VT_RMT   = 2,
+	VT_TRM   = 3,
+	VT_TMR   = 4,
+	VT_MTR   = 5,
+	VT_MRT   = 6
+}
+VtTfmnSeq;
+
+
+// Windows + Collimators
+// ---------------------
+// oscillation (of the radial collimator)
+typedef enum
+{	
+  VT_OSC_OFF   = 0,
+	VT_RND_PHASE = 1,
+}
+VtOscill;
+
+typedef enum
+{	
+	VT_MWND_AUTO   = 0,
+	VT_MWND_CIRCLE = 1,
+	VT_MWND_SQUARE = 2
+}
+VtMultWndShape;
+
+
+// Guides
+// ------
+// guide walls : top, bottom ... 
+typedef enum
+{ GW_TOP      = 0,
+  GW_BOTTOM   = 1,
+  GW_LEFT     = 2,
+  GW_RIGHT    = 3,
+  GW_EXIT     = 4,
+  GW_INIT     = 5
+}
+VtGdeWall;
+
+// guide shape
+typedef enum
+{ 
+  VT_CONSTANT = 0,
+  VT_LINEAR   = 1,
+  VT_CURVED   = 2,
+  VT_PARABOLIC= 3,
+  VT_ELLIPTIC = 4,
+  VT_FROM_FILE= 5,
+  VT_LIN_CURV = 6,
+}
+VtGdeShape;
+
+// waviness distribution
+typedef enum
+{	
+	VT_WAVI_RECT  = 1,
+	VT_WAVI_GAUSS = 2,
+}
+VtWaviDistr;
+
+
+// Monochromator
 // -------------
+// monochromator arrangement
 typedef enum
 {
   SINGLE_CE     = 1,
   CE_ARRAY_CALC = 2,
   CE_ARRAY_FILE = 3
 }
-VtMonoGeom;
+VtMonoArrange;
 
+// monochromator geometry
 typedef enum
 {
   REFL_MONO   = 1,
@@ -235,6 +459,7 @@ typedef enum
 }
 VtMonoType;
 
+// focusing options
 typedef enum
 {
   CONST_LMBD = 1,
@@ -244,24 +469,78 @@ typedef enum
 }
 VtMonoFocus;
 
-// windows + collimators
-// ---------------------
-typedef enum
-{	VT_OFF       = 0,
-	VT_RND_PHASE = 1,
-}
-VtOsc;
 
+// Samples
+// -------
+// samnple geometry
 typedef enum
 {	
-	VT_AUTO_SHAPE = 0,
-	VT_CIRCLE     = 1,
-	VT_RECTANGLE  = 2
+  VT_CUBE    = 1,
+	VT_CYL     = 2,
+	VT_SPHERE  = 3,
+	VT_HOL_CYL = 4
 }
-VtWndGeom;
+VtSmplGeom;
 
-// monitors
+// measuring mode (sample_reflectom)
+typedef enum
+{	
+  VT_SAMPLE    = 0,
+	VT_REFERENCE = 1,
+}
+VtMeasMode;
+
+
+// Detector
 // --------
+// geometry
+typedef enum
+{
+  VT_DET_CYL  = 1,
+  VT_DET_FLAT = 2
+}
+VtDetGeom;
+
+// type
+typedef enum
+{
+  VT_DET_TUBE = 0,
+  VT_DET_AREA = 1
+}
+VtDetType;
+
+// tube shape
+typedef enum
+{	
+	VT_TUBE_CIRCLE = 0,
+	VT_TUBE_SQUARE = 1
+}
+VtTubeShape;
+
+// module usage
+typedef enum
+{
+  VT_DET_REAL = 0,
+  VT_MON_ONLY = 1,
+  VT_GRID_OFF = 2
+}
+VtDetUse;
+
+// absorbing detector material
+typedef enum
+{
+  VT_GAS_BF3    = 0,
+  VT_GAS_HE3    = 1,
+  VT_SOLID_CB10 = 2,
+  VT_SOLID_LI6  = 3,
+  VT_ABS_OTHER  = 5
+}
+VtDetAbs;
+
+
+// Monitors
+// --------
+// monitor parameter for mon1 and monpol1
 typedef enum
 {
   NO_MON_PAR = 0,
@@ -274,8 +553,9 @@ typedef enum
   MON_ENERGY = 7,
   MON_DIV_YZ = 8,
 }
-VtMonPar;
+VtMon1Par;
 
+// monitor parameter for monitor1D and monitor2D
 typedef enum
 {
   NO_PAR   =  0,
@@ -297,13 +577,14 @@ typedef enum
   COL_HOR  = 13,
   COLOR    = 14,
 }
-VtPar;
+VtMonPar;
 
+// normalization options
 typedef enum
 {
-  NO_NORM   = 0,   // no normalization
-  NORM_SIZE = 1,   // normalization by bin size 
-  NORM_REF  = 2    // relative to reference file
+  NO_NORM       = 0,   // no normalization
+  NORM_BIN_SIZE = 1,   // normalization by bin size 
+  NORM_REF_FILE = 2    // relative to reference file
 }
 VtMonNorm;
 
@@ -331,61 +612,14 @@ VtBrlNorm;
 
 typedef enum
 {
-  NO_FORMAT =-1,
-  MATRIX    = 0,
-  XYZ       = 1,
-  MATR_CMPT = 2,
-  XYZ_CMPT  = 3
+  NO_2D_FORMAT =-1,
+  MATRIX       = 0,
+  XYZ          = 1,
+  MATR_CMPT    = 2,
+  XYZ_CMPT     = 3
 }
 VtFormat2D;
 
-// reading and writing trajectories
-// --------------------------------
-typedef enum
-{	
-	VT_CREATED   = 0,    // source
-	VT_OUTSIDE   = 1,    // guide
-	VT_OUT_OF_WND= 2,    // slit
-	VT_PASSED    = 3,    // chopper, slit
-	VT_ENTERED   = 4,    // guide
-	VT_TRANSIT   = 5,    // from one guide segment to the next
-	VT_REFLECTED = 6,    // guide or mirror surface
-	VT_SCATTERED = 7,    // sample
-	VT_ABSORBED  = 8,    // chopper, guide, collimator
-	VT_EXITED    = 9,    // guide
-	VT_DETECTED  = 10,   // detector
-}
-VtReason;
-
-typedef enum
-{ VT_VITESS_FMT = 1,
-  VT_MCSTAS_FMT = 2,
-  VT_MCPL_FMT   = 3,
-  VT_MCNPX_FMT  = 4,
-  VT_MCNP6_FMT  = 5
-}
-VtPrgFormat;
-
-typedef enum
-{ VT_EXPONENTIAL = 0,
-  VT_FLOAT       = 1,
-  VT_BINARY      = 2
-}
-VtDataFormat;
-
-typedef enum
-{ VT_BLANK     = 0,
-  VT_TABULATOR = 1
-}
-VtSeparator;
-
-typedef enum
-{ PAR_DIR   = 0,
-  INSTL_DIR = 1,
-  IN_DIR    = 2,
-  OUT_DIR   = 3
-}
-VtDirType;
 
 // Tools
 // -----
@@ -460,7 +694,7 @@ SampleGeomType;
 
 typedef struct
 {
-  SampleGeom Type;
+  VtSmplGeom   Type;
   VectorType Position;
   VectorType Direction;
   SampleGeomType SG;

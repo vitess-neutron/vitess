@@ -58,7 +58,7 @@ typedef struct
   int    Geom,          // 0: flat,   1: cyl,          2: tube
          usage,         // 0: normal, 1: monitor only, 2: grid off
          Absorbertype;  // Boron10 (0,2), He3 (1), Li (3) or other (5)               
-  short  array,         // first or intermediate part of detector array 
+  short  array,         // first or intermediate part of detector array        should become type 'VtModAct'
          minColor,      /* colour necessary for the trajectory to be regarded
                            colour -1 means: all trajectories are regarded  
                            use neutrons with color >= minColour */

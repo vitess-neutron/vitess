@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
          bposy   [BINSIZE],
          binyz   [BINSIZE][BINSIZE], 
          binyzpol[BINSIZE][BINSIZE];
-  VtFormat2D  eFormat = MATRIX;   // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+  VtFormat2D  eFormat = MATRIX;   //  file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
   
   // reading of input data and initilisation
   // ---------------------------------------

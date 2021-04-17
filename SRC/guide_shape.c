@@ -22,15 +22,6 @@
 /************************************/
 #define PI       3.1415926535898 
 
-typedef enum
-{	VT_CONSTANT = 0,
-	VT_LINEAR   = 1,
-	VT_CURVED   = 2,
-	VT_PARABOLIC= 3,
-	VT_ELLIPTIC = 4,
-}
-VtShape;
-
 
 /******************************/
 /** Prototypes               **/

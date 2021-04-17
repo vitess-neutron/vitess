@@ -35,7 +35,7 @@ static short  s_nSource=ANYSOURCE; /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS  
 /* dTemp      : [K]  eff. moderator temperature 
    nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED
    dPower     : [W]  average source power                    */          
-double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPower)
+double CsnsTotalFU(const double dTemp,   const VtModType  eModType, const double dPower)
 {
   double dFUAmpl=0.0;;
 

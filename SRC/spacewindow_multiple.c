@@ -44,7 +44,7 @@ Plane	    Endpoint,         // Planes through window for zero thickness and
           EndPointO,        // end of the Outer and end of the Inner wall
 	        EndPointI;        // Endpoint.D: distance to window along x-axis        [cm]
 
-VtWndGeom eShape=VT_AUTO_SHAPE, // kind of window: defined by input file, circular or rectangular
+VtMultWndShape eShape=VT_MWND_AUTO, // kind of window: defined by input file, circular or rectangular
           eWinShape[101];  
 char*     CollFileName=NULL;
 double    Distance=0.0,         // Distance from origin to the window (along the x-axis)  [cm]
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
 		
           for(j=1; j<=NumberOfHoles; j++) 
           {
-            if (eWinShape[j]==VT_CIRCLE)
+            if (eWinShape[j]==VT_MWND_CIRCLE)
             {	DistSquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) 
                            + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
               if (DistSquared <= winradius[j]*winradius[j]) 
@@ -305,7 +305,7 @@ void  OwnInit   (int argc, char *argv[])
 					OuterRadius = atof(&argv[i][2]);
 					break;
 				case 'S':
-					eShape = (VtWndGeom) atol(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
+					eShape = (VtMultWndShape) atoi(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
 					break;
 
 				case 'c':
@@ -366,7 +366,7 @@ short ReadWndFile()
     winradius [j] = 0.0; 
     winwidth  [j] = 0.0; 
     winheight [j] = 0.0; 
-    eWinShape [j] = VT_AUTO_SHAPE;
+    eWinShape [j] = VT_MWND_AUTO;
   }	
 
 	if (CollFileName !=NULL)
@@ -381,22 +381,22 @@ short ReadWndFile()
 			while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
 			{	
 				j++;
-				if (eShape==VT_CIRCLE)
+				if (eShape==VT_MWND_CIRCLE)
 				{	sscanf(sLine, "%lf %lf %lf",     &ywincenter[j], &zwincenter[j], &winradius[j]);
-					eWinShape[j] = VT_CIRCLE;
+					eWinShape[j] = VT_MWND_CIRCLE;
 				}
-				else if (eShape==VT_RECTANGLE)
+				else if (eShape==VT_MWND_SQUARE)
 				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
-					eWinShape[j] = VT_RECTANGLE;
+					eWinShape[j] = VT_MWND_SQUARE;
 				}
 				else
 				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
 					if (winheight[j] > 0.0)
-					{	eWinShape[j] = VT_RECTANGLE;
+					{	eWinShape[j] = VT_MWND_SQUARE;
 					}
 					else
 					{	winradius[j] = winwidth[j];
-						eWinShape[j] = VT_CIRCLE;
+						eWinShape[j] = VT_MWND_CIRCLE;
 					}
 				}
 			}
@@ -416,7 +416,7 @@ short ReadWndFile()
 
 
 	for(j = 1; j <= Nholes; j++) {
-	  if (eWinShape[j]==VT_CIRCLE)
+	  if (eWinShape[j]==VT_MWND_CIRCLE)
 	    fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
 		    ywincenter[j], zwincenter[j], winradius[j]);
 	  else 
@@ -603,7 +603,7 @@ void  SetGeometry(char* sColor, int nHoles)
    
     for (j=0; j < nHoles; j++)
     { 
-      if (eWinShape[j]==VT_CIRCLE)
+      if (eWinShape[j]==VT_MWND_CIRCLE)
         nHolesC++;
       else
         nHolesR++;
@@ -627,7 +627,7 @@ void  SetGeometry(char* sColor, int nHoles)
 
     for (j=0; j < nHoles; j++)
     { 
-      if (eWinShape[j]==VT_CIRCLE)
+      if (eWinShape[j]==VT_MWND_CIRCLE)
       {
         stGeometry.pHolCyl[0].InnerRadius = winradius[j];
         stGeometry.pHolCyl[0].Radius      = winradius[j] * 1.1;

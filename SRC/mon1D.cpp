@@ -100,7 +100,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'X':
-	        eParX[0] = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
+	        eParX[0] = (VtMonPar)atoi(&argv[i][2]); // parameter to be shown on the 1st x axis, input parameter
 	        break;
 	  
         case 'x':
@@ -115,7 +115,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;
 
         case 'Y':
-	        eParX[1] = (VtPar)atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
+	        eParX[1] = (VtMonPar)atoi(&argv[i][2]); // 2nd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'y':
@@ -130,7 +130,7 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;   
 
         case 'Z':
-	        eParX[2] = (VtPar)atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
+	        eParX[2] = (VtMonPar)atoi(&argv[i][2]); // 3rd parameter to be shown on the x axis, input parameter
 	        break;
 	  
         case 'z':
@@ -146,11 +146,11 @@ void Mon1D::OwnInit(int argc, char* argv[])
 	        break;   
  
         case 'I':  
-	        filterParam1 = (VtPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
+	        filterParam1 = (VtMonPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
 	        break;
 
         case 'J':  
-	        filterParam2 = (VtPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+	        filterParam2 = (VtMonPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	        break;
 
         case 'C':  
@@ -363,7 +363,7 @@ int Mon1D::FillMonitor(Neutron* n, int counter)
 /*******************************************************/
 /** Determine, which parameter has to be calculated   **/
 /*******************************************************/
-double Mon1D::DetermineParameter(VtPar id, Neutron* n)
+double Mon1D::DetermineParameter(VtMonPar id, Neutron* n)
 {
 
   // Return the parameter value identified by 'id'

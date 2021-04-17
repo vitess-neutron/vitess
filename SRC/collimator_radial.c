@@ -30,7 +30,7 @@ int    DetermineChannel(double Angle, double AngleMin, double AngleSep, double R
 /******************************/
 /** Global Variables         **/
 /******************************/
-VtOsc    _eOscColl=VT_OFF;       /* option: oscillating collimator  
+VtOscill  _eOscColl=VT_OSC_OFF;  /* option: oscillating collimator  
                                       0: no             
                                       1: yes, but only random phase   */
 long   nChannels=1;           /* number of collimator channels                        */

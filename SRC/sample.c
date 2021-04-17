@@ -21,6 +21,16 @@
 /******************************/
 double MuTot=0.0, /* total macroscopic scattering cross-section (= sigma_tot/UCV) [1/cm] */
        MuAbs=0.0; /* macroscopic absorption cross-section       (= sigma_abs/UCV) [1/cm] */
+int colD, colF, colF2, colDW, colM, colh, colk, coll;
+
+double scaleF2;
+
+double* hVal;
+double* kVal;
+double* lVal;
+double* F2Val;
+
+extern char* SampleFileName;
 
 
 /****************************************************************/

@@ -217,7 +217,7 @@ void  OwnInit(int argc, char *argv[])
             break;
 
 	      case 'F':
-            eFormat = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
+            eFormat = (VtFormat2D) atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
             break;
 
 	      default:

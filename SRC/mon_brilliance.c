@@ -340,13 +340,13 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'k':
-          eBrlPar  = (short) atoi(&argv[i][2]);     // 1: lambda  2: time  3: y  4: z  5: div_y  6: div_z  7: div_rad  8: energy
+          eBrlPar  = (VtBrlPar) atoi(&argv[i][2]);   // 1: lambda  2: time  3: y  4: z  5: div_y  6: div_z  7: div_rad  8: energy
           break;
         case 'N':
-          eBrlNorm = (short) atoi(&argv[i][2]);     // 1: absolute brilliance [n/(cm²s sr Ang)]   2: brilliance transfer   3: brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]
+          eBrlNorm = (VtBrlNorm) atoi(&argv[i][2]);  // 1: absolute brilliance [n/(cm²s sr Ang)]   2: brilliance transfer   3: brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]
           break;
 				case 'B':
-					bLogBin  = (short) atoi(&argv[i][2]);     // TRUE : bin size increases exponentially   FALSE: linear binning
+					bLogBin  = (short) atoi(&argv[i][2]);      // TRUE : bin size increases exponentially   FALSE: linear binning
 					break;
 
         case 'n':

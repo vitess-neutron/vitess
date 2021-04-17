@@ -1,0 +1,146 @@
+#ifndef CONVERT_H
+#define CONVERT_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "defines.h"
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+// General
+// -------
+void      CompID2Name(char* sName, const McCompID eComp);
+McCompID  Name2CompID(const char* sName);
+
+void      Reason_ID2Txt(char* sText, const VtReason eID);
+VtReason  Reason_Txt2ID(const char* sText);
+
+void      DirType_ID2Txt(char* sText, const VtDirType eID);
+VtDirType DirType_Txt2ID(const char* sText);
+
+
+void     Axis_ID2Txt(char* sText, const VtAxis eID);
+VtAxis   Axis_Txt2ID(const char* sText);
+
+void     Orient_ID2Txt(char* sText, const VtOrient eID);
+VtOrient Orient_Txt2ID(const char* sText);
+
+void     Shape_ID2Txt(char* sText, const VtShape eID);
+VtShape  Shape_Txt2ID(const char* sText);
+
+void      CompAct_ID2Txt(char* sText, const VtCompAct eID);
+VtCompAct CompAct_Txt2ID(const char* sText);
+
+void      Distr_ID2Txt(char* sText, const VtDistr eID);
+VtDistr   Distr_Txt2ID(const char* sText);
+
+// Source
+// ------
+void      SrcName_ID2Txt(char* sText, const VtSrcName eID);
+VtSrcName SrcName_Txt2ID(const char* sText);
+
+void      SrcKind_ID2Txt(char* sText, const VtSrcKind eID);
+VtSrcKind SrcKind_Txt2ID(const char* sText); 
+
+void      SrcType_ID2Txt(char* sText, const VtSrcType eID);
+VtSrcType SrcType_Txt2ID(const char* sText); 
+
+void      ModType_ID2Txt(char* sText, const VtModType eID);
+VtModType ModType_Txt2ID(const char* sText); 
+
+void       ModShape_ID2Txt(char* sText, const VtModShape eID);
+VtModShape ModShape_Txt2ID(const char* sText);
+
+void       Direct_ID2Txt(char* sText, const VtDirect eID);
+VtDirect   Direct_Txt2ID(const char* sText);
+
+void      ModVsn_ID2Txt(char* sText, const EssModVsn eID);
+EssModVsn ModVsn_Txt2ID(const char* sText);
+
+// Readin + WriteOut
+// -----------------
+void      Trace_ID2Txt(char* sText, const VtTrace eID);
+VtTrace   Trace_Txt2ID(const char* sText);
+
+void         PrgFormat_ID2Txt(char* sText, const VtPrgFormat eID);
+VtPrgFormat  PrgFormat_Txt2ID(const char* sText);
+
+void         DataFormat_ID2Txt(char* sText, const VtDataFormat eID);
+VtDataFormat DataFormat_Txt2ID(const char* sText);
+
+void        Separator_ID2Txt(char* sText, const VtSeparator eID);
+VtSeparator Separator_Txt2ID(const char* sText);
+
+// Frame
+// -----
+void        TfmnSeq_ID2Txt(char* sText, const VtTfmnSeq eID);
+VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
+
+// Windows and Collimators
+// -----------------------
+void        Oscill_ID2Txt(char* sText, const VtOscill eID);
+VtOscill    Oscill_Txt2ID(const char* sText);
+
+void           MultWndShape_ID2Txt(char* sText, const VtMultWndShape eID);
+VtMultWndShape MultWndShape_Txt2ID(const char* sText);
+
+// Guides
+// ------
+void      GdeWall_ID2Txt(char* sText, const VtGdeWall eID);
+VtGdeWall GdeWall_Txt2ID(const char* sText);
+
+void       GdeShape_ID2Txt(char* sText, const VtGdeShape eID);
+VtGdeShape GdeShape_Txt2ID(const char* sText);
+
+void        WaviDistr_ID2Txt(char* sText, const VtWaviDistr eID);
+VtWaviDistr WaviDistr_Txt2ID(const char* sText);
+
+// Monochromators
+void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID);
+VtMonoArrange MonoArrange_Txt2ID(const char* sText);
+
+void        MonoType_ID2Txt(char* sText, const VtMonoType eID);
+VtMonoType  MonoType_Txt2ID(const char* sText);
+
+void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID);
+VtMonoFocus MonoFocus_Txt2ID(const char* sText);
+
+// Samples
+void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID);
+VtSmplGeom  SmpleGeom_Txt2ID(const char* sText);
+
+void        MeasMode_ID2Txt(char* sText, const VtMeasMode eID);
+VtMeasMode  MeasMode_Txt2ID(const char* sText);
+
+// Monitors
+void      Mon1Par_ID2Txt(char* sText, const VtMon1Par eID);
+VtMon1Par Mon1Par_Txt2ID(const char* sText);
+
+void      MonPar_ID2Txt(char* sText, const VtMonPar eID);
+VtMonPar  MonPar_Txt2ID(const char* sText);
+
+void      MonNorm_ID2Txt(char* sText, const VtMonNorm eID);
+VtMonNorm MonNorm_Txt2ID(const char* sText);
+
+void      BrlPar_ID2Txt(char* sText, const VtBrlPar eID);
+VtBrlPar  BrlPar_Txt2ID(const char* sText);
+
+void      BrlNorm_ID2Txt(char* sText, const VtBrlNorm eID);
+VtBrlNorm BrlNorm_Txt2ID(const char* sText);
+
+void       Format2D_ID2Txt(char* sText, const VtFormat2D eID);
+VtFormat2D Format2D_Txt2ID(const char* sText);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif
+

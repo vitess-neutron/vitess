@@ -5,6 +5,8 @@
 /** Definitions              **/
 /******************************/
 
+#include "defines.h"
+
 #define INDEX(x,y,p) (x*(nbinsY)+y   +  (p+1)*nbinsX*nbinsY )
 
 #define MAX_GAMMA_NUM 19
@@ -43,21 +45,10 @@
 /** Structures and Enums     **/
 /******************************/
 
-/* GW_TOP, GW_BOTTOM, GW_LEFT, GW_RIGHT must be 0 to 3 */
-typedef enum
-{ GW_TOP      = 0,
-  GW_BOTTOM   = 1,
-  GW_LEFT     = 2,
-  GW_RIGHT    = 3,
-  GW_EXIT     = 4,
-  GW_INIT     = 5
-}
-eGuideWall;
-
 typedef struct
 {
   Neutron    neutron;
-  eGuideWall ThisCollision;
+  VtGdeWall  ThisCollision;
   double     degangular;
   double     m;
   double     reflectivity;
@@ -110,17 +101,6 @@ typedef struct
   Plane *Wall;
 }
 NeutronGuide;
-
-typedef enum
-{ VT_CONSTANT = 0,
-  VT_LINEAR   = 1,
-  VT_CURVED   = 2,
-  VT_PARABOLIC= 3,
-  VT_ELLIPTIC = 4,
-  VT_FROM_FILE= 5,
-  VT_LIN_CURV = 6,
-}
-VtShape;
 
 typedef struct
 {

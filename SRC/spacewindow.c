@@ -40,8 +40,8 @@ void  SetGeometry(char* sColor);          // fills the structure stGeometry for 
 /** Global Variables         **/
 /******************************/
 // Input parameters
-short  bCircularWindow=TRUE,  // -R  [-]   Flag: kind of window, TRUE: circular, FALSE rectangular  
-       bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
+VtShape eWndShape=VT_NO_SHAPE; // -R  [-]   Window shape: VT_CIRCLE circular, VT_SQUARE rectangular  
+short  bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
        bRemoveOtherCol=TRUE,  // -d  [-]   Flag: Neutrons that are not treated are removed
        TreatColor = -1;       // -f  [-]   Treat only neutrons with this color
 double DistMove =0.0;         // -l  [cm]  Distance from origin to the window (along the x-axis) 
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
         }
 
         // Test if window is hit
-        if (bCircularWindow==TRUE)
+        if (eWndShape==VT_CIRCLE)
         {	DistSquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
                        + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
           if (winradius*winradius < DistSquared)
@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
   // Finish: print parameters, write geometry and instrument file, free memory
   // -------------------------------------------------------------------------
 my_exit:
-	if (bCircularWindow)
+	if (eWndShape==VT_CIRCLE)
 	  fprintf(LogFilePtr,"Window of %6.2f cm diameter in a distance of %7.2f cm \n", 2.0*winradius, DistMove);
 	else
 	  fprintf(LogFilePtr,"Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
@@ -398,7 +398,7 @@ void  OwnInit(int argc, char *argv[])
 				break;
 
 			case 'R':
-				bCircularWindow = atol(&argv[i][2]);
+				eWndShape = (VtShape) atoi(&argv[i][2]);
 				break;
 
 			case 'h':
@@ -641,13 +641,13 @@ void SetGeometry(char* sColor)
 {
   
  // Geometry data
-  if (bVisInstr)
+  if (bVisInstr && eWndShape!=VT_NO_SHAPE)
   { 
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    if (bCircularWindow) 
+    if (eWndShape==VT_CIRCLE) 
     {  
       stGeometry.pHolCyl = calloc(1, sizeof(VtHolCyl));
       stGeometry.nHolCyls = 1;

@@ -67,6 +67,7 @@
 #include "source_ess.h"
 #include "message.h"
 #include "trace.h"
+#include "convert.h"
 
 
 /******************************/
@@ -137,14 +138,14 @@ double    TimeMeas   =  0.0,    // EPIC  -A             [s]   time of measuremen
           LmbdWant   =  0.0;    // EPIC  -W            [Ang]  desired wavelength           
 
 extern char* _sTraceFileName;   // EPIC  -r             [-]   name of the file containing the trajectory IDs to be traced
-extern short _eTraceMode;       /* EPIC  -k             [-]   NO_TRACING     : no tracing 
+extern VtTrace _eTraceMode;     /* EPIC  -k             [-]   NO_TRACING     : no tracing 
                                                               WRITE_TRC_FILES: write trace files for traj. of interest
                                                               ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
 // Moderator parameters read from file or from input
 // -------------------------------------------------
 Moderator stMod   [NUM_MOD];    //   I   -0S  TS1             index: target station
                                 // E     -nt COUPLED [-]      enum: moderator type (POISONED,  DECOUPLED, COUPLED, MULT_SPEC)
-                                //  P CS -ns   'C'  [cm]      shape of the moderator (RECTANGULAR, CIRCULAR) 
+                                //  P CS -ns   'C'  [cm]      shape of the moderator (VT_MOD_SQUARE, VT_MOD_CIRCLE) 
                                 //  P CS -nr   2.0  [cm]      diameter of the moderator
                                 // EPICS -nw        [cm]      width of the moderator
                                 // EPICS -nh        [cm]      height of the moderator
@@ -186,6 +187,8 @@ short     nMod=0,               //                          number of moderators
           imod=0,               //                          index of current moderators in moderator system 
           ColorByLmbd=FALSE;    //                          option: set color depending on wavelength  (only for ESS Butterfly-1)
 
+char      name[99];
+
 
 /*******************************************************/
 /** ISIS code (structure, prototypes, functions       **/
@@ -199,6 +202,7 @@ short     nMod=0,               //                          number of moderators
 int main(int argc, char *argv[])
 {
   unsigned long i=0;          /* index of the all neutron trajectories  */
+  char    sDataVsn[18]="";    /* name of the version used for the flux calculation */
   char    ig1='A', ig2='A';   /* part of the ID of the trajectory */
   long    iBndl=0,            /* index of the bundles */
           iNeut=0;            /* index of the neutron trajectories within the bundle */
@@ -275,7 +279,9 @@ int main(int argc, char *argv[])
     if (stSrc.Power > 0.0)
       fprintf(LogFilePtr, "average power                : %7.3f MW \n",   stSrc.Power/1000000.);
     if (iDataVsn!=NO_VERSION)
-      fprintf(LogFilePtr, "data base version            : %3d      \n\n", iDataVsn);
+    { ModVsn_ID2Txt(sDataVsn, iDataVsn);
+      fprintf(LogFilePtr, "data base version            : %s      \n\n", sDataVsn);
+    }
   }
 
   /* for all moderators in the system */
@@ -385,9 +391,9 @@ int main(int argc, char *argv[])
       /* case ESS, SNS */
       else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
       {  
-       if (stSrc.nSource==ESS && iDataVsn == 5)
+       if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY2_2015)
 	       pMod->FUAmpMod = EssTotFU2015(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength);
-	     else if (stSrc.nSource==ESS && iDataVsn == 6)
+	     else if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY1_2016)
 	       pMod->FUAmpMod = EssTotFU2016(pMod->Height, pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, stSrc.PulseLength, stMod[0].PfmcFact, stMod[1].PfmcFact);
 	     else
          pMod->FUAmpMod = TotalFU(pMod->ModTemp, stSrc.nSource, pMod->eModType, stSrc.Power, stSrc.PulsePeriod, stSrc.PulseLength);
@@ -630,7 +636,7 @@ int main(int argc, char *argv[])
 
       /* Declination */
 	    /* for ESS butterfly 2015: do this after prob is calculated*/
-	    if(stSrc.nSource!=ESS || iDataVsn != 5)
+	    if(stSrc.nSource!=ESS || iDataVsn != BUTTERFLY2_2015)
       { Input.Position[1] = Y0 * dDecCos - pMod->CntrX * dDecSin;
 	      Input.Position[0] = Y0 * dDecSin + pMod->CntrX * dDecCos;
       }
@@ -676,12 +682,12 @@ int main(int argc, char *argv[])
          }
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
          {  // case ESS, SNS
-            if (stSrc.nSource==ESS && iDataVsn == 5)
+            if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY2_2015)
             {  prob = EssModFU_Butterfly2015(pMod->Height, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
                prob = prob / pMod->FUAmpMod * pMod->NormInt;
                Input.Color=GetColour_ESSbutterfly2015(Input.Position[1], Declination);
             }
-            else if (stSrc.nSource==ESS && iDataVsn == 6)
+            else if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY1_2016)
             {  prob = EssModFU_Butterfly2016(pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
                prob = prob / pMod->FUAmpMod * pMod->NormInt;
                if (ColorByLmbd) 
@@ -704,7 +710,7 @@ int main(int argc, char *argv[])
       if(prob <= 0.0) continue; 
 
       /* Declination for ESS butterfly 2015 (others: has been done already)*/
-      if(stSrc.nSource==ESS && iDataVsn == 5)
+      if(stSrc.nSource==ESS && iDataVsn == BUTTERFLY2_2015)
       { Input.Position[1] = Y0 * dDecCos - pMod->CntrX * dDecSin;
 	      Input.Position[0] = Y0 * dDecSin + pMod->CntrX * dDecCos;
       }
@@ -853,8 +859,8 @@ int main(int argc, char *argv[])
 short ModInit(int argc, char **argv)
 {
   int i=0, iM=0, iMax=-1;
-  char cShape,
-      *arg=NULL;
+  VtModShape cShape=VT_MOD_CIRCLE;
+  char*      arg=NULL;
   
   for (iM=0; iM<NUM_MOD; iM++)
   { 
@@ -1048,16 +1054,8 @@ void SrcInit(int argc, char **argv)
             break;
           case 'N':
             stSrc.pSrcName = arg;
-            if      (strcmp(arg,"ESS") ==0) stSrc.nSource = ESS;
-            else if (strcmp(arg,"SNS") ==0) stSrc.nSource = SNS;
-            else if (strcmp(arg,"ISIS")==0) stSrc.nSource = ISIS;
-            else if (strcmp(arg,"CSNS")==0) stSrc.nSource = CSNS;
-            else if (strcmp(arg,"IPNS")==0) stSrc.nSource = IPNS;
-            else if (strcmp(arg,"HBS") ==0) stSrc.nSource = HBS;
-            else if (strcmp(arg,"ILL") ==0) stSrc.nSource = ILL;
-            else if (strcmp(arg,"HMI") ==0) stSrc.nSource = HMI;
-            else if (strcmp(arg,"FRM2")==0) stSrc.nSource = FRM2;
-            else                            stSrc.nSource = ANYSOURCE;	     /* no specific source given */
+            stSrc.nSource  = SrcName_Txt2ID(arg);
+            // SrcNameID2Txt(name, stSrc.nSource);
             break;
           case 'v':
             iDataVsn = (short)atoi(arg);       /* version of the data base */
@@ -1144,7 +1142,7 @@ void SrcInit(int argc, char **argv)
             _sTraceFileName=arg;  
             break;
           case 'k':
-            _eTraceMode = (short) atoi(arg); 
+            _eTraceMode = (VtTrace) atoi(arg); 
             break;
 
           default:
@@ -1258,8 +1256,9 @@ void OwnCleanup()
 /********************************************************/
 short ReadModData(char* sFileName)
 {
-  char  sShape   [2]="S",
-        sBuffer [CHAR_BUF_LENGTH];
+  VtModShape eShape=VT_MOD_SQUARE;
+  char  sShape[2]="S",
+        sBuffer[CHAR_BUF_LENGTH];
   short iM=0;
   FILE* pFileR=NULL;
 
@@ -1272,7 +1271,7 @@ short ReadModData(char* sFileName)
     while (ReadLine(pFileR, sBuffer, sizeof(sBuffer)-1)==TRUE)
     { 
       if (stSrc.nSource==ISIS)
-      { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %hd %lf %lf  %hd  %lf %lf %lf  %lf %lf", 
+      { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %d %lf %lf  %hd  %lf %lf %lf  %lf %lf", 
                         &stMod[iM].ModTemp,     &stMod[iM].nColour,     sShape,  
                         &stMod[iM].CntrX,       &stMod[iM].CntrY,      &stMod[iM].CntrZ,  
                         &stMod[iM].Width,       &stMod[iM].Height,   
@@ -1284,7 +1283,7 @@ short ReadModData(char* sFileName)
                         &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
       }
       else
-      { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %hd %lf %lf  %lf  %lf %lf %lf  %lf %lf", 
+      { sscanf(sBuffer, "%lf %hd %s  %lf %lf %lf  %lf %lf  %hd %lf %lf  %s %s %s  %d %lf %lf  %lf  %lf %lf %lf  %lf %lf", 
                         &stMod[iM].ModTemp,     &stMod[iM].nColour,     sShape,  
                         &stMod[iM].CntrX,       &stMod[iM].CntrY,      &stMod[iM].CntrZ,  
                         &stMod[iM].Width,       &stMod[iM].Height,   
@@ -1296,6 +1295,8 @@ short ReadModData(char* sFileName)
                         &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
       }
 
+      eShape = sShape[0];
+      ModShape_ID2Txt(name, eShape);
       if (strcmp(sShape, "C")==0)
       { stMod[iM].Diameter = stMod[iM].Width;
         stMod[iM].Width  = 0.0;
@@ -1355,9 +1356,9 @@ void CompleteModData()
   }
 
   /* set only moderator option for ESS butterfly: */
-  if (stSrc.nSource==ESS && iDataVsn >= 5)
+  if (stSrc.nSource==ESS && iDataVsn >= BUTTERFLY2_2015)
   {
-    if (iDataVsn==5)
+    if (iDataVsn==BUTTERFLY2_2015)
     { 
       // set butterfly geometry:
       stMod[0].ModTemp = 325.0;
@@ -1419,7 +1420,7 @@ void CompleteModData()
     CopyTrajRange(&stTraj[0], &stTraj[1]);
 
     // add second cold for the theta=0 view:
-    if (iDataVsn==5 && fabs(Declination) < 0.01)
+    if (iDataVsn==BUTTERFLY2_2015 && fabs(Declination) < 0.01)
     {
       iM=3;
       stMod[2].ModTemp = 50.0;
@@ -1430,7 +1431,7 @@ void CompleteModData()
       stMod[2].nColour = 2;
       stMod[2].Height  = stMod[0].Height;
       stMod[2].Area    = stMod[2].Height * stMod[2].Width; 
-        if (iDataVsn==6) stMod[2].Area *= cos(Declination*M_PI/180.0);
+        if (iDataVsn==BUTTERFLY1_2016) stMod[2].Area *= cos(Declination*M_PI/180.0);
       stMod[2].bCircle   = FALSE;
       stMod[2].Diameter = 0.0;
       stMod[2].DistModWnd = WindowDist-stMod[2].CntrX;

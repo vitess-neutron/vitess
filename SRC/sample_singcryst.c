@@ -43,7 +43,7 @@ double dSpreadGaussian(double rdelta);                        // probability of 
 // Input parameters
 char      *SampleFileName=NULL,     // -P     [-]   pointer to the name of the sample file  
           *StructFileName=NULL;     // -S     [-]   pointer to the name of the structure factor file  
-long       d_spr_option=1;          // -o     [-]   function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
+VtDistr    d_spr_option=LORENTZIAN; // -o     [-]   function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
 double     Ddperd=0.0001;           // -d     [-]   d-spacing spread d_FWHM/d  
 
 double     A_reciproc[3],           // file [1/Ang] reciprocal unit vector A
@@ -196,8 +196,8 @@ int main(int argc, char **argv)
           CopyVector(GG, GGact); 
           MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_inc)/ScalarProduct(GG,GG)));
 
-          if(d_spr_option == 1) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
-          if(d_spr_option == 2) Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
+          if(d_spr_option == LORENTZIAN) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
+          if(d_spr_option == GAUSSIAN)   Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
 
           /* defines now outgoing k direction */
           AddVector(k_inc, GGact); 
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 void OwnInit(int argc, char *argv[])
 {
   Ddperd=0.01;
-  d_spr_option = 1 ;
+  d_spr_option = LORENTZIAN;
 
   colh = -1; colk = -1; coll = -1; colD = -1;
   colF = -1; colF2 = -1; colM = -1; colDW = -1;

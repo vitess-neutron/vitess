@@ -126,7 +126,7 @@ static void   allocRdata (ReflFile ***p, int c);
 
 // functions for coating optimization
 void     WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron, GuidePiece *Pce,
-                        eGuideWall ThisCollision, double degangular, double reflectivity);
+                        VtGdeWall ThisCollision, double degangular, double reflectivity);
 void     PrintMaximalM(double *RData, long i);
 int      FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane);
 
@@ -164,8 +164,8 @@ extern long iModuleId;
 // input parameters
 // ----------------
 // geometry and coating
-VtShape eGuideShapeY=VT_CONSTANT,  // -Y   [-]   shape of the guide in horizontal direction 
-        eGuideShapeZ=VT_CONSTANT;  // -Z   [-]   shape of the guide in vertical direction             
+VtGdeShape eGuideShapeY=VT_CONSTANT,  // -Y   [-]   shape of the guide in horizontal direction 
+           eGuideShapeZ=VT_CONSTANT;  // -Z   [-]   shape of the guide in vertical direction             
 const char *ShapeFileName          // -S   [-]   name of the file containing the sizes of the guide, output or input file
           ="guide_shape.dat";     
 long   nPieces   = 1;              // -N   [-]   number of guide pieces
@@ -193,11 +193,11 @@ long   nChannels = 1,              // -b   [-]   number of (vertical) channels
 short  AddToColor= 0;              // -A   [-]   value added to the color on each reflection
 double spacer=0.0,                 // -s  [cm]   width of the blades dividing the channels         
        AbutLen =0.0,               // -l  [cm]   area around the connection of guide segments, where neutrons are absorbed 
-       WaviAmpl=0.0,               // -r  [deg]  maximal (RECTANGULAR) or RMS (GAUSSIAN) deviation from normal of the waviness of the guide surface 
+       WaviAmpl=0.0,               // -r  [deg]  maximal (VT_WAVI_RECT) or RMS (VT_WAVI_GAUSS) deviation from normal of the waviness of the guide surface 
        MuScat=0.0,                 // -M [1/cm]  total macroscopic scattering cross-section
        MuAbs =0.0,                 // -m [1/cm]  macroscopic absorption cross-section for 1.798 Ang 
        rotplane = 0.0;             // -n  [deg]  rotation angle to create additional planes  (see help file for details)
-VtWaviDistr eWaviDistr=VT_RECTANGULAR; // -q   [-]   shape of the waviness distribution   RECTANGULAR   GAUSSIAN
+VtWaviDistr eWaviDistr=VT_WAVI_RECT; // -q   [-]   shape of the waviness distribution   VT_WAVI_RECT   VT_WAVI_GAUSS
 
 // Reflection list
 char  *ReflParamFileName=NULL;     // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option. 
@@ -264,8 +264,8 @@ double startPoint=0.0,             //            beginning of the elliptic guide
        endPoint  =0.0;             //            end of the elliptic guide,       (not needed here)            
 double AreaY=0.0, AreaZ=0.0;       //    [cm^2]  Approximate area of guide plane 
 GuidePiece *pPieces;               //            Holds piece Informations. Replaces Xpce, Ypce, Zpce 
-eGuideWall eGwExit = GW_EXIT,      //      [-]   structure describing the entrance plane
-           eGwInit = GW_INIT;      //      [-]   structure describing the exit plane
+VtGdeWall eGwExit = GW_EXIT,       //      [-]   structure describing the entrance plane
+          eGwInit = GW_INIT;       //      [-]   structure describing the exit plane
 
 extern VectorType BegPosS,         //     [cm]   end position of prev. section = origin of this section in absolute co-ordinate system 
                   BegPosM;         //     [cm]   end position of prev. module = origin of this module in absolute co-ordinate system   
@@ -608,8 +608,8 @@ void OwnInit   (int argc, char *argv[])
           rot += rotplane;
           nPlanes += 4;
         }
-        eGwExit = (eGuideWall)  nPlanes;
-        eGwInit = (eGuideWall) (nPlanes+1);
+        eGwExit = (VtGdeWall)  nPlanes;
+        eGwInit = (VtGdeWall) (nPlanes+1);
       }
       break;
     case 'N':
@@ -623,10 +623,10 @@ void OwnInit   (int argc, char *argv[])
       piecelength = atof(arg); /* length of 1 piece of guide in cm */
       break;
     case 'Y':                   /* Shape of guide: 0: constant                           */
-      eGuideShapeY = (VtShape) atol(arg); /*                 1: (linearly) converging or diverging */
+      eGuideShapeY = (VtGdeShape) atol(arg); /*                 1: (linearly) converging or diverging */
       break;                    /*                 2: curved (circular)                  */
     case 'Z':                   /*                 3: parabolic                          */
-      eGuideShapeZ = (VtShape) atol(arg); /*                 4: elliptic                           */
+      eGuideShapeZ = (VtGdeShape) atol(arg); /*                 4: elliptic                           */
       break;
       
     case 'M':
@@ -1129,7 +1129,7 @@ void showAndCompleteSetup()
   else 
   {
     fprintf(LogFilePtr,"The walls have a waviness of %10.3e deg\n", atan(WaviAmpl)*180.0/M_PI);
-    if (eWaviDistr==VT_GAUSSIAN)
+    if (eWaviDistr==VT_WAVI_GAUSS)
       fprintf(LogFilePtr,"rms Gaussian distribution\n");
     else
       fprintf(LogFilePtr,"max. rectangular distribution\n");
@@ -2015,7 +2015,7 @@ double PathThroughGuideGravOrder1(int thread_i,
   int     datanumber,
           iColl=0,          // index of collisions
           k = GW_INIT;
-  eGuideWall ThisCollision = GW_INIT;
+  VtGdeWall ThisCollision = GW_INIT;
   double  degangular, ThisReflectivity=0.;
   double  TimeOF,         // time of flight to any wall
           TimeOFmin,      // shortest time of flight to a wall (found so far) 
@@ -2075,7 +2075,7 @@ double PathThroughGuideGravOrder1(int thread_i,
       
       CopyNeutron(&TempNeutron, &NearestNeutron);
       TimeOFmin = TimeOF;
-      ThisCollision = (eGuideWall) k;
+      ThisCollision = (VtGdeWall) k;
     }
  
     /***********************************************************************************/
@@ -2396,7 +2396,7 @@ static void allocRdata (ReflFile ***p, int c)
 /*******************************************************/
 
 void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron, GuidePiece *Pce,
-                    eGuideWall ThisCollision, double degangular, double reflectivity)
+                    VtGdeWall ThisCollision, double degangular, double reflectivity)
 {
   const char *fstr="%c%c%09lu     %c     %3d   %8.5f %6.2f %12.5f %8.4f %8.4f  %c %5d  %7.3f %8.5f %11.3e"
     "  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";

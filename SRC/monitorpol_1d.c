@@ -15,10 +15,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "defines.h"
+#include "convert.h"
 #include "init.h"
 #include "softabort.h"
-#include "general.h"
 #include "matrix.h"
 #include "mon2_header.h"
 
@@ -36,7 +35,7 @@
 char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
 short  bProbactiv = TRUE,   // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
        bExclusive = FALSE;  // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-VtMonPar ePar = NO_PAR;     // -k    [-]   ID for parameter, as a function of which the intensity is shown
+VtMon1Par ePar = NO_PAR;    // -k    [-]   ID for parameter, as a function of which the intensity is shown
 long   nbiny  = 1;          // -n    [-]   number of monitor channels
 double xMin   = 0.0,        // -m   [var]  lower bound value of the monitored range 
        xMax   = 0.0,        // -M   [var]  upper bound value of the monitored range
@@ -291,7 +290,7 @@ void  OwnInit(int argc, char *argv[])
 		      break;
 
 	      case 'k':
-	        ePar = atol(&argv[i][2]);       /* 1= monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 5=monitory, 6=monitorz */
+	        ePar = (VtMon1Par) atol(&argv[i][2]);       /* 1= monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz, 5=monitory, 6=monitorz */
 	        break;
 
 	      case 'n':

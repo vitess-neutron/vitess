@@ -47,7 +47,7 @@ class Monochromator{
   int        eFocGeom;                // -g     [-]   Focusing geometry:     1: constant lambda  2: spherical            3: vert. cylinder     4: double focussing
   int        bTransm;                 // -o     [-]   Treat transmitted beam 1: yes              0: no
   int        eMonoMode;               // -X     [-]   Monochr. geometry:     1: reflection,      2: transmission,      
-  int        d_spr_option;            // -d     [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
+  VtDistr    d_spr_option;            // -d     [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
   int        nRepete;                 // -A     [-]   Number of times the neutrons is reflected at the monochromator
                                                 
   double     d_fwhm,                  // -D     [-]   relative d-spread del_d/d (fwhm)

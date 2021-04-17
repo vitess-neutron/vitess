@@ -21,7 +21,7 @@ Monochromator::Monochromator()
   eFocGeom     = 0; 
   bTransm      = FALSE;
   eMonoMode    = 0;
-  d_spr_option = 0; 
+  d_spr_option = LORENTZIAN; 
   nRepete      = 1; 
 
   d_fwhm       = 0.0; 
@@ -261,7 +261,7 @@ void Monochromator::OwnInit(int argc, char* argv[])
   // for normalisation calculation and randomising
   dSpacingSpreadParams[0] = 1.;
   dSpacingSpreadParams[1] = d_spacing;
-  if (d_spr_option == 1) dSpacingSpreadParams[2] = d_fwhm;
+  if (d_spr_option == LORENTZIAN) dSpacingSpreadParams[2] = d_fwhm;
   else  dSpacingSpreadParams[2] = d_sigma;
 
   horMosaicSpreadParams[0] = 1.;
@@ -656,7 +656,7 @@ void Monochromator::NormFunction()
 
     if (sigma1 > 0) 
     {
-      if(d_spr_option == 1) prob_dspacing =  sq(sigma1) / ( 4.*sq(x1 - d_spacing) + sq(sigma1) ) ;
+      if(d_spr_option == LORENTZIAN) prob_dspacing =  sq(sigma1) / ( 4.*sq(x1 - d_spacing) + sq(sigma1) ) ;
       else prob_dspacing = dSpacingSpreadParams[0]*exp(-sq(x1 - dSpacingSpreadParams[1])/(2.*sq(sigma1)));   
     }
     double braggAngleDev = acos(peakWL/(2.*x1)) - acos(peakWL/(2.*d_spacing));
@@ -850,8 +850,8 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
        /* random d-spacing */     
       if (d_fwhm > 0) 
       {
-        if (d_spr_option==1) d_rnd = RandomLorentzian(d_spacing, d_fwhm) ;
-        if (d_spr_option==2) d_rnd = DistrGauss(d_spacing, d_sigma);  
+        if (d_spr_option==LORENTZIAN) d_rnd = RandomLorentzian(d_spacing, d_fwhm) ;
+        if (d_spr_option==GAUSSIAN)   d_rnd = DistrGauss(d_spacing, d_sigma);  
       }
                  
       /* computes reflection angle corresponding to random d-spacindg */

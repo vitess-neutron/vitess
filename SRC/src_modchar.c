@@ -30,8 +30,8 @@ extern Moderator stMod  [NUM_MOD];  /* moderator data            */
 /********************/
 static ModInfo stMInfo[NUM_MOD][2];  // additional moderator data  bispec. moder.: index 0 for cold part, 1 for thermal part
                                      //                            otherwise     : only index 0 used
-static short   _eSource=ANYSOURCE,  /* _eSource    : ANYSOURCE, ESS, SNS, CSNS                         */
-               _eModType=0;         /* _eModType   : decoupled POISONED, DECOUPLED unpoisoned, COUPLED */
+static VtSrcName _eSource=ANYSOURCE; // _eSource    : ANYSOURCE, ESS, SNS, CSNS                        
+static VtModType _eModType=0;        // _eModType   : decoupled POISONED, DECOUPLED unpoisoned, COUPLED
 
 
 /*********************************/
@@ -126,7 +126,7 @@ long IndLT(const long i, const long j)
 /***********************************************************/
 /* TotalFU  returns the flus amplitude for ESS and SNS     */
 /***********************************************************/
-double TotalFU(const double Temp,  const short  eSource, const short eModType, 
+double TotalFU(const double Temp,  const short  eSource, const VtModType eModType, 
                const double Power, const double Period, const double PulseLen)
 {
 	/* Temp      : [K]  eff. moderator temperature 
@@ -200,7 +200,7 @@ double TotalFU(const double Temp,  const short  eSource, const short eModType,
 					}
 					else if (Temp==325.0)
 					{ 
-            if (iDataVsn>=2)
+            if (iDataVsn >= ZANINI_2012)
             { stMInfo[imod][0].F001 = 1.64e10; stMInfo[imod][0].F002 = 3.0e10;  /* Phi1 */
             }
             else
@@ -327,7 +327,7 @@ double EssModFU(const double Lambda, const double Time, const double PulsLen)
 					}
 					else // Temp==325.0)
 					{	/* Phi1 */
-            if (iDataVsn>=2)
+            if (iDataVsn >= ZANINI_2012)
 						{ dPSM =  ShortPulseShape(Time,  21.0e-6           , 5.0);
 						  dPSN =  ShortPulseShape(Time,   3.6e-6 * Lambda, 5.0);
 						  dN   =  NotMaxwell(Lambda, 1.9, 2.2);
@@ -382,21 +382,21 @@ double EssModFU(const double Lambda, const double Time, const double PulsLen)
 		FUt  =  stMInfo[imod][1].F001 * Maxwellian(Lambda, stMInfo[imod][1].Temp)    * dPSMT
 		      + stMInfo[imod][1].F002 * NotMaxwell(Lambda, stMInfo[imod][1].alpha_SD, stMInfo[imod][1].kappa_SD) * dPSN ;
 	
-    if (iDataVsn >= 3)       // new cold moderator, analytical description
+    if (iDataVsn >= SCHOENFELDT_2013)       // new cold moderator, analytical description
 		{ FUc  =  stMInfo[imod][0].F001 * LeakageFct(Lambda, &stMInfo[imod][0]) * dPSMC
 		        + stMInfo[imod][0].F002 * NotMaxwell(Lambda,  stMInfo[imod][0].alpha_SD, stMInfo[imod][0].kappa_SD) * dPSN ;
     }
     else
 		{ FUc  =  stMInfo[imod][0].F001 * Maxwellian(Lambda, stMInfo[imod][0].Temp) * dPSMC
 		        + stMInfo[imod][0].F002 * NotMaxwell(Lambda, stMInfo[imod][0].alpha_SD, stMInfo[imod][0].kappa_SD)  * dPSN ;
-      if (iDataVsn == 2)     // new cold moderator, empirical correction factor
+      if (iDataVsn == ZANINI_2012)     // new cold moderator, empirical correction factor
         FUc *= EmpCorrFact(Lambda);
     }
     dFU = f_cold (Lambda) * FUc + f_therm(Lambda) * FUt;
 	}
 	else
 	{	
-    if ((iDataVsn==3 || iDataVsn==4) && dTemp < 100.0)     // new cold moderator, analytical description
+    if ((iDataVsn==SCHOENFELDT_2013 || iDataVsn==VARHEIGHT_2013) && dTemp < 100.0)     // new cold moderator, analytical description
       dM = LeakageFct(Lambda, &stMInfo[imod][0]);
     else
 		  dM = Maxwellian(Lambda, stMInfo[imod][0].Temp);
@@ -404,7 +404,7 @@ double EssModFU(const double Lambda, const double Time, const double PulsLen)
 		dFU =  stMInfo[imod][0].F001 * dM * dPSM
 		     + stMInfo[imod][0].F002 * dN * dPSN;
 
-    if (iDataVsn == 2 && dTemp < 100.0)     // new cold moderator, empirical correction factor
+    if (iDataVsn == ZANINI_2012 && dTemp < 100.0)     // new cold moderator, empirical correction factor
       dFU *= EmpCorrFact(Lambda);
 	}
 

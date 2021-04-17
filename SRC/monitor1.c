@@ -30,8 +30,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "defines.h"
-#include "general.h"
+#include "convert.h"
 #include "init.h"
 #include "softabort.h"
 #include "mon2_header.h"
@@ -62,10 +61,10 @@ void ChangeName   (char* sFileNew,  char* sFileOld);                         // 
 char  *MonFileName    = NULL,      // -O    [-]   Monitor output file containing intensity as a function of the chosen parameter
       *RefFileName    = NULL;      // -R    [-]   reference file containing input data to normalize the monitor data
 
-VtMonPar  ePar        = MON_DIV_YZ;// -k    [-]   ID for parameter, as a function of which the intensity is shown
-VtMonNorm eNormalize  = NO_NORM;   // -f    [-]   enum: NO_NORM  : intensities of the neutron trajctories distributed unchanged into channels 
-                                   //                   NORM_SIZE: intensities normalized to bin size
-                                   //                   NORM_REF : intensities normalized to reference file
+VtMon1Par ePar        = MON_DIV_YZ;// -k    [-]   ID for parameter, as a function of which the intensity is shown
+VtMonNorm eNormalize  = NO_NORM;   // -f    [-]   enum: NO_NORM      : intensities of the neutron trajctories distributed unchanged into channels 
+                                   //                   NORM_BIN_SIZE: intensities normalized to bin size
+                                   //                   NORM_REF_FILE: intensities normalized to reference file
 short  bAllFiles      = FALSE,     // -c    [-]   flag: generates additional files for colour=0, 1, ..., iColour
        bProbWeight    = TRUE,      // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
        bSplitWeight   = TRUE,      // -P    [-]   flag for yz: YES split weight   NO: multiplication by number of detection angles
@@ -355,7 +354,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'k':
-          ePar = atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz,
+          ePar = (VtMon1Par) atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz,
                                        5=monitory,      6=monitorz     7=energy       8=divyz */
           break;
 
@@ -411,8 +410,8 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'f':
-          eNormalize = atoi(&argv[i][2]);      /* if 1, each channel normalised with bin size */
-          break;                               /* if 2, each channel normalised reference file */
+          eNormalize = (VtMonNorm) atoi(&argv[i][2]);      /* if 1, each channel normalised with bin size */
+          break;                                           /* if 2, each channel normalised reference file */
 
         case 'C':
           iColour = atol(&argv[i][2]);         /*  excludes all neutrons with diff. Colour, if iColour >= 0   */
@@ -493,10 +492,10 @@ void InitArrays()
       nBin[iBin+jMon*(nBins+1)]=0;
     }
 
-    if (eNormalize==NORM_SIZE)
+    if (eNormalize==NORM_BIN_SIZE)
     { Norm[iBin] =(MaxY-MinY)/(double)nBins;
     }
-    else if (eNormalize==NORM_REF && ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1))
+    else if (eNormalize==NORM_REF_FILE && ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1))
     { 
       StrgScanLF(sBuffer, &RefValue, 1, 1);
       Norm[iBin] = RefValue;  
@@ -508,8 +507,8 @@ void InitArrays()
   
   switch (eNormalize)
   {
-    case NORM_SIZE: fprintf(LogFilePtr, "Norm     : %f\n",  Norm[0]); break;
-    case NORM_REF : fprintf(LogFilePtr, "normalized by %s", RefFileName); break;
+    case NORM_BIN_SIZE: fprintf(LogFilePtr, "Norm     : %f\n",  Norm[0]); break;
+    case NORM_REF_FILE : fprintf(LogFilePtr, "normalized by %s", RefFileName); break;
   }
   fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nBins, MinY, MaxY, sUnit[ePar]);
   fprintf(LogFilePtr, "File     : %s\n", MonFileName);
@@ -533,7 +532,7 @@ void OpenFiles()
   { 
     pFileRef = OpenInputFile(RefFileName, FALSE, "rt");
     if (pFileRef!=NULL)
-    { eNormalize=NORM_REF;
+    { eNormalize=NORM_REF_FILE;
     }
     else
     {  fprintf(LogFilePtr,"\nERROR: Reference file %s could not be opened\n", RefFileName);

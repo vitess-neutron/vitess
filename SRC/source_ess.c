@@ -185,7 +185,7 @@ double EssModFU_Butterfly2015(const double ModHeight, const double Power, const 
   if (fabs(theta) < 0.01 && x0 > 0)
     x0 *= -1.0;
 
-  if (fabs(theta) > 55.0 && iDataVsn == 5)
+  if (fabs(theta) > 55.0 && iDataVsn == BUTTERFLY2_2015)
     Error("source_ess.c: ESS moderator data 2015 only implemented for declination |theta| <= 55 deg");
 
   if (ModHeight > 2.9 && ModHeight < 3.1)

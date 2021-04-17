@@ -66,7 +66,7 @@ int          nRep=1;                     // -R        Number of times the input 
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf') 
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
-extern short _eTraceMode;                // -t        NO_TRACING     : no tracing 
+extern VtTrace _eTraceMode;              // -t        NO_TRACING     : no tracing 
                                          //           WRITE_TRC_FILES: write trace files for traj. of interest
                                          //           ONLY_TRC_TRAJ  : simulation only with traj. of interest 
 
@@ -225,7 +225,7 @@ void OwnInit(int argc, char *argv[])
           FactInt =   (double)atof(&argv[i][2]);
           break;
         case 't':
-          _eTraceMode = atoi(&argv[i][2]);
+          _eTraceMode = (VtTrace) atoi(&argv[i][2]);
           break;
         case 'T':
           _sTraceFileName = &argv[i][2];  

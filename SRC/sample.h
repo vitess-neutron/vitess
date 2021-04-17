@@ -4,16 +4,22 @@
 #include "intersection.h"
 #include "general.h"
 
-extern char* SampleFileName;
+/******************************/
+/**   Global Variables       **/
+/******************************/
+extern int colD, colF, colF2, colDW, colM, colh, colk, coll;
 
-int colD, colF, colF2, colDW, colM, colh, colk, coll;
-double scaleF2;
+extern double scaleF2;
 
-double* hVal;
-double* kVal;
-double* lVal;
-double* F2Val;
+extern double* hVal;
+extern double* kVal;
+extern double* lVal;
+extern double* F2Val;
 
+
+/******************************/
+/** Prototypes               **/
+/******************************/
 void InitSample  (SampleType *Sample);
 void ReadCube    (FILE *SampleFile, SampleType *Sample);
 void ReadCylinder(FILE *SampleFile, SampleType *Sample);

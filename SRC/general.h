@@ -89,9 +89,6 @@ double Max     (const double value1, const double value2);
 long   mini    (const long   value1, const long   value2);
 long   maxi    (const long   value1, const long   value2);
 
-void     CompID2Name(char* sName, const McCompID eComp);
-McCompID Name2CompID(const char* sName);
-
 double SolidAngle    (const double dHorAngle,     const double dVertAngle);
 double TrueSolidAngle(const double dHorAngle,     const double dVertAngle);
 double ReflSNT       (char* sTxt, const double Q, const double m, const short bPrint);

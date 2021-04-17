@@ -24,7 +24,7 @@ Mon2D::Mon2D()
 
   bWeight = 1;
   exclCounts = 0;
-  format = NO_FORMAT;
+  format = NO_2D_FORMAT;
 
   lambdaMin = -1;
   lambdaMax = -1;
@@ -78,10 +78,10 @@ void Mon2D::OwnInit(int argc, char* argv[])
 	        break;
 
 	      case 'X':
-	        xParam = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the x axis, input parameter
+	        xParam = (VtMonPar)atoi(&argv[i][2]); // parameter to be shown on the x axis, input parameter
 	        break;
 	      case 'Y':
-	        yParam = (VtPar)atoi(&argv[i][2]); // parameter to be shown on the y axis, input parameter
+	        yParam = (VtMonPar)atoi(&argv[i][2]); // parameter to be shown on the y axis, input parameter
 
 	      case 'x':
 	         nBinsX = atol(&argv[i][2]); /* number of bins horizontal axis */
@@ -105,11 +105,11 @@ void Mon2D::OwnInit(int argc, char* argv[])
 	        break;
 
 	      case 'I':  
-	        filterParam1 = (VtPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
+	        filterParam1 = (VtMonPar)atoi(&argv[i][2]); // filter parameter 1, optional input parameter
 	        break;
 
 	      case 'J':  
-	        filterParam2 = (VtPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
+	        filterParam2 = (VtMonPar)atoi(&argv[i][2]); // filter parameter 2, optional input parameter
 	        break;
 
 	      case 'C':  
@@ -310,7 +310,7 @@ int Mon2D::FillMonitor(Neutron* n)
 /*******************************************************/
 /** Determine, which parameter has to be calculated   **/
 /*******************************************************/
-double Mon2D::DetermineParameter(VtPar id, Neutron* n)
+double Mon2D::DetermineParameter(VtMonPar id, Neutron* n)
 {
 
   // Return the parameter value identified by 'id'
@@ -457,7 +457,7 @@ void Mon2D::WriteOut(long iBndl)
 /***********************************/
 /** Convert parameter ID to text  **/
 /***********************************/
-void Mon2D::ParId2Text(char* sParName, const VtPar ePar)
+void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 {
   switch (ePar)
   { 

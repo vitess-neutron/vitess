@@ -35,30 +35,30 @@ class Mon2D
   // input parameters
   string fMonitorFilename; // -O  name of the output file
 
-  int    nBinsX;           // -x  number of x bins
-  int    nBinsY;           // -y  number of y bins
-  VtPar  xParam;           // -X  parameter to be shown on the x axis
-  VtPar  yParam;           // -Y  parameter to be shown on the y axis
+  int      nBinsX;           // -x  number of x bins
+  int      nBinsY;           // -y  number of y bins
+  VtMonPar xParam;           // -X  parameter to be shown on the x axis
+  VtMonPar yParam;           // -Y  parameter to be shown on the y axis
 
-  double xMin;             // -w  minimum x value
-  double xMax;             // -w  maximum x value
-  double yMin;             // -h  mininum y value
-  double yMax;             // -H  maximum y value
+  double   xMin;             // -w  minimum x value
+  double   xMax;             // -w  maximum x value
+  double   yMin;             // -h  mininum y value
+  double   yMax;             // -H  maximum y value
 
-  int    bWeight;          // -p  use eigher actual probability of trajectories or 1 for all trajectories
-  int    exclCounts;       // -e  do not forward neutrons to the pipe that do not contribute to the monitor data
-  VtFormat2D format;       // -F  file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+  int      bWeight;          // -p  use eigher actual probability of trajectories or 1 for all trajectories
+  int      exclCounts;       // -e  do not forward neutrons to the pipe that do not contribute to the monitor data
+  VtFormat2D format;         // -F  file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
 
   // optional input parameters (filters and polarisation analysis)
-  double lambdaMin;        // -l  minimum wavelength, filter for the monitor
-  double lambdaMax;        // -L  maximum wavelength, filter for the monitor
-  VtPar  filterParam1;     // -I  filter parameter 1
-  VtPar  filterParam2;     // -J  filter parameter 2
-  int    filterComb;       // -C  filter 1 and 2 combined with AND or OR
-  double filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
-  double filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
-  double filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
-  double filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
+  double   lambdaMin;        // -l  minimum wavelength, filter for the monitor
+  double   lambdaMax;        // -L  maximum wavelength, filter for the monitor
+  VtMonPar filterParam1;     // -I  filter parameter 1
+  VtMonPar filterParam2;     // -J  filter parameter 2
+  int      filterComb;       // -C  filter 1 and 2 combined with AND or OR
+  double   filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
+  double   filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
+  double   filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
+  double   filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
   
   int    analysePol;       // -P  switched on if polarisation analysis desired
   MathVector* 
@@ -98,10 +98,10 @@ class Mon2D
 
   // operations
   void   OwnInit(int argc, char* argv[]);         // Read in the monitor parameters from the command line
-  double DetermineParameter(VtPar id, Neutron* n);  // Determine, which parameter has to be calculated
+  double DetermineParameter(VtMonPar id, Neutron* n);  // Determine, which parameter has to be calculated
   int    FillMonitor(Neutron* n);                 // Fill monitor, if the neutron fulfills all constraints
   void   WriteOut(long iBndl);                    // Write output file
-  void   ParId2Text(char* sName, const VtPar ePar); // Convert parameter ID to text
+  void   ParId2Text(char* sName, const VtMonPar ePar); // Convert parameter ID to text
   void   FreeMemory();                            // Free allocated memory
 };
 

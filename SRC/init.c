@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "convert.h"
 #include "init.h"
 
 
@@ -164,23 +165,23 @@ char* FullOutName     (const char* filename);                       // adds inpu
 /* Adds path of the installation directory to a file name */
 char* FullInstallName(const char* fileName, const char* sRelPath)
 {
-  return conCat(fileName, sRelPath, 1);
+  return conCat(fileName, sRelPath, INSTL_DIR);
 }
 
 /* Adds the path of a directory - input, output or parameter - to a file name */
 char* FullParName(const char* fileName)
 {
-  return conCat(fileName, "", 0);
+  return conCat(fileName, "", PAR_DIR);
 }
 
 char* FullInName(const char* fileName)
 {
-  return conCat(fileName, "", 2);
+  return conCat(fileName, "", IN_DIR);
 }
 
 char* FullOutName(const char* fileName)
 {
-  return conCat(fileName, "", 3);
+  return conCat(fileName, "", OUT_DIR);
 }
 
 
@@ -1398,7 +1399,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
   FILE*  pFile=NULL;
   int    nModuleID;
   long   nModNo=0, No=0, nDum;
-  char   sBuffer[CHAR_BUF_LENGTH]="", sLine[CHAR_BUF_LENGTH]="", sLineH[CHAR_BUF_LENGTH]="";
+  char   sBuffer[CHAR_BUF_LENGTH]="", sLine[CHAR_BUF_LENGTH]="";
 
   nModNo   = 0;
   Pos[0]   = Pos[1] = Pos[2] = 0.0;
