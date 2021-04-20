@@ -126,7 +126,7 @@ long IndLT(const long i, const long j)
 /***********************************************************/
 /* TotalFU  returns the flus amplitude for ESS and SNS     */
 /***********************************************************/
-double TotalFU(const double Temp,  const short  eSource, const VtModType eModType, 
+double TotalFU(const double Temp,  const VtSrcName eSource, const VtModType eModType, 
                const double Power, const double Period, const double PulseLen)
 {
 	/* Temp      : [K]  eff. moderator temperature 

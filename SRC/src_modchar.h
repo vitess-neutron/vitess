@@ -135,7 +135,7 @@ void   InitTrajRange  (TrajParam* pTrj);
 void   CopyTrajRange  (const TrajParam* pSrc, TrajParam* pDest);
 
 long   IndLT          (const long   i,       const long   j);
-double TotalFU        (const double Temp,    const short  eSource, const VtModType  eModType,
+double TotalFU        (const double Temp,    const VtSrcName eSource, const VtModType eModType,
 					             const double Power,   const double Period,  const double PulseLen);
 double EssModFU       (const double Lambda,  const double Time,    const double Length);
                       

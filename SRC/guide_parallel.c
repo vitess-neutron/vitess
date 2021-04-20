@@ -137,8 +137,8 @@ static void   addPixStat(BINDATA *bpix,  BINDATA *rpix);
 static void   doBinDetail(ReflCond *RefOut, NeutronEx *rp, double ValProb, int ibinX, int ibinY, BINDATA **ppix);
 
 void     DoBin(ReflCond *RefOut, int thread_i);
-GetVal   SetValueFunction(const int key);
-void     GetKeyName(const int key, char* buf);
+GetVal   SetValueFunction(const VtPlotPar key);
+void     GetKeyName      (const VtPlotPar key, char* buf);
 
 double (*GetValueX)(ReflCond *RefOut, int cNeut) = NULL;
 double (*GetValueY)(ReflCond *RefOut, int cNeut) = NULL;
@@ -200,15 +200,15 @@ double spacer=0.0,                 // -s  [cm]   width of the blades dividing th
 VtWaviDistr eWaviDistr=VT_WAVI_RECT; // -q   [-]   shape of the waviness distribution   VT_WAVI_RECT   VT_WAVI_GAUSS
 
 // Reflection list
-char  *ReflParamFileName=NULL;     // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option. 
-int    nReflMinCnt = 0;            // -e   [-]   Minimum number of reflections within the guide for reflection list output 
-int    nReflMaxCnt = 0;            // -E   [-]   Maximum number of reflections within the guide for reflection list output 
-int    nReflMinCntY = 0;           // -c   [-]   Minimum number of reflections on the horizontal guide for reflection list output 
-int    nReflMaxCntY = 0;           // -C   [-]   Maximum number of reflections on the horizontal guide for reflection list output 
-int    nReflMinCntZ = 0;           // -d   [-]   Minimum number of reflections on the vertical guide for reflection list output 
-int    nReflMaxCntZ = 0;           // -D   [-]   Maximum number of reflections on the vertical guide for reflection list output 
-int    keyReflVerbose = 0;         // -v   [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. 
-int    keyReflParam = -1;          /* -O   [-]   Trajectories to be written out:
+char  *ReflParamFileName=NULL;      // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option. 
+int    nReflMinCnt  = 0;            // -e   [-]   Minimum number of reflections within the guide for reflection list output 
+int    nReflMaxCnt  = 0;            // -E   [-]   Maximum number of reflections within the guide for reflection list output 
+int    nReflMinCntY = 0;            // -c   [-]   Minimum number of reflections on the horizontal guide for reflection list output 
+int    nReflMaxCntY = 0;            // -C   [-]   Maximum number of reflections on the horizontal guide for reflection list output 
+int    nReflMinCntZ = 0;            // -d   [-]   Minimum number of reflections on the vertical guide for reflection list output 
+int    nReflMaxCntZ = 0;            // -D   [-]   Maximum number of reflections on the vertical guide for reflection list output 
+VtListVbs eReflVbs=VT_LSTM_NO;      // -v   [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. 
+VtListPar eReflPar=VT_LIST_PASS_LF; /* -O   [-]   Trajectories to be written out:
                                                  1 = only those leaving the guide;
                                                  2 = all successfull reflections; no matter if the trajectory reaches the guide end
                                                  3 = only those with at least one successful scattering event
@@ -216,17 +216,17 @@ int    keyReflParam = -1;          /* -O   [-]   Trajectories to be written out:
                                                  4 = all
                                                  a negative number adds a line feed between each trajectory */
 // Reflection plot
-char  *ReflPlotFileName=NULL;      // -P   [-]   name of the file for writing teflectiond fot plotting. Giving a filename activiates this option. 
-int    keyPlotParam = 0;           // -B   [-]   Plot filter:  0 = any   1 = only scattered   2 = only died 
-int    KeyX = dKeyPositionX;       // -t   [-]   key defining x parameter for reflection plot
-int    KeyY = dKeym;               // -T   [-]   key defining y parameter for reflection plot
-int    KeyProb = dKeyProbability;  // -V   [-]   key for f(x,y) for reflection plot
-long   nbinsX=1000,                // -k   [-]   number of X bins in reflection plot
-       nbinsY= 100;                // -K   [-]   number of Y bins in reflection plot 
-double MinX=    0.0,               // -x  [var]  lower bound of X range in reflection plot
-       MaxX= 1000.0,               // -X  [var]  upper bound of X range in reflection plot
-       MinY=    0.0,               // -u  [var]  lower bound of Y range in reflection plot
-       MaxY=   10.0;               // -U  [var]  upper bound of Y range in reflection plot
+char      *ReflPlotFileName=NULL;    // -P   [-]   name of the file for writing teflectiond fot plotting. Giving a filename activiates this option. 
+VtPlotFilt ePlotFilt = VT_PLOT_ALL;  // -B   [-]   Plot filter:  0 = any   1 = only scattered   2 = only died 
+VtPlotPar KeyX = dKeyPositionX;      // -t   [-]   key defining x parameter for reflection plot
+VtPlotPar KeyY = dKeym;              // -T   [-]   key defining y parameter for reflection plot
+VtPlotPar KeyProb = dKeyProbability; // -V   [-]   key for f(x,y) for reflection plot
+long   nbinsX=1000,                  // -k   [-]   number of X bins in reflection plot
+       nbinsY= 100;                  // -K   [-]   number of Y bins in reflection plot 
+double MinX=    0.0,                 // -x  [var]  lower bound of X range in reflection plot
+       MaxX= 1000.0,                 // -X  [var]  upper bound of X range in reflection plot
+       MinY=    0.0,                 // -u  [var]  lower bound of Y range in reflection plot
+       MaxY=   10.0;                 // -U  [var]  upper bound of Y range in reflection plot
 
 // MCP Loutput
 char  *MCPLParamFileName=NULL;     // -Z   [-]   name of the file for the gamma radiation
@@ -510,7 +510,7 @@ void OwnInit   (int argc, char *argv[])
       break;
 
     case 'O':
-      keyReflParam = atoi(arg); /* Trajectories to be written out:
+      eReflPar = (VtListPar) atoi(arg); /* Trajectories to be written out:
                                    1 = only those leaving the guide;
                                    2 = all successfull reflections; no matter if the trajectory reaches the guide end
                                    3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)
@@ -518,7 +518,7 @@ void OwnInit   (int argc, char *argv[])
                                    a negative number adds a line feed between each trajectory */
       break;
     case 'B':
-      keyPlotParam = atoi(arg); /* Trajectories to be binned:
+      ePlotFilt = (VtPlotFilt) atoi(arg); /* Trajectories to be binned:
                                    0 = all
                                    1 = only scattered;
                                    2 = only dies
@@ -537,7 +537,7 @@ void OwnInit   (int argc, char *argv[])
       }
       break;
     case 'v':    /* Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. */
-      keyReflVerbose = atoi(arg);
+      eReflVbs = (VtListVbs) atoi(arg);
       break;
     case 'e':    /* Minimum number of reflections within the guide for reflection list output */
       nReflMinCnt = atoi(arg);
@@ -683,14 +683,14 @@ void OwnInit   (int argc, char *argv[])
       break;
       
     case 't':    /* Key for x parameter */
-      KeyX = atoi(arg);
+      KeyX = (VtPlotPar) atoi(arg);
       break;
     case 'T':    /* Key for y parameter */
-      KeyY = atoi(arg);
+      KeyY = (VtPlotPar) atoi(arg);
       break;
       
     case 'V':    /* Probability weighting key */
-      KeyProb = atoi(arg);
+      KeyProb = (VtPlotPar) atoi(arg);
       break;
       
     case 'g':
@@ -1486,7 +1486,7 @@ void processNeutron(int neutron_i, int thread_i)
         }
       }
     
-      if (keyReflVerbose != 0 && j == 0)
+      if (eReflVbs != VT_LSTM_NO && j == 0)
         WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
       if (j == 0)
         WriteIAP(myneutron, VT_ENTERED); 
@@ -1494,7 +1494,7 @@ void processNeutron(int neutron_i, int thread_i)
       // donkey work routine
       TimeOF1 = PathThroughGuideGravOrder1(thread_i, myneutron, guide, &pPieces[j], PRefOut, j);
 
-      if (keyReflVerbose == 2 && j == nPieces-1)
+      if (eReflVbs == VT_LSTM_EDGE && j == nPieces-1)
         WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwExit, 0., 0.);
 
       if (TimeOF1 == -1.0) 
@@ -1562,7 +1562,7 @@ void processNeutron(int neutron_i, int thread_i)
          (PRefOut->RefCountZ >= nReflMinCntZ && (PRefOut->RefCountZ <= nReflMaxCntZ || nReflMaxCntZ == 0)) ) 
     {
       int condition;
-      switch (abs(keyReflParam)) 
+      switch (abs(eReflPar)) 
       {
         case 1:  condition = (PRefOut->RefCount > 0); break;
         case 2:
@@ -1575,11 +1575,14 @@ void processNeutron(int neutron_i, int thread_i)
         {
           char *s = PRefOut->Output;
           if (NThreads <= 0 || thread_i <= 0)
+          {
             // in serial mode, or if we are thread 0: print to file
-            fprintf(pReflParam, keyReflParam < 0 ? "%s\n" : "%s", s);
-          else {
+            fprintf(pReflParam, eReflPar < 0 ? "%s\n" : "%s", s);
+          }
+          else 
+          {
             int len = PRefOut->insert_at;
-            if (keyReflParam < 0) 
+            if (eReflPar < 0) 
             {
               s[len] = '\n';
               len++;
@@ -2115,7 +2118,7 @@ double PathThroughGuideGravOrder1(int thread_i,
                                            - sq(pThisNeutron->Vector[2]));
       pThisNeutron->Probability = NearestNeutron.Probability;
  
-      if (keyReflVerbose == 1 && RefOut)
+      if (eReflVbs == VT_LSTM_YES && RefOut)
         WriteReflParam(RefOut, thread_i, 5, pThisNeutron, Pce, ThisCollision, 0., 0.);
  
       if (iPiece == nPieces-1) 
@@ -2525,7 +2528,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
   }  
   //End MCPL output
  
-  if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(keyReflParam) > 2)) 
+  if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(eReflPar) > 2)) 
   {
     NeutronEx *rp;
     int slen, to_alloc;
@@ -2553,7 +2556,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
  
     // add neutron to reflection storage /* neutrons */
     if (((int)ThisCollision < eGwExit) && 
-      ((keyPlotParam == 0) || ((keyPlotParam == 1) && (Mode == 0)) || ((keyPlotParam == 2) && (Mode == 10)))) 
+      ((ePlotFilt == VT_PLOT_ALL) || ((ePlotFilt == VT_PLOT_SCAT) && (Mode == 0)) || ((ePlotFilt == VT_PLOT_DIED) && (Mode == 10)))) 
     {
       // first fetch enough space for that
       if (RefOut->alloc_neutrons == 0) 
@@ -2697,7 +2700,7 @@ static void writeBindata ()
         ibinXY = INDEX(ibinX, ibinY, iplane);
         if ((pix = binXY[ibinXY])) cout+=writeReflPix(pix, 0);
       }
-      if (keyReflParam<0 && cout>0) fprintf(pReflPlot,"\n");
+      if (eReflPar < 0 && cout>0) fprintf(pReflPlot,"\n");
     }
  
     if (iplane==-1) 
@@ -2710,7 +2713,7 @@ static void writeBindata ()
       if ((pix = binX[ibinX + nbinsX*(iplane+1)]))
         writeReflPix(pix, 1);
  
-    if (keyReflParam<0) fprintf(pReflPlot,"\n");
+    if (eReflPar < 0) fprintf(pReflPlot,"\n");
     
     if (iplane==-1) 
     { fprintf(pReflPlot, "\n#==YData==\n");
@@ -2722,7 +2725,7 @@ static void writeBindata ()
       if ((pix = binY[ibinY + nbinsY*(iplane+1)]))
         writeReflPix(pix, 2);
  
-    if (keyReflParam<0) fprintf(pReflPlot,"\n");
+    if (eReflPar < 0) fprintf(pReflPlot,"\n");
   }
 }
 
@@ -2889,7 +2892,7 @@ double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return (double)Re
 double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[2]; }
 
 
-GetVal SetValueFunction(const int key)
+GetVal SetValueFunction(const VtPlotPar key)
 {
   /*
     #define iKeyMode           1
@@ -2953,7 +2956,7 @@ GetVal SetValueFunction(const int key)
 }
 
 
-void GetKeyName(const int key, char* buf)
+void GetKeyName(const VtPlotPar key, char* buf)
 {
   switch (key) 
   {

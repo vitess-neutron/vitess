@@ -11,35 +11,6 @@
 
 #define MAX_GAMMA_NUM 19
 
-// binning keys
-#define KeyNone            0
-#define iKeyMode           1
-#define iKeyMode0          2
-#define iKeyMode5          3
-#define iKeyMode10         4
-#define dKeyRefCount       5
-#define dKeyRefCountY      6
-#define dKeyRefCountZ      7
-#define iKeyThisCollision  8
-#define dKeydegangular     9
-#define dKeym             10
-#define dKeyreflectivity  11
-#define dKeyDivY          12
-#define dKeyDivZ          13
-#define iKeyColor         14
-#define dKeyTime          15
-#define dKeyWavelength    16
-#define dKeyProbability   17
-#define dKeyPositionX     18
-#define dKeyPositionY     19
-#define dKeyPositionZ     20
-#define dKeyVectorX       21
-#define dKeyVectorY       22
-#define dKeyVectorZ       23
-#define dKeySpinX         24
-#define dKeySpinY         25
-#define dKeySpinZ         26
-
 
 /******************************/
 /** Structures and Enums     **/

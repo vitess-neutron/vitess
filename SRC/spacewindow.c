@@ -59,8 +59,9 @@ double ThicknessO=0.0,        // -t  [cm]  thickness of the frame material
        ThicknessI=0.0;        // -T  [cm]  thickness of the pane material      
 char	*sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
 char	*sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of the material in the open part of window
-long   KeymaterialO=6;        // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-	                            //                                  4 - Eu,        5 - Silicon,    6 - ideal absorber
+VtWndAbs eMaterialO           // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+          =VT_WABS_IDEAL;     //                                  4 - Eu,        5 - Silicon,    6 - ideal absorber  
+	                         
 
 // Variables determined from input parameters or trajectory data
 long   KeymaterialI=1;        //           Window pane material:  0 - from file  1 - no(default) 
@@ -213,7 +214,7 @@ int main(int argc, char *argv[])
           if (winradius*winradius < DistSquared)
             bOutOfWindow=TRUE;
           else
-          bOutOfWindow=FALSE;
+            bOutOfWindow=FALSE;
         }
         else
         {	if ((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
@@ -266,7 +267,7 @@ int main(int argc, char *argv[])
         }
         else /* else, if hitting beamstop or out of window */
         {
-          if (KeymaterialO != 6)
+          if (eMaterialO != VT_WABS_IDEAL)
           {
             if (keygrav == 1)
             {
@@ -279,7 +280,7 @@ int main(int argc, char *argv[])
 
             /* Attenuation during pass through window material */
             N_Wavelength = InputNeutrons[i].Wavelength;
-            mu = Interpolation(N_Wavelength,KeymaterialO,WavO,MuO,nValFO);
+            mu = Interpolation(N_Wavelength, eMaterialO, WavO, MuO, nValFO);
             if (mu == -10000.0)
             { // sprintf(sBuffer, "Attenuation coefficient of window frame material could not be determined for wavelength %6.3f Ang", N_Wavelength);
               // Error(sBuffer);
@@ -429,7 +430,7 @@ void  OwnInit(int argc, char *argv[])
 				break;
 
 			case 'c':
-				KeymaterialO = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
+				eMaterialO = (VtWndAbs) atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
         break;
 
 			case 'C':
@@ -479,6 +480,9 @@ void  OwnInit(int argc, char *argv[])
   if (maxPhi < minPhi)
     Error("Maximal phi angle must not be smaller than minimal phi angle");
 
+  if (eWndShape==VT_NO_SHAPE)
+    Error("Shape must be given");
+
   // Fill structures defining the planes
 	EndPoint.D  = -1.0 * DistMove;
 	EndPointI.D = -1.0 *(DistMove + ThicknessI);
@@ -526,7 +530,7 @@ void EvalInput()
   // --------------------
 	if (ThicknessO == 0.0)
 	{
-		KeymaterialO = 6;
+		eMaterialO = VT_WABS_IDEAL;
 	}
   	if (ThicknessI == 0.0)
 	{
@@ -537,7 +541,7 @@ void EvalInput()
   // -----------
   fprintf(LogFilePtr,"Window frame material: ");
 
-  switch (KeymaterialO)
+  switch (eMaterialO)
   { case 0: fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
     case 1: fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
     case 2: fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
@@ -555,7 +559,7 @@ void EvalInput()
   
   // window frame material from file
   // -------------------------------
-  if (KeymaterialO == 0)
+  if (eMaterialO == VT_WABS_FILE)
   {
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
@@ -593,7 +597,7 @@ void EvalInput()
     }
   }	
 
-  if (KeymaterialO >= 0 && KeymaterialO < 6) 
+  if (eMaterialO !=  VT_WABS_IDEAL) 
     fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nVal]);
 
   // window pane material from file

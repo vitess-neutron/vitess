@@ -1141,8 +1141,8 @@ set specoptAdd {
     "Choose which trajectories will be printed. This option also affects reflection plot options below!!!\n1 = only those leaving the guide\n2 = all successfull reflections; no matter if the trajectory reaches the guide end\n3 = only those with at least one successful scattering event (tracjectory may end with an unsuccessfull event)\n4 = all\nA negative number adds a line feed between each trajectory." "" O}
     {"Trajectories passing the guide end" "Trajectories passing the guide end (with linefeed)" "Only successful reflections" "Only successful reflections (with linefeed)" "Trajectories with at least one successful reflection" "Trajectories with at least one successful reflection (with linefeed)" "All trajectories" "All trajectories (with linefeed)"} {1 -1 2 -2 3 -3 4 -4}}
   {keyreflverbose radio no {"verbose\nlist"
-    "Additional trajectories are written at the entry and the exit of the guide (enter & exit) or each guide piece (yes)." "" v}
-    {no yes "enter & exit"} {0 1 2}}
+    "Additional trajectories are written at the entry and the exit of the guide (entry & exit) or each guide piece (yes)." "" v}
+    {no yes "entry & exit"} {0 1 2}}
   {}
   {keyreflmin int 0 {
     "minimum number\nof reflections" "Minimum number of reflections." "" e} ge0 "" 0}

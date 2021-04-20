@@ -92,7 +92,7 @@ direct_view
 
 # these macros define dependencies
 
-TOOL = init.o general.o message.o softabort.o
+TOOL = init.o general.o convert.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = $(MTOOL)

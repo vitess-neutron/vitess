@@ -207,7 +207,7 @@ int main(int argc, char **argv)
           ConvertVitess2MCPL (&OutParticle,   &InputNeutrons[i]);
           break;
         case VT_MCNP6_FMT:
-          ConvertVitess2MCNP6(&OutMp6Neutron,   &InputNeutrons[i]);
+          ConvertVitess2MCNP6(&OutMp6Neutron, &InputNeutrons[i]);
           break;
         case VT_MCNPX_FMT:
           ConvertVitess2MCNPX(&OutMpxNeutron, &InputNeutrons[i]);

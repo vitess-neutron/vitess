@@ -891,11 +891,11 @@ short ModInit(int argc, char **argv)
             stMod[iM].eIsisTS = (short) atoi(arg);     //    [-]    Isis Target station: 1  or  2
             break;
           case 't':
-            stMod[iM].eModType= (short) atoi(arg);     //    [-]    moderator type 
+            stMod[iM].eModType= (VtModType) atoi(arg); //    [-]    moderator type 
             break;
 
           case 's':
-            cShape = *arg;                         //    [-]    moderator shape
+            cShape = (VtModShape) *arg;                //    [-]    moderator shape
             if (cShape=='C' || cShape=='c')
               stMod[iM].bCircle=TRUE;
             break;
@@ -983,7 +983,7 @@ short ModInit(int argc, char **argv)
 
 void SrcInit(int argc, char **argv)
 {
-  int    i=0, j=0;
+  int    i=0;
   double PolNorm = 0.0;
 
   char  *arg=NULL;
@@ -1025,11 +1025,9 @@ void SrcInit(int argc, char **argv)
             break;
 
           case 'd':
-            j = atol(arg); 
-            if (j < 0 || j > 2)
+            eDirDet = (VtDirect) atoi(arg); 
+            if (eDirDet < 0 || eDirDet > 2)
               Error("Wrong parameter for 'direction determination'");
-            else
-              eDirDet = (VtDirect) j;
             break;
 
           case 'b':
@@ -1047,10 +1045,10 @@ void SrcInit(int argc, char **argv)
 
           /* source */
           case 'S':
-            stSrc.eSrcType = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            stSrc.eSrcType = (VtSrcType) atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
             break;
           case 'K':
-            stSrc.eSrcKind = (short)atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            stSrc.eSrcKind = (VtSrcKind) atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
             break;
           case 'N':
             stSrc.pSrcName = arg;
@@ -1058,7 +1056,7 @@ void SrcInit(int argc, char **argv)
             // SrcNameID2Txt(name, stSrc.nSource);
             break;
           case 'v':
-            iDataVsn = (short)atoi(arg);       /* version of the data base */
+            iDataVsn = (EssModVsn) atoi(arg);       /* version of the data base */
             break;
 
           case 'R':

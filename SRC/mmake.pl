@@ -33,9 +33,9 @@ $suse_version = $1 if / = (.+)/;
 my @InitObj = qw(init);
 
 # tool objects
-my @Obj = qw(general intersection matrix sample softabort);
+my @Obj = qw(general convert intersection matrix sample softabort);
 
-# modules which need TOOL (init general message)
+# modules which need TOOL (init general convert message)
 my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
@@ -279,7 +279,7 @@ EOS
 
   print OF <<'EOS';
 
-TOOL = init.o general.o message.o softabort.o
+TOOL = init.o general.o convert.o message.o softabort.o
 ITOOL = intersection.o $(TOOL)
 MTOOL = matrix.o $(ITOOL)
 MGTOOL = mathfunctions.o $(MTOOL)
@@ -408,7 +408,7 @@ LINK32=link.exe
 WINLIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib
 LINK32_FLAGS=/nologo /subsystem:console /incremental:no /machine:I386 /opt:ref /opt:icf,5 \
  /libpath:"$(GPATH)" /libpath:"$(GSLPATH)"
-TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
+TOOL="$(IDIR)\init.obj" "$(IDIR)\general.obj" "$(IDIR)\convert.obj" "$(IDIR)\message.obj" "$(IDIR)\softabort.obj"
 ITOOL="$(IDIR)\intersection.obj" $(TOOL)
 MTOOL="$(IDIR)\matrix.obj" $(ITOOL)
 NTOOL="$(IDIR)\mathvector.obj" "$(IDIR)\mathmatrix.obj" "$(IDIR)\mon2D.obj" $(TOOL)

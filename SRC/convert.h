@@ -85,6 +85,9 @@ VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
 
 // Windows and Collimators
 // -----------------------
+void        WndAbs_ID2Txt(char* sText, const VtWndAbs eID);
+VtWndAbs    WndAbs_Txt2ID(const char* sText);
+
 void        Oscill_ID2Txt(char* sText, const VtOscill eID);
 VtOscill    Oscill_Txt2ID(const char* sText);
 
@@ -101,6 +104,19 @@ VtGdeShape GdeShape_Txt2ID(const char* sText);
 
 void        WaviDistr_ID2Txt(char* sText, const VtWaviDistr eID);
 VtWaviDistr WaviDistr_Txt2ID(const char* sText);
+
+void        ListPar_ID2Txt(char* sText, const VtListPar eID);
+VtListPar   ListPar_Txt2ID(const char* sText);
+
+void        ListVbs_ID2Txt(char* sText, const VtListVbs eID);
+VtListVbs   ListVbs_Txt2ID(const char* sText);
+
+void        PlotPar_ID2Txt(char* sText, const VtPlotPar eID);
+VtPlotPar   PlotPar_Txt2ID(const char* sText);
+
+void        PlotFilt_ID2Txt(char* sText, const VtPlotFilt eID);
+VtPlotFilt  PlotFilt_Txt2ID(const char* sText);
+
 
 // Monochromators
 void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID);

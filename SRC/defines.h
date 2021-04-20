@@ -388,6 +388,19 @@ VtTfmnSeq;
 
 // Windows + Collimators
 // ---------------------
+// window absorber material
+typedef enum
+{	
+  VT_WABS_FILE  = 0,
+	VT_WABS_GD    = 1,
+  VT_WABS_CD    = 2,
+	VT_WABS_B10   = 3,
+  VT_WABS_EU    = 4,
+	VT_WABS_SI    = 5,
+  VT_WABS_IDEAL = 6
+}
+VtWndAbs;
+
 // oscillation (of the radial collimator)
 typedef enum
 {	
@@ -396,6 +409,7 @@ typedef enum
 }
 VtOscill;
 
+// Shape of multiple windows
 typedef enum
 {	
 	VT_MWND_AUTO   = 0,
@@ -438,6 +452,71 @@ typedef enum
 	VT_WAVI_GAUSS = 2,
 }
 VtWaviDistr;
+
+// reflection list parameter
+typedef enum
+{	
+	VT_LIST_PASS    =  1,
+	VT_LIST_PASS_LF = -1,
+	VT_LIST_REFL    =  2,
+	VT_LIST_REFL_LF = -2,
+	VT_LIST_T1SR    =  3,
+	VT_LIST_T1SR_LF = -3,
+	VT_LIST_ALL     =  4,
+	VT_LIST_ALL_LF  = -4,
+}
+VtListPar;
+
+// additional output for reflection list
+typedef enum
+{	
+	VT_LSTM_NO   = 0,
+	VT_LSTM_YES  = 1,
+	VT_LSTM_EDGE = 2,
+}
+VtListVbs;
+
+// reflection plot parameter
+typedef enum
+{	
+  KeyNone          =  0,
+  iKeyMode         =  1,
+  iKeyMode0        =  2,
+  iKeyMode5        =  3,
+  iKeyMode10       =  4,
+  dKeyRefCount     =  5,
+  dKeyRefCountY    =  6,
+  dKeyRefCountZ    =  7,
+  iKeyThisCollision=  8,
+  dKeydegangular   =  9,
+  dKeym            = 10,
+  dKeyreflectivity = 11,
+  dKeyDivY         = 12,
+  dKeyDivZ         = 13,
+  iKeyColor        = 14,
+  dKeyTime         = 15,
+  dKeyWavelength   = 16,
+  dKeyProbability  = 17,
+  dKeyPositionX    = 18,
+  dKeyPositionY    = 19,
+  dKeyPositionZ    = 20,
+  dKeyVectorX      = 21,
+  dKeyVectorY      = 22,
+  dKeyVectorZ      = 23,
+  dKeySpinX        = 24,
+  dKeySpinY        = 25,
+  dKeySpinZ        = 26
+}
+VtPlotPar;
+
+// reflection plot filter
+typedef enum
+{	
+	VT_PLOT_ALL  = 0,
+	VT_PLOT_SCAT = 1,
+	VT_PLOT_DIED = 2,
+}
+VtPlotFilt;
 
 
 // Monochromator
@@ -529,11 +608,11 @@ VtDetUse;
 // absorbing detector material
 typedef enum
 {
-  VT_GAS_BF3    = 0,
-  VT_GAS_HE3    = 1,
-  VT_SOLID_CB10 = 2,
-  VT_SOLID_LI6  = 3,
-  VT_ABS_OTHER  = 5
+  VT_GAS_BF3   = 0,
+  VT_GAS_HE3   = 1,
+  VT_SOLID_B10 = 2,
+  VT_SOLID_LI6 = 3,
+  VT_ABS_OTHER = 5
 }
 VtDetAbs;
 
