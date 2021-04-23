@@ -75,11 +75,11 @@ void InitModerator(Moderator*   pMod)
   strcpy(pMod->sLFileName ,"");
   strcpy(pMod->sTFileName ,"");
   strcpy(pMod->sLTFileName,"");
-  pMod->eModType   =COUPLED;
+  pMod->eModType   = COUPLED;
   pMod->TauAscMod  =  0.0;       
   pMod->TauDecMod  =  0.0;        
   pMod->FUAmpMod   =  0.0;          
-  pMod->eIsisTS    =  0;	  
+  pMod->eIsisTS    = VT_NO_TS;	  
   pMod->TotFluxUM  =  0.0;       
   pMod->Chi        =  0.0;             
   pMod->Kappa      =  2.2;           
@@ -424,7 +424,7 @@ double Maxwellian(const double lambda, const double Temp)
 
 	if (Temp > 0.0  &&  lambda > 0.0)
 	{
-		b = pow(1.0e10*H_P, 2) / (2*K*MN);            /* b = h²/(2*k*m_n)  in (1E-10 m)²K */
+		b = pow(1.0e10*H_P, 2) / (2*KB*MN);            /* b = h²/(2*k*m_n)  in (1E-10 m)²K */
 		a = b / Temp;
 		
 		M = 2 * pow(a,2) * exp(-a / pow(lambda,2)) / pow(lambda,5) ;

@@ -16,6 +16,9 @@ extern "C" {
 /******************************/
 // General
 // -------
+void      RndGen_ID2Txt(char* sText, const VtRndGen eID);
+VtRndGen  RndGen_Txt2ID(const char* sText);
+
 void      CompID2Name(char* sName, const McCompID eComp);
 McCompID  Name2CompID(const char* sName);
 
@@ -26,14 +29,14 @@ void      DirType_ID2Txt(char* sText, const VtDirType eID);
 VtDirType DirType_Txt2ID(const char* sText);
 
 
-void     Axis_ID2Txt(char* sText, const VtAxis eID);
-VtAxis   Axis_Txt2ID(const char* sText);
+void      Axis_ID2Txt(char* sText, const VtAxis eID);
+VtAxis    Axis_Txt2ID(const char* sText);
 
-void     Orient_ID2Txt(char* sText, const VtOrient eID);
-VtOrient Orient_Txt2ID(const char* sText);
+void      Orient_ID2Txt(char* sText, const VtOrient eID);
+VtOrient  Orient_Txt2ID(const char* sText);
 
-void     Shape_ID2Txt(char* sText, const VtShape eID);
-VtShape  Shape_Txt2ID(const char* sText);
+void      Shape_ID2Txt(char* sText, const VtShape eID);
+VtShape   Shape_Txt2ID(const char* sText);
 
 void      CompAct_ID2Txt(char* sText, const VtCompAct eID);
 VtCompAct CompAct_Txt2ID(const char* sText);
@@ -51,6 +54,9 @@ VtSrcKind SrcKind_Txt2ID(const char* sText);
 
 void      SrcType_ID2Txt(char* sText, const VtSrcType eID);
 VtSrcType SrcType_Txt2ID(const char* sText); 
+
+void      TS_ID2Txt(char* sText, const VtTS eID);
+VtTS      TS_Txt2ID(const char* sText);
 
 void      ModType_ID2Txt(char* sText, const VtModType eID);
 VtModType ModType_Txt2ID(const char* sText); 

@@ -197,7 +197,7 @@ double spacer=0.0,                 // -s  [cm]   width of the blades dividing th
        MuScat=0.0,                 // -M [1/cm]  total macroscopic scattering cross-section
        MuAbs =0.0,                 // -m [1/cm]  macroscopic absorption cross-section for 1.798 Ang 
        rotplane = 0.0;             // -n  [deg]  rotation angle to create additional planes  (see help file for details)
-VtWaviDistr eWaviDistr=VT_WAVI_RECT; // -q   [-]   shape of the waviness distribution   VT_WAVI_RECT   VT_WAVI_GAUSS
+VtWaviDistr eWaviDistr=VT_WAVI_RECT; //    [-]   shape of the waviness distribution   VT_WAVI_RECT   VT_WAVI_GAUSS
 
 // Reflection list
 char  *ReflParamFileName=NULL;      // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option. 

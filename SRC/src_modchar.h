@@ -29,7 +29,7 @@ typedef struct
 {                         
   double ModTemp;         //     [K]     effective moderator temperature  
   VtModType eModType;     //     [-]     moderator type: coupled, decoupled, ...
-  short  eIsisTS;	        //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2 
+  VtTS   eIsisTS;	        //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2 
   short  nBackground;     //     [-]     index: order of moderators: higher number is in background
   short  nColour;         //     [-]     neutrons leaving this moderator get this colour
   char   bCircle;         //     [-]     flag: circular moderator

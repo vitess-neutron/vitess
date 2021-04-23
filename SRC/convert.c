@@ -16,6 +16,33 @@
 
 // GENERAL
 // ------
+
+// Distribution function  (monochromator, sample_singlecryst)
+void     RndGen_ID2Txt(char* sText, const VtRndGen eID)
+{
+  switch (eID)
+  {
+    case VT_RAN3   : strcpy(sText, "ran3"   ); break;
+    case VT_TAUS   : strcpy(sText, "taus"   ); break;
+    case VT_GFSR4  : strcpy(sText, "gfsr4"  ); break;
+    case VT_MT19937: strcpy(sText, "mt19937"); break;
+    case VT_RANLUX : strcpy(sText, "ranlux" ); break;
+    default        : strcpy(sText, "");
+  }
+}
+VtRndGen  RndGen_Txt2ID(const char* sText)
+{
+  VtRndGen eID=VT_RAN3;
+
+       if (strcmp(sText, "ran3"   )==0) eID=VT_RAN3   ;
+  else if (strcmp(sText, "taus"   )==0) eID=VT_TAUS   ;
+  else if (strcmp(sText, "gfsr4"  )==0) eID=VT_GFSR4  ;
+  else if (strcmp(sText, "mt19937")==0) eID=VT_MT19937;
+  else if (strcmp(sText, "ranlux" )==0) eID=VT_RANLUX ;
+  
+  return eID;
+}
+
 // Module ID      (all modules, internal)
 void     CompID2Name (char* sCompName, const McCompID eComp)
 {
@@ -482,6 +509,26 @@ VtSrcType SrcType_Txt2ID(const char* sText)
   return eID;
 }
 
+// Target station 1 or 2
+void      TS_ID2Txt(char* sText, const VtTS eID)
+{
+  switch (eID)
+  {
+    case VT_TS_1: strcpy(sText, "TS 1"); break;
+    case VT_TS_2: strcpy(sText, "TS 2"); break;
+    default     : strcpy(sText, "");
+  }
+}
+VtTS      TS_Txt2ID(const char* sText)
+{
+  VtTS eID=VT_NO_TS;
+
+       if (strcmp(sText, "TS 1")==0) eID=VT_TS_1;
+  else if (strcmp(sText, "TS 2")==0) eID=VT_TS_2;
+  
+  return eID;
+}
+
 // Type of moderator: coupled, ...
 void      ModType_ID2Txt(char* sText, const VtModType eID)
 {
@@ -507,7 +554,7 @@ VtModType ModType_Txt2ID(const char* sText)
 }
 
 // moderator shape
-void           ModShape_ID2Txt(char* sText, const VtModShape eID)
+void       ModShape_ID2Txt(char* sText, const VtModShape eID)
 {
   switch (eID)
   {
@@ -516,9 +563,9 @@ void           ModShape_ID2Txt(char* sText, const VtModShape eID)
     default           : strcpy(sText, "");
   }
 }
-VtMultWndShape ModShape_Txt2ID(const char* sText)
+VtModShape ModShape_Txt2ID(const char* sText)
 {
-  VtMultWndShape eID=VT_MOD_CIRCLE;
+  VtModShape eID=VT_MOD_CIRCLE;
 
        if (strcmp(sText, "rectangular")==0) eID=VT_MOD_SQUARE;
   else if (strcmp(sText, "circular"   )==0) eID=VT_MOD_CIRCLE;
@@ -586,7 +633,7 @@ void    Trace_ID2Txt(char* sText, const VtTrace eID)
   {
     case WRITE_TRC_FILES: strcpy(sText, "write trace files"      ); break;
     case ONLY_TRC_TRAJ  : strcpy(sText, "only trace trajectories"); break;
-    default             : strcpy(sText, "no");
+    default             : strcpy(sText, "no tracing");
   }
 }
 VtTrace Trace_Txt2ID(const char* sText)
@@ -652,8 +699,8 @@ void        Separator_ID2Txt(char* sText, const VtSeparator eID)
 {
   switch (eID)
   {
-    case VT_BLANK    : strcpy(sText, "Space"    ); break;
-    case VT_TABULATOR: strcpy(sText, "Tabulator"); break;
+    case VT_BLANK    : strcpy(sText, "space"    ); break;
+    case VT_TABULATOR: strcpy(sText, "tabulator"); break;
     default  : strcpy(sText, "");
   }
 }
@@ -661,8 +708,8 @@ VtSeparator Separator_Txt2ID(const char* sText)
 {
   VtSeparator eID=VT_BLANK;
 
-       if (strcmp(sText, "Space"    )==0) eID=VT_BLANK    ;
-  else if (strcmp(sText, "Tabulator")==0) eID=VT_TABULATOR;
+       if (strcmp(sText, "space"    )==0) eID=VT_BLANK    ;
+  else if (strcmp(sText, "tabulator")==0) eID=VT_TABULATOR;
   
   return eID;
 }
@@ -782,25 +829,25 @@ void        GdeWall_ID2Txt(char* sText, const VtGdeWall eID)
 {
   switch (eID)
   {
-    case GW_TOP   : strcpy(sText, "GW_TOP"   ); break;
-    case GW_BOTTOM: strcpy(sText, "GW_BOTTOM"); break;
-    case GW_LEFT  : strcpy(sText, "GW_LEFT"  ); break;
-    case GW_RIGHT : strcpy(sText, "GW_RIGHT" ); break;
-    case GW_EXIT  : strcpy(sText, "GW_EXIT"  ); break;
-    case GW_INIT  : strcpy(sText, "GW_INIT"  ); break;
-    default          : strcpy(sText, "");
+    case GW_TOP   : strcpy(sText, "top"   ); break;
+    case GW_BOTTOM: strcpy(sText, "bottom"); break;
+    case GW_LEFT  : strcpy(sText, "lweft" ); break;
+    case GW_RIGHT : strcpy(sText, "right" ); break;
+    case GW_EXIT  : strcpy(sText, "exit"  ); break;
+    case GW_INIT  : strcpy(sText, "init"  ); break;
+    default       : strcpy(sText, "");
   }
 }
 VtGdeWall   GdeWall_Txt2ID(const char* sText)
 {
   VtGdeWall eID=GW_INIT;
 
-       if (strcmp(sText, "GW_TOP"   )==0) eID=GW_TOP   ;
-  else if (strcmp(sText, "GW_BOTTOM")==0) eID=GW_BOTTOM;
-  else if (strcmp(sText, "GW_LEFT"  )==0) eID=GW_LEFT  ;
-  else if (strcmp(sText, "GW_RIGHT" )==0) eID=GW_RIGHT ;
-  else if (strcmp(sText, "GW_EXIT"  )==0) eID=GW_EXIT  ;
-  else if (strcmp(sText, "GW_INIT"  )==0) eID=GW_INIT  ;
+       if (strcmp(sText, "top"   )==0) eID=GW_TOP   ;
+  else if (strcmp(sText, "bottom")==0) eID=GW_BOTTOM;
+  else if (strcmp(sText, "lweft" )==0) eID=GW_LEFT  ;
+  else if (strcmp(sText, "right" )==0) eID=GW_RIGHT ;
+  else if (strcmp(sText, "exit"  )==0) eID=GW_EXIT  ;
+  else if (strcmp(sText, "init"  )==0) eID=GW_INIT  ;
   
   return eID;
 }
@@ -810,13 +857,13 @@ void        GdeShape_ID2Txt(char* sText, const VtGdeShape eID)
 {
   switch (eID)
   {
-    case VT_CONSTANT : strcpy(sText, "VT_CONSTANT" ); break;
-    case VT_LINEAR   : strcpy(sText, "VT_LINEAR"   ); break;
-    case VT_CURVED   : strcpy(sText, "VT_CURVED"   ); break;
-    case VT_PARABOLIC: strcpy(sText, "VT_PARABOLIC"); break;
-    case VT_ELLIPTIC : strcpy(sText, "VT_ELLIPTIC" ); break;
-    case VT_FROM_FILE: strcpy(sText, "VT_FROM_FILE"); break;
-    case VT_LIN_CURV : strcpy(sText, "VT_LIN_CURV" ); break;
+    case VT_CONSTANT : strcpy(sText, "constant"     ); break;
+    case VT_LINEAR   : strcpy(sText, "linear"       ); break;
+    case VT_CURVED   : strcpy(sText, "curved"       ); break;
+    case VT_PARABOLIC: strcpy(sText, "parabolic"    ); break;
+    case VT_ELLIPTIC : strcpy(sText, "elliptic"     ); break;
+    case VT_FROM_FILE: strcpy(sText, "from file"    ); break;
+    case VT_LIN_CURV : strcpy(sText, "curved+linear"); break;
     default          : strcpy(sText, "");
   }
 }
@@ -824,13 +871,13 @@ VtGdeShape  GdeShape_Txt2ID(const char* sText)
 {
   VtGdeShape eID=VT_CONSTANT;
 
-       if (strcmp(sText, "VT_CONSTANT" )==0) eID=VT_CONSTANT ;
-  else if (strcmp(sText, "VT_LINEAR"   )==0) eID=VT_LINEAR   ;
-  else if (strcmp(sText, "VT_CURVED"   )==0) eID=VT_CURVED   ;
-  else if (strcmp(sText, "VT_PARABOLIC")==0) eID=VT_PARABOLIC;
-  else if (strcmp(sText, "VT_ELLIPTIC" )==0) eID=VT_ELLIPTIC ;
-  else if (strcmp(sText, "VT_FROM_FILE")==0) eID=VT_FROM_FILE;
-  else if (strcmp(sText, "VT_LIN_CURV" )==0) eID=VT_LIN_CURV ;
+       if (strcmp(sText, "constant"     )==0) eID=VT_CONSTANT ;
+  else if (strcmp(sText, "linear"       )==0) eID=VT_LINEAR   ;
+  else if (strcmp(sText, "curved"       )==0) eID=VT_CURVED   ;
+  else if (strcmp(sText, "parabolic"    )==0) eID=VT_PARABOLIC;
+  else if (strcmp(sText, "elliptic"     )==0) eID=VT_ELLIPTIC ;
+  else if (strcmp(sText, "from file"    )==0) eID=VT_FROM_FILE;
+  else if (strcmp(sText, "curved+linear")==0) eID=VT_LIN_CURV ;
   
   return eID;
 }
@@ -840,8 +887,8 @@ void        WaviDistr_ID2Txt(char* sText, const VtWaviDistr eID)
 {
   switch (eID)
   {
-    case VT_WAVI_RECT : strcpy(sText, "VT_RECTANGULAR"); break;
-    case VT_WAVI_GAUSS: strcpy(sText, "VT_GAUSSIAN"   ); break;
+    case VT_WAVI_RECT : strcpy(sText, "rectangular"); break;
+    case VT_WAVI_GAUSS: strcpy(sText, "Gaussian"   ); break;
     default           : strcpy(sText, "");
   }
 }
@@ -849,8 +896,8 @@ VtWaviDistr WaviDistr_Txt2ID(const char* sText)
 {
   VtWaviDistr eID=VT_WAVI_RECT;
 
-       if (strcmp(sText, "VT_RECTANGULAR")==0) eID=VT_WAVI_RECT;
-  else if (strcmp(sText, "VT_GAUSSIAN"   )==0) eID=VT_WAVI_GAUSS  ;
+       if (strcmp(sText, "rectangular")==0) eID=VT_WAVI_RECT;
+  else if (strcmp(sText, "Gaussian"   )==0) eID=VT_WAVI_GAUSS  ;
   
   return eID;
 }
@@ -861,14 +908,14 @@ void        ListPar_ID2Txt(char* sText, const VtListPar eID)
 {
   switch (eID)
   {
-    case VT_LIST_PASS   : strcpy(sText, "Trajectories passing the guide end"                                  ); break;
-    case VT_LIST_PASS_LF: strcpy(sText, "Trajectories passing the guide end (with linefeed)"                  ); break;
-    case VT_LIST_REFL   : strcpy(sText, "Only successful reflections"                                         ); break;
-    case VT_LIST_REFL_LF: strcpy(sText, "Only successful reflections (with linefeed)"                         ); break;
-    case VT_LIST_T1SR   : strcpy(sText, "Trajectories with at least one successful reflection"                ); break;
-    case VT_LIST_T1SR_LF: strcpy(sText, "Trajectories with at least one successful reflection (with linefeed)"); break;
-    case VT_LIST_ALL    : strcpy(sText, "All trajectories"                                                    ); break;
-    case VT_LIST_ALL_LF : strcpy(sText, "All trajectories (with linefeed)"                                    ); break;
+    case VT_LIST_PASS   : strcpy(sText, "Trajectories passing the guide end"     ); break;
+    case VT_LIST_PASS_LF: strcpy(sText, "Trajectories passing the guide end (LF)"); break;
+    case VT_LIST_REFL   : strcpy(sText, "Only successful reflections"            ); break;
+    case VT_LIST_REFL_LF: strcpy(sText, "Only successful reflections (LF)"       ); break;
+    case VT_LIST_T1SR   : strcpy(sText, "Traj. with at least 1 reflection"       ); break;
+    case VT_LIST_T1SR_LF: strcpy(sText, "Traj. with at least 1 reflection (LF)"  ); break;
+    case VT_LIST_ALL    : strcpy(sText, "All trajectories"                       ); break;
+    case VT_LIST_ALL_LF : strcpy(sText, "All trajectories (LF)"                  ); break;
     default             : strcpy(sText, "");
   }
 }
@@ -876,14 +923,14 @@ VtListPar   ListPar_Txt2ID(const char* sText)
 {
   VtListPar eID=VT_LIST_PASS_LF;
 
-       if (strcmp(sText, "Trajectories passing the guide end"                                  )==0) eID=VT_LIST_PASS   ;
-  else if (strcmp(sText, "Trajectories passing the guide end (with linefeed)"                  )==0) eID=VT_LIST_PASS_LF;
-  else if (strcmp(sText, "Only successful reflections"                                         )==0) eID=VT_LIST_REFL   ;
-  else if (strcmp(sText, "Only successful reflections (with linefeed)"                         )==0) eID=VT_LIST_REFL_LF;
-  else if (strcmp(sText, "Trajectories with at least one successful reflection"                )==0) eID=VT_LIST_T1SR   ;
-  else if (strcmp(sText, "Trajectories with at least one successful reflection (with linefeed)")==0) eID=VT_LIST_T1SR_LF;
-  else if (strcmp(sText, "All trajectories"                                                    )==0) eID=VT_LIST_ALL    ;
-  else if (strcmp(sText, "All trajectories (with linefeed)"                                    )==0) eID=VT_LIST_ALL_LF ;
+       if (strcmp(sText, "Trajectories passing the guide end"     )==0) eID=VT_LIST_PASS   ;
+  else if (strcmp(sText, "Trajectories passing the guide end (LF)")==0) eID=VT_LIST_PASS_LF;
+  else if (strcmp(sText, "Only successful reflections"            )==0) eID=VT_LIST_REFL   ;
+  else if (strcmp(sText, "Only successful reflections (LF)"       )==0) eID=VT_LIST_REFL_LF;
+  else if (strcmp(sText, "Traj. with at least 1 reflection"       )==0) eID=VT_LIST_T1SR   ;
+  else if (strcmp(sText, "Traj. with at least 1 reflection (LF)"  )==0) eID=VT_LIST_T1SR_LF;
+  else if (strcmp(sText, "All trajectories"                       )==0) eID=VT_LIST_ALL    ;
+  else if (strcmp(sText, "All trajectories (LF)"                  )==0) eID=VT_LIST_ALL_LF ;
   
   return eID;
 }
@@ -893,9 +940,9 @@ void        ListVbs_ID2Txt(char* sText, const VtListVbs eID)
 {
   switch (eID)
   {
-    case VT_LSTM_NO  : strcpy(sText, "no"            ); break;
-    case VT_LSTM_YES : strcpy(sText, "yes"           ); break;
-    case VT_LSTM_EDGE: strcpy(sText, "entry and exit"); break;
+    case VT_LSTM_NO  : strcpy(sText, "no"          ); break;
+    case VT_LSTM_YES : strcpy(sText, "yes"         ); break;
+    case VT_LSTM_EDGE: strcpy(sText, "entry & exit"); break;
     default          : strcpy(sText, "");
   }
 }
@@ -903,9 +950,9 @@ VtListVbs   ListVbs_Txt2ID(const char* sText)
 {
   VtListVbs eID=VT_LSTM_EDGE;
 
-       if (strcmp(sText, "no"            )==0) eID=VT_LSTM_NO  ;
-  else if (strcmp(sText, "yes"           )==0) eID=VT_LSTM_YES ;
-  else if (strcmp(sText, "entry and exit")==0) eID=VT_LSTM_EDGE;
+       if (strcmp(sText, "no"          )==0) eID=VT_LSTM_NO  ;
+  else if (strcmp(sText, "yes"         )==0) eID=VT_LSTM_YES ;
+  else if (strcmp(sText, "entry & exit")==0) eID=VT_LSTM_EDGE;
   
   return eID;
 }
@@ -915,7 +962,7 @@ void        PlotPar_ID2Txt(char* sText, const VtPlotPar eID)
 {
   switch (eID)
   {
-    case iKeyMode         : strcpy(sText, "Mode"        ); break;
+    case iKeyMode         : strcpy(sText, "Scattered (Mode)"); break;
     case iKeyMode0        : strcpy(sText, "Mode0"       ); break;
     case iKeyMode5        : strcpy(sText, "Mode5"       ); break;
     case iKeyMode10       : strcpy(sText, "Mode10"      ); break;
@@ -941,14 +988,14 @@ void        PlotPar_ID2Txt(char* sText, const VtPlotPar eID)
     case dKeySpinX        : strcpy(sText, "Spin X"      ); break;
     case dKeySpinY        : strcpy(sText, "Spin Y"      ); break;
     case dKeySpinZ        : strcpy(sText, "Spin Z"      ); break;
-    default               : strcpy(sText, "None");
+    default               : strcpy(sText, "none");
   }
 }
 VtPlotPar   PlotPar_Txt2ID(const char* sText)
 {
   VtPlotPar eID=KeyNone;
 
-       if (strcmp(sText, "Mode"        )==0) eID=iKeyMode         ;
+       if (strcmp(sText, "Scattered (Mode)")==0) eID=iKeyMode         ;
   else if (strcmp(sText, "Mode0"       )==0) eID=iKeyMode0        ;
   else if (strcmp(sText, "Mode5"       )==0) eID=iKeyMode5        ;
   else if (strcmp(sText, "Mode10"      )==0) eID=iKeyMode10       ;
@@ -983,9 +1030,9 @@ void        PlotFilt_ID2Txt(char* sText, const VtPlotFilt eID)
 {
   switch (eID)
   {
-    case VT_PLOT_ALL : strcpy(sText, "All"           ); break;
-    case VT_PLOT_SCAT: strcpy(sText, "Only scattered"); break;
-    case VT_PLOT_DIED: strcpy(sText, "Only died"     ); break;
+    case VT_PLOT_ALL : strcpy(sText, "all"           ); break;
+    case VT_PLOT_SCAT: strcpy(sText, "only scattered"); break;
+    case VT_PLOT_DIED: strcpy(sText, "only died"     ); break;
     default           : strcpy(sText, "");
   }
 }
@@ -993,9 +1040,9 @@ VtPlotFilt  PlotFilt_Txt2ID(const char* sText)
 {
   VtPlotFilt eID=VT_PLOT_ALL;
 
-       if (strcmp(sText, "All"           )==0) eID=VT_PLOT_ALL ;
-  else if (strcmp(sText, "Only scattered")==0) eID=VT_PLOT_SCAT;
-  else if (strcmp(sText, "Only died"     )==0) eID=VT_PLOT_DIED;
+       if (strcmp(sText, "all"           )==0) eID=VT_PLOT_ALL ;
+  else if (strcmp(sText, "only scattered")==0) eID=VT_PLOT_SCAT;
+  else if (strcmp(sText, "only died"     )==0) eID=VT_PLOT_DIED;
   
   return eID;
 }

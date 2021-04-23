@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
     /* load wavelength distribution and time distribution of pulse */
     if(strlen(pMod->sLTFileName) > 0)
     { 
-      if (pMod->eIsisTS > 0) 
+      if (pMod->eIsisTS > VT_NO_TS) 
       {
         // set up ISIS specific parameters and values
         FILE* IFptr;
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
         fprintf(LogFilePtr,"Isis moderator - target station %d \n", pMod->eIsisTS);
 
         // normalisation of ISIS data, which are for 60 µA, and division through frequency
-        if (pMod->eIsisTS == 1)
+        if (pMod->eIsisTS == VT_TS_1)
           IsisNorm = 160.0/60.0/40.0;  // 60 µA -> 160 µA;   40 Hz
         else
           IsisNorm =  40.0/60.0/10.0;  // 60 µA ->  40 µA;   10 Hz
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
       else
       {
         // calculate ISIS specific Solid Angle correction
-        if (pMod->eIsisTS > 0)
+        if (pMod->eIsisTS > VT_NO_TS)
         {
           SolAngle=strArea(pMod->Width/100.0, pMod->Height/100.0,
                            pMod->DistModWnd/100.0, WindowWidth/100.0, WindowHeight/100.0);
@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
       /* case: flux(lambda,t) was given in a file */
       if (strlen(pMod->sLTFileName) > 0)
       {
-        if (pMod->eIsisTS > 0)
+        if (pMod->eIsisTS > VT_NO_TS)
         {
           // try and give flux in n/s/cm2
           pMod->TotFluxMod = ISISflux*3.744905847e14*1.1879451;
@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
       }
 
       /* MC choice of wavelength and starting time */
-      if (pMod->eIsisTS > 0)
+      if (pMod->eIsisTS > VT_NO_TS)
       {
         ISISgetpoint(&Input.Time, &Input.Wavelength);
       }
@@ -675,7 +675,7 @@ int main(int argc, char *argv[])
          if(strlen(pMod->sLTFileName) > 0) 
          {
             // case: flux(lambda,t) was given in a file
-            if (pMod->eIsisTS > 0) 
+            if (pMod->eIsisTS > VT_NO_TS) 
                prob = IsisNorm * TS.Total * 3.744905847e14 * 1.1879451 * SolAngle * WindowWidth * WindowHeight * stSrc.PulseFreq / NumberOfNeutrons;
             else
                prob = stFluxLT[imod].pDisFct(Input.Wavelength, TimeAtModerator) / stFluxLT[imod].Int * pMod->NormInt;
@@ -888,7 +888,7 @@ short ModInit(int argc, char **argv)
         switch(argv[i][2]) // mod free          :     b B   C     e E      g G   H     j J   K l L m M n N   O   P q Q   R         u   v           y   z                                
         {
           case 'S':
-            stMod[iM].eIsisTS = (short) atoi(arg);     //    [-]    Isis Target station: 1  or  2
+            stMod[iM].eIsisTS = (VtTS) atoi(arg);     //    [-]    Isis Target station: 1  or  2
             break;
           case 't':
             stMod[iM].eModType= (VtModType) atoi(arg); //    [-]    moderator type 
@@ -1822,9 +1822,9 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       }   // end for loop over lines (index i)	
   			
       /* ISIS normalisation: FU/proton -> FU */
-      if (pFluxLT->Int < 1.0 && pMod->eIsisTS > 0) 
+      if (pFluxLT->Int < 1.0 && pMod->eIsisTS > VT_NO_TS) 
       {	
-        double fact = pMod->eIsisTS == 1 ? 1.8e-04 / E_C : 0.6e-04 / E_C;
+        double fact = pMod->eIsisTS == VT_TS_1 ? 1.8e-04 / E_C : 0.6e-04 / E_C;
   	      
         for (i=0; i < pFluxLT->nLines; i++)
           for (j=0; j < pFluxLT->nColumns; j++)

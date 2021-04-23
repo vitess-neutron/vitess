@@ -7,7 +7,7 @@
 
 #define MN          1.6749284E-27
 #define G           9.80665
-#define K           1.380662E-23
+#define KB          1.380662E-23
 #define NA          6.022137E23
 #define H_P         6.6260696E-34
 #define L_2_E       81805.048
@@ -73,6 +73,18 @@ typedef double DoublePair[2];
 
 // General
 // -------
+
+// Random number generator
+typedef enum
+{
+  VT_RAN3    = 1, 
+  VT_TAUS    = 2,
+  VT_GFSR4   = 3,
+  VT_MT19937 = 4,
+  VT_RANLUX  = 5 
+}
+VtRndGen;
+
 // Module ID
 typedef enum
 {
@@ -294,13 +306,22 @@ typedef enum
 }
 VtSrcType;
 
+// Target station
+typedef enum
+{
+  VT_NO_TS=0,
+  VT_TS_1 =1,
+  VT_TS_2 =2
+}
+VtTS;
+
 typedef enum
 {
   NO_MOD_TYPE=0,
   POISONED   =1,   /* moderator decoupled poisoned        */
   DECOUPLED  =2,   /* moderator decoupled unpoisoned      */
   COUPLED    =3,   /* moderator coupled                   */
-  MULT_SPEC  =4   /* effective spectrum of a moderator consisting of a cold and thermal part      */
+  MULT_SPEC  =4    /* effective spectrum of a moderator consisting of a cold and thermal part      */
 }
 VtModType;
 

@@ -1115,9 +1115,6 @@ set specoptAdd {
   {keyabut radio no {"abutment\nloss"
     "Neutrons hitting the surface close to the connection of guide segments are absorbed." "" a}
     {yes no} {1 0}}
-  {wavi_dis radio rectangular {"waviness\ndistr."
-    "Distribution of waviness 1: rectangular (given value is maximal value)   2: Gaussian (given value is rms value)." "" q}
-    {rectangular Gaussian} {1 2}}
   {eval_colour int -1 {
     "color" "color necessary for the trajectory to be treated\ncolor -1 means: all trajectories are treated.\nNot machting neutrons will stay unchanged and passed to the next module." "" g} -1 32768}
   {addtocolor int 0 {
@@ -2368,7 +2365,7 @@ set nA {
   {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 set nnA {
-  {withbin radio no {"normalize\nwith binsize" "If activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis." "" f} {no yes} {0 1}}
+  {withbin radio no {"normalize" "'no': intensities of the neutron trajctories are only distributed into channels\n'binsize': intensities are normalized to the channel width\n'reference file': intensities are divided by those in the reference file" "" f} {no binsize "reference file"} {0 1 2}}
   {all_files radio no {"all files" "if 'yes' files containing all trajectories and those of colour 0, 1, 2, ... 'colour' are generated simultaneously\nif 'no' only one file containing trajectories of colour 'colour' is generated" "" c} {no yes} {0 1}}
 }
 
