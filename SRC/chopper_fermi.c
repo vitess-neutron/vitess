@@ -47,7 +47,6 @@
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_CHOP_FERMI;
 
 int	       Option, CurvGeomOption, GatesNumber, zerotime=0;
 long       NumOut, Nchannels;
@@ -80,6 +79,7 @@ int main(int argc, char **argv)
 {
   /* Initialize the program according to the parameters given  */
   /* --------------------------------------------------------  */
+  _eModule = MCN_CHOP_FERMI;
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.19");
 	OwnInit(argc, argv);

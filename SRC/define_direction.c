@@ -18,6 +18,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "init.h"
 #include "matrix.h"
 
 
@@ -38,7 +39,6 @@ static double GetDbl  (const char* s);  // Reads double value from stdin
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID _eModule=MCN_TOOL_DEF_DIR;
 
 char   cMode, sBuffer[129];
 int    i;
@@ -50,6 +50,7 @@ double theta, phi, angZ, angY, rotangX, rotangY, rotangZ, dir[3], dLength, MX[3]
 /******************************/
 int main(int argc, char **argv)
 {
+  _eModule=MCN_TOOL_DEF_DIR;
 newdef:
   do
   {	

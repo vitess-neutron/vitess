@@ -11,6 +11,10 @@
 #define MAXWORKER 32
 #define MOD_NAME_LEN  20   // length of module name
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char*    sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
 extern McCompID _eModule;       /* ID of the module                */
@@ -126,6 +130,10 @@ extern gsl_rng * vit_gsl_rng;
 #  define DEBUG_OUT(...) (void)0
 # endif
 # undef DODEBMACRO
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
