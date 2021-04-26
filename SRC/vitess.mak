@@ -74,7 +74,6 @@ ALL : \
 	"$(OD)\gener_pipe.exe" \
 	"$(OD)\opt_sim.exe" \
 	"$(OD)\chopper_disc.exe" \
-	"$(OD)\chopper_fermi.exe" \
 	"$(OD)\chopper_fermi_parallel.exe" \
 	"$(OD)\collimator.exe" \
 	"$(OD)\slit.exe" \
@@ -470,13 +469,6 @@ SOURCE=$(SPATH)\chopper_disc.c
 
 "$(OD)\chopper_disc.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_disc.obj" "$(OD)\bender_inter_data.obj"
 	$(LINK32) $(ML) /pdb:"$(OD)\chopper_disc.pdb" /out:"$(OD)\chopper_disc.exe" "$(IDIR)\chopper_disc.obj" $(ITOOL) "$(OD)\bender_inter_data.obj" 
-
-SOURCE=$(SPATH)\chopper_fermi.c
-"$(IDIR)\chopper_fermi.obj" : $(SOURCE)
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-"$(OD)\chopper_fermi.exe" : "$(OD)" $(ITOOL) "$(OD)\chopper_fermi.obj"
-	$(LINK32) $(ML) /pdb:"$(OD)\chopper_fermi.pdb" /out:"$(OD)\chopper_fermi.exe" "$(IDIR)\chopper_fermi.obj" $(ITOOL) 
 
 SOURCE=$(SPATH)\chopper_fermi_parallel.c
 "$(IDIR)\chopper_fermi_parallel.obj" : $(SOURCE)

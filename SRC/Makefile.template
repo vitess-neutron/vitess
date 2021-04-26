@@ -36,7 +36,6 @@ spin_reset \
 capture_flux \
 runtime \
 chopper_disc \
-chopper_fermi \
 chopper_fermi_parallel \
 collimator_soller \
 collimator \
@@ -53,13 +52,12 @@ eval_elast \
 eval_elast2 \
 eval_inelast \
 frame \
-guide \
 guide_parallel \
+guide_elliptic \
 monitorpol_1d \
 monitorpol_pos \
 monochr_analyser \
 polariser_sm \
-polariser_sm_parallel \
 polariser_he3 \
 flipper_coil \
 pol_mirror \
@@ -83,7 +81,6 @@ sample_sans \
 sample_environment \
 bender \
 visual \
-sm_ensemble \
 sm_ensemble_parallel \
 dist_time \
 chop_phases \
@@ -162,6 +159,9 @@ source : source.c src_modchar.c source_csns.c $(ITOOL)
 guide_parallel : guide_parallel.c threadHelper.c $(MTOOL)
 	$(CC) -pthread -o $@ $^ $(LIBS)
 
+guide_elliptic : guide_elliptic.c $(GTOOL)
+	$(CC) -o $@ $^ $(LIBS)
+
 frame : frame.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -210,9 +210,6 @@ slit : slit.c $(ITOOL)
 sm_ensemble_parallel : sm_ensemble_parallel.c threadHelper.c cpgplot.c $(MTOOL)
 	$(CC) -pthread -o $@ $^ $(GRALIB)
 
-chopper_fermi : chopper_fermi.c $(ITOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
 mon2_posdiv : mon2_posdiv.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
@@ -258,20 +255,11 @@ eval_inelast : eval_inelast.c $(MTOOL)
 standard_deviation : standard_deviation.c 
 	$(CC) -o $@ $^ $(LIBS)
 
-guide : guide.c $(MTOOL)
-	$(CC) -o $@ $^ $(LIBS)
-
-sm_ensemble : sm_ensemble.c cpgplot.c $(MTOOL)
-	$(CC) -o $@ $^ $(GRALIB)
-
 writeout : writeout.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
 
 runtime : runtime.c $(TOOL)
 	$(CC) -o $@ $^ $(LIBS)
-
-polariser_sm_parallel : polariser_sm_parallel.c threadHelper.c $(MTOOL)
-	$(CC) -pthread -o $@ $^ $(LIBS)
 
 precessionfield : precessionfield.c magneticmap.c $(MTOOL)
 	$(CC) -o $@ $^ $(LIBS)
