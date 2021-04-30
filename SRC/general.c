@@ -777,9 +777,10 @@ long LinesInFile(FILE *pIn)
   char Buffer[CHAR_BUF_LARGE]="";
   long NumLines=0;
 
-  rewind(pIn);
   if (pIn!=NULL)
-  { while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
+  { 
+    rewind(pIn);
+    while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
       NumLines++;
     rewind(pIn);
   }

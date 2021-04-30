@@ -6,195 +6,255 @@
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Module Monitor</title>
 </head>
-  <body>
+<body>
 
-<h2>VITESS Monitor Modules</h2>
+  <h2>VITESS Monitor Modules</h2>
 
-<p>
-The <b>monitor</b> modules are needed to obtain information about the <b>wavelength</b>, <b>time</b>, <b>divergence</b> or 
-<b>position </b>(y-z-plane) dependent <b>intensity or polarization distribution</b> of the neutron output given from the previous modules. 
-They write the intensity or average polarization according to the segmentation of the interval of interest as ASCII data to the monitor file. 
-So the data of these file can be visualised by any graphics tool, e.g. 'Origin', or one can try to use the plot facilities of the VITESS GUI. 
-The monitor module do not influence the neutron stream to the following modules, unless the option '<i>exclusive counts</i>' is activated (see below).<br/>
-<br/>
-There are different kinds of monitors:<br/>
-- The modules <b>mon1_a</b> allow to plot intensity (n/s) as a function of the parameter '<i>a</i>' in a 1D plot <br/> &ensp;
-  they exist for time, wavelength, energy, hor. position (y), vert. position (z), hor. diverg. (div-y), vert. diverg. (div-z) and radial diverg. (div-y-z)<br/>
-- The modules <b>monpol_a</b> allow to plot polarization as a function of the parameter '<i>a</i>' in a 1D plot <br/> &ensp;
-  they exist for time, wavelength, hor. position (y), vert. position (z), hor. diverg. (div-y) and vert. diverg. (div-z)<br/>
-- The generic module <b>monitor1D</b> allows to plot intensity (n/s) or polarisation as a function of any parameter, including color, in a 1D plot. <br/>
-<br/>
-- The modules <b>mon2_ab</b> allow to plot intensity (n/s) as a function of the parameter '<i>a</i>' and '<i>b</i>' in a 2D plot <br/> &ensp;
-  they exist for the combinations (y - z), (div-y - div-z), (ky - kz), (TOF - wavelength), (wavelength - div-y/div-z), (y - div-y), (z - div-z), (radius - div-y-z)<br/>
-- The modules <b>monitorpol_pos</b> allows to plot polarization as a function of hor. and vert. pos (x - y)  in a 2D plot<br/>
-- The generic module <b>monitor2D</b> allows to plot intensity or polarisation as a function of any combination of 2 parameters, including color, in a 2D plot <br/>
-<br/>
-- The module <b>mon_brilliance</b> plots the brilliance (in n/(cm<sup>2</sup>s&Aring; sterad)) in a given time, position, wavelength and divergenz range in a 1D plot<br/> &ensp;
-  The variable parameter can be: time, wavelength, y- or z-position, diy-y, div-z or div-y-z.<br/>
-</p>
-<br/>
-<br/>
-
-
-<h2>VITESS Modules Mon1_x, Mon2_y, Monpol_z, Monitorpol_pos</h2>
-
-<h4>For the specialized 1- or 2-dimensional monitors, the following information has to be given as input</h4>
-
-<p>
- <b>monitor file name</b><br/>
- <br/>
- <b>number of bins</b> <br/>
-   the interval to be considered (e.g. the wavelength range) will be partitioned into number of bins segments of equal size.<br/>
-   In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br/>
- <br/>
- <b>colour</b> only for 1-dim monitors <br/>
-   if colour is -1, the intensity of all trajectories is displayed <br/>
-   if colour is greater equal 0 only the trajectories of that colour are taken into account <br/>
- <br/>
- <b>normalise with binsize</b> only for 1-dim monitors <br/>
-   if activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis.<br/>
- <br/>
- <b>all files</b> only for 1-dim monitors <br/>
-   if "yes" the intensity of all trajectories is displayed in the given monitor file and additionally
-   files containing intensities of colour 0, 1, 2, ... 'colour' are written.<br/>
-   if "no", only one file containing trajectories of the given colour is generated
- <br/>
- <b>minimal value, maximal value</b> <br/> 
-   the values defining the interval of interest.<br/>
- <br/>
- <b>probability weight</b><br/>
-   if one deactivates the probability weight each neutron is considered with the weight 1, otherwise (default) the attributed probabilities 
-   (due to the operations of the modules before) are considered.<br/>
- <br/>
- <b>exclusive counts</b><br/>
-   if activated, only those neutrons which have been monitored successfully are transferred to the subsequent module
-   (e.g. the wavelength of the neutron lies in the monitored wavelength interval and it is not taken our because of filters - see below) <br/>
- <br/>
- <b>filters</b> like <b> filter lambda, filter Y pos, begin and  end of evaluation</b> varying from monitor to monitor<br/>
-   only neutrons arriving in that time interval are considered in the evaluation<br/>
- <br/>
- <b>analysis direction</b> only for monitoring polarization<br/> 
-   in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br/>
- <br/>
- <b>file format</b>: only for 2-dim monitors <br/>
- Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.<br/>
-</p>
-<br/>
-<br/>
-
-<h2>VITESS Modules Monitor1D and Monitor2D</h2>
-
-The module <b>monitor1D</b> allows to plot any of the following parameters in a 1D plot.
-The module <b>monitor2D</b> allows to plot arbitrary combinations of following parameters against each other in a 2D plot:
-<p> 
-  <b>position </b> in the y-z plane: <b>pos_y</b> and  <b>pos_z</b>
-</p>
-<p> 
-  <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
-</p>
-<p> 
-  <b>wavelength</b>
-</p>
-<p> 
-  <b>energy</b>
-</p>
-<p>
-  <b>time</b>
-</p>
-<p>
-  <b>wave vector</b> in the y-z plane:  <b>k_y</b> and <b>k_z</b>, defined as k_y(z) = (div_y(z) * 2 * pi) / lambda
-</p>
-<p>
-  <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
-</p>
-<p>
-  <b>Color</b>: This is useful if modules modified the color parameter. In particular, guides can change the color of a trajectory with each reflection. At the same time, the monitor1D and monitor2D modules can distinguish between reflections in the horizontal and vertical plane, if needed.
-</p>
-<p> 
-  Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
-  filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
-  applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
-</p>
-<p> 
-  Additional input needed by the module:
-</p>
-<p>
-  <b>Probability weight</b>: if one deactivates the probability weight each neutron<br/>
-  is considered with the weight 1, otherwise (default) the attributed<br/>
-  probabilities (due to the operations of the modules before) are considered.<br/>
-</p>
-<p>
-  <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br/>
-  successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled )
-  are transferred to the subsequent module. <br/>
-</p>
-<p> 
-  <b>analysis direction</b> only for monitoring polarization 
-  in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br/>
-</p>
-<p> 
-  <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
-</p>
-<br/>
-<br/>
-
-<h2>VITESS Module Mon_brilliance</h2>
-<p>
-For continuous sources the brilliance calculated is always a time averaged brilliance. 
-Therefore, time interval and frequency have to be left blank. 
-If the time averaged brilliance shall be calculated for pulsed sources, they have to be left blank as well.
-Otherwise, the brilliance is calculated as the brilliance in the given time range and needs to be normalized by the frequency. 
-<br/>
-Depending on the existence of a reference file, the monitor file contains either the brilliance [n/(cm<sup>2</sup> s sterad &Aring]
-or the brilliance transfer, i.e. the fraction of the brilliance that is transferred from source (or another reference point)
-to the position of the actual brilliance monitor. To get correct result, the brilliance monitors should be identical.
-<br/>
-Average and peak brilliance - the maximal value found in the brilliance monitor file and the average value, i.e. the sum divided by the number
-of bins - are written to the log file.
-<p>
- <b>monitor file</b><br/>
-   Name of the file containing the brilliance or the brilliance transfer (see below) as a function of the variable parameter <br/>
- <br/>
- <b>reference file</b><br/>
-   Name of the file containing the brilliance relative to which the brilliance transfer is calculated. 
-   'Monitor file' contains the brilliance transfer in this case. <br/>
- <br/>
- <b>flux file</b><br/>
-If a file name is given here, one line is written or added to this file, which contains the following numbers:
-mean wavelength (=center of the wavelength range), mean y-position and z-position, mean horizontal, vertical and radial divergence
-and average and peak brilliance (see above).
-This can be used calculate the brilliance as a function of a second parameter in running a series of simulation.
- <br/>
- <br/>
- <b>number of bins</b> <br/>
-   the interval to be considered (e.g. the wavelength range) will be partitioned into number of bins segments of equal size.<br/>
-   In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br/>
- <br/>
- <b>colour</b> <br/>
-   if colour is -1, the intensity of all trajectories is displayed <br/>
-   if colour is greater or equal 0 only the trajectories of that colour are considered <br/>
- <br/>
- <b>variable parameter</b> <br/>
-   the brilliance is monitored as a function of this parameter <br/>
- <br/>
- <b>ranges (min_lambda, max_lambda, .... up bound radial div)</b> <br/>
-   neutrons are only monitored if their properties are within all given ranges <br/>
-   the parameter defined by '<i>var. parameter</i>' is divided in '<i>number of bins</i> channels <br/>
- <br/>
- <b>frequency</b> <br/>
-   source frequency in case of a pulsed source (necessary to calculate from time averaged to actual brilliance <br/>
-</p>
-<br/>
-<br/>
+  <p>
+    The <b>monitor</b> modules are needed to obtain information about the <b>wavelength</b>, <b>time</b>, <b>divergence</b> or
+    <b>position </b>(y-z-plane) dependent <b>intensity or polarization distribution</b> of the neutron beam at the position whrer it is placed.
+    They write the intensity or average polarization as a function of the chosen parameter(s) as ASCII data into the monitor file.
+    So the data of these file can either be visualised by the tool implemented in VITESS or by any graphics tool.
+    The monitor module do not influence the neutron beam, unless the option '<i>exclusive counts</i>' is activated (see below).<br />
+    <br />
+    There are different kinds of monitors:<br />
+    - The modules <b>mon1_a</b> allow to plot intensity (n/s) as a function of the parameter '<i>a</i>' in a 1D plot <br /> &ensp;
+    they exist for time, wavelength, energy, hor. position (y), vert. position (z), hor. diverg. (div-y), vert. diverg. (div-z) and radial diverg. (div-y-z)<br />
+    - The modules <b>monpol_a</b> allow to plot polarization as a function of the parameter '<i>a</i>' in a 1D plot <br /> &ensp;
+    they exist for time, wavelength, hor. position (y), vert. position (z), hor. diverg. (div-y) and vert. diverg. (div-z)<br />
+    - The generic module <b>monitor1D</b> allows to plot intensity (n/s) or polarisation as a function of any parameter, including color, in a 1D plot. <br />
+    <br />
+    - The modules <b>mon2_ab</b> allow to plot intensity (n/s) as a function of the parameter '<i>a</i>' and '<i>b</i>' in a 2D plot <br /> &ensp;
+    they exist for the combinations (y - z), (div-y - div-z), (ky - kz), (TOF - wavelength), (wavelength - div-y/div-z), (y - div-y), (z - div-z), (radius - div-y-z)<br />
+    - The modules <b>monitorpol_pos</b> allows to plot polarization as a function of hor. and vert. pos (x - y)  in a 2D plot<br />
+    - The generic module <b>monitor2D</b> allows to plot intensity or polarisation as a function of any combination of 2 parameters, including color, in a 2D plot <br />
+    <br />
+    - The module <b>mon_brilliance</b> plots the brilliance (in n/(cm<sup>2</sup>s&Aring; sterad)) in a given time, position, wavelength and divergenz range in a 1D plot<br /> &ensp;
+    The variable parameter can be: time, wavelength, y- or z-position, diy-y, div-z or div_rad (=div-y-z) or energy.<br />
+  </p>
+  <br />
+  <br />
 
 
-<hr/><a href="vitess.html">Back to VITESS overview</a> <br/>
+  <h2>VITESS Modules Mon1_x, Mon2_y, Monpol_z, Monitorpol_pos</h2>
+
+  <p>
+    Practically all monitor functions are available using the generic monitors <b>monitor1D</b> or <b>monitor2D</b> or the brilliance monitor.
+    However, mon1, mon2_pos and mon2_div will be kept in the future. The others are not supported anymore and will not be ported to VITESS 4.
+  </p>
+
+  <h3>Parameters for module 'mon1'</h3>
+  <p>
+    <table cellpadding="2" cellspacing="2" border="1" width="100%">
+      <tbody>
+        <tr>
+          <td valign="top"><b>Parameter<br> Unit<br></b></td>
+          <td valign="top"><b>Description<br>      </b></td>
+          <td valign="top"><b>Range or Values<br>  </b></td>
+          <td valign="top"><b>Command Option<br>   </b></td>
+        </tr>
+
+        <tr>
+          <td valign="top">monitor file</td>
+          <td valign="top"></td>
+          <td valign="top">   </td>
+          <td valign="top">-O </td>
+        </tr>
+
+        <tr>
+          <td valign="top">entrance height<br>exit height<br>[cm]    </td>
+          <td valign="top">entrance and exit height of the collimator</td>
+          <td valign="top">&gt;= 0       </td>
+          <td valign="top">-h<br>-H      </td>
+        </tr>
+
+        <tr>
+          <td valign="top">length<br>[cm]<br>       </td>
+          <td valign="top">length of the collimator </td>
+          <td valign="top">&gt;= 0  </td>
+          <td valign="top">-l       </td>
+        </tr>
+
+        <tr>
+          <td valign="top">number of channels            </td>
+          <td valign="top">number of collimator channels </td>
+          <td valign="top">&gt;= 1 </td>
+          <td valign="top">-n      </td>
+        </tr>
+
+        <tr>
+          <td valign="top">blade width<br />[cm]</td>
+          <td valign="top">thickness of the material dividing the collimator into channels</td>
+          <td valign="top">&gt;= 0 </td>
+          <td valign="top">-s      </td>
+        </tr>
+      </tbody>
+    </table>
+  <p>
+
+
+
+
+
+
+
+
+  <p>
+    <b>monitor file name</b><br />
+    <br />
+    <b>number of bins</b> <br />
+    the interval to be considered (e.g. the wavelength range) will be partitioned into number of bins segments of equal size.<br />
+    In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br />
+    <br />
+    <b>colour</b> only for 1-dim monitors <br />
+    if colour is -1, the intensity of all trajectories is displayed <br />
+    if colour is greater equal 0 only the trajectories of that colour are taken into account <br />
+    <br />
+    <b>normalise with binsize</b> only for 1-dim monitors <br />
+    if activated, in each channel count-rate and standard deviation are normalised with the binsize on the wavelength, time-of-flight, etc axis.<br />
+    <br />
+    <b>all files</b> only for 1-dim monitors <br />
+    if "yes" the intensity of all trajectories is displayed in the given monitor file and additionally
+    files containing intensities of colour 0, 1, 2, ... 'colour' are written.<br />
+    if "no", only one file containing trajectories of the given colour is generated
+    <br />
+    <b>minimal value, maximal value</b> <br />
+    the values defining the interval of interest.<br />
+    <br />
+    <b>probability weight</b><br />
+    if one deactivates the probability weight each neutron is considered with the weight 1, otherwise (default) the attributed probabilities
+    (due to the operations of the modules before) are considered.<br />
+    <br />
+    <b>exclusive counts</b><br />
+    if activated, only those neutrons which have been monitored successfully are transferred to the subsequent module
+    (e.g. the wavelength of the neutron lies in the monitored wavelength interval and it is not taken our because of filters - see below) <br />
+    <br />
+    <b>filters</b> like <b> filter lambda, filter Y pos, begin and  end of evaluation</b> varying from monitor to monitor<br />
+    only neutrons arriving in that time interval are considered in the evaluation<br />
+    <br />
+    <b>analysis direction</b> only for monitoring polarization<br />
+    in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br />
+    <br />
+    <b>file format</b>: only for 2-dim monitors <br />
+    Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.<br />
+  </p>
+  <br />
+  <br />
+
+  <h2>VITESS Modules Monitor1D and Monitor2D</h2>
+
+  The module <b>monitor1D</b> allows to plot any of the following parameters in a 1D plot.
+  The module <b>monitor2D</b> allows to plot arbitrary combinations of following parameters against each other in a 2D plot:
+  <p>
+    <b>position </b> in the y-z plane: <b>pos_y</b> and  <b>pos_z</b>
+  </p>
+  <p>
+    <b>divergence </b> in the y-z plane: <b>div_y</b> and  <b>div_z</b>
+  </p>
+  <p>
+    <b>wavelength</b>
+  </p>
+  <p>
+    <b>energy</b>
+  </p>
+  <p>
+    <b>time</b>
+  </p>
+  <p>
+    <b>wave vector</b> in the y-z plane:  <b>k_y</b> and <b>k_z</b>, defined as k_y(z) = (div_y(z) * 2 * pi) / lambda
+  </p>
+  <p>
+    <b>position </b> in the the cylindrical r-phi (corresponding to y-z) plane: <b>r</b> and <b>phi</b>
+  </p>
+  <p>
+    <b>Color</b>: This is useful if modules modified the color parameter. In particular, guides can change the color of a trajectory with each reflection. At the same time, the monitor1D and monitor2D modules can distinguish between reflections in the horizontal and vertical plane, if needed.
+  </p>
+  <p>
+    Moreover, two of the above parameters, in addition to the neutron wavelength, can be used as
+    filters in order to restrict the parameter space shown in the plot. If desired, polarisation analysis can be
+    applied, in which the average neutron spin component parallel to the analysis direction will be plotted in each bin of the diagram.
+  </p>
+  <p>
+    Additional input needed by the module:
+  </p>
+  <p>
+    <b>Probability weight</b>: if one deactivates the probability weight each neutron<br />
+    is considered with the weight 1, otherwise (default) the attributed<br />
+    probabilities (due to the operations of the modules before) are considered.<br />
+  </p>
+  <p>
+    <b>Exclusive counts</b>: if activated, only those neutrons which have been monitored<br />
+    successfully (both parameters under study lie within the considered value range and all filter conditions are fulfilled )
+    are transferred to the subsequent module. <br />
+  </p>
+  <p>
+    <b>analysis direction</b> only for monitoring polarization
+    in case of monitoring polarization distributions it is represented by a vector in cartesian coordinates <br />
+  </p>
+  <p>
+    <b>File format</b>: Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.
+  </p>
+  <br />
+  <br />
+
+  <h2>VITESS Module Mon_brilliance</h2>
+  <p>
+    For continuous sources the brilliance calculated is always a time averaged brilliance.
+    Therefore, time interval and frequency have to be left blank.
+    If the time averaged brilliance shall be calculated for pulsed sources, they have to be left blank as well.
+    Otherwise, the brilliance is calculated as the brilliance in the given time range and needs to be normalized by the frequency.
+    <br />
+    Depending on the existence of a reference file, the monitor file contains either the brilliance [n/(cm<sup>2</sup> s sterad &Aring]
+    or the brilliance transfer, i.e. the fraction of the brilliance that is transferred from source (or another reference point)
+    to the position of the actual brilliance monitor. To get correct result, the brilliance monitors should be identical.
+    <br />
+    Average and peak brilliance - the maximal value found in the brilliance monitor file and the average value, i.e. the sum divided by the number
+    of bins - are written to the log file.
+  <p>
+    <b>monitor file</b><br />
+    Name of the file containing the brilliance or the brilliance transfer (see below) as a function of the variable parameter <br />
+    <br />
+    <b>reference file</b><br />
+    Name of the file containing the brilliance relative to which the brilliance transfer is calculated.
+    'Monitor file' contains the brilliance transfer in this case. <br />
+    <br />
+    <b>flux file</b><br />
+    If a file name is given here, one line is written or added to this file, which contains the following numbers:
+    mean wavelength (=center of the wavelength range), mean y-position and z-position, mean horizontal, vertical and radial divergence
+    and average and peak brilliance (see above).
+    This can be used calculate the brilliance as a function of a second parameter in running a series of simulation.
+    <br />
+    <br />
+    <b>number of bins</b> <br />
+    the interval to be considered (e.g. the wavelength range) will be partitioned into number of bins segments of equal size.<br />
+    In the case of position, one can give a different number of bins for each direction of the y-z-plane for obtaining a rectangular segmentation.<br />
+    <br />
+    <b>colour</b> <br />
+    if colour is -1, the intensity of all trajectories is displayed <br />
+    if colour is greater or equal 0 only the trajectories of that colour are considered <br />
+    <br />
+    <b>variable parameter</b> <br />
+    the brilliance is monitored as a function of this parameter <br />
+    <br />
+    <b>ranges (min_lambda, max_lambda, .... up bound radial div)</b> <br />
+    neutrons are only monitored if their properties are within all given ranges <br />
+    the parameter defined by '<i>var. parameter</i>' is divided in '<i>number of bins</i> channels <br />
+    <br />
+    <b>frequency</b> <br />
+    source frequency in case of a pulsed source (necessary to calculate from time averaged to actual brilliance <br />
+  </p>
+  <br />
+  <br />
+
+
+  <hr /><a href="vitess.html">Back to VITESS overview</a> <br />
   <a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a>
-<p><!-- hhmts start --><font size="-1">Last modified: </font>Mon Jun 30 17:24:23
- MEST 2003 G. Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  --> </font><!-- hhmts end -->
- </p>
-  <br/>
-  <br/>
- <br/>
+  <p>
+    <!-- hhmts start --><font size="-1">Last modified: </font>Mon Jun 30 17:24:23
+    MEST 2003 G. Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  --> </font><!-- hhmts end -->
+  </p>
+  <br />
+  <br />
+  <br />
 </body>
 </html>

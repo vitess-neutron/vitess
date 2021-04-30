@@ -2365,7 +2365,7 @@ set nA {
   {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
 }
 set nnA {
-  {withbin radio no {"normalize" "'no': intensities of the neutron trajctories are only distributed into channels\n'binsize': intensities are normalized to the channel width\n'reference file': intensities are divided by those in the reference file" "" f} {no binsize "reference file"} {0 1 2}}
+  {withbin radio no {"normalize\n(by binsize)" "'no': intensities of the neutron trajctories are only distributed into channels\n'yes': intensities are normalized to the channel width\n'reference file': intensities are divided by those in the reference file" "" f} {no yes "reference file"} {0 1 2}}
   {all_files radio no {"all files" "if 'yes' files containing all trajectories and those of colour 0, 1, 2, ... 'colour' are generated simultaneously\nif 'no' only one file containing trajectories of colour 'colour' is generated" "" c} {no yes} {0 1}}
 }
 

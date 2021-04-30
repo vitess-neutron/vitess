@@ -499,6 +499,8 @@ void OwnInit(int argc, char *argv[])
 /*******************************************************/
 void OpenFiles()
 {
+  short bHeader=YES;
+
   // opens reference file if needed
   if (eBrlNorm==BRL_TRANSF)
   { if (RefFileName!=NULL)
@@ -513,15 +515,25 @@ void OpenFiles()
     }
   }
 
-  // opens flux file
+  // opens flux file and writes header 
   if (FluxFileName!=NULL)
-  { pFileFlux = OpenOutputFile(FluxFileName, FALSE, "at");
+  { 
+    pFileFlux = OpenOutputFile(FluxFileName, FALSE, "rt");
     if (pFileFlux!=NULL)
-    { if (ColumnsInFile(pFileFlux)==0)
+    { 
+      if (LinesInFile(pFileFlux) > 0)
+        bHeader=NO;
+      fclose(pFileFlux);
+    }
+
+    pFileFlux = OpenOutputFile(FluxFileName, FALSE, "at");
+    if (pFileFlux!=NULL)
+    {
+      if (bHeader==YES)
       {
-        fprintf(pFileFlux, "    lambda      y_pos      z_pos      div_y      div_z     div_rad      brl_avrg        brl_peak         brl_period     \n");
-        fprintf(pFileFlux, "     [Ang]      [cm]       [cm]       [deg]      [deg]      [deg]  [n/(cm²s Ang sr)] [n/(cm²s Ang sr)] [n/(cm²s Ang sr)]\n");
-        fprintf(pFileFlux, "------------------------------------------------------------------------------------------------------------------------\n");
+        fprintf(pFileFlux, "#   lambda      y_pos      z_pos      div_y      div_z     div_rad      brl_avrg        brl_peak         brl_period     \n");
+        fprintf(pFileFlux, "#    [Ang]      [cm]       [cm]       [deg]      [deg]      [deg]  [n/(cm²s Ang sr)] [n/(cm²s Ang sr)] [n/(cm²s Ang sr)]\n");
+        fprintf(pFileFlux, "# ----------------------------------------------------------------------------------------------------------------------\n");
       }
     }
     else

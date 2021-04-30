@@ -601,16 +601,16 @@ void UpdateMon(int jMon, long iBndl)
       if (Norm[iBin]!=0)
       { 
         if (ePar==MON_DIV_YZ) 
-          fprintf(pFile, "%12.5f  %14.7e %14.7e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]/(double)nRot);
+          fprintf(pFile, "%10.3f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]/(double)nRot);
         else
-          fprintf(pFile, "%12.5f  %14.7e %14.7e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]);
+          fprintf(pFile, "%10.3f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]);
       }
       else
       { 
         if (ePar==MON_DIV_YZ) 
-          fprintf(pFile, "%12.5f   0.0000000E+00  0.0000000E+00        0.00\n", xBin);
+          fprintf(pFile, "%10.3f   0.0000000E+00  0.0000000E+00        0.00\n", xBin);
         else
-          fprintf(pFile, "%12.5f   0.0000000E+00  0.0000000E+00        0\n",    xBin);
+          fprintf(pFile, "%10.3f   0.0000000E+00  0.0000000E+00        0\n",    xBin);
       }
 
       if (jMon==ANY_COLOR)
