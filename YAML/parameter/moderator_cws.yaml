@@ -1,0 +1,131 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+
+Moderator:
+  - ModName :
+      descr:   "name"
+      type:    "string"
+      column:  0                #0-2
+
+  - eShape  :                   #   [-]    enum: moderator shape: RECTANGULAR CIRCULAR 
+      type:    "combo" 
+      descr:   "shape"
+      tooltip: "moderator shape"
+      default: ["circular", "rectangular"] 
+      column:  0                     
+      prefix:  "-s"    
+
+  - Diameter:                   #   [cm]   diameter of the moderator 
+      type:    "float" 
+      descr:   "diameter [cm]"
+      tooltip: "diameter of the moderator"
+      default: 2.0
+      column:  0                     
+      prefix:  "-r"     
+  - Width   :                   #   [cm]   width  of the moderator 
+      type:    "float" 
+      descr:   "width [cm]"
+      tooltip: "width of the moderator"
+      column:  1                     
+      prefix:  "-w" 
+  - Height  :                   #   [cm]   height of the moderator 
+      type:    "float" 
+      descr:   "height [cm]"
+      tooltip: "height of the moderator"
+      column:  2                     
+      prefix:  "-h"     
+    
+  - CntrX   :                   #   [cm]   x coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center x [cm]"
+      tooltip: "x coordinate of the center of the moderator"
+      default: 0.0
+      column:  0                     
+      prefix:  "-X"     
+  - CntrY   :                   #   [cm]   y coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center y [cm]"
+      tooltip: "y coordinate of the center of the moderator"
+      default: 0.0
+      column:  1                    
+      prefix:  "-Y"    
+  - CntrZ   :                   #   [cm]   z coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center z [cm]"
+      tooltip: "z coordinate of the center of the moderator"
+      default: 0.0
+      column:  2                     
+      prefix:  "-Z"
+
+  - Order   :                   #   [-]    spatial order of the moderator (the higher the number the more it is in the background) 
+      type:    "int" 
+      descr:   "spatial order"
+      tooltip: "spatial order of the moderator (the higher the number the more it is in the background)"
+      column:  0                     
+      prefix: "-o" 
+  - Color   :                   #   [-]    the trajectories can be marked by this 'color' to identify the moderator of origin 
+      type:    "int" 
+      descr:   "color"
+      tooltip: "the trajectories can be marked by this 'color' to identify the moderator of origin"
+      min:    -1
+      column:  1                     
+      prefix: "-c" 
+  - Current :                   #  [n/s]   Moderator current (only useful if moderator flux is zero) 
+      type:    "float" 
+      descr:   "current [n/s]"
+      tooltip: "Average moderator current (only useful if moderator flux is zero)"
+      column:  2                     
+      prefix: "-I"     
+     
+  - Flux    :                   # [n/cm²/s] Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength 
+      type:    "float" 
+      descr:   "total flux mod.\n[n/cm²/s]"
+      tooltip: "Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength"
+      min:     0.0
+      default: 1.0e13
+      column:  0                     
+      prefix: "-F"    
+  - Temp    :                   #   [K]    temperature of a Maxwellian distribution 
+      type:    "float" 
+      descr:   "temperature [K]"
+      tooltip: "Temperature of a Maxwellian distribution"
+      min:      0.1
+      default: 50.0
+      column:   1                   
+      prefix: "-T"      
+     
+  - Flux    :                   # [n/cm²/s] Time averaged flux of the under-moderated neutrons on the moderator surface into 2*pi integrated over wavelength 
+      type:    "float" 
+      descr:   "total flux UM\n[n/cm²/s]"
+      tooltip: "Time averaged flux of the under-moderated neutrons on the moderator surface into 2*pi integrated over wavelength"
+      min:     0.0
+      default: 0.0
+      column:  0                     
+      prefix: "-f"    
+  - Chi    :                    # [1/Ang]  Factor for the wavelength dependence of under-moderated neutrons 
+      type:    "float" 
+      descr:   "wavelength factor UM\n [1/Ang]"
+      tooltip: "Factor for the wavelength dependence of under-moderated neutrons, typically 0.9 for cold neutrons and 2.5 for thermal neutrons"
+      default: 0.9
+      column:  1                   
+      prefix: "-x"      
+  - Kappa:                      #   [-]    Scaling factor for the flux of under-moderated neutrons 
+      type:    "float" 
+      descr:   "Scaling factor UM"
+      tooltip: "Scaling factor for the flux of under-moderated neutrons"
+      default: 2.2
+      column:  2                     
+      prefix: "-k"      
+
+  - LmbdFile:                   #   [-]    file containing the wavelength distribution function 
+      type:    "file" 
+      descr:   "wavelength\ndist file"
+      tooltip: "File containing the wavelength distribution function"
+      prefix: "-W"     
