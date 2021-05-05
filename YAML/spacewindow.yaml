@@ -1,0 +1,139 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+spacewindow:
+  - Name    : 
+      type:    "string"
+      descr:   "name" 
+  - Distance:                 # -l    0.0  [cm]  Distance from origin to the window (along the x-axis) 
+      type:    "float" 
+      descr:   "distance to\nwindow [cm]" 
+      tooltip: "distance from origin to window (along the x-axis)"
+      default: 0.0
+      min:     0.0
+      column:  0                     
+      prefix:  "-l"   
+  - eCircWnd:                 # -R   VtShape  Shape_Txt2ID(const char* sText)  
+      type:    "combo" 
+      descr:   "window shape"  
+      tooltip: "shape of the aperture" 
+      default: ["rectangular","circular"]   
+      column:  1                     
+      prefix:  "-R"   
+
+  - Title_cir: 
+      type:    "title"
+      default: "circular window coordinates" 
+  - Radius  :                 # -r    0.0  [cm]  radius of circular window                             
+      type:    "float" 
+      descr:   "radius" 
+      tooltip: "radius of circular window"
+      min:     0.0
+      column:  0                     
+      prefix:  "-r"   
+  - CntrY   :                 # -y    0.0  [cm]  y coordinate: center of window                        
+      type:    "float" 
+      descr:   "center y" 
+      tooltip: "y coordinate: center of window"
+      default: 0.0
+      column:  1                     
+      prefix:  "-y"   
+  - CntrZ   :                 # -z    0.0  [cm]  z coordinate: center of window                        
+      type:    "float" 
+      descr:   "center z"  
+      tooltip: "z coordinate: center of window"
+      default: 0.0 
+      column:  2                     
+      prefix:  "-z"   
+
+  - Title_rect : 
+      type:    "title"
+      default: "rectangular window coordinates" 
+  - Wmin    :                 # -w    0.0  [cm]  y-coordinate: lower frame value of rectangular window 
+      type:    "float" 
+      descr:   "min. y [cm]"  
+      tooltip: "y-coordinate: lower frame value of rectangular window" 
+      column:  0                     
+      prefix:  "-w"   
+  - Wmax    :                 # -W    0.0  [cm]  y-coordinate: higher frame value of rectangular window
+      type:    "float" 
+      descr:   "max. y [cm]" 
+      tooltip: "y-coordinate: higher frame value of rectangular window"
+      column:  1                     
+      prefix:  "-W" 
+  - Hmin    :                 # -h    0.0  [cm]  z-coordinate: bottom of rectangular window            
+      type:    "float" 
+      descr:   "min. z [cm]"  
+      tooltip: "z-coordinate: bottom of rectangular window"  
+      column:  0                     
+      prefix:  "-h"   
+  - Hmax    :                 # -H    0.0  [cm]  z-coordinate: top of rectangular window               
+      type:    "float" 
+      descr:   "max. z [cm]" 
+      tooltip: "z-coordinate: top of rectangular window" 
+      column:  1                     
+      prefix:  "-H"   
+  - RotAng  :                 # -A    0.0  [deg] Rotation angle
+      type:    "float" 
+      descr:   "rot. angle [deg]"  
+      tooltip: "Rotation angle of the rectangular window (see Help file for details)"
+      column:  2                     
+      prefix:  "-A"   
+
+ 
+  - Title_add : 
+      type:    "title"
+      default: "Co-ordinate system" 
+  - bPFrame:                  # -F   NO    [-]   Flag: use previous frame        TRUE: yes, FALSE no
+      type:    "switch" 
+      descr:   "used previous\nframe"  
+      tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window plane (default)"
+      default: NO 
+      column:  0                     
+      prefix:  "-F"   
+
+  - Title_out : 
+      type:    "title"
+      default: "Outer Material" 
+  - eMatrial:                 # -c IDEAL_ABS VtWndAbs   WndAbs_Txt2ID(const char* sText)
+      type:    "combo" 
+      descr:   "frame material"  
+      tooltip: "Material used for the absorbing window frame"
+      default: ["ideal absorber", "from file", "gadolinium", "cadmium", "bor10", "europium", "silicon"]
+      column:  1                     
+      prefix:  "-c" 
+  - ThickOut:                 # -t    0.0  [cm]  thickness of the frame material    
+      type:    "float" 
+      descr:   "thickness of\nframe [cm]" 
+      tooltip: "Thickness of the material used for the absorbing window frame" 
+      min:     0.0
+      column:  0                     
+      prefix:  "-t"   
+  - FileOut :                 # -C   NULL   [-]  file describing the transmission of the window frame material
+      type:    "file" 
+      descr:   "transmission\nfile" 
+      tooltip: "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)"
+      prefix:  "-C"
+
+  - Title_in : 
+      type:    "title"
+      default: "Inner Material" 
+  - ThickIn :                 # -T    0.0  [cm]  thickness of the pane material      
+      type:    "float" 
+      descr:   "thickness of\nwindow [cm]"  
+      tooltip: "Thickness of the material used for the window pane"
+      min:     0.0
+      column:  0                     
+      prefix:  "-T"    
+  - FileIn  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window
+      type:    "file" 
+      descr:   "transmission\n file"  
+      tooltip: "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)"
+      prefix:  "-m"   
+
