@@ -1,17 +1,20 @@
 #include "parameter.h"
 #include "ui_parameter.h"
 #include <fstream>
+#include <QTextStream>
 
 using namespace YAML;
 using namespace std;
 
-Parameter::Parameter(QWidget *parent) :
+Parameter::Parameter(QStringList dirs, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Parameter)
 {
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     ui->setupUi(this);
     ui->numberEdit->setValidator(new QIntValidator(1,20,this));
+    instrumentInDir = dirs[0];
+    instrumentOutDir = dirs[1];
 }
 
 Parameter::~Parameter()
@@ -76,6 +79,8 @@ void Parameter::designParameterWin(QString filename)
 void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 {
     //configure parameter window
+    if (!modulName.contains("moderator",Qt::CaseInsensitive))
+        ui->numWidget->hide();
     int iGritRow = 0;
     int index = 0;
     QLabel *headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
@@ -127,7 +132,7 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 
 void Parameter::browseBut_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentInDir);
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
@@ -162,16 +167,21 @@ void Parameter::on_pushSave_clicked()
 {
     //save parameter values in file
     QFileInfo fileinfo(initFile);
-    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instrumentDir,
-                                                    tr("YAML (*.yaml *.yml)"));
+    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instrumentOutDir,
+                                                    tr("YAML(*.yaml) (*.yaml)"));
+    if (fileName.isEmpty()) return;
+    if (!fileName.endsWith(".yaml"))
+        fileName += ".yaml";
     QFile file(fileName);
     if (!file.open(QFile::ReadWrite | QFile::Text))
     {
         QMessageBox::information(this,"Warning cannot open: ",fileName);
+        fileName = "";
         return;
     }
     //stream to write to file
     ofstream fout(fileName.toStdString());       // using namespace std
+
     //write yaml file
     YAML::Node config;
     for (int i=0; i<ui->stackedWidget->count(); i++)
@@ -192,6 +202,8 @@ void Parameter::on_pushSave_clicked()
 
 void Parameter::loadFile(QString fileName)
 {
+    QFileInfo fileinfo(fileName);
+    instrumentOutDir = fileinfo.path();
     YAML::Node config = YAML::LoadFile(fileName.toStdString());
     YAML::Node config_paramWin = config[config.begin()->first.as<string>()];
     for (unsigned i=1; i < config_paramWin.size(); i++)

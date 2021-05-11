@@ -2,6 +2,7 @@
 #include "ui_chrystanalyzer.h"
 #include <QProcess>
 #include <iostream>
+#include <QMessageBox>
 
 Chrystanalyzer::Chrystanalyzer(QStringList modulSpec,QWidget *parent) :
     QWidget(parent),
@@ -27,12 +28,11 @@ void Chrystanalyzer::on_Cancel_clicked()
 void Chrystanalyzer::on_Execute_clicked()
 {
     QString cmd = vdir +"/MODULES/"+ ui->cmdEdit->text();
-    std::cout << cmd.toStdString() << std::endl;
     QProcess *toolProcess = new QProcess();
     toolProcess->start(cmd);
     if (!toolProcess->waitForStarted())
     {
-       std::cout << "Error with start cas_v40" << std::endl;
+       QMessageBox::warning(this,"Error in start process: ",cmd);
        return;
     }
 

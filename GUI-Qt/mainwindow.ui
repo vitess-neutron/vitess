@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1210</width>
-    <height>865</height>
+    <height>870</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -100,12 +100,20 @@
           <property name="text">
            <string>Check</string>
           </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/check_circle_green-24px.svg</normaloff>images/check_circle_green-24px.svg</iconset>
+          </property>
          </widget>
         </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="pushDryrun">
           <property name="text">
            <string>Dryrun</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-start-2.png</normaloff>images/media-playback-start-2.png</iconset>
           </property>
          </widget>
         </item>
@@ -114,12 +122,20 @@
           <property name="text">
            <string>Start</string>
           </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-start.png</normaloff>images/media-playback-start.png</iconset>
+          </property>
          </widget>
         </item>
         <item row="2" column="0" colspan="2">
          <widget class="QPushButton" name="pushVisual">
           <property name="text">
            <string>Visualization</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/utilities-system-monitor.png</normaloff>images/utilities-system-monitor.png</iconset>
           </property>
          </widget>
         </item>
@@ -128,12 +144,20 @@
           <property name="text">
            <string>Stop</string>
           </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-stop.png</normaloff>images/media-playback-stop.png</iconset>
+          </property>
          </widget>
         </item>
         <item row="3" column="1">
          <widget class="QPushButton" name="pushKill">
           <property name="text">
            <string>Kill</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/process-stop.png</normaloff>images/process-stop.png</iconset>
           </property>
          </widget>
         </item>
@@ -382,130 +406,157 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <property name="topMargin">
-       <number>10</number>
+     <widget class="QWidget" name="outputWidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>200</height>
+       </size>
       </property>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Maximum</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushBig">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Big</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushClear">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushSave">
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Save</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Maximum</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <spacer name="verticalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Preferred</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>80</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QTextBrowser" name="textBrowser">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>180</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Maximum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushBig">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Big</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushClear">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushSave">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Maximum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>80</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QTextBrowser" name="textBrowser">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>180</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -515,7 +566,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>28</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -631,6 +682,34 @@
      <addaction name="actionCryst_Analayzer_Spectrom_2"/>
      <addaction name="actionCompute_Chopper_Phases_2"/>
     </widget>
+    <widget class="QMenu" name="menuModules_1">
+     <property name="title">
+      <string>Modules A-L</string>
+     </property>
+     <addaction name="actionguide"/>
+     <addaction name="actionguide_2"/>
+    </widget>
+    <widget class="QMenu" name="menuModules_4">
+     <property name="title">
+      <string>Modules S-Z</string>
+     </property>
+     <addaction name="actionsource"/>
+     <addaction name="actionspace"/>
+     <addaction name="actionspacewindow"/>
+     <addaction name="actionvelselect"/>
+    </widget>
+    <widget class="QMenu" name="menuModules_2">
+     <property name="title">
+      <string>Modules M</string>
+     </property>
+     <addaction name="actionmonitor1"/>
+    </widget>
+    <widget class="QMenu" name="menuModules_3">
+     <property name="title">
+      <string>Modules N-R</string>
+     </property>
+     <addaction name="actionpolariser_sm"/>
+    </widget>
     <addaction name="actionGeneral_Information"/>
     <addaction name="actionTutorial"/>
     <addaction name="actionUser_Interface"/>
@@ -639,10 +718,10 @@
     <addaction name="actionVisualization"/>
     <addaction name="actionOptimization"/>
     <addaction name="menuHelpTools"/>
-    <addaction name="actionModules_A_L"/>
-    <addaction name="actionModules_M"/>
-    <addaction name="actionModules_N_R"/>
-    <addaction name="actionModules_S_Z"/>
+    <addaction name="menuModules_1"/>
+    <addaction name="menuModules_2"/>
+    <addaction name="menuModules_3"/>
+    <addaction name="menuModules_4"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -985,26 +1064,6 @@
     <string>Xcontrol</string>
    </property>
   </action>
-  <action name="actionModules_A_L">
-   <property name="text">
-    <string>Modules A-L</string>
-   </property>
-  </action>
-  <action name="actionModules_M">
-   <property name="text">
-    <string>Modules M</string>
-   </property>
-  </action>
-  <action name="actionModules_N_R">
-   <property name="text">
-    <string>Modules N-R</string>
-   </property>
-  </action>
-  <action name="actionModules_S_Z">
-   <property name="text">
-    <string>Modules S-Z</string>
-   </property>
-  </action>
   <action name="action1000">
    <property name="checkable">
     <bool>true</bool>
@@ -1205,6 +1264,46 @@
   <action name="actionCompute_Chopper_Phases_2">
    <property name="text">
     <string>Compute Chopper Phases</string>
+   </property>
+  </action>
+  <action name="actionguide">
+   <property name="text">
+    <string>frame</string>
+   </property>
+  </action>
+  <action name="actionguide_2">
+   <property name="text">
+    <string>guide</string>
+   </property>
+  </action>
+  <action name="actionspace">
+   <property name="text">
+    <string>space</string>
+   </property>
+  </action>
+  <action name="actionspacewindow">
+   <property name="text">
+    <string>spacewindow</string>
+   </property>
+  </action>
+  <action name="actionmonitor1">
+   <property name="text">
+    <string>monitor1</string>
+   </property>
+  </action>
+  <action name="actionsource">
+   <property name="text">
+    <string>source</string>
+   </property>
+  </action>
+  <action name="actionvelselect">
+   <property name="text">
+    <string>velselect</string>
+   </property>
+  </action>
+  <action name="actionpolariser_sm">
+   <property name="text">
+    <string>polariser_sm</string>
    </property>
   </action>
  </widget>

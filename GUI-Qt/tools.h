@@ -15,7 +15,7 @@
 #include <QMap>
 #include <iostream>
 #include <fstream>
-
+#include "convert.h"
 #include "string.h"
 #include "yaml-cpp/yaml.h"
 
@@ -23,7 +23,7 @@
 static QStringList typeList = {"file","string", "float", "int", "combo","switch","window"};
 static QStringList strList;
 static QString instrumentDir;
-
+static QString instrumentInDir, instrumentOutDir;
 static QMap<QString,QString> mapParam = {
     {"type", ""},
     {"descr", ""},

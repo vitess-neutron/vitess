@@ -13,7 +13,7 @@ class Parameter : public QWidget
     Q_OBJECT
 
 public:
-    explicit Parameter(QWidget *parent = nullptr);
+    explicit Parameter(QStringList dirs, QWidget *parent = nullptr);
     ~Parameter();
     QMap<QString, QMap<QString,QString>> mapModule;
     void designParameterWin(QString filename);

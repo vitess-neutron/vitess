@@ -142,6 +142,7 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
 void pythonScript(QString instrumentDir, QStringList cmdList, QString logfile)
 {
     QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  python script as",instrumentDir);
+    if (fileName == "") return;
     if (!fileName.endsWith(".py")) fileName += ".py";
     QFile file(fileName);
     file.open(QFile::WriteOnly | QFile::Text);
@@ -158,13 +159,13 @@ void pythonScript(QString instrumentDir, QStringList cmdList, QString logfile)
          " f.close\n";
     fout << "cmd = \"" << cmdList.join(" | ").toStdString() << " --Fno_file\"\n" ;
     fout << "os.system( \"export GSL_RNG_SEED='1' GSL_RNG_TYPE='ran3' ;\" + cmd )\n";
-    //fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', 'C:/tmp/logfile')";
     fout << "pwrite('" << instrumentDir.toStdString() << "/result.txt', '" << logfile.toStdString() << "')";
 }
 
 void shellScript(QString instrumentDir, QStringList cmdList, QString logfile)
 {
     QString fileName = QFileDialog::getSaveFileName(nullptr,"Save  shell script as",instrumentDir);
+    if (fileName == "") return;
     if (!fileName.endsWith(".sh")) fileName += ".sh";
     QFile file(fileName);
     file.open(QFile::WriteOnly | QFile::Text);
@@ -172,8 +173,6 @@ void shellScript(QString instrumentDir, QStringList cmdList, QString logfile)
     std::ofstream fout(fileName.toStdString());
     fout << "#!/bin/sh\n";
     fout <<  cmdList.join(" | ").toStdString() << " --Fno_file\n" ;
-//    fout << "cat C:/tmp/logfile? > " << instrumentDir.toStdString() << "/result.txt\n";
-//    fout << "cat C:/tmp/logfile?? >> " << instrumentDir.toStdString() << "/result.txt\n";
     fout << "cat " << logfile.toStdString() << "? > " << instrumentDir.toStdString() << "/result.txt\n";
     fout << "cat " << logfile.toStdString() << "?? >> " << instrumentDir.toStdString() << "/result.txt\n";
 }

@@ -40,10 +40,11 @@ MainWindow::MainWindow(QWidget *parent) :
     VitessDir = QApplication::applicationDirPath().
                left(QApplication::applicationDirPath().lastIndexOf("/"));
     //If Application is under debug or release
-    if (!QDir(  VitessDir+"/yaml/").exists())
+    if (!QDir(  VitessDir+"/YAML/").exists())
         VitessDir = VitessDir.left(VitessDir.lastIndexOf("/"));
-    instrumentDir = VitessDir;
-    QDir directory (VitessDir+"/yaml/");
+    instrumentInDir = VitessDir;
+    instrumentOutDir = instrumentInDir;
+    QDir directory (VitessDir+"/YAML/");
 
     QStringList modulList;
     // List of all configuration yaml files
@@ -56,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
        QFile file(modulFile);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
-        QMessageBox::information(this,"Warning cannot open: ",modulFile);
+        QMessageBox::information(this,"Warning cannot open Modul initfile: ",modulFile);
         return;
        }
        //load yaml file
@@ -77,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
        //map of modulname and map of modulparameter and their definitions
        mapVitess[modulList[i]] = mapModule;
+
     }
 
     //table to select moduls
@@ -114,7 +116,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionGenerate_Series,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
     foreach(QAction * act, ui->menuHelpTools->actions())
         connect(act,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
+
+    for (int i=1; i<5; i++)
+    {
+        QMenu *modMenu = this->findChild<QMenu *>("menuModules_"+QString::number(i));
+        foreach(QAction * act, modMenu->actions())
+          connect(act,SIGNAL(triggered()),this,SLOT(helpModules_triggered()));
+    }
+    t = new QTimer(this);
+    connect(t, SIGNAL(timeout()),this,SLOT(testActive()));
+
+    //Dialog for big output window
+    bigOutput = new Big();
+    connect(bigOutput,SIGNAL(small()),
+                         this,SLOT(showTextBrowser()));
+    connect(bigOutput,SIGNAL(clear()),
+                         this,SLOT(on_pushClear_clicked()));
+    connect(this,SIGNAL(big(QString)),
+                         bigOutput,SLOT(setBrowserText(QString)));
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -187,6 +208,7 @@ void MainWindow::removeModule(int row)
     ui->stackedWidget->show();
 }
 
+
 //Insert module in module table
 void MainWindow::insertModule(int row)
 {
@@ -202,120 +224,82 @@ void MainWindow::insertModule(int row)
     ui->stackedWidget->show();
 }
 
+
 //Menue load instrument
 void MainWindow::on_actionLoad_triggered()
 {
 
-   instrumentName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir,
-                                                 tr("YAML (*.yaml *.yml)"));
-   QFileInfo fileinfo(instrumentName);
-   ui->InstName->setText(fileinfo.baseName());
-   QFile file(instrumentName);
-   if (!file.open(QFile::ReadOnly | QFile::Text))
-   {
-       QMessageBox::information(this,"Load Instrumnet","Warning cannot open: ",instrumentName);
-       return;
-   }
-   QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                 "Load Instrument",
-                                 "Set default directory to\n"+ fileinfo.path(),
-                                 QMessageBox::Yes|QMessageBox::No);
-   //set new working dir
-   if (reply == QMessageBox::Yes) instrumentDir=fileinfo.path();
-   modultab->cleanModules();
-   while ( ui->stackedWidget->count() > 0 )
-        ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
-
-   //get yaml instrument configuration
-   YAML::Node pipe = YAML::LoadFile(instrumentName.toStdString());
-
-   config = pipe[pipe.begin()->first.as<string>()];
-
-   for(unsigned int ipipe = 0; ipipe < config.size();ipipe++)
-   {
-     for(YAML::const_iterator it=config[ipipe].begin(); it!=config[ipipe].end(); ++it)
-     {
-       configChildren.reset();
-       configChildren = it->second;
-       //get module name
-       QString module = QString::fromStdString(it->first.as<string>());
-       if (module == "GlobalParameters")
-          loadHeader(configChildren);
-       else
-       {
-           //put module in tabelle, this sends signal changedComboVal and
-           //slot changeModulWidget is executed
-           if (configChildren["disabled"])
-               modultab->disableFlag[int(ipipe-1)]=true;
-           modultab->loadModule(module);
-           //put values in gui
-           pasteCurModul(configChildren, ui->stackedWidget->count()-1);
-       }
-     }
-   }
-   file.close();
-   modultab->setDisabled();
-   //to do: error case
-   ui->textBrowser->setText("Successfully loaded intrument:  "+fileinfo.baseName());
+   QString fName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentInDir,
+                                                 tr("*.yml (*.yml)"));
+   if (fName != "") loadInstrument(fName);
 }
 
+//Save instrument
 void MainWindow::on_actionSave_triggered()
 {
     if (instrumentName == "")                          //no filename set
     {
-        instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument",instrumentDir,
-                                                     "Files (*.yaml *.yml)");
+        QString instName = QFileDialog::getSaveFileName(this,"Save Instrument",instrumentInDir,
+                                                     "YML(*.yml) (*.yml)");
+        if (instName.isEmpty())return;
+        else instrumentName = instName;
         //filename without extension
-        if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
-           instrumentName += ".yml";
+        if (!instrumentName.endsWith(".yml")) instrumentName += ".yml";
     }
     saveFile(instrumentName);
 }
 
+//Save instrument as
 void MainWindow::on_actionSave_as_triggered()
 {
 
-    instrumentName = QFileDialog::getSaveFileName(this,"Save Instrument as",instrumentDir,
-                                                  tr("Files (*.yaml *.yml)"));
-    if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
-        instrumentName += ".yml";
+    QString instName = QFileDialog::getSaveFileName(this,"Save Instrument as",instrumentInDir,
+                                                  tr("YML(*.yml) (*.yml)"));
+    if (instName.isEmpty())return;
+    else instrumentName = instName;
+    if (!instrumentName.endsWith(".yml")) instrumentName += ".yml";
     saveFile(instrumentName);
     ui->textBrowser->append("Instrument is saved as: " +instrumentName);
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
 }
 
+
+//New instrument
 void MainWindow::on_actionNewInst_triggered()
 {
 
     ui->pushFresh->clicked();
     ui->textBrowser->clear();
-
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
 }
 
+
+//Exit
 void MainWindow::on_actionExit_triggered()
 {
     QApplication::closeAllWindows();
 }
 
+
+//General information
 void MainWindow::on_actionGeneral_Information_triggered()
 {
-
     //open seperat help dialog
     Help *help_general = new Help(this);
     help_general->defaultHelp();
     help_general->show();
-
 }
+
 
 void MainWindow::on_actionTutorial_triggered()
 {
     //open pdf in webbrowser
     QDesktopServices::openUrl(QUrl(VitessDir+"/WWW/tutorial.pdf"));     // tutorial.pdf
-
 }
 
+//Fresh modul table
 void MainWindow::on_pushFresh_clicked()
 {
-
     modultab->cleanModules();
     while ( ui->stackedWidget->count() > 0 )
          ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
@@ -323,31 +307,33 @@ void MainWindow::on_pushFresh_clicked()
     ui->InstName->setText(instrumentName);
 }
 
+
 void MainWindow::on_pushClear_clicked()
 {
     ui->textBrowser->clear();
 }
 
+
 void MainWindow::on_pushSave_clicked()
 {
     //save textbrowser content to file
-    QString logFile = QFileDialog::getSaveFileName(this,"Save logfile as",instrumentDir,
+    QString logFile = QFileDialog::getSaveFileName(this,"Save logfile as",instrumentOutDir,
                                                    tr("Files (*.*)"));
     QFile file(logFile);
     if (!file.open(QFile::WriteOnly | QFile::Text))        //open file
     {
-        QMessageBox::warning(this,"cannot open logFile: ",logFile);
+        QMessageBox::warning(this,"Save Output","Warning cannot open logfile: ",logFile);
         return;
     }
     ofstream fout(logFile.toStdString());          // std::ofstream
     fout << ui->textBrowser->toPlainText().toStdString();
     file.close();
-
 }
 
+
+//Dryrun
 void MainWindow::on_pushDryrun_clicked()
 {
-
 // Start a dry run.
 // A dry run is a pipe execution with few neutron trajectories.
     ui->pushCheck->clicked();
@@ -357,6 +343,7 @@ void MainWindow::on_pushDryrun_clicked()
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("Pipe is active");
         ui->textBrowser->setTextColor(Qt::black);
+        if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
         return;
     }
     // first module should be a source module
@@ -365,6 +352,7 @@ void MainWindow::on_pushDryrun_clicked()
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("First module should be a source module");
         ui->textBrowser->setTextColor(Qt::black);
+        if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
         return;
     }
 
@@ -416,17 +404,19 @@ void MainWindow::on_pushDryrun_clicked()
     }
 }
 
+
+//Last process in pipe finished
 void MainWindow::finishedLast()
 {
-    //daily protocol file
     QDate curDate = QDate::currentDate();
-    QString fileName = instrumentDir+"/XC"+QString::number(curDate.year())+
+    QString fileName = instrumentOutDir+"/XC"+QString::number(curDate.year())+
             QString::number(curDate.dayOfYear())+".log";
 
     QFile protFile(fileName);
     if (!protFile.open(QFile::ReadWrite | QIODevice::Append | QFile::Text))
     {
-       QMessageBox::information(this,"Warning cannot open: ",fileName);
+       QMessageBox::warning(this,"Save daily protocol file",
+                            "Warning cannot open file: ",fileName);
        return;
     }
     //write cmdList to protocolfile
@@ -435,14 +425,13 @@ void MainWindow::finishedLast()
     protFile.write("\n\n");
 
     //write contents of logfiles to textbrowser
-    pipeActive = false;
     for (int i=0; i < procList.count(); i++)
     {
        QString logName = logFname + QString::number(i+1);
        QFile file(logName);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
-           QMessageBox::information(this,"Warning cannot open: ", logName);
+           QMessageBox::information(this,"Warning cannot open modul logfile: ", logName);
            return;
        }
        QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hh:mm:ss")+ "\n\n";
@@ -460,10 +449,13 @@ void MainWindow::finishedLast()
     QString str = QString::number(
                 static_cast<int>(timer.elapsed()/1000 >0) ? static_cast<int>(timer.elapsed()/1000) : 1);
     ui->textBrowser->append("Measurement took: " + str + " sec");
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
     protFile.close();
-
+    pipeActive = false;
 }
 
+
+//Set buffer size
 void MainWindow::BufferSize_triggered()
 {
       foreach (QAction* act,ui->menunBuffer->actions())
@@ -471,6 +463,7 @@ void MainWindow::BufferSize_triggered()
       this->findChild<QAction *>(sender()->objectName())->setChecked(true);
       nBuffer = this->findChild<QAction *>(sender()->objectName())->text();
 }
+
 
 void MainWindow::minNeutWeight_triggered()
 {
@@ -486,6 +479,11 @@ void MainWindow::helpTools_triggered()
      QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + helpTools[text] + ".html"));
 }
 
+void MainWindow::helpModules_triggered()
+{
+     QString text = this->findChild<QAction *>(sender()->objectName())->text();
+     QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + text + ".html"));
+}
 
 void MainWindow::writeHeader(YAML::Node& config)
 {
@@ -506,9 +504,28 @@ void MainWindow::writeHeader(YAML::Node& config)
 }
 
 
+//Get input directory
+void MainWindow::on_pushIndir_clicked()
+{
+    QString InDir = QFileDialog::getExistingDirectory(this,"Set input directory",
+                                 VitessDir,QFileDialog::ShowDirsOnly);
+    if (InDir != "")ui->InDir->setText(InDir);
+
+}
+
+
+//Get output directory
+void MainWindow::on_pushOutdir_clicked()
+{
+    QString OutDir = QFileDialog::getExistingDirectory(this,"Set output directory",
+                                  VitessDir,QFileDialog::ShowDirsOnly);
+    if (OutDir != "") ui->OutDir->setText(OutDir);
+
+}
+
+
 void MainWindow::loadHeader(YAML::Node& nodeGlobal)
 {
-
     QString childName;
     //set global values in gui
     for(YAML::const_iterator iter=nodeGlobal.begin(); iter!=nodeGlobal.end(); ++iter)
@@ -541,9 +558,18 @@ void MainWindow::loadHeader(YAML::Node& nodeGlobal)
             }
         }
     }
-
+    if (ui->InDir->text()!="") instrumentInDir = ui->InDir->text();
+    else ui->InDir->setText(instrumentInDir);
+    if (ui->OutDir->text()!="") instrumentOutDir = ui->OutDir->text();
+    else
+    {
+        ui->OutDir->setText(instrumentInDir);
+        instrumentOutDir = instrumentInDir;
+    }
 }
 
+
+//Read global header
 void MainWindow::getHeader(QTextStream& out)
 {
 
@@ -562,7 +588,7 @@ void MainWindow::getHeader(QTextStream& out)
 }
 
 
-
+//Prepare pipe
 void MainWindow::on_pushCheck_clicked()
 {
     //generate modul pipe string for enabled modules
@@ -605,11 +631,10 @@ void MainWindow::on_pushCheck_clicked()
                     else if (ui->stackedWidget->widget(i)->findChild< QComboBox *>(param))
                     {
                        cmd += " " + mapVitess[modulName][param]["prefix"];
-                       int curInd = ui->stackedWidget->widget(i)
-                                       ->findChild< QComboBox *>(param)->currentIndex();
-                       if (mapVitess[modulName][param]["index"] != "")         //index
-                            cmd += mapVitess[modulName][param]["index"].split(",")[curInd];
-                       else cmd += QString::number(curInd);
+                       QString curText = ui->stackedWidget->widget(i)
+                               ->findChild< QComboBox *>(param)->currentText();
+                       functionMap[param](curText.toStdString().c_str());
+                       cmd += QString::number(functionMap[param](curText.toStdString().c_str()));
                     }
                     else if (ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param))
                     {
@@ -628,7 +653,8 @@ void MainWindow::on_pushCheck_clicked()
                     QFile file(fileName);
                     if (!file.open(QFile::ReadOnly | QFile::Text))
                     {
-                      QMessageBox::information(this,"Warning cannot open: ",fileName);
+                      QMessageBox::warning(this,"Parameter file",
+                                           "Warning cannot open file: ",fileName);
                       return;
                     }
                     config = YAML::LoadFile(fileName.toStdString());
@@ -648,39 +674,23 @@ void MainWindow::on_pushCheck_clicked()
                       }
                     }
                 }
-           }
-           cmdList.append(cmd);
-           if (i < ui->stackedWidget->count()-1) cmd += " | ";
-           //write pipe string to textbrowser
-           ui->textBrowser->append(cmd);
-           ui->textBrowser->verticalScrollBar()->
+            }
+            cmdList.append(cmd);
+            if (i < ui->stackedWidget->count()-1) cmd += " | ";
+            //write pipe string to textbrowser
+            ui->textBrowser->append(cmd);
+            ui->textBrowser->verticalScrollBar()->
                    setValue(ui->textBrowser->verticalScrollBar()->maximum());
-
-           enableIndex++;
-        }   //not disabled
-    }       //loop stackedWidget count
+            if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
+            enableIndex++;
+        } //not disabled
+    } //loop stackedWidget count
 }
 
 
-void MainWindow::on_pushIndir_clicked()
-{
-    QString InDir = QFileDialog::getExistingDirectory(this,"Set input directory",
-                                 VitessDir,QFileDialog::ShowDirsOnly);
-    ui->InDir->setText(InDir);
-
-}
-
-void MainWindow::on_pushOutdir_clicked()
-{
-    QString OutDir = QFileDialog::getExistingDirectory(this,"Set output directory",
-                                  VitessDir,QFileDialog::ShowDirsOnly);
-    ui->OutDir->setText(OutDir);
-
-}
-
+//Start pipe
 void MainWindow::on_pushStart_clicked()
 {
-
     // get pipe string
     ui->pushCheck->clicked();
 
@@ -689,6 +699,7 @@ void MainWindow::on_pushStart_clicked()
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("Pipe is active");
         ui->textBrowser->setTextColor(Qt::black);
+        if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
         return;
     }
     // first module should be a source or read_in module
@@ -697,6 +708,7 @@ void MainWindow::on_pushStart_clicked()
         ui->textBrowser->setTextColor(Qt::red);
         ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
         ui->textBrowser->setTextColor(Qt::black);
+        if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
         return;
     }
     //create process list
@@ -728,6 +740,7 @@ void MainWindow::on_pushStart_clicked()
                ui->textBrowser->setTextColor(Qt::red);
                ui->textBrowser->append( "Error with start module: " + QString::number(i));
                ui->textBrowser->setTextColor(Qt::black);
+               if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
                pipeActive = false;
                return;
             }
@@ -736,6 +749,7 @@ void MainWindow::on_pushStart_clicked()
     }
 }
 
+//Kill running processes
 void MainWindow::on_pushKill_clicked()
 {
     //kill processes immediately
@@ -747,7 +761,7 @@ void MainWindow::on_pushKill_clicked()
            ui->textBrowser->append( "Module: " + QString::number(i) + " killed;");
        }
     ui->textBrowser->setTextColor(Qt::black);
-
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
 }
 
 void MainWindow::on_pushStop_clicked()
@@ -761,8 +775,9 @@ void MainWindow::on_pushStop_clicked()
             ui->textBrowser->append( "Module: " + QString::number(i) + " stopped;");
         }
     ui->textBrowser->setTextColor(Qt::black);
-
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
 }
+
 
 void MainWindow::saveFile(QString instrumentName)
 {
@@ -772,7 +787,8 @@ void MainWindow::saveFile(QString instrumentName)
     QFile file(instrumentName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        QMessageBox::warning(this,"Cannot open file: ",instrumentName);
+        QMessageBox::warning(this,"Save Instrument",
+                             "Warning cannot open file: ",instrumentName);
     }
     //stream to write to file
     ofstream fout(instrumentName.toStdString());       // using namespace std
@@ -795,6 +811,7 @@ void MainWindow::saveFile(QString instrumentName)
     fout << pipe;
     file.close();
 }
+
 
 void MainWindow::readCurModul(YAML::Node& curModule,int index)
 {
@@ -833,6 +850,7 @@ void MainWindow::readCurModul(YAML::Node& curModule,int index)
     }
 }
 
+
 void MainWindow::pasteCurModul(YAML::Node curModule,int index)
 {
     for(YAML::const_iterator it=curModule.begin(); it!=curModule.end(); ++it)
@@ -852,11 +870,11 @@ void MainWindow::pasteCurModul(YAML::Node curModule,int index)
         {
             //write subparameter yaml data to seperat file,that will be opened when
             //button is pressed
-            QString fileName = instrumentDir+"/"+childName.toLower()+".yml";
+            QString fileName = instrumentOutDir+"/"+childName.toLower()+".yaml";
             QFile file(fileName);
             if (!file.open(QFile::ReadWrite | QFile::Text))
             {
-                QMessageBox::information(this,"Warning cannot open: ",fileName);
+                QMessageBox::warning(this,"Warning cannot open parameter file: ",fileName);
                 return;
             }
             //stream to write to file
@@ -872,6 +890,7 @@ void MainWindow::pasteCurModul(YAML::Node curModule,int index)
         }
     }
 }
+
 
 void MainWindow::designModul(QString modulName)
 {
@@ -891,9 +910,11 @@ void MainWindow::designModul(QString modulName)
 
 }
 
+
 void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
 {
     //create page of stackedWidget for given modul
+
     int iGritRow = 0;
     int index = 0;
     QLabel *headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
@@ -937,10 +958,10 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
             if( scrollArea->widget()->findChild<QPushButton*>(parName))
             {
                 //create widget for subparameter
-                paramWindow[parName] = new Parameter();
+                paramWindow[parName] = new Parameter(QStringList()<<instrumentInDir<<instrumentOutDir);
                 paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
                 //get configuration yaml file for subparameter in subdirectory
-                QString yamlPath = VitessDir + "/yaml/parameter/";
+                QString yamlPath = VitessDir + "/YAML/parameter/";
                 QString filename = yamlPath + parName.toLower() + ".yaml";
                 //design subwidget
                 paramWindow[parName]->designParameterWin(filename);
@@ -961,6 +982,8 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
     }
 }
 
+
+//Subparameter new window
 void MainWindow::paramBut_clicked()
 {
     //show parameter subwindow
@@ -972,33 +995,49 @@ void MainWindow::paramBut_clicked()
     paramWindow[param]->show();
 }
 
+void MainWindow::changeParamWidget(QString filename,QString initName)
+{
+    //set filename from subparameter into matching lineEdit
+    QFileInfo fileinfo(filename);
+    int curInd = ui->stackedWidget->currentIndex();
+    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(filename);
+}
+
+
+//Browse files
 void MainWindow::browseBut_clicked()
 {
     //get filename
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentInDir);
+    if (fileName == "") return;
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::information(this,"Warning cannot open: ",fileName);
+        QMessageBox::warning(this,"Browse file","Warning cannot open file: ",fileName);
         return;
     }
+    QFileInfo fileinfo(fileName);
     // cut browse_ from sender
     QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(7);
     if (ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str))
-        ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->setText(fileName);
+    //    ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->setText(fileName);
+          ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)
+                         ->setText(fileinfo.fileName());
     else ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str.toLower()+"_file")
-                     ->setText(fileName);
+                         ->setText(fileName);
 }
 
+
+//Show files
 void MainWindow::editBut_clicked()
 {
      QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(5);
      QString fileName = ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->text();
      if (fileName == "") return;
-     QFile file(instrumentDir+"/"+fileName);
+     QFile file(instrumentInDir+"/"+fileName);
      if (!file.open(QFile::ReadOnly | QFile::Text))
      {
-         QMessageBox::information(this,"Warning cannot open: ",fileName);
+         QMessageBox::warning(this,"Show file","Warning cannot open file: ",instrumentInDir+"/"+fileName);
          return;
      }
      QPlainTextEdit* textEdit = new QPlainTextEdit();
@@ -1007,6 +1046,7 @@ void MainWindow::editBut_clicked()
      textEdit->show();
 }
 
+//Validator slot for lineEdits
 void MainWindow::checkIsValide()
 {
     //check if input in lineEdit is valide
@@ -1017,26 +1057,11 @@ void MainWindow::checkIsValide()
     testEdit->setPalette(palette);
 }
 
-bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
-{
-    //combobox should not react on mouse wheel
-    if(ev->type()== QEvent::Wheel)
-    {
-        QComboBox* combo = qobject_cast<QComboBox*>(obj);
-        if (combo && !combo->hasFocus())
-        return true;
-    }
-    return false;
-}
 
-void MainWindow::closeEvent( QCloseEvent *ev)
-{
-    QApplication::closeAllWindows();
-}
-
+//Test gnuplot
 void MainWindow::on_actionPlot_File_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentOutDir);
     string cmd_filename = "testgnu.txt";
     ofstream f(cmd_filename.c_str());        //std::ofstream
     f <<
@@ -1049,14 +1074,12 @@ void MainWindow::on_actionPlot_File_triggered()
 
 
      QProcess *gnuProc = new QProcess;
-     //  connect(gnuProc,SIGNAL(error(QProcess::ProcessError)),this,SLOT(handleError(QProcess::ProcessError)));
-     //  gnuProc->setArguments(QStringList() << "testgnu.txt");
      gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
 }
 
 void MainWindow::on_action2D_Plot_File_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentDir);
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentOutDir);
     string cmd_filename = "testgnu.txt";
     ofstream f(cmd_filename.c_str());
     f <<
@@ -1068,19 +1091,10 @@ void MainWindow::on_action2D_Plot_File_triggered()
          "splot \"" << fileName.toStdString() << "\"\n";
 
      QProcess *gnuProc = new QProcess;
-     //  connect(gnuProc,SIGNAL(error(QProcess::ProcessError)),this,SLOT(handleError(QProcess::ProcessError)));
-     //  gnuProc->setArguments(QStringList() << "testgnu.txt");
      gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
 
 }
 
-void MainWindow::changeParamWidget(QString filename,QString initName)
-{
-    //set filename from subparameter into matching lineEdit
-    QFileInfo fileinfo(filename);
-    int curInd = ui->stackedWidget->currentIndex();
-    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(filename);
-}
 
 //create progressDialog
 void MainWindow::progress()
@@ -1088,23 +1102,27 @@ void MainWindow::progress()
     new Progress(ui->stackedWidget->count(),modultab->disableFlag,logFname,this);
 }
 
+
 void MainWindow::on_actionPy_Python_script_triggered()
 {
     ui->pushCheck->clicked();
-    pythonScript(instrumentDir, cmdList, logFname);
+    pythonScript(instrumentOutDir, cmdList, logFname);
 }
+
 
 void MainWindow::on_actionBat_shell_triggered()
 {
     ui->pushCheck->clicked();
-    shellScript(instrumentDir, cmdList, logFname);
+    shellScript(instrumentOutDir, cmdList, logFname);
 }
+
 
 void MainWindow::on_actionCopy_Module_Parameters_triggered()
 {
     curModul.reset();
     readCurModul(curModul,ui->stackedWidget->currentIndex());
 }
+
 
 void MainWindow::on_actionPaste_Module_Parameters_triggered()
 {
@@ -1114,14 +1132,16 @@ void MainWindow::on_actionPaste_Module_Parameters_triggered()
         pasteCurModul(curModul[key],index);
 }
 
+
 void MainWindow::on_actionShow_inf_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,"Open inf file",
-                                                    instrumentDir,tr("INF (*.inf)"));
+                                                      instrumentOutDir,tr("INF (*.inf)"));
+    if(fileName.isEmpty()) return;
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::information(this,"Warning cannot open: ",fileName);
+        QMessageBox::warning(this,"Show inf file","Warning cannot open file: ",fileName);
         return;
     }
     QPlainTextEdit* textEdit = new QPlainTextEdit();
@@ -1133,24 +1153,22 @@ void MainWindow::on_actionShow_inf_File_triggered()
 
 void MainWindow::on_actionSet_Instrument_Name_triggered()
 {
-    instrumentName = QFileDialog::getSaveFileName(this,"Set Instrumentname",instrumentDir,
+    instrumentName = QFileDialog::getSaveFileName(this,"Set Instrumentname",instrumentInDir,
                                                   tr("Files (*.yaml *.yml)"));
     if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
         instrumentName += ".yml";
     QFile file(instrumentName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        QMessageBox::warning(this,"Cannot open file: ",instrumentName);
+        QMessageBox::warning(this,"set Instrumentname",
+                             "Warning cannot open file: ",instrumentName);
         return;
     }
     QFileInfo fileinfo(instrumentName);
     ui->InstName->setText(fileinfo.baseName());
-    QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                  "Instrument",
-                                  "Set default directory to\n"+ fileinfo.path(),
-                                  QMessageBox::Yes|QMessageBox::No);
     //set new working dir
-    if (reply == QMessageBox::Yes) instrumentDir=fileinfo.path();
+    instrumentInDir=fileinfo.path();
+    ui->InDir->setText(instrumentInDir);
 
 }
 
@@ -1186,7 +1204,7 @@ void MainWindow::on_actionGuide_Shape_triggered()
 void MainWindow::on_actionCryst_Analayzer_Spectrom_triggered()
 {
     QStringList modulSpec;
-    modulSpec << VitessDir << syspar << instrumentDir;
+    modulSpec << VitessDir << syspar << instrumentOutDir;
     Chrystanalyzer *analyzerWin = new Chrystanalyzer(modulSpec);
     analyzerWin->show();
 }
@@ -1197,6 +1215,58 @@ void MainWindow::on_actionCompute_Chopper_Phases_triggered()
     cmd += " -o" +logFname.left(logFname.lastIndexOf("/")) + "/chop_phases";
     ChopperPhases *chopperPhases = new ChopperPhases(cmd);
     chopperPhases->show();
+}
+
+void MainWindow::loadInstrument(QString fName)
+{
+    QFile file(fName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::warning(this,"Load Instrumnet","Warning cannot open file: ",fName);
+        return;
+    }
+    instrumentName = fName;
+    QFileInfo fileinfo(instrumentName);
+
+    ui->InstName->setText(fileinfo.baseName());
+    //set new working dir
+    instrumentInDir=fileinfo.path();
+    modultab->cleanModules();
+    while ( ui->stackedWidget->count() > 0 )
+         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
+
+    //get yaml instrument configuration
+    YAML::Node pipe = YAML::LoadFile(instrumentName.toStdString());
+
+    config = pipe[pipe.begin()->first.as<string>()];
+
+    for(unsigned int ipipe = 0; ipipe < config.size();ipipe++)
+    {
+      for(YAML::const_iterator it=config[ipipe].begin(); it!=config[ipipe].end(); ++it)
+      {
+        configChildren.reset();
+        configChildren = it->second;
+        //get module name
+        QString module = QString::fromStdString(it->first.as<string>());
+        if (module == "GlobalParameters")
+           loadHeader(configChildren);
+        else
+        {
+            //put module in tabelle, this sends signal changedComboVal and
+            //slot changeModulWidget is executed
+            if (configChildren["disabled"])
+                modultab->disableFlag[int(ipipe-1)]=true;
+            modultab->loadModule(module);
+            //put values in gui
+            pasteCurModul(configChildren, ui->stackedWidget->count()-1);
+        }
+      }
+    }
+    file.close();
+    modultab->setDisabled();
+    //to do: error case
+    ui->textBrowser->setText("Successfully loaded intrument:  "+fileinfo.baseName());
+    if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
 }
 
 void MainWindow::toolCommand(QString prog)
@@ -1222,3 +1292,195 @@ void MainWindow::on_actionOptimization_triggered()
 {
     QDesktopServices::openUrl(QUrl(VitessDir+"/WWW/Optimization.pdf"));
 }
+
+
+void MainWindow::on_pushBig_clicked()
+{
+    ui->outputWidget->hide();
+    emit big(ui->textBrowser->toPlainText());
+    bigOutput->show();
+}
+
+
+void MainWindow::showTextBrowser()
+{
+    ui->outputWidget->show();
+}
+
+
+void MainWindow::testActive()
+{
+    if (!pipeActive)
+    {
+        t->stop();
+        Visualization(sim);
+    }
+}
+
+void MainWindow::on_pushVisual_clicked()
+{
+    sim = 0;
+    t->start(100);
+
+}
+
+void MainWindow::Visualization(int i)
+{
+    if (sim < 2)
+    {
+        // get pipe string
+
+        //pruefen ob trajektionen < 100000
+
+        ui->pushCheck->clicked();
+
+        if (pipeActive == true)
+        {
+            ui->textBrowser->setTextColor(Qt::red);
+            ui->textBrowser->append("Pipe is active");
+            ui->textBrowser->setTextColor(Qt::black);
+            if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
+            return;
+        }
+        // first module should be a source or read_in module
+        if ((cmdList[0].indexOf("source") < 0) & (cmdList[0].indexOf("read_in_") < 0))
+        {
+            ui->textBrowser->setTextColor(Qt::red);
+            ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
+            ui->textBrowser->setTextColor(Qt::black);
+            if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
+            return;
+        }
+        //create progressDialog and eleapsed timer to get measurment time
+        progress();
+        timer.start();
+        QString simParam;
+        //create process list
+        procList.clear();
+        for (int i=0; i<ui->stackedWidget->count(); i++)
+            //do not create process if modul if disabled
+            if (!modultab->disableFlag[i]) procList.append(new QProcess());
+        connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
+        pipeActive = true;
+        int enableIndex = 0;
+        for (int i=0; i<ui->stackedWidget->count(); i++)
+        {
+            if (!modultab->disableFlag[i])
+            {
+                //start processes of enabled modules in chain
+                if (enableIndex < procList.count()-1 )
+                {
+                    //Output of process is input of next process
+                    procList[enableIndex]->setStandardOutputProcess(procList[enableIndex+1]);     //pipe commands
+                    //toDo error handling
+                }
+                if (sim > 0) simParam = " --V/tmp/pipelog" + QString::number(i+1) + "v";
+                else simParam =  " --vgeometry.inf";
+                procList[enableIndex]->start(cmdList[enableIndex]+ simParam);
+                if (!procList[enableIndex]->waitForStarted())
+                {
+                   ui->textBrowser->setTextColor(Qt::red);
+                   ui->textBrowser->append( "Error with start module: " + QString::number(i));
+                   ui->textBrowser->setTextColor(Qt::black);
+                   if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
+                   pipeActive = false;
+                   return;
+                }
+                enableIndex++;
+            }
+        }
+        sim++;
+        t->start(100);
+    }
+    else
+    {
+        QProcess *sortProc = new QProcess;
+        connect(sortProc,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedSort()));
+        QString cmd = VitessDir + "/MODULES/sortiap" + syspar + " -x ";
+
+        for (int nr=1; nr<1000; nr++)
+        {
+            fGeom = instrumentOutDir + "/geom_" + QString::number(nr) + ".x3d";
+            if ( !QFile::exists(fGeom)) break;
+        }
+        QString geoLogFiles = "";
+        for (int nr=1; nr<= procList.count(); nr++)
+            if ( QFile::exists("C:/tmp/pipelog"+QString::number(nr)+"v") )
+                 geoLogFiles.append(" C:/tmp/pipelog"+QString::number(nr)+"v");
+            //else
+            // ausgabe fehler und break
+        cmd += "-o " + fGeom + geoLogFiles;
+        sortProc->start(cmd);
+    }
+}
+
+
+void MainWindow::finishedSort()
+{
+    QProcess *playerProc = new QProcess;
+    #ifdef Q_OS_WIN
+       playerProc->start("cmd /c where.exe /R C:\\ InstantPlayer.exe");
+    #else
+       playerProc->start("which", QStringList() << "InstantPlayer");
+    #endif
+    playerProc->waitForReadyRead();
+    QString output(playerProc->readAllStandardOutput());
+    playerProc->close();
+    if (output != "")
+    {
+        QFileInfo fi(output);
+        QString exePath=fi.absolutePath();
+        #ifdef Q_OS_WIN
+            //output string direkt liess sich nicht öffnen wegen Blanks in directory
+            playerProc->start("\"" + exePath +"\"" +  "/InstantPlayer.exe " + fGeom);
+        #else
+            playerProc->start( exePath +  "/InstantPlayer " + fGeom);
+        #endif
+    }
+    else {
+        QMessageBox::information(this,"Programm is not get installed: ", "InstantPlayer");
+        return;
+    }
+}
+
+
+void MainWindow::on_InDir_editingFinished()
+{
+    QDir path(ui->InDir->text());
+    if (path.exists())
+        instrumentInDir = ui->InDir->text();
+    else
+        QMessageBox::warning(this,"Set input directory",
+                             "Directory does not exist: ", ui->InDir->text());
+}
+
+
+void MainWindow::on_OutDir_editingFinished()
+{
+    QDir path(ui->OutDir->text());
+    if (path.exists())
+        instrumentOutDir = ui->OutDir->text();
+    else
+        QMessageBox::warning(this,"Set output directory",
+                             "Output Directory does not exist: ", ui->OutDir->text());
+}
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
+{
+    //combobox should not react on mouse wheel
+    if(ev->type()== QEvent::Wheel)
+    {
+        QComboBox* combo = qobject_cast<QComboBox*>(obj);
+        if (combo && !combo->hasFocus())
+        return true;
+    }
+    return false;
+}
+
+
+void MainWindow::closeEvent( QCloseEvent *ev)
+{
+    QApplication::closeAllWindows();
+}
+
