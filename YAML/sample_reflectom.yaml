@@ -21,6 +21,10 @@ sample_reflectom:
       descr:   "reflectivity\nfile"  
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
+  - Refl_Parameter:
+      type:    "window"
+      descr:   "reflectivity\nparameter"
+      tooltip: "reflectometry description parameter"   
   - Mode    :                 # -O  SAMPLE [-]    enum mode  1 reflection of SAMPLE   2 reflection of REFERENCE  
       type:    "combo" 
       descr:   "mode" 
@@ -95,15 +99,4 @@ sample_reflectom:
       default: 0.0
       column:  2                     
       prefix:  "-t"   
- 
-#   PosX    :   20.0           # file  0.0  [cm]   center x position of the sample 
-#   PosY    :    0.0           # file  0.0  [cm]   center y position of the sample 
-#   PosZ    :    0.0           # file  0.0  [cm]   center z position of the sample 
-#   Thicknes:    0.02          # file  0.0  [cm]   thickness of the reflecting surface
-#   Width   :    2.0           # file  0.0  [cm]   width of the sample
-#   Length  :    4.0           # file  0.0  [cm]   length of the sample
-#   OutX    :  150.0           # file  0.0  [-]    x coordinate in output frame 
-#   OutY    :    0.0           # file  0.0  [-]    y coordinate in output frame 
-#   OutZ    :    0.0           # file  0.0  [-]    x coordinate in output frame 
-#   OutHor  :    0.0           # file  0.0  [-]    horizontal angular coordinate in output frame 
-#   OutVert :    0.0           # file  0.0  [-]    vertical angular coordinate in output frame 
+
