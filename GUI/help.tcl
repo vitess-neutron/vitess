@@ -295,7 +295,7 @@ are activated again.
 helpItem {Visualising Results} {
 To visualise the result of your simulation, you should use a monitor, e.g. 'mon1_lambda'
 to see the wavelength dependence of the intensity.
-Click on the '--inactive--' button and choose 'visualise_data' -> 'mon1_lambda'.
+Click on the '--inactive--' button and choose 'monitor' -> 'mon1_lambda'.
 }
 
 helpItem {Saving an Instrument} {

@@ -428,11 +428,10 @@ double Mon1D::DetermineParameter(VtMonPar id, Neutron* n)
     
     case POS_R:
       neutronPosition.x[0] = 0;
-      paramValue = neutronPosition.Mod(); // r: projection of the neutron vector on the y-z plane
+      paramValue = neutronPosition.Mod(); // r: projection of the position vector on the y-z plane
       break;
     case POS_PHI:
-      // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
-      paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+      paramValue = neutronPositionProjYZ.Phi()*180./M_PI;   // orientation of pos_r in the y-z plane (in a cylindrical coordinate system)
       break;
     
     case DIR_PHI:  
@@ -446,7 +445,7 @@ double Mon1D::DetermineParameter(VtMonPar id, Neutron* n)
       paramValue = (n->Color %100); //  colorTB: number of reflections at top or bottom plane
       break;
     case COL_HOR:
-      paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
+      paramValue = (n->Color - (n->Color%100) ) / 100;//  colorLR: number of reflections on left or right plane
       break;
     case COLOR:
       paramValue = (n->Color - (n->Color%100) ) / 100 + (n->Color %100); // color: number of reflections (colorTB+colorLR)

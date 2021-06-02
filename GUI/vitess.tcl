@@ -185,7 +185,7 @@ proc makeModuleSets {} {
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
     {velselect {} velselect}
-    {visualise_data {
+    {monitor {
       visual
       mon1_time mon1_lambda mon1_energy mon1_y mon1_z mon1_divy mon1_divz mon1_divyz mon_brilliance
       mon2_pos mon2_div mon2_kdiv mon2_rdiv mon2_tofwl mon2_wldiv mon2_y_divy mon2_z_divz
@@ -2342,14 +2342,12 @@ unset fA fA1 fA2 fA3 fA4 fComb fPAi fPAj fPAk fPAl
 ### Monitor many many modules
 
 proc genFE {n} {
-  set ll {"monitor file"
-    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval" "" O}
+  set ll {"monitor file" "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter" "" O}
   return [list [list monitor_file moneditablefile $n.dat $ll "" "" 1]]
 }
 
 proc genFE2 {n} {
-  set ll {"monitor file"
-    "the monitor output file: it contains the number of probability counts for each segment of the monitored interval" "" O}
+  set ll {"monitor file" "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter" "" O}
   return [list [list monitor_file mon2editablefile $n.dat $ll "" "" 1]]
 }
 
@@ -2361,8 +2359,8 @@ set dA {
 }
 
 set nA {
-  {number_bins int 100 {"number\nof bins" "number of bins determines the segmentation of the interval" "" n} 1 99999 1}
-  {mtrl_colour int  -1 {"colour" "colour necessary for the trajectory to be monitored\ncolour -1 means: all trajectories are evaluated" "" C} -1 32768}
+  {number_bins int 100 {"number\nof bins" "Number of the monitor channels" "" n} 1 99999 1}
+  {mtrl_colour int  -1 {"colour" "if 'all files'='no', this is the only color monitored, '-1' means all colors\nif 'all files'='yes',  this is the max. color to which additional monitor files are generated" "" C} -1 32768}
 }
 set nnA {
   {withbin radio no {"normalize\n(by binsize)" "'no': intensities of the neutron trajctories are only distributed into channels\n'yes': intensities are normalized to the channel width\n'reference file': intensities are divided by those in the reference file" "" f} {no yes "reference file"} {0 1 2}}
@@ -2633,11 +2631,11 @@ set ra {
   {mineny float "" {"min. energy [meV]" "minimal energy [meV]" "" m}}
   {maxeny float "" {"max. energy [meV]" "maximal energy [meV]" "" M}}
   {}
-  {lowbw float "" {"low bound\nwidth [cm]" "lower bound for the width [cm]" "" y}}
-  {upbw float "" {"up bound\nwidth [cm]" "upper bound for the width [cm]" "" Y}}
+  {lowbw float "" {"low bound\ny-pos [cm]" "lower bound for the horizontal position [cm]" "" y}}
+  {upbw float "" {"up bound\ny-pos[cm]" "upper bound for the horizontal position [cm]" "" Y}}
   {}
-  {lowbh float "" {"low bound\nheight [cm]" "lower bound for the height [cm]" "" z}}
-  {upbh float "" {"up bound\nheight [cm]" "upper bound for the height [cm]" "" Z}}
+  {lowbh float "" {"low bound\nz-pos [cm]" "lower bound for the vertical position [cm]" "" z}}
+  {upbh float "" {"up bound\nz-pos [cm]" "upper bound for the vertical position [cm]" "" Z}}
   {}
   {lowhd float "" {"low bound\nhor div [deg]" "lower bound for the horizontal divergence [deg]" "" h}}
   {uphd float "" {"up bound\nhor div [deg]" "upper bound for the horizontal divergence [deg]" "" H}}

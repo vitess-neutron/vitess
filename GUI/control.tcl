@@ -324,14 +324,33 @@ proc controlMenu {w} {
       {c "Instrument Digest" {showHelpItem digest.html}} \
       {c "External commands" {showHelpItem External-Commands}} \
       {c "Ray tracing" {showHelpItem raytracing.html}} \
-      {c Trajectories {showHelpItem trajectories.html}} \
+      {c Visualization {showHelpItem visula.html}} \
       {c Optimization {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
       {c Xcontrol {showHelpItem XControl}} s \
-      {m "Modules A - L" m1} \
-      {m "Modules M" m2} \
-      {m "Modules N - R" m3} \
-      {m "Modules S - Z" m4}
+      {c "beamstop"   {showHelpItem beamstop.html}} \
+      {c "chopper"    {showHelpItem chopper.html}} \
+      {c "collimator" {showHelpItem collimator.html}} \
+      {c "detector"   {showHelpItem detector.html}} \
+      {c "evaluation" {showHelpItem evaluation.html}} \
+      {c "filter"     {showHelpItem filter.html}} \
+      {c "flipper"    {showHelpItem flipper.html}} \
+      {c "frame"      {showHelpItem frame.html}} \
+      {c "guide"      {showHelpItem guide.html}} \
+      {c "magnetic_field"     {showHelpItem magnetic_field.html}} \
+      {c "mirror"             {showHelpItem mirror.html}} \
+      {c "monitor"            {showHelpItem monitor.html}} \
+      {c "monochromator"      {showHelpItem monochromator.html}} \
+      {c "optical_elements"   {showHelpItem optical_elements.html}} \
+      {c "polariser"          {showHelpItem polariser.html}} \
+      {c "resonator_drabkin"  {showHelpItem resonator_drabkin.html}} \
+      {c "sample"             {showHelpItem sample.html}} \
+      {c "sample_environment" {showHelpItem sample_environment.html}} \
+      {c "sm_ensemble"  {showHelpItem sm_ensemble.html}} \
+      {c "source"       {showHelpItem source.html}} \
+      {c "spacewindow"  {showHelpItem spacewindow.html}} \
+      {c "trajectories" {showHelpItem trajectories.html}} \
+      {c "velselect"    {showHelpItem velselect.html}} \
 
   set pwd [file join $SourceDirectory WWW]
 
@@ -348,70 +367,6 @@ proc controlMenu {w} {
     eval popMenu $w.hel.menu.me $li
   }
 
-  # Add a help link for all modules with given HTML help file.
-  # First obtain two lists, nl for names and hl for help items
-  set nl {}
-  set hl {}
-  foreach line $AvailableSET {
-    set n [lindex $line 0]
-    set s [lindex $line 1]
-    set h [lindex $line 2]
-    if {$s == ""} {
-      lappend nl $n
-      lappend hl $h
-    } else {
-      set fe [lindex $h 0]
-      set lasthelp ""
-      foreach t $s m $h {
-	lappend nl $t
-	if {$m == ""} {
-	  set m $lasthelp
-	} else {
-	  set lasthelp $m
-	}
-	lappend hl $m
-      }
-    }
-  }
-  # Sort items alphabetically, as nl may not be sorted lexically
-  set nlen [llength $nl]
-  set il {}
-  foreach m $nl h $hl {
-    lappend il [list $m $h]
-  }
-  set il [lsort -command pCompare $il]
-  # The result list is a list of {name help} pairs
-
-  set li1 {}
-  set li2 {}
-  set li3 {}
-  set li4 {}
-  foreach e $il {
-    set m [lindex $e 0]
-    set h [lindex $e 1]
-    if [file exists [file join $pwd $h.html]] {
-      set Htmlhelp($m) $h.html
-      set ll [list c $m "showHelpItem $h.html"]
-      switch -regexp $m {
-	^[a-lA-L] {lappend li1 $m $ll}
-	^[mM] {lappend li2 $m $ll}
-	^[n-rN-R] {lappend li3 $m $ll}
-	default {lappend li4 $m $ll}
-      }
-    }
-  }
-  menu $w.hel.menu.m1 -bg $menuColor -tearoff 0
-  eval popMenu $w.hel.menu.m1 $li1
-
-  menu $w.hel.menu.m2 -bg $menuColor -tearoff 0
-  eval popMenu $w.hel.menu.m2 $li2
-
-  menu $w.hel.menu.m3 -bg $menuColor -tearoff 0
-  eval popMenu $w.hel.menu.m3 $li3
-
-  menu $w.hel.menu.m4 -bg $menuColor -tearoff 0
-  eval popMenu $w.hel.menu.m4 $li4
-
   set wo $w.opt.menu
   popMenu $wo \
       {c "Apply settings" applySettings} s\
@@ -426,7 +381,7 @@ proc controlMenu {w} {
       {m "Execution mode" execmode} \
       {m Buffersize buffersize} \
       {m "Plot mode" plotmode} \
-      {m Trajectories trajmode} \
+      {m Visualization trajmode} \
       {m "Browse selection" browse_ext_mode} \
       {m "Scrollbar width" swid} s\
       {m Xcontrol intern} \
@@ -869,7 +824,7 @@ proc showBeef {w} {
   pack $wb.check -anchor w -fill x
   pack $wb.check.c1 $wb.check.c2 -side left -ipadx 1m
   bButton $wb.start Start startAction
-  bButton $wb.startv Trajectories startActionV
+  bButton $wb.startv Visualization startActionV
   frame $wb.meter
   frame $wb.stop
   bsButton $wb.stop.kill "  Kill  " "stopAction 1 1"

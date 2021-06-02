@@ -52,8 +52,8 @@ short  bExclusive=FALSE,                  // -e     criterion: only trajectories
        bLogBin   =FALSE;                  // -B     TRUE : bin size increases exponentially  FALSE: linear binning
 long   nBins  =1,                         // -n     number of bins in the monitor file
        nColour=ANY_COLOR;                 // -C     color of trajectory that is monitored   (-1=all)
-double MinY   =  -1.0e9, MaxY   =  1.0e9, // -y -Y  min. and max. width to be taken into account
-       MinZ   =  -1.0e9, MaxZ   =  1.0e9, // -z -Z  min. and max. height to be taken into account
+double MinY   =  -1.0e9, MaxY   =  1.0e9, // -y -Y  min. and max. hor. position to be taken into account
+       MinZ   =  -1.0e9, MaxZ   =  1.0e9, // -z -Z  min. and max. vert. position to be taken into account
        MinDivY=-180.0,   MaxDivY=180.0,   // -h -H  min. and max. hor. div. to be taken into account
        MinDivZ=-180.0,   MaxDivZ=180.0,   // -v -V  min. and max. vert. div. to be taken into account
        MinDivR=   0.0,   MaxDivR=180.0,   // -r -R  min. and max. radial div. to be taken into account
