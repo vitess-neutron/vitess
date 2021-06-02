@@ -8,49 +8,47 @@
 </head>
   <body>
   
-<h1> VITESS Module S(Q)-sample</h1>
- The module S(Q)-sample module describes the coherent and incoherent elastic 
-scattering of a S(Q)-sample. The coordinate system of an incoming neutron 
-is defined by the preceding module as well as the main flight path of the 
-neutrons. The main flight direction of the neutrons defines the +x-axis. The
-y-axis is defined as the horizontal axis and the z-axis as the vertical one.
-The module S(Q)-sample uses the angles <font face="Symbol">q</font> and <font
- face="Symbol">f. q</font> is defined as the angle between a vector r and
-the +x-axis and covers the range from [0..<font face="Symbol">p</font>]. <font
- face="Symbol">f</font> is the angle between the projection of the vector
-r in the yz-plane and the +y-axis and has the range of [0..2<font
- face="Symbol">p</font>[. 
-<p>A neutron is written to the output by this module, if the neutron arrives 
-at the sample surface after scattering. The coordinate system has still the
-same orientation, but the origin has moved to the center of the sample. All
-sample modules consider the divergence of each neutron without any approximation
-to obtain the true direction of the flightpath after the scattering process. 
-</p>
-<p>Description of the scattering: <br>
-First of all it is determined if the neutron intersects the sample. If the
-neutron does not intersect the sample, it is discarded. Otherwise the neutron
-is scattered along its path through the sample at a certain distance L<sub>s</sub>
-from its entrance, which is determined by a Monte Carlo choice. <br>
-The scattering is restricted to an angular range of [<font face="Symbol">q</font>-<font
- face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>], [<font
- face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
- face="Symbol">Df</font>] by the input values for <font face="Symbol">q, Dq</font>,
-<font face="Symbol">f, Df</font>. The direction of the trajectory i after
-the sample is given by (<font face="Symbol">q</font><sub>i</sub>, <font
- face="Symbol">f</font><sub>i</sub> ). For both, coherent scattering and
-incoherent scattering, both angles <font face="Symbol">q</font><sub>i</sub> 
-and <font face="Symbol">f</font><sub>i </sub>are determined by a Monte Carlo
-choice in these ranges. Therefore, the number of trajectories per solid angle
-in this range depends on the choice of the range. To get the real flux into
-this solid angle, this has to be considered by the factors </p>
-<center>G<sub>inc </sub>= G<sub>coh </sub>= <font face="Symbol">Df/p * Dq</font></center>
-  
-<p><br>
- <br>
- <br>
- <br>
+  <h1> VITESS Module S(Q)-sample</h1>
+  <p>
+    The module S(Q)-sample module describes the coherent and incoherent elastic
+    scattering of a S(Q)-sample. The coordinate system of an incoming neutron
+    is defined by the preceding module as well as the main flight path of the
+    neutrons. The main flight direction of the neutrons defines the +x-axis. The
+    y-axis is defined as the horizontal axis and the z-axis as the vertical one.
+    The module S(Q)-sample uses the angles <font face="Symbol">q</font> and <font face="Symbol">f. q</font> is defined as the angle between a vector r and
+    the +x-axis and covers the range from [0..<font face="Symbol">p</font>]. <font face="Symbol">f</font> is the angle between the projection of the vector
+    r in the yz-plane and the +y-axis and has the range of [0..2<font face="Symbol">p</font>[.
+  </p>
+  <p>
+    A neutron is written to the output by this module, if the neutron arrives 
+    at the sample surface after scattering. The coordinate system has still the
+    same orientation, but the origin has moved to the center of the sample. All
+    sample modules consider the divergence of each neutron without any approximation
+    to obtain the true direction of the flightpath after the scattering process. 
+  </p>
+  <h4>Description of the scattering: </h4>
+  <p>
+  First of all it is determined if the neutron intersects the sample. If the
+  neutron does not intersect the sample, it is discarded. Otherwise the neutron
+  is scattered along its path through the sample at a certain distance L<sub>s</sub>
+  from its entrance, which is determined by a Monte Carlo choice. <br>
+  The scattering is restricted to an angular range of [<font face="Symbol">q</font>-<font
+   face="Symbol">Dq, q</font>+<font face="Symbol">Dq</font>], [<font
+   face="Symbol">f</font>-<font face="Symbol">Df, f</font>+<font
+   face="Symbol">Df</font>] by the input values for <font face="Symbol">q, Dq</font>,
+  <font face="Symbol">f, Df</font>. The direction of the trajectory i after
+  the sample is given by (<font face="Symbol">q</font><sub>i</sub>, <font
+   face="Symbol">f</font><sub>i</sub> ). For both, coherent scattering and
+  incoherent scattering, both angles <font face="Symbol">q</font><sub>i</sub> 
+  and <font face="Symbol">f</font><sub>i </sub>are determined by a Monte Carlo
+  choice in these ranges. Therefore, the number of trajectories per solid angle
+  in this range depends on the choice of the range. To get the real flux into
+  this solid angle, this has to be considered by the factors </h4>
+  <center>G<sub>inc </sub>= G<sub>coh </sub>= <font face="Symbol">Df/p * Dq</font></center>
  </p>
-<p>(see below). With the equation for the differential cross section (Squires, 
+
+  <p>
+    (see below). With the equation for the differential cross section (Squires, 
 Thermal Neutron Scattering (5.29)): </p>
 <center> 
 <p>d<font face="Symbol">s/</font>d<font face="Symbol">W&nbsp; = Ns</font><sub>coh</sub>/(4<font
@@ -307,7 +305,7 @@ absorption <br>
   </p>
 <p> </p>
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+<a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a> 
 
 </body>
 </html>
