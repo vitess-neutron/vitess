@@ -6,63 +6,137 @@
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Module Collimator</title>
 </head>
- <body>
-<h1>VITESS Modules Space, Slit and Spacewindow</h1>
-<p>
-  There are 4 modules that can be used for propagation of the neutrons to a certain area: Space, Slit, Spacewindow and Spacewindow_multiple.
-  They all take into account gravity (if this option is chosen).
-  <b>Space</b> propagates the neutrons over a certain distance and takes into account attenuation (in air).
-  <b>Slit</b> propagates the neutrons over a certain distance to a rectangular window centered around the beam axis.
-  <b>Spacewindow</b> propagates the neutrons over a certain distance to a rectangular or circular window whose center might be out of the center of the beamline.
-  It can consider attenuation inside the window and non-perfect absorption outside the window and can also be used as a beamstóp. 
-  Additionally, it has some filter options.<br>
-  <b>Spacewindow_multiple</b> works like Spacewindow, but can treat up to 100 rectangular or circular window in any geometry. 
-  It is described in <a href="spacewindow_multiple.html">spacewindow_multiple.html</a><br>
-  Their x-coordinates are reset to 0 (as in most others modules) after finishing the propagation.
-</p>
-<img SRC="windows1.gif" height=259 width=575></pre>
-<p>
-<h3>VITESS Module Space</h3>
-<p>
-  The module <b>space</b> simply simulates the propagation over a certain distance. An attenuation inside the medium can be considered by
-  giving the macrosopic absorption and total scattering cross-section. The macroscopic cross-section can be calculated from the microscopic 
-  cross-section by multipyling with the particle density.
-<p>
-<h3>VITESS Module Slit</h3>
-  The module <b>slit</b> simulates the propagation to a rectangular window in a certain distance, which is centered around the beam axis and 
-  has its normal vector along the x-axis. Only those neutrons hitting the window are considered further.
-  This common case can be easily handled using this simple module. In all other cases the module <b>spacewindow</b> has to be used.  
-<p>
-<h3>VITESS Module Spacewindow</h3> 
-<p>
-  The module <b>spacewindow</b> simulates free propagation of neutrons (from x=0) to a rectangular or circular window.
-  The (rectangular) window can be rotated about the x-axis. 
-  There is the possibility to let only neutrons of a certain range in flight direction and a certain color pass.<br>
-  The window may have a thickness, an inner and/or an outer material.
-  In case of ideal transmission inside and ideal absorption outside, only those hitting the window are considered further on.
-  Otherwise, attenuation is calculated for neutrons passing inside (<i>inner  material</i>) or outside (<i>outer material</i>).
-  <br>
-  There is also the possibility to simulate a beamstop by defining a negative window, where neutrons pass outside and are absorbed inside.
-  But it is a better choice to use the module <b>beamstop</b> for that.
-  To simulate beamstops and windows between sample and detector, the option 'use previous frame' has been included.
-  It prevents the usual shift of the origin to the center of the window, thus leaving the origin in the center of the sample,
-  which is necessary for a proper working of the detector module. <br />
-  Two kinds of material can be chosen. <i>Outer material</i> denotes the material of the window frame absorbing neutrons outside the window.
-  <i>Inner material</i> denotes the material of the window pane (if any) through which the neutrons have to pass.
-  For each material used, the thickness has to be given.
-  Setting the thickness of the material to zero means ideal absorption for the outer and ideal transmission for the inner material.
-  For both kinds of materials, a file describing the absorption can be given (see below).
-  If the file is given, the treatment of transmission is activated, otherwise the ideal transmission/absorption is assumed.
-  For the window frame, there is also the option to choose from a number of absorbing materials.
-  <br>
-  The file format describing the transmission is: <br />
-  <pre>
+<body>
+
+  <h1>VITESS Modules to simulate Propagation and Apertures</h1>
+  <p>
+    There are 5 modules that can be used to simulate propagation of the neutrons to a certain area, where it may pass an aperture:
+    <b>space</b>, <b>slit</b>, <b>spacewindow</b>, <b>spacewindow_multiple</b> and <b>grid</b>.
+    They all take into account gravity (if this option is chosen).
+    <b>Space</b> propagates the neutrons over a certain distance and takes into account attenuation (in air).
+    <b>Slit</b> propagates the neutrons over a certain distance to a rectangular window centered around the beam axis.
+    <b>Spacewindow</b> propagates the neutrons over a certain distance to a rectangular or circular window whose center might be out of the center of the beamline.
+    It can consider attenuation inside the window and non-perfect absorption outside the window and can also be used as a beamstóp.
+    Additionally, it has some filter options.<br>
+    <b>Spacewindow_multiple</b> works like Spacewindow, but can treat up to 100 rectangular or circular windows in any geometry.
+    It is described in <a href="spacewindow_multiple.html">spacewindow_multiple.html</a><br>
+    Their x-coordinates are reset to 0 (as in most others modules) after finishing the propagation.
+    <b>grid</b>simulates a regular set of N x M apertures of equal size. A series of such ensembles of apertures which can be used for collimation in SANS instruments.
+  </p>
+  <img SRC="windows1.gif" height=259 width=575></pre>
+
+
+  <br><br>
+  <h2><font size="+1"> VITESS Module 'space' to simulate Propagation over a Certain Distance </font></h2>
+  <p>
+    The module <b>space</b> simply simulates the propagation over a certain distance. An attenuation inside the medium can be considered by
+    giving the macrosopic absorption and total scattering cross-section. The macroscopic cross-section can be calculated from the microscopic
+    cross-section by multipyling with the particle density.
+  </p>
+
+  <h4>Parameters for module 'space'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">distance<br>[m]</td>
+        <td valign="top">distance from the origin (usually the exit of the previous component) to a plane vertical to the x-axis where the next component begins</td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-d      </td>
+      </tr>
+      <tr>
+        <td valign="top">total scattering<br>[1/cm]</td>
+        <td valign="top">macroscopic total scattering cross-section  </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-M      </td>
+      </tr>
+      <tr>
+        <td valign="top">absorption<br>[1/cm]</td>
+        <td valign="top">
+          macroscopic absorption cross-section for 1.798 Ãƒ<br />
+          The absorption cross-section for the wavelength under consideration is calculated in the module from this value.
+        </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-m      </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br><br>
+  <h2><font size="+1"> VITESS Module 'slit' to simulate Propagation to a Rectangular Slit </font></h2>
+  <p>
+    The module <b>slit</b> simulates the propagation to a rectangular window in a certain distance, which is centered around the beam axis and
+    has its normal vector along the x-axis. Only those neutrons hitting the window are considered further.
+    This common case can be easily handled using this simple module. In all other cases the module <b>spacewindow</b> has to be used.
+  </p>
+
+  <h4>Parameters for module 'slit'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">distance<br>[m]</td>
+        <td valign="top">the distance from the origin (usually the exit of the previous component) to the slit along the x-axis </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-d      </td>
+      </tr>
+      <tr>
+        <td valign="top">width<br>[cm]</td>
+        <td valign="top">width of the rectangular slit</td>
+        <td valign="top">&gt;= 0  </td>
+        <td valign="top">-W       </td>
+      </tr>
+      <tr>
+        <td valign="top">height<br>[cm]</td>
+        <td valign="top">height of the rectangular slit</td>
+        <td valign="top">&gt;= 0  </td>
+        <td valign="top">-H       </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <br><br>
+  <h2><font size="+1"> VITESS Module 'spacewindow' to simulate Propagation to a Rectangular or Circular Aperture </font></h2>
+  <p>
+    The module <b>spacewindow</b> simulates free propagation of neutrons (from x=0) to a rectangular or circular window.
+    The (rectangular) window can be rotated about the x-axis.
+    There is the possibility to let only neutrons of a certain range in flight direction and a certain color pass.<br>
+    The window may have a thickness, an inner and/or an outer material.
+    In case of ideal transmission inside and ideal absorption outside, only those hitting the window are considered further on.
+    Otherwise, attenuation is calculated for neutrons passing inside (<i>inner  material</i>) or outside (<i>outer material</i>).
+    <br>
+    There is also the possibility to simulate a beamstop by defining a negative window, where neutrons pass outside and are absorbed inside.
+    But it is a better choice to use the module <b>beamstop</b> for that.
+    To simulate beamstops and windows between sample and detector, the option 'use previous frame' has been included.
+    It prevents the usual shift of the origin to the center of the window, thus leaving the origin in the center of the sample,
+    which is necessary for a proper working of the detector module. <br />
+    Two kinds of material can be chosen. <i>Outer material</i> denotes the material of the window frame absorbing neutrons outside the window.
+    <i>Inner material</i> denotes the material of the window pane (if any) through which the neutrons have to pass.
+    For each material used, the thickness has to be given.
+    Setting the thickness of the material to zero means ideal absorption for the outer and ideal transmission for the inner material.
+    For both kinds of materials, a file describing the absorption can be given (see below).
+    If the file is given, the treatment of transmission is activated, otherwise the ideal transmission/absorption is assumed.
+    For the window frame, there is also the option to choose from a number of absorbing materials.
+    <br>
+    The file format describing the transmission is: <br />
+    <pre>
   First column : wavelength  [&Aring;] 
   Second column: attenuation [1/cm] 
   </pre>
 
-  For the outer materials, the following options exist
-  <pre>
+    For the outer materials, the following options exist
+    <pre>
    Value 0 - data from file (created by user)
    Value 1 - Gadolinium.
    Value 2 - Cadmium.
@@ -71,230 +145,549 @@
    Value 5 - Silicon.
    Value 6 - Ideal absorption
   </pre>
-  For materials 1 - 4, the maximal wavelength range is 0.3 ... 28 &Aring;.
-  For silicon, the maximal wavelength range is 1 .. 20 &Aring;    (Data from Thomas Krist, HZB, Berlin)<br />
-  Note that the wavelength values must appear in the table in ascending order from shortest to longest wavelength
-<p>
-<h3>Parameters for module 'Space'</h3>
-<p>
-<table cellpadding="2" cellspacing="2" border="1" width="100%">
-   <tbody>
-     <tr>
-       <td valign="top"><b>Parameter<br> Unit<br></b></td>
-       <td valign="top"><b>Description<br>      </b></td>
-       <td valign="top"><b>Range or Values<br>  </b></td>
-       <td valign="top"><b>Command Option<br>   </b></td>
-     </tr>
+    For materials 1 - 4, the maximal wavelength range is 0.3 ... 28 &Aring;.
+    For silicon, the maximal wavelength range is 1 .. 20 &Aring;    (Data from Thomas Krist, HZB, Berlin)<br />
+    Note that the wavelength values must appear in the table in ascending order from shortest to longest wavelength
+  </p>
 
-     <tr>
-       <td valign="top">distance<br>[m]</td>
-       <td valign="top">distance from the origin (usually the exit of the previous component) to a plane vertical to the x-axis where the next component begins</td>
-       <td valign="top">&gt;= 0 </td>
-       <td valign="top">-d      </td>
-     </tr>
 
-     <tr>
-       <td valign="top">total scattering<br>[1/cm]</td>
-       <td valign="top">macroscopic total scattering cross-section  </td>
-       <td valign="top">&gt;= 0 </td>
-       <td valign="top">-M      </td>
-     </tr>
+  <h4>Parameters for module 'Spacewindow'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
 
-     <tr>
-       <td valign="top">absorption<br>[1/cm]</td>
-       <td valign="top">macroscopic absorption cross-section for 1.798 Ãƒ<br />
-                        The absorption cross-section for the wavelength under consideration is calculated in the module from this value. </td>
-       <td valign="top">&gt;= 0 </td>
-       <td valign="top">-m      </td>
-     </tr>
+      <tr>
+        <td valign="top">distance orig. <-> win<br>[cm]</td>
+        <td valign="top">
+          the distance from the origin (usually the exit of the previous component) to the center of the window.
+          It is the projection of the vector from the origin to center of the window on the x-axis
+        </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-l      </td>
+      </tr>
 
-   
-  </tbody> 
-</table>
-<p>
-<h3>Parameters for module 'Slit'</h3>
-<p>
-<table cellpadding="2" cellspacing="2" border="1" width="100%">
-   <tbody>
-     <tr>
-       <td valign="top"><b>Parameter<br> Unit<br></b></td>
-       <td valign="top"><b>Description<br>      </b></td>
-       <td valign="top"><b>Range or Values<br>  </b></td>
-       <td valign="top"><b>Command Option<br>   </b></td>
-     </tr>
+      <tr>
+        <td valign="top">window shape</td>
+        <td valign="top">
+          shape of the window <br />
+          circular   : circular window defined by its center (relative to beam axis) and radius       <br />
+          rectangular: rectangular window defined by the distances from the 4 edges to the center of the beam axis
+        </td>
+        <td valign="top">circular, rectangular</td>
+        <td valign="top">-R   </td>
+      </tr>
 
-     <tr>
-       <td valign="top">distance<br>[m]</td>
-       <td valign="top">the distance from the origin (usually the exit of the previous component) to the slit along the x-axis </td>
-       <td valign="top">&gt;= 0 </td>
-       <td valign="top">-d      </td>
-     </tr>
+      <tr>
+        <td valign="top">radius<br>[cm]</td>
+        <td valign="top">radius of the circular window </td>
+        <td valign="top">&gt;= 0</td>
+        <td valign="top">-r   </td>
+      </tr>
+      <tr>
+        <td valign="top">center y<br>center z<br />[cm]</td>
+        <td valign="top">horizontal (y) and vertical (z) position of the center of the window relative to the center of the beam axis</td>
+        <td valign="top">&gt;= 0</td>
+        <td valign="top">-y<br />-z  </td>
+      </tr>
 
-     <tr>
-       <td valign="top">width<br>[cm]</td>
-       <td valign="top">width of the rectangular slit</td>
-       <td valign="top">&gt;= 0  </td>
-       <td valign="top">-W       </td>
-     </tr>
+      <tr>
+        <td valign="top">min. y<br />max. y<br>[cm]</td>
+        <td valign="top">right and left edge of the rectangular window relative to the center of the beam axis</td>
+        <td valign="top">&gt;= 0    </td>
+        <td valign="top">-w<br />-W  </td>
+      </tr>
+      <tr>
+        <td valign="top">min. z<br />max. z<br>[cm]</td>
+        <td valign="top">lower and upper vertical edge of the rectangular window relative to the center of the beam axis</td>
+        <td valign="top">&gt;= 0    </td>
+        <td valign="top">-h<br />-H  </td>
+      </tr>
 
-     <tr>
-       <td valign="top">height<br>[cm]</td>
-       <td valign="top">height of the rectangular slit</td>
-       <td valign="top">&gt;= 0  </td>
-       <td valign="top">-H       </td>
-     </tr>
-  </tbody> 
-</table>
-<p>
-<h3>Parameters for module 'Spacewindow'</h3>
-<p>
-<table cellpadding="2" cellspacing="2" border="1" width="100%">
-  <tbody>
-    <tr>
-      <td valign="top"><b>Parameter<br> Unit<br></b></td>
-      <td valign="top"><b>Description<br>      </b></td>
-      <td valign="top"><b>Range or Values<br>  </b></td>
-      <td valign="top"><b>Command Option<br>   </b></td>
-    </tr>
+      <tr>
+        <td valign="top">rot. angle<br>[deg] </td>
+        <td valign="top">
+          rotation of the window about the (negative) x-axis  <br />
+          &nbsp;0 deg: height along the z-axis (upwards)      <br />
+          90 deg: height along the y-axis (to the left)
+        </td>
+        <td valign="top">[-180,180] deg </td>
+        <td valign="top">-A           </td>
+      </tr>
 
-    <tr>
-      <td valign="top">distance orig. <-> win<br>[cm]</td>
-      <td valign="top">
-        the distance from the origin (usually the exit of the previous component) to the center of the window.
-        It is the projection of the vector from the origin to center of the window on the x-axis
-      </td>
-      <td valign="top">&gt;= 0 </td>
-      <td valign="top">-l      </td>
-    </tr>
+      <tr>
+        <td valign="top">used as beamstop </td>
+        <td valign="top">
+          yes: negative window: absorption inside and transmission outside <br />
+          no : normal window:   transmission inside  <br />
+          This option will be removed in VITESS 4. Please, use module <b>beamstop</b> instead.
+        </td>
+        <td valign="top">'no', 'yes' </td>
+        <td valign="top">-S          </td>
+      </tr>
+      <tr>
+        <td valign="top">use previous frame</td>
+        <td valign="top">
+          yes: origin of the co-ordinate system remains unchanged <br />
+          no : x-ordinate is shifted to the center of the window (default) <br />
+          Prevention of the shift of the origin is necessary for beamstops and windows between sample and detector
+        </td>
+        <td valign="top">'no', 'yes'  </td>
+        <td valign="top">-F           </td>
+      </tr>
 
-    <tr>
-      <td valign="top">window shape</td>
-      <td valign="top">
-        shape of the window <br />
-        circular   : circular window defined by its center (relative to beam axis) and radius       <br />
-        rectangular: rectangular window defined by the distances from the 4 edges to the center of the beam axis
-      </td>
-      <td valign="top">circular, rectangular</td>
-      <td valign="top">-R   </td>
-    </tr>
+      <tr>
+        <td valign="top">treat color</td>
+        <td valign="top"> filter: Treat only events with given color. A negative number means any color </td>
+        This option will be removed in VITESS 4. Please, use module
+        <b>filter</b> instead.
+        <td valign="top">-1,0, 1 ... </td>
+        <td valign="top">-f           </td>
+      </tr>
 
-    <tr>
-      <td valign="top">radius<br>[cm]</td>
-      <td valign="top">radius of the circular window </td>
-      <td valign="top">&gt;= 0</td>
-      <td valign="top">-r   </td>
-    </tr>
-    <tr>
-      <td valign="top">center y<br>center z<br />[cm]</td>
-      <td valign="top">horizontal (y) and vertical (z) position of the center of the window relative to the center of the beam axis</td>
-      <td valign="top">&gt;= 0</td>
-      <td valign="top">-y<br />-z  </td>
-    </tr>
+      <tr>
+        <td valign="top">min. phi<br>max. phi<br>[deg] </td>
+        <td valign="top">
+          filter: minimal and maximal flight direction phi <br>
+          phi is the projection of the flight direction to the y-z-plane <br>
+          0° negative z-axis, 90° negative y-axis, 180° positive z-axis, 270° positive y-axis, <br>
+          A negative value for minimum or maximum means that the whole range is allowed.
+        </td>
+        This option will be removed in VITESS 4. Please, use module
+        <b>filter</b> instead.
+        <td valign="top">[0°,360°] </td>
+        <td valign="top">-p, -P    </td>
+      </tr>
 
-    <tr>
-      <td valign="top">min. y<br />max. y<br>[cm]</td>
-      <td valign="top">right and left edge of the rectangular window relative to the center of the beam axis</td>
-      <td valign="top">&gt;= 0    </td>
-      <td valign="top">-w<br />-W  </td>
-    </tr>
-    <tr>
-      <td valign="top">min. z<br />max. z<br>[cm]</td>
-      <td valign="top">lower and upper vertical edge of the rectangular window relative to the center of the beam axis</td>
-      <td valign="top">&gt;= 0    </td>
-      <td valign="top">-h<br />-H  </td>
-    </tr>
+      <tr>
+        <td valign="top">outer tranmsission file </td>
+        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the frame of the window </td>
+        <td valign="top">    </td>
+        <td valign="top">-C  </td>
+      </tr>
+      <tr>
+        <td valign="top">thickness of frame<br />[cm] </td>
+        <td valign="top">Thickness of the material used for the absorbing window frame</td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-t      </td>
+      </tr>
+      <tr>
+        <td valign="top">frame material</td>
+        <td valign="top">Material used for the absorbing window frame</td>
+        <td valign="top">    </td>
+        <td valign="top">-c  </td>
+      </tr>
 
-    <tr>
-      <td valign="top">rot. angle<br>[deg] </td>
-      <td valign="top">
-        rotation of the window about the (negative) x-axis  <br />
-        &nbsp;0 deg: height along the z-axis (upwards)      <br />
-             90 deg: height along the y-axis (to the left)
-      </td>
-      <td valign="top">[-180,180] deg </td>
-      <td valign="top">-A           </td>
-    </tr>
+      <tr>
+        <td valign="top">inner transmission file </td>
+        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the window pane </td>
+        <td valign="top">    </td>
+        <td valign="top">-m  </td>
+      </tr>
+      <tr>
+        <td valign="top">thickness of window<br />[cm] </td>
+        <td valign="top">Thickness of the material used for the window pane</td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-T      </td>
+      </tr>
+    </tbody>
+  </table>
 
-    <tr>
-      <td valign="top">used as beamstop </td>
-      <td valign="top">
-        yes: negative window: absorption inside and transmission outside <br />
-        no : normal window:   transmission inside  <br />
-        This option will be removed in VITESS 4. Please, use module <b>beamstop</b> instead.
-      </td>
-      <td valign="top">'no', 'yes' </td>
-      <td valign="top">-S          </td>
-    </tr>
-    <tr>
-      <td valign="top">use previous frame</td>
-      <td valign="top">
-        yes: origin of the co-ordinate system remains unchanged <br />
-        no : x-ordinate is shifted to the center of the window (default) <br />
-        Prevention of the shift of the origin is necessary for beamstops and windows between sample and detector
-      </td>
-      <td valign="top">'no', 'yes'  </td>
-      <td valign="top">-F           </td>
-    </tr>
 
-    <tr>
-      <td valign="top">treat color</td>
-      <td valign="top"> filter: Treat only events with given color. A negative number means any color </td>
-                        This option will be removed in VITESS 4. Please, use module <b>filter</b> instead.
-      <td valign="top">-1,0, 1 ... </td>
-      <td valign="top">-f           </td>
-    </tr>
+  <br><br>
+  <h2><font size="+1"> VITESS Module 'spacewindow_multiple' to simulate Propagation to a Ensemble of Apertures </font></h2>
+  <p>
+    The module <b>multiplewindows</b> simulates free propagation of neutrons
+    from (x=0) to the multi-aperture circular collimator (circular slits) or
+    just characterising a space region of interest. The influence of gravity
+    can be included in the calculation or omitted(-G option, values 1 or 0).
+    If gravity is included, neutrons travel from plane x=0 to the collimator
+    plane on <b>parabolic trajectories</b>. This is very useful for simulating
+    a SANS (pinhole collimation) instrument with long distances for the long
+    wavelength range. This collimator represents a window with multiple holes
+    (with an ideally absorbing circular plate) transmitting the neutrons. The
+    radius of the circular plate has to be given by the user. The radius and
+    center position of each hole is described in the parameter file, which
+    must be created by the user.&nbsp;<br>
+    <br>
+    <img SRC="windows1.gif">
+    <br>The format of parameter file: Y, Z give the center position of the
+    hole, R the radius of the hole.
+    <br><b>Example (two holes)</b>:
+    <br>-10 0.0 2.0
+    <br>0.0 10.0 3.0
+    <br>The number of holes for each collimator must be &lt; 100. The number
+    of lines is equal to the number of holes in the multiple collimator. The
+    neutrons at x=0 has been calculated by the previous module (naturally they
+    may differ in y and z-coordinates, divergence, wavelength and time) and
+    those hitting the holes (or outside of circular plate) are considered further
+    on in case of ideal transmission or transmited via the "inner material of collimator".
+    Other neutrons are absorbing in case of ideal absorption or transmitting via
+    the "outer material of collimator".<br>
+    Their x-coordinates are reset to 0 as is usually&nbsp;
+    done by most of the modules after finishing their specific calculations. <br>
+  </p>
+  <p>
+    Also the module calculates the center of the beam at the collimator plate and the
+    time of flight. The user must give the outer radius of the circular plate
+    and the distance from the former module to the plate along the x-axis.
+    (The plate must be perpendicular to the x-direction). An example of visualization
+    with such a parameter file is given below:
+    <br>(For visualization use the module monitor or<b> visual</b> (see visual
+    module help file))
+    <br><img SRC="windows2.gif">
+    <br>with
+    <br>-4.0 0.0 1.3
+    <br>3.5 0.0 1.3
+    <br>0.0 3.5 1.3
+    <br>0.0 -3.5 1.3
+    <br>0.0 0.0 1.3
+    <br>-2.5 2.5 1.3
+    <br>2.5 -2.5 1.3
+    <br>2.5 2.5 1.3
+    <br>-2.5 -2.5 1.3
+    <br>&nbsp;
+    <br>---------------------------------------------
+    <br>There are two kinds of material can be chosen. Outer material is meaning the
+    "absorbtion" material for the collimator. Inner material is meaning the "transmission"
+    material for the collimator. The thickness for the each material must be given too.
+    If the thickness of material is given zero, so for outer material is meaning the ideal
+    absorbtion. For the inner material is meaning the ideal transmission.<br>
 
-    <tr>
-      <td valign="top">min. phi<br>max. phi<br>[deg] </td>
-      <td valign="top">filter: minimal and maximal flight direction phi <br>
-                       phi is the projection of the flight direction to the y-z-plane <br>
-                       0° negative z-axis, 90° negative y-axis, 180° positive z-axis, 270° positive y-axis, <br>
-                       A negative value for minimum or maximum means that the whole range is allowed. </td>
-                       This option will be removed in VITESS 4. Please, use module <b>filter</b> instead.
-      <td valign="top">[0°,360°] </td>
-      <td valign="top">-p, -P    </td>
-    </tr>
+    <br> For the inner material data can be red from the file, which has the structure, given
+    below. If the file is given, the exp. transmission is activating automaticly, otherwise the ideal
+    transmission is acivated.<br>
+    <br>
+    <br>
+    <b>List of outer materials, which are included in the module </b>
+    <br>Value 0 - Read data from file, which created by user
+    <br>Value 1 - Gd: Gadolinium.
+    <br>Value 2 - Cd: Cadmium.
+    <br>Value 3 - B: Bor10.
+    <br>Value 4 - Eu
+    <br>Value 5 - Si: Silicon.
+    <br>Value 6 - Ideal absorbtion
+    <br>For values 1-4 wavelength range must be 0.3 ... 28 A in the source module or virtual source
+    <br>Foe value 5 wavelength range must be 1 .. 20 A in the source module or virtual source
+    <br>This data was given by Thomas Krist, HMI, Berlin.
+    <br>
+    <br>
+    The format of file, which is describing  the transmission is:
+    <br>Wavelength, A            Value MU, cm^(-1)
+    <br>...............................................................
+    <br>
+    <br>The wavelength values in the table must be increasing!!!
+    <br>Then, the transmission is calculated by formula:
+    Transmission = exp(-MU*Distance);
+    <br> where Distance is length of flight of neutron in given material in cm, which
+    calculated automaticly. During passing the neutrons via material, the Transmission
+    is multiply on the neutron probability.<br>
 
-    <tr>
-      <td valign="top">outer tranmsission file </td>
-      <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the frame of the window </td>
-      <td valign="top">    </td>
-      <td valign="top">-C  </td>
-    </tr>
-    <tr>
-      <td valign="top">thickness of frame<br />[cm] </td>
-      <td valign="top">Thickness of the material used for the absorbing window frame</td>
-      <td valign="top">&gt;= 0 </td>
-      <td valign="top">-t      </td>
-    </tr>
-    <tr>
-      <td valign="top">frame material</td>
-      <td valign="top">Material used for the absorbing window frame</td>
-      <td valign="top">    </td>
-      <td valign="top">-c  </td>
-    </tr>
+    <br>Please note.
+    <br>The wavelength range must be from smallest to longest wavelength in the table.
+    If you used material from list and/or material from file, please choose the
+    minimal and maximum wavelength values in the source module (or virtual source),
+    which do not extend the wavelength range for the absorption (outer) and
+    transmission (inner) materials.
+  </p>
 
-    <tr>
-      <td valign="top">inner transmission file </td>
-      <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the window pane </td>
-      <td valign="top">    </td>
-      <td valign="top">-m  </td>
-    </tr>
-    <tr>
-      <td valign="top">thickness of window<br />[cm] </td>
-      <td valign="top">Thickness of the material used for the window pane</td>
-      <td valign="top">&gt;= 0 </td>
-      <td valign="top">-T      </td>
-    </tr>
+  <h4>Parameters for module 'Spacewindow'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">collimator file </td>
+        <td valign="top">
+          File containing data defining the windows. Each line must contain 3 or 4 numbers: <br />
+          y, z, radius for circular windows or y, z, width, height <br />
+          The number of holes for each collimator must be less than 100.
+        </td>
+        <td valign="top">    </td>
+        <td valign="top">-I  </td>
+      </tr>
+      <tr>
+        <td valign="top">distance orig. <-> win<br>[cm]</td>
+        <td valign="top">
+          the distance from the origin (usually the exit of the previous component) to the center of the window.
+          It is the projection of the vector from the origin to center of the window on the x-axis
+        </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-D      </td>
+      </tr>
+      <tr>
+        <td valign="top">Outer radius<br>[cm]</td>
+        <td valign="top">Outer radius of the circular plate (multiaperture collimators)</td>
+        <td valign="top">&gt;= 0</td>
+        <td valign="top">-r   </td>
+      </tr>
+      <tr>
+        <td valign="top">window shape</td>
+        <td valign="top">
+          shape of the individual windows <br />
+          circular   : circular window defined by its center (relative to beam axis) and radius       <br />
+          rectangular: rectangular window defined by the center position (y,z), width and height <br />
+          automatic  : 3 numbers give circular, 4 nambers give rectangular shape
+        </td>
+        <td valign="top">circular, rectangular, automatic</td>
+        <td valign="top">-S   </td>
+      </tr>
+      <tr>
+        <td valign="top">outer tranmsission file </td>
+        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the frame of the window </td>
+        <td valign="top">    </td>
+        <td valign="top">-C  </td>
+      </tr>
+      <tr>
+        <td valign="top">thickness of frame<br />[cm] </td>
+        <td valign="top">Thickness of the material used for the absorbing window frame</td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-t      </td>
+      </tr>
+      <tr>
+        <td valign="top">frame material</td>
+        <td valign="top">Material used for the absorbing window frame</td>
+        <td valign="top">    </td>
+        <td valign="top">-c  </td>
+      </tr>
 
-  </tbody> 
-</table>
- <br> 
- 
-<hr><a href="vitess.html">Back to VITESS overview</a><br>
- <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a> 
-<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
-MET DST 2001 <!-- hhmts end --></font> </p>
-<br>
+      <tr>
+        <td valign="top">inner transmission file </td>
+        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the window pane </td>
+        <td valign="top">    </td>
+        <td valign="top">-m  </td>
+      </tr>
+      <tr>
+        <td valign="top">thickness of window<br />[cm] </td>
+        <td valign="top">Thickness of the material used for the window pane</td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-T      </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <br><br>
+  <h2><font size="+1"> VITESS Module 'grid' to simulate Propagation to a Multi-Aperture Collimator </font></h2>
+  <p>
+    The module <b>grid</b> simulates propagation of neutrons from the origin (x=0) to a multi-aperture collimator of circular or rectangular outer shape.
+    This grid collimator represents a plate with multiple rectangular windows transmitting the neutrons.
+    The size of the circular or rectangular plate and the distance from the former module to the plate along the x-axis have to be given by the user.
+    (The plate must be perpendicular to the x-direction.)  <br />
+    The size and center position of each hole (= window) is described in a parameter file, which has to be created by the user.
+    The collimator plate can be shifted horizontally and/or vertically.
+    The vertical shifting is useful to simulate a special 'gravitational monochromator'.
+    The vertical shift can be calculated automatically by the module, if the parameters belonging to 'Options gravity monochromator' are set.
+    Deviations of some parameters from ideal values can be simulated (see 'Deviation of parameters').
+    Non-ideal absorption in the plate can also be treated. The transmission is calculated then as:
+  </p>
+    &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*pathlen)&ensp;<br />
+  <p>
+    where 'pathlen' is the length of the path of the neutron in the given material, (which is calculated automatically from the thickness of the material).
+    The x-coordinates are reset to 0 (as usual) at the end of the treatment in this module.
+  <p>
+
+  <h4>Parameter file defining the holes</h4>
+  <p>
+    The user has to create a file describing the windows of the grid system. The number of lines is equal to the number of holes in the multiple collimator grid.
+    The format of each line is like this: <br />
+    1st column: (y-coordinate): horizontal position of the center of the hole <br />
+    2nd column: (z-coordinate): vertical position of the center of the hole <br />
+    3rd column: half width = half height of the hole
+  <p>
+    <b>Example:</b>
+  <p>
+    4 quadratic holes of 1 x 1 cmÂ² in a distance of 1.2 cm (horizontally and vertically) would look like that: <br />
+<pre>
+#   y     z   halfwidth
+#----------------------
+  -0.6  -0.6   0.5  
+   0.6  -0.6   0.5
+  -0.6   0.6   0.5 
+   0.6   0.6   0.5
+</pre>
+  <p>
+
+  <h4>Parameters for module 'grid'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+
+      <tr>
+        <td valign="top">Holes description</td>
+        <td valign="top">File that characterizes the positions and sizes of the holes of a grid</td>
+        <td valign="top"> - </td>
+        <td valign="top">-I </td>
+      </tr>
+
+      <tr>
+        <td valign="top">distance orig  - grid<br>[cm]</td>
+        <td valign="top">distance from origin to grid along the beam direction (x-axis) </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-D </td>
+      </tr>
+
+      <tr>
+        <td valign="top">thickness of material<br>[cm]</td>
+        <td valign="top">Thickness of the material used for the grid </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-t</td>
+      </tr>
+
+      <tr>
+        <td valign="top">outer hor size or radius<br>[cm]</td>
+        <td valign="top">
+          for circular outer shape   : radius of the grid <br />
+          for rectangular outer shape: width of the grid
+        </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-a</td>
+      </tr>
+
+      <tr>
+        <td valign="top">outer vert size<br>[cm]</td>
+        <td valign="top">for rectangular outer shape: height of the grid  </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-b</td>
+      </tr>
+
+      <tr>
+        <td valign="top">horizontal/vertical shift<br>[cm]</td>
+        <td valign="top">horizontal/vertical shift of the grid  </td>
+        <td valign="top">any</td>
+        <td valign="top">-d<br />-e</td>
+      </tr>
+
+      <tr>
+        <td valign="top">shape of the grid</td>
+        <td valign="top">shape of the collimator plate containing the holes</td>
+        <td valign="top">'circular'<br />'square'</td>
+        <td valign="top">-N</td>
+      </tr>
+
+      <tr>
+        <td valign="top">crosstalk between channels tracking</td>
+        <td valign="top">
+          'yes': analysis of cross-talk between channels within the grid system activated <br />
+          'no' : no analysis of cross-talk
+        </td>
+        <td valign="top">'no'<br />'yes'</td>
+        <td valign="top">-K</td>
+      </tr>
+
+      <tr>
+        <td valign="top">material description file</td>
+        <td valign="top">
+          for 'material from file':  <br />
+          File which characterizes the transmission of the (outer) material of the grid plate.
+        </td>
+        <td valign="top"> - </td>
+        <td valign="top">-C </td>
+      </tr>
+
+      <tr>
+        <td valign="top">material</td>
+        <td valign="top">
+          material of the grid plate: <br />
+          'from file' needs a 'material description file' as input <br />
+          in all other cases the necessary data are in the program
+        </td>
+        <td valign="top">'from file'<br />'gadolinum'<br />'cadmium'<br />'bor-10'<br />'Eu'<br />'silicon'<br />'ideal absorber'</td>
+        <td valign="top">-c</td>
+      </tr>
+
+      <tr>
+        <td valign="top">Deviation: horizontal/vertical shift<br>[cm]</td>
+        <td valign="top">
+          random deviation of horizontal/vertical shift of the grid <br />
+          a linear distribution within [shift-dev_shift, shift+dev_shift] is assumed
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-y<br />-q</td>
+      </tr>
+
+      <tr>
+        <td valign="top">Deviation: radius of window<br>[cm]</td>
+        <td valign="top">
+          random deviation of the size of the apertures in the grid plate  <br />
+          a linear distribution within [radius-dev_radius, radius+dev_radius] is assumed
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-h<br />-H</td>
+      </tr>
+
+      <tr>
+        <td valign="top">Deviation: center of window<br>[cm]</td>
+        <td valign="top">
+          random deviation of the center position of the windows (in the plate) <br />
+          a linear distribution within [pos-dev_pos, po+dev_pos] is assumed
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-h<br />-H</td>
+      </tr>
+
+      <tr>
+        <td valign="top">Deviation: distance orig  - grid<br>[cm]</td>
+        <td valign="top">
+          random deviation from the defined distance between origin and grid  <br />
+          a linear distribution within [distance-dev_dist, distance+dev_dist] is assumed
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top"> -X </td>
+      </tr>
+
+      <tr>
+        <td valign="top">Grav.Monochr.: calc dist orig  - grid<br>[cm] </td>
+        <td valign="top">
+          distance from the end of previous module, usually the previous window        <br />
+          used to calculate the ideal shift of the grid plate for a certain wavelength
+        </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top"> -M  </td>
+      </tr>
+
+      <tr>
+        <td valign="top">Grav.Monochr.: calc total dist <br>[cm]        </td>
+        <td valign="top">
+          distance from the beginning of the grid system  <br />
+          used to calculate the ideal shift of the grid plate for a certain wavelength
+        </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top"> -m  </td>
+      </tr>
+
+      <tr>
+        <td valign="top">Grav.Monochr.: Grav.Monoch. wavelength<br>[Ã…]            </td>
+        <td valign="top">wavelength for which the grid system should be optimized </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top"> -n  </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+  <a href="vitess.html">Back to VITESS overview</a>
+  <br>
+  <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
+  <p>
+    <font size="-1">
+      <!-- hhmts start --> Last modified: Tue May  8 17:08:06
+      MET DST 2001 <!-- hhmts end -->
+    </font>
+  </p>
+  <br>
 </body>
 </html>
