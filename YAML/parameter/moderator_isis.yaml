@@ -1,0 +1,63 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+Moderator:
+  - ModName :
+      descr:   "name"
+      type:    "string"
+      column:  0                #0-2
+
+  - eTS     :                   #   VtTS      TS_Txt2ID(const char* sText)
+      type:    "combo" 
+      descr:   "target station"
+      tooltip: "target station"
+      default: ["TS 1","TS 2"] 
+      column:  0                     
+      prefix:  "-S"    
+
+  - Width   :                   #   [cm]   width  of the moderator 
+      type:    "float" 
+      descr:   "width [cm]"
+      tooltip: "width of the moderator"
+      column:  0                     
+      prefix:  "-w" 
+  - Height  :                   #   [cm]   height of the moderator 
+      type:    "float" 
+      descr:   "height [cm]"
+      tooltip: "height of the moderator"
+      column:  1                     
+      prefix:  "-h"     
+    
+  - CntrX   :                   #   [cm]   x coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center x [cm]"
+      tooltip: "x coordinate of the center of the moderator"
+      default: 0.0
+      column:  0                     
+      prefix:  "-X"     
+  - CntrY   :                   #   [cm]   y coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center y [cm]"
+      tooltip: "y coordinate of the center of the moderator"
+      default: 0.0
+      column:  1                    
+      prefix:  "-Y"    
+  - CntrZ   :                   #   [cm]   z coordinate of the center of the moderator 
+      type:    "float" 
+      descr:   "center z [cm]"
+      tooltip: "z coordinate of the center of the moderator"
+      default: 0.0
+      column:  2                     
+      prefix:  "-Z"
+
+  - L_T_File:                   #   [-]    file containing the wavelength-time distribution function 
+      type:    "file" 
+      descr:   "wavelength-time\ndist file"
+      tooltip: "File containing the wavelength-time distribution function"
+      prefix: "-U"    

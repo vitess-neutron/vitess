@@ -1,0 +1,80 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+chopper_disc:
+  - Name    : 
+      descr:   "name" 
+      type:    "string" 
+  - Chopper_Window:
+      type:    "window"
+      descr:   "chopper window"
+      tooltip: "chopper window description parameter"   
+
+  - Rpm     :                     # -s       [1/min] rotation speed 
+      type:    "float" 
+      descr:   "rounds / min."
+      tooltip: "rotation speed" 
+      column:  0                     
+      prefix:  "-s"     
+  - Offset  :                     # -o        [deg]  orientation of the chopper at t=0 
+      type:    "float" 
+      descr:   "Offset [deg]"
+      tooltip: "orientation of the chopper at t=0"
+      column:  1                     
+      prefix:  "-o"     
+  - Dist    :                     # -l        [cm]   distance of the chopper from the end of the previous component 
+      type:    "float" 
+      descr:   "distance to\nprev. module [cm]"
+      tooltip: "distance of the chopper from the end of the previous component" 
+      column:  2                     
+      prefix:  "-l"     
+
+  - eAbs    :                     # -g  IDEAL  [-]   enum: absorption in chopper: IDEAL  GADOLINIUM  BOR 
+      type:    "combo" 
+      descr:   "absorption"
+      tooltip: "absorbing window material" 
+      column:  0                     
+      default: ["ideal absorber","gadolinium","bor10"]
+      prefix:  "-g"     
+  - bZeroT  :                     # -z   NO    [-]   flag: chopper sets neutron time to zero 
+      type:    "switch" 
+      descr:   "set zero time"
+      tooltip: "set: chopper sets neutron time to zero" 
+      column:  1                     
+      prefix:  "-z"     
+  - bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
+      type:    "switch" 
+      descr:   "treat neutrons\npassing by"
+      tooltip: "set: neutrons can pass outside the chopper" 
+      column:  2                     
+      prefix:  "-p"     
+
+  - bColor  :                     # -c   YES   [-]   flag: chopper sets colour to window number 
+      type:    "switch" 
+      descr:   "set colour"
+      tooltip: "set: chopper sets colour to window number"
+      column:  0                     
+      prefix:  "-c"     
+
+  - Radius  :                     #     35.0  [cm]   radius of the chopper 
+      type:    "float" 
+      descr:   "radius [cm]"
+      tooltip: "radius of the chopper" 
+      column:  0                     
+  - HorPos  :                     #      0.0  [cm]   y-component of the centre of the chopper 
+      type:    "float" 
+      descr:   "horiz. position\nof axle [cm]"
+      tooltip: "y-component of the centre of the chopper"
+      column:  1                     
+  - VerPos  :                #    -25.0  [cm]   z-component of the centre of the chopper 
+      type:    "float" 
+      descr:   "vert. position\nof axle [cm]"
+      tooltip: "z-component of the centre of the chopper" 
+      column:  2                     
+
