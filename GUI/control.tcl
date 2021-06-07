@@ -318,25 +318,25 @@ proc controlMenu {w} {
 
   popMenu $w.hel.menu \
       {c "General information" {showHelpItem VITESS-General}} \
-      {c Tutorial {showHelpItem tutorial.pdf}} \
-      {c "User interface" {showHelpItem VITESS-GUI}} \
-      {c "Generate Series" {showHelpItem sim_series.html}} \
-      {c "Instrument Digest" {showHelpItem digest.html}} \
-      {c "External commands" {showHelpItem External-Commands}} \
-      {c "Ray tracing" {showHelpItem raytracing.html}} \
-      {c Visualization {showHelpItem visula.html}} \
-      {c Optimization {showHelpItem Optimization.pdf}} \
+      {c Tutorial             {showHelpItem tutorial.pdf}} \
+      {c "User interface"     {showHelpItem VITESS-GUI}} \
+      {c "Generate Series"    {showHelpItem sim_series.html}} \
+      {c "Instrument Digest"  {showHelpItem digest.html}} \
+      {c "External commands"  {showHelpItem External-Commands}} \
+      {c "Ray tracing"        {showHelpItem raytracing.html}} \
+      {c Visualization        {showHelpItem visula.html}} \
+      {c Optimization         {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
-      {c Xcontrol {showHelpItem XControl}} s \
-      {c "beamstop"   {showHelpItem beamstop.html}} \
-      {c "chopper"    {showHelpItem chopper.html}} \
-      {c "collimator" {showHelpItem collimator.html}} \
-      {c "detector"   {showHelpItem detector.html}} \
-      {c "evaluation" {showHelpItem evaluation.html}} \
-      {c "filter"     {showHelpItem filter.html}} \
-      {c "flipper"    {showHelpItem flipper.html}} \
-      {c "frame"      {showHelpItem frame.html}} \
-      {c "guide"      {showHelpItem guide.html}} \
+      {c Xcontrol             {showHelpItem XControl}} s \
+      {c "beamstop"           {showHelpItem beamstop.html}} \
+      {c "chopper"            {showHelpItem chopper.html}} \
+      {c "collimator"         {showHelpItem collimator.html}} \
+      {c "detector"           {showHelpItem detector.html}} \
+      {c "evaluation"         {showHelpItem evaluation.html}} \
+      {c "filter"             {showHelpItem filter.html}} \
+      {c "flipper"            {showHelpItem flipper.html}} \
+      {c "frame"              {showHelpItem frame.html}} \
+      {c "guide"              {showHelpItem guide.html}} \
       {c "magnetic_field"     {showHelpItem magnetic_field.html}} \
       {c "mirror"             {showHelpItem mirror.html}} \
       {c "monitor"            {showHelpItem monitor.html}} \
@@ -346,11 +346,11 @@ proc controlMenu {w} {
       {c "resonator_drabkin"  {showHelpItem resonator_drabkin.html}} \
       {c "sample"             {showHelpItem sample.html}} \
       {c "sample_environment" {showHelpItem sample_environment.html}} \
-      {c "sm_ensemble"  {showHelpItem sm_ensemble.html}} \
-      {c "source"       {showHelpItem source.html}} \
-      {c "spacewindow"  {showHelpItem spacewindow.html}} \
-      {c "trajectories" {showHelpItem trajectories.html}} \
-      {c "velselect"    {showHelpItem velselect.html}} \
+      {c "sm_ensemble"        {showHelpItem sm_ensemble.html}} \
+      {c "source"             {showHelpItem source.html}} \
+      {c "spacewindow"        {showHelpItem spacewindow.html}} \
+      {c "trajectories"       {showHelpItem trajectories.html}} \
+      {c "velselect"          {showHelpItem velselect.html}} \
 
   set pwd [file join $SourceDirectory WWW]
 
