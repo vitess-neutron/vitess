@@ -1,5 +1,0 @@
-slit:
-   Name    : "Diaphragm 1"
-   Distance:  200.0           # -d    0.0  [cm]   length of the free flight path along the x-axis 
-   Width   :    2.0           # -W    0.0  [cm]   width of the slit
-   Height  :    4.0           # -H    0.0  [cm]   height of the slit
