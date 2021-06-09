@@ -1,0 +1,97 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+sample_inelast:
+  - Name    : 
+      type:    "string" 
+      descr:   "name" 
+  - Title: 
+      type:    "title" 
+      default: "Inelastic scattering" 
+  - SmplFile:                 # -P         [-]    sample parameter file name 
+      type:    "file" 
+      descr:   "parameter\nfile"
+      tooltip: "sample parameter file name"
+      prefix:  "-P"     
+  - Inelast_Parameter:
+      type:    "window"
+      descr:   "inelast\nparameter"
+      tooltip: "inelast description parameter"   
+
+  - Title_param: 
+      type:    "title" 
+      default: "S(q,w):  main (P) and dispersion (D) parameters"
+  - P1      :                 # -a    0.0 [ueV]   reference energy (: peak position for vanishing energy dispersion)
+      type:    "float" 
+      descr:   "P1 [microeV]"
+      tooltip: "reference energy (peak position for vanishing energy dispersion)"
+      default: 0.0
+      column:  0                     
+      prefix:  "-a"     
+  - P2      :                 # -b    0.0 [ueV]   Lorentzian width (HWHM)
+      type:    "float" 
+      descr:   "P2 [microeV]"
+      min:     0.0
+      default: 0.0 
+      tooltip: "Lorentzian width (HWHM)"
+      column:  1                     
+      prefix:  "-b"     
+  - P3      :                 # -c    0.0  [-]    scaling factor (for both peaks)
+      type:    "float" 
+      descr:   "P3"
+      min:     0.0001
+      tooltip: "scaling factor (for both peaks)"
+      default: 0.0 
+      column:  2                     
+      prefix:  "-c"     
+  - P4      :                 # -d    0.0  [-]    intensity of the second peak relative to the first
+      type:    "float" 
+      descr:   "P4"
+      tooltip: "intensity of the second peak relative to the first"
+      column:  0                     
+      prefix:  "-d"     
+  - Temp    :                 # -T    0.0  [cm]   temperature of the sample
+      type:    "float" 
+      descr:   "temperature [K]"
+      min:     0.0001
+      tooltip: "temperature of the sample"
+      column:  1                     
+      prefix:  "-T"     
+  - Repete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
+      type:    "int" 
+      descr:   "repetition" 
+      min:     1
+      tooltip: "repetitions (number of trajectories generated per incoming trajectory"
+      column:  2                     
+      prefix:  "-A"     
+  - D1      :                 # -x    0.0  [cm]   linear energy dispersion coefficient of momentum component x
+      type:    "float" 
+      descr:   "D1 [microeV*A]"
+      tooltip: "linear energy dispersion coefficient of momentum component x"
+      column:  0                     
+      prefix:  "-x"     
+  - D2      :                 # -y    0.0 [deg]   linear energy dispersion coefficient of momentum component y
+      type:    "float" 
+      descr:   "D2 [microeV*A]"
+      tooltip: "linear energy dispersion coefficient of momentum component y"
+      column:  1                     
+      prefix:  "-y"     
+  - D3      :                 # -z    0.0 [deg]   linear energy dispersion coefficient of momentum component z
+      type:    "float" 
+      descr:   "D3 [microeV*A]"
+      tooltip: "linear energy dispersion coefficient of momentum component z"
+      column:  2                     
+      prefix:  "-z"     
+  - bBoseFac:                 # -D    NO  flag: multiplication with the Bose factor
+      type:    "switch" 
+      descr:   "Bose factor?" 
+      tooltip: "flag   multiplication with the Bose factor"
+      column:  0                     
+      prefix:  "-D"     
+

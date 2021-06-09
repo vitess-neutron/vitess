@@ -1,0 +1,42 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+sample_inelast:
+  - Name    : 
+      type:    "string" 
+      descr:   "name" 
+  - SmplFile:                 # -P         [-]    sample parameter file name 
+      type:    "file" 
+      descr:   "parameter\nfile"
+      tooltip: "sample parameter file name"
+      prefix:  "-P"     
+  - Elast_Parameter:
+      type:    "window"
+      descr:   "elast\nparameter"
+      tooltip: "elasticisotr description parameter"   
+
+  - Title_param: 
+      type:    "title" 
+      default: "Special Options"
+  - bColor      :                 # -c ANY_COLOR [-]  color: if != -1, only neutrons of this colour are treated
+      type:    "int" 
+      descr:   "color"
+      tooltip: "if != -1, only neutrons of this colour are treated"
+      default: -1
+      column:  0                     
+      prefix:  "-c"     
+  - Repete:                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
+      type:    "int" 
+      descr:   "repetition"
+      min:     1
+      default: 1 
+      tooltip: "repetitions (number of trajectories generated per incoming trajectory)"
+      column:  1                     
+      prefix:  "-A"     
+
