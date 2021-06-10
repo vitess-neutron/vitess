@@ -11,20 +11,87 @@ sample_reflectom:
   - Name    :
       type:    "string"
       descr:   "name" 
-  - SmplFile:                 # -P         [-]    sample parameter file name 
-      type:    "file" 
-      descr:   "parameter\nfile"  
-      tooltip: "sample parameter file name"
-      prefix:  "-P"
+
+  - Title_OffSpect: 
+      type:    "title" 
+      default: "Sample parameter"
+  - PosX:                   	#   [cm]   center x position of the sample
+      type:    "float" 
+      descr:   "pos x [cm]"
+      tooltip: "center x position of the sample"
+      default: 0.0
+      prefix:  "-x"
+      column:  0                     
+  - PosY:                   	#   [cm]   center y position of the sample
+      type:    "float" 
+      descr:   "pos y [cm]"
+      tooltip: "center y position of the sample"
+      default: 0.0
+      prefix:  "-y"
+      column:  1                     
+  - PosZ:                  	#   [cm]   center z position of the sample
+      type:    "float" 
+      descr:   "pos z [cm]"
+      tooltip: "center z position of the sample"
+      default: 0.0
+      prefix:  "-z"
+      column:  2                     
+
+  - Width   :                   #   [cm]   width  of the sample 
+      type:    "float" 
+      descr:   "width [cm]"
+      tooltip: "width of the sample"
+      prefix:  "-W"
+      column:  0                     
+  - Length  :                   #   [cm]   length of the sample 
+      type:    "float" 
+      descr:   "length [cm]"
+      tooltip: "length of the sample"
+      prefix:  "-L"
+      column:  1                     
+   
+  - OutX   :                   #   [cm]   x coordinate in output frame 
+      type:    "float" 
+      descr:   "out x [cm]"
+      tooltip: "x coordinate in output frame"
+      default: 0.0
+      prefix:  "-u"
+      column:  0                     
+  - OutY   :                   #   [cm]   y coordinate in output frame 
+      type:    "float" 
+      descr:   "out y [cm]"
+      tooltip: "y coordinate in output frame"
+      default: 0.0
+      prefix:  "-U"
+      column:  1                     
+  - OutZ   :                   #   [cm]   z coordinate in output frame 
+      type:    "float" 
+      descr:   "out z [cm]"
+      tooltip: "z coordinate in output frame"
+      default: 0.0
+      prefix:  "-w"
+      column:  2                     
+
+  - OutHor   :                   #   [deg]   horizontal angular coordinate in output frame 
+      type:    "float" 
+      descr:   "horizontal\nangle [deg]"
+      tooltip: "horizontal angular coordinate in output frame"
+      default: 0.0
+      prefix:  "-k"
+      column:  0                     
+  - OutVert   :                   #   [deg]   vertical angular coordinate in output frame 
+      type:    "float" 
+      descr:   "vertical\nangle [deg]"
+      tooltip: "vertical angular coordinate in output frame"
+      default: 0.0
+      prefix:  "-K"
+      column:  1                     
+
   - ReflFile:                 # -I         [-]    name of the file containing the sample reflectometry
       type:    "file" 
       descr:   "reflectivity\nfile"  
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
-  - Refl_Parameter:
-      type:    "window"
-      descr:   "reflectivity\nparameter"
-      tooltip: "reflectometry description parameter"   
   - Mode    :                 # -O  SAMPLE [-]    enum mode  1 reflection of SAMPLE   2 reflection of REFERENCE  
       type:    "combo" 
       descr:   "mode" 
