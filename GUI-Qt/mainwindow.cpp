@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QScrollBar>
 #include <QDesktopServices>
+#include <QUrl>
 #include <unistd.h>
 #include <QDate>
 #include <QPlainTextEdit>
@@ -37,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     while ( ui->stackedWidget->count() > 0 )
         ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
     ui->stackedWidget->hide();
+
+    //get vitess directory
     VitessDir = QApplication::applicationDirPath().
                left(QApplication::applicationDirPath().lastIndexOf("/"));
     //If Application is under debug or release
@@ -44,54 +47,59 @@ MainWindow::MainWindow(QWidget *parent) :
         VitessDir = VitessDir.left(VitessDir.lastIndexOf("/"));
     instrumentInDir = VitessDir;
     instrumentOutDir = instrumentInDir;
-    QDir directory (VitessDir+"/YAML/");
 
+    //get modul list from existing yaml definition files
+    QDir directory (VitessDir+"/YAML/");
     QStringList modulList;
-    // List of all configuration yaml files
     fList = directory.entryList({"*.yaml"});
     for(int i=0; i<fList.count();i++ )
     {
-       //module name   filename without extension
-       modulList << fList[i].left(fList[i].lastIndexOf(".yaml"));
        QString modulFile = directory.path()+"/"+fList[i];
        QFile file(modulFile);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
-        QMessageBox::information(this,"Warning cannot open Modul initfile: ",modulFile);
-        return;
+        QMessageBox::warning(this,"Error in modul definition file",
+                     "Cannot open file: ",modulFile);
        }
-       //load yaml file
-       config = YAML::LoadFile(modulFile.toStdString());
-       file.close();
+       else{
 
-       //list of modulNames for comboBox in tableWidget
-       //map modulname with filename and name of used c-module (first entry in file)
-       Module[modulList[i]] << modulFile << QString::fromStdString(config.begin()->first.as<string>());
-       //count same modules in table
-       modindex[modulList[i]] = 0;
-       mapModule.clear();
+        //list of modulNames for comboBox in tableWidget
+        //module name:  filename without extension
+        modulList << fList[i].left(fList[i].lastIndexOf(".yaml"));
+        Module[modulList[i]] << modulFile;
+        //map entry: modulparameter
+        //    val: parameter definitions (type,description...)
+        mapModule.clear();
 
-       //design gui for modul
-       designModul(modulList[i]);
-       // map of modulname and moduldesign
-       modulGui[modulList[i]] = scrollArea;
+        //design gui for modul
+        designModul(modulList[i]);
+        //map key:modulname
+        //    val:modul init filename , name of used c-module in pipe
+        Module[modulList[i]] << cModul;
+        // map entry: modulname   val: moduldesign
+        modulGui[modulList[i]] = scrollArea;
 
-       //map of modulname and map of modulparameter and their definitions
-       mapVitess[modulList[i]] = mapModule;
-
+        //map entry: modulname
+        //      val: map  entry: modulparameter
+        //                val:   parameter definitions
+        mapVitess[modulList[i]] = mapModule;
+        //for later count of same modules
+        modindex[modulList[i]] = 0;
+      }
     }
-
     //table to select moduls
     modultab = new ModulTable(modulList, ui->modWidget);
+    //set layout
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(modultab);
     layout->setContentsMargins(0,0,0,0);
     ui->modWidget->setLayout(layout);
+
     //Connect signals to slots
     //An arrow was pressed
     connect(modultab,SIGNAL(arrowPressed(int)),this,SLOT(showSelectedModul(int)));
 
-    //Modul comboBox Value changed
+    //Modul table value changed
     connect(modultab,SIGNAL(changedComboVal(QString,int)),this,
                      SLOT(changeModulWidget(QString,int)));
 
@@ -105,7 +113,6 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect signals for menu action buffersize
     foreach(QAction * act, ui->menunBuffer->actions())
         connect(act,SIGNAL(triggered()),this,SLOT(BufferSize_triggered()));
-
     nBuffer = "50000";          //default setting
 
     //connect signals for min. neutron weight
@@ -116,15 +123,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionGenerate_Series,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
     foreach(QAction * act, ui->menuHelpTools->actions())
         connect(act,SIGNAL(triggered()),this,SLOT(helpTools_triggered()));
-
-    for (int i=1; i<5; i++)
+    foreach(QString str, helpModul)
     {
-        QMenu *modMenu = this->findChild<QMenu *>("menuModules_"+QString::number(i));
-        foreach(QAction * act, modMenu->actions())
-          connect(act,SIGNAL(triggered()),this,SLOT(helpModules_triggered()));
+        QAction *act = new QAction(str);
+        act->setObjectName(str);
+        ui->menuHelp->addAction(act);
+        connect(act,SIGNAL(triggered()),this,SLOT(helpModules_triggered()));
     }
-    t = new QTimer(this);
-    connect(t, SIGNAL(timeout()),this,SLOT(testActive()));
+
+    //timer used for progress
+    tProgress = new QTimer(this);
+    connect(tProgress, SIGNAL(timeout()),this,SLOT(testActive()));
 
     //Dialog for big output window
     bigOutput = new Big();
@@ -319,6 +328,7 @@ void MainWindow::on_pushSave_clicked()
     //save textbrowser content to file
     QString logFile = QFileDialog::getSaveFileName(this,"Save logfile as",instrumentOutDir,
                                                    tr("Files (*.*)"));
+    if (logFile.isEmpty()) return;
     QFile file(logFile);
     if (!file.open(QFile::WriteOnly | QFile::Text))        //open file
     {
@@ -356,12 +366,11 @@ void MainWindow::on_pushDryrun_clicked()
         return;
     }
 
-    // generate 100 trajectories only, change parameter -n to 100000
+    // change number of neutron trajectories  -n to 100000
     if (cmdList[0].contains(QRegExp("-n[0-9]+e\\+?[0-9]+")))
         cmdList[0].replace(QRegExp("-n[0-9]+e\\+?[0-9]+"), "-n100000");
     else if (cmdList[0].contains(QRegExp("-n[0-9]+")))
         cmdList[0].replace(QRegExp("-n[0-9]+"), "-n100000") ;
-    else cout << "Error in -n" << endl;
 
     procList.clear();
     for (int i=0; i<ui->stackedWidget->count(); i++)
@@ -395,7 +404,8 @@ void MainWindow::on_pushDryrun_clicked()
            procList[enableIndex]->start(cmdList[enableIndex]);
            if (!procList[enableIndex]->waitForStarted())
            {
-              cout << "Error with start proc" << enableIndex << endl;
+              QMessageBox::critical(this,"Critical Error!",
+                           " Could not start process number:",QString::number(enableIndex));
               pipeActive = false;
               return;
            }
@@ -481,23 +491,17 @@ void MainWindow::helpTools_triggered()
 
 void MainWindow::helpModules_triggered()
 {
-     QString text = this->findChild<QAction *>(sender()->objectName())->text();
-     QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + text + ".html"));
+     QString text = sender()->objectName();
+     if (!QDesktopServices::openUrl(QUrl("file:///"+ VitessDir + "/WWW/" + text + ".html")))
+         QMessageBox::warning(this,"Help file",
+                              "Warning cannot open helpfile for modul: ",text);
 }
 
 void MainWindow::writeHeader(YAML::Node& config)
 {
     string gPara = "GlobalParameters";
-    //get global entries from map
-    foreach(QString entry, mapHeader.keys())
-    {
-        if (this->findChild<QLineEdit *>(entry))
-            config[gPara][entry.toStdString()] =
-                    this->findChild<QLineEdit *>(entry)->text().toStdString();
-        else if (this->findChild<QComboBox *>(entry))
-            config[gPara][entry.toStdString()] =
-                    this->findChild<QComboBox *>(entry)->currentText().toStdString();
-    }
+    config[gPara]["RndSeed"] = ui->RndSeed->text().toStdString();
+    config[gPara]["bGravity"] = ui->bGravity->currentText().toStdString();
     config[gPara]["nBuffer"] = nBuffer.toStdString();
     config[gPara]["MinWght"] = MinWght.toStdString();
     config[gPara]["Modnum"] = ui->stackedWidget->count();
@@ -573,10 +577,10 @@ void MainWindow::loadHeader(YAML::Node& nodeGlobal)
 void MainWindow::getHeader(QTextStream& out)
 {
 
-    //get global values and the matching entries from map
+    //get global values and the matching prefixes from map
     foreach(QString entry, mapHeader.keys())
     {
-        out << " " << mapHeader[entry][0];
+        out << " " << mapHeader[entry];
         if (this->findChild<QLineEdit *>(entry))
             out << this->findChild<QLineEdit *>(entry)->text();
         else if (this->findChild<QComboBox *>(entry))
@@ -650,6 +654,9 @@ void MainWindow::on_pushCheck_clicked()
                 {
                     QString fileName = ui->stackedWidget->widget(i)
                           ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
+//eingefuegt
+                    fileName = instrumentOutDir+"/"+fileName;
+
                     QFile file(fileName);
                     if (!file.open(QFile::ReadOnly | QFile::Text))
                     {
@@ -840,13 +847,15 @@ void MainWindow::readCurModul(YAML::Node& curModule,int index)
     {
         QString butName = allPushButtons[ii]->objectName();
         if(paramWindow.keys().indexOf(butName) != -1)
-           if( ui->stackedWidget->widget(index)
-                ->findChild<QLineEdit *>(butName.toLower()+"_file")->text() != "")
+        {
+           QString parFile = ui->stackedWidget->widget(index)
+                  ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
+           if( parFile != "")
            {
-              QString parFile = ui->stackedWidget->widget(index)
-                    ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
+              parFile = instrumentOutDir + "/" +parFile;
               paramWindow[butName]->saveData(config,key,butName,parFile);
            }
+        }
     }
 }
 
@@ -885,8 +894,9 @@ void MainWindow::pasteCurModul(YAML::Node curModule,int index)
             fout << paramWin;
             file.close();
             //set filename to lineEdit
+            QFileInfo fileinfo(fileName);
             modulWidget->findChild< QLineEdit *>(childName.toLower()+"_file")
-                       ->setText(fileName);
+                       ->setText(fileinfo.fileName());
         }
     }
 }
@@ -906,6 +916,8 @@ void MainWindow::designModul(QString modulName)
     scrollArea->setWidgetResizable(true);
     //load modul yaml configuration file
     YAML::Node config = YAML::LoadFile(Module[modulName][0].toStdString());
+    // set used c-modul
+    cModul = QString::fromStdString(config.begin()->first.as<string>());
     getModulParameter(config, modulName);
 
 }
@@ -958,7 +970,7 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
             if( scrollArea->widget()->findChild<QPushButton*>(parName))
             {
                 //create widget for subparameter
-                paramWindow[parName] = new Parameter(QStringList()<<instrumentInDir<<instrumentOutDir);
+                paramWindow[parName] = new Parameter();
                 paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
                 //get configuration yaml file for subparameter in subdirectory
                 QString yamlPath = VitessDir + "/YAML/parameter/";
@@ -991,7 +1003,18 @@ void MainWindow::paramBut_clicked()
     QString fileName = ui->stackedWidget->currentWidget()
                          ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
     if (fileName != "")
+    {
+       fileName = instrumentOutDir+"/"+fileName;
+       QFile file(fileName);
+       if (!file.open(QFile::ReadOnly | QFile::Text))
+       {
+           QMessageBox::warning(this,"Parameter file","Warning cannot open file: ",fileName);
+           return;
+       }
        paramWindow[param]->loadFile(fileName);
+    }
+    paramWindow[param]->instInDir=instrumentInDir;
+    paramWindow[param]->instOutDir=instrumentOutDir;
     paramWindow[param]->show();
 }
 
@@ -1000,7 +1023,7 @@ void MainWindow::changeParamWidget(QString filename,QString initName)
     //set filename from subparameter into matching lineEdit
     QFileInfo fileinfo(filename);
     int curInd = ui->stackedWidget->currentIndex();
-    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(filename);
+    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(fileinfo.fileName());
 }
 
 
@@ -1155,6 +1178,7 @@ void MainWindow::on_actionSet_Instrument_Name_triggered()
 {
     instrumentName = QFileDialog::getSaveFileName(this,"Set Instrumentname",instrumentInDir,
                                                   tr("Files (*.yaml *.yml)"));
+    if (instrumentName.isEmpty()) return;
     if (!instrumentName.endsWith(".yaml") && !instrumentName.endsWith(".yml"))
         instrumentName += ".yml";
     QFile file(instrumentName);
@@ -1230,7 +1254,11 @@ void MainWindow::loadInstrument(QString fName)
 
     ui->InstName->setText(fileinfo.baseName());
     //set new working dir
-    instrumentInDir=fileinfo.path();
+    instrumentInDir = fileinfo.path();
+    instrumentOutDir = instrumentInDir;
+    ui->InDir->setText(instrumentInDir);
+    ui->OutDir->setText(instrumentInDir);
+
     modultab->cleanModules();
     while ( ui->stackedWidget->count() > 0 )
          ui->stackedWidget->removeWidget( ui->stackedWidget->widget(0) );
@@ -1308,49 +1336,45 @@ void MainWindow::showTextBrowser()
 }
 
 
+void MainWindow::on_pushVisual_clicked()
+{
+    ui->pushCheck->clicked();
+    // first module should be a source module
+    if (cmdList[0].indexOf("source") < 0)
+    {
+        ui->textBrowser->setTextColor(Qt::red);
+        ui->textBrowser->append("First module should be a source module");
+        ui->textBrowser->setTextColor(Qt::black);
+        if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
+        return;
+    }
+    if (cmdList[0].contains(QRegExp("-n[0-9]+e\\+?[0-9]+")))
+        cmdList[0].replace(QRegExp("-n[0-9]+e\\+?[0-9]+"), "-n10000");
+    else if (cmdList[0].contains(QRegExp("-n[0-9]+")))
+        cmdList[0].replace(QRegExp("-n[0-9]+"), "-n10000") ;
+    ui->textBrowser->setTextColor(Qt::blue);
+    ui->textBrowser->append("Set Number of trajections to 10000\n");
+    ui->textBrowser->setTextColor(Qt::black);
+    visualRepete = 0;
+    //start timer to repete test of visual simulation runs to be ready
+    //without blocking program
+    tProgress->start(100);
+
+}
+
 void MainWindow::testActive()
 {
     if (!pipeActive)
     {
-        t->stop();
-        Visualization(sim);
+        tProgress->stop();
+        Visualization();
     }
 }
 
-void MainWindow::on_pushVisual_clicked()
+void MainWindow::Visualization()
 {
-    sim = 0;
-    t->start(100);
-
-}
-
-void MainWindow::Visualization(int i)
-{
-    if (sim < 2)
+    if (visualRepete < 2)
     {
-        // get pipe string
-
-        //pruefen ob trajektionen < 100000
-
-        ui->pushCheck->clicked();
-
-        if (pipeActive == true)
-        {
-            ui->textBrowser->setTextColor(Qt::red);
-            ui->textBrowser->append("Pipe is active");
-            ui->textBrowser->setTextColor(Qt::black);
-            if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
-            return;
-        }
-        // first module should be a source or read_in module
-        if ((cmdList[0].indexOf("source") < 0) & (cmdList[0].indexOf("read_in_") < 0))
-        {
-            ui->textBrowser->setTextColor(Qt::red);
-            ui->textBrowser->append("Please specify an input file, if the first module\ndoes not generate simulated neutrons");
-            ui->textBrowser->setTextColor(Qt::black);
-            if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
-            return;
-        }
         //create progressDialog and eleapsed timer to get measurment time
         progress();
         timer.start();
@@ -1372,9 +1396,11 @@ void MainWindow::Visualization(int i)
                 {
                     //Output of process is input of next process
                     procList[enableIndex]->setStandardOutputProcess(procList[enableIndex+1]);     //pipe commands
-                    //toDo error handling
                 }
-                if (sim > 0) simParam = " --V/tmp/pipelog" + QString::number(i+1) + "v";
+                //two simulation runs
+                //first  with  --vgeometry.inf
+                //second with  --V/tmp/pipelog<nr>
+                if (visualRepete > 0) simParam = " --V/tmp/pipelog" + QString::number(i+1) + "v";
                 else simParam =  " --vgeometry.inf";
                 procList[enableIndex]->start(cmdList[enableIndex]+ simParam);
                 if (!procList[enableIndex]->waitForStarted())
@@ -1389,15 +1415,19 @@ void MainWindow::Visualization(int i)
                 enableIndex++;
             }
         }
-        sim++;
-        t->start(100);
+        ui->textBrowser->setTextColor(Qt::blue);
+        ui->textBrowser->append("Started visualization cycle: " + QString::number(visualRepete+1) +"\n");
+        ui->textBrowser->setTextColor(Qt::black);
+        visualRepete++;
+        tProgress->start(100);
     }
     else
     {
+        //run sorting programm (sortiap)
         QProcess *sortProc = new QProcess;
         connect(sortProc,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedSort()));
         QString cmd = VitessDir + "/MODULES/sortiap" + syspar + " -x ";
-
+        //search for next new possible number of geom_ file
         for (int nr=1; nr<1000; nr++)
         {
             fGeom = instrumentOutDir + "/geom_" + QString::number(nr) + ".x3d";
@@ -1417,6 +1447,9 @@ void MainWindow::Visualization(int i)
 
 void MainWindow::finishedSort()
 {
+    ui->textBrowser->setTextColor(Qt::blue);
+    ui->textBrowser->append("Starting InstantPlayer");
+    ui->textBrowser->setTextColor(Qt::black);
     QProcess *playerProc = new QProcess;
     #ifdef Q_OS_WIN
        playerProc->start("cmd /c where.exe /R C:\\ InstantPlayer.exe");
@@ -1431,7 +1464,7 @@ void MainWindow::finishedSort()
         QFileInfo fi(output);
         QString exePath=fi.absolutePath();
         #ifdef Q_OS_WIN
-            //output string direkt liess sich nicht öffnen wegen Blanks in directory
+            //could not use output string directly,because of blanks in directory
             playerProc->start("\"" + exePath +"\"" +  "/InstantPlayer.exe " + fGeom);
         #else
             playerProc->start( exePath +  "/InstantPlayer " + fGeom);
@@ -1447,22 +1480,26 @@ void MainWindow::finishedSort()
 void MainWindow::on_InDir_editingFinished()
 {
     QDir path(ui->InDir->text());
-    if (path.exists())
-        instrumentInDir = ui->InDir->text();
-    else
+    if (!path.exists())
+    {
         QMessageBox::warning(this,"Set input directory",
-                             "Directory does not exist: ", ui->InDir->text());
+                             "Directory does not exist: " + ui->InDir->text());
+        ui->InDir->setText(VitessDir);
+    }
+    instrumentInDir = ui->InDir->text();
 }
 
 
 void MainWindow::on_OutDir_editingFinished()
 {
     QDir path(ui->OutDir->text());
-    if (path.exists())
-        instrumentOutDir = ui->OutDir->text();
-    else
+    if (!path.exists())
+    {
         QMessageBox::warning(this,"Set output directory",
-                             "Output Directory does not exist: ", ui->OutDir->text());
+                             "Output Directory does not exist: " + ui->OutDir->text());
+        ui->OutDir->setText(ui->InDir->text());
+    }
+    instrumentOutDir = ui->OutDir->text();
 }
 
 

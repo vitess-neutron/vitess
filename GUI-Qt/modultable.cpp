@@ -254,6 +254,7 @@ void ModulTable::butModulItemChanged(QAction* action )
            {
             ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::black);
             ui->tableWidget->verticalHeaderItem(curRow)->setForeground(Qt::red);
+            ui->tableWidget->setCurrentCell(curRow,0);
             oldRow = curRow;
             break;
            }

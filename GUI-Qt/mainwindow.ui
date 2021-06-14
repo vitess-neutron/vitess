@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1210</width>
-    <height>870</height>
+    <height>913</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -566,7 +566,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -682,34 +682,6 @@
      <addaction name="actionCryst_Analayzer_Spectrom_2"/>
      <addaction name="actionCompute_Chopper_Phases_2"/>
     </widget>
-    <widget class="QMenu" name="menuModules_1">
-     <property name="title">
-      <string>Modules A-L</string>
-     </property>
-     <addaction name="actionguide"/>
-     <addaction name="actionguide_2"/>
-    </widget>
-    <widget class="QMenu" name="menuModules_4">
-     <property name="title">
-      <string>Modules S-Z</string>
-     </property>
-     <addaction name="actionsource"/>
-     <addaction name="actionspace"/>
-     <addaction name="actionspacewindow"/>
-     <addaction name="actionvelselect"/>
-    </widget>
-    <widget class="QMenu" name="menuModules_2">
-     <property name="title">
-      <string>Modules M</string>
-     </property>
-     <addaction name="actionmonitor1"/>
-    </widget>
-    <widget class="QMenu" name="menuModules_3">
-     <property name="title">
-      <string>Modules N-R</string>
-     </property>
-     <addaction name="actionpolariser_sm"/>
-    </widget>
     <addaction name="actionGeneral_Information"/>
     <addaction name="actionTutorial"/>
     <addaction name="actionUser_Interface"/>
@@ -718,10 +690,7 @@
     <addaction name="actionVisualization"/>
     <addaction name="actionOptimization"/>
     <addaction name="menuHelpTools"/>
-    <addaction name="menuModules_1"/>
-    <addaction name="menuModules_2"/>
-    <addaction name="menuModules_3"/>
-    <addaction name="menuModules_4"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">

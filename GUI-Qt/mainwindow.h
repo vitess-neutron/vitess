@@ -108,6 +108,7 @@ private slots:
         void on_InDir_editingFinished();
         void on_OutDir_editingFinished();
 
+
 private:
     Ui::MainWindow *ui;
 
@@ -120,82 +121,21 @@ private:
     QString instrumentName;
     QString logFname;
     QString fGeom;
+    QString cModul;
     ModulTable* modultab;
     QGridLayout *gridLayout;
     QScrollArea *scrollArea;
 
-    typedef int (*convert_ptr)(const char *);
-    QMap<QString, int (*)(const char *)> functionMap = {
-    //   source
-    //   {"SrcName",  reinterpret_cast<convert_ptr>(&SrcName_Txt2ID)},
-         {"SrcName",  (convert_ptr) &SrcName_Txt2ID},
-         {"eKind",    (convert_ptr) &SrcKind_Txt2ID},
-         {"eDir",     (convert_ptr) &Direct_Txt2ID},
-         {"eTrcMode", (convert_ptr) &Trace_Txt2ID},
-         {"DataVsn",  (convert_ptr) &ModVsn_Txt2ID},
-    //   moderator
-         {"eShape",   (convert_ptr) &ModShape_Txt2ID},
-         {"eType",    (convert_ptr) &ModType_Txt2ID},
-         {"eTS",      (convert_ptr) &TS_Txt2ID},
-    //   writeout
-         {"ePrgFmt",  (convert_ptr) &PrgFormat_Txt2ID},
-         {"eDatFmt",  (convert_ptr) &DataFormat_Txt2ID},
-         {"eSepFmt",  (convert_ptr) &Separator_Txt2ID},
-    //   monitor
-         {"ePar",     (convert_ptr) &Mon1Par_Txt2ID},
-         {"eNorm",    (convert_ptr) &MonNorm_Txt2ID},
-         {"eFormat",  (convert_ptr) &Format2D_Txt2ID},
-         {"ePar",     (convert_ptr) &Mon1Par_Txt2ID},
-         {"eParA",    (convert_ptr) &MonPar_Txt2ID},
-         {"eParB",    (convert_ptr) &MonPar_Txt2ID},
-         {"eParC",    (convert_ptr) &MonPar_Txt2ID},
-         {"eBrl",     (convert_ptr) &BrlNorm_Txt2ID},
-         {"eParBrl",  (convert_ptr) &BrlPar_Txt2ID},
-     //   read_in
-         {"eInPrgf",  (convert_ptr) &PrgFormat_Txt2ID},
-         {"eInForm",  (convert_ptr) &DataFormat_Txt2ID},
-    //   guide
-         {"eShapeY",  (convert_ptr) &GdeShape_Txt2ID},
-         {"eShapeZ",  (convert_ptr) &GdeShape_Txt2ID},
-         {"eLstPar",  (convert_ptr) &ListPar_Txt2ID},
-         {"eLstGeom", (convert_ptr) &ListVbs_Txt2ID},
-         {"bPlotPar", (convert_ptr) &PlotFilt_Txt2ID},
-         {"ePlotX",   (convert_ptr) &PlotPar_Txt2ID},
-         {"ePlotY",   (convert_ptr) &PlotPar_Txt2ID},
-         {"ePlotPrb", (convert_ptr) &PlotPar_Txt2ID},
-    //   frame
-         {"Sequence", (convert_ptr) &TfmnSeq_Txt2ID},
-    //   spacewindow
-         {"eCircWnd", (convert_ptr) &Shape_Txt2ID},
-         {"eMatrial", (convert_ptr) &WndAbs_Txt2ID},
-    //   sample
-         {"Mode", (convert_ptr) &MeasMode_Txt2ID},
-         {"RotAxis", (convert_ptr) &Axis_Txt2ID},
-};
-
-
-    QMap<QString, QStringList> mapHeader = {
-        {"RndSeed" , {"--Z"}, },
-//        {"RndNoGen", {"???"}},
-        {"bGravity", {"--G"},},
-        {"nBuffer" , {"--B"},},
-        {"MinWght" , {"--U"},},
-        {"InDir"   , {"--i"}},
-//        {"InDir"   , {"--P",}},
-        {"OutDir"  , {"--o",}},
-//        {"LogFile" , {"--L",}},
-//        {"Modnum"  , {"--N",}},
+    QMap<QString, QString> mapHeader = {
+        {"RndSeed" , "--Z" },
+//        {"RndNoGen", "???"},
+        {"bGravity", "--G" },
+        {"nBuffer" , "--B" },
+        {"MinWght" , "--U" },
+        {"InDir"   , "--i" },
+        {"OutDir"  , "--o" },
     };
-    QMap<QString,QString> helpTools = {
-        { "Generate Series", "sim_series"},
-        { "Convert Ascii to Binary" , "ascii2bin"},
-        { "Define Direction", "define_direction"},
-        { "Generate Mirror Files", "mirror_coating"},
-        { "Generate Surface Files", "surface_file"},
-        { "Generate Extraction System",  "gener_bispectral"},
-        { "Cryst.Analyzer Spectrom.", "crysanalyzerspec"},
-        { "Compute Chopper Phases", "chop_phases"}
-    };
+
     QMap<QString, QMap<QString,QString>> mapModule;
     QMap <QString,QMap<QString,QMap<QString,QString>>> mapVitess;
 
@@ -204,7 +144,7 @@ private:
 
     QMap<QString,int> modindex;
 
-    QTimer *t;
+    QTimer *tProgress;
     QElapsedTimer timer;
     QProgressDialog *dialog;
 
@@ -220,7 +160,7 @@ private:
     QString nBuffer;
     QString MinWght;
     QPalette palette;
-    int sim;
+    int visualRepete;
     int minWidth;
     bool pipeActive = false;
     YAML::Node config, configChildren;
@@ -237,7 +177,7 @@ private:
     void progress();
     void toolCommand(QString prog);
     void closeEvent(QCloseEvent *ev);
-    void Visualization(int i);
+    void Visualization();
 };
 
 #endif // MAINWINDOW_H

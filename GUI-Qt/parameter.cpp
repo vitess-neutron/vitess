@@ -6,15 +6,13 @@
 using namespace YAML;
 using namespace std;
 
-Parameter::Parameter(QStringList dirs, QWidget *parent) :
+Parameter::Parameter(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Parameter)
 {
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     ui->setupUi(this);
     ui->numberEdit->setValidator(new QIntValidator(1,20,this));
-    instrumentInDir = dirs[0];
-    instrumentOutDir = dirs[1];
 }
 
 Parameter::~Parameter()
@@ -66,6 +64,13 @@ void Parameter::designParameterWin(QString filename)
     ui->labelShow->setText("show "+fileinfo.baseName());
     ui->labelNumText->setText("currently set "+fileinfo.baseName()+"s:");
     YAML::Node config = YAML::LoadFile(filename.toStdString());
+    ui->numWidget->hide();
+    foreach (QString str, multipleWin)
+        if(filename.contains(str,Qt::CaseInsensitive))
+       {
+           ui->numWidget->show();
+           break;
+       }
 
     //configure parameter window
     getModulSubParameter(config, "");
@@ -79,8 +84,6 @@ void Parameter::designParameterWin(QString filename)
 void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 {
     //configure parameter window
-    if (!modulName.contains("moderator",Qt::CaseInsensitive))
-        ui->numWidget->hide();
     int iGritRow = 0;
     int index = 0;
     QLabel *headerLabel = new QLabel("<b>" +  modulName + "</b>\n");
@@ -117,7 +120,10 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
            if( winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName))
                connect(winScrollArea->widget()->findChild<QPushButton*>("browse_" + parName),
                        SIGNAL(clicked()),this,SLOT(browseBut_clicked()));
-           else if( winScrollArea->widget()->findChild<QLineEdit*>(parName))
+           if( winScrollArea->widget()->findChild<QPushButton*>("edit_" + parName))
+               connect(winScrollArea->widget()->findChild<QPushButton*>("edit_" + parName),
+                       SIGNAL(clicked()),this,SLOT(editBut_clicked()));
+           if( winScrollArea->widget()->findChild<QLineEdit*>(parName))
                     connect(winScrollArea->widget()->findChild<QLineEdit*>(parName),
                            SIGNAL(textChanged(const QString &)),this,SLOT(checkIsValide()));
 
@@ -132,7 +138,8 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
 
 void Parameter::browseBut_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentInDir);
+    QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instInDir);
+    if (fileName == "") return;
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
@@ -144,6 +151,25 @@ void Parameter::browseBut_clicked()
                 qobject_cast<QPushButton *>(sender())->objectName().mid(7))
                 ->setText(fileName);
 }
+void Parameter::editBut_clicked()
+{
+     QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(5);
+     QString fileName = ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->text();
+     if (fileName == "") return;
+     else fileName = instInDir+"/"+fileName;
+     QFile file(fileName);
+     if (!file.open(QFile::ReadOnly | QFile::Text))
+     {
+         QMessageBox::warning(this,"Show file","Warning cannot open file: ",fileName);
+         return;
+     }
+     QPlainTextEdit* textEdit = new QPlainTextEdit();
+     textEdit->setWindowModality(Qt::ApplicationModal);
+     textEdit->resize(700,350);
+     textEdit->setPlainText(file.readAll());
+     textEdit->show();
+}
+
 
 void Parameter::checkIsValide()
 {
@@ -167,11 +193,11 @@ void Parameter::on_pushSave_clicked()
 {
     //save parameter values in file
     QFileInfo fileinfo(initFile);
-    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instrumentOutDir,
-                                                    tr("YAML(*.yaml) (*.yaml)"));
+    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instOutDir,
+                                                    tr("YML(*.yml) (*.yml)"));
     if (fileName.isEmpty()) return;
-    if (!fileName.endsWith(".yaml"))
-        fileName += ".yaml";
+    if (!fileName.endsWith(".yml"))
+        fileName += ".yml";
     QFile file(fileName);
     if (!file.open(QFile::ReadWrite | QFile::Text))
     {
@@ -203,7 +229,7 @@ void Parameter::on_pushSave_clicked()
 void Parameter::loadFile(QString fileName)
 {
     QFileInfo fileinfo(fileName);
-    instrumentOutDir = fileinfo.path();
+    instOutDir = fileinfo.path();
     YAML::Node config = YAML::LoadFile(fileName.toStdString());
     YAML::Node config_paramWin = config[config.begin()->first.as<string>()];
     for (unsigned i=1; i < config_paramWin.size(); i++)
