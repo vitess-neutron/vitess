@@ -1,5 +1,6 @@
 #include "progress.h"
 #include <QFileInfo>
+#include <QTime>
 
 Progress::Progress(int modnum, QVector<bool> disableVec, QString logFname,  QObject *parent)
     : QObject(parent),steps(0)
@@ -11,7 +12,7 @@ Progress::Progress(int modnum, QVector<bool> disableVec, QString logFname,  QObj
     pd->setValue(1);
     t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &Progress::perform);
-    t->start(0);
+    t->start(10);
 }
 
 Progress::~Progress()
@@ -20,20 +21,20 @@ Progress::~Progress()
 
 void Progress::perform()
 {
-    if (disableFlag[steps])
-            steps++;
+    if (steps >= disableFlag.count()-1)
+    {
+      t->stop();
+      pd->close();
+    }
+    else if (disableFlag[steps])
+        steps++;
     else
     {
       QFileInfo fi (logFile+QString::number(steps+1));
       if (fi.size() > 0)
       {
-         pd->setValue(steps+1);
+         pd->setValue(pd->value() + 1);
          steps++;
-      }
-      if (steps >= pd->maximum())
-      {
-        t->stop();
-        pd->close();
       }
     }
 }

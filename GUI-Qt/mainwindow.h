@@ -103,7 +103,7 @@ private slots:
         void on_pushBig_clicked();
 
         void on_pushVisual_clicked();
-        void testActive();
+        void visualActive();
 
         void on_InDir_editingFinished();
         void on_OutDir_editingFinished();
@@ -118,7 +118,7 @@ private:
     Big *bigOutput;
 
     QString VitessDir;
-    QString instrumentName;
+    QString instrumentFile;
     QString logFname;
     QString fGeom;
     QString cModul;
@@ -136,15 +136,15 @@ private:
         {"OutDir"  , "--o" },
     };
 
-    QMap<QString, QMap<QString,QString>> mapModule;
-    QMap <QString,QMap<QString,QMap<QString,QString>>> mapVitess;
+    QMap<QString, QMap<QString,QString>> ModulParam;
+    QMap <QString,QMap<QString,QMap<QString,QString>>> Module;
 
-    QMap<QString,QStringList> Module;
-    QMap<QString,QScrollArea *> modulGui;
+    QMap<QString,QStringList> ModulFiles;
+    QMap<QString,QScrollArea *> ModulGui;
 
     QMap<QString,int> modindex;
 
-    QTimer *tProgress;
+    QTimer *tVisual;
     QElapsedTimer timer;
     QProgressDialog *dialog;
 
@@ -171,9 +171,10 @@ private:
     void designModul(QString modulName);
     void getModulParameter(YAML::Node& config,QString modulName);
     void writeHeader(YAML::Node& config);
-    void saveFile(QString instrumentName);
+    void saveFile(QString instrumentFile);
     void readCurModul(YAML::Node& curModule,int index);
     void pasteCurModul(YAML::Node curModule,int index);
+    void startPipe();
     void progress();
     void toolCommand(QString prog);
     void closeEvent(QCloseEvent *ev);
