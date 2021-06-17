@@ -10,6 +10,7 @@ class Progress : public QObject
 public:
     explicit Progress(int modnum, QVector<bool> disableVec,QString logFname, QObject *parent = 0);
     ~Progress();
+    QProgressDialog *pd;
 
 signals:
 
@@ -19,7 +20,7 @@ private:
     QVector<bool> disableFlag;
     QString logFile;
     int steps;
-    QProgressDialog *pd;
+//    QProgressDialog *pd;
     QTimer *t;
 
 };

@@ -116,7 +116,7 @@ private:
     QMap <QString, Parameter *> paramWindow;
 
     Big *bigOutput;
-
+    Progress *progDial;
     QString VitessDir;
     QString instrumentFile;
     QString logFname;

@@ -656,14 +656,16 @@ void MainWindow::on_pushVisual_clicked()
     tVisual->start(100);
 }
 
+//Stop/terminate running processes
 void MainWindow::on_pushStop_clicked()
 {
     //end processes without new trajections
     ui->textBrowser->setTextColor(Qt::red);
-    for (int i=0; i<ui->stackedWidget->count(); i++)
+    for (int i=0; i<procList.count(); i++)
         if (procList[i]->state() > 0)
         {
             procList[i]->terminate();
+            sleep(1);
             ui->textBrowser->append( "Module: " + QString::number(i) + " stopped;");
         }
     ui->textBrowser->setTextColor(Qt::black);
@@ -676,7 +678,8 @@ void MainWindow::on_pushKill_clicked()
 {
     //kill processes immediately
     ui->textBrowser->setTextColor(Qt::red);
-    for (int i=0; i<ui->stackedWidget->count(); i++)
+//    for (int i=0; i<ui->stackedWidget->count(); i++)
+    for (int i=0; i<procList.count(); i++)
        if (procList[i]->state() > 0)
        {
            procList[i]->kill();
@@ -1222,7 +1225,10 @@ void MainWindow::startPipe()
     for (int i=0; i<ui->stackedWidget->count(); i++)
         //do not create process if modul is disabled
         if (!modultab->disableFlag[i])
-           procList.append(new QProcess());
+        {
+            procList.append(new QProcess());
+            QFile::remove(logFname+QString::number(procList.count()));
+        }
     connect(procList.last(),SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(finishedLast()));
     pipeActive = true;
     int enableIndex = 0;
@@ -1263,6 +1269,10 @@ void MainWindow::startPipe()
 //Last process in pipe finished
 void MainWindow::finishedLast()
 {
+    //measurment time in sec min 1
+    QString str = QString::number(
+                static_cast<int>(timer.elapsed()/1000 >0) ? static_cast<int>(timer.elapsed()/1000) : 1);
+
     QDate curDate = QDate::currentDate();
     QString fileName = instrumentOutDir+"/XC"+QString::number(curDate.year())+
             QString::number(curDate.dayOfYear())+".log";
@@ -1279,7 +1289,7 @@ void MainWindow::finishedLast()
         protFile.write((pipe+"\n").toStdString().c_str());
     protFile.write("\n\n");
 
-    //write contents of logfiles to textbrowser
+    //write contents of logfiles to textbrowser and protocol file
     for (int i=0; i < procList.count(); i++)
     {
        QString logName = logFname + QString::number(i+1);
@@ -1289,20 +1299,23 @@ void MainWindow::finishedLast()
            QMessageBox::information(this,"Warning cannot open modul logfile: ", logName);
            return;
        }
-       QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hh:mm:ss")+ "\n\n";
-       QByteArray arr = file.readAll();
-       ui->textBrowser->append(arr);
+       if (file.size() > 0)
+       {
+           QString createTime = "Date: "+ QFileInfo(logName).lastModified().toString("yyyyMMdd-hh:mm:ss")+ "\n\n";
+           QByteArray arr = file.readAll();
+           ui->textBrowser->append(arr);
 
-       //write to daily protocol file
-       protFile.write(createTime.toStdString().c_str());
-       protFile.write(arr);
-       protFile.write("\n\n");
-       file.close();
+           //write to daily protocol file
+           protFile.write(createTime.toStdString().c_str());
+           protFile.write(arr);
+           protFile.write("\n\n");
+       }
+       else {
+           protFile.write(("Pipe was interrupted at modul number: " + QString::number(i+1)).toStdString().c_str());
+       }
        procList[i]->close();
    }
-    //measurment time in sec min 1
-    QString str = QString::number(
-                static_cast<int>(timer.elapsed()/1000 >0) ? static_cast<int>(timer.elapsed()/1000) : 1);
+    progDial->pd->close();
     ui->textBrowser->append("Measurement took: " + str + " sec");
     if (bigOutput->isVisible()) emit big(ui->textBrowser->toPlainText());
     protFile.close();
@@ -1328,7 +1341,8 @@ void MainWindow::checkIsValide()
 void MainWindow::progress()
 {
 //    new Progress(ui->stackedWidget->count(),modultab->disableFlag,logFname,this);
-    new Progress(procList.count(),modultab->disableFlag,logFname,this);
+    progDial = new Progress(procList.count(),modultab->disableFlag,logFname,this);
+    progDial->pd->show();
 }
 
 void MainWindow::toolCommand(QString prog)
