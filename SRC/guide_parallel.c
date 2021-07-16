@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_GUIDE;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "3.12");
+  PrintModuleName(_eModule, "3.12a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -428,6 +428,7 @@ void OwnInit   (int argc, char *argv[])
   double bintervalX=1.0, bintervalY=1.0;
   int ibinX, ibinY;
 
+  MsgInit();
   InitVector(BegPosM);
   InitVector(BegPosS);
 
@@ -1099,7 +1100,7 @@ void showAndCompleteSetup()
   fprintf(LogFilePtr, " area (left+right) :%8.3f m^2\n", AreaZ*2./1e4);
 
   if (Radius != 0.0)  // curved guide
-    fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each", nPieces-1, 180.0/M_PI*beta);
+    fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each\n", nPieces-1, 180.0/M_PI*beta);
   
   for(i=0; i < nReflFiles; i++)
   {
@@ -1599,7 +1600,7 @@ void processNeutron(int neutron_i, int thread_i)
 
     if (fabs(myneutron->Position[1]) > 0.5*GuideExitWidth ||
         fabs(myneutron->Position[2]) > 0.5*GuideExitHeight) 
-    {
+    { 
       CountMessageThread(thread_i, GUID_OUT_OF_EXIT, myneutron->ID);
       WriteIAP(myneutron, VT_OUT_OF_WND);
       return;

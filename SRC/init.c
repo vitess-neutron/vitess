@@ -80,7 +80,7 @@ char*    OutputFileName;     /* file to write neutrons */
 char*    LogFileName;        /* log file name  */
 const char *pGeomFileName="geometry.inf"; /* name of instrument geometry file */
 char*    pTrajFileName=NULL; /* trajectory file name  */
-char*    ParDir;       /* parameter directory */
+char*    ParDir;             /* parameter directory */
 char*    InstallDir;
 char     sModuleName[MOD_NAME_LEN+1]="";
 char     sVisDescrpt[MOD_NAME_LEN+9]="";
@@ -120,6 +120,8 @@ McCompID eFirstMod=MCN_COMP_UNKNOWN;
 /**************************************************************/
 /* STATIC VARIABLES                                           */
 /**************************************************************/
+static char       sFilePath[256]="";
+
 static char*      InputDir =NULL;       //  [PATH_LEN]="";
 static char*      OutputDir=NULL;       //  [PATH_LEN]="";
 
@@ -145,6 +147,7 @@ unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
 static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
 static char* conCat (const char *sFile, const char* sSubDir, int sel);
+static void  TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 static McCompID GetModId(char* sBuffer);                                // return ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
@@ -163,9 +166,11 @@ char* FullOutName     (const char* filename);                       // adds inpu
 /**************************************************************/
 
 /* Adds path of the installation directory to a file name */
-char* FullInstallName(const char* fileName, const char* sRelPath)
+char* FullInstallName(const char* sFileName, const char* sRelPath)
 {
-  return conCat(fileName, sRelPath, INSTL_DIR);
+  TotalPath(sFilePath, sFileName, sRelPath, INSTL_DIR);
+
+  return sFilePath;
 }
 
 /* Adds the path of a directory - input, output or parameter - to a file name */
@@ -1752,7 +1757,11 @@ void setDetachedWrite()
 /**************************************************************/
 /* LOCAL FUNCTIONS                                            */
 /**************************************************************/
-static void setInstallDirectory (char *arg) {
+/******************************************************************************************************/
+/* Sets installation, parameter, input and output directory in correct form for the operating systme  */
+/******************************************************************************************************/
+static void setInstallDirectory (char *arg) 
+{
   // We need the InstallDir path for implicitly referenced data files.
   // For gridrun we take this from the VITESSROOT environment variable.
   // Normally we use the executable path of the module, which  contains the installation path;
@@ -1793,10 +1802,14 @@ static char* setDir (char *arg)
   return pDir;
 }
 
+/****************************************************************/
+/* combines path to the directory with sub-directory and file   */
+/*   (conCat shall be replaced by TotalPath in the future)      */
+/****************************************************************/
 static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel) 
 {
-  char *pResult=NULL, 
-       *pDir=NULL;
+  static char *pResult=NULL; 
+  char *pDir=NULL;
   int  LenD=0, LenF=0, LenS=0;
 
   // no file, no full file name 
@@ -1827,7 +1840,7 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   LenS = strlen(sSubDir);
 
   // allocate memory and copy all parts to the string
-  if ((pResult = (char *) malloc(LenD+LenF+LenS+2))) 
+  if ((pResult = (char *) malloc(LenD+LenF+LenS+3))) 
   {
     // set path
     if (LenD > 0) 
@@ -1851,6 +1864,29 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   return pResult;
 }
 
+static void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel)
+{
+  switch (sel)
+  { case PAR_DIR  : strcpy(pPath, ParDir);     break;
+    case INSTL_DIR: strcpy(pPath, InstallDir); break;
+    case IN_DIR   : strcpy(pPath, InputDir);   break;
+    case OUT_DIR  : strcpy(pPath, OutputDir);  break;
+    default       : strcpy(pPath, "");
+  }
+  
+  AddSlash(pPath); 
+  AddSlash(sSubDir);
+  
+  strcat(pPath, sSubDir);
+  strcat(pPath, sFile);
+
+  ChangeSlash(pPath);
+}
+
+
+/**********************************************************************/
+/* returns module ID from a string (usually a line in instrument.inf  */
+/**********************************************************************/
 static McCompID GetModId(char* sBuffer)
 {
   long nDum;

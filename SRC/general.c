@@ -982,9 +982,10 @@ void GetActTime(char* sTime)
 }
 
 
-/**************************************************************/
-/* Change of the Slashes to the right ones, e.g. '\' to '/'   */
-/**************************************************************/
+/***************************************************************************/
+/* ChangeSlash: Change of the Slashes to the right ones, e.g. '\' to '/'   */
+/* AddSlash   : Add a slash if string length > 0 and slash is missing      */
+/***************************************************************************/
 void ChangeSlash(char* pStr)
 {
 	int k, kLen;
@@ -1000,8 +1001,10 @@ void AddSlash(char* pStr)
 {
   int kLen = strlen(pStr);
 
-  if (pStr[kLen-1]!=cSlash)
-  { pStr[kLen]   = cSlash;
-    pStr[kLen+1] ='\0';
+  if (kLen > 0)
+  { if (pStr[kLen-1]!='/' && pStr[kLen-1]!='\\')
+    { pStr[kLen]   = cSlash;
+      pStr[kLen+1] ='\0';
+    }
   }
 }
