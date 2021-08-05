@@ -962,23 +962,25 @@ int ReadNeutrons()
   {
     WriteTraceLine(&InputNeutrons[i]);
     if (IsEOB(&InputNeutrons[i])) 
-      NumEobRead++;
-
-    /* normalization of direction vector for modules representing hardware */
-    if (_eModule < MCN_MONITOR1)
-      NormVector(InputNeutrons[i].Vector);
-
-    // Check if a neutron with such an ID has been seen before
-    // If neutrons with same IDs arriving, shift the ID!
-    if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) 
-    {
-      WriteIAP(&InputNeutrons[i], VT_ENTERED);
-      tempID = InputNeutrons[i].ID;
+    { NumEobRead++;
     }
-    else 
-    {
-      ChangeNeutronID(&InputNeutrons[i]);
-      WriteIAP(&InputNeutrons[i], VT_ENTERED);
+    else
+    { /* normalization of direction vector for modules representing hardware */
+      if (_eModule < MCN_MONITOR1)
+        NormVector(InputNeutrons[i].Vector);
+
+      // Check if a neutron with such an ID has been seen before
+      // If neutrons with same IDs arriving, shift the ID!
+      if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) 
+      {
+        WriteIAP(&InputNeutrons[i], VT_ENTERED);
+        tempID = InputNeutrons[i].ID;
+      }
+      else 
+      {
+        ChangeNeutronID(&InputNeutrons[i]);
+        WriteIAP(&InputNeutrons[i], VT_ENTERED);
+      }
     }
   }
 
@@ -1560,7 +1562,7 @@ long ReadNumBndl(void)
 
 void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorType vAbsPosE)
 {
-  fprintf(pGeomFile, "Line           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %s\n",
+  fprintf(pGeomFile, "Line           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsPosB[0]/100.0, vAbsPosB[1]/100.0, vAbsPosB[2]/100.0,
                      vAbsPosE[0]/100.0, vAbsPosE[1]/100.0, vAbsPosE[2]/100.0,  pDescr);
 }
@@ -1568,7 +1570,7 @@ void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorTy
 void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                    double Width, double Height, double rotAngle)
 {
-  fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f  %10.5f %s\n",
+  fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,
                      vDir[0], vDir[1], vDir[2],
 	             Width/100.0, Height/100.0, rotAngle, pDescr);
@@ -1576,7 +1578,7 @@ void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vec
 
 void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2, VectorType vEdge3)
 {
-  fprintf(pGeomFile, "Triangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %s\n",
+  fprintf(pGeomFile, "Triangle       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
 	  vEdge1[0]/100.0, vEdge1[1]/100.0, vEdge1[2]/100.0,
 	  vEdge2[0]/100.0, vEdge2[1]/100.0, vEdge2[2]/100.0,
 	  vEdge3[0]/100.0, vEdge3[1]/100.0, vEdge3[2]/100.0, pDescr);
@@ -1585,7 +1587,7 @@ void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, Vector
 void DrawOpenRect(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height,
                   double InnerWidth, double InnerHeight)
 {
-  fprintf(pGeomFile, "OpenRectangle  %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "OpenRectangle  %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f   %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,
                      vDir[0], vDir[1], vDir[2],
                      Width/100.0, Height/100.0,  InnerWidth/100.0, InnerHeight/100.0,   pDescr);
@@ -1594,7 +1596,7 @@ void DrawOpenRect(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vect
 void DrawCircle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                 double Radius, double AngleBeg, double AngleEnd)
 {
-  fprintf(pGeomFile, "Circle         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "Circle         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,
                      vDir[0], vDir[1], vDir[2],
                      Radius/100.0, AngleBeg, AngleEnd,  pDescr);
@@ -1603,7 +1605,7 @@ void DrawCircle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                 double Length, double Width, double Height, double rotAngle)
 {
-  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f  %s\n",
+  fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
 	  Length/100.0, Width/100.0, Height/100.0, rotAngle, pDescr);
 }
@@ -1611,7 +1613,7 @@ void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
               double Length, double WidthIn, double WidthOut, double HeightIn, double HeightOut, double rotAngle)
 {
-  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
 	  Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, rotAngle, pDescr);
 }
@@ -1619,7 +1621,7 @@ void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorTy
 void DrawCylinder(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
                   const double Len, const double Radius)
 {
-  fprintf(pGeomFile, "Cylinder       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "Cylinder       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
                      Len/100.0, Radius/100.0,   pDescr);
 }
@@ -1627,9 +1629,9 @@ void DrawCylinder(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vect
 void DrawHolCyl(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len,
                 const double Radius, const double InnerRadius)
 {
-  fprintf(pGeomFile, "HollowCylinder %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "HollowCylinder %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-                     Len/100.0, Radius/100.0, InnerRadius/100.0,   pDescr);
+                     Len/100.0, Radius/100.0, InnerRadius/Radius,   pDescr);
 }
 
 void DrawSphere(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double Radius)
@@ -1641,14 +1643,14 @@ void DrawSphere(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double
 
 void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double xLow, double xHigh)
 {
-  fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f %10.5f   %s\n",
 	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
 	  Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
 }
 
 void DrawCylSlice(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double Width, double Height, double Phi, double openAngle)
 {
-  fprintf(pGeomFile, "CylSlice      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f    %10.5f %10.5f %10.5f %10.5f   %s\n",
+  fprintf(pGeomFile, "CylSlice       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
 	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
 	  Height/100.0,  Radius/100.0, Phi, openAngle, pDescr);
 }
