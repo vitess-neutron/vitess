@@ -7,67 +7,91 @@
   <title>Module Frame</title>
 </head>
 <body>
-<h1>VITESS Module Frame</h1>
 
-<p>The module frame makes possible a transformation of the initial reference
-frame  (provided by the former module)&nbsp; by rotation, translation and/or
-mirroring. This might be useful for test purposes or for composing instruments
-with unusual geometrical arrangements simply by using the provided standard
-modules and changing with this module the reference frame. </p>
+  <h1>VITESS Module Frame</h1>
 
-<p>A sequence e.g. rotation <font face="Symbol">-</font>translation<font
- face="Symbol">-</font>mirroring covers all options for a transformation.
-However, in order to provide maximal flexibility and to allow for performing
-the most simple way of transformation, the sequence of rotation(R), transformation(T)
-and mirroring(M) can also be chosen (the input option&nbsp; "sequence" offers
-always one out of the six possibilities, default is RTM). </p>
+  <p>
+    The module frame renders possible a transformation of the initial co-ordinate system  (provided by the former module) by rotation and/or translation and/or mirroring.
+    There are two common applications: One is to get a kink in the beamline by using rotation.
+    The other one is to simulate instruments with geometrical arrangements that are not foreseen by using the provided standard modules.
+    In this case, the co-ordinate system can be changed before this module and changed back after it.
+    Please note that the direction of the gravity effect remains unchanged.
+  </p>
 
-<p><i>Rotation</i> </p>
+  <br />
+  <h4>Parameters for module 'frame'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
 
-<p>In most of the cases only one simple rotation about Z, Y or X is needed.
- This can be done by giving one rotation angle for the corresponding axis
-while the other two values have to be set zero (default). The input values
-are defined in degrees. </p>
+      <tr>
+        <td valign="top">sequence</td>
+        <td valign="top">
+          One sequence, e.g. rotation - translation - mirroring, covers all options for a transformation.
+          However, in order to provide maximal flexibility and to allow performing the most simple way of transformation, the sequence of rotation(R), transformation(T) and mirroring(M) can be chosen.
+          (The input option "sequence" offers always one out of the six possibilities, default is RTM).
+        </td>
+        <td valign="top">RTM, RMT, TRM, TMR, MTR, MRT</td>
+        <td valign="top">-S </td>
+      </tr>
+      <tr>
+        <td valign="top">rot. angle about<br />z, y, x axis<br>[deg]</td>
+        <td valign="top">
+          In most cases, only one simple rotation about Z, Y or X axis is needed.
+          This can be done by giving one rotation angle for the corresponding axis while the other two values have to be set to zero (default).
+          </br>
+          IMPORTANT: Positive rotation of a frame means rotation of one positive axis towards a higher index positive axis : +X to +Y, +Y to +Z, +X to +Z .
+          That is: A 90&deg; rotation about the Z axis means X+ rotated on Y+; 90&deg; about the Y axis means X+ rotated on Z+; a 90&deg; rotation about the X axis means Y+ rotated on Z+.
+          Negative angle (e.g. -90&deg;) means rotation in opposite direction.
+          </br>
+          For multiple rotations, it is important to realize that rotation operations are not commutative.
+          On the other hand, three successive rotations of a 3D frame about e.g. Z, Y and X axes cover all possible orientations.
+          This  module uses the the following sequence: the first rotation performed is always around the Z axis (horizontal plane),
+          this is followed by a rotation about the <u>new</u> Y (vertical plane containing new X) and finaly about the <u>new</u> X (beam) axes.
+        </td>
+        <td valign="top"></td>
+        <td valign="top">-H, -V, -A </td>
+      </tr>
 
-<p>IMPORTANT: Positive rotation of frame means rotation of one positive axis
-towards a higher index positive axis : +X to +Y, +Y to +Z, +X to +Z . That
-is: A 90&deg; rotation about the Z axis means X+ rotated on Y+; 90&deg; about
-the Y axis means X+ rotated on Z+; a 90&deg; rotation about the X axis means
-Y+ rotated on Z+. Negative angle 90&deg; means rotation in opposite direction.
- </p>
+      <tr>
+        <td valign="top">Translation<br>x, y, z<br>[cm]</td>
+        <td valign="top">
+          The input parameters are the components x, y, z of the translation vector which shifts the origin of the coordinate system. <br>
+          This shift is not meant as a real pysical operation, therefore the neutron time-of-flight is <u>not</u> recalculated according to the length of this vector.
+        </td>
+        <td valign="top"></td>
+        <td valign="top">-x, -y, -z</td>
+      </tr>
 
-<p>For multiple rotations, it is important to realize that rotation operations
- are not commutative. On the other hand, three successive rotations of a
-3D frame about e.g. Z, Y and X axes cover all possible orientations. This
-module uses the the following sequence: the first rotation performed is always
-around the Z axis (horizontal plane), this is followed by a rotation about
-the <u>new</u> Y (vertical plane containing new X) and finaly about the <u>new</u>
- X (beam) axes. </p>
+      <tr>
+        <td valign="top">mirror at<br>yz, xz, xy plane</td>
+        <td valign="top">
+          Mirroring relative to the YZ , ZX or XY planes means: x changes to -x, y to -y and z to -z resp.
+          The three mirror operations can be performed alltogether. Two simultaneous mirroring operations mean a rotation of 180&deg;.
+        </td>
+        <td valign="top">'yes', 'no'</td>
+        <td valign="top">-i, -j, -k </td>
+      </tr>
+    </tbody>
+  </table>
 
-<p><i>Translation</i> </p>
-
-<p>The input parameters are the components "x, y, z" of the translation vector
-in [cm] which shifts the origin of the coordinate system. <br>
- This shift is not meant as a real pysical operation, therefore the neutron
-time-of-flight is <u>not</u> recalculated according to the length of this
-vector. </p>
-
-<p><i>Mirror</i> </p>
-
-<p>Mirroring relative to the YZ , ZX or XY planes means: x changes to <font
- face="Symbol">-</font>x , y toy&nbsp; or z toz. The three mirror operations
-can be performed alltogether. Two simultaneous mirroring operations mean
-a rotation of 180&deg;. </p>
-
-<p> </p>
-
-<hr><a href="vitess.html">Back to VITESS overview</a><br>
+  <hr>
+  <a href="vitess.html">Back to VITESS overview</a>
+  <br>
   <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
 
-<p> <!-- hhmts start --><font size="-1"> Last modified: </font>Thu Jan 29
-15:02:26 MET 2004 G.Zs.<font size="-1"> <!--#echo var="LAST_MODIFIED"  -->
- <!-- hhmts end --></font> </p>
- <br>
- <br>
+  <p>
+    <!-- hhmts start --><font size="-1"> Last modified: </font>2021-07-21  K. Lieutenant <font size="-1">
+      <!--#echo var="LAST_MODIFIED"  -->
+      <!-- hhmts end -->
+    </font>
+  </p>
+  <br>
+  <br>
 </body>
 </html>

@@ -10,11 +10,100 @@
 
   <h1> VITESS Evaluation Modules </h1>
   <p>
-    There are VITESS modules for 4 different evaluation procedures: <b>Elastic 1D</b>, <b>Inelastic</b>, <b>SANS</b> and <b>Elastic 2D</b>
+    There are VITESS modules for 4 different evaluation procedures: <b>Elastic 1D</b>, <b>Inelastic</b>, <b>SANS</b> and <b>Elastic 2D</b>.
+    Additionally, there is a tool to analyze the <b>runtime</b> of parts of the simulation and to determine the <b>capture flux</b>.
   </p>
+
   <br>
+  <h2><font size="+1">VITESS Module Runtime</font></h2>
+  <p>
+    The module <b>runtime</b> counts the time it is running in its position in the pipe. It does not alter any neutron.
+    Once the pipe is finished, the runtime module will add the time needed up to this pipe position to the log output.
+  </p>
+
+  <h4>Parameters for module 'runtime'</h4>
+  <p>
+    None.
+  </p>
+
+  <br>
+  <h2><font size="+1"> VITESS Module Capture Flux</font></h2>
+  <p>
+    The module <b>capture_flux</b> (folder 'evaluate') calculates the capture flux (at any point of the instrument).
+    The capture flux method is used to determine absolute flux values in a beam line. A gold foil is introduced for some hours and the activation of the gold is measured.
+    As the absorption probability of neutrons rises linearly with wavelength, one does not get the real flux but the integral <br />
+    <br />
+    &emsp;&emsp;&emsp;	&Phi;<sub>capture</sub>&emsp;=&emsp;&int;&phi;(&lambda;)&ensp;&lambda;/&lambda;<sub>ref</sub>&ensp;d&lambda;<br />
+    <br />
+    (The reference wavelength is usually 1.798 &Aring;.) This integral is calculated in the module thus allowing a direct comparison with measurements.
+    Reference wavelength, shape and size of the foil need to be given. Additionally, the wavelength range contributing to the capture flux can be limited.
+  </p>
 
 
+  <br>
+  <h4> Parameters for module 'capture_flux' </h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">reference wavelength<br>[&Aring;] </td>
+        <td valign="top">
+          reference wavelength in the capture flux definition, usually 1.798 &Aring; (cf. text).<br>
+          If 0.0 is given, no reference wavelength is used
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-R    </td>
+      </tr>
+      <tr>
+        <td valign="top">window type</td>
+        <td valign="top">shape of the gold foil</td>
+        <td valign="top">'circular' or 'rectangular'</td>
+        <td valign="top">-t</td>
+      </tr>
+      <tr>
+        <td valign="top">radius<br>[cm]</td>
+        <td valign="top">for circular foil: radius of the foil </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-r   </td>
+      </tr>
+      <tr>
+        <td valign="top">center y<br>center z<br>[cm]</td>
+        <td valign="top">for circular foil: center y (horizontal) and z (vertical) of the foil</td>
+        <td valign="top">any</td>
+        <td valign="top">-y<br>-z</td>
+      </tr>
+      <tr>
+        <td valign="top">min. y<br>max. y<br>[cm]</td>
+        <td valign="top">for rectangular foil: minimal (right) and maximal (left) y value of the foil</td>
+        <td valign="top">any     </td>
+        <td valign="top">-w<br>-W</td>
+      </tr>
+      <tr>
+        <td valign="top">min. z<br>max. z<br>[cm]</td>
+        <td valign="top">for rectangular foil: minimal (bottom) and maximal (top) z value of the foil</td>
+        <td valign="top">any     </td>
+        <td valign="top">-h<br>-H</td>
+      </tr>
+      <tr>
+        <td valign="top">min. lambda<br>max. lambda[cm]</td>
+        <td valign="top">
+          minimal and maximal wavelength that is considered for the integration<br>
+          If minimal and maximal wavelength are zero this option is ignored
+        </td>
+        <td valign="top">&gt;0<br>	&lambda;<sub>min</sub>&lt;&lambda;<sub>max</sub></td>
+        <td valign="top">-l<br>-L</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+
+  <br /><br />
   <h2><font size="+1"> VITESS Module 'eval_elast' for 1D Evaluation of Elastic Scattering</font></h2>
   <p>
     The module <b>eval_elast</b> is supposed to be used for elastic scattering (e.g. powder diffraction, SANS).
@@ -108,8 +197,10 @@
       </tr>
       <tr>
         <td valign="top">exclusive counts</td>
-        <td valign="top">yes: only the evaluated neutrons will written to the VITESS output file (be considered by subsequent modules) <br />
-                         no : all are written to the output file  </td>
+        <td valign="top">
+          yes: only the evaluated neutrons will written to the VITESS output file (be considered by subsequent modules) <br />
+          no : all are written to the output file
+        </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-c         </td>
       </tr>
@@ -652,8 +743,10 @@
       </tr>
       <tr>
         <td valign="top">Zeros</td>
-        <td valign="top">Choose if zero entries shall be written to disk. <br /> 
-                         Writing those results is considerably slower and may result in much bigger files. Memory	consumption may increase significantly.</td>
+        <td valign="top">
+          Choose if zero entries shall be written to disk. <br />
+          Writing those results is considerably slower and may result in much bigger files. Memory	consumption may increase significantly.
+        </td>
         <td valign="top">'no', 'yes'</td>
         <td valign="top">-f         </td>
       </tr>
@@ -783,12 +876,8 @@
   </p>
 
   <p>
-    <!-- hhmts start --><font size="-1">
-      Last modified: Thu Jan 29 15:23:30
-      MET 2004
-    </font><font size="-1">, G. Zs.</font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+    <!-- hhmts start --><font size="-1"> Last modified: 2021-07-22  KL </font><!-- hhmts end -->
   </p>
-  <br>
-  <br>
+
 </body>
 </html>
