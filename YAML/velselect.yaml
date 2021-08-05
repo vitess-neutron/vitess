@@ -12,20 +12,54 @@ velselect:
       type:    "string" 
       descr:   "name" 
       column:  0                     
-  - Length  :            # -l   30.0  [cm]   length of the velocity selector 
+  - WndWidth:            # -W  [cm]   width of entrance and exit window
+      type:    "float" 
+      descr:   "window\nwidth [cm]"  
+      tooltip: "width of entrance and exit window of the selector [cm]"
+      default: 5.0
+      min:     0.00001
+      column:  0                     
+      prefix:  "-W" 
+  - WndHite :            # -H  [cm]   height of entrance and exit window
+      type:    "float" 
+      descr:   "window\nheight [cm]"  
+      tooltip: "height of entrance and exit window of the selector [cm]"
+      default: 5.0
+      min:     0.00001
+      column:  1                     
+      prefix:  "-H" 
+
+  - Length  :            # -l   25.0  [cm]   length of the velocity selector 
       type:    "float" 
       descr:   "length of\nvelselect [cm]"  
       tooltip: "length of velocity selector [cm]"
-      default: 30.0
+      default: 25.0
       min:     0.00001
       column:  0                     
       prefix:  "-l" 
+  - RadiusO :             # -r   20.0  [cm]   outer radius of the velocity selector 
+      type:    "float" 
+      descr:   "outer\nradius [cm]"
+      tooltip: "outer radius of the velocity selector"
+      min:     0.00001
+      default: 14.5
+      column:  1                     
+      prefix:  "-r" 
+  - RadiusI :             # -i   20.0  [cm]   inner  radius of the velocity selector 
+      type:    "float" 
+      descr:   "inner\nradius [cm]"
+      tooltip: "radius of the part of the rotor without absorbing blades"
+      min:     0.00001
+      default: 8.5
+      column:  2                     
+      prefix:  "-i" 
+
   - Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
       type:    "float" 
       descr:   "rotations\nper sec."  
       tooltip: "number of rotations per second"
-      default: 250.0 
-      column:  1                     
+      default: 212.3 
+      column:  0                     
       prefix:  "-s" 
   - winnum  :                # -w   90     [-]   number of windows 
       type:    "int" 
@@ -33,36 +67,44 @@ velselect:
       tooltip: "number of velocity selector channels"
       default: 72    
       min:     1 
-      column:  2                     
+      column:  1                     
       prefix:  "-w" 
   - Twist   :             # -c   45.0  [deg]  twist of the velocity selector channels
       type:    "float" 
       descr:   "twist [deg]"  
       tooltip: "twist of velocity selector channels "
-      default: 45.0 
-      column:  0                     
-      prefix:  "-c" 
-  - Radius  :             # -r   20.0  [cm]   radius of the velocity selector 
-      type:    "float" 
-      descr:   "radius [cm]"
-      tooltip: "radius of the velocity selector front"
-      min:     0.00001
-      default: 20.0
-      column:  1                     
-      prefix:  "-r" 
-  - DistAxle:            # -o   15.0  [cm]   distance origin - axle of the velocity selector
-      type:    "float" 
-      descr:   "vert. distance\naxle-orig. [cm]"
-      tooltip: "distance (along z-axis) between axle of velocity selector and the origin\n(generally the center of the neutron guide end from the last module),
-              preferably <= radius - 0.5*height of guide"   
-      default: 15.0
+      default: 48.3 
       column:  2                     
-      prefix: "-o"  
+      prefix:  "-c" 
+
   - Spacer  :            # -d    0.0  [cm]   blade thickness   
       type:    "float" 
       descr:   "spacer\nwidth [cm]"  
-      tooltip: "width of a spacer which separates the channels of the velocity selector"
-      default: 0.0
+      tooltip: "width of blades separating the channels of the velocity selector"
+      default: 0.04
       column:  0                     
       prefix: "-d"  
+
+  - AxlePosY:            # -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
+      type:    "float" 
+      descr:   "horizontal\naxle position [cm]"  
+      tooltip: "horizontal position of the selector axle (in the co-ordinate system of the beamline)"
+      default: 0.0
+      column:  0                     
+      prefix:  "-Y" 
+  - AxlePosZ:            # -Z  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
+      type:    "float" 
+      descr:   "vertical\naxle position [cm]"  
+      tooltip: "vertical position of the selector axle (in the co-ordinate system of the beamline)"
+      default: -11.5
+      column:  1                     
+      prefix:  "-Z" 
+
+  - bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
+      type:    "switch" 
+      descr:   "treat neutrons\npassing by"
+      tooltip: "NO: neutrons passing outside the rotor are removed\nYES: neutrons passing outside the rotor disc are kept. Warning is given"
+      default: "NO"
+      column:  0                     
+      prefix:  "-p"     
 
