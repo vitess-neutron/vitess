@@ -6,6 +6,8 @@
 110 E %ld trajector%s found with a horizontal position outside the range given in the distribution file '%s'
 200 E %ld trajector%s out of guide exit area
 300 W %ld trajector%s passed outside the chopper
+310 W %ld trajector%s passed outside the velocity selector
+311 W %ld trajector%s passed within the area without selector blades
 402 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window frame
 403 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window pane
 410 W %ld trajector%s found in holes not matching their color (= previous hole), i.e. cross-talk between holes

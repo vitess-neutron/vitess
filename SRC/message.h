@@ -23,6 +23,8 @@ typedef enum
   GUID_OUT_OF_EXIT       = 200,
   GUID_NO_PLANE          = 201,
   CHOP_PASSED_OUTSIDE    = 300,
+  SELECT_OUTSIDE         = 310,
+  SELECT_NO_BLADES       = 311,
   WNDO_L_RANGE_TOO_SMALL = 402,
   WNDI_L_RANGE_TOO_SMALL = 403,
   WND_CROSS_TALK         = 410,

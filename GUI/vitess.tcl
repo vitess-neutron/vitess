@@ -1453,23 +1453,23 @@ proc benderCheckErr  {{app _}} {
 ### velselect
 ###
 set velselectESET {
-  {length float 30 {
-    "length of\nvelselect [cm]" "length of velocity selector [cm]" "" l} gt0}
-  {rotations float 500 {
-    "rotations\nper sec." "number of rotations per second" "" s} 1}
-  {channels int 72 {
-    "number of\nchannels" "number of velocity selector channels" "" w} ge1}
-  {curvature float 45 {
-    "curvature [deg]" "curvature of velocity selector channels " "" c} 1}
-  {radius float 20 {
-    "radius [cm]" "radius of the velocity selector front"
-    "" r} gt0}
-  {distance float 17 {
-    "vert. distance\naxle-orig. [cm]" "distance (along z-axis) between axle of velocity selector and the origin (generally the center of the neutron guide end from the last module),
-preferably <= radius - 0.5*height of guide" "" o} 1}
-  {spacew float 0 {
-    "spacer\nwidth [cm]" "width of a spacer which separates the channels of the velocity selector" "" d}
-    0 1000}
+  {wnd_w float "" {"window\nwidth [cm]" "width of entrance and exit window of the selector [cm]" "" W} gt0}
+  {wnd_h float "" {"window\nheight [cm]" "height of entrance and exit window of the selector [cm]" "" H} gt0}
+  {}
+  {length  float 25.0 {"length of\nselector [cm]" "length of the velocity selector" "" l} gt0}
+  {radius float 14.5 {"outer\nradius [cm]" "outer radius of the velocity selector"  "" r} gt0}
+  {rad_in float ""   {"inner\nradius [cm]" "radius of the part of the rotor without absorbing blades"  "" i} gt0}
+  {}
+  {rotations float 212.3 {"rotations\nper sec." "number of rotations per second" "" s} 1}
+  {channels int 72 {"number of\nchannels" "number of velocity selector channels" "" w} ge1}
+  {curvature float 48.3 {"curvature [deg]" "twist of the velocity selector channels " "" c} 1}
+  {}
+  {spacew float 0.04 {"spacer\nwidth [cm]" "width of the blades separating the channels of the velocity selector" "" d} 0 1000}
+  {}
+  {axle_y float "" {"horizontal\naxle position [cm]" "horizontal position of the selector axle (in the co-ordinate system of the beamline)" "" Y}}
+  {axle_z float "" {"vertical\naxle position [cm]" "vertical position of the selector axle (in the co-ordinate system of the beamline)" "" Z}}
+  {distance float 11.5 {"vert. distance\naxle-orig. [cm]" "obsolete: distance (along z-axis) between axle of velocity selector and the origin (center of the beamline), preferably <= radius - 0.5*height of guide" "" o}}
+  {pass_outside radio "" {"treat neutrons\npassing by" "no: neutrons passing outside the rotor are removed (default)\nyes: neutrons passing outside the rotor disc are kept. Warning is given" "" p} {no yes ""} {0 1}}
 }
 
 proc velselectCheckErr {{app _}} {

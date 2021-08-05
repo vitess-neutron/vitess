@@ -344,10 +344,10 @@ void OwnInit   (int argc, char *argv[])
           break;
 
         case 'p':
-          /* z unequal 0 => chopper sets time to zero */
+          /* p equal 0 => neutrons outside the chopper are removed */
           bPassOutside = (short) atoi(&argv[i][2]);
           if (bPassOutside==FALSE)
-          fprintf(LogFilePtr,"Neutrons passing outside the chopper are removed\n");
+            fprintf(LogFilePtr,"Neutrons passing outside the chopper are removed\n");
           break;
 
         // not yet activated
