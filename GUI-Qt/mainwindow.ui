@@ -600,6 +600,8 @@
     <addaction name="actionPaste_Module_Parameters"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Instrument_Name"/>
+    <addaction name="separator"/>
+    <addaction name="actionGenerate_Series"/>
    </widget>
    <widget class="QMenu" name="menuPlot">
     <property name="title">
@@ -685,7 +687,7 @@
     <addaction name="actionGeneral_Information"/>
     <addaction name="actionTutorial"/>
     <addaction name="actionUser_Interface"/>
-    <addaction name="actionGenerate_Series"/>
+    <addaction name="actionHelpGenerate_Series"/>
     <addaction name="actionExternal_Commands"/>
     <addaction name="actionVisualization"/>
     <addaction name="actionOptimization"/>
@@ -756,36 +758,6 @@
     <string>New Instrument</string>
    </property>
   </action>
-  <action name="actionInsert">
-   <property name="text">
-    <string>Insert</string>
-   </property>
-  </action>
-  <action name="actionSave_2">
-   <property name="text">
-    <string>Save</string>
-   </property>
-  </action>
-  <action name="actionSave_to_dir">
-   <property name="text">
-    <string>Save to dir</string>
-   </property>
-  </action>
-  <action name="actionImport_Pipe">
-   <property name="text">
-    <string>Import Eid Instrument</string>
-   </property>
-  </action>
-  <action name="actionMerge_Results">
-   <property name="text">
-    <string>Merge Results</string>
-   </property>
-  </action>
-  <action name="actionNew_inf_File">
-   <property name="text">
-    <string>New *.inf File</string>
-   </property>
-  </action>
   <action name="actionShow_inf_File">
    <property name="text">
     <string>Show *.inf File</string>
@@ -800,29 +772,14 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionEid_Instrument">
-   <property name="text">
-    <string>Eid Instrument</string>
-   </property>
-  </action>
   <action name="actionPy_Python_script">
    <property name="text">
     <string>Py Python script</string>
    </property>
   </action>
-  <action name="actionPI_Perl_script">
-   <property name="text">
-    <string>PI Perl script</string>
-   </property>
-  </action>
   <action name="actionBat_shell">
    <property name="text">
     <string>Bat shell</string>
-   </property>
-  </action>
-  <action name="actionVariations">
-   <property name="text">
-    <string>Variations</string>
    </property>
   </action>
   <action name="actionCopy_Module_Parameters">
@@ -846,21 +803,6 @@
   <action name="actionSet_Instrument_Name">
    <property name="text">
     <string>Set Instrument Name</string>
-   </property>
-  </action>
-  <action name="actionGenerate_Series_2">
-   <property name="text">
-    <string>Generate Series</string>
-   </property>
-  </action>
-  <action name="actionVariations_2">
-   <property name="text">
-    <string>Variations</string>
-   </property>
-  </action>
-  <action name="actionRecover_Instument">
-   <property name="text">
-    <string>Recover Instument</string>
    </property>
   </action>
   <action name="actionPlot_File">
@@ -918,74 +860,14 @@
     <string>Compute Chopper Phases</string>
    </property>
   </action>
-  <action name="actionSmaller_fonts">
-   <property name="text">
-    <string>Smaller fonts</string>
-   </property>
-  </action>
-  <action name="actionBigger_fonts">
-   <property name="text">
-    <string>Bigger fonts</string>
-   </property>
-  </action>
-  <action name="actionFonts">
-   <property name="text">
-    <string>Fonts</string>
-   </property>
-  </action>
-  <action name="actionCheck_mode">
-   <property name="text">
-    <string>Check mode</string>
-   </property>
-  </action>
-  <action name="actionSave_Instr_mode">
-   <property name="text">
-    <string>Save Instr. mode</string>
-   </property>
-  </action>
-  <action name="actionOutput_compression">
-   <property name="text">
-    <string>Output compression</string>
-   </property>
-  </action>
-  <action name="actionExecution_mode">
-   <property name="text">
-    <string>Execution mode</string>
-   </property>
-  </action>
-  <action name="actionPlot_mode">
-   <property name="text">
-    <string>Plot mode</string>
-   </property>
-  </action>
-  <action name="actionBrowse_selection">
-   <property name="text">
-    <string>Browse selection</string>
-   </property>
-  </action>
   <action name="actionScrollbar_width">
    <property name="text">
     <string>Scrollbar width</string>
    </property>
   </action>
-  <action name="actionXcontrol">
-   <property name="text">
-    <string>Xcontrol</string>
-   </property>
-  </action>
-  <action name="actionRecovery">
-   <property name="text">
-    <string>Recovery</string>
-   </property>
-  </action>
   <action name="actionX3D_options">
    <property name="text">
     <string>X3D options</string>
-   </property>
-  </action>
-  <action name="actionapplications">
-   <property name="text">
-    <string>applications</string>
    </property>
   </action>
   <action name="actionGeneral_Information">
@@ -1003,7 +885,7 @@
     <string>User Interface</string>
    </property>
   </action>
-  <action name="actionGenerate_Series">
+  <action name="actionHelpGenerate_Series">
    <property name="text">
     <string>Generate Series</string>
    </property>
@@ -1011,11 +893,6 @@
   <action name="actionExternal_Commands">
    <property name="text">
     <string>User Module</string>
-   </property>
-  </action>
-  <action name="actionRay_tracing">
-   <property name="text">
-    <string>Ray tracing</string>
    </property>
   </action>
   <action name="actionVisualization">
@@ -1026,11 +903,6 @@
   <action name="actionOptimization">
    <property name="text">
     <string>Optimization</string>
-   </property>
-  </action>
-  <action name="actionXcontrol_2">
-   <property name="text">
-    <string>Xcontrol</string>
    </property>
   </action>
   <action name="action1000">
@@ -1220,11 +1092,6 @@
     <string>Generate Extraction System</string>
    </property>
   </action>
-  <action name="actionGuide_Shape_2">
-   <property name="text">
-    <string>Guide Shape</string>
-   </property>
-  </action>
   <action name="actionCryst_Analayzer_Spectrom_2">
    <property name="text">
     <string>Cryst.Analyzer Spectrom.</string>
@@ -1235,44 +1102,9 @@
     <string>Compute Chopper Phases</string>
    </property>
   </action>
-  <action name="actionguide">
+  <action name="actionGenerate_Series">
    <property name="text">
-    <string>frame</string>
-   </property>
-  </action>
-  <action name="actionguide_2">
-   <property name="text">
-    <string>guide</string>
-   </property>
-  </action>
-  <action name="actionspace">
-   <property name="text">
-    <string>space</string>
-   </property>
-  </action>
-  <action name="actionspacewindow">
-   <property name="text">
-    <string>spacewindow</string>
-   </property>
-  </action>
-  <action name="actionmonitor1">
-   <property name="text">
-    <string>monitor1</string>
-   </property>
-  </action>
-  <action name="actionsource">
-   <property name="text">
-    <string>source</string>
-   </property>
-  </action>
-  <action name="actionvelselect">
-   <property name="text">
-    <string>velselect</string>
-   </property>
-  </action>
-  <action name="actionpolariser_sm">
-   <property name="text">
-    <string>polariser_sm</string>
+    <string>Generate Series</string>
    </property>
   </action>
  </widget>

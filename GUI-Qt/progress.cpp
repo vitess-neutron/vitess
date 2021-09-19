@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    progress.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    03.Sep.2021
+// Purpose:
+//=============================================================================
+
 #include "progress.h"
 #include <QFileInfo>
 #include <QTime>

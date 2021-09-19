@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    chopperphases.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    2021
+// Purpose: Calculate chopperphases with external programm chop_phases
+//=============================================================================
+
 #include "chopperphases.h"
 #include "ui_chopperphases.h"
 #include <QProcess>
@@ -8,6 +15,7 @@ ChopperPhases::ChopperPhases(QString modHeader,QWidget *parent) :
     ui(new Ui::ChopperPhases)
 {
     ui->setupUi(this);
+    // modHeader contains call of /Modules/chop_phases with logfile as parameter;
     cmd = modHeader;
 }
 
@@ -16,6 +24,7 @@ ChopperPhases::~ChopperPhases()
     delete ui;
 }
 
+//calculate chopper phases
 void ChopperPhases::on_Calculate_clicked()
 {
     foreach(QString key,chopPhas.keys())
@@ -34,7 +43,7 @@ void ChopperPhases::on_Calculate_clicked()
     toolProcess->start(cmd);
     if (!toolProcess->waitForStarted())
     {
-       std::cout << "Error with start chop_phases" << std::endl;
+       ui->textBrowser->append("Error cannot start chop_phases");
        return;
     }
     if (toolProcess->waitForFinished())
@@ -63,8 +72,8 @@ void ChopperPhases::on_Calculate_clicked()
     }
     else
     {
-       std::cout << "Timeout in chop_phases" << std::endl;
-       return;
+        ui->textBrowser->append("Timeout in chop_phases");
+        return;
     }
 
 }

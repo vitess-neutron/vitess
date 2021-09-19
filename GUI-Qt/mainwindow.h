@@ -9,6 +9,7 @@
 #include "chopperphases.h"
 #include "progress.h"
 #include "big.h"
+#include "series.h"
 #include "convert.h"
 
 #include <QTreeWidgetItem>
@@ -30,15 +31,83 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void loadInstrument(QString fName);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
 
 signals:
     void big(QString test);
+    void getSeriesVariable(QString text, QString val);
 
 private slots:
 
-//        void showTextBrowser(QString test);
+        //menu file
+        void on_actionLoad_triggered();
+        void on_actionSave_as_triggered();
+        void on_actionSave_triggered();
+        void on_actionNewInst_triggered();
+        void on_actionPy_Python_script_triggered();
+        void on_actionBat_shell_triggered();
+        void on_actionShow_inf_File_triggered();
+        void on_actionExit_triggered();
+
+        //menu variations
+        void on_actionCopy_Module_Parameters_triggered();
+        void on_actionPaste_Module_Parameters_triggered();
+        void on_actionSet_Instrument_Name_triggered();
+        void on_actionGenerate_Series_triggered();
+
+        //menu plot
+        void on_actionPlot_File_triggered();
+        void on_action2D_Plot_File_triggered();
+
+        //menu tools
+        void on_actionConvert_Ascii_to_Binary_triggered();
+        void on_actionDefine_Direction_triggered();
+        void on_actionGenerate_Mirror_Files_triggered();
+        void on_actionGenerate_Surface_Files_triggered();
+        void on_actionGenerate_Extraction_System_triggered();
+        void on_actionGuide_Shape_triggered();
+        void on_actionCryst_Analayzer_Spectrom_triggered();
+        void on_actionCompute_Chopper_Phases_triggered();
+
+        //menu options
+        void BufferSize_triggered();
+        void minNeutWeight_triggered();
+
+        //menu help
+        void on_actionGeneral_Information_triggered();
+        void on_actionTutorial_triggered();
+        void on_actionUser_Interface_triggered();
+        void on_actionVisualization_triggered();
+        void on_actionOptimization_triggered();
+        void helpTools_triggered();
+        void helpModules_triggered();
+
+
+        //buttons
+        void on_pushCheck_clicked();
+        void on_pushDryrun_clicked();
+        void on_pushStart_clicked();
+        void on_pushVisual_clicked();
+        void on_pushStop_clicked();
+        void on_pushKill_clicked();
+        void on_pushFresh_clicked();
+
+        void on_pushOutdir_clicked();
+        void on_pushIndir_clicked();
+        void on_InDir_editingFinished();
+        void on_OutDir_editingFinished();
+        void browseBut_clicked();
+        void editBut_clicked();
+        void paramBut_clicked();
+
+        //buttons output area
+        void on_pushBig_clicked();
+        void on_pushClear_clicked();
+        void on_pushSave_clicked();
+
+
         void showTextBrowser();
         void showSelectedModul(int);
         void changeModulWidget(QString modul,int row);
@@ -52,61 +121,9 @@ private slots:
 
         void checkIsValide();
 
-        void on_actionLoad_triggered();
-        void on_actionSave_as_triggered();
-        void on_actionSave_triggered();
-        void on_actionNewInst_triggered();
-        void on_actionExit_triggered();
-        void on_actionGeneral_Information_triggered();
-        void on_actionTutorial_triggered();
-        void on_actionUser_Interface_triggered();
-        void on_actionOptimization_triggered();
-        void on_actionPlot_File_triggered();
-        void on_action2D_Plot_File_triggered();
-        void on_actionPy_Python_script_triggered();
-        void on_actionBat_shell_triggered();
-        void on_actionCopy_Module_Parameters_triggered();
-        void on_actionPaste_Module_Parameters_triggered();
-        void on_actionShow_inf_File_triggered();
-        void on_actionSet_Instrument_Name_triggered();
-
-        void on_actionConvert_Ascii_to_Binary_triggered();
-        void on_actionDefine_Direction_triggered();
-        void on_actionGenerate_Mirror_Files_triggered();
-        void on_actionGenerate_Surface_Files_triggered();
-        void on_actionGenerate_Extraction_System_triggered();
-        void on_actionGuide_Shape_triggered();
-        void on_actionCryst_Analayzer_Spectrom_triggered();
-        void on_actionCompute_Chopper_Phases_triggered();
-
-
-        void on_pushFresh_clicked();
-        void on_pushClear_clicked();
-        void on_pushSave_clicked();
-        void on_pushDryrun_clicked();
-        void on_pushCheck_clicked();
-        void on_pushOutdir_clicked();
-        void on_pushIndir_clicked();
-        void on_pushStart_clicked();
-        void on_pushKill_clicked();
-        void on_pushStop_clicked();
-
-        void browseBut_clicked();
-        void editBut_clicked();
-        void paramBut_clicked();
-        void BufferSize_triggered();
-        void minNeutWeight_triggered();
-        void helpTools_triggered();
-        void helpModules_triggered();
-
-
-        void on_pushBig_clicked();
-
-        void on_pushVisual_clicked();
         void visualActive();
-
-        void on_InDir_editingFinished();
-        void on_OutDir_editingFinished();
+        void startSerie(QStringList serieVar, QVector<QVector <QString>> table ,
+                        QStringList SelSelect, QStringList copyFiles, QString copyDir);
 
 
 private:
@@ -117,6 +134,7 @@ private:
 
     Big *bigOutput;
     Progress *progDial;
+    Series *series;
     QString VitessDir;
     QString instrumentFile;
     QString logFname;
@@ -145,6 +163,7 @@ private:
     QMap<QString,int> modindex;
 
     QTimer *tVisual;
+    QTimer *tSerie;
     QElapsedTimer timer;
     QProgressDialog *dialog;
 
@@ -163,6 +182,7 @@ private:
     int visualRepete;
     int minWidth;
     bool pipeActive = false;
+    bool killBit = false;
     YAML::Node config, configChildren;
     YAML::Node curModul;
 
@@ -179,6 +199,7 @@ private:
     void toolCommand(QString prog);
     void closeEvent(QCloseEvent *ev);
     void Visualization();
+    void delay();
 };
 
 #endif // MAINWINDOW_H

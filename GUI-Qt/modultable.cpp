@@ -1,8 +1,16 @@
+//=============================================================================
+// File:    modultable.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    03.Sep.2021
+// Purpose:
+//=============================================================================
+
 #include "modultable.h"
 #include "ui_modultable.h"
 #include <QStandardItemModel>
 #include <QTableWidgetItem>
 #include <QMenu>
+#include <QFile>
 #include <QTextStream>
 #include <iostream>
 
@@ -11,7 +19,6 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     ui(new Ui::ModulTable)
 {
     modNames = s1;
-//    arrow = new QIcon(":/resources/images/arrow-right.xpm");
     arrow = new QIcon(":/resources/images/right_arrow.png");
     ui->setupUi(this);
 
@@ -23,13 +30,13 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     foreach (QString s, modNames)
     {
         // length of string plus 1 pixel
-       // int w = fontMetrics().width(s) + s.length();
         int w = fontMetrics().horizontalAdvance(s) + s.length();
         if ( minWidth < w )
             minWidth = w;
     }
     //Menu for table toolbuttons
     menu= new QMenu();
+    //create submenu for source,sample,monitor moduls
     for (int index=0; index < menuTitle.size(); index++)
     {
         subMenu << new QMenu();
@@ -41,6 +48,7 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
         sMenu = false;
         QAction *newAction = new QAction(s,this);
         //connect(newAction,SIGNAL(triggered()),this,SLOT(toolAction()));
+        //if modul name starts with source, sample or mon put in submenu
         for (int index=0; index < menuSearch.size(); index++)
             if (s.startsWith(menuSearch[index]))
             {
@@ -49,6 +57,7 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
                 sMenu = true;
                 break;
             }
+        //else put in main button menu
         if (!sMenu) menu->addAction(newAction);
     }
 
@@ -64,7 +73,9 @@ ModulTable::ModulTable(QStringList s1,QWidget *parent) :
     //Menu in module table
     header = ui->tableWidget->verticalHeader();
     header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, SIGNAL(customContextMenuRequested(const QPoint&)),this, SLOT(showContextMenu(const QPoint&)));
+    //right mouse click on header
+    connect(header, SIGNAL(customContextMenuRequested(const QPoint&)),this,
+            SLOT(showContextMenu(const QPoint&)));
 
     addNewRow();
 }
@@ -75,22 +86,24 @@ ModulTable::~ModulTable()
     delete ui;
 }
 
-//right mouse pressed on vertical table header
+//right mouse pressed on vertical table header, menu to disable,enable... will appear
 void ModulTable::showContextMenu(const QPoint& pos)
 {
+    //get index from mouse click position and set to current row
+    ui->tableWidget->setCurrentCell(header->logicalIndexAt(pos),0);
+    //get position where menu should appear
     QPoint globalPos = header->mapToGlobal(pos);
     QMenu moduleMenu;
+    //connect slots to menu actions
     moduleMenu.addAction("Move Down",this,SLOT(insertModule()));
     moduleMenu.addAction("Remove Module",this,SLOT(removeModule()));
-    moduleMenu.addSeparator();
-    moduleMenu.addAction("Edit here",this,SLOT(infoModule()));
-    moduleMenu.addAction("Separat Window",this,SLOT(infoModule()));
     moduleMenu.addSeparator();
     moduleMenu.addAction("Disable Module",this,SLOT(disableModule()));
     moduleMenu.addAction("Enable",this,SLOT(enableModule()));
     moduleMenu.addAction("Enable all",this,SLOT(enableAllModules()));
     moduleMenu.addSeparator();
     moduleMenu.addAction("Info",this,SLOT(infoModule()));
+    //show menu
     moduleMenu.exec(globalPos);
 }
 
@@ -102,12 +115,6 @@ void ModulTable::disableModule()
     ui->tableWidget->verticalHeader()->update();
 }
 
-void ModulTable::setDisabled()
-{
-    for (int index=0; index < disableFlag.size(); index++)
-        if (disableFlag[index])
-           ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::lightGray);
-}
 
 void ModulTable::enableModule()
 {
@@ -126,11 +133,14 @@ void ModulTable::enableAllModules()
     ui->tableWidget->verticalHeaderItem(oldRow)->setForeground(Qt::red);
 }
 
+//move down  insert modul in table
 void ModulTable::insertModule()
 {
     int index=ui->tableWidget->currentRow();
     ui->tableWidget->insertRow(index);
     QToolButton *tBut = new QToolButton();
+    //button menu indicator is not shown (little arrow in buttom right button corner)
+    tBut->setStyleSheet("QToolButton::menu-indicator {image:none;}");
     tBut->setText("--inactive--");
     tBut->setMenu(menu);
     tBut->setPopupMode(QToolButton::InstantPopup);
@@ -155,22 +165,6 @@ void ModulTable::insertModule()
     emit insertCombo(index);
 }
 
-//called from mainwindow when reading yaml file
-void ModulTable::loadModule(QString text)
-{
-    foreach (QString s, modNames)
-    {
-        if ( s.indexOf(text) == 0)
-        {
-           butModule.last()->setMinimumWidth(minWidth);    // width of modullist
-           butModule.last()->setText(s);
-           arrowButton.last()->setEnabled(true);
-           emit changedComboVal(text,butModule.size()-1);
-           addNewRow();
-           return;
-        }
-    }
-}
 
 void ModulTable::infoModule()
 {
@@ -178,7 +172,13 @@ void ModulTable::infoModule()
     QString wwwFile = butModule[index]->text().toLower();
     QString VitessDir = QApplication::applicationDirPath().
                     left(QApplication::applicationDirPath().lastIndexOf("/"));
-    QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + wwwFile + ".html"));
+    if( QFile::exists(VitessDir + "/WWW/" + wwwFile + ".html"))
+        QDesktopServices::openUrl(QUrl(VitessDir + "/WWW/" + wwwFile + ".html"));
+    else
+    {
+        QMessageBox::information(this,"No direct infofile for module ",
+                                 "See help menue");
+    }
 }
 
 
@@ -203,7 +203,32 @@ void ModulTable::removeModule()
     emit removeCombo(index);
 }
 
+//called from MainWindow::loadinstrument put selected modul in table
+void ModulTable::loadModule(QString text)
+{
+    foreach (QString s, modNames)
+    {
+        if ( s.indexOf(text) == 0)
+        {
+           butModule.last()->setMinimumWidth(minWidth);    // width of modullist
+           butModule.last()->setText(s);
+           arrowButton.last()->setEnabled(true);
+           emit changedComboVal(text,butModule.size()-1);
+           addNewRow();
+           return;
+        }
+    }
+}
 
+//called from MainWindow::loadinstrument set color gray for all disabled moduls in file
+void ModulTable::setDisabled()
+{
+    for (int index=0; index < disableFlag.size(); index++)
+        if (disableFlag[index])
+           ui->tableWidget->verticalHeaderItem(index)->setForeground(Qt::lightGray);
+}
+
+//called from MainWindow::loadinstrument and new button
 void ModulTable::cleanModules()
 {
     disableFlag.clear();
@@ -213,10 +238,13 @@ void ModulTable::cleanModules()
     ui->tableWidget->setRowCount(0);
     addNewRow();
 }
+
+//add new row with buttons to table
 void ModulTable::addNewRow()
 {
     // new ToolButton
     QToolButton *tBut = new QToolButton();
+    //do not show little triangle in button as menu indicator
     tBut->setStyleSheet("QToolButton::menu-indicator {image:none;}");
     tBut->setText("--inactive--");
     tBut->setMenu(menu);
@@ -238,7 +266,6 @@ void ModulTable::addNewRow()
     ui->tableWidget->setCellWidget(row,1,tb);
     QTableWidgetItem *vertItem = new QTableWidgetItem(QString::number(row+1));
     ui->tableWidget->setVerticalHeaderItem(row,vertItem);
-    // oldRow = row;
 
     disableFlag << false;
 }

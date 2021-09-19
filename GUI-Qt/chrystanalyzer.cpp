@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    chrystanalyzer.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    2021
+// Purpose: Calculate christ. analyzer spectrum
+//=============================================================================
+
 #include "chrystanalyzer.h"
 #include "ui_chrystanalyzer.h"
 #include <QProcess>
@@ -9,6 +16,7 @@ Chrystanalyzer::Chrystanalyzer(QStringList modulSpec,QWidget *parent) :
     ui(new Ui::Chrystanalyzer)
 {
     ui->setupUi(this);
+    //preseted call of cas_v40 modul
     ui->cmdEdit->setText("cas_v40"+ modulSpec[1] + " --Z2 --L" + modulSpec[2] +
                          "/CAS_log60arm10.dat -PCAS_par60arm10.dat "
                          "-SCAS_S60arm10.dat -TCAS_D60arm10.dat -l6.174745 -w0.03 -k0");

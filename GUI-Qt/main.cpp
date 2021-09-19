@@ -1,20 +1,28 @@
+//=============================================================================
+// File:    main.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    2021
+// Purpose: Main program to start application
+//=============================================================================
+
 #include "mainwindow.h"
 #include <QApplication>
 
+//starts the application
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
-   // w.centralWidget()->setStyleSheet("QPushButton {background-color:lightgreen;}");
+    //set style of application
     w.centralWidget()->setStyleSheet("QWidget {background-color:lightcyan;}"
                                     " QLineEdit {background-color:lightyellow;}"
                                     " QPushButton {background-color:lightgray;}");
-    //w.centralWidget()->setStyleSheet("background-color:lightgreen");
+
+    //call programm with instrumentfilename as argument
     if (argc >1)
     {
         QString fName(argv[1]);
-        std::cout << "fName: " << fName.toStdString() << std::endl;
         w.loadInstrument(fName);
     }
 

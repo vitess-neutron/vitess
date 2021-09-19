@@ -18,13 +18,14 @@ public:
     void defaultHelp();
 
 private slots:
-    void on_comboBox_activated(const QString &arg1);
+
+    void on_comboBox_activated(int index);
 
 private:
     Ui::Help *ui;
     QString helpDir;
     QStringList helpFiles;
-    void writeHelp(int);
+    void showHelp(int);
 };
 
 #endif // HELP_H

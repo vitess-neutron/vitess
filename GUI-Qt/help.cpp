@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    help.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    2021
+// Purpose: Dialog to show help entries
+//=============================================================================
+
 #include "help.h"
 #include "ui_help.h"
 #include <iostream>
@@ -27,15 +34,11 @@ Help::~Help()
 }
 void Help::defaultHelp()
 {
-   writeHelp (0);
+    //show vitess-general.txt
+    showHelp (0);
 }
 
-void Help::on_comboBox_activated(const QString &arg1)
-{
-    writeHelp(ui->comboBox->currentIndex());
-}
-
-void Help::writeHelp(int i)
+void Help::showHelp(int i)
 {
     QFile file(helpFiles[i]);
     QTextStream text(&file);
@@ -47,6 +50,7 @@ void Help::writeHelp(int i)
 
 void Help::guiHelp()
 {
+    //show help for user interface without selection button
     ui->comboBox->hide();
     QFile file(helpDir+"vitess-gui.txt");
     QTextStream text(&file);
@@ -54,4 +58,9 @@ void Help::guiHelp()
         QMessageBox::information(this, "info", file.errorString());
     ui->textBrowser->setText(text.readAll());
     file.close();
+}
+
+void Help::on_comboBox_activated(int index)
+{
+    showHelp(index);
 }

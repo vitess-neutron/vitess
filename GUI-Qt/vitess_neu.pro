@@ -39,6 +39,7 @@ SOURCES += \
         modultable.cpp \
         parameter.cpp \
         progress.cpp \
+        series.cpp \
         tools.cpp \
         ../SRC/convert.c
 
@@ -51,6 +52,7 @@ HEADERS += \
         modultable.h \
         parameter.h \
         progress.h \
+        series.h \
         tools.h
 FORMS += \
         big.ui \
@@ -59,7 +61,8 @@ FORMS += \
         help.ui \
         mainwindow.ui \
         modultable.ui \
-        parameter.ui
+        parameter.ui \
+        series.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

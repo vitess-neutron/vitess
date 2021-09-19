@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    tools.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    2021
+// Purpose:
+//=============================================================================
+
 #include "tools.h"
 
 
@@ -70,20 +77,35 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
                //wenn nur float Darstellung (nicht exponential)
                //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
                double val = mapParameter["min"].toDouble(&ok);          //min    minimum
-               if (ok) static_cast<QDoubleValidator*>(validator)->setBottom(val);
+               if (ok)
+               {
+                   static_cast<QDoubleValidator*>(validator)->setBottom(val);
+                   label->setToolTip(label->toolTip() + "\nMinimum: " +mapParameter["min"]);
+               }
                val = mapParameter["max"].toDouble(&ok);                 //max    maximum
-               if (ok) static_cast<QDoubleValidator*>(validator)->setTop(val);
+               if (ok)
+               {
+                   static_cast<QDoubleValidator*>(validator)->setTop(val);
+                   label->setToolTip(label->toolTip() + "\nMaximum: " +mapParameter["max"]);
+               }
                validator->setLocale(QLocale::C);
                flag = true;
            }
        case 3:                                                               //int
            if (flag == false)
            {
+
                QIntValidator *intValidator = new QIntValidator;
                if (mapParameter["min"].toInt())
+               {
                   intValidator->setBottom( mapParameter["min"].toInt());
+                  label->setToolTip(label->toolTip() + "\nMinimum: " +mapParameter["min"]);
+               }
                if (mapParameter["max"].toInt())
+               {
                   intValidator->setTop( mapParameter["max"].toInt());
+                  label->setToolTip(label->toolTip() + "\nMaximum: " +mapParameter["max"]);
+               }
                validator = intValidator;
            }
            lEdit = new QLineEdit();

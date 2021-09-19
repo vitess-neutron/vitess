@@ -1,3 +1,10 @@
+//=============================================================================
+// File:    parameter.cpp
+// Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
+// Date:    03.Sep.2021
+// Purpose:
+//=============================================================================
+
 #include "parameter.h"
 #include "ui_parameter.h"
 #include <fstream>
@@ -10,6 +17,9 @@ Parameter::Parameter(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Parameter)
 {
+    //Window without close cross
+    //CustomizeWindowHint flag turns off the default window title hints
+    //WindowTitleHint gives the window only a title bar without icons
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     ui->setupUi(this);
     ui->numberEdit->setValidator(new QIntValidator(1,20,this));
