@@ -20,10 +20,11 @@
 #include "yaml-cpp/yaml.h"
 
 
-static QStringList typeList = {"file","string", "float", "int", "combo","switch","window"};
 static QStringList strList;
 static QString instrumentDir;
 static QString instrumentInDir, instrumentOutDir;
+
+//definition entries for single parameter
 static QMap<QString,QString> mapParam = {
     {"type", ""},
     {"descr", ""},
@@ -34,11 +35,14 @@ static QMap<QString,QString> mapParam = {
     {"max", ""},
     {"column", ""},
     {"prefix", ""},
-
 };
+//possible entries for parameter type definition 
+static QStringList typeList = {"file","string", "float", "int", "combo","switch","window"};
 
 typedef int (*convert_ptr)(const char *);
 
+//search vitess enum values matching the text in comboBoxes
+//use functions in convert.c 
 static QMap<QString, int (*)(const char *)> functionMap = {
 //   source
 //     {"SrcName",  (convert_ptr) &SrcName_Txt2ID},
@@ -88,6 +92,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"SmplGeom",reinterpret_cast<convert_ptr>(&SmpleGeom_Txt2ID)},
 };
 
+//map connects entries in menu help tools to files in WWW directory 
 static QMap<QString,QString> helpTools = {
     { "Generate Series", "sim_series"},
     { "Convert Ascii to Binary" , "ascii2bin"},
@@ -99,6 +104,7 @@ static QMap<QString,QString> helpTools = {
     { "Compute Chopper Phases", "chop_phases"}
 };
 
+//list of moduls displayed in help menu
 static QStringList helpModul = {
     "beamstop",
     "chopper", "collimator",

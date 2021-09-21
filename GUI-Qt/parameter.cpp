@@ -1,8 +1,8 @@
 //=============================================================================
 // File:    parameter.cpp
 // Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
-// Date:    03.Sep.2021
-// Purpose:
+// Date:    2021
+// Purpose: Generate and handle subparameter in seperate window 
 //=============================================================================
 
 #include "parameter.h"
@@ -156,10 +156,11 @@ void Parameter::browseBut_clicked()
         QMessageBox::information(this,"Warning cannot open: ",fileName);
         return;
     }
+    QFileInfo fileinfo(fileName);
     // cut browse_ from sender
     ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(
                 qobject_cast<QPushButton *>(sender())->objectName().mid(7))
-                ->setText(fileName);
+                ->setText(fileinfo.fileName());
 }
 void Parameter::editBut_clicked()
 {

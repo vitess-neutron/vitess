@@ -1,8 +1,8 @@
 //=============================================================================
 // File:    modultable.cpp
 // Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
-// Date:    03.Sep.2021
-// Purpose:
+// Date:    2021
+// Purpose: Create table for instrument modul selection
 //=============================================================================
 
 #include "modultable.h"

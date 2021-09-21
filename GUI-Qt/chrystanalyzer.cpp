@@ -11,6 +11,7 @@
 #include <iostream>
 #include <QMessageBox>
 
+//modulSpec contains system identifier and instrument input directory
 Chrystanalyzer::Chrystanalyzer(QStringList modulSpec,QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Chrystanalyzer)

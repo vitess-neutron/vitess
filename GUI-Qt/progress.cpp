@@ -1,8 +1,8 @@
 //=============================================================================
 // File:    progress.cpp
 // Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
-// Date:    03.Sep.2021
-// Purpose:
+// Date:    2021
+// Purpose: Create progress dialog
 //=============================================================================
 
 #include "progress.h"

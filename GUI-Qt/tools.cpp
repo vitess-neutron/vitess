@@ -2,7 +2,7 @@
 // File:    tools.cpp
 // Author:  Lydia Fleischhauer-Fuß <l.fleischhauer-fuss@fz-juelich.de>
 // Date:    2021
-// Purpose:
+// Purpose: Functions to design single moduls and generate scripts
 //=============================================================================
 
 #include "tools.h"

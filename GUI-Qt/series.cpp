@@ -176,7 +176,7 @@ void Series::on_iterations_valueChanged(int arg1)
     }
 }
 
-//value in row one changed
+//delta value in row one changed
 void Series::on_seriesTable_cellChanged(int row, int column)
 {
     if (row == 1)
