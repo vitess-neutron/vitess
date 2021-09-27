@@ -204,7 +204,7 @@ void Parameter::on_pushSave_clicked()
 {
     //save parameter values in file
     QFileInfo fileinfo(initFile);
-    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instOutDir,
+    QString fileName = QFileDialog::getSaveFileName(this,"Open Instrument",instInDir,
                                                     tr("YML(*.yml) (*.yml)"));
     if (fileName.isEmpty()) return;
     if (!fileName.endsWith(".yml"))
@@ -240,7 +240,7 @@ void Parameter::on_pushSave_clicked()
 void Parameter::loadFile(QString fileName)
 {
     QFileInfo fileinfo(fileName);
-    instOutDir = fileinfo.path();
+    instInDir = fileinfo.path();
     YAML::Node config = YAML::LoadFile(fileName.toStdString());
     YAML::Node config_paramWin = config[config.begin()->first.as<string>()];
     for (unsigned i=1; i < config_paramWin.size(); i++)

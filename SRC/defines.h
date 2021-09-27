@@ -214,9 +214,9 @@ VtDirType;
 // Axis
 typedef enum
 {
-  X_AXIS = 0,
-  Y_AXIS = 1,
-  Z_AXIS = 2
+  X_AXIS = 'X',
+  Y_AXIS = 'Y',
+  Z_AXIS = 'Z'
 } 
 VtAxis;
 
@@ -585,8 +585,8 @@ VtSmplGeom;
 // measuring mode (sample_reflectom)
 typedef enum
 {	
-  VT_SAMPLE    = 0,
-	VT_REFERENCE = 1,
+  VT_SAMPLE    = 1,
+	VT_REFERENCE = 2,
 }
 VtMeasMode;
 

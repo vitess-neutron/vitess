@@ -32,11 +32,6 @@ Help::~Help()
 {
     delete ui;
 }
-void Help::defaultHelp()
-{
-    //show vitess-general.txt
-    showHelp (0);
-}
 
 void Help::showHelp(int i)
 {

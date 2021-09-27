@@ -20,7 +20,7 @@ public:
     void designParameterWin(QString filename);
     void loadFile(QString filename);
     void saveData(YAML::Node& config,std::string key,QString param,QString parFile);
-    QString instInDir, instOutDir;
+    QString instInDir;
 
 private:
     Ui::Parameter *ui;
