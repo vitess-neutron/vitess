@@ -610,7 +610,6 @@
     <addaction name="actionPlot_File"/>
     <addaction name="action2D_Plot_File"/>
     <addaction name="separator"/>
-    <addaction name="actionclose_gnuplot_Windows"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -662,11 +661,8 @@
     <addaction name="menunBuffer"/>
     <addaction name="menuMinWght"/>
     <addaction name="menuTrajectories"/>
-    <addaction name="actionScrollbar_width"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actionX3D_options"/>
-    <addaction name="actionGraphics_tools"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">

@@ -463,7 +463,7 @@ void MainWindow::on_actionGeneral_Information_triggered()
 {
     //open seperat help dialog
     Help *help_general = new Help(this);
-    help_general->defaultHelp();
+    help_general->showHelp(0);
     help_general->show();
 }
 
@@ -555,14 +555,20 @@ void MainWindow::on_pushCheck_clicked()
                        cmd += " " + Module[modulName][param]["prefix"];
                        cmd += ui->stackedWidget->widget(i)->findChild< QLineEdit *>(param)->text();
                     }
-                    //get combobox text and convert
+                    //get combobox text
+                    //functionMap converts text to enum values using function in convert.c
                     else if (ui->stackedWidget->widget(i)->findChild< QComboBox *>(param))
                     {
                        cmd += " " + Module[modulName][param]["prefix"];
                        QString curText = ui->stackedWidget->widget(i)
                                ->findChild< QComboBox *>(param)->currentText();
-                       functionMap[param](curText.toStdString().c_str());
-                       cmd += QString::number(functionMap[param](curText.toStdString().c_str()));
+                       if ( functionMap.contains(param))
+                         cmd += QString::number(functionMap[param](curText.toStdString().c_str()));
+                       else if ( functionMapChar.contains(param))
+                         cmd += functionMapChar[param](curText.toStdString().c_str());
+                       else
+                         cmd +=  QString::number(ui->stackedWidget->widget(i)
+                                 ->findChild< QComboBox *>(param)->currentIndex());
                     }
                     //get checkbox value
                     else if (ui->stackedWidget->widget(i)->findChild< QCheckBox *>(param))
@@ -579,7 +585,7 @@ void MainWindow::on_pushCheck_clicked()
                 {
                     QString fileName = ui->stackedWidget->widget(i)
                           ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
-                    fileName = instrumentOutDir+"/"+fileName;
+                    fileName = instrumentInDir+"/"+fileName;
                     QFile file(fileName);
                     if (!file.open(QFile::ReadOnly | QFile::Text))
                     {
@@ -825,7 +831,7 @@ void MainWindow::paramBut_clicked()
                          ->findChild< QLineEdit *>(param.toLower()+"_file")->text();
     if (fileName != "")
     {
-       fileName = instrumentOutDir+"/"+fileName;
+       fileName = instrumentInDir+"/"+fileName;
        QFile file(fileName);
        if (!file.open(QFile::ReadOnly | QFile::Text))
        {
@@ -835,7 +841,6 @@ void MainWindow::paramBut_clicked()
        paramWindow[param]->loadFile(fileName);
     }
     paramWindow[param]->instInDir=instrumentInDir;
-    paramWindow[param]->instOutDir=instrumentOutDir;
     paramWindow[param]->show();
 }
 
@@ -1043,7 +1048,7 @@ void MainWindow::readCurModul(YAML::Node& curModule,int index)
                   ->findChild<QLineEdit *>(butName.toLower()+"_file")->text();
            if( parFile != "")
            {
-              parFile = instrumentOutDir + "/" +parFile;
+              parFile = instrumentInDir + "/" +parFile;
               paramWindow[butName]->saveData(config,key,butName,parFile);
            }
         }
@@ -1071,7 +1076,7 @@ void MainWindow::pasteCurModul(YAML::Node curModule,int index)
         {
             //write subparameter yaml data to seperat file,that will be opened when
             //button is pressed
-            QString fileName = instrumentOutDir+"/"+childName.toLower()+".yml";
+            QString fileName = instrumentInDir+"/"+childName.toLower()+".yml";
             QFile file(fileName);
             if (!file.open(QFile::ReadWrite | QFile::Text))
             {

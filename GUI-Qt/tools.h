@@ -40,9 +40,19 @@ static QMap<QString,QString> mapParam = {
 static QStringList typeList = {"file","string", "float", "int", "combo","switch","window"};
 
 typedef int (*convert_ptr)(const char *);
+typedef char (*convert_char_ptr)(const char *);
 
 //search vitess enum values matching the text in comboBoxes
 //use functions in convert.c 
+
+static QMap<QString, char (*)(const char *)> functionMapChar = {
+//sample
+ {"RotAxis", reinterpret_cast<convert_char_ptr>(&Axis_Txt2ID)},
+//moderator
+ {"eShape",   reinterpret_cast<convert_char_ptr>(&ModShape_Txt2ID)},
+
+};
+
 static QMap<QString, int (*)(const char *)> functionMap = {
 //   source
 //     {"SrcName",  (convert_ptr) &SrcName_Txt2ID},
@@ -52,7 +62,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"eTrcMode", reinterpret_cast<convert_ptr>(&Trace_Txt2ID)},
      {"DataVsn",  reinterpret_cast<convert_ptr>(&ModVsn_Txt2ID)},
 //   moderator
-     {"eShape",   reinterpret_cast<convert_ptr>(&ModShape_Txt2ID)},
+//     {"eShape",   reinterpret_cast<convert_ptr>(&ModShape_Txt2ID)},
      {"eType",    reinterpret_cast<convert_ptr>(&ModType_Txt2ID)},
      {"eTS",      reinterpret_cast<convert_ptr>(&TS_Txt2ID)},
 //   writeout
@@ -88,7 +98,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"eMatrial", reinterpret_cast<convert_ptr>(&WndAbs_Txt2ID)},
 //   sample
      {"Mode", reinterpret_cast<convert_ptr>(&MeasMode_Txt2ID)},
-     {"RotAxis", reinterpret_cast<convert_ptr>(&Axis_Txt2ID)},
+ //    {"RotAxis", reinterpret_cast<convert_ptr>(&Axis_Txt2ID)},
      {"SmplGeom",reinterpret_cast<convert_ptr>(&SmpleGeom_Txt2ID)},
 };
 
