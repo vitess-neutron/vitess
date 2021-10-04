@@ -600,7 +600,7 @@ void InitPlane(Plane* pPlane)
 /*  Basic Matrix Functions                                                              */
 /****************************************************************************************/
 
-/* sets 3 x 3 matrix to zero */
+/* sets 3 x 3 matrix to zero or 1-Matrix resp. */
 void Init3x3Matrix(double Matrix[3][3])
 {
   int i,j;
@@ -608,6 +608,17 @@ void Init3x3Matrix(double Matrix[3][3])
   for (i=0; i < 3; i++)
   { for (j=0; j < 3; j++)
       Matrix[i][j] = 0.0;  
+  }
+}
+
+void InitRotMatrix(double Matrix[3][3])
+{
+  int i,j;
+
+  for (i=0; i < 3; i++)
+  { for (j=0; j < 3; j++)
+      if (i==j) Matrix[i][j] = 1.0;
+      else      Matrix[i][j] = 0.0;
   }
 }
 

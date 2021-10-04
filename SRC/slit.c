@@ -175,17 +175,21 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.pRectangle = calloc(1, sizeof(VtRectangle));
-    stGeometry.nRectangles = 1;
+    stGeometry.pHull  = calloc(1, sizeof(VtHull));
+    stGeometry.nHulls = 1;
 
-    stGeometry.pRectangle[0].Width    = Width;
-    stGeometry.pRectangle[0].Height   = Height;
-    stGeometry.pRectangle[0].vCntr[0] = DistMove/CmprFact;
-    stGeometry.pRectangle[0].vCntr[1] = 0.0;
-    stGeometry.pRectangle[0].vCntr[2] = 0.0;
-    stGeometry.pRectangle[0].vNormal[0] = 1.0;
-    stGeometry.pRectangle[0].vNormal[1] = 0.0;
-    stGeometry.pRectangle[0].vNormal[2] = 0.0;
+    stGeometry.pHull[0].Length     = 0.0;
+    stGeometry.pHull[0].WidthIn    = Width;
+    stGeometry.pHull[0].WidthOut   = Width * 3.0;
+    stGeometry.pHull[0].HeightIn   = Height;
+    stGeometry.pHull[0].HeightOut  = Height * 3.0;
+    stGeometry.pHull[0].vCntr[0]   = DistMove/CmprFact;
+    stGeometry.pHull[0].vCntr[1]   = 0.0;
+    stGeometry.pHull[0].vCntr[2]   = 0.0;
+    stGeometry.pHull[0].vNormal[0] = 1.0;
+    stGeometry.pHull[0].vNormal[1] = 0.0;
+    stGeometry.pHull[0].vNormal[2] = 0.0;
+    stGeometry.pHull[0].rotAngle   = 0.0;
   }
 
   return;

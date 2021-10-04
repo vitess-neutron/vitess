@@ -467,7 +467,7 @@ double Mon1D::DetermineParameter(VtMonPar id, Neutron* n)
 void Mon1D::WriteOut(long iBndl)
 {
   int    nBinPol[3]={0,0,0};
-  string fullFileName = fMonitorFilename + ".dat";
+  string fullFileName;
 
   for (int ii = 0; ii < 3; ii++) 
   {
@@ -491,6 +491,8 @@ void Mon1D::WriteOut(long iBndl)
 
     if (bMultFiles) 
       fullFileName = fMonitorFilename + "_" + sParName[eParX[ii]] + ".dat";
+    else
+      fullFileName = fMonitorFilename;
     
     fMonitor[ii] = OpenOutputFile(fullFileName.c_str(), TRUE, "w");
     if (fMonitor[ii]!=NULL)

@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
 	long    i=0;               // index of trajectories
 
 	double  DistSquared=0.0;   // distance from point of hitting to center of window   
-	double  TimeOF,            // TOF of neutron from origin to window
-          TOF3;              // TOF of neutron to pass through window material
+	double  TimeOF=0.0,        // TOF of neutron from origin to window
+          TOF3=0.0;          // TOF of neutron to pass through window material
 	double  NewPositionY=0.0,  // neutron position in co-ordinate system  rotated by 'rotang'
           NewPositionZ=0.0, 
           Phi=0.0;           // phi angle of the current trajectory
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
           CenterZ=0.0, 
           SumProb=0.0;
   double  VelocityReal=0.0,  // velocity of the current neutron
-          N_Wavelength,      // wavelength of the current neutron
+          N_Wavelength=0.0,  // wavelength of the current neutron
           mu=0.0,            // attenuation coefficient of the material, that the neutron traverses
           prob=0.0;          // probability of traversing the material
 

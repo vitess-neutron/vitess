@@ -3058,12 +3058,12 @@ set envESET {
   {env_thick float "" {"thickness [cm]" "thickness of the hollow cylinder surrounding the sample"} gt0}
   {env_wid float "" {"diameter [cm]" "outer width of the hollow cylinder"} gt0}
   {env_hei float "" {"height [cm]" "outer height of the cylinder"} gt0}
-  {env_sffile pareditablefile "" {"structure\nfactor file"} r}
+  {env_sffile pareditablefile "" {"structure\nfactor file" "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS) .laz and .lau format."} r}
   {Scattering header}
-  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic incoherent scattering cross-section"} 1}
-  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic total scattering cross-section"} 1}
-  {env_abs float "" {"absorption\n[1/cm]" "macroscopic absorption cross-section (with respect to a wavelength of 1.798 A)"} 1}
-  {env_ucv float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 50}
+  {env_inc float "" {"incoherent scat-\ntering [1/cm]" "macroscopic incoherent scattering cross-section of the sample environment material\nIf a non-zero value is given, incoherent scattering is applied."} 1}
+  {env_sca float "" {"total scat-\ntering [1/cm]"      "macroscopic total scattering cross-section of the sample environment material (used for attenuation)"} 1}
+  {env_abs float "" {"absorption\n[1/cm]" "macroscopic absorption cross-section of the sample environment material for 1.798 A (used for attenuation)"} 1}
+  {env_ucv float "" {"unit cell\nvolume [A³]" "Unit cell volume of the sample environment material"} gt0 "" 50}
 }
 
 
@@ -3102,18 +3102,18 @@ set nxsESET [concat $samASET {
 ###   pow file description
 
 set powESET [concat $samASET {
-  {sfactfile pareditablefile "" {"structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau\nor in another format. In the latter case the meaning of individual\ncolumns must be specified in the parameter file."} r}
+  {sfactfile pareditablefile "" {"structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."} r}
   {Scattering header}
   {tscat float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
   {cscat float "" {"total scat-\ntering [1/cm]"      "macroscopic cross-section"} 1}
   {absorp float "" {"absorption\n[1/cm]" "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
   {vol float "" {"unit cell\nvolume [A^3]" "Unit cell volume in cubic Angstroem."} gt0 "" 1}
   {"Structure file format" header}
-  {cD int  0 {"d-spacing\ncolumn" "D-spacing column number in the custom structure file."} ge0}
-  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int 0 {"Squared str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the custom structure file (optional)."} ge0}
-  {cDW int 0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}
+  {cD int  0 {"d-spacing\ncolumn" "d-spacing column number in the structure factor file (see HelpFile)."} ge0}
+  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the structure factor file (see HelpFile)."} ge0}
+  {cF2 int 0 {"Squared str.\nfactor column" "Squared structure factor column number in the structure factor file (see HelpFile)."} ge0}
+  {cM int  0 {"Mult.\ncolumn" "Multiplicity column number in the structure factor file (see HelpFile) (optional)."} ge0}
+  {cDW int 0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the structure factor file (see HelpFile) (optional)."} ge0}
   {sFactor float 1 {"Scale factor" "For a custom file format please specify a scale factor such \nthat the squared structure factor can be calculated in barn. Example: \nIf the (squared) structure factor is in fm (fm^2), then the \nscale factor is 1/100. (optional)."} ge0}
 }]
 
@@ -3121,14 +3121,13 @@ set powESET [concat $samASET {
 ###   psq file description
 
 set psqESET [concat $samASET {
-  {sfac radio "from file" {"structure\nfactor"} {"from file" "as function"} {D F}}
+  {sfac radio "from file" {"structure\nfactor"Source of the structure factor data, either 'from file' or 'as function'\nIn the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"} {"from file" "as function"} {D F}}
   {}
-  {sfactfile editablefile "" {"structure\nfactor file"} r}
+  {sfactfile editablefile "" {"structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. The first contains the momentum transfer values Q [1/Ang] and the second the corresponding value for S"} r}
   {Scattering header}
-  {tscat float "" {"incoherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
-  {cscat float "" {"coherent scat-\ntering [1/cm]" "macroscopic cross-section"} 1}
-  {absorp float "" {"absorption\n[1/cm]"
-    "macroscopic cross-section (with respect to a wavelength of 1.798 A)"} 1}
+  {tscat float "" {"incoherent scat-\ntering [1/cm]" "Macroscopic incoherent scattering cross section of the sample material. (Needed if 'Incoherent scattering' is chosen.)"} 1}
+  {cscat float "" {"coherent scat-\ntering [1/cm]" "Macroscopic coherent scattering cross section of the sample material (required)"} 1}
+  {absorp float "" {"absorption\n[1/cm]" "Macroscopic absorption cross section of the sample material for 1.798 Ang (used for attenuation)"} 1}
 }]
 
 proc checkMv {v name rc} {
@@ -3194,12 +3193,12 @@ isotropic scattering: no value needed."}
     {S D E P C I}
   }
   {}
-  {hsrad float "" {"radius 1 or\nlength [Ang]"} gt0}
-  {sobv2 float "" {"radius 2 or\nthickness [Ang]"} gt0}
-  {sobv3 float "" {"radius 3 or\nheight [Ang]"} gt0}
+  {hsrad float "" {"radius 1 or\nlength [Ang]" "Size of the particles:\n(Min.) radius of a sphere, thickness of a parallelepiped, or first radius of a cylinder or an ellipsoid. (See also Help|sample)"} gt0}
+  {sobv2 float "" {"radius 2 or\nwidth  [Ang]" "Size of the particles:\nWidth of a parallelepiped or 2nd or max. radius of an ellipsoid, a cylinder or max. radius of spheres. (See also Help|sample)"} gt0}
+  {sobv3 float "" {"radius 3 or\nheight [Ang]" "Size of the particles:\nHeight of a parallelepiped or cylinder or 3rd radius of an ellipsoid (see also Help|sample"} gt0}
   {}
-  {rho1 float "" {"scat. len. dens.\nparticl. [1/cmÂý]" "scattering length density of the soluted particles"} gt0}
-  {rho2 float "" {"scat. len. dens.\nsolvent [1/cmÂý]" "scattering length density of the solvent"} gt0}
+  {rho1 float "" {"scat. len. dens.\nparticl. [1/cm^2]" "scattering length density of the soluted particles"} gt0}
+  {rho2 float "" {"scat. len. dens.\nsolvent [1/cm^2]" "scattering length density of the solvent"} gt0}
   {fpkl float "" {"vol. fraction\nof particles" "volume fraction of the ensemble of particles in solution"} gt0}
   {}
   {miscs float "" {"incoh. scatter.\ncoeff. [1/cm]"} ge0}
@@ -3240,7 +3239,7 @@ set sample_environmentESET {
   {ev_z float 0.0 {"z [cm]" "z-position of the centre of the sample environment (usually the sample position) in the frame of the previous module" "" z}}
   {ev_file pareditablefile environ.env {"parameter file"
     "The parameter file describes the geometry and compositions of the sample environment. This option is mandatory." "" F} r env 1}
-  {ev_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {ev_col int "" {colour "Colour of the neutrons coherently scattered from the environment, incoherently scattered neutrons get 'color+1'" "" c} 0 32767}
   {ev_dir radio in {direction "in : sample environment before sample\nout: sample environment after sample" "" r} {in out} {1 2}}
 }
 
@@ -3311,7 +3310,7 @@ set sample_singcrystESET {
   {parfile pareditablefile sample_singcryst.par {
     "parameter file" "" "" P} r ssc 1}
   {sfactfile pareditablefile singcryst_structuref.dat {
-    "structure\nfactor file" "Structure factor file can be given as .dat (see FILES folder), .laz, .lau\nor in another format. In the latter case the meaning of individual\ncolumns must be specified in the parameter file." "" S} r}
+    "structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program." "" S} r}
   {spac radio Lorentzian {"d-spacing\ndistribution" "d-spacing probability distribution with maximum at the nominal value" "" o}
     {Lorentzian Gaussian} {1 2}}
   {spread float 0.0001 {"d-spacing\nspread [-]" "FWHM/d-spacing, the relative 'thickness' of the Ewald sphere" "" d}}
@@ -3350,12 +3349,12 @@ set sscESET {
   {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output"}}
   {ov float "" {"output angle\nvertical [deg]"}}
   {"Structure file format" header}
-  {ch int  0 {"h\ncolumn" "H column number in the custom structure file."} ge0}
-  {ck int  0 {"k\ncolumn" "K column number in the custom structure file."} ge0}
-  {cl int  0 {"l\ncolumn" "L column number in the custom structure file."} ge0}
-  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the custom structure file."} ge0}
-  {cF2 int  0 {"Squared Str.\nfactor column" "Squared structure factor column number in the custom structure file."} ge0}
-  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the custom structure file (optional)."} ge0}
+  {ch int  0 {"h\ncolumn" "h column number in the structure factor file (see HelpFile)."} ge0}
+  {ck int  0 {"k\ncolumn" "k column number in the structure factor file (see HelpFile)."} ge0}
+  {cl int  0 {"l\ncolumn" "l column number in the structure factor file (see HelpFile)."} ge0}
+  {cF int  0 {"Str. factor\ncolumn" "Structure factor column number in the structure factor file (see HelpFile)."} ge0}
+  {cF2 int  0 {"Squared Str.\nfactor column" "Squared structure factor column number in the structure factor file (see HelpFile)."} ge0}
+  {cDW int  0 {"Debye-Waller\nfactor column" "Debye-Waller factor column number in the structure factor file (see HelpFile) (optional)."} ge0}
   {sFactor float  1 {"Scale factor" "For a custom file format please specify a scale factor such \nthat the squared structure factor can be calculated in barn. Example: \nIf the (squared) structure factor is in fm (fm^2), then the \nscale factor is 1/100. (optional)."} ge0}
 }
 
@@ -3842,57 +3841,32 @@ proc collimator_sollerCheckErr {{app _}} {
 ### collimator
 ###
 set collimatorESET {
-  {sc_en_width float 6 {
-    "entrance\nwidth [cm]"
-    "entrance of the soller collimator: width in cm (center of entrance window = origin)"  "" w} gt0 "" 1}
-  {sc_en_height float 10 {
-    "entrance\nheight [cm]"
-    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
+  {sc_en_width  float 6   {"entrance\nwidth [cm]" "width of the soller collimator exit\n(center at y=0)"  "" w} gt0 "" 1}
+  {sc_en_height float 10 {"entrance\nheight [cm]" "height of the soller collimator exit\n(center at z=0)" "" h} gt0 "" 1}
   {}
-  {sc_ex_width float 6 {
-    "exit\nwidth [cm]"
-    "exit of the soller collimator:: width in cm"  "" W} gt0 "" 1}
-  {sc_ex_height float 10 {
-    "exit\nheight [cm]"
-    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
-
-  {sc_len float "" {
-    "length [cm]" "length of the collimator in cm" "" l} ge0 "" 1}
-  {sc_channels int "" {
-    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge0}
-  {sc_sp_width float "" {
-    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
+  {sc_ex_width float 6    {"exit\nwidth [cm]" "width of the soller collimator exit\n(center at y=0)t"  "" W} gt0 "" 1}
+  {sc_ex_height float 10 {"exit\nheight [cm]" "height of the soller collimator exit\n(center at z=0)" "" H} gt0 "" 1}
+  {}
+  {sc_len float "" {"length [cm]" "length of the collimator" "" l} ge0 "" 1}
+  {sc_channels int "" {"number of\nchannels" "number of collimator channels (lying in the x-z-plane)" "" n} ge0}
+  {sc_sp_width float "" {"wall\nthickness [cm]" "thickness of the blades dividing the collimator into channels" "" s} ge0}
 }
 
 ### collimator_radial
 ###
 set collimator_radialESET {
-  {rc_angle float 90 {
-    "theta [deg]"
-    "hor. direction to the centre of the collimator in deg range: [-180,180]\n0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
-  {rc_en_width float 120 {
-    "width [deg]"
-    "width of the radial collimator in deg\nedges are supposed to point to the origin, i.e. the centre of the sample"  "" w} gt0 "" 1}
-  {rc_osc_width float 9 {
-    "oscillation\nwidth [deg]"
-    "full width amplitude of oscillation of the radial collimator in deg\nactual angle is randomly chosen\nosc.width = 0 means: no oscillation regarded"  "" o} ge0 "" 1}
+  {rc_angle float 90 {"theta [deg]" "hor. direction to the centre of the collimator in deg range: [-180,180]\n0 deg: direction of the beam impinging on the sample (= x-axis)\n90 deg: to the left (= y-axis)"  "" a}}
+  {rc_en_width float 120 {"width [deg]" "width of the radial collimator in deg\n"  "" w} gt0 "" 1}
+  {rc_osc_width float 9 {"oscillation\nwidth [deg]" "full width amplitude of oscillation of the radial collimator in deg\nactual angle is randomly chosen\nosc.width = 0 means: no oscillation regarded"  "" o} ge0 "" 1}
   {}
-  {rc_en_height float 10 {
-    "entrance\nheight [cm]"
-    "entrance of the soller collimator: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
-  {rc_ex_height float 10 {
-    "exit\nheight [cm]"
-    "exit of the soller collimator:: height in cm" "" H} gt0 "" 1}
+  {rc_en_height float 10 {"entrance\nheight [cm]" "height of the entrance of the radial collimator" "" h} gt0 "" 1}
+  {rc_ex_height float 10 {"exit\nheight [cm]" "height of the exit of the radial collimator" "" H} gt0 "" 1}
   {}
-  {rc_dist float 20 {
-    "distance [cm]" "distance of the collimator entrance from the origin (i.e. the centre of the sample) in cm" "" d} ge0 "" 1}
-  {rc_len float 10 {
-    "length [cm]" "length of the collimator in cm, i.e. distance between entrance and exit of a channel" "" l} gt0 "" 1}
+  {rc_dist float 20 {"distance [cm]" "distance of the collimator entrance from the origin (i.e. the centre of the sample)" "" d} ge0 "" 1}
+  {rc_len float 10 {"length [cm]" "length of the collimator channels" "" l} gt0 "" 1}
   {}
-  {rc_channels int "" {
-    "number of\nchannels" "number of vertical channels (lying in the x-z-plane)" "" n} ge1}
-  {rc_sp_width float "" {
-    "blade\nwidth [cm]" "thickness of the material dividing the collimator into channels" "" s} ge0}
+  {rc_channels int "" {"number of\nchannels" "number of collimator channels (in the x-y-plane)" "" n} ge1}
+  {rc_sp_width float "" {"wall\nthickness [cm]" "thickness of the blades dividing the collimator into channels" "" s} ge0}
 }
 
 

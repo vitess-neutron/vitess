@@ -15,7 +15,7 @@ velselect:
   - WndWidth:            # -W  [cm]   width of entrance and exit window
       type:    "float" 
       descr:   "window\nwidth [cm]"  
-      tooltip: "width of entrance and exit window of the selector [cm]"
+      tooltip: "Width of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
       column:  0                     
@@ -23,7 +23,7 @@ velselect:
   - WndHite :            # -H  [cm]   height of entrance and exit window
       type:    "float" 
       descr:   "window\nheight [cm]"  
-      tooltip: "height of entrance and exit window of the selector [cm]"
+      tooltip: "Height of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
       column:  1                     
@@ -32,7 +32,7 @@ velselect:
   - Length  :            # -l   25.0  [cm]   length of the velocity selector 
       type:    "float" 
       descr:   "length of\nvelselect [cm]"  
-      tooltip: "length of velocity selector [cm]"
+      tooltip: "Length of velocity selector [cm]"
       default: 25.0
       min:     0.00001
       column:  0                     
@@ -40,7 +40,7 @@ velselect:
   - RadiusO :             # -r   20.0  [cm]   outer radius of the velocity selector 
       type:    "float" 
       descr:   "outer\nradius [cm]"
-      tooltip: "outer radius of the velocity selector"
+      tooltip: "Outer radius of the velocity selector"
       min:     0.00001
       default: 14.5
       column:  1                     
@@ -48,7 +48,7 @@ velselect:
   - RadiusI :             # -i   20.0  [cm]   inner  radius of the velocity selector 
       type:    "float" 
       descr:   "inner\nradius [cm]"
-      tooltip: "radius of the part of the rotor without absorbing blades"
+      tooltip: "Radius of the part of the rotor without absorbing blades"
       min:     0.00001
       default: 8.5
       column:  2                     
@@ -57,14 +57,14 @@ velselect:
   - Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
       type:    "float" 
       descr:   "rotations\nper sec."  
-      tooltip: "number of rotations per second"
+      tooltip: "Number of rotations per second"
       default: 212.3 
       column:  0                     
       prefix:  "-s" 
   - winnum  :                # -w   90     [-]   number of windows 
       type:    "int" 
       descr:   "number of\nchannels" 
-      tooltip: "number of velocity selector channels"
+      tooltip: "Number of velocity selector channels"
       default: 72    
       min:     1 
       column:  1                     
@@ -72,7 +72,7 @@ velselect:
   - Twist   :             # -c   45.0  [deg]  twist of the velocity selector channels
       type:    "float" 
       descr:   "twist [deg]"  
-      tooltip: "twist of velocity selector channels "
+      tooltip: "Twist of velocity selector channels "
       default: 48.3 
       column:  2                     
       prefix:  "-c" 
@@ -80,7 +80,7 @@ velselect:
   - Spacer  :            # -d    0.0  [cm]   blade thickness   
       type:    "float" 
       descr:   "spacer\nwidth [cm]"  
-      tooltip: "width of blades separating the channels of the velocity selector"
+      tooltip: "Width of blades separating the channels of the velocity selector"
       default: 0.04
       column:  0                     
       prefix: "-d"  
@@ -88,14 +88,14 @@ velselect:
   - AxlePosY:            # -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
       type:    "float" 
       descr:   "horizontal\naxle position [cm]"  
-      tooltip: "horizontal position of the selector axle (in the co-ordinate system of the beamline)"
+      tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
       default: 0.0
       column:  0                     
       prefix:  "-Y" 
   - AxlePosZ:            # -Z  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
       type:    "float" 
       descr:   "vertical\naxle position [cm]"  
-      tooltip: "vertical position of the selector axle (in the co-ordinate system of the beamline)"
+      tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
       default: -11.5
       column:  1                     
       prefix:  "-Z" 

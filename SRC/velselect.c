@@ -347,6 +347,7 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle  = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
       stGeometry.pRectangle[0].Width    = WndWidth;
       stGeometry.pRectangle[0].Height   = WndHeight;
+      stGeometry.pRectangle[0].rotAngle = 0.0;
       stGeometry.pRectangle[0].vCntr[0] = 0.0;
       stGeometry.pRectangle[0].vCntr[1] = 0.0;
       stGeometry.pRectangle[0].vCntr[2] = 0.0;
@@ -355,6 +356,7 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle[0].vNormal[2] = 0.0;
       stGeometry.pRectangle[1].Width    = WndWidth;
       stGeometry.pRectangle[1].Height   = WndHeight;
+      stGeometry.pRectangle[1].rotAngle = 0.0;
       stGeometry.pRectangle[1].vCntr[0] = Length;
       stGeometry.pRectangle[1].vCntr[1] = 0.0;
       stGeometry.pRectangle[1].vCntr[2] = 0.0;

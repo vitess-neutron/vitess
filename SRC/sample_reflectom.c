@@ -42,7 +42,7 @@ short  bIncoh,               // -B    Flag whether to use incoherent scattering:
        bOffSpec,             // -o    Flag whether to use offspecular scattering: 0 for "not use", 1 "for use" 
        bUser,                // file  Flag: user defined output frame
        bOffSpecNotDone;      
-long   eOption;              // -O    option:  1: reflection of sample       2: reflection of reference  
+VtMeasMode eOption;          // -O    option:  1: reflection of sample       2: reflection of reference  
 char   sRotAxis[4]="Y";      // -R    rotation axis of sample "Y" or"Z"            
 double RotAngle=0.0,         // -a    min. value of angle or reflection 
        MuInc   =0.0,         // -X    Macroscopic incoherent cross section 
@@ -349,7 +349,7 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'O':
-        eOption=atol(arg) ;
+        eOption = MeasMode_Txt2ID(arg) ;
         break;
 
       case 'I':

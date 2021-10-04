@@ -25,17 +25,21 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 /** Global Variables         **/
 /******************************/
-Plane  Endpoint;                 // vertical Plane through the position of the beamstop
-                                 //  (Endpoint.D = distance to end of free flight path along x-axis [cm]) 
-double VelocityReal=0.0,         // velocity of the neutron 
-       DistCenter  =0.0,         // distance between center of beamstop and point of striking of the neutron
-       Width   =0.0, Height=0.0, // width and height of an rectangular beamstop 
-       Radius  =0.0,             // radius of an circular beamstop  
-       DistMove=0.0,             // distance between starting point and beamstop 
-       CenterY =0.0, CenterZ=0.0;// center of the beamstop position
-short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, FALSE rectangular 
-       bOnBeamstop=FALSE,        // criterion: beamstop hit or not 
-       bProp=FALSE;              // criterion: propagate to beamstop  0: no,  1: yes
+// Input parameters
+VtShape eShape=FALSE;          // -R  [cm]   criterion: shape of window, 'circular' or 'rectangular' 
+short   bProp=FALSE;           // -p  [cm]   criterion: propagate to beamstop  0: no,  1: yes
+double  Width   =0.0,          // -W  [cm]   width of a rectangular beamstop 
+        Height  =0.0,          // -H  [cm]   height of a rectangular beamstop 
+        Radius  =0.0,          // -r  [cm]   radius of a circular beamstop  
+        DistMove=0.0;          // -d  [cm]   distance between starting point and beamstop 
+double  CenterY =0.0,          //            fixed
+        CenterZ =0.0;          //             center of the beamstop position
+
+// Variables determined from input parameters or trajectory data
+short   bOnBeamstop=FALSE;     // criterion: beamstop hit or not 
+Plane   Endpoint;              // vertical Plane through the position of the beamstop
+                               //  (Endpoint.D = distance to end of free flight path along x-axis [cm]) 
+double  VelocityReal=0.0;      // velocity of the neutron 
 
 
 /******************************/
@@ -44,12 +48,15 @@ short  bCircularWindow=FALSE,    // criterion: shape of window, TRUE: circular, 
 int main(int argc, char *argv[])
 {
   long    i=0;                      // index of trajectories
-  double  TimeOF=0.0,               // time of flight of the neutron to the window
+  double  DistCenter=0.0,           // distance between center of beamstop and point of striking of the neutron
+          TimeOF =0.0,              // time of flight of the neutron to the window
           NewPosY=0.0, NewPosZ=0.0; // hor. and vert. position of neutron at slit
   Neutron TestNeutron;
 
   // Initialisation
   // --------------
+  InitNeutron(&TestNeutron);
+
   _eModule=MCN_BEAMSTOP;
 
   Init(argc,argv, _eModule);
@@ -99,7 +106,7 @@ int main(int argc, char *argv[])
         { NewPosY = TestNeutron.Position[1];
           NewPosZ = TestNeutron.Position[2];
 
-          if(bCircularWindow==TRUE)
+          if(eShape==VT_CIRCLE)
           {	
             DistCenter = sqrt(sq(NewPosY - CenterY) + sq(NewPosZ - CenterZ));
             if (DistCenter <= Radius)
@@ -107,12 +114,15 @@ int main(int argc, char *argv[])
             else
               bOnBeamstop=FALSE;
           }
-          else
+          else if (eShape==VT_SQUARE)
           { 
             if (fabs(NewPosY - CenterY) <= 0.5*Width  &&  fabs(NewPosZ - CenterZ) <= 0.5*Height)
               bOnBeamstop=TRUE;
 			      else
 				      bOnBeamstop=FALSE;
+          }
+          else
+          { Error("Unknown beamstop shape");
           }
         }
         else
@@ -135,10 +145,12 @@ int main(int argc, char *argv[])
   // Finish: print parameters, write geometry and instrument file, free memory
   // -------------------------------------------------------------------------
 my_exit:
-  if (bCircularWindow)
+  if (eShape==VT_CIRCLE)
     fprintf(LogFilePtr, "Beamstop of %6.2f cm diameter in a distance of %7.2f cm \n",             2.0*Radius, DistMove);
-  else
+  else if (eShape==VT_SQUARE) 
     fprintf(LogFilePtr, "Beamstop of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
+  else
+    Error("Unknown beamstop shape");
   
   SetGeometry("blue");
   Cleanup(DistMove,0.0,0.0, 0.0,0.0);	
@@ -166,7 +178,7 @@ void  OwnInit(int argc, char* argv[])
 					bOldFrame = TRUE;
 				break;
 			case 'R':
-				bCircularWindow = atoi(&argv[i][2]);
+				eShape = Shape_Txt2ID(&argv[i][2]);
 				break;
 
 			case 'd':
@@ -211,7 +223,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    if (bCircularWindow) 
+    if (eShape==VT_CIRCLE) 
     {
       stGeometry.pCircle =calloc(1, sizeof(VtCircle));
       stGeometry.nCircles=1; 
@@ -226,7 +238,7 @@ void SetGeometry(char* sColor)
       stGeometry.pCircle[0].vNormal[1]= 0.0;
       stGeometry.pCircle[0].vNormal[2]= 0.0;
     }
-    else 
+    else if (eShape==VT_SQUARE) 
     {
       stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
       stGeometry.nRectangles=1; 

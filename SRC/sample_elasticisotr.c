@@ -474,7 +474,7 @@ void ReadParFile(SampleType* pSample)
   {
    pSample->SG.Cyl.r = DimSample[0];
    pSample->SG.Cyl.height = DimSample[1];
-   pSample->Type = VT_CYL;
+   pSample->Type = VT_HOL_CYL;
 
     fprintf(LogFilePtr,"             sample geometry:	'hollow cylinder'\n") ;
   }

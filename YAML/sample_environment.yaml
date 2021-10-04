@@ -14,87 +14,107 @@ sample_environment:
   - ParFile :                  # -F         [-]    parameter file name 
       type:    "file"    
       descr:   "parameter file"
-      tooltip: "sample parameter file name"
+      tooltip: "File containing parameters of the sample environment\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-F"     
+  - StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
+      type:    "file"    
+      descr:   "structure\nfactor file"
+      tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
+      prefix:  "-s"     
+  - eDirEnv :                  # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
+      type:    "combo"    
+      descr:   "direction"
+      tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"
+      default: ["in","out"]
+      column:  0       
+      prefix:  "-r"     
+  - nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
+      type:    "int"    
+      descr:   "colour"
+      tooltip: "Colour of the neutrons coherently scattered from the environment, incoherently scattered neutrons get 'color+1'"
+      min:     0 
+      column:  0       
+      prefix:  "-c"     
+
   - PosMainX:                  # -x    0.0  [cm]   center position X of the sample environment 
       type:    "float"    
       descr:   "X [cm]"
-      tooltip: "center position X of the sample environment"
-      column:  0       
+      tooltip: "Center position X of the sample environment  (usually the sample position)"
+      default: 30.0
+      column:   0       
       prefix:  "-x"     
   - PosMainY:                  # -y    0.0  [cm]   center position Y of the sample environment 
       type:    "float"    
       descr:   "Y [cm]"
-      tooltip: "center position Y of the sample environment"
+      tooltip: "Center position Y of the sample environment (usually the sample position)"
       column:  1       
       prefix:  "-y"     
   - PosMainZ:                  # -z    0.0  [cm]   center position Z of the sample environment 
       type:    "float"    
       descr:   "Z [cm]"
-      tooltip: "center position Z of the sample environment" 
+      tooltip: "center position Z of the sample environment (usually the sample position)" 
+      default: 0.0
       column:  2       
       prefix:  "-z"     
-  - nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
-      type:    "int"    
-      descr:   "colour"
-      tooltip: "colour of the neutrons scattered from the environment"
-      min:     0 
-      column:  0       
-      prefix:  "-c"     
-  - eDirEnv :                  # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
-      type:    "combo"    
-      descr:   "direction"
-      tooltip: "direction of the beam passing the sample environment"
-      default: ["in","out"]
-      column:  0       
-      prefix:  "-r"     
-  - StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
-      type:    "file"    
-      tooltip: "structure factor file name (of the sample environment material)"
-      descr:   "structure\nfactor file"
-  - Title: 
-      type:    "title"    
-      default: "Scattering"
+
   - Thicknes:                  # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
       type:    "float"    
-      tooltip: "thickness of the sample environment"
       descr:   "thickness [cm]"
+      tooltip: "Thickness of the sample environment, which is assumed to be a hollow cylinder."
       min:     0.0001
+      default: 0.5
       column:  0       
+      prefix:  "-t"     
   - Diameter:                  # file 10.0  [cm]   outer diameter of the sample environment  (: 2*R_out)
       type:    "float"    
-      tooltip: "outer diameter of the sample environment"
       descr:   "diameter [cm]"
+      tooltip: "Outer diameter of the sample environment, which is assumed to be a hollow cylinder."
+      default: 15.0
       min:     0.0001
       column:  1       
+      prefix:  "-d"     
   - Height  :                  # file 20.0  [cm]   outer height of the sample environment
       type:    "float"    
       descr:   "height [cm]"
-      tooltip: "outer height of the sample environment"
+      tooltip: "Outer height of the sample environment, which is assumed to be a hollow cylinder."
+      default: 20.0
       min:     0.0001
       column:  2       
+      prefix:  "-h"     
+
+  - Title: 
+      type:    "title"    
+      default: "Scattering"
   - MuScaInc:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "incoherent scat-\ntering [1/cm]"
-      tooltip: "user defined macroscopic incoherent scattering cross section of the sample"
+      tooltip: "Macroscopic incoherent scattering cross section of the sample environment material.\nIf a non-zero value is given, incoherent scattering is applied."
+      default: 20.0
       min:     0.0
       column:  0       
+      prefix:  "-I"     
   - MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "total scat-\ntering [1/cm]"
-      tooltip: "user defined macroscopic total scattering cross section of the sample environment"
+      tooltip: "Macroscopic total scattering cross section of the sample environment material (used for attenuation)"
+      default: 20.0
       min:     0.0
       column:  1       
+      prefix:  "-T"     
   - MuAbs   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
       type:    "float"    
       descr:   "absorption\n[1/cm]"
-      tooltip: "user defined macroscopic absorption cross section of the sample environment"
+      tooltip: "Macroscopic absorption cross section of the sample environment material  (used for attenuation)"
+      default: 20.0
       min:     0.0
       column:  2       
+      prefix:  "-A"     
   - UCV     :                  # file 50.0 [Ang^3] unit cell volume of the sample environment material
       type:    "float"    
       descr:   "unit cell\nvolume [A^3]"
-      tooltip: "unit cell volume of the sample environment material"
+      tooltip: "Unit cell volume of the sample environment material"
+      default: 20.0
       min:     0.0001
       column:  0       
+      prefix:  "-U"     
 

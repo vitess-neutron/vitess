@@ -34,14 +34,16 @@ int   NumBlds         (int nChanTot, int iHull);                                
 /******************************/
 /** Global variables         **/
 /******************************/
-double CollEntrWidth =0.0,      // collimator width and height at entrance
-       CollEntrHeight=0.0,
-       CollExitWidth =0.0,      // collimator width and height at exit
-       CollExitHeight=0.0, 
-       Length        =0.0,      // length of the collimator       
-       BladeWidth    =0.0;      // thickness of the blades separating the channels
-long   nChannels=1;             // number of collimator channels  
+// Input parameters
+double CollEntrWidth =0.0,      // -w  [cm]   collimator width and height at entrance
+       CollEntrHeight=0.0,      // -h  [cm]   
+       CollExitWidth =0.0,      // -W  [cm]   collimator width and height at exit
+       CollExitHeight=0.0,      // -H  [cm]   
+       Length        =0.0,      // -l  [cm]   length of the collimator       
+       BladeWidth    =0.0;      // -s  [cm]   thickness of the blades separating the channels
+long   nChannels=1;             // -n   [-]   number of collimator channels  
 
+// Variables determined from input parameters or trajectory data
 double ChanWin=0.0, ChanWout=0.0;       // width of channel at entrance and exit
 
 
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
   Plane   CollExit;                        // plane determined by the exit area of the the collimator
   Neutron OutNeutron;                      // trajectory written to the output (to be read by the next module)
 
+  InitNeutron(&OutNeutron);
 
 	// reading of input data and initialisation
   // ----------------------------------------
@@ -174,7 +177,7 @@ int main(int argc, char *argv[])
 /***********************************************************************************/
 void OwnInit   (int argc, char *argv[])
 {
-  long  i,
+  long  i=0,
         nBlades =0;        // number of the blades separating the channels
   char  *arg=NULL;
 

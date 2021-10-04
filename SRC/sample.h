@@ -21,6 +21,11 @@ extern double* F2Val;
 /** Prototypes               **/
 /******************************/
 void InitSample  (SampleType *Sample);
+void FillSample(SampleType* pSample, const VtSmplGeom eGeom, 
+                const double Xpos,   const double Ypos,  const double Zpos, 
+                const double Xdir,   const double Ydir,  const double Zdir, 
+                const double SizeD,  const double SizeH, const double SizeW, const double SizeT);
+
 void ReadCube    (FILE *SampleFile, SampleType *Sample);
 void ReadCylinder(FILE *SampleFile, SampleType *Sample);
 void ReadBall    (FILE *SampleFile, SampleType *Sample);

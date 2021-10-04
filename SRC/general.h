@@ -121,6 +121,7 @@ void   InitPlane       (Plane* pPlane);
 
 /* Basic matrix operation */
 void   Init3x3Matrix     (double Matrix   [3][3]);
+void   InitRotMatrix     (double RotMatrix[3][3]);
 void   RotVector         (double RotMatrix[3][3], VectorType Vector);
 void   RotBackVector     (double RotMatrix[3][3], VectorType Vector);
 void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const double rotz);

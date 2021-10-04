@@ -16,6 +16,7 @@
 
 typedef enum
 {	
+  VT_NO_DIR = 0,
 	VT_IN     = 1,
 	VT_OUT    = 2,
 	VT_INSIDE = 3

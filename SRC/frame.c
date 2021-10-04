@@ -22,7 +22,7 @@
 /** Global and Static Variables **/
 /*********************************/
 // input parameters
-char		   S1='x', S2, S3;             // -S       [-]   sequence of operations RTM RMT TRM TMR MTR MRT
+char		   S1='M', S2='T', S3='R';     // -S       [-]   sequence of operations RTM RMT TRM TMR MTR MRT
 int 		   MirrX=FALSE,                // -i       [-]   flag: mirror trajectories at yz-plane            
            MirrY=FALSE,                // -j       [-]   flag: mirror trajectories at xz-plane 
            MirrZ=FALSE;                // -k       [-]   flag: mirror trajectories at xy-plane
@@ -42,6 +42,7 @@ VectorType Translate1={0.0,0.0,0.0};   // [cm]           translation vector for 
 /******************************/
 void    OwnInit(int argc, char *argv[]);     // Reads input parameters, sets global parameters and calculates rotation matrices etc.
 void    OwnCleanup();                        // Does module specific cleanup
+void    SetGeometry(char* sColor);           // fills the structure stGeometry for visualization
 void		Rotation (Neutron* pNeutron);        // rotates position, direction and spin about z-, y- and x-axis
 void		Mirroring(Neutron* pNeutron);        // mirrors position, direction and spin about z-, y- and x-axis
 
@@ -51,18 +52,20 @@ void		Mirroring(Neutron* pNeutron);        // mirrors position, direction and sp
 /******************************/
 int main(int argc, char **argv)
 {
-  long i;
+  long i=0;
   Neutron OutNeutron;
+
+  InitNeutron(&OutNeutron);
 
   // Initialize the program according to the parameters given
   // --------------------------------------------------------
   _eModule=MCN_FRAME;
 
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.3a");
 	OwnInit(argc, argv);
 
-  bVisInstalled = FALSE;
+  bVisInstalled = TRUE;
   bLengthCmpr   = FALSE;
 
   DECLARE_ABORT;
@@ -72,7 +75,7 @@ int main(int argc, char **argv)
   /* Get the neutrons from the file */
   while((ReadNeutrons())!= 0)
   {
-    for(i=0;i<NumNeutGot;i++)
+    for(i=0; i < NumNeutGot; i++)
     {
       CHECK;
 
@@ -126,6 +129,9 @@ int main(int argc, char **argv)
  my_exit:;
 	/* Does module specific cleanup */
 	OwnCleanup();
+  
+  /* write geometry data for visualization */
+  SetGeometry("white");                       
 
   /* Does the general cleanup */
   Cleanup(Translate1[0],Translate1[1],Translate1[2], AnglAroundZ*M_PI/180., AnglAroundY*M_PI/180.);
@@ -135,45 +141,19 @@ int main(int argc, char **argv)
 
 
 /*******************************************************/
-/** rotation                                          **/
-/*******************************************************/
-void		Rotation(Neutron* pNeutron)
-{
-  RotVector(RotMatrixZY,      pNeutron->Position);
-  RotVector(RotMatrixAroundX, pNeutron->Position);
-
-  RotVector(RotMatrixZY,      pNeutron->Vector);
-  RotVector(RotMatrixAroundX, pNeutron->Vector);
-
-  RotVector(RotMatrixZY,      pNeutron->Spin);
-  RotVector(RotMatrixAroundX, pNeutron->Spin);
-}
-
-
-/*******************************************************/
-/** mirroring                                         **/
-/*******************************************************/
-void		Mirroring(Neutron* pNeutron)
-{
-  if(MirrX == 1) pNeutron->Position[0] *= - 1.;
-  if(MirrY == 1) pNeutron->Position[1] *= - 1.;
-  if(MirrZ == 1) pNeutron->Position[2] *= - 1.;
-
-  if(MirrX == 1) pNeutron->Vector[0] *= - 1.;
-  if(MirrY == 1) pNeutron->Vector[1] *= - 1.;
-  if(MirrZ == 1) pNeutron->Vector[2] *= - 1.;
-
-  if(MirrX == 1) pNeutron->Spin[0] *= - 1.;
-  if(MirrY == 1) pNeutron->Spin[1] *= - 1.;
-  if(MirrZ == 1) pNeutron->Spin[2] *= - 1.;
-}
-
-
-/*******************************************************/
 /** Reads input parameters and sets global variables  **/
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
+  int k=0,l=0;
+
+  for (k=0; k<3; k++)
+  { for (l=0; l<3; l++)
+    { RotMatrixZY     [k][l] = k==l ? 1.0 : 0.0;
+      RotMatrixAroundX[k][l] = k==l ? 1.0 : 0.0;
+    }
+  }
+
   while(argc>1)
   {
     switch(argv[1][1])
@@ -230,32 +210,32 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 
-  if (S1 != 'x') 
-    fprintf(LogFilePtr, " sequence		%c %c %c\n", S1, S2, S3);
-  else 
-    Error("wrong option for sequence. Give R,T or M");
-
   if ((MirrX != 0) &&	(MirrX != 1))
     Error("wrong option for MirrX");
-
   if ((MirrY != 0) &&	(MirrY != 1))
     Error("wrong option for MirrY");
-
   if ((MirrZ != 0) &&	(MirrZ != 1))
     Error("wrong option for MirrZ");
 
-  fprintf(LogFilePtr, " angle around  Z, Y, X: %lf  %lf  %lf\n translate     x, y, z: %lf  %lf  %lf\n",
-                      AnglAroundZ, AnglAroundY, AnglAroundX, Translate[0], Translate[1], Translate[2]);
+    fprintf(LogFilePtr, " sequence            : %c %c %c\n", S1, S2, S3);
 
-  fprintf(LogFilePtr," mirror YZ,ZX,XY %ld %ld %ld\n",MirrX, MirrY, MirrZ);
+  if (MirrX == 1 || MirrY == 1 || MirrZ == 1)
+    fprintf(LogFilePtr, " mirror YZ, ZX, XY   : %ld %ld %ld\n", MirrX, MirrY, MirrZ);
 
-  FillRotMatrixZY(RotMatrixZY, AnglAroundY * M_PI/180., AnglAroundZ * M_PI/180.);
+  if (Translate[0] != 0.0 || Translate[1] != 0.0 || Translate[2] != 0.0)
+    fprintf(LogFilePtr, " translation  x, y, z: %lf  %lf  %lf\n",  Translate[0], Translate[1], Translate[2]);
 
-  FillRotMatrixXZ(RotMatrixAroundX, 0., AnglAroundX * M_PI/180.);
-  FillRotMatrixXZ(RotMatrixMX,      0., AnglAroundX * M_PI/180.);
+  if (AnglAroundX != 0.0 || AnglAroundY != 0.0 || AnglAroundZ != 0.0)
+  {
+    FillRotMatrixZY(RotMatrixZY, AnglAroundY * M_PI/180., AnglAroundZ * M_PI/180.);
 
-  fprintf(LogFilePtr, "Euler frame rotations: Positive rotation of frame means rotation of one positive \n"
-                      "axis towards a higher index positive axis : +X->+Y, +Y->+Z, +X->+Z \n");
+    FillRotMatrixXZ(RotMatrixAroundX, 0., AnglAroundX * M_PI/180.);
+    FillRotMatrixXZ(RotMatrixMX,      0., AnglAroundX * M_PI/180.);
+
+    fprintf(LogFilePtr, " angle around Z, Y, X: %lf  %lf  %lf\n ", AnglAroundZ, AnglAroundY, AnglAroundX);
+    fprintf(LogFilePtr, "Euler frame rotations: Positive rotation of frame means rotation of one positive \n"
+                        "axis towards a higher index positive axis : +X->+Y, +Y->+Z, +X->+Z \n");
+  }
 
   /* here calculates Translate1 as input for Cleanup */
   if ((S1 == 'R') && (S2 == 'T') && (S3 == 'M'))
@@ -298,4 +278,81 @@ void OwnCleanup()
 {
   // do not free(&Neutrons); because Neutrons is a static variable
 }
+
+
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  // Visualisation of the velocity selector geometry
+  if (bVisInstr)
+  { 
+    double sy = sin(Radians(AnglAroundY)),
+           sz = sin(Radians(AnglAroundZ));
+
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    stGeometry.nRectangles = 2;
+    stGeometry.pRectangle  = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+    stGeometry.pRectangle[0].Width    = 20.0;
+    stGeometry.pRectangle[0].Height   = 20.0;
+    stGeometry.pRectangle[0].rotAngle =  0.0;
+    stGeometry.pRectangle[0].vCntr[0] = 0.0;
+    stGeometry.pRectangle[0].vCntr[1] = 0.0;
+    stGeometry.pRectangle[0].vCntr[2] = 0.0;
+    stGeometry.pRectangle[0].vNormal[0] = 1.0;
+    stGeometry.pRectangle[0].vNormal[1] = 0.0;
+    stGeometry.pRectangle[0].vNormal[2] = 0.0;
+    stGeometry.pRectangle[1].Width    = 20.0;
+    stGeometry.pRectangle[1].Height   = 20.0;
+    stGeometry.pRectangle[1].rotAngle =  0.0;
+    stGeometry.pRectangle[1].vCntr[0] = Translate1[0];
+    stGeometry.pRectangle[1].vCntr[1] = Translate1[1];
+    stGeometry.pRectangle[1].vCntr[2] = Translate1[2];
+    stGeometry.pRectangle[1].vNormal[0] = sqrt(1.0 - sq(sy) -sq(sz));
+    stGeometry.pRectangle[1].vNormal[1] = sz;
+    stGeometry.pRectangle[1].vNormal[2] = sy;
+  }
+  return;
+}
+
+
+/*******************************************************/
+/** rotation                                          **/
+/*******************************************************/
+void		Rotation(Neutron* pNeutron)
+{
+  RotVector(RotMatrixZY,      pNeutron->Position);
+  RotVector(RotMatrixAroundX, pNeutron->Position);
+
+  RotVector(RotMatrixZY,      pNeutron->Vector);
+  RotVector(RotMatrixAroundX, pNeutron->Vector);
+
+  RotVector(RotMatrixZY,      pNeutron->Spin);
+  RotVector(RotMatrixAroundX, pNeutron->Spin);
+}
+
+
+/*******************************************************/
+/** mirroring                                         **/
+/*******************************************************/
+void		Mirroring(Neutron* pNeutron)
+{
+  if(MirrX == 1) pNeutron->Position[0] *= - 1.;
+  if(MirrY == 1) pNeutron->Position[1] *= - 1.;
+  if(MirrZ == 1) pNeutron->Position[2] *= - 1.;
+
+  if(MirrX == 1) pNeutron->Vector[0] *= - 1.;
+  if(MirrY == 1) pNeutron->Vector[1] *= - 1.;
+  if(MirrZ == 1) pNeutron->Vector[2] *= - 1.;
+
+  if(MirrX == 1) pNeutron->Spin[0] *= - 1.;
+  if(MirrY == 1) pNeutron->Spin[1] *= - 1.;
+  if(MirrZ == 1) pNeutron->Spin[2] *= - 1.;
+}
+
+
 

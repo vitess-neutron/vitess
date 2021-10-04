@@ -6,6 +6,7 @@
 /* 1.0  Nov 2008  K. Lieutenant   initial version                                            */
 /* 1.1  Oct 2012  K. Lieutenant   only 1 Bragg reflection                                    */
 /* 1.2  Apr 2020  K. Lieutenant   new central visualization parameters                       */
+/* 1.3  Aug 2021  K. Lieutenant   option: parameters from input instead of from file         */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -23,33 +24,40 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-char   StructFileName[99];  // file  structure factor file name
-char  *SampleFileName;      // -F    parameter file name (located in argv)
-short  nColor   = NO_COLOR; // -c    colour of the neutrons scattered from the environment
-double Theta    = M_PI/2.0, // fix   solid angles into which scattering takes place
-       DelTheta = M_PI/2.0, // fix      Theta has to be in the range of [0;PI]         
-       Phi      = M_PI,     // fix      Phi has to be in the range of [0;2*PI] 
-       DelPhi   = M_PI;     // fix
-double MuInc    = 0.0,      // file  incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm]
-       UCV      =50.0,      // file  UCV 
-       Height   =20.0,      // file  outer height of the sample environment
-       Diameter =10.0,      // file  outer diameter of the sample environment  (= 2*R_out)
-       Thickness= 1.0;      // file  thickness of the sample environment  (= R_out - R_in)
-VtDir  eDirEnv;             // -r    direction for sample environment: 1:'in' or 2:'out' 
-SampleType stEnvironment;   //       properties of the sample environment    
-                            // -x -y -z:  position of the center of the sample environment 
-
-extern double MuTot,     // file  macrosc. scattering cross section, defined in 'sample.c'
-              MuAbs;     // file  macrosc. absorption cross section, defined in 'sample.c'
-extern VtDir  g_eDir;       //       direction for sample environment: 'in' or 'out',  defined in 'sample.c'
+// Input parameters
+char   sStructFileP[CHAR_BUF_XS]=""; // -s       [-]   structure factor file name from input
+char*  pSampleFileName=NULL;         // -F       [-]   parameter file name (located in argv)
+short  nColor   = NO_COLOR;          // -c       [-]   colour of the neutrons scattered from the environment
+VtDir  eDirEnv  = VT_NO_DIR;         // -r       [-]   direction for sample environment: 1:'in' or 2:'out' 
+double Theta    = M_PI/2.0,          //    fix  [deg]  solid angles into which scattering takes place
+       DelTheta = M_PI/2.0,          //    fix  [deg]  Theta has to be in the range of [0;PI]         
+       Phi      = M_PI,              //    fix  [deg]  Phi has to be in the range of [0;2*PI] 
+       DelPhi   = M_PI;              //    fix  [deg]  
+double Xpos     = 0.0,               // -x       [cm]  position of the center of the sample environment
+       Ypos     = 0.0,               // -y       [cm]  
+       Zpos     = 0.0,               // -z       [cm]  
+       Thickness= 0.0,               // -t file  [cm]  thickness of the sample environment  (= R_out - R_in)
+       Diameter = 0.0,               // -d file  [cm]  outer diameter of the sample environment  (= 2*R_out)
+       Height   = 0.0,               // -h file  [cm]  outer height of the sample environment
+       MuInc    = 0.0,               // -I file [1/cm] incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm]
+       UCV      = 0.0;               // -U file [Ang^3] UCV 
+                                    
+extern double MuTot,                 // -T file [1/cm] macrosc. scattering cross section, defined in 'sample.c'
+              MuAbs;                 // -A file [1/cm] macrosc. absorption cross section, defined in 'sample.c'
+  
+// Variables determined from input parameters or from file
+char   sStructFileF[CHAR_BUF_XS]="", //    file  [-]   structure factor file name from parameter file
+       sStrFileName[CHAR_BUF_XS]=""; //          [-]   structure factor file name used for the simulation
+SampleType stEnvironment;            //                properties of the sample environment    
+                               
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit          (SampleType* pEnvironment, int argc, char* argv[]);                        // reads input parameters and sets global parameters
+void  OwnInit          (int argc, char* argv[]);                                                  // reads input parameters and sets global parameters
 void  OwnCleanup       (DoublePair* pStrucFac);                                                   // Does module specific cleanup
-short ReadEnvironPar   (SampleType* pEnvironment);                                                // Reads parameters of the sample environment from file
+short SetEnvironPar    (SampleType* pEnvironment);                                                // Sets parameters of the sample environment
 long  ReadStrucFact    (DoublePair* pStrucFac[]);                                                 // Reads structure factor file
 long  ChooseBraggReflex(long* pNrefl, long Nstrcfac, DoublePair* pStrucFac[], double Wavelength); // chooses one of the possible Bragg reflection
 void  SetGeometry      (char* sColor);                                                            // fills the structure stGeometry for visualization
@@ -60,45 +68,63 @@ void  SetGeometry      (char* sColor);                                          
 /******************************/
 int main(int argc, char **argv)
 {
-  int        i,j;
-  long       nisp,                /* number of intersection points to come               */
-             Nth,                 /* index of the structure factor                       */
-             Nrefl;               /* number of reflections for the given wavelength      */
-  double     Lbf;                 /* full path length of the neutron in the sample       */
-  double     Ls;                  /* distance of the neutron in the sample before scat.  */
-  long       NumStrucFac;         /* number of reflections in the structure factor file  */
-  double     DetFacCoh,           /* cares about the detector coverage                   */
-             DetFacInc,           /*  for coherent and incoherent scattering             */
-             HelpFac;             /* contains k independent term of the scattering       */
-  VectorType InISP[2],            /* neutron intersection with sample without scattering */
-             SP;                  /* position of scattering event                        */
+  int        i=0,j=0;
+  long       nisp=0,              /* number of intersection points to come               */
+             Nth =0,              /* index of the structure factor                       */
+             Nrefl=0;             /* number of reflections for the given wavelength      */
+  double     Lbf=0.0;             /* full path length of the neutron in the sample       */
+  double     Ls =0.0;             /* distance of the neutron in the sample before scat.  */
+  long       NumStrucFac=0;       /* number of reflections in the structure factor file  */
+  double     DetFacCoh=0.0,       /* cares about the detector coverage                   */
+             DetFacInc=0.0,       /*  for coherent and incoherent scattering             */
+             HelpFac  =0.0;       /* contains k independent term of the scattering       */
   DoublePair *pStrucFac=NULL;
   Neutron    OutNeutron;
-  double     ScProbCoh, ScProbF,  /* probability for coherent, incoh. scattering and transmission */
-             ScProbInc, ScProbT,
-             ScTheta,             /* scattering angles (in neutron coordinate system) */
-             ScPhi;
-  double     RotMatrixSmpl[3][3]; /* Rotation matrix that transforms a Vector to the */
+  double     ScProbCoh=0.0, ScProbF=0.0, /* probability for coherent, incoh. scattering and transmission */
+             ScProbInc=0.0, ScProbT=0.0,
+             ScTheta  =0.0,              /* scattering angles (in neutron coordinate system) */
+             ScPhi   = 0.0;
+  double     RotMatrixSmpl[3][3];        /* Rotation matrix that transforms a Vector to the */
   double     RotMatrixNeut[3][3];
+  VectorType SP={0.0,0.0,0.0},                       /* position of scattering event                        */
+             InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}}; /* neutron intersection with sample without scattering */
+             
+	// initialisation and reading of input data
+  // ----------------------------------------
+  InitNeutron(&OutNeutron);
+  InitRotMatrix(RotMatrixSmpl);
+  InitRotMatrix(RotMatrixNeut);
 
-  /* Initialize the program according to the parameters given   */
   _eModule = MCN_SMPL_ENVIRO;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.3");
 
-  /* Module specific initialization and reading of sample geometry and name of the structure factor file */
-  InitSample    (&stEnvironment);
-  OwnInit       (&stEnvironment, argc, argv);
-  ReadEnvironPar(&stEnvironment);
+  /* Module specific initialization and reading of sample geometry */
+  OwnInit      (argc, argv);
+  SetEnvironPar(&stEnvironment);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 
-  /* Now get the nuclear unit-cell structure factors |f_N(t)|^2.       */
-  /* The memory needed will be allocated inside 'GetStructureFactor()'.*/
-  NumStrucFac = ReadStrucFact(&pStrucFac);
+  /* Now get the nuclear unit-cell structure factors |f_N(t)|^2 */
+  if (strlen(sStructFileP) > 0)                                    // try the file name from the input parameters first
+    NumStrucFac = ReadStructureFile(sStructFileP, 1, &pStrucFac);  
+  if (NumStrucFac > 0)                                             // structure factors found in file from input parameters
+  { strcpy(sStrFileName, sStructFileP);                            
+  }
+  else                                   
+  { if (strlen(sStructFileF) > 0)                                  // now the file given in the file
+      NumStrucFac = ReadStructureFile(sStructFileF, 1, &pStrucFac);
+    if (NumStrucFac > 0)                                           // structure factors found in file from given in the parameter file
+    { strcpy(sStrFileName, sStructFileF); 
+    }
+    else
+    { fprintf(LogFilePtr,"ERROR: Can't read the structure factor data, neither from %s nor from %s\n", sStructFileP, sStructFileF);
+      exit(-1);
+    }
+  }
 
   /* Factors that take care of the detector coverage */
   DetFacCoh = DelPhi/M_PI;
@@ -201,17 +227,19 @@ int main(int argc, char **argv)
 
           //  Then the incoherent scattering
           //--------------------------------
-          /* Determine the scattering angle and the probability */
-          OutNeutron.Color = (short)(nColor+1);
-          if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
-          if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
+          if (MuInc > 0.0)
+          { /* Determine the scattering angle and the probability */
+            OutNeutron.Color = (short)(nColor+1);
+            if (eDirEnv==VT_IN)  OutNeutron.ID.IDGrp[0]++;
+            if (eDirEnv==VT_OUT) OutNeutron.ID.IDGrp[1]++;
      
-          ScPhi     = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
-          ScTheta   = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
-          ScProbInc = Lbf*MuInc * sin(ScTheta);
+            ScPhi     = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
+            ScTheta   = MonteCarlo(Theta-DelTheta,Theta+DelTheta);
+            ScProbInc = Lbf*MuInc * sin(ScTheta);
 
-          ProcessNeutronToEnd(&OutNeutron, SP, Ls, DetFacInc, ScProbInc,
-          ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
+            ProcessNeutronToEnd(&OutNeutron, SP, Ls, DetFacInc, ScProbInc,
+                                ScTheta, ScPhi, &stEnvironment, RotMatrixNeut,  RotMatrixSmpl);
+          }
 
           // The transmitted neutrons  
           //-----------------------------
@@ -259,7 +287,7 @@ int main(int argc, char **argv)
                       "unit cell volume   : %8.3f Ang³\n"
                       "struct. factor file: %s\n", 
                       stEnvironment.Position[0], stEnvironment.Position[1], stEnvironment.Position[2], 
-                      MuInc, MuTot, MuAbs, UCV, StructFileName);
+                      MuInc, MuTot, MuAbs, UCV, sStrFileName);
 
   /* write geometry file */
   SetGeometry("cyan");
@@ -277,9 +305,9 @@ int main(int argc, char **argv)
 /*******************************************************/
 /** Reads input parameters and sets global variables  **/
 /*******************************************************/
-void  OwnInit(SampleType* pEnvironment, int argc, char *argv[]) 
+void  OwnInit(int argc, char *argv[]) 
 {
-  int   i;
+  int   i=0;
 
   for(i=1; i<argc; i++) 
   { 
@@ -288,17 +316,43 @@ void  OwnInit(SampleType* pEnvironment, int argc, char *argv[])
       switch(argv[i][1])
       {	
         case 'F':
-          SampleFileName = &argv[i][2];
+          pSampleFileName = &argv[i][2];
+          break;
+        case 's':
+          strcpy(sStructFileP, &argv[i][2]);
           break;
 
         case 'x':
-          pEnvironment->Position[0] = atof(&argv[i][2]);
+          Xpos = atof(&argv[i][2]);
           break;
         case 'y':
-          pEnvironment->Position[1] = atof(&argv[i][2]);
+          Ypos = atof(&argv[i][2]);
           break;
         case 'z':
-          pEnvironment->Position[2] = atof(&argv[i][2]);
+          Zpos = atof(&argv[i][2]);
+          break;
+
+        case 'h':
+          Height = atof(&argv[i][2]);
+          break;
+        case 'd':
+          Diameter = atof(&argv[i][2]);
+          break;
+        case 't':
+          Thickness = atof(&argv[i][2]);
+          break;
+
+        case 'I':
+          MuInc = atof(&argv[i][2]);
+          break;
+        case 'T':
+          MuTot = atof(&argv[i][2]);
+          break;
+        case 'A':
+          MuAbs = atof(&argv[i][2]);
+          break;
+        case 'U':
+          UCV = atof(&argv[i][2]);
           break;
 
         case 'c':
@@ -335,9 +389,6 @@ void  OwnInit(SampleType* pEnvironment, int argc, char *argv[])
       }
     }
   }
-
-  if (SampleFileName == NULL)
-    Error("The option -F to give the ascii file name is mandatory!");
 
   /* if( (detectortest != 0) && (detectortest != 15))
   {	Warning("You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI");
@@ -413,39 +464,46 @@ void SetGeometry(char* sColor)
 /*******************************************************/
 /** Reads input parameters from file                  **/
 /*******************************************************/
-short ReadEnvironPar(SampleType* pEnvironment)
+short SetEnvironPar(SampleType* pEnvironment)
 {
-  FILE  *pFile;
-  char   sLine[256];
+  FILE*  pFile=NULL;
+  char   sLine[CHAR_BUF_SMALL]="";
   int    nLen=sizeof(sLine)-1;
+  double thickness=0.0, diameter=0.0, height=0.0,
+         muInc=0.0, muTot=0.0, muAbs=0.0, ucv=0.0;
 
-  pEnvironment->Type = VT_HOL_CYL;
-  pEnvironment->Direction[0] = 0.0;
-  pEnvironment->Direction[1] = 0.0;
-  pEnvironment->Direction[2] = 1.0;
+  InitSample(&stEnvironment);
 
-  pFile=OpenInputFile(SampleFileName, FALSE, "rt");
-  if (pFile != NULL)
-  {
-    // ReadLine(pFile, sLine, nLen); sscanf(sLine, "%lf %lf %lf", &pEnvironment->Position[0], &pEnvironment->Position[1], &pEnvironment->Position[2]); 
-    ReadLine(pFile, sLine, nLen); sscanf(sLine, "%lf %lf %lf", &Thickness, &Diameter, &Height);
-    ReadLine(pFile, sLine, nLen); sscanf(sLine, "%s",          StructFileName); 
-    ReadLine(pFile, sLine, nLen); sscanf(sLine, "%lf %lf %lf", &MuInc, &MuTot, &MuAbs); 
-    ReadLine(pFile, sLine, nLen); sscanf(sLine, "%lf",         &UCV);
+  // Read parameter data
+  if (pSampleFileName!=NULL)
+  { pFile=OpenInputFile(pSampleFileName, FALSE, "rt");
+    if (pFile != NULL)
+    {
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &thickness, &diameter, &height);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileName); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf",         &ucv);
 
-    pEnvironment->SG.HCyl.r_out = 0.5 * Diameter; 
-    pEnvironment->SG.HCyl.r_in  = pEnvironment->SG.HCyl.r_out - Thickness; 
-    pEnvironment->SG.HCyl.h_in  = pEnvironment->SG.HCyl.h_out - 2.0*Thickness; 
-    pEnvironment->SG.HCyl.h_out = Height;
+      fclose(pFile);
 
-    fclose(pFile);
-    return(TRUE);
+      // combines information from input and file
+      if (Height   ==0.0 && height   !=0.0) Height    =  height   ;
+      if (Diameter ==0.0 && diameter !=0.0) Diameter  =  diameter ;
+      if (Thickness==0.0 && thickness!=0.0) Thickness =  thickness;
+      if (MuInc    ==0.0 && muInc    !=0.0) MuInc     =  muInc    ;
+      if (MuTot    ==0.0 && muTot    !=0.0) MuTot     =  muTot    ;
+      if (MuAbs    ==0.0 && muAbs    !=0.0) MuAbs     =  muAbs    ;
+      if (UCV      ==0.0 && ucv      !=0.0) UCV       =  ucv      ;
+    }
+    else
+    {	
+      fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSampleFileName);
+    }
   }
-  else
-  {	
-    fprintf(LogFilePtr,"ERROR: Cannot open sample file %s\n", SampleFileName);
-    return(FALSE);
-  }
+
+  FillSample(pEnvironment, VT_HOL_CYL,  Xpos, Ypos, Zpos,  0.0, 1.0, 1.0, Diameter, Height, 0.0, Thickness);
+
+  return(TRUE);
 }
 
 
@@ -454,16 +512,22 @@ short ReadEnvironPar(SampleType* pEnvironment)
 /*******************************************************/
 long ReadStrucFact(DoublePair* pStrucFac[])
 {
-  FILE  *pStrucFile;
+  FILE  *pStrucFile=NULL;
   long  NumLines, i, j;
   char  sBuffer[CHAR_BUF_LENGTH];
 
-  /* first open the file, add path if missing */
-  pStrucFile = OpenInputFile(StructFileName, FALSE, "rt"); 
-  if(pStrucFile==NULL)
+  /* first try the file name from parameter input, then that from the parameter file */
+  if (strlen(sStructFileP) > 0)
+    pStrucFile = OpenInputFile(sStructFileP, FALSE, "rt"); 
+  if (pStrucFile==NULL)
   { 
-    fprintf(LogFilePtr,"ERROR: Can't read the structure factor data from %s\n", StructFileName);
-    exit(-1);
+    if (strlen(sStructFileF) > 0)
+      pStrucFile = OpenInputFile(sStructFileF, FALSE, "rt"); 
+    if (pStrucFile==NULL)
+    { 
+      fprintf(LogFilePtr,"ERROR: Can't read the structure factor data, neither from %s nor from %s\n", sStructFileP, sStructFileP);
+      exit(-1);
+    }
   }
 
   /* count lines in file */

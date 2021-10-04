@@ -18,6 +18,7 @@
 /* 1.8  Nov 2012  K. Lieutenant  size distribution of spheres                                 */
 /* 1.9  Oct 2013  K. Lieutenant  only theta_max variable                                      */
 /* 1.10 Apr 2020  K. Lieutenant  new central visualization parameters                         */
+/* 1.11 Aug 2021  K. Lieutenant  option: parameters from input instead of from file              */
 /**********************************************************************************************/
 
 #include <string.h>
@@ -40,6 +41,16 @@ double ThetaMax = 0.0,       // -M    maximum scattering angle to be considered
        DelTheta = M_PI/2.0,  // calc     Theta has to be in the range of [0;PI]         
        Phi      = M_PI,      // fix      Phi has to be in the range of [0;2*PI] 
        DelPhi   = M_PI;      // fix
+double Xpos     = 0.0,               // -x file  [cm]   position of the center of the sample 
+       Ypos     = 0.0,               // -y file  [cm]  
+       Zpos     = 0.0,               // -z file  [cm]  
+       Diameter = 0.0,               // -t file  [cm]   thickness or radius of the sample 
+       Height   = 0.0,               // -h file  [cm]   height of the sample 
+       Width    = 0.0,               // -w file  [cm]   width of the sample
+       Xdir     = 0.0,               // -X file  [-]    orientation of the sample 
+       Ydir     = 0.0,               // -Y file  [-]  
+       Zdir     = 0.0;               // -Z file  [-]  
+VtSmplGeom eGeom= VT_NO_GEOM;        // -G file  [-]    geometry: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
 char   cGeometry = ' ';      /* file  geometry parameter: 
                                       S: spheres,        R  = SizeA
                                       D: size dstr. sph. Rmin=SizeA, Rmax=SizeB

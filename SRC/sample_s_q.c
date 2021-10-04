@@ -10,6 +10,7 @@
 /* 1.2  Feb 2004  K. Lieutenant  'FullParName', 'message' & 'ERROR' included; output extended */
 /* 1.3  Apr 2020  K. Lieutenant   new central visualization parameters                        */
 /* 1.4  Apr 2020  K. Lieutenant   modulation of sample response                               */
+/* 1.5  Aug 2021  K. Lieutenant  option: parameters from input instead of from file           */
 /**********************************************************************************************/
 
 #include <string.h>
@@ -26,8 +27,8 @@
 /**   Global Variables       **/
 /******************************/
 FILE  *pStrFacFile=NULL;      //            pointer to structure factor file
-char   sStrucFileName[200],   // file       structure factor file name  
-       cFunction = ' ',       // file       parameter of the S(Q) function: F: analytical function   D: data from file 
+VtDataSrc eFunction=VT_NO_SRC;// -F  file   source of the S(Q) function: F: analytical function   D: data from file 
+char   sStrucFileName[200],   // -s  file   structure factor file name  
        *SampleFileName;       // -S         pointer to the name of the sample file  
 short  bIncohScat=FALSE;      // -I   [-]   should incoherent scattering be done
 long   GenNeutrons =1,        // -A   [-]   how many neutrons to generate on the "cone" 
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
     bLengthCmpr = FALSE;
 
   /* Load structure factor file, if needed */
-  if (cFunction == 'D')
+  if (eFunction == VT_FR_FILE)
     LoadStrucFactFile();
 
   /* Factors that take care of the dectector coverage */
@@ -191,7 +192,7 @@ int main(int argc, char *argv[])
           OutTheta=ScTheta;
 
           /* ScProb corresponds to the sample form factor considering hard sphere scattering */
-          switch (cFunction)
+          switch (eFunction)
           {
             case 'F': 
               ScProb *= CalcStructureFactor(qValue)*Lbf*MuCoh / GenNeutrons;
@@ -282,7 +283,7 @@ int main(int argc, char *argv[])
   else
     fprintf(LogFilePtr, "  no modulation\n");
 
-  if (cFunction=='F')
+  if (eFunction==VT_AS_FCT)
   	fprintf(LogFilePtr, "Q-values calculated");
   else
     fprintf(LogFilePtr, "Q-values from structure factor file: %s\n", sStrucFileName);
@@ -364,9 +365,12 @@ void  OwnInit(int argc, char *argv[])
           sscanf(&(argv[i][2]),"%lf", &Offset);
           break;
 
-        /* read sample file name */
+        /* sample and structure factor file name */
         case 'S':
           SampleFileName=&argv[i][2];
+          break;
+        case 's':
+          strcpy(sStrucFileName,&argv[i][2]);
           break;
 
         default:
@@ -490,11 +494,11 @@ void GetSample(SampleType *pSample)
     /* Read criterion for getting S(Q) data */
     if(ReadTilComment(Buffer, pSampleFile))
     {	
-      sscanf(Buffer, "%c", &cFunction);
+      sscanf(Buffer, "%c", &eFunction);
       /*	Allowed char. for function parameter: 
       F: analytic function  D: function data from file   */
-      if(cFunction!='F' && cFunction!='D')  
-      Error("Wrong character for function to determine structure factor");
+      if(eFunction!=VT_FR_FILE && eFunction!=VT_AS_FCT)  
+        Error("Wrong character for function to determine structure factor");
     }
     else 
     {	
@@ -508,7 +512,7 @@ void GetSample(SampleType *pSample)
     }
     else 
     {	
-      if (cFunction == 'D')
+      if (eFunction == VT_FR_FILE)
       {	
         fprintf(LogFilePtr, "ERROR: Can't read structure factor file name %s",SampleFileName);
         exit(-1);

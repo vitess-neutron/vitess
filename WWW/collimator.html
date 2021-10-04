@@ -18,8 +18,9 @@
   <br>
   <h2><font size="+1"> VITESS Module 'collimator' to simulate Soller Collimators </font></h2>
   <p>
-    The module <b>collimator</b> simulates a soller collimator of a certain length, width and height consisting of a number of channels separated by blades of a certain thickness.
-    Exit width and height can be different from entrance width and height.
+    The module <b>collimator</b> simulates a soller collimator of a certain length, width and height consisting of a number of channels separated by absorbing walls of a certain thickness.
+    Their walls are vertical planes parallel to the x-z-plane. There is no separation in vertical direction.
+    Exit width and height can be different from entrance width and height.<br />
     For each trajectory, it is checked whether the neutron is outside the exit or entrance area and if a channel wall is hit; in these cases the trajectory is removed.
     Otherwise it is propagated to the collimator exit (without loss in intensity).
     This is a realistic description of a Soller collimator and is therefore the recommended choice.
@@ -50,8 +51,11 @@
   <h2><font size="+1"> VITESS Module 'collimator_radial' to simulate Radial Collimators </font></h2>
   <p>
     A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>.
-    As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits the absorbing walls.
-    It considers also the height of the collimator and propagates the neutrons to the end of the radial collimator. <br />
+    It is realized by a number of channels defining different directions in the horizontal plane.
+    Their walls are vertical planes throught the origin; a thickness of these blades can be considered, but zero thickness works as well. All walls are treated as 100% absorbing.
+    There is no separation in vertical direction, but it considers entrance and exit height of the collimator. <br />
+    As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits one of the (absorbing) walls.
+    Otherwise, it propagates the neutrons to the end of the radial collimator. <br />
     Furthermore, an oscillation of the collimator can be treated. If this is used, the orientation of the collimator (at the time the neutron is passing)
     is determined by a random choice within a range given. In this way, the shadowing effect of the blades can be simulated and the extent of this effect estimated.
   </p>
@@ -69,32 +73,34 @@
 
       <tr>
         <td valign="top">entrance width<br>exit width<br>[cm]     </td>
-        <td valign="top">total width of the collimator entrance and exit (between the two walls defining beginning of first and end of last channel) </td>
+        <td valign="top">Total width of the collimator entrance and exit (between the two walls defining beginning of first and end of last channel)<br />
+                         (center of the entrance window at y=0)</td>
         <td valign="top">&gt;= 0    </td>
         <td valign="top">-w<br>-W   </td>
       </tr>
       <tr>
         <td valign="top">entrance height<br>exit height<br>[cm]    </td>
-        <td valign="top">entrance and exit height of the collimator</td>
+        <td valign="top">Entrance and exit height of the collimator<br />
+                         (center of the entrance window at z=0)</td>
         <td valign="top">&gt;= 0       </td>
         <td valign="top">-h<br>-H      </td>
       </tr>
       <tr>
         <td valign="top">length<br>[cm]<br>       </td>
-        <td valign="top">length of the collimator </td>
+        <td valign="top">Length of the collimator </td>
         <td valign="top">&gt;= 0  </td>
         <td valign="top">-l       </td>
       </tr>
 
       <tr>
         <td valign="top">number of channels            </td>
-        <td valign="top">number of collimator channels </td>
+        <td valign="top">Number of collimator channels along the y-axis.<br />There are no channels in vertical direction.</td>
         <td valign="top">&gt;= 1 </td>
         <td valign="top">-n      </td>
       </tr>
       <tr>
-        <td valign="top">blade width<br />[cm]</td>
-        <td valign="top">thickness of the material dividing the collimator into channels</td>
+        <td valign="top">wall thickness<br />[cm]</td>
+        <td valign="top">Thickness of the blades dividing the collimator into channels<br />Zero thickness is also possible and still gives 100% absorption.</td>
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-s      </td>
       </tr>
@@ -123,14 +129,14 @@
       </tr>
       <tr>
         <td valign="top">collimator divergence<br>[deg]</td>
-        <td valign="top">allowed x-y divergence (FWHM of the triangular shape)  </td>
+        <td valign="top">Allowed x-y divergence (FWHM of the triangular shape)  </td>
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-d      </td>
       </tr>
       <tr>
         <td valign="top">peak transmission </td>
         <td valign="top">
-          maximal probability for passing through the soller collimator
+          Maximal probability for passing through the soller collimator
           (corresponds to an average loss due to blocking neutrons by the finite size of the Soller collimator)
         </td>
         <td valign="top">]0, 1] </td>
@@ -145,13 +151,13 @@
           The following centers (always higher angles) are calculated by considering
           a gap of (2*allowed_div_fwhm + angle_spacing) between two centers.
         </td>
-        <td valign="top">[-180Â°, 180Â°[  </td>
+        <td valign="top">[-180°, 180°[  </td>
         <td valign="top">-m       </td>
       </tr>
       <tr>
         <td valign="top">number of collimation centers   </td>
         <td valign="top">
-          number of orientations corresponding to divergence 0 (or to peak transmission resp.).
+          Number of orientations corresponding to divergence 0 (or to peak transmission resp.).
           The difference between two collimation centers is: 2*allowed_div_fwhm + angle_spacing
         </td>
         <td valign="top">&gt;= 1 </td>
@@ -161,7 +167,7 @@
       </tr>
       <tr>
         <td valign="top">angle spacing <br />[deg]</td>
-        <td valign="top">additional angular distance between the collimation centers due to the size of collimator spacers </td>
+        <td valign="top">Additional angular distance between the collimation centers due to the size of collimator spacers </td>
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-a      </td>
       </tr>
@@ -180,26 +186,28 @@
       </tr>
 
       <tr>
-        <td valign="top">theta<br>[deg]      </td>
+        <td valign="top">theta (center)<br>[deg]      </td>
         <td valign="top">
-          hor. direction to the center of the collimator <br />
+          Hor. direction to the center of the collimator <br />
           0 deg: direction of the beam impinging on the sample (= x-axis)          <br />
           90 deg: to the left (= y-axis)
         </td>
-        <td valign="top">[-180Â°,180Â°]</td>
+        <td valign="top">[-180°,180°]</td>
         <td valign="top">-a   </td>
       </tr>
       <tr>
         <td valign="top">width<br>[deg]      </td>
-        <td valign="top">angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel) </td>
-        <td valign="top">[0Â°,360Â°]</td>
+        <td valign="top">Angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel)<br />
+                         Channel centers and blades are pointing to the origin, i.e. the centre of the sample.</td>
+        <td valign="top">[0°,360°]</td>
         <td valign="top">-w   </td>
       </tr>
       <tr>
         <td valign="top">oscillation width<br>[deg]      </td>
         <td valign="top">
-          full width amplitude of oscillation of the radial collimator <br />
-          the orientation of the collimator for a certain trajectory is randomly chosen within this range
+          Full width amplitude of oscillation of the radial collimator <br />
+          The orientation of the collimator for a certain trajectory is randomly chosen within this range <br />
+          Oscillation width = 0.0 means: no oscillation regarded
         </td>
         <td valign="top">&gt;= 0</td>
         <td valign="top">-a   </td>
@@ -207,32 +215,33 @@
 
       <tr>
         <td valign="top">entrance height<br />exit height<br>[cm]</td>
-        <td valign="top">entrance and exit height of the radial collimator</td>
+        <td valign="top">Entrance and exit height of the radial collimator<br />
+                         The center of entrance and exit is set to z=0, i.e. the collimator is symmetrical to the x-y-plane</td>
         <td valign="top">&gt;= 0       </td>
         <td valign="top">-h<br>-H      </td>
       </tr>
       <tr>
         <td valign="top">distance<br>[cm]<br>       </td>
-        <td valign="top">distance of the collimator entrance from the origin (usually the center of the sample) </td>
+        <td valign="top">Distance of the collimator entrance from the origin (usually the center of the sample) </td>
         <td valign="top">&gt;= 0  </td>
         <td valign="top">-d       </td>
       </tr>
       <tr>
         <td valign="top">length<br>[cm]<br>       </td>
-        <td valign="top">length of the collimator channels </td>
+        <td valign="top">Length of the collimator channels, (i.e. distance between entrance and exit of a channel)</td>
         <td valign="top">&gt;= 0  </td>
         <td valign="top">-l       </td>
       </tr>
 
       <tr>
         <td valign="top">number of channels            </td>
-        <td valign="top">number of collimator channels </td>
+        <td valign="top">Number of collimator channels in the x-y-plane (defining different theta-directions)<br />There are no channels in vertical direction.</td>
         <td valign="top">&gt;= 1 </td>
         <td valign="top">-n      </td>
       </tr>
       <tr>
-        <td valign="top">blade width<br />[cm]</td>
-        <td valign="top">thickness of the material dividing the collimator into channels</td>
+        <td valign="top">wall thickness<br />[cm]</td>
+        <td valign="top">Thickness of the blades dividing the collimator into channels<br />zZero thickness is also possible and still gives 100% absorption.</td>
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-s      </td>
       </tr>
