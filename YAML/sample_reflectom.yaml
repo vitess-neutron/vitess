@@ -87,6 +87,12 @@ sample_reflectom:
       prefix:  "-K"
       column:  1                     
 
+  - SmplFile:                 # -I         [-]    name of the file containing the sample reflectometry
+      type:    "file" 
+      descr:   "parameter\nfile"  
+      tooltip: "name of the file containing the sample parameters"
+      prefix:  "-P"
+
   - ReflFile:                 # -I         [-]    name of the file containing the sample reflectometry
       type:    "file" 
       descr:   "reflectivity\nfile"  

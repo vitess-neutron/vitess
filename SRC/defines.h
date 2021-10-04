@@ -214,9 +214,9 @@ VtDirType;
 // Axis
 typedef enum
 {
-  X_AXIS = 0,
-  Y_AXIS = 1,
-  Z_AXIS = 2
+  X_AXIS = 'X',
+  Y_AXIS = 'Y',
+  Z_AXIS = 'Z'
 } 
 VtAxis;
 

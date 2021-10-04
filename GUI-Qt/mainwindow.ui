@@ -1,0 +1,1112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1210</width>
+    <height>913</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Vitess 4.0</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Instrumentname:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="InstName">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>250</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushCheck">
+          <property name="text">
+           <string>Check</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/check_circle_green-24px.svg</normaloff>images/check_circle_green-24px.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="pushDryrun">
+          <property name="text">
+           <string>Dryrun</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-start-2.png</normaloff>images/media-playback-start-2.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QPushButton" name="pushStart">
+          <property name="text">
+           <string>Start</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-start.png</normaloff>images/media-playback-start.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QPushButton" name="pushVisual">
+          <property name="text">
+           <string>Visualization</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/utilities-system-monitor.png</normaloff>images/utilities-system-monitor.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="pushStop">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/media-playback-stop.png</normaloff>images/media-playback-stop.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="pushKill">
+          <property name="text">
+           <string>Kill</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>images/process-stop.png</normaloff>images/process-stop.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>input directory</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="InDir"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="pushIndir">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>  output directory</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="OutDir"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="pushOutdir">
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>       random seed</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="RndSeed">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>80</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>gravity</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="bGravity">
+            <item>
+             <property name="text">
+              <string>off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>on</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="pushFresh">
+        <property name="text">
+         <string>New</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QWidget" name="modWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>245</width>
+          <height>410</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>250</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QWidget" name="widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QStackedWidget" name="stackedWidget">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <strikeout>false</strikeout>
+             <kerning>true</kerning>
+            </font>
+           </property>
+           <property name="tabletTracking">
+            <bool>false</bool>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::DefaultContextMenu</enum>
+           </property>
+           <property name="acceptDrops">
+            <bool>false</bool>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="page">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3"/>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QWidget" name="outputWidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>200</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Maximum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushBig">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Big</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushClear">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushSave">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Maximum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>80</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QTextBrowser" name="textBrowser">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>180</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1210</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menu_Export_as">
+     <property name="title">
+      <string>Export as </string>
+     </property>
+     <addaction name="actionPy_Python_script"/>
+     <addaction name="actionBat_shell"/>
+    </widget>
+    <addaction name="actionLoad"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_as"/>
+    <addaction name="separator"/>
+    <addaction name="actionNewInst"/>
+    <addaction name="separator"/>
+    <addaction name="menu_Export_as"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_inf_File"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Variations</string>
+    </property>
+    <addaction name="actionCopy_Module_Parameters"/>
+    <addaction name="actionPaste_Module_Parameters"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Instrument_Name"/>
+    <addaction name="separator"/>
+    <addaction name="actionGenerate_Series"/>
+   </widget>
+   <widget class="QMenu" name="menuPlot">
+    <property name="title">
+     <string>Plot</string>
+    </property>
+    <addaction name="actionPlot_File"/>
+    <addaction name="action2D_Plot_File"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <widget class="QMenu" name="menunBuffer">
+     <property name="title">
+      <string>Buffersize</string>
+     </property>
+     <addaction name="action1000"/>
+     <addaction name="action5000"/>
+     <addaction name="action10000"/>
+     <addaction name="action20000"/>
+     <addaction name="action50000"/>
+     <addaction name="action100000"/>
+    </widget>
+    <widget class="QMenu" name="menuMinWght">
+     <property name="title">
+      <string>Min. neutron weight</string>
+     </property>
+     <addaction name="action0_0"/>
+     <addaction name="action1_0e_25"/>
+     <addaction name="action1_0e_20"/>
+     <addaction name="action1_0e_15"/>
+     <addaction name="action1_0e_10"/>
+     <addaction name="action1_0e_05"/>
+     <addaction name="action1_0"/>
+    </widget>
+    <widget class="QMenu" name="menurandom_number_generator">
+     <property name="title">
+      <string>random number generator</string>
+     </property>
+     <addaction name="actionran3"/>
+     <addaction name="actiontaus"/>
+     <addaction name="actiongfsr4"/>
+     <addaction name="actionmt19937"/>
+     <addaction name="actionranlux"/>
+    </widget>
+    <widget class="QMenu" name="menuTrajectories">
+     <property name="title">
+      <string>Trajectories</string>
+     </property>
+     <addaction name="actionX3D"/>
+     <addaction name="actionSVG_XZ"/>
+     <addaction name="actionSVG_xy"/>
+     <addaction name="actiontext_file"/>
+    </widget>
+    <addaction name="menurandom_number_generator"/>
+    <addaction name="menunBuffer"/>
+    <addaction name="menuMinWght"/>
+    <addaction name="menuTrajectories"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <widget class="QMenu" name="menuHelpTools">
+     <property name="title">
+      <string>Tools</string>
+     </property>
+     <addaction name="actionConvert"/>
+     <addaction name="actionDefine_Direction_2"/>
+     <addaction name="actionGenerate_Mirror_Files_2"/>
+     <addaction name="actionGenerate_Surface_Files_2"/>
+     <addaction name="actionGenerate_Extraction_System_2"/>
+     <addaction name="actionCryst_Analayzer_Spectrom_2"/>
+     <addaction name="actionCompute_Chopper_Phases_2"/>
+    </widget>
+    <addaction name="actionGeneral_Information"/>
+    <addaction name="actionTutorial"/>
+    <addaction name="actionUser_Interface"/>
+    <addaction name="actionHelpGenerate_Series"/>
+    <addaction name="actionExternal_Commands"/>
+    <addaction name="actionVisualization"/>
+    <addaction name="actionOptimization"/>
+    <addaction name="menuHelpTools"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionConvert_Ascii_to_Binary"/>
+    <addaction name="actionDefine_Direction"/>
+    <addaction name="actionGenerate_Mirror_Files"/>
+    <addaction name="actionGenerate_Surface_Files"/>
+    <addaction name="actionGenerate_Extraction_System"/>
+    <addaction name="actionGuide_Shape"/>
+    <addaction name="actionCryst_Analayzer_Spectrom"/>
+    <addaction name="actionCompute_Chopper_Phases"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuPlot"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuOptions"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="actionLoad">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/open.png</normaloff>:/resources/images/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>LOAD Instument</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/save.png</normaloff>:/resources/images/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>SAVE Instrument</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/save_as.png</normaloff>:/resources/images/save_as.png</iconset>
+   </property>
+   <property name="text">
+    <string>SAVE As</string>
+   </property>
+  </action>
+  <action name="actionNewInst">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/new.png</normaloff>:/resources/images/new.png</iconset>
+   </property>
+   <property name="text">
+    <string>New Instrument</string>
+   </property>
+  </action>
+  <action name="actionShow_inf_File">
+   <property name="text">
+    <string>Show *.inf File</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/exit.png</normaloff>:/resources/images/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionPy_Python_script">
+   <property name="text">
+    <string>Py Python script</string>
+   </property>
+  </action>
+  <action name="actionBat_shell">
+   <property name="text">
+    <string>Bat shell</string>
+   </property>
+  </action>
+  <action name="actionCopy_Module_Parameters">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/copy.png</normaloff>:/resources/images/copy.png</iconset>
+   </property>
+   <property name="text">
+    <string>Copy Module Parameters</string>
+   </property>
+  </action>
+  <action name="actionPaste_Module_Parameters">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resources/images/paste.png</normaloff>:/resources/images/paste.png</iconset>
+   </property>
+   <property name="text">
+    <string>Paste Module Parameters</string>
+   </property>
+  </action>
+  <action name="actionSet_Instrument_Name">
+   <property name="text">
+    <string>Set Instrument Name</string>
+   </property>
+  </action>
+  <action name="actionPlot_File">
+   <property name="text">
+    <string>Plot File</string>
+   </property>
+  </action>
+  <action name="action2D_Plot_File">
+   <property name="text">
+    <string>2D Plot File</string>
+   </property>
+  </action>
+  <action name="actionclose_gnuplot_Windows">
+   <property name="text">
+    <string>close gnuplot Windows</string>
+   </property>
+  </action>
+  <action name="actionConvert_Ascii_to_Binary">
+   <property name="text">
+    <string>Convert Ascii to Binary</string>
+   </property>
+  </action>
+  <action name="actionDefine_Direction">
+   <property name="text">
+    <string>Define Direction</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Mirror_Files">
+   <property name="text">
+    <string>Generate Mirror Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Surface_Files">
+   <property name="text">
+    <string>Generate Surface Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Extraction_System">
+   <property name="text">
+    <string>Generate Extraction System</string>
+   </property>
+  </action>
+  <action name="actionGuide_Shape">
+   <property name="text">
+    <string>Guide Shape</string>
+   </property>
+  </action>
+  <action name="actionCryst_Analayzer_Spectrom">
+   <property name="text">
+    <string>Cryst.Analyzer Spectrom.</string>
+   </property>
+  </action>
+  <action name="actionCompute_Chopper_Phases">
+   <property name="text">
+    <string>Compute Chopper Phases</string>
+   </property>
+  </action>
+  <action name="actionScrollbar_width">
+   <property name="text">
+    <string>Scrollbar width</string>
+   </property>
+  </action>
+  <action name="actionX3D_options">
+   <property name="text">
+    <string>X3D options</string>
+   </property>
+  </action>
+  <action name="actionGeneral_Information">
+   <property name="text">
+    <string>General Information</string>
+   </property>
+  </action>
+  <action name="actionTutorial">
+   <property name="text">
+    <string>Tutorial</string>
+   </property>
+  </action>
+  <action name="actionUser_Interface">
+   <property name="text">
+    <string>User Interface</string>
+   </property>
+  </action>
+  <action name="actionHelpGenerate_Series">
+   <property name="text">
+    <string>Generate Series</string>
+   </property>
+  </action>
+  <action name="actionExternal_Commands">
+   <property name="text">
+    <string>User Module</string>
+   </property>
+  </action>
+  <action name="actionVisualization">
+   <property name="text">
+    <string>Visualization</string>
+   </property>
+  </action>
+  <action name="actionOptimization">
+   <property name="text">
+    <string>Optimization</string>
+   </property>
+  </action>
+  <action name="action1000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1000</string>
+   </property>
+  </action>
+  <action name="action5000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>5000</string>
+   </property>
+  </action>
+  <action name="action10000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>10000</string>
+   </property>
+  </action>
+  <action name="action20000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>20000</string>
+   </property>
+  </action>
+  <action name="action50000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>50000</string>
+   </property>
+  </action>
+  <action name="action100000">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>100000</string>
+   </property>
+  </action>
+  <action name="action200000">
+   <property name="text">
+    <string>200000</string>
+   </property>
+  </action>
+  <action name="action0_0">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>0.0</string>
+   </property>
+  </action>
+  <action name="action1_0e_25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-25</string>
+   </property>
+  </action>
+  <action name="action1_0e_20">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-20</string>
+   </property>
+  </action>
+  <action name="action1_0e_15">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-15</string>
+   </property>
+  </action>
+  <action name="action1_0e_10">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-10</string>
+   </property>
+  </action>
+  <action name="action1_0e_05">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0e-05</string>
+   </property>
+  </action>
+  <action name="action1_0">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>1.0</string>
+   </property>
+  </action>
+  <action name="actionran3">
+   <property name="text">
+    <string>ran3</string>
+   </property>
+  </action>
+  <action name="actiontaus">
+   <property name="text">
+    <string>taus</string>
+   </property>
+  </action>
+  <action name="actiongfsr4">
+   <property name="text">
+    <string>gfsr4</string>
+   </property>
+  </action>
+  <action name="actionmt19937">
+   <property name="text">
+    <string>mt19937</string>
+   </property>
+  </action>
+  <action name="actionranlux">
+   <property name="text">
+    <string>ranlux</string>
+   </property>
+  </action>
+  <action name="actionX3D">
+   <property name="text">
+    <string>X3D</string>
+   </property>
+  </action>
+  <action name="actionSVG_XZ">
+   <property name="text">
+    <string>SVG xz</string>
+   </property>
+  </action>
+  <action name="actionSVG_xy">
+   <property name="text">
+    <string>SVG xy</string>
+   </property>
+  </action>
+  <action name="actiontext_file">
+   <property name="text">
+    <string>text file</string>
+   </property>
+  </action>
+  <action name="actionGraphics_tools">
+   <property name="text">
+    <string>Graphics tools</string>
+   </property>
+  </action>
+  <action name="actionConvert">
+   <property name="text">
+    <string>Convert Ascii to Binary</string>
+   </property>
+  </action>
+  <action name="actionDefine_Direction_2">
+   <property name="text">
+    <string>Define Direction</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Mirror_Files_2">
+   <property name="text">
+    <string>Generate Mirror Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Surface_Files_2">
+   <property name="text">
+    <string>Generate Surface Files</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Extraction_System_2">
+   <property name="text">
+    <string>Generate Extraction System</string>
+   </property>
+  </action>
+  <action name="actionCryst_Analayzer_Spectrom_2">
+   <property name="text">
+    <string>Cryst.Analyzer Spectrom.</string>
+   </property>
+  </action>
+  <action name="actionCompute_Chopper_Phases_2">
+   <property name="text">
+    <string>Compute Chopper Phases</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Series">
+   <property name="text">
+    <string>Generate Series</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>
