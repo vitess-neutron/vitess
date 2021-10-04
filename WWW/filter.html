@@ -4,118 +4,184 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
-  <title>Module Beamstop</title>
+  <title>Module Filter</title>
 </head>
- <body>
-<h1>VITESS Module Filter</h1>
-<p>
-  The module <b>filter</b> selects trajectories with certain parameter values.
-  It is a numerical operation that does not have an equivalent in reality, (though some instrument components have a similar task).
-  Only trajectories with a value of the chosen parameter within the given range are considered further.
-  For sufficient flexibility, up to 4 parameter can be chosen and combined logically with AND, OR or the combination: (par1 AND par2) OR (par3 AND par4).
-<p>
-<h3>Parameters for module 'filter'</h3>
-<p>
-<table cellpadding="2" cellspacing="2" border="1" width="100%">
-  <tbody>
-    <tr>
-      <td valign="top"><b>Parameter<br> Unit<br></b></td>
-      <td valign="top"><b>Description<br>      </b></td>
-      <td valign="top"><b>Range or Values<br>  </b></td>
-      <td valign="top"><b>Command Option<br>   </b></td>
-    </tr>
+<body>
+  <h1>VITESS Module Filter</h1>
+  <p>
+    There are two filter modules. Both select trajectories with certain parameter values.
+    It is a numerical operation that does not have an equivalent in reality, (though some instrument components have a similar task).
+    Only trajectories with values of the chosen parameters within the given ranges are considered further. <br>
+    In <b>filter</b>, up to 4 parameter can be chosen and combined logically with AND, OR or the combination: (par1 AND par2) OR (par3 AND par4) for sufficient flexibility.
+  </p>
+  <p>
+    In contrast, <b>filter2D</b> only allows a limitation of the spatial or divergence distribution of the beam,
+    but the beam intensity can be varied in 2D over the given range.
+    The distribution of the transmission is defined by a matrix read by the module.
+    It assumes equal spacing in both dimensions over the given range.
+    The intensity of a trajectory is multiplied by the factor found in the matrix for its 2D position or divergence resp. 
+  </p>
 
-    <tr>
-      <td valign="top">filter combination</td>
-      <td valign="top">logical connection of the different filters</td>
-      <td valign="top">AND, OR, AND_OR_AND</td>
-      <td valign="top">-C </td>
-    </tr>
+  <br>
+  <h4>Parameters for module 'filter'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
 
-    <tr>
-      <td valign="top">filter parameter 1 </td>
-      <td valign="top">1st parameter determining which trajectories are kept</td>
-      <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
-      <td valign="top">-I </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 1 min value </td>
-      <td valign="top">minimal value of parameter 1, required for the trajectory to pass the filter</td>
-      <td valign="top">   </td>
-      <td valign="top">-u </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 1 max value </td>
-      <td valign="top">maximal value of parameter 1, required for the trajectory to pass the filter</td>
-      <td valign="top">  </td>
-      <td valign="top">-U</td>
-    </tr>
+      <tr>
+        <td valign="top">filter combination</td>
+        <td valign="top">logical connection of the different filters</td>
+        <td valign="top">AND, OR, AND_OR_AND</td>
+        <td valign="top">-C </td>
+      </tr>
 
-    <tr>
-      <td valign="top">filter parameter 2 </td>
-      <td valign="top">2nd parameter determining which trajectories are kept</td>
-      <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
-      <td valign="top">-J </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 2 min value</td>
-      <td valign="top">minimal value of parameter 2, required for the trajectory to pass the filter</td>
-      <td valign="top">   </td>
-      <td valign="top">-v </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 2 max value</td>
-      <td valign="top">maximal value of parameter 2, required for the trajectory to pass the filter</td>
-      <td valign="top">  </td>
-      <td valign="top">-V</td>
-    </tr>
+      <tr>
+        <td valign="top">filter parameter 1 </td>
+        <td valign="top">1st parameter determining which trajectories are kept</td>
+        <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
+        <td valign="top">-I </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 1 min value </td>
+        <td valign="top">minimal value of parameter 1, required for the trajectory to pass the filter</td>
+        <td valign="top">   </td>
+        <td valign="top">-u </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 1 max value </td>
+        <td valign="top">maximal value of parameter 1, required for the trajectory to pass the filter</td>
+        <td valign="top">  </td>
+        <td valign="top">-U</td>
+      </tr>
 
-    <tr>
-      <td valign="top">filter parameter 3 </td>
-      <td valign="top">3rd parameter determining which trajectories are kept</td>
-      <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
-      <td valign="top">-K </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 3 min value</td>
-      <td valign="top">minimal value of parameter 3, required for the trajectory to pass the filter</td>
-      <td valign="top">   </td>
-      <td valign="top">-w </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 3 max value</td>
-      <td valign="top">maximal value of parameter 3, required for the trajectory to pass the filter</td>
-      <td valign="top">  </td>
-      <td valign="top">-W</td>
-    </tr>
+      <tr>
+        <td valign="top">filter parameter 2 </td>
+        <td valign="top">2nd parameter determining which trajectories are kept</td>
+        <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
+        <td valign="top">-J </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 2 min value</td>
+        <td valign="top">minimal value of parameter 2, required for the trajectory to pass the filter</td>
+        <td valign="top">   </td>
+        <td valign="top">-v </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 2 max value</td>
+        <td valign="top">maximal value of parameter 2, required for the trajectory to pass the filter</td>
+        <td valign="top">  </td>
+        <td valign="top">-V</td>
+      </tr>
 
-    <tr>
-      <td valign="top">filter parameter 4</td>
-      <td valign="top">4th parameter determining which trajectories are kept</td>
-      <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
-      <td valign="top">-L </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 4 min value</td>
-      <td valign="top">minimal value of parameter 4, required for the trajectory to pass the filter</td>
-      <td valign="top">   </td>
-      <td valign="top">-x </td>
-    </tr>
-    <tr>
-      <td valign="top">filter 4 max value</td>
-      <td valign="top">maximal value of parameter 4, required for the trajectory to pass the filter</td>
-      <td valign="top">  </td>
-      <td valign="top">-X</td>
-    </tr>
+      <tr>
+        <td valign="top">filter parameter 3 </td>
+        <td valign="top">3rd parameter determining which trajectories are kept</td>
+        <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
+        <td valign="top">-K </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 3 min value</td>
+        <td valign="top">minimal value of parameter 3, required for the trajectory to pass the filter</td>
+        <td valign="top">   </td>
+        <td valign="top">-w </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 3 max value</td>
+        <td valign="top">maximal value of parameter 3, required for the trajectory to pass the filter</td>
+        <td valign="top">  </td>
+        <td valign="top">-W</td>
+      </tr>
 
-  </tbody> 
-</table>
+      <tr>
+        <td valign="top">filter parameter 4</td>
+        <td valign="top">4th parameter determining which trajectories are kept</td>
+        <td valign="top">none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color</td>
+        <td valign="top">-L </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 4 min value</td>
+        <td valign="top">minimal value of parameter 4, required for the trajectory to pass the filter</td>
+        <td valign="top">   </td>
+        <td valign="top">-x </td>
+      </tr>
+      <tr>
+        <td valign="top">filter 4 max value</td>
+        <td valign="top">maximal value of parameter 4, required for the trajectory to pass the filter</td>
+        <td valign="top">  </td>
+        <td valign="top">-X</td>
+      </tr>
 
- 
-<hr><a href="vitess.html">Back to VITESS overview</a><br>
- <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a> 
-<p><font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:06
-MET DST 2001 <!-- hhmts end --></font> </p>
-<br>
+    </tbody>
+  </table>
+
+  <br>
+  <h4>Parameters for module 'filter2D'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+
+      <tr>
+        <td valign="top">filter parameter</td>
+        <td valign="top">Parameters determining which trajectories are kept</td>
+        <td valign="top">"position","divergence"</td>
+        <td valign="top">-P </td>
+      </tr>
+      <tr>
+        <td valign="top">filter table</td>
+        <td valign="top">
+          Name of the file containing the filter matrix <br>
+          The filter range is divided into a number of channels corresponding to the number of columns <i>N<sub>col</sub></i> and rows <i>N<sub>row</sub></i> in the matrix.
+          The total width is divided into <i>N<sub>col</sub></i> channels of constant width. The total height is divided into <i>N<sub>row</sub></i> channels of constant height.
+          For each of the <i>N<sub>col</sub></i> x <i>N<sub>row</sub></i> elements, a factor has to be given in the matrix, by which the intensity of a trajectory (with this position or divergence) is multiplied
+        </td>
+        <td valign="top">   </td>
+        <td valign="top">-F </td>
+      </tr>
+
+      <tr>
+        <td valign="top">"min. y<br>[cm]</td>
+        <td valign="top">lower bound of the filter range in horizontal direction (width)</td>
+        <td valign="top">   </td>
+        <td valign="top">-y </td>
+      </tr>
+      <tr>
+        <td valign="top">"max. y<br>[cm]</td>
+        <td valign="top">upper bound of the filter range in horizontal direction (width)</td>
+        <td valign="top">  </td>
+        <td valign="top">-Y</td>
+      </tr>
+      <tr>
+        <td valign="top">"min. z<br>[cm]</td>
+        <td valign="top">lower bound of the filter range in vertical direction (height)</td>
+        <td valign="top">   </td>
+        <td valign="top">-z </td>
+      </tr>
+      <tr>
+        <td valign="top">"max. z<br>[cm]</td>
+        <td valign="top">upper bound of the filter range in vertical direction (height)</td>
+        <td valign="top">  </td>
+        <td valign="top">-Z</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <hr><a href="vitess.html">Back to VITESS overview</a><br>
+    <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
+  </p>
+  <p>
+    <!-- hhmts start --><font size="-1"> Last modified: 2021-09-17  KL </font><!-- hhmts end -->
+  </p>
+
 </body>
 </html>

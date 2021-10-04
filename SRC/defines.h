@@ -575,6 +575,7 @@ VtMonoFocus;
 // samnple geometry
 typedef enum
 {	
+  VT_NO_GEOM = 0,
   VT_CUBE    = 1,
 	VT_CYL     = 2,
 	VT_SPHERE  = 3,
@@ -582,13 +583,22 @@ typedef enum
 }
 VtSmplGeom;
 
+typedef enum
+{
+  VT_NO_SRC  = ' ',
+  VT_FR_FILE = 'D',
+  VT_AS_FCT  = 'F'
+}
+VtDataSrc;
+
 // measuring mode (sample_reflectom)
 typedef enum
 {	
-  VT_SAMPLE    = 0,
-	VT_REFERENCE = 1,
+  VT_SAMPLE    = 1,
+	VT_REFERENCE = 2,
 }
 VtMeasMode;
+
 
 
 // Detector
@@ -654,6 +664,15 @@ typedef enum
   MON_DIV_YZ = 8,
 }
 VtMon1Par;
+
+// 2D monitor and filter parameter
+typedef enum
+{
+  NO_MON2_PAR = 0,
+  MON2_POS    = 1,
+  MON2_DIV    = 2,
+}
+VtMon2Par;
 
 // monitor parameter for monitor1D and monitor2D
 typedef enum

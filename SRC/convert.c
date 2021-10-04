@@ -1135,11 +1135,32 @@ VtSmplGeom  SmpleGeom_Txt2ID(const char* sText)
 {
   VtSmplGeom eID=VT_CYL;
 
-       if (strcmp(sText, "cuboid"         )==0) eID=VT_CUBE   ;
-  else if (strcmp(sText, "rectangular"    )==0) eID=VT_CUBE   ;
-  else if (strcmp(sText, "cylinder"       )==0) eID=VT_CYL    ;
-  else if (strcmp(sText, "sphere"         )==0) eID=VT_SPHERE ;
-  else if (strcmp(sText, "hollow-cylinder")==0) eID=VT_HOL_CYL;
+       if (memcmp(sText, "cuboid"         , 3)==0) eID=VT_CUBE   ;
+  else if (memcmp(sText, "rectangular"    , 3)==0) eID=VT_CUBE   ;
+  else if (memcmp(sText, "cylinder"       , 3)==0) eID=VT_CYL    ;
+  else if (memcmp(sText, "sphere"         , 3)==0) eID=VT_SPHERE ;
+  else if (memcmp(sText, "ball"           , 3)==0) eID=VT_SPHERE ;
+  else if (memcmp(sText, "hollow-cylinder", 3)==0) eID=VT_HOL_CYL;
+  
+  return eID;
+}
+
+// source of S(Q) (sample_reflectom)
+void        DataSrc_ID2Txt(char* sText, const VtDataSrc eID)
+{
+  switch (eID)
+  {
+    case VT_FR_FILE: strcpy(sText, "from file"  ); break;
+    case VT_AS_FCT : strcpy(sText, "as function"); break;
+    default        : strcpy(sText, "");
+  }
+}
+VtDataSrc   DataSrc_Txt2ID(const char* sText)
+{
+  VtDataSrc eID=VT_NO_SRC;
+
+       if (strcmp(sText, "from file"  )==0) eID=VT_FR_FILE;
+  else if (strcmp(sText, "as function")==0) eID=VT_AS_FCT ;
   
   return eID;
 }
@@ -1149,17 +1170,17 @@ void        MeasMode_ID2Txt(char* sText, const VtMeasMode eID)
 {
   switch (eID)
   {
-    case VT_SAMPLE   : strcpy(sText, "cylindrical"); break;
-    case VT_REFERENCE: strcpy(sText, "flat"       ); break;
-    default          : strcpy(sText, "");
+    case VT_SAMPLE   : strcpy(sText, "sample"   ); break;
+    case VT_REFERENCE: strcpy(sText, "reference"); break;
+    default        : strcpy(sText, "");
   }
 }
 VtMeasMode  MeasMode_Txt2ID(const char* sText)
 {
   VtMeasMode eID=VT_SAMPLE;
 
-       if (strcmp(sText, "cylindrical")==0) eID=VT_SAMPLE   ;
-  else if (strcmp(sText, "flat"       )==0) eID=VT_REFERENCE;
+       if (strcmp(sText, "sample"   )==0) eID=VT_SAMPLE   ;
+  else if (strcmp(sText, "reference")==0) eID=VT_REFERENCE;
   
   return eID;
 }
@@ -1306,6 +1327,26 @@ VtMon1Par Mon1Par_Txt2ID(const char* sText)
   else if (strcmp(sText, "pos_z"  )==0) eID=MON_Z     ;
   else if (strcmp(sText, "energy" )==0) eID=MON_ENERGY;
   else if (strcmp(sText, "div_rad")==0) eID=MON_DIV_YZ;
+  
+  return eID;
+}
+
+// 2D monitor and filter parameter
+void      Mon2Par_ID2Txt(char* sText, const VtMon2Par eID)
+{
+  switch (eID)
+  {
+    case MON2_DIV : strcpy(sText, "position"  ); break;
+    case MON2_POS : strcpy(sText, "divergence"); break;
+    default       : strcpy(sText, "");
+  }
+}
+VtMon2Par Mon2Par_Txt2ID(const char* sText)
+{
+  VtMon2Par eID=NO_MON2_PAR;
+
+       if (strcmp(sText, "position"  )==0) eID=MON2_POS;
+  else if (strcmp(sText, "divergence")==0) eID=MON2_DIV;
   
   return eID;
 }

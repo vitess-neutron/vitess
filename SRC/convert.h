@@ -125,6 +125,7 @@ VtPlotFilt  PlotFilt_Txt2ID(const char* sText);
 
 
 // Monochromators
+// --------------
 void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID);
 VtMonoArrange MonoArrange_Txt2ID(const char* sText);
 
@@ -135,15 +136,23 @@ void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID);
 VtMonoFocus MonoFocus_Txt2ID(const char* sText);
 
 // Samples
+// -------
 void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID);
 VtSmplGeom  SmpleGeom_Txt2ID(const char* sText);
+
+void        DataSrc_ID2Txt(char* sText, const VtDataSrc eID);
+VtDataSrc   DataSrc_Txt2ID(const char* sText);
 
 void        MeasMode_ID2Txt(char* sText, const VtMeasMode eID);
 VtMeasMode  MeasMode_Txt2ID(const char* sText);
 
 // Monitors
+// --------
 void      Mon1Par_ID2Txt(char* sText, const VtMon1Par eID);
 VtMon1Par Mon1Par_Txt2ID(const char* sText);
+
+void      Mon2Par_ID2Txt(char* sText, const VtMon2Par eID);
+VtMon2Par Mon2Par_Txt2ID(const char* sText);
 
 void      MonPar_ID2Txt(char* sText, const VtMonPar eID);
 VtMonPar  MonPar_Txt2ID(const char* sText);
