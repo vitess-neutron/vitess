@@ -35,6 +35,9 @@ VtAxis    Axis_Txt2ID(const char* sText);
 void      Orient_ID2Txt(char* sText, const VtOrient eID);
 VtOrient  Orient_Txt2ID(const char* sText);
 
+void     FrameGen_ID2Txt(char* sText, const VtFrameGen eID);
+VtFrameGen FrameGen_Txt2ID(const char* sText);
+
 void      Shape_ID2Txt(char* sText, const VtShape eID);
 VtShape   Shape_Txt2ID(const char* sText);
 
@@ -137,14 +140,35 @@ VtMonoFocus MonoFocus_Txt2ID(const char* sText);
 
 // Samples
 // -------
-void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID);
-VtSmplGeom  SmpleGeom_Txt2ID(const char* sText);
+void        SmplGeom_ID2Txt(char* sText, const VtSmplGeom eID);
+VtSmplGeom  SmplGeom_Txt2ID(const char* sText);
+
+void        PtclGeom_ID2Txt (char* sText, const VtPtclGeom eID);
+VtPtclGeom  PtclGeom_Char2ID(const char cID);
+VtPtclGeom  PtclGeom_Txt2ID (const char* sText);
 
 void        DataSrc_ID2Txt(char* sText, const VtDataSrc eID);
 VtDataSrc   DataSrc_Txt2ID(const char* sText);
 
 void        MeasMode_ID2Txt(char* sText, const VtMeasMode eID);
 VtMeasMode  MeasMode_Txt2ID(const char* sText);
+
+// Detectors 
+// ---------
+void        DetGeom_ID2Txt(char* sText, const VtDetGeom eID);
+VtDetGeom   DetGeom_Txt2ID(const char* sText);
+
+void        DetType_ID2Txt(char* sText, const VtDetType eID);
+VtDetType   DetType_Txt2ID(const char* sText);
+
+void        TubeShape_ID2Txt(char* sText, const VtTubeShape eID);
+VtTubeShape TubeShape_Txt2ID(const char* sText);
+
+void       DetUse_ID2Txt(char* sText, const VtDetUse eID);
+VtDetUse   DetUse_Txt2ID(const char* sText);
+
+void       DetAbs_ID2Txt(char* sText, const VtDetAbs eID);
+VtDetAbs   DetAbs_Txt2ID(const char* sText);
 
 // Monitors
 // --------

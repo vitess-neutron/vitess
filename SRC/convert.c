@@ -30,7 +30,7 @@ void     RndGen_ID2Txt(char* sText, const VtRndGen eID)
     default        : strcpy(sText, "");
   }
 }
-VtRndGen  RndGen_Txt2ID(const char* sText)
+VtRndGen RndGen_Txt2ID(const char* sText)
 {
   VtRndGen eID=VT_RAN3;
 
@@ -350,7 +350,7 @@ void     FrameGen_ID2Txt(char* sText, const VtFrameGen eID)
 }
 VtFrameGen FrameGen_Txt2ID(const char* sText)
 {
-  VtFrameGen eID=VT_FRAME_STD;
+  VtFrameGen eID=VT_NO_FRAME;
 
        if (strcmp(sText, "standard frame generation")==0) eID=VT_FRAME_STD ;
   else if (strcmp(sText, "user defined frame"       )==0) eID=VT_FRAME_USER;
@@ -748,7 +748,6 @@ VtTfmnSeq  TfmnSeq_Txt2ID(const char* sText)
 
 // WINDOWS and COLLIMATORS
 // -----------------------
-
 // absorbing window material
 void       WndAbs_ID2Txt(char* sText, const VtWndAbs eID)
 {
@@ -1119,8 +1118,8 @@ VtMonoFocus MonoFocus_Txt2ID(const char* sText)
 
 // SAMPLES
 // -------
-// samnple geometry
-void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID)
+// sample geometry
+void        SmplGeom_ID2Txt(char* sText, const VtSmplGeom eID)
 {
   switch (eID)
   {
@@ -1131,7 +1130,7 @@ void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID)
     default         : strcpy(sText, "");
   }
 }
-VtSmplGeom  SmpleGeom_Txt2ID(const char* sText)
+VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
 {
   VtSmplGeom eID=VT_CYL;
 
@@ -1141,6 +1140,51 @@ VtSmplGeom  SmpleGeom_Txt2ID(const char* sText)
   else if (memcmp(sText, "sphere"         , 3)==0) eID=VT_SPHERE ;
   else if (memcmp(sText, "ball"           , 3)==0) eID=VT_SPHERE ;
   else if (memcmp(sText, "hollow-cylinder", 3)==0) eID=VT_HOL_CYL;
+  
+  return eID;
+}
+
+// particle geometry
+void        PtclGeom_ID2Txt(char* sText, const VtPtclGeom eID)
+{
+  switch (eID)
+  {
+    case VT_PTCL_SPHERE  : strcpy(sText, "spheres"               ); break;
+    case VT_PTCL_POLY_SPH: strcpy(sText, "polydispersive spheres"); break;
+    case VT_PTCL_ELLIPS  : strcpy(sText, "ellipsoids"            ); break;
+    case VT_PTCL_CYL     : strcpy(sText, "cylinders"             ); break;
+    case VT_PTCL_EPIPED  : strcpy(sText, "parallelepipeds"       ); break;
+    case VT_ISOTROPIC    : strcpy(sText, "isotropic scattering"  ); break;
+    default              : strcpy(sText, ""  );
+  }
+}
+VtPtclGeom  PtclGeom_Char2ID(const char cID)
+{
+  VtPtclGeom eID=VT_NO_PTCL;
+
+  switch (cID)
+  {
+    case 'S': eID=VT_PTCL_SPHERE  ; break;
+    case 'D': eID=VT_PTCL_POLY_SPH; break;
+    case 'E': eID=VT_PTCL_ELLIPS  ; break;
+    case 'C': eID=VT_PTCL_CYL     ; break;
+    case 'P': eID=VT_PTCL_EPIPED  ; break;
+    case 'I': eID=VT_ISOTROPIC    ; break;
+    default : eID=VT_NO_PTCL;
+  }
+  
+  return eID;
+}
+VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
+{
+  VtPtclGeom eID=VT_NO_PTCL;
+
+       if (strcmp(sText, "spheres"               )==0) eID=VT_PTCL_SPHERE;
+  else if (strcmp(sText, "polydispersive spheres")==0) eID=VT_PTCL_POLY_SPH;
+  else if (strcmp(sText, "ellipsoids"            )==0) eID=VT_PTCL_ELLIPS;
+  else if (strcmp(sText, "cylinders"             )==0) eID=VT_PTCL_CYL;
+  else if (strcmp(sText, "parallelepipeds"       )==0) eID=VT_PTCL_EPIPED;
+  else if (strcmp(sText, "isotropic scattering"  )==0) eID=VT_ISOTROPIC;
   
   return eID;
 }
@@ -1189,7 +1233,7 @@ VtMeasMode  MeasMode_Txt2ID(const char* sText)
 // DETECTOR
 // --------
 // detector geometry
-void       DetGeom_ID2Txt(char* sText, const VtDetGeom eID)
+void        DetGeom_ID2Txt(char* sText, const VtDetGeom eID)
 {
   switch (eID)
   {
@@ -1209,7 +1253,7 @@ VtDetGeom   DetGeom_Txt2ID(const char* sText)
 }
 
 // detector type
-void       DetType_ID2Txt(char* sText, const VtDetType eID)
+void        DetType_ID2Txt(char* sText, const VtDetType eID)
 {
   switch (eID)
   {
@@ -1229,7 +1273,7 @@ VtDetType   DetType_Txt2ID(const char* sText)
 }
 
 // tube shape
-void       TubeShape_ID2Txt(char* sText, const VtTubeShape eID)
+void        TubeShape_ID2Txt(char* sText, const VtTubeShape eID)
 {
   switch (eID)
   {
@@ -1238,7 +1282,7 @@ void       TubeShape_ID2Txt(char* sText, const VtTubeShape eID)
     default         : strcpy(sText, "");
   }
 }
-VtTubeShape   TubeShape_Txt2ID(const char* sText)
+VtTubeShape TubeShape_Txt2ID(const char* sText)
 {
   VtTubeShape eID=VT_TUBE_CIRCLE;
 

@@ -13,6 +13,7 @@
 /* 1.5b DEC 2004  K. Lieutenant  correction: algorithm for repetitions                      */
 /* 1.6  JAN 2011  K. Lieutenant  option to scatter only neutrons of a special color         */
 /* 1.7  Apr 2020  K. Lieutenant  tidy up and new central visualization parameters           */
+/* 1.8  Oct 2021  K. Lieutenant  option: parameters from input instead of from file         */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -20,6 +21,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "convert.h"
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
@@ -35,7 +37,7 @@
 /***********************************/
 void   OwnInit(int argc, char *argv[]);                 // Reads input parameters and sets global variables
 void   OwnCleanup();                                    // Does module specific cleanup
-void   ReadParFile(SampleType* pSample);                // Reads sample parameters from file
+void   SetSamplePar   (SampleType *pSample);            // Reads sample parameters and combines with input parameters
 void   CalcAndWritePar();                               // Calculates arrays from input parameters and writes to log file
 void   SetGeometry(char* sColor);                       // Fills the structure stGeometry for visualization 
 void   OutputTransform(VectorType Pos, VectorType Dir); // Co-ordinate transformation to output frame
@@ -44,30 +46,33 @@ void   OutputTransform(VectorType Pos, VectorType Dir); // Co-ordinate transform
 /******************************/
 /**   Global Variables       **/
 /******************************/
-char      *SampleFileName=NULL;     // -P     [-]   pointer to the name of the sample file  
-long       Repetition=1;            // -A     [-]   repetitions (how many trajectories to generate per incoming trajectory)
-short      iColor=ANY_COLOR;        // -c     [-]   enum color: if != ANY_COLOR, only neutrons of this colour are treated 
+char      *pSmplFileName=NULL;         //      -P        [-]   pointer to the name of the sample file  
+long       Repetition=1;               //      -A        [-]   repetitions (how many trajectories to generate per incoming trajectory)
+short      iColor=ANY_COLOR;           //      -c        [-]   enum color: if != ANY_COLOR, only neutrons of this colour are treated 
                                              
-char       Option[STRING_BUFFER];   // file   [-]   geometry parameter: "cylinder"  "hollow-cylinder"  "cuboid"  "ball" 
-VectorType ScatterMain,             // file  [deg]  horizontal and vertical component (Theta, Phi) of the main scattering direction
-           ScatterRange;            // file  [deg]  hor. and vert. var. (DelTheta, DelPhi) determining scat. range [Phi-DelPhi/2, Phi+DelPhi/2], Theta analogous  
-double     AbsorptionC,             // file  [1/cm] Macroscopic absorption cross section 
-           ScatteringC;             // file  [1/cm] Macroscopic total scattering cross section 
-VectorType PosSample,               // file   [cm]  center position of the sample
-           DimSample;               // file   [cm]  size of the sample
-double     AnglSampleHoriz,         // file  [deg]  horizontal angle of the sample orientation, relative to standard orientation
-           AnglSampleVert;          // file  [deg]  vertical angle of the sample orientation, relative to standard orientation
-VectorType TranslOut;               // file   [cm]  center position of the output frame
-double     AnglOutHoriz,            // file  [deg]  horizontal angle of the output frame, relative to input orientation
-           AnglOutVert;             // file  [deg]  vertical angle of the output frame, relative to input orientation                       
+VtSmplGeom eGeom=VT_NO_GEOM;           // file -G        [-]   geometry parameter: "cylinder" "hollow-cylinder" "sphere" "cuboid" 
+VectorType ScatMain ={0.0,0.0,0.0},    // file -E -F    [deg]  horizontal and vertical component (Theta, Phi) of the main scattering direction
+           ScatRange={0.0,0.0,0.0};    // file -e -f    [deg]  hor. and vert. var. (DelTheta, DelPhi) determining scat. range [Phi-DelPhi/2, Phi+DelPhi/2], Theta analogous  
+double     AbsorptionC=0.0,            // file -m       [1/cm] Macroscopic absorption cross section 
+           ScatteringC=0.0;            // file -T       [1/cm] Macroscopic total scattering cross section 
+VectorType PosSample={0.0,0.0,0.0};    // file -x -y -z  [cm]  center position of the sample
+double     Diameter = 0.0,             // file -t        [cm]  thickness or radius of the sample 
+           Height   = 0.0,             // file -h        [cm]  height of the sample 
+           Width    = 0.0;             // file -w        [cm]  width of the sample
+double     AnglSmplHor =0.0,           // file -o       [deg]  horizontal angle of the sample orientation, relative to standard orientation
+           AnglSmplVert=0.0;           // file -O       [deg]  vertical angle of the sample orientation, relative to standard orientation
+VectorType TranslOut={0.0,0.0,0.0};    // file -X -Y -Z  [cm]  center position of the output frame
+double     AnglOutHor =0.0,            // file -u       [deg]  horizontal angle of the output frame, relative to input orientation
+           AnglOutVert=0.0;            // file -U       [deg]  vertical angle of the output frame, relative to input orientation                       
 
 // Variables determined from input parameters or trajectory data
-SampleType stSample;               //       sample geometry
-VectorType DimSampleHol;           //       array to use 'IntersectsWithCylinder()' for hollow cylinders  
-double     ProbCutoff=0.0;         //       neutron weight, below which the trajectory is removed
-double     RotMatrixSample[3][3],  //       rotation matrix to transfer to coordinate system of the sample
-           RotMatrixOut[3][3],     //       rotation matrix to transfer to the output coordinate system
-           RotMatrixScatter[3][3]; //       rotation matrix to transfer into coordinate system of the scattering direction
+SampleType stSample;                   //                      sample geometry
+VectorType DimSample   ={0.0,0.0,0.0}, //                      size of the sample
+           DimSampleHol={0.0,0.0,0.0}; //                      array to use 'IntersectsWithCylinder()' for hollow cylinders  
+double     ProbCutoff=0.0;             //                      neutron weight, below which the trajectory is removed
+double     RotMatrixSample[3][3],      //                      rotation matrix to transfer to coordinate system of the sample
+           RotMatrixOut[3][3],         //                      rotation matrix to transfer to the output coordinate system
+           RotMatrixScatter[3][3];     //                      rotation matrix to transfer into coordinate system of the scattering direction
 
 
 /******************************/
@@ -76,27 +81,34 @@ double     RotMatrixSample[3][3],  //       rotation matrix to transfer to coord
 int main(int argc, char **argv) 
 {
   long       repet=0, i=0;
-  double     TOF, WL, Prob, 
+  double     TOF=0.0, WL=0.0, Prob=0.0, 
              PathLength   =0.0, PathLengthHol   =0.0, 
              MaxPathLength=0.0, MaxPathLengthHol=0.0;
-  VectorType Pos1f, Pos2f, Pos3f, Pos4f, 
-             Pos1v, Pos2v, Pos3v, Pos4v, Pos, Dir ;
-  Neutron    Neutrons ;
+  VectorType Pos1f={0.0,0.0,0.0}, Pos2f={0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0}, 
+             Pos1v={0.0,0.0,0.0}, Pos2v={0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0}, 
+             Pos  ={0.0,0.0,0.0}, Dir  ={0.0,0.0,0.0};
+  Neutron    Neutrons;
   
   // initialisation
   // --------------
+  InitNeutron(&Neutrons);
+
  _eModule = MCN_SMPL_EL_ISO;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "2.7");
+  PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
+
+  InitSample  (&stSample);
+  SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 
-  /* reads file containing sample parameters */
-  ReadParFile(&stSample);
+  /* Reads sample parameters and combines with input parameters */
+  InitSample  (&stSample);
+  SetSamplePar(&stSample);
 
   /* determines the dependent parameters and write out important parameters */
   CalcAndWritePar();
@@ -131,10 +143,10 @@ int main(int argc, char **argv)
           RotVector(RotMatrixSample, InputNeutrons[i].Vector) ;
         
           /* gives intersection positions with sample */
-          if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+          if (eGeom==VT_CYL && IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
              goto getlost ;
 
-          if (Option[1] == 'o')
+          if (eGeom==VT_HOL_CYL)
           {
             if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0) 
             { goto getlost ; 
@@ -181,10 +193,10 @@ int main(int argc, char **argv)
             }
           }
 
-          if(Option[1] == 'u' && IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+          if (eGeom==VT_CUBE && IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
             goto getlost ; 
 	      
-          if(Option[1] == 'a' && IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
+          if (eGeom==VT_SPHERE && IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
             goto getlost ; 
 	      
           for (repet=0;repet<Repetition;repet++) 
@@ -235,8 +247,8 @@ int main(int argc, char **argv)
             
               /* new random direction  */
             
-              DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatterRange[1]/2. * M_PI/180. ;
-              DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatterRange[2]/2. * M_PI/180. ;
+              DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatRange[1]/2. * M_PI/180. ;
+              DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatRange[2]/2. * M_PI/180. ;
              
               EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
             
@@ -247,10 +259,10 @@ int main(int argc, char **argv)
 
             /* Attenuation succeeding scattering */
 
-            if (Option[1] == 'y' && IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+            if (eGeom==VT_CYL && IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
               goto getlost2 ; 
 		
-            if(Option[1] == 'o')
+            if (eGeom==VT_HOL_CYL)
             {
           	
               if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0)
@@ -293,10 +305,10 @@ int main(int argc, char **argv)
               }
             }
 
-            if (Option[1] == 'u' && IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+            if (eGeom==VT_CUBE && IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
               goto getlost2 ; 
         	
-            if (Option[1] == 'a' && IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
+            if (eGeom==VT_SPHERE && IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
               goto getlost2 ; 
 
 
@@ -327,7 +339,7 @@ int main(int argc, char **argv)
 
             OutputTransform(Pos2v, Dir) ;
 		
-            Prob *= ScatterRange[1]/180. * sin(ScatterRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
+            Prob *= ScatRange[1]/180. * sin(ScatRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
             if (Prob <= ProbCutoff) goto getlost2 ;
 
             /* transmit coordinates which were not changed, the rest overwrite below */
@@ -369,7 +381,7 @@ int main(int argc, char **argv)
   OwnCleanup(); 
 
   /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHoriz, AnglOutVert);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHor, AnglOutVert);	
 
   return 0;
 }
@@ -380,34 +392,113 @@ int main(int argc, char **argv)
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
+  InitRotMatrix(RotMatrixSample);
+  InitRotMatrix(RotMatrixScatter);
+  InitRotMatrix(RotMatrixOut);
+
   ProbCutoff=wei_min;
 	
-  while(argc>1)
+  /* Scan all command line parameters */
+  for (int i=1; i<argc; i++)
   {
-    switch(argv[1][1])
-    {
-      			
-      case 'P':
-        SampleFileName=&argv[1][2];
-        break;
-      	
-      case 'A':
-        sscanf(&argv[1][2], "%ld", &Repetition) ;
-        break;
-      	
-      case 'c':
-        sscanf(&argv[1][2], "%hd", &iColor) ;
-        break;
+    if (argv[i][0]!='+')
+    { 
+      switch (argv[i][1])
+      {
+        /* Main window */
+        case 'P':
+          pSmplFileName=&argv[i][2];
+          break;
+        case 'A':
+          sscanf(&argv[i][2], "%ld", &Repetition) ;
+          break;
+        case 'c':
+          sscanf(&argv[i][2], "%hd", &iColor) ;
+          break;
 
+        /* Scattering parameters */
+        case 'E':
+          ScatMain[1] = atof(&argv[i][2]);
+          break;
+        case 'F':
+          ScatMain[2] = atof(&argv[i][2]);
+          break;
+        case 'e':
+          ScatRange[1] = atof(&argv[i][2]);
+          break;
+        case 'f':
+          ScatRange[2] = atof(&argv[i][2]);
+          break;
+
+        case 'T':
+          ScatteringC = atof(&argv[i][2]);
+          break;
+        case 'm':
+          AbsorptionC = atof(&argv[i][2]);
+          break;
+
+        /* sample position, size and orientation */
+        case 'G':
+          eGeom = (VtSmplGeom) atoi(&argv[i][2]);
+          break;
+
+        case 'x':
+          PosSample[0] = atof(&argv[i][2]);
+          break;
+        case 'y':
+          PosSample[1] = atof(&argv[i][2]);
+          break;
+        case 'z':
+          PosSample[2] = atof(&argv[i][2]);
+          break;
+
+        case 't':
+          Diameter = atof(&argv[i][2]);
+          break;
+        case 'h':
+          Height = atof(&argv[i][2]);
+          break;
+        case 'w':
+          Width = atof(&argv[i][2]);
+          break;
+
+        case 'o':
+          AnglSmplHor  = atof(&argv[i][2]);
+          break;
+        case 'O':
+          AnglSmplVert = atof(&argv[i][2]);
+          break;
+
+        case 'X':
+          TranslOut[0] = atof(&argv[i][2]);
+          break;
+        case 'Y':
+          TranslOut[1] = atof(&argv[i][2]);
+          break;
+        case 'Z':
+          TranslOut[2] = atof(&argv[i][2]);
+          break;
+
+        case 'u':
+          AnglOutHor  = atof(&argv[i][2]);
+          break;
+        case 'U':
+          AnglOutVert = atof(&argv[i][2]);
+          break;
+
+        /* Output frame */
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
+          exit(-1);
+      }
     }
-    argc--;
-    argv++;
   }
 	
   if (Repetition < 1)
     Error("Repetition rate must be >= 1") ;  
 
-  if (SampleFileName==NULL)
+  if (pSmplFileName==NULL)
     Error("Parameter file name missing") ;  
 
   return;
@@ -426,86 +517,103 @@ void OwnCleanup()
 /*******************************************************/
 /** Reads the sample parameters from file             **/
 /*******************************************************/
-void ReadParFile(SampleType* pSample)
+void SetSamplePar(SampleType* pSample)
 {
-  // opens file containing sample parameters (program exit in case of error)
-  FILE* pSmplFile = OpenInputFile2(SampleFileName, "sample data", "r");
+  FILE*  pFile=NULL;
+  char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
+  int    nLen=sizeof(sLine)-1;
+  double f_h   =0.0, f_v   =0.0,
+         f_dh  =0.0, f_dv  =0.0,
+         mu_sca=0.0, mu_abs=0.0,
+         x     =0.0,  y    =0.0, z   =0.0, 
+         off_h =0.0, off_v =0.0,
+         radius=0.0,height =0.0, width=0.0,
+         out_x =0.0, out_y =0.0, out_z=0.0, 
+         out_h =0.0, out_v =0.0;
+  VtSmplGeom geom=VT_NO_GEOM;
+  SampleType sample;         // file  sample geometry
 
-  /* reads from file by using ReadParF(pSmplFile) and ReadParComment(pSmplFile) */
-  ScatterMain [1]=ReadParF(pSmplFile); ScatterMain [2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
-  ScatterRange[1]=ReadParF(pSmplFile); ScatterRange[2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
+  InitSample(pSample);
+  InitSample(&sample);
+  /* Opens the parameter file if a file name is given */
+  if (pSmplFileName!=NULL)
+  { 
+    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
 
-  ScatteringC =ReadParF(pSmplFile);    AbsorptionC =ReadParF(pSmplFile);    ReadParComment(pSmplFile) ;
-  PosSample[0]=ReadParF(pSmplFile);    PosSample[1]=ReadParF(pSmplFile);    PosSample[2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
+    /* Reads the parameters if the file can be opened */
+    if (pFile != NULL)
+    { 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &f_h,    &f_v);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &f_dh,   &f_dv);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf"    , &mu_sca, &mu_abs); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x,      &y,      &z);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &off_h,  &off_v);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &out_x,  &out_y,  &out_z);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &out_h,  &out_v);
 
-  AnglSampleHoriz=ReadParF(pSmplFile); AnglSampleVert=ReadParF(pSmplFile);  ReadParComment(pSmplFile);
-  ReadParString(pSmplFile, Option);    ReadParComment(pSmplFile);
+      geom  = SmplGeom_Txt2ID(sGeom);
 
-  DimSample[0]=ReadParF(pSmplFile); DimSample[2]=ReadParF(pSmplFile); DimSample[1]=ReadParF(pSmplFile) ; ReadParComment(pSmplFile) ;
-  TranslOut[0]=ReadParF(pSmplFile); TranslOut[1]=ReadParF(pSmplFile); TranslOut[2]=ReadParF(pSmplFile) ; ReadParComment(pSmplFile) ;
-  AnglOutHoriz=ReadParF(pSmplFile); AnglOutVert =ReadParF(pSmplFile); ReadParComment(pSmplFile) ;
+      fprintf (LogFilePtr,"sample data read from parameter file: '%s':\n", pSmplFileName) ;
+      fclose(pFile);
 
+      // combines information from input and file, input parameters have priority
+      if (eGeom ==VT_NO_GEOM   && geom !=VT_NO_GEOM)  eGeom   = geom; 
+      if (ScatMain [1]==0.0 && f_h   !=0.0) ScatMain [0]= f_h   ;
+      if (ScatMain [2]==0.0 && f_v   !=0.0) ScatMain [0]= f_v   ;
+      if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[0]= f_dh  ;
+      if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[0]= f_dv  ;
+      if (ScatteringC ==0.0 && mu_sca!=0.0) ScatteringC = mu_sca;
+      if (AbsorptionC ==0.0 && mu_abs!=0.0) AbsorptionC = mu_abs;
+      if (PosSample[0]==0.0 && x     !=0.0) PosSample[0]= x     ;
+      if (PosSample[1]==0.0 && y     !=0.0) PosSample[1]= y     ;
+      if (PosSample[2]==0.0 && z     !=0.0) PosSample[2]= z     ;
+      if (AnglSmplHor ==0.0 && off_h !=0.0) AnglSmplHor = off_h ;
+      if (AnglSmplVert==0.0 && off_v !=0.0) AnglSmplVert= off_v ;
+      if (Diameter    ==0.0 && radius!=0.0) Diameter    = 2.0*radius;
+      if (Height      ==0.0 && height!=0.0) Height      = height;
+      if (Width       ==0.0 && width !=0.0) Width       = width ;
+      if (TranslOut[0]==0.0 && out_x !=0.0) TranslOut[0]= out_x ;
+      if (TranslOut[1]==0.0 && out_y !=0.0) TranslOut[1]= out_y ;
+      if (TranslOut[2]==0.0 && out_z !=0.0) TranslOut[2]= out_z ;
+      if (AnglOutHor  ==0.0 && out_h !=0.0) AnglOutHor  = out_h ;
+      if (AnglOutVert ==0.0 && out_v !=0.0) AnglOutVert = out_v ;
+    }
+    else
+    {	
+      fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
+    }
+  }
+
+  // checks
   if ((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
     Warning("Distance to sample is smaller than at least one sample dimension"); 
 
-  /* changes geometry text to small letters */
-  for (int i=0; i < strlen(Option); i++)
-  { if (isupper(Option[i]))
-      Option[i] = tolower(Option[i]);
+  // check if geometry was given
+  if (eGeom==VT_NO_GEOM)
+  {  Error2("Sample geometry could not be identified", sGeom);
+  }
+  else
+  { SmplGeom_ID2Txt(sGeom, eGeom);
+    fprintf(LogFilePtr, "             sample geometry:	'%s'\n", sGeom);
   }
 
-  /*	 checks some values */
-  if ((Option[1] != 'y') && (Option[1] != 'o')  && (Option[1] != 'u') && (Option[1] != 'a'))
-    Error("No valid geometry option");
-
-  pSample->Position[0] = PosSample[0];
-  pSample->Position[1] = PosSample[1];
-  pSample->Position[2] = PosSample[2];
- 
-  if(Option[1] == 'y') 
-  {
-    pSample->SG.Cyl.r = DimSample[0];
-    pSample->SG.Cyl.height = DimSample[1];
-    pSample->Type = VT_CYL;
-
-    fprintf(LogFilePtr,"             sample geometry:	'cylinder'\n") ;
-  }
-  if(Option[1] == 'o') 
-  {
-   pSample->SG.Cyl.r = DimSample[0];
-   pSample->SG.Cyl.height = DimSample[1];
-   pSample->Type = VT_HOL_CYL;
-
-    fprintf(LogFilePtr,"             sample geometry:	'hollow cylinder'\n") ;
-  }
-  if(Option[1] == 'u')
-  { 
-    pSample->SG.Cube.thickness = DimSample[0];
-    pSample->SG.Cube.width = DimSample[1];
-    pSample->SG.Cube.height = DimSample[2];
-    pSample->Type = VT_CUBE;
-
-    fprintf(LogFilePtr,"             sample geometry:	'cuboid'\n") ;
-  }
-  if(Option[1] == 'a') 
-  {
-    pSample->SG.Ball.r = DimSample[0];
-    pSample->Type = VT_SPHERE;
-
-    fprintf(LogFilePtr,"             sample geometry:	'sphere'\n") ;
-  }
+  // fills data structures
+  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
+  DimSample[0] = Diameter/2.0;
+  DimSample[1] = Width;
+  DimSample[2] = Height;
 
   /* converts degs in radian etc. */
-  AnglSampleHoriz *= M_PI/180. ;
-  AnglSampleVert  *= M_PI/180. ;
-  AnglOutHoriz    *= M_PI/180. ;
-  AnglOutVert     *= M_PI/180. ;
+  AnglSmplHor  *= M_PI/180. ;
+  AnglSmplVert *= M_PI/180. ;
+  AnglOutHor   *= M_PI/180. ;
+  AnglOutVert  *= M_PI/180. ;
 
   /* Hollow cylinder option */
   CopyVector(DimSample, DimSampleHol); 
   DimSampleHol[0] = DimSample[1];
-
-  fclose(pSmplFile);
  
 }/* End ReadParFile */
 
@@ -523,15 +631,15 @@ void  CalcAndWritePar()
                        "in wavelength, time, x,y,z and directions just before the sample\n") ;
 
   /* computes global reference values */
-  scattered_dir[0]= (double) cos(ScatterMain[2]*M_PI/180.) * (double) cos(ScatterMain[1]*M_PI/180.) ;
-  scattered_dir[1]= (double) cos(ScatterMain[2]*M_PI/180.) * (double) sin(ScatterMain[1]*M_PI/180.) ;
-  scattered_dir[2]= (double) sin(ScatterMain[2]*M_PI/180.) ;
+  scattered_dir[0]= (double) cos(ScatMain[2]*M_PI/180.) * (double) cos(ScatMain[1]*M_PI/180.) ;
+  scattered_dir[1]= (double) cos(ScatMain[2]*M_PI/180.) * (double) sin(ScatMain[1]*M_PI/180.) ;
+  scattered_dir[2]= (double) sin(ScatMain[2]*M_PI/180.) ;
 
   fprintf(LogFilePtr,"  scattered dir.		:     %lf    %lf    %lf\n", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
 
-  FillRotMatrixZY(RotMatrixScatter, ScatterMain[2]*M_PI/180., ScatterMain[1]*M_PI/180.) ; 
-  FillRotMatrixZY(RotMatrixSample,  AnglSampleVert,           AnglSampleHoriz) ;
-  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,              AnglOutHoriz) ;
+  FillRotMatrixZY(RotMatrixScatter, ScatMain[2]*M_PI/180., ScatMain[1]*M_PI/180.) ; 
+  FillRotMatrixZY(RotMatrixSample,  AnglSmplVert,           AnglSmplHor) ;
+  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,            AnglOutHor) ;
 
 }/* End OwnInit */
 

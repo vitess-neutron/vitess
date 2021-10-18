@@ -26,10 +26,6 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
                 const double Xdir,   const double Ydir,  const double Zdir, 
                 const double SizeD,  const double SizeH, const double SizeW, const double SizeT);
 
-void ReadCube    (FILE *SampleFile, SampleType *Sample);
-void ReadCylinder(FILE *SampleFile, SampleType *Sample);
-void ReadBall    (FILE *SampleFile, SampleType *Sample);
-
 void SetSampleGeometry(SampleType *Sample);
 
 int  CompPair(const void* p1, const void* p2);

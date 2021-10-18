@@ -15,6 +15,7 @@
 
 #include <string.h>
 
+#include "convert.h"
 #include "init.h"
 #include "sample.h"
 #include "softabort.h"
@@ -26,41 +27,56 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-FILE  *pStrFacFile=NULL;      //            pointer to structure factor file
-VtDataSrc eFunction=VT_NO_SRC;// -F  file   source of the S(Q) function: F: analytical function   D: data from file 
-char   sStrucFileName[200],   // -s  file   structure factor file name  
-       *SampleFileName;       // -S         pointer to the name of the sample file  
-short  bIncohScat=FALSE;      // -I   [-]   should incoherent scattering be done
-long   GenNeutrons =1,        // -A   [-]   how many neutrons to generate on the "cone" 
-       nLinesStr =0;          //      [-]   number of lines in the structure factor file 
-double Theta    = M_PI/2.0,   // -D  [deg]  these angles determine orientation and solid angles covered by the detector
-       DelTheta = M_PI/2.0,   // -d  [deg]     Theta has to be in the range of [0;PI]         
-       Phi      = M_PI,       // -P  [deg]     Phi has to be in the range of [0;2*PI] 
-       DelPhi   = M_PI;       // -p  [deg]
-                              //            if Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Offset))
-double Freq     =  0.0,       // -f  [Hz]   modulation frequency of the sample response
-       Offset   =  0.0,       // -o  [deg]  phase of the sample response at t=0 
-      *aSF=NULL,              //            array of structure factor data as a function of mom. transfer Q
-      *aQ =NULL;              //            corresponding array of momentum transfer data [1/Ang]          
+VtDataSrc eFunction=VT_NO_SRC;// -F file          source of the S(Q) function: F: analytical function   D: data from file 
+char  *pStrFileNameI=NULL,    // -s               pointer to S(Q) file name (from input parameter)  
+      *pSmplFileName=NULL;    // -S               pointer to the name of the sample file  
+short  bIncScat =FALSE,       // -I        [-]    shall incoherent scattering be done ?  
+       bTreatAll=FALSE,       // -a vsn4   [-]    shall neutrons not hitting the sample be treated ?  
+       nColor   =NO_COLOR;    // -c vsn4   [-]    colour of the scattered neutrons  
+long   GenNeutrons =1;        // -A        [-]    how many neutrons to generate on the "cone" 
+double Theta    = M_PI/2.0,   // -D       [deg]   these angles determine orientation and solid angles covered by the detector
+       DelTheta = M_PI/2.0,   // -d       [deg]     Theta has to be in the range of [0;PI]         
+       Phi      = M_PI,       // -P       [deg]     Phi has to be in the range of [0;2*PI] 
+       DelPhi   = M_PI;       // -p       [deg]
+                              //                  if Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Offset))
+double Freq     = 0.0,        // -f        [Hz]   modulation frequency of the sample response
+       Offset   = 0.0;        // -o       [deg]   phase of the sample response at t=0 
+VtSmplGeom eGeomS=VT_NO_GEOM; // -G file   [-]    sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
+double Xpos     = 0.0,        // -x file   [cm]   position of the center of the sample 
+       Ypos     = 0.0,        // -y file   [cm]  
+       Zpos     = 0.0,        // -z file   [cm]  
+       Diameter = 0.0,        // -t file   [cm]   thickness or radius of the sample 
+       Height   = 0.0,        // -h file   [cm]   height of the sample 
+       Width    = 0.0,        // -w file   [cm]   width of the sample
+       Xdir     = 0.0,        // -X file   [-]    orientation of the sample 
+       Ydir     = 0.0,        // -Y file   [-]  
+       Zdir     = 0.0;        // -Z file   [-]  
 extern 
-double MuTot,                 // calc       macrosc. scattering cross section, defined in 'sample.c'
-       MuAbs;                 // file       macrosc. absorption cross section, defined in 'sample.c'
-double MuCoh    = 0.0,        // file       coherent macroscopic scattering cross-section (= sigma_coh/UCV) [1/cm] */
-       MuInc    = 0.0;        // file       incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] */
-SampleType stSample;          // file       sample geometry
+double MuAbs;                 // -m file [1/cm/Ang]  macrosc. absorption cross section, defined in 'sample.c'
+double MuCoh    = 0.0,        // -C file  [1/cm]  coherent macroscopic scattering cross-section (= sigma_coh/UCV) [1/cm] */
+       MuInc    = 0.0;        // -i file  [1/cm]  incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] */
 
+// Variables determined from input parameters or from file
+SampleType stSample;          //           [-]    sample geometry and position
+long   nLinesStr= 0;          //           [-]    number of lines in the S(Q) file 
+extern
+double MuTot;                 //          [1/cm]  macrosc. scattering cross section, defined in 'sample.c'
+double *aSF=NULL,             //                  array of structure factors as a function of momentum transfer Q
+       *aQ =NULL;             //                  corresponding array of momentum transfer data [1/Ang]          
+char  *pStrFileName="not found",      //   [-]    pointer to S(Q) file name that is used
+       sStrFileNameF[CHAR_BUF_XS]=""; //          S(Q) file name from parameter file
 double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
 /***********************************/
 /** Prototypes of local functions **/
 /***********************************/
-void   OwnInit   (int argc, char *argv[]);         // reads input parameters and sets global 
-void   OwnCleanup();                               // Does module specific cleanup
-void   GetSample (SampleType *Sample);             // Reads sample parameters from file
-void   LoadStrucFactFile();                        // Reads structure factor file into array
-double GetStructureFactor (double dQ, long index); // Gets structure factor from the structure factor file 
-double CalcStructureFactor(double dQ);             // Calculates structure factor from an analytical function
+void   OwnInit     (int argc, char *argv[]);       // Reads input parameters and sets global 
+void   OwnCleanup  ();                             // Does module specific cleanup
+void   SetSamplePar(SampleType *Sample);           // Sets sample parameters
+int    LoadSofQFile(const char* pFileName);        // Reads file S(Q) into array
+double GetStructureFactor (double dQ, long index); // Gets S(Q) from the structure factor file 
+double CalcStructureFactor(double dQ);             // Calculates S(Q) from an analytical function
 void   SetGeometry        (char* sColor);          // fills the structure stGeometry for visualization
 
 
@@ -69,51 +85,68 @@ void   SetGeometry        (char* sColor);          // fills the structure stGeom
 /******************************/
 int main(int argc, char *argv[])
 {
-  VectorType InISP[2];    /* neutron intersection before scattering */
-  double     qValue,      /* absolute value of momentum transfer    */
-             ThetaMin,   /* minimal and maximal values of the           */
-             ThetaMax,   /* scattering angle according to Theta, DelTheta */
-             neutTheta,
-             neutPhi;
-  double     DetFacCoh,   /* cares about the detector coverage      */
-             DetFacInc,   /* for coherent and incoherent scattering */
-             Lbf;         /* full path length of the neutron in the sample */
-  /* with its initial direction */
-  double     Ls,          /* flight path length of the neutron in the sample before scattering */
-             Lbs=0.0;     /* flight path length of the neutron before scattering */
-  long       j;           /* counting variable */
-  VectorType SP;          /* position of scattering event */
-  double     ScTheta,     /* angle of coherent Scattering */
-             ScProb,      /* scattering probability */
-             ModFact=1.0, /* Time modulation factor */
-             TimeScat=0.0,/* absolute time of scattering */
-             OutTheta,    /* Final angles of the neutron in the sample system */
-             OutPhi;
+  VectorType InISP[2];       /* neutron intersection before scattering */
+  double     qValue   =0.0,  /* absolute value of momentum transfer    */
+             ThetaMin =0.0,  /* minimal and maximal values of the           */
+             ThetaMax =0.0,  /* scattering angle according to Theta, DelTheta */
+             neutTheta=0.0,
+             neutPhi  =0.0;
+  double     DetFacCoh=0.0,   /* cares about the detector coverage      */
+             DetFacInc=0.0,   /* for coherent and incoherent scattering */
+             Lbf=0.0;         /* full path length of the neutron in the sample with its initial direction */
+  double     Ls =0.0,         /* flight path length of the neutron in the sample before scattering */
+             Lbs=0.0;         /* flight path length of the neutron before scattering */
+  long       j=0;             /* counting variable */
+  VectorType SP={0.0,0.0,0.0};/* position of scattering event */
+  double     ScTheta=0.0,     /* angle of coherent Scattering */
+             ScProb =0.0,     /* scattering probability */
+             ModFact=1.0,     /* Time modulation factor */
+             TimeScat=0.0,    /* absolute time of scattering */
+             OutTheta=0.0,    /* Final angles of the neutron in the sample system */
+             OutPhi  =0.0;
   double     RotMatrixSmpl[3][3], /* Rotation matrix that transforms a Vector to the */
              RotMatrixNeut[3][3];
   /* sample coordinate system */
-  long       i,           /* counting variable of the neutrons */
-             nisp,        /* number of intersection points to come */
-  NeutCount;
+  long       i=0,         /* counting variable of the neutrons */
+             nisp=0,      /* number of intersection points to come */
+             NeutCount=0;
 
   // initialisation
   // --------------
+  InitRotMatrix(RotMatrixSmpl); InitVector(InISP[0]); 
+  InitRotMatrix(RotMatrixNeut); InitVector(InISP[1]),
+
   _eModule = MCN_SMPL_S_Q;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
-
-  InitSample(&stSample);
+  PrintModuleName(_eModule, "1.5");
   OwnInit   (argc, argv);
-  GetSample (&stSample);
+
+  InitSample  (&stSample);
+  SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 
-  /* Load structure factor file, if needed */
+  /* Load file S(Q), if needed;  try the name from paramter input first, then the name from file */
   if (eFunction == VT_FR_FILE)
-    LoadStrucFactFile();
+  { 
+    nLinesStr = LoadSofQFile(pStrFileNameI);  
+    if (nLinesStr == 0) 
+    { nLinesStr = LoadSofQFile(sStrFileNameF);
+      if (nLinesStr == 0) 
+      { fprintf(LogFilePtr,"ERROR: Can't read the structure factor data, neither from %s nor from %s\n", pStrFileNameI, sStrFileNameF);
+        exit(-1);
+      }
+      else
+      { pStrFileName=sStrFileNameF;
+      }
+    }
+    else
+    { pStrFileName=pStrFileNameI;
+    }
+  }
 
   /* Factors that take care of the dectector coverage */
   DetFacCoh = DelPhi/M_PI*DelTheta;
@@ -166,8 +199,10 @@ int main(int argc, char *argv[])
 				
           //   First the coherent scattering           
           //--------------------------------
-          /* determine Theta and Phi of the neutrons direction */
-          /* Theta should be small                             */
+          if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
+            InputNeutrons[i].Color = nColor;
+
+          /* determine Theta and Phi of the neutrons direction Theta should be small                             */
           NormVector          (InputNeutrons[i].Vector);
           CartesianToSpherical(InputNeutrons[i].Vector, &neutTheta, &neutPhi);
 
@@ -194,10 +229,10 @@ int main(int argc, char *argv[])
           /* ScProb corresponds to the sample form factor considering hard sphere scattering */
           switch (eFunction)
           {
-            case 'F': 
+            case VT_AS_FCT: 
               ScProb *= CalcStructureFactor(qValue)*Lbf*MuCoh / GenNeutrons;
               break;
-            case 'D': 
+            case VT_FR_FILE: 
               ScProb *= GetStructureFactor (qValue,i)*Lbf*MuCoh / GenNeutrons;
               break;
             default:
@@ -229,8 +264,11 @@ int main(int argc, char *argv[])
 				
           // Second the incoherent scattering 
           //--------------------------------
-          if (bIncohScat)
+          if (bIncScat)
           { 
+            if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
+              InputNeutrons[i].Color = (short)(nColor+1);
+
             for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
             {
               /* Determine the scattering angle */
@@ -244,6 +282,10 @@ int main(int argc, char *argv[])
                                   OutTheta, OutPhi, &stSample, OneMatrix,  RotMatrixSmpl);
             }
           }
+        }
+        else if (bTreatAll==TRUE)
+        {	
+          WriteNeutron(&InputNeutrons[i]);
         }
       }
     }
@@ -286,7 +328,7 @@ int main(int argc, char *argv[])
   if (eFunction==VT_AS_FCT)
   	fprintf(LogFilePtr, "Q-values calculated");
   else
-    fprintf(LogFilePtr, "Q-values from structure factor file: %s\n", sStrucFileName);
+    fprintf(LogFilePtr, "Q-values from S(Q) file: %s\n", pStrFileName);
 
   /* write geometry file */
   SetGeometry("white");
@@ -314,7 +356,7 @@ int main(int argc, char *argv[])
 /*********************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  long i;
+  long i=0;
   int  detectortest=0;
 	
   /* Ok, scan all commandline parameters */
@@ -324,18 +366,29 @@ void  OwnInit(int argc, char *argv[])
     {
       switch(argv[i][1])
       {	
-        /* Consider incoherent scattering or not */
-        case 'I':
-          if(argv[i][2]=='1') bIncohScat=TRUE;
+        /* sample and S(Q) file name */
+        case 'S':
+          pSmplFileName=&argv[i][2];
+          break;
+        case 's':
+          pStrFileNameI=&argv[i][2];
           break;
 
-        /* Repetition rate  */
+        /* Consider incoherent scattering? neutrons not hitting the sample? mark scattered neutrons? Multiply trajectories */
+        case 'I':
+          if(argv[i][2]=='1') bIncScat=TRUE;
+          break;
+        case 'a':
+          if(argv[i][2]=='1') bTreatAll=TRUE;
+          break;
+        case 'c':
+          nColor = (short) atoi(&argv[i][2]);
+          break;
         case 'A':
-          sscanf(&(argv[i][2]),"%ld", &GenNeutrons);
+          GenNeutrons = atol(&argv[i][2]);
           break;
 
         /* get the solid angle covered by the detectors if other than 4*PI */
-        /* read four numbers                                               */
         case 'D':
           sscanf(&(argv[i][2]),"%lf", &Theta);
           Theta*=M_PI/180.0;
@@ -357,7 +410,7 @@ void  OwnInit(int argc, char *argv[])
           detectortest &= 0001L;
           break;
 
-        /* parameters for signal modulation                                */
+        /* parameters for signal modulation */
         case 'f':
           sscanf(&(argv[i][2]),"%lf", &Freq);
           break;
@@ -365,12 +418,51 @@ void  OwnInit(int argc, char *argv[])
           sscanf(&(argv[i][2]),"%lf", &Offset);
           break;
 
-        /* sample and structure factor file name */
-        case 'S':
-          SampleFileName=&argv[i][2];
+        case 'G':
+          eGeomS = (VtSmplGeom) atoi(&argv[i][2]);
           break;
-        case 's':
-          strcpy(sStrucFileName,&argv[i][2]);
+        case 'F':
+          eFunction = (VtDataSrc) atoi(&argv[i][2]);
+          break;
+
+        case 'x':
+          Xpos = atof(&argv[i][2]);
+          break;
+        case 'y':
+          Ypos = atof(&argv[i][2]);
+          break;
+        case 'z':
+          Zpos = atof(&argv[i][2]);
+          break;
+
+        case 't':
+          Diameter = atof(&argv[i][2]);
+          break;
+        case 'h':
+          Height = atof(&argv[i][2]);
+          break;
+        case 'w':
+          Width = atof(&argv[i][2]);
+          break;
+
+        case 'X':
+          Xdir = atof(&argv[i][2]);
+          break;
+        case 'Y':
+          Ydir = atof(&argv[i][2]);
+          break;
+        case 'Z':
+          Zdir = atof(&argv[i][2]);
+          break;
+
+        case 'i':
+          MuInc = atof(&argv[i][2]);
+          break;
+        case 'C':
+          MuCoh = atof(&argv[i][2]);
+          break;
+        case 'm':
+          MuAbs = atof(&argv[i][2]);
           break;
 
         default:
@@ -379,9 +471,6 @@ void  OwnInit(int argc, char *argv[])
       }
     }
   }
-
-  /* Total macroscopic scattering cross-section */
-  MuTot = MuCoh + MuInc;
 
   /* Check, whether all 4 angles are given; if not, initial values are set again */	
   if ( detectortest!=0 && detectortest!=15) 
@@ -411,7 +500,7 @@ void  OwnInit(int argc, char *argv[])
 void OwnCleanup()
 {
   /* print error that might have occured many times */
-  PrintMessage(SMPL_Q_RANGE_TOO_SMALL, sStrucFileName, ON);
+  PrintMessage(SMPL_Q_RANGE_TOO_SMALL, pStrFileName, ON);
   PrintMessage(SMPL_TRAJ_INSIDE, "", ON);
 
   fprintf(LogFilePtr," \n");
@@ -426,118 +515,98 @@ void OwnCleanup()
 /* 'GetSample'                                                       */
 /* Read data of the sample (position, geometry, size, orientation)   */
 /*********************************************************************/
-void GetSample(SampleType *pSample)
+void SetSamplePar(SampleType *pSample)
 {
-  FILE* pSampleFile;
-  char Buffer[CHAR_BUF_LENGTH];
+  FILE*  pFile=NULL;
+  char   sLine[CHAR_BUF_SMALL]="", 
+         sGeomS[20]="",             // string: sample shape
+         cFct      =' ';            // char  : particle shape
+  int    nLen=sizeof(sLine)-1;
+  double x     = 0.0, y     = 0.0, z    = 0.0, 
+         xdir  = 0.0, ydir  = 0.0, zdir = 0.0,
+         radius= 0.0, height= 0.0, width= 0.0,
+         muInc = 0.0, muCoh = 0.0, muAbs= 0.0; 
+  VtSmplGeom geomS;           // enum  sample shape
+  SampleType sample;          // structure  sample geometry
 
-  /* open file */
-  pSampleFile=OpenInputFile(SampleFileName, FALSE, "rt");
-  if (pSampleFile==NULL) 
-  {
-    fprintf(LogFilePtr,"ERROR: Cannot open sample file %s\n", SampleFileName);
-    exit(-1);
+  InitSample(pSample);
+  InitSample(&sample);
+
+  /* Opens the parameter file if a file name is given */
+  if (pSmplFileName!=NULL)
+  { 
+    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+
+    /* Reads the parameters if the file can be opened */
+    if (pFile != NULL)
+    { 
+      /* First line: sample position     */
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%c",          &cFct);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileNameF); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muCoh, &muAbs); 
+
+      geomS = SmplGeom_Txt2ID (sGeomS);
+      if (geomS==VT_NO_GEOM)
+        Error2("Sample geometry could not be identified", sGeomS);
+
+      fclose(pFile);
+
+      // combines information from input and file, input parameters have priority
+      if (eGeomS==VT_NO_GEOM && geomS!=VT_NO_GEOM) eGeomS = geomS; 
+      if (Xpos    == 0.0 && x     != 0.0) Xpos    = x;
+      if (Ypos    == 0.0 && y     != 0.0) Ypos    = y;
+      if (Zpos    == 0.0 && z     != 0.0) Zpos    = z;
+      if (Diameter== 0.0 && radius!= 0.0) Diameter= 2.0*radius;
+      if (Height  == 0.0 && height!= 0.0) Height  = height;
+      if (Width   == 0.0 && width != 0.0) Width   = width;
+      if (Xdir    == 0.0 && xdir  != 0.0) Xdir    = xdir;
+      if (Ydir    == 0.0 && ydir  != 0.0) Ydir    = ydir;
+      if (Zdir    == 0.0 && zdir  != 0.0) Zdir    = zdir;
+      if (MuInc   == 0.0 && muInc != 0.0) MuInc   = muInc;
+      if (MuCoh   == 0.0 && muCoh != 0.0) MuCoh   = muCoh;
+      if (MuAbs   == 0.0 && muAbs != 0.0) MuAbs   = muAbs;
+      // if (pStrFileNameI==NULL && strlen(sStrFileNameF) > 0) pStrFileNameI=sStrFileNameF;
+    }
+    else
+    {	
+      fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
+    }
   }
-  else
+
+  /* Total macroscopic scattering cross-section */
+  MuTot = MuCoh + MuInc;
+
+  // checks if geometry was given
+  if (eGeomS==VT_NO_GEOM)
+    Error2("Sample geometry could not be identified", sGeomS);
+
+  /* Fills sample structure */
+  FillSample(pSample, eGeomS, Xpos, Ypos, Zpos,  Xdir, Ydir, Zdir, Diameter, Height, Width, 0.0);
+
+  /* the direction vector should have a positive z component  this will make things easier with the rotations later on */
+  if(pSample->Direction[2] < 0) 
   {
-    /* read data, if file could be opened */
-    if (ReadTilComment(Buffer, pSampleFile)) 
-    {
-      sscanf(Buffer, "%lf %lf %lf", &(pSample->Position[0]), 
-                                    &(pSample->Position[1]), 
-                                    &(pSample->Position[2]));
-    } 
-    else 
-    {	
-      fprintf(LogFilePtr, "ERROR: Can't read first line of %s",SampleFileName);
-      exit(-1);
-    }
+    pSample->Direction[0] = -pSample->Direction[0];
+    pSample->Direction[1] = -pSample->Direction[1];
+    pSample->Direction[2] = -pSample->Direction[2];
+  }
 
-    /* Next line should decribe the type of geometry cylinder, cube, sphere    */
-    if (ReadTilComment(Buffer, pSampleFile)) 
-    {
-      if(strstr(Buffer, "cyl")!=NULL) 
-      {
-        ReadCylinder(pSampleFile, pSample);
-        pSample->Type=VT_CYL;
-      } 
-      else if(strstr(Buffer, "cub")!=NULL) 
-      {
-        ReadCube(pSampleFile, pSample);
-        pSample->Type=VT_CUBE;
-      } 
-      else if(strstr(Buffer, "bal")!=NULL) 
-      {	
-        ReadBall(pSampleFile, pSample);
-        pSample->Type=VT_SPHERE;
-      }
-      else 
-      {	
-        fprintf(LogFilePtr, "ERROR: Please denote the sample geometry by cyl, cub or bal on the second line of %s\n", SampleFileName);
-        exit(-1);
-      }
-
-      /* the direction vector should have a positive z component  */
-      /* this will make things easier with the rotations later on */
-      if(pSample->Direction[2] < 0) 
-      {
-        pSample->Direction[0] = -pSample->Direction[0];
-        pSample->Direction[1] = -pSample->Direction[1];
-        pSample->Direction[2] = -pSample->Direction[2];
-      }
-    } 
-    else 
-    {
-      fprintf(LogFilePtr, "ERROR: Can't read one of the lines 2 - 4 of %s",SampleFileName);
-      exit(-1);
-    }
-    /* Read criterion for getting S(Q) data */
-    if(ReadTilComment(Buffer, pSampleFile))
-    {	
-      sscanf(Buffer, "%c", &eFunction);
-      /*	Allowed char. for function parameter: 
-      F: analytic function  D: function data from file   */
-      if(eFunction!=VT_FR_FILE && eFunction!=VT_AS_FCT)  
-        Error("Wrong character for function to determine structure factor");
-    }
-    else 
-    {	
-      fprintf(LogFilePtr, "ERROR: Can't read criterion for getting S(Q) data %s", SampleFileName);
-      exit(-1);
-    }
-    /* Read structure factor file */
-    if(ReadTilComment(Buffer, pSampleFile))
-    {	
-      sscanf(Buffer, "%s", sStrucFileName);
-    }
-    else 
-    {	
-      if (eFunction == VT_FR_FILE)
-      {	
-        fprintf(LogFilePtr, "ERROR: Can't read structure factor file name %s",SampleFileName);
-        exit(-1);
-      }
-    }
-    /* Read macroscopic cross sections */
-    if(ReadTilComment(Buffer, pSampleFile)) 
-    {
-      sscanf(Buffer,"%lf%lf%lf", &MuInc, &MuCoh, &MuAbs);
-    } 
-    else 
-    {	
-      fprintf(LogFilePtr, "ERROR: Can't read cross sections %s",SampleFileName);
-      exit(-1);
-    }
-
-    /* Seems as everything needed could be read */
-    fclose(pSampleFile);
+  /* check if file for S(Q) could be found */
+  if (eFunction == VT_FR_FILE)
+  {	
+    fprintf(LogFilePtr, "ERROR: Can't read S(Q) file name %s", pSmplFileName);
+    exit(-1);
   }
 }
 
 
 /*********************************************************************/
 /* 'CalcStructureFactor'                                             */
-/* Calculate structure factor from an analytical function            */
+/* Calculate S(Q) from an analytical function            */
 /*                                                                   */
 /*  CALCULATION OF A STRUCTURE FACTOR WITH THE                       */
 /*      PERCUS-YEVICK HARD SPHERE MODEL                              */
@@ -560,7 +629,7 @@ double CalcStructureFactor(double p_dQ)
 
 /*********************************************************************/
 /* 'GetStructureFactor'                                             */
-/* Get structure factor from the structure factor file               */
+/* Get S(Q) from the structure factor file               */
 /*********************************************************************/
 double GetStructureFactor(double p_dQ, long index)
 {
@@ -588,27 +657,29 @@ double GetStructureFactor(double p_dQ, long index)
 
 /*********************************************************************/
 /* 'LoadStrucFacFile'                                                */
-/* load structure factor file                                        */
+/* load S(Q) file                                        */
 /*********************************************************************/
-void LoadStrucFactFile()
+int LoadSofQFile(const char* pFileName)
 {
+  FILE  *pStrFacFile=NULL;   //                  pointer to S(Q) file
+  long   nLines= 0;          //           [-]    number of lines in the S(Q) file 
   char sBuffer[CHAR_BUF_LENGTH];
 
-  /* If there is a structure factor file go and load the file */
-  if (sStrucFileName!=NULL) 
+  /* If there is a S(Q) file go and load the file */
+  if (pFileName!=NULL && strlen(pFileName) >0) 
   {
     /* opens distribution file */
-    pStrFacFile = OpenInputFile(sStrucFileName, FALSE, "rt");
+    pStrFacFile = OpenInputFile(pStrFileName, FALSE, "rt");
     if (pStrFacFile!=NULL) 
     {
       long   n;
 
       /* reads number of lines, allocates memory and then reads data */
-      nLinesStr = LinesInFile(pStrFacFile);
-      aQ  = calloc(nLinesStr, sizeof(double));
-      aSF = calloc(nLinesStr, sizeof(double));
+      nLines = LinesInFile(pStrFacFile);
+      aQ  = calloc(nLines, sizeof(double));
+      aSF = calloc(nLines, sizeof(double));
 
-      for(n=0; n<nLinesStr; n++)
+      for(n=0; n<nLines; n++)
       {  
         ReadLine(pStrFacFile, sBuffer, CHAR_BUF_LENGTH);
         sscanf  (sBuffer, "%lf %lf", &aQ[n], &aSF[n]);
@@ -619,10 +690,11 @@ void LoadStrucFactFile()
     } 
     else 
     {	
-      fprintf(LogFilePtr, "\nERROR: Can't open %s to read structure factor file\n", sStrucFileName);
+      fprintf(LogFilePtr, "\nERROR: Can't open %s to read S(Q) file\n", pStrFileName);
       exit (-1);
     }
   }
+  return nLines;
 }
 
 

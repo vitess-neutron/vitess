@@ -27,8 +27,8 @@
 // Input parameters
 char   sStructFileP[CHAR_BUF_XS]=""; // -s       [-]   structure factor file name from input
 char*  pSampleFileName=NULL;         // -F       [-]   parameter file name (located in argv)
-short  nColor   = NO_COLOR;          // -c       [-]   colour of the neutrons scattered from the environment
 VtDir  eDirEnv  = VT_NO_DIR;         // -r       [-]   direction for sample environment: 1:'in' or 2:'out' 
+short  nColor   = NO_COLOR;          // -c       [-]   colour of the neutrons scattered from the environment
 double Theta    = M_PI/2.0,          //    fix  [deg]  solid angles into which scattering takes place
        DelTheta = M_PI/2.0,          //    fix  [deg]  Theta has to be in the range of [0;PI]         
        Phi      = M_PI,              //    fix  [deg]  Phi has to be in the range of [0;2*PI] 
@@ -39,11 +39,11 @@ double Xpos     = 0.0,               // -x       [cm]  position of the center of
        Thickness= 0.0,               // -t file  [cm]  thickness of the sample environment  (= R_out - R_in)
        Diameter = 0.0,               // -d file  [cm]  outer diameter of the sample environment  (= 2*R_out)
        Height   = 0.0,               // -h file  [cm]  outer height of the sample environment
-       MuInc    = 0.0,               // -I file [1/cm] incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm]
+       MuInc    = 0.0,               // -i file [1/cm] incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm]
        UCV      = 0.0;               // -U file [Ang^3] UCV 
                                     
 extern double MuTot,                 // -T file [1/cm] macrosc. scattering cross section, defined in 'sample.c'
-              MuAbs;                 // -A file [1/cm] macrosc. absorption cross section, defined in 'sample.c'
+              MuAbs;                 // -m file [1/cm] macrosc. absorption cross section, defined in 'sample.c'
   
 // Variables determined from input parameters or from file
 char   sStructFileF[CHAR_BUF_XS]="", //    file  [-]   structure factor file name from parameter file
@@ -322,6 +322,13 @@ void  OwnInit(int argc, char *argv[])
           strcpy(sStructFileP, &argv[i][2]);
           break;
 
+        case 'r':
+          eDirEnv = (VtDir) atoi(&argv[i][2]);   // 1:in   2: out
+          break;
+        case 'c':
+          nColor = (short) atoi(&argv[i][2]);
+          break;
+
         case 'x':
           Xpos = atof(&argv[i][2]);
           break;
@@ -342,24 +349,17 @@ void  OwnInit(int argc, char *argv[])
           Thickness = atof(&argv[i][2]);
           break;
 
-        case 'I':
+        case 'i':
           MuInc = atof(&argv[i][2]);
           break;
         case 'T':
           MuTot = atof(&argv[i][2]);
           break;
-        case 'A':
+        case 'm':
           MuAbs = atof(&argv[i][2]);
           break;
         case 'U':
           UCV = atof(&argv[i][2]);
-          break;
-
-        case 'c':
-          nColor = (short) atoi(&argv[i][2]);
-          break;
-        case 'r':
-          eDirEnv = (VtDir) atoi(&argv[i][2]);   // 1:in   2: out
           break;
 
           /*	case 'D':
@@ -501,7 +501,7 @@ short SetEnvironPar(SampleType* pEnvironment)
     }
   }
 
-  FillSample(pEnvironment, VT_HOL_CYL,  Xpos, Ypos, Zpos,  0.0, 1.0, 1.0, Diameter, Height, 0.0, Thickness);
+  FillSample(pEnvironment, VT_HOL_CYL,  Xpos, Ypos, Zpos,  0.0, 0.0, 1.0, Diameter, Height, 0.0, Thickness);
 
   return(TRUE);
 }

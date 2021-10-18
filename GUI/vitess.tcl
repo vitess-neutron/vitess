@@ -3078,10 +3078,9 @@ set samASET [list {Sample header} \
   [list y float "" [list "y \[cm]" $Refa] 1] \
   [list z float "" [list "z \[cm]" $Refa] 1] \
   {} \
-  {cyl radio cylinder {"sample\ngeometry"} {cylinder sphere cuboid} {cyl bal cub}} \
+  {cyl radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, sphere or cuboid"} {cylinder sphere cuboid} {cyl bal cub}} \
   {} \
-  {thick float "" {"thickness or\nradius [cm]"
-    "thickness of cuboid, or radius of sphere, or radius of cylinder"} gt0 "" 1} \
+  {thick float "" {"thickness or\nradius [cm]" "thickness of cuboid, or radius of sphere, or radius of cylinder"} gt0 "" 1} \
   {hei float "" {"height [cm]" "height of cuboid, or height of cylinder"} gt0} \
   {wid float "" {"width [cm]" "width of cuboid"} gt0} \
   {} \
@@ -3094,7 +3093,7 @@ set samASET [list {Sample header} \
 ###   nxs file description
 
 set nxsESET [concat $samASET {
-  {nxsfile pareditablefile "" {"nxs para-\nmeter file"} dr}
+  {nxsfile pareditablefile "" {"nxs para-\nmeter file" "File containing parameters of the powder sample\nSee HelpFile 'sample.html'"} dr}
 }]
 
 
@@ -3121,7 +3120,7 @@ set powESET [concat $samASET {
 ###   psq file description
 
 set psqESET [concat $samASET {
-  {sfac radio "from file" {"structure\nfactor"Source of the structure factor data, either 'from file' or 'as function'\nIn the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"} {"from file" "as function"} {D F}}
+  {sfac radio "from file" {"structure\nfactor" "Source of the structure factor data, either 'from file' or 'as function'\nIn the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"} {"from file" "as function"} {D F}}
   {}
   {sfactfile editablefile "" {"structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. The first contains the momentum transfer values Q [1/Ang] and the second the corresponding value for S"} r}
   {Scattering header}
@@ -3252,7 +3251,7 @@ set sample_environmentESET {
 set sample_nxsESET [concat $sampleASET {
   {samplefile pareditablefile nxs_sample.par {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r nxs 1}
-  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering by the sample." "" c} 0 32767}
   {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
     {yes no} {1 0}}
   {trans_only radio no {"transmission\nonly" "'yes' only handles transmission (imaging mode), i.e. all neutrons intersecting the sample are transmitted and weighted according to the calculated total neutron cross section. 'no' additionally performs scattering." "" T}
@@ -3269,7 +3268,7 @@ proc sample_nxsCheckErr {{app _}} {
 set sample_powderESET [concat $sampleASET {
   {samplefile pareditablefile psample.par {
     "sample file" "The sample file describes the geometry and compositions of the sample. This option is mandatory." "" S} r pow 1}
-  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment." "" c} 0 32767}
+  {sp_col int "" {colour "The trajectories will be marked by a so-called 'colour' to show that they are scattering by the sample." "" c} 0 32767}
   {treat_all radio no {"treat all\nneutrons" "'yes' treats neutrons not hitting the sample" "" a}
     {yes no} {1 0}}
 }]
@@ -3336,12 +3335,11 @@ set sscESET {
   {px float "" {"position X [cm]" "x coordinate of the sample centre"}}
   {py float "" {"position Y [cm]" "y coordinate of the sample centre"}}
   {pz float "" {"position Z [cm]" "z coordinate of the sample centre"}}
-  {phi float "" {"phi(Z) [deg]" "rotation angle of sample i.e. the reciprocal unit vectors around the  Z axis"}}
-  {chi float "" {"chi(X) [deg]" "rotation angle of sample i.e. the reciprocal unit vectors around the  X axis"}}
-  {omega float "" {"omega(Z) [deg]" "rotation angle of sample i.e. the reciprocal unit vectors around the Z axis again"}}
+  {phi float "" {"phi(Z) [deg]" "1st rotation angle of the sample, i.e. the reciprocal unit vectors about the Z axis (see 'Help sample')"}}
+  {chi float "" {"chi(X) [deg]" "2nd rotation angle of the sample, i.e. the reciprocal unit vectors about the new X axis (see 'Help sample')"}}
+  {omega float "" {"omega(Z) [deg]" "3rd rotation angle of the sample, i.e. the reciprocal unit vectors about the new Z axis (see 'Help sample')"}}
   {}
-  {geom radio cubic {geometry "sample geometry"}
-    {cubic cylindrical ball} {cub cyl bal}}
+  {geom radio cubic {geometry "sample geometry" "geometry of the sample: cuboid, cylinder or sphere"} {cubic cylindrical ball} {cub cyl bal}}
   {}
   {thick float "" {"thickness\nor diameter [cm]" "rectangular sample dimension in x direction (sample frame)"}}
   {hei float "" {"height [cm]" "rectangular sample dimension in y direction (sample frame)"}}
@@ -3371,12 +3369,14 @@ set sample_inelastESET {
   {p2 float 5 {"P2 [microeV]" "constant corresponding to the half width at half maximum in the symmetrized Lorentzian" "" b} ge0 "" 1}
   {p3 float 1 {P3 "scales the amplitude, intensity" "" c} gt0 "" 1}
   {p4 float 0   {P4 "if 0, then Lorentzian, if 1, then symmetrized Lorentzian, if negative other then generates sum of 2 Lorentzians" "" d} 1}
-  {temp float 1 {"temperature [K]" "temperature of the sample" "" T} gt0 "" 1}
-  {reprate int 1 {repetition "repetitions for the same trajectory" "" A} ge1 "" 1}
+  {}
   {d1 float 0 {"D1 [microeV*A]" "linear energy dispersion coefficient of momentum component x" "" x} 1}
   {d2 float 0 {"D2 [microeV*A]" "linear energy dispersion coefficient of momentum component y" "" y} 1}
   {d3 float 0 {"D3 [microeV*A]" "linear energy dispersion coefficient of momentum component z" "" z} 1}
-  {bfact radio no {"Bose factor?" "asks whether to multiply with the Bose factor" "" D} {no yes} {0 1}}
+  {bfact radio no {"Bose factor?" "asks whether to multiply with the Bose factor (cf. 'Help|sample')" "" D} {no yes} {0 1}}
+  {}
+  {temp float 1 {"temperature [K]" "temperature of the sample (only needed if use of the Bose factor is chosen)" "" T} gt0 "" 1}
+  {reprate int 1 {repetition "number of trajectories generated per incoming trajectory" "" A} ge1 "" 1}
 }
 
 ### sample->ineleast
@@ -3384,27 +3384,26 @@ set sample_inelastESET {
 
 set ineESET {
   {"Scattering parameters" header}
-  {lf float 6.27 {"lambda\nfinal [A]" "the center of the interval of the generated outgoing random wavelength"} gt0}
-  {ahf float 0 {"angle horiz\nfinal [deg]" "angle component of the main scattering direction"}}
-  {avf float 0 {"angle vert\nfinal [deg]" "angle component of the main scattering direction"}}
-  {dlf float 1 {"delta lambda\nfinal [A]" "the length of the interval of the generated outgoing random wavelength"}}
-  {dah float 1 {"delta angle\nhoriz [deg]" "angular interval around the main scattering direction"}}
-  {dav float 1 {"delta angle\nvert [deg]" "angular interval around the main scattering direction"}}
+  {lf float 6.27 {"lambda\nfinal [A]" "average wavelength Lmbd of the scattered neutrons"} gt0}
+  {ahf float 0 {"angle horiz\nfinal [deg]" "horizontal rotation Theta defining the main scattering direction"}}
+  {avf float 0 {"angle vert\nfinal [deg]" "vertical rotation Phi defining the main scattering direction"}}
+  {dlf float 1 {"delta lambda\nfinal [A]" "wavelength interval DelLmbd of the scattered neutrons [Lmbd-DelLmbd/2, Lmbd+DelLmbd/2]"}}
+  {dah float 1 {"delta angle\nhoriz [deg]" "angular horizontal interval DelTheta around the main scattering direction\n[Theta-DelTheta/2, Theta+DelTheta/2]"}}
+  {dav float 1 {"delta angle\nvert [deg]" "angular vertical interval DelPhi around the main scattering direction\n[Phi-DelPhi/2, Phi+DelPhi/2]"}}
   {scc float 0.368 {"scattering\ncoeff.[1/cm]"} gt0}
   {asc float 0.109 {"absorption\ncoeff.[1/cm/A]"} gt0}
   {"Position and direction of the sample" header}
   {x1 float 50 {"X [cm]" "position of the sample centre"}}
   {y1 float 0 {"Y [cm]" "position of the sample centre"}}
   {z1 float 0 {"Z [cm]" "position of the sample centre"}}
-  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
-  {voff float 0 {"offset angle\nvert. [deg]" "rotation of the sample in vertical direction"}}
   {}
-  {cyl radio cylinder {"sample\ngeometry"}
-    {cylinder hollow-cylinder sphere rectangular} {cyl holcyl ball cub}}
+  {cyl radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid"} {cylinder hollow-cylinder sphere rectangular} {cyl holcyl ball cub}}
   {}
   {trad float 3 {"thickness or\ndiameter [cm]" "thickness of the sample in x direction or diameter in case of cylinder or sphere"} gt0}
   {hei float 3 {"height [cm]" "heigtht of sample in z direction if rectangular or cylinder, no relevance if sphere"} gt0}
   {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} gt0}
+  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
+  {voff float 0 {"offset angle\nvert. [deg]" "rotation of the sample in vertical direction"}}
   {"Output Frame" header}
   {gen radio "standard frame generation" {"output frame\ndefinition"
     "either user defined frame by using new coordinates of the output frame; or standard frame using the initial wavevector values"}
@@ -3479,11 +3478,11 @@ set sample_elasticisotrESET {
 
 set isoESET {
   {"Scattering parameters" header}
-  {ah float 0 {"angle horiz.\nfinal [deg]" "horizontal component of the main scattering direction"}}
-  {av float 0 {"angle vert.\nfinal [deg]"  "vertical component of the main scattering direction"}}
+  {ah float 0 {"angle horiz.\nfinal [deg]" "horizontal rotation Theta defining the main scattering direction"}}
+  {av float 0 {"angle vert.\nfinal [deg]"  "vertical rotation Phi defining the main scattering direction"}}
   {}
-  {dh float 1 {"delta angle\nhoriz. [deg]" "angular interval around the main scattering direction"}}
-  {dv float 1 {"delta angle\nvert. [deg]"   "angular interval around the main scattering direction"}}
+  {dh float 1 {"delta angle\nhoriz. [deg]" "angular horizontal interval DelTheta around the main scattering direction\n[Theta-DelTheta/2, Theta+DelTheta/2]"}}
+  {dv float 1 {"delta angle\nvert. [deg]"  "angular vertical interval DelPhi around the main scattering direction\n[Phi-DelPhi/2, Phi+DelPhi/2]"}}
   {}
   {sco float 0.368 {"scattering\ncoeff.[1/cm]" "scattering cross section multiplied with density in 1/cm units"} gt0}
   {aco float 0.109 {"absorption\ncoeff.[1/cm/A]" "wavelength dependent absorption cross section multiplied with density in 1/cm/Angstrom units"} gt0}
@@ -3492,16 +3491,13 @@ set isoESET {
   {y float 0 {"Y [cm]" "y position of the sample center"}}
   {z float 0 {"Z [cm]" "z position of the sample center"}}
   {}
-  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
-  {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample in vertical (first rotation) direction"}}
-  {}
-  {sg radio cylinder
-    {"sample\ngeometry"}
-    {cylinder hollow-cylinder sphere cuboid} {y o a u}}
+  {sg radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid"} {cylinder hollow-cylinder sphere cuboid} {y o a u}}
   {}
   {thrad float 3 {"thickness or\ndiameter [cm]" "thickness or diameter of sample"} gt0}
   {hei float 3 {"height [cm]" "height of sample"} gt0}
   {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} gt0}
+  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
+  {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample in vertical (first rotation) direction"}}
   {"Output Frame" header}
   {x2 float 0 {"X' [cm]"}}
   {y2 float 0 {"Y' [cm]"}}

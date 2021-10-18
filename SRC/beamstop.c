@@ -8,6 +8,7 @@
 /*                                                                                           */
 /* 1.0  Apr 2011  K. Lieutenant   initial version                                            */
 /* 1.1  Jul 2019  K. Lieutenant   length compression for visualization                       */
+/* 1.2  Jul 2021  K. Lieutenant   general changes for VITESS 3.5                             */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -33,7 +34,7 @@ double  Width   =0.0,          // -W  [cm]   width of a rectangular beamstop
         Radius  =0.0,          // -r  [cm]   radius of a circular beamstop  
         DistMove=0.0;          // -d  [cm]   distance between starting point and beamstop 
 double  CenterY =0.0,          //            fixed
-        CenterZ =0.0;          //             center of the beamstop position
+        CenterZ =0.0;          //            center of the beamstop position
 
 // Variables determined from input parameters or trajectory data
 short   bOnBeamstop=FALSE;     // criterion: beamstop hit or not 
@@ -60,7 +61,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_BEAMSTOP;
 
   Init(argc,argv, _eModule);
-	PrintModuleName(_eModule, "1.1");
+	PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;

@@ -30,7 +30,7 @@ double* kVal;
 double* lVal;
 double* F2Val;
 
-extern char* SampleFileName;
+// extern char* pSmplFileName;
 
 
 /****************************************************************/
@@ -89,133 +89,6 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
     default:
       Error("Geometry unknown");
   }
-}
-
-/****************************************************************/
-/* 'ReadCube'                                                   */
-/*   reads information about a sample of cubic geometry         */
-/*                                                              */
-/* SampleFile: Pointer to the File                        (in)  */
-/* Sample    : Information about geometry and orientation (out) */
-/****************************************************************/
-void ReadCube(FILE *SampleFile, SampleType *Sample)
-{
-  char Buffer[CHAR_BUF_LENGTH];
-  char *helpptr;
-
-  /* get next line from SampleFile */
-  if (fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
-  {
-    /* first strip any comment                  */
-    helpptr= strchr(Buffer, '#');
-    sscanf(Buffer,"%lf %lf %lf", &(Sample->SG.Cube.thickness),
-                                 &(Sample->SG.Cube.height),
-                                 &(Sample->SG.Cube.width));
-    if (Sample->SG.Cube.thickness==0.0 || Sample->SG.Cube.height==0.0 || Sample->SG.Cube.width==0.0)
-      Error("One of the lengths of the (cuboid) sample is not given or assigned to zero");
-    if(helpptr!=NULL) *helpptr='\0';
-
-    if (fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
-    {
-      sscanf(Buffer, "%lf %lf %lf",
-      &(Sample->Direction[0]), &(Sample->Direction[1]), &(Sample->Direction[2]));
-      if (NormVector(Sample->Direction)==FALSE)
-      Error("Sample direction is missing");
-    } 
-    else 
-    {
-      fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
-      exit(-1);
-    }
-  } 
-  else 
-  {
-    fprintf(LogFilePtr,"ERROR: height, width and thickness of the cube not found in %s!\n", SampleFileName);
-    exit(-1);
-  }
-
-  Sample->Type=VT_CUBE;
-
-  SetSampleGeometry(Sample);
-}
-
-
-/****************************************************************/
-/* 'ReadCylinder'                                               */
-/*   reads information about a sample of cylindric geometry     */
-/*                                                              */
-/* SampleFile: Pointer to the File                        (in)  */
-/* Sample    : Information about geometry and orientation (out) */
-/****************************************************************/
-void ReadCylinder(FILE *SampleFile, SampleType *Sample)
-{
-  char Buffer[CHAR_BUF_LENGTH];
-  char *helpptr;
-
-  /* get next line from SampleFile */
-  if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
-  {
-    /* first strip any comment                  */
-    helpptr= strchr(Buffer, '#');
-    if(helpptr!=NULL) *helpptr='\0';
-
-    sscanf(Buffer,"%lf %lf", &(Sample->SG.Cyl.r), &(Sample->SG.Cyl.height));
-    if (Sample->SG.Cyl.r==0.0 || Sample->SG.Cyl.height==0.0)
-      Error("Height or radius of the (cylindrical) sample is not given or assigned to zero");
-    if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
-    {
-      sscanf(Buffer, "%lf %lf %lf", &(Sample->Direction[0]), &(Sample->Direction[1]), &(Sample->Direction[2]));
-      if (NormVector(Sample->Direction)==FALSE)
-        Error("Sample direction is missing");
-    } 
-    else 
-    {
-      fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
-      exit(-1);
-    }
-  } 
-  else 
-  {
-    fprintf(LogFilePtr,"ERROR: radius and height of the cylinder not found in %s!\n",
-    SampleFileName);
-    exit(-1);
-  }
-
-  Sample->Type=VT_CYL;
-
-  SetSampleGeometry(Sample);
-}
-
-
-/****************************************************************/
-/* 'ReadBall'                                                   */
-/*   reads information about a sample of spheric geometry       */
-/*                                                              */
-/* SampleFile: Pointer to the File                        (in)  */
-/* Sample    : Information about geometry and orientation (out) */
-/****************************************************************/
-void ReadBall(FILE *SampleFile, SampleType *Sample)
-{
-	char Buffer[CHAR_BUF_LENGTH];
-	char *helpptr;
-
-	if(fgets(Buffer,CHAR_BUF_LENGTH,SampleFile)!=NULL) 
-	{
-		/* first strip any comment                  */
-		helpptr= strchr(Buffer, '#');
-		if(helpptr!=NULL) *helpptr='\0';
-		sscanf(Buffer,"%lf", &(Sample->SG.Ball.r));
-		if (Sample->SG.Ball.r==0.0)
-			Error("Radius of the (spherical) sample is not given or assign to zero");
-		Sample->Direction[0] = 0.0;
-		Sample->Direction[1] = 0.0;
-		Sample->Direction[2] = 1.0;
-	}
-
-	Sample->Type=VT_SPHERE;
-
-	SetSampleGeometry(Sample);
-
 }
 
 
@@ -493,7 +366,7 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 /**                                                                                **/
 /** analyzes extension .str .lau and .laz to read parameters from the right column **/
 /************************************************************************************/
-int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[])
+int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFactorLookup[])
 {
   FILE*   pStrucFile=NULL;
   long    NumLines=0, i=0, j=0;
@@ -502,155 +375,157 @@ int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactor
   int     maxColumn=0;
   double* parBuffer=NULL;
   
-  /* first open the file, exit if opening fails */
-  pStrucFile = OpenInputFile(sStructFile, FALSE, "rt"); 
+  if (sStrFileName!=NULL && strlen(sStrFileName) > 0)
+  {
+    /* first open the file, exit if opening fails */
+    pStrucFile = OpenInputFile(sStrFileName, FALSE, "rt"); 
 
-  if (pStrucFile==NULL)
-  { 
-    fprintf(LogFilePtr, "Note: structure factor file '%s' could not be opened", sStructFile);
-  }
-  else
-  { /* count lines in file */
-    NumLines = LinesInFile(pStrucFile);
-
-    /* get memory for StrucFac */
-    if (tag == 1) 
-    {
-      if((*structFactorLookup = (DoublePair*) calloc(NumLines, sizeof(DoublePair)))==NULL)
-      { 
-        fprintf(LogFilePtr,"ERROR: Can't allocate memory for structure factor data\n");
-        exit(-1);
-      }
-    }
-    else if (tag == 2) 
-    {
-      hVal = (double*) calloc(NumLines, sizeof(double));
-      kVal = (double*) calloc(NumLines, sizeof(double));
-      lVal = (double*) calloc(NumLines, sizeof(double));
-      F2Val = (double*) calloc(NumLines, sizeof(double));
-    }
-    else 
+    if (pStrucFile==NULL)
     { 
-      fprintf(LogFilePtr,"ERROR: Unknown sample type!\n");
-      exit(-1);
+      fprintf(LogFilePtr, "Note: structure factor file '%s' could not be opened", sStrFileName);
     }
+    else
+    { /* count lines in file */
+      NumLines = LinesInFile(pStrucFile);
 
-    /* get back to the start of the File */
-    rewind(pStrucFile);
-  
-    lenFilename = strlen(sStructFile);
-
-    if (strstr(sStructFile, ".str") == &sStructFile[lenFilename-4]) 
-    {
-      colD = 1;
-      colF2 = 2;
-      maxColumn = 2;
-    }
-    else if (strstr(sStructFile, ".laz") == &sStructFile[lenFilename-4]) 
-    {
-      colh = 1;
-      colk = 2;
-      coll = 3;
-      colD = 6;
-      colF = 13;
-      colM = 17;
-      maxColumn = 18;
-    }
-    else if (strstr(sStructFile, ".lau") == &sStructFile[lenFilename-4]) 
-    {
-      colh = 1;
-      colk = 2;
-      coll = 3;
-      colM = 4;
-      colD = 5;
-      colF2 = 7 ;
-      scaleF2 = 1./100.; // conversion from fm^2 to barn
-      maxColumn = 7;
-    }
-    else if (((colD > 0 && tag==1) || (colh > 0 && colk > 0 && coll > 0 && tag == 2))  && (colF > 0 || colF2 > 0)) 
-    {
-      maxColumn = Max(Max(Max(Max(Max(colD, colF), colF2), colM), colDW), Max(colh, Max(colk, coll)));
-    }
-    else 
-    {
-      fprintf(LogFilePtr,"ERROR: Unknown structure file format! Use .dat, .str, .laz, .lau or specify the meaning of the individual columns!\n");
-      exit(-1);
-    }
-
-    parBuffer = (double*) calloc(maxColumn, sizeof(double));
-
-    /* and read the data */
-     
-    for(i=0; i < NumLines; i++)  
-    { 
-      char format[1024] = "%lf ";
-      const char* sRemainBuffer;
-
-      ReadLine(pStrucFile, sBuffer, sizeof(sBuffer)-1);        
-
-      sscanf  (sBuffer, format, &parBuffer[0]);    
-      sRemainBuffer = sBuffer;         
-
-      for (j=1; j < maxColumn; j++) 
-      {
-        strncpy(&format[strlen(format)-4], "%*lf ", 5);
-        strcat(format, "%lf ");
-        sscanf(sRemainBuffer, format, &parBuffer[j]);
-      }
-      
+      /* get memory for StrucFac */
       if (tag == 1) 
       {
-        (*structFactorLookup)[i][0] = parBuffer[colD-1];      
-        if (colF2 > 0)  
-        {
-          (*structFactorLookup)[i][1] = parBuffer[colF2 -1]*scaleF2;
+        if((*structFactorLookup = (DoublePair*) calloc(NumLines, sizeof(DoublePair)))==NULL)
+        { 
+          fprintf(LogFilePtr,"ERROR: Can't allocate memory for structure factor data\n");
+          exit(-1);
         }
-        else if (colF > 0)
-        { (*structFactorLookup)[i][1] = sq(parBuffer[colF -1])*scaleF2;
-        }
+      }
+      else if (tag == 2) 
+      {
+        hVal = (double*) calloc(NumLines, sizeof(double));
+        kVal = (double*) calloc(NumLines, sizeof(double));
+        lVal = (double*) calloc(NumLines, sizeof(double));
+        F2Val = (double*) calloc(NumLines, sizeof(double));
+      }
+      else 
+      { 
+        fprintf(LogFilePtr,"ERROR: Unknown sample type!\n");
+        exit(-1);
+      }
 
-        if (colDW > 0) (*structFactorLookup)[i][1] *= parBuffer[colDW -1];
-        // powder sample
-        if (colM > 0) (*structFactorLookup)[i][1] *= parBuffer[colM -1];
-      
-        //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]); 
+      /* get back to the start of the File */
+      rewind(pStrucFile);
+  
+      lenFilename = strlen(sStrFileName);
+
+      if (strstr(sStrFileName, ".str") == &sStrFileName[lenFilename-4]) 
+      {
+        colD = 1;
+        colF2 = 2;
+        maxColumn = 2;
+      }
+      else if (strstr(sStrFileName, ".laz") == &sStrFileName[lenFilename-4]) 
+      {
+        colh = 1;
+        colk = 2;
+        coll = 3;
+        colD = 6;
+        colF = 13;
+        colM = 17;
+        maxColumn = 18;
+      }
+      else if (strstr(sStrFileName, ".lau") == &sStrFileName[lenFilename-4]) 
+      {
+        colh = 1;
+        colk = 2;
+        coll = 3;
+        colM = 4;
+        colD = 5;
+        colF2 = 7 ;
+        scaleF2 = 1./100.; // conversion from fm^2 to barn
+        maxColumn = 7;
+      }
+      else if (((colD > 0 && tag==1) || (colh > 0 && colk > 0 && coll > 0 && tag == 2))  && (colF > 0 || colF2 > 0)) 
+      {
+        maxColumn = Max(Max(Max(Max(Max(colD, colF), colF2), colM), colDW), Max(colh, Max(colk, coll)));
       }
       else 
       {
-        hVal[i] = parBuffer[colh -1];
-        kVal[i] = parBuffer[colk -1];
-        lVal[i] = parBuffer[coll -1];
-      
-        if (colF2 > 0) 
-          F2Val[i] = parBuffer[colF2 -1]*scaleF2;
-        else 
-          F2Val[i] = sq(parBuffer[colF -1])*scaleF2;
-      
-        if (colDW > 0) F2Val[i] *= parBuffer[colDW -1];
+        fprintf(LogFilePtr,"ERROR: Unknown structure file format! Use .dat, .str, .laz, .lau or specify the meaning of the individual columns!\n");
+        exit(-1);
       }
-    }
 
-    fclose(pStrucFile);
-    fprintf(LogFilePtr,"Read %ld lines from the structure factor file %s.\n", NumLines, sStructFile);
+      parBuffer = (double*) calloc(maxColumn, sizeof(double));
 
-    if (tag == 1) 
-    {
-      qsort((void *)*structFactorLookup, (size_t) NumLines, sizeof(DoublePair), CompPair);
-      /* Sum up all equal d-spacings */
-      i=0;
-      for(j=1; j<NumLines; j++)
-      { if((*structFactorLookup)[j][0]!=(*structFactorLookup)[j-1][0])
-        { i++;
-          (*structFactorLookup)[i][0]=(*structFactorLookup)[j][0];
-          (*structFactorLookup)[i][1]=(*structFactorLookup)[j][1];
-        } 
-        else
-        { (*structFactorLookup)[i][1]+= (*structFactorLookup)[j][1];
+      /* and read the data */
+     
+      for(i=0; i < NumLines; i++)  
+      { 
+        char format[1024] = "%lf ";
+        const char* sRemainBuffer;
+
+        ReadLine(pStrucFile, sBuffer, sizeof(sBuffer)-1);        
+
+        sscanf  (sBuffer, format, &parBuffer[0]);    
+        sRemainBuffer = sBuffer;         
+
+        for (j=1; j < maxColumn; j++) 
+        {
+          strncpy(&format[strlen(format)-4], "%*lf ", 5);
+          strcat(format, "%lf ");
+          sscanf(sRemainBuffer, format, &parBuffer[j]);
+        }
+      
+        if (tag == 1) 
+        {
+          (*structFactorLookup)[i][0] = parBuffer[colD-1];      
+          if (colF2 > 0)  
+          {
+            (*structFactorLookup)[i][1] = parBuffer[colF2 -1]*scaleF2;
+          }
+          else if (colF > 0)
+          { (*structFactorLookup)[i][1] = sq(parBuffer[colF -1])*scaleF2;
+          }
+
+          if (colDW > 0) (*structFactorLookup)[i][1] *= parBuffer[colDW -1];
+          // powder sample
+          if (colM > 0) (*structFactorLookup)[i][1] *= parBuffer[colM -1];
+      
+          //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]); 
+        }
+        else 
+        {
+          hVal[i] = parBuffer[colh -1];
+          kVal[i] = parBuffer[colk -1];
+          lVal[i] = parBuffer[coll -1];
+      
+          if (colF2 > 0) 
+            F2Val[i] = parBuffer[colF2 -1]*scaleF2;
+          else 
+            F2Val[i] = sq(parBuffer[colF -1])*scaleF2;
+      
+          if (colDW > 0) F2Val[i] *= parBuffer[colDW -1];
         }
       }
-      NumLines = i+1;
+
+      fclose(pStrucFile);
+      fprintf(LogFilePtr,"Read %ld lines from the structure factor file %s.\n", NumLines, sStrFileName);
+
+      if (tag == 1) 
+      {
+        qsort((void *)*structFactorLookup, (size_t) NumLines, sizeof(DoublePair), CompPair);
+        /* Sum up all equal d-spacings */
+        i=0;
+        for(j=1; j<NumLines; j++)
+        { if((*structFactorLookup)[j][0]!=(*structFactorLookup)[j-1][0])
+          { i++;
+            (*structFactorLookup)[i][0]=(*structFactorLookup)[j][0];
+            (*structFactorLookup)[i][1]=(*structFactorLookup)[j][1];
+          } 
+          else
+          { (*structFactorLookup)[i][1]+= (*structFactorLookup)[j][1];
+          }
+        }
+        NumLines = i+1;
+      }
     }
   }
-
   return NumLines;
 }

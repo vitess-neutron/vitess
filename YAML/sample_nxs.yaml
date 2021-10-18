@@ -125,8 +125,8 @@ sample_nxs:
   -  SmplGeom:               # enum sample geometry: CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER
       type:    "combo" 
       descr:   "sample\ngeometry"
-      tooltip: "sample geometry  CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER RECTANGULAR"
-      default: [cylinder, sphere, cuboid, hollow-cylinder, rectangular]
+      tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"
+      default: [cylinder, sphere, cuboid]
       prefix:  "-G"     
       column:  0 
                    

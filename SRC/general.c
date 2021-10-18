@@ -741,6 +741,12 @@ void Error(const char *text)
   exit(-1);
 }
 
+void Error2(const char *text1, const char *text2)
+{
+  fprintf(LogFilePtr, "ERROR: %s! Input: %s\n", text1, text2);
+  exit(-1);
+}
+
 void Warning(const char *text)
 {
   fprintf(LogFilePtr, "WARNING: %s!\n", text);

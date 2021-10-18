@@ -132,6 +132,7 @@ FILE*  fileOpen          (const char* sName, const char* sMode);
 FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sContent);
 
 void   Error  (const char *text);
+void   Error2 (const char *text1, const char *text2);
 void   Warning(const char *text);
 void   Note   (const char *text);
 void   Abort  ();

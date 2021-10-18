@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
-  <title>Module SANS Sample</title>
+  <title>Sample Modules</title>
 </head>
 <body>
 
@@ -47,16 +47,16 @@
     module is multiplied by the factors:
   </p>
   <p>
-    <i>P' = </i>(&sigma;&rho;) </font> x (<i>pathlength</i></font> x <i>attenuation</i>) x (solid angle/4 &pi;) x <i>P</i>,
+    <i>P' = </i>(&sigma; &rho;) x (<i>pathlength</i> x <i>attenuation</i>) x (solid_angle/4 &pi;) x <i>P</i>,
   </p>
 
   <p>
-    where (&sigma;&rho;) is the scattering coefficient [cm<sup>-1</sup>] i.e. scattering cross section multiplied with density.
+    where (&sigma;&rho;) is the scattering coefficient [cm<sup>-1</sup>] i.e. the scattering cross section &sigma; multiplied with density &rho;.
     <i>Attenuation</i> means two wavelength and path length dependent exponential factors before
     and after the scattering: exp(-(&sigma; + &sigma;<sub>absorption</sub>) &rho; x <i>pathlength</i>),
     where &sigma;<sub>absorption</sub> ~ &lambda;,
     and the usual tabular value for 1.798 &Aring; has to be converted to 1 &Aring; and used in order to calculate the input value <i>absorption coefficient</i>.
-    The (&sigma;&rho;) scattering coefficient [cm<sup>-1</sup>] ontributes to the attenuation ('self-shielding').
+    The (&sigma;&rho;) scattering coefficient [cm<sup>-1</sup>] contributes to the attenuation ('self-shielding').
   </p>
 
   <p>
@@ -99,14 +99,6 @@
         <td> -P </td>
       </tr>
       <tr>
-        <td> repetition <br> [-] </td>
-        <td>
-          If this integer &gt;1, the neutron trajectory is used multiple times to obtain better statistics.
-        </td>
-        <td> &ge; 1 </td>
-        <td> -A </td>
-      </tr>
-      <tr>
         <td> colour <br> [-] </td>
         <td>
           if -1, all neutrons are scattered <br />
@@ -114,6 +106,14 @@
         </td>
         <td> &ge; -1 </td>
         <td> -c </td>
+      </tr>
+      <tr>
+        <td> repetition <br> [-] </td>
+        <td>
+          If this integer &gt;1, the neutron trajectory is used multiple times to obtain better statistics.
+        </td>
+        <td> &ge; 1 </td>
+        <td> -A </td>
       </tr>
     </tbody>
   </table>
@@ -130,37 +130,42 @@
       </tr>
       <tr>
         <td>angle horiz/vert <br> final [deg]   </td>
-        <td>horizontal and vertical components of the main scattering angle</td>
+        <td>horizontal and vertical angles &theta; and &phi; defining the main scattering direction</td>
         <td> -180&deg; - 180&deg;</td>
-        <td> -D, -P </td>
+        <td> -E, -F </td>
       </tr>
       <tr>
         <td>delta angle<br>horiz/vert [deg]</td>
-        <td>Angular intervals around the horizontal and vertical components of the main scattering angle</td>
+        <td>
+          Angular intervals &Delta;&theta; and &Delta;&phi; around the main scattering direction,
+          i.e. scattering takes place in the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;],[&phi;-&Delta;&phi;,&phi;+&Delta;&phi;]
+        </td>
         <td>0&deg; - 180&deg;</td>
-        <td> -d,-p </td>
+        <td> -e, -f </td>
       </tr>
       <tr>
         <td> scattering coefficient <br>[1/cm]       </td>
-        <td> 1/ (density * scattering cross section) </td>
+        <td> Macroscopic total scattering cross section of the sample<br />
+             This is: 1/ (density * scattering cross section) </td>
         <td>from tables</td>
-        <td> -f </td>
+        <td> -T </td>
       </tr>
       <tr>
         <td>absorption coefficient<br>[1/cm/ &Aring;]</td>
         <td>
-          Attenuation constant
-          per unit wavelength (corresponding to 1 Angstrom) which is 1/ (density *
-          absorbtion cross section).
+          Macroscopic absorption cross section of the sample per wavelength <br />
+          This is the attenuation constant per unit wavelength (corresponding to 1 Angstrom) <br /> 
+          It is:  1/ (density * absorption_cross_section).
         </td>
-        <td> &gt; 0. </td>
-        <td> -F </td>
+        <td> &gt; 0 </td>
+        <td> -m </td>
       </tr>
+
       <tr>
         <td> position X Y Z <br> [cm] </td>
-        <td> Position of the sample center in the frame provided by the former module. </td>
+        <td> Position of the sample center (in the frame provided by the former module). </td>
         <td> e.g. 10.0, 0.0, 0.0 </td>
-        <td> -f </td>
+        <td> -x, -y, -z </td>
       </tr>
       <tr>
         <td> sample geometry</td>
@@ -174,10 +179,10 @@
           Thickness, height and  width give dimensions of a cuboid sample.
           For cylinder, only diameter and height are relevant parameters.
           For hollow cylinder, the inner diameter is given by the third parameter.
-          For spherical samples, the first value is considered as radius.
+          For spherical samples, the first value is considered as the radius.
         </td>
-        <td> e.g. cylinder:1.0, 6.0 </td>
-        <td> -f </td>
+        <td> e.g. cylinder: 0.5, 2.0 </td>
+        <td> -t, h, -w </td>
       </tr>
       <tr>
         <td> offset angle horizontal, vertical<br> [deg] </td>
@@ -187,7 +192,7 @@
           the sample. It has no relevance for a spherical sample geometry.
         </td>
         <td> e.g. 0.0, 0.0  </td>
-        <td> -f,-g </td>
+        <td> -o,-O </td>
       </tr>
       <tr>
         <td>output frame<br>X',Y',Z'<br> [cm] </td>
@@ -196,7 +201,7 @@
           vector applied to shift the origin of the original (input) frame to the new (output) position.
         </td>
         <td>one point on the scattered beam axis</td>
-        <td> -f </td>
+        <td> -X, -Y, -Z </td>
       </tr>
       <tr>
         <td>output angle horizontal, vertical<br>[deg]</td>
@@ -205,7 +210,7 @@
           for the neutrons written to the output.
         </td>
         <td>e.g. forward scattering:<br>0.0, 0.0</td>
-        <td> -f,-g </td>
+        <td> -u,-U </td>
       </tr>
     </tbody>
   </table>
@@ -497,13 +502,19 @@
         <td>cylinder, sphere or cuboid</td>
         <td> -G </td>
       </tr>
+
       <tr>
         <td>thickness or radius<br>[cm]</td>
-        <td>thickness of cuboid, or radius of sphere, or radius of cylinder</td>
+        <td>thickness of cuboid, or radius of sphere, or radius of cylinder  (from file)</td>
+        <td>&gt; 0</td>
+        <td>  </td>
+      </tr>
+      <tr>
+        <td>thickness or diameter<br>[cm]</td>
+        <td>thickness of cuboid, or diameter of sphere, or diameter of cylinder  (from input parameter)</td>
         <td>&gt; 0</td>
         <td> -t </td>
       </tr>
-
       <tr>
         <td>height<br>[cm]</td>
         <td>height of cuboid, or height of cylinder</td>
@@ -516,6 +527,7 @@
         <td>&ge; 0</td>
         <td> -w </td>
       </tr>
+
       <tr>
         <td>x,y,z direction</td>
         <td>
@@ -528,6 +540,7 @@
         <td>e.g. (0,0,1) for vertical cylinder</td>
         <td> -X,-Y,-Z </td>
       </tr>
+
       <tr>
         <td>scattering objects</td>
         <td>
@@ -535,7 +548,7 @@
           additionally, isotropically scattering objects can be chosen for testing normalization purposes
         </td>
         <td>spheres, polydispersive spheres, ellipsoids, parallelepipeds, cylinders</td>
-        <td> -A </td>
+        <td> -O </td>
       </tr>
       <tr>
         <td>
@@ -553,25 +566,25 @@
           <b>isotropic</b>: no parameter needed
         </td>
         <td>&ge; 0</td>
-        <td> -a,-b,-c </td>
+        <td> -U,-V,-W </td>
       </tr>
       <tr>
         <td>scat. len. dens. particl.<br>[1/cm&sup2;]</td>
         <td>Scattering length density of the particles</td>
         <td>&ge; 0</td>
-        <td> -A </td>
+        <td> -l </td>
       </tr>
       <tr>
         <td>scat. len. dens. solution<br>[1/cm&sup2;]</td>
         <td>Scattering length density of the solution</td>
         <td>&ge; 0</td>
-        <td> -A </td>
+        <td> -L </td>
       </tr>
       <tr>
         <td>vol. fraction of particles</td>
         <td>Volume fraction of the particles in solution (for 5 %: 0.05)</td>
         <td>0 &lt; frac &lt; 1</td>
-        <td> -A </td>
+        <td> -f </td>
       </tr>
       <tr>
         <td>incoherent scattering<br>total scattering<br>absorption<br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>&Aring;<sup>-1</sup>]</td>
@@ -580,7 +593,7 @@
           absorption is supposed to increase linearly with wavelength, the other are regarded as wavelength independent.
         </td>
         <td>&ge; 0</td>
-        <td> -A </td>
+        <td> -i, -T, -m </td>
       </tr>
     </tbody>
   </table>
@@ -1350,16 +1363,16 @@
             <i>no</i>: incoherent scattering is omitted
           </td>
           <td>yes, no</td>
-          <td>&nbsp;-I</td>
+          <td>-I</td>
         </tr>
         <tr>
-          <td>treat all neutronsincoherent scattering</td>
+          <td>treat all neutrons</td>
           <td>
             <i>yes</i>: treats neutrons not hitting the sample <br>
             <i>no </i>: treats only neutrons hitting the sample  (This is the right option for background simulations.)
           </td>
           <td>yes, no</td>
-          <td>&nbsp;-I</td>
+          <td>-a</td>
         </tr>
 
       </tbody>
@@ -1662,16 +1675,20 @@
     <tr align="center"><td><B>nxs_sample.par</B></td></tr>
     <tr>
       <td>
-        <pre>
-10.0 0.0 0.0    # sample position relative in [cm] to the coordinate system defined by the preceding module
-cub             # sample geometry (cyl, bal or cub)
-2.0 1.0	2.3     # thickness or radius, width and height of the sample in [cm]
-1.0 0.0 0.0     # orientation of the cylinder (does not need not be normalised)
-Fe.nxs          # nxs parameter file to describe the unit cell composition
-</pre>
+        <pre> 
+  10.0 0.0 0.0    # sample position in [cm] the coordinate system of the preceding module   (-x, -y, -z)
+  cub             # sample geometry (cyl, bal or cub)                                       (-G)
+  2.0 1.0 2.3     # thickness or radius, height and widthheight of the sample in [cm]       (-t, -h, -w)
+  1.0 0.0 0.0     # orientation of the cylinder (does not need not be normalised)           (-X, -Y, -Z)
+  Fe.nxs          # nxs parameter file to describe the unit cell composition                (-s)
+        </pre>
       </td>
     </tr>
   </table><BR>
+  <p>
+    From VITESS 4 on, these parameters can also given as input parameters. The command options are shown in brackets at the end of the table.
+  </p>
+
   The sample_nxs module provides three geometry to be simulated (cylinder, sphere (ball), cuboid). Depending on the selected shape, thickness, height and width and/or radius need to be defined. The sample orientation is given by vector components:<br>
   <UL>
     <LI>Cylinder: the vector is always perpendicular to the top of the cylinder (standard cyl. position (001), height along the z-axis).
@@ -1811,7 +1828,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       </tr>
       <tr>
         <td> d-spacing spread </td>
-        <td> gives FWHM/d-spacing, the relative 'thickness' of the Ewald sphere  i.e. a small variation of the lattice constant which is same in each direction </td>
+        <td> d<sub>fwhm</sub>/d, the relative 'thickness' of the Ewald sphere, i.e. a small variation of the lattice constant which is same in each direction </td>
         <td> silicon ~ 0.0001=0.01% </td>
         <td> -d </td>
       </tr>
@@ -1832,7 +1849,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td> reciprocal unit vectors A, B, C <br> [1/A] </td>
         <td> x,y,z components of the reciprocal unit vectors A, B, C defined in the sample frame </td>
         <td>    </td>
-        <td> -R -S -T<br /> -U -V -W <br /> -X -Y -Z  </td>
+        <td> -A -B -C <br /> -T -U -V <br /> -X -Y -Z </td>
       </tr>
       <tr>
         <td> normalisation <br> [arb.u.] </td>
@@ -1844,7 +1861,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td> absorption <br> [1/cm/A] </td>
         <td> attenuation due to absorption within the sample per wavelength </td>
         <td> &ge; 0 </td>
-        <td> -a </td>
+        <td> -m </td>
       </tr>
       <tr>
         <td> position X,Y,Z <br> [cm] </td>
@@ -1854,9 +1871,10 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       </tr>
       <tr>
         <td> phi(Z), chi(X'), omega(Z'') <br> [deg] </td>
-        <td> rotation angles of sample i.e. the reciprocal unit vectors around the Z, X and again Z axes </td>
+        <td> The transformation of the sample to its orientation is realized by 3 Euler angle rotations.
+             The reciprocal unit vectors are first rotated about the z axis Z (of the instrument), then about the new x axis X' and then about the z axis Z" (after the second rotation)</td>
         <td>    </td>
-        <td> -p -c -o </td>
+        <td> -p -c -O </td>
       </tr>
       <tr>
         <td> sample geometry </td>
@@ -1874,25 +1892,24 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td> output angle <br> horizontal, vertical <br> [deg] </td>
         <td> a frame rotation about the Z axis and then a rotation about the (new) Y axis defines a new orientation for the neutrons written to the output </td>
         <td> hor: -180° ... 180° <br /> vert: -90° ... 90° <br /> default: 0° 0°  </td>
-        <td> -_ </td>
+        <td> -u -U </td>
       </tr>
       <tr>
         <td> Structure file format</td>
         <td>
           If the structure factor file has the extension .dat (VITESS) or .laz or .lau (Laue Format), the columns (where the values can be found in the table) are set in the program.
           Otherwise, the meaning of individual columns needs to be specified to calculate the scattering probabilily. <br />
-          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F</i>, square of the structure factor <i>|F|²</i>, Multiplicity <i>M</i> and Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
+          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F</i>, square of the structure factor <i>|F|²</i> and the Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
           The VITESS format assumes the Miller indices in columns 2 to 4 and <i>|F<sub>hkl</sub></i>|² in the fifth column.
         </td>
         <td> &ge; 0 <br />0: not in file</td>
-        <td> -H -K -L -F -Q -M -W </td>
+        <td> -H -K -L<br />-F -Q -W </td>
       </tr>
       <tr>
         <td> Scale factor</td>
         <td> In case the structure factor file has neither the .dat (VITESS) nor .lau format, this scale factor is needed, if the (squared) structure factor is not given in barn^0.5 (barn).</td>
         <td> &gt; 0 </td>
         <td> -f     </td>
-        </td>
       </tr>
     </tbody>
   </table>
@@ -2093,20 +2110,6 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       </tr>
 
       <tr>
-        <td> temperature <br> [K] </td>
-        <td>
-          Temperature of the sample  controlling detailed balance. If T = 0, Bose Factor is set to 1 for w&gt;0  and 0 for w&lt;0.
-        </td>
-        <td>e.g. 0.0 1000. K</td>
-        <td> -T </td>
-      </tr>
-      <tr>
-        <td> repetition <br> [-] </td>
-        <td> If this integer &gt; 1, the neutron is used multiple times to obtain better statistics. </td>
-        <td>&ge; 1<br />default: 1</td>
-        <td> -A </td>
-      </tr>
-      <tr>
         <td> Bose Factor?</td>
         <td>
           'yes': Detailed balance included <br />
@@ -2114,6 +2117,22 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         </td>
         <td>'yes' 'no'</td>
         <td> -D </td>
+      </tr>
+      <tr>
+        <td> temperature <br> [K] </td>
+        <td>
+          Temperature of the sample  controlling detailed balance. <br />
+          If T = 0, Bose Factor is set to 1 for &omega;&gt;0  and 0 for &omega;&lt;0.
+        </td>
+        <td>e.g. 0.0 1000 K</td>
+        <td> -T </td>
+      </tr>
+
+      <tr>
+        <td> repetition <br> [-] </td>
+        <td> If this integer &gt; 1, the neutron is used multiple times to obtain better statistics. </td>
+        <td>&ge; 1<br />default: 1</td>
+        <td> -A </td>
       </tr>
     </tbody>
   </table>
@@ -2131,16 +2150,24 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       <tr>
         <td>lambda final<br>[&Aring;] </td>
         <td>
-          Gives centre position
-          of the scattered wavelength interval which is considered in the computation.
+          Gives center position of the scattered wavelength interval, which is considered in the simulation.
           It is recommended to choose e.g. the main analyser wavelength.
         </td>
         <td>e.g. 6.27 for Si(111) analyser      </td>
         <td> -L </td>
       </tr>
       <tr>
+        <td> angle horiz/vert <br> final [deg] </td>
+        <td>horizontal and vertical components of the main scattering angle</td>
+        <td>&nbsp;-180&deg; <font face="Symbol">-</font>&nbsp; 180&deg;</td>
+        <td> -E -F </td>
+      </tr>
+      <tr>
         <td>delta lambda final<br>[&Aring;]</td>
-        <td valign="top" width="54%"> Gives the length of the scattered wavelength interval which is considered in the computation. </td>
+        <td valign="top" width="54%">
+          Gives the width of the scattered wavelength interval which is considered in the computation,
+          i.e. th final wavelength will be in the range [&lambda;-&Delta;&lambda;, &lambda;+&Delta;&lambda;]
+        </td>
         <td valign="top" width="28%">
           e.g. ~0.02 for Si(111)  <br>
           and ~0.2 for PG(002);
@@ -2148,34 +2175,40 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td> -l </td>
       </tr>
       <tr>
-        <td> angle horiz/vert <br> final [deg] </td>
-        <td>horizontal and vertical components of the main scattering angle</td>
-        <td>&nbsp;-180&deg; <font face="Symbol">-</font>&nbsp; 180&deg;</td>
-        <td> -H -V </td>
-      </tr>
-      <tr>
-        <td> delta angle&nbsp; <br> horiz/vert&nbsp; [deg] </td>
-        <td> angular intervals around the horizontal and vertical components of the main scattering angle </td>
+        <td> delta angle <br> horiz/vert [deg] </td>
+        <td>
+          Angular intervals &Delta;&theta; and &Delta;&phi; around the main scattering direction,
+          i.e. scattering takes place in the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;],[&phi;-&Delta;&phi;,&phi;+&Delta;&phi;]
+        </td>
         <td>0&deg; <font face="Symbol">-</font> 180&deg;</td>
-        <td> -h -v </td>
+        <td> -e -f </td>
+      </tr>
+
+      <tr>
+        <td> scattering coefficient <br>[1/cm]       </td>
+        <td>
+          Macroscopic total scattering cross section of the sample<br />
+          This is: 1/ (density * scattering cross section)
+        </td>
+        <td>from tables</td>
+        <td> -s </td>
       </tr>
       <tr>
         <td> absorption coefficient <br> [1/cm/ &Aring;] </td>
-        <td> Attenuation constant per unit wavelength (corresponding to 1 Angstrom) which is 1/ (density * absorbtion cross section). </td>
+        <td>
+          Macroscopic absorption cross section of the sample per wavelength <br />
+          This is the attenuation constant per unit wavelength (corresponding to 1 Angstrom) <br />
+          It is:  1/ (density * absorption_cross_section).
+        </td>
         <td>&gt; 0.0</td>
         <td> -m </td>
       </tr>
-      <tr>
-        <td> scattering coefficient <br> [1/cm] </td>
-        <td>1/ (density * scattering cross section)</font></td>
-        <td>from tables</td>
-        <td> -T </td>
-      </tr>
+
       <tr>
         <td> position <br> [cm] </td>
         <td> Position of sample center  in the frame provided by the former module. </td>
         <td>e.g. 10.0, 0.0, 0.0</td>
-        <td> -x -y -z </td>
+        <td> -X -Y -Z </td>
       </tr>
       <tr>
         <td> sample geometry</td>
@@ -2190,8 +2223,17 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           For hollow cylinder, inner diameter is given by the third parameter.
           For spherical samples only the first value is considered as radius.
         </td>
-        <td> e.g. cylinder: 1.0, 6.0    </td>
+        <td> e.g. cylinder: 0.5, 2.0    </td>
         <td> -t -h -w </td>
+      </tr>
+      <tr>
+        <td> offset angle horizontal, vertical <br>[deg] </td>
+        <td>
+          A rotation first around the Z axis and then around the (new) Y axis gives the orientation of
+          the sample. It has no relevance for a spherical sample geometry.
+        </td>
+        <td>e.g. 0.0, 0.0 </td>
+        <td> -o -O </td>
       </tr>
 
       <tr>
@@ -2201,17 +2243,8 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           'standard frame generation': beamline direction follows the expected beam direction <br />
           'user defined frame': any direction defined by the user
         </td>
-        <td>>'standard frame generation'<br /> 'user defined frame'</td>
-        <td> -F </td>
-      </tr>
-      <tr>
-        <td> offset angle horizontal, vertical <br>[deg] </td>
-        <td>
-          A rotation first around the Z axis and then around the (new)Y axis<i> </i>gives the orientation of
-          the sample. It has no relevance for a spherical sample geometry.
-        </td>
-        <td>e.g. 0.0, 0.0 </td>
-        <td> -o -O </td>
+        <td>'standard frame generation'<br /> 'user defined frame'</td>
+        <td> -g </td>
       </tr>
       <tr>
         <td>lambda initial<br>angle hor. initial<br>angle vert. initial<br>[&Aring;], [deg], [deg] </td>
@@ -2229,14 +2262,24 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           and scattering angle with respect to the vector q-transfer.
         </td>
         <td> e.g. data corresponding to the most probable initial neutron wavevector </td>
-        <td> -r -s -t </td>
+        <td> -q -i -I </td>
+      </tr>
+      <tr>
+        <td> output frame <br> X',Y',Z' <br> [cm] </td>
+        <td>
+          The position of the output frame origin in the original frame. It represents the translation
+          vector applied to shift the origin of the original (input) frame to the new (output) position.
+          Default setting (standard frame) is the main position of the sample.
+        </td>
+        <td> one point on the scattered beam axis </td>
+        <td> -R -S -W </td>
       </tr>
       <tr>
         <td> output angle horizontal, vertical <br /> [deg] </td>
         <td>
           In case of "user defined
           output frame", a rotation about the Z axis and then a rotation about the
-          (new)Y axis defines a new orientation for the neutrons written to the output.
+          (new) Y axis defines a new orientation for the neutrons written to the output.
           If "standard frame generation" is activated, the coordinate system is rotated
           until the new X axis is parallel to the scattering direction which is determined
           by the reference k-vector and the vector 'q-transfer' defined above. This
@@ -2245,19 +2288,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           fixed for all q-transfers.&nbsp;
         </td>
         <td> e.g. forward scattering: <br>0.0, 0.0 </td>
-        <td> -w -W </td>
-      </tr>
-      <tr>
-        <td> output frame <br> X',Y',Z' <br> [cm] </td>
-        <td>
-          The position of the
-          output frame origin in the original frame. It represents the translation
-          vector applied to shift the origin of the original (input) frame to the new
-          (output) position. Default setting (standard frame) is the main position
-          of the sample.
-        </td>
-        <td> one point on the scattered beam axis </td>
-        <td> -X -Y -Z </td>
+        <td> -u -U </td>
       </tr>
     </tbody>
   </table>

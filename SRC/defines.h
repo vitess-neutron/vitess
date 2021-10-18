@@ -231,6 +231,7 @@ VtOrient;
 // Frame generation
 typedef enum
 {
+  VT_NO_FRAME   = 0,
   VT_FRAME_STD  = 1,
   VT_FRAME_USER = 2
 } 
@@ -582,6 +583,30 @@ typedef enum
 	VT_HOL_CYL = 4
 }
 VtSmplGeom;
+
+/*
+typedef enum
+{
+  VT_NO_PTCL       = ' ',
+  VT_PTCL_SPHERE   = 'S',
+  VT_PTCL_POLY_SPH = 'D',
+  VT_PTCL_ELLIPS   = 'E',
+  VT_PTCL_CYL      = 'C',
+  VT_PTCL_EPIPED   = 'P'
+  VT_ISOTROPIC     = 'I',
+}
+VtPtclGeom;*/
+typedef enum
+{
+  VT_NO_PTCL       = 0,
+  VT_PTCL_SPHERE   = 1,
+  VT_PTCL_POLY_SPH = 2,
+  VT_PTCL_ELLIPS   = 3,
+  VT_PTCL_CYL      = 4,
+  VT_PTCL_EPIPED   = 5,
+  VT_ISOTROPIC     = 6
+}
+VtPtclGeom;
 
 typedef enum
 {

@@ -44,11 +44,13 @@
 /* 1.0a May 2012  A. Houben  Color is also set for coherently scattered neutrons                */
 /* 1.1  Oct 2014  M. Boin    Updated nxs library and removed dependence from read_table-lib.h   */
 /* 1.2  Apr 2020  K. Lieutenant  visualisation and new central visualization parameters         */
+/* 1.3  Oct 2021  K. Lieutenant  option: parameters from input instead of from file             */
 /************************************************************************************************/
 
 #include <string.h>
 #include <math.h>
 
+#include "convert.h"
 #include "init.h"
 #include "sample.h"
 #include "softabort.h"
@@ -61,22 +63,35 @@
 /**   Global Variables       **/
 /******************************/
 // Input parameters
-char  *SampleFileName;      // -S    name of the sample parameter file      
-double Theta    = M_PI/2.0, // -D    these angles determine orientation and solid angles covered by the detector
-       DelTheta = M_PI/2.0, // -d       Theta has to be in the range of [0;PI]         
-       Phi      = M_PI,     // -P       Phi has to be in the range of [0;2*PI] 
-       DelPhi   = M_PI;     // -p
-//double DENSITY;           // unit cell volume                                  
-short  nColor=NO_COLOR,     // -c    colour of the scattered neutrons  
-       bIncohScat = FALSE,  // -I    shall incoherent scattering be done ?             
-       bTreatAll  = FALSE,  // -a    shall neutrons not hitting the sample be treated ?
-       bTransOnly = FALSE;  // -T    shall only transmission (imaging) be treated (=TRUE)? Or scattering also(=FALSE)?
-long   GenNeutrons=1;       // -A    how many trajectories to generate per incoming trajectory
+char  *pNxsFileNameI=NULL;       // -s       [-]    pointer to nxs parameter file name (from input parameter)
+char  *pSmplFileName=NULL;       // -S       [-]    name of the sample parameter file      
+double Theta    = M_PI/2.0,      // -D      [deg]   these angles determine orientation and solid angles covered by the detector
+       DelTheta = M_PI/2.0,      // -d      [deg]      Theta has to be in the range of [0;PI]         
+       Phi      = M_PI,          // -P      [deg]      Phi has to be in the range of [0;2*PI] 
+       DelPhi   = M_PI;          // -p      [deg]
+short  nColor=NO_COLOR,          // -c       [-]   colour of the scattered neutrons  
+       bIncohScat = FALSE,       // -I       [-]   shall incoherent scattering be done ?             
+       bTreatAll  = FALSE,       // -a       [-]   shall neutrons not hitting the sample be treated ?
+       bTransOnly = FALSE;       // -T       [-]   shall only transmission (imaging) be treated (=TRUE)? Or scattering also(=FALSE)?
+long   GenNeutrons=1;            // -A       [-]   how many trajectories to generate per incoming trajectory
+double Xpos     = 0.0,           // -x file  [cm]  position of the center of the sample 
+       Ypos     = 0.0,           // -y file  [cm]  
+       Zpos     = 0.0,           // -z file  [cm]  
+       Diameter = 0.0,           // -t file  [cm]  thickness or radius of the sample 
+       Height   = 0.0,           // -h file  [cm]  height of the sample 
+       Width    = 0.0,           // -w file  [cm]  width of the sample
+       Xdir     = 0.0,           // -X file  [-]   orientation of the sample 
+       Ydir     = 0.0,           // -Y file  [-]  
+       Zdir     = 0.0;           // -Z file  [-]  
+VtSmplGeom eGeom= VT_NO_GEOM;    // -G file  [-]   sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
 
-SampleType Sample;          // file  sample geometry
+// Variables determined from input parameters or from file
+SampleType Sample;                  //            sample geometry and position
+char *pNxsFileName="not found",     //       [-]   pointer to NXS file name that is used
+      sNxsFileNameF[CHAR_BUF_XS]="";// file  [-]   NXS file name from parameter file
 
 // constants
-short  MAX_HKL = 8;         // maximum hkl index value                           
+short  MAX_HKL = 8;                   //        maximum hkl index value                           
 double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
@@ -91,12 +106,12 @@ double MuTot,    // file  macrosc. scattering cross section, defined in 'sample.
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit   (int argc, char *argv[]);                // reads input parameters and sets global 
-void  OwnCleanup(DoublePair *StrucFac);                  // Does module specific cleanup
-void  GetSample (SampleType *Sample, char *StrFileName); // Reads sample parameters from file
-void  SetGeometry(char* sColor);                         // fills the structure stGeometry for visualization
+void  OwnInit    (int argc, char *argv[]);     // reads input parameters and sets global 
+void  OwnCleanup (DoublePair *StrucFac);       // Does module specific cleanup
+void SetSamplePar(SampleType *pSample);        // sets sample parameters 
+void  SetGeometry(char* sColor);               // fills the structure stGeometry for visualization
 
-char* FullInName(const char* filename);                  // path to input directory + file name  (from init.c)
+char* FullInName (const char* filename);       // path to input directory + file name  (from init.c)
 
 
 /******************************/
@@ -107,51 +122,51 @@ int main(int argc, char *argv[])
   /* sample */
   NXS_UnitCell   uc;               /* unit cell definitions (from nxs.h) */
   NXS_AtomInfo   *atomInfoList;    /* list for atom parameters */
-  char       nxsFileName[200];     /* nxs parameter file name */
-
-  VectorType InISP[2];             /* neutron intersection before scattering */
-  double     DetFacCoh,            /* cares about the detector coverage      */
-             DetFacInc;                     /* for coherent and incoherent scattering */
-  double     Lbf;                  /* full path length of the neutron in the sample */
-                                   /* with its initial direction */
-  double     Ls;                   /* distance of the neutron in the sample before sc. */
-  long       j;                    /* counting variable */
+  double     DetFacCoh=0.0,        /* cares about the detector coverage      */
+             DetFacInc=0.0;        /* for coherent and incoherent scattering */
+  double     Lbf=0.0;              /* full path length of the neutron in the sample with its initial direction */
+  double     Ls=0.0;               /* distance of the neutron in the sample before sc. */
+  long       j=0;                  /* counting variable */
   VectorType SP;                   /* position of scattering event */
-  double     ScTheta,              /* scattering angles (in neutron coordinate system) */
-             ScPhi;
+  double     ScTheta=0.0,          /* scattering angles (in neutron coordinate system) */
+             ScPhi=0.0;
   double     RotMatrixSmpl[3][3];  /* Rotation matrix that transforms a Vector to the sample coordinate system */
   double     RotMatrixNeut[3][3];
-  long       nisp,                 /* number of intersection points to come       */
-             i,                    /* counting index of the incoming trajectories */
-             iGen;                 /* counting index of the generated trajectories (see 'GenNeutrons') */
+  long       nisp=0,               /* number of intersection points to come       */
+             i=0,                  /* counting index of the incoming trajectories */
+             iGen=0;               /* counting index of the generated trajectories (see 'GenNeutrons') */
   DoublePair *StrucFac=NULL;
   double     mu_factor = 0.0;
-  int        numAtoms = 0;
+  int        numAtoms  = 0;
   int        nxs_init_success = 0;
+  VectorType InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}};             /* neutron intersection before scattering */
   
   // initialisation
   // --------------
+  InitRotMatrix(RotMatrixSmpl);
+  InitRotMatrix(RotMatrixNeut);
+
   _eModule = MCN_SMPL_NXS;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of nxs parameter file */
-  InitSample(&Sample);
-  GetSample (&Sample, nxsFileName);
+  InitSample  (&Sample);
+  SetSamplePar(&Sample);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 
   switch (Sample.Type)
-    { case VT_CUBE:
-        fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
-                "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-                Sample.SG.Cube.thickness, Sample.SG.Cube.height, Sample.SG.Cube.width,
-                Sample.Direction[0], Sample.Direction[1], Sample.Direction[2]);
-        break;
+  { case VT_CUBE:
+      fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
+              "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
+              Sample.SG.Cube.thickness, Sample.SG.Cube.height, Sample.SG.Cube.width,
+              Sample.Direction[0], Sample.Direction[1], Sample.Direction[2]);
+      break;
     case VT_CYL:
       fprintf(LogFilePtr, "Cylindrical sample : %7.2f cm radius%6.2f cm height\n"
               "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
@@ -163,26 +178,37 @@ int main(int argc, char *argv[])
               Sample.SG.Ball.r);
       break;
     default: break;
-    }
-  fprintf(LogFilePtr, "NXS parameter file: %s\n", nxsFileName);
+  }
+  fprintf(LogFilePtr, "NXS parameter file: %s\n", pNxsFileName);
 
-  /* read unit cell parameters from file */
-  numAtoms = nxs_readParameterFile( FullInName(nxsFileName), &uc, &atomInfoList ); 
+  /* read unit cell parameters from file 
+     try the name from paramter input first, then the name from file */
+  numAtoms = nxs_readParameterFile( FullInName(pNxsFileNameI), &uc, &atomInfoList ); 
   if( numAtoms < 1 )
   {
-    NXS_AtomInfo ai;
+    numAtoms = nxs_readParameterFile( FullInName(sNxsFileNameF), &uc, &atomInfoList ); 
+    if( numAtoms < 1 )
+    {
+      NXS_AtomInfo ai;
     
-    /* fallback solution: if no file exists, use alpha_iron */
-    fprintf(LogFilePtr, "WARNING: nxs parameter file %s NOT found! Using default values...\n", nxsFileName);
-    strncpy(uc.spaceGroup,"229",MAX_CHARS_SPACEGROUP);
-    uc.a = 2.866; uc.alpha = 90.0; uc.debyeTemp = 464.0;
-    strncpy(ai.label,"Fe",MAX_CHARS_ATOMLABEL); ai.b_coherent = 9.45;
-    ai.sigmaIncoherent = 0.4; ai.sigmaAbsorption = 2.56;
-    ai.molarMass = 55.85;
-    ai.x[0] = ai.y[0] = ai.z[0] = 0.0;
-    atomInfoList = (NXS_AtomInfo*)realloc( atomInfoList, sizeof(NXS_AtomInfo) );
-    atomInfoList[0] = ai;
-    numAtoms = 1;
+      /* fallback solution: if no file exists, use alpha_iron */
+      fprintf(LogFilePtr, "WARNING: nxs parameter file NOT found, neither in %s nor in %s!\n! Using default values...\n", pNxsFileNameI, sNxsFileNameF);
+      strncpy(uc.spaceGroup,"229",MAX_CHARS_SPACEGROUP);
+      uc.a = 2.866; uc.alpha = 90.0; uc.debyeTemp = 464.0;
+      strncpy(ai.label,"Fe",MAX_CHARS_ATOMLABEL); ai.b_coherent = 9.45;
+      ai.sigmaIncoherent = 0.4; ai.sigmaAbsorption = 2.56;
+      ai.molarMass = 55.85;
+      ai.x[0] = ai.y[0] = ai.z[0] = 0.0;
+      atomInfoList = (NXS_AtomInfo*)realloc( atomInfoList, sizeof(NXS_AtomInfo) );
+      atomInfoList[0] = ai;
+      numAtoms = 1;
+    }
+    else
+    { pNxsFileName=sNxsFileNameF;
+    }
+  }
+  else
+  { pNxsFileName=pNxsFileNameI;
   }
   
   if( NXS_ERROR_OK != nxs_initUnitCell(&uc) )
@@ -417,7 +443,7 @@ void  OwnInit(int argc, char *argv[])
   /*  -T Transmission only     (default: no = 0)                       */
   /*********************************************************************/
 
-  long i;
+  long i=0;
   int  detectortest=0;
 
   /* some default values */
@@ -427,64 +453,102 @@ void  OwnInit(int argc, char *argv[])
   DelPhi   = M_PI;
 
   /* Ok, scan all command line parameters */
-  for(i=1; i<argc; i++)
+  for (i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+')
-    { switch(argv[i][1])
+    if (argv[i][0]!='+')
+    { switch (argv[i][1])
       {
-      case 'S':
-        /* what is the sample file called? */
-        SampleFileName=&argv[i][2];
-        break;
+        case 'S':
+          /* what is the sample file called? */
+          pSmplFileName=&argv[i][2];
+          break;
+        case 's':
+          pNxsFileNameI=&argv[i][2];
+          break;
 
-      /* get the solid angle covered by the detectors if other than 4PI */
-      /* read four numbers            */
-      case 'D':
-        sscanf(&(argv[i][2]),"%lf", &Theta);
-        Theta*=M_PI/180.0;
-        /* Theta has to be in the range of [0;PI] */
-        if (Theta < 0.0 || Theta > M_PI)
-          Error("Theta has to be in the range of [0;PI] ");
-        detectortest &= 1000L;
-        break;
-      case 'd':
-        sscanf(&(argv[i][2]),"%lf", &DelTheta);
-        DelTheta*=M_PI/180.0;
-        detectortest &= 0100L;
-        break;
-      case 'P':
-        sscanf(&(argv[i][2]),"%lf", &Phi);
-        Phi*=M_PI/180.0;
-        /* Phi has to be in the range of [0;2*PI] */
-        if (Phi < 0.0 || Phi > 2.0*M_PI)
-          Error("Phi has to be in the range of [0;2*PI] ");
-        detectortest &= 0010L;
-        break;
-      case 'p':
-        sscanf(&(argv[i][2]),"%lf", &DelPhi);
-        DelPhi*=M_PI/180.0;
-        detectortest &= 0001L;
-        break;
+        /* get the solid angle covered by the detectors if other than 4PI */
+        /* read four numbers            */
+        case 'D':
+          sscanf(&(argv[i][2]),"%lf", &Theta);
+          Theta*=M_PI/180.0;
+          /* Theta has to be in the range of [0;PI] */
+          if (Theta < 0.0 || Theta > M_PI)
+            Error("Theta has to be in the range of [0;PI] ");
+          detectortest &= 1000L;
+          break;
+        case 'd':
+          sscanf(&(argv[i][2]),"%lf", &DelTheta);
+          DelTheta*=M_PI/180.0;
+          detectortest &= 0100L;
+          break;
+        case 'P':
+          sscanf(&(argv[i][2]),"%lf", &Phi);
+          Phi*=M_PI/180.0;
+          /* Phi has to be in the range of [0;2*PI] */
+          if (Phi < 0.0 || Phi > 2.0*M_PI)
+            Error("Phi has to be in the range of [0;2*PI] ");
+          detectortest &= 0010L;
+          break;
+        case 'p':
+          sscanf(&(argv[i][2]),"%lf", &DelPhi);
+          DelPhi*=M_PI/180.0;
+          detectortest &= 0001L;
+          break;
 
-      case 'A':
-        sscanf(&(argv[i][2]),"%ld",&GenNeutrons);
-        break;
-      case 'c':
-        nColor = (short) atoi(&argv[i][2]);
-        break;
-      case 'I':
-        if(argv[i][2]=='1') bIncohScat=TRUE;
-        break;
-      case 'a':
-        if(argv[i][2]=='1') bTreatAll=TRUE;
-        break;
-      case 'T':
-        if(argv[i][2]=='1') bTransOnly=TRUE;
-        break;
+        case 'A':
+          sscanf(&(argv[i][2]),"%ld",&GenNeutrons);
+          break;
+        case 'c':
+          nColor = (short) atoi(&argv[i][2]);
+          break;
+        case 'I':
+          if(argv[i][2]=='1') bIncohScat=TRUE;
+          break;
+        case 'a':
+          if(argv[i][2]=='1') bTreatAll=TRUE;
+          break;
+        case 'T':
+          if(argv[i][2]=='1') bTransOnly=TRUE;
+          break;
 
-      default:
-        fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
-        exit(-1);
+        case 'G':
+          eGeom = (VtSmplGeom) atoi(&argv[i][2]);
+          break;
+
+        /* sample position, size and orientation */
+        case 'x':
+          Xpos = atof(&argv[i][2]);
+          break;
+        case 'y':
+          Ypos = atof(&argv[i][2]);
+          break;
+        case 'z':
+          Zpos = atof(&argv[i][2]);
+          break;
+
+        case 't':
+          Diameter = atof(&argv[i][2]);
+          break;
+        case 'h':
+          Height = atof(&argv[i][2]);
+          break;
+        case 'w':
+          Width = atof(&argv[i][2]);
+          break;
+
+        case 'X':
+          Xdir = atof(&argv[i][2]);
+          break;
+        case 'Y':
+          Ydir = atof(&argv[i][2]);
+          break;
+        case 'Z':
+          Zdir = atof(&argv[i][2]);
+          break;
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
+          exit(-1);
       }
     }
   }
@@ -520,75 +584,70 @@ void OwnCleanup(DoublePair *StrucFac)
 /*******************************************************/
 /** Reads sample parameters from file                 **/
 /*******************************************************/
-void GetSample(SampleType *pSample, char *StrFileName)
+void SetSamplePar(SampleType *pSample)
 {
-  FILE *pSampleFile;
-  char Buffer[CHAR_BUF_LENGTH];
+  FILE  *pSampleFile;
+  char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
+  int    nLen=sizeof(sLine)-1;
+  double x=0.0, y=0.0, z=0.0, 
+         xdir  =0.0, ydir  =0.0, zdir =0.0,
+         radius=0.0, height=0.0, width=0.0;
+  VtSmplGeom geom=VT_NO_GEOM;
+  SampleType sample;         // file  sample geometry
 
-  pSampleFile = OpenInputFile2(SampleFileName, "sample data", "rt");
+  InitSample(pSample);
+  InitSample(&sample);
 
-  /* Read the file */
-  if(ReadTilComment(Buffer, pSampleFile))
-  { /* first line: sample position     */
-    sscanf(Buffer, "%lf %lf %lf", &(pSample->Position[0]), &(pSample->Position[1]), &(pSample->Position[2]));
+  /* Opens the parameter file if a file name is given */
+  if (pSmplFileName!=NULL)
+  { 
+    pSampleFile = OpenInputFile(pSmplFileName, FALSE, "rt");
 
-    /* Next line should describe the type of geometry cylinder, cube, ball */
-    if(ReadTilComment(Buffer, pSampleFile))
-    {
-      if(strstr(Buffer, "cyl")!=NULL)
-      { ReadCylinder(pSampleFile, pSample);
-        pSample->Type=VT_CYL;
-      }
-      else if(strstr(Buffer, "cub")!=NULL)
-      { ReadCube(pSampleFile, pSample);
-        pSample->Type=VT_CUBE;
-      }
-      else if(strstr(Buffer, "bal")!=NULL)
-      { ReadBall(pSampleFile, pSample);
-        pSample->Type=VT_SPHERE;
-      }
-      else
-      { fprintf(LogFilePtr, "ERROR: Please denote the sample geometry by cyl, cub or bal in the second line of %s\n", SampleFileName);
-        exit(-1);
-      }
+    /* Reads the parameters if the file can be opened */
+    if (pSampleFile != NULL)
+    { 
+      /* First line: sample position     */
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sNxsFileNameF); 
 
-      /* the direction vector should have a positive z component  */
-      /* this will make things easier with the rotations later on */
-      if(pSample->Direction[2] < 0)
-      { pSample->Direction[0] = -pSample->Direction[0];
-        pSample->Direction[1] = -pSample->Direction[1];
-        pSample->Direction[2] = -pSample->Direction[2];
-      }
+      geom = SmplGeom_Txt2ID(sGeom);
 
-      /* Sample Geometry is read */
-      if(ReadTilComment(Buffer, pSampleFile))
-      {
-        sscanf(Buffer, "%s", StrFileName);
+      fclose(pSampleFile);
 
-        // if(ReadTilComment(Buffer, pSampleFile))
-        // {
-      // sscanf(Buffer,"%lf", &DENSITY);
-        // }
-        // else
-        // { fprintf(LogFilePtr, "ERROR: Can't read volume of a unit cell of %s", SampleFileName);
-            // exit(-1);
-        // }
-      }
-      else
-      { fprintf(LogFilePtr, "ERROR: Can't read name of the nxs parameter file of %s", SampleFileName);
-        exit(-1);
-      }
+      // combines information from input and file, input parameters have priority
+      if (eGeom==VT_NO_GEOM && geom!=VT_NO_GEOM) eGeom = geom; 
+      if (Xpos    ==0.0 && x     !=0.0) Xpos    = x;
+      if (Ypos    ==0.0 && y     !=0.0) Ypos    = y;
+      if (Zpos    ==0.0 && z     !=0.0) Zpos    = z;
+      if (Diameter==0.0 && radius!=0.0) Diameter= 2.0*radius;
+      if (Height  ==0.0 && height!=0.0) Height  = height;
+      if (Width   ==0.0 && width !=0.0) Width   = width;
+      if (Xdir    ==0.0 && xdir  !=0.0) Xdir    = xdir;
+      if (Ydir    ==0.0 && ydir  !=0.0) Ydir    = ydir;
+      if (Zdir    ==0.0 && zdir  !=0.0) Zdir    = zdir;
     }
     else
-    { fprintf(LogFilePtr, "ERROR: Can't read second line of %s", SampleFileName);
-      exit(-1);
+    {	
+      fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
     }
   }
-  else
-  { fprintf(LogFilePtr, "ERROR: Can't read first line of %s", SampleFileName);
-    exit(-1);
+
+  // checks if geometry was given
+  if (eGeom==VT_NO_GEOM)
+    Error2("Sample geometry could not be identified", sGeom);
+
+  // fills data structures
+  FillSample(pSample, eGeom, Xpos, Ypos, Zpos, Xdir, Ydir, Zdir, Diameter, Height, Width, 0.0);
+
+  /* the direction vector should have a positive z component  this will make things easier with the rotations later on */
+  if(pSample->Direction[2] < 0)
+  { pSample->Direction[0] = -pSample->Direction[0];
+    pSample->Direction[1] = -pSample->Direction[1];
+    pSample->Direction[2] = -pSample->Direction[2];
   }
-  fclose(pSampleFile);
 }
 
 
