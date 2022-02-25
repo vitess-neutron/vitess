@@ -1,0 +1,44 @@
+variables:
+  VITESS_VERSION: "3.5"
+
+stages:
+  - build
+  - test
+  - package
+
+image: rockylinux:8
+
+compile:
+  stage: build
+  before_script:
+    - dnf install -y make gcc gcc-c++
+  script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+  artifacts:
+    paths:
+      - MODULES/
+
+test:
+  stage: test
+  script:
+    - echo "TODO no tests defined yet"
+
+tarball:
+  stage: package
+  variables:
+    DIR_NAME: vitess${VITESS_VERSION}
+    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
+  before_script:
+    - dnf install -y tar
+  script:
+    - mkdir ${DIR_NAME}
+    - cp -r `cat filelist.txt` ${DIR_NAME}/
+    - tar -czf ${TAR_NAME} ${DIR_NAME}
+  artifacts:
+    name: Vitess_Linux_x86_64
+    paths:
+      - ${TAR_NAME}

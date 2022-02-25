@@ -37,6 +37,7 @@
 // Input parameters
 char   sStructFileP[CHAR_BUF_XS]=""; // -s file  [-]    structure factor file name from input parameters
 char  *pSampleFileName;              // -S       [-]    pointer to the parameter file name (located in argv) 
+char *SampleFileName=NULL; /* FIXME: nedeed for compatibility with sample.c */
 short  nColor=NO_COLOR,              // -c       [-]    colour of the scattered neutrons  
        bIncohScat=FALSE,             // -I       [-]    shall incoherent scattering be done ?  
        bTreatAll =FALSE;             // -a       [-]    shall neutrons not hitting the sample be treated ?  

@@ -160,7 +160,7 @@ my @All = (@C, @CI, @CM, @CN, @CG, @CMG, @CS, @Gexe, @PTool);
 ###
 ### end define targets #####################################################################
 
-my $makefile = 'Makefile';
+my $makefile = 'Makefile.template';
 my $nmakefile = 'vitess.mak';
 
 sub usage {
