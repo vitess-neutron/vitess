@@ -427,6 +427,7 @@ void OwnInit   (int argc, char *argv[])
   ReflFile *pRefFileLast;
   double bintervalX=1.0, bintervalY=1.0;
   int ibinX, ibinY;
+  int k;
 
   MsgInit();
   InitVector(BegPosM);
@@ -472,7 +473,7 @@ void OwnInit   (int argc, char *argv[])
       pReflMCPLThread = (mcpl_outfile_t*) malloc((NThreads+1)*sizeof(mcpl_outfile_t));
       particleT = (mcpl_particle_t*) malloc((NThreads+1)*sizeof(mcpl_particle_t));
       pMCPLparticles  = (Escaping_MCPL_particles*) malloc((NThreads+1)*sizeof(Escaping_MCPL_particles));
-      
+
       //Initialize RotMatrixM and BegPosM
       double BlnLen;
       ReadInstrData(iModuleId, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
@@ -482,16 +483,16 @@ void OwnInit   (int argc, char *argv[])
       //allocate memory for RotMatrixSThread and BegPosSThread
       //PARALLLEL
       RotMatrixSThread = (double**) malloc(3*(NThreads+1)*sizeof(double*));
-      for(int k=0; k<3*(NThreads+1);k++)
+      for (k=0; k<3*(NThreads+1);k++)
           RotMatrixSThread[k] = (double*) malloc(3*sizeof(double));
       //allocate memory for RotMatrixSThread and BegPosSThread
       BegPosSThread = (double**) malloc((NThreads+1)*sizeof(double*));
-      for(int k=0; k<(NThreads+1);k++)
+      for (k=0; k<(NThreads+1);k++)
           BegPosSThread[k] = (double*) malloc(3*sizeof(double));
-      
+
       MCPLParamFileName=arg;
       char mcpl_tmp_filename[1024];
-      for(int k=0; k<=NThreads; ++k)
+      for (k=0; k<=NThreads; ++k)
       {
         if(k==0)
         {
@@ -501,9 +502,9 @@ void OwnInit   (int argc, char *argv[])
         else
         { sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", FullOutName(arg), k);
         }
-        
+
         pReflMCPLThread[k] = mcpl_create_outfile(mcpl_tmp_filename);
-        
+
         //Init the Threads own tmp particle
         memset(particleT+k, '\0', sizeof(mcpl_particle_t));
       }
@@ -1203,6 +1204,7 @@ void processNeutron(int neutron_i, int thread_i)
   double dXpce = GdXpce;
   // double dDelY = GdDelY;
   double dDelZ = GdDelZ;
+  int i, k;
 
   myneutron = InputNeutrons + neutron_i;
 
@@ -1222,9 +1224,9 @@ void processNeutron(int neutron_i, int thread_i)
     if (sMCPLWrite !=0)
     {
       CopyVector(BegPosM, BegPosSThread[thread_i]);
-      for(int i=0; i<3; i++)
+      for (i=0; i<3; i++)
       {
-        for(int k=0; k<3;k++)
+        for (k=0; k<3;k++)
         {
           RotMatrixSThread[thread_i*3+i][k] = RotMatrixM[i][k];
         }
@@ -1666,15 +1668,16 @@ void OwnCleanup()
   {
     char mcpl_tmp_filename[1024];
     char mcpl_outfilename[1024];
+    int i;
     //Close MCPL files
-    for(int i=0; i<NThreads+1; ++i)
+    for (i=0; i<NThreads+1; ++i)
     {
         mcpl_close_outfile(pReflMCPLThread[i]);
     }
     //Merge MCPL files
     sprintf(mcpl_outfilename, "%s.mcpl", FullOutName(MCPLParamFileName));
     fprintf(LogFilePtr, "MCPL outfile: %s \n", mcpl_outfilename);
-    for (int i=1;i<=NThreads;++i)
+    for (i=1;i<=NThreads;++i)
     {
       sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", FullOutName(MCPLParamFileName), i);
       if (mcpl_can_merge(mcpl_outfilename, mcpl_tmp_filename) )
@@ -2450,10 +2453,11 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
   double absPos[3]={pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2]};
   if(sMCPLWrite)
   {
+    int j;
     RotBackVector(RotMatrixSThread[thread_i*3], absPos);
     //SERIAL RotBackVector(RotMatrixSThread, absPos);
  
-    for(int j=0; j<3; j++)
+    for (j=0; j<3; j++)
       absPos[j] = BegPosSThread[thread_i][j] + absPos[j];
   }
   // Gamma output
@@ -2483,7 +2487,8 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
     }
  
     double cosTheta, cosPhi, sinTheta, sinPhi, phi;
-    for(int i=0; i<MAX_GAMMA_NUM; i++)
+    int i;
+    for (i=0; i<MAX_GAMMA_NUM; i++)
     {
       particleT[thread_i].position[0] = absPos[0];
       particleT[thread_i].position[1] = absPos[1];
@@ -3007,6 +3012,7 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
 {
   double Niabs, Tiabs;
   double lossNeutronI = incI * (1 - reflectivity);
+  int i;
   
   // Total reflection
   if (mVal<=1)
@@ -3024,7 +3030,7 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
       pOutParticles->neutronInt=0;
     }
     
-    for(int i=0; i<MAX_GAMMA_NUM; ++i)
+    for (i=0; i<MAX_GAMMA_NUM; ++i)
     {
         pOutParticles->gammaInt[i] = Niabs*gamma_fractionNi[i] + Tiabs*gamma_fractionTi[i];
     }
@@ -3043,7 +3049,7 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
       Tiabs*=q;
       pOutParticles->neutronInt=0;
     }
-    for(int i=0; i<MAX_GAMMA_NUM; ++i)
+    for (i=0; i<MAX_GAMMA_NUM; ++i)
     {
       pOutParticles->gammaInt[i] = Niabs*gamma_fractionNi[i] + Tiabs*gamma_fractionTi[i];
     }
@@ -3061,7 +3067,7 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
       Tiabs*=q;
       pOutParticles->neutronInt=0;
     }
-    for(int i=0; i<MAX_GAMMA_NUM; ++i){
+    for (i=0; i<MAX_GAMMA_NUM; ++i){
       pOutParticles->gammaInt[i] = Niabs*gamma_fractionNi[i] + Tiabs*gamma_fractionTi[i];
     }
   }

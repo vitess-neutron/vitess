@@ -297,8 +297,9 @@ my_exit:
 
   // additional monitors
   if (nAddMons > 0) 
-  { 
-    for (int jMon=0; jMon<nAddMons; jMon++)
+  {
+    int jMon;
+    for (jMon=0; jMon<nAddMons; jMon++)
       UpdateMon(jMon, nBundle);
   }
 

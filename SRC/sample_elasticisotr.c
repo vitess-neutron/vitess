@@ -430,6 +430,7 @@ void ReadParFile(SampleType* pSample)
 {
   // opens file containing sample parameters (program exit in case of error)
   FILE* pSmplFile = OpenInputFile2(SampleFileName, "sample data", "r");
+  int i;
 
   /* reads from file by using ReadParF(pSmplFile) and ReadParComment(pSmplFile) */
   ScatterMain [1]=ReadParF(pSmplFile); ScatterMain [2]=ReadParF(pSmplFile); ReadParComment(pSmplFile);
@@ -449,7 +450,7 @@ void ReadParFile(SampleType* pSample)
     Warning("Distance to sample is smaller than at least one sample dimension"); 
 
   /* changes geometry text to small letters */
-  for (int i=0; i < strlen(Option); i++)
+  for (i=0; i < strlen(Option); i++)
   { if (isupper(Option[i]))
       Option[i] = tolower(Option[i]);
   }
