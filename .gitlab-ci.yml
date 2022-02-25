@@ -6,10 +6,9 @@ stages:
   - test
   - package
 
-image: rockylinux:8
-
-compile:
+compile-rocky8:
   stage: build
+  image: rockylinux:8
   before_script:
     - dnf install -y make gcc gcc-c++
   script:
@@ -18,23 +17,62 @@ compile:
     - make install
     - make clean
     - cd ..
+    - mkdir artifacts-rocky8
+    - cp -r MODULES artifacts-rocky8/
   artifacts:
+    expire_in: 1 week
     paths:
-      - MODULES/
+      - artifacts-rocky8/
 
-test:
-  stage: test
+compile-centos7:
+  stage: build
+  image: centos:7
+  before_script:
+    - yum install -y make gcc gcc-c++
   script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+    - mkdir artifacts-centos7
+    - cp -r MODULES artifacts-centos7/
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - artifacts-centos7/
+
+test-rocky8:
+  stage: test
+  image: rockylinux:8
+  script:
+    - cp -rf artifacts-rocky8/MODULES .
     - echo "TODO no tests defined yet"
 
-tarball:
+package-rocky8:
   stage: package
+  image: rockylinux:8
   variables:
     DIR_NAME: vitess${VITESS_VERSION}
     TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
-  before_script:
-    - dnf install -y tar
   script:
+    - cp -rf artifacts-rocky8/MODULES .
+    - mkdir ${DIR_NAME}
+    - cp -r `cat filelist.txt` ${DIR_NAME}/
+    - tar -czf ${TAR_NAME} ${DIR_NAME}
+  artifacts:
+    name: Vitess_Linux_x86_64
+    paths:
+      - ${TAR_NAME}
+
+package-centos7:
+  stage: package
+  image: centos:7
+  variables:
+    DIR_NAME: vitess${VITESS_VERSION}
+    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
+  script:
+    - cp -rf artifacts-centos7/MODULES .
     - mkdir ${DIR_NAME}
     - cp -r `cat filelist.txt` ${DIR_NAME}/
     - tar -czf ${TAR_NAME} ${DIR_NAME}
