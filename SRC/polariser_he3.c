@@ -279,6 +279,7 @@ void OwnInit(int argc, char *argv[])
 {
   double     roty_g =0.0, rotz_g =0.0; 
   double     roty_gm=0.0, rotz_gm=0.0; 
+  int j;
 
   /* initial values */
   InitVector(PosMain);
@@ -293,7 +294,7 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixG_Field);
   Init3x3Matrix(RotMatrixGM_Field);
 
-  for (int j=0; j < FLD_SIZE; j++)
+  for (j=0; j < FLD_SIZE; j++)
   { polardata[j] = 0.0;
     transdata[j] = 0.0;
   }

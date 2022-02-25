@@ -319,6 +319,7 @@ my_exit:
 void OwnInit(int argc, char *argv[])
 {
   double roty=0.0, rotz=0.0;
+  int j;
 
   /* initial values */
   InitVector(PosSM);
@@ -332,8 +333,9 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixOut);
   Init3x3Matrix(RotMatrixAnalysis);
 
-  for (int j=0; j < FLD_SIZE; j++)
-  { rupdata[j]   = 0.0;
+  for (j=0; j < FLD_SIZE; j++)
+  {
+    rupdata[j]   = 0.0;
     rdowndata[j] = 0.0;
   }
 

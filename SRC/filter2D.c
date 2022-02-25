@@ -164,6 +164,7 @@ void  OwnInit(int argc, char *argv[])
 void LoadTable()
 {
   char sBuffer[CHAR_BUF_LENGTH];
+  int i;
 
   /* If there is a structure factor file go and load the file */
   if (sFilterTable!=NULL) 
@@ -177,8 +178,8 @@ void LoadTable()
       nBinsVert = LinesInFile(pFilterFile);
       aFilter  = calloc(nBinsHor*nBinsVert, sizeof(double));
 
-      for (int i=0; i < nBinsVert; i++)
-      {  
+      for (i=0; i < nBinsVert; i++)
+      {
         ReadLine  (pFilterFile, sBuffer, CHAR_BUF_LENGTH);
         StrgScanLF(sBuffer, &(aFilter[i*nBinsHor]), nBinsHor, 0);
       }
