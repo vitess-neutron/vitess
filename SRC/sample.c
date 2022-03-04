@@ -30,8 +30,6 @@ double* kVal;
 double* lVal;
 double* F2Val;
 
-extern char* SampleFileName;
-
 
 /****************************************************************/
 /* 'InitSample':   initializes structure 'SampleType'           */
@@ -124,13 +122,13 @@ void ReadCube(FILE *SampleFile, SampleType *Sample)
     } 
     else 
     {
-      fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
+      fprintf(LogFilePtr, "ERROR: orientation of the sample not found\n");
       exit(-1);
     }
   } 
   else 
   {
-    fprintf(LogFilePtr,"ERROR: height, width and thickness of the cube not found in %s!\n", SampleFileName);
+    fprintf(LogFilePtr,"ERROR: height, width and thickness of the cube not found\n");
     exit(-1);
   }
 
@@ -170,14 +168,13 @@ void ReadCylinder(FILE *SampleFile, SampleType *Sample)
     } 
     else 
     {
-      fprintf(LogFilePtr, "ERROR: orientation of the sample not found in %s\n", SampleFileName);
+      fprintf(LogFilePtr, "ERROR: orientation of the sample not found\n");
       exit(-1);
     }
   } 
   else 
   {
-    fprintf(LogFilePtr,"ERROR: radius and height of the cylinder not found in %s!\n",
-    SampleFileName);
+    fprintf(LogFilePtr,"ERROR: radius and height of the cylinder not found\n");
     exit(-1);
   }
 
