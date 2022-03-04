@@ -27,7 +27,6 @@
 // Input parameters
 char   sStructFileP[CHAR_BUF_XS]=""; // -s       [-]   structure factor file name from input
 char*  pSampleFileName=NULL;         // -F       [-]   parameter file name (located in argv)
-char *SampleFileName=NULL; /* FIXME: nedeed for compatibility with sample.c */
 short  nColor   = NO_COLOR;          // -c       [-]   colour of the neutrons scattered from the environment
 VtDir  eDirEnv  = VT_NO_DIR;         // -r       [-]   direction for sample environment: 1:'in' or 2:'out' 
 double Theta    = M_PI/2.0,          //    fix  [deg]  solid angles into which scattering takes place
