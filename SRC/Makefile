@@ -6,22 +6,25 @@ ifndef VITESS_VERSION
 VITESS_VERSION = 3.5
 endif
 DESTDIR = ../MODULES
+GSLPATH = ./rng
+
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
 TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC = cc
-CFLAGS = -O3 -pthread -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -Irng
-CPPFLAGS=
+CFLAGS = -O3 -pthread -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX = c++
 CXXFLAGS = $(CFLAGS)
-LDFLAGS = -L. -Lrng
+CPPFLAGS=
+LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
 ARFLAGS = rv
 INSTALL = install
 RM = rm -f
+
 
 ALL = ascii2bin \
 beamstop \
@@ -116,7 +119,6 @@ mathfunctions.o \
 sample.o \
 mathvector.o \
 mathmatrix.o \
-mathfunctions.o \
 mcpl.o \
 mon2_header.o \
 trace.o \
@@ -129,7 +131,7 @@ all: $(ALL)
 .PHONY: clean
 clean:
 	$(RM) *.o *.a $(ALL)
-	$(MAKE) -C rng clean
+	$(MAKE) -C "$(GSLPATH)" clean
 
 .PHONY: install
 install: all
@@ -137,32 +139,15 @@ install: all
 		$(INSTALL) $${F} $(DESTDIR)/$${F}_$(SYS)_$(ARCH); \
 	done
 
-.SUFFIXES: .c .cpp .o
 
-.c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
-
-.cpp.o:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
-
-.c:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-
-.cpp:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-
-.o:
-	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-
-
-rng/libgslran.a:
-	$(MAKE) -C rng libgslran.a
+"$(GSLPATH)/libgslran.a":
+	$(MAKE) -C "$(GSLPATH)" libgslran.a
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(ALL): | libvitess.a rng/libgslran.a
 
+$(ALL): | libvitess.a "$(GSLPATH)/libgslran.a"
 
 init.o: CPPFLAGS+=-DVVERS='"$(FULLVERSION)"'
 
@@ -199,4 +184,22 @@ source: source.c src_modchar.c source_csns.c source_ess.c
 spacewindow: spacewindow.c bender_inter_data.c
 
 spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
+
+
+.SUFFIXES: .c .cpp .o
+
+.c.o:
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
+
+.cpp.o:
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
+
+.c:
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+.cpp:
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+.o:
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
