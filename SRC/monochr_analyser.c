@@ -815,13 +815,14 @@ void SetGeometry(char* sColor)
     }
     else
     {	
+      int i, j;
       k=0;
 	    stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
 	    stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
       
-	    for (int i=0; i < NumberCE[0]; i++) 
+	    for (i=0; i < NumberCE[0]; i++) 
       {
-	      for (int j=0; j < NumberCE[1]; j++) 
+	      for (j=0; j < NumberCE[1]; j++) 
         {
 	        VectorType DimCurrCE, PosCurrCE;
 	        double RotMatrixCurrCE[3][3];

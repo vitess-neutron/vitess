@@ -229,12 +229,15 @@ void OwnInit(int argc, char *argv[])
 {
   const char *intForm = "%d";
   double shift_y=0.0; 
+  int i, j;
 
   GeomFileName="chopper_fermi_g.dat";
 
-  for (int i=0; i < MAX_GATE; i++)
-  { for (int j=0; j < MAX_CHAN; j++)
-    { x_ch[i][j]=0.0;
+  for (i=0; i < MAX_GATE; i++)
+  {
+    for (j=0; j < MAX_CHAN; j++)
+    {
+      x_ch[i][j]=0.0;
       y_ch[i][j]=0.0;
     }
   }
