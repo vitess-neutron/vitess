@@ -30,6 +30,7 @@
 #include "matrix.h"
 #include "message.h"
 #include "sample.h"
+#include "convert.h"
 
 
 /**************************************************/
