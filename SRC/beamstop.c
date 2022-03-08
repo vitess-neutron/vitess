@@ -13,6 +13,7 @@
 #include "init.h"
 #include "softabort.h"
 #include "intersection.h"
+#include "convert.h"
 
 
 /******************************/
