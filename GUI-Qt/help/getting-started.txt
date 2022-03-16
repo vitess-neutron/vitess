@@ -1,0 +1,14 @@
+Getting Started
+
+You can either start from scratch or with one of our examples, collected in the FILES sub-folder
+of the VITESS installation directory (menu 'File' | 'LOAD Instrument').
+In the first case, we recommend to create a new directory first and to define it
+as 'parameter directory'.
+'input file' and 'output file' are only needed in special cases.
+The second step is to create a source.
+Click on the '--inactive--' button and choose your kind of source. You will get a default
+'moderator description file'; this contains most of the information of the moderator.
+For your own simulation you will probably either have to choose another description
+(Browse in Files/moderators) - or to change the contents of the default file (Edit).
+
+
