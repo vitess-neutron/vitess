@@ -10,7 +10,7 @@ use strict;
 
 # unix comment
 my $unixcomment =<<'EOS';
-# compile hosts used at HZB
+# compiler hosts used at FZJ
 # Linux   : dixi3  openSUSE 10.2 (i586)
 # Linux64 : dixi4 openSUSE 11.3 (x86_64)
 # Darwin  : daisy.helmholtz-berlin.de 11.2.0 (X86-64)
@@ -40,7 +40,7 @@ my @C = qw(ascii2bin monitor1
 	   mon2_div mon2_pos mon2_posdiv mon2_tofwl mon2_wldiv mon2_kdiv mon2_rdiv
 	   mon_brilliance velselect read_in writeout gener_batch lattice_dist
 	   mirror_coating surface_file gener_bispectral guide_shape spin_reset
-     filter2D capture_flux runtime fom gener_pipe opt_sim);
+	   capture_flux runtime fom gener_pipe opt_sim filter2D);
 
 # modules which need ITOOL (=TOOL + intersection)
 my @CI = qw(chopper_disc chopper_fermi_parallel collimator
