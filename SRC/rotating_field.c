@@ -117,6 +117,7 @@ int main(int argc, char **argv)
   double TimeR=0.0, Rroty=0.0, Rrotz=0.0;
   double VX=0.0, VY=0.0, VZ=0.0;
   double F_MODULE=0.0, FieldCorr=1.0;
+  int k;
 
   Neutron NeutronAdd1, NeutronAdd2;
   Plane EndPoint1, EndPoint2;
@@ -156,7 +157,7 @@ int main(int argc, char **argv)
     FldM[ind_x] = 0.0;
   }
 
-  for (int k=0; k < 3 ; k++)
+  for (k=0; k < 3 ; k++)
     FieldValue00[k]=0.0;
 
   DECLARE_ABORT;
@@ -702,6 +703,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
+  int j;
   /* INIT */
   InitVector(PosMain);
   InitVector(TranslOut);
@@ -719,7 +721,7 @@ void OwnInit(int argc, char *argv[])
   FieldValue0Init[1] = 0.0;
   FieldValue0Init[2] = 0.0;	
 
-  for (int j=1; j<FIELD_SIZE; j++)
+  for (j=1; j<FIELD_SIZE; j++)
   {
     PosD   [j]=0.0;
     FieldD [j]=0.0;

@@ -423,8 +423,9 @@ void SetReflData(double* pReflDat, const double* aQ, const double* aR, const int
 double InterpolM(const double m, const double* aM, const double* aR, const int nVals)
 {
   double R=0.0;
+  int k;
 
-  for (int k=0; k < nVals-1; k++)
+  for (k=0; k < nVals-1; k++)
   {
     if (aM[k] <= m && aM[k+1] > m)
       R = aR[k] + (aR[k+1] - aR[k])/(aM[k+1] - aM[k]) * (m - aM[k]);   
@@ -436,8 +437,9 @@ double InterpolM(const double m, const double* aM, const double* aR, const int n
 double InterpolQ(const double Q, const double* aQ, const double* aR, const int nVals)
 {
   double R=0.0;
+  int k;
 
-  for (int k=0; k < nVals-1; k++)
+  for (k=0; k < nVals-1; k++)
   {
     if (aQ[k] <= Q && aQ[k+1] > Q)
       R = aR[k] + (aR[k+1] - aR[k])/(aQ[k+1] - aQ[k]) * (Q - aQ[k]);   

@@ -31,8 +31,6 @@ double* kVal=NULL;
 double* lVal=NULL;
 double* F2Val=NULL;
 
-// extern char* pSmplFileName;
-
 
 /****************************************************************/
 /* 'InitSample':   initializes structure 'SampleType'           */

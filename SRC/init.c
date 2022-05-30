@@ -1677,6 +1677,8 @@ void CopyNeutron(const Neutron *source, Neutron *dest)
 
 void InitNeutron(Neutron* pNeut)
 {
+	int k;
+
 	pNeut->ID.IDGrp[0]='A';
 	pNeut->ID.IDGrp[1]='A';
 	pNeut->ID.IDNo=0;
@@ -1687,7 +1689,7 @@ void InitNeutron(Neutron* pNeut)
 	pNeut->Wavelength =0.0;
 	pNeut->Probability=0.0;
 
-  for (int k=0; k < 3; k++)
+  for (k=0; k < 3; k++)
   { pNeut->Position[k]=0.0;
 	  pNeut->Vector[k]  =0.0;
 	  pNeut->Spin[k]    =0.0;

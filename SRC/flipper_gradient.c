@@ -112,6 +112,7 @@ int main(int argc, char **argv)
   double     TimeR=0.0, Rroty=0.0, Rrotz=0.0, RRSM=0.0;
   double     VX=0.0, VY=0.0, VZ=0.0;
   VectorType RR, RR1, RRS;
+  int k;
 
   // initialization
   // --------------
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
     FldM[ind_x] = 0.0;
   }
 
-  for (int k=0; k < 3; k++)
+  for (k=0; k < 3; k++)
     FieldValue0[k] = 0.0; 
 	
   InitVector(Pos1); InitVector(Pos2); InitVector(domain_field);
@@ -753,12 +754,13 @@ void OwnInit(int argc, char *argv[])
   double FieldValue0Ave[3];            // variables for calculations 
   double FieldValue0Length=0.0, 
          OmegaFV0=0.0, OmegaFV0in=0.0; 
+  int k;
 
   /* initial values */
   InitVector(PosMain);
   InitVector(TranslOut);
 
-  for (int k=0; k < 3; k++)
+  for (k=0; k < 3; k++)
   { FieldValue0Init [k] = 0.0; 
     FieldValue0Grlin[k] = 0.0; 
     FieldValue0Ave  [k] = 0.0;
