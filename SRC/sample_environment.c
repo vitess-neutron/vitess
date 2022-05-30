@@ -272,22 +272,12 @@ int main(int argc, char **argv)
   my_exit:
 
   /* Write parameters to log file */
-  switch (stEnvironment.Type)
-  { 
-    case VT_HOL_CYL: 
-      fprintf(LogFilePtr, "Vertical hollow cylinder around sample: \n"
-                          " radii, out and in : %7.2f, %7.2f cm \n height out and in : %7.2f, %7.2f cm\n",
-                          stEnvironment.SG.HCyl.r_out, stEnvironment.SG.HCyl.r_in, stEnvironment.SG.HCyl.h_out, stEnvironment.SG.HCyl.h_in);
-      break;
-    default:;
-      Error("Sample environment can only have the shape of a vertical hollow cylinder");
-  }
-  fprintf(LogFilePtr, " position          :(%7.2f,%7.2f,%7.2f ) cm\n"
-                      "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
+  if (stEnvironment.Type!=VT_HOL_CYL) 
+    Error("Sample environment can only have the shape of a vertical hollow cylinder");
+
+  fprintf(LogFilePtr, "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
                       "unit cell volume   : %8.3f Ang³\n"
-                      "struct. factor file: %s\n", 
-                      stEnvironment.Position[0], stEnvironment.Position[1], stEnvironment.Position[2], 
-                      MuInc, MuTot, MuAbs, UCV, sStrFileName);
+                      "struct. factor file: %s\n",         MuInc, MuTot, MuAbs, UCV, sStrFileName);
 
   /* write geometry file */
   SetGeometry("cyan");
@@ -480,7 +470,7 @@ short SetEnvironPar(SampleType* pEnvironment)
     if (pFile != NULL)
     {
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &thickness, &diameter, &height);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileName); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStructFileF); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf",         &ucv);
 

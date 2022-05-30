@@ -5,7 +5,7 @@
 /* providing due credit is given to the authors.                                            */
 /* 1.0  Oct 2011  D. Nekrassov   initial version                                            */
 /* 1.1  Feb 2020  K. Lieutenant  new central visualization parameters                       */
-/* 1.2  Mar 2021  K. Lieutenant  update after each bundle                                   */
+/* 1.2  Mar 2021  K. Lieutenant  update after each bunch                                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -28,7 +28,7 @@ extern "C" {
 int main(int argc, char *argv[])
 {
   long	i=0,
-        iBndl=0;            // current bundle
+        iBnch=0;            // current bunch
   short bExclusive = FALSE, 
         bRegistered= FALSE;
 
@@ -62,8 +62,8 @@ int main(int argc, char *argv[])
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       { 
-        iBndl++;
-        templateMonitor.WriteOut(iBndl);
+        iBnch++;
+        templateMonitor.WriteOut(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
 my_exit:
   // Stores the information in the output file, closes the file and releases memory.
-  templateMonitor.WriteOut(templateMonitor.nBundle);
+  templateMonitor.WriteOut(templateMonitor.nBunches);
   templateMonitor.FreeMemory();
 
   // releases memmory and writes to instrument and log file

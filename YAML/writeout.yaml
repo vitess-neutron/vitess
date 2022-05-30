@@ -23,7 +23,7 @@ writeout: 		     # source module that will be executed
       type:    "switch" 
       descr:   "Active?" 
       tooltip: "YES: output file is written   NO: output file is not written"
-      default: "YES"
+      default: [YES,NO]
       column:  0                     
       prefix:  "-a"  
 
@@ -31,7 +31,7 @@ writeout: 		     # source module that will be executed
       type:    "switch" 
       descr:   "Header" 
       tooltip: "YES: write header to ASCII file beginning each line with '#'    NO: write only data, no header"
-      default: "YES"
+      default: [YES,NO]
       column:  1                     
       prefix:  "-h"  
 
@@ -39,7 +39,7 @@ writeout: 		     # source module that will be executed
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
-      default: ["VITESS", "McStas", "MCPL", "MCNPX", "MCNP6"]   
+      default: ["VITESS", "McStas", "MCPL", "MCNP6"]   
       column:  0                     
       prefix:  "-f"
 
@@ -59,13 +59,26 @@ writeout: 		     # source module that will be executed
       column:  2                     
       prefix:  "-S" 
   
-  - FactInt :               #  >=0    -I  "intensity factor\nfor MCNP"  "Factor to normalize to the source intensity from MCNP data"
+  - FactInt :              
       type:    "float" 
-      descr:   "intensity factor\nfor MCNP"
-      tooltip: "Factor to normalize to the source intensity from MCNP data"
+      descr:   "intensity\nfactor"
+      tooltip: "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'."
       min:     0.0
       column:  0                     
       prefix:  "-I"
+  - nSurface:               
+      type:    "int" 
+      descr:   "surface\nID" 
+      tooltip: "Only for MCNP6: Number written as surface ID to the output file" 
+      default: 0
+      column:  1                     
+      prefix:  "-s"
+  - Beamline:   
+      type:    "string" 
+      descr:   "title"
+      tooltip: "Only for MCNP6: name of the simulation" 
+      column:  2                     
+      prefix:  "-T"     
 
 #  - aParOut :               #         -c  "Columns"  
 #      type:    "string" 

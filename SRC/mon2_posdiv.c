@@ -28,32 +28,32 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*  MonFileName  = NULL;      // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
-short  bProbactiv   = TRUE,      // -p    [-]   flag Display:   YES: Probability weight   NO: number of trajectories
-       bExclusive   = FALSE;     // -e    [-]   flag Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-int    index_yz     = Y_AXIS;    // -q    [-]   enum direction:  Y_AXIS  Z_AXIS   
-long   nbin_pos     = 1,         // -y    [-]   number of position bins
-       nbin_div     = 1,         // -z    [-]   number of divergence bins
-       format       = MATRIX;    // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
-double pos_min      = 0.0,       // -w   [cm]   min. position to be monitored
-       pos_max      = 0.0,       // -W   [cm]   max. position to be monitored
-       div_min      = 0.0,       // -h   [deg]  min. divergence to be monitored
-       div_max      = 0.0;       // -H   [deg]  max. divergence to be monitored
-double filtLambdaMin=-1.0,       // -l   [Ang]  filter: lower bound value of the wavelength range
-       filtLambdaMax=-1.0,       // -L   [Ang]  filter: upper bound value of the wavelength range
-       filtYMin     =-1.0e10,    // -u   [cm]   filter: left edge position of the monitored area
-       filtYMax     = 1.0e10,    // -U   [cm]   filter: right edge position of the monitored area
-       filtZMin     =-1.0e10,    // -v   [cm]   filter: bottom position of the monitored area
-       filtZMax     = 1.0e10;    // -V   [cm]   filter: top position of the monitored area
-
+char*  MonFileName  = NULL;        // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
+short  bProbactiv   = TRUE,        // -p    [-]   flag Display:   YES: Probability weight   NO: number of trajectories
+       bExclusive   = FALSE;       // -e    [-]   flag Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+VtScAxis index_yz = VT_NO_SC_AXIS; // -q    [-]   enum direction:  VT_SC_Y  VT_SC_Z   
+long   nBinsPos     = 1,           // -y    [-]   number of position bins
+       nBinsDiv     = 1,           // -z    [-]   number of divergence bins
+       format       = MATRIX;      // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+double pos_min      = 0.0,         // -w   [cm]   min. position to be monitored
+       pos_max      = 0.0,         // -W   [cm]   max. position to be monitored
+       div_min      = 0.0,         // -h   [deg]  min. divergence to be monitored
+       div_max      = 0.0;         // -H   [deg]  max. divergence to be monitored
+double filtLambdaMin=-1.0,         // -l   [Ang]  filter: lower bound value of the wavelength range
+       filtLambdaMax=-1.0,         // -L   [Ang]  filter: upper bound value of the wavelength range
+       filtYMin     =-1.0e10,      // -u   [cm]   filter: left edge position of the monitored area
+       filtYMax     = 1.0e10,      // -U   [cm]   filter: right edge position of the monitored area
+       filtZMin     =-1.0e10,      // -v   [cm]   filter: bottom position of the monitored area
+       filtZMax     = 1.0e10;      // -V   [cm]   filter: top position of the monitored area
+                                 
 // Variables determined from input parameters
-FILE*  fMonitor     = NULL;
-
-double BinPosY   [BINSIZE];           // edges of the bins of the first parameter 
-double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter 
-double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
-double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
-long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
+FILE*  fMonitor     = NULL;      
+                                 
+double*  BinPosY    = NULL;        //             edges of the bins of the first parameter 
+double*  BinPosZ    = NULL;        //             edges of the bins of the second parameter 
+double** IntYZ      = NULL;        //             intensity within a bin (in 2 dimensions) 
+double** IntYZError = NULL;        //             standard deviation of this intensity 
+long  ** nTrajYZ    = NULL;        //             number of trajectories within a bin
 
 
 /******************************/
@@ -88,13 +88,12 @@ int main(int argc, char *argv[])
   bLengthCmpr   = FALSE;
 
   // initializes arrays
-  for(iPos = 0; iPos<nbin_pos+1; iPos++)
-  {
-    BinPosY[iPos] = pos_min + (pos_max-pos_min) * iPos / (double)nbin_pos;
+  for (iPos=0; iPos <= nBinsPos; iPos++) BinPosY[iPos] = pos_min + (pos_max-pos_min) * iPos / (double)nBinsPos;
+  for (jDiv=0; jDiv <= nBinsDiv; jDiv++) BinPosZ[jDiv] = div_min + (div_max-div_min) * jDiv / (double)nBinsDiv;
 
-    for(jDiv = 0;jDiv<(nbin_div+1); jDiv++)
+  for(iPos=0; iPos < nBinsPos; iPos++)
+  { for(jDiv=0; jDiv < nBinsDiv; jDiv++)
 	  {
-	    BinPosZ         [jDiv] = div_min + (div_max-div_min)  * jDiv / (double) nbin_div;
 	    IntYZ     [iPos][jDiv] = 0.0;
 	    IntYZError[iPos][jDiv] = 0.0;
 	    nTrajYZ   [iPos][jDiv] = 0;
@@ -136,7 +135,7 @@ int main(int argc, char *argv[])
 
 	      pos_ = InputNeutrons[i].Position[index_yz];
 
-	      if (index_yz == Y_AXIS) 
+	      if (index_yz == VT_SC_Y)
         {
 	        if (InputNeutrons[i].Vector[0] >=0) 
             div_ = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
@@ -144,7 +143,7 @@ int main(int argc, char *argv[])
             div_ = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
 	        div_ *= 180.0/M_PI;
 	      }
-	      else if (index_yz == Z_AXIS) 
+	      else if (index_yz == VT_SC_Z) 
         {
 	        div_  = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
 	        div_ *= 180.0/M_PI;
@@ -154,10 +153,10 @@ int main(int argc, char *argv[])
           Error("Analysis direction does not have a proper value");
         }
 
-        iPos = (int)floor(nbin_pos*(pos_-pos_min)/(pos_max-pos_min));
-	      jDiv = (int)floor(nbin_div*(div_-div_min)/(div_max-div_min));
+        iPos = (int)floor(nBinsPos*(pos_-pos_min)/(pos_max-pos_min));
+	      jDiv = (int)floor(nBinsDiv*(div_-div_min)/(div_max-div_min));
 			
-	      if (((iPos>=0)&&(iPos<nbin_pos))&&((jDiv>=0)&&(jDiv<nbin_div)))
+	      if (((iPos>=0)&&(iPos<nBinsPos))&&((jDiv>=0)&&(jDiv<nBinsDiv)))
         {	
 	        nTrajYZ[iPos][jDiv]++;
 	        IntYZ [iPos][jDiv] += prob ;
@@ -175,16 +174,17 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
- if (index_yz==Y_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nbin_pos, "y/cm", nbin_div, "y-divergence/deg");
-  else if (index_yz == Z_AXIS) 
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nbin_pos, "z/cm", nbin_div, "z-divergence/deg");
+  if (index_yz==VT_SC_Y)
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsPos, "y/cm", nBinsDiv, "y-divergence/deg");
+  else if (index_yz == VT_SC_Z) 
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsPos, "z/cm", nBinsDiv, "z-divergence/deg");
   else
     Error("Analysis direction does not have a proper value");
 
- // WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY,        nbin_div, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
-  WriteOutput2D(fMonitor, format, bProbactiv,  nbin_pos, BinPosY, BINSIZE,  nbin_div, BinPosZ,  
-                         (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+ // WriteOutput2D(fMonitor, format, bProbactiv,  nBinsPos, BinPosY,        nBinsDiv, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
+  WriteOutput2D(fMonitor, format,  bProbactiv,  
+                nBinsPos, BinPosY, nBinsDiv, BinPosZ,  
+                IntYZ, IntYZError, nTrajYZ);
   fclose(fMonitor);
 
   // writes to instrument and log file
@@ -207,7 +207,7 @@ void  OwnInit(int argc, char *argv[])
       switch(argv[i][1])
       {
         case 'q':
-	        index_yz = atol(&argv[i][2]); /*  y or z direction */
+	        index_yz = (VtScAxis) atoi(&argv[i][2]); /*  y or z direction */
 	        break;
 
         case 'O':
@@ -215,14 +215,10 @@ void  OwnInit(int argc, char *argv[])
 	        break;
 
         case 'y':
-	        nbin_pos = atol(&argv[i][2]); /* number of bins horizontal axis*/
-	        if(nbin_pos>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
+	        nBinsPos = atol(&argv[i][2]); /* number of bins horizontal axis*/
 	        break;
         case 'z':
-	        nbin_div = atol(&argv[i][2]); /* number of bins vertical axis*/
-	        if(nbin_div>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
+	        nBinsDiv = atol(&argv[i][2]); /* number of bins vertical axis*/
 	        break;
 
         case 'w':
@@ -277,6 +273,10 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
+  // check
+  if (index_yz!=VT_SC_Y && index_yz!=VT_SC_Z)
+    Error("Analysis direction wrong");
+
   // opens monitor file
   if (MonFileName==NULL)
   {
@@ -288,8 +288,23 @@ void  OwnInit(int argc, char *argv[])
   }
 
   /*initialisation */
-  if (bProbactiv != 1) 
-    bProbactiv = 0;
+  if (bProbactiv != TRUE) 
+    bProbactiv = FALSE;
+
+  // Allocate memory for the monitor data
+  BinPosY    = (double*)  malloc((nBinsPos+1) * sizeof(double));
+  BinPosZ    = (double*)  malloc((nBinsDiv+1) * sizeof(double));
+
+  IntYZ      = (double**) malloc(nBinsPos * sizeof(double*));
+  IntYZError = (double**) malloc(nBinsPos * sizeof(double*));
+  nTrajYZ    =   (long**) malloc(nBinsPos * sizeof(long*));
+
+  for (int iY=0; iY < nBinsPos; iY++) 
+  {
+    IntYZ     [iY] = (double*) malloc(nBinsDiv * sizeof(double));
+    IntYZError[iY] = (double*) malloc(nBinsDiv * sizeof(double));
+    nTrajYZ   [iY] = (long*)   malloc(nBinsDiv * sizeof(int));
+  }
 
   return;
 }

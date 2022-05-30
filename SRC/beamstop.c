@@ -11,6 +11,7 @@
 /* 1.2  Jul 2021  K. Lieutenant   general changes for VITESS 3.5                             */
 /*********************************************************************************************/
 
+#include "convert.h"
 #include "init.h"
 #include "softabort.h"
 #include "intersection.h"
@@ -166,41 +167,46 @@ my_exit:
 void  OwnInit(int argc, char* argv[])
 {
 	int i;
+  char* arg;
 
 	for (i = 1; i < argc; i++)
 	{
 		if (argv[i][0] != '+')
 		{
+      arg=&argv[i][2];
 			switch (argv[i][1])
 			{
-			case 'p':
-				bProp = atoi(&argv[i][2]);        // criterion: propagate to beamstop  0: no,  1: yes
-				if (bProp == FALSE)
-					bOldFrame = TRUE;
-				break;
-			case 'R':
-				eShape = Shape_Txt2ID(&argv[i][2]);
-				break;
+			  case 'p':
+				  bProp = atoi(&argv[i][2]);        // criterion: propagate to beamstop  0: no,  1: yes
+				  if (bProp == FALSE)
+					  bOldFrame = TRUE;
+				  break;
+			  case 'R':
+          if (strlen(arg) > 1)
+				    eShape = Shape_Txt2ID(arg);     // text given   VITESS 4 
+          else
+            eShape = (VtShape) atoi(arg);   // ID given     VITESS 3
+				  break;
 
-			case 'd':
-				DistMove = atof(&argv[i][2]);
-				break;
+			  case 'd':
+				  DistMove = atof(&argv[i][2]);
+				  break;
 
-			case 'r':
-				Radius = atof(&argv[i][2]);
-				break;
+			  case 'r':
+				  Radius = atof(&argv[i][2]);
+				  break;
 
-			case 'W':
-				Width = atof(&argv[i][2]);
-				break;
-			case 'H':
-				Height = atof(&argv[i][2]);
-				break;
+			  case 'W':
+				  Width = atof(&argv[i][2]);
+				  break;
+			  case 'H':
+				  Height = atof(&argv[i][2]);
+				  break;
 
-			default:
-				fprintf(LogFilePtr, "ERROR: unknown command option: %s\n", argv[i]);
-				exit(-1);
-				break;
+			  default:
+				  fprintf(LogFilePtr, "ERROR: unknown command option: %s\n", argv[i]);
+				  exit(-1);
+				  break;
 			}
 		}
 	}

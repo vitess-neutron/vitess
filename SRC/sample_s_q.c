@@ -45,7 +45,7 @@ VtSmplGeom eGeomS=VT_NO_GEOM; // -G file   [-]    sample shape: VT_NO_GEOM, VT_C
 double Xpos     = 0.0,        // -x file   [cm]   position of the center of the sample 
        Ypos     = 0.0,        // -y file   [cm]  
        Zpos     = 0.0,        // -z file   [cm]  
-       Diameter = 0.0,        // -t file   [cm]   thickness or radius of the sample 
+       Diameter = 0.0,        // -t file   [cm]   thickness or diameter of the sample 
        Height   = 0.0,        // -h file   [cm]   height of the sample 
        Width    = 0.0,        // -w file   [cm]   width of the sample
        Xdir     = 0.0,        // -X file   [-]    orientation of the sample 
@@ -296,39 +296,17 @@ int main(int argc, char *argv[])
  my_exit:
 
   /* Write parameters to log file */
-  switch (stSample.Type)
-  {	
-    case VT_CUBE: 
-      fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
-                          "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-      stSample.SG.Cube.thickness, stSample.SG.Cube.height, stSample.SG.Cube.width,
-      stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_CYL: 
-      fprintf(LogFilePtr, "Cylindrical sample : %7.2f cm radius%6.2f cm height\n"
-                          "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-      stSample.SG.Cyl.r, stSample.SG.Cyl.height,
-      stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_SPHERE: 
-      fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n", 
-      stSample.SG.Ball.r);
-      break;
-    default :;
-  }
-  fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
-                      "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, coh scat; absorption)\n",
-                      stSample.Position [0], stSample.Position [1], stSample.Position [2], MuInc, MuCoh, MuAbs);
-
-  if (Freq > 0.0)
-    fprintf(LogFilePtr, "  modulation       :%7.1f Hz %7.2f deg offset\n", Freq, Offset);
-  else
-    fprintf(LogFilePtr, "  no modulation\n");
+  fprintf(LogFilePtr, "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, coh scat; absorption)\n", MuInc, MuCoh, MuAbs);
 
   if (eFunction==VT_AS_FCT)
   	fprintf(LogFilePtr, "Q-values calculated");
-  else
+  else if (eFunction==VT_FR_FILE)
     fprintf(LogFilePtr, "Q-values from S(Q) file: %s\n", pStrFileName);
+
+  if (Freq > 0.0)
+    fprintf(LogFilePtr, "modulation         :%7.1f Hz %7.2f deg offset\n", Freq, Offset);
+  else
+    fprintf(LogFilePtr, "no modulation\n");
 
   /* write geometry file */
   SetGeometry("white");
@@ -475,11 +453,11 @@ void  OwnInit(int argc, char *argv[])
   /* Check, whether all 4 angles are given; if not, initial values are set again */	
   if ( detectortest!=0 && detectortest!=15) 
   {
-    Error("You have to specify -P,-p,-D,-d together in order to set the detector range.\n The detector range is reset to 4*PI ");
-    Theta   = M_PI/2.0;
+    Error("You have to specify -P,-p,-D,-d together in order to set the detector range.");
+  /*  Theta   = M_PI/2.0;
     DelTheta= M_PI/2.0;
     Phi     = M_PI;
-    DelPhi  = M_PI;
+    DelPhi  = M_PI; */
   }
 
   /* Theta has to be in the range of [0;PI] */
@@ -519,14 +497,15 @@ void SetSamplePar(SampleType *pSample)
 {
   FILE*  pFile=NULL;
   char   sLine[CHAR_BUF_SMALL]="", 
-         sGeomS[20]="",             // string: sample shape
-         cFct      =' ';            // char  : particle shape
+         sGeomS[20]="",        // string: sample shape
+         sFct[2]   =" ";       // char  : source of S(Q) function
   int    nLen=sizeof(sLine)-1;
-  double x     = 0.0, y     = 0.0, z    = 0.0, 
-         xdir  = 0.0, ydir  = 0.0, zdir = 0.0,
-         radius= 0.0, height= 0.0, width= 0.0,
-         muInc = 0.0, muCoh = 0.0, muAbs= 0.0; 
-  VtSmplGeom geomS;           // enum  sample shape
+  double x    = 0.0, y     = 0.0, z    = 0.0, 
+         xdir = 0.0, ydir  = 0.0, zdir = 0.0,
+         d_par= 0.0, height= 0.0, width= 0.0,
+         muInc= 0.0, muCoh = 0.0, muAbs= 0.0; 
+  VtSmplGeom eGeo;           // enum  sample shape
+  VtDataSrc  eFct;
   SampleType sample;          // structure  sample geometry
 
   InitSample(pSample);
@@ -543,24 +522,30 @@ void SetSamplePar(SampleType *pSample)
       /* First line: sample position     */
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%c",          &cFct);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          &sFct);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileNameF); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muCoh, &muAbs); 
 
-      geomS = SmplGeom_Txt2ID (sGeomS);
-      if (geomS==VT_NO_GEOM)
+      eGeo = SmplGeom_Txt2ID (sGeomS);
+      if (eGeo==VT_NO_GEOM)
         Error2("Sample geometry could not be identified", sGeomS);
+      eFct = (VtDataSrc) sFct[0];
+      //eFct = (VtDataSrc) cFct;
+      if (eFct==VT_NO_SRC)
+        Error2("Source of structure factor function could not be identified", sFct);
 
       fclose(pFile);
 
       // combines information from input and file, input parameters have priority
-      if (eGeomS==VT_NO_GEOM && geomS!=VT_NO_GEOM) eGeomS = geomS; 
+      if (eGeomS   ==VT_NO_GEOM && eGeo!=VT_NO_GEOM) eGeomS    = eGeo; 
+      if (eFunction==VT_NO_SRC  && eFct!=VT_NO_SRC)  eFunction = eFct; 
       if (Xpos    == 0.0 && x     != 0.0) Xpos    = x;
       if (Ypos    == 0.0 && y     != 0.0) Ypos    = y;
       if (Zpos    == 0.0 && z     != 0.0) Zpos    = z;
-      if (Diameter== 0.0 && radius!= 0.0) Diameter= 2.0*radius;
+      if (Diameter== 0.0 && d_par != 0.0)
+      { if (eGeomS==VT_CUBE) Diameter = d_par; else Diameter = 2.0 * d_par;}
       if (Height  == 0.0 && height!= 0.0) Height  = height;
       if (Width   == 0.0 && width != 0.0) Width   = width;
       if (Xdir    == 0.0 && xdir  != 0.0) Xdir    = xdir;
@@ -580,9 +565,11 @@ void SetSamplePar(SampleType *pSample)
   /* Total macroscopic scattering cross-section */
   MuTot = MuCoh + MuInc;
 
-  // checks if geometry was given
+  // checks if geometry and source of S(Q) were given
   if (eGeomS==VT_NO_GEOM)
-    Error2("Sample geometry could not be identified", sGeomS);
+    Error2("Sample geometry could not be determined", sGeomS);
+  if (eFunction==VT_NO_SRC)
+    Error2("Source of structure factor function could not be determined", sFct);
 
   /* Fills sample structure */
   FillSample(pSample, eGeomS, Xpos, Ypos, Zpos,  Xdir, Ydir, Zdir, Diameter, Height, Width, 0.0);
@@ -595,12 +582,7 @@ void SetSamplePar(SampleType *pSample)
     pSample->Direction[2] = -pSample->Direction[2];
   }
 
-  /* check if file for S(Q) could be found */
-  if (eFunction == VT_FR_FILE)
-  {	
-    fprintf(LogFilePtr, "ERROR: Can't read S(Q) file name %s", pSmplFileName);
-    exit(-1);
-  }
+  return;
 }
 
 
@@ -669,7 +651,7 @@ int LoadSofQFile(const char* pFileName)
   if (pFileName!=NULL && strlen(pFileName) >0) 
   {
     /* opens distribution file */
-    pStrFacFile = OpenInputFile(pStrFileName, FALSE, "rt");
+    pStrFacFile = OpenInputFile(pFileName, FALSE, "rt");
     if (pStrFacFile!=NULL) 
     {
       long   n;
@@ -690,7 +672,7 @@ int LoadSofQFile(const char* pFileName)
     } 
     else 
     {	
-      fprintf(LogFilePtr, "\nERROR: Can't open %s to read S(Q) file\n", pStrFileName);
+      fprintf(LogFilePtr, "\nERROR: Can't open %s to read S(Q) file\n", pFileName);
       exit (-1);
     }
   }

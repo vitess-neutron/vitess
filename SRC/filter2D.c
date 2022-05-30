@@ -1,12 +1,13 @@
 /*********************************************************************************************/
-/*  VITESS module 'filter2D'                                                                     */
+/*  VITESS module 'filter2D'                                                                 */
 /*                                                                                           */
-/* This module simulates a rectangular area in which the                                        */
+/* This module simulates a rectangular area in which the intensity is modulated              */
+/* as a function of either position or divergence                                            */
 /*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  Sep 2021  K. Lieutenant   initial version (based on slit.c)                                           */
+/* 1.0  Sep 2021  K. Lieutenant   initial version (based on slit.c)                          */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -36,6 +37,7 @@ double    Ymin=0.0,            // -y   [cm]  minimal horizontal filter position
 
 // Variables determined from input parameters or data from file
 FILE*     pFilterFile=NULL;    //            pointer to the file containing the filter table  
+char      sParTxt[20]="";      //            name of the filter parameter
 int       nBinsHor =1,         //      [cm]  number of horizontal channels = number of matrix columns
           nBinsVert=1;         //      [cm]  number of vertical channels   = number of matrix rows
 double*   aFilter=NULL;
@@ -47,12 +49,11 @@ double*   aFilter=NULL;
 int main(int argc, char *argv[])
 {
 	long  i=0;
-  char   sParTxt[20]="";
-	double PosY=0.0, PosZ=0.0;        // hor. and vert. position of neutron
+	double Y=0.0, Z=0.0;        // hor. and vert. position or divergence of the neutron
 
   // initialisation
   // --------------
-  _eModule = MCN_SLIT;
+  _eModule = MCN_FILTER2D;
 
 	Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.0");
@@ -79,14 +80,26 @@ int main(int argc, char *argv[])
       }
       else
       { 
-			  // Calculate  and  writeout new data set, if slit is hit
-			  // -----------------------------------------------------
-			  PosY = InputNeutrons[i].Position[1];
-			  PosZ = InputNeutrons[i].Position[2];
+			  // Calculate weight  and  writeout new data set, if position/divergence is within the limits
+			  // ----------------------------------------------------------------------------------
+        switch (ePar)
+        { 
+          case MON2_POS:
+			      Y = InputNeutrons[i].Position[1];
+			      Z = InputNeutrons[i].Position[2];
+            break;
+          case MON2_DIV:
+			      Y = Degrees(atan(InputNeutrons[i].Vector[1]/InputNeutrons[i].Vector[0]));
+			      Z = Degrees(atan(InputNeutrons[i].Vector[2]/InputNeutrons[i].Vector[0]));
+            break;
+          default:
+            Error2("Filter2D not yet realized for this parameter", sParTxt);
+        }
+          
 			
-			  if (PosY > Ymin && PosY < Ymax &&  PosZ > Zmin && PosZ < Zmax)
+			  if (Y > Ymin && Y < Ymax &&  Z > Zmin && Z < Zmax)
 			  {	
-				  InputNeutrons[i].Probability *= GetFactor(PosY, PosZ);
+				  InputNeutrons[i].Probability *= GetFactor(Y, Z);
 
 				  WriteNeutron(&InputNeutrons[i]);
 			  }
@@ -97,7 +110,6 @@ int main(int argc, char *argv[])
 // Finish: print parameters, write geometry and instrument file, free memory
 // -----------------------------------------------------
 my_exit:
-  Mon2Par_ID2Txt(sParTxt, ePar);
 	fprintf(LogFilePtr, "%d x %d %s filter of size %6.2f x %6.2f cm (W x H) using file '%s'\n", 
 	                    nBinsHor, nBinsVert, sParTxt, Ymax-Ymin, Zmax-Zmin, sFilterTable);
 
@@ -125,7 +137,7 @@ void  OwnInit(int argc, char *argv[])
           sFilterTable=&argv[i][2];
           break;
 				case 'P':
-					ePar = Mon2Par_Txt2ID(&argv[i][2]);
+					ePar = (VtMon2Par) atoi(&argv[i][2]);
 					break;
 
 				case 'y':
@@ -140,13 +152,6 @@ void  OwnInit(int argc, char *argv[])
 				case 'Z':
 					Zmax = atof(&argv[i][2]);
 					break;
-
-				case 'n':
-					nBinsHor = atoi(&argv[i][2]);
-					break;
-				case 'N':
-					nBinsVert = atoi(&argv[i][2]);
-					break;
       
 				default:
 					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
@@ -155,6 +160,10 @@ void  OwnInit(int argc, char *argv[])
 			}
 		}
 	}
+
+  Mon2Par_ID2Txt(sParTxt, ePar);
+
+  return;
 }
 
 

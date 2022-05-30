@@ -91,6 +91,7 @@ long   maxi    (const long   value1, const long   value2);
 
 double SolidAngle    (const double dHorAngle,     const double dVertAngle);
 double TrueSolidAngle(const double dHorAngle,     const double dVertAngle);
+double TrueSolidAngleR(const double RadAngle);
 double ReflSNT       (char* sTxt, const double Q, const double m, const short bPrint);
 double ReflTypical   (            const double Q, const double m);
 double ReflTypicalT  (char* sTxt, const double Q, const double m, const short bPrint);
@@ -150,7 +151,7 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
-void   GetActDate(char* sDate);                      // Gets current date from system  
+void   GetActDate(char* sDate, short eDateFmt);      // Gets current date from system  
 void   GetActTime(char* sTime);                      // Gets current time from system  
 
 void   ChangeSlash(char* pStr);

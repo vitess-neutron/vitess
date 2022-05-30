@@ -54,11 +54,11 @@ double     A_recip[3]={0.0,0.0,0.0},// -A -B -C file [1/Ang] reciprocal unit vec
 double     NormFact=1.0,            // -N       file   [-]   normalisation factor
            AbsorptionC=0.0;         // -m       file  [1/cm] Macroscopic absorption cross section 
 double		 AnglPhi=0.0,             // -p       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (1st rot)
-           AnglChi=0.0,             // -c       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the X-axis (2nd rot)
+           AnglChi=0.0,             // -q       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the X-axis (2nd rot)
            AnglOmega=0.0;           // -O       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (3rd rot)
 VtSmplGeom eGeom=VT_NO_GEOM;        // -G       file   [-]   sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
 VectorType PosSample={0.0,0.0,0.0}; // -x -y -z file   [cm]  center position of the sample
-double     Diameter = 0.0,          // -t       file  [cm]   thickness or radius of the sample 
+double     Diameter = 0.0,          // -t       file  [cm]   thickness or diameter of the sample 
            Height   = 0.0,          // -h       file  [cm]   height of the sample 
            Width    = 0.0,          // -w       file  [cm]   width of the sample
            AnglOutHoriz=0.0,        // -u       file  [rad]  horizontal angle of the output frame, relative to input orientation
@@ -73,8 +73,8 @@ double     scaleF2;                 // -f       file   [-]   normalization facto
 
 // Variables determined from input parameters or trajectory data
 SampleType stSample;                     //            [-]   sample geometry
-VectorType DimSample={0.0,0.0,0.0};      // -t -h -w file   [cm]  size of the sample
-long       Repetition=1;                 //            [-]   number of reflections found in the structure factor file
+VectorType DimSample={0.0,0.0,0.0};      //            [cm]  size of the sample
+long       nReflect=1;                   //            [-]   number of reflections found in the structure factor file
 double     *Fhkl2=NULL,                  //            [-]   array of |F|² values of the Bragg reflections
            *hh=NULL,*kk=NULL,*ll=NULL;   //            [-]   array of (h,k.l) numbers of the Bragg reflections
 int        *no=NULL;                     //            [-]   array of sequential numbers of the Bragg reflections
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
           if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
         }
 	
-        for(repet=0;repet<Repetition;repet++)
+        for(repet=0;repet<nReflect;repet++)
         {
           CHECK;
           CopyVector(Pos1f, Pos1v) ;
@@ -202,7 +202,7 @@ int main(int argc, char **argv)
 				
           // Take into account the number of hkl-entries in the look-up file
           // for correct normalisation.
-          Prob *= MaxPathLength * NormFact * (1./((double) Repetition))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
+          Prob *= MaxPathLength * NormFact * (1./((double) nReflect))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
 
           /* scattering: new neutron variables*/ 
           CopyVector(Dir, k_inc);
@@ -296,7 +296,7 @@ void OwnInit(int argc, char *argv[])
 
   colh = -1; colk = -1; coll = -1; colD = -1;
   colF = -1; colF2= -1; colM = -1; colDW= -1;
-  scaleF2 = 1.;
+  scaleF2 = 1.0;
 	
   /* Scan all command line parameters */
   for (int i=1; i<argc; i++)
@@ -365,7 +365,7 @@ void OwnInit(int argc, char *argv[])
         case 'p':
           AnglPhi = atof(&argv[i][2]);
           break;
-        case 'c':
+        case 'q':
           AnglChi = atof(&argv[i][2]);
           break;
         case 'O':
@@ -455,8 +455,8 @@ void SetSamplePar(SampleType* pSample)
 {
   FILE*  pFile=NULL;
   char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
-  int    col_h=0, col_k=0,  col_l=0, 
-         col_f=0, col_f2=0, col_dw=0, 
+  int    col_h=-1, col_k=-1,  col_l=-1, 
+         col_f=-1, col_f2=-1, col_dw=-1, 
          nLen=sizeof(sLine)-1;
   double Ax  =0.0,  Ay  =0.0, Az  =0.0, 
          Bx  =0.0,  By  =0.0, Bz  =0.0, 
@@ -464,8 +464,8 @@ void SetSamplePar(SampleType* pSample)
          x   =0.0,  y   =0.0, z   =0.0, 
          phi =0.0,  chi =0.0, omega=0.0,
          outh=0.0,  outv=0.0,
-         radius=0.0,height=0.0, width=0.0,
-         norm=0.0,  muAbs =0.0, scale_f2=0.0;
+         diamtr=0.0,height=0.0, width=0.0,
+         norm=0.0,  muAbs =0.0, scale_f2=1.0;
   VtSmplGeom geom=VT_NO_GEOM;
   SampleType sample;         // file  sample geometry
 
@@ -487,7 +487,7 @@ void SetSamplePar(SampleType* pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &phi, &chi, &omega);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &diamtr, &width, &height);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &outh,  &outv);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%d %d %d %d %d %d %lf", &col_h, &col_k, &col_l, &col_f, &col_f2, &col_dw, &scale_f2);
 
@@ -507,7 +507,8 @@ void SetSamplePar(SampleType* pSample)
       if (C_recip[0]  ==0.0 && Cx    !=0.0) C_recip[0]  = Cx;
       if (C_recip[1]  ==0.0 && Cy    !=0.0) C_recip[1]  = Cy;
       if (C_recip[2]  ==0.0 && Cz    !=0.0) C_recip[2]  = Cz;
-      if (NormFact    ==0.0 && norm  !=0.0) NormFact    = norm;
+      if (NormFact    ==1.0 && norm  !=0.0
+                            && norm  !=1.0) NormFact    = norm;
       if (AbsorptionC ==0.0 && muAbs !=0.0) AbsorptionC = muAbs;
       if (PosSample[0]==0.0 && x     !=0.0) PosSample[0]= x;
       if (PosSample[1]==0.0 && y     !=0.0) PosSample[1]= y;
@@ -515,18 +516,19 @@ void SetSamplePar(SampleType* pSample)
       if (AnglPhi     ==0.0 && phi   !=0.0) AnglPhi     = phi;
       if (AnglChi     ==0.0 && chi   !=0.0) AnglChi     = chi;
       if (AnglOmega   ==0.0 && omega !=0.0) AnglOmega   = omega;
-      if (Diameter    ==0.0 && radius!=0.0) Diameter    = 2.0*radius;
+      if (Diameter    ==0.0 && diamtr!=0.0) Diameter    = diamtr;
       if (Height      ==0.0 && height!=0.0) Height      = height;
       if (Width       ==0.0 && width !=0.0) Width       = width;
       if (AnglOutHoriz==0.0 && outh  !=0.0) AnglOutHoriz= outh;
       if (AnglOutVert ==0.0 && outv  !=0.0) AnglOutVert = outv;
-      if (colh        ==0.0 && col_h !=0.0) colh        = col_h ;
-      if (colk        ==0.0 && col_k !=0.0) colk        = col_k ;
-      if (coll        ==0.0 && col_l !=0.0) coll        = col_l ;
-      if (colF        ==0.0 && col_f !=0.0) colF        = col_f ;
-      if (colF2       ==0.0 && col_f2!=0.0) colF2       = col_f2;
-      if (colDW       ==0.0 && col_dw!=0.0) colDW       = col_dw;
-      if (scaleF2     ==0.0 && scale_f2!=0.0) scaleF2   = scale_f2;
+      if (colh        ==-1  && col_h !=-1 ) colh        = col_h ;
+      if (colk        ==-1  && col_k !=-1 ) colk        = col_k ;
+      if (coll        ==-1  && col_l !=-1 ) coll        = col_l ;
+      if (colF        ==-1  && col_f !=-1 ) colF        = col_f ;
+      if (colF2       ==-1  && col_f2!=-1 ) colF2       = col_f2;
+      if (colDW       ==-1  && col_dw!=-1 ) colDW       = col_dw;
+      if (scaleF2     ==1.0 && scale_f2!=0.0
+                            && scale_f2!=1.0) scaleF2   = scale_f2;
     }
     else
     {	
@@ -536,16 +538,11 @@ void SetSamplePar(SampleType* pSample)
 
   // checks if geometry was given
   if (eGeom==VT_NO_GEOM)
-  {  Error2("Sample geometry could not be identified", sGeom);
-  }
-  else
-  { SmplGeom_ID2Txt(sGeom, eGeom);
-    fprintf(LogFilePtr, "             sample geometry:	'%s'\n", sGeom);
-  }
+    Error2("Sample geometry could not be identified", sGeom);
 
   // fills data structures
   FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  DimSample[0] = Diameter/2.0;
+  DimSample[0] = Diameter;
   DimSample[1] = Width;
   DimSample[2] = Height;
 
@@ -570,6 +567,7 @@ void SetSamplePar(SampleType* pSample)
 /*******************************************************/
 void ReadStructFile()
 {
+  char sLine[CHAR_BUF_SMALL];
   long nLines=1,
        count =0;
 
@@ -589,36 +587,38 @@ void ReadStructFile()
     ll = (double*) calloc(nLines, sizeof(double));
     Fhkl2 = (double*) calloc(nLines, sizeof(double));
       
-    for (count=0; count<nLines; count++)
+    nReflect=0;
+    for (count=0; count < nLines; count++)
     {
-      no[count] = ReadParF(pStructFile);
+    /*no[count] = ReadParF(pStructFile);
       hh[count] = ReadParF(pStructFile);
       kk[count] = ReadParF(pStructFile);
       ll[count] = ReadParF(pStructFile);
-			 
       Fhkl2[count] = ReadParF(pStructFile); 
-      if(Fhkl2[count] == 0.) break ;
+      ReadParComment(pStructFile); */
 
-      ReadParComment(pStructFile);
+      ReadLine(pStructFile, sLine, sizeof(sLine)-1);
+      sscanf(sLine, "%d %lf %lf %lf %lf", &no[nReflect], &hh[nReflect], &kk[nReflect], &ll[nReflect], &Fhkl2[nReflect]);
 
-      Repetition = count +1 ; 
+      if (Fhkl2[nReflect] != 0.0) 
+        nReflect++; 
     }
 
     fclose(pStructFile);
 
     fprintf(LogFilePtr, "Structure factors read from file: '%s'\n", pStrFileName) ;
-    fprintf(LogFilePtr, "Number of reflections           : %ld\n",  Repetition);
+    fprintf(LogFilePtr, "Number of reflections           : %ld\n",  nReflect);
   }
   else 
   {
     int jj;
 
     /* ReadStructureFile() in sample.c */
-    Repetition = ReadStructureFile(pStrFileName, 2, 0);
+    nReflect = ReadStructureFile(pStrFileName, 2, 0);
 
     /* array of sequential numbers */
-    no  = (int*) calloc(Repetition, sizeof(int));
-    for (jj = 0; jj < Repetition; jj++) no[jj] = jj+1;
+    no  = (int*) calloc(nReflect, sizeof(int));
+    for (jj = 0; jj < nReflect; jj++) no[jj] = jj+1;
 
     /* pointer to other arrays copied from sample.c */
     hh = hVal;

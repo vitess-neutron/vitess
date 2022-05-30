@@ -38,13 +38,12 @@ Plane  Endpoint;                //      [cm]  Endpoint.D: distance to end of fre
 /******************************/
 int main(int argc, char *argv[])
 {
-	long  i=0;
-
+	long   i=0;
 	double VelocityReal=0.0,          // velocity of the neutron    
          TimeOF=0.0,                // time of flight of the neutron to the window 
 	       NewPosY=0.0, NewPosZ=0.0;  // hor. and vert. position of neutron at slit 
 
-  // initialisation
+  // Initialisation
   // --------------
   _eModule = MCN_SLIT;
 
@@ -58,7 +57,7 @@ int main(int argc, char *argv[])
 
 	DECLARE_ABORT
 
-  // loop over all trajectories
+  // Loop over all trajectories
   // --------------------------
 	while (ReadNeutrons()!= 0)
 	{
@@ -74,24 +73,17 @@ int main(int argc, char *argv[])
       else
       { 
 			  // 	Move neutron to end of space and calculate Time of Flight (ms)
-			  // ---------------------------------------------------------------
 			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
 			  if (InputNeutrons[i].Wavelength == 0.0) continue;
-			  VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+			  VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
 			  if (VelocityReal <= 0.0) continue;
 			
 			  if (keygrav == 1)
-			  {
 				  TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			  }
 			  else
-			  {
 				  TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-			  }
-
 
 			  // Calculate  and  writeout new data set, if slit is hit
-			  // -----------------------------------------------------
 			  NewPosY = InputNeutrons[i].Position[1];
 			  NewPosZ = InputNeutrons[i].Position[2];
 			
@@ -99,7 +91,7 @@ int main(int argc, char *argv[])
 			  {	
           WriteIAP(&InputNeutrons[i], VT_PASSED);
 
-				  InputNeutrons[i].Time += (double)TimeOF;
+				  InputNeutrons[i].Time += TimeOF;
 				  InputNeutrons[i].Position[0]=0.0;
 
 				  WriteNeutron(&InputNeutrons[i]);
@@ -114,8 +106,7 @@ int main(int argc, char *argv[])
 // Finish: print parameters, write geometry and instrument file, free memory
 // -----------------------------------------------------
 my_exit:
-	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
-	                    Width, Height, DistMove);
+	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
 
   SetGeometry("blue");                       // write geometry data for visualization
   Cleanup(DistMove, 0.0, 0.0, 0.0, 0.0);     // print intensity, write instrument.inf, free memory

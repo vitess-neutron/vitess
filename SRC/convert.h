@@ -47,6 +47,9 @@ VtCompAct CompAct_Txt2ID(const char* sText);
 void      Distr_ID2Txt(char* sText, const VtDistr eID);
 VtDistr   Distr_Txt2ID(const char* sText);
 
+void       InstGeom_ID2Txt(char* sText, const VtInstGeom eID);
+VtInstGeom InstGeom_Txt2ID(const char* sText);
+
 // Source
 // ------
 void      SrcName_ID2Txt(char* sText, const VtSrcName eID);
@@ -94,6 +97,9 @@ VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
 
 // Windows and Collimators
 // -----------------------
+void        AbsMat_ID2Txt(char* sText, const VtAbsMat eID);
+VtAbsMat    AbsMat_Txt2ID(const char* sText);
+
 void        WndAbs_ID2Txt(char* sText, const VtWndAbs eID);
 VtWndAbs    WndAbs_Txt2ID(const char* sText);
 
@@ -114,6 +120,9 @@ VtGdeShape GdeShape_Txt2ID(const char* sText);
 void        WaviDistr_ID2Txt(char* sText, const VtWaviDistr eID);
 VtWaviDistr WaviDistr_Txt2ID(const char* sText);
 
+void        MirrMat_ID2Txt(char* sText, const VtMirrMat eID);
+VtMirrMat   MirrMat_Txt2ID(const char* sText);
+
 void        ListPar_ID2Txt(char* sText, const VtListPar eID);
 VtListPar   ListPar_Txt2ID(const char* sText);
 
@@ -126,9 +135,8 @@ VtPlotPar   PlotPar_Txt2ID(const char* sText);
 void        PlotFilt_ID2Txt(char* sText, const VtPlotFilt eID);
 VtPlotFilt  PlotFilt_Txt2ID(const char* sText);
 
-
-// Monochromators
-// --------------
+// Monochromators and choppers
+// ---------------------------
 void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID);
 VtMonoArrange MonoArrange_Txt2ID(const char* sText);
 
@@ -138,6 +146,9 @@ VtMonoType  MonoType_Txt2ID(const char* sText);
 void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID);
 VtMonoFocus MonoFocus_Txt2ID(const char* sText);
 
+void        ChnlShape_ID2Txt(char* sText, const VtChnlShape eID);
+VtChnlShape  ChnlShape_Txt2ID(const char* sText);
+
 // Samples
 // -------
 void        SmplGeom_ID2Txt(char* sText, const VtSmplGeom eID);
@@ -146,6 +157,9 @@ VtSmplGeom  SmplGeom_Txt2ID(const char* sText);
 void        PtclGeom_ID2Txt (char* sText, const VtPtclGeom eID);
 VtPtclGeom  PtclGeom_Char2ID(const char cID);
 VtPtclGeom  PtclGeom_Txt2ID (const char* sText);
+
+void        ScAxis_ID2Txt(char* sText, const VtScAxis eID);
+VtScAxis    ScAxis_Txt2ID(const char* sText);
 
 void        DataSrc_ID2Txt(char* sText, const VtDataSrc eID);
 VtDataSrc   DataSrc_Txt2ID(const char* sText);
@@ -192,6 +206,24 @@ VtBrlNorm BrlNorm_Txt2ID(const char* sText);
 
 void       Format2D_ID2Txt(char* sText, const VtFormat2D eID);
 VtFormat2D Format2D_Txt2ID(const char* sText);
+
+// Evaluation + Filter
+// -------------------
+void       FiltComb_ID2Txt(char* sText, const VtFiltComb eID);
+VtFiltComb FiltComb_Txt2ID(const char* sText);
+
+void       EvalPar_ID2Txt(char* sText, const VtEvalPar eID);
+VtEvalPar  EvalPar_Txt2ID(const char* sText);
+
+void       EvalComb_ID2Txt(char* sText, const VtEvalComb eID);
+VtEvalComb EvalComb_Txt2ID(const char* sText);
+
+void       EvalSort_ID2Txt(char* sText, const VtEvalSort eID);
+VtEvalSort EvalSort_Txt2ID(const char* sText);
+
+void       AngleSel_ID2Txt(char* sText, const VtAngleSel eID);
+VtAngleSel AngleSel_Txt2ID(const char* sText);
+
 
 #ifdef __cplusplus
 } /* extern "C" */

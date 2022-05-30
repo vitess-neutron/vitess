@@ -32,14 +32,16 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
-short  bProbactiv = TRUE,   // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
-       bExclusive = FALSE;  // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-VtMon1Par ePar = NO_PAR;    // -k    [-]   ID for parameter, as a function of which the intensity is shown
-long   nbiny  = 1;          // -n    [-]   number of monitor channels
-double xMin   = 0.0,        // -m   [var]  lower bound value of the monitored range 
-       xMax   = 0.0,        // -M   [var]  upper bound value of the monitored range
-       analysis_dir[3]      // -a -b -c    components of the quantization direction in x-, y- and z-direction
+VtMon1Par ePar = NO_PAR;       // -k    [-]   ID for parameter, as a function of which the intensity is shown
+char*  MonFileName= NULL;      // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
+short  bProbactiv = TRUE,      // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
+       bExclusive = FALSE,     // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+       iColour    = ANY_COLOR; // -C    [-]   index: for bAllFiles=FALSE: excludes all neutrons with diff. Colour from monitoring , if iColour >= 0 
+                               //                    for bAllFiles=TRUE : max. colour to which additional monitor files are generated             
+long   nbiny  = 1;             // -n    [-]   number of monitor channels
+double xMin   = 0.0,           // -m   [var]  lower bound value of the monitored range 
+       xMax   = 0.0,           // -M   [var]  upper bound value of the monitored range
+       analysis_dir[3]         // -a -b -c    components of the quantization direction in x-, y- and z-direction
            ={0.0,0.0,1.0};
 
 // Variables determined from input parameters
@@ -127,7 +129,14 @@ int main(int argc, char *argv[])
           prob = InputNeutrons[i].Probability;
 	      else 
           prob=1.0;
-	  
+
+        /* write out all neutrons, if 'exclusive counts = no' is set */
+        if (bExclusive==0)
+          WriteNeutron(&(InputNeutrons[i]));
+
+        /* exclude traj. with wrong colours: (iColour=-1 means: all colours accepted) */
+        if (iColour != ANY_COLOR && iColour!=InputNeutrons[i].Color) continue;
+
 	      /* calculate spin vector in the direction of the analysis */
 	      RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
@@ -226,7 +235,8 @@ int main(int argc, char *argv[])
 	      /* calculate spin vector in the original direction */
 	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
-	      if ((bExclusive==0)||(bRegistered==1))
+        /* write out registered neutrons, if 'exclusive counts = yes' is set */
+        if ((bExclusive==1) && (bRegistered==1))
 	        WriteNeutron(&(InputNeutrons[i]));
       }
     }
@@ -243,7 +253,7 @@ my_exit:
     {
 	    binerror[dy] = (bint[dy]/bintch[dy])*sqrt(1./bincounts[dy]);
     }
-    fprintf(fMonitor, "%10.3f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
+    fprintf(fMonitor, "%10.4f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
   }
 
   fclose(fMonitor);
@@ -298,6 +308,9 @@ void  OwnInit(int argc, char *argv[])
 	        if (nbiny > 10000)
 	          Error("number of bins must be <= 10000");
           break;
+        case 'C':
+          iColour = atol(&argv[i][2]);         /*  excludes all neutrons with diff. Colour, if iColour >= 0   */
+          break;  
 
 	      case 'm':
 	        xMin = atof(&argv[i][2]);       /* lower bound lambda, time or div. window [A], [ms], [deg]*/

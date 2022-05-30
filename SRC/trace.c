@@ -18,7 +18,7 @@
 char*     _sTraceFileName=NULL;   // name of the file containing the trajectories to be traced or started
 TotalID*  _aTrace=NULL;           // table of trajectory IDs for tracing
 long      _nLinesTr=0;            // Number of lines in the trace file  
-short     _eTraceMode=NO_TRACING; // NO_TRACING     : no tracing 
+int       _eTraceMode=NO_TRACING; // NO_TRACING     : no tracing 
                                    // WRITE_TRC_FILES: write trace files for traj. of interest
                                    // ONLY_TRC_TRAJ  : simulation only with traj. of interest 
 

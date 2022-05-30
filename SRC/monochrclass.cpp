@@ -3,6 +3,7 @@
 
 #include "mathfunctions.h"
 #include "monochrclass.h"
+#include "convert.h"
 
 #define DEL_ZETA_MAX 0.01
 
@@ -12,15 +13,15 @@ Monochromator::Monochromator()
   eModule=MCN_MONOCHROM;
 
   // Initialise member variables
-  ParFileName = ""; 
+  ParFileName  = ""; 
   GeomFileName = "";
   
   pGeomFile = NULL;
 
-  eGeomOption  = 0;
-  eFocGeom     = 0; 
+  eGeomOption  = SINGLE_CE;
+  eFocGeom     = NO_FOCUSING; 
   bTransm      = FALSE;
-  eMonoMode    = 0;
+  eMonoMode    = REFL_MONO;
   d_spr_option = LORENTZIAN; 
   nRepete      = 1; 
 
@@ -51,9 +52,9 @@ Monochromator::Monochromator()
   OutHor    = 0.0; 
   OutVert   = 0.0; 
 
-  bUser = 0;   // no user defined frame  
+  eFrame    = VT_NO_FRAME;   // no decision about user defined frame  
   d_spacing = 0.0; 
-  OrderReflection = 1;
+  OrderRefl = 0;
 
   for (int i = 0; i < 3; i++)
   {
@@ -97,23 +98,25 @@ Monochromator::Monochromator()
   NumOut =  0; 
 
   DelZetaMax = DEL_ZETA_MAX;
-
 }
+
 
 // reads and checks input parameters and calculates depending values
 void Monochromator::OwnInit(int argc, char* argv[])
 {
   int    k=0;
   double m_cut=M_CUT;
-  char   sHV[2][11]={"horizontal", "vertical"},
-         sMM[2][13]={"Reflection", "Transmission"},
-         sTr[2][ 8]={"blocked",    "treated"},
-         sSO[2][11]={"Lorentzian", "Gaussian  "};
+  char   sHV[2][11]={"horizontal", "vertical"},  // mosaic_fwhm
+         sTr[2][ 8]={"blocked",    "treated"},   // bTransm
+         sMM[13]="",                             // eMonoMode
+         sSO[11]="";                             // d_spr_option
 
   while(argc>1)
   {
     switch(argv[1][1])
     {
+      // Main Window
+      // -----------
       case 'P':
 	      ParFileName=&argv[1][2];
 	      break;
@@ -122,19 +125,19 @@ void Monochromator::OwnInit(int argc, char* argv[])
 	      break;
 
       case 'O':
-	      sscanf(&argv[1][2], "%d", &eGeomOption) ;
+	      eGeomOption = (VtMonoArrange) atoi(&argv[1][2]);
 	      break;
       case 'g':
-	      sscanf(&argv[1][2], "%d", &eFocGeom) ;
+	      eFocGeom    = (VtMonoFocus) atoi(&argv[1][2]);
+	      break;
+      case 'X':
+	      eMonoMode   = (VtMonoType) atoi(&argv[1][2]);
+	      break;
+      case 'd':
+	      d_spr_option = (VtDistr) atoi(&argv[1][2]);
 	      break;
       case 'B':
 	      sscanf(&argv[1][2], "%d", &bTransm) ;
-	      break;
-      case 'X':
-	      sscanf(&argv[1][2], "%d", &eMonoMode) ;
-	      break;
-      case 'd':
-	      sscanf(&argv[1][2], "%d", &d_spr_option) ;
 	      break;
       case 'A':
 	      sscanf(&argv[1][2], "%d", &nRepete) ;
@@ -142,7 +145,7 @@ void Monochromator::OwnInit(int argc, char* argv[])
       case 'f':
 	      sscanf(&argv[1][2], "%lf", &Freq) ;
 	      break;
-      case 'z':
+      case 'p':
 	      sscanf(&argv[1][2], "%lf", &Zeta0) ;
 	      break;
 
@@ -193,14 +196,85 @@ void Monochromator::OwnInit(int argc, char* argv[])
       case 's':
 	      sscanf(&argv[1][2], "%lf", &RadH) ;
 	      break;
-      }
+
+      // Parameter file or main window
+      // -----------------------------
+      // position and size of the monochromator element
+      case 'x':
+        PosCE0[0] = atof(&argv[1][2]);
+        break;
+      case 'y':
+        PosCE0[1] = atof(&argv[1][2]);
+        break;
+      case 'z':
+        PosCE0[2] = atof(&argv[1][2]);
+        break;
+
+      case 'i':
+        DimCE0[0] = atof(&argv[1][2]);
+        break;
+      case 'j':
+        DimCE0[1] = atof(&argv[1][2]);
+        break;
+      case 'k':
+        DimCE0[2] = atof(&argv[1][2]);
+        break;
+
+      // information about the reflecting plane
+      case 'l':
+        BraggHor = atof(&argv[1][2]);
+        break;
+      case 'L':
+        BraggVert = atof(&argv[1][2]);
+        break;
+
+      case 'e':
+        SrfcHor = atof(&argv[1][2]);
+        break;
+      case 'E':
+        SrfcVert = atof(&argv[1][2]);
+        break;
+
+      case 'S':
+        d_spacing = atof(&argv[1][2]);
+        break;
+      case 'N':
+        OrderRefl = atoi(&argv[1][2]);
+        break;
+
+      // Output frame 
+      case 'F':
+        eFrame = (VtFrameGen) atoi(&argv[1][2]);
+        break;
+
+      case 'W':
+        Transl[0] = atof(&argv[1][2]);
+        break;
+      case 'Y':
+        Transl[1] = atof(&argv[1][2]);
+        break;
+      case 'Z':
+        Transl[2] = atof(&argv[1][2]);
+        break;
+
+      case 'u':
+        OutHor  = atof(&argv[1][2]);
+        break;
+      case 'U':
+        OutVert = atof(&argv[1][2]);
+        break;
+
+      default:
+        Error2("unkown command option", argv[1]);
+        exit(-1);
+    }
     argc--;
     argv++;
   }
 
   // Checks for possible  options   (1 crystal element, geometry calculated or from file
-  if((eGeomOption != 1) && (eGeomOption != 2) && (eGeomOption != 3))
-    Error("No valid option (1, 2 or 3) found!!");
+  if((eGeomOption != SINGLE_CE) && (eGeomOption != CE_ARRAY_CALC) && (eGeomOption != CE_ARRAY_FILE))
+    Error("No valid option for the gemetry of the monochromator system found!!");
   
   // checks mosaicity   
   for (k=0; k<2; k++) 
@@ -212,27 +286,30 @@ void Monochromator::OwnInit(int argc, char* argv[])
     }
   }
 
-  fprintf(LogFilePtr, "  Mode: %s,  transmitted beam: %s\n",               sMM[eMonoMode-1], sTr[bTransm]);
+  MonoType_ID2Txt(sMM, eMonoMode);
+  Distr_ID2Txt   (sSO, d_spr_option);
+
+  fprintf(LogFilePtr, "  Mode: %s,  transmitted beam: %s\n",               sMM, sTr[bTransm]);
   fprintf(LogFilePtr, "  Rot.freq, initial orient.: %7.2f Hz %9.4f deg\n", Freq, Zeta0);
   fprintf(LogFilePtr, "  attenuation   (scat, abs): %9.4f, %9.4f 1/cm\n",  mu_scat, mu_abs);
   fprintf(LogFilePtr, "  mosaic spread (hor, vert): %9.4f, %9.4f\n",       mosaic_fwhm[0], mosaic_fwhm[1]);
-  fprintf(LogFilePtr, "  d-spread %10s      : %13.4e      \n",             sSO[d_spr_option-1], d_fwhm);
+  fprintf(LogFilePtr, "  d-spread %10s      : %13.4e      \n",             sSO, d_fwhm);
   fprintf(LogFilePtr, "  reflectivity             : %9.4f \n",             Reflectivity);
   fprintf(LogFilePtr, "  repetition               : %4ld  \n",             nRepete);
   
   /* prints to log file */
   fprintf(LogFilePtr, "initialised option: ") ;
-  if (eGeomOption == 1)
+  if (eGeomOption == SINGLE_CE)
   { fprintf(LogFilePtr,"'crystal_flat'\n");
   }
-  else if (eGeomOption == 2)
+  else if (eGeomOption == CE_ARRAY_CALC)
   {
     fprintf(LogFilePtr,"'crystal_focus'\n");
     fprintf(LogFilePtr,"  horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg\n",                          NumberCE[0], RadH, GapH, DevH) ;
     fprintf(LogFilePtr,"  vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg\n", NumberCE[1], RadV, GapV, DevV, Psi0);
     fprintf(LogFilePtr,"  focus file:                '%s'\n", GeomFileName);
   }
-  else if (eGeomOption == 3)
+  else if (eGeomOption == CE_ARRAY_FILE)
   {
     fprintf(LogFilePtr,"'crystal_focus_dat'\n");
     fprintf(LogFilePtr,"  number of CE = %d, %d (h.,v.)\n", NumberCE[0], NumberCE[1]);
@@ -244,10 +321,112 @@ void Monochromator::OwnInit(int argc, char* argv[])
   mosaic_fwhm[1]  *= M_PI/180.0;
   d_fwhm          *= d_spacing;
   d_sigma          = d_fwhm/sqrt(8.0*log(2.0));
+}
 
-  /*****************************************************************************/
-  /* reads parameter file */
-  ReadParameterFile();
+
+// Reads monochromator parameters and combines with them input parameters 
+void Monochromator::setMonochrPar()
+{
+  FILE*  pFile = NULL;
+  char   sLine[CHAR_BUF_SMALL]="";
+  int    nLen=sizeof(sLine)-1, 
+         iFrm  =-1,  n_ord=0;
+  double x     =0.0, y    =0.0, z     =0.0,
+         sfc_h =0.0, sfc_v=0.0,
+         brg_h =0.0, brg_v=0.0,
+         thickn=0.0, width=0.0, height=0.0,
+         dsp   =0.0, 
+         m_rng =0.0, d_rng=0.0,
+         out_x =0.0, out_y=0.0, out_z =0.0, 
+         out_h =0.0, out_v=0.0;
+  VtFrameGen eFrm=VT_NO_FRAME; 
+
+  /* Opens the parameter file if a file name is given */
+  if (ParFileName!=NULL)
+	{
+    pFile = OpenInputFile(ParFileName, FALSE, "r");
+
+    /* Reads the parameters if the file could be opened */
+    if (pFile != NULL)
+    { 
+      /* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x,     &y,     &z);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &sfc_h, &sfc_v);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &brg_h, &brg_v);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &thickn,&width, &height);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %d",      &dsp,   &n_ord);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &m_rng, &d_rng);    // data not used in new monochromator module, kept to be able to use the same file
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%d",          &iFrm); 
+      eFrm = (VtFrameGen) iFrm; 
+      if (eFrm==VT_FRAME_USER)
+      { 
+        if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &out_x,  &out_y,  &out_z);
+        if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &out_h,  &out_v);
+      }
+
+      fprintf(LogFilePtr, "data from parameter file   : '%s'\n",                ParFileName) ;
+
+      // combines information from input and file, input parameters have priority
+      if (eFrame==VT_NO_FRAME  && eFrm!=VT_NO_FRAME) eFrame = eFrm; 
+      if (PosCE0[0]==0.0 && x     !=0.0) PosCE0[0]= x     ;
+      if (PosCE0[1]==0.0 && y     !=0.0) PosCE0[1]= y     ;
+      if (PosCE0[2]==0.0 && z     !=0.0) PosCE0[2]= z     ;
+      if (SrfcHor  ==0.0 && sfc_h !=0.0) SrfcHor  = sfc_h ;
+      if (SrfcVert ==0.0 && sfc_v !=0.0) SrfcVert = sfc_v ;
+      if (BraggHor ==0.0 && brg_h !=0.0) BraggHor = brg_h ;
+      if (BraggVert==0.0 && brg_v !=0.0) BraggVert= brg_v ;
+      if (DimCE0[0]==0.0 && thickn!=0.0) DimCE0[0]= thickn;
+      if (DimCE0[1]==0.0 && width !=0.0) DimCE0[1]= width ;
+      if (DimCE0[2]==0.0 && height!=0.0) DimCE0[2]= height;
+      if (d_spacing==0.0 && dsp   !=0.0) d_spacing = dsp  ;
+      if (OrderRefl==0   && n_ord !=0  ) OrderRefl = n_ord;
+      if (Transl[0]==0.0 && out_x !=0.0) Transl[0]= out_x ;
+      if (Transl[1]==0.0 && out_y !=0.0) Transl[1]= out_y ;
+      if (Transl[2]==0.0 && out_z !=0.0) Transl[2]= out_z ;
+      if (OutHor   ==0.0 && out_h !=0.0) OutHor   = out_h ;
+      if (OutVert  ==0.0 && out_v !=0.0) OutVert  = out_v ;
+
+      // calculates values for output frame, unless transmission is treated
+      if (eFrame==VT_FRAME_STD)
+      { if (bTransm==FALSE)  
+        {
+          /* angles corresponding to the output frame: */
+          AnglesOutputFrame(BraggHor, BraggVert, &OutHor, &OutVert);
+
+          /* shifts output frame origin to center of focussing geometry */
+          CopyVector(PosCE0, Transl) ;
+        }
+        else
+        { Transl[0]=Transl[1]=Transl[2]=0.0;
+          OutHor=OutVert=0.0;
+        }
+      }
+
+      // initializes vectors to chosen CE element
+      CopyVector(PosCE0, PosCE);
+      CopyVector(DimCE0, DimCE);
+
+      /* print parameters to log file for verification */
+      fprintf(LogFilePtr, "  order of reflection = %d,   d-spacing =%9.4f\n",   OrderRefl, d_spacing);
+      fprintf(LogFilePtr, "  main position X, Y, Z    : %9.4f, %9.4f, %9.4f\n", PosCE0[0], PosCE0[1], PosCE0[2]);
+      fprintf(LogFilePtr, "  thickness, width, height : %9.4f, %9.4f, %9.4f\n", DimCE0[0], DimCE0[1], DimCE0[2]);
+      fprintf(LogFilePtr, "  Bragg angles   (hor,vert): %9.4f, %9.4f\n",        BraggHor,  BraggVert);
+      fprintf(LogFilePtr, "  Surface angles (hor,vert): %9.4f, %9.4f\n",        SrfcHor,   SrfcVert);
+
+      if (eFrame==VT_FRAME_USER) 
+        fprintf(LogFilePtr,"user defined frame:\n") ;
+      else  
+        fprintf(LogFilePtr,"standard frame generation:\n") ;
+      fprintf(LogFilePtr, "  output angles (hor, vert): %9.4f  %9.4f\n",        OutHor,    OutVert); 
+	    fprintf(LogFilePtr, "  position X',Y',Z'        : %9.4f, %9.4f, %9.4f\n", Transl[0], Transl[1], Transl[2]);
+
+      fclose(pFile);
+    }
+    else
+    {	
+      fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", ParFileName);
+    }
+  }
 
   /* converts degs in radian etc. */
   SrfcHor   *= M_PI/180.0;
@@ -257,6 +436,13 @@ void Monochromator::OwnInit(int argc, char* argv[])
   OutHor    *= M_PI/180.0;
   OutVert   *= M_PI/180.0;
 
+  return;
+}/* End ReadParameterFile */
+
+
+// Determines the dependent parameters and write out important parameters 
+void Monochromator::calcAndWritePar()
+{
   // Filling the array of the d_spacing spread parameters 
   // for normalisation calculation and randomising
   dSpacingSpreadParams[0] = 1.;
@@ -282,7 +468,7 @@ void Monochromator::OwnInit(int argc, char* argv[])
   fprintf(LogFilePtr,"Norm of the mosaic function: %1.4lf, peak wavelength %1.4lf \n", fNorm[0], peakWL) ;
 
   // here the the different geometry options are treated
-  if(eGeomOption == 1)     // single CE
+  if (eGeomOption == SINGLE_CE)     // single CE
   {
     NumberCE[0] = NumberCE[1] = 1 ;
       
@@ -297,17 +483,17 @@ void Monochromator::OwnInit(int argc, char* argv[])
     RotCEvert_F.push_back(RotVertVector);
     RotCEvert_F[0].push_back(SrfcVert); 
   }
-  else if (eGeomOption == 2)   // CE positions, dimensions and orientations calculated
+  else if (eGeomOption == CE_ARRAY_CALC)   // CE positions, dimensions and orientations calculated
   {
-    if (eFocGeom==1) crys_geomLambda();
-    if (eFocGeom==2) crys_geomSphere();
-    if (eFocGeom==3) crys_geomVertCyl();
-    if (eFocGeom==4) crys_geomDoubleCyl();
+    if (eFocGeom==CONST_LMBD) crys_geomLambda();
+    if (eFocGeom==SPHERICAL ) crys_geomSphere();
+    if (eFocGeom==VERT_CYL  ) crys_geomVertCyl();
+    if (eFocGeom==DBL_FOC   ) crys_geomDoubleCyl();
     addDev2Std();
   }
-  else if(eGeomOption == 3)     // CE positions, dimensions and orientations from file
+  else if (eGeomOption == CE_ARRAY_FILE)     // CE positions, dimensions and orientations from file
   {
-    ReadFocFile() ;
+    readFocFile() ;
     addDev2Std();
   }
   
@@ -322,78 +508,9 @@ void Monochromator::OwnInit(int argc, char* argv[])
   return; 
 }
 
-/* ReadParameterFile() reads the parameters from "crys.par" */
-void Monochromator::ReadParameterFile()
-{
-  // double mosaic_range, d_range;
-  FILE* pParFile = OpenInputFile(ParFileName, FALSE, "r");
 
-  if (pParFile==NULL)
-	{
-	  fprintf(LogFilePtr, "ERROR: parameter file '%s' not found!\n", ParFileName);
-	  exit(0);
-	}
-  else
-  {
-    /* reads from file by using ReadParF(Par_Crys) and ReadParComment(Par_Crys) */
-    PosCE0[0]=ReadParF(pParFile);  PosCE0[1]=ReadParF(pParFile); PosCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-    SrfcHor=ReadParF(pParFile);   SrfcVert=ReadParF(pParFile);   ReadParComment(pParFile) ;
-    BraggHor=ReadParF(pParFile); BraggVert=ReadParF(pParFile); ReadParComment(pParFile) ;
-    DimCE0[0]=ReadParF(pParFile);  DimCE0[1]=ReadParF(pParFile); DimCE0[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-    d_spacing=ReadParF(pParFile);  OrderReflection=ReadParI(pParFile) ; ReadParComment(pParFile) ;
-    // mosaic_range=ReadParF(pParFile) ; d_range=ReadParF(pParFile) ;  ReadParComment(pParFile) ;   data not in parameter file
-    bUser = ReadParI(pParFile);    ReadParComment(pParFile) ;
-
-    // reads data for user defined output frame
-    if (bUser==TRUE)
-    { Transl[0]=ReadParF(pParFile) ;   Transl[1]=ReadParF(pParFile);   Transl[2]=ReadParF(pParFile) ; ReadParComment(pParFile) ;
-      OutHor=ReadParF(pParFile); OutVert=ReadParF(pParFile); ReadParComment(pParFile) ;
-    }
-    else
-    // calculates values for output frame, unless transmission is treated
-    { if (bTransm==FALSE)  
-      {
-        /* angles corresponding to the output frame: */
-        AnglesOutputFrame(BraggHor+Zeta0, BraggVert, &OutHor, &OutVert);
-
-        /* shifts output frame origin to center of focussing geometry */
-        CopyVector(PosCE0, Transl) ;
-      }
-      else
-      { Transl[0]=Transl[1]=Transl[2]=0.0;
-        OutHor=OutVert=0.0;
-      }
-    }
-
-    // initializes vectors to chosen CE element
-    CopyVector(PosCE0, PosCE);
-    CopyVector(DimCE0, DimCE);
-
-    /* print parameters to log file for verification */
-    fprintf(LogFilePtr, "data from parameter file   : '%s'\n",                ParFileName) ;
-    fprintf(LogFilePtr, "  order of reflection = %d,   d-spacing =%9.4f\n",   OrderReflection, d_spacing);
-    fprintf(LogFilePtr, "  main position X, Y, Z    : %9.4f, %9.4f, %9.4f\n", PosCE0[0], PosCE0[1], PosCE0[2]);
-    fprintf(LogFilePtr, "  thickness, width, height : %9.4f, %9.4f, %9.4f\n", DimCE0[0], DimCE0[1], DimCE0[2]);
-    fprintf(LogFilePtr, "  Bragg angles   (hor,vert): %9.4f, %9.4f\n",        BraggHor,  BraggVert);
-    fprintf(LogFilePtr, "  Surface angles (hor,vert): %9.4f, %9.4f\n",        SrfcHor,   SrfcVert);
-
-    if (bUser==TRUE) 
-      fprintf(LogFilePtr,"user defined frame:\n") ;
-    else  
-      fprintf(LogFilePtr,"standard frame generation:\n") ;
-    fprintf(LogFilePtr, "  output angles (hor, vert): %9.4f  %9.4f\n",        OutHor,    OutVert); 
-	  fprintf(LogFilePtr, "  position X',Y',Z'        : %9.4f, %9.4f, %9.4f\n", Transl[0], Transl[1], Transl[2]);
-
-    fclose(pParFile);
-  }
-
-  return;
-
-}/* End ReadParameterFile */
-
-
-/* ReadFocFile() reads the parameters from the geometry file */
-void Monochromator::ReadFocFile()
+// Reads the parameters from the geometry file */
+void Monochromator::readFocFile()
 {
   int	i, j;
   
@@ -439,6 +556,7 @@ void Monochromator::ReadFocFile()
   return;
 }/* End ReadFocFile */
 
+
 // fills the structure stGeometry for visualization
 void Monochromator::setGeometry(char* sColor)
 {
@@ -451,7 +569,7 @@ void Monochromator::setGeometry(char* sColor)
     stGeometry.pDescr  = sVisDescrpt;
     stGeometry.eModule = eModule;
 
-    if(eGeomOption == 1) 
+    if(eGeomOption == SINGLE_CE) 
     {
       // Visualisation of the monochromator geometry
 	    stGeometry.pCuboid  = (VtCuboid*) calloc(1, sizeof(VtCuboid));
@@ -505,6 +623,7 @@ void Monochromator::setGeometry(char* sColor)
   return;
 }
 
+
 // Calls Cleanup to write trajectory information and change to output co-ordinate system
 void Monochromator::OwnCleanup()
 {
@@ -521,7 +640,7 @@ void Monochromator::OwnCleanup()
 
 /* fills rotations matrices for the surface and the reflecting planes of the central CE (= monochromator) 
    and the surfaces of all CEs for a given Orientation of the rotating monochromator */
-void  Monochromator::fillRotMatrices(double MonoHor)
+void Monochromator::fillRotMatrices(double MonoHor)
 {
   int i, j ;
   double rotH, rotV, RotMatrix[3][3] ;
@@ -759,7 +878,7 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
   bool    bHit=false;
   int     iRep=0,          // index of repetition
           kHit=0, lHit=0;  // (expected) index of column and row of CE that is hit
-  double  DelX, V0, Vx, Path;
+  double  DelX=0.0, V0=0.0, Vx=0.0, Path=0.0;
   Neutron NeutInCE,     // data of the incoming neutron          (in the frame of the refl. plane
           NeutCES,      // data of the neutron on the CE surface (in the frame of the module)
           NeutPlCE,     // data of the neutron on the CE plane   (in the frame of the refl. plane)
@@ -769,7 +888,10 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
           NeutReflOut;  // data of the reflected neutron         (in the output frame)
   
   // init
-  InitNeutron(&NeutTrans);
+  InitNeutron(&NeutInCE);   InitNeutron(&NeutCES);
+  InitNeutron(&NeutPlCE);   InitNeutron(&NeutTrans);
+  InitNeutron(&NeutRefl);   InitNeutron(&NeutTransOut);
+  InitNeutron(&NeutReflOut);
 
   // Set the vector magnitude to unity
   pNeutIn->Vector[0] = sqrt(1.0 - sq(pNeutIn->Vector[1]) - sq(pNeutIn->Vector[2])) ;
@@ -830,8 +952,8 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
     for (int i = 0; i < 3; i++)
       NeutPlCE.Position[i] += NeutPlCE.Vector[i] * Path; //
 
-    // for flat option (eGeomOption=1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position
-    if (eGeomOption==1)
+    // for flat option (eGeomOption=SINGLE_CE) computes neutron direction in the "Bragg" frame keeping frame of CE for the position
+    if (eGeomOption==SINGLE_CE)
     { RotBackVector(RotMatrixCE,    NeutPlCE.Vector);   // Vector is now back to the original frame
       RotVector    (RotMatrixBragg, NeutPlCE.Vector);   // Vector is now in the frame of the Bragg refl. plane
     }
@@ -855,7 +977,7 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
       }
                  
       /* computes reflection angle corresponding to random d-spacindg */
-      arg = NeutRefl.Wavelength * OrderReflection / 2. / d_rnd ;
+      arg = NeutRefl.Wavelength * OrderRefl / 2. / d_rnd ;
       if (arg >= 1.05) return;   /* wavelength too large */
       if (arg >= 1.00) continue; /* wavelength for the chosen d-spacing too large */
       pi2_bragg = acos(arg) ;
@@ -1082,7 +1204,7 @@ bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE, int kS
 
         // path lengths through the crystal
         PathLenTrans = DistVector(Pos1, Pos2);
-        if (eMonoMode==1) 
+        if (eMonoMode==REFL_MONO) 
           PathLenRefl = 2.0*(Depth[0]-Pos1[0]) * PathLenTrans/(Pos2[0]-Pos1[0]);  // reflection geometry, approximation, correct only for planes parallel to surface
         else 
           PathLenRefl = PathLenTrans;                                             // transmission geometry approximation, correct only for planes parallel to surface
@@ -1092,7 +1214,7 @@ bool  Monochromator::selectCE(const Neutron* pNeutIn, Neutron* pNeutInCE, int kS
         CopyVector(dir, pNeutInCE->Vector);
 
         /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
-        if (eGeomOption != 1) 
+        if (eGeomOption != SINGLE_CE) 
         { int p, q;
 			
           for(p=0; p<3; p++) 

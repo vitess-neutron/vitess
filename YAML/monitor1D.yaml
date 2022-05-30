@@ -121,13 +121,14 @@ monitor1D:                    # source module that will be executed
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "YES: Beam intensity  NO: number of trajectories"
-      default: "YES"
+      default: [YES,NO]
       column:  0                     
       prefix:  "-p"  
   - bExclude:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-e"  
  
@@ -208,6 +209,7 @@ monitor1D:                    # source module that will be executed
       type:    "switch" 
       descr:   "Polarisation\nanalysis" 
       tooltip: "YES: polarisation monitored   NO: intensity monitored"
+      default: [NO,YES]
       column:  0                     
       prefix:  "-P"  
 

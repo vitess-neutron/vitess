@@ -160,25 +160,6 @@ int main(int argc, char *argv[])
   if (bVisInstr) 
     bLengthCmpr = FALSE;
 
-  switch (Sample.Type)
-  { case VT_CUBE:
-      fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
-              "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-              Sample.SG.Cube.thickness, Sample.SG.Cube.height, Sample.SG.Cube.width,
-              Sample.Direction[0], Sample.Direction[1], Sample.Direction[2]);
-      break;
-    case VT_CYL:
-      fprintf(LogFilePtr, "Cylindrical sample : %7.2f cm radius%6.2f cm height\n"
-              "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-              Sample.SG.Cyl.r, Sample.SG.Cyl.height,
-              Sample.Direction[0], Sample.Direction[1], Sample.Direction[2]);
-      break;
-    case VT_SPHERE:
-      fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n",
-              Sample.SG.Ball.r);
-      break;
-    default: break;
-  }
   fprintf(LogFilePtr, "NXS parameter file: %s\n", pNxsFileName);
 
   /* read unit cell parameters from file 
@@ -591,7 +572,7 @@ void SetSamplePar(SampleType *pSample)
   int    nLen=sizeof(sLine)-1;
   double x=0.0, y=0.0, z=0.0, 
          xdir  =0.0, ydir  =0.0, zdir =0.0,
-         radius=0.0, height=0.0, width=0.0;
+         d_par=0.0, height=0.0, width=0.0;
   VtSmplGeom geom=VT_NO_GEOM;
   SampleType sample;         // file  sample geometry
 
@@ -609,7 +590,7 @@ void SetSamplePar(SampleType *pSample)
       /* First line: sample position     */
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
-      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sNxsFileNameF); 
 
@@ -622,7 +603,8 @@ void SetSamplePar(SampleType *pSample)
       if (Xpos    ==0.0 && x     !=0.0) Xpos    = x;
       if (Ypos    ==0.0 && y     !=0.0) Ypos    = y;
       if (Zpos    ==0.0 && z     !=0.0) Zpos    = z;
-      if (Diameter==0.0 && radius!=0.0) Diameter= 2.0*radius;
+      if (Diameter==0.0 && d_par !=0.0)
+      { if (eGeom==VT_CUBE) Diameter = d_par; else Diameter = 2.0 * d_par;}
       if (Height  ==0.0 && height!=0.0) Height  = height;
       if (Width   ==0.0 && width !=0.0) Width   = width;
       if (Xdir    ==0.0 && xdir  !=0.0) Xdir    = xdir;

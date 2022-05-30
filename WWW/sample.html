@@ -130,17 +130,20 @@
       </tr>
       <tr>
         <td>angle horiz/vert <br> final [deg]   </td>
-        <td>horizontal and vertical angles &theta; and &phi; defining the main scattering direction</td>
+        <td>horizontal and vertical angles &theta; and &phi; defining the mean scattering direction</td>
         <td> -180&deg; - 180&deg;</td>
         <td> -E, -F </td>
       </tr>
       <tr>
         <td>delta angle<br>horiz/vert [deg]</td>
         <td>
-          Angular intervals &Delta;&theta; and &Delta;&phi; around the main scattering direction,
-          i.e. scattering takes place in the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;],[&phi;-&Delta;&phi;,&phi;+&Delta;&phi;]
+          Angular widths &Delta;&theta; and &Delta;&phi; of the horizontal and vertical scattering direction <br />
+          If read from file, &Delta;&theta; and &Delta;&phi; are regarded as the full ranges, i.e. scattering takes place in the range
+          [&theta; - &frac12; &Delta;&theta;, &theta;+ &frac12; &Delta;&theta;],[&phi; - &frac12; &Delta;&phi;,&phi; + &frac12; &Delta;&phi;] <br />
+          If given as input parameter (VITESS 4), &Delta;&theta; and &Delta;&phi; are regarded as the ranges around the mean angles, i.e. scattering takes place in the range
+          [&theta; - &Delta;&theta;, &theta; + &Delta;&theta;],[&phi; - &Delta;&phi;,&phi; + &Delta;&phi;] 
         </td>
-        <td>0&deg; - 180&deg;</td>
+        <td>0&deg; - 360&deg; or <br />0&deg; - 180&deg; (param.)</td>
         <td> -e, -f </td>
       </tr>
       <tr>
@@ -179,7 +182,7 @@
           Thickness, height and  width give dimensions of a cuboid sample.
           For cylinder, only diameter and height are relevant parameters.
           For hollow cylinder, the inner diameter is given by the third parameter.
-          For spherical samples, the first value is considered as the radius.
+          For spherical samples, the first value is considered as the diameter.
         </td>
         <td> e.g. cylinder: 0.5, 2.0 </td>
         <td> -t, h, -w </td>
@@ -504,10 +507,10 @@
       </tr>
 
       <tr>
-        <td>thickness or radius<br>[cm]</td>
-        <td>thickness of cuboid, or radius of sphere, or radius of cylinder  (from file)</td>
+        <td>thickness or diameter<br>[cm]</td>
+        <td>thickness of cuboid, or diameter of sphere, or diameter of cylinder  (from file)</td>
         <td>&gt; 0</td>
-        <td>  </td>
+        <td> -t </td>
       </tr>
       <tr>
         <td>thickness or diameter<br>[cm]</td>
@@ -751,7 +754,8 @@
       </tr>
       <tr>
         <td>sample file</td>
-        <td>The sample file describes the geometry and compositions of the sample.</td>
+        <td>The sample file describes the geometry, position and scattering properties of the sample. In VITESS 3 it is mandatory. 
+            An example is the file 'glass.psq' from the folder 'FILES/sample_files' in the installation directory </td>
         <td>    </td>
         <td> -S </td>
       </tr>
@@ -856,8 +860,8 @@
         <td> -G </td>
       </tr>
       <tr>
-        <td>thickness or radius<br>[cm]</td>
-        <td>thickness of cuboid, or radius of sphere, or radius of cylinder</td>
+        <td>thickness or diameter<br>[cm]</td>
+        <td>thickness of cuboid, or diameter of sphere, or diameter of cylinder</td>
         <td>&gt; 0</td>
         <td> -t </td>
       </tr>
@@ -969,22 +973,6 @@
   </p>
 
   <br />
-  <h4> Options</h4>
-  <table border="1" cellpadding="5" width="400">
-    <tbody>
-      <tr>
-        <td valign="top" width="33%">1. Sample:</td>
-        <td valign="top" width="67%">Reflectivity data from the reflectivity file</td>
-      </tr>
-      <tr>
-        <td valign="top" width="33%">2. Reference:</td>
-        <td valign="top" width="67%">Reflectivity R=1 for all angles.</td>
-      </tr>
-
-    </tbody>
-  </table>
-
-  <br />
   <h4> Main parameters </h4>
   <table border="1" cellpadding="5" width="95%">
     <tbody>
@@ -993,13 +981,6 @@
         <td valign="top" width="60%"><b> Descripton       </b></td>
         <td valign="top" width="12%"><b> Range, Examples  </b></td>
         <td valign="top" width="8%"><b> Command Option   </b></td>
-      </tr>
-
-      <tr>
-        <td>mode</td>
-        <td>Option: Virtual reflectivity measurement or reference measurement using R=1</td>
-        <td>'sample' or 'reference'</td>
-        <td>-O</td>
       </tr>
 
       <tr>
@@ -1024,20 +1005,62 @@
         <td>refl_probe.dat</td>
         <td> -I </td>
       </tr>
+
+      <tr>
+        <td>mode</td>
+        <td>Option for the virtual experiment, either 'sample' (reflectivity data from the 'reflectivity file') or 'reference' (reflectivity R=1 for all angles)</td>
+        <td>'sample' or 'reference'</td>
+        <td>-O</td>
+      </tr>
       <tr>
         <td>Axis of rotation </td>
-        <td>Axis around which the sample is rotated </td>
+        <td>Axis about which the sample is rotated </td>
         <td> 'Y' or 'Z'</td>
         <td> -R </td>
       </tr>
+      <tr>
+        <td>treat neutrons not reflected</td>
+        <td>no: neutrons that are not reflected by the sample are removed (default)<br />
+            yes: neutrons that are not reflected by the sample are treated </td>
+        <td> "no" "yes"</td>
+        <td> -A </td>
+      </tr>
+
       <tr>
         <td>reflection angle &theta;<br>[deg]</td>
         <td>
           &theta;=0 means: no reflection, sample parallel to incoming beam<br>
           positive q.value means: reflection towards the positive z- or positive y-direction resp.<br>
+          for reflection by 2 &alpha; into the negative direction choose angles of &theta; = 180° - &alpha;
         </td>
         <td>-90&deg; .....90&deg;<br>typical. +1&deg;....+4&deg; </td>
         <td> -a </td>
+      </tr>
+
+      <tr>
+        <td>substrate material</td>
+        <td>Choose between the available materials for a proper description of the attenuation of neutrons passing through the substrate, it it is chosen to treat these neutrons</td>
+        <td>'Silicon' 'B4C' 'Glass' 'Other'</td>
+        <td>-M</td>
+      </tr>
+      <tr>
+        <td>substrate thickn.<br>[cm]</td>
+        <td>
+          Thickness of the substrate on which the sample is put (assuming the same width and length as the sample) <br />
+          It is needed to calculate the absorption of the neutrons passing through the substrate, if  'treating not reflected neutrons' is chosen.
+        </td>
+        <td> &ge; 0 </td>
+        <td> -h </td>
+      </tr>
+      <tr>
+        <td> total scattering<br>absorption <br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>&Aring;<sup>-1</sup>]</td>
+        <td>
+          Macroscopic cross sections for total scattering and absorption for 1.798 &Aring; of the substrate material <br />
+          Absorption is supposed to increase linearly with wavelength, scattering is regarded as wavelength independent. <br />
+          It is needed for 'Other' substrate material for 'treating not reflected neutrons' within the substrate.
+        </td>
+        <td> &ge; 0   </td>
+        <td> -s,-m </td>
       </tr>
 
       <tr>
@@ -1061,18 +1084,10 @@
         <td> -B </td>
       </tr>
       <tr>
-        <td> Detector distance, width, height <br /> cm </td>
-        <td>
-          If 'Incoherent scattering' the from sample is chosen, detector distance, height and width should be given to efficiently scatter the neutrons towards the detector surface.<br>
-          The specular signal is expected in the center of the detector.
-        </td>
-        <td> &gt; 0</td>
-        <td> -d - p -t </td>
-      <tr>
-        <td> Incoherent pathlength </td>
-        <td> If 'Incoherent scattering' from sample is chosen, the parameter &mu; for the scattering probability P = &mu;*x is needed, where x is the pathlength in the sample. </td>
-        <td> &mu;=0.00288 1/cm for D<sub>2</sub>O</td>
-        <td> -B </td>
+        <td> inc. cross-section<br />[1/cm] </td>
+        <td> If 'Incoherent scattering' from sample is chosen, the macroscopic incoherent scattering cross-section &mu;<sub>inc</sub> for the scattering probability P = &mu;<sub>inc</sub>*x is needed, where x is the pathlength in the sample. </td>
+        <td> &mu;<sub>inc</sub>=0.00288 1/cm for D<sub>2</sub>O</td>
+        <td> -X </td>
       </tr>
       <tr>
         <td>Norm factor </td>
@@ -1082,6 +1097,14 @@
         <td> Usually several percent for an area detector, put in 1 if unknown.</td>
         <td> -S </td>
       </tr>
+      <tr>
+        <td> Detector distance, width, height <br /> cm </td>
+        <td>
+          If 'Incoherent scattering' the from sample is chosen, detector distance, height and width should be given to efficiently scatter the neutrons towards the detector surface.<br>
+          The specular signal is expected in the center of the detector.
+        </td>
+        <td> &gt; 0</td>
+        <td> -d - p -t </td>
     </tbody>
   </table>
 
@@ -1096,44 +1119,40 @@
         <td valign="top" width="8%"><b> Command Option   </b></td>
       </tr>
       <tr>
-        <td>main position<br>[cm]</td>
+        <td>center pos.<br>[cm]</td>
         <td>
           <i>x</i>, <i>y</i>, <i>z</i> <br />
-          Generally this position defines the reference point (origin) of the sample in the frame provided by the former module.
+          This position defines the center of the sample (origin) in the frame provided by the previous module.
         </td>
         <td>
-          <i>x = distance </i>to CE <br>
-          <i>y </i>= <i>z </i>= 0.0
+          <i>x</i> = 'distance to sample center'<br>
+          <i>y</i> = <i>z</i> = 0.0
         </td>
         <td> -x -y -z </td>
       </tr>
       <tr>
+        <td>thickness, width, length sample<br>[cm]</td>
         <td>
-          thickness, width, height of CE
-          <p>[cm]</p>
-        </td>
-        <td>
-          <i>t</i>, <i>w</i>, <i>h</i> <br />
+          <i>t</i>, <i>w</i>, <i>l</i> <br />
             Thickness, width and length give the sizes of the (rectangular) sample: for reflection angle 0, the reflecting surface of the
             sample is in the x-y-plane. The thickness is along the z-axis, width along the y-axis and length along the x-axis.
             Thickness is used to determine a distance from the surface (by MC choice) where the reflection is supposed to take place.
         </td>
         <td>
-          <i>t</i> = 0.00002 cm
-          <p>
-            <i>w</i> = <i>h</i> = 2.0 cm <br>
-          </p>
+          <i>t</i> = 0.00002 cm<br>
+          <i>w</i> = <i>h</i> = 2.0 cm <br>
         </td>
-        <td> -t -w -l </td>
+        <td> -T -W -L </td>
       </tr>
+
       <tr>
         <td>frame generation  </td>
         <td>
           'user defined frame' sets the following coordinate system according to the values given below. <br>
-          'standard frame generation' leaves the coordiate system as it is, i.e. origin at sample centre, x-axis along the incoming beam. </p>
+          'standard frame generation' leaves the coordiate system as it is, i.e. origin at sample centre, x-axis along the incoming beam.
         </td>
-        <td>>'standard frame generation'<br /> 'user defined frame'</td>
-        <td> -F </td>
+        <td>'standard frame generation'<br /> 'user defined frame'</td>
+        <td> -g </td>
       </tr>
       <tr>
         <td>
@@ -1148,7 +1167,7 @@
         <td>
           <i>&Phi; </i>= 180&deg;, &Theta;= -2&theta;
         </td>
-        <td> -o -O </td>
+        <td> -k -K </td>
       </tr>
       <tr>
         <td>output frame<br>[cm]</td>
@@ -1159,7 +1178,7 @@
           Default setting is: (<i>x'</i>, <i>y'</i>, <i>z'</i>) = (<i>x</i>, <i>y</i>, <i>z</i>) i.e. main position of the sample.
         </td>
         <td> one point on the scattered beam axis </td>
-        <td> -X -Y -Z </td>
+        <td> -u -v -w </td>
       </tr>
 
     </tbody>
@@ -1419,8 +1438,8 @@
       </tr>
 
       <tr>
-        <td>thickness or radius<br>[cm]</td>
-        <td>thickness of cuboid, or radius of sphere, or radius of cylinder</td>
+        <td>thickness or diameter<br>[cm]</td>
+        <td>thickness of cuboid, or diameter of sphere, or diameter of cylinder</td>
         <td>&gt; 0</td>
         <td> -t </td>
       </tr>
@@ -1465,10 +1484,10 @@
         <td> -s </td>
       </tr>
       <tr>
-        <td> incoherent scattering<br>total scattering<br>absorption <br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>&Aring;<sup>-1</sup>]</td>
+        <td> incoherent scattering<br>total scattering<br>absorption <br>[cm<sup>-1</sup>, cm<sup>-1</sup>, cm<sup>-1</sup>]</td>
         <td>
           Macroscopic cross sections for incoherent scattering, total scattering and absorption for 1.798 &Aring;  <br />
-          absorption is supposed to increase linearly with wavelength, the other are regarded as wavelength independent.
+          Absorption is supposed to increase linearly with wavelength, the other are regarded as wavelength independent.
         </td>
         <td> &ge; 0   </td>
         <td> -i,-T,-m </td>
@@ -2151,22 +2170,25 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td>lambda final<br>[&Aring;] </td>
         <td>
           Gives center position of the scattered wavelength interval, which is considered in the simulation.
-          It is recommended to choose e.g. the main analyser wavelength.
+          It is recommended to choose e.g. the mean analyser wavelength.
         </td>
         <td>e.g. 6.27 for Si(111) analyser      </td>
         <td> -L </td>
       </tr>
       <tr>
         <td> angle horiz/vert <br> final [deg] </td>
-        <td>horizontal and vertical components of the main scattering angle</td>
+        <td>horizontal and vertical components of the mean scattering angle</td>
         <td>&nbsp;-180&deg; <font face="Symbol">-</font>&nbsp; 180&deg;</td>
         <td> -E -F </td>
       </tr>
       <tr>
         <td>delta lambda final<br>[&Aring;]</td>
         <td valign="top" width="54%">
-          Gives the width of the scattered wavelength interval which is considered in the computation,
-          i.e. th final wavelength will be in the range [&lambda;-&Delta;&lambda;, &lambda;+&Delta;&lambda;]
+          Width of the scattered wavelength interval which is considered in the computation <br />
+          If read from file, &Delta;&lambda; is regarded as the full range,
+          i.e. the final wavelength will be in the range [&lambda;- &frac12; &Delta;&lambda;, &lambda;+ &frac12; &Delta;&lambda;] <br />
+          If given as input parameter (VITESS 4), &Delta;&lambda; is regarded as the range around the mean wavelength,
+          i.e. the final wavelength will be in the range [&lambda;-&Delta;&lambda;, &lambda;+&Delta;&lambda;] <br />
         </td>
         <td valign="top" width="28%">
           e.g. ~0.02 for Si(111)  <br>
@@ -2177,10 +2199,13 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       <tr>
         <td> delta angle <br> horiz/vert [deg] </td>
         <td>
-          Angular intervals &Delta;&theta; and &Delta;&phi; around the main scattering direction,
-          i.e. scattering takes place in the range [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;],[&phi;-&Delta;&phi;,&phi;+&Delta;&phi;]
+          Angular widths &Delta;&theta; and &Delta;&phi; of the horizontal and vertical scattering direction <br />
+          If read from file, &Delta;&theta; and &Delta;&phi; are regarded as the full ranges, i.e. scattering takes place in the range
+          [&theta; - &frac12; &Delta;&theta;, &theta;+ &frac12; &Delta;&theta;],[&phi; - &frac12; &Delta;&phi;,&phi; + &frac12; &Delta;&phi;] <br />
+          If given as input parameter (VITESS 4), &Delta;&theta; and &Delta;&phi; are regarded as the ranges around the mean angle, i.e. scattering takes place in the range
+          [&theta; - &Delta;&theta;, &theta; + &Delta;&theta;],[&phi; - &Delta;&phi;,&phi; + &Delta;&phi;]
         </td>
-        <td>0&deg; <font face="Symbol">-</font> 180&deg;</td>
+        <td>0&deg; - 360&deg; or <br />0&deg; - 180&deg; (param.)</td>
         <td> -e -f </td>
       </tr>
 
@@ -2221,7 +2246,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td>
           Thickness, height and  width give dimensions of a cuboid sample. For cylinder only diamter and height are relevant parameters. <br />
           For hollow cylinder, inner diameter is given by the third parameter.
-          For spherical samples only the first value is considered as radius.
+          For spherical samples only the first value is considered as the diameter.
         </td>
         <td> e.g. cylinder: 0.5, 2.0    </td>
         <td> -t -h -w </td>

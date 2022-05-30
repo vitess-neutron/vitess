@@ -19,6 +19,7 @@
 #define TRUE 		    1
 #define FALSE 		  0
 #define MISSING 	 -1
+#define UNUSED     -1
 
 #define UP          1
 #define DOWN        0
@@ -32,6 +33,9 @@
 
 #define NO  0
 #define YES 1
+
+#define DATE_STD   0
+#define DATE_US    1
 
 #define NN  0
 
@@ -141,6 +145,7 @@ typedef enum
 	MCN_SMPL_REFL    = 680,
 	MCN_FRAME        = 710,
 	MCN_FILTER       = 720,
+	MCN_FILTER2D     = 722,
 	MCN_RESET        = 730,
 	MCN_VISUAL       = 740,
 	MCN_MONITOR1     = 800,
@@ -210,19 +215,30 @@ typedef enum
 }
 VtDirType;
 
-
 // Axis
 typedef enum
 {
+  NO_AXIS= ' ',
   X_AXIS = 'X',
   Y_AXIS = 'Y',
   Z_AXIS = 'Z'
 } 
 VtAxis;
 
+// Scattering axis
+typedef enum
+{
+  VT_NO_SC_AXIS=-1,
+  VT_SC_X    = 0,
+  VT_SC_Y    = 1,
+  VT_SC_Z    = 2,
+} 
+VtScAxis;
+
 // Orientation
 typedef enum
 {
+  NO_ORIENT  =-1,
   HORIZONTAL = 0,
   VERTICAL   = 1
 } 
@@ -231,9 +247,9 @@ VtOrient;
 // Frame generation
 typedef enum
 {
-  VT_NO_FRAME   = 0,
-  VT_FRAME_STD  = 1,
-  VT_FRAME_USER = 2
+  VT_NO_FRAME   =-1,
+  VT_FRAME_STD  = 0,
+  VT_FRAME_USER = 1
 } 
 VtFrameGen;
 
@@ -265,6 +281,15 @@ typedef enum
   GAUSSIAN   = 2
 }
 VtDistr;
+
+// Instrument geometry
+typedef enum
+{
+  VT_NO_I_GEOM   =-1,
+  VT_DIRECT_GEOM = 0,
+  VT_INVERT_GEOM  = 1
+}
+VtInstGeom;
 
 
 // Source and Moderators
@@ -413,6 +438,19 @@ VtTfmnSeq;
 // window absorber material
 typedef enum
 {	
+  VT_NO_MAT    = -1,
+  VT_ABS_IDEAL =  0,
+	VT_ABS_GD    =  1,
+	VT_ABS_B10   =  2,
+	VT_ABS_CD    =  3,
+	VT_ABS_EU    =  4,
+  VT_ABS_FILE  = 10
+}
+VtAbsMat;
+
+// absorber material
+typedef enum
+{	
   VT_WABS_FILE  = 0,
 	VT_WABS_GD    = 1,
   VT_WABS_CD    = 2,
@@ -422,6 +460,7 @@ typedef enum
   VT_WABS_IDEAL = 6
 }
 VtWndAbs;
+
 
 // oscillation (of the radial collimator)
 typedef enum
@@ -474,6 +513,19 @@ typedef enum
 	VT_WAVI_GAUSS = 2,
 }
 VtWaviDistr;
+
+// mirror material
+typedef enum
+{	
+	VT_NO_MIRR_MAT =-1,
+  VT_MIRR_OTHER  = 0,
+  VT_MIRR_SI     = 1,
+  VT_MIRR_SAPPH  = 2,
+  VT_MIRR_GLASS  = 3,
+  VT_MIRR_B4C    = 4,
+  VT_MIRR_VACUUM = 6
+}
+VtMirrMat;
 
 // reflection list parameter
 typedef enum
@@ -541,8 +593,8 @@ typedef enum
 VtPlotFilt;
 
 
-// Monochromator
-// -------------
+// Monochromators and choppers
+// ---------------------------
 // monochromator arrangement
 typedef enum
 {
@@ -563,12 +615,32 @@ VtMonoType;
 // focusing options
 typedef enum
 {
+  NO_FOCUSING= 0,
   CONST_LMBD = 1,
   SPHERICAL  = 2,
   VERT_CYL   = 3,
   DBL_FOC    = 4
 }
 VtMonoFocus;
+
+// shape of Fermi chopper channels
+typedef enum
+{	
+	VT_NO_CHN_SHAPE=-1,
+  VT_CHN_STR     = 0,
+  VT_CHN_IDEAL   = 1,
+  VT_CHN_CIRC    = 2
+}
+VtChnlShape;
+
+// shape of Fermi chopper channels
+typedef enum
+{	
+	VT_NO_FERMI_TYPE=0,
+	VT_FERMI_STR    =1,
+	VT_FERMI_CURV   =2
+}
+VtFermiType;
 
 
 // Samples
@@ -631,39 +703,44 @@ VtMeasMode;
 // geometry
 typedef enum
 {
-  VT_DET_CYL  = 1,
-  VT_DET_FLAT = 2
+  VT_NO_DET_GEOM=-1,
+  VT_DET_CYL    = 1,
+  VT_DET_FLAT   = 2
 }
 VtDetGeom;
 
 // type
 typedef enum
 {
-  VT_DET_TUBE = 0,
-  VT_DET_AREA = 1
+  VT_NO_DET_TYPE=-1,
+  VT_DET_TUBE   = 0,
+  VT_DET_AREA   = 1
 }
 VtDetType;
 
 // tube shape
 typedef enum
 {	
-	VT_TUBE_CIRCLE = 0,
-	VT_TUBE_SQUARE = 1
+  VT_NO_TUBE_SHAPE=-1,
+	VT_TUBE_CIRCLE  = 0,
+	VT_TUBE_SQUARE  = 1
 }
 VtTubeShape;
 
 // module usage
 typedef enum
 {
-  VT_DET_REAL = 0,
-  VT_MON_ONLY = 1,
-  VT_GRID_OFF = 2
+  VT_NO_DET_USE=-1,
+  VT_DET_REAL  = 0,
+  VT_MON_ONLY  = 1,
+  VT_GRID_OFF  = 2
 }
 VtDetUse;
 
 // absorbing detector material
 typedef enum
 {
+  VT_NO_ABS_MAT=-1,
   VT_GAS_BF3   = 0,
   VT_GAS_HE3   = 1,
   VT_SOLID_B10 = 2,
@@ -673,8 +750,8 @@ typedef enum
 VtDetAbs;
 
 
-// Monitors
-// --------
+// Monitors, Filter and Evaluation
+// -------------------------------
 // monitor parameter for mon1 and monpol1
 typedef enum
 {
@@ -742,7 +819,8 @@ typedef enum
   VT_DIV_HOR =5,
   VT_DIV_VERT=6,
   VT_DIV_RAD =7,
-  VT_ENERGY  =8
+  VT_ENERGY  =8,
+  VT_POS_R   =9
 }
 VtBrlPar;
 
@@ -763,6 +841,60 @@ typedef enum
   XYZ_CMPT     = 3
 }
 VtFormat2D;
+
+// combination of filter parameters
+typedef enum
+{
+  NO_FCOMB   =-1,   
+  OR_OR_OR   = 0,
+  AND_AND_AND= 1,
+  AND_OR_AND = 2,
+}
+VtFiltComb;
+
+// evaluation parameter for eval_elast2
+typedef enum
+{
+  VT_NO_EVAL   =0,
+  VT_EVAL_DSP  =1,
+  VT_EVAL_Q    =2,
+  VT_EVAL_ANGLE=3,
+  VT_EVAL_LMBD =4,
+}
+VtEvalPar;
+
+// evaluation combination for eval_elast2
+typedef enum
+{
+  VT_NO_ECOMB = 0,   
+  VT_SCA_LMBD = 1,   // scattering angle and wavelength
+  VT_SCA_TOF  = 2,   // scattering angle and TOF
+}
+VtEvalComb;
+
+// sort mode for eval_elast2
+typedef enum
+{
+  VT_NO_SORT    = 0,
+  VT_SORT_X     = 1,
+  VT_SORT_X_R   =-1,
+  VT_SORT_Y     = 2,
+  VT_SORT_Y_R   =-2,
+  VT_SORT_INT   = 3,
+  VT_SORT_INT_R =-3,
+  VT_SORT_CTS   = 4,
+  VT_SORT_CTS_R =-4,
+}
+VtEvalSort;
+
+// angle selection mode for eval_elast2
+typedef enum
+{
+  VT_NO_SEL  =-1,
+  VT_SEL_DIR = 0,  // selection by direction
+  VT_SEL_POS = 1,  // selection by position
+}
+VtAngleSel;
 
 
 // Tools
@@ -894,12 +1026,32 @@ typedef struct
   double         ID;
   double         Counts;
   double         Energy;
-	double         Shakes;
-	VectorType     Position;
-	VectorType     Vector;
-  double         Unknown;
+  double         Shakes;
+  VectorType     Position;
+  double         DirX;
+  double         DirY;
+  double         Surface;
 }
 Mcnp6Neutron;
+
+typedef struct
+{
+  int  nBytes;
+  char sID      [8];
+  int  iNum1    [2];
+  char sPrg     [8],
+       sVsn     [5];
+  char sDatePrg [9];
+  char sDateEnd [9],
+       sTimeEnd[10];
+  char sDateBeg [9],
+       sTimeBeg [9];
+  char sTitle  [80];
+  int  iNum2   [12];
+  char sRest  [300];
+}
+Mcnp6Header;
+
 
 // choppers
 // --------

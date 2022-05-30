@@ -14,6 +14,7 @@
 #include "sample.h"
 #include "matrix.h"
 #include "message.h"
+#include "convert.h" 
 
 
 /******************************/
@@ -21,14 +22,14 @@
 /******************************/
 double MuTot=0.0, /* total macroscopic scattering cross-section (= sigma_tot/UCV) [1/cm] */
        MuAbs=0.0; /* macroscopic absorption cross-section       (= sigma_abs/UCV) [1/cm] */
-int colD, colF, colF2, colDW, colM, colh, colk, coll;
+double scaleF2=1.0;
+int    colD=-1, colF=-1, colF2=-1, colDW=-1, colM=-1, 
+       colh=-1, colk=-1, coll =-1;
 
-double scaleF2;
-
-double* hVal;
-double* kVal;
-double* lVal;
-double* F2Val;
+double* hVal=NULL;
+double* kVal=NULL;
+double* lVal=NULL;
+double* F2Val=NULL;
 
 // extern char* pSmplFileName;
 
@@ -51,7 +52,7 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
                 const double Xdir,   const double Ydir,  const double Zdir, 
                 const double SizeD,  const double SizeH, const double SizeW, const double SizeT)
 {
-  // InitSample(pSample);
+  char  sGeom[20]="";
 
   pSample->Type = eGeom;
   pSample->Position [0] = Xpos;
@@ -60,19 +61,31 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
   pSample->Direction[0] = Xdir;
   pSample->Direction[1] = Ydir;
   pSample->Direction[2] = Zdir;
+
+  SmplGeom_ID2Txt(sGeom, eGeom);
+  if (SizeT > 0.0)
+    fprintf(LogFilePtr, "Geometry:	'%s'\n", sGeom);        // sample environment uses thickness of cylinder
+  else
+    fprintf(LogFilePtr, "Sample geometry:	'%s'\n", sGeom);
+
   switch (eGeom)
   {
     case VT_CUBE:
       pSample->SG.Cube.thickness=SizeD;
       pSample->SG.Cube.height   =SizeH;
       pSample->SG.Cube.width    =SizeW;
+      fprintf(LogFilePtr, "  sizes    :  %9.4f %9.4f %9.4f  cm  (thickness, width, height)\n",
+                          pSample->SG.Cube.thickness, pSample->SG.Cube.width, pSample->SG.Cube.height);
       break;
     case VT_CYL:
       pSample->SG.Cyl.r      = 0.5*SizeD;
       pSample->SG.Cyl.height = SizeH;
+      fprintf(LogFilePtr, "  sizes    :  %9.4f cm radius %9.4f cm height\n",
+                          pSample->SG.Cyl.r, pSample->SG.Cyl.height);
       break;
     case VT_SPHERE:
       pSample->SG.Ball.r     = 0.5*SizeD;
+      fprintf(LogFilePtr, "  size     :  %9.4f cm radius\n", pSample->SG.Ball.r);
       break;
     case VT_HOL_CYL:
       pSample->SG.HCyl.r_out = 0.5*SizeD;
@@ -82,13 +95,23 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
         pSample->SG.HCyl.h_in = pSample->SG.HCyl.h_out - 2.0*SizeT;
       }
       else
-      { pSample->SG.HCyl.r_in = SizeW; 
+      { pSample->SG.HCyl.r_in = 0.5*SizeW; 
         pSample->SG.HCyl.h_in = pSample->SG.HCyl.h_out;
       }
+      fprintf(LogFilePtr, "  radius out and in: %9.4f %9.4f cm \n  height out and in: %9.4f %9.4f cm\n",
+                          pSample->SG.HCyl.r_out, pSample->SG.HCyl.r_in, pSample->SG.HCyl.h_out, pSample->SG.HCyl.h_in);
       break;
     default:
       Error("Geometry unknown");
   }
+
+  fprintf(LogFilePtr, "  position : (%9.4f %9.4f %9.4f) cm\n",
+                      pSample->Position [0], pSample->Position [1], pSample->Position [2]);
+  if (eGeom!=VT_SPHERE)
+    fprintf(LogFilePtr, "  direction: (%9.4f %9.4f %9.4f)   \n",
+                        pSample->Direction[0], pSample->Direction[1], pSample->Direction[2]);
+
+  return;
 }
 
 

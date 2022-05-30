@@ -66,7 +66,7 @@ double     AbsorptionC=0.0,            // file -m       [1/cm] Macroscopic absor
 VectorType PosSample={0.0,0.0,0.0};    // file -X -Y -Z  [cm]  center position of the sample
 double     AnglSmplHor =0.0,           // file -o       [rad]  horizontal angle of the sample orientation, relative to standard orientation
            AnglSmplVert=0.0;           // file -O       [rad]  vertical angle of the sample orientation, relative to standard orientation
-double     Diameter = 0.0,             // file -t        [cm]  thickness or radius of the sample 
+double     Diameter = 0.0,             // file -t        [cm]  thickness or diameter of the sample 
            Height   = 0.0,             // file -h        [cm]  height of the sample 
            Width    = 0.0;             // file -w        [cm]  width of the sample
 VtFrameGen eFrame=VT_NO_FRAME;         // file -g        [-]   flag: user defined output frame or standard frame generation
@@ -82,7 +82,8 @@ SampleType stSample;                   //                      sample geometry
 VectorType DimSample   ={0.0,0.0,0.0}, //                      size of the sample
            DimSampleHol={0.0,0.0,0.0}, //                      array to use 'IntersectsWithCylinder()' for hollow cylinders  
            k_reference ={0.0,0.0,0.0}; //                      initial k-vector
-double     ProbCutoff=0.0;             //                      neutron weight, below which the trajectory is removed
+double     ProbCutoff=0.0,             //                      neutron weight, below which the trajectory is removed
+           Beta      =0.0;             //                      1/kT  (to calculae Bose factor for given temperature)
 double     RotMatrixSample [3][3],     //                      rotation matrix to transfer to coordinate system of the sample
            RotMatrixOut    [3][3],     //                      rotation matrix to transfer to the output coordinate system
            RotMatrixScatter[3][3];     //                      rotation matrix to transfer into coordinate system of the scattering direction
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
   _eModule = MCN_SMPL_INELAST;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.6");
+  PrintModuleName(_eModule, "1.6a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -326,7 +327,7 @@ int main(int argc, char **argv)
 
           OutputTransform(Pos2v, Dir) ;
 
-          Prob *= ScatRange[1]/180. * sin(ScatRange[2]* M_PI/180.)/4.;  /* solid angle / 4pi */
+          Prob *= ScatRange[1]/90. * sin(ScatRange[2]* M_PI/90.)/4.;  /* solid angle / 4pi */
           if (Prob <= ProbCutoff) 
             goto getlost2 ;
 
@@ -521,6 +522,9 @@ void OwnInit(int argc, char *argv[])
     }
   }
 
+  if (Temp > 0.0)
+    Beta = 1.0e-06 / (KB/E_C * Temp);   // 1/kT in 1/µeV 
+
   if (pSmplFileName==NULL)
     Error("Parameter file name missing") ;  
 	
@@ -550,19 +554,19 @@ void OwnCleanup()
 void SetSamplePar(SampleType* pSample)
 {
   FILE*  pFile=NULL;
-  char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="", sFrm[20]="";
-  int    nLen=sizeof(sLine)-1;
+  char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
+  int    nLen=sizeof(sLine)-1, iFrm=-1;
   double f_lmd =0.0, f_h   =0.0, f_v  =0.0,
          f_dlmd=0.0, f_dh  =0.0, f_dv =0.0,
          mu_sca=0.0, mu_abs=0.0,
          x     =0.0,  y    =0.0, z    =0.0, 
-         radius=0.0, height=0.0, width=0.0,
+         diamtr=0.0, height=0.0, width=0.0,
          off_h =0.0, off_v =0.0,
          in_lmd=0.0, in_h  =0.0, in_v =0.0,
          out_x =0.0, out_y =0.0, out_z=0.0, 
          out_h =0.0, out_v =0.0;
-  VtSmplGeom geom =VT_NO_GEOM;
-  VtFrameGen frame=VT_NO_FRAME; 
+  VtSmplGeom eGeo=VT_NO_GEOM;
+  VtFrameGen eFrm=VT_NO_FRAME; 
   SampleType sample;         // file  sample geometry
 
   InitSample(pSample);
@@ -582,29 +586,30 @@ void SetSamplePar(SampleType* pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x,      &y,      &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &off_h,  &off_v);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sFrm); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &diamtr, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%d",          &iFrm); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &in_lmd, &in_h,   &in_v);
-      frame = FrameGen_Txt2ID(sFrm); 
-      if (frame==VT_FRAME_USER)
-      { if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &out_x,  &out_y,  &out_z);
+      eFrm = (VtFrameGen) iFrm; 
+      if (eFrm==VT_FRAME_USER)
+      { 
+        if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &out_x,  &out_y,  &out_z);
         if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &out_h,  &out_v);
       }
 
-      geom  = SmplGeom_Txt2ID(sGeom);
+      eGeo  = SmplGeom_Txt2ID(sGeom);
 
       fprintf (LogFilePtr,"sample data read from parameter file: '%s':\n", pSmplFileName) ;
       fclose(pFile);
 
       // combines information from input and file, input parameters have priority
-      if (eGeom ==VT_NO_GEOM   && geom !=VT_NO_GEOM)  eGeom   = geom; 
-      if (eFrame==VT_NO_FRAME  && frame!=VT_NO_FRAME) eFrame  = frame; 
+      if (eGeom ==VT_NO_GEOM   && eGeo!=VT_NO_GEOM)  eGeom  = eGeo; 
+      if (eFrame==VT_NO_FRAME  && eFrm!=VT_NO_FRAME) eFrame = eFrm; 
       if (ScatMain [0]==0.0 && f_lmd !=0.0) ScatMain [0]= f_lmd ;
-      if (ScatMain [1]==0.0 && f_h   !=0.0) ScatMain [0]= f_h   ;
-      if (ScatMain [2]==0.0 && f_v   !=0.0) ScatMain [0]= f_v   ;
-      if (ScatRange[0]==0.0 && f_dlmd!=0.0) ScatRange[0]= f_dlmd;
-      if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[0]= f_dh  ;
-      if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[0]= f_dv  ;
+      if (ScatMain [1]==0.0 && f_h   !=0.0) ScatMain [1]= f_h   ;
+      if (ScatMain [2]==0.0 && f_v   !=0.0) ScatMain [2]= f_v   ;
+      if (ScatRange[0]==0.0 && f_dlmd!=0.0) ScatRange[0]= f_dlmd/2.0;
+      if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[1]= f_dh/2.0;
+      if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[2]= f_dv/2.0;
       if (ScatteringC ==0.0 && mu_sca!=0.0) ScatteringC = mu_sca;
       if (AbsorptionC ==0.0 && mu_abs!=0.0) AbsorptionC = mu_abs;
       if (PosSample[0]==0.0 && x     !=0.0) PosSample[0]= x     ;
@@ -612,7 +617,7 @@ void SetSamplePar(SampleType* pSample)
       if (PosSample[2]==0.0 && z     !=0.0) PosSample[2]= z     ;
       if (AnglSmplHor ==0.0 && off_h !=0.0) AnglSmplHor = off_h ;
       if (AnglSmplVert==0.0 && off_v !=0.0) AnglSmplVert= off_v ;
-      if (Diameter    ==0.0 && radius!=0.0) Diameter    = 2.0*radius;
+      if (Diameter    ==0.0 && diamtr!=0.0) Diameter    = diamtr;
       if (Height      ==0.0 && height!=0.0) Height      = height;
       if (Width       ==0.0 && width !=0.0) Width       = width ;
       if (LmbdInit    ==0.0 && in_lmd!=0.0) LmbdInit    = in_lmd;
@@ -632,21 +637,25 @@ void SetSamplePar(SampleType* pSample)
 
   // checks if geometry was given
   if (eGeom==VT_NO_GEOM)
-  {  Error2("Sample geometry could not be identified", sGeom);
-  }
-  else
-  { SmplGeom_ID2Txt(sGeom, eGeom);
-    fprintf(LogFilePtr, "             sample geometry:	'%s'\n", sGeom);
-  }
+    Error2("Sample geometry could not be identified", sGeom);
 
   // fills data structures
   FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  DimSample[0] = Diameter/2.0;
-  DimSample[1] = Width;
-  DimSample[2] = Height;
+  if (eGeom==VT_HOL_CYL)
+  {
+    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
+    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
+    DimSample[2] = Height;    DimSampleHol[2] = Height;
+  }
+  else
+  {
+    DimSample[0] = Diameter;
+    DimSample[1] = Width;    
+    DimSample[2] = Height;  
+  }
 
-  if ((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
-    Error("Distance to sample smaller than at least one sample dimension");
+  if (PosSample[0] < 0.5*DimSample[0] || PosSample[0] < 0.5*DimSample[1] || PosSample[0] < 0.5*DimSample[2]) 
+    Error("Distance to sample smaller than half the sample size in at least one dimension");
 
   k_reference[0] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) cos(DirInHor) ;
   k_reference[1] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) sin(DirInHor) ;
@@ -665,19 +674,6 @@ void SetSamplePar(SampleType* pSample)
     /* shifts output frame origin to center of sample */
     CopyVector(PosSample, TranslOut) ;
   }
-	
-  /* prints parameters into log file for verification */
-  fprintf(LogFilePtr,"	random main w, y, z		=  %9.4f, %9.4f, %9.4f\n	range x, y, z		=  %9.4f, %9.4f, %9.4f\n	absorption constant	=     %9.4e\n	cutoff probability		=     %8.1e\n",
-                     ScatMain[0], ScatMain[1], ScatMain[2], ScatRange[0], ScatRange[1], ScatRange[2], AbsorptionC, ProbCutoff) ;
-  fprintf(LogFilePtr,"	position x, y, z		=  %9.4f, %9.4f, %9.4f\n	thickn./radius, height, width  =  %9.4f, %9.4f, %9.4f\n	offset angle horiz		=  %9.4f\n	offset angle vert		=  %9.4f\n",
-                     PosSample[0], PosSample[1], PosSample[2], DimSample[0], DimSample[2], DimSample[1], AnglSmplHor, AnglSmplVert) ;
-  fprintf(LogFilePtr,"	reference-k x, y, z		=  %9.4f, %9.4f, %9.4f\n",
-                     k_reference[0], k_reference[1], k_reference[2]) ;
-
-  FrameGen_ID2Txt(sFrm, eFrame);
-  fprintf(LogFilePtr,"%s:\n", sFrm);
-  fprintf(LogFilePtr,"	output horizontal angle	= %9.4f\n	output vertical angle	= %9.4f\n	X',Y',Z'			= %9.4f, %9.4f, %9.4f\n", 
-                     AnglOutHor, AnglOutVert, TranslOut[0], TranslOut[1], TranslOut[2]) ;
 
   /* converts degs in radian etc. */
   AnglSmplHor  *= M_PI/180. ;
@@ -685,10 +681,7 @@ void SetSamplePar(SampleType* pSample)
   AnglOutHor   *= M_PI/180. ;
   AnglOutVert  *= M_PI/180. ;
 
-  /* Hollow cylinder option */
-  CopyVector(DimSample, DimSampleHol); 
-  DimSampleHol[0] = DimSample[1];
-
+  return;
 } /* End ReadParFile */
 
 
@@ -697,18 +690,33 @@ void SetSamplePar(SampleType* pSample)
 /**********************************************************************/
 void  CalcAndWritePar()
 {
+  char   sFrm[30]="";
   double scattered_dir[3];
   double	wl, wl_scattered, q_length, scattering_angle, energy_transfer ;
   VectorType	k_scattered ;
 
-  fprintf(LogFilePtr,"	P1			=  %9.4f\n	P2			=  %9.4f\n	P3			=  %9.4f\n	P4			=  %9.4f\n	D1			=  %9.4f\n	D2			=  %9.4f\n	D3			=  %9.4f\n	temperature		=  %9.4f\n",
-                     P1, P2, P3, P4, D1, D2, D3, Temp) ;
+  /* prints parameters into log file for verification */
+  fprintf(LogFilePtr, "S(q,omega) parameters\n");
+  fprintf(LogFilePtr, "  P1 (peak center)    : %9.4f ueV\n  P2 (peak width)     : %9.4f ueV\n  P3 (scale factor)   : %9.4f\n  P4 (ampl. 2nd peak) : %9.4f\n", P1, P2, P3, P4); 
+  fprintf(LogFilePtr, "  dispersion (x,y,z)  : %9.4f  %9.4f  %9.4f ueV*Ang\n", D1, D2, D3) ;
   if (P2 <= 0.0002) fprintf(LogFilePtr,"WARNING: P2 <= 0.0002 converted to P2 = 0.0\n") ;
 
-  if(bBoseF == 1) fprintf(LogFilePtr,"multiplied by Bose-factor");
-  if(bBoseF != 1) fprintf(LogFilePtr,"not multiplied by Bose-factor");
-  if(bBoseF == 1 && Temp == 0.0) fprintf(LogFilePtr," (T = 0 means 1 for w > 0 and 0 for w < 0)");
-  fprintf(LogFilePtr,"\n");
+  if (bBoseF == TRUE)
+  { fprintf(LogFilePtr,"  multiplied by Bose-factor\n  Temperature         : %9.4f K\n", Temp);
+    if(Temp == 0.0) 
+      Warning("T = 0 means 1 for w > 0 and 0 for w < 0");
+  }
+  else
+  { fprintf(LogFilePtr,"  not multiplied by Bose-factor\n");
+  }
+	
+  fprintf(LogFilePtr, "Scattering parameters\n");
+  fprintf(LogFilePtr, "  final wavelength    : %9.4f +/-%9.4f Ang\n", ScatMain[0], ScatRange[0]);
+  fprintf(LogFilePtr, "  final hor. angle    : %9.4f +/-%9.4f deg\n", ScatMain[1], ScatRange[1]);
+  fprintf(LogFilePtr, "  final vert. angle   : %9.4f +/-%9.4f deg\n", ScatMain[2], ScatRange[2]);
+  fprintf(LogFilePtr, "  scat. & abs. coeff. : %9.4f    %9.4f 1/cm\n", ScatteringC, AbsorptionC) ;
+  fprintf(LogFilePtr, "  offset angles (h,v) : %9.4f %9.4f           deg\n", Degrees(AnglSmplHor), Degrees(AnglSmplVert));
+  fprintf(LogFilePtr, "  reference-k (x,y,z) : %9.4f %9.4f %9.4f 1/Ang\n",   k_reference[0], k_reference[1], k_reference[2]);
 
   /* computes global reference values */
   scattered_dir[0]= (double) cos(ScatMain[2]*M_PI/180.) * (double) cos(ScatMain[1]*M_PI/180.) ;
@@ -727,16 +735,21 @@ void  CalcAndWritePar()
 
   energy_transfer = ENERGY_FROM_LAMBDA(wl) - ENERGY_FROM_LAMBDA(wl_scattered) ;
 
-  fprintf(LogFilePtr,	"scattering triangle corresponding to q-transfer and reference-k:\n	reference wavelength	= %9.4f A\n	scattered wavelength	= %9.4f A\n	scattering angle		= %9.4f deg\n	|q-transfer|		= %9.4f A-1\n	energy transfer		= %9.4f ueV\n",
+  fprintf(LogFilePtr,	"scattering triangle corresponding to q-transfer and reference-k:\n  reference wavelength: %9.4f Ang\n  scattered wavelength: %9.4f Ang\n  scattering angle    : %9.4f deg\n  |q-transfer|        : %9.4f 1/Ang\n  energy transfer     : %9.4f ueV\n",
                       wl, wl_scattered, scattering_angle, q_length, energy_transfer) ;
 
+  FrameGen_ID2Txt(sFrm, eFrame);
+  fprintf(LogFilePtr, "%s:\n", sFrm);
+  fprintf(LogFilePtr, "  output position (X',Y',Z'): %9.4f %9.4f %9.4f cm \n",     TranslOut[0], TranslOut[1], TranslOut[2]);
+  fprintf(LogFilePtr, "  output angles   (hor,vert): %9.4f %9.4f           deg\n", Degrees(AnglOutHor), Degrees(AnglOutVert));
+
   FillRotMatrixZY(RotMatrixScatter, ScatMain[2]*M_PI/180., ScatMain[1]*M_PI/180.) ; 
-  FillRotMatrixZY(RotMatrixSample, AnglSmplVert, AnglSmplHor) ;
-  FillRotMatrixZY(RotMatrixOut, AnglOutVert, AnglOutHor) ;
+  FillRotMatrixZY(RotMatrixSample,  AnglSmplVert, AnglSmplHor) ;
+  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,  AnglOutHor) ;
 
   RotVector(RotMatrixSample, scattered_dir) ;
 
-  fprintf(LogFilePtr,"	repetition  		=     %ld\n", Repetition) ;
+  fprintf(LogFilePtr,"repetition         : %ld\n", Repetition) ;
   if(Repetition > 1) fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate > 1 can lead to wrong results. Be sure that you have very good statistics\n" 
                                         "\nin wavelength, time, x,y,z and directions just before the sample\n") ;
 }
@@ -800,8 +813,8 @@ long S_q_w(double *wl, double *prob, VectorType Dir)
   /* new random direction */
   CopyVector(Dir, dir_inc) ;
 
-  DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatRange[1]/2. * M_PI/180. ;
-  DeltaVert = MonteCarlo(-1. , 1.) ; DeltaVert *= ScatRange[2]/2. * M_PI/180. ;
+  DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatRange[1] * M_PI/180. ;
+  DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatRange[2] * M_PI/180. ;
 
   EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
 
@@ -817,7 +830,7 @@ long S_q_w(double *wl, double *prob, VectorType Dir)
   {
     double fact; double wl_old = *wl;
 
-    *wl = ScatMain[0] + MonteCarlo(- ScatRange[0]/2, ScatRange[0]/2) ;
+    *wl = ScatMain[0] + MonteCarlo(- ScatRange[0], ScatRange[0]) ;
     energy = ENERGY_FROM_LAMBDA(wl_old) - ENERGY_FROM_LAMBDA(*wl) ;
 
     MultiplyByScalar(dir_inc, 2 * M_PI / wl_old) ;
@@ -878,19 +891,20 @@ double	Dispersion(VectorType q)
 /*******************************************************/
 double	BoseFactor(double T, double w)
 {
-  double beta;
+  double factor=1.0;
 
   if (T == 0.0) 
   {
-    if (w > 0.0) return 1.0 ;
-    if (w < 0.0) return 0.0 ;
+    if (w > 0.0) factor = 1.0 ;
+    if (w < 0.0) factor = 0.0 ;
   }
-
-  beta = 11.605 / T / 1.e3 ; /* unit 1/ueV ! */
-
-  if (w > 0.0) return 1.0 / (exp( beta * w) - 1.0) + 1.0;
-  if (w < 0.0) return 0.0 / (exp(-beta * w) - 1.0);
-  else         return 0.0 ;
+  else
+  {
+         if (w > 0.0) factor = 1.0 / (exp( Beta * w) - 1.0) + 1.0;
+    else if (w < 0.0) factor = 1.0 / (exp(-Beta * w) - 1.0);
+    else              factor = 0.0 ;
+  }
+  return factor;
 }
 	
 

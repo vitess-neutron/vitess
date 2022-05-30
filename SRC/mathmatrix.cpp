@@ -150,12 +150,13 @@ MathMatrix operator * (const MathMatrix& m1, const MathMatrix& m2)
 MathMatrix* MathMatrix::RotMatrixXFromVector(MathVector* v)
 {
 
-  double phi = v->Phi(); // rotation angle around z-axis
+  double phi   = v->Phi();   // rotation angle around z-axis
   double theta = v->Theta(); // here: rotation angle around y-axis
 
-  MathMatrix* rotMatrix = new MathMatrix(0, 3.14159265/2. - theta, (-1.)*phi, "xyz");
+  // MathMatrix* rotMatrixZ = new MathMatrix(0, M_PI_2 - theta, (-1.)*phi, "xyz");
+  MathMatrix* rotMatrixX = new MathMatrix(0, theta, -phi, "xyz");
     
-  return rotMatrix;
+  return rotMatrixX;
 }
 
 

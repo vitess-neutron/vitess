@@ -14,7 +14,7 @@ source:				       # source module that will be executed
       default: "First Simulation" 
       column:  0                       
   - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    "combo"                        # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+      type:    "combo"                 # This shall not be selected, but defined by the chosen module   
       default: "simple source" 
       index:   1
       prefix:  "-K"     

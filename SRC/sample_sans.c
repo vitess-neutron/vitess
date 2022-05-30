@@ -47,7 +47,7 @@ double ThetaMax = 0.0,          // -M              maximum scattering angle to b
 double Xpos     = 0.0,          // -x file  [cm]   position of the center of the sample 
        Ypos     = 0.0,          // -y file  [cm]  
        Zpos     = 0.0,          // -z file  [cm]  
-       Diameter = 0.0,          // -t file  [cm]   thickness or radius of the sample 
+       Diameter = 0.0,          // -t file  [cm]   thickness or diameter of the sample 
        Height   = 0.0,          // -h file  [cm]   height of the sample 
        Width    = 0.0,          // -w file  [cm]   width of the sample
        Xdir     = 0.0,          // -X file  [-]    orientation of the sample 
@@ -64,9 +64,9 @@ VtPtclGeom eGeomP= VT_NO_PTCL;  /* -O file  [-]    particle shape:
 double SizeA   = -1.0,          // -U file  [Ang]  size of the particles
        SizeB   = -1.0,          // -V file           e.g. hard spere radius
        SizeC   = -1.0,          // -W file           in x-, y-, and z-direction 
-       Rho1    =  1.0e10,       // -s file         scattering length density of the particles 
-       Rho2    =  1.0e10,       // -S file         scattering length density of the solvemt 
-       FracPtcl=  0.01;         // -f file         volume fraction of the particles 
+       Rho1    =  0.0,          // -s file         scattering length density of the particles 
+       Rho2    =  0.0,          // -S file         scattering length density of the solvemt 
+       FracPtcl=  0.0;          // -f file         volume fraction of the particles 
 extern                                             
 double MuTot,                   // -T file         macrosc. scattering cross section, defined in 'sample.c'
        MuAbs;                   // -m file         macrosc. absorption cross section, defined in 'sample.c'
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
             OutPhi = MonteCarlo(Phi-DelPhi, Phi+DelPhi);
 
             /* ScProb corresponds to the sample form factor considering hard sphere scattering */
-            switch (eGeomS)
+            switch (eGeomP)
             {
               case VT_PTCL_SPHERE: 
                 fFormFac = FormFactorSphere(qValue, SizeA);
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 
             // Determine the scattering probability from the form factor, 
             // contrast and particle size, the sample size, and the solid angle factor,
-            if (eGeomS==VT_ISOTROPIC)
+            if (eGeomP==VT_ISOTROPIC)
             {	
               fFacCtrPtkl = 1.0;
             }
@@ -492,36 +492,14 @@ void  WritePar()
   char sGeomP[30]="";
 
   PtclGeom_ID2Txt(sGeomP, eGeomP);
-
-  switch (stSample.Type)
-  {
-    case VT_CUBE: 
-      fprintf(LogFilePtr, "Cubic sample, sizes : %8.2f,%8.2f,%8.2f   cm  (thickness, height, width)\n"
-                          "  direction         :(%9.3f,%8.3f,%8.3f)   \n",
-                          stSample.SG.Cube.thickness, stSample.SG.Cube.height, stSample.SG.Cube.width,
-                          stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_CYL: 
-      fprintf(LogFilePtr, "Cylindrical sample  : %8.2f cm radius%6.2f cm height\n"
-                          "  direction         :(%9.3f,%8.3f,%8.3f)   \n",
-                          stSample.SG.Cyl.r, stSample.SG.Cyl.height,
-                          stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_SPHERE: 
-      fprintf(LogFilePtr, "Spherical sample    : %8.2f cm radius\n", stSample.SG.Ball.r);
-      break;
-    default: ;
-  }
-  fprintf(LogFilePtr, "  position          :(%8.2f,%8.2f,%8.2f ) cm\n",
-                      stSample.Position [0], stSample.Position [1], stSample.Position [2]);
   switch (eGeomP)
   {	
-    case 'S': fprintf(LogFilePtr, "%s: %8.2f Ang radius\n",                    sGeomP, SizeA);               break;
-    case 'D': fprintf(LogFilePtr, "%s from %8.2f to %8.2f Ang radius\n",       sGeomP, SizeA, SizeB);        break;
-    case 'E': fprintf(LogFilePtr, "%s: radii %8.2f,%8.2f,%8.2f Ang\n",         sGeomP, SizeA, SizeB, SizeC); break;
-    case 'P': fprintf(LogFilePtr, "%s: %8.2f,%8.2f,%8.2f Ang length\n",        sGeomP, SizeA, SizeB, SizeC); break;
-    case 'C': fprintf(LogFilePtr, "%s: radii %8.2f,%8.2f, length:%8.2f Ang\n", sGeomP, SizeA, SizeB, SizeC); break;
-    case 'I': fprintf(LogFilePtr, "%s \n",                                     sGeomP);                      break;
+    case VT_PTCL_SPHERE  : fprintf(LogFilePtr, "%s: %8.2f Ang radius\n",                    sGeomP, SizeA);               break;
+    case VT_PTCL_POLY_SPH: fprintf(LogFilePtr, "%s from %8.2f to %8.2f Ang radius\n",       sGeomP, SizeA, SizeB);        break;
+    case VT_PTCL_ELLIPS  : fprintf(LogFilePtr, "%s: radii %8.2f,%8.2f,%8.2f Ang\n",         sGeomP, SizeA, SizeB, SizeC); break;
+    case VT_PTCL_EPIPED  : fprintf(LogFilePtr, "%s: %8.2f,%8.2f,%8.2f Ang length\n",        sGeomP, SizeA, SizeB, SizeC); break;
+    case VT_PTCL_CYL     : fprintf(LogFilePtr, "%s: radii %8.2f,%8.2f, length:%8.2f Ang\n", sGeomP, SizeA, SizeB, SizeC); break;
+    case VT_ISOTROPIC    : fprintf(LogFilePtr, "%s \n",                                     sGeomP);                      break;
   }
   fprintf(LogFilePtr, "scat. length density: %13.3e (particle) %10.3e 1/cm^2 (solvent)\n"
                       "vol.fract. of part. : %8.3f\n"
@@ -542,7 +520,7 @@ void SetSamplePar(SampleType* pSample)
   int    nLen=sizeof(sLine)-1;
   double x     = 0.0, y     = 0.0, z    = 0.0, 
          xdir  = 0.0, ydir  = 0.0, zdir = 0.0,
-         radius= 0.0, height= 0.0, width= 0.0,
+         d_par = 0.0, height= 0.0, width= 0.0,
          sizeA =-1.0, sizeB =-1.0, sizeC=-1.0,
          rho1  = 0.0, rho2  = 0.0, frac = 0.0,
          muInc = 0.0, muTot = 0.0, muAbs= 0.0; 
@@ -564,7 +542,7 @@ void SetSamplePar(SampleType* pSample)
       /* First line: sample position     */
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%c %lf %lf %lf", &cGeomP, &sizeA, &sizeB, &sizeC);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &rho1,  &rho2,  &frac);
@@ -581,7 +559,8 @@ void SetSamplePar(SampleType* pSample)
       if (Xpos    == 0.0 && x     != 0.0) Xpos    = x;
       if (Ypos    == 0.0 && y     != 0.0) Ypos    = y;
       if (Zpos    == 0.0 && z     != 0.0) Zpos    = z;
-      if (Diameter== 0.0 && radius!= 0.0) Diameter= 2.0*radius;
+      if (Diameter== 0.0 && d_par != 0.0)
+      { if (eGeomS==VT_CUBE) Diameter = d_par; else Diameter = 2.0 * d_par;}
       if (Height  == 0.0 && height!= 0.0) Height  = height;
       if (Width   == 0.0 && width != 0.0) Width   = width;
       if (Xdir    == 0.0 && xdir  != 0.0) Xdir    = xdir;
@@ -645,9 +624,10 @@ void SetSamplePar(SampleType* pSample)
       }
       break;
     case VT_NO_PTCL:
+    case VT_ISOTROPIC:
       break;
     default:
-      fprintf(LogFilePtr, "ERROR: No or wrong value given for geometry in %s", pSmplFileName);
+      fprintf(LogFilePtr, "ERROR: No or wrong character given for the particle geometry in %s", pSmplFileName);
       exit(-1);
   }
 }

@@ -16,6 +16,7 @@
 /* 1.3a Jul  2019  K. Lieutenant   MCNPX format uses its own structure                       */
 /* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
 /* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNP6 files                           */
+/* 1.5  Feb  2022  K. Lieutenant   correction: binary MCNP6 files and surface file           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -48,6 +49,7 @@ short ConvertMcpl2Vitess  (Neutron* pVitNeut, const mcpl_particle_t* pMcplPtcl);
 void  RotMc2Vit  (VectorType* pVitVector, const VectorType* pMcVector);            // Vector transfer from McStas to VITESS co-ordinate system 
 void  InitMcNeutr(Neutron* pNeutron);                                              // Initializes a trajectory
 void  GetId      (TotalID* pID);                                                   // Creates next ID for a trajectory 
+void  ConvertDate(const char* sDateUS, char* sDateInt);                            // Converts American to international date format
                                                                                    
 extern char* FullParName(const char* filename);                                    // function in init.c, adds parameter directory to file name 
 
@@ -60,7 +62,8 @@ VtPrgFormat  ePrgFormat=VT_VITESS_FMT;   // -f        data format of the program
 VtDataFormat eDatFormat=VT_EXPONENTIAL;  // -F        format of the data to read (VT_EXPONENTIAL   VT_FLOAT   VT_BINARY)
 char*        sInputFileName[NF_MAX];     // -A -B -D  names of the NF_MAX input files
 double       Weight[NF_MAX];             // -a -b -d  Weights of the input files
-double       FactInt=1.0;                // -I        Factor to normalize to the source intensity from MCNP data
+double       FactInt=1.0;                // -I        Factor to normalize to the source intensity
+int          iSurface=MISSING;           // -s        surface ID: if given, only neutrons with this ID are considered  
 short        iDetectColor=-1;            // -C        Only for VITESS format: Read only events with a given color.
 int          nRep=1;                     // -R        Number of times the input is read
 
@@ -97,7 +100,7 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
  
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.5");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -147,7 +150,7 @@ int main(int argc, char **argv)
           {
             case VT_VITESS_FMT: rc=ReadVitessTraj(&InNeutron, &nT, pInFile[m]); break;
             case VT_MCSTAS_FMT: rc=ReadMcStasTraj(&InNeutron, &nT, pInFile[m]); break;
-            case VT_MCNPX_FMT : rc=ReadMcnpxTraj (&InNeutron, &nT, pInFile[m]); break;
+            // case VT_MCNPX_FMT : rc=ReadMcnpxTraj (&InNeutron, &nT, pInFile[m]); break;
             case VT_MCNP6_FMT : rc=ReadMcnp6Traj (&InNeutron, &nT, pInFile[m]); break;
             default: Error("Data format is not (yet) implemented");
           }
@@ -237,6 +240,9 @@ void OwnInit(int argc, char *argv[])
         case 'F':
           eDatFormat = (VtDataFormat) atoi(&argv[i][2]);
           break;
+        case 's':
+          iSurface = atoi(&argv[i][2]);
+          break;
         case 'C':
           iDetectColor = (short) atoi(&argv[i][2]);
           break;
@@ -290,8 +296,8 @@ void OwnInit(int argc, char *argv[])
       case VT_VITESS_FMT: nHeader=   0; break;  // value > 0 requires code change in 'ReadVitessTraj'
       case VT_MCSTAS_FMT: nHeader=   0; break;  // value > 0 requires code change in 'ReadMcStasTraj'
       case VT_MCPL_FMT  : nHeader=   0; break;  // no influence, it is handled inside mcpl.c
-      case VT_MCNPX_FMT : nHeader=   0; Error  ("Binary input not properly implemented"); break;
-      case VT_MCNP6_FMT : nHeader=2211; Warning("Binary input file may be read wrongly"); break;
+      case VT_MCNPX_FMT : nHeader=   0; Error  ("Binary input for MCNPX not yet properly implemented"); break;
+      case VT_MCNP6_FMT : nHeader=   0; break;
       default: Error("Data format is not (yet) implemented");
     }  
   }
@@ -501,21 +507,89 @@ short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
 short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
 {
   Mcnp6Neutron McnpNeutr;
-  short        rcs=0,
-               rc=FALSE;
-  static int   i=0;
+  short        eSign=1,             // flight direction 1: forward  -1: backward
+               rcs=0, rc=FALSE;
+  int          i=0, nBytes=0, nSets=0,
+               iNum=0,  iNum2=0,  iNum3=0, iNum4=0,
+               iNum5=0, iNum6=0,  iNum7=0,  iNum8=0,
+               iNum9=0, iNum10=0, iNum11=0, iNum12=0,
+               iNum13=0, iNum14=0;
+  char         sTitle[81]="", sName [ 9]="", sCode [ 9]="", sVsn[5]="", 
+               sDate [ 9]="", sTimeJ[ 9]="", sTimeM[ 9]="", sMuell[8]="", sNix[8]="", sHist[9]="",
+               sDateP[11]="", sDateJ[11]="", sDateM[11]="", 
+               cBlank='\0',   c='\0';
+  static short bHeader=FALSE;  // flag: Header treated already
 
 	// initialization			                      
   *nTrj = 0;           // number of loaded and wanted trajectories (0 or 1)
-	memset(&McnpNeutr, '\0', sizeof(Mcnp6Neutron));        
+	memset(&McnpNeutr , '\0', sizeof(Mcnp6Neutron));        
 
   if (eDatFormat==VT_BINARY)
   { 
-    while (i < nHeader)
-    { sHeader[i] = fgetc(pFile);
-      i++;
+    if (bHeader==FALSE)
+    { fread(&nBytes,    4, 1, pFile);
+      fread(sName,      8, 1, pFile);
+      fread(&iNum2,     4, 1, pFile);
+      fread(&iNum3,     4, 1, pFile);
+      fread(sCode,      8, 1, pFile);
+      fread(sVsn,       4, 1, pFile); cBlank=fgetc(pFile);
+      fread(sDate,      8, 1, pFile); cBlank=fgetc(pFile); ConvertDate(sDate, sDateP);
+      fread(sDate,      8, 1, pFile); cBlank=fgetc(pFile); ConvertDate(sDate, sDateJ);
+      fread(sTimeJ,     8, 1, pFile); cBlank=fgetc(pFile); cBlank=fgetc(pFile);
+      fread(sDate,      8, 1, pFile); cBlank=fgetc(pFile); ConvertDate(sDate, sDateM);
+      fread(sTimeM,     8, 1, pFile); cBlank=fgetc(pFile);
+      fread(sTitle,    80, 1, pFile);
+      fread(&iNum4,     4, 1, pFile);
+      fread(&iNum5,     4, 1, pFile);
+      fread(&iNum6,     4, 1, pFile);
+      fread(&iNum7,     4, 1, pFile);
+      fread(&iNum8,     4, 1, pFile);
+      fread(&nSets,     4, 1, pFile);
+      fread(&iNum9,     4, 1, pFile);
+      fread(&iNum10,    4, 1, pFile);
+      fread(&iNum11,    4, 1, pFile);
+      fread(&iNum12,    4, 1, pFile);
+      fread(&iNum13,    4, 1, pFile);
+      fread(&iNum14,    4, 1, pFile);
+      
+      // search for beginning of data
+      for (i=1; i < 20000; i++)
+      { 
+        c = fgetc(pFile);
+        if (c=='X')
+        { fread(sMuell, 7, 1, pFile);
+          if (memcmp(sMuell, sNix, 7)==0) 
+            break;
+        }
+      }
+
+      // read first data set
+      if (c=='X')
+      {
+        fread(sHist+4, 4, 1, pFile);
+        memcpy(&McnpNeutr.History, sHist, 8);
+        rc = (short) fread(&(McnpNeutr.ID),  sizeof(Mcnp6Neutron) - sizeof(double),  1, pFile);
+        for (i=0; i < 4; i++) c = fgetc(pFile);
+ 
+        bHeader=TRUE;
+        fprintf(LogFilePtr, "%s%s simulation %s\nfrom %s %s containng %d data sets\n", sCode, sVsn, sTitle, sDateJ, sTimeJ, nSets);
+      }
+      else
+      { Error("Searching for beginning of data failed");
+      }
+
     }
-    *nTrj   = fread(&McnpNeutr, sizeof(Mcnp6Neutron), 1, pFile);
+    else
+    {
+      fread(&iNum, 4, 1, pFile);
+      rc = (short) fread(&McnpNeutr , sizeof(Mcnp6Neutron), 1, pFile);
+      for (i=0; i < 4; i++) c = fgetc(pFile);
+    }
+    if (McnpNeutr.ID!=0.0)
+      eSign = McnpNeutr.ID/fabs(McnpNeutr.ID);
+
+    if (rc > 0 && (iSurface==MISSING || iSurface==(int)McnpNeutr.Surface) && fabs(McnpNeutr.ID)==8.0) 
+      *nTrj = 1;
   }
   else
   {
@@ -524,19 +598,24 @@ short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
                       &McnpNeutr.History,     &McnpNeutr.ID, 
                       &McnpNeutr.Counts,      &McnpNeutr.Energy,      &McnpNeutr.Shakes, 
                       &McnpNeutr.Position[0], &McnpNeutr.Position[1], &McnpNeutr.Position[2], 
-                      &McnpNeutr.Vector[0],   &McnpNeutr.Vector[1],   &McnpNeutr.Vector[2]); 
-    if (rcs > 7) *nTrj = 1;
+                      &McnpNeutr.DirX,        &McnpNeutr.DirY,        &McnpNeutr.Surface); 
+    eSign = McnpNeutr.ID/fabs(McnpNeutr.ID);
+
+    if (rcs > 7 && (iSurface==MISSING || iSurface==(int)McnpNeutr.Surface) && fabs(McnpNeutr.ID)==8.0) 
+      *nTrj = 1;
   }
 
   if (*nTrj > 0)
   { 
-  	// initialization
-    InitMcNeutr(pNeutron);			                      
+  	// initialization and ID for VITESS neutron structure
+
+    InitMcNeutr(pNeutron);
 
     CopyVector(McnpNeutr.Position, pNeutron->Position);
-    CopyVector(McnpNeutr.Vector,   pNeutron->Vector);
 
-    NormVector(pNeutron->Vector);
+    pNeutron->Vector[0] = McnpNeutr.DirX;
+    pNeutron->Vector[1] = McnpNeutr.DirY;
+    pNeutron->Vector[2] = sqrt(1 - sq(McnpNeutr.DirX)  - sq(McnpNeutr.DirY)) * eSign;
     
     pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> µeV,  lambda -> energy
     pNeutron->Probability = McnpNeutr.Counts * FactInt;                     // normalisation counts -> n/s 
@@ -622,6 +701,7 @@ void InitMcNeutr(Neutron* pNeutron)
 	pNeutron->Color = 0;                              // no color
 }
 
+
 /******************************************/
 /**  Creates next ID for a trajectory    **/
 /******************************************/
@@ -646,5 +726,21 @@ void GetId(TotalID* pID)
 	pID->IDGrp[1] = ig2;
 	pID->IDNo     = ig;
 }
+
+
+/******************************************************/
+/**  Converts American to international date format  **/
+/******************************************************/
+void ConvertDate(const char* sDateUS, char* sDateInt)
+{
+  strcpy(sDateInt,"2022-01-31");
+  sDateInt[2]=sDateUS[6];
+  sDateInt[3]=sDateUS[7];
+  sDateInt[5]=sDateUS[0];
+  sDateInt[6]=sDateUS[1];
+  sDateInt[8]=sDateUS[3];
+  sDateInt[9]=sDateUS[4];
+}
+
 
 

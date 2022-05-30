@@ -52,11 +52,11 @@ short      iColor=ANY_COLOR;           //      -c        [-]   enum color: if !=
                                              
 VtSmplGeom eGeom=VT_NO_GEOM;           // file -G        [-]   geometry parameter: "cylinder" "hollow-cylinder" "sphere" "cuboid" 
 VectorType ScatMain ={0.0,0.0,0.0},    // file -E -F    [deg]  horizontal and vertical component (Theta, Phi) of the main scattering direction
-           ScatRange={0.0,0.0,0.0};    // file -e -f    [deg]  hor. and vert. var. (DelTheta, DelPhi) determining scat. range [Phi-DelPhi/2, Phi+DelPhi/2], Theta analogous  
+           ScatRange={0.0,0.0,0.0};    // file -e -f    [deg]  hor. and vert. var. (DelTheta, DelPhi) determining scat. range [Phi-DelPhi, Phi+DelPhi], Theta analogous  
 double     AbsorptionC=0.0,            // file -m       [1/cm] Macroscopic absorption cross section 
            ScatteringC=0.0;            // file -T       [1/cm] Macroscopic total scattering cross section 
 VectorType PosSample={0.0,0.0,0.0};    // file -x -y -z  [cm]  center position of the sample
-double     Diameter = 0.0,             // file -t        [cm]  thickness or radius of the sample 
+double     Diameter = 0.0,             // file -t        [cm]  thickness or diameter of the sample 
            Height   = 0.0,             // file -h        [cm]  height of the sample 
            Width    = 0.0;             // file -w        [cm]  width of the sample
 double     AnglSmplHor =0.0,           // file -o       [deg]  horizontal angle of the sample orientation, relative to standard orientation
@@ -96,11 +96,8 @@ int main(int argc, char **argv)
  _eModule = MCN_SMPL_EL_ISO;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.8");
+  PrintModuleName(_eModule, "1.8a");
   OwnInit(argc, argv);
-
-  InitSample  (&stSample);
-  SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
@@ -247,8 +244,8 @@ int main(int argc, char **argv)
             
               /* new random direction  */
             
-              DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatRange[1]/2. * M_PI/180. ;
-              DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatRange[2]/2. * M_PI/180. ;
+              DeltaHoriz = MonteCarlo(-1. , 1.) ; DeltaHoriz *= ScatRange[1] * M_PI/180. ;
+              DeltaVert  = MonteCarlo(-1. , 1.) ; DeltaVert  *= ScatRange[2] * M_PI/180. ;
              
               EulerToCartesianZY( dir_fin,  &DeltaVert,  &DeltaHoriz);
             
@@ -339,7 +336,7 @@ int main(int argc, char **argv)
 
             OutputTransform(Pos2v, Dir) ;
 		
-            Prob *= ScatRange[1]/180. * sin(ScatRange[2]* M_PI/180.) /4.;  /* solid angle / 4pi */
+            Prob *= ScatRange[1]/90. * sin(ScatRange[2]* M_PI/90.) /4.;  /* solid angle / 4pi */
             if (Prob <= ProbCutoff) goto getlost2 ;
 
             /* transmit coordinates which were not changed, the rest overwrite below */
@@ -527,7 +524,7 @@ void SetSamplePar(SampleType* pSample)
          mu_sca=0.0, mu_abs=0.0,
          x     =0.0,  y    =0.0, z   =0.0, 
          off_h =0.0, off_v =0.0,
-         radius=0.0,height =0.0, width=0.0,
+         diamtr=0.0, height=0.0, width=0.0,
          out_x =0.0, out_y =0.0, out_z=0.0, 
          out_h =0.0, out_v =0.0;
   VtSmplGeom geom=VT_NO_GEOM;
@@ -549,7 +546,7 @@ void SetSamplePar(SampleType* pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x,      &y,      &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &off_h,  &off_v);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &diamtr, &height, &width);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &out_x,  &out_y,  &out_z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &out_h,  &out_v);
 
@@ -560,10 +557,10 @@ void SetSamplePar(SampleType* pSample)
 
       // combines information from input and file, input parameters have priority
       if (eGeom ==VT_NO_GEOM   && geom !=VT_NO_GEOM)  eGeom   = geom; 
-      if (ScatMain [1]==0.0 && f_h   !=0.0) ScatMain [0]= f_h   ;
-      if (ScatMain [2]==0.0 && f_v   !=0.0) ScatMain [0]= f_v   ;
-      if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[0]= f_dh  ;
-      if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[0]= f_dv  ;
+      if (ScatMain [1]==0.0 && f_h   !=0.0) ScatMain [1]= f_h   ;
+      if (ScatMain [2]==0.0 && f_v   !=0.0) ScatMain [2]= f_v   ;
+      if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[1]= f_dh/2.0;
+      if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[2]= f_dv/2.0;
       if (ScatteringC ==0.0 && mu_sca!=0.0) ScatteringC = mu_sca;
       if (AbsorptionC ==0.0 && mu_abs!=0.0) AbsorptionC = mu_abs;
       if (PosSample[0]==0.0 && x     !=0.0) PosSample[0]= x     ;
@@ -571,7 +568,7 @@ void SetSamplePar(SampleType* pSample)
       if (PosSample[2]==0.0 && z     !=0.0) PosSample[2]= z     ;
       if (AnglSmplHor ==0.0 && off_h !=0.0) AnglSmplHor = off_h ;
       if (AnglSmplVert==0.0 && off_v !=0.0) AnglSmplVert= off_v ;
-      if (Diameter    ==0.0 && radius!=0.0) Diameter    = 2.0*radius;
+      if (Diameter    ==0.0 && diamtr!=0.0) Diameter    = diamtr;
       if (Height      ==0.0 && height!=0.0) Height      = height;
       if (Width       ==0.0 && width !=0.0) Width       = width ;
       if (TranslOut[0]==0.0 && out_x !=0.0) TranslOut[0]= out_x ;
@@ -592,18 +589,22 @@ void SetSamplePar(SampleType* pSample)
 
   // check if geometry was given
   if (eGeom==VT_NO_GEOM)
-  {  Error2("Sample geometry could not be identified", sGeom);
-  }
-  else
-  { SmplGeom_ID2Txt(sGeom, eGeom);
-    fprintf(LogFilePtr, "             sample geometry:	'%s'\n", sGeom);
-  }
+    Error2("Sample geometry could not be identified", sGeom);
 
   // fills data structures
   FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  DimSample[0] = Diameter/2.0;
-  DimSample[1] = Width;
-  DimSample[2] = Height;
+  if (eGeom==VT_HOL_CYL)
+  {
+    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
+    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
+    DimSample[2] = Height;    DimSampleHol[2] = Height;
+  }
+  else
+  {
+    DimSample[0] = Diameter;
+    DimSample[1] = Width;    
+    DimSample[2] = Height;  
+  }
 
   /* converts degs in radian etc. */
   AnglSmplHor  *= M_PI/180. ;
@@ -611,9 +612,10 @@ void SetSamplePar(SampleType* pSample)
   AnglOutHor   *= M_PI/180. ;
   AnglOutVert  *= M_PI/180. ;
 
-  /* Hollow cylinder option */
-  CopyVector(DimSample, DimSampleHol); 
-  DimSampleHol[0] = DimSample[1];
+  if (ScatRange[1] <= 0.0)
+    Warning("Horizontal scattering range does not have a positive value. Intensity will be zero");
+  if (ScatRange[2] <= 0.0)
+    Warning("Vertical scattering range does not have a positive value. Intensity will be zero");
  
 }/* End ReadParFile */
 
@@ -625,7 +627,7 @@ void  CalcAndWritePar()
 {
   double scattered_dir[3];
 
-  fprintf(LogFilePtr,"  repetition rate		=     %ld\n", Repetition) ;
+  fprintf(LogFilePtr,"Repetition rate:     %ld\n", Repetition) ;
   if(Repetition > 20)
     fprintf(LogFilePtr,"Warning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics\n" 
                        "in wavelength, time, x,y,z and directions just before the sample\n") ;
@@ -635,7 +637,7 @@ void  CalcAndWritePar()
   scattered_dir[1]= (double) cos(ScatMain[2]*M_PI/180.) * (double) sin(ScatMain[1]*M_PI/180.) ;
   scattered_dir[2]= (double) sin(ScatMain[2]*M_PI/180.) ;
 
-  fprintf(LogFilePtr,"  scattered dir.		:     %lf    %lf    %lf\n", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
+  fprintf(LogFilePtr,"Scattered dir. :     %6.3f    %6.3f    %6.3f\n", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
 
   FillRotMatrixZY(RotMatrixScatter, ScatMain[2]*M_PI/180., ScatMain[1]*M_PI/180.) ; 
   FillRotMatrixZY(RotMatrixSample,  AnglSmplVert,           AnglSmplHor) ;

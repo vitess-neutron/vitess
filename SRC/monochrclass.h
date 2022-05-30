@@ -39,79 +39,77 @@ class Monochromator{
   McCompID   eModule;
 
   // Monochromator variables from the main window
-  char       *ParFileName,            // -P     [-]   Name of the parameter file (orientation, positione, size of a crystal element) 
-             *GeomFileName;           // -G     [-]   Name of the geometry file  (arrangement of the crystal elements)        
-  FILE*      pGeomFile;               //        [-]   Pointer to geometry file
-                                                
-  int        eGeomOption;             // -O     [-]   Geometry option:       1: single element   2: geometry calculated  3: geometry from file
-  int        eFocGeom;                // -g     [-]   Focusing geometry:     1: constant lambda  2: spherical            3: vert. cylinder     4: double focussing
-  int        bTransm;                 // -o     [-]   Treat transmitted beam 1: yes              0: no
-  int        eMonoMode;               // -X     [-]   Monochr. geometry:     1: reflection,      2: transmission,      
-  VtDistr    d_spr_option;            // -d     [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
-  int        nRepete;                 // -A     [-]   Number of times the neutrons is reflected at the monochromator
-                                                
-  double     d_fwhm,                  // -D     [-]   relative d-spread del_d/d (fwhm)
-             d_sigma,                 //       [cm]   absolute d-spread del_d   (sigma)
-             mu_abs,                  // -C   [1/cm]  Macrosc. absorption cross-section in the crystal for 1.798 Ang  .
-             mu_scat,                 // -C   [1/cm]  Macrosc. total scattering cross-section in the crystal          .
-             Reflectivity,            // -R     [-]   Peak Reflectivity 
-             Freq,                    // -f    [1/s]  Rot. frequency of the monochromator                             
-             Zeta0;                   // -z    [deg]  zero time orientation of the rotating monochromator             
-
-  int        NumberCE[2];             // -H -V  [-]   Number of horizontal and vertical CE segments
-  double     mosaic_fwhm[2];          // -m -M [deg]  Horizontal and vertical mosaicity 
-  double     DevH, DevV;              // -t -T [deg]  Horizontal and vertical deviation from correct crystal orientation
-  double     GapH, GapV;              // -h -v [cm]   Horizontal and vertical distance between crystal elements
-  double     RadH, RadV,              // -s -r [cm]   Horizontal and vertical radius
-             Psi0;                    // -a    [deg]  Angular offset of the bottom row of the crystal elements   
-
-  // Monochromator variables from the parameter file
-  double	   SrfcHor,   SrfcVert,     //       [deg]  Horizontal and vertical surface orientation (relative backscattering direction)
-             BraggHor,  BraggVert,    //       [deg]  Horizontal and vertical crystal plane orientation (relative backscattering direction)
-             OutHor,    OutVert;      //       [deg]  Horizontal and vertical orientation of the output co-ordinate system
-  VectorType Transl,                  //       [cm]   Position [x,y,z] of the output co-ordinate system 
-             PosCE0,                  //       [cm]   Position [x,y,z] of the center of the monochromator
-             DimCE0;                  //       [cm]   thickness, width and height of a monochromator crystal element
-  int        bUser;                   //       [-]    criterion: 'user defined frame' 1: yes   0: no
-  double     d_spacing;               //       [cm]   Distance of the (h,k,l) crystal planes
-  int        OrderReflection;         //       [-]    Order of Bragg reflection (usually 1)
-                                             
-  // Monochromator variables from the geometry file or from calculation
-  std::vector < std::vector<double> >        
-             RotCEhor_F,              //       [rad]  vector containing the horizontal orientations of all monochromator elements           
-             RotCEvert_F,             //       [rad]  vector containing the vertical orientations of all monochromator elements             
-             PosCE_F[3],              //       [cm]   3 vectors containing the x-pos., y-pos. and z-pos. of all monochromator elements      
-             DimCE_F[3],              //       [cm]   3 vectors containing the thicknesses, widths and heights of all monochromator elements
+  char       *ParFileName,             // -P        [-]   Name of the parameter file (orientation, positione, size of a crystal element) 
+             *GeomFileName;            // -G        [-]   Name of the geometry file  (arrangement of the crystal elements)        
+                                                   
+  VtMonoType    eMonoMode;             // -X        [-]   Monochr. geometry:     1: reflection,      2: transmission,      
+  VtMonoArrange eGeomOption;           // -O        [-]   Geometry option:       1: single element   2: geometry calculated  3: geometry from file
+  int        bTransm;                  // -B        [-]   Treat transmitted beam 1: yes              0: no
+  int        nRepete;                  // -A        [-]   Number of times the neutrons is reflected at the monochromator
+  double     Freq,                     // -f       [1/s]  Rot. frequency of the monochromator                             
+             Zeta0;                    // -p       [deg]  zero time orientation of the rotating monochromator             
+  double     mosaic_fwhm[2];           // -m -M    [deg]  Horizontal and vertical mosaicity 
+  VtDistr    d_spr_option;             // -d        [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
+  double     d_fwhm,                   // -D        [-]   relative d-spread del_d/d (fwhm)   (multiplied by d to get del_d after read in)
+             mu_abs,                   // -C      [1/cm]  Macrosc. absorption cross-section in the crystal for 1.798 Ang  .
+             mu_scat,                  // -c      [1/cm]  Macrosc. total scattering cross-section in the crystal          .
+             Reflectivity;             // -R        [-]   Peak Reflectivity 
+  VtMonoFocus eFocGeom;                // -g        [-]   Focusing geometry:     1: constant lambda  2: spherical            3: vert. cylinder     4: double focussing
+  int        NumberCE[2];              // -H -V     [-]   Number of horizontal and vertical CE segments
+  double     DevH, DevV;               // -t -T    [deg]  Horizontal and vertical deviation from correct crystal orientation
+  double     GapH, GapV;               // -h -v    [cm]   Horizontal and vertical distance between crystal elements
+  double     RadH, RadV,               // -s -r    [cm]   Horizontal and vertical radius
+             Psi0;                     // -a       [deg]  Angular offset of the bottom row of the crystal elements   
+                                       
+  // Monochromator variables from main  window or parameter file
+  double	   BraggHor,  BraggVert,     // -l -L    [deg]  Horizontal and vertical crystal plane orientation (relative backscattering direction)
+             SrfcHor,   SrfcVert,      // -e -E    [deg]  Horizontal and vertical surface orientation (relative backscattering direction)
+             OutHor,    OutVert;       // -u -U    [deg]  Horizontal and vertical orientation of the output co-ordinate system
+  VectorType Transl,                   // -W -Y -Z [cm]   Position [x,y,z] of the output co-ordinate system 
+             PosCE0,                   // -x -y -z [cm]   Position [x,y,z] of the center of the monochromator
+             DimCE0;                   // -i -j -k [cm]   thickness, width and height of a monochromator crystal element
+  VtFrameGen eFrame;                   // -F       [-]    flag: 'user defined frame' 1: yes   0: no
+  double     d_spacing;                // -S       [cm]   Distance of the (h,k,l) crystal planes
+  int        OrderRefl;                // -N       [-]    Order of Bragg reflection (usually 1)
+                                              
+  // Monochromator variables from the  geometry file or from calculation
+  std::vector < std::vector<double> >         
+             RotCEhor_F,               //          [rad]  vector containing the horizontal orientations of all monochromator elements           
+             RotCEvert_F,              //          [rad]  vector containing the vertical orientations of all monochromator elements             
+             PosCE_F[3],               //          [cm]   3 vectors containing the x-pos., y-pos. and z-pos. of all monochromator elements      
+             DimCE_F[3],               //          [cm]   3 vectors containing the thicknesses, widths and heights of all monochromator elements
              RotMatrixCE_F[3][3];
 
-  // Calculated variables
-  VectorType Depth,                    //       Vector from CE surface to the reflecting plane 
-             PosCE,                    //       Position [x,y,z] of the center of the current crystal element (CE)
-             DimCE;                    //       thickness, width and height of the current CE
-  double     dSpacingSpreadParams  [3],//       data to treat d-spacing spread
-             horMosaicSpreadParams [3],//       data to treat hor. mosaicity
-             vertMosaicSpreadParams[3];//       data to treat hor. mosaicity
-  double     RotMatrixCE   [3][3],     //       Matrix to rotate the trajectory into the system of the current crystal element
-             RotMatrixCE0  [3][3],     //       Matrix to rotate the trajectory into the system of the central crystal element
-             RotMatrixBragg[3][3],     //       Matrix to rotate the trajectory into the system of the reflecting planes
-             RotMatrixOut  [3][3];     //       Matrix to rotate the trajectory into output frame
-  double     PathLenTrans,             //       Length of the trajectory through the crystal for the transmitted
-             PathLenRefl,              //         and the reflected beam
-             maxDeviation;             //       max. angle deviation considered for the reflectivity normalization
-  double     peakWL,                   //       Peak wavelength
-             braggAngleTot,            //       total bragg angle (in case braggHor > 0 and braggVer > 0), 
-             axisPhi;                  //       spherical angle Phi of the instrument axis in the Bragg frame, needed for the normalisation procedure
-  int        mosRndmDir;               //       defines direction for normal and random mosaicity: 1: vert. norm, hor. rnd  2: vice versa
-  double     fNorm[3], fRndm[3];       //       contains parameters for Gaussian distribution of mosaicity
-                                               
-  // Variables of the trajectories             
-  Neutron*   currentNeutron;                   
-  VectorType Pos, Dir;                 //       position and flight direction
-  double     TOF, Prob;                //       time of flight, weight
-  long       NumOut;                   //       number of written trajectories
-                                               
-  // Parameters for the monochromator rotation
-  double     DelZetaMax;               //       max. difference between rotational angle in last and last but one approximation step
+// Variables determined from input parameters or trajectory data
+  FILE*      pGeomFile;                //           [-]   Pointer to geometry file
+  double     d_sigma;                  //           [cm]  absolute d-spread del_d   (sigma)
+  VectorType Depth,                    //                 Vector from CE surface to the reflecting plane 
+             PosCE,                    //                 Position [x,y,z] of the center of the current crystal element (CE)
+             DimCE;                    //                 thickness, width and height of the current CE
+  double     dSpacingSpreadParams  [3],//                 data to treat d-spacing spread
+             horMosaicSpreadParams [3],//                 data to treat hor. mosaicity
+             vertMosaicSpreadParams[3];//                 data to treat hor. mosaicity
+  double     RotMatrixCE   [3][3],     //                 Matrix to rotate the trajectory into the system of the current crystal element
+             RotMatrixCE0  [3][3],     //                 Matrix to rotate the trajectory into the system of the central crystal element
+             RotMatrixBragg[3][3],     //                 Matrix to rotate the trajectory into the system of the reflecting planes
+             RotMatrixOut  [3][3];     //                 Matrix to rotate the trajectory into output frame
+  double     PathLenTrans,             //                 Length of the trajectory through the crystal for the transmitted
+             PathLenRefl,              //                   and the reflected beam
+             maxDeviation;             //                 max. angle deviation considered for the reflectivity normalization
+  double     peakWL,                   //                 Peak wavelength
+             braggAngleTot,            //                 total bragg angle (in case braggHor > 0 and braggVer > 0), 
+             axisPhi;                  //                 spherical angle Phi of the instrument axis in the Bragg frame, needed for the normalisation procedure
+  int        mosRndmDir;               //                 defines direction for normal and random mosaicity: 1: vert. norm, hor. rnd  2: vice versa
+  double     fNorm[3], fRndm[3];       //                 contains parameters for Gaussian distribution of mosaicity
+                                                          
+  // Variables of the trajectories                        
+  Neutron*   currentNeutron;                              
+  VectorType Pos, Dir;                 //                 position and flight direction
+  double     TOF, Prob;                //                 time of flight, weight
+  long       NumOut;                   //                 number of written trajectories
+                                                          
+  // Parameters for the monochromator rotation            
+  double     DelZetaMax;               //                 max. difference between rotational angle in last and last but one approximation step
   
 
   // Member functions
@@ -120,8 +118,9 @@ class Monochromator{
   virtual ~Monochromator() {};
 
   void        OwnInit(int argc, char *argv[]);
-  void        ReadParameterFile();              // reads standard values for a crystal elements
-  void        ReadFocFile();                    // reads deviations in position, dimensions and orientation of all crystal elements
+  void        setMonochrPar();                  // reads monochromator parameters and combines them with input parameters
+  void        calcAndWritePar();                // determines the dependent parameters and write out important parameters 
+  void        readFocFile();                    // reads deviations in position, dimensions and orientation of all crystal elements
   void        setGeometry(char* sColor);        // fills the structure stGeometry for visualization
   void        OwnCleanup();
 

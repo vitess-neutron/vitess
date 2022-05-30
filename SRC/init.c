@@ -148,11 +148,12 @@ static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
 static char* conCat (const char *sFile, const char* sSubDir, int sel);
 static void  TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
-static McCompID GetModId(char* sBuffer);                                // return ID of the module from a line in 'instrument.inf'
+static McCompID GetModId(char* sBuffer);                            // returns ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
 static int   readCompressedNeutrons();
-static void  WriteTraceLine   (Neutron* Neut);
+static void  WriteTraceLine(Neutron* Neut);
+static short GetColMax();                                           // Returns maximum color with intensity > 0
 
 // these function should only be used exceptionally outside init.c
 char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
@@ -709,8 +710,8 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   double TimeMeas=0.0, LmbdWant=0.0, Freq=0.0, 
          nNumNeutr=0.0, nNumNeutrSrc=0.0,
 	       CntRateErr=0.0;
-  long   nBndl=0;
-  int    l=0;
+  long   nBnch=0;
+  int    iCol=0, iColMin=1, iColMax=0;
   VectorType Shift,  /* Shift of end position        [m] */
              EndPos; /* end position of this module  [m] */
 
@@ -729,14 +730,14 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 
     FillRMatrixZY(RotMatrixM, RotY, RotZ);
 
-    ReadSimData  (&TimeMeas, &LmbdWant, &Freq, &nNumNeutrSrc, &nBndl);
+    ReadSimData  (&TimeMeas, &LmbdWant, &Freq, &nNumNeutrSrc, &nBnch);
     // nModuleNo++;
     Shift[0]= dShiftX;
     Shift[1]= dShiftY;
     Shift[2]= dShiftZ;
     RotBackVector(RotMatrixM, Shift);
     RotBackVector(RotMatrixMX, Shift);
-    for (l=0; l<3; l++)
+    for (int l=0; l<3; l++)
       EndPos[l] = BegPosM[l] + Shift[l];
     BlnLen += LengthVector(Shift);
     RotZ   += dHorizAngle;
@@ -792,15 +793,18 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
 
   fprintf(LogFilePtr, "%2ld number of trajectories read         : %11.0f\n", nModuleNo, NumNeutRead);
   fprintf(LogFilePtr, "%2ld number of trajectories written      : %11.0f\n", iModuleId, NumNeutWritten);
-  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", dProbTotal[0], CntRateErr);
-  for (l=0; l<=MAX_COL; l++)
-  { if (dProbTotal[l+1] > 0)
-      fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", l, dProbTotal[l+1]);
+  fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", GetTotInt(ANY_COLOR), CntRateErr);
+  iColMax= GetColMax();
+  if (iColMax > 0)     // only write "intensity of color 0" if there exists a color > 0 
+    iColMin=0;
+  for (iCol=iColMin; iCol<=iColMax; iCol++)
+  { if (GetTotInt(iCol) > 0)
+      fprintf(LogFilePtr, " count rate of colour %d                : %11.4e n/s \n", iCol, GetTotInt(iCol));
   }
 
   if (TimeMeas > 0.0)
   {
-    nNumNeutr = floor(dProbTotal[0]*TimeMeas + 0.5);
+    nNumNeutr = floor(GetTotInt(ANY_COLOR)*TimeMeas + 0.5);
     fprintf(LogFilePtr, "number of neutrons in %8.0f seconds : %11.4e  \n", TimeMeas, nNumNeutr);
   }
 
@@ -1495,7 +1499,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
 }
 
 
-void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj, long  nBundles)
+void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj, long  nBunches)
 {
   FILE*  pFile;
 
@@ -1505,38 +1509,28 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj
     fprintf(pFile, "%10.5f       # desired wavelength [Ang]\n", dLmbdWant);
     fprintf(pFile, "%10.5f       # source frequency   [Hz]\n", dFreq);
     fprintf(pFile, "%14.5e   # number of trajectories \n", nTraj);
-    fprintf(pFile, "%4ld             # number of bundles \n", nBundles);
+    fprintf(pFile, "%4ld             # number of bunches \n", nBunches);
     fclose(pFile);
   }
 }
 
-short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBundles)
+short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBunches)
 {
-  short rc=FALSE;
+  short rcr,rc=FALSE;
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
 
-  *pFreq = 0.0; *pTimeMeas = 0.0; 
-  *pTraj = 0.0; *pLmbdWant = 0.0; *pBundles = 0;
+  *pFreq = 1.0; *pTimeMeas = 0.0; 
+  *pTraj = 0.0; *pLmbdWant = 0.0; *pBunches = 1;
 
   pFile = OpenOutputFile("simulation.inf", FALSE, "r");
   if (pFile)
   {
-    /* First line - measuring time */
-    ReadLine(pFile, sLine, sizeof(sLine)-1);
-    sscanf(sLine, "%le", pTimeMeas);
-    /* Second line - desired wavelength */
-    ReadLine(pFile, sLine, sizeof(sLine)-1);
-    sscanf(sLine, "%lf", pLmbdWant);
-    /* Third line - frequency */
-    ReadLine(pFile, sLine, sizeof(sLine)-1);
-    sscanf(sLine, "%lf", pFreq);
-    /* fourth line - number of trajectories per bundle */
-    ReadLine(pFile, sLine, sizeof(sLine)-1);
-    sscanf(sLine, "%le", pTraj);
-    /* fifth line - number of bundles */
-    ReadLine(pFile, sLine, sizeof(sLine)-1);
-    sscanf(sLine, "%ld", pBundles);
+    if (ReadLine(pFile, sLine, sizeof(sLine)-1)==TRUE) sscanf(sLine, "%le", pTimeMeas);  /* First line  - measuring time */
+    if (ReadLine(pFile, sLine, sizeof(sLine)-1)==TRUE) sscanf(sLine, "%lf", pLmbdWant);  /* Second line - desired wavelength */
+    if (ReadLine(pFile, sLine, sizeof(sLine)-1)==TRUE) sscanf(sLine, "%lf", pFreq);      /* Third line  - frequency */
+    if (ReadLine(pFile, sLine, sizeof(sLine)-1)==TRUE) sscanf(sLine, "%le", pTraj);      /* fourth line - number of trajectories per bunch */
+    if (ReadLine(pFile, sLine, sizeof(sLine)-1)==TRUE) sscanf(sLine, "%ld", pBunches);   /* fifth line  - number of bunches */
 
     fclose(pFile);
     rc=TRUE;
@@ -1545,18 +1539,18 @@ short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* p
   return rc;
 }
 
-long ReadNumBndl(void)
+long ReadNumBnch(void)
 {
   double TimeMeas=0.0,       /* measuring time     (from simulation.inf, not needed) */
          LmbdWant=0.0,       /* desired wavelength (from simulation.inf, not needed) */
          Freq    =0.0,       /* source frequency   (from simulation.inf)   */
-         nTraj   =0.0;       /* number of trajectories started per bundle  */
-  long   nBndl  = 0;         // number of bundles started 
+         nTraj   =0.0;       /* number of trajectories started per bunch  */
+  long   nBnch  = 1;         // number of bunches started 
 
-  if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBndl)==FALSE)
-    nBndl  = 1;
+  if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBnch)==FALSE)
+    nBnch  = 1;
 
-  return nBndl;
+  return nBnch;
 }
 
 
@@ -2128,4 +2122,17 @@ static void   WriteTraceLine(Neutron* pNeutron)
       fclose (pFile);
     }
   }
+}
+
+
+/* Returns maximum color with intensity > 0 */
+static short GetColMax()
+{
+  short iMax=0, iCol=0;
+
+  for (iCol=1; iCol <= MAX_COL; iCol++)
+    if (GetTotInt(iCol) > 0.0) 
+      iMax=iCol;
+
+  return iMax;
 }

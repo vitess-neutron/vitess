@@ -48,7 +48,7 @@ double Theta    = M_PI/2.0,          // -D      [deg]   these angles determine o
 double Xpos     = 0.0,               // -x file  [cm]   position of the center of the sample 
        Ypos     = 0.0,               // -y file  [cm]  
        Zpos     = 0.0,               // -z file  [cm]  
-       Diameter = 0.0,               // -t file  [cm]   thickness or radius of the sample 
+       Diameter = 0.0,               // -t file  [cm]   thickness or diameter of the sample 
        Height   = 0.0,               // -h file  [cm]   height of the sample 
        Width    = 0.0,               // -w file  [cm]   width of the sample
        Xdir     = 0.0,               // -X file  [-]    orientation of the sample 
@@ -59,7 +59,7 @@ extern
 double MuTot,                        // -T file [1/cm]  macrosc. scattering cross section, defined in 'sample.c'
        MuAbs;                        // -m file [1/cm]  macrosc. absorption cross section, defined in 'sample.c'
 double MuInc =  0.0,                 // -i file [1/cm]  incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] 
-       UCV   = 50.0;                 // -U file [Ang^3] unit cell volume  
+       UCV   =  0.0;                 // -U file [Ang^3] unit cell volume  
 extern                               
 int    colD,                         // -C file  [-]    column where d-spacing is 
        colF,                         // -F file  [-]    column where structure factor F is
@@ -277,30 +277,9 @@ int main(int argc, char *argv[])
  my_exit:
 
   /* Write parameters to log file */
-  switch (stSample.Type)
-  { case VT_CUBE: 
-      fprintf(LogFilePtr, "Cubic sample, sizes: %7.2f,%7.2f,%7.2f   cm  (thickness, height, width)\n"
-                          "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-                          stSample.SG.Cube.thickness, stSample.SG.Cube.height, stSample.SG.Cube.width,
-                          stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_CYL: 
-      fprintf(LogFilePtr, "Cylindrical sample : %7.2f cm radius%6.2f cm height\n"
-                          "  direction        :(%8.3f,%7.3f,%7.3f)   \n",
-                          stSample.SG.Cyl.r, stSample.SG.Cyl.height,
-                          stSample.Direction[0], stSample.Direction[1], stSample.Direction[2]);
-      break;
-    case VT_SPHERE: 
-      fprintf(LogFilePtr, "Spherical sample   : %7.2f cm radius\n", 
-                          stSample.SG.Ball.r);
-      break;
-    default :;
-  }
-  fprintf(LogFilePtr, "  position         :(%7.2f,%7.2f,%7.2f ) cm\n"
-                      "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
+  fprintf(LogFilePtr, "macr. cross section: %10.5f,%10.5f,%10.5f  1/cm (incoh, total scat; absorption)\n"
                       "unit cell volume   : %8.3f Ang³\n"
                       "struct. factor file: %s\n", 
-                      stSample.Position [0], stSample.Position [1], stSample.Position [2], 
                       MuInc, MuTot, MuAbs, UCV, pStrFileName);
 
   /* write geometry file */
@@ -500,7 +479,7 @@ void  SetSamplePar(SampleType* pSample)
          nLen=sizeof(sLine)-1;
   double x=0.0, y=0.0, z=0.0, 
          xdir  =0.0, ydir  =0.0, zdir =0.0,
-         radius=0.0, height=0.0, width=0.0,
+         d_par =0.0, height=0.0, width=0.0,
          muInc =0.0, muTot =0.0, muAbs=0.0, 
          ucv =0.0, scale_f2=0.0;
   VtSmplGeom geom=VT_NO_GEOM;
@@ -520,7 +499,7 @@ void  SetSamplePar(SampleType* pSample)
       /* First line: sample position     */
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &radius, &height, &width);
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileNameF); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
@@ -536,7 +515,8 @@ void  SetSamplePar(SampleType* pSample)
       if (Xpos    ==0.0 && x     !=0.0) Xpos    = x;
       if (Ypos    ==0.0 && y     !=0.0) Ypos    = y;
       if (Zpos    ==0.0 && z     !=0.0) Zpos    = z;
-      if (Diameter==0.0 && radius!=0.0) Diameter= 2.0*radius;
+      if (Diameter==0.0 && d_par != 0.0)
+      { if (eGeom==VT_CUBE) Diameter = d_par; else Diameter = 2.0 * d_par;}
       if (Height  ==0.0 && height!=0.0) Height  = height;
       if (Width   ==0.0 && width !=0.0) Width   = width;
       if (Xdir    ==0.0 && xdir  !=0.0) Xdir    = xdir;
@@ -560,9 +540,11 @@ void  SetSamplePar(SampleType* pSample)
     }
   }
 
-  // checks if geometry was given
+  // checks if needed parameters were given
   if (eGeom==VT_NO_GEOM)
     Error2("Sample geometry could not be identified", sGeom);
+  if (UCV==0.0)
+    Error("Unit cell volume is not given");
 
   // fills data structures
   FillSample(pSample, eGeom, Xpos, Ypos, Zpos, Xdir, Ydir, Zdir, Diameter, Height, Width, 0.0);

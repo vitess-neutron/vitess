@@ -288,37 +288,38 @@ void SetGeometry(char* sColor)
     stGeometry.eModule = _eModule;
 
     stGeometry.nCylSlices = 2; 
-    stGeometry.pCylSlice  = (VtCylSlice*) calloc(2, sizeof(VtCylSlice));
+    stGeometry.pCylSlice  = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
     stGeometry.nHulls     = nChannels+1; 
     stGeometry.pHull      = (VtHull*) calloc(nChannels+1, sizeof(VtHull));
 
     // get direction to the center of the collimator
     RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
     if (rz < 0) rz += 2.*M_PI;
+
     // fprintf(LogFilePtr,"For the radial collimator ry %f, rz %f \n", ry, rz);
     Xi = AngCentre + rz/M_PI*180.0;
 	      
     stGeometry.pCylSlice[0].Radius     = Distance; 
     stGeometry.pCylSlice[0].Width      = Distance*(AngWidth+OscWidth)/180.0*M_PI;
     stGeometry.pCylSlice[0].Height     = EntrHeight;
-    stGeometry.pCylSlice[0].vCntr[0]   = 0.;
-    stGeometry.pCylSlice[0].vCntr[1]   = 0.;
-    stGeometry.pCylSlice[0].vCntr[2]   = 0.;
-    stGeometry.pCylSlice[0].vSymAxis[0]= 0;
-    stGeometry.pCylSlice[0].vSymAxis[1]= 0;
-    stGeometry.pCylSlice[0].vSymAxis[2]= 1;
+    stGeometry.pCylSlice[0].vCntr[0]   = 0.0;
+    stGeometry.pCylSlice[0].vCntr[1]   = 0.0;
+    stGeometry.pCylSlice[0].vCntr[2]   = 0.0;
+    stGeometry.pCylSlice[0].vSymAxis[0]= 0.0;
+    stGeometry.pCylSlice[0].vSymAxis[1]= 0.0;
+    stGeometry.pCylSlice[0].vSymAxis[2]= 1.0;
     stGeometry.pCylSlice[0].OpenAngle  = AngWidth+OscWidth;
     stGeometry.pCylSlice[0].Phi        = Xi;
 	      
     stGeometry.pCylSlice[1].Radius     = Distance+Length; 
     stGeometry.pCylSlice[1].Width      =(Distance+Length)*(AngWidth+OscWidth)/180.0*M_PI;
     stGeometry.pCylSlice[1].Height     = ExitHeight;
-    stGeometry.pCylSlice[1].vCntr[0]   = 0.;
-    stGeometry.pCylSlice[1].vCntr[1]   = 0.;
-    stGeometry.pCylSlice[1].vCntr[2]   = 0.;
-    stGeometry.pCylSlice[1].vSymAxis[0]= 0;
-    stGeometry.pCylSlice[1].vSymAxis[1]= 0;
-    stGeometry.pCylSlice[1].vSymAxis[2]= 1;
+    stGeometry.pCylSlice[1].vCntr[0]   = 0.0;
+    stGeometry.pCylSlice[1].vCntr[1]   = 0.0;
+    stGeometry.pCylSlice[1].vCntr[2]   = 0.0;
+    stGeometry.pCylSlice[1].vSymAxis[0]= 0.0;
+    stGeometry.pCylSlice[1].vSymAxis[1]= 0.0;
+    stGeometry.pCylSlice[1].vSymAxis[2]= 1.0;
     stGeometry.pCylSlice[1].OpenAngle  = AngWidth+OscWidth;
     stGeometry.pCylSlice[1].Phi        = Xi;
 

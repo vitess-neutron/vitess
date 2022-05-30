@@ -43,27 +43,34 @@ sample_inelast:
       type:    "float" 
       descr:   "angle horiz\nfinal [deg]"
       tooltip: "Horizontal rotation Theta defining the main scattering direction"
-      default: 0.0
+      min:     -180.0
+      max:      180.0
+      default:    0.0
       prefix:  "-E"     
       column:  0                     
   - ScatVert:                  	# 0.0 [deg]   vertical rotation defining the main scattering direction
       type:    "float" 
       descr:   "angle vert\nfinal [deg]"
       tooltip: "Vertical rotation Phi defining the main scattering direction"
-      default: 0.0
+      min:     -180.0
+      max:      180.0
+      default:    0.0
       prefix:  "-F"     
       column:  1                     
-  - VarHor:                   # 0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta/2, Theta+DelTheta/2]
+  - VarHor:             
       type:    "float" 
       descr:   "delta angle\nhoriz [deg]"
-      tooltip: "Horizontal interval DelTheta determining the horizontal scattering range [Theta-DelTheta/2, Theta+DelTheta/2]"
+      tooltip: "Horizontal range DelTheta around the mean scattering dirction determining the horizontal scattering range [Theta-DelTheta, Theta+DelTheta]"
+      min:        0.0
+      max:      180.0
       prefix:  "-e"     
       column:  0                     
-  - VarVert:                  # 0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi/2, Phi+DelPhi/2]
+  - VarVert:            
       type:    "float" 
       descr:   "delta angle\nvert [deg]"
-      tooltip: "Vertical interval DelPhi determining the vertical scattering range [Phi-DelPhi/2, Phi+DelPhi/2]"
-      default: 0.0
+      tooltip: "Vertical range DelPhi around the mean scattering dirction determining the vertical scattering range [Phi-DelPhi, Phi+DelPhi]"
+      min:        0.0
+      max:      180.0
       prefix:  "-f"     
       column:  1                     
 
@@ -71,6 +78,7 @@ sample_inelast:
       type:    "float" 
       descr:   "scattering\ncoeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
+      min:     0.0
       default: 0.0
       prefix:  "-T"     
       column:  0                     
@@ -78,6 +86,7 @@ sample_inelast:
       type:    "float" 
       descr:   "absorption\ncoeff. [1/cm/Ang]"
       tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
+      min:     0.0
       default: 0.0
       prefix:  "-m"     
       column:  1                     
@@ -109,7 +118,7 @@ sample_inelast:
       prefix:  "-z"     
       column:  2  
 
-  -  SmplGeom:                   # enum 'VtSmplGeom' for sample geometry: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
+  -  SmplGeom:     # enum 'VtSmplGeom' for sample geometry: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL,  function: VtSmplGeom SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample\ngeometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"

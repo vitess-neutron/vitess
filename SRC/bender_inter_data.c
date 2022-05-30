@@ -16,18 +16,77 @@
 /*                                                                               */
 /* 1.0  Oct 2003  S. Manoshin     initial version                                */
 /* 1.1  Aug 2019  K. Lieutenant   tidy up                                        */
+/* 1.2  May 2022  K. Lieutenant   functions AttenuationXyz() added               */
 /*********************************************************************************/
  
+#include <math.h>
 
 #include "init.h"
-#include "math.h"
+#include "convert.h"
+#include "message.h"
 #include "bender_inter_data.h"
 
 
-/* Linear Interpolation function */
-/* Wavelength, A  Number of material */ 
+static void   InitArrays();
+static double Interpol(double Wavelen, double WAV1[MAX_MU], double MU1[MAX_MU], long nValFile);
 
-double Interpolation(double Wave,         long Material, 
+
+/****************************************************************/
+/* Attenuation as a function of wavelength for some materials   */
+/****************************************************************/
+double AttenuationAbs(const double Lambda, const VtAbsMat eMatID)
+{
+  char   sMat[21]="";
+  long   nValues=0;                  // number of data points
+  double mu_tot=0.0,                 // total attenuation 
+         aLmbd[MAX_MU], aMu[MAX_MU]; // arrays for data (wavelength, attenuation)
+
+  InitArrays(aLmbd, aMu);
+
+  switch (eMatID)
+  {
+    case VT_ABS_IDEAL:                                   mu_tot=1.0e99;           break;
+    case VT_ABS_GD   : Gadolinium(aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_ABS_B10  : Bor10     (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_ABS_CD   : Cadmium   (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_ABS_EU   : Eu        (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_NO_MAT   : Error ("material for attenuation not given");    break;
+    case VT_ABS_FILE : Error ("Wrong function: Use function 'Interpolation' for attenuation from file");   break;
+    default          : AbsMat_ID2Txt(sMat, eMatID);
+                       Error2("Attenuation for this material not yet implemented", sMat);
+  }
+
+  return mu_tot;
+}
+
+
+double AttenuationMirr(const double Lambda, const VtMirrMat eMatID)
+{
+  char   sMat[21]="";
+  long   nValues=0;                  // number of data points
+  double mu_tot=0.0,                 // total attenuation 
+         aLmbd[MAX_MU], aMu[MAX_MU]; // arrays for data (wavelength, attenuation)
+
+  InitArrays(aLmbd, aMu);
+
+  switch (eMatID)
+  {
+    case VT_MIRR_VACUUM:                                 mu_tot=0.0;                                   break;
+    case VT_MIRR_SI    : Silicon (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_MIRR_B4C   : Bor10   (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues) * 0.8 * 2.52/2.34; break; // ratio of atom numbers and densities, C contribution ignored 
+    // case VT_MIRR_SAPPH : Sapphire(aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    // case VT_MIRR_GLASS : Glass   (aLmbd, aMu, &nValues); mu_tot=Interpol(Lambda, aLmbd, aMu, nValues); break;
+    case VT_NO_MIRR_MAT: Error ("material for attenuation not given");    break;
+    case VT_MIRR_OTHER : Error ("Wrong function: Use absorption and scattering cross-section to determine the attenuation or the function 'Interpolation' for attenuation from file");   break;
+    default          : AbsMat_ID2Txt(sMat, eMatID);
+                       Error2("Attenuation for this material not yet implemented", sMat);
+  }
+
+  return mu_tot;
+}
+
+
+double Interpolation(double Wave,      long Material, 
                      double WAV1[MAX_MU], double MU1[MAX_MU], long nValFile)
 {
   double WAV[MAX_MU];              // array of wavelengths         [Ang]
@@ -42,11 +101,7 @@ double Interpolation(double Wave,         long Material,
   
   // Initialize
   // ----------
-  for(i = 0; i < MAX_MU; i++)
-  {
-    WAV[i] = 0.0;
-    MU [i] = 0.0;
-  }
+  InitArrays(WAV, MU);
 
   // Fill the array with data
   // ------------------------
@@ -133,7 +188,67 @@ double Interpolation(double Wave,         long Material,
 }
 
 
+/****************************************************************/
+/* Local functions: interpolation and initialization            */
+/****************************************************************/
+void InitArrays(double Lambda[MAX_MU], double Mu[MAX_MU])
+{
+  for(int i=0; i < MAX_MU; i++)
+  {
+    Lambda[i] = 0.0;
+    Mu    [i] = 0.0;
+  }
+}
 
+
+double Interpol(double Wavelen, double WAV[MAX_MU], double MU[MAX_MU], long nVal)
+{
+  double X1=0.0, X2=0.0,           // wavelength 
+         Y1=0.0, Y2=0.0,           // and attenuation values of the interpolation interval
+         Mu;                       // interpolated attenuation value [1/cm]
+  long   i,                        // index ....
+         iIpn=1;                   // index of left side of interval for interpolation
+    
+  for(i = 0; i < (nVal-1); i++)
+  {
+    if ((Wavelen >= WAV[i]) && (Wavelen <= WAV[i+1]))  
+    {
+      X1 = WAV[i];
+      X2 = WAV[i+1];
+      Y1 = MU[i];
+      Y2 = MU[i+1];
+      iIpn = i;
+      break;
+    }
+  } 
+    
+  // Check interval
+  // --------------
+  if (!((Wavelen >= WAV[iIpn])&&(Wavelen <= WAV[iIpn+1])))
+  {
+    CountMessage(ALL_L_RANGE_TOO_SMALL);   
+    return(-10000.0);
+  }	
+    
+  // Linear interpolation
+  // --------------------
+  if (X1 != X2)
+  {
+    Mu = Y1 + ((Y2-Y1)*(Wavelen-X1)/(X2-X1));
+  }
+  else
+  {
+    CountMessage(MON_ZERO_BIN_SIZE);   
+    Mu = -10000.0;
+  }    
+ 
+  return(Mu);
+}
+
+
+/****************************************************************/
+/* Local functions: mu(lambda) values for different materials   */
+/****************************************************************/
 /* For gadolinium */
 void Gadolinium(double WAV[44], double MU[44], long *nVal)
 {
@@ -186,6 +301,7 @@ void Gadolinium(double WAV[44], double MU[44], long *nVal)
   WAV[43] = 28.59;	MU[43] = 16945.6;
 }
 
+
 /* For cadmium */
 void Cadmium(double WAV[44], double MU[44], long *nVal)
 {
@@ -237,6 +353,7 @@ void Cadmium(double WAV[44], double MU[44], long *nVal)
   WAV[42] = 12.78;	MU[42] = 648.2;
   WAV[43] = 28.59;	MU[43] = 1389.0;
 }
+
 
 /* For Bor10 */
 void Bor10(double WAV[44], double MU[44], long *nVal)
