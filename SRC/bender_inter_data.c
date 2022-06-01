@@ -193,7 +193,8 @@ double Interpolation(double Wave,      long Material,
 /****************************************************************/
 void InitArrays(double Lambda[MAX_MU], double Mu[MAX_MU])
 {
-  for(int i=0; i < MAX_MU; i++)
+  int i;
+  for(i=0; i < MAX_MU; i++)
   {
     Lambda[i] = 0.0;
     Mu    [i] = 0.0;

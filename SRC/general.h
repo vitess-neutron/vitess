@@ -15,9 +15,11 @@ extern "C" {
 /******************************/
 
 #ifdef WIN32
-# define VINLINE __inline
+  # define VINLINE __inline
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+  # define VINLINE inline
 #else
-# define VINLINE inline
+  # define VINLINE
 #endif
 
 #ifdef _MSC_VER

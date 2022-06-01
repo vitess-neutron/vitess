@@ -771,6 +771,8 @@ void SetGeometry(char* sColor)
 /*******************************************************/
 void  InitDetector(DetectorType* pDetector)
 {
+  int i;
+
   pDetector->Width    = 0.0; pDetector->Height = 0.0; pDetector->Thickness = 0.0;
   pDetector->NColumns = 1;   pDetector->NRows  = 1;   pDetector->NLayers   = 1;
 
@@ -787,7 +789,7 @@ void  InitDetector(DetectorType* pDetector)
   pDetector->eUsage =VT_NO_DET_USE;
   pDetector->eAbsMat=VT_NO_ABS_MAT;
  
-  for(int i=0; i<3; i++)
+  for(i=0; i<3; i++)
   {
     pDetector->PixelWidth[i]=0.0;  
     pDetector->Direction [i]=0.0;

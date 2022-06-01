@@ -240,6 +240,7 @@ void OwnInit(int argc, char *argv[])
 {
   char   sInstGeom[21];
   double TOF_total_e=0.0;   // total TOF without energy transfer
+  int k;
 
   while(argc>1)
   {
@@ -434,7 +435,7 @@ void OwnInit(int argc, char *argv[])
   alpha = 1 / (1 - SlopeBins) ;
   beta = 0. ;
 
-  for (int k=0;k<nBins;k++) 
+  for (k=0;k<nBins;k++) 
     beta += pow(alpha, k) ;
   beta = (MaxTOF - pow(alpha, nBins) * MinTOF) / beta ;
 
