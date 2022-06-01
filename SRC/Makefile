@@ -122,7 +122,8 @@ mathmatrix.o \
 mcpl.o \
 mon2_header.o \
 trace.o \
-threadHelper.o
+threadHelper.o \
+bender_inter_data.o
 
 
 .PHONY: all

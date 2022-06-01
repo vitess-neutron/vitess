@@ -115,7 +115,8 @@ mathmatrix.obj \
 mcpl.obj \
 mon2_header.obj \
 trace.obj \
-threadHelper.obj
+threadHelper.obj \
+bender_inter_data.obj
 
 
 all: vitess.lib $(ALL)
