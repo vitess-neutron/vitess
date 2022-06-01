@@ -286,6 +286,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
+  int i;
   InitRotMatrix(RotMatrixPhi);
   InitRotMatrix(RotMatrixChi);
   InitRotMatrix(RotMatrixOmega);
@@ -299,7 +300,7 @@ void OwnInit(int argc, char *argv[])
   scaleF2 = 1.0;
 	
   /* Scan all command line parameters */
-  for (int i=1; i<argc; i++)
+  for (i=1; i<argc; i++)
   {
     if (argv[i][0]!='+')
     { switch (argv[i][1])

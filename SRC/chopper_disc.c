@@ -22,6 +22,7 @@
 /* 1.13  Aug 2020  K. Lieutenant  time of arrival can be set by random choice                */
 /*********************************************************************************************/
 
+#include <ctype.h>
 #include "intersection.h"
 #include "init.h"
 #include "convert.h"
@@ -798,6 +799,7 @@ double CalcMinTrnd     (void)
 void AllocAndInitWnds(int kWnd)
 { 
   int kAnf=0;
+  int k;
 
   // no allocation needed, if no windows or current window already in allocated range
   if (kWnd==0 && nWindows==0  ||  stWnd!=NULL && kWnd <= nWindows) 
@@ -819,7 +821,7 @@ void AllocAndInitWnds(int kWnd)
     Error("Out of memory whilst allocating memory for chopper data");
 
   // and initializes the allocated space
-  for (int k=kAnf; k < nWindows; k++) 
+  for (k=kAnf; k < nWindows; k++) 
   {
     InitWindow(&stWnd[k]);
   }

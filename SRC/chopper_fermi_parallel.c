@@ -597,6 +597,7 @@ void SetGeometry(char* sColor)
          opening   = 0.0,   // [rad] angle that is covered by one part of the shadowing cylinder 
          chan_dist = 0.0,   // [cm]  distance between 2 neighboring channels
          phi       = 0.0;   // [rad] direction to the center of the shadowing cylinder
+  int k;
 
   // Visualisation of the velocity selector geometry
   if (bVisInstr)
@@ -617,7 +618,7 @@ void SetGeometry(char* sColor)
       stGeometry.nHulls = Nchannels+1; 
       stGeometry.pHull  = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
 
-      for (int k=0; k <= Nchannels; k++)
+      for (k=0; k <= Nchannels; k++)
       { 
         stGeometry.pHull[k].WidthIn   = wallwidth;
         stGeometry.pHull[k].WidthOut  = wallwidth;

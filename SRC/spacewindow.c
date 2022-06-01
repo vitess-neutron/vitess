@@ -26,6 +26,7 @@
 #include "bender_inter_data.h"
 #include "matrix.h"
 #include "message.h"
+#include "convert.h"
 
 
 /******************************/

@@ -465,6 +465,7 @@ void HeaderAndParameters(void)
               sSrcName  [CHAR_BUF_XS]="",    sID[9]="SF_00001", sPrg[9]="VITESS  ", sPrgVsn[9]="3.5  ",
               sHeadlines[CHAR_BUF_SMALL]="", sTitle[TITLE_LEN+1]="VITESS simulation   ";
   Mcnp6Header Head;
+  int k;
 
   GetActDate(sDate,   DATE_STD);
   GetActDate(sDateUS, DATE_US); strcat(sDateUS, " ");
@@ -498,7 +499,7 @@ void HeaderAndParameters(void)
         memcpy(Head.sDateBeg, sDateUS,9);
         memcpy(Head.sTimeBeg, sTime,  9);
         memcpy(Head.sTitle,   sTitle, TITLE_LEN);
-        for (int k=0; k < 12; k++)
+        for (k=0; k < 12; k++)
           Head.iNum2[k]=iNum[k];
         Head.iNum2[5] = (int)NumNeutWritten;
         memset(Head.sRest, '\0', 300);
