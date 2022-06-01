@@ -34,6 +34,8 @@ static float fMax       (float value1,  float value2);
 static short ReadChopper(int argc, char *argv[]);
 static void  OwnInit    (int argc, char *argv[]);
 
+char* FullParName       (const char* filename);
+
 char  sBuffer[BUF_SIZE+1];
 const char *pTitle="  ",  // title of the plot
      *pFileName=0,  // Name of plot file

@@ -390,6 +390,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
+  int i;
   InitRotMatrix(RotMatrixSample);
   InitRotMatrix(RotMatrixScatter);
   InitRotMatrix(RotMatrixOut);
@@ -397,7 +398,7 @@ void OwnInit(int argc, char *argv[])
   ProbCutoff=wei_min;
 	
   /* Scan all command line parameters */
-  for (int i=1; i<argc; i++)
+  for (i=1; i<argc; i++)
   {
     if (argv[i][0]!='+')
     { 
