@@ -30,7 +30,7 @@ void     RndGen_ID2Txt(char* sText, const VtRndGen eID)
     default        : strcpy(sText, "");
   }
 }
-VtRndGen  RndGen_Txt2ID(const char* sText)
+VtRndGen RndGen_Txt2ID(const char* sText)
 {
   VtRndGen eID=VT_RAN3;
 
@@ -98,6 +98,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_SMPL_REFL    : strcpy(sCompName, "SampleReflect");     break;    
 	  case MCN_FRAME        : strcpy(sCompName, "Frame");             break;            
 	  case MCN_FILTER       : strcpy(sCompName, "Filter");            break;           
+	  case MCN_FILTER2D     : strcpy(sCompName, "Filter2D");          break;           
 	  case MCN_RESET        : strcpy(sCompName, "Reset");             break;            
 	  case MCN_VISUAL       : strcpy(sCompName, "Visualization");     break;    
 	  case MCN_MONITOR1     : strcpy(sCompName, "Monitor1D");         break;        
@@ -114,8 +115,9 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_MON2_TOFWL   : strcpy(sCompName, "Mon2D_Tof-Wl");      break; 
 	  case MCN_MON2_POL_POS : strcpy(sCompName, "Mon2D-Pol_Pos");     break;
 	  case MCN_EVAL1_ELAST  : strcpy(sCompName, "Eval1D_Elastic");    break;   
+    case MCN_EVAL1_SANS   : strcpy(sCompName, "Eval1D_SANS");       break; 
 	  case MCN_EVAL1_INELAST: strcpy(sCompName, "Eval1D_Inelastic");  break; 
-	  case MCN_EVAL2_ELAST  : strcpy(sCompName, "Eval2D_Elastic");    break;   
+	  case MCN_EVAL2_ELAST  : strcpy(sCompName, "Eval2D_Elastic");    break; 
 	  case MCN_RUNTIME      : strcpy(sCompName, "RunTime");           break;          
 	  case MCN_TOOL_A2B     : strcpy(sCompName, "Tool_Ascii2Bin");    break;             
 	  case MCN_TOOL_CAS     : strcpy(sCompName, "Tool_CrysAnaSpec");  break;             
@@ -192,6 +194,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "SampleReflect"))     eComp=MCN_SMPL_REFL    ; 
   else if (strcmp(sCompName, "Frame"))             eComp=MCN_FRAME        ; 
   else if (strcmp(sCompName, "Filter"))            eComp=MCN_FILTER       ; 
+  else if (strcmp(sCompName, "Filter2D"))          eComp=MCN_FILTER2D     ; 
   else if (strcmp(sCompName, "Reset"))             eComp=MCN_RESET        ; 
   else if (strcmp(sCompName, "Visualization"))     eComp=MCN_VISUAL       ;
   else if (strcmp(sCompName, "Monitor1D"))         eComp=MCN_MONITOR1     ;
@@ -296,24 +299,46 @@ VtDirType DirType_Txt2ID(const char* sText)
 }
 
 
-// Axis          (sample_refl, detector)
+// Axis             (detector)
 void     Axis_ID2Txt(char* sText, const VtAxis eID)
 {
   switch (eID)
   {
-    case X_AXIS: strcpy(sText, "X"); break;
-    case Y_AXIS: strcpy(sText, "Y"); break;
-    case Z_AXIS: strcpy(sText, "Z"); break;
-    default        : strcpy(sText, "");
+    case X_AXIS: strcpy(sText, "x"); break;
+    case Y_AXIS: strcpy(sText, "y"); break;
+    case Z_AXIS: strcpy(sText, "z"); break;
+    default    : strcpy(sText, "");
   }
 }
 VtAxis   Axis_Txt2ID(const char* sText)
 {
-  VtAxis eID=X_AXIS;
+  VtAxis eID=NO_AXIS;
 
-       if (strcmp(sText, "X")==0) eID=X_AXIS;
-  else if (strcmp(sText, "Y")==0) eID=Y_AXIS;
-  else if (strcmp(sText, "Z")==0) eID=Z_AXIS;
+       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=X_AXIS;
+  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=Y_AXIS;
+  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=Z_AXIS;
+  
+  return eID;
+}
+
+// Scattering axis  (evaluation, sample_refl)
+void     ScAxis_ID2Txt(char* sText, const VtScAxis eID)
+{
+  switch (eID)
+  {
+    case VT_SC_X: strcpy(sText, "x"); break;
+    case VT_SC_Y: strcpy(sText, "y"); break;
+    case VT_SC_Z: strcpy(sText, "z"); break;
+    default     : strcpy(sText, "none");
+  }
+}
+VtScAxis   ScAxis_Txt2ID(const char* sText)
+{
+  VtScAxis eID=VT_NO_SC_AXIS;
+
+       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=VT_SC_X;
+  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=VT_SC_Y;
+  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=VT_SC_Z;
   
   return eID;
 }
@@ -330,7 +355,7 @@ void     Orient_ID2Txt(char* sText, const VtOrient eID)
 }
 VtOrient Orient_Txt2ID(const char* sText)
 {
-  VtOrient eID=HORIZONTAL;
+  VtOrient eID=NO_ORIENT;
 
        if (strcmp(sText, "horizontal")==0) eID=HORIZONTAL;
   else if (strcmp(sText, "vertical"  )==0) eID=VERTICAL  ;
@@ -350,7 +375,7 @@ void     FrameGen_ID2Txt(char* sText, const VtFrameGen eID)
 }
 VtFrameGen FrameGen_Txt2ID(const char* sText)
 {
-  VtFrameGen eID=VT_FRAME_STD;
+  VtFrameGen eID=VT_NO_FRAME;
 
        if (strcmp(sText, "standard frame generation")==0) eID=VT_FRAME_STD ;
   else if (strcmp(sText, "user defined frame"       )==0) eID=VT_FRAME_USER;
@@ -420,6 +445,26 @@ VtDistr  Distr_Txt2ID(const char* sText)
 
        if (strcmp(sText, "Lorentzian")==0) eID=LORENTZIAN;
   else if (strcmp(sText, "Gaussian"  )==0) eID=GAUSSIAN  ;
+  
+  return eID;
+}
+
+// Distribution function  (monochromator, sample_singlecryst)
+void     InstGeom_ID2Txt(char* sText, const VtInstGeom eID)
+{
+  switch (eID)
+  {
+    case VT_DIRECT_GEOM: strcpy(sText, "direct geometry"  ); break;
+    case VT_INVERT_GEOM: strcpy(sText, "inverted geometry"); break;
+    default            : strcpy(sText, "no instrument geometry");
+  }
+}
+VtInstGeom  InstGeom_Txt2ID(const char* sText)
+{
+  VtInstGeom eID=VT_NO_I_GEOM;
+
+       if (strcmp(sText, "direct geometry"  )==0) eID=VT_DIRECT_GEOM;
+  else if (strcmp(sText, "inverted geometry")==0) eID=VT_INVERT_GEOM;
   
   return eID;
 }
@@ -748,6 +793,33 @@ VtTfmnSeq  TfmnSeq_Txt2ID(const char* sText)
 
 // WINDOWS and COLLIMATORS
 // -----------------------
+// absorbing material
+void       AbsMat_ID2Txt(char* sText, const VtAbsMat eID)
+{
+  switch (eID)
+  {
+    case VT_NO_MAT   : strcpy(sText, "none"          ); break;
+    case VT_ABS_IDEAL: strcpy(sText, "ideal absorber"); break;
+    case VT_ABS_GD   : strcpy(sText, "Gadolinium"    ); break;
+    case VT_ABS_B10  : strcpy(sText, "Bor-10"        ); break;
+    case VT_ABS_FILE : strcpy(sText, "from file"     ); break;
+    default          : strcpy(sText, "");
+  }
+}
+VtAbsMat   AbsMat_Txt2ID(const char* sText)
+{
+  VtAbsMat eID=VT_NO_MAT;
+
+       if (strcmp(sText, "ideal"         )==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "ideal absorber")==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "Gd"            )==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "Bor"           )==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "bor10"         )==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "from file"     )==0) eID=VT_ABS_FILE ;
+ 
+  return eID;
+}
 
 // absorbing window material
 void       WndAbs_ID2Txt(char* sText, const VtWndAbs eID)
@@ -822,8 +894,8 @@ VtMultWndShape MultWndShape_Txt2ID(const char* sText)
 }
 
 
-// GUIDES
-// ------
+// GUIDES and MIRRORS
+// ------------------
 // guide walls : top, bottom ... 
 void        GdeWall_ID2Txt(char* sText, const VtGdeWall eID)
 {
@@ -902,6 +974,32 @@ VtWaviDistr WaviDistr_Txt2ID(const char* sText)
   return eID;
 }
 
+// mirror material
+void       MirrMat_ID2Txt(char* sText, const VtMirrMat eID)
+{
+  switch (eID)
+  {
+    case VT_NO_MIRR_MAT: strcpy(sText, "none"    ); break;
+    case VT_MIRR_OTHER : strcpy(sText, "other"   ); break;
+    case VT_MIRR_SI    : strcpy(sText, "silicon" ); break;
+    case VT_MIRR_SAPPH : strcpy(sText, "sapphire"); break;
+    case VT_MIRR_GLASS : strcpy(sText, "glass"   ); break;
+    case VT_MIRR_B4C   : strcpy(sText, "B4C"   ); break;
+    default            : strcpy(sText, "");
+  }
+}
+VtMirrMat   MirrMat_Txt2ID(const char* sText)
+{
+  VtMirrMat eID=VT_NO_MIRR_MAT;
+
+       if (strcmp(sText, "Other"   )==0 || strcmp(sText, "other"   )==0) eID=VT_MIRR_OTHER;
+  else if (strcmp(sText, "Silicon" )==0 || strcmp(sText, "silicon" )==0) eID=VT_MIRR_SI   ;
+  else if (strcmp(sText, "Sapphire")==0 || strcmp(sText, "sapphire")==0) eID=VT_MIRR_SAPPH;
+  else if (strcmp(sText, "Glass"   )==0 || strcmp(sText, "glass"   )==0) eID=VT_MIRR_GLASS;
+  else if (strcmp(sText, "B4C"     )==0                                ) eID=VT_MIRR_B4C;
+ 
+  return eID;
+}
 
 // reflection list parameter
 void        ListPar_ID2Txt(char* sText, const VtListPar eID)
@@ -1048,8 +1146,8 @@ VtPlotFilt  PlotFilt_Txt2ID(const char* sText)
 }
 
 
-// MONOCHROMATOR
-// -------------
+// MONOCHROMATOR + CHOPPERS
+// ------------------------
 // arrangement of monochromator  
 void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID)
 {
@@ -1086,8 +1184,8 @@ VtMonoType  MonoType_Txt2ID(const char* sText)
 {
   VtMonoType eID=REFL_MONO;
 
-       if (strcmp(sText, "reflection"  )==0) eID=REFL_MONO  ;
-  else if (strcmp(sText, "transmission")==0) eID=TRANSM_MONO;
+       if (strcmp(sText, "reflection"  )==0 || strcmp(sText, "Reflection"  )==0) eID=REFL_MONO  ;
+  else if (strcmp(sText, "transmission")==0 || strcmp(sText, "Transmission")==0) eID=TRANSM_MONO;
   
   return eID;
 }
@@ -1098,29 +1196,50 @@ void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID)
   switch (eID)
   {
     case CONST_LMBD: strcpy(sText, "constant lambda" ); break;
-    case SPHERICAL : strcpy(sText, "sperical"        ); break;
+    case SPHERICAL : strcpy(sText, "spherical"       ); break;
     case VERT_CYL  : strcpy(sText, "vert. cylinder"  ); break;
     case DBL_FOC   : strcpy(sText, "double focussing"); break;
-    default         : strcpy(sText, "");
+    default        : strcpy(sText, "");
   }
 }
 VtMonoFocus MonoFocus_Txt2ID(const char* sText)
 {
-  VtMonoFocus eID=VERT_CYL;
+  VtMonoFocus eID=NO_FOCUSING;
 
        if (strcmp(sText, "constant lambda" )==0) eID=CONST_LMBD;
-  else if (strcmp(sText, "sperical"        )==0) eID=SPHERICAL ;
+  else if (strcmp(sText, "spherical"       )==0) eID=SPHERICAL ;
   else if (strcmp(sText, "vert. cylinder"  )==0) eID=VERT_CYL  ;
   else if (strcmp(sText, "double focussing")==0) eID=DBL_FOC   ;
   
   return eID;
 }
 
+// Channel Shape         (chopper_fermi)
+void        ChnlShape_ID2Txt(char* sText, const VtChnlShape eID)
+{
+  switch (eID)
+  {
+    case VT_CHN_STR  : strcpy(sText, "straight"); break;
+    case VT_CHN_IDEAL: strcpy(sText, "ideal"   ); break;
+    case VT_CHN_CIRC : strcpy(sText, "circular"); break;
+    default       : strcpy(sText, "");
+  }
+}
+VtChnlShape  ChnlShape_Txt2ID(const char* sText)
+{
+  VtChnlShape eID=VT_NO_CHN_SHAPE;
+
+       if (strcmp(sText, "straight")==0) eID=VT_CHN_STR;
+  else if (strcmp(sText, "ideal"   )==0) eID=VT_CHN_IDEAL;
+  else if (strcmp(sText, "circular")==0) eID=VT_CHN_CIRC ;
+  
+  return eID;
+}
 
 // SAMPLES
 // -------
-// samnple geometry
-void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID)
+// sample geometry
+void        SmplGeom_ID2Txt(char* sText, const VtSmplGeom eID)
 {
   switch (eID)
   {
@@ -1131,7 +1250,7 @@ void        SmpleGeom_ID2Txt(char* sText, const VtSmplGeom eID)
     default         : strcpy(sText, "");
   }
 }
-VtSmplGeom  SmpleGeom_Txt2ID(const char* sText)
+VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
 {
   VtSmplGeom eID=VT_CYL;
 
@@ -1141,6 +1260,51 @@ VtSmplGeom  SmpleGeom_Txt2ID(const char* sText)
   else if (memcmp(sText, "sphere"         , 3)==0) eID=VT_SPHERE ;
   else if (memcmp(sText, "ball"           , 3)==0) eID=VT_SPHERE ;
   else if (memcmp(sText, "hollow-cylinder", 3)==0) eID=VT_HOL_CYL;
+  
+  return eID;
+}
+
+// particle geometry
+void        PtclGeom_ID2Txt(char* sText, const VtPtclGeom eID)
+{
+  switch (eID)
+  {
+    case VT_PTCL_SPHERE  : strcpy(sText, "spheres"               ); break;
+    case VT_PTCL_POLY_SPH: strcpy(sText, "polydispersive spheres"); break;
+    case VT_PTCL_ELLIPS  : strcpy(sText, "ellipsoids"            ); break;
+    case VT_PTCL_CYL     : strcpy(sText, "cylinders"             ); break;
+    case VT_PTCL_EPIPED  : strcpy(sText, "parallelepipeds"       ); break;
+    case VT_ISOTROPIC    : strcpy(sText, "isotropic scattering"  ); break;
+    default              : strcpy(sText, ""  );
+  }
+}
+VtPtclGeom  PtclGeom_Char2ID(const char cID)
+{
+  VtPtclGeom eID=VT_NO_PTCL;
+
+  switch (cID)
+  {
+    case 'S': eID=VT_PTCL_SPHERE  ; break;
+    case 'D': eID=VT_PTCL_POLY_SPH; break;
+    case 'E': eID=VT_PTCL_ELLIPS  ; break;
+    case 'C': eID=VT_PTCL_CYL     ; break;
+    case 'P': eID=VT_PTCL_EPIPED  ; break;
+    case 'I': eID=VT_ISOTROPIC    ; break;
+    default : eID=VT_NO_PTCL;
+  }
+  
+  return eID;
+}
+VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
+{
+  VtPtclGeom eID=VT_NO_PTCL;
+
+       if (strcmp(sText, "spheres"               )==0) eID=VT_PTCL_SPHERE;
+  else if (strcmp(sText, "polydispersive spheres")==0) eID=VT_PTCL_POLY_SPH;
+  else if (strcmp(sText, "ellipsoids"            )==0) eID=VT_PTCL_ELLIPS;
+  else if (strcmp(sText, "cylinders"             )==0) eID=VT_PTCL_CYL;
+  else if (strcmp(sText, "parallelepipeds"       )==0) eID=VT_PTCL_EPIPED;
+  else if (strcmp(sText, "isotropic scattering"  )==0) eID=VT_ISOTROPIC;
   
   return eID;
 }
@@ -1189,7 +1353,7 @@ VtMeasMode  MeasMode_Txt2ID(const char* sText)
 // DETECTOR
 // --------
 // detector geometry
-void       DetGeom_ID2Txt(char* sText, const VtDetGeom eID)
+void        DetGeom_ID2Txt(char* sText, const VtDetGeom eID)
 {
   switch (eID)
   {
@@ -1200,7 +1364,7 @@ void       DetGeom_ID2Txt(char* sText, const VtDetGeom eID)
 }
 VtDetGeom   DetGeom_Txt2ID(const char* sText)
 {
-  VtDetGeom eID=VT_DET_FLAT;
+  VtDetGeom eID=VT_NO_DET_GEOM;
 
        if (strcmp(sText, "cylindrical")==0) eID=VT_DET_CYL ;
   else if (strcmp(sText, "flat"       )==0) eID=VT_DET_FLAT;
@@ -1209,7 +1373,7 @@ VtDetGeom   DetGeom_Txt2ID(const char* sText)
 }
 
 // detector type
-void       DetType_ID2Txt(char* sText, const VtDetType eID)
+void        DetType_ID2Txt(char* sText, const VtDetType eID)
 {
   switch (eID)
   {
@@ -1220,30 +1384,10 @@ void       DetType_ID2Txt(char* sText, const VtDetType eID)
 }
 VtDetType   DetType_Txt2ID(const char* sText)
 {
-  VtDetType eID=VT_DET_AREA;
+  VtDetType eID=VT_NO_DET_TYPE;
 
        if (strcmp(sText, "tubes"      )==0) eID=VT_DET_TUBE;
   else if (strcmp(sText, "area/volume")==0) eID=VT_DET_AREA;
-  
-  return eID;
-}
-
-// tube shape
-void       TubeShape_ID2Txt(char* sText, const VtTubeShape eID)
-{
-  switch (eID)
-  {
-    case VT_TUBE_CIRCLE: strcpy(sText, "tubes"      ); break;
-    case VT_TUBE_SQUARE: strcpy(sText, "area/volume"); break;
-    default         : strcpy(sText, "");
-  }
-}
-VtTubeShape   TubeShape_Txt2ID(const char* sText)
-{
-  VtTubeShape eID=VT_TUBE_CIRCLE;
-
-       if (strcmp(sText, "tubes"      )==0) eID=VT_TUBE_CIRCLE;
-  else if (strcmp(sText, "area/volume")==0) eID=VT_TUBE_SQUARE;
   
   return eID;
 }
@@ -1261,11 +1405,32 @@ void       DetUse_ID2Txt(char* sText, const VtDetUse eID)
 }
 VtDetUse   DetUse_Txt2ID(const char* sText)
 {
-  VtDetUse eID=VT_DET_REAL;
+  VtDetUse eID=VT_NO_DET_USE;
 
-       if (strcmp(sText, "realistic"   )==0) eID=VT_DET_REAL;
+       if (strcmp(sText, "normal"      )==0 
+        || strcmp(sText, "realistic"   )==0) eID=VT_DET_REAL;
   else if (strcmp(sText, "monitor only")==0) eID=VT_MON_ONLY;
   else if (strcmp(sText, "grid off"    )==0) eID=VT_GRID_OFF;
+  
+  return eID;
+}
+
+// tube shape
+void        TubeShape_ID2Txt(char* sText, const VtTubeShape eID)
+{
+  switch (eID)
+  {
+    case VT_TUBE_CIRCLE: strcpy(sText, "circular"   ); break;
+    case VT_TUBE_SQUARE: strcpy(sText, "rectangular"); break;
+    default         : strcpy(sText, "");
+  }
+}
+VtTubeShape TubeShape_Txt2ID(const char* sText)
+{
+  VtTubeShape eID=VT_NO_TUBE_SHAPE;
+
+       if (strcmp(sText, "circular"   )==0) eID=VT_TUBE_CIRCLE;
+  else if (strcmp(sText, "rectangular")==0) eID=VT_TUBE_SQUARE;
   
   return eID;
 }
@@ -1285,7 +1450,7 @@ void       DetAbs_ID2Txt(char* sText, const VtDetAbs eID)
 }
 VtDetAbs   DetAbs_Txt2ID(const char* sText)
 {
-  VtDetAbs eID=VT_ABS_OTHER;
+  VtDetAbs eID=VT_NO_ABS_MAT;
 
        if (strcmp(sText, "BF3 gas"  )==0) eID=VT_GAS_BF3  ;
   else if (strcmp(sText, "3He gas"  )==0) eID=VT_GAS_HE3  ;
@@ -1336,8 +1501,8 @@ void      Mon2Par_ID2Txt(char* sText, const VtMon2Par eID)
 {
   switch (eID)
   {
-    case MON2_DIV : strcpy(sText, "position"  ); break;
-    case MON2_POS : strcpy(sText, "divergence"); break;
+    case MON2_POS : strcpy(sText, "position"  ); break;
+    case MON2_DIV : strcpy(sText, "divergence"); break;
     default       : strcpy(sText, "");
   }
 }
@@ -1426,14 +1591,15 @@ void      BrlPar_ID2Txt(char* sText, const VtBrlPar eID)
 {
   switch (eID)
   {
-    case VT_LAMBDA  : strcpy(sText, "lambda" ); break;
     case VT_TIME    : strcpy(sText, "time"   ); break;
+    case VT_LAMBDA  : strcpy(sText, "lambda" ); break;
+    case VT_ENERGY  : strcpy(sText, "energy" ); break;
     case VT_POS_Y   : strcpy(sText, "pos_y"  ); break;
     case VT_POS_Z   : strcpy(sText, "pos_z"  ); break;
+    case VT_POS_R   : strcpy(sText, "pos_rad"); break;
     case VT_DIV_HOR : strcpy(sText, "div_y"  ); break;
     case VT_DIV_VERT: strcpy(sText, "div_z"  ); break;
     case VT_DIV_RAD : strcpy(sText, "div_rad"); break;
-    case VT_ENERGY  : strcpy(sText, "energy" ); break;
     default         : strcpy(sText, "");
   }
 }
@@ -1441,14 +1607,15 @@ VtBrlPar  BrlPar_Txt2ID(const char* sText)
 {
   VtBrlPar eID=VT_LAMBDA;
 
-       if (strcmp(sText, "lambda" )==0) eID=VT_LAMBDA  ;
-  else if (strcmp(sText, "time"   )==0) eID=VT_TIME    ;
+       if (strcmp(sText, "time"   )==0) eID=VT_TIME    ;
+  else if (strcmp(sText, "lambda" )==0) eID=VT_LAMBDA  ;
+  else if (strcmp(sText, "energy" )==0) eID=VT_ENERGY  ;
   else if (strcmp(sText, "pos_y"  )==0) eID=VT_POS_Y   ;
   else if (strcmp(sText, "pos_z"  )==0) eID=VT_POS_Z   ;
+  else if (strcmp(sText, "pos_rad")==0) eID=VT_POS_R   ;
   else if (strcmp(sText, "div_y"  )==0) eID=VT_DIV_HOR ;
   else if (strcmp(sText, "div_z"  )==0) eID=VT_DIV_VERT;
   else if (strcmp(sText, "div_rad")==0) eID=VT_DIV_RAD ;
-  else if (strcmp(sText, "energy" )==0) eID=VT_ENERGY  ;
   
   return eID;
 }
@@ -1498,4 +1665,125 @@ VtFormat2D Format2D_Txt2ID(const char* sText)
   
   return eID;
 }
+
+// Evaluation
+// ----------
+// filter combination 
+void       FiltComb_ID2Txt(char* sText, const VtFiltComb eID)
+{
+  switch (eID)
+  {
+    case OR_OR_OR   : strcpy(sText, "OR"        ); break;
+    case AND_AND_AND: strcpy(sText, "AND"       ); break;
+    case AND_OR_AND : strcpy(sText, "AND_OR_AND"); break;
+    default         : strcpy(sText, "none");
+  }
+}
+VtFiltComb FiltComb_Txt2ID(const char* sText)
+{
+  VtFiltComb eID=NO_FCOMB;
+
+       if (strcmp(sText, "OR"        )==0) eID = OR_OR_OR   ;
+  else if (strcmp(sText, "AND"       )==0) eID = AND_AND_AND;
+  else if (strcmp(sText, "AND_OR_AND")==0) eID = AND_OR_AND ;
+  
+  return eID;
+}
+
+// evaluation parameter for all eval modules
+void      EvalPar_ID2Txt(char* sText, const VtEvalPar eID)
+{
+  switch (eID)
+  {
+    case VT_EVAL_DSP  : strcpy(sText, "d-spacing"            ); break;
+    case VT_EVAL_Q    : strcpy(sText, "momentum transfer Q"  ); break;
+    case VT_EVAL_ANGLE: strcpy(sText, "scattering angle"     ); break;
+    case VT_EVAL_LMBD : strcpy(sText, "wavelength difference"); break;
+    default      : strcpy(sText, "");
+  }
+}
+VtEvalPar EvalPar_Txt2ID(const char* sText)
+{
+  VtEvalPar eID=VT_NO_EVAL;
+
+       if (strcmp(sText, "d-spacing"            )==0) eID = VT_EVAL_DSP  ;
+  else if (strcmp(sText, "momentum transfer Q"  )==0) eID = VT_EVAL_Q    ;
+  else if (strcmp(sText, "scattering angle"     )==0) eID = VT_EVAL_ANGLE;
+  else if (strcmp(sText, "wavelength difference")==0) eID = VT_EVAL_LMBD ;
+  
+  return eID;
+}
+
+// evaluation combination for eval_elast2
+void       EvalComb_ID2Txt(char* sText, const VtEvalComb eID)
+{
+  switch (eID)
+  {
+    case VT_SCA_LMBD: strcpy(sText, "Scattering angle [deg] and wavelength [Ang]"); break;
+    case VT_SCA_TOF : strcpy(sText, "Scattering angle [deg] and TOF [ms]"        ); break;
+    default      : strcpy(sText, "");
+  }
+}
+VtEvalComb EvalComb_Txt2ID(const char* sText)
+{
+  VtEvalComb eID=VT_NO_ECOMB;
+
+       if (strcmp(sText, "Scattering angle [deg] and wavelength [Ang]")==0) eID = VT_SCA_LMBD;
+  else if (strcmp(sText, "Scattering angle [deg] and TOF [ms]"        )==0) eID = VT_SCA_TOF ;
+  
+  return eID;
+}
+
+// sort mode for eval_elast2
+void       EvalSort_ID2Txt(char* sText, const VtEvalSort eID)
+{
+  switch (eID)
+  {
+    case VT_SORT_X    : strcpy(sText, "Scattering angle"          ); break;
+    case VT_SORT_X_R  : strcpy(sText, "Scattering angle (reverse)"); break;
+    case VT_SORT_Y    : strcpy(sText, "Wavelength/TOF"            ); break;
+    case VT_SORT_Y_R  : strcpy(sText, "Wavelength/TOF (reverse)"  ); break;
+    case VT_SORT_INT  : strcpy(sText, "Intensity"                 ); break;
+    case VT_SORT_INT_R: strcpy(sText, "Intensity (reverse)"       ); break;
+    case VT_SORT_CTS  : strcpy(sText, "Counts"                    ); break;
+    case VT_SORT_CTS_R: strcpy(sText, "Counts (reverse)          "); break;
+    default           : strcpy(sText, "");
+  }
+}
+VtEvalSort EvalSort_Txt2ID(const char* sText)
+{
+  VtEvalSort eID=VT_NO_SORT;
+
+       if (strcmp(sText, "Scattering angle"          )==0) eID = VT_SORT_X    ;
+  else if (strcmp(sText, "Scattering angle (reverse)")==0) eID = VT_SORT_X_R  ;
+  else if (strcmp(sText, "Wavelength/TOF"            )==0) eID = VT_SORT_Y    ;
+  else if (strcmp(sText, "Wavelength/TOF (reverse)"  )==0) eID = VT_SORT_Y_R  ;
+  else if (strcmp(sText, "Intensity"                 )==0) eID = VT_SORT_INT  ;
+  else if (strcmp(sText, "Intensity (reverse)"       )==0) eID = VT_SORT_INT_R;
+  else if (strcmp(sText, "Counts"                    )==0) eID = VT_SORT_CTS  ;
+  else if (strcmp(sText, "Counts (reverse)          ")==0) eID = VT_SORT_CTS_R;
+  
+  return eID;
+}
+
+// angle selection mode for eval_elast2
+void       AngleSel_ID2Txt(char* sText, const VtAngleSel eID)
+{
+  switch (eID)
+  {
+    case VT_SEL_DIR: strcpy(sText, "direction"); break;
+    case VT_SEL_POS: strcpy(sText, "position" ); break;
+    default      : strcpy(sText, "");
+  }
+}
+VtAngleSel AngleSel_Txt2ID(const char* sText)
+{
+  VtAngleSel eID=VT_NO_SEL;
+
+       if (strcmp(sText, "direction")==0) eID = VT_SEL_DIR;
+  else if (strcmp(sText, "position" )==0) eID = VT_SEL_POS;
+  
+  return eID;
+}
+
 

@@ -41,14 +41,16 @@ void  SetGeometry(char* sColor);                 // fills the structure stGeomet
 /******************************/
 /** Global variables         **/
 /******************************/
-short   bAngColl=FALSE;      //       flag: angular collimation
-long    nAngles =1;          //       number of collimation channels = Angle grid
-double  PeakTransm=1.0,      //       maximal probability for passing through the collimator (considers effectively the blocking due to the width of collimator blades
-	      HorCollDiv=0.0,      // [deg] allowed divergence FWHM; always with respect to y-direction
-	      AngSpacing=0.0,      // [deg] angular distance betwee
-        AngleMin  =0.0;      // [deg] minimum of angle range 
+// Input parameters
+short   bAngColl=FALSE;      // -k         flag: angular collimation
+long    nAngles =1;          // -n         number of collimation channels = Angle grid
+double  PeakTransm=1.0,      // -e         maximal probability for passing through the collimator (considers effectively the blocking due to the width of collimator blades
+	      HorCollDiv=0.0,      // -d  [deg]  allowed divergence FWHM; always with respect to y-direction
+	      AngSpacing=0.0,      // -a  [deg]  angular distance betwee
+        AngleMin  =0.0;      // -m  [deg]  minimum of angle range 
 
-double  AngleMax  =0.0;      // [deg] maximum of angle range 
+// Variables determined from input parameters or trajectory data
+double  AngleMax  =0.0;      //     [deg]  maximum of angle range 
 
 
 /******************************/

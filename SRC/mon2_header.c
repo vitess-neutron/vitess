@@ -40,20 +40,20 @@ void WriteHeader1D(FILE* fMonitor, const char *sType, short bWeight,
   return;
 }
 
-void WriteHeader1DB(FILE* fMonitor, const char *sType, short iCol, long iBndl, long nBndl, int nBinsX, 
+void WriteHeader1DB(FILE* fMonitor, const char *sType, short iCol, long iBnch, long nBnch, int nBinsX, 
                     double IntMon, long nTrjMon, const char* sPar, const char* sUnit) 
 {
   char sDate[11], sTime[9];
 
   OutputBufferFlush(0);
-  GetActDate(sDate);
+  GetActDate(sDate, DATE_STD);
   GetActTime(sTime);
 
   fprintf(fMonitor, "# Monitor 1D %s:  %d bins: %s/%s\n", sType, nBinsX, sPar, sUnit);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   fprintf(fMonitor, "# Total intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(iCol), NumNeutWritten - (double)NumEobWritten);
   fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
-  fprintf(fMonitor, "# Bundles: %ld of %ld written\n", iBndl, nBndl);
+  fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
   fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
 
   return;
@@ -76,12 +76,12 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
       break;
 
     case XYZ:
+      fputs("# Monitor x y z\n", fMonitor);
       fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
-      fputs("#x y z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("#x y z\n", fMonitor);
+      fputs("# Monitor x y z\n", fMonitor);
       break;
   }
 
@@ -89,13 +89,13 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
 }
 
 
-void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, long iBndl, long nBndl, double IntMon, long nTrjMon, 
+void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
                    int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
 {
   char sEvents[11]="", sDate[11], sTime[9];
 
   OutputBufferFlush(0);
-  GetActDate(sDate);
+  GetActDate(sDate, DATE_STD);
   GetActTime(sTime);
   OutFmt2Txt(eFormat);  // fills static string 'sFormat'
   if (bWeight==FALSE)
@@ -103,23 +103,26 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
 
   fprintf(fMonitor, "# Monitor 2D %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
-  fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(0), NumNeutWritten - (double)NumEobWritten);
+  fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(-1), NumNeutWritten - (double)NumEobWritten);
   fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
-  fprintf(fMonitor, "# Bundles: %ld of %ld written\n", iBndl, nBndl);
+  fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
 
   switch (eFormat)
   {
     case MATRIX:
-      fputs("# Data y        F(x,y) \n              ", fMonitor);
+      fputs("# Data y        F(x,y)\n          ", fMonitor);
+      break;
+
+    case MATR_CMPT:
+      fputs("# Data y   F(X,y)\n          ", fMonitor);
       break;
 
     case XYZ:
       fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
-      fputs("#x y z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("#x y z\n", fMonitor);
+      fputs("# Data x   y F(x,y) error  events\n", fMonitor);
       break;
   }
 
@@ -130,40 +133,39 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
 /* 'WriteOutput2D': Writes 2D monitor file   */
 /*********************************************/
 int WriteOutput2D(FILE* fMonitor, int eFormat, short bWeight, 
-                   int nBinsX, double* BinPosY, int nArrayX, 
+                   int nBinsX, double* BinPosY, 
                    int nBinsY, double* BinPosZ, 
-                   double* IntYZ, double* IntYZError, long* nTrajYZ) 
+                   double** IntYZ, double** IntYZError, long** nTrajYZ) 
 {
   return WriteOutput2DB(fMonitor, eFormat, bWeight, 
-                        nBinsX, BinPosY, nArrayX, 
+                        nBinsX, BinPosY, 
                         nBinsY, BinPosZ, 1.0, IntYZ, IntYZError, nTrajYZ);
 }
   
 int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight, 
-                   int nBinsX, double* BinPosY, int nArrayX, 
+                   int nBinsX, double* BinPosY, 
                    int nBinsY, double* BinPosZ, double fNorm,
-                   double* IntYZ, double* IntYZError, long* nTrajYZ) 
+                   double** IntYZ, double** IntYZError, long** nTrajYZ) 
 {
-  int    i=0, j=0, k=0, c=0;
+  int    i=0, j=0, c=0;
   double x=0.0, y=0.0;
 
   switch (eFormat)
   {
     case MATRIX:
       for (i = 0; i < nBinsX; i++)
-        fprintf(fMonitor, "%10.3f    ", (BinPosY[i] + BinPosY[i+1]) / 2.0);
+        fprintf(fMonitor, "%10.4f   ", (BinPosY[i] + BinPosY[i+1]) / 2.0);
       Newline;
 
       for (j=0; j < nBinsY; j++) 
       {
-        fprintf(fMonitor, "%10.3f  ", (BinPosZ[j]+BinPosZ[j+1]) / 2.0);
+        fprintf(fMonitor, "%10.4f  ", (BinPosZ[j]+BinPosZ[j+1]) / 2.0);
         for (i=0; i < nBinsX; i++)
         {
-          k = nArrayX * i + j; 
           if (bWeight==TRUE)
-            fprintf(fMonitor, "%12.5e ", fNorm*IntYZ[k]);
+            fprintf(fMonitor, "%12.5e ", fNorm*IntYZ[i][j]);
           else
-            fprintf(fMonitor, "%7ld ", (long)(fNorm*nTrajYZ[k]));
+            fprintf(fMonitor, "%7ld ", (long)(fNorm*nTrajYZ[i][j]));
         }
         Newline;
       }
@@ -176,8 +178,7 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
         for (i=0; i < nBinsX; i++) 
         {
           x = (BinPosY[i]+BinPosY[i+1]) / 2.0;
-          k = nArrayX * i + j; 
-          fprintf(fMonitor, "%10.3f %10.3f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntYZ[k], fNorm*IntYZError[k], (long)(fNorm*nTrajYZ[k]));
+          fprintf(fMonitor, "%10.4f %10.4f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntYZ[i][j], fNorm*IntYZError[i][j], (long)(fNorm*nTrajYZ[i][j]));
         }
         Newline;
       }
@@ -193,11 +194,10 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
         PrintItem("%5.3f ", (BinPosZ[j] + BinPosZ[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
         {
-          k = nArrayX * i + j; 
           if (bWeight==TRUE)
-            PrintItem("%5.3E ", fNorm*IntYZ[k])
+            PrintItem("%5.3E ", fNorm*IntYZ[i][j])
           else
-            PrintInt("%ld ", (long)(fNorm*nTrajYZ[k]))
+            PrintInt("%ld ", (long)(fNorm*nTrajYZ[i][j]))
         }
         Newline;
       }
@@ -210,18 +210,17 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
         y = (BinPosZ[j]+BinPosZ[j+1]) / 2.0;
         for (i = 0; i < nBinsX; i++) 
         {
-          k = nArrayX * i + j; 
-          c = fNorm*nTrajYZ[k];
+          c = fNorm*nTrajYZ[i][j];
           PrintFloat((BinPosY[i]+BinPosY[i+1]) / 2.0);
           PrintFloat(y);
           if (c <= 0)
-          { fputs("0 0 0\n", fMonitor);
+          { fputs(" 0 0 0\n", fMonitor);
           }
           else 
           {
-            binc  = fNorm*IntYZ[k];
+            binc  = fNorm*IntYZ[i][j];
             error = binc <= 0 ? 0 : binc * sqrt(1./c);
-            PrintItem("%5.3E ", binc);
+            PrintItem(" %5.3E ", binc);
             PrintItem("%5.3E ", error);
             fprintf(fMonitor, "%ld\n", c);
           }

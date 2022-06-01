@@ -105,5 +105,4 @@ cd to the SRC directory in that window, and do
 nmake /f vitess.mak all
 
 At last you may copy the compiled files like
-nmake /f vitess.mak install
-
+copy release\*.exe ..\MODULES

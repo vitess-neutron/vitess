@@ -22,7 +22,7 @@ monitor1:                    # source module that will be executed
   - ePar    :                 # -k    [-]  -VtMon1Par  Mon1Par_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "variable\nparameter" 
-      tooltip: "ID for the parameter, as a function of which the intensity is shown" 
+      tooltip: "parameter, as a function of which the intensity is shown" 
       default: ["lambda","time","div_y","div_z","pos_y","pos_z","energy"]
       prefix:  "-k"   
 
@@ -61,6 +61,7 @@ monitor1:                    # source module that will be executed
       type:    "switch" 
       descr:   "all files" 
       tooltip: "Set:  generates additional files for colour:0, 1, ..., iColour"  
+      default: [NO,YES]
       column:  1                     
       prefix:  "-c"   
 
@@ -68,12 +69,14 @@ monitor1:                    # source module that will be executed
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "Set:        Probability weight\nNot set:  number of trajectories" 
+      default: [YES,NO]
       column:  0                     
       prefix:  "-p"   
   - bExclude:                 # -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written   NO: all are written
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "Set:       only neutrons meeting the monitor conditions are written\nNot set: all are written"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-e"   
   - eNorm   :                 #   -VtMonNorm MonNorm_Txt2ID(const char* sText)

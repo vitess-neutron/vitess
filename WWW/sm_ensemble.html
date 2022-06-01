@@ -8,119 +8,147 @@
   <meta name="Author" content="geza">
   <title>VITESS Supermirror Ensemble</title>
 </head>
-  <body>
-   <b><font size="+3">VITESS Supermirror-Ensemble</font></b>   
+
+<body>
+  <b><font size="+3">VITESS Supermirror-Ensemble</font></b>   
 <p>
-This module simulates an ensemble of mirror or supermirror (SM) planes of up to 50
-elements. This can be used for the simulation of more complicated optical systems,
-with branch geometry. For example one can use 4 elements as a normal guide
-and put one transparent element into this tilted by an angle relative to
-the main (beam) axis and use it as polarizer. Both sides of the supermirror plates reflect. 
-<br />
-Shapes and positions of the SM elements have to be given in the file "geometry and reflectivity data". 
-Size and shape of each element are defíned by giving the four corners in a plane perpendicular to the beam.
-The center of each mirror is then moved to his final position; then two rotations are executed to get the mirror in the right orientation. 
-A triangular shape can also be treated: 3 'corners' have to be co-linear for that.
+  This module simulates an ensemble of up to 50 mirror planes.
+  This can be used for the simulation of more complicated optical systems,
+  with branch geometry. For example one can use 4 elements as a normal guide
+  and put one transparent element into this, tilted by an angle relative to
+  the main (beam) axis and use it as polarizer. Both sides of the supermirror planes reflect. 
+  <br />
+  Shapes and positions of the SM elements have to be given in the file "geometry and reflectivity data". 
+  Size and shape of each element are defíned by giving the four corners in a plane perpendicular to the beam.
+  The center of each mirror is then moved to his final position; then two rotations are executed to get the mirror in the right orientation. 
+  A triangular shape can also be treated: 3 'corners' have to be co-linear for that.
 </p>
 <p>
-The algorithm calculates the angle of inclination for each trajectory and decides about reflection or transmission depending on the reflectivity.
-The reflectivity model that is used for the sm_ensemlbe module depends on the format of the parameter file. If the file format is the old one, then 
-for angles below theta_c, a reflectivity of 1 is assumed, for angles above thetaCSM, reflectivity of 0 is used. These parameters are used in the old
-file format. For angles between theta_c and thetaCSM, the reflectivity decreases linearly from 1 to R. <br>
-If the new file format is used, then only the m number is given for spin-up and spin-down neutrons, respectively. The module then calculated the reflectivity
-according to the empirical model describing the reflectivity behaviour of Swiss Neutronics mirrors. See below for details about the two file formats.
+  The algorithm calculates the angle of inclination for each trajectory and decides about reflection or transmission depending on the reflectivity curve.
+  There are 2 formats to give the reflectivity data: <br />
+  In the old file format, 3 parameters have to be given for spin-up and spin-down neutrons separately: <i>theta_c</i>, <i>theta_csm</i> and <i>R_csm</i> (see examples below).
+  For angles below theta_c, a reflectivity of 1 is assumed, for angles above thetaCSM, reflectivity of 0 is used.
+  For angles between theta_c and thetaCSM, the reflectivity decreases linearly from 1 to R. <br>
+  In the new file format, only the <i>m</i> value is given (for spin-up and spin-down neutrons).
+  The module then calculates the reflectivity according to an empirical model assuming also a linear decrease between <i>theta_c</i> and <i>theta_csm</i>, but an S-shaped drop to zero after <i>theta_csm</i>.
+  It describes the reflectivity curves of state-of-the-art coatings based on data delivered by the producers in 2019.<br />
+  Furthermore, transmission can be excluded by setting the number in the first column to 2, while in the old format requires a high value of &mu;*d for that.
+  Instead of &mu;*d and &mu;<sub>incoh</sub>*d, the thickness <i>d</i> of the mirror is used assuming the material given on the main window of the module. <br />
+  See also the 2nd and 3rd table for details of the two file formats.
 </p>
 <p>
-Visualisation of neutron paths or collision points is available. The module will visualize only the first 10000 trajectories or points. <br>
+  Visualisation of neutron paths or collision points is available. The module will visualize only the first 10000 trajectories or points. <br>
 </p>
 <br>
 <h3><font size="+2"> Parameters for module 'sm_ensemble' </font></h3>
 
-<table border="1" cols="3" width="84%">
-   <tbody>
-      <tr>
-        <td><b>Parameter<br> Unit</b>></td>
-        <td><b>Description</b></td>
-        <td><b>Command Option</b></td>
-      </tr>
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td><b>Parameter<br> Unit</b>></td>
+      <td><b>Description</b></td>
+      <td><b>Range or Values<br></b></td>
+      <td><b>Command Option</b></td>
+    </tr>
 
-      <tr>
-        <td>geometry and reflectivity data file</td>
-        <td>In this file shape, position, orientation, angular spread, 'up' and 'down' reflectivity curves and absorption of the mirrors have to be given</td>
-        <td>-P</td>
-      </tr>
+    <tr>
+      <td>geometry and reflectivity data file</td>
+      <td>In this input file, shape, position, orientation, angular spread, 'up' and 'down' reflectivity curves and absorption of the mirrors have to be given</td>
+      <td>  </td>
+      <td>-P</td>
+    </tr>
+    <tr>
+      <td>collision file</td>
+      <td>name of file for collisions output if 'output in collision file' option chosen in 'visualisation'</td>
+      <td>  </td>
+      <td>-P</td>
+    </tr>
 
-	<tr>
-        <td>File format</td>
-        <td>For differences between the old and the new file formats, see below. Its best to stick to the new format if a specific subtrate material is chosen.</td>
-        <td>-F</td>
-      </tr>	
+    <tr>
+      <td>File format</td>
+      <td>For differences between the old and the new file formats, see below. Its best to stick to the new format if a specific subtrate material is chosen.</td>
+      <td>'Old' 'New'</td>
+      <td>-F</td>
+    </tr>
+    <tr>
+      <td>Substrate material</td>
+      <td>Choose between available materials Silicon or Sapphire for a proper description of neutron absorption when passing through the mirror. Choose 'Other' for a general approximation. Beware that OTHER only works with the old file format! </td>
+      <td>'Other'  'Silicon'  'Sapphire'</td>
+      <td>-S</td>
+    </tr>
+    <tr>
+      <td>Modify color</td>
+      <td>Choose this option if the module should increase the color variable by 1 each time the trajectory undergoes a reflection within the mirror stack.</td>
+      <td>'Off' 'On'</td>
+      <td>-R</td>
+    </tr>
+    <tr>
+      <td>spin quantisation direction </td>
+      <td>direction of spin quantisation in accordance with input data (e.g.source module)<br />Put 'N' if spin direction should be ignored. </td>
+      <td>'X' 'Y' 'Z' 'N'</td>
+      <td>-Q </td>
+    </tr>
 
-	<tr>
-        <td>Subtrate coating</td>
-        <td>Choose between available materials Silicon or Sapphire for a proper description of neutron absorption. Choose Other for a general approximation. Beware that OTHER only works with the old file format! </td>
-        <td>-S</td>
-      </tr>
+    <tr>
+      <td>output frame<br>X',Y',Z'<br>[cm]</td>
+      <td>
+        The position of the output frame origin in the  original frame. It represents the translation vector applied to shift
+        the  origin of the original (input) frame to the new (output) position.
+      </td>
+      <td>  </td>
+      <td>-r, -s, -t</td>
+    </tr>
+    <tr>
+      <td>output angle<br>horizontal, vertical<br>[deg]</td>
+      <td>A rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output.</td>
+      <td> -180 ... 180  </td>
+      <td>-h, -v</td>
+    </tr>
 
-      <tr>
-        <td>Modify color</td>
-        <td>Choose this option if the module should increase the color variable by 1 each time the trajectory undergoes a reflection within the mirror stack.</td>
-        <td>-R</td>
-      </tr>
+    <tr>
+      <td>Visualisation window</td>
+      <td>Horizontal and vertical coordinates of the custom visualisation window.</td>
+      <td>  </td>
+      <td>-w, -W, -a, -A</td>
+    </tr>
 
+    <tr>
+      <td>Cutoff probability</td>
+      <td>The minimum probability still used for the custom visualisation</td>
+      <td>&ge;0</td>
+      <td>-b</td>
+    </tr>
+    <tr>
+      <td>stop at collisions</td>
+      <td>At this number of collisions it stops and writes out the trajectory for custom visualisation. This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. collisions.</td>
+      <td>&ge;0</td>
+      <td>-M</td>
+    </tr>
 
-      <tr>
-        <td valign="top">spin quantisation direction </td>
-        <td valign="top">direction of spin quantisation in accordance with input data (e.g.source module) </td>
-        <td valign="top">-Q </td>
-      </tr>
+    <tr>
+      <td>output</td>
+      <td>
+        If 'no output',  no output is created<br>
+        If 'yes' (1), it writes out the collisions into a file "collisions.dat".<br>
+        Else: it visualises the trajectories
+      </td>
+      <td>'no output'  'yes'  'plane XOY'  'plane XOZ'  'plane YOZ'</td>
+      <td>-T</td>
+    </tr>
+    <tr>
+      <td>visualisation device</td>
+      <td>Choose the device for visualisation: display, file, or display+file </td>
+      <td>'display'  'file'  'display+file'</td>
+      <td>-o</td>
+    </tr>
+    <tr>
+      <td>line type</td>
+      <td>graphical representation of the trajectories in the visualisaton</td>
+      <td>'lines'  'points'</td>
+      <td>-c</td>
+    </tr>
 
-      <tr>
-        <td>output frame<br>X',Y',Z'<br>[cm]</td>
-        <td>The position of the output frame origin in the  original frame. It represents the translation vector applied to shift
-            the  origin of the original (input) frame to the new (output) position.</td>
-        <td>-r, -s, -t</td>
-      </tr>
-
-      <tr>
-        <td>output angle<br>horizontal, vertical<br>[deg]</td>
-        <td>A rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output.</td>
-        <td>-h, -v</td>
-      </tr>
-     
-       <tr>
-        <td>Visualisation window</td>
-        <td>Horizontal and vertical coordinates of the custom visualisation window.</td>
-        <td>-w, -W, -a, -A</td>
-      </tr>		
-
-	<tr>
-        <td>Cutoff probability</td>
-        <td>The minimum probability still used for the custom visualisation</td>
-        <td>-b</td>
-      </tr>	
-
-	   <tr>
-        <td>stop at collisions</td>
-        <td>At this number of collisions it stops and writes out the trajectory for custom visualisation. This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. collisions.</td>
-        <td>-M</td>
-      </tr>
-	
-	   <tr>
-        <td>visualisation</td>
-        <td>If 'yes' (1), it writes out the collisions into a file "collisions.dat".<br>
-            Else: it visualises the trajectories</td>
-        <td>-T</td>
-      </tr>
-
-      <tr>
-        <td>device</td>
-        <td>Choose the device for visualisation: 1 - display, 2 - file, 3 - display+file </td>
-        <td>-o</td>
-      </tr>
-
-         
-  </tbody>  
+  </tbody>
 </table>
 </p>
       
@@ -249,14 +277,15 @@ mirror subtrate!
 
       <tr>
         <td>on/off/no transmission</td>
-        <td>defines if the wall is not active (0), active (1), or active without transmission, i.e. all trajectories that are not reflected are absorbed (2)<br>
-             at most 50 walls can be active  </td>
+        <td>Defines if the wall is not active (0), active with transmission (1), or active without transmission (2). <br />
+            The latter option means that all neutrons that are not reflected are absorbed.<br>
+            At most 50 walls can be active.  </td>
         <td>0: off <br> 1: on <br> 2: no transmission</td>
       </tr>
 
       <tr>
         <td>y<sub>i</sub>, z<sub>i</sub> i=1,..,4<br>[cm]</td>
-        <td>defines shape and size of a mirror element: <br> 
+        <td>Defines shape and size of a mirror element: <br> 
             the positions of the corners of a quadrangle are given in a plane perpendicular to the beam <br>
             you can also form a triangle if 3 'corners' are co-linear(cf. figure above)</td>
         <td>any</td>
@@ -310,9 +339,11 @@ mirror subtrate!
 
 <h3>Example 1: Polarizing V Cavity</h3> 
 <p>
-A V type cavity is a transmission polarization device, by which a wide neutron band with large divergence can be polarized.
-Here it is realized as a single V cavity using an FeSi supermirror, which shows total reflectivity up to m=1 and zero reflectivity above m=4 for spin-up 
-and total reflectivity up to m=0.6 and zero reflectivity above m=0.7 for spin-down neutrons (cf. figure and table).
+  A V type cavity is a transmission polarization device, by which a wide neutron band with large divergence can be polarized.
+  Here it is realized as a single V cavity using an FeSi supermirror, which shows total reflectivity up to m=1 and zero reflectivity above m=4 for spin-up
+  and total reflectivity up to m=0.6 and zero reflectivity above m=0.7 for spin-down neutrons (cf. figure and table). <br />
+  In the old format, 5 numbers have to be given to define the reflectivity curve (s. Table below), both for up- and down-neutrons.
+  In the new format, it is done by just giving the m-value.
 </p>
   
 <p>
@@ -328,23 +359,23 @@ and total reflectivity up to m=0.6 and zero reflectivity above m=0.7 for spin-do
 <pre>
 1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.2496   0.0   -90.715    0.0   0.0   0.0     0.00173   0.00692   0.78     0.000144   0.0009      0.001038   0.001211   0.60    0.000144   0.0009   ----- pol mirror 1 -----
 1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.2496   0.0    90.715    0.0   0.0   0.0     0.00173   0.00692   0.78     0.000144   0.0009      0.001038   0.001211   0.60    0.000144   0.0009   ----- pol mirror 2 -----
-1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.4992   0.0    90.000    0.0   0.0   0.0     0.00173   0.00173   0.99   100.00    100.00         0.00173    0.00173    0.99  100.00     100.00     ----- left side    -----
-1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0     0.00173   0.00173   0.99   100.00    100.00         0.00173    0.00173    0.99  100.00     100.00     ----- right side   -----
-1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0     0.00173   0.00519   0.88   100.00    100.00         0.00173    0.00519    0.88  100.00     100.00     ----- up           -----
-1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0     0.00173   0.00519   0.88   100.00    100.00         0.00173    0.00519    0.88  100.00     100.00     ----- down         -----
+1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.4992   0.0    90.000    0.0   0.0   0.0     0.00173   0.00173   0.99   100.00     100.00        0.00173    0.00173    0.99  100.00     100.00     ----- left side    -----
+1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0     0.00173   0.00173   0.99   100.00     100.00        0.00173    0.00173    0.99  100.00     100.00     ----- right side   -----
+1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0     0.00173   0.00519   0.88   100.00     100.00        0.00173    0.00519    0.88  100.00     100.00     ----- up           -----
+1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0     0.00173   0.00519   0.88   100.00     100.00        0.00173    0.00519    0.88  100.00     100.00     ----- down         -----
 on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/°      V/°   h/°   v/° Up: theta_c  theta_csm  R_csm   µ*d      µ_incoh*d  Down: theta_c theta_csm  R_csm     µ*d    µ_incoh*d         wall
 </pre>
 <br/>
 
 <h3><font size="+2"> New format </font></h3>
 <pre>
-1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.2496   0.0   -90.715    0.0   0.0   0.0     0.03	4	0.6  	 ----- pol mirror 1 -----
-1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.2496   0.0    90.715    0.0   0.0   0.0     0.03	4	0.6	 ----- pol mirror 2 -----
-2      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.4992   0.0    90.000    0.0   0.0   0.0     0.03 	1	1	 ----- left side    -----
-2      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0     0.03	1	1	 ----- right side   -----
-2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0     0.03	3	3	 ----- up           -----
-2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0     0.03	3	3	 ----- down         -----
-on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/°      V/°   h/°   v/°     d	m up	m down	   wall
+1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.2496   0.0   -90.715    0.0   0.0   0.0   0.03   4.6  0.65  ----- pol mirror 1 -----
+1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.2496   0.0    90.715    0.0   0.0   0.0   0.03   4.6  0.65  ----- pol mirror 2 -----
+2      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0  -0.4992   0.0    90.000    0.0   0.0   0.0   0.03   1.0  1.0   ----- left side    -----
+2      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0   0.03   1.0  1.0   ----- right side   -----
+2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0   0.03   3.0  3.0   ----- up           -----
+2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0   0.03   3.0  3.0   ----- down         -----
+on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/°      V/°   h/°   v/°    d    m_up m_down       wall
 </pre>
 
 
@@ -353,10 +384,10 @@ on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y 
 
 <h3>Example 2: Extraction System</h3> 
 <p>
-The following example shows the realization of a bi-spectral extraction system consisting of 3 vertical m=3 supermirrors and 2 horizontal m=2 supermirrors.
-The vertical mirrors are 0.77° and 0.19° inclined (relative to the beamline) in the direction shown in the figure. <br/>
-5 numbers have to be given to define the reflectivity curve (s. Table below), both for up- and down-neutrons. Note that apart from
-the second mirror, all others do not transmit neutrons.
+  The following example shows the realization of a bi-spectral extraction system consisting of 3 vertical m=3 supermirrors and 2 horizontal m=2 supermirrors.
+  Two of the vertical mirrors are 0.77° inclined (relative to the beamline) in the direction shown in the figure, the other one is not.
+  All have the same length of 6.47 m. (The example was somewhat simplified after the sketch was made.) <br />
+  Note that apart from the second mirror, the mirrors do not transmit neutrons.
 </p>
    
 <p>
@@ -368,22 +399,22 @@ the second mirror, all others do not transmit neutrons.
 
 <h3><font size="+2"> Old format </font></h3>
 <pre>
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --left--- 
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88     0.00024   0.00150        0.00173  0.00519  0.88   0.00024    0.00150   --center--- 
-1     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --right--- 
-1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --top--- 
-1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --bot--- 
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --right-- 
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88     0.00024   0.00150        0.00173  0.00519  0.88   0.00024    0.00150  --center- 
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5     3.000  0.00   90.00    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --left--- 
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +3.0  -323.5    323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --top---- 
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +3.0  -323.5    323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --bottom- 
 on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Up: theta_c  theta_csm  R_csm   µ*d      µ_incoh*d  Down: theta_c theta_csm R_csm   µ*d    µ_incoh*d     wall
 </pre>
    
 <h3><font size="+2"> New format </font></h3>
 <pre>
-2     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.05	5	5       --left--- 
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.05	3	3      --center--- 
-2     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.05	3	3       --right--- 
-2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.05   	3  	3        --top--- 
-2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.05	2	2        --bot--- 
-on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Thickness	m up	m down     wall
+2     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.05     3     3      --right-- 
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.05     3     3      --center--- 
+2     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5     3.000  0.00   90.00    0.00    0.00  0.00     0.05     3     3      --left--- 
+2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +3.0  -323.5    323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.05     2     2      --top--- 
+2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +3.0  -323.5    323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.05     2     2      --bottom 
+on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Thickness  m up  m down     wall
 </pre>
 
 

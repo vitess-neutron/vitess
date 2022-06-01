@@ -14,7 +14,7 @@ source:				       # source module that will be executed
       default: "First Simulation" 
       column:  0                       
   - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    combo                   # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+      type:    combo                   # This shall not be selected, but defined by the chosen module 
       default: "source ESS" 
       index:   5
       prefix:  "-K"     
@@ -65,7 +65,7 @@ source:				       # source module that will be executed
       column:  0                     
       prefix:  "-v"     
   - Beamline:                          # -B         [-]   name of the beamline  
-      type:    "float" 
+      type:    "string" 
       descr:   "beamline"
       tooltip: "name of the beamline" 
       column:  1                     

@@ -21,7 +21,7 @@
 /* 1.9  Feb 2012  K. Lieutenant  any color = -1                                                */
 /* 1.10 Feb 2020  K. Lieutenant  tidy up, new central visualization parameters                 */
 /* 1.11 Nov 2020  K. Lieutenant  preparation for transfer to version 4                         */
-/* 1.12 mar 2021  K. Lieutenant  update after each bundle                                      */
+/* 1.12 mar 2021  K. Lieutenant  update after each bunch                                       */
 /***********************************************************************************************/
 
 // includes
@@ -49,7 +49,7 @@
 void OwnInit      (int argc, char *argv[]);                                  // Reads input parameters and sets global parameters
 void InitArrays   ();
 void OpenFiles    ();                                                        // Opens all monitor files
-void UpdateMon    (int iMon, long iBndl);                                    // Updates monitor output file 
+void UpdateMon    (int iMon, long iBnch);                                    // Updates monitor output file 
 void NumerateName (char* sFileLong, char* sFileShort, const short nNumber);  // Building a combined file name of 'sFileShort' and 'sNumber' without changing the extension
 void ChangeName   (char* sFileNew,  char* sFileOld);                         // Putting "new_" in front of the original name                                              
 
@@ -105,7 +105,7 @@ long    nTrjTot=0;          // total number of traj. within binning and eval. ti
 double  IntTot=0.0;         // total count rate within binning and eval. time     
 double  IntMax =-1.0e10,    // maximal count rate found in one bin
         BinSize= 0.0;       // size of each bin          
-long    nBundle= 1;         // number of bundles started 
+long    nBunches= 1;         // number of bunches started 
 static
 char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                   // unit and parameter name
        sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal divergence", "vertical divergence",  // of the possible x-axis parameters
@@ -121,8 +121,8 @@ int main(int argc, char *argv[])
          sModVsnName[40]="";
 
   short  iCol=NO_COLOR;      /* colour of the trajectory */
-  long   iBin=0,             /* bin number */
-         iBndl=0,            // current bundle
+  long   iBin=0,             /* bin number     */
+         iBnch=0,            /* current bunch */
          i=0, 
          bRegistered=FALSE; 
   double prob=0.0,           /* neutron weight */
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   double TimeMeas=0.0,       /* measuring time     (from simulation.inf, not needed) */
          LmbdWant=0.0,       /* desired wavelength (from simulation.inf, not needed) */
          Freq    =0.0,       /* source frequency   (from simulation.inf)   */
-         nTraj   =0.0;       /* number of trajectories started per bundle  */
+         nTraj   =0.0;       /* number of trajectories started per bunch   */
 
 
   // reading of input data and initilisation
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
   bLengthCmpr   = FALSE;
 
   InitArrays();
-  ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBundle);
+  ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBunches);
   
   DECLARE_ABORT;
   
@@ -170,8 +170,8 @@ int main(int argc, char *argv[])
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       { 
-        iBndl++;
-        UpdateMon(ANY_COLOR, iBndl);
+        iBnch++;
+        UpdateMon(ANY_COLOR, iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -293,14 +293,13 @@ int main(int argc, char *argv[])
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // -----------------------------------------------------------------------------------------------
 my_exit:
-  UpdateMon(ANY_COLOR, nBundle);  // main monitor
+  UpdateMon(ANY_COLOR, nBunches);  // main monitor
 
   // additional monitors
   if (nAddMons > 0) 
-  {
-    int jMon;
-    for (jMon=0; jMon<nAddMons; jMon++)
-      UpdateMon(jMon, nBundle);
+  { 
+    for (int jMon=0; jMon<nAddMons; jMon++)
+      UpdateMon(jMon, nBunches);
   }
 
   // TOF monitor 
@@ -563,10 +562,10 @@ void OpenFiles()
 /*******************************************************/
 /**  Updates main monitor output file                 **/
 /*******************************************************/
-void UpdateMon(int jMon, long iBndl)
+void UpdateMon(int jMon, long iBnch)
 {
   char   sNewName[99]="";
-  double f_norm;                 // ratio of total to processed bundles after treating current bundle
+  double f_norm=1.0;             // ratio of total to processed bunches after treating current bunch
   long   iBin=0,                 // index of bins in x-axix and for main monitor
          kBin=0;                 // index in array for monitors of individual colors   
   double xBin=0.0;               // center of the current bin 
@@ -586,9 +585,10 @@ void UpdateMon(int jMon, long iBndl)
 
   if (pFile != NULL)     
   { 
-    WriteHeader1DB(pFile, "intensity", iColor, iBndl, nBundle, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
+    WriteHeader1DB(pFile, "intensity", iColor, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
 
-    f_norm = (double) nBundle / (double) iBndl;
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
     IntMax = 0.0;
 
     for (iBin = 0; iBin < nBins; iBin++)
@@ -602,16 +602,16 @@ void UpdateMon(int jMon, long iBndl)
       if (Norm[iBin]!=0)
       { 
         if (ePar==MON_DIV_YZ) 
-          fprintf(pFile, "%10.3f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]/(double)nRot);
+          fprintf(pFile, "%10.4f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]/(double)nRot);
         else
-          fprintf(pFile, "%10.3f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]);
+          fprintf(pFile, "%10.4f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]);
       }
       else
       { 
         if (ePar==MON_DIV_YZ) 
-          fprintf(pFile, "%10.3f   0.0000000E+00  0.0000000E+00        0.00\n", xBin);
+          fprintf(pFile, "%10.4f   0.0000000E+00  0.0000000E+00        0.00\n", xBin);
         else
-          fprintf(pFile, "%10.3f   0.0000000E+00  0.0000000E+00        0\n",    xBin);
+          fprintf(pFile, "%10.4f   0.0000000E+00  0.0000000E+00        0\n",    xBin);
       }
 
       if (jMon==ANY_COLOR)

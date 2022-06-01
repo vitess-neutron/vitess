@@ -83,7 +83,7 @@
   <h2><font size="+1"> VITESS Module 'read_in' to read trajectories from a file</font></h2>
   <p>
     The module <b>read_in</b> can read the data of the <i>output file</i> or data sets written by <b>writeout</b> or a corresponding module in another simulation program.
-    It can read data of the same 5 formats: VITESS, McStas, MCPL, MCNP and MCNPX, both as ASCII and binary data.
+    It can read data of the same 5 formats: VITESS, McStas, MCPL, MCNP6, both as ASCII and binary data.
     In any case it expects complete data sets, i.e. data sets with a reduced number of paramters as enabled in <b>writeout</b> for the VITESS format (see above) cannot be read.
     <br />
     Up to 3 files can be read. If nore than 1 file is used, their weights have to be set accordingly.
@@ -119,7 +119,7 @@
       <tr>
         <td valign="top">data format</td>
         <td valign="top">Format in which the input was written </td>
-        <td valign="top">"VITESS"<br />"McStas"<br />"MCPL"<br />"MCNP"<br />"MCNPX"</td>
+        <td valign="top">"VITESS"<br />"McStas"<br />"MCPL"<br />"MCNP6"</td>
         <td valign="top">-f  </td>
       </tr>
       <tr>
@@ -159,13 +159,21 @@
       <td valign="top">-R  </td>
     </tr>
     <tr>
-      <td valign="top">Intensity factor for MCNPX<br />[n/s]</td>
+      <td valign="top">Intensity factor<br />[1/s]</td>
       <td valign="top">
-        The weight of each neutron trajectory from the MCNPX simulation will be multiplied by this factor to yield correct absolute source flux values.<br />
-        This factor  F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub>  can be calculated as the ratio of proton current to the number of protons simulated.
+        The weight of each neutron trajectory from the target-moderator simulation will be multiplied by this factor to yield correct absolute source flux values.<br />
+        This factor  F = I<sub>p,src</sub>/ N<sub>MCNP-Events</sub>  can be calculated as the ratio of time averaged proton current to the number of protons simulated.
       </td>
       <td valign="top">&gt;0 <br />typical 1.0e8<br />default: 1.0</td>
       <td valign="top">-I  </td>
+    </tr>
+    <tr>
+      <td valign="top">Surface ID</td>
+      <td valign="top">
+        Only for MCNP6: If a surface ID is given, only neutrons passing through this surface are read from the input file(s).
+      </td>
+      <td valign="top">&ge;-1<br />default: -1 (all neutrons)</td>
+      <td valign="top">-s  </td>
     </tr>
     <tr>
       <td valign="top">read in color</td>
@@ -200,7 +208,7 @@
   <p>
     The module <b>writeout</b> can be inserted between two other VITESS modules or put to the end of the instrument.
     It records the output of the preceding module by writing data sets of trajectories (or 'neutrons' or 'events') into an ASCII or binary file.
-    The data can be written in 5 different formats: VITESS, McStas, MCPL, MCNP and MCNPX.
+    The data can be written in 5 different formats: VITESS, McStas, MCPL and MCNP6.
     For ASCII output, the separator (space or tab) and the data format (float or exponential) has to be specified.
     It is possible to write all data sets, but there are also different options to select the trajectories that are written to this file
     (see table <i>Parameters for Module 'writeout'</i>).
@@ -243,7 +251,7 @@
       <tr>
         <td valign="top">data format</td>
         <td valign="top">The format in which the output file will be written</td>
-        <td valign="top">"VITESS"<br />"McStas"<br />"MCPL"<br />"MCNP"<br />"MCNPX"</td>
+        <td valign="top">"VITESS"<br />"McStas"<br />"MCPL"<br />"MCNP6"</td>
         <td valign="top">-f    </td>
       </tr>
       <tr>
@@ -259,20 +267,38 @@
         <td valign="top">separator</td>
         <td valign="top">
           Character used to separate the numbers in a VITESS output file <br />
-          MCNPX and McStas data are separated by 'space'
+          MCNP6 and McStas data are separated by 'space'
         </td>
         <td valign="top">"Space"<br />"Tabulator"</td>
         <td valign="top">-S  </td>
       </tr>
+
       <tr>
-        <td valign="top">Intensity factor for MCNPX<br />[n/s]</td>
+        <td valign="top">Intensity factor<br />[n/s]</td>
         <td valign="top">
-          The weight of each neutron trajectory  is divided by this factor to yield the counts in the MCNPX simulation.<br />
-          The factor is: F = I<sub>src</sub>/ N<sub>MCNPX-Events</sub>
+          The weight of each neutron trajectory is divided by this factor to yield the counts in the MCNP simulation.<br />
+          The factor is: F = I<sub>src</sub>/ N<sub>MCNP-Events</sub>
         </td>
         <td valign="top">&gt;0 <br />typical 1.0e8<br />default: 1.0</td>
         <td valign="top">-I  </td>
       </tr>
+      <tr>
+        <td valign="top">Surface ID</td>
+        <td valign="top">
+          Only for MCNP6: this number is written as surface ID to the output file. If no number is given, 0 is written.
+        </td>
+        <td valign="top">default: 0</td>
+        <td valign="top">-s  </td>
+      </tr>
+      <tr>
+        <td valign="top">Title</td>
+        <td valign="top">
+          Only for MCNP6: title of the simulation. this is written to the header of the output file.
+        </td>
+        <td valign="top">default: 0</td>
+        <td valign="top">-T  </td>
+      </tr>
+
       <tr>
         <td valign="top">Columns</td>
         <td valign="top">Choice of output parameters for VITESS format</td>
@@ -355,17 +381,7 @@
     9 -11  x-,y-,z-coordinate of the polarization 
   </pre>
   <br />
-  The ollowing information is written for each trajectory (or neutron) in MCNP format: <br />
-  <pre>
-  column                                                                
-    1 - 3  x-,y-,z-coordinate of the position    [cm]    (with respect to the coordinate system provided by the module preceding <b>writeout</b>) 
-    4 - 6  x-,y-,z-coordinate of the flight dir.         (direction cosinus) 
-      7    neutron energy                        [MeV]                               
-      8    weight                                [n/s]   (represented by the trajectory)     
-      9    time of flight                    [shakes=1e-8s]                                    
-  </pre>
-  <br />
-  The following information is written for each trajectory (or neutron) in MCNPX format: <br />
+  The following information is written for each trajectory (or neutron) in MCNP6 format: <br />
   <pre>
   column                                                                
       1    history                                [-]    not used, 0 written                           

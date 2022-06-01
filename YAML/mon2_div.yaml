@@ -61,17 +61,20 @@ mon2_div:                 # source module that will be executed
       default: 50
       column:  2                     
       prefix:  "-z"  
+
   - bProbWt :               #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "YES: Beam intensity   NO: number of trajectories"
       default: "YES"
+      default: [YES,NO]
       column:  0                     
       prefix:  "-p"  
   - bExclude:              #     -e  "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
       type:    "switch" 
       descr:   "exclusive\ncounts"  
       tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-e"  
   - eFormat :              #     -F   VtFormat2D Format2D_Txt2ID(const char* sText)
@@ -81,6 +84,7 @@ mon2_div:                 # source module that will be executed
       default: ["matrix","xyz","matrix compact","xyz compact"]
       column:  2                     
       prefix:  "-F"  
+
   - FlmbdMin:              #     -l  "lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda\nmin [Ang]" 

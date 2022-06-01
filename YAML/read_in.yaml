@@ -15,7 +15,7 @@ read_in:   		     # source module that will be executed
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
-      default: ["VITESS", "McStas", "MCPL", "MCNP", "MCNPX"]   
+      default: ["VITESS", "McStas", "MCPL", "MCNP6"]   
       column:  0                     
       prefix:  "-f"   
   - eInForm:                 # -F   FLOAT   [-]    see 'VtDataFormat' in 'in_out.h'
@@ -61,25 +61,32 @@ read_in:   		     # source module that will be executed
       default: 0.0
       column:  2                     
       prefix:  "-d"   
+
   - Title_1:
       type:    "title"
-      default: " " 
+      default: "Special options" 
   - nInRep:                   # -R     1  Number of times that the events are read 
       type:    "int" 
       descr:   "repetition" 
       tooltip: "Number of times that the events are read"
       default: 1
       min:     1
-      column:  1                     
+      column:  0                     
       prefix:  "-R" 
-  
   - RiFact:                 # -I    1.0  [-] 
       type:    "float" 
-      descr:   "intensity factor\nfor MCNPX"
-      tooltip: "The weight of each neutron trajectory from the MCNPX simulation is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnpx-events"
+      descr:   "intensity\nfactor"
+      tooltip: "The weight of each neutron trajectory (from an MCNP simulation) is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnp-events"
       default: 1.0
-      column:  0                     
+      column:  1                     
       prefix:  "-I"   
+  - nSurface:               
+      type:    "int" 
+      descr:   "surface\nID" 
+      tooltip: "Only for MCNP6: If a surface ID greater -1 is given, only neutrons passing this ID are read from file." 
+      default: -1
+      column:  2                     
+      prefix:  "-s"   
   - nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
       type:    "int" 
       descr:   "read in color" 
@@ -102,6 +109,6 @@ read_in:   		     # source module that will be executed
       descr:   "raytracing mode" 
       tooltip: "no tracing\nwrite a files for each traj. of interest\nsimulation only with traj. of interest"
       default: ["no tracing", "write trace files", "only trace trajectories"]   
-      column:  1                     
+      column:  0                     
       prefix:  "-t"   
 

@@ -146,11 +146,11 @@ my_exit:
   
   for (dy = 0; dy < nbiny; dy++)
   {
-    fprintf(fMonitor, "%10.3f    ", (bposy[dy]+bposy[dy+1])/2.0);
+    fprintf(fMonitor, "%10.4f   ", (bposy[dy]+bposy[dy+1])/2.0);
   }
   for (dz = 0; dz<nbinz; dz++)
   {
-    fprintf(fMonitor, "\n%10.3f  ", (bposz[dz]+bposz[dz+1])/2.0);
+    fprintf(fMonitor, "\n%10.4f  ", (bposz[dz]+bposz[dz+1])/2.0);
     for (dy = 0; dy < nbiny; dy++)
 	  {
 	    if (binyz[dy][dz] == 0.)

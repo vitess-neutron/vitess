@@ -94,7 +94,7 @@ spacewindow:
       type:    "switch" 
       descr:   "used previous\nframe"  
       tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window plane (default)"
-      default: NO 
+      default: [NO, YES]
       column:  0                     
       prefix:  "-F"   
 

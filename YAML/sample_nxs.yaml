@@ -26,16 +26,16 @@ sample_nxs:
   - nRepete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
       type:    "int" 
       descr:   "repetitions" 
+      tooltip: "repetitions (number of trajectories generated per incoming trajectory\nfor each structure factor)"
       min:     1
       default: 1
-      tooltip: "repetitions (number of trajectories generated per incoming trajectory\nfor each structure factor)"
       column:  0                     
       prefix:  "-A"     
   - nColor  :                 # -c          colour of the neutrons scattered from the environment
       type:    "int" 
       descr:   "colour" 
-      min:     -1
       tooltip: "colour of the neutrons scattered from the sample"
+      min:     -1
       column:  1                     
       prefix:  "-c"     
 
@@ -43,23 +43,23 @@ sample_nxs:
       type:    "switch" 
       descr:   "incoherent scattering"
       tooltip: "flag incoherent scattering (YES  NO)"
-      prefix:  "-I"     
       default: [NO, YES]
       column:  0                     
+      prefix:  "-I"     
   - bTrtAll :                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO) 
       type:    "switch" 
       descr:   "treat all neutrons"
       tooltip: "flag neutrons not hitting the sample are treated"
-      prefix:  "-a"     
       default: [NO, YES]
       column:  1                     
+      prefix:  "-a"     
   - bOnlyT  :                # -T   NO      flag: shall only transmission (imaging) be treated (YES) or scattering also (NO)
       type:    "switch" 
       descr:   "transmission only"
       tooltip: "flag shall only transmission (imaging) be treated (YES)\nor scattering also (NO)"
-      prefix:  "-T"     
       default: [NO, YES]
       column:  2                     
+      prefix:  "-T"     
 
   - Theta   :                 # -D  90.0 [deg]   these angles determine orientation and range in which neutrons are scattered
       type:    "float" 
@@ -125,8 +125,8 @@ sample_nxs:
   -  SmplGeom:               # enum sample geometry: CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER
       type:    "combo" 
       descr:   "sample\ngeometry"
-      tooltip: "sample geometry  CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER RECTANGULAR"
-      default: [cylinder, sphere, cuboid, hollow-cylinder, rectangular]
+      tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"
+      default: [cylinder, sphere, cuboid]
       prefix:  "-G"     
       column:  0 
                    

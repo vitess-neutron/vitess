@@ -20,7 +20,7 @@ proc textWindow {w th tfont {series 0}} {
   bButton $w.b.c Clear clearText
   bButton $w.b.s Save saveText
   if {$w == "$Textw"} {
-    bButton $w.b.b Big {sizeTextWindow 1}
+    bButton $w.b.b Maximize {sizeTextWindow 1}
   } else {
     if $series {
       bButton $w.b.b "Stop\nSeries" stopSeriesExecution

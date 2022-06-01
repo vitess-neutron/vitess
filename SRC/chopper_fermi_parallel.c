@@ -51,35 +51,37 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-int    Option=1;               //   -O     [-]   type of Fermi chopper: 1: straight   2: curved  
-const char *GeomFileName;      //   -G     [-]   output file of the curved channel geometry 
-double pos_ch[3]={0.0,0.0,0.0},//-X,-Y,-V [cm]   center position x of the Fermi chopper
-       height=0.0,             //   -a    [cm]   height of the Fermi chopper
-       width=0.0,              //   -b    [cm]   width of the Fermi chopper
-       depth=0.0;              //   -c    [cm]   hchannel length of the Fermi chopper
-       
-long	 Nchannels=1;            //   -l     [-]   number of channels, max 2000
-double wallwidth=0.0,          //   -m    [cm]   thickness of the walls between the channels  
-       diameter=0.0,           //   -r    [cm]   diameter of the shadowing cylinder
-
-       omega=0.0,              //   -n  [rad/ms] rotational speed, input: [rps] 
-       Phase=0.0,              //   -q    [rad]  dephasing angle at zero time input [deg]
-       optimal_wl=0.0;         //   -L    [Ang]  optimal wavelength to be transmitted
-
-int    GatesNumber=4,          //   -p     [-]   number of gates representing the channels (4, 6 or 8)
-       zerotime=FALSE,         //   -z     [-]   flag: chopper sets neutron time close to zero (after the chopper)
-       CurvGeomOption=1;       //   -g     [-]   channel shape: 1: ideal   2:circular 
+VtFermiType eFmOption
+            =VT_NO_FERMI_TYPE;   //   -O     [-]   type of Fermi chopper: 1: straight   2: curved   (not used in VITESS 4 anymore)
+VtChnlShape  eGeomOption
+           =VT_NO_CHN_SHAPE;     //   -g     [-]   channel shape: 1: ideal   2:circular 
+const char *GeomFileName=NULL;   //   -G     [-]   output file of the curved channel geometry 
+double pos_chp[3]={0.0,0.0,0.0}, //-X,-Y,-V [cm]   center position x of the Fermi chopper
+       height=0.0,               //   -a    [cm]   height of the Fermi chopper
+       width=0.0,                //   -b    [cm]   width of the Fermi chopper
+       depth=0.0;                //   -c    [cm]   hchannel length of the Fermi chopper
+                                 
+long	 Nchannels=1;              //   -l     [-]   number of channels, max 2000
+double wallwidth=0.0,            //   -m    [cm]   thickness of the walls between the channels  
+       diameter =0.0,            //   -r    [cm]   diameter of the shadowing cylinder
+                                 
+       omega=0.0,                //   -n  [rad/ms] rotational speed, input: [rps] 
+       Phase=0.0,                //   -q    [rad]  dephasing angle at zero time input [deg]
+       optimal_wl=0.0;           //   -L    [Ang]  optimal wavelength to be transmitted
+                                 
+int    GatesNumber=4,            //   -p     [-]   number of gates representing the channels (4, 6 or 8)
+       zerotime=FALSE;           //   -z     [-]   flag: chopper sets neutron time close to zero (after the chopper)
                                
 // Variables determined from input parameters or file data
-FILE* GeomFilePtr=NULL;        //                Pointer to geometry output file
-FILE* GatesFilePtr=NULL;       //                Pointer to output file "gates.dat"
+FILE* GeomFilePtr=NULL;         //                Pointer to geometry output file
+FILE* GatesFilePtr=NULL;        //                Pointer to output file "gates.dat"
 double expon = 0.3333,                           
-       y_ch[MAX_GATE][MAX_CHAN], //       [cm]   y-positions of all gates and channels
-       x_ch[MAX_GATE][MAX_CHAN], //       [cm]   x-positions of all gates and channels
-       main_depth=0.0,         //         [cm]   distance from entrance window to center of the Fermi chopper           
-       coef_pi=0.0,            //         [rad]  reduzierte Phase
-       radius_of_curv=0.0,     //         [cm]   radius of the curved channels   
-       angle_channel=0.0;      //         [rad]  angle of the curved channels   
+       y_ch[MAX_GATE][MAX_CHAN],//         [cm]   y-positions of all gates and channels
+       x_ch[MAX_GATE][MAX_CHAN],//         [cm]   x-positions of all gates and channels
+       main_depth=0.0,          //         [cm]   distance from entrance window to center of the Fermi chopper           
+       coef_pi   =0.0,          //         [rad]  reduzierte Phase
+       radius_of_curv=0.0,      //         [cm]   radius of the curved channels   
+       angle_channel =0.0;      //         [rad]  angle of the curved channels   
 
 /******************************/
 /** Prototypes               **/
@@ -87,6 +89,7 @@ double expon = 0.3333,
 void		OwnInit(int argc, char *argv[]);     // Reads module specific input parameters and sets global parameters
 void		OwnCleanup();                        // Does module specific cleanup
 void    processNeutron(int i, int thread_i); // processes 1 neutron trajectory
+void    SetGeometry   (char* sColor);        // Fills the structure stGeometry for visualization 
 
 static int inPhase   (int gates, double phase0, const double WL, const VectorType Dir, const VectorType Pos);                     // Checks if neutron passes through all gates
 static int outOfPhase(int i, int j, int gates, const double phase0, const double WL, const VectorType Dir, const VectorType Pos); // Checks if neutron is out of one gate  
@@ -120,7 +123,7 @@ int main(int argc, char **argv)
 
   fprintf(LogFilePtr," \n");
 
-  Cleanup(pos_ch[0],pos_ch[1],pos_ch[2], 0.0,0.0);	
+  Cleanup(pos_chp[0],pos_chp[1],pos_chp[2], 0.0,0.0);	
 
   return 0;
 }
@@ -131,9 +134,12 @@ int main(int argc, char **argv)
 /************************************/
 void processNeutron (int i, int thread_i) 
 {
-  double WL, TOF, phase0, pos[3], n[3];
-  VectorType Pos, Dir, Path;
+  double     WL=0.0, TOF=0.0, phase0=0.0, 
+             pos[3]={0.0,0.0,0.0}, n[3]={0.0,0.0,0.0};
+  VectorType Pos={0.0,0.0,0.0}, Dir={0.0,0.0,0.0}, Path={0.0,0.0,0.0};
   Neutron neutron;
+
+  InitNeutron(&neutron);
 
   if (IsEOB(&(InputNeutrons[i]))==TRUE)
   {
@@ -150,7 +156,7 @@ void processNeutron (int i, int thread_i)
     Dir[0] = sqrt(1 - sq(Dir[1]) - sq(Dir[2]));
 
     /* shift to center of Fermi-Chopper */
-    SubVector(Pos, pos_ch);
+    SubVector(Pos, pos_chp);
 
     /*trajectories which do not intersect the entrance and exit window */
     n[0] = 1.;
@@ -249,9 +255,9 @@ void OwnInit(int argc, char *argv[])
     switch (argv[1][1])	
     {
       case 'O':
-        sscanf(arg, intForm, &Option);
-        if ((Option!=1)&&(Option!=2))
-          Error("Wrong option! Good options: 1-straight, 2-curved");
+        eFmOption = (VtFermiType)atoi(arg);
+        if (eFmOption==VT_FERMI_STR)  
+          eGeomOption = VT_CHN_STR;   // parameter not read for straight Fermi chopper in Vitess 3
         break;
 
       case 'G':
@@ -259,13 +265,13 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'X':
-        sscanf(arg, "%lf", &pos_ch[0]);
+        sscanf(arg, "%lf", &pos_chp[0]);
         break;
       case 'Y':
-        sscanf(arg, "%lf", &pos_ch[1]);
+        sscanf(arg, "%lf", &pos_chp[1]);
         break;
       case 'V':
-        sscanf(arg, "%lf", &pos_ch[2]);
+        sscanf(arg, "%lf", &pos_chp[2]);
         break;
 
       case 'a':
@@ -310,14 +316,21 @@ void OwnInit(int argc, char *argv[])
         sscanf(arg, intForm, &zerotime);
         break;
       case 'g':
-        sscanf(arg, intForm, &CurvGeomOption);
+        eGeomOption = (VtChnlShape) atoi(arg);
+        if (eGeomOption==VT_CHN_STR)
+          eFmOption = VT_FERMI_STR;    // parameter not read in Vitess 4
+        else
+          eFmOption = VT_FERMI_CURV;
         break;
     }
     argc--;
     argv++;
   }
 
-  if(pos_ch[0] < diameter/2.)
+  if (eFmOption==VT_NO_FERMI_TYPE || eGeomOption==VT_NO_CHN_SHAPE)
+    Error("Chopper geometry not defined");
+
+  if(pos_chp[0] < diameter/2.)
     Error("Minimum position is diameter/2");
 
   if(Nchannels==1) wallwidth=0.;
@@ -326,7 +339,7 @@ void OwnInit(int argc, char *argv[])
 
   // calculate edge positions
   // ------------------------  
-  if (Option==1)
+  if (eFmOption==VT_FERMI_STR)
   {
     fprintf(LogFilePtr,"Straight Fermi chopper option activated\n");
 
@@ -400,25 +413,25 @@ void OwnInit(int argc, char *argv[])
     }
   }
 
-  if(Option==2)
+  if(eFmOption==VT_FERMI_CURV)
   {	
-    if(CurvGeomOption==1)
+    if (eGeomOption==VT_CHN_IDEAL)
     {
       fprintf(LogFilePtr,"Curved Fermi chopper activated \n");
       fprintf(LogFilePtr,"Geometry option: ideally shaped (close to parabolic) long channels ('channel length' inactive parameter) \n");
       fprintf(LogFilePtr,"Radius of curvature (parabolic approximation):\n" 
-                         "%f cm at center\n" 
-                         "%f cm at circumference\n", V_FROM_LAMBDA(optimal_wl)/2./omega, V_FROM_LAMBDA(optimal_wl)/2./omega*pow((1 + sq(omega*diameter/V_FROM_LAMBDA(optimal_wl))), 1.5));
+                         "%10.3f cm at center\n" 
+                         "%10.3f cm at circumference\n", V_FROM_LAMBDA(optimal_wl)/2./omega, V_FROM_LAMBDA(optimal_wl)/2./omega*pow((1 + sq(omega*diameter/V_FROM_LAMBDA(optimal_wl))), 1.5));
 
       GeomFilePtr = OpenOutputFile(GeomFileName, FALSE, "w");
       {
         double add, w_ch, xx[500], yy[500], tt;
         long   j, m, k;
 
-        if ((w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels    ) <= 0.)
+        if ((w_ch = ( width - (Nchannels + 1L) * wallwidth ) / Nchannels    ) <= 0.)
           Error("Channel width =< 0 !"); 
 
-        fprintf(LogFilePtr,"Channel width: %f cm\nChannels represented by %d gates.\n", w_ch, GatesNumber);
+        fprintf(LogFilePtr,"Channel width : %12.5f cm\nChannels represented by %d gates.\n", w_ch, GatesNumber);
 
         y_ch[0][0] =  - width/2.;
         x_ch[0][0] = sqrt(sq(diameter/2.) - sq(y_ch[0][0]));
@@ -473,7 +486,7 @@ void OwnInit(int argc, char *argv[])
       }
     }
 
-    if (CurvGeomOption==2)
+    if (eGeomOption==VT_CHN_CIRC)
     {
       /* diameter matter */
       main_depth = 2. * sqrt(sq(diameter/2.) - sq(width/2.));
@@ -487,8 +500,7 @@ void OwnInit(int argc, char *argv[])
       radius_of_curv = V_FROM_LAMBDA(optimal_wl)/2./omega;
       angle_channel  = atan(depth/2./radius_of_curv);
 
-      fprintf(LogFilePtr,"Radius of curvature (parabolic approximation):\n" 
-                         "optimal_velocity/2./omega = %f cm \nAngle channel: %f deg \n", radius_of_curv, 180./M_PI*angle_channel);
+      fprintf(LogFilePtr,"Radius of curvature : %10.3f cm \nAngle of the channel: %10.3f deg \n", radius_of_curv, 180./M_PI*angle_channel);
 
       GeomFilePtr = OpenOutputFile(GeomFileName, FALSE, "w");
       {
@@ -500,7 +512,7 @@ void OwnInit(int argc, char *argv[])
           exit(-1);
         }
 
-        fprintf(LogFilePtr,"Channel width: %f cm\nChannels represented by %d gates.\n",w_ch, GatesNumber);
+        fprintf(LogFilePtr,"Channel width     : %12.5f cm\nChannels represented by %d gates.\n",w_ch, GatesNumber);
 
         for (k=0; k<500; k++)
         { tt = k /500. * 2 * M_PI; 
@@ -557,8 +569,9 @@ void OwnInit(int argc, char *argv[])
     }
   }
 		
-  if (Option==1) coef_pi=1.; 
-  else           coef_pi=2.;  
+  if      (eFmOption==VT_FERMI_STR)  coef_pi=1.0; 
+  else if (eFmOption==VT_FERMI_CURV) coef_pi=2.0; 
+  else                             Error("Invalid Fermi type option");
   
   fprintf(LogFilePtr,"Phase set is %f deg.\n", 180./M_PI*fmod(Phase , coef_pi*M_PI)); 
 
@@ -572,6 +585,131 @@ void OwnCleanup()
 {
   if (GeomFilePtr) fclose(GeomFilePtr);
   if (GatesFilePtr) fclose(GatesFilePtr);
+}
+
+
+/*******************************************************/
+/** fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void SetGeometry(char* sColor)
+{
+  double theta     = 0.0,   // [rad] horizontal deviation of the Fermi chopper from x-axis in the figure
+         opening   = 0.0,   // [rad] angle that is covered by one part of the shadowing cylinder 
+         chan_dist = 0.0,   // [cm]  distance between 2 neighboring channels
+         phi       = 0.0;   // [rad] direction to the center of the shadowing cylinder
+
+  // Visualisation of the velocity selector geometry
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    theta     = Phase;
+    phi       = theta + M_PI_2;
+    chan_dist = width/Nchannels;
+    if (diameter > width)
+      opening = 2.0 * acos(width/diameter);
+
+    // straight Fermi chopper: channel walls are shown
+    if (eFmOption==VT_FERMI_STR)
+    { 
+      stGeometry.nHulls = Nchannels+1; 
+      stGeometry.pHull  = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
+
+      for (int k=0; k <= Nchannels; k++)
+      { 
+        stGeometry.pHull[k].WidthIn   = wallwidth;
+        stGeometry.pHull[k].WidthOut  = wallwidth;
+        stGeometry.pHull[k].HeightIn  = height;
+        stGeometry.pHull[k].HeightOut = height;
+        stGeometry.pHull[k].Length    = depth;
+        stGeometry.pHull[k].vCntr[0]  = pos_chp[0] + (k - Nchannels/2.0) * chan_dist * sin(theta);
+        stGeometry.pHull[k].vCntr[1]  = pos_chp[1] - (k - Nchannels/2.0) * chan_dist * cos(theta);
+        stGeometry.pHull[k].vCntr[2]  = pos_chp[2];
+        stGeometry.pHull[k].vNormal[0]= cos(theta);
+        stGeometry.pHull[k].vNormal[1]= sin(theta);
+        stGeometry.pHull[k].vNormal[2]= 0.0;
+        stGeometry.pHull[k].rotAngle  = 0.0;   // Rotation about x axis
+      }
+    }
+    // curved Fermi chopper is shown as one block
+    else if (eFmOption==VT_FERMI_CURV)
+    {
+      stGeometry.nCuboids = 1;
+      stGeometry.pCuboid  = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+      stGeometry.pCuboid[0].Length     = depth;
+      stGeometry.pCuboid[0].Width      = width;
+      stGeometry.pCuboid[0].Height     = height;
+      stGeometry.pCuboid[0].rotAngle   = 0.0;
+      stGeometry.pCuboid[0].vCntr[0]   = pos_chp[0];
+      stGeometry.pCuboid[0].vCntr[1]   = pos_chp[1];
+      stGeometry.pCuboid[0].vCntr[2]   = pos_chp[2];
+      stGeometry.pCuboid[0].vNormal[0] = cos(theta);
+      stGeometry.pCuboid[0].vNormal[0] = sin(theta);
+      stGeometry.pCuboid[0].vNormal[0] = 0.0;
+    }
+    else                             
+    { Error("Invalid Fermi type option");
+    }
+
+    // Shadowing cylinder: 2 cylinder slices + 2 rectangles
+    if (diameter > depth && diameter > width)
+    {
+      stGeometry.nCylSlices = 2; 
+      stGeometry.pCylSlice  = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
+
+      stGeometry.pCylSlice[0].Radius     = 0.5*diameter; 
+      stGeometry.pCylSlice[0].Width      = stGeometry.pCylSlice[0].Radius * opening;
+      stGeometry.pCylSlice[0].Height     = height;
+      stGeometry.pCylSlice[0].vCntr[0]   = pos_chp[0];
+      stGeometry.pCylSlice[0].vCntr[1]   = pos_chp[1];
+      stGeometry.pCylSlice[0].vCntr[2]   = pos_chp[2];
+      stGeometry.pCylSlice[0].vSymAxis[0]= 0.0;
+      stGeometry.pCylSlice[0].vSymAxis[1]= 0.0;
+      stGeometry.pCylSlice[0].vSymAxis[2]= 1.0;
+      stGeometry.pCylSlice[0].OpenAngle  = Degrees(opening);
+      stGeometry.pCylSlice[0].Phi        = Degrees(phi);
+
+      stGeometry.pCylSlice[1].Radius     = 0.5*diameter; 
+      stGeometry.pCylSlice[1].Width      = stGeometry.pCylSlice[0].Radius * opening;
+      stGeometry.pCylSlice[1].Height     = height;
+      stGeometry.pCylSlice[1].vCntr[0]   = pos_chp[0];
+      stGeometry.pCylSlice[1].vCntr[1]   = pos_chp[1];
+      stGeometry.pCylSlice[1].vCntr[2]   = pos_chp[2];
+      stGeometry.pCylSlice[1].vSymAxis[0]= 0.0;
+      stGeometry.pCylSlice[1].vSymAxis[1]= 0.0;
+      stGeometry.pCylSlice[1].vSymAxis[2]= 1.0;
+      stGeometry.pCylSlice[1].OpenAngle  = Degrees(opening);
+      stGeometry.pCylSlice[1].Phi        =-Degrees(phi);
+
+      stGeometry.nRectangles = 2;
+      stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+
+      stGeometry.pRectangle[0].Width      = sqrt(sq(diameter) - sq(width));
+      stGeometry.pRectangle[0].Height     = height;
+      stGeometry.pRectangle[0].rotAngle   = 0.0;
+      stGeometry.pRectangle[0].vCntr[0]   = pos_chp[0] - width/2.0 * sin(theta);
+      stGeometry.pRectangle[0].vCntr[1]   = pos_chp[1] + width/2.0 * cos(theta);
+      stGeometry.pRectangle[0].vCntr[2]   = pos_chp[2];
+      stGeometry.pRectangle[0].vNormal[0] =-sin(theta);
+      stGeometry.pRectangle[0].vNormal[1] = cos(theta);
+      stGeometry.pRectangle[0].vNormal[2] = 0.0;
+
+      stGeometry.pRectangle[1].Width      = sqrt(sq(diameter) - sq(width));
+      stGeometry.pRectangle[1].Height     = height;
+      stGeometry.pRectangle[1].rotAngle   = 0.0;
+      stGeometry.pRectangle[1].vCntr[0]   = pos_chp[0] + width/2.0 * sin(theta);
+      stGeometry.pRectangle[1].vCntr[1]   = pos_chp[1] - width/2.0 * cos(theta);
+      stGeometry.pRectangle[1].vCntr[2]   = pos_chp[2];
+      stGeometry.pRectangle[1].vNormal[0] =-stGeometry.pRectangle[0].vNormal[0];
+      stGeometry.pRectangle[1].vNormal[1] =-stGeometry.pRectangle[0].vNormal[1];
+      stGeometry.pRectangle[1].vNormal[2] = 0.0;
+    }
+  }    
+
+  return;
 }
 
 

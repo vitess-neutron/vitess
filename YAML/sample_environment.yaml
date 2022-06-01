@@ -92,7 +92,7 @@ sample_environment:
       default: 20.0
       min:     0.0
       column:  0       
-      prefix:  "-I"     
+      prefix:  "-i"     
   - MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "total scat-\ntering [1/cm]"
@@ -108,7 +108,7 @@ sample_environment:
       default: 20.0
       min:     0.0
       column:  2       
-      prefix:  "-A"     
+      prefix:  "-m"     
   - UCV     :                  # file 50.0 [Ang^3] unit cell volume of the sample environment material
       type:    "float"    
       descr:   "unit cell\nvolume [A^3]"

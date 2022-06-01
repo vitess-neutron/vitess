@@ -618,20 +618,21 @@
     The following parameters define the phase space considered for the brilliance calculation.
     Neutrons are only considered if their properties are within all given ranges.
     A range has to be given for position, time, lambda or energy, divergence (either in cartesian or radial co-ordinates).
-    A  missing value is regarded as +&infin; (max.) or -&infin; (min.).
-    One of them has to be chosen as the 'variable parameters'.
+    A  missing value is regarded as +&infin; (max.) or -&infin; (min.), or 0 for minimal radius.
+    One of them has to be chosen as the 'variable parameter'.
     If 'time' is the variable parameter or a frequency > 0 is given, a pulsed source is assumed.
     If 'time' is the variable parameter and no frequency is given, the frequency is taken from 'simulation.inf'.
   </p>
   <pre>
-  y         [cm]     y component of the position (horizontal)
-  z         [cm]     z component of the position (vertical)
   time      [ms]     time of flight
   lambda    [Ang]    neutron wavelength
-  energy    [µeV]    neutron energy
-  div_y     [deg]    horizontal deviation of the flight direction from the beamline
-  div_z     [deg]    vertical deviation of the flight direction from the beamline
-  div_rad   [deg]    radial deviation of the flight direction from beamline 
+  energy    [meV]    neutron energy
+  pos_y     [cm]     y component of the position (horizontal)
+  pos_z     [cm]     z component of the position (vertical)
+  pos_rad   [cm]     distance from the beam axis
+  div_y     [deg]    horizontal deviation of the flight direction from the beam axis
+  div_z     [deg]    vertical deviation of the flight direction from the beam axis
+  div_rad   [deg]    radial deviation of the flight direction from beam axis
   </pre>
 
   <h4>Parameters for 'mon_brilliance'</h4>
@@ -674,7 +675,7 @@
       <tr>
         <td>number of bins</td>
         <td>the interval of the 'variable parameter' (e.g. 'lambda') will be partitioned into 'number of bins' segments of equal size.</td>
-        <td>&ge; 0<br>default 100</td>
+        <td>&ge; 1<br>default 100</td>
         <td> -n </td>
       </tr>
       <tr>
@@ -714,7 +715,7 @@
       </tr>
 
       <tr>
-        <td>min., max. time</td>
+        <td>min., max. time<br>[ms]</td>
         <td>
           minimal and maximal time of flight <br />
           Only necessary for time dependent brilliance of pulsed sources.<br />
@@ -724,45 +725,51 @@
         <td>-t, -T</td>
       </tr>
       <tr>
-        <td>min., max. lambda</td>
+        <td>min., max. lambda<br>[&Aring;]</td>
         <td>minimal and maximal neutron wavelength</td>
         <td>&ge; 0</td>
         <td>-l, -L</td>
       </tr>
       <tr>
-        <td>min., max. energy</td>
+        <td>min., max. energy<br>[meV]</td>
         <td>minimal and maximal neutron energy</td>
         <td>&ge; 0</td>
         <td>-m, -M</td>
       </tr>
       <tr>
-        <td>low, up bound y-pos</td>
+        <td>low, up bound y-pos<br>[cm]</td>
         <td>minimal and maximal horizontal position</td>
         <td>   </td>
         <td>-y, -Y</td>
       </tr>
       <tr>
-        <td>low, up bound z-pos</td>
+        <td>low, up bound z-pos<br>[cm]</td>
         <td>minimal and maximal vertical position</td>
         <td>   </td>
         <td>-z, -Z</td>
       </tr>
       <tr>
-        <td>low, up bound hor div</td>
+        <td>low, up bound radius<br>[cm]</td>
+        <td>minimal and maximal distance from the beam axis</td>
+        <td>&ge; 0</td>
+        <td>-d, -D</td>
+      </tr>
+      <tr>
+        <td>low, up bound hor div<br>[deg]</td>
         <td>minimal and maximal horizontal divergence</td>
         <td>   </td>
         <td>-h, -H</td>
       </tr>
       <tr>
-        <td>low, up bound vert div</td>
+        <td>low, up bound vert div<br>[deg]</td>
         <td>minimal and maximal vertical divergence</td>
         <td>   </td>
         <td>-v, -V</td>
       </tr>
       <tr>
-        <td>low, up bound radial div</td>
+        <td>low, up bound radial div<br>[deg]</td>
         <td>minimal and maximal radial divergence</td>
-        <td>   </td>
+        <td>&ge; 0</td>
         <td>-r, -R</td>
       </tr>
 
@@ -771,7 +778,7 @@
         <td>
           source frequency in case of a pulsed source <br />
           It is necessary to calculate from time averaged to actual brilliance).
-          If the frequency is given, a pulsed source is assumed. 
+          If the frequency is given, a pulsed source is assumed.
           If it is not given and a frequency is needed, it is taken from 'simulation.inf'.
         </td>
         <td>    </td>

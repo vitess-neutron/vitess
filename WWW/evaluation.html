@@ -10,8 +10,10 @@
 
   <h1> VITESS Evaluation Modules </h1>
   <p>
-    There are VITESS modules for 4 different evaluation procedures: <b>Elastic 1D</b>, <b>Inelastic</b>, <b>SANS</b> and <b>Elastic 2D</b>.
-    Additionally, there is a tool to analyze the <b>runtime</b> of parts of the simulation and to determine the <b>capture flux</b>.
+    There are VITESS modules for 5 different evaluation procedures: <b>Elastic 1D</b>, <b>Inelastic</b>, <b>SANS</b>, <b>Elastic 2</b> and <b>Elastic 2D</b>.
+    Elastic 2 allows displaying the intensity as a function of scattering angle (x axis) and wavelength or TOF (y axis).
+    Elastic 2D displays the data as a function of Q<sub>y</sub> and Q<sub>z</sub>.
+    Additionally, there is a module to analyze the <b>runtime</b> (of parts) of the simulation and one to determine the <b>capture flux</b>.
   </p>
 
   <br>
@@ -144,13 +146,13 @@
       </tr>
       <tr>
         <td valign="top">intensity file</td>
-        <td valign="top">It will contain the integrated intensities for certain ranges within the evaluation interval defined above. The ranges and the range centres have to be defined in the info file.</td>
+        <td valign="top">Optional: It will contain the integrated intensities for certain ranges within the evaluation interval defined above. The ranges and the range centres have to be defined in the info file.</td>
         <td valign="top"> -  </td>
         <td valign="top">-O  </td>
       </tr>
       <tr>
         <td valign="top">info file</td>
-        <td valign="top">It is needed to define the integration ranges for an intensity file (see explanation and example in the text above).</td>
+        <td valign="top">Optional: It is needed to define the integration ranges for an intensity file (see explanation and example in the text above).</td>
         <td valign="top"> -  </td>
         <td valign="top">-I  </td>
       </tr>
@@ -207,8 +209,8 @@
       <tr>
         <td valign="top">scattering axis of the sample</td>
         <td valign="top">
-          In case the elastic sample scatters in one direction only, like,
-          e.g., the surface of a liquid that scatters only in z-direction, please specify this particular scattering axis (y or z)
+          In case the elastic sample scatters in one direction only, like e.g., the surface of a liquid that scatters only in z-direction,
+          please specify this particular scattering axis (y or z). For isotropic scattering choose 'none'.
         </td>
         <td valign="top">'none', 'y', 'z'</td>
         <td valign="top">-A         </td>
@@ -224,14 +226,17 @@
       </tr>
       <tr>
         <td valign="top">correct TOF to distance</td>
-        <td valign="top">yes: correct TOF for real flight path from sample to detector </td>
+        <td valign="top">
+          yes: correct TOF for the flight path from sample center to the position of detection <br />
+          no : use the given sample-detector distance
+        </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-t         </td>
       </tr>
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper)</td>
+        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper) to detector</td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
       </tr>
@@ -259,9 +264,13 @@
         <td valign="top">&gt; 0 </td>
         <td valign="top">-r     </td>
       </tr>
+
       <tr>
         <td valign="top">time interval begin/end<br />[ms]</td>
-        <td valign="top">(optional) The bounds of the time interval for the evaluation. Only neutrons arriving in that time interval are considered in the evaluation.</td>
+        <td valign="top">
+          (optional) The bounds of the time interval for the evaluation. <br />
+          Only neutrons arriving in that time interval are considered in the evaluation, both for TOF and continuous instruments.
+        </td>
         <td valign="top">&gt;=0<br />end&gt;begin</td>
         <td valign="top">-e<br />-E </td>
       </tr>
@@ -365,15 +374,15 @@
       </tr>
 
       <tr>
-        <td valign="top">geometry: direct or inverted                </td>
+        <td valign="top">geometry               </td>
         <td valign="top">Choose geometry type of the TOF instrument. </td>
-        <td valign="top">   </td>
+        <td valign="top">'direct' or 'inverted'</td>
         <td valign="top">-A </td>
       </tr>
       <tr>
         <td valign="top">correct TOF to distance </td>
         <td valign="top">direct geometry only: correct TOF for real flight path length from sample to detector </td>
-        <td valign="top">   </td>
+        <td valign="top">'yes' or 'no'</td>
         <td valign="top">-t </td>
       </tr>
 
@@ -389,27 +398,19 @@
         <td valign="top">&gt;= 0</td>
         <td valign="top">-c    </td>
       </tr>
-
       <tr>
         <td valign="top">time offset<p>[ms]</p> </td>
         <td valign="top">If nonzero, start time at moderator is shifted: TOF' = TOF time offset.
         <td valign="top">   </td>
         <td valign="top">-d </td>
-        </td>
       </tr>
+
       <tr>
         <td valign="top">number of bins <br>  </td>
         <td valign="top">The number of time and energy channels to be considered </td>
         <td valign="top">&gt;= 0</td>
         <td valign="top">-C    </td>
       </tr>
-      <tr>
-        <td valign="top">color</td>
-        <td valign="top">color necessary for the trajectory to be evaluated <br />color -1 means: all trajectories are evaluated </td>
-        <td valign="top">&gt;= -1</td>
-        <td valign="top">-f </td>
-      </tr>
-
       <tr>
         <td valign="top">minimal and maximal energy transfer <p>[meV]</p> </td>
         <td valign="top">
@@ -433,7 +434,7 @@
         <td valign="top">gradient of timebins <p>[-]&nbsp; <br> &nbsp;</p> </td>
         <td valign="top">Derivative <i>s</i> of the time channel width in function of TOF (as described below). </td>
         <td valign="top">   </td>
-        <td valign="top">-C </td>
+        <td valign="top">-h </td>
       </tr>
 
       <tr>
@@ -444,6 +445,12 @@
         </td>
         <td valign="top">   </td>
         <td valign="top">-j -k </td>
+      </tr>
+      <tr>
+        <td valign="top">color</td>
+        <td valign="top">color necessary for the trajectory to be evaluated <br />color -1 means: all trajectories are evaluated </td>
+        <td valign="top">&gt;= -1</td>
+        <td valign="top">-f </td>
       </tr>
     </tbody>
   </table>
@@ -490,9 +497,10 @@
     </dir>
   </dir>
   As it can be seen,<i>s</i> represents a gradient describing the channel
-  width variation. A reasonable range for this parameter is: |<i>s</i>| &lt;
-  0.01 .
-  <p>5. Expressions for energy binning </p>
+  width variation. A reasonable range for this parameter is: |<i>s</i>| &lt; 0.01 .
+
+
+  <h4>Expressions for energy binning </h4>
 
   <p>
     This module also transforms constant angle TOF data into constant angle
@@ -613,18 +621,29 @@
         <td valign="top"><b>Range or Values<br />  </b></td>
         <td valign="top"><b>Command Option<br />   </b></td>
       </tr>
+
+      <tr>
+        <td valign="top">intensity file</td>
+        <td valign="top">The output file containing the intensity distribution I(Q) at the detector (of this simulation)<br /> This file is mandatory.</td>
+        <td valign="top"> -  </td>
+        <td valign="top">-i  </td>
+      </tr>
       <tr>
         <td valign="top">S(Q) file</td>
-        <td valign="top">The spectrum file: it contains the S(Q) result</td>
+        <td valign="top">The output file containing the result S(Q) calculated from this intensity distribution and that of the reference file as <br />
+                         S(Q) = F<sub>norm</sub> * I<sub>smpl</sub>(Q) / I<sub>ref</sub>(Q)    (for the definition of F<sub>norm</sub> see below) <br />
+                         Creating this file is optional. It requires the referencce file I(Q) obtained by running the same simulation with a isotripic scatterer.</td>
         <td valign="top"> -  </td>
         <td valign="top">-S  </td>
       </tr>
       <tr>
         <td valign="top">reference file</td>
-        <td valign="top">The reference file contains the intensity distribution I(Q) at the detector for isotropic scattering</td>
+        <td valign="top">The reference file contains the intensity distribution I(Q) at the detector for isotropic scattering obtained in an earlier run.<br />
+                         This is only needed if the output S(Q) is wanted</td>
         <td valign="top"> -  </td>
-        <td valign="top">-F  </td>
+        <td valign="top">-I  </td>
       </tr>
+
       <tr>
         <td valign="top">number of bins</td>
         <td valign="top">The number of bins determines the segmentation of the momentum transfer and therewith the number of values written to the S(Q) file.</td>
@@ -637,16 +656,7 @@
         <td valign="top">&gt;=0<br />max&gt;min</td>
         <td valign="top">-m<br />-M  </td>
       </tr>
-      <tr>
-        <td valign="top">normalization parameter </td>
-        <td valign="top">
-          The ratio of the intensity of the isotropic scatterer to that of the SANS sample in forward direction (&theta;=0)
-          The theoretical value is: <br />
-          F_norm = 1 / ((&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> F(<b>Q</b>))
-        </td>
-        <td valign="top">&gt;0 <br /> typical 1e-4 </td>
-        <td valign="top">-p    </td>
-      </tr>
+
       <tr>
         <td valign="top">increase to next bin<br />[%]</td>
         <td valign="top">
@@ -663,6 +673,27 @@
         <td valign="top">-d      </td>
       </tr>
       <tr>
+        <td valign="top">reference wavelength<br />[&Aring;]</td>
+        <td valign="top">
+          (for option: 'No TOF') The (average) wavelength set by velocity selector or monchromator <br />
+          This module does not use the wavelenghth of the trajectory for data evaluation, but (as in real life) the wavelength given here.
+        </td>
+        <td valign="top">&gt; 0 </td>
+        <td valign="top">-r     </td>
+      </tr>
+
+      <tr>
+        <td valign="top">normalization parameter </td>
+        <td valign="top">
+          The ratio of the intensity of the isotropic scatterer to that of the SANS sample in forward direction (&theta;=0)
+          The theoretical value is: <br />
+          F_norm = 1 / ((&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> F(<b>Q</b>))
+        </td>
+        <td valign="top">&gt;0 <br /> typical 1e-4 </td>
+        <td valign="top">-p    </td>
+      </tr>
+
+      <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
           yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory<br />
@@ -672,10 +703,26 @@
         <td valign="top">-w         </td>
       </tr>
       <tr>
+        <td valign="top">correct TOF to distance</td>
+        <td valign="top">
+          yes: correct TOF for the flight path from sample center to the position of detection <br />
+          no : use the given sample-detector distance
+        </td>
+        <td valign="top">'yes', 'no'</td>
+        <td valign="top">-t         </td>
+      </tr>
+
+      <tr>
         <td valign="top">flight path<br />[cm]</td>
         <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper)</td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
+      </tr>
+      <tr>
+        <td valign="top">sample-detector distance<br />[cm]</td>
+        <td valign="top">nominal distance from sample to detector</td>
+        <td valign="top">&gt; 0  </td>
+        <td valign="top">-L      </td>
       </tr>
       <tr>
         <td valign="top">time offset<br />[ms]</td>
@@ -686,15 +733,7 @@
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-T      </td>
       </tr>
-      <tr>
-        <td valign="top">reference wavelength<br />[&Aring;]</td>
-        <td valign="top">
-          (for option: 'No TOF') The (average) wavelength set by velocity selector or monchromator <br />
-          This module does not use the wavelenghth of the trajectory for data evaluation, but (as in real life) the wavelength given here.
-        </td>
-        <td valign="top">&gt; 0 </td>
-        <td valign="top">-r     </td>
-      </tr>
+
       <tr>
         <td valign="top">time interval begin/end<br />[ms]</td>
         <td valign="top">(optional) The bounds of the time interval for the evaluation. Only neutrons arriving in that time interval are considered in the evaluation.</td>
@@ -714,9 +753,9 @@
 
   <h2><font size="+1"> VITESS Module 'eval_elast2' for 2D Evaluation of Elastic Scattering</font></h2>
   <p>
-    The module <b>eval_elast2</b> is supposed to be used for elastic<br>scattering (e.g. powder diffraction, SANS).
-    The diffractogram or spectra file will contain the neutron probabilities counted for each >segment of the evaluation interval (with respect to the evaluation parameter<br>of interest).<br>
-    The following information has to be given as an input:<br>
+    The module <b>eval_elast2</b> is supposed to be used for elastic scattering (e.g. powder diffraction, SANS).
+    The diffractogram or spectra file will contain the neutron probabilities counted for each segment of the evaluation interval
+    (with respect to the evaluation parameter of interest). The following information has to be given as an input:
   </p>
   <br />
 
@@ -792,8 +831,8 @@
           if one deactivates the probability weight, each neutron is considered with the weight 1, otherwise (default)
           the attributed probabilities (due to the operations of the modules before) are considered.
         </td>
-        <td valign="top">   </td>
-        <td valign="top">-p </td>
+        <td valign="top">'yes', 'no'</td>
+        <td valign="top"> -p        </td>
       </tr>
       <tr>
         <td valign="top">exclusive counts</td>
@@ -802,13 +841,13 @@
           no : all are written to the output file
         </td>
         <td valign="top">'yes', 'no'</td>
-        <td valign="top">-c         </td>
+        <td valign="top"> -c        </td>
       </tr>
       <tr>
         <td valign="top">Scatt. angle selection</td>
         <td valign="top">Selects the way how the scattering angle is determined </td>
         <td valign="top">'direction', 'position'</td>
-        <td valign="top">-D         </td>
+        <td valign="top"> -D         </td>
       </tr>
       <tr>
         <td valign="top">time of flight</td>
@@ -816,14 +855,14 @@
           If the wavelength of the neutrons shall be determined by time of flight analysis (i.e. each wavelength is calculated from the flight path and the flight time),
           this option must be activated when using scattering angle vs. wavelength.
         </td>
-        <td valign="top">   </td>
-        <td valign="top">-w </td>
+        <td valign="top">'yes', 'no'</td>
+        <td valign="top"> -w        </td>
       </tr>
       <tr>
         <td valign="top">correct TOF to distance</td>
         <td valign="top">yes: correct TOF for real flight path from sample to detector </td>
         <td valign="top">'yes', 'no'</td>
-        <td valign="top">-t         </td>
+        <td valign="top"> -t        </td>
       </tr>
 
       <tr>
@@ -868,6 +907,7 @@
       </tr>
     </tbody>
   </table>
+  <br><br>
 
   <hr>
   <p>

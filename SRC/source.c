@@ -51,7 +51,7 @@
 /* 1.25  Dec  2017  K. Lieutenant  new ESS Butterfly moderator, performance factor           */
 /* 1.26  Jan  2020  K. Lieutenant  tidy up, correction reading ISIS moderator data from file */
 /* 1.27  Sep  2020  K. Lieutenant  undermoderated neutrons for all moderators, par. renamed  */
-/* 1.28  Dez  2020  K. Lieutenant  bundles included                                          */
+/* 1.28  Dez  2020  K. Lieutenant  bunches included                                          */
 /* 1.29  Jan  2021  K. Lieutenant  moderator data readable from input string                 */
 /* 1.30  Feb  2021  K. Lieutenant  trace functions from 'trace.c'                            */
 /*********************************************************************************************/
@@ -109,8 +109,8 @@ char*     pBeamline=NULL;       // E I   -B             [-]   name of the beamli
 double    Declination = 0.0;    // EP C  -i    0.0     [deg]  declination between moderator surface normal and propagation window 
 
 // simulation parameters
-long      nBundles  =1,         // EPICS -l    10       [-]   number of bundles 
-          nNeutBndl =0;         // EPICS -n    1.0e6    [-]   number of neutron trajectories (events) per bundle
+long      nBunches  =1,         // EPICS -l    10       [-]   number of bunches 
+          nNeutBnch =0;         // EPICS -n    1.0e6    [-]   number of neutron trajectories (events) per bunch
 
 TrajParam stTraj  [NUM_MOD];    // EPICS -m -M [1,5]   [Ang]  min. and max. of the wavelength range 
                                 // EP C  -t -T [0,2]   [ms]   min. and max. of the time frame to start neutrons
@@ -204,8 +204,8 @@ int main(int argc, char *argv[])
   unsigned long i=0;          /* index of the all neutron trajectories  */
   char    sDataVsn[18]="";    /* name of the version used for the flux calculation */
   char    ig1='A', ig2='A';   /* part of the ID of the trajectory */
-  long    iBndl=0,            /* index of the bundles */
-          iNeut=0;            /* index of the neutron trajectories within the bundle */
+  long    iBnch=0,            /* index of the bunches */
+          iNeut=0;            /* index of the neutron trajectories within the bunch */
   double  prob=0.0,           /* weight of the trajectory */
           TimeAtModerator=0.0,
           TimeAtWnd=0.0,      /* time of arrival a time window  */
@@ -506,7 +506,7 @@ int main(int argc, char *argv[])
 
   if (!bVisTraj) 
     WriteInstrData(NullPos);
-  WriteSimData(TimeMeas, LmbdWant, stSrc.PulseFreq, nNeutBndl, nBundles);
+  WriteSimData(TimeMeas, LmbdWant, stSrc.PulseFreq, nNeutBnch, nBunches);
 
   /* Propagation, Polarisation */
   if (pBeamline!=NULL)
@@ -558,15 +558,15 @@ int main(int argc, char *argv[])
   // -------------------------------
   //   Generate neutron trajectories
   // -------------------------------
-  for (iBndl=0; iBndl < nBundles; iBndl++) 
+  for (iBnch=0; iBnch < nBunches; iBnch++) 
   {
-    for (iNeut=0; iNeut < nNeutBndl; iNeut++) 
+    for (iNeut=0; iNeut < nNeutBnch; iNeut++) 
     {
       CHECK;
 
       // provide data for progress meter
       if ((i & 0xff) == 0) 
-      { double No = (double)iBndl * (double)nNeutBndl + (double)iNeut; 
+      { double No = (double)iBnch * (double)nNeutBnch + (double)iNeut; 
         adjustProgress((int)(100.0 * No / NumberOfNeutrons));
       }
 
@@ -816,8 +816,8 @@ int main(int argc, char *argv[])
          WriteNeutron(&Input);
     }
 
-    // writes data set marking the end of the bundle
-    if (iBndl < nBundles - 1)
+    // writes data set marking the end of the bunch
+    if (iBnch < nBunches - 1)
       WriteEOB();
 
   }  // end loop over trajectories
@@ -838,7 +838,7 @@ int main(int argc, char *argv[])
       fprintf(LogFilePtr,"\nNo neutrons on the exit of this module \n");
    }	
 
-   fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f = %ld x %ld\n", NumberOfNeutrons, nBundles, nNeutBndl);
+   fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f = %ld x %ld\n", NumberOfNeutrons, nBunches, nNeutBnch);
 
   /* write geometry file */
    SetGeometry("yellow");
@@ -1004,10 +1004,10 @@ void SrcInit(int argc, char **argv)
         {
           /* Simulation */
           case 'l':
-            nBundles  = (long) atof(arg);
+            nBunches  = (long) atof(arg);
             break;
           case 'n':
-            nNeutBndl = (long) atof(arg);
+            nNeutBnch = (long) atof(arg);
             break;
 
           /* neutron parameters */
@@ -1152,7 +1152,7 @@ void SrcInit(int argc, char **argv)
     }
   }
 
-  NumberOfNeutrons = (double)nBundles * (double)nNeutBndl;
+  NumberOfNeutrons = (double)nBunches * (double)nNeutBnch;
 
   // source type
   if (stSrc.eSrcType==NO_TYPE)
@@ -1257,7 +1257,7 @@ short ReadModData(char* sFileName)
   VtModShape eShape=VT_MOD_SQUARE;
   char  sShape[2]="S",
         sBuffer[CHAR_BUF_LENGTH];
-  short iM=0;
+  short iM=0, eTS=0;
   FILE* pFileR=NULL;
 
   pFileR = OpenInputFile(sFileName, FALSE,"rt");
@@ -1276,7 +1276,7 @@ short ReadModData(char* sFileName)
                         &stMod[iM].nBackground, &stMod[iM].TotFluxMod, &stMod[iM].Current, 
                          stMod[iM].sLFileName,   stMod[iM].sTFileName,  stMod[iM].sLTFileName, 
                         &stMod[iM].eModType,    &stMod[iM].TauAscMod , &stMod[iM].TauDecMod,
-                        &stMod[iM].eIsisTS,
+                        &eTS,
                         &stMod[iM].TotFluxUM,   &stMod[iM].Chi,        &stMod[iM].Kappa,
                         &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
       }
@@ -1293,6 +1293,7 @@ short ReadModData(char* sFileName)
                         &stMod[iM].TauAscUM,    &stMod[iM].TauDecUM);
       }
 
+      stMod[iM].eIsisTS = (VtTS) eTS;
       eShape = sShape[0];
       ModShape_ID2Txt(name, eShape);
       if (strcmp(sShape, "C")==0)

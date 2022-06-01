@@ -1,5 +1,7 @@
 001 W %ld trajector%s initially already behind the component
 002 W %ld trajector%s initially already behind the beginning of the component
+003 W %ld trajector%s have negative integer value
+010 E %ld trajector%s found with a wavelength outside the range given in the attenuation file '%s'
 100 E %ld trajector%s found with a wavelength outside the range given in the distribution file '%s'
 101 E %ld trajector%s found with an inital time outside the range given in the distribution file '%s'
 102 E %ld trajector%s found with a wavelength or an inital time larger than all values in the distribution file '%s'
@@ -11,7 +13,8 @@
 402 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window frame
 403 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window pane
 410 W %ld trajector%s found in holes not matching their color (= previous hole), i.e. cross-talk between holes
-800 E for %ld trajector%s the calculated Q-value is higher (or smaller) than all values in the file %s 
+500 W %ld trajector%s could not be handled because of zero bin size
+800 W for %ld trajector%s the calculated Q-value is higher (or smaller) than all values in the file %s 
 801 E %ld trajector%s initially already inside (or behind) the sample
 802 E %ld trajector%s initially already inside the sample environment
 803 E %ld trajector%s initially already outside the sample environment

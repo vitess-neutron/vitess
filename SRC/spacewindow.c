@@ -399,7 +399,10 @@ void  OwnInit(int argc, char *argv[])
 				break;
 
 			case 'R':
-				eWndShape = (VtShape) atoi(&argv[i][2]);
+				if (strlen(&argv[i][2]) > 1)
+				  eWndShape = Shape_Txt2ID(&argv[i][2]);    // text given   VITESS 4
+        else
+          eWndShape = (VtShape) atoi(&argv[i][2]);  // ID given     VITESS 3
 				break;
 
 			case 'h':
