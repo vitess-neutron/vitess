@@ -99,7 +99,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
 //   sample
      {"Mode", reinterpret_cast<convert_ptr>(&MeasMode_Txt2ID)},
  //    {"RotAxis", reinterpret_cast<convert_ptr>(&Axis_Txt2ID)},
-     {"SmplGeom",reinterpret_cast<convert_ptr>(&SmpleGeom_Txt2ID)},
+     {"SmplGeom",reinterpret_cast<convert_ptr>(&SmplGeom_Txt2ID)},
 };
 
 //map connects entries in menu help tools to files in WWW directory 
