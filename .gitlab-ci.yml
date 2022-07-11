@@ -10,7 +10,7 @@ compile-rocky8:
   stage: build
   image: rockylinux:8
   before_script:
-    - dnf install -y make gcc gcc-c++
+    - dnf install -y make gcc 'gcc-c++'
   script:
     - cd SRC
     - make
@@ -28,7 +28,7 @@ compile-centos7:
   stage: build
   image: centos:7
   before_script:
-    - yum install -y make gcc gcc-c++
+    - yum install -y make gcc 'gcc-c++'
   script:
     - cd SRC
     - make
@@ -41,6 +41,43 @@ compile-centos7:
     expire_in: 1 week
     paths:
       - artifacts-centos7/
+
+#compile-ubuntu:
+#  stage: build
+#  image: ubuntu:latest
+#  before_script:
+#    - apt-get update
+#    - apt-get install -y make gcc 'g++'
+#  script:
+#    - cd SRC
+#    - make
+#    - make install
+#    - make clean
+#    - cd ..
+#    - mkdir artifacts-ubuntu
+#    - cp -r MODULES artifacts-ubuntu/
+#  artifacts:
+#    expire_in: 1 week
+#    paths:
+#      - artifacts-ubuntu/
+
+compile-darwin:
+  stage: build
+  image: macos:catalina-xcode
+  tags:
+      - libvirt
+  script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+    - mkdir artifacts-darwin
+    - cp -r MODULES artifacts-darwin/
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - artifacts-darwin/
 
 test-rocky8:
   stage: test
@@ -78,5 +115,37 @@ package-centos7:
     - tar -czf ${TAR_NAME} ${DIR_NAME}
   artifacts:
     name: Vitess_Linux_x86_64
+    paths:
+      - ${TAR_NAME}
+
+#package-ubuntu:
+#  stage: package
+#  image: ubuntu:latest
+#  variables:
+#    DIR_NAME: vitess${VITESS_VERSION}
+#    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
+#  script:
+#    - cp -rf artifacts-ubuntu/MODULES .
+#    - mkdir ${DIR_NAME}
+#    - cp -r `cat filelist.txt` ${DIR_NAME}/
+#    - tar -czf ${TAR_NAME} ${DIR_NAME}
+#  artifacts:
+#    name: Vitess_Linux_x86_64
+#    paths:
+#      - ${TAR_NAME}
+
+package-darwin:
+  stage: package
+  image: rockylinux:8
+  variables:
+    DIR_NAME: vitess${VITESS_VERSION}
+    TAR_NAME: Vitess${VITESS_VERSION}_Darwin_x86_64.tar.gz
+  script:
+    - cp -rf artifacts-darwin/MODULES .
+    - mkdir ${DIR_NAME}
+    - cp -r `cat filelist.txt` ${DIR_NAME}/
+    - tar -czf ${TAR_NAME} ${DIR_NAME}
+  artifacts:
+    name: Vitess_Darwin_x86_64
     paths:
       - ${TAR_NAME}
