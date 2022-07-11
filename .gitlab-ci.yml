@@ -9,6 +9,10 @@ stages:
 compile-rocky8:
   stage: build
   image: rockylinux:8
+  variables:
+    OS: Rocky8
+    ARCH: x86_64
+    OSARCH: ${OS}-${ARCH}
   before_script:
     - dnf install -y make gcc 'gcc-c++'
   script:
@@ -17,16 +21,20 @@ compile-rocky8:
     - make install
     - make clean
     - cd ..
-    - mkdir artifacts-rocky8
-    - cp -r MODULES artifacts-rocky8/
+    - mkdir artifacts-${OSARCH}
+    - cp -r MODULES artifacts-${OSARCH}
   artifacts:
     expire_in: 1 week
     paths:
-      - artifacts-rocky8/
+      - artifacts-${OSARCH}/
 
 compile-centos7:
   stage: build
   image: centos:7
+  variables:
+    OS: CentOS7
+    ARCH: x86_64
+    OSARCH: ${OS}-${ARCH}
   before_script:
     - yum install -y make gcc 'gcc-c++'
   script:
@@ -35,16 +43,20 @@ compile-centos7:
     - make install
     - make clean
     - cd ..
-    - mkdir artifacts-centos7
-    - cp -r MODULES artifacts-centos7/
+    - mkdir artifacts-${OSARCH}
+    - cp -r MODULES artifacts-${OSARCH}
   artifacts:
     expire_in: 1 week
     paths:
-      - artifacts-centos7/
+      - artifacts-${OSARCH}/
 
 #compile-ubuntu:
 #  stage: build
 #  image: ubuntu:latest
+#  variables:
+#    OS: Ubuntu
+#    ARCH: x86_64
+#    OSARCH: ${OS}-${ARCH}
 #  before_script:
 #    - apt-get update
 #    - apt-get install -y make gcc 'g++'
@@ -54,12 +66,12 @@ compile-centos7:
 #    - make install
 #    - make clean
 #    - cd ..
-#    - mkdir artifacts-ubuntu
-#    - cp -r MODULES artifacts-ubuntu/
+#    - mkdir artifacts-${OSARCH}
+#    - cp -r MODULES artifacts-${OSARCH}
 #  artifacts:
 #    expire_in: 1 week
 #    paths:
-#      - artifacts-ubuntu/
+#      - artifacts-${OSARCH}/
 
 compile-darwin:
   stage: build
@@ -72,80 +84,32 @@ compile-darwin:
     - make install
     - make clean
     - cd ..
-    - mkdir artifacts-darwin
-    - cp -r MODULES artifacts-darwin/
+    - mkdir artifacts-Darwin-x86_64
+    - cp -r MODULES artifacts-Darwin-x86_64
   artifacts:
     expire_in: 1 week
     paths:
-      - artifacts-darwin/
+      - artifacts-Darwin-x86_64/
 
 test-rocky8:
+  when: manual
   stage: test
   image: rockylinux:8
   script:
-    - cp -rf artifacts-rocky8/MODULES .
+    - cp -rf artifacts-Rocky8-x86_64/MODULES .
     - echo "TODO no tests defined yet"
 
-package-rocky8:
+package-tarballs:
   stage: package
   image: rockylinux:8
-  variables:
-    DIR_NAME: vitess${VITESS_VERSION}
-    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
   script:
-    - cp -rf artifacts-rocky8/MODULES .
-    - mkdir ${DIR_NAME}
-    - cp -r `cat filelist.txt` ${DIR_NAME}/
-    - tar -czf ${TAR_NAME} ${DIR_NAME}
+    - mkdir Downloads
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Darwin-x86_64; do
+        mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
+        cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
+        cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
+        tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
+      done
   artifacts:
-    name: Vitess_Linux_x86_64
     paths:
-      - ${TAR_NAME}
-
-package-centos7:
-  stage: package
-  image: centos:7
-  variables:
-    DIR_NAME: vitess${VITESS_VERSION}
-    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
-  script:
-    - cp -rf artifacts-centos7/MODULES .
-    - mkdir ${DIR_NAME}
-    - cp -r `cat filelist.txt` ${DIR_NAME}/
-    - tar -czf ${TAR_NAME} ${DIR_NAME}
-  artifacts:
-    name: Vitess_Linux_x86_64
-    paths:
-      - ${TAR_NAME}
-
-#package-ubuntu:
-#  stage: package
-#  image: ubuntu:latest
-#  variables:
-#    DIR_NAME: vitess${VITESS_VERSION}
-#    TAR_NAME: Vitess${VITESS_VERSION}_Linux_x86_64.tar.gz
-#  script:
-#    - cp -rf artifacts-ubuntu/MODULES .
-#    - mkdir ${DIR_NAME}
-#    - cp -r `cat filelist.txt` ${DIR_NAME}/
-#    - tar -czf ${TAR_NAME} ${DIR_NAME}
-#  artifacts:
-#    name: Vitess_Linux_x86_64
-#    paths:
-#      - ${TAR_NAME}
-
-package-darwin:
-  stage: package
-  image: rockylinux:8
-  variables:
-    DIR_NAME: vitess${VITESS_VERSION}
-    TAR_NAME: Vitess${VITESS_VERSION}_Darwin_x86_64.tar.gz
-  script:
-    - cp -rf artifacts-darwin/MODULES .
-    - mkdir ${DIR_NAME}
-    - cp -r `cat filelist.txt` ${DIR_NAME}/
-    - tar -czf ${TAR_NAME} ${DIR_NAME}
-  artifacts:
-    name: Vitess_Darwin_x86_64
-    paths:
-      - ${TAR_NAME}
+      - Downloads/
