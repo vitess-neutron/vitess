@@ -5,7 +5,7 @@ SHELL = /bin/sh
 ifndef VITESS_VERSION
 VITESS_VERSION = 3.5
 endif
-DESTDIR = ../MODULES
+MODULES_DIR = ../MODULES
 GSLPATH = ./rng
 
 SYS := $(shell uname -s)
@@ -137,7 +137,7 @@ clean:
 .PHONY: install
 install: all
 	for F in $(ALL); do \
-		$(INSTALL) $${F} $(DESTDIR)/$${F}_$(SYS)_$(ARCH); \
+		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_$(ARCH); \
 	done
 
 
