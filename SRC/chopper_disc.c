@@ -22,6 +22,8 @@
 /* 1.13  Aug 2020  K. Lieutenant  time of arrival can be set by random choice                */
 /*********************************************************************************************/
 
+#include <ctype.h>
+
 #include "intersection.h"
 #include "init.h"
 #include "convert.h"
