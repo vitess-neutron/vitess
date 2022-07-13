@@ -91,6 +91,33 @@ compile-darwin:
     paths:
       - artifacts-Darwin-x86_64/
 
+compile-windows:
+  stage: build
+  image: windows_cpp17:10-vc17
+  tags:
+    - libvirt
+  script:
+    - cd /c
+    - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
+    - mv vitess-data/tcl /c/
+    - mv vitess-data/gnuplot /c/
+    - cd -
+    - cd SRC
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak install
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak clean
+    - cd ..
+    - mkdir artifacts-Windows10-x86
+    - cp -r MODULES artifacts-Windows10-x86/
+    - mkdir -p /c/vitess${VITESS_VERSION}
+    - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
+    - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
+    - cp TOOLS/Output/mysetup.exe artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - artifacts-Windows10-x86/
+
 test-rocky8:
   when: manual
   stage: test
@@ -99,17 +126,18 @@ test-rocky8:
     - cp -rf artifacts-Rocky8-x86_64/MODULES .
     - echo "TODO no tests defined yet"
 
-package-tarballs:
+package:
   stage: package
   image: rockylinux:8
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Darwin-x86_64; do
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Darwin-x86_64 Windows10-x86; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
         tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
       done
+    - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe Downloads/
   artifacts:
     paths:
       - Downloads/
