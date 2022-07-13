@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
          LmbdWant=0.0,       /* desired wavelength (from simulation.inf, not needed) */
          Freq    =0.0,       /* source frequency   (from simulation.inf)   */
          nTraj   =0.0;       /* number of trajectories started per bunch   */
+  int jMon;
 
 
   // reading of input data and initilisation
@@ -298,7 +299,7 @@ my_exit:
   // additional monitors
   if (nAddMons > 0) 
   { 
-    for (int jMon=0; jMon<nAddMons; jMon++)
+    for (jMon=0; jMon<nAddMons; jMon++)
       UpdateMon(jMon, nBunches);
   }
 

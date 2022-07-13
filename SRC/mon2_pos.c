@@ -163,7 +163,7 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int i;
+  int i, iY;
 
   for(i=1; i<argc; i++)
   {
@@ -237,7 +237,7 @@ void  OwnInit(int argc, char *argv[])
   IntYZError = (double**) malloc(nBinsY * sizeof(double*));
   nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
 
-  for (int iY=0; iY < nBinsY; iY++) 
+  for (iY=0; iY < nBinsY; iY++) 
   {
     IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));

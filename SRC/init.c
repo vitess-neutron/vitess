@@ -711,6 +711,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
          nNumNeutr=0.0, nNumNeutrSrc=0.0,
 	       CntRateErr=0.0;
   long   nBnch=0;
+  int    l=0;
   int    iCol=0, iColMin=1, iColMax=0;
   VectorType Shift,  /* Shift of end position        [m] */
              EndPos; /* end position of this module  [m] */
@@ -737,7 +738,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     Shift[2]= dShiftZ;
     RotBackVector(RotMatrixM, Shift);
     RotBackVector(RotMatrixMX, Shift);
-    for (int l=0; l<3; l++)
+    for (l=0; l<3; l++)
       EndPos[l] = BegPosM[l] + Shift[l];
     BlnLen += LengthVector(Shift);
     RotZ   += dHorizAngle;
