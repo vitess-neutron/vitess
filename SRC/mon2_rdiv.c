@@ -270,7 +270,7 @@ void  OwnInit(int argc, char *argv[])
   {
     IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));
-    nTrajYZ   [iY] = (long*)   malloc(nBinsZ * sizeof(int));
+    nTrajYZ   [iY] = (long*)   malloc(nBinsZ * sizeof(long));
   }
 
   return;

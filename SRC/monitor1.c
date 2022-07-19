@@ -249,7 +249,8 @@ int main(int argc, char *argv[])
             //x' = x cos f - y sin f
 		
             rotang = RotAngMin;
-            do {
+            do 
+            {
               Div = Divy * cos(-rotang) - Divz * sin(-rotang);
 
               iBin = (int)floor(nBins*(Div - MinY)/(MaxY-MinY));
@@ -257,13 +258,18 @@ int main(int argc, char *argv[])
                 {
                   Int [iBin] += prob/nRot;
                   nBin[iBin] += 1;
-                  IntTot      += prob/nRot;
-                  nTrjTot     += 1;
+                  IntTot     += prob/nRot;
+                  nTrjTot    += 1;
                   bRegistered = 1;
                 }
               rotang += RotAngStep;
-            } while (RotAngStep > 0.0 && rotang <= RotAngMax && RotAngMax > RotAngMin);
+            } 
+            while (RotAngStep > 0.0 && rotang <= RotAngMax && RotAngMax > RotAngMin);
             break;
+
+          default: 
+            fprintf(LogFilePtr,"ERROR: No or unknown value for the monitor parameter given. Input value: %d\n", ePar);
+            exit(-1);
         }
 
         if (ePar != MON_DIV_YZ)
@@ -355,7 +361,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'k':
-          ePar = (VtMon1Par) atol(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz,
+          ePar = (VtMon1Par) atoi(&argv[i][2]); /* 1=monitorlambda; 2=monitortime; 3=monitordivy, 4=monitordivz,
                                        5=monitory,      6=monitorz     7=energy       8=divyz */
           break;
 
