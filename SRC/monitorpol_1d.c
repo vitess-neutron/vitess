@@ -64,9 +64,7 @@ int main(int argc, char *argv[])
   char   sCompName  [21]="",
          sModVsnName[40]="";
   char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
-         sParN[MAX_KIND+1][22]={"", "wavelength", "time",
-                               "horizontal divergence", "vertical divergence",
-                               "horizontal position",   "vertical position", "energy", "divergence yz"};
+         sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"};
   short  bRegistered=FALSE;
   int	   dy=0, 
          bincounts[10001];
@@ -89,8 +87,8 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   CompID2Name (sCompName, _eModule);
-  sprintf(sModuleName, "%s_%s",     sCompName, sParN[ePar]);
-  sprintf(sModVsnName, "%s_%s 1.4", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN, "%s_%s",     sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN, "%s_%s 1.4", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;

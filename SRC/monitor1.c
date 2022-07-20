@@ -107,9 +107,8 @@ double  IntMax =-1.0e10,    // maximal count rate found in one bin
         BinSize= 0.0;       // size of each bin          
 long    nBunches= 1;         // number of bunches started 
 static
-char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                   // unit and parameter name
-       sParN[MAX_KIND+1][22]={"", "wavelength", "time", "horizontal divergence", "vertical divergence",  // of the possible x-axis parameters
-                               "horizontal position",   "vertical position", "energy", "divergence yz"};
+char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                                     // unit and parameter name
+       sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"}; // of the possible x-axis parameters
 
 
 /******************************/
@@ -146,8 +145,8 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   CompID2Name (sCompName, _eModule);
-  sprintf(sModuleName, "%s_%s",      sCompName, sParN[ePar]);
-  sprintf(sModVsnName, "%s_%s 1.12", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN, "%s_%s",      sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN, "%s_%s 1.12", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
 
   OpenFiles();
