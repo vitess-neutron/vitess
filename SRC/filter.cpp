@@ -8,6 +8,7 @@
 /* 1.2  Feb 2015  K. Lieutenant "AND OR AND" added                                          */
 /* 1.3  Mar 2020  K. Lieutenant  new central visualization parameters, UNUSED -> TRUE       */
 /* 1.3a Oct 2021  K. Lieutenant  enums used for parameters and their combination            */
+/* 1.3b Oct 2021  K. Lieutenant  parameter list completed                                   */
 /********************************************************************************************/
 
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_FILTER;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3a");
+  PrintModuleName(_eModule, "1.3b");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
@@ -236,10 +237,12 @@ double DetermineParameter(int id, Neutron* pNeut)
   
   switch (id) 
   {
+    case POS_X:
+      paramValue = pNeut->Position[0]; // y-pos
+      break;
     case POS_Y:
       paramValue = pNeut->Position[1]; // y-pos
       break;
-    
     case POS_Z:
       paramValue = pNeut->Position[2]; // z-pos
       break;
@@ -247,7 +250,6 @@ double DetermineParameter(int id, Neutron* pNeut)
     case DIV_Y:
       paramValue = neutronVector.Phi()*180./M_PI; // y divergence
       break;
-    
     case DIV_Z:
       paramValue = atan(neutronVector.x[2]/neutronVector.x[0])*180./M_PI;     // z divergence
       break;
@@ -255,11 +257,9 @@ double DetermineParameter(int id, Neutron* pNeut)
     case LAMBDA:
       paramValue = pNeut->Wavelength; // wavelength
       break;
-    
     case ENERGY:
       paramValue = ENERGY_FROM_LAMBDA(pNeut->Wavelength);  //energy
       break;
-    
     case TIME:
       paramValue = pNeut->Time; // time
       break;
@@ -268,7 +268,6 @@ double DetermineParameter(int id, Neutron* pNeut)
       divy = neutronVector.Phi();
       paramValue = divy * 2. * M_PI / pNeut->Wavelength; // ky: y component of the wave vector 
       break;
-    
     case K_Z:
       neutronVector.x[1] = 0;
       if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
@@ -280,20 +279,24 @@ double DetermineParameter(int id, Neutron* pNeut)
       neutronPosition.x[0] = 0;
       paramValue = neutronPosition.Mod(); // r: projection of the neutron vector on the y-z plane
       break;
-    
     case POS_PHI:
       // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
       paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+      break;
+    
+    case DIR_PHI:  
+      paramValue = neutronVector.PhiSc()*180./M_PI;
+      break;
+    case DIR_THETA:  
+      paramValue = neutronVector.ThetaSc()*180./M_PI;
       break;
 
     case COL_VERT:
       paramValue = (pNeut->Color %100); //  colorTB: number of reflections at top or bottom plane
       break;
-
     case COL_HOR:
       paramValue = (pNeut->Color - (pNeut->Color%100) ) / 100;//  colorLR: number of reflections at left or right plane
       break;
-
     case COLOR:
       paramValue = (pNeut->Color - (pNeut->Color%100) ) / 100 + (pNeut->Color %100); // color: number of reflections (colorTB+colorLR)
       break;
