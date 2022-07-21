@@ -7,7 +7,8 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
-/* 1.4  Nov 2020  K. Lieutenant  preparation for tranfer to version 4                       */
+/* 1.4  Nov 2020  K. Lieutenant  preparation for transfer to version 4                      */
+/* 1.4a Nov 2020  K. Lieutenant  bug of too long module name fixed                          */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -62,7 +63,7 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 int main(int argc, char *argv[])
 {
   char   sCompName  [21]="",
-         sModVsnName[40]="";
+         sModVsnName[MOD_NAME_LEN+8]="";
   char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
          sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"};
   short  bRegistered=FALSE;
@@ -86,9 +87,10 @@ int main(int argc, char *argv[])
   Init(argc, argv, _eModule);
   OwnInit(argc, argv);
 
+  // the following 4 commands replace the call of 'PrintModuleName' to extend the module name
   CompID2Name (sCompName, _eModule);
-  snprintf(sModuleName, MOD_NAME_LEN, "%s_%s",     sCompName, sParN[ePar]);
-  snprintf(sModVsnName, MOD_NAME_LEN, "%s_%s 1.4", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN,   "%s_%s",      sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN+7, "%s_%s 1.4a", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;

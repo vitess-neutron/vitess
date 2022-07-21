@@ -21,7 +21,8 @@
 /* 1.9  Feb 2012  K. Lieutenant  any color = -1                                                */
 /* 1.10 Feb 2020  K. Lieutenant  tidy up, new central visualization parameters                 */
 /* 1.11 Nov 2020  K. Lieutenant  preparation for transfer to version 4                         */
-/* 1.12 mar 2021  K. Lieutenant  update after each bunch                                       */
+/* 1.12  Mar 2021  K. Lieutenant  update after each bunch                                      */
+/* 1.12a Jul 2022  K. Lieutenant  bug of too long module and file name fixed                   */
 /***********************************************************************************************/
 
 // includes
@@ -117,7 +118,7 @@ char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "
 int main(int argc, char *argv[])
 {
   char   sCompName  [21]="",
-         sModVsnName[40]="";
+         sModVsnName[MOD_NAME_LEN+8]="";
 
   short  iCol=NO_COLOR;      /* colour of the trajectory */
   long   iBin=0,             /* bin number     */
@@ -144,9 +145,10 @@ int main(int argc, char *argv[])
   Init   (argc, argv, _eModule);
   OwnInit(argc, argv);
 
+  // the following 4 commands replace the call of 'PrintModuleName' to extend the module name
   CompID2Name (sCompName, _eModule);
-  snprintf(sModuleName, MOD_NAME_LEN, "%s_%s",      sCompName, sParN[ePar]);
-  snprintf(sModVsnName, MOD_NAME_LEN, "%s_%s 1.12", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN,   "%s_%s",      sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN+7, "%s_%s 1.12a", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
 
   OpenFiles();
@@ -530,9 +532,6 @@ void InitArrays()
 /*******************************************************/
 void OpenFiles()
 {
-  // short jMon;                 /* monitor number */
-  // char  sNewName[99]="";
-
   // opens reference file
   if (RefFileName!=NULL)
   { 
@@ -570,7 +569,7 @@ void OpenFiles()
 /*******************************************************/
 void UpdateMon(int jMon, long iBnch)
 {
-  char   sNewName[99]="";
+  char   sNewName[CHAR_BUF_SMALL]="";
   double f_norm=1.0;             // ratio of total to processed bunches after treating current bunch
   long   iBin=0,                 // index of bins in x-axix and for main monitor
          kBin=0;                 // index in array for monitors of individual colors   
@@ -638,7 +637,7 @@ void NumerateName(char* sFileLong, char* sFileShort, const short nNumber)
 
 {
    char sParExt [4],      // extension of file names (with simulation results)
-        sParName[99];     // name (without extension) of those files
+        sParName[CHAR_BUF_SMALL];     // name (without extension) of those files
 
 	strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
 	StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);

@@ -53,10 +53,10 @@ short  CheckFilename(char* sFilename);
 /*********************************************/
 int main(int argc, char* argv[])
 {
-	char   sParFileS[99]="",             // name of signal, 
-	       sParFileR[99]="",             //         reference,
-	       sParFileN[99]="",             //         noise,
-	       sParFileW[99]="";             //     and weight  file
+	char   sParFileS[CHAR_BUF_SMALL]="", // name of signal, 
+	       sParFileR[CHAR_BUF_SMALL]="", //         reference,
+	       sParFileN[CHAR_BUF_SMALL]="", //         noise,
+	       sParFileW[CHAR_BUF_SMALL]=""; //     and weight  file
 	int    i=0;                          // index over spectrum elements
 	short  iSpec=0,                      // index counting spectra to evaluate
 	       bAverage;                     // criterion sum (bAverage=0) or average (bAverage=1) in figure of merit
