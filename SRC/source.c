@@ -97,7 +97,7 @@ double   calcFraction(double, double, double, double);
 // -----------------
 
 // source, moderator and beamline parameters  
-Source    stSrc;                //       -S             [-]   enum: type of source: CWS SPSS LPSS
+Source    stSrc;                // EP    -S             [-]   enum: type of source: NO_TYPE CWS SPSS LPSS
                                 // EPICS -K             [-]   enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
                                 // EP C  -N             [-]   name of the source 
                                 // EPI   -R   50       [Hz]   pulse frequency
@@ -143,7 +143,7 @@ extern VtTrace _eTraceMode;     /* EPIC  -k             [-]   NO_TRACING     : n
                                                               ONLY_TRC_TRAJ  : simulation only with traj. of interest  */
 // Moderator parameters read from file or from input
 // -------------------------------------------------
-Moderator stMod   [NUM_MOD];    //   I   -0S  TS1             index: target station
+Moderator stMod   [NUM_MOD];    //   I   -0S  TS1             enum: target station
                                 // E     -nt COUPLED [-]      enum: moderator type (POISONED,  DECOUPLED, COUPLED, MULT_SPEC)
                                 //  P CS -ns   'C'  [cm]      shape of the moderator (VT_MOD_SQUARE, VT_MOD_CIRCLE) 
                                 //  P CS -nr   2.0  [cm]      diameter of the moderator
@@ -1165,14 +1165,12 @@ void SrcInit(int argc, char **argv)
         stSrc.eSrcType=CWS; 
         break;
       case SRC_PULSED:
+      case SRC_ESS:
         if (stSrc.PulseLength==0.0) stSrc.eSrcType=SPSS; 
         else                        stSrc.eSrcType=LPSS;   
         break;
       case SRC_ISIS:
         stSrc.eSrcType=SPSS;
-        break;
-      case SRC_ESS:
-        stSrc.eSrcType=LPSS;
         break;
       default: 
         Error("Kind of source not defined");

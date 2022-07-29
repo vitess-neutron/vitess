@@ -13,7 +13,7 @@ Moderator:
       type:    "string"
       column:  0                
 
-  - eShape  :                   #   [-]    enum: moderator shape: RECTANGULAR CIRCULAR 
+  - eModShp :                   #   VtModShape ModShape_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "shape"
       tooltip: "moderator shape"

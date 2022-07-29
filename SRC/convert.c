@@ -298,8 +298,7 @@ VtDirType DirType_Txt2ID(const char* sText)
   return eID;
 }
 
-
-// Axis             (detector)
+// Axis  (monitors, evaluation, detector, sm_ensemble)
 void     Axis_ID2Txt(char* sText, const VtAxis eID)
 {
   switch (eID)
@@ -307,7 +306,7 @@ void     Axis_ID2Txt(char* sText, const VtAxis eID)
     case X_AXIS: strcpy(sText, "x"); break;
     case Y_AXIS: strcpy(sText, "y"); break;
     case Z_AXIS: strcpy(sText, "z"); break;
-    default    : strcpy(sText, "");
+    default     : strcpy(sText, "none");
   }
 }
 VtAxis   Axis_Txt2ID(const char* sText)
@@ -321,24 +320,24 @@ VtAxis   Axis_Txt2ID(const char* sText)
   return eID;
 }
 
-// Scattering axis  (evaluation, sample_refl)
-void     ScAxis_ID2Txt(char* sText, const VtScAxis eID)
+// Rotation Axis             (sample_refl)
+void      RotAxis_ID2Txt(char* sText, const VtRotAxis eID)
 {
   switch (eID)
   {
-    case VT_SC_X: strcpy(sText, "x"); break;
-    case VT_SC_Y: strcpy(sText, "y"); break;
-    case VT_SC_Z: strcpy(sText, "z"); break;
-    default     : strcpy(sText, "none");
+    case VT_ROT_X: strcpy(sText, "x"); break;
+    case VT_ROT_Y: strcpy(sText, "y"); break;
+    case VT_ROT_Z: strcpy(sText, "z"); break;
+    default    : strcpy(sText, "");
   }
 }
-VtScAxis   ScAxis_Txt2ID(const char* sText)
+VtRotAxis RotAxis_Txt2ID(const char* sText)
 {
-  VtScAxis eID=VT_NO_SC_AXIS;
+  VtRotAxis eID=NO_ROT_AX;
 
-       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=VT_SC_X;
-  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=VT_SC_Y;
-  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=VT_SC_Z;
+       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=VT_ROT_X;
+  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=VT_ROT_Y;
+  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=VT_ROT_Z;
   
   return eID;
 }
@@ -359,6 +358,28 @@ VtOrient Orient_Txt2ID(const char* sText)
 
        if (strcmp(sText, "horizontal")==0) eID=HORIZONTAL;
   else if (strcmp(sText, "vertical"  )==0) eID=VERTICAL  ;
+  
+  return eID;
+}
+
+// Direction in - out  (sample, sample environment)
+void     DirInOut_ID2Txt(char* sText, const VtDir eID)
+{
+  switch (eID)
+  {
+    case VT_IN    : strcpy(sText, "in"    ); break;
+    case VT_OUT   : strcpy(sText, "out"   ); break;
+    case VT_INSIDE: strcpy(sText, "inside"); break;
+    default       : strcpy(sText, "");
+  }
+}
+VtDir DirInOut_Txt2ID(const char* sText)
+{
+  VtDir eID=VT_NO_DIR;
+
+       if (strcmp(sText, "in"    )==0) eID=VT_IN    ;
+  else if (strcmp(sText, "out"   )==0) eID=VT_OUT   ;
+  else if (strcmp(sText, "inside")==0) eID=VT_INSIDE;
   
   return eID;
 }
@@ -449,8 +470,36 @@ VtDistr  Distr_Txt2ID(const char* sText)
   return eID;
 }
 
+// Absorbing material
+void       AbsMat_ID2Txt(char* sText, const VtAbsMat eID)
+{
+  switch (eID)
+  {
+    case VT_NO_MAT   : strcpy(sText, "none"          ); break;
+    case VT_ABS_IDEAL: strcpy(sText, "ideal absorber"); break;
+    case VT_ABS_GD   : strcpy(sText, "Gadolinium"    ); break;
+    case VT_ABS_B10  : strcpy(sText, "Bor-10"        ); break;
+    case VT_ABS_FILE : strcpy(sText, "from file"     ); break;
+    default          : strcpy(sText, "");
+  }
+}
+VtAbsMat   AbsMat_Txt2ID(const char* sText)
+{
+  VtAbsMat eID=VT_NO_MAT;
+
+       if (strcmp(sText, "ideal"         )==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "ideal absorber")==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "Gd"            )==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "Bor"           )==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "bor10"         )==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "from file"     )==0) eID=VT_ABS_FILE ;
+ 
+  return eID;
+}
+
 // Distribution function  (monochromator, sample_singlecryst)
-void     InstGeom_ID2Txt(char* sText, const VtInstGeom eID)
+void        InstGeom_ID2Txt(char* sText, const VtInstGeom eID)
 {
   switch (eID)
   {
@@ -470,8 +519,8 @@ VtInstGeom  InstGeom_Txt2ID(const char* sText)
 }
 
 
-// SOURCE
-// ------
+// SOURCE + MODERATOR
+// ------------------
 // name defining the facility
 void      SrcName_ID2Txt(char* sText, const VtSrcName eID)
 {
@@ -618,7 +667,7 @@ VtModShape ModShape_Txt2ID(const char* sText)
   return eID;
 }
 
-// definition of flight direction 
+// definition of flight direction range 
 void     Direct_ID2Txt(char* sText, const VtDirect eID)
 {
   switch (eID)
@@ -793,34 +842,6 @@ VtTfmnSeq  TfmnSeq_Txt2ID(const char* sText)
 
 // WINDOWS and COLLIMATORS
 // -----------------------
-// absorbing material
-void       AbsMat_ID2Txt(char* sText, const VtAbsMat eID)
-{
-  switch (eID)
-  {
-    case VT_NO_MAT   : strcpy(sText, "none"          ); break;
-    case VT_ABS_IDEAL: strcpy(sText, "ideal absorber"); break;
-    case VT_ABS_GD   : strcpy(sText, "Gadolinium"    ); break;
-    case VT_ABS_B10  : strcpy(sText, "Bor-10"        ); break;
-    case VT_ABS_FILE : strcpy(sText, "from file"     ); break;
-    default          : strcpy(sText, "");
-  }
-}
-VtAbsMat   AbsMat_Txt2ID(const char* sText)
-{
-  VtAbsMat eID=VT_NO_MAT;
-
-       if (strcmp(sText, "ideal"         )==0) eID=VT_ABS_IDEAL;
-  else if (strcmp(sText, "ideal absorber")==0) eID=VT_ABS_IDEAL;
-  else if (strcmp(sText, "Gd"            )==0) eID=VT_ABS_GD   ;
-  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_ABS_GD   ;
-  else if (strcmp(sText, "Bor"           )==0) eID=VT_ABS_B10  ;
-  else if (strcmp(sText, "bor10"         )==0) eID=VT_ABS_B10  ;
-  else if (strcmp(sText, "from file"     )==0) eID=VT_ABS_FILE ;
- 
-  return eID;
-}
-
 // absorbing window material
 void       WndAbs_ID2Txt(char* sText, const VtWndAbs eID)
 {
@@ -975,7 +996,7 @@ VtWaviDistr WaviDistr_Txt2ID(const char* sText)
 }
 
 // mirror material
-void       MirrMat_ID2Txt(char* sText, const VtMirrMat eID)
+void        MirrMat_ID2Txt(char* sText, const VtMirrMat eID)
 {
   switch (eID)
   {
@@ -1225,7 +1246,7 @@ void        ChnlShape_ID2Txt(char* sText, const VtChnlShape eID)
     default       : strcpy(sText, "");
   }
 }
-VtChnlShape  ChnlShape_Txt2ID(const char* sText)
+VtChnlShape ChnlShape_Txt2ID(const char* sText)
 {
   VtChnlShape eID=VT_NO_CHN_SHAPE;
 
@@ -1295,7 +1316,7 @@ VtPtclGeom  PtclGeom_Char2ID(const char cID)
   
   return eID;
 }
-VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
+VtPtclGeom  PtclGeom_Txt2ID(const char* sText)
 {
   VtPtclGeom eID=VT_NO_PTCL;
 
@@ -1462,7 +1483,7 @@ VtDetAbs   DetAbs_Txt2ID(const char* sText)
 }
 
 
-// MONITORS
+// MONITORS + FILTER + EVALUATION
 // --------------------------------
 // monitor parameter for mon1 and mon_pol1
 void      Mon1Par_ID2Txt(char* sText, const VtMon1Par eID)
@@ -1666,8 +1687,6 @@ VtFormat2D Format2D_Txt2ID(const char* sText)
   return eID;
 }
 
-// Evaluation
-// ----------
 // filter combination 
 void       FiltComb_ID2Txt(char* sText, const VtFiltComb eID)
 {

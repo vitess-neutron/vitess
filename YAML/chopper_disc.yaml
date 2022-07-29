@@ -42,7 +42,7 @@ chopper_disc:
       column:  2                     
       prefix:  "-l"     
 
-  - eAbs    : 
+  - eAbsMat:   #  VtAbsMat   AbsMat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "absorption"
       tooltip: "absorbing window material" 

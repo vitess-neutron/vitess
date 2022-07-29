@@ -41,7 +41,7 @@ class Mon2D
   VtMonPar yParam;           // -Y  parameter to be shown on the y axis
 
   double   xMin;             // -w  minimum x value
-  double   xMax;             // -w  maximum x value
+  double   xMax;             // -W  maximum x value
   double   yMin;             // -h  mininum y value
   double   yMax;             // -H  maximum y value
 

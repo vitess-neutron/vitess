@@ -14,7 +14,7 @@ frame:			    # source module that will be executed
   - Title_1 : 
       type:    "title" 
       default: "transformation"
-  - Sequence:              # -S  RTM    [-]   sequence of operations RTM RMT TRM TMR MTR MRT
+  - eSequenc:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
       type:    "combo"  
       descr:   "sequence"
       tooltip: "sequence of Rotation, Translation, and Mirroring" 

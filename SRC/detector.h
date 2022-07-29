@@ -10,7 +10,7 @@
 typedef struct
 {
   double r;
-  VtScAxis eAxis;
+  VtAxis eAxis;
   short bCnstPhi;  // 0 = const. pixel size; 1 = const Delta phi 
 }
 CylinderDetectorType;

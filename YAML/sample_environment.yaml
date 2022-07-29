@@ -21,7 +21,7 @@ sample_environment:
       descr:   "structure\nfactor file"
       tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
       prefix:  "-s"     
-  - eDirEnv :                  # -r         [-]    direction of the beam passing the sample environment: IN or OUT 
+  - eDirIO:                  # -r    VtDir DirInOut_Txt2ID(const char* sText)
       type:    "combo"    
       descr:   "direction"
       tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"

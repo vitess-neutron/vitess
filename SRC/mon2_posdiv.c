@@ -31,7 +31,7 @@
 char*  MonFileName  = NULL;        // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
 short  bProbactiv   = TRUE,        // -p    [-]   flag Display:   YES: Probability weight   NO: number of trajectories
        bExclusive   = FALSE;       // -e    [-]   flag Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-VtScAxis index_yz = VT_NO_SC_AXIS; // -q    [-]   enum direction:  VT_SC_Y  VT_SC_Z   
+VtAxis index_yz     = NO_AXIS;     // -q    [-]   enum direction:  Y_AXIS  Z_AXIS   
 long   nBinsPos     = 1,           // -y    [-]   number of position bins
        nBinsDiv     = 1,           // -z    [-]   number of divergence bins
        format       = MATRIX;      // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 
 	      pos_ = InputNeutrons[i].Position[index_yz];
 
-	      if (index_yz == VT_SC_Y)
+	      if (index_yz == Y_AXIS)
         {
 	        if (InputNeutrons[i].Vector[0] >=0) 
             div_ = atan2(InputNeutrons[i].Vector[1], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
             div_ = atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));	  
 	        div_ *= 180.0/M_PI;
 	      }
-	      else if (index_yz == VT_SC_Z) 
+	      else if (index_yz == Z_AXIS) 
         {
 	        div_  = atan2(InputNeutrons[i].Vector[2], sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1])));	 
 	        div_ *= 180.0/M_PI;
@@ -174,9 +174,9 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  if (index_yz==VT_SC_Y)
+  if (index_yz==Y_AXIS)
     WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsPos, "y/cm", nBinsDiv, "y-divergence/deg");
-  else if (index_yz == VT_SC_Z) 
+  else if (index_yz == Z_AXIS) 
     WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsPos, "z/cm", nBinsDiv, "z-divergence/deg");
   else
     Error("Analysis direction does not have a proper value");
@@ -207,7 +207,10 @@ void  OwnInit(int argc, char *argv[])
       switch(argv[i][1])
       {
         case 'q':
-	        index_yz = (VtScAxis) atoi(&argv[i][2]); /*  y or z direction */
+	        index_yz = (VtAxis) atoi(&argv[i][2]); /*  y or z direction */
+	             if (index_yz==Y_AXIS) fprintf(LogFilePtr,"horizontal direction \n");
+		      else if (index_yz==Z_AXIS) fprintf(LogFilePtr,"vertical direction \n");
+	        else    Error2("No or wrong direction parameter", &argv[i][2]);
 	        break;
 
         case 'O':
@@ -272,10 +275,6 @@ void  OwnInit(int argc, char *argv[])
       }
     }
   }
-
-  // check
-  if (index_yz!=VT_SC_Y && index_yz!=VT_SC_Z)
-    Error("Analysis direction wrong");
 
   // opens monitor file
   if (MonFileName==NULL)

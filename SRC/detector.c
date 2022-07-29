@@ -589,7 +589,7 @@ void  OwnInit(int argc, char *argv[])
         /* Cylindrical detector */
         case 'x':
           /* cylinder axis orientation */
-          Detector.DG.Cyl.eAxis = (VtScAxis) atoi(&argv[i][2]);
+          Detector.DG.Cyl.eAxis = (VtAxis) atoi(&argv[i][2]);
           break;
         case 'z':
           /* flag: constant phi */
@@ -627,7 +627,7 @@ void  OwnInit(int argc, char *argv[])
  
   if(Detector.eGeom==VT_DET_CYL)
   {	/* cylinder */
-    if (Detector.DG.Cyl.eAxis== VT_SC_X && fabs(Detector.Theta-M_PI/2)>0.0001)
+    if (Detector.DG.Cyl.eAxis== X_AXIS && fabs(Detector.Theta-M_PI/2)>0.0001)
     {
       fprintf(LogFilePtr,"\n WARNING: Theta is set to 90 deg for cylinder in x direction!");
       Detector.Theta=M_PI/2;
@@ -727,9 +727,9 @@ void SetGeometry(char* sColor)
       stGeometry.pCylSlice[0].vSymAxis[Detector.DG.Cyl.eAxis]= 1;
       stGeometry.pCylSlice[0].Phi = Detector.Theta/M_PI*180.;
       //coordinates differently defined in visualization:
-      if(Detector.DG.Cyl.eAxis==VT_SC_X)
+      if(Detector.DG.Cyl.eAxis==X_AXIS)
         stGeometry.pCylSlice[0].Phi = Detector.Phi/M_PI*180.+90.;
-        else if(Detector.DG.Cyl.eAxis==VT_SC_Y)
+        else if(Detector.DG.Cyl.eAxis==Y_AXIS)
       stGeometry.pCylSlice[0].Phi = -Detector.Theta/M_PI*180.;
 	
       stGeometry.pCylSlice[0].OpenAngle = Detector.Width/(2.*M_PI*Detector.Distance)*360.;
@@ -808,7 +808,7 @@ void  InitDetector(DetectorType* pDetector)
   pDetector->DG.Tube.eTubeShape=VT_NO_TUBE_SHAPE;  
   pDetector->DG.Tube.bTubeShift=FALSE; 
   pDetector->DG.Cyl.r=0.0; 
-  pDetector->DG.Cyl.eAxis=VT_NO_SC_AXIS; 
+  pDetector->DG.Cyl.eAxis=NO_AXIS; 
   pDetector->DG.Cyl.bCnstPhi=FALSE;
 
 
@@ -912,7 +912,7 @@ short NeutronIntersectsCylDetector(Neutron *Nin, VectorType ISP[])
   if(Detector.Direction[0]) CTheta=nphi;
   else if (Detector.Direction[1]) CTheta=atan(sin(nphi)*tan(ntheta));
 
-  if(Detector.DG.Cyl.eAxis!=VT_SC_X && ntheta>M_PI_2)
+  if(Detector.DG.Cyl.eAxis!=X_AXIS && ntheta>M_PI_2)
     CTheta= (CTheta<=0) ? (M_PI + CTheta) : (-M_PI + CTheta);
 	
   GTheta= Detector.Direction[0] ? Detector.Phi : Detector.Theta;
@@ -1274,9 +1274,9 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot)
   SPHeight = nsp[Detector.DG.Cyl.eAxis];
 
   SpotR=sqrt( sq(nsp[0])+sq(nsp[1]) ); 
-  if (Detector.DG.Cyl.eAxis==VT_SC_X)	
+  if (Detector.DG.Cyl.eAxis==X_AXIS)	
     SpotR=sqrt( sq(nsp[1])+sq(nsp[2]) ); 
-  else if(Detector.DG.Cyl.eAxis==VT_SC_Y)	
+  else if(Detector.DG.Cyl.eAxis==Y_AXIS)	
     SpotR=sqrt( sq(nsp[0])+sq(nsp[2]) ); 
   SpotR= Detector.DG.Cyl.r + (floor((SpotR-Detector.DG.Cyl.r)*Detector.NLayers/Detector.Thickness)+0.5)*Detector.Thickness/Detector.NLayers;
 	
@@ -1287,7 +1287,7 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot)
   if(Detector.Direction[0]) { CTheta=SPhi; GTheta=Detector.Phi; }
   else if (Detector.Direction[1]) CTheta=atan(sin(SPhi)*tan(STheta));
   
-  if(Detector.DG.Cyl.eAxis!=VT_SC_X && STheta>M_PI_2)
+  if(Detector.DG.Cyl.eAxis!=X_AXIS && STheta>M_PI_2)
     CTheta= (CTheta<=0) ? (M_PI + CTheta) : (-M_PI + CTheta);
   
   archpos= fabs(CTheta-(GTheta+dTheta));  //counted from 0 to radians of archlength
@@ -1296,15 +1296,15 @@ void CylinderDetSpot(VectorType SP, VectorType DetSpot)
   
   switch (Detector.DG.Cyl.eAxis)
   {
-    case VT_SC_X:
+    case X_AXIS:
       DetSpot[1]=SpotR*cos(SpotTheta);
       DetSpot[2]=SpotR*sin(SpotTheta);
       break;
-    case VT_SC_Y:
+    case Y_AXIS:
       DetSpot[0]=SpotR*cos(SpotTheta);
       DetSpot[2]=SpotR*sin(SpotTheta);
       break;
-    case VT_SC_Z: 
+    case Z_AXIS: 
       DetSpot[0]=SpotR*cos(SpotTheta);
       DetSpot[1]=SpotR*sin(SpotTheta);
       break;	
@@ -1485,10 +1485,10 @@ void CheckAndAdjustDetectorInput(VtDetType type, VtDetGeom geom)
   }
   else if(eDetProp==VT_CYL_AREA)
   { 
-    if (Detector.DG.Cyl.eAxis==VT_NO_SC_AXIS)
+    if (Detector.DG.Cyl.eAxis==NO_AXIS)
     {
       Warning("Cylinder geometry chosen but no cylinder axis given (specify with -x). Cylinder axis is set to be z axis per default.");
-      Detector.DG.Cyl.eAxis=VT_SC_Z;
+      Detector.DG.Cyl.eAxis=Z_AXIS;
     }
     if(Detector.Theta_n!=0 || Detector.Phi_n!=0)
       Error("Surface inclination only possible for flat detector! For cylindrical geometry, theta_n and phi_n have to be 0 deg.");

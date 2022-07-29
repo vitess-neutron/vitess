@@ -58,7 +58,7 @@ short  bProbactiv = TRUE,        // -p  [-]  flag: TRUE: Probability weight   FA
        bTOF       = FALSE,       // -w  [-]  flag: TRUE: time of flight instrument 
        bPathCor   = FALSE;       // -t  [-]  flag: TRUE: correct TOF for real flight path from sample to detector 
 
-VtScAxis eScatAxis=VT_NO_SC_AXIS;// -A  [-]  direction of scattering for correct calculation of the scattering parameters 
+VtAxis eScatAxis  = NO_AXIS;     // -A  [-]  direction of scattering for correct calculation of the scattering parameters 
                                  
 double TotLength  = 0.0,         // -l [cm]  standard length of total neutron flight path
        DetDist    = 0.0,         // -D [cm]  sample detector distance                     
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
         // determination of scattering angle
-        if (eScatAxis == VT_SC_Y) 
+        if (eScatAxis == Y_AXIS) 
         {
           /* Neutron temp = InputNeutrons[i]; */
           /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[2])); */
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
           TwoTheta = (double) atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[0]);
           Phi      = (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
         }
-        else if (eScatAxis == VT_SC_Z) 
+        else if (eScatAxis == Z_AXIS) 
         {
           /* Neutron temp = InputNeutrons[i]; */
           /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[1])); */
@@ -434,9 +434,9 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'A':
-          eScatAxis = (VtScAxis) atoi(arg);
-          if (eScatAxis!=VT_SC_Y && eScatAxis!=VT_SC_Z && eScatAxis!=VT_NO_SC_AXIS) 
-            Error("ERROR: invalid scattering axis!!!");
+          eScatAxis = (VtAxis) atoi(arg);
+          if (eScatAxis!=Y_AXIS && eScatAxis!=Z_AXIS && eScatAxis!=NO_AXIS) 
+            Error2("Invalid scattering axis", arg);
           break;
 
         case 'l':

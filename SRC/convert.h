@@ -28,9 +28,11 @@ VtReason  Reason_Txt2ID(const char* sText);
 void      DirType_ID2Txt(char* sText, const VtDirType eID);
 VtDirType DirType_Txt2ID(const char* sText);
 
-
 void      Axis_ID2Txt(char* sText, const VtAxis eID);
 VtAxis    Axis_Txt2ID(const char* sText);
+
+void      RotAxis_ID2Txt(char* sText, const VtRotAxis eID);
+VtRotAxis RotAxis_Txt2ID(const char* sText);
 
 void      Orient_ID2Txt(char* sText, const VtOrient eID);
 VtOrient  Orient_Txt2ID(const char* sText);
@@ -157,9 +159,6 @@ VtSmplGeom  SmplGeom_Txt2ID(const char* sText);
 void        PtclGeom_ID2Txt (char* sText, const VtPtclGeom eID);
 VtPtclGeom  PtclGeom_Char2ID(const char cID);
 VtPtclGeom  PtclGeom_Txt2ID (const char* sText);
-
-void        ScAxis_ID2Txt(char* sText, const VtScAxis eID);
-VtScAxis    ScAxis_Txt2ID(const char* sText);
 
 void        DataSrc_ID2Txt(char* sText, const VtDataSrc eID);
 VtDataSrc   DataSrc_Txt2ID(const char* sText);

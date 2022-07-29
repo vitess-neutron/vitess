@@ -11,14 +11,14 @@ read_in:   		     # source module that will be executed
   - Name    : 
       type:    "string"
       descr:   "name" 
-  - eInPrgf:                 # -f   VITESS   [-]   see 'VtPrgFormat' in 'in_out.h'   
+  - ePrgFmt:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
       default: ["VITESS", "McStas", "MCPL", "MCNP6"]   
       column:  0                     
       prefix:  "-f"   
-  - eInForm:                 # -F   FLOAT   [-]    see 'VtDataFormat' in 'in_out.h'
+  - eDatFmt:                 # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exp': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
@@ -104,7 +104,7 @@ read_in:   		     # source module that will be executed
       descr:   "raytracing\nfile"
       tooltip: "Name of the file that contains the IDs of the trajectories for tracing."
       prefix:  "-T"
-  - eTrcMode:                 #  see defines in general.h
+  - eTrcMode:                 # -t   VtTrace   Trace_Txt2ID(const char* sText);
       type:    "combo" 
       descr:   "raytracing mode" 
       tooltip: "no tracing\nwrite a files for each traj. of interest\nsimulation only with traj. of interest"

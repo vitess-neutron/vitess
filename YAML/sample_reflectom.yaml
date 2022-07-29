@@ -23,14 +23,14 @@ sample_reflectom:
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
 
-  - eMode  :                 # VtMeasMode  MeasMode_Txt2ID(const char* sText) 
+  - eMeasMod:                 # VtMeasMode  MeasMode_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "mode" 
       tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)" 
       default: ["sample", "reference"]   
       column:  0                     
       prefix:  "-O"   
-  - RotAxis :                 # VtAxis   Axis_Txt2ID(const char* sText)
+  - eRotAxis:                # VtRotAxis RotAxis_Txt2ID(const char* sText);
       type:    "combo" 
       descr:   "axis of\nrotation"
       tooltip: "rotation axis of the sample, Y or Z"
@@ -57,7 +57,7 @@ sample_reflectom:
   - Title_Substrate: 
       type:    "title" 
       default: "Substrate"
-  - SubMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
+  - eSubsMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "substrate\nmaterial"
       tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 

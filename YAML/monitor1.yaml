@@ -19,7 +19,7 @@ monitor1:                    # source module that will be executed
       default: "monitor.dat"
       prefix:  "-O"   
 
-  - ePar    :                 # -k    [-]  -VtMon1Par  Mon1Par_Txt2ID(const char* sText)
+  - eMon1Par:                 # -k    [-]  -VtMon1Par  Mon1Par_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "variable\nparameter" 
       tooltip: "parameter, as a function of which the intensity is shown" 
@@ -79,7 +79,7 @@ monitor1:                    # source module that will be executed
       default: [NO,YES]
       column:  1                     
       prefix:  "-e"   
-  - eNorm   :                 #   -VtMonNorm MonNorm_Txt2ID(const char* sText)
+  - eMonNorm:                 #   -VtMonNorm MonNorm_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "normalization" 
       tooltip: "none: intensities of the neutron trajctories are distributed unchanged into channels\nbin size: intensities are normalized to the channel width\nreference file: intensities are divided by those in the reference file" 

@@ -118,7 +118,7 @@ sample_inelast:
       prefix:  "-z"     
       column:  2  
 
-  -  SmplGeom:     # enum 'VtSmplGeom' for sample geometry: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL,  function: VtSmplGeom SmplGeom_Txt2ID(const char* sText)
+  - eSmplGeo:               #  VtSmplGeom SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample\ngeometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
@@ -126,7 +126,7 @@ sample_inelast:
       prefix:  "-G"     
       column:  0 
 
-  - SizePar1:                   #  0.0  [cm]   thickness of cuboid or (outer) diameter of sphere or cylinder
+  - SizePar1:                 #  0.0  [cm]   thickness of cuboid or (outer) diameter of sphere or cylinder
       type:    "float" 
       descr:   "thickness or\ndiameter [cm]"
       tooltip: "thickness of a cuboid or (outer) diameter of a sphere or cylinder"
