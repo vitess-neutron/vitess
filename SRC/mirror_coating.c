@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 	  if (pFileOut!=NULL)
 	  {
       // Header
-      GetActDate(sText);
+      GetActDate(sText, DATE_STD);
       Mode2Text (sMode, eMode);
       fprintf(pFileOut, "#%s\n# %s\n# %s for m=%4.2f\n", sDash, sText, sMode, mO);
 	

@@ -14,15 +14,6 @@
 #define Z(x) ISP[x][2]
 
 
-typedef enum
-{	
-  VT_NO_DIR = 0,
-	VT_IN     = 1,
-	VT_OUT    = 2,
-	VT_INSIDE = 3
-}
-VtDir;
-
 /* for function 'PathThroughBenderGravOrder2' in module bender */
 /* ----------------------------------------------------------- */
 double NeutronPlaneAngle2             (const Neutron *, const double, const double, const double);

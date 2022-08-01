@@ -1,20 +1,26 @@
 #ifndef DETECTOR_H
 #define DETECTOR_H
 
+
+#define VT_FLAT_AREA  0
+#define VT_CYL_AREA   1
+#define VT_FLAT_TUBES 2
+
+
 typedef struct
 {
   double r;
-  int axis;
-  short phimode;  // 0 = const. pixel size; 1 = const Delta phi 
+  VtAxis eAxis;
+  short bCnstPhi;  // 0 = const. pixel size; 1 = const Delta phi 
 }
 CylinderDetectorType;
 
 typedef struct
 {
   double wallThickness;       // only tube det: thickness of tube walls
-  short  vertTubeOrientation, // vertical (1) or horizontal (0) tube axis
-         rectXsec,            // circular (0) or rectangular (1) tube cross-section
-         tubeshift;           // tube layers shifted against each other
+  short  bTubeShift;          // tube layers shifted against each other
+  VtOrient    eTubeOrient;    // horizontal (0) or vertical (1) or tube axis
+  VtTubeShape eTubeShape;     // circular (0) or rectangular (1) tube cross-section
 }
 TubeDetectorType;
 
@@ -50,22 +56,27 @@ typedef struct
   double Resolution[3];  
   double Thickness, Width, Height;
   double NLayers, NColumns, NRows;
-  double Theta, Phi, Distance,       // detector coordinates (center) 
-         Phi_n, Theta_n;             // inclination of detector surface w.r.t. position vector
-  double GasPressure, GasTemperature,               // only gas det: gas pressure and temperature
-         SolidAtomDensity, SolidAbsorberthickness,  // only solid det: density (N) and thickness of converter layer
-         EfficiencyMod;                             // modify efficiency
-  int    Geom,          // 0: flat,   1: cyl,          2: tube
-         usage,         // 0: normal, 1: monitor only, 2: grid off
-         Absorbertype;  // Boron10 (0,2), He3 (1), Li (3) or other (5)               
-  short  array,         // first or intermediate part of detector array        should become type 'VtModAct'
-         minColor,      /* colour necessary for the trajectory to be regarded
-                           colour -1 means: all trajectories are regarded  
-                           use neutrons with color >= minColour */
-         maxColor,      /* colour necessary for the trajectory to be regarded
-                           colour -1 means: all trajectories are regarded  
-                           use neutrons with color <= maxColour */
-         addColor;      // tag detected neutrons by adding addColor to color
+  double Theta, Phi, Distance,  // detector coordinates (center) 
+         Phi_n, Theta_n;        // inclination of detector surface w.r.t. position vector
+  double AbsPar1,               // Absorption parameters: pressure and temp. for gas
+         AbsPar2,               //                        thickness and density for solids
+         GasPressure,           // only gas detectors: pressure 
+         GasTemperature,        //                 and temperature of the converter gas
+         SolidAbsThickness,     // only solid detectors: thickness 
+         SolidAtomDensity,      //                   and density of the converter layer
+         EfficiencyMod;         // modify efficiency
+  VtDetGeom eGeom;              // geometry 1: cyl     2: flat   
+  VtDetType eType;              // type     0: tubes   1: area/volume
+  VtDetUse  eUsage;             // usage    0: realistic (normal)   1: monitor only   2: grid off
+  VtDetAbs  eAbsMat;            // Boron10 (0,2), He3 (1), Li (3) or other (5)               
+  short  bArray,                // first or intermediate part of detector array        should become type 'VtModAct'
+         minColor,              /* colour necessary for the trajectory to be regarded
+                                   colour -1 means: all trajectories are regarded  
+                                   use neutrons with color >= minColour */
+         maxColor,              /* colour necessary for the trajectory to be regarded
+                                   colour -1 means: all trajectories are regarded  
+                                   use neutrons with color <= maxColour */
+         addColor;              // tag detected neutrons by adding addColor to color
 }
 DetectorType;
 
@@ -74,10 +85,13 @@ DetectorType;
 short (*NeutronIntersectsDetector)(Neutron *Nin, VectorType ISP[]);
 void (*DetectorSpot)(VectorType SP, VectorType DetSpot);
 
-/* prototypes of local functions */
-void  OwnInit   (int argc, char *argv[]);   // reads input parameters and initializes global variables
-void  OwnCleanup();                         // does module specific cleanup
-void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization
+/*******************************************************/
+/** prototypes of local functions                     **/
+/*******************************************************/
+void  OwnInit     (int argc, char *argv[]);   // reads input parameters and initializes global variables
+void  OwnCleanup  ();                         // does module specific cleanup
+void  SetGeometry (char* sColor);             // fills the structure stGeometry for visualization
+void  InitDetector(DetectorType* pDetector);  // Initializes the detector structure
 
 /* Intersection of neutron with different geometries       */
 short NeutronIntersectsCubeDetector(Neutron *Nin, VectorType ISP[]);
@@ -95,6 +109,6 @@ double GetLambdaProbFromEff(const double lambda, const TotalID NeutronID);
 double GetXsec(int h_absorbertype, double h_lambda);                        
 
 /* checks and completes detector geometry   */
-void  CheckAndAdjustDetectorInput(int type);
+void  CheckAndAdjustDetectorInput(VtDetType type, VtDetGeom geom);
 
 #endif

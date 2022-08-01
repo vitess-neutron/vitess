@@ -13,6 +13,7 @@
 /*                                Allow for several monochromators after each other          */
 /* 2.1  Jan 2020  K. Lieutenant   tidy up, transmission geom. corrected, attenuation improved*/  
 /* 2.2  Jan 2020  K. Lieutenant   option: rotating monochromator                             */  
+/* 2.3  Apr 2020  K. Lieutenant   adaption to VITESS 4, e.g. file parameters to input param. */  
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -37,11 +38,18 @@ int main(int argc, char *argv[])
   // --------------
   _eModule=monochrom.eModule;
 	Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "2.2");
+  PrintModuleName(_eModule, "2.3");
+
   monochrom.OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
   bLengthCmpr   = FALSE;
+
+  /* Reads monochromator parameters and combines with them input parameters */
+   monochrom.setMonochrPar();
+
+  /* Determines the dependent parameters and write out important parameters */
+   monochrom.calcAndWritePar();
   
   DECLARE_ABORT;
 

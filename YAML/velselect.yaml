@@ -104,7 +104,7 @@ velselect:
       type:    "switch" 
       descr:   "treat neutrons\npassing by"
       tooltip: "NO: neutrons passing outside the rotor are removed\nYES: neutrons passing outside the rotor disc are kept. Warning is given"
-      default: "NO"
+      default: [NO, YES]
       column:  0                     
       prefix:  "-p"     
 

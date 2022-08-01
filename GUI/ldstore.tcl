@@ -673,7 +673,7 @@ proc importPipe {} {
   set name [fileDialog open]
   if {$name == ""} return
   if [dontDoit "Your changes will be saved to a snapshot only. Continue importing a pipe?"] return
-  doSnapshot
+     
   doImportPipe $name
 }
 
@@ -809,7 +809,7 @@ proc loadAll {extension {givenname ""}} {
   }
 
   if [dontDoit "Your changes will be saved to a snapshot only. Continue loading?"] return
-  doSnapshot
+     
 
   set f [openSaveFile $name "experiment description save file" version]
   if {$f == ""} return
@@ -1089,7 +1089,11 @@ proc recoverFileGUI {} {
     return
   }
   global FTime bgColor
-  set fdir [file join [globVal SourceDirectory] FILES .saved]
+  if {[getSystem] == "windows"} {
+    set fdir [file join [globVal SourceDirectory] FILES .saved]
+  } else {
+    set fdir [file join [globVal SourceDirectory] /tmp .saved]
+  }
   set i 0
   set FTime {}
   set fname {}

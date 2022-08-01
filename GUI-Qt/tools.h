@@ -47,42 +47,39 @@ typedef char (*convert_char_ptr)(const char *);
 
 static QMap<QString, char (*)(const char *)> functionMapChar = {
 //sample
- {"RotAxis", reinterpret_cast<convert_char_ptr>(&Axis_Txt2ID)},
+ {"eRotAxis", reinterpret_cast<convert_char_ptr>(&RotAxis_Txt2ID)},
 //moderator
- {"eShape",   reinterpret_cast<convert_char_ptr>(&ModShape_Txt2ID)},
+ {"eModShp",   reinterpret_cast<convert_char_ptr>(&ModShape_Txt2ID)},
 
 };
 
 static QMap<QString, int (*)(const char *)> functionMap = {
-//   source
-//     {"SrcName",  (convert_ptr) &SrcName_Txt2ID},
+//   general
+     {"eAxis",    reinterpret_cast<convert_ptr>(&Axis_Txt2ID)},
+     {"eOrient",  reinterpret_cast<convert_ptr>(&Orient_Txt2ID)},
+     {"eDirIO",   reinterpret_cast<convert_ptr>(&DirInOut_Txt2ID)},
+     {"eFrame",   reinterpret_cast<convert_ptr>(&FrameGen_Txt2ID)},
+     {"eShape",   reinterpret_cast<convert_ptr>(&Shape_Txt2ID)},
+
+     {"eDistr",   reinterpret_cast<convert_ptr>(&Distr_Txt2ID)},
+     {"eAbsMat",  reinterpret_cast<convert_ptr>(&AbsMat_Txt2ID)},
+     {"eInstGeo", reinterpret_cast<convert_ptr>(&InstGeom_Txt2ID)},
+//   source + moderator
      {"SrcName",  reinterpret_cast<convert_ptr>(&SrcName_Txt2ID)},
      {"eKind",    reinterpret_cast<convert_ptr>(&SrcKind_Txt2ID)},
-     {"eDir",     reinterpret_cast<convert_ptr>(&Direct_Txt2ID)},
+     {"eSrcType", reinterpret_cast<convert_ptr>(&SrcType_Txt2ID)},
+     {"eDirect",  reinterpret_cast<convert_ptr>(&Direct_Txt2ID)},
      {"eTrcMode", reinterpret_cast<convert_ptr>(&Trace_Txt2ID)},
-     {"DataVsn",  reinterpret_cast<convert_ptr>(&ModVsn_Txt2ID)},
-//   moderator
-//     {"eShape",   reinterpret_cast<convert_ptr>(&ModShape_Txt2ID)},
-     {"eType",    reinterpret_cast<convert_ptr>(&ModType_Txt2ID)},
+     {"eDataVsn", reinterpret_cast<convert_ptr>(&ModVsn_Txt2ID)},
+     {"eModType", reinterpret_cast<convert_ptr>(&ModType_Txt2ID)},
      {"eTS",      reinterpret_cast<convert_ptr>(&TS_Txt2ID)},
-//   writeout
+//   read_in + writeout
      {"ePrgFmt",  reinterpret_cast<convert_ptr>(&PrgFormat_Txt2ID)},
      {"eDatFmt",  reinterpret_cast<convert_ptr>(&DataFormat_Txt2ID)},
      {"eSepFmt",  reinterpret_cast<convert_ptr>(&Separator_Txt2ID)},
-//   monitor
-     {"ePar",     reinterpret_cast<convert_ptr>(&Mon1Par_Txt2ID)},
-     {"eNorm",    reinterpret_cast<convert_ptr>(&MonNorm_Txt2ID)},
-     {"eFormat",  reinterpret_cast<convert_ptr>(&Format2D_Txt2ID)},
-     {"ePar",     reinterpret_cast<convert_ptr>(&Mon1Par_Txt2ID)},
-     {"eParA",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
-     {"eParB",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
-     {"eParC",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
-     {"eBrl",     reinterpret_cast<convert_ptr>(&BrlNorm_Txt2ID)},
-     {"eParBrl",  reinterpret_cast<convert_ptr>(&BrlPar_Txt2ID)},
- //   read_in
-     {"eInPrgf",  reinterpret_cast<convert_ptr>(&PrgFormat_Txt2ID)},
-     {"eInForm",  reinterpret_cast<convert_ptr>(&DataFormat_Txt2ID)},
-//   guide
+//   frame
+     {"eSequenc", reinterpret_cast<convert_ptr>(&TfmnSeq_Txt2ID)},
+//   guide + mirrors
      {"eShapeY",  reinterpret_cast<convert_ptr>(&GdeShape_Txt2ID)},
      {"eShapeZ",  reinterpret_cast<convert_ptr>(&GdeShape_Txt2ID)},
      {"eLstPar",  reinterpret_cast<convert_ptr>(&ListPar_Txt2ID)},
@@ -91,15 +88,44 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"ePlotX",   reinterpret_cast<convert_ptr>(&PlotPar_Txt2ID)},
      {"ePlotY",   reinterpret_cast<convert_ptr>(&PlotPar_Txt2ID)},
      {"ePlotPrb", reinterpret_cast<convert_ptr>(&PlotPar_Txt2ID)},
-//   frame
-     {"Sequence", reinterpret_cast<convert_ptr>(&TfmnSeq_Txt2ID)},
-//   spacewindow
-     {"eCircWnd", reinterpret_cast<convert_ptr>(&Shape_Txt2ID)},
-     {"eMatrial", reinterpret_cast<convert_ptr>(&WndAbs_Txt2ID)},
-//   sample
-     {"Mode", reinterpret_cast<convert_ptr>(&MeasMode_Txt2ID)},
- //    {"RotAxis", reinterpret_cast<convert_ptr>(&Axis_Txt2ID)},
-     {"SmplGeom",reinterpret_cast<convert_ptr>(&SmpleGeom_Txt2ID)},
+     {"eMirrMat", reinterpret_cast<convert_ptr>(&MirrMat_Txt2ID)},
+//   monochromator + choppers
+     {"eMonoTyp", reinterpret_cast<convert_ptr>(&MonoType_Txt2ID)},
+     {"eMonoArr", reinterpret_cast<convert_ptr>(&MonoArrange_Txt2ID)},
+     {"eMonoFoc", reinterpret_cast<convert_ptr>(&MonoFocus_Txt2ID)},
+     {"eChnShp",  reinterpret_cast<convert_ptr>(&ChnlShape_Txt2ID)},
+//   windows + collimators
+     {"eFrmMat",  reinterpret_cast<convert_ptr>(&WndAbs_Txt2ID)},
+//   sample + sample environment
+     {"eSmplGeo", reinterpret_cast<convert_ptr>(&SmplGeom_Txt2ID)},
+     {"ePtclGeo", reinterpret_cast<convert_ptr>(&PtclGeom_Txt2ID)},
+     {"eDataSrc", reinterpret_cast<convert_ptr>(&DataSrc_Txt2ID)},
+     {"eMeasMod", reinterpret_cast<convert_ptr>(&MeasMode_Txt2ID)},
+     {"eSubsMat", reinterpret_cast<convert_ptr>(&MirrMat_Txt2ID)},
+//   detector
+     {"eDetGeom", reinterpret_cast<convert_ptr>(&DetGeom_Txt2ID)},
+     {"eDetType", reinterpret_cast<convert_ptr>(&DetType_Txt2ID)},
+     {"eDetUse",  reinterpret_cast<convert_ptr>(&DetUse_Txt2ID)},
+     {"eDetMat",  reinterpret_cast<convert_ptr>(&DetAbs_Txt2ID)},
+     {"eDetXsec", reinterpret_cast<convert_ptr>(&TubeShape_Txt2ID)},
+//   monitor + filter + eval
+     {"eMon1Par", reinterpret_cast<convert_ptr>(&Mon1Par_Txt2ID)},
+     {"eMonNorm", reinterpret_cast<convert_ptr>(&MonNorm_Txt2ID)},
+     {"eFormat",  reinterpret_cast<convert_ptr>(&Format2D_Txt2ID)},
+     {"eParA",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eParB",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eBrlNorm", reinterpret_cast<convert_ptr>(&BrlNorm_Txt2ID)},
+     {"eBrlPar",  reinterpret_cast<convert_ptr>(&BrlPar_Txt2ID)},
+     {"eFltPar1", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eFltPar2", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eFltPar3", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eFltPar4", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
+     {"eFltComb", reinterpret_cast<convert_ptr>(&FiltComb_Txt2ID)},
+     {"eFlt2D",   reinterpret_cast<convert_ptr>(&Mon2Par_Txt2ID)},
+     {"eEvalPar", reinterpret_cast<convert_ptr>(&EvalPar_Txt2ID)},
+     {"eEvalCmb", reinterpret_cast<convert_ptr>(&EvalComb_Txt2ID)},
+     {"eEvalSrt", reinterpret_cast<convert_ptr>(&EvalSort_Txt2ID)},
+     {"eEvalSel", reinterpret_cast<convert_ptr>(&AngleSel_Txt2ID)},
 };
 
 //map connects entries in menu help tools to files in WWW directory 

@@ -7,7 +7,8 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
-/* 1.4  Nov 2020  K. Lieutenant  preparation for tranfer to version 4                       */
+/* 1.4  Nov 2020  K. Lieutenant  preparation for transfer to version 4                      */
+/* 1.4a Nov 2020  K. Lieutenant  bug of too long module name fixed                          */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -32,14 +33,16 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*  MonFileName= NULL;   // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
-short  bProbactiv = TRUE,   // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
-       bExclusive = FALSE;  // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-VtMon1Par ePar = NO_PAR;    // -k    [-]   ID for parameter, as a function of which the intensity is shown
-long   nbiny  = 1;          // -n    [-]   number of monitor channels
-double xMin   = 0.0,        // -m   [var]  lower bound value of the monitored range 
-       xMax   = 0.0,        // -M   [var]  upper bound value of the monitored range
-       analysis_dir[3]      // -a -b -c    components of the quantization direction in x-, y- and z-direction
+VtMon1Par ePar = NO_PAR;       // -k    [-]   ID for parameter, as a function of which the intensity is shown
+char*  MonFileName= NULL;      // -O    [-]   Monitor output file containing polarization as a function of the chosen parameter
+short  bProbactiv = TRUE,      // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
+       bExclusive = FALSE,     // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+       iColour    = ANY_COLOR; // -C    [-]   index: for bAllFiles=FALSE: excludes all neutrons with diff. Colour from monitoring , if iColour >= 0 
+                               //                    for bAllFiles=TRUE : max. colour to which additional monitor files are generated             
+long   nbiny  = 1;             // -n    [-]   number of monitor channels
+double xMin   = 0.0,           // -m   [var]  lower bound value of the monitored range 
+       xMax   = 0.0,           // -M   [var]  upper bound value of the monitored range
+       analysis_dir[3]         // -a -b -c    components of the quantization direction in x-, y- and z-direction
            ={0.0,0.0,1.0};
 
 // Variables determined from input parameters
@@ -60,11 +63,9 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 int main(int argc, char *argv[])
 {
   char   sCompName  [21]="",
-         sModVsnName[40]="";
+         sModVsnName[MOD_NAME_LEN+8]="";
   char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
-         sParN[MAX_KIND+1][22]={"", "wavelength", "time",
-                               "horizontal divergence", "vertical divergence",
-                               "horizontal position",   "vertical position", "energy", "divergence yz"};
+         sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"};
   short  bRegistered=FALSE;
   int	   dy=0, 
          bincounts[10001];
@@ -86,9 +87,10 @@ int main(int argc, char *argv[])
   Init(argc, argv, _eModule);
   OwnInit(argc, argv);
 
+  // the following 4 commands replace the call of 'PrintModuleName' to extend the module name
   CompID2Name (sCompName, _eModule);
-  sprintf(sModuleName, "%s_%s",     sCompName, sParN[ePar]);
-  sprintf(sModVsnName, "%s_%s 1.4", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN,   "%s_%s",      sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN+7, "%s_%s 1.4a", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;
@@ -127,7 +129,14 @@ int main(int argc, char *argv[])
           prob = InputNeutrons[i].Probability;
 	      else 
           prob=1.0;
-	  
+
+        /* write out all neutrons, if 'exclusive counts = no' is set */
+        if (bExclusive==0)
+          WriteNeutron(&(InputNeutrons[i]));
+
+        /* exclude traj. with wrong colours: (iColour=-1 means: all colours accepted) */
+        if (iColour != ANY_COLOR && iColour!=InputNeutrons[i].Color) continue;
+
 	      /* calculate spin vector in the direction of the analysis */
 	      RotVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
@@ -226,7 +235,8 @@ int main(int argc, char *argv[])
 	      /* calculate spin vector in the original direction */
 	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
 
-	      if ((bExclusive==0)||(bRegistered==1))
+        /* write out registered neutrons, if 'exclusive counts = yes' is set */
+        if ((bExclusive==1) && (bRegistered==1))
 	        WriteNeutron(&(InputNeutrons[i]));
       }
     }
@@ -243,7 +253,7 @@ my_exit:
     {
 	    binerror[dy] = (bint[dy]/bintch[dy])*sqrt(1./bincounts[dy]);
     }
-    fprintf(fMonitor, "%10.3f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
+    fprintf(fMonitor, "%10.4f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
   }
 
   fclose(fMonitor);
@@ -298,6 +308,9 @@ void  OwnInit(int argc, char *argv[])
 	        if (nbiny > 10000)
 	          Error("number of bins must be <= 10000");
           break;
+        case 'C':
+          iColour = atol(&argv[i][2]);         /*  excludes all neutrons with diff. Colour, if iColour >= 0   */
+          break;  
 
 	      case 'm':
 	        xMin = atof(&argv[i][2]);       /* lower bound lambda, time or div. window [A], [ms], [deg]*/

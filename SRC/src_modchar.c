@@ -958,7 +958,7 @@ double IntAtan(const double IntBeg, const double IntEnd, const double Param)
 /**********************************************************************************************/
 char*  FullModPath(short eSource)
 {
-  static char sModPath[99]="FILES/moderators/";
+  static char sModPath[CHAR_BUF_SMALL]="FILES/moderators/";
 
   switch (eSource)
   {

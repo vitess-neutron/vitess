@@ -31,15 +31,15 @@ mon_brilliance:           # source module that will be executed
       tooltip: "This file is used to monitor the average and max. brilliance as a function of the given parameter set.\n1 line is written in each simulation"
       prefix:  "-F"  
  
-  - eParBrl:                  #     -k  "variable\nparameter"      VtBrlPar  BrlPar_Txt2ID(const char* sText)
+  - eBrlPar:                  #     -k  "variable\nparameter"      VtBrlPar  BrlPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "variable\nparameter"
       tooltip: "ID for the parameter, as a function of which the brilliance is shown"
-      default: ["lambda","time","div_y","div_z","pos_y","pos_z","div_rad","energy"]
+      default: ["time","lambda","energy","pos_y","pos_z","pos_rad","div_y","div_z","div_rad"]
       column:  0            
       prefix:  "-k"
 
-  - eBrl:                  #     -N  "norm. type"     VtBrlNorm BrlNorm_Txt2ID(const char* sText)            
+  - eBrlNorm:                  #     -N  "norm. type"     VtBrlNorm BrlNorm_Txt2ID(const char* sText)            
       type:    "combo" 
       descr:   "norm. type"
       tooltip: "absolute   absolute brilliance [n/(cm²s sr Ang)]\n
@@ -53,13 +53,14 @@ mon_brilliance:           # source module that will be executed
       type:    "switch" 
       descr:   "logarithmic\nbinning" 
       tooltip: "YES: bin size increases exponentially   NO: linear binning"
+      default: [NO,YES]
       column:  0            
       prefix:  "-B" 
-
   - bExclude:              #     -e  "exclusive\ncounts"
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "YES: only neutrons meeting the monitor conditions are written\nNO : all are written"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-e"   
  
@@ -71,7 +72,6 @@ mon_brilliance:           # source module that will be executed
       min:     1
       column:  0            
       prefix:  "-n"
-
   - iColour:               #     -C  "color"                     
       type:    "int" 
       descr:   "color" 
@@ -98,26 +98,31 @@ mon_brilliance:           # source module that will be executed
       type:    "float" 
       descr:   "min. lambda [Ang]"
       tootip:  "minimal wavelength to be taken into account"
+      min:     0.0
       column:  0            
       prefix:  "-l"
   - LmbdMax:               #     -L  "max. lambda [Ang]"
       type:    "float" 
       descr:   "max. lambda [Ang]" 
       tooltip: "maximal wavelength to be taken into account"
+      min:     0.0
       column:  1            
       prefix:  "-L"
   - EMin:                  #     -m  "min. energy [meV]"
       type:    "float" 
       descr:   "min. energy [meV]"
       tooltip: "minimal energy to be taken into account"
+      min:     0.0
       column:  0            
       prefix:  "-m"
   - EMax:                  #     -M  "max. energy [meV]"
       type:    "float" 
       descr:   "max. energy [meV]"
       tooltip: "maximal energy to be taken into account"
+      min:     0.0
       column:  1            
       prefix:  "-M"
+
   - yMin:                  #     -y  "min. width  [cm]"
       type:    "float" 
       descr:   "min. hor.\npos. [cm]"
@@ -142,6 +147,20 @@ mon_brilliance:           # source module that will be executed
       tooltip: "maximal vertical position to be taken into account"
       column:  1            
       prefix:  "-Z"
+  - RadMin:       
+      type:    "float" 
+      descr:   "min. radius [cm]" 
+      tooltip: "minimal radial position to be taken into account"
+      min:     0.0
+      column:  0            
+      prefix:  "-d"
+  - RadMax:    
+      type:    "float" 
+      descr:   "max. radius [cm]"
+      tooltip: "maximal radial position to be taken into account"
+      min:     0.0
+      column:  1            
+      prefix:  "-D"
 
   - DivYMin:               #     -h  "min. hor. \ndiv. [deg]"
       type:    "float" 
@@ -171,14 +190,17 @@ mon_brilliance:           # source module that will be executed
       type:    "float" 
       descr:   "min. radial\ndiv. [deg]" 
       tooltip: "minimal radial div. to be taken into account"
+      min:     0.0
       column:  0             
       prefix:  "-r"  
   - DivRMax:               #     -R  "max. radial \ndiv. [deg]"
       type:    "float" 
       descr:   "max. radial \ndiv. [deg]"
       tooltip: "maximal radial div. to be taken into account"
+      min:     0.0
       column:  1            
       prefix:  "-R"
+
   - Freq:                  #     -f  "frequency [Hz]"
       type:    "float" 
       descr:   "frequency [Hz]"

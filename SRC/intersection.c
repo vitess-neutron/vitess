@@ -623,15 +623,15 @@ long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, 
   if( (Pos2[2] <= DimSample[2]/2.) && (Pos2[2] >= - DimSample[2]/2.) ) /* exit cylinder wall */
     {
       if(Pos1[2] >= DimSample[2]/2.)   /* entrance top */
-	{
-	  if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
-	  return 1 ;
-	}
+      {
+	      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
+	      return 1 ;
+      }
       if(Pos1[2] <= - DimSample[2]/2.) /* entrance bottom */
-	{
-	  if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
-	  return 1;
-	}
+      {
+	      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
+	      return 1;
+      }
       else return 0 ;
     }
 
@@ -652,15 +652,15 @@ long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, 
   if( (Pos1[2] >= - DimSample[2]/2.) && (Pos1[2] <= DimSample[2]/2.) ) /* entrance cylinder wall */
     {
       if(Pos2[2] >= DimSample[2]/2.) /* exit top */
-	{
-	  if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
-	  return 1;
-	}
+      {
+	      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
+	      return 1;
+      }
       if(Pos2[2] <= - DimSample[2]/2.) /* exit bottom */
-	{
-	  if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
-	  return 1;
-	}
+      {
+	      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
+	      return 1;
+      }
       else return 0 ;
     }
   else return 0 ;

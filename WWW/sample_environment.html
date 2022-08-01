@@ -61,7 +61,8 @@
 
      <tr>
        <td valign="top">parameter file</td>
-       <td valign="top">The parameter file describes the geometry and compositions of the sample environment</td>
+       <td valign="top">The parameter file describes the geometry and compositions of the sample environment <br />
+                        These parameters are only used if they are not given as direct input parameters.     </td>
        <td valign="top"> -  </td>
        <td valign="top">-F  </td>
      </tr>
@@ -76,19 +77,18 @@
      </tr>
 
      <tr>
-       <td valign="top">colour</td>
-       <td valign="top">The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment<br />
-                        the given colour is used for coherent scattering, the incoherent scattering is marked with (colour+1) </td>
-       <td valign="top">&gt;=0  </td>
-       <td valign="top">-c      </td>
-     </tr>
-
-     <tr>
        <td valign="top">direction</td>
        <td valign="top">in : sample environment before sample<br />
                         out: sample environment after sample</td>
        <td valign="top">in<br>out </td>
        <td valign="top">-r        </td>
+     </tr>
+     <tr>
+       <td valign="top">colour</td>
+       <td valign="top">The trajectories will be marked by a so-called 'colour' to show that they are scattering in this sample environment<br />
+                        the given colour is used for coherent scattering, the incoherent scattering is marked with (colour+1) </td>
+       <td valign="top">&gt;=0  </td>
+       <td valign="top">-c      </td>
      </tr>
     </tbody> 
   </table>
@@ -143,7 +143,7 @@
        <td valign="top">User defined macroscopic incoherent scattering cross-section of the sample environment material<br />
                         If a non-zero value is given, incoherent scattering is applied.</td>
        <td valign="top">&gt;=0 </td>
-       <td valign="top">-I        </td>
+       <td valign="top">-i        </td>
      </tr>
 
      <tr>
@@ -161,7 +161,7 @@
                         This parameter only affects the attenuation in the sample environment. 
                         Absorption is assumed to increase linearly with the neutron wavelength. </td>
        <td valign="top">&gt;=0 </td>
-       <td valign="top">-A     </td>
+       <td valign="top">-m     </td>
      </tr>
 
      <tr>

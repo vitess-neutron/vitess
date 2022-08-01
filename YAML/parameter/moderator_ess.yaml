@@ -22,7 +22,7 @@ Moderator:
       column:  0                     
       prefix:  "-t"    
 
-  - eShape  :                   #   VtModShape ModShape_Txt2ID(const char* sText)
+  - eModShp :                   #   VtModShape ModShape_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "shape"
       tooltip: "moderator shape"

@@ -14,7 +14,7 @@ frame:			    # source module that will be executed
   - Title_1 : 
       type:    "title" 
       default: "transformation"
-  - Sequence:              # -S  RTM    [-]   sequence of operations RTM RMT TRM TMR MTR MRT
+  - eSequenc:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
       type:    "combo"  
       descr:   "sequence"
       tooltip: "sequence of Rotation, Translation, and Mirroring" 
@@ -78,6 +78,7 @@ frame:			    # source module that will be executed
       type:    "switch" 
       descr:   "mirror at\nyz plane"
       tooltip: "mirror x axis (plane yz)"
+      default: [NO,YES]
       column:  0                     
       prefix:  "-i"     
   - MirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
@@ -85,12 +86,14 @@ frame:			    # source module that will be executed
       descr:   "mirror at\nxz plane"
       default: "NO"
       tooltip: "mirror y axis (plane xz)"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-j"     
   - MirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
       type:    "switch" 
       descr:   "mirror at\nxy plane"
       tooltip: "mirror z axis (plane xy)"
+      default: [NO,YES]
       column:  2                     
       prefix:  "-k"     
 

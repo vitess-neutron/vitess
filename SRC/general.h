@@ -15,9 +15,11 @@ extern "C" {
 /******************************/
 
 #ifdef WIN32
-# define VINLINE __inline
+  # define VINLINE __inline
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+  # define VINLINE inline
 #else
-# define VINLINE inline
+  # define VINLINE
 #endif
 
 #ifdef _MSC_VER
@@ -91,6 +93,7 @@ long   maxi    (const long   value1, const long   value2);
 
 double SolidAngle    (const double dHorAngle,     const double dVertAngle);
 double TrueSolidAngle(const double dHorAngle,     const double dVertAngle);
+double TrueSolidAngleR(const double RadAngle);
 double ReflSNT       (char* sTxt, const double Q, const double m, const short bPrint);
 double ReflTypical   (            const double Q, const double m);
 double ReflTypicalT  (char* sTxt, const double Q, const double m, const short bPrint);
@@ -132,6 +135,7 @@ FILE*  fileOpen          (const char* sName, const char* sMode);
 FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sContent);
 
 void   Error  (const char *text);
+void   Error2 (const char *text1, const char *text2);
 void   Warning(const char *text);
 void   Note   (const char *text);
 void   Abort  ();
@@ -149,7 +153,7 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
-void   GetActDate(char* sDate);                      // Gets current date from system  
+void   GetActDate(char* sDate, short eDateFmt);      // Gets current date from system  
 void   GetActTime(char* sTime);                      // Gets current time from system  
 
 void   ChangeSlash(char* pStr);

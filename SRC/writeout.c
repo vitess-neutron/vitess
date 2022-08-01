@@ -26,7 +26,8 @@
 /* 1.9   Mar 2020  K. Lieutenant   new central visualization parameters                      */
 /* 1.10  Mar 2020  K. Lieutenant   binary output for VITESS format                           */
 /* 1.11  Feb 2021  K. Lieutenant   binary output for all data formats                        */
-/* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                     */
+/* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                    */
+/* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -34,6 +35,7 @@
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
+#include "convert.h"
 #include "mcpl.h"
 
 
@@ -41,7 +43,7 @@
 /** Definitions and Enums    **/
 /******************************/
 #define SP(var, form) if (iSep) strcpy(var,pSep); strncat(var, form, 13)
-#define FP(s) if (bHeader){if (iSep++) fputs(pSep, pOutFile); fputs(s, pOutFile);}
+#define FP(s) if (iSep++) fputs(pSep, pOutFile); if (bHeader) fputs(s, pOutFile);
 
 #define cID       0
 #define cTrc      1
@@ -60,15 +62,18 @@
 #define cSpinZ   14
 
 #define BLOCK_SIZE 20.0
+#define TITLE_LEN  80
+
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void  OwnInit(int argc, char *argv[]);                                           // Reads input parameters and sets global variables
 void  OwnCleanup();                                                              // Does module specific cleanup
+void  HeaderAndParameters(void);                                                          // Writes header of binary file
 short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
                      const VectorType Direction);                                
-void  VitessParameters(int iSsep, const char *sSep);                             // Defines format for variables in output file and print headline
+void  VitessParameters();                                                        // Defines format for variables and headline in output file 
 void  McStasParameters();                                                        // Sets output parameters for McStas  
 void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6  
 void  MCNPXParameters();                                                         // Sets output parameters for MCNPX  
@@ -103,7 +108,9 @@ short        bF_cID=TRUE,               //  -c   [-]   string containing 9 flags
              bF_cDirection=TRUE,
              bF_cSpin=TRUE;
 
-double       FactInt   = 1.0;           //  -I   [-]   Factor to normalize to the source intensity from MCNP data
+double       FactInt   = 1.0;           //  -I   [-]   factor to normalize to the source intensity from MCNP data
+int          iSurface  = MISSING;       //  -s   [-]   surface ID written to the event file
+char*        pTitle=NULL;               //  -T   [-]   title of the simulation 
 
 double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
              filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
@@ -126,7 +133,8 @@ char*          sHeader =NULL;           //             header: parameters of the
 char*          sUnits  =NULL;           //             header: units used in the event file
 short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
                bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           form[15][15]={"","","","","","","","","","","","","","",""};            
+char           sVsn[5]="1.13",
+               form[15][15]={"","","","","","","","","","","","","","",""};            
                                         // formats to print data of the different parameters using VITESS
 
 
@@ -156,18 +164,20 @@ int main(int argc, char **argv)
   _eModule=MCN_WRITEOUT;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.12");
+  PrintModuleName(_eModule, sVsn);
   OwnInit(argc, argv);
   
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
-  // if (bVisInstr) stGeometry.pDescr = "writeout:white";
+
+  if (bActive)
+    HeaderAndParameters();
  
   DECLARE_ABORT;
 
   // loop over trajectories
   // ----------------------
-	while((ReadNeutrons())!= 0)
+	while (ReadNeutrons() != 0)
   {
     for(i=0; i<NumNeutGot; i++) 
     {
@@ -251,14 +261,16 @@ int main(int argc, char **argv)
 
           case VT_MCNP6_FMT:
             if (eDatFormat==VT_BINARY)
-            { nBytesW = fwrite(&OutMp6Neutron, sizeof(Mcnp6Neutron), 1, pOutFile);
+            { int num=88;
+              fwrite(&num, 4, 1, pOutFile);
+              nBytesW = fwrite(&OutMp6Neutron, sizeof(Mcnp6Neutron), 1, pOutFile);
+              fwrite(&num, 4, 1, pOutFile);
             }
             else
             { fprintf(pOutFile, sOutform, OutMp6Neutron.History,     OutMp6Neutron.ID,
                                           OutMp6Neutron.Counts,      OutMp6Neutron.Energy,      OutMp6Neutron.Shakes,
                                           OutMp6Neutron.Position[0], OutMp6Neutron.Position[1], OutMp6Neutron.Position[2],
-			                                    OutMp6Neutron.Vector  [0], OutMp6Neutron.Vector  [1], OutMp6Neutron.Vector  [2],
-		                                      OutMp6Neutron.Unknown);
+			                                    OutMp6Neutron.DirX,        OutMp6Neutron.DirY,        OutMp6Neutron.Surface);
             }
             break;
 
@@ -292,6 +304,7 @@ int main(int argc, char **argv)
         if (ePrgFormat!=VT_MCPL_FMT)
         { 
           double nBlocks, rest;
+
           if (eDatFormat!=VT_BINARY)
             fputs("\n", pOutFile);
 
@@ -307,6 +320,7 @@ int main(int argc, char **argv)
   // Do module specific cleanups
  my_exit:
   OwnCleanup();
+  fprintf(LogFilePtr,"\n");
   
   // Do the general cleanup
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -320,9 +334,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void  OwnInit(int argc, char *argv[]) 
 {
-  int         i=0,         // index of parameter list  
-              iSep=0;      // index of formats
-  const char* pSep=NULL;   // separator
+  int         i=0;         // index of parameter list  
 
   for(i=1; i<argc; i++) 
   { 
@@ -351,11 +363,19 @@ void  OwnInit(int argc, char *argv[])
           eSeparator = (VtSeparator) atoi(&argv[i][2]);
           break;
 
-        case 'c':
-          sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
-          break;
         case 'I':
           FactInt    = atof(&argv[i][2]);
+          break;
+        case 's':
+          iSurface = atoi(&argv[i][2]);
+          break;
+        case 'T':
+          pTitle = &argv[i][2];
+          break;
+
+
+        case 'c':
+          sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
           break;
         case 'C':
           iDetectColor = (short) atoi(&argv[i][2]);
@@ -426,6 +446,7 @@ void  OwnInit(int argc, char *argv[])
     }
     else
     { Note("writeout inactive, no file written");
+      bHeader = FALSE;
     }
   } 
   else 
@@ -434,49 +455,93 @@ void  OwnInit(int argc, char *argv[])
 
   if (ePrgFormat==VT_MCPL_FMT && eDatFormat!=VT_BINARY)
     Note("Input and output of MCPL data is handled via module 'mcpl' which stores data in binary format.\nChoice of ASCII format ignored.");
+}
 
-  
-  if (eSeparator==VT_TABULATOR) 
-    pSep = "\t"; 
-  else if (eSeparator==VT_BLANK) 
-    pSep = " ";
+void HeaderAndParameters(void)
+{  
+  int         iNum[12]={2,143,32,-50000,-1,0,0,-11,1,299,0,32}; 
+  char        sDate[11]="", sFormat[10]="", 
+              sDateUS[10]="         ", sTime[11]="          ", 
+              sSrcName  [CHAR_BUF_XS]="",    sID[9]="SF_00001", sPrg[9]="VITESS  ", sPrgVsn[9]="3.5  ",
+              sHeadlines[CHAR_BUF_SMALL]="", sTitle[TITLE_LEN+1]="VITESS simulation   ";
+  Mcnp6Header Head;
+  int k;
+
+  GetActDate(sDate,   DATE_STD);
+  GetActDate(sDateUS, DATE_US); strcat(sDateUS, " ");
+  GetActTime(sTime);            strcat(sTime  , "  ");
+  PrgFormat_ID2Txt(sFormat, ePrgFormat);
+  if (pTitle!=NULL)
+    StrgCopy(sTitle, pTitle, TITLE_LEN);
+
+  sprintf(sSrcName,   "VITESS 3.5  Trajectories module %s %s  %s-Format", sModuleName, sVsn, sFormat);
+  sprintf(sHeadlines, "# %s\n# %s %s\n# %s\n", sSrcName, sDate, sTime, sTitle);
+
+  // define format for variables in output file and print header
+  if (eDatFormat==VT_BINARY)
+  {
+    switch (ePrgFormat)
+    { 
+      case VT_MCPL_FMT:
+        mcpl_hdr_set_srcname    (hOutFile, sSrcName);   /* Name of the generating application         */
+        mcpl_hdr_add_comment    (hOutFile, sTitle);     /* Add one or more human-readable comments    */
+        mcpl_enable_polarisation(hOutFile);             /* to write the "polarisation" info           */
+        break;
+      case VT_MCNP6_FMT:
+        Head.nBytes   = 8;
+        Head.iNum1[0] = 8; Head.iNum1[1] = 143;
+        memcpy(Head.sID,      sID,    8);
+        memcpy(Head.sPrg,     sPrg,   8);
+        memcpy(Head.sVsn,     sPrgVsn,5);
+        memcpy(Head.sDatePrg, sDateUS,9);
+        memcpy(Head.sDateEnd, sDateUS,9);
+        memcpy(Head.sTimeEnd, sTime, 10);
+        memcpy(Head.sDateBeg, sDateUS,9);
+        memcpy(Head.sTimeBeg, sTime,  9);
+        memcpy(Head.sTitle,   sTitle, TITLE_LEN);
+        for (k=0; k < 12; k++)
+          Head.iNum2[k]=iNum[k];
+        Head.iNum2[5] = (int)NumNeutWritten;
+        memset(Head.sRest, '\0', 300);
+
+        fwrite(&Head, sizeof(Mcnp6Header), 1, pOutFile);
+        break;
+    }
+  }
   else
-    Error("Separator has unknown value");
-
-  // define format for variables in output file and print headline
-  if (bActive && eDatFormat!=VT_BINARY)
   {
     switch (ePrgFormat)
     { case VT_MCSTAS_FMT:
         McStasParameters();
         if (bHeader)
-        { fprintf(pOutFile, "#Trajectories writeout_McStas \n");
+        { fprintf(pOutFile, "%s", sHeadlines);
           fprintf(pOutFile, "%s%s", sHeader, sUnits);
         }
         break;
       case VT_MCPL_FMT:
-        mcpl_hdr_set_srcname    (hOutFile, "VITESS 3.4  module writeout 1.10"); /* Name of the generating application         */
-        mcpl_hdr_add_comment    (hOutFile, "first test");                       /* Add one or more human-readable comments    */
-        mcpl_enable_polarisation(hOutFile);                                     /* to write the "polarisation" info           */
+        mcpl_hdr_set_srcname    (hOutFile, sSrcName);   /* Name of the generating application         */
+        mcpl_hdr_add_comment    (hOutFile, sTitle);     /* Add one or more human-readable comments    */
+        mcpl_enable_polarisation(hOutFile);             /* to write the "polarisation" info           */
         break;
       case VT_MCNP6_FMT:
         MCNP6Parameters();
         if (bHeader)
-        { fprintf(pOutFile, "#Trajectories writeout_MCNP6 \n");
+        { fprintf(pOutFile, "%s", sHeadlines);
           fprintf(pOutFile, "%s%s", sHeader, sUnits);
         }
         break;
       case VT_MCNPX_FMT:
-        MCNPXParameters();
+        /* MCNPXParameters();
         if (bHeader)
         { fprintf(pOutFile, "#Trajectories writeout_MCNPX \n");
           fprintf(pOutFile, "%s%s", sHeader, sUnits);
-        }
+        }*/
+        Error("MCNPX format not yes properly implemented");
         break;
       case VT_VITESS_FMT:
 	      if (bHeader) 
-          fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
-        VitessParameters(iSep, pSep);
+          fprintf(pOutFile, "%s", sHeadlines);
+        VitessParameters();
         break;
       default:   
         Error("Data format not (yet) existent");
@@ -539,8 +604,18 @@ short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const Vecto
 /***************************************************************/
 /**  Defines format for variables in output file and header   **/
 /***************************************************************/
-void VitessParameters(int iSep, const char *pSep)
+void VitessParameters()
 {
+  const char* pSep=NULL;   // separator
+  int         iSep=0;      // index of formats
+
+  if (eSeparator==VT_TABULATOR) 
+    pSep = "\t"; 
+  else if (eSeparator==VT_BLANK) 
+    pSep = " ";
+  else
+    Error("Separator has unknown value");
+
   if (pOutFile)
   {
     if (bHeader) fputs("#", pOutFile);
@@ -632,7 +707,7 @@ void VitessParameters(int iSep, const char *pSep)
     { Error("Separator has unknown value");
     } // end Separator
 
-    if (bHeader) fputs("\n", pOutFile);
+    fputs("\n", pOutFile);
   } // end if (pOutFile)
 }
 
@@ -707,28 +782,28 @@ void MCNP6Parameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# History       ID         weight          E            time        pos_x    pos_y    pos_z     dir_x     dir_y     dir_z      unused\n";  
-      sUnits   = "#                          [MeV]          [1]         [1e-8s]        [cm]     [cm]     [cm]      [1]       [1]       [1]             \n";  
-      sOutform = "%10.0f %10.0f  %13.6e %13.6e %13.6e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f  %9.6f";
+    { sHeader  = "# History       ID         weight          E            time        pos_x    pos_y    pos_z     dir_x     dir_y    surface \n";  
+      sUnits   = "#                            [1]         [MeV]        [1e-8s]        [cm]     [cm]     [cm]      [1]       [1]       [1]   \n";  
+      sOutform = "%10.0f %10.0f  %13.6e %13.6e %13.6e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.1f";
     }
     else
     {
-      sHeader  = "#   History          ID           weight          E            time          pos_x         pos_y         pos_z          dir_x         dir_y         dir_z          unused\n";  
-      sUnits   = "#                                  [1]          [MeV]        [1e-8s]          [cm]          [cm]          [cm]           [1]           [1]           [1]                 \n";  
-      sOutform = "%13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e";
+      sHeader  = "#   History          ID           weight          E            time          pos_x         pos_y         pos_z          dir_x        surface        dir_z \n";  
+      sUnits   = "#                                  [1]          [MeV]        [1e-8s]          [cm]          [cm]          [cm]           [1]           [1]           [1]  \n";  
+      sOutform = "%13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# History\t    ID   \t   weight\t      E  \t     time \t pos_x  \t   pos_y\t   pos_z\t   dir_x \t  dir_y \t  dir_z \t  unused\n";  
-      sUnits   = "#        \t         \t     [1] \t    [MeV]\t   [1e-8s]\t  [cm]  \t    [cm]\t    [cm]\t    [1]  \t   [1]  \t   [1]  \t        \n";  
-      sOutform = "%10.0f\t%10.0f\t%13.6e\t%13.6e\t%13.6e\t%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.6f\t%9.6f";
+    { sHeader  = "# History\t    ID   \t   weight\t      E  \t     time \t pos_x  \t   pos_y\t   pos_z\t   dir_x \t  dir_y \t surface\t \n";  
+      sUnits   = "#        \t         \t     [1] \t    [MeV]\t   [1e-8s]\t  [cm]  \t    [cm]\t    [cm]\t    [1]  \t   [1]  \t   [1]  \t \n";  
+      sOutform = "%10.0f\t%10.0f\t%13.6e\t%13.6e\t%13.6e\t%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.1f";
     }
     else
     {
-      sHeader  = "#   History\t      ID \t   weight\t      E  \t     time \t    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t    dir_z\t    unused\n";  
-      sUnits   = "#          \t         \t     [1] \t    [MeV]\t   [1e-8s]\t     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1] \t          \n";  
-      sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
+      sHeader  = "#   History\t      ID \t   weight\t      E  \t     time \t    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t   surface\t \n";  
+      sUnits   = "#          \t         \t     [1] \t    [MeV]\t   [1e-8s]\t     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1]  \t \n";  
+      sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }
   }
 }
@@ -801,12 +876,16 @@ short ConvertVitess2MCNP6(Mcnp6Neutron* pMcnpNeutron, const Neutron* pVitNeutron
 	memset(pMcnpNeutron, '\0', sizeof(Mcnp6Neutron));        
 
   pMcnpNeutron->History = 0.0;
-	pMcnpNeutron->ID      = 8.0;
+	pMcnpNeutron->ID      = 8.0 * pVitNeutron->Vector[2]/fabs(pVitNeutron->Vector[2]);
   pMcnpNeutron->Counts  = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
   pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit µeV -> MeV
   pMcnpNeutron->Shakes  = 1.0e+05 * pVitNeutron->Time;                             // unit  ms -> shakes = 1.0e-08 s
+  pMcnpNeutron->DirX    = pVitNeutron->Vector[0];
+  pMcnpNeutron->DirY    = pVitNeutron->Vector[1];
+  if (iSurface==MISSING) pMcnpNeutron->Surface = 0.0;
+  else                   pMcnpNeutron->Surface = (double) iSurface;
+
   CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
-  CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
 
   return(TRUE);
 }

@@ -13,8 +13,8 @@ source:				       # source module that will be executed
       type:    "string"
       default: "First Simulation" 
       column:  0                       
-  - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    combo                   # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+  - eKind   :                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)     SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+      type:    combo                   # This shall not be selected, but defined by the chosen module 
       descr:   "source type" 
       default: "source ISIS" 
       prefix:  "-K"     
@@ -27,7 +27,7 @@ source:				       # source module that will be executed
       type:    "window"
       descr:   "moderator"
       tooltip: "moderator description parameter"   
-#     default: "moderator.yaml"
+#     default: "moderator_isis.yaml"
 
   - Freq    :                          # -R        [Hz]   pulse frequency 
       type:    "float" 
@@ -87,7 +87,7 @@ source:				       # source module that will be executed
   - titel_2 :                       
       type:    "title" 
       default: "Propagation"
-  - eDir    :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
+  - eDirect :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "direction\ndefined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
@@ -185,7 +185,7 @@ source:				       # source module that will be executed
       tooltip: "desired wavelength (can be used for chopper phasing)" 
       column:  1                     
       prefix:  "-W"     
-  - eTrcMode:                          # -k                mode: NO_TRACING  WRITE_TRC_FILES  ONLY_TRC_TRAJ
+  - eTrcMode:                          # -k   VtTrace Trace_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "kind of\nraytracing"
       tooltip: "'write trace files': writes a file for each trajectries of interest\n'only trace trajectories': simulation only started for trajectories of interest"

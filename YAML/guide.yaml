@@ -198,6 +198,7 @@ guide_parallel:
       type:    "switch" 
       descr:   "abutment\nloss" 
       tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed" 
+      default: [NO,YES]
       column:  0                     
       prefix:  "-a" 
   - AbutLen :           		    # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 

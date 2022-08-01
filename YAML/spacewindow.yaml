@@ -19,7 +19,7 @@ spacewindow:
       min:     0.0
       column:  0                     
       prefix:  "-l"   
-  - eCircWnd:                 # -R   VtShape  Shape_Txt2ID(const char* sText)  
+  - eShape:                 # -R   VtShape  Shape_Txt2ID(const char* sText)  
       type:    "combo" 
       descr:   "window shape"  
       tooltip: "shape of the aperture" 
@@ -94,14 +94,14 @@ spacewindow:
       type:    "switch" 
       descr:   "used previous\nframe"  
       tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window plane (default)"
-      default: NO 
+      default: [NO, YES]
       column:  0                     
       prefix:  "-F"   
 
   - Title_out : 
       type:    "title"
       default: "Outer Material" 
-  - eMatrial:                 # -c IDEAL_ABS VtWndAbs   WndAbs_Txt2ID(const char* sText)
+  - eFrmAMat:                 # -c IDEAL_ABS VtWndAbs   WndAbs_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "frame material"  
       tooltip: "Material used for the absorbing window frame"

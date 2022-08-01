@@ -20,7 +20,7 @@ monitor1D:                    # source module that will be executed
       default: "monitor1D.dat" 
       tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
 
-  - eParA  :                 # -X            x-axis parameter for the first 1D monitor file 
+  - eParA  :                 # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "1st parameter\non x-axis"
       tooltip: "x-axis parameter for the first 1D monitor file"
@@ -30,29 +30,20 @@ monitor1D:                    # source module that will be executed
                 "col_vert","col_hor","color"]
       column:  0                     
       prefix:  "-X"   
-
-  - eParB  :                 # -Y           x-axis parameter for the second 1D monitor file 
-      type:    "combo" 
-      descr:   "2nd parameter\non x-axis" 
-      tooltip: "x-axis parameter for the second 1D monitor file"
-      default: ["none","pos_x","pos_y","pos_z","div_y","div_z",
-                "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta",
-                "col_vert","col_hor","color"]
-      column:  1                     
-      prefix:  "-Y"  
-
-  - eParC  :                 # -Z           x-axis parameter for the third 1D monitor file 
-      type:    "combo" 
-      descr:   "3rd parameter\non x-axis" 
-      tooltip: "x-axis parameter for the third 1D monitor file"
-      default: ["none","pos_x","pos_y","pos_z","div_y","div_z",
-                "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta",
-                "col_vert","col_hor","color"]
-      column:  2                     
-      prefix:  "-Z"  
-
+  - MinParA :                 # -w          minimal x value for the first 1D monitor file
+      type:    "float" 
+      descr:   "min. x value\n1st par." 
+      tooltip: "minimal x value for the first 1D monitor file"
+      default: 0.0
+      column:  0                     
+      prefix:  "-w"  
+  - MaxParA :                 # -W  10.0   maximal x value for the first 1D monitor file 
+      type:    "float" 
+      descr:   "max. x value\n1st par."
+      tooltip: "maximal x value for the first 1D monitor file"
+      default: 10.0
+      column:  0                     
+      prefix:  "-W"  
   - nBinParA:                 # -x   100    number of x channels for the first 1D monitor file 
       type:    "int" 
       descr:   "number of bins\n1st par." 
@@ -61,73 +52,20 @@ monitor1D:                    # source module that will be executed
       min:     1
       column:  0                     
       prefix:  "-x"  
-  - nBinParB:                 # -y          number of x channels for the second 1D monitor file 
-      type:    "int" 
-      descr:   "number of bins\n2st par."
-      tooltip: "number of x channels for the second 1D monitor file"
-      min:     1
-      column:  1                     
-      prefix:  "-y"   
-  - nBinParC:                 # -z          number of x channels for the third 1D monitor file 
-      type:    "int" 
-      descr:   "number of bins\n3st par." 
-      tooltip: "number of x channels for the third 1D monitor file" 
-      min:     1
-      column:  2                     
-      prefix:  "-z"   
-
-  - MinParA :                 # -w          minimal x value for the first 1D monitor file
-      type:    "float" 
-      descr:   "min. x value\n1st par." 
-      tooltip: "minimal x value for the first 1D monitor file"
-      default: 0.0
-      column:  0                     
-      prefix:  "-w"  
-  - MinParB :                 # -f          minimal x value for the first 2D monitor file 
-      type:    "float" 
-      descr:   "min. x value\n2st par."
-      tooltip: "minimal x value for the second 1D monitor file"
-      column:  1                     
-      prefix:  "-f"  
-  - MinParC :                 # -g          minimal x value for the first 3D monitor file
-      type:    "float" 
-      descr:   "min. x value\n3st par."
-      tooltip: "minimal x value for the third 1D monitor file"
-      column:  2                     
-      prefix:  "-g"  
-
-  - MaxParA :                 # -W  10.0   maximal x value for the first 1D monitor file 
-      type:    "float" 
-      descr:   "max. x value\n1st par."
-      tooltip: "maximal x value for the first 1D monitor file"
-      default: 10.0
-      column:  0                     
-      prefix:  "-W"  
-  - MaxParB :                 # -F        maximal x value for the second 1D monitor file
-      type:    "float" 
-      descr:   "max. x value\n2st par." 
-      tooltip: "maximal x value for the second 1D monitor file"
-      column:  1                     
-      prefix:  "-F"   
-  - MaxParC :                 # -G        maximal x value for the second 1D monitor file
-      type:    "float" 
-      descr:   "max. x value\n3st par." 
-      tooltip: "maximal x value for the third 1D monitor file"
-      column:  2                     
-      prefix:  "-G"  
 
 
   - bProbWt :                 # -p  YES   Display  : YES: Beam intensity   NO: number of trajectories
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "YES: Beam intensity  NO: number of trajectories"
-      default: "YES"
+      default: [YES,NO]
       column:  0                     
       prefix:  "-p"  
   - bExclude:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      default: [NO,YES]
       column:  1                     
       prefix:  "-e"  
  
@@ -147,7 +85,7 @@ monitor1D:                    # source module that will be executed
       column:   2                     
       prefix:  "-L"  
 
-  - eFilt1 :                 # -I NO_PAR filter parameter 1
+  - eFltPar1 :                 # -I VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter\nparameter 1"  
       tooltip: "filter parameter 1"
@@ -169,16 +107,15 @@ monitor1D:                    # source module that will be executed
       column:  2                     
       prefix:  "-U"  
 
-  - FiltComb:                 # -C  AND  filter 1 and 2 combined with AND or OR
+  - eFltComb:                 # -C  VtFiltComb FiltComb_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter\ncombination" 
       tooltip: "filter 1 and 2 combined with AND or OR"
       default: ["AND", "OR"]
-      index:   [1,0]
       column:  0                     
       prefix:  "-C"  
 
-  - eFilt2 :                 # -J  NO_PAR filter parameter 2
+  - eFltPar2 :                 # -J  VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter\nparameter 2"
       tooltip: "filter parameter 2"
@@ -208,6 +145,7 @@ monitor1D:                    # source module that will be executed
       type:    "switch" 
       descr:   "Polarisation\nanalysis" 
       tooltip: "YES: polarisation monitored   NO: intensity monitored"
+      default: [NO,YES]
       column:  0                     
       prefix:  "-P"  
 

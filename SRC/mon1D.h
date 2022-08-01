@@ -43,15 +43,15 @@ class Mon1D
   int      exclCounts;            // -e        do not forward neutrons to the pipe that do not contribute to the monitor data
 
   // optional input parameters (filters and polarisation analysis)
-  double   lambdaMin;             // -l        minimum wavelength, filter for the monitor
-  double   lambdaMax;             // -L        maximum wavelength, filter for the monitor
-  VtMonPar filterParam1;          // -I        filter parameter 1
-  VtMonPar filterParam2;          // -J        filter parameter 2
-  int      filterComb;            // -C        filter 1 and 2 combined with AND or OR
-  double   filterVarMin1;         // -u        minimum value of parameter 1, additional filter for the monitor
-  double   filterVarMax1;         // -U        minimum value of parameter 1, additional filter for the monitor
-  double   filterVarMin2;         // -v        maximum value of parameter 2, additional filter for the monitor
-  double   filterVarMax2;         // -V        maximum value of parameter 2, additional filter for the monitor
+  double     lambdaMin;             // -l        minimum wavelength, filter for the monitor
+  double     lambdaMax;             // -L        maximum wavelength, filter for the monitor
+  VtMonPar   filterParam1;          // -I        filter parameter 1
+  VtMonPar   filterParam2;          // -J        filter parameter 2
+  VtFiltComb filterComb;            // -C        filter 1 and 2 combined with AND or OR
+  double     filterVarMin1;         // -u        minimum value of parameter 1, additional filter for the monitor
+  double     filterVarMax1;         // -U        minimum value of parameter 1, additional filter for the monitor
+  double     filterVarMin2;         // -v        maximum value of parameter 2, additional filter for the monitor
+  double     filterVarMax2;         // -V        maximum value of parameter 2, additional filter for the monitor
 
   int      analysePol;            // -P        switched on if polarisation analysis desired
   MathVector* polAnalysisVector;  // -r -s -t  polarisation analysis vector
@@ -62,7 +62,7 @@ class Mon1D
   // Variables determined from input parameters or trajectory data
   FILE*       fMonitor[3];           // pointer to output file
   bool        bMultFiles;            // flag: more than 1 monitor file wanted
-  long        nBundle;               // number of bundles started
+  long        nBunches;               // number of bunches started
   long        nTrajTot[3];           // total number of trajectories within monitor limits
   double      IntTot  [3];           // total intensity within monitor limits
   double      xBinSize[3];           // size of x bins 
@@ -86,7 +86,7 @@ class Mon1D
   double DetermineParameter(VtMonPar id, Neutron* n); // Determine, which parameter has to be calculated
   int    FillMonitorArray(Neutron* n);           // Fill all monitors chosen
   int    FillMonitor(Neutron* n, int counter);   // Fill one monitor, if the neutron fulfills all constraints
-  void   WriteOut(long iBndl);                   // Write output file
+  void   WriteOut(long iBnch);                   // Write output file
   void   FreeMemory();                           // Free allocated memory
 };
 

@@ -10,7 +10,7 @@
 /* 1.2b JAN 2010  A. Houben      xyz output                                                 */
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.3a Nov 2020  K. Lieutenant  new 'mon2_header'                                          */
-/* 1.4  Mar 2021  K. Lieutenant  update after each bundle                                   */
+/* 1.4  Mar 2021  K. Lieutenant  update after each bunch                                   */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -42,21 +42,21 @@ double   FiltLmbdMin=-1.0,      // -l   [Ang]  filter: lower bound value of the 
          FiltLmbdMax=-1.0;      // -L   [Ang]  filter: upper bound value of the wavelength range
 
 // Variables determined from input parameters
-long   nBundle = 1;                   // number of bundles started
-double BinPosY   [BINSIZE];           // edges of the bins of the first parameter
-double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter
-double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
-double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
-long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
-long   nTrajTot=0;                    // total number of traj. within monitor limits
-double TotInt  =0.0;                  // total intensitiy within monitor limits
+long     nBunches  = 1;         //             number of bunches started
+double*  BinPosY   = NULL;      //             edges of the bins of the first parameter
+double*  BinPosZ   = NULL;      //             edges of the bins of the second parameter
+double** IntYZ     = NULL;      //             intensity within a bin (in 2 dimensions) 
+double** IntYZError= NULL;      //             standard deviation of this intensity 
+long  ** nTrajYZ   = NULL;      //             number of trajectories within a bin
+long     nTrajTot=0;            //             total number of traj. within monitor limits
+double   TotInt  =0.0;          //             total intensitiy within monitor limits
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
-void UpdateMon(long iBndl);             // Updates monitor output file 
+void UpdateMon(long iBnch);             // Updates monitor output file 
 
 
 /******************************/
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   short  bRegistered=0;
   int	   iY=0, jZ=0;
   long 	 i=0,
-         iBndl=0;       // current bundle
+         iBnch=0;       // current bunch
   double prob   = 0.0;  // Intensitiy of a trajectory
 
   // reading of input data and initilisation
@@ -81,16 +81,15 @@ int main(int argc, char *argv[])
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
 
-  nBundle = ReadNumBndl();
+  nBunches = ReadNumBnch();
 
   // initializes arrays
-  for(iY = 0; iY < nBinsY+1; iY++)
-  {
-    BinPosY[iY] = WidthMin + (WidthMax-WidthMin) * iY / (double)nBinsY;
+  for (iY=0; iY <= nBinsY; iY++) BinPosY[iY] = WidthMin  +  (WidthMax-WidthMin)  * iY / (double)nBinsY;
+  for (jZ=0; jZ <= nBinsZ; jZ++) BinPosZ[jZ] = HeightMin + (HeightMax-HeightMin) * jZ / (double)nBinsZ;
 
-    for(jZ=0; jZ < (nBinsZ+1); jZ++)
+  for(iY=0; iY < nBinsY; iY++)
+  { for(jZ=0; jZ < nBinsZ; jZ++)
 	  {
-	    BinPosZ       [jZ] = HeightMin + (HeightMax-HeightMin) * jZ / (double)nBinsZ;
 	    IntYZ     [iY][jZ] = 0.0;
 	    IntYZError[iY][jZ] = 0.0;
 	    nTrajYZ   [iY][jZ] = 0;
@@ -111,8 +110,8 @@ int main(int argc, char *argv[])
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       { 
-        iBndl++;
-        UpdateMon(iBndl);
+        iBnch++;
+        UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes final monitor output
-  UpdateMon(nBundle);  
+  UpdateMon(nBunches);  
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -164,7 +163,7 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int i;
+  int i, iY;
 
   for(i=1; i<argc; i++)
   {
@@ -178,13 +177,9 @@ void  OwnInit(int argc, char *argv[])
 
 	      case 'y':
 	        nBinsY = atol(&argv[i][2]); /* number of bins y-direction */
-	        if(nBinsY>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
 	      case 'z':
 	        nBinsZ = atol(&argv[i][2]); /* number of bins, z-direction */
-	        if(nBinsZ>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR:  number of bins must be <= %d \n", BINSIZE); exit(99);}
 	        break;
 
 	      case 'w':
@@ -231,17 +226,34 @@ void  OwnInit(int argc, char *argv[])
   if (MonFileName==NULL)
     Error("You must define a monitor output file");
 
-  if (bProbactiv != 1) 
-    bProbactiv = 0;
+  if (bProbactiv != TRUE) 
+    bProbactiv = FALSE;
+
+  // Allocate memory for the monitor data
+  BinPosY    = (double*)  malloc((nBinsY+1) * sizeof(double));
+  BinPosZ    = (double*)  malloc((nBinsZ+1) * sizeof(double));
+
+  IntYZ      = (double**) malloc(nBinsY * sizeof(double*));
+  IntYZError = (double**) malloc(nBinsY * sizeof(double*));
+  nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
+
+  for (iY=0; iY < nBinsY; iY++) 
+  {
+    IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
+    IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));
+    nTrajYZ   [iY] = (long*)   malloc(nBinsZ * sizeof(long));
+  }
+
+  return;
 }
 
 
 /*******************************************************/
 /**  Updates main monitor output file                 **/
 /*******************************************************/
-void UpdateMon(long iBndl)
+void UpdateMon(long iBnch)
 {
-  double f_norm  = 1.0;               // ratio of total to processed bundles after treating current bundle
+  double f_norm  = 1.0;               // ratio of total to processed bunches after treating current bunch
   FILE*  fMonitor= NULL;              // pointer to output file
 
   // opens monitor file
@@ -249,14 +261,16 @@ void UpdateMon(long iBndl)
 
   if (fMonitor)
   {
-    f_norm = (double) nBundle / (double) iBndl;
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
 
     // writes header and data
-    WriteHeader2DB(fMonitor, eFormat, "Intensity", bProbactiv, iBndl, nBundle, TotInt, nTrajTot,   
+    WriteHeader2DB(fMonitor, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
                    nBinsY, "y/cm",          nBinsZ, "z/cm");
 
-    WriteOutput2DB(fMonitor, eFormat,              bProbactiv,  
-                   nBinsY, BinPosY,  BINSIZE, nBinsZ, BinPosZ, f_norm, (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+    WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
+                   nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm,
+                   IntYZ, IntYZError, nTrajYZ);
 
     fclose(fMonitor);
   }

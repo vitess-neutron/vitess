@@ -41,7 +41,7 @@ class Mon2D
   VtMonPar yParam;           // -Y  parameter to be shown on the y axis
 
   double   xMin;             // -w  minimum x value
-  double   xMax;             // -w  maximum x value
+  double   xMax;             // -W  maximum x value
   double   yMin;             // -h  mininum y value
   double   yMax;             // -H  maximum y value
 
@@ -50,19 +50,19 @@ class Mon2D
   VtFormat2D format;         // -F  file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
 
   // optional input parameters (filters and polarisation analysis)
-  double   lambdaMin;        // -l  minimum wavelength, filter for the monitor
-  double   lambdaMax;        // -L  maximum wavelength, filter for the monitor
-  VtMonPar filterParam1;     // -I  filter parameter 1
-  VtMonPar filterParam2;     // -J  filter parameter 2
-  int      filterComb;       // -C  filter 1 and 2 combined with AND or OR
-  double   filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
-  double   filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
-  double   filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
-  double   filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
+  double     lambdaMin;        // -l  minimum wavelength, filter for the monitor
+  double     lambdaMax;        // -L  maximum wavelength, filter for the monitor
+  VtMonPar   filterParam1;     // -I  filter parameter 1
+  VtMonPar   filterParam2;     // -J  filter parameter 2
+  VtFiltComb filterComb;       // -C  filter parameters 1 and 2 combined with AND or OR
+  double     filterVarMin1;    // -u  minimum value of parameter 1, additional filter for the monitor
+  double     filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
+  double     filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
+  double     filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
   
-  int    analysePol;       // -P  switched on if polarisation analysis desired
+  int    analysePol;         // -P  switched on if polarisation analysis desired
   MathVector* 
-    polAnalysisVector;     // -r -s -t  polarisation analysis vector
+    polAnalysisVector;       // -r -s -t  polarisation analysis vector
 
   // input parameters that are not (yet) implemented
   // int normalise;   // normaisation of the histogram by the size of x bins, input parameter
@@ -73,7 +73,7 @@ class Mon2D
 
   FILE*  fMonitor;             // pointer to output file
                            
-  long   nBundle;              // number of bundles started 
+  long   nBunches;              // number of bunches started 
   long   nTrajTot;             // total number of trajectories within monitor limits
   double IntTot;               // total intensity within monitor limits
                            
@@ -81,12 +81,13 @@ class Mon2D
   double yBinSize;             // size of y bons
 
   // arrays for data storage
-  double* BinPosX;             // edges of the bins of the first parameter
-  double* BinPosY;             // edges of the bins of the second parameter
-  double* dataArray;           // here the monitor data is stored
-  double* dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
-  double* dataArrayError;
-  long*   dataArrayCounts;
+  double*  BinPosX;             // edges of the bins of the first parameter
+  double*  BinPosY;             // edges of the bins of the second parameter
+  double** dataArray;           // here the monitor data is stored
+  double** dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
+  double** dataArrayError;
+  double** dataArrayPol;        // this is the average polarisation in a bin
+  long**   dataArrayCounts;
 
   // string weightTag[2];     // text: parameter
   // string formatTag[2];     // text: format
@@ -97,12 +98,12 @@ class Mon2D
   virtual ~Mon2D() {};
 
   // operations
-  void   OwnInit(int argc, char* argv[]);         // Read in the monitor parameters from the command line
+  void   OwnInit(int argc, char* argv[]);              // Read in the monitor parameters from the command line
   double DetermineParameter(VtMonPar id, Neutron* n);  // Determine, which parameter has to be calculated
-  int    FillMonitor(Neutron* n);                 // Fill monitor, if the neutron fulfills all constraints
-  void   WriteOut(long iBndl);                    // Write output file
+  int    FillMonitor(Neutron* n);                      // Fill monitor, if the neutron fulfills all constraints
+  void   WriteOut(long iBnch);                         // Write output file
   void   ParId2Text(char* sName, const VtMonPar ePar); // Convert parameter ID to text
-  void   FreeMemory();                            // Free allocated memory
+  void   FreeMemory();                                 // Free allocated memory
 };
 
 

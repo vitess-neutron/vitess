@@ -9,11 +9,12 @@
 /* 1.3  Jan 2002  K. Lieutenant  Cleanup(), log. binning, Writing out of the neutron data    */
 /* 1.4  Nov 2003  K. Lieutenant  evaluation dependent on colour                              */
 /* 1.5  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                */
-/* 1.6  Feb 2004  K. Lieutenant  'FullParName' + ERROR included; check of 'kind' out of loop */
+/* 1.6  Feb 2004  K. Lieutenant  'FullParName' + ERROR included; check of 'eKind' out of loop*/
 /* 1.7  Nov 2005  K. Lieutenant  transformation direction -> scattering angles added         */
 /* 1.7a Jun 2009  A. Houben      increased NCENTER from 100 to 200                           */
 /* 1.8  Apr 2013  K. Lieutenant  flight path correction                                      */
 /* 1.9  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
+/* 1.9a Oct 2021  K. Lieutenant  tidy up completed                                           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -21,6 +22,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "convert.h"
 #include "init.h"
 #include "general.h"
 #include "matrix.h"
@@ -36,35 +38,38 @@
 /*********************************/
 /** Global Variables            **/
 /*********************************/
-FILE  *fSpectra=NULL, 
-      *fTotCounts=NULL, 
-      *fInfoFile=NULL;;
+// Input parameters
+VtEvalPar eKind=VT_NO_EVAL;      // -k  [-]  evaluation parameter: d-spacing, momentum transfer, scattering angle or wavelength difference 
 
-int    bProbactiv =TRUE,      /* bProbactiv=1 means probabilities activated, else neutron weight is set to 1.0         */
-       bTOF       =FALSE,     /* TRUE : time of flight instrument */
-       bDeadSpot  =FALSE,     /* TRUE : deadspot exists */
-       bPathCor   =FALSE,     /* TRUE : correct TOF for real flight path from sample to detector */
-       bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements are written to the output      */
-       bCounted   =FALSE,     /* TRUE : neutron is counted, intensity added to channel and total intensity */
-       bLogBinning=FALSE;     /* TRUE : binning increases exponentially    FALSE: linear binning                  */
+FILE  *fSpectra   = NULL,        // -o  [-]  output file containing the evaluated data
+      *fTotCounts = NULL,        // -O  [-]  optional: file containing integrated intensities (see Help|evaluation) 
+      *fInfoFile  = NULL;        // -I  [-]  optional: file controling the output of integrated intensities
 
-int    scatterAxis = -1;      /* Direction of scattering for correct calculation of scattering parameters */
+long   nbins      = 0;           // -n  [-]  number of bins 
 
-long   nbins=0,               /* number of bins */
-       nColour=ANY_COLOR,     /* colour necessary for the trajectory to be regarded
-                                 colour=-1(ANY_COLOR) means: all trajectories are regarded  */
-       kind=0;                /* 1= d-spacing; 2=momentum transfer q; 3=scattering angle */
+double MinX       = 0.0,         // -m [var] upper bound of d-spacing, q, theta or lambda range [Ang], [1/Ang], [deg]
+       MaxX       = 0.0,         // -M [var] lower bound of d-spacing, q, theta or lambda range [Ang], [1/Ang], [deg]
+       LogProz    = 0.0,         // -R  [%]  percentage of increase to next bin 
+       DeadSpot   = 0.0,         // -d [deg] excludes all neutrons with a scattering angle < DeadSpot 
+       LmbdRef    = 0.0;         // -r [Ang] reference Wavelength for crystal monochromator (or mechanical velocity selector) instrument                                                 */
 
-double referenceWavelength,   /* reference Wavelength for crystal monochromator (or mechanical velocity selector) instrument                                                 */
-       deadspotangle=0.0,     /* excludes all neutrons with a scattering angle < deadspotangle [deg] */
-       Flightpath0=0.0,       /* standard length of neutron flight path [cm] */
-       DetDist=0.0,           /* detector distance             [cm] */
-       TimeOffset=0.0,        /* global shift of the neutron time t= t-TimeOffset [ms] */
-       m=0.1, M=10.0,         /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-       dLogProz=0.0,          /* percentage of increase to next bin      */
-       dDelLambda,            /* difference between wavelength calculated from TOF and true wavelength  */
-       dEvalTimeMin=-1.0e10,  /* minimal and maximal time for evaluation */
-       dEvalTimeMax= 1.0e10;
+short  bProbactiv = TRUE,        // -p  [-]  flag: TRUE: Probability weight   FALSE: number of trajectories neutron weight is set to 1.0 
+       bExclCount = FALSE,       // -c  [-]  flag: TRUE: only neutrons complying with the evaluate requirements are written to the output 
+       bTOF       = FALSE,       // -w  [-]  flag: TRUE: time of flight instrument 
+       bPathCor   = FALSE;       // -t  [-]  flag: TRUE: correct TOF for real flight path from sample to detector 
+
+VtAxis eScatAxis  = NO_AXIS;     // -A  [-]  direction of scattering for correct calculation of the scattering parameters 
+                                 
+double TotLength  = 0.0,         // -l [cm]  standard length of total neutron flight path
+       DetDist    = 0.0,         // -D [cm]  sample detector distance                     
+       TimeOffset = 0.0,         // -T [ms]  global shift of the neutron time t' = t-TimeOffset
+       EvalTimeMin=-1.0e10,      // -e [ms]  minimaltime for evaluation
+       EvalTimeMax= 1.0e10;      // -E [ms]  maximal time for evaluation
+int    nColour    = ANY_COLOR;   // -C  [-]  colour necessary for the trajectory to be regarded, colour=-1(ANY_COLOR) means: all trajectories are regarded  
+
+// Variables determined from input parameters or trajectory data
+short  bLogBinning=FALSE,        //          flag: TRUE : binning increases exponentially    FALSE: linear binning  
+       bDeadSpot  =FALSE;        //          flag: TRUE : deadspot exists 
 
 
 /******************************/
@@ -78,6 +83,8 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 /******************************/
 int main(int argc, char *argv[])
 {
+  char   sOption[25]="";
+  short  bCounted   =FALSE;      // TRUE : neutron is counted, intensity added to channel and total intensity 
   int    ibin=0;
 
   long   i=0, j=0, k=0, 
@@ -87,14 +94,15 @@ int main(int argc, char *argv[])
   double bintc    =0.0, 
          binterval=1.0,
          bpost [BINS+1],         /* limits of the bins                                */
-         bint  [BINS+1],          /* count rate of a bin                               */
+         bint  [BINS+1],         /* count rate of a bin                               */
          center[NCENTER], totcenter[NCENTER], range[NCENTER],
          time=0.0, lambda=0.0, 
          TwoTheta=0.0, TwoThetaDeg=0.0, Phi=0.0, 
-         qValue=0.0, dspacing=0.0, 
-         prob  =0.0,
-         Flightpath=0.0,        // real length of neutron flight path [cm] 
-         DetPath=0.0;           // path length from sample to position of detection
+         qValue  =0.0, dspacing=0.0, 
+         prob    =0.0,
+         DelLmbd =0.0,           // difference between wavelength calculated from TOF and true wavelength 
+         DetPath =0.0,           // path length from sample to position of detection
+         Flightpath=0.0;         // length of the total neutron flight path [cm] 
 
 
   // reading of input data and initilisation
@@ -102,20 +110,14 @@ int main(int argc, char *argv[])
   _eModule=MCN_EVAL1_ELAST;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.9");
+  PrintModuleName(_eModule, "1.9a");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bLengthCmpr   = FALSE;
 
-  switch (kind) 
-  {
-    case 1: fprintf(LogFilePtr, "Option: d-spacing\n"); break;
-    case 2: fprintf(LogFilePtr, "Option: momentum transfer Q\n"); break;
-    case 3: fprintf(LogFilePtr, "Option: scattering angle\n");break;
-    case 4: fprintf(LogFilePtr, "Option: wavelength difference\n");break;
-    default:Error("Wrong value for evaluation parameter\n");
-  }
+  EvalPar_ID2Txt(sOption, eKind); 
+  fprintf(LogFilePtr, "Option: %s\n", sOption); 
 
   // initializes arrays
   memset(totcenter, 0,  NCENTER*sizeof(double));
@@ -129,11 +131,11 @@ int main(int argc, char *argv[])
   /* logarithmic */
   if (bLogBinning)
   {	
-    bpost[0] = m;
+    bpost[0] = MinX;
 
-    for(ibin = 1; bpost[ibin-1] < M; ibin++)
+    for(ibin = 1; bpost[ibin-1] < MaxX; ibin++)
     {
-      bpost[ibin] = bpost[ibin-1] * (1.0 + dLogProz/100.);
+      bpost[ibin] = bpost[ibin-1] * (1.0 + LogProz/100.);
       bint [ibin] = 0.0;
       bcnt [ibin] = 0;
     }
@@ -141,11 +143,11 @@ int main(int argc, char *argv[])
   }
   /* linear */
   else
-  {	binterval = (M - m) / (double)nbins;
+  {	binterval = (MaxX - MinX) / (double)nbins;
 		
     for(ibin = 0; ibin<=nbins; ibin++)
     {
-      bpost[ibin] = m + binterval*ibin;
+      bpost[ibin] = MinX + binterval*ibin;
       bint [ibin] = 0.0;
       bcnt [ibin] = 0;
     }
@@ -177,21 +179,21 @@ int main(int argc, char *argv[])
         if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
 
         // determination of scattering angle
-        if (scatterAxis == 1) 
+        if (eScatAxis == Y_AXIS) 
         {
           /* Neutron temp = InputNeutrons[i]; */
           /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[2])); */
           /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
-          TwoTheta = (double) atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
-          Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+          TwoTheta = (double) atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[0]);
+          Phi      = (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
         }
-        else if (scatterAxis == 2) 
+        else if (eScatAxis == Z_AXIS) 
         {
           /* Neutron temp = InputNeutrons[i]; */
           /* temp.Vector[0] = sqrt(sq(temp.Vector[0]) + sq(temp.Vector[1])); */
           /* CartesianToSpherical(temp.Vector, &TwoTheta, &Phi); */
-          TwoTheta = (double) atan2(InputNeutrons[i].Vector[2],InputNeutrons[i].Vector[0]);
-          Phi	= (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
+          TwoTheta = (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[0]);
+          Phi	     = (double) atan2(InputNeutrons[i].Vector[2], InputNeutrons[i].Vector[1]);
         }
         else 
           CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
@@ -200,26 +202,26 @@ int main(int argc, char *argv[])
         if (bPathCor)
         { // origin of co-ordinate system in sample center
           DetPath    = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
-          Flightpath = Flightpath0 + DetPath - DetDist;
+          Flightpath = TotLength + DetPath - DetDist;
         }
         else
-        { Flightpath = Flightpath0;
+        { Flightpath = TotLength;
         }
 
         // determination of weight and wavelength
         prob     = bProbactiv ? InputNeutrons[i].Probability : 1.0;
         time     = InputNeutrons[i].Time - TimeOffset;
-        lambda   = bTOF ? 395.60346/(Flightpath/time) : referenceWavelength;
+        lambda   = bTOF ? 395.60346/(Flightpath/time) : LmbdRef;
 
         /* trajectories within deadspot */
-        if (bDeadSpot && TwoTheta <= deadspotangle) continue;
+        if (bDeadSpot && TwoTheta <= DeadSpot) continue;
 
         /* traj. out of time of evaluation */
-        if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
+        if (time < EvalTimeMin || time > EvalTimeMax) continue;
 
-        switch (kind) 
+        switch (eKind) 
         {
-          case 1: /* dspacing */
+          case VT_EVAL_DSP: /* dspacing */
             dspacing = lambda / (2.0 * sin(TwoTheta/2.0));
             for(ibin = 0; ibin<nbins; ibin++)
             {	if (bpost[ibin] <= dspacing && dspacing < bpost[ibin+1])
@@ -233,7 +235,7 @@ int main(int argc, char *argv[])
             }
             break;
 
-          case 2: /* q-range */
+          case VT_EVAL_Q: /* q-range */
             qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
             for(ibin = 0; ibin<nbins; ibin++)
             {	if (bpost[ibin] <= qValue && qValue < bpost[ibin+1])
@@ -247,7 +249,7 @@ int main(int argc, char *argv[])
             }
             break;
 
-          case 3:	/* scattering angle */
+          case VT_EVAL_ANGLE:	/* scattering angle */
             TwoThetaDeg = TwoTheta*180.0/M_PI;
             for(ibin = 0; ibin<nbins; ibin++)
             {	if (bpost[ibin] <= TwoThetaDeg && TwoThetaDeg < bpost[ibin+1])
@@ -261,10 +263,10 @@ int main(int argc, char *argv[])
             }
             break;
 
-          case 4: /* lambda-diff */
-            dDelLambda = lambda - InputNeutrons[i].Wavelength;
+          case VT_EVAL_LMBD: /* lambda-diff */
+            DelLmbd = lambda - InputNeutrons[i].Wavelength;
             for(ibin = 0; ibin<nbins; ibin++)
-            {	if (bpost[ibin] <= dDelLambda && dDelLambda < bpost[ibin+1])
+            {	if (bpost[ibin] <= DelLmbd && DelLmbd < bpost[ibin+1])
               {
                 bcnt[ibin]++;
                 bint[ibin] = bint[ibin] + prob;
@@ -327,8 +329,8 @@ int main(int argc, char *argv[])
 
     for (j=0; j<i; j++)
     {
-      leftedge =  (long)floor( (center[j] - (range[j]/2.0) -m)/binterval );
-      rightedge = (long)floor( (center[j] + (range[j]/2.0) -m)/binterval);
+      leftedge =  (long)floor( (center[j] - (range[j]/2.0) -MinX)/binterval );
+      rightedge = (long)floor( (center[j] + (range[j]/2.0) -MinX)/binterval);
 	  				  
       fprintf(LogFilePtr,"\n [%ld, %ld]",leftedge, rightedge);
 				  
@@ -359,9 +361,8 @@ int main(int argc, char *argv[])
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-  long   i;
-  double winp;
-  char * arg;
+  long   i=0;
+  char*  arg=NULL;
 
   for(i=1; i<argc; i++) 
   {
@@ -371,115 +372,92 @@ void OwnInit(int argc, char *argv[])
       arg += 2;
       switch(arg[-1]) 
       {
-        case 'o':
+        case 'k':
+          eKind = (VtEvalPar) atol(arg);     /* evaluation parameter */
+          break;
+
+        case 'o':                            /* output file containing spectrum */
           fSpectra = OpenOutputFile(arg, FALSE, "w");
           if (fSpectra ==NULL)
           { fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
             exit(-1);
           }
           break;
-					  
-        case 'O':
+        case 'O':                            /* optional: file containing integrated intensities */
           fTotCounts = OpenOutputFile(arg, FALSE, "w");
           if (fTotCounts==NULL)
           { fprintf(LogFilePtr,"\nERROR: File %s could not be opened for integrated output\n",arg);
             exit(-1);
           }
           break;
-
-        case 'I':
-          /* info file for generating integrated output */
+        case 'I':                            /* optional: info file for generating integrated intensities */
           fInfoFile = OpenInputFile(arg, TRUE, "r");
           break;
 
         case 'n':
-          nbins = atol(arg); /* number of bins */
+          nbins = atol(arg);                 /* number of bins */
           if (nbins > BINS)
-          { fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS);
-            exit(99);
-          }
+          { fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS); exit(99);}
           break;
-
-        case 'k':
-          kind = atol(arg); /* 1= d-spacing; 2=momentum transfer q; 3=scattering angle */
-          break;
-
-        case 'w':
-          winp = atof(arg);
-          if (winp == 1.0) bTOF = TRUE; /* time of flight instrument */
-          break;
-
-        case 'r':
-          referenceWavelength = atof(arg); /* reference Wavelength for crystal monochromator */
-          break;                           /* (or mechanical velocity selector) instrument   */
-
-        case 'e':
-          dEvalTimeMin = atof(arg);        /* minimal time for evaluation */
-          break;
-
-        case 'E':
-          dEvalTimeMax = atof(arg);        /* maximal time for evaluation */
-          break;
-
-
-        case 'C':
-          nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
-          break;
-
-        case 'd':
-          deadspotangle = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
-          bDeadSpot = TRUE;                /* scattering angle < deadspotangle [deg] */
-          break;
-
-
         case 'm':
-          m = atof(arg);   /* lower bound of d-spacing, q or theta range [A], [1/A], [deg]*/
+          MinX = atof(arg);                  /* lower bound of d-spacing, q or theta range [A], [1/A], [deg]*/
           break;
-
         case 'M':
-          M = atof(arg);   /* upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
+          MaxX = atof(arg);                  /* upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
           break;
 
         case 'R':
-          dLogProz    = atof(arg);       /* percentage of increase to next bin */
-          if (dLogProz!=0.0)
+          LogProz    = atof(arg);            /* percentage of increase to next bin */
+          if (LogProz!=0.0)
             bLogBinning = TRUE;
           break;
-
-
-        case 'c':
-          if(atol(arg)==1)        /* if activated, only neutrons complying with the  */
-          bExclCount = TRUE;    /* evaluate requirements are considered further on */
+        case 'd':
+          DeadSpot = M_PI*atof(arg)/180.0;   /* excludes all neutrons with a           */
+          if (DeadSpot!=0.0)
+            bDeadSpot = TRUE;                /* scattering angle < DeadSpot [deg] */
           break;
-
-
-        case 't':
-          bPathCor = atol(arg);     /*  correct flight path length for location of detection */
-          break;
-
-        case 'l':
-          Flightpath0 = atof(arg);  /* length of neutron flight path [cm] */
-          if (Flightpath0 <= 0.0)
-            Error("you must define a flight path > 0.0");
-          break;
-
-        case 'D':
-          DetDist = atof(arg);  /* length of neutron flight path [cm] */
-          break;
-
-        case 'T':
-          TimeOffset = atof(arg); /* global shift of the neutron time t= t-TimeOffset [ms] */
-          break;
+        case 'r':                            
+          LmbdRef     = atof(arg);           /* reference Wavelength for crystal monochromator (or mechanical velocity selector) instrument */
+          break;                              
 
         case 'p':
-          bProbactiv = atoi(arg);
-          /* bProbactiv=1 means probabilities activated, else neutron weight is set to 1.0 */
+          bProbactiv = (short) atoi(arg);    /* bProbactiv=1 means probabilities activated, else neutron weight is set to 1.0 */
+          break;
+        case 'c':
+          bExclCount = (short) atoi(arg);    /* if activated, only neutrons complying with the evaluate requirements are considered further on */
+          break;
+        case 'w':
+          bTOF       = (short) atoi(arg);    /* time of flight instrument */
+          break;
+        case 't':
+          bPathCor   = (short) atoi(arg);    /*  correct flight path length for location of detection */
           break;
 
         case 'A':
-          scatterAxis = atoi(arg);
-          if (scatterAxis > 2) 
-            Error("ERROR: invalid scattering axis!!!");
+          eScatAxis = (VtAxis) atoi(arg);
+          if (eScatAxis!=Y_AXIS && eScatAxis!=Z_AXIS && eScatAxis!=NO_AXIS) 
+            Error2("Invalid scattering axis", arg);
+          break;
+
+        case 'l':
+          TotLength = atof(arg);           /* length of neutron flight path [cm] */
+          if (TotLength <= 0.0)            
+            Error("you must define a flight path > 0.0");
+          break;                             
+        case 'D':                            
+          DetDist     = atof(arg);           /* length of neutron flight path [cm] */
+          break;                             
+        case 'T':                            
+          TimeOffset  = atof(arg);           /* global shift of the neutron time t= t-TimeOffset [ms] */
+          break;                             
+        case 'e':                            
+          EvalTimeMin = atof(arg);           /* minimal time for evaluation */
+          break;                             
+        case 'E':                            
+          EvalTimeMax = atof(arg);           /* maximal time for evaluation */
+          break;
+        case 'C':
+          nColour = atoi(arg);               /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
           break;
 					
         default:
@@ -491,7 +469,7 @@ void OwnInit(int argc, char *argv[])
   }
 
   /* checks */
-  if (bLogBinning && m==0.0)
+  if (bLogBinning && MinX==0.0)
     Error("lower bound value must not be zero for logarithmic binning"); 
 }
 

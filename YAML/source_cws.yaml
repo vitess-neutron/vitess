@@ -13,8 +13,8 @@ source:				       # source module that will be executed
       type:    "string"
       default: "First Simulation" 
       column:  0                       
-  - eKind   :                          # -K        [-]  enum: kind of source: SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    "combo"                 # Das soll nicht ausgewählt, sondern durch die Wahl der Quelle bestimmt werden.  
+  - eKind   :                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)      SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+      type:    "combo"                 # This shall not be selected, but defined by the chosen module   
       descr:   "source type"
       default: "continuous source" 
       prefix:  "-K"     
@@ -26,7 +26,8 @@ source:				       # source module that will be executed
       type:    "window"
       descr:   "moderator"
       tooltip: "moderator description parameter"   
-#     default: "moderator.yaml"
+#     default: "moderator_cws.yaml"
+
   - SrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "source\nname" 
@@ -99,7 +100,7 @@ source:				       # source module that will be executed
       column:  1                     
       prefix:  "-T"     
 
-  - eDir    :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
+  - eDirect :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "direction\ndefined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 

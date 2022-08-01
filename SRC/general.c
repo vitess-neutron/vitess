@@ -217,6 +217,12 @@ double TrueSolidAngle(const double HorAngle, const double VertAngle)
   return (4 * asin(sin(HorAngle) * sin(VertAngle)));
 }
 
+/*   RadAngle: [rad] half opening of a cone   */
+double TrueSolidAngleR(const double RadAngle)
+{
+  return (4 * M_PI * sq(sin(RadAngle/2)));
+}
+
 
 // Calculation of reflectivity on supermirrors from wavelength and inclination angle
 // either following quadratic SwissNeutronics description by Henrik Jacobsen (ReflSN)
@@ -743,6 +749,12 @@ void Error(const char *text)
   exit(-1);
 }
 
+void Error2(const char *text1, const char *text2)
+{
+  fprintf(LogFilePtr, "ERROR: %s! Input: %s\n", text1, text2);
+  exit(-1);
+}
+
 void Warning(const char *text)
 {
   fprintf(LogFilePtr, "WARNING: %s!\n", text);
@@ -960,7 +972,7 @@ long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart
 /*******************************************************/
 /** Gets current date or time from system             **/
 /*******************************************************/
-void GetActDate(char* sDate)
+void GetActDate(char* sDate, short eDateFmt)
 {
   time_t t;
   struct tm *tmp;
@@ -969,7 +981,10 @@ void GetActDate(char* sDate)
   tmp = localtime(&t);
   if (tmp != NULL) 
   {
-    strftime(sDate, CHAR_BUF_SMALL, "%Y-%m-%d", tmp);
+    if (eDateFmt==DATE_US)
+      strftime(sDate, CHAR_BUF_SMALL, "%m/%d/%y", tmp);
+    else
+      strftime(sDate, CHAR_BUF_SMALL, "%Y-%m-%d", tmp);
   } 
   else 
   {

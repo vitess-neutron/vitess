@@ -178,7 +178,7 @@ proc show2Dfile {fname} {
   if [regexp {^# Date} $ins] {gets $f ins}
   if [regexp {^# Total} $ins] {gets $f ins}
   if [regexp {^# Within} $ins] {gets $f ins}
-  if [regexp {^# Bundles} $ins] {gets $f ins}
+  if [regexp {^# Bunches} $ins] {gets $f ins}
   if [regexp {^# Data} $ins] {gets $f ins}
   
   set ll [eval list $ins]

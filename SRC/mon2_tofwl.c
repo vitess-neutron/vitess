@@ -29,25 +29,25 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*  MonFileName= NULL;      // -O    [-]    Monitor output file containing intensity as a function of y- and z-position  
-short  bProbactiv = TRUE,      // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
-       bExclusive = FALSE;     // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written 
-long   nbiny      = 1,         // -y    [-]    number of bins in horizontal direction (TOF)
-       nbinz      = 1,         // -z    [-]    number of bins in vertical direction   (lambda)
-       format     = MATRIX;    // -F    [-]    file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
-double TofMin     = 0.0,       // -w   [ms]    min. time of flight to be monitored
-       TofMax     = 0.0,       // -W   [ms]    max. time of flight to be monitored
-       LambdaMin  = 0.0,       // -m   [Ang]   min. wavelength to be monitored
-       LambdaMax  = 0.0;       // -M   [Ang]   max. wavelength to be monitored
+char*    MonFileName= NULL;    // -O    [-]    Monitor output file containing intensity as a function of y- and z-position  
+short    bProbactiv = TRUE,    // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
+         bExclusive = FALSE;   // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written 
+long     nBinsY      = 1,       // -y    [-]    number of bins in horizontal direction (TOF)
+         nBinsZ      = 1,       // -z    [-]    number of bins in vertical direction   (lambda)
+         format     = MATRIX;  // -F    [-]    file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
+double   TofMin     = 0.0,     // -w   [ms]    min. time of flight to be monitored
+         TofMax     = 0.0,     // -W   [ms]    max. time of flight to be monitored
+         LambdaMin  = 0.0,     // -m   [Ang]   min. wavelength to be monitored
+         LambdaMax  = 0.0;     // -M   [Ang]   max. wavelength to be monitored
 
 // Variables determined from input parameters
-FILE*  fMonitor   = NULL;
+FILE*    fMonitor   = NULL;
 
-double BinPosY   [BINSIZE];           // edges of the bins of the first parameter 
-double BinPosZ   [BINSIZE];           // edges of the bins of the second parameter 
-double IntYZ     [BINSIZE][BINSIZE];  // intensity within a bin (in 2 dimensions) 
-double IntYZError[BINSIZE][BINSIZE];  // standard deviation of this intensity 
-long   nTrajYZ   [BINSIZE][BINSIZE];  // number of trajectories within a bin
+double*  BinPosY    = NULL;    //              edges of the bins of the first parameter 
+double*  BinPosZ    = NULL;    //              edges of the bins of the second parameter 
+double** IntYZ      = NULL;    //              intensity within a bin (in 2 dimensions) 
+double** IntYZError = NULL;    //              standard deviation of this intensity 
+long  ** nTrajYZ    = NULL;    //              number of trajectories within a bin
 
 
 /******************************/
@@ -79,13 +79,12 @@ int main(int argc, char *argv[])
   bLengthCmpr   = FALSE;
 
   // initializes arrays
-  for(dy=0; dy<nbiny+1; dy++)
-  {
-    BinPosY[dy] = TofMin + (TofMax-TofMin) * dy / (double)nbiny;
+  for (dy=0; dy <= nBinsY; dy++) BinPosY[dy] = TofMin    +    (TofMax-TofMin)    * dy / (double) nBinsY;
+  for (dz=0; dz <= nBinsZ; dz++) BinPosZ[dz] = LambdaMin + (LambdaMax-LambdaMin) * dz / (double) nBinsZ;
 
-    for(dz=0; dz < (nbinz+1); dz++)
+  for (dy=0; dy < nBinsY; dy++)
+  { for (dz=0; dz < nBinsZ; dz++)
     {
-	    BinPosZ       [dz] = LambdaMin + (LambdaMax-LambdaMin)  * dz / (double) nbinz;
 	    IntYZ     [dy][dz] = 0.0;
 	    IntYZError[dy][dz] = 0.0;
 	    nTrajYZ   [dy][dz] = 0;
@@ -115,10 +114,10 @@ int main(int argc, char *argv[])
 	      else 
           prob=1.0;
 
-	      dy = (int)floor(nbiny*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
-	      dz = (int)floor(nbinz*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
+	      dy = (int)floor(nBinsY*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
+	      dz = (int)floor(nBinsZ*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
 			
-  	    if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
+  	    if (((dy>=0)&&(dy<nBinsY))&&((dz>=0)&&(dz<nBinsZ)))
 	      {	
 	        nTrajYZ[dy][dz]++;
 	        IntYZ  [dy][dz]+= prob;
@@ -136,10 +135,11 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,  nbiny, "TOF/ms", nbinz, "wavelength/Ang");
-  // WriteOutput2D(fMonitor, format,           bProbactiv,  nbiny, BinPosY,           nbinz, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
-  WriteOutput2D(fMonitor, format,              bProbactiv,  nbiny, BinPosY, BINSIZE,  nbinz, BinPosZ,  
-                         (double*)IntYZ, (double*)IntYZError, (long*)nTrajYZ);
+  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,  nBinsY, "TOF/ms", nBinsZ, "wavelength/Ang");
+  // WriteOutput2D(fMonitor, format,           bProbactiv,  nBinsY, BinPosY,           nBinsZ, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
+  WriteOutput2D(fMonitor, format,  bProbactiv,  
+                nBinsY, BinPosY,   nBinsZ, BinPosZ,  
+                IntYZ, IntYZError, nTrajYZ);
   fclose(fMonitor);
 
   // writes to instrument and log file
@@ -154,7 +154,7 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int i;
+  int i, iY;
 
   for(i=1; i<argc; i++)
   {
@@ -167,14 +167,10 @@ void  OwnInit(int argc, char *argv[])
 	        break;
 
 	      case 'y':
-	        nbiny = atol(&argv[i][2]); /* number of bins horizontal axis */
-	        if(nbiny>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
+	        nBinsY = atol(&argv[i][2]); /* number of bins horizontal axis */
 	        break;
 	      case 'z':
-	        nbinz = atol(&argv[i][2]); /* number of bins vertical axis */
-	        if(nbinz>BINSIZE)
-	          {fprintf(LogFilePtr,"ERROR: number of bins must be <= %d \n", BINSIZE); exit(99);}
+	        nBinsZ = atol(&argv[i][2]); /* number of bins vertical axis */
 	        break;
 
 	      case 'w':
@@ -184,10 +180,10 @@ void  OwnInit(int argc, char *argv[])
 	        TofMax = atof(&argv[i][2]);		/* maximal tof-value [ms]*/
 	        break;
 	      case 'm':
-	        LambdaMin =  atof(&argv[i][2]);   /* minimal wavelength [A]*/
+	        LambdaMin = atof(&argv[i][2]);   /* minimal wavelength [A]*/
 	        break;
 	      case 'M':
-	        LambdaMax =  atof(&argv[i][2]);   /* maximal wavelength [A]*/
+	        LambdaMax = atof(&argv[i][2]);   /* maximal wavelength [A]*/
 	        break;
 
 	      case 'p':
@@ -220,8 +216,23 @@ void  OwnInit(int argc, char *argv[])
   { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");
   }
 
-  if (bProbactiv != 1) 
-    bProbactiv = 0;
+  if (bProbactiv != TRUE) 
+    bProbactiv = FALSE;
+
+  // Allocate memory for the monitor data
+  BinPosY         = (double*)  malloc((nBinsY+1) * sizeof(double));
+  BinPosZ         = (double*)  malloc((nBinsZ+1) * sizeof(double));
+
+  IntYZ      = (double**) malloc(nBinsY * sizeof(double*));
+  IntYZError = (double**) malloc(nBinsY * sizeof(double*));
+  nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
+
+  for (iY=0; iY < nBinsY; iY++) 
+  {
+    IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
+    IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));
+    nTrajYZ   [iY] = (long*)   malloc(nBinsZ * sizeof(long));
+  }
 
   return;
 }

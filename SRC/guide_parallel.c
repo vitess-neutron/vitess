@@ -733,7 +733,7 @@ void OwnInit   (int argc, char *argv[])
   } 
   else
   { if (Radius!=0.0)
-      Error("Curvature of guide only supported in options 'curved and linear+curved', please delete radius or switch to one of th");
+      Error("Curvature of guide only supported in options 'curved' and 'linear+curved', please delete radius or switch to one of these options");
   }
 
   /* Exit and entrance size */
@@ -1635,9 +1635,9 @@ void processNeutron(int neutron_i, int thread_i)
 }
 
 
-/******************************************************************************/
-// OwnCleanup collects data from threads, writes out messages and coating results
-/******************************************************************************/
+/************************************************************************************/
+// 'OwnCleanup' collects data from threads, writes out messages and coating results
+/************************************************************************************/
 void OwnCleanup() 
 {
   if (NThreads > 0) 
@@ -1701,7 +1701,7 @@ void OwnCleanup()
 
 
 /******************************************************************************/
-// Set Geonmetry fills the structure stGeometry for Visualization
+// 'Set Geometry' fills the structure stGeometry for Visualization
 /******************************************************************************/
 void SetGeometry(char* sColor)
 {
