@@ -6,5 +6,5 @@
 30       -15       0		phi(Z) [deg], chi(X) [deg], omega(Z) [deg]
 cub				sample geometry: 'cub', 'cyl'inder, 'ball'
 1          1       1		thickness or diameter [cm], height [cm], width [cm]
-171     0			output angle horiz. [deg], output angle vert. [deg]
+171        0			output angle horiz. [deg], output angle vert. [deg]
 

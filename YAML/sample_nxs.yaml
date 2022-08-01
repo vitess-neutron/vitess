@@ -12,15 +12,15 @@ sample_nxs:
       type:    "string" 
       descr:   "name" 
 
-  - ParFile :                  # -S         [-]    parameter file name 
+  - SmplFile:                  # -S         [-]    parameter file name 
       type:    "file"    
-      descr:   "nxs parameter file"
-      tooltip: "File containing parameters of the powder sample\nSee HelpFile 'sample.html'"
+      descr:   "sample file"
+      tooltip: "File containing parameters of the powder sample (size, poition, orientation)\nSee HelpFile 'sample.html'"
       prefix:  "-S"     
-  - StrFile :                  # -s           nxs structure factor file name (of the sample material)
+  - NxsFile :                  # -s           nxs structure factor file name (of the sample material)
       type:    "file"     
-      descr:   "structure factor\nfile"
-      tooltip: "nxs structure factor file name (of the sample material)"
+      descr:   "nxs parameter\nfile"
+      tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
       prefix:  "-s"     
 
   - nRepete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
@@ -122,7 +122,7 @@ sample_nxs:
       prefix:  "-z"     
       column:  2  
 
-  -  SmplGeom:               # enum sample geometry: CYLINDER  SPHERE  CUBOID  HOLLOW_CYLINDER
+  -  eSmplGeo:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample\ngeometry"
       tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"

@@ -2274,19 +2274,19 @@ set fA {
 
 set fA1 {
   {filter_param1 radio none {"filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_x pos_y pos_z div_y div_z lambda energy time k_y k_z r phi dir_phi dir_theta col_vert col_hor color} {0 17 1 2 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
 }
 set fA2 {
   {filter_param2 radio none {"filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_x pos_y pos_z div_y div_z lambda energy time k_y k_z r phi dir_phi dir_theta col_vert col_hor color} {0 17 1 2 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
 }
 set fA3 {
   {filter_param3 radio none {"filter\nparameter 3" "choose filter parameter 3 (optional)" "" K}
-    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_x pos_y pos_z div_y div_z lambda energy time k_y k_z r phi dir_phi dir_theta col_vert col_hor color} {0 17 1 2 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
 }
 set fA4 {
   {filter_param4 radio none {"filter\nparameter 4" "choose filter parameter 4 (optional)" "" L}
-    {none pos_y pos_z div_y div_z lambda energy time k_y k_z r phi col_vert col_hor color} {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}}
+    {none pos_x pos_y pos_z div_y div_z lambda energy time k_y k_z r phi dir_phi dir_theta col_vert col_hor color} {0 17 1 2 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
 }
 
 set fComb {

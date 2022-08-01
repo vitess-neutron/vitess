@@ -18,7 +18,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "init.h"
+//#include "init.h"
 #include "matrix.h"
 
 
@@ -50,7 +50,7 @@ double theta, phi, angZ, angY, rotangX, rotangY, rotangZ, dir[3], dLength, MX[3]
 /******************************/
 int main(int argc, char **argv)
 {
-  _eModule=MCN_TOOL_DEF_DIR;
+//  _eModule=MCN_TOOL_DEF_DIR;
 newdef:
   do
   {	

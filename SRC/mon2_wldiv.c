@@ -31,20 +31,20 @@
 char*    MonFileName= NULL;      // -O    [-]    Monitor output file containing intensity as a function of y- and z-position  
 short    bProbactiv = TRUE,      // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
          bExclusive = FALSE;     // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written
-int      index_yz   = Y_AXIS;    // -q    [-]   enum direction:  Y_AXIS  Z_AXIS   
+VtAxis   index_yz   = NO_AXIS;   // -q    [-]    enum direction:  Y_AXIS  Z_AXIS   
 long     nBinsLmd   = 1,         // -y    [-]    number of bins in horizontal direction (TOF)
          nBinsDiv   = 1,         // -z    [-]    number of bins in vertical direction   (lambda)
          format     = MATRIX;    // -F    [-]    file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
 double   wl_min       = 0.0,     // -w   [Ang]   min. wavelength to be monitored 
          wl_max       = 0.0,     // -W   [Ang]   max. wavelength to be monitored 
-         div_min      = 0.0,     // -h   [deg]    min. divergence to be monitored 
+         div_min      = 0.0,     // -h   [deg]   min. divergence to be monitored 
          div_max      = 0.0,     // -H   [cm]    max. divergence to be monitored       
          constrain_min= 0.0,     // -c   [cm]    constraint: min. divergence in perpendicular direction  
          constrain_max= 0.0,     // -C   [cm]    constraint: max. divergence in perpendicular direction      
-         filtYMin     =-1.0e10,  // -u   [cm]   filter: left edge position of the monitored area
-         filtYMax     = 1.0e10,  // -U   [cm]   filter: right edge position of the monitored area
-         filtZMin     =-1.0e10,  // -v   [cm]   filter: bottom position of the monitored area
-         filtZMax     = 1.0e10;  // -V   [cm]   filter: top position of the monitored area
+         filtYMin     =-1.0e10,  // -u   [cm]    filter: left edge position of the monitored area
+         filtYMax     = 1.0e10,  // -U   [cm]    filter: right edge position of the monitored area
+         filtZMin     =-1.0e10,  // -v   [cm]    filter: bottom position of the monitored area
+         filtZMax     = 1.0e10;  // -V   [cm]    filter: top position of the monitored area
 
 // Variables determined from input parameters
 FILE*  fMonitor   = NULL;
@@ -220,11 +220,10 @@ void  OwnInit(int argc, char *argv[])
 	    switch(argv[i][1])
 	    {
 	      case 'q':
-	        index_yz = atol(&argv[i][2]); /*  y or z direction */
-	        if (index_yz==Y_AXIS) fprintf(LogFilePtr,"horizontal direction \n");
-		      if (index_yz==Z_AXIS) fprintf(LogFilePtr,"vertical direction \n");
-	        if (index_yz!=Y_AXIS && index_yz!=Z_AXIS)
-            {index_yz = Y_AXIS ; Warning("horizontal direction chosen");}
+	        index_yz = (VtAxis) atoi(&argv[i][2]); /*  y or z direction */
+	             if (index_yz==Y_AXIS) fprintf(LogFilePtr,"horizontal direction \n");
+		      else if (index_yz==Z_AXIS) fprintf(LogFilePtr,"vertical direction \n");
+	        else    Error2("No or wrong direction parameter", &argv[i][2]);
 		    break;
 
         case 'O':
@@ -317,7 +316,7 @@ void  OwnInit(int argc, char *argv[])
   {
     IntYZ     [iY] = (double*) malloc(nBinsDiv * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsDiv * sizeof(double));
-    nTrajYZ   [iY] = (long*)   malloc(nBinsDiv * sizeof(int));
+    nTrajYZ   [iY] = (long*)   malloc(nBinsDiv * sizeof(long));
   }
 
   return;

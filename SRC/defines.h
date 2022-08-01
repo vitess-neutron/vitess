@@ -218,22 +218,22 @@ VtDirType;
 // Axis
 typedef enum
 {
-  NO_AXIS= ' ',
-  X_AXIS = 'X',
-  Y_AXIS = 'Y',
-  Z_AXIS = 'Z'
+  NO_ROT_AX= ' ',
+  VT_ROT_X = 'X',
+  VT_ROT_Y = 'Y',
+  VT_ROT_Z = 'Z'
 } 
-VtAxis;
+VtRotAxis;
 
 // Scattering axis
 typedef enum
 {
-  VT_NO_SC_AXIS=-1,
-  VT_SC_X    = 0,
-  VT_SC_Y    = 1,
-  VT_SC_Z    = 2,
+  NO_AXIS=-1,
+  X_AXIS = 0,
+  Y_AXIS = 1,
+  Z_AXIS = 2,
 } 
-VtScAxis;
+VtAxis;
 
 // Orientation
 typedef enum
@@ -243,6 +243,15 @@ typedef enum
   VERTICAL   = 1
 } 
 VtOrient;
+
+typedef enum
+{	
+  VT_NO_DIR = 0,
+	VT_IN     = 1,
+	VT_OUT    = 2,
+	VT_INSIDE = 3
+}
+VtDir;
 
 // Frame generation
 typedef enum

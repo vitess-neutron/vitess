@@ -41,7 +41,7 @@
 char  *pSmplFileName=NULL;         // -P               name of the sample parameter file  
 char  *sReflFileName=NULL;         // -I               name of the file containing the theoretical spectrum  
 VtMeasMode eOption =VT_SAMPLE;     // -O               option:  1: reflection of sample       2: reflection of reference  
-VtAxis     eSmplAxis=NO_AXIS;      // -R               rotation axis of sample "Y" or"Z"            
+VtRotAxis  eSmplAxis=NO_ROT_AX;    // -R               rotation axis of sample "Y" or"Z"            
 VtMirrMat  eSubMat=VT_NO_MIRR_MAT; // -M               material of the substrate  
 short  bIncoh   =FALSE,            // -B               flag: whether to use incoherent  scattering: 0 for "not use", 1 "for use" 
        bOffSpec =FALSE,            // -o               flag: whether to use offspecular scattering: 0 for "not use", 1 "for use"
@@ -312,7 +312,7 @@ void OwnInit(int argc, char *argv[])
         eSubMat = (VtMirrMat) atoi(arg) ;
         break;
       case 'R':
-        eSmplAxis = Axis_Txt2ID(arg) ;
+        eSmplAxis = RotAxis_Txt2ID(arg) ;
         break;
 
       case 'B':
@@ -414,7 +414,7 @@ void  CalcAndWritePar()
   char sMode[11]="", sMat[15]="";
 
   /* prints to log file */
-  Axis_ID2Txt    (sAxis, eSmplAxis);
+  RotAxis_ID2Txt (sAxis, eSmplAxis);
   MeasMode_ID2Txt(sMode, eOption);
   MirrMat_ID2Txt (sMat,  eSubMat);
 
@@ -443,12 +443,12 @@ void  CalcAndWritePar()
   FillRotMatrixZY(RotMatrixOut, AnglOutVert, AnglOutHor) ;
 
   /* determines rotation angles in horiz. and vert. direction */
-  if (eSmplAxis==Z_AXIS)
+  if (eSmplAxis==VT_ROT_Z)
   {  
     SmplHor = M_PI_2 + SmplAngle;
     SmplVert  = 0.0;
   }
-  else if (eSmplAxis==Y_AXIS)
+  else if (eSmplAxis==VT_ROT_Y)
   {  
     SmplHor = 0.0;
     SmplVert  = M_PI_2 + SmplAngle;
@@ -468,13 +468,13 @@ void  CalcAndWritePar()
   if (SmplVert > 0) stSample.Direction[2] = tan(SmplVert - M_PI_2);
   stSample.Direction[0] = 1.0 - sqrt(sq(stSample.Direction[1]) + sq(stSample.Direction[1]));
 
-  if (eSmplAxis==Y_AXIS)
+  if (eSmplAxis==VT_ROT_Y)
   {
     stSample.SG.Cube.thickness = DimSmpl[2];
     stSample.SG.Cube.width     = DimSmpl[1];
     stSample.SG.Cube.height    = DimSmpl[0];
   }
-  else if (eSmplAxis==Z_AXIS)
+  else if (eSmplAxis==VT_ROT_Z)
   {
     stSample.SG.Cube.thickness = DimSmpl[1];
     stSample.SG.Cube.width     = DimSmpl[0];
@@ -673,13 +673,13 @@ void SetSamplePar()
   DimSmpl[0] = SmplThick;  DimSub[0] = SubThick;  
 
   CopyVector(PosSmpl, PosSub);
-  if (eSmplAxis==Y_AXIS)
+  if (eSmplAxis==VT_ROT_Y)
   { PosSub [0] = PosSmpl[0] + 0.5*(SmplThick+SubThick)*sin(Radians(SmplAngle));
     PosSub [2] = PosSmpl[2] - 0.5*(SmplThick+SubThick)*cos(Radians(SmplAngle));
     DimSmpl[1] = SmplWidth;  DimSub[1] = SmplWidth; 
     DimSmpl[2] = SmplLength; DimSub[2] = SmplLength;
   }
-  else if (eSmplAxis==Z_AXIS)
+  else if (eSmplAxis==VT_ROT_Z)
   { PosSub [0] = PosSmpl[0] + 0.5*(SmplThick+SubThick)*sin(Radians(SmplAngle));
     PosSub [1] = PosSmpl[1] - 0.5*(SmplThick+SubThick)*cos(Radians(SmplAngle));
     DimSmpl[1] = SmplLength; DimSub[1] = SmplLength;
@@ -1072,7 +1072,7 @@ void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switch
 {
   double h0, h, h0Dist, hDist, largestDist1, largestDist2, det_X, det_Y;
 
-  if (eSmplAxis==Z_AXIS) 
+  if (eSmplAxis==VT_ROT_Z) 
   {
     det_X = DetHeight;
     det_Y = DetWidth;
@@ -1173,7 +1173,7 @@ int ScatterSpecular(double scatteringAngle, Neutron* inputNeutron, Neutron* outp
   divz = (double) asin(inputNeutron->Vector[2] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
                                                       inputNeutron->Vector[1]*inputNeutron->Vector[1]));
   
-  if (eSmplAxis==Z_AXIS) 
+  if (eSmplAxis==VT_ROT_Z) 
     theta = (double) asin(scatteringAngle) - divy;
   else 
     theta = (double) asin(scatteringAngle) - divz;
@@ -1225,7 +1225,7 @@ void ScatterOffspecular(double scatteringAngle, Neutron* inputNeutron, Neutron* 
   divz = (double) asin(inputNeutron->Vector[2] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
                                                       inputNeutron->Vector[1]*inputNeutron->Vector[1]));
   
-  if (eSmplAxis==Z_AXIS) 
+  if (eSmplAxis==VT_ROT_Z) 
     theta = (double) asin(scatteringAngle) - divy;
   else 
     theta = (double) asin(scatteringAngle) - divz;
@@ -1303,7 +1303,7 @@ void ScatterIncoherent(Neutron* outputNeutron, double PathInSmpl)
   ProbIn -= outputNeutron->Probability;
 
   outputNeutron->Vector[0] = cos(theta);
-  if (eSmplAxis==Y_AXIS) 
+  if (eSmplAxis==VT_ROT_Y) 
   { 
     outputNeutron->Vector[1] = sin(theta)*sin(phi);
     outputNeutron->Vector[2] = sin(theta)*cos(phi);
@@ -1427,7 +1427,7 @@ void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutrons, double dQin, double 
   if (switchSign == 1) vDiff0 = fabs(vDiff0) * (-1.);
   else vDiff0 = fabs(vDiff0);
 
-  if (eSmplAxis==Z_AXIS) 
+  if (eSmplAxis==VT_ROT_Z) 
   {
     FillRotMatrixZY(RotMatOffSpec, 0, (SmplHor-M_PI_2));
     

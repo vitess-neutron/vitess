@@ -31,7 +31,7 @@ mon_brilliance:           # source module that will be executed
       tooltip: "This file is used to monitor the average and max. brilliance as a function of the given parameter set.\n1 line is written in each simulation"
       prefix:  "-F"  
  
-  - eParBrl:                  #     -k  "variable\nparameter"      VtBrlPar  BrlPar_Txt2ID(const char* sText)
+  - eBrlPar:                  #     -k  "variable\nparameter"      VtBrlPar  BrlPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "variable\nparameter"
       tooltip: "ID for the parameter, as a function of which the brilliance is shown"
@@ -39,7 +39,7 @@ mon_brilliance:           # source module that will be executed
       column:  0            
       prefix:  "-k"
 
-  - eBrl:                  #     -N  "norm. type"     VtBrlNorm BrlNorm_Txt2ID(const char* sText)            
+  - eBrlNorm:                  #     -N  "norm. type"     VtBrlNorm BrlNorm_Txt2ID(const char* sText)            
       type:    "combo" 
       descr:   "norm. type"
       tooltip: "absolute   absolute brilliance [n/(cm²s sr Ang)]\n

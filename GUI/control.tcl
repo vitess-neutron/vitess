@@ -33,7 +33,11 @@ proc finalExit {} {
       catch {file delete $f}
     }
   }
-  set fdir [file join [globVal SourceDirectory] FILES .saved]
+  if {[getSystem] == "windows"} {
+    set fdir [file join [globVal SourceDirectory] FILES .saved]
+  } else {
+    set fdir [file join [globVal SourceDirectory] /tmp .saved]
+  }
   foreach f [glob -nocomplain -directory $fdir *.gui] {
     catch {file delete $f}
   }
@@ -398,8 +402,8 @@ proc controlMenu {w} {
   forceDef StoreStates 8
   cascEntries $ww.states StoreStates 2 4 8 16
 
-  forceDef WatchSeconds 30
-  cascEntries $ww.secs WatchSeconds 5 10 20 30 60 300 600 900
+  forceDef WatchSeconds 300
+  cascEntries $ww.secs WatchSeconds 60 120 300 600 900 1800 3600 7200
 
   set ww $wo.afont
   menu $ww -bg $menuColor -tearoff 0
@@ -891,7 +895,11 @@ proc doSnapshot {} {
     } else {
       set StateStoreInd 0
     }
-    set fdir [file join [globVal SourceDirectory] FILES .saved]
+    if {[getSystem] == "windows"} {
+      set fdir [file join [globVal SourceDirectory] FILES .saved]
+    } else {
+      set fdir [file join [globVal SourceDirectory] /tmp .saved]
+    }
     file mkdir $fdir
     set fn [file join $fdir $i.gui]
     # last parameter 0 means we do this in a snap context

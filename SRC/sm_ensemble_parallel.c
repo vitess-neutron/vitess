@@ -93,7 +93,7 @@ static double
 const char *COLLFILEName = "collision.dat"; //   -C    [-]   name of the collision file
 char       *ParameterFileName=NULL;         //   -P    [-]   name of the file containing the geometry and properties of the mirrors
 long        nMaxColl = 0;                   //   -M    [-}   100  maximal number of collisions
-VtScAxis    quant_dir=VT_NO_SC_AXIS;        //   -Q    [-]   spin quantization direction 
+VtAxis      quant_dir=NO_AXIS;              //   -Q    [-]   spin quantization direction 
 short       bNewFormat=TRUE,                //   -F    [-]   flag: new format for geometry file
             bIncrColor=FALSE;               //   -R    [-]   flag: increase the neutron color by 1 for each mirror reflection
 VtMirrMat   eMirrMaterial=VT_NO_MIRR_MAT;   //   -S    [-]   enum: mirror material 
@@ -126,7 +126,7 @@ VectorType WallOffset[MAX_MIRR+1],                        //  center of the mirr
 double	   WallHoriz[MAX_MIRR+1], WallVert[MAX_MIRR+1],   // hor. and vert. rotation for the correct orientation (read from the geometry file) 
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],        // uncertainty of the hor. and vert. rotation for the correct orientation (read from the geometry file)
            mValue[MAX_MIRR+1][2],                         // m_cutoff for spin-up and spin-down (read from the new geometry file)
-           MirrThick[MAX_MIRR+1],                     // mirror thickness (read from the new geometry file)
+           MirrThick[MAX_MIRR+1],                         // mirror thickness (read from the new geometry file)
            thetaC[MAX_MIRR+1][2], thetaCSM[MAX_MIRR+1][2],// Q(m=1) and Q(m_cutoff) for spin-up and spin-down (as read from the old geometry file)
            RthetaCSM[MAX_MIRR+1][2],                      // R(m_cutoff) for spin-up and spin-down (as read from the old geometry file)
            mued[MAX_MIRR+1][4];                           // µ_coh*d_mirr and µ_inc*d_mirr for for spin-up and spin-down (as read from the old geometry file)
@@ -508,10 +508,10 @@ void OwnInit(int argc, char *argv[])
         break;		
 
       case 'Q':
-        quant_dir = (VtScAxis)atoi(arg);
+        quant_dir = (VtAxis)atoi(arg);
         if (quant_dir < -1 || quant_dir > 2)
           Error("wrong quantization direction definition");
-        else if (quant_dir == VT_NO_SC_AXIS)
+        else if (quant_dir == NO_AXIS)
           useQuantDir = FALSE;
         break;
       case 'F':
