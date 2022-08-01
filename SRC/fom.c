@@ -19,7 +19,6 @@
 /*********************************************/
 /* global and static variables               */
 /*********************************************/
-extern FILE*  LogFilePtr=NULL;    // Pointer on file for output of the progress of the fit
 
 static
 char  sFctFile[FN_LEN] = "Fcomm.dat",       // name of the file for the actual fitted values

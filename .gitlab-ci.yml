@@ -50,28 +50,28 @@ compile-centos7:
     paths:
       - artifacts-${OSARCH}/
 
-#compile-ubuntu:
-#  stage: build
-#  image: ubuntu:latest
-#  variables:
-#    OS: Ubuntu
-#    ARCH: x86_64
-#    OSARCH: ${OS}-${ARCH}
-#  before_script:
-#    - apt-get update
-#    - apt-get install -y make gcc 'g++'
-#  script:
-#    - cd SRC
-#    - make
-#    - make install
-#    - make clean
-#    - cd ..
-#    - mkdir artifacts-${OSARCH}
-#    - cp -r MODULES artifacts-${OSARCH}
-#  artifacts:
-#    expire_in: 1 week
-#    paths:
-#      - artifacts-${OSARCH}/
+compile-ubuntu:
+  stage: build
+  image: ubuntu:latest
+  variables:
+    OS: Ubuntu
+    ARCH: x86_64
+    OSARCH: ${OS}-${ARCH}
+  before_script:
+    - apt-get update
+    - apt-get install -y make gcc 'g++'
+  script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+    - mkdir artifacts-${OSARCH}
+    - cp -r MODULES artifacts-${OSARCH}
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - artifacts-${OSARCH}/
 
 compile-darwin:
   stage: build
@@ -131,7 +131,7 @@ package:
   image: rockylinux:8
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Darwin-x86_64 Windows10-x86; do
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-x86_64 Windows10-x86; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
