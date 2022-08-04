@@ -28,6 +28,28 @@ compile-rocky8:
     paths:
       - artifacts-${OSARCH}/
 
+compile-rocky9:
+  stage: build
+  image: rockylinux:9
+  variables:
+    OS: Rocky9
+    ARCH: x86_64
+    OSARCH: ${OS}-${ARCH}
+  before_script:
+    - dnf install -y make gcc 'gcc-c++'
+  script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+    - mkdir artifacts-${OSARCH}
+    - cp -r MODULES artifacts-${OSARCH}
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - artifacts-${OSARCH}/
+
 compile-centos7:
   stage: build
   image: centos:7
