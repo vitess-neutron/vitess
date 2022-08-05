@@ -11,6 +11,7 @@
 /* 1.11  Nov 2009  A. Houben      Limit captured flux by wave-length range                   */
 /* 1.12  Nov 2009  K. Lieutenant  gold foil area calculated                                  */
 /* 1.13  Mar 2020  K. Lieutenant  new central visualization parameters                       */
+/* 1.13a Aug 2022  K. Lieutenant  output improved and standard deviation corrected           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -19,30 +20,36 @@
 #include "init.h"
 #include "softabort.h"
 
-
-/*********************************/
-/** Global and Static Variables **/
-/*********************************/
-double CaptArea=1.0;
-double ReferenceWavelength=1.798;
-double heightmin  = 0.0,              /* z-coordinate: bottom of rectangular window             [cm] */
-       heightmax  = 0.0,              /* z-coordinate: top of rectangular window                [cm] */
-       widthmin   = 0.0,              /* y-coordinate: lower frame value of rectangular window  [cm] */
-       widthmax   = 0.0,              /* y-coordinate: higher frame value of rectangular window [cm] */
-       winradius  = 0.0,              /* radius of circular window                              [cm] */
-       ywincenter = 0.0,              /* y coordinate: center of circular window                [cm] */
-       zwincenter = 0.0;              /* y coordinate: center of circular window                [cm] */
-double lambdamin  = 0.0,              /* Minimum lambda for flux count                          [A]  */
-       lambdamax  = 0.0;              /* Maximum lambda for flux count                          [A]  */
-long   WindowType = 0;                /* 0 = No restrictions; 1 = circular window; 2 = rectangular window */
-double avColor = 0.0, avwColor = 0.0; /* Average color and weighted average color */
-
+// To do for version 4
+// - WindowType needs new structure definition and convert function 
+// - yaml file missing
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);     // Reads input parameters and sets global parameters
 void OwnCleanup();                        // Does module specific cleanup
+
+
+/*********************************/
+/** Global and Static Variables **/
+/*********************************/
+// Input parameters
+double ReferenceWavelength=1.798;     // -R  [Ang]  reference wavelength                                                            
+double heightmin  = 0.0,              // -h  [cm]   z-coordinate: bottom of rectangular window             
+       heightmax  = 0.0,              // -H  [cm]   z-coordinate: top of rectangular window                
+       widthmin   = 0.0,              // -w  [cm]   y-coordinate: lower frame value of rectangular window  
+       widthmax   = 0.0,              // -W  [cm]   y-coordinate: higher frame value of rectangular window 
+       winradius  = 0.0,              // -r  [cm]   radius of circular window                              
+       ywincenter = 0.0,              // -y  [cm]   y coordinate: center of circular window                
+       zwincenter = 0.0;              // -z  [cm]   y coordinate: center of circular window                
+double lambdamin  = 0.0,              // -l  [Ang]  Minimum lambda for flux count                          
+       lambdamax  = 0.0;              // -L  [Ang]  Maximum lambda for flux count                          
+long   WindowType = 0;                // -t  [Ang]  0 = No restrictions; 1 = circular window; 2 = rectangular window
+
+// Variables determined from input parameters or trajectory data
+double CaptArea=1.0;                  //    [cm^2]  area for catching the neutrons
+double avColor = 0.0, avwColor = 0.0; //     [Ang]  Average color and weighted average color */
 
 
 /******************************/
@@ -58,7 +65,7 @@ int main(int argc, char **argv)
   _eModule=MCN_CAPTURE;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.13");
+  PrintModuleName(_eModule, "1.13a");
   OwnInit(argc, argv);    // module specific initialization
  
   bVisInstalled = FALSE;
@@ -146,16 +153,15 @@ int main(int argc, char **argv)
     case 0:
       break;
     case 1:
-      fprintf(LogFilePtr,"Circular window of %6.2f cm diameter \n", 2.0*winradius);
+      fprintf(LogFilePtr,"Circular window of %6.2f cm diameter,    area %7.3f cm^2\n", 2.0*winradius, CaptArea);
       break;
     case 2:
-      fprintf(LogFilePtr,"Rectangular window of size %6.2f x %6.2f cm (W x H) \n", 
-      widthmax-widthmin, heightmax-heightmin);
+      fprintf(LogFilePtr,"Rectangular window of size %6.2f x %6.2f cm (W x H),    area %7.3f  cm^2 \n", widthmax-widthmin, heightmax-heightmin, CaptArea);
       break;
   }
 
   if (lambdamin != 0. && lambdamax != 0.)
-    fprintf(LogFilePtr,"Lambda window from %6.2f A to %6.2f A \n", lambdamin, lambdamax);
+    fprintf(LogFilePtr,"Lambda window from %7.3f A to %7.3f A \n", lambdamin, lambdamax);
 
   fprintf(LogFilePtr, "Reference wavelength: %12.3f A\n", ReferenceWavelength);
   if (avColor != 0.0 && Ntot!=0) 
@@ -163,8 +169,8 @@ int main(int argc, char **argv)
     fprintf(LogFilePtr, "Average color       : %12.3f \n", avColor);
     fprintf(LogFilePtr, "Avr. weighted color : %12.3f \n", avwColor);
   }
-  fprintf(LogFilePtr, "Capture area        : %12.3f cm^2\n", CaptArea);
-  fprintf(LogFilePtr, "Capture flux        : %12.3e +/- %12.3e n/(s*cm^2) \n\n", CaptInt/CaptArea, CaptErr);
+  fprintf(LogFilePtr, "Captured intensity  : %12.3e +/- %12.3e n/s       by %10ld trajectories\n", CaptInt, CaptErr,    Ntot);
+  fprintf(LogFilePtr, "Capture flux        : %12.3e +/- %12.3e n/(s*cm^2) \n\n",          CaptInt/CaptArea, CaptErr/CaptArea);
   
   // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
   // ----------------------------------------------------------------------------------------
