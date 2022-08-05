@@ -14,7 +14,7 @@ TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC = cc
-CFLAGS = -O3 -pthread -Wall -Wpointer-arith -Wcast-qual -Wwrite-strings -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
+CFLAGS = -O3 -pthread -Wall -Wno-cast-qual -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX = c++
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS=
@@ -25,6 +25,9 @@ ARFLAGS = rv
 INSTALL = install
 RM = rm -f
 
+ifdef DEBUG
+CFLAGS += -g -O0 -DDEBUG=1
+endif
 
 ALL = ascii2bin \
 beamstop \
