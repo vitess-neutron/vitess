@@ -28,6 +28,9 @@ VtReason  Reason_Txt2ID(const char* sText);
 void      DirType_ID2Txt(char* sText, const VtDirType eID);
 VtDirType DirType_Txt2ID(const char* sText);
 
+void      DirInOut_ID2Txt(char* sText, const VtDir eID);
+VtDir     DirInOut_Txt2ID(const char* sText);
+
 void      Axis_ID2Txt(char* sText, const VtAxis eID);
 VtAxis    Axis_Txt2ID(const char* sText);
 
