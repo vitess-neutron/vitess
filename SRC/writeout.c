@@ -846,9 +846,9 @@ short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutr
 	pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
 	pMCPLNeutron->weight = pVitNeutron->Probability;
 
-	RotVit2Mc(&pMCPLNeutron->position,     &pVitNeutron->Position);
-	RotVit2Mc(&pMCPLNeutron->direction,    &pVitNeutron->Vector);
-	RotVit2Mc(&pMCPLNeutron->polarisation, &pVitNeutron->Spin);
+  CopyVector( pVitNeutron->Position, pMCPLNeutron->position);
+  CopyVector(pVitNeutron->Vector, pMCPLNeutron->direction);
+  CopyVector(pVitNeutron->Spin, pMCPLNeutron->polarisation);
 
   return(TRUE);
 }

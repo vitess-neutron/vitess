@@ -494,7 +494,7 @@ short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     CopyVector(McnpNeutr.Position, pNeutron->Position);
     CopyVector(McnpNeutr.Vector,   pNeutron->Vector);
     
-    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> µeV,  lambda -> energy
+    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> ï¿½eV,  lambda -> energy
     pNeutron->Probability = McnpNeutr.Counts * FactInt;                     // normalisation counts -> n/s 
     pNeutron->Time        = McnpNeutr.Shakes * 1.0e-05;                     // unit  shakes (=1.0e-08 s) -> ms
     
@@ -617,7 +617,7 @@ short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     pNeutron->Vector[1] = McnpNeutr.DirY;
     pNeutron->Vector[2] = sqrt(1 - sq(McnpNeutr.DirX)  - sq(McnpNeutr.DirY)) * eSign;
     
-    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> µeV,  lambda -> energy
+    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> ï¿½eV,  lambda -> energy
     pNeutron->Probability = McnpNeutr.Counts * FactInt;                     // normalisation counts -> n/s 
     pNeutron->Time        = McnpNeutr.Shakes * 1.0e-05;                     // unit  shakes (=1.0e-08 s) -> ms
 
@@ -662,13 +662,13 @@ short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParti
   	// initialization
     InitMcNeutr(pVitNeutron);			  
 
-	  pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> µeV   
+	  pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> ï¿½eV   
 	  pVitNeutron->Time        = pMcplParticle->time; 
 	  pVitNeutron->Probability = pMcplParticle->weight;
 
-	  RotMc2Vit(&pVitNeutron->Position, &pMcplParticle->position);
-	  RotMc2Vit(&pVitNeutron->Vector,   &pMcplParticle->direction);
-	  RotMc2Vit(&pVitNeutron->Spin,     &pMcplParticle->polarisation);
+    CopyVector(pMcplParticle->position, pVitNeutron->Position );
+    CopyVector(pMcplParticle->direction, pVitNeutron->Vector );
+    CopyVector(pMcplParticle->polarisation, pVitNeutron->Spin );
 
     return(TRUE);
   }
