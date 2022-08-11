@@ -113,160 +113,163 @@ void Monochromator::OwnInit(int argc, char* argv[])
 
   while(argc>1)
   {
-    switch(argv[1][1])
-    {
-      // Main Window
-      // -----------
-      case 'P':
-	      ParFileName=&argv[1][2];
-	      break;
-      case 'G':
-	      GeomFileName=&argv[1][2];
-	      break;
+		if (argv[1][0]!='+') 
+		{
+      switch(argv[1][1])
+      {
+        // Main Window
+        // -----------
+        case 'P':
+	        ParFileName=&argv[1][2];
+	        break;
+        case 'G':
+	        GeomFileName=&argv[1][2];
+	        break;
 
-      case 'O':
-	      eGeomOption = (VtMonoArrange) atoi(&argv[1][2]);
-	      break;
-      case 'g':
-	      eFocGeom    = (VtMonoFocus) atoi(&argv[1][2]);
-	      break;
-      case 'X':
-	      eMonoMode   = (VtMonoType) atoi(&argv[1][2]);
-	      break;
-      case 'd':
-	      d_spr_option = (VtDistr) atoi(&argv[1][2]);
-	      break;
-      case 'B':
-	      sscanf(&argv[1][2], "%d", &bTransm) ;
-	      break;
-      case 'A':
-	      sscanf(&argv[1][2], "%d", &nRepete) ;
-	      break;
-      case 'f':
-	      sscanf(&argv[1][2], "%lf", &Freq) ;
-	      break;
-      case 'p':
-	      sscanf(&argv[1][2], "%lf", &Zeta0) ;
-	      break;
+        case 'O':
+	        eGeomOption = (VtMonoArrange) atoi(&argv[1][2]);
+	        break;
+        case 'g':
+	        eFocGeom    = (VtMonoFocus) atoi(&argv[1][2]);
+	        break;
+        case 'X':
+	        eMonoMode   = (VtMonoType) atoi(&argv[1][2]);
+	        break;
+        case 'd':
+	        d_spr_option = (VtDistr) atoi(&argv[1][2]);
+	        break;
+        case 'B':
+	        sscanf(&argv[1][2], "%d", &bTransm) ;
+	        break;
+        case 'A':
+	        sscanf(&argv[1][2], "%d", &nRepete) ;
+	        break;
+        case 'f':
+	        sscanf(&argv[1][2], "%lf", &Freq) ;
+	        break;
+        case 'p':
+	        sscanf(&argv[1][2], "%lf", &Zeta0) ;
+	        break;
 
-      case 'D':
-	      sscanf(&argv[1][2], "%lf", &d_fwhm) ;
-	      break;
-      case 'c':
-	      sscanf(&argv[1][2], "%lf", &mu_scat) ;
-	      break;
-      case 'C':
-	      sscanf(&argv[1][2], "%lf", &mu_abs) ;
-	      break;
-      case 'R':
-	      sscanf(&argv[1][2], "%lf", &Reflectivity) ;
-	      break;
+        case 'D':
+	        sscanf(&argv[1][2], "%lf", &d_fwhm) ;
+	        break;
+        case 'c':
+	        sscanf(&argv[1][2], "%lf", &mu_scat) ;
+	        break;
+        case 'C':
+	        sscanf(&argv[1][2], "%lf", &mu_abs) ;
+	        break;
+        case 'R':
+	        sscanf(&argv[1][2], "%lf", &Reflectivity) ;
+	        break;
 
-      case 'm':
-	      sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
-	      break;
-      case 'M':
-	      sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
-	      break;
-      case 't':
-	      sscanf(&argv[1][2], "%lf", &DevH) ;
-	      break;
-      case 'T':
-	      sscanf(&argv[1][2], "%lf", &DevV) ;
-	      break;
-      case 'h':
-	      sscanf(&argv[1][2], "%lf", &GapH) ;
-	      break;
-      case 'v':
-	      sscanf(&argv[1][2], "%lf", &GapV) ;
-	      break;
-      case 'H':
-	      sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
-	      break;
-      case 'V':
-	      sscanf(&argv[1][2], "%d", &NumberCE[1]) ;
-	      break;
+        case 'm':
+	        sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
+	        break;
+        case 'M':
+	        sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
+	        break;
+        case 't':
+	        sscanf(&argv[1][2], "%lf", &DevH) ;
+	        break;
+        case 'T':
+	        sscanf(&argv[1][2], "%lf", &DevV) ;
+	        break;
+        case 'h':
+	        sscanf(&argv[1][2], "%lf", &GapH) ;
+	        break;
+        case 'v':
+	        sscanf(&argv[1][2], "%lf", &GapV) ;
+	        break;
+        case 'H':
+	        sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
+	        break;
+        case 'V':
+	        sscanf(&argv[1][2], "%d", &NumberCE[1]) ;
+	        break;
 
-      case 'r':
-	      sscanf(&argv[1][2], "%lf", &RadV) ;
-	      break;
-      case 'a':
-	      sscanf(&argv[1][2], "%lf", &Psi0) ;
-	      break;
-      case 's':
-	      sscanf(&argv[1][2], "%lf", &RadH) ;
-	      break;
+        case 'r':
+	        sscanf(&argv[1][2], "%lf", &RadV) ;
+	        break;
+        case 'a':
+	        sscanf(&argv[1][2], "%lf", &Psi0) ;
+	        break;
+        case 's':
+	        sscanf(&argv[1][2], "%lf", &RadH) ;
+	        break;
 
-      // Parameter file or main window
-      // -----------------------------
-      // position and size of the monochromator element
-      case 'x':
-        PosCE0[0] = atof(&argv[1][2]);
-        break;
-      case 'y':
-        PosCE0[1] = atof(&argv[1][2]);
-        break;
-      case 'z':
-        PosCE0[2] = atof(&argv[1][2]);
-        break;
+        // Parameter file or main window
+        // -----------------------------
+        // position and size of the monochromator element
+        case 'x':
+          PosCE0[0] = atof(&argv[1][2]);
+          break;
+        case 'y':
+          PosCE0[1] = atof(&argv[1][2]);
+          break;
+        case 'z':
+          PosCE0[2] = atof(&argv[1][2]);
+          break;
 
-      case 'i':
-        DimCE0[0] = atof(&argv[1][2]);
-        break;
-      case 'j':
-        DimCE0[1] = atof(&argv[1][2]);
-        break;
-      case 'k':
-        DimCE0[2] = atof(&argv[1][2]);
-        break;
+        case 'i':
+          DimCE0[0] = atof(&argv[1][2]);
+          break;
+        case 'j':
+          DimCE0[1] = atof(&argv[1][2]);
+          break;
+        case 'k':
+          DimCE0[2] = atof(&argv[1][2]);
+          break;
 
-      // information about the reflecting plane
-      case 'l':
-        BraggHor = atof(&argv[1][2]);
-        break;
-      case 'L':
-        BraggVert = atof(&argv[1][2]);
-        break;
+        // information about the reflecting plane
+        case 'l':
+          BraggHor = atof(&argv[1][2]);
+          break;
+        case 'L':
+          BraggVert = atof(&argv[1][2]);
+          break;
 
-      case 'e':
-        SrfcHor = atof(&argv[1][2]);
-        break;
-      case 'E':
-        SrfcVert = atof(&argv[1][2]);
-        break;
+        case 'e':
+          SrfcHor = atof(&argv[1][2]);
+          break;
+        case 'E':
+          SrfcVert = atof(&argv[1][2]);
+          break;
 
-      case 'S':
-        d_spacing = atof(&argv[1][2]);
-        break;
-      case 'N':
-        OrderRefl = atoi(&argv[1][2]);
-        break;
+        case 'S':
+          d_spacing = atof(&argv[1][2]);
+          break;
+        case 'N':
+          OrderRefl = atoi(&argv[1][2]);
+          break;
 
-      // Output frame 
-      case 'F':
-        eFrame = (VtFrameGen) atoi(&argv[1][2]);
-        break;
+        // Output frame 
+        case 'F':
+          eFrame = (VtFrameGen) atoi(&argv[1][2]);
+          break;
 
-      case 'W':
-        Transl[0] = atof(&argv[1][2]);
-        break;
-      case 'Y':
-        Transl[1] = atof(&argv[1][2]);
-        break;
-      case 'Z':
-        Transl[2] = atof(&argv[1][2]);
-        break;
+        case 'W':
+          Transl[0] = atof(&argv[1][2]);
+          break;
+        case 'Y':
+          Transl[1] = atof(&argv[1][2]);
+          break;
+        case 'Z':
+          Transl[2] = atof(&argv[1][2]);
+          break;
 
-      case 'u':
-        OutHor  = atof(&argv[1][2]);
-        break;
-      case 'U':
-        OutVert = atof(&argv[1][2]);
-        break;
+        case 'u':
+          OutHor  = atof(&argv[1][2]);
+          break;
+        case 'U':
+          OutVert = atof(&argv[1][2]);
+          break;
 
-      default:
-        Error2("unkown command option", argv[1]);
-        exit(-1);
+        default:
+          Error2("unkown command option", argv[1]);
+          exit(-1);
+      }
     }
     argc--;
     argv++;
