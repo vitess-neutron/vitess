@@ -19,6 +19,7 @@
 /* 1.5  Feb  2022  K. Lieutenant   correction: binary MCNP6 files and surface file           */
 /* 1.6  Aug  2022  P. Zakalek      read in of SSW files from MCNP implemented                */
 /* 1.6a Aug  2022  P. Zakalek      removed automatic rotation of MCPL file format            */
+/* 1.6b Aug  2022  P. Zakalek      added option to limit number of read neutrons             */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -71,6 +72,7 @@ double       FactInt=1.0;                // -I        Factor to normalize to the
 int          iSurface=MISSING;           // -s        surface ID: if given, only neutrons with this ID are considered
 short        iDetectColor=-1;            // -C        Only for VITESS format: Read only events with a given color.
 int          nRep=1;                     // -R        Number of times the input is read
+double   maxEv=-1;                    // -M
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf')
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
@@ -108,7 +110,7 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.6a");
+  PrintModuleName(_eModule, "1.6b");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -127,19 +129,20 @@ int main(int argc, char **argv)
       rc=TRUE;
       while (rc != VT_EOF)
       {
-        rc=ReadMcplTraj(&InNeutron);
-        if (rc==TRUE)
-        {
-          NumNeutRead += rc;
-          WriteNeutron(&InNeutron);
-        }
-        else if (rc==VT_EOF)
-        {
-          iRep++;
-          if (iRep < nRep)
-          { mcpl_rewind(hInFile);
-            rc=TRUE;
+        if ((int)maxEv == -1 || NumNeutRead < maxEv) {
+          rc = ReadMcplTraj(&InNeutron);
+          if (rc == TRUE) {
+            NumNeutRead += rc;
+            WriteNeutron(&InNeutron);
+          } else if (rc == VT_EOF) {
+            iRep++;
+            if (iRep < nRep) {
+              mcpl_rewind(hInFile);
+              rc = TRUE;
+            }
           }
+        } else {
+          rc = VT_EOF;
         }
       }
     }
@@ -149,9 +152,13 @@ int main(int argc, char **argv)
       rc = ReadSSWTraj(&InNeutron, &nT, hSSWFile);
       if (rc == TRUE){
         for (int j=0; j<nT; j++) {
-          if (j!=0) GetId(&InNeutron.ID);
-          NumNeutRead += nT;
-          WriteNeutron(&InNeutron);
+          if ((int)maxEv == -1 || NumNeutRead < maxEv) {
+            if (j != 0) GetId(&InNeutron.ID);
+            NumNeutRead += 1;
+            WriteNeutron(&InNeutron);
+          } else {
+            rc = VT_EOF;
+          }
         }
       }
     }
@@ -176,9 +183,13 @@ int main(int argc, char **argv)
           }
           if (nT>=1)
           {
-            InNeutron.Probability *= (Weight[m]/nRep);        // reduction of weight if data are read more than once or more than 1 file is read
-            NumNeutRead += nT;
-            WriteNeutron(&InNeutron);
+            if ((int)maxEv == -1 || NumNeutRead < maxEv) {
+              InNeutron.Probability *= (Weight[m] / nRep);        // reduction of weight if data are read more than once or more than 1 file is read
+              NumNeutRead += nT;
+              WriteNeutron(&InNeutron);
+            } else {
+              rc = VT_EOF;
+            }
           }
 
           // if reading was not possible anymore, try to start from beginning if applicable
@@ -252,7 +263,9 @@ void OwnInit(int argc, char *argv[])
         case 'T':
           _sTraceFileName = &argv[i][2];
           break;
-
+        case 'M':
+          maxEv = (double)atof(&argv[i][2]);
+          break;
         case 'f':
           ePrgFormat = (VtPrgFormat) atoi(&argv[i][2]);
           break;
