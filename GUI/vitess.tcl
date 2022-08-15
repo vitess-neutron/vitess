@@ -789,7 +789,6 @@ set read_inESET {
   {ri_frc2 float "0.0" {"weight\nfor file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {}
-  {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
   {ri_fact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory from the MCNP simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {in_surf int ""  {"surface\nID" "Only for MCNP6: If a surface ID (greater -1) is given, only neutrons with this ID are read from file." "" s} ge-1}
   {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
