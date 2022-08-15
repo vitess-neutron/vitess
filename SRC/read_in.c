@@ -17,6 +17,8 @@
 /* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
 /* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNP6 files                           */
 /* 1.5  Feb  2022  K. Lieutenant   correction: binary MCNP6 files and surface file           */
+/* 1.6  Aug  2022  P. Zakalek      read in of SSW files from MCNP implemented                */
+/* 1.6a Aug  2022  P. Zakalek      removed automatic rotation of MCPL file format            */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -106,7 +108,7 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.5");
+  PrintModuleName(_eModule, "1.6a");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -728,9 +730,9 @@ short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParti
     pVitNeutron->Time        = pMcplParticle->time;
     pVitNeutron->Probability = pMcplParticle->weight;
 
-    RotMc2Vit(&pVitNeutron->Position, &pMcplParticle->position);
-    RotMc2Vit(&pVitNeutron->Vector,   &pMcplParticle->direction);
-    RotMc2Vit(&pVitNeutron->Spin,     &pMcplParticle->polarisation);
+    CopyVector(&pMcplParticle->position, &pVitNeutron->Position);
+    CopyVector(&pMcplParticle->direction, &pVitNeutron->Vector);
+    CopyVector(&pMcplParticle->polarisation, &pVitNeutron->Spin);
 
     return(TRUE);
   }
