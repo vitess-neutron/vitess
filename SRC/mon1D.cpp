@@ -516,15 +516,18 @@ void Mon1D::WriteOut(long iBnch)
       { 
         WriteHeader1DB(fMonitor[ii], "polarisation", ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
-          fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
-	                                                               dataArray[ii][iBin]/dataArrayPolWeights[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);       
+        { if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
+            fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
+	                                                                 dataArray[ii][iBin]/dataArrayPolWeights[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
+        }
       }
       else
       { 
         WriteHeader1DB(fMonitor[ii], "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
-          fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
-	                                                               fNorm * dataArray[ii][iBin], fNorm * dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);       
+        { fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
+	                                                              fNorm * dataArray[ii][iBin], fNorm * dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
+        }
       }
 
       fclose(fMonitor[ii]);

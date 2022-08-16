@@ -158,8 +158,8 @@ static short GetColMax();                                           // Returns m
 // these function should only be used exceptionally outside init.c
 char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
 char* FullParName     (const char* filename);                       // adds parameter directory to file name 
-char* FullInName      (const char* filename);                       // adds output dir to file name 
-char* FullOutName     (const char* filename);                       // adds input dir to file name 
+char* FullInName      (const char* filename);                       // adds input dir to file name 
+char* FullOutName     (const char* filename);                       // adds output dir to file name 
 
 
 /**************************************************************/

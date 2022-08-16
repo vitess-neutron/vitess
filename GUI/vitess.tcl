@@ -1333,7 +1333,6 @@ set guide_ellipticESET [concat $guide_ellipticESET]
 set BigFramebender 1
 
 set benderESET {
-  {visdev radio display {visualisation\ndevice "" "" o} {display file display+file} {1 2 3}}
   {"Bender geometry characteristic" header}
   {enter_height float 10 {
     "entrance\nheight [cm]"
@@ -1385,15 +1384,14 @@ set benderESET {
 
   {"Geometrical description of bender" header}
   {sfile pareditablefile "" {"surface\nfile" " file which describes the bender geometry" "" u} r}
-  {ifile parbrowsefile "" {"information\nfile" " file which contains some information about the bender geometry" "" A} r}
+  {ifile parbrowsefile "" {"information\nfile" " file which contains some information about the bender geometry" "" A} w}
 
   {"Special option" header}
   {uref radio yes {"transmitted\nneutrons"
     "no: ideal absorption between bender channels,\nyes: unreflected neutrons pass in the next bender channel" "" g}
     {yes no} {1 0}}
   {amat radio Vacuum {"Absorption\nmaterial"
-    "Attenuation of neutrons flux in the given material inside channels
-of bender.\n\"from file\" means data are read from a file specified as \"transmission file\"" "" c}
+    "Attenuation of neutrons flux in the given material inside channels of bender.\n\"from file\" means data are read from a file specified as \"transmission file\"" "" c}
     {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
   {}
   {amatl radio Gadolinium {"left side\nmaterial"
@@ -1411,12 +1409,14 @@ of bender.\n\"from file\" means data are read from a file specified as \"transmi
     "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r} ge0 "" 1}
   {abut float 0 {"abutment\nloss length"
     "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a} ge0 "" 1}
-  {visu radio yes {visualisation "" "" y} {yes no} {1 0}}
-  {pola radio yes {polarisation
-    "yes: split into spin-down and spin-up reflectivity\nno: spin-up reflectivity for all neutrons" "" p}
-    {yes no} {1 0}}
+  {}
+  {visu radio no {visualisation "" "" y} {yes no} {1 0}}
+  {visdev radio file {visualisation\ndevice "" "" o} {display file display+file} {1 2 3}}
+  {}
+  {pola radio no {polarisation "yes: split into spin-down and spin-up reflectivity\nno: spin-up reflectivity for all neutrons" "" p} {yes no} {1 0}}
   {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation" "" V} {OX OY OZ} {0 1 2}}
-  {geotest radio yes {"geometry test" "activate/deactivates geometry test" "" t} {no yes} {0 1}}
+  {}
+  {geotest radio no {"geometry test" "activate/deactivates geometry test" "" t} {no yes} {0 1}}
 }
 
 proc checkOFile {a b ts app} {

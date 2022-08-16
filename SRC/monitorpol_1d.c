@@ -68,17 +68,18 @@ int main(int argc, char *argv[])
          sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"};
   short  bRegistered=FALSE;
   int	   dy=0, 
-         bincounts[10001];
+         nCounts[10001];      // number of trajectories per bin  
   long	 i=0;
-  double bpost   [10001],
-         bint    [10001],
-         bintch  [10001], 
-         binerror[10001],
-         Divy  =0.0, 
-         Divz  =0.0,  
-         prob  =0.0,
-         bintc =0.0,
-         binpol=0.0;
+  double PosT   [10001],      // limits of the bins (minimal and maximal value)
+         IntBin [10001],      // total intensity (=count rate) per bin 
+         IntPol [10001],      // summed up polarization per bin (Sum(count_rate * spin))
+         Pol     =0.0,        // polarization in a bin
+         PolError=0.0,        // standarad variation of the polarization in a bin
+         Divy    =0.0, 
+         Divz    =0.0,  
+         prob    =0.0,
+         bintc   =0.0,
+         binpol  =0.0;
   
   // reading of input data and initilisation
   // ---------------------------------------
@@ -99,11 +100,10 @@ int main(int argc, char *argv[])
   // initializes arrays
   for (dy=0; dy < nbiny+1; dy++)
   {
-    bpost[dy] = xMin + ((xMax-xMin)*dy/(double)nbiny);
-    bint     [dy]=0.0;
-    bintch   [dy]=0.0;
-    binerror [dy]=0.0;
-    bincounts[dy]=0;
+    PosT[dy] = xMin + ((xMax-xMin)*dy/(double)nbiny);
+    IntPol   [dy]=0.0;
+    IntBin   [dy]=0.0;
+    nCounts[dy]=0;
   }
 
   DECLARE_ABORT;
@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 	    
 	          if ((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0];
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
 	          dy = (int) floor(nbiny*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
 	          if ((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -176,8 +176,8 @@ int main(int argc, char *argv[])
 	          dy = (int)floor(nbiny*(Divy - xMin)/(xMax-xMin));	      
 	          if((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -193,8 +193,8 @@ int main(int argc, char *argv[])
 	          dy = (int)floor(nbiny*(Divz - xMin)/(xMax-xMin));
 	          if ((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -205,8 +205,8 @@ int main(int argc, char *argv[])
 	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
 	          if ((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -217,8 +217,8 @@ int main(int argc, char *argv[])
 	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
 	          if ((dy>=0)&&(dy<nbiny))
 	          {
-		          bint[dy]   = bint[dy] + prob * InputNeutrons[i].Spin[0];
-		          bintch[dy] = bintch[dy] + prob;
+		          IntPol[dy] = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
+		          IntBin[dy] = IntBin[dy] + prob;
 		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
 		          bintc      = bintc + prob;
 		          bRegistered=1;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
             exit(-1);
 	      }
 	  
-	      if((dy>=0)&&(dy<nbiny)) bincounts[dy]++;
+	      if((dy>=0)&&(dy<nbiny)) nCounts[dy]++;
 
 	      /* calculate spin vector in the original direction */
 	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
@@ -249,11 +249,12 @@ my_exit:
   WriteHeader1D(fMonitor, "polarization", bProbactiv, nbiny, sParN[ePar], sUnit[ePar]);
   for (dy = 0; dy<(nbiny); dy++)
   {
-    if (bintch[dy]!=0.0 && bincounts[dy] > 0) 
+    if (IntBin[dy]!=0.0 && nCounts[dy] > 0) 
     {
-	    binerror[dy] = (bint[dy]/bintch[dy])*sqrt(1./bincounts[dy]);
+	    Pol      = IntPol[dy]/IntBin[dy];
+	    PolError = Pol * sqrt(1./nCounts[dy]);
+      fprintf(fMonitor, "%10.4f  %12.5e %12.5e  %7d\n", (PosT[dy]+PosT[dy+1])/2.0, Pol, PolError, nCounts[dy]);
     }
-    fprintf(fMonitor, "%10.4f  %12.5e %12.5e  %7d\n", (bpost[dy]+bpost[dy+1])/2.0,(bint[dy]/bintch[dy]), binerror[dy], bincounts[dy]);
   }
 
   fclose(fMonitor);

@@ -83,13 +83,13 @@
 /******************************/
 /** Inline Functions         **/
 /******************************/
-
 FILE * openNFile (char *name) {return OpenInputFile(name, TRUE, "r");}
 
 
-/**************************************/
-/** Prototypes of internal functions **/
-/**************************************/
+/*************************************************/
+/** Prototypes of 'init' and internal functions **/
+/*************************************************/
+char* FullOutName(const char* filename);                    // adds output dir to file name 
 
 void OwnInit(int argc, char *argv[]);                       // reads input parameters and initializes global variables
 int  LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
@@ -102,7 +102,6 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
                                           double entranceHeight, double dZ);
 
 void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorType v3);
-
 
 
 /******************************/
@@ -1035,7 +1034,7 @@ void  OwnInit(int argc, char *argv[])
     memcpy(AsciiFileName, SurfacesFileName, len-3);
     AsciiFileName[len-3] = '\0';
     strcat(AsciiFileName, "Log");
-    fprintf(LogFilePtr,"NOTE: No name of the bender information file was given. Output is written to %s", AsciiFileName);
+    fprintf(LogFilePtr,"NOTE: No name of the bender information file was given. Output is written to %s\n", AsciiFileName);
   }
   AsciiFile = OpenOutputFile(AsciiFileName, FALSE, "wt");
 
@@ -1060,10 +1059,7 @@ void  OwnInit(int argc, char *argv[])
 
   if ((bAbsTransCrit != 0)&&(NumberOfSurfaces == 2))
   {
-    fprintf(LogFilePtr,"ERROR: you have guide for simulation, \n"
-    "which have only one channel and choosed transmission between channels. \n"
-    "Please not use the transmission between channels!\n");
-    exit(-1);
+    Warning("Having only one channel and choosing transmission between channels does not make sense. \n");
   }
 
   /* define bender entrance and exit width and radius of curvature */
@@ -1494,7 +1490,7 @@ void  OwnInit(int argc, char *argv[])
 
 
     /* open graphical device */
-    if (cpgopen(GraphDev) < 1)
+    if (cpgopen(FullOutName(GraphDev)) < 1)
     {
       fprintf(LogFilePtr,"ERROR: I cannot open plot device \n");
       exit(-1);
@@ -1780,7 +1776,7 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
   deltaY1 = fabs(yEnd - yStart);
   deltaY2 = fabs(1. - cos(angle))*radius;
 
-  fprintf(LogFilePtr,"deltaY1 %f, deltaY2 %f  \n", deltaY1, deltaY2);
+  // fprintf(LogFilePtr,"deltaY1 %f, deltaY2 %f  \n", deltaY1, deltaY2);
 
   if (deltaY1 >= deltaY2)
   {
@@ -1801,7 +1797,7 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
   // Take into account a possible converging
   dY = yEnd - (yStart + dYcirc);
 
-  fprintf(LogFilePtr,"dY %f \n", dY);
+  // fprintf(LogFilePtr,"dY %f \n", dY);
 
   angleElem = 0.;
   angleNorm = 0.;

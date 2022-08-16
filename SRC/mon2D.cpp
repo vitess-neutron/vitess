@@ -52,7 +52,8 @@ Mon2D::Mon2D()
 
   BinPosX   = NULL;
   BinPosY   = NULL;
-  dataArray = NULL;
+  dataArray       = NULL;
+  dataArrayPol    = NULL;
   dataArrayError  = NULL;
   dataArrayCounts = NULL;
   dataArrayPolWeights = NULL;
@@ -438,8 +439,9 @@ void Mon2D::WriteOut(long iBnch)
     {
       if (analysePol)
       { if (dataArrayCounts[iBinX][jBinY] > 0  && dataArrayPolWeights[iBinX][jBinY] > 0) 
-          dataArrayPol  [iBinX][jBinY] = dataArray   [iBinX][jBinY] / dataArrayPolWeights[iBinX][jBinY];
+        { dataArrayPol  [iBinX][jBinY] = dataArray   [iBinX][jBinY] / dataArrayPolWeights[iBinX][jBinY];
           dataArrayError[iBinX][jBinY] = dataArrayPol[iBinX][jBinY] / sqrt(dataArrayCounts[iBinX][jBinY]);
+        }
       }
       else
       { if (dataArrayCounts[iBinX][jBinY] > 0) 

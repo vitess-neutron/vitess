@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   // --------------
   _eModule=templateMonitor.eModule;
 	Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.2a");
   templateMonitor.OwnInit(argc, argv);
  
   bVisInstalled = FALSE;

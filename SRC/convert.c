@@ -83,7 +83,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_FIELD_PREC   : strcpy(sCompName, "MagnField");         break;        
 	  case MCN_FIELD_ROT    : strcpy(sCompName, "MagnFieldRotating"); break;
 	  case MCN_FIELD_SESANS : strcpy(sCompName, "MagnFieldSESANS");   break;  
-	  case MCN_CAPTURE      : strcpy(sCompName, "Source");            break;           
+	  case MCN_CAPTURE      : strcpy(sCompName, "CaptureFlux");       break;           
 	  case MCN_BEAMSTOP     : strcpy(sCompName, "BeamStop");          break;         
 	  case MCN_SMPL_ENVIRO  : strcpy(sCompName, "SampleEnvironment"); break;
 	  case MCN_DETECTOR     : strcpy(sCompName, "Detector");          break;         
@@ -179,7 +179,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "MagnField"))         eComp=MCN_FIELD_PREC   ;        
   else if (strcmp(sCompName, "MagnFieldRotating")) eComp=MCN_FIELD_ROT    ;
   else if (strcmp(sCompName, "MagnFieldSESANS"))   eComp=MCN_FIELD_SESANS ;  
-  else if (strcmp(sCompName, "Source"))            eComp=MCN_CAPTURE      ;           
+  else if (strcmp(sCompName, "CaptureFlux"))       eComp=MCN_CAPTURE      ;           
   else if (strcmp(sCompName, "BeamStop"))          eComp=MCN_BEAMSTOP     ;         
   else if (strcmp(sCompName, "SampleEnvironment")) eComp=MCN_SMPL_ENVIRO  ;
   else if (strcmp(sCompName, "Detector"))          eComp=MCN_DETECTOR     ;         
