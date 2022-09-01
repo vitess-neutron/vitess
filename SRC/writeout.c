@@ -28,6 +28,7 @@
 /* 1.11  Feb 2021  K. Lieutenant   binary output for all data formats                        */
 /* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                    */
 /* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
+/* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -150,7 +151,7 @@ char*          sHeader =NULL;           //             header: parameters of the
 char*          sUnits  =NULL;           //             header: units used in the event file
 short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
 bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           sVsn[5]="1.13",
+char           sVsn[5]="1.14",
         form[15][15]={"","","","","","","","","","","","","","",""};
 // formats to print data of the different parameters using VITESS
 
