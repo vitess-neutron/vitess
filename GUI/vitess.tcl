@@ -812,12 +812,16 @@ set writeoutESET {
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
-  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6} {1 2 3 5}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
   {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
   {wofact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
   {outsurf int ""  {"surface\nID" "Only for MCNP6: Number written as surface ID to the output file" "" s}}
+  {}
+  {"SSW output reference file" header}
+  {rfname pareditablefile "" {
+      "SSW\nreference file" "Specifies the name of the SSW reference file to determine the file format." "" r} "" ""}
   {}
   {"VITESS ASCII output selection" header}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}

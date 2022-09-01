@@ -412,6 +412,14 @@ typedef enum
 }
 VtPrgFormat;
 
+// data format of SSW datatype
+typedef enum
+{ SSW_MCNP6 = 1,
+    SSW_MCNPX = 2,
+    SSW_MCNP5   = 3,
+}
+SSWFormat;
+
 // format used to store trajctories: float, exponential or binary
 typedef enum
 { VT_EXPONENTIAL = 0,
