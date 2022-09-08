@@ -12,7 +12,7 @@
 #define H_P         6.6260696E-34
 #define L_2_E       81805.048
 #define E_C         1.6021773E-19
-#define THETA_NI    0.09894   // the old value 0.099138° corresponds to QC_NI=0.021743 1/Ang
+#define THETA_NI    0.09894   // the old value 0.099138 deg corresponds to QC_NI=0.021743 1/Ang
 #define QC_NI       0.0217
 #define NEUTRON_ID  2112
 
@@ -407,7 +407,8 @@ typedef enum
   VT_MCSTAS_FMT = 2,
   VT_MCPL_FMT   = 3,
   VT_MCNPX_FMT  = 4,
-  VT_MCNP6_FMT  = 5
+  VT_MCNP6_FMT  = 5,
+  VT_SSW_FMT = 6
 }
 VtPrgFormat;
 

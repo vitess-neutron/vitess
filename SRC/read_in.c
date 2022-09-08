@@ -17,6 +17,7 @@
 /* 1.3b Jul  2019  K. Lieutenant   smart trajectory search algorithm only for long lists     */
 /* 1.4  Feb  2021  K. Lieutenant   options: binary and MCNP6 files                           */
 /* 1.5  Feb  2022  K. Lieutenant   correction: binary MCNP6 files and surface file           */
+/* 1.6  Aug  2022  P. Zakalek      SSW files read by sswread                                 */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -26,6 +27,7 @@
 #include "softabort.h"
 #include "mcpl.h"
 #include "trace.h"
+#include "sswread.h"
 
 #define NF_MAX         3
 #define MAX_HEADER  3000
@@ -40,7 +42,8 @@ void  OwnCleanup();                                                             
 short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads VITESS trajectory
 short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads McStas trajectory
 short ReadMcplTraj  (Neutron* pNeutron);                         // Reads MCPL trajectory 
-short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNPX  trajectory 
+short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNPX  trajectory
+short ReadSSWTraj   (Neutron* pNeutron, int* nTrj, ssw_file_t pFile);  // Reads MCNP SSW trajectory
 short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNP6 trajectory 
                                                                                    
 short ConvertMcStas2Vitess(Neutron* pVitNeut, const McNeutron*       pMcNeut);     // Converts McStas to VITESS trajectory 
@@ -76,6 +79,7 @@ extern VtTrace _eTraceMode;              // -t        NO_TRACING     : no tracin
 // Variables determined from input parameters or trajectory data
 FILE*        pInFile[NF_MAX];            //           pointer to input file
 mcpl_file_t  hInFile;                    //           handle to MCPL input file
+ssw_file_t   hSSWFile;                   //           handle to SSW input file
 
 // parameter used in different functions
 char         sLine[256]="";              //           one line in an ASCII input file
@@ -100,7 +104,7 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
  
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.5");
+  PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -121,7 +125,7 @@ int main(int argc, char **argv)
       {
         rc=ReadMcplTraj(&InNeutron);
         if (rc==TRUE) 
-        {    
+        {
           NumNeutRead += rc;       
           WriteNeutron(&InNeutron);
         }
@@ -133,6 +137,16 @@ int main(int argc, char **argv)
             rc=TRUE;
           }
         }
+      }
+    }
+  } else if (ePrgFormat == VT_SSW_FMT) {
+    rc = TRUE;
+    while (rc != VT_EOF) {
+      rc = ReadSSWTraj(&InNeutron, &nT, hSSWFile);
+      if (rc == TRUE)
+      {
+        NumNeutRead += nT;
+        WriteNeutron(&InNeutron);
       }
     }
   }
@@ -173,7 +187,6 @@ int main(int argc, char **argv)
       }
     }
   }
-
   // Do module specific cleanups
   OwnCleanup();
   
@@ -270,6 +283,9 @@ void OwnInit(int argc, char *argv[])
     if (sInputFileName[1] != NULL || sInputFileName[2] != NULL)
       Warning("Input file 2 and 3 cannot be treated.");
    }
+  else if (ePrgFormat==VT_SSW_FMT){
+    hSSWFile = ssw_open_file(sInputFileName[0]);
+  }
   else  
   { 
     for (m=0; m < NF_MAX; m++)
@@ -298,6 +314,7 @@ void OwnInit(int argc, char *argv[])
       case VT_MCPL_FMT  : nHeader=   0; break;  // no influence, it is handled inside mcpl.c
       case VT_MCNPX_FMT : nHeader=   0; Error  ("Binary input for MCNPX not yet properly implemented"); break;
       case VT_MCNP6_FMT : nHeader=   0; break;
+      case VT_SSW_FMT: nHeader= 0; break;
       default: Error("Data format is not (yet) implemented");
     }  
   }
@@ -324,6 +341,8 @@ void OwnCleanup()
   if (ePrgFormat== VT_MCPL_FMT)
   { // Deallocate memory and release file-handle
     mcpl_close_file(hInFile);
+  } else if (ePrgFormat== VT_SSW_FMT){
+    ssw_close_file(hSSWFile);
   }
   else  
   { // Close all files
@@ -502,6 +521,37 @@ short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
   }
 
   return(rc);
+}
+
+short ReadSSWTraj(Neutron* pNeutron, int* nTrj, ssw_file_t  pFile) {
+
+  const ssw_particle_t *p;
+  if ((p = ssw_load_particle(pFile))) {
+    if (!p->pdgcode) {
+      printf("Warning: ignored particle with no PDG code set (raw ssw type was %li).\n", p->rawtype);
+      return FALSE;
+    }
+
+    if (p-> pdgcode==NEUTRON_ID) {
+      InitMcNeutr(pNeutron);
+
+      pNeutron->Position[0] = p->x;
+      pNeutron->Position[1] = p->y;
+      pNeutron->Position[2] = p->z;
+      pNeutron->Vector[0] = p->dirx;
+      pNeutron->Vector[1] = p->diry;
+      pNeutron->Vector[2] = p->dirz;
+      pNeutron->Wavelength = LAMBDA_FROM_ENERGY(1.0e+12 * p->ekin);
+      pNeutron->Probability = p->weight/10.0;
+      pNeutron->Time = p->time * 1.0e-05;
+      //pNeutron-> = p->isurf;
+
+      *nTrj = 1;
+      return TRUE;
+    }
+  }
+
+  return VT_EOF;
 }
 
 short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
