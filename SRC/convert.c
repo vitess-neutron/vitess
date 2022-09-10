@@ -90,7 +90,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_WRITEOUT     : strcpy(sCompName, "EventsOut");         break;        
 	  case MCN_SMPL_EL_ISO  : strcpy(sCompName, "SampleElasticIsotr");break;
 	  case MCN_SMPL_INELAST : strcpy(sCompName, "SampleInelastic");   break;  
-	  case MCN_SMPL_SNGL_X  : strcpy(sCompName, "SampleSnglCrytal");  break; 
+	  case MCN_SMPL_SNGL_X  : strcpy(sCompName, "SampleSnglCrystal"); break; 
 	  case MCN_SMPL_POWDER  : strcpy(sCompName, "SamplePowder");      break;     
 	  case MCN_SMPL_S_Q     : strcpy(sCompName, "SampleSofQ");        break;       
 	  case MCN_SMPL_NXS     : strcpy(sCompName, "SampleNXS");         break;        
@@ -186,7 +186,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "EventsOut"))         eComp=MCN_WRITEOUT     ;        
   else if (strcmp(sCompName, "SampleElasticIsotr"))eComp=MCN_SMPL_EL_ISO  ;
   else if (strcmp(sCompName, "SampleInelastic"))   eComp=MCN_SMPL_INELAST ; 
-  else if (strcmp(sCompName, "SampleSnglCrytal"))  eComp=MCN_SMPL_SNGL_X  ; 
+  else if (strcmp(sCompName, "SampleSnglCrystal")) eComp=MCN_SMPL_SNGL_X  ; 
   else if (strcmp(sCompName, "SamplePowder"))      eComp=MCN_SMPL_POWDER  ; 
   else if (strcmp(sCompName, "SampleSofQ"))        eComp=MCN_SMPL_S_Q     ; 
   else if (strcmp(sCompName, "SampleNXS"))         eComp=MCN_SMPL_NXS     ; 

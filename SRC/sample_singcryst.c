@@ -8,6 +8,7 @@
 /* 1.2  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced      */
 /* 1.3  Apr 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Oct 2021  K. Lieutenant  option: parameters from input instead of from file         */
+/* 1.4a Sep 2022  K. Lieutenant  loop over trajectories changed to speed up calculation     */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -45,8 +46,8 @@ double dSpreadGaussian(double rdelta);                        // probability of 
 // Input parameters
 char      *pSmplFileName=NULL,      // -P     [-]   pointer to the name of the sample file  
           *pStrFileName =NULL;      // -S     [-]   pointer to the name of the structure factor file  
-VtDistr    d_spr_option=LORENTZIAN; // -o     [-]   function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
-double     Ddperd=0.0001;           // -d     [-]   d-spacing spread d_FWHM/d  
+VtDistr    d_spr_option =GAUSSIAN;  // -o     [-]   function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
+double     d_spr_rel    =0.0001;    // -d     [-]   relative d-spacing spread d_FWHM/d  
 
 double     A_recip[3]={0.0,0.0,0.0},// -A -B -C file [1/Ang] reciprocal unit vector A
            B_recip[3]={0.0,0.0,0.0},// -T -U -V file [1/Ang] reciprocal unit vector A 
@@ -91,11 +92,14 @@ int main(int argc, char **argv)
 {
   long       repet=0, i=0;
   double     TOF=0.0, WL, Prob=0.0 ;
-  double     k_inc[3]={0.0,0.0,0.0}, 
+  double     k_in [3]={0.0,0.0,0.0},    // incoming wavevector
+             k_out[3]={0.0,0.0,0.0},    // outgoing wavevector
              GGact[3]={0.0,0.0,0.0}; 
   double     MaxPathLength=0.0, PathLength=0.0;
-  VectorType Pos={0.0,0.0,0.0}, Dir={0.0,0.0,0.0}, 
-             GG ={0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0};
+  VectorType Pos={0.0,0.0,0.0}, 
+             Dir={0.0,0.0,0.0}, 
+             GG ={0.0,0.0,0.0},         // reciprocal lattice vector
+             Pos_final={0.0,0.0,0.0};
   VectorType Pos1f={0.0,0.0,0.0}, Pos2f={0.0,0.0,0.0},
              Pos1v={0.0,0.0,0.0}, Pos2v={0.0,0.0,0.0};
   Neutron    Neutrons;
@@ -107,7 +111,7 @@ int main(int argc, char **argv)
   _eModule = MCN_SMPL_SNGL_X;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.4a");
   OwnInit(argc, argv);
 
   /* Reads sample parameters and combines with input parameters */
@@ -167,7 +171,7 @@ int main(int argc, char **argv)
           if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
         }
 	
-        for(repet=0;repet<nReflect;repet++)
+        for (repet=0; repet < nReflect; repet++)
         {
           CHECK;
           CopyVector(Pos1f, Pos1v) ;
@@ -195,68 +199,67 @@ int main(int argc, char **argv)
 
           CopyVector(Pos1v, Pos);						/*scattering position */
 
-          if ((WL*LengthVector(GG)/4./M_PI)>1) Prob = 0.; 
-
-          /* attenuation untill scattering normalized to maximal path and probability */
-          Prob *= exp( - PathLength * AbsorptionC * WL );
+          // wavelength has to be smaller than 2d to have a chance for reflection
+          if (WL < 4.0*M_PI/LengthVector(GG))
+          {  
+            /* attenuation untill scattering normalized to maximal path and probability */
+            Prob *= exp( - PathLength * AbsorptionC * WL );
 				
-          // Take into account the number of hkl-entries in the look-up file
-          // for correct normalisation.
-          Prob *= MaxPathLength * NormFact * (1./((double) nReflect))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
+            // Take into account the number of hkl-entries in the look-up file
+            // for correct normalisation.
+            Prob *= MaxPathLength * NormFact * (1./((double) nReflect))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
 
-          /* scattering: new neutron variables*/ 
-          CopyVector(Dir, k_inc);
-          MultiplyByScalar(k_inc, 2 * M_PI / WL);
-          CopyVector(GG, GGact); 
-          MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_inc)/ScalarProduct(GG,GG)));
+            /* scattering: new neutron variables*/ 
+            CopyVector(Dir, k_in);  MultiplyByScalar(k_in, 2 * M_PI / WL);
+            CopyVector(GG, GGact);  MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_in)/ScalarProduct(GG,GG)));
 
-          if(d_spr_option == LORENTZIAN) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
-          if(d_spr_option == GAUSSIAN)   Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
+            if(d_spr_option == LORENTZIAN) Prob *= dSpreadLorentzian((1. - LengthVector(GGact)/LengthVector(GG)));
+            if(d_spr_option == GAUSSIAN)   Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
 
-          /* defines now outgoing k direction */
-          AddVector(k_inc, GGact); 
-          MultiplyByScalar(k_inc, 1./LengthVector(k_inc));
-          CopyVector(k_inc, Dir);
+            /* defines now outgoing k direction */
+            CopyVector(k_in, k_out);  AddVector (k_out, GGact); 
+            CopyVector(k_out, Dir);   MultiplyByScalar(Dir, 1./LengthVector(Dir));
 
-          /* attenuation succeeding scattering */
-          if (eGeom==VT_CYL)
-          {
-            if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+            /* attenuation succeeding scattering */
+            if (eGeom==VT_CYL)
+            {
+              if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+            }
+            if (eGeom==VT_CUBE)
+            {
+              if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;  
+            }
+            if (eGeom==VT_SPHERE)
+            {
+              if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+            }
+
+            /* path in the sample after scattering */
+            CopyVector(Pos2v, Pos_final);
+            SubVector(Pos_final, Pos);
+            PathLength = LengthVector(Pos_final);  
+
+            Prob *= (double) exp( - PathLength * AbsorptionC * WL );
+
+            /* Output matters */
+            TOF +=  PathLength / V_FROM_LAMBDA(WL);
+            OutputTransform(Pos2v, Dir);
+
+            /* transmit coordinates which were not changed, the rest overwrite below */
+            Neutrons = InputNeutrons[i]; 
+
+            Neutrons.Time = TOF ;
+            Neutrons.Probability = Prob ;
+
+            CopyVector(Pos2v, Neutrons.Position);
+            CopyVector(Dir, Neutrons.Vector);
+
+            Neutrons.Color = (short) no[repet]; 
+
+            /*	 writes output binary file */
+            if (Prob > wei_min) 
+              WriteNeutron(&Neutrons);
           }
-          if (eGeom==VT_CUBE)
-          {
-            if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;  
-          }
-          if (eGeom==VT_SPHERE)
-          {
-            if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
-          }
-
-          /* path in the sample after scattering */
-          CopyVector(Pos2v, Pos_final);
-          SubVector(Pos_final, Pos);
-          PathLength = LengthVector(Pos_final);  
-
-          Prob *= (double) exp( - PathLength * AbsorptionC * WL );
-
-          /* Output matters */
-          TOF +=  PathLength / V_FROM_LAMBDA(WL);
-          OutputTransform(Pos2v, Dir);
-
-          /* transmit coordinates which were not changed, the rest overwrite below */
-          Neutrons = InputNeutrons[i]; 
-
-          Neutrons.Time = TOF ;
-          Neutrons.Probability = Prob ;
-
-          CopyVector(Pos2v, Neutrons.Position);
-          CopyVector(Dir, Neutrons.Vector);
-
-          Neutrons.Color = (short) no[repet]; 
-
-          /*	 writes output binary file */
-          if(Prob > wei_min) WriteNeutron(&Neutrons);
-
         }/* repet */
 
       /* here continues if neutron gets lost */
@@ -292,9 +295,6 @@ void OwnInit(int argc, char *argv[])
   InitRotMatrix(RotMatrixOmega);
   InitRotMatrix(RotMatrixOut);
 
-  Ddperd=0.01;
-  d_spr_option = LORENTZIAN;
-
   colh = -1; colk = -1; coll = -1; colD = -1;
   colF = -1; colF2= -1; colM = -1; colDW= -1;
   scaleF2 = 1.0;
@@ -314,7 +314,7 @@ void OwnInit(int argc, char *argv[])
           break;
 		
         case 'd':
-          sscanf(&argv[i][2], "%lf", &Ddperd); /* d-spacing spread, this gives the relative 'thickness' of the Ewald sphere */
+          sscanf(&argv[i][2], "%lf", &d_spr_rel); /* d-spacing spread, this gives the relative 'thickness' of the Ewald sphere */
           break;
         case 'o':
           sscanf(&argv[i][2], "%ld", &d_spr_option);
@@ -689,7 +689,7 @@ void OutputTransform(VectorType Pos, VectorType Dir)
 /*******************************************************************/
 double	dSpreadLorentzian(double rdelta)
 {
-  return	sq(Ddperd) / ( 4*sq(rdelta) + sq(Ddperd) );
+  return	sq(d_spr_rel) / ( 4*sq(rdelta) + sq(d_spr_rel) );
 
 }/* End dSpreadLorentzian */
 
@@ -702,7 +702,7 @@ double	dSpreadGaussian(double rdelta)
 {
   double argd ;
 
-  argd = - sq(rdelta / Ddperd) * 4. *log(2);
+  argd = - sq(rdelta / d_spr_rel) * 4. *log(2);
   if (argd < - 100.) 
     argd = -100.;
 
