@@ -3315,9 +3315,9 @@ set sscESET {
   {}
   {geom radio cubic {geometry "sample geometry" "geometry of the sample: cuboid, cylinder or sphere"} {cubic cylindrical ball} {cub cyl bal}}
   {}
-  {thick float "" {"thickness\nor diameter [cm]" "rectangular sample dimension in x direction (sample frame)"}}
-  {hei float "" {"height [cm]" "rectangular sample dimension in y direction (sample frame)"}}
-  {wid float "" {"width [cm]" "rectangular sample dimension in Z direction (sample frame)"}}
+  {thick float "" {"thickness\nor diameter [cm]" "rectangular sample dimension in x direction (sample frame)"} gt0 "" 1}
+  {hei float "" {"height [cm]" "rectangular sample dimension in y direction (sample frame)"} ge0 "" 1}
+  {wid float "" {"width [cm]" "rectangular sample dimension in Z direction (sample frame)"} ge0 "" 1}
   {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output"}}
   {ov float "" {"output angle\nvertical [deg]"}}
   {"Structure file format" header}
@@ -3376,9 +3376,9 @@ set ineESET {
   {}
   {cyl radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid"} {cylinder hollow-cylinder sphere rectangular} {cyl holcyl ball cub}}
   {}
-  {trad float 3 {"thickness or\ndiameter [cm]" "thickness of the sample in x direction or diameter in case of cylinder or sphere"} gt0}
-  {hei float 3 {"height [cm]" "heigtht of sample in z direction if rectangular or cylinder, no relevance if sphere"} gt0}
-  {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} gt0}
+  {trad float 3 {"thickness or\ndiameter [cm]" "thickness of the sample in x direction or diameter in case of cylinder or sphere"} gt0 "" 1}
+  {hei float 3 {"height [cm]" "heigtht of sample in z direction if rectangular or cylinder, no relevance if sphere"} ge0 "" 1}
+  {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} ge0 "" 1}
   {"Output Frame" header}
   {gen radio "standard frame generation" {"output frame\ndefinition"
     "either user defined frame by using new coordinates of the output frame; or standard frame using the initial wavevector values"}
@@ -3473,9 +3473,9 @@ set isoESET {
   {}
   {sg radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid"} {cylinder hollow-cylinder sphere cuboid} {y o a u}}
   {}
-  {thrad float 3 {"thickness or\ndiameter [cm]" "thickness or diameter of sample"} gt0}
-  {hei float 3 {"height [cm]" "height of sample"} gt0}
-  {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} gt0}
+  {thrad float 3 {"thickness or\ndiameter [cm]" "thickness or diameter of sample"} gt0 "" 1}
+  {hei float 0 {"height [cm]" "height of sample"} ge0 "" 1}
+  {wid float 0 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} ge0 "" 1}
   {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
   {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample in vertical (first rotation) direction"}}
   {"Output Frame" header}
@@ -4750,12 +4750,12 @@ proc serializeIsoFile {f mode var app} {
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
       if {[gets $f l1] >= 0} {
-	switch [string index [string tolower $l1] 1] {
-	  y {set sg cylinder}
-	  o {set sg hollow-cylinder}
-	  a {set sg sphere}
-	  default {set sg cuboid}
-	}
+        switch [string index [string tolower $l1] 1] {
+          y {set sg cylinder}
+          o {set sg hollow-cylinder}
+          a {set sg sphere}
+          default {set sg cuboid}
+        }
       }
       readNumItems $f $blist $app
     }
