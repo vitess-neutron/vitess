@@ -27,6 +27,7 @@
  1.18  SEP 2005  G. Zsigmond   optimisations to speed up the algorithm
  1.19  JAN 2010  M. Fromme     thread parallelisation
  1.20  Feb 2021  K. Lieutenant tidy up, new central visualization parameters                
+ 1.21  Sep 2022  K. Lieutenant correction broad channels                
 *****************************************************************************************************************************/
 
 #include <stdio.h>
@@ -41,11 +42,12 @@
 
 
 /*********************************/
-/** Defines and Streuctures     **/
+/** Defines and Structures      **/
 /*********************************/
 #define	STRING_BUFFER 100
 #define MAX_GATE       10
 #define MAX_CHAN     2000
+
 
 /*********************************/
 /** Global and Static Variables **/
@@ -75,13 +77,15 @@ int    GatesNumber=4,            //   -p     [-]   number of gates representing 
 // Variables determined from input parameters or file data
 FILE* GeomFilePtr=NULL;         //                Pointer to geometry output file
 FILE* GatesFilePtr=NULL;        //                Pointer to output file "gates.dat"
-double expon = 0.3333,                           
+double w_ch=0.0,                //         [cm]   width of each channel
+       expon = 0.3333,          //                parameter dfining the distribution of gate positions
        y_ch[MAX_GATE][MAX_CHAN],//         [cm]   y-positions of all gates and channels
        x_ch[MAX_GATE][MAX_CHAN],//         [cm]   x-positions of all gates and channels
        main_depth=0.0,          //         [cm]   distance from entrance window to center of the Fermi chopper           
        coef_pi   =0.0,          //         [rad]  reduzierte Phase
        radius_of_curv=0.0,      //         [cm]   radius of the curved channels   
        angle_channel =0.0;      //         [rad]  angle of the curved channels   
+
 
 /******************************/
 /** Prototypes               **/
@@ -91,9 +95,9 @@ void		OwnCleanup();                        // Does module specific cleanup
 void    processNeutron(int i, int thread_i); // processes 1 neutron trajectory
 void    SetGeometry   (char* sColor);        // Fills the structure stGeometry for visualization 
 
-static int inPhase   (int gates, double phase0, const double WL, const VectorType Dir, const VectorType Pos);                     // Checks if neutron passes through all gates
-static int outOfPhase(int i, int j, int gates, const double phase0, const double WL, const VectorType Dir, const VectorType Pos); // Checks if neutron is out of one gate  
-static double phase  (const double x_ch_k_j, const double y_ch_k_j, const double WL, const VectorType Dir, const VectorType Pos); // Calculates chopper phase 
+static int inPhase   (int gates, double phase0, const double WL, const VectorType Dir, const VectorType Pos);                       // Checks if neutron passes through all gates
+static int outOfPhase(int i, int j, int gates, const double phase0, const double WL, const VectorType Dir, const VectorType Pos);   // Checks if neutron is out of one gate  
+static double CalcPhase(const double x_ch_k_j, const double y_ch_k_j, const double WL, const VectorType Dir, const VectorType Pos); // Calculates the chopper phase for which the gate edge hits the neutron trajectory
 
 
 /******************************/
@@ -106,7 +110,7 @@ int main(int argc, char **argv)
   _eModule=MCN_CHOP_FERMI;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.20");
+  PrintModuleName(_eModule, "1.21");
   OwnInit(argc, argv);
 
   bVisInstalled = MISSING;  // needs to be done still
@@ -235,16 +239,17 @@ void OwnInit(int argc, char *argv[])
 {
   const char *intForm = "%d";
   double shift_y=0.0; 
-  int i, j;
+  int k,  // index of gates 
+      j;  // index of channels
 
   GeomFileName="chopper_fermi_g.dat";
 
-  for (i=0; i < MAX_GATE; i++)
+  for (k=0; k < MAX_GATE; k++)
   {
     for (j=0; j < MAX_CHAN; j++)
     {
-      x_ch[i][j]=0.0;
-      y_ch[i][j]=0.0;
+      x_ch[k][j]=0.0;
+      y_ch[k][j]=0.0;
     }
   }
 
@@ -351,8 +356,8 @@ void OwnInit(int argc, char *argv[])
     }
 
     {
-      double add, w_ch;
-      long j, k, m;
+      double add;
+      long m;
 
       if (( w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels ) <= 0.)
         Error("Channel width =< 0");
@@ -425,8 +430,8 @@ void OwnInit(int argc, char *argv[])
 
       GeomFilePtr = OpenOutputFile(GeomFileName, FALSE, "w");
       {
-        double add, w_ch, xx[500], yy[500], tt;
-        long   j, m, k;
+        double add, xx[500], yy[500], tt;
+        long   m;
 
         if ((w_ch = ( width - (Nchannels + 1L) * wallwidth ) / Nchannels    ) <= 0.)
           Error("Channel width =< 0 !"); 
@@ -504,8 +509,8 @@ void OwnInit(int argc, char *argv[])
 
       GeomFilePtr = OpenOutputFile(GeomFileName, FALSE, "w");
       {
-        double add, w_ch, xx[500], yy[500], tt;
-        long   j, m, k;
+        double add, xx[500], yy[500], tt;
+        long   m;
 
         if (( w_ch = ( width - (Nchannels + 1) * wallwidth ) / Nchannels ) <= 0.)
         { fprintf(LogFilePtr,"Channel width =< 0 !\n");
@@ -742,42 +747,70 @@ static int inPhase(int gates, double phase0, const double WL, const VectorType D
 /*******************************************************/
 static int outOfPhase(int i, int j, int gates, const double phase0, const double WL, const VectorType Dir, const VectorType Pos) 
 {
-  if (i <= (gates-1) / 2)
-     return phase0 <= phase(x_ch[i][j-1], y_ch[i][j-1], WL, Dir, Pos) ||
-            phase0 >= phase(x_ch[i][j],   y_ch[i][j],   WL, Dir, Pos);
-  return phase0 >= phase(x_ch[i][j-1], y_ch[i][j-1], WL, Dir, Pos) ||
-         phase0 <= phase(x_ch[i][j],   y_ch[i][j],   WL, Dir, Pos);
+  short  bOutPhase=FALSE;
+  double phaseB=0.0, // phase to outer side of gate
+         phaseT=0.0; // phase to inner side of gate
+
+  phaseB = CalcPhase(x_ch[i][j-1], y_ch[i][j-1], WL, Dir, Pos);
+  phaseT = CalcPhase(x_ch[i][j],   y_ch[i][j],   WL, Dir, Pos);
+ 
+  if (i <= (gates-1) / 2)  // gates before chopper center
+    bOutPhase = (phase0 <= phaseB || phase0 >= phaseT);
+  else
+    bOutPhase = (phase0 >= phaseB || phase0 <= phaseT);
+
+  return bOutPhase;
 }
 
 
-/*******************************************************/
-/** Calculates chopper phase                          **/
-/*******************************************************/
-static double phase(const double x_ch_k_j, const double y_ch_k_j, const double WL, const VectorType Dir, const VectorType Pos)
+/**********************************************************************************/
+/** Calculates chopper phase for which the gate edge hits the neutron trajectory **/
+/**********************************************************************************/
+static double CalcPhase(const double x_ch_k_j, const double y_ch_k_j, const double WL, const VectorType Dir, const VectorType Pos)
 {
 
-  double sq_x_ch_k_j, Denom_k, Arg_k, arg_k, pha_k_j, y_ch_new_k_j;
-  double sq_D_0_1, sq_term, omega_fact, dirpos, vz_pos;
+  double phase=0.0,      // calculated chopper phase
+         sq_x_ch_k_j,    // square of the x position of the gate edge
+         y_ch_new_k_j,   // varied y position if neutron trajectory beam does not intersect with the trajectory of the gate
+         Denom_k,        // distance of the gate edge to thd chopper center = radius of rotation 
+         Arg_k, arg_k, 
+         pha_k_j, 
+         sq_D_0_1, 
+         sq_term, 
+         omega_fact,     // Chop_RotFreq / Neutron_Speed    [rad/cm] 
+         dirpos,         // y position of the neutron at x=0, i.e. at the position of the chopper center
+         vx_pos,         // flag for the horizontal hemisphere of the gate position : 1: after chopper center  -1: before chopper center
+         vy_pos;         // flag for the vertical hemisphere of the neutron positio0: 1: above chopper center  -1: below chopper center
 
   sq_D_0_1 = sq(Dir[0]) + sq(Dir[1]);
   dirpos   = Dir[0]*Pos[1] - Dir[1]*Pos[0];
   sq_term  = sq(dirpos) / sq_D_0_1;
   omega_fact = omega / (V_FROM_LAMBDA(WL) * Dir[0]);
-  vz_pos = Pos[1] > 0.0 ? 1.0 : -1.0;
+  vx_pos = x_ch_k_j > 0.0 ? 1.0 : -1.0;
+  vy_pos = Pos[1]   > 0.0 ? 1.0 : -1.0; 
 
   sq_x_ch_k_j = sq(x_ch_k_j);
   Denom_k     = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_k_j)) );
 
   Arg_k = dirpos / Denom_k;
 
-  if (fabs(Arg_k) > 1.)
+  // if the radius of the rotating gate edge is smaller than the distance to the neutron trajectory
+  // there is no intersection with trajectory
+  if (fabs(Arg_k) > 1.)  //
   {
-    Arg_k = vz_pos;
-    y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
+    // original calculation only works if the gate is sufficiently far away from the center (relative to the channel width) 
+    if (x_ch_k_j/w_ch > 0.5)
+    { Arg_k = vy_pos; 
+      y_ch_new_k_j = Arg_k * sqrt(sq_term - sq_x_ch_k_j);
+    }
+    else
+    { phase = vx_pos*vy_pos * M_PI_2;
+      return phase;
+    }
   } 
-  else
+  else 
   {
-    y_ch_new_k_j = y_ch_k_j; /* no intersection with trajectory */
+    y_ch_new_k_j = y_ch_k_j;
   }
 
   Denom_k = sqrt( sq_D_0_1 * (sq_x_ch_k_j + sq(y_ch_new_k_j)) );
@@ -790,8 +823,9 @@ static double phase(const double x_ch_k_j, const double y_ch_k_j, const double W
 
   if (x_ch_k_j < 0.0) pha_k_j = - pha_k_j;
 								
-  return pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
+  phase = pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
 
+  return phase;
 }
 
 
