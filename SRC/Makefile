@@ -126,7 +126,8 @@ mcpl.o \
 mon2_header.o \
 trace.o \
 threadHelper.o \
-bender_inter_data.o
+bender_inter_data.o \
+sswread.o
 
 
 .PHONY: all
