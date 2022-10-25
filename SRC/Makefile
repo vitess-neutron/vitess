@@ -7,6 +7,7 @@ VITESS_VERSION = 3.5
 endif
 MODULES_DIR = ../MODULES
 GSLPATH = ./rng
+G2PATH = ./g2-0.72
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
@@ -24,6 +25,18 @@ AR = ar
 ARFLAGS = rv
 INSTALL = install
 RM = rm -f
+
+ifndef NOG2
+CFLAGS += -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I"$(G2PATH)/include"
+LDFLAGS += -L"$(G2PATH)"
+LDLIBS += -lg2 -lgd -lpng -lz -lfreetype -lXpm -lX11
+G2OPTS =
+ifeq ($(SYS),Darwin)
+G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+CFLAGS += -I/opt/X11/include
+LDFLAGS += -L/opt/X11/lib
+endif
+endif
 
 ifdef DEBUG
 CFLAGS += -g -O0 -DDEBUG=1
@@ -110,6 +123,9 @@ standard_deviation \
 surface_file \
 velselect \
 writeout
+ifndef NOG2
+ALL += visual
+endif
 
 COMMON = init.o \
 general.o \
@@ -126,9 +142,10 @@ mcpl.o \
 mon2_header.o \
 trace.o \
 threadHelper.o \
-bender_inter_data.o \
 sswread.o
-
+ifndef NOG2
+COMMON += cpgplot.o
+endif
 
 .PHONY: all
 all: $(ALL)
@@ -137,6 +154,7 @@ all: $(ALL)
 clean:
 	$(RM) *.o *.a $(ALL)
 	$(MAKE) -C "$(GSLPATH)" clean
+	[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 
 .PHONY: install
 install: all
@@ -145,12 +163,19 @@ install: all
 	done
 
 
+"$(G2PATH)/libg2.a":
+	cd $(G2PATH); ./configure $(G2OPTS)
+	$(MAKE) -C "$(G2PATH)" all
+
 "$(GSLPATH)/libgslran.a":
 	$(MAKE) -C "$(GSLPATH)" libgslran.a
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
+ifndef NOG2
+cpgplot.o: | "$(G2PATH)/libg2.a"
+endif
 
 $(ALL): | libvitess.a "$(GSLPATH)/libgslran.a"
 
@@ -181,6 +206,8 @@ monochromator: monochromator.cpp monochrclass.cpp
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
 sample_nxs: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
+
+sample_reflectom: bender_inter_data.c
 
 sample_s_q: sample_s_q.c sq_calc.c
 

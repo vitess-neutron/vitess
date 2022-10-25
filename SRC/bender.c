@@ -65,6 +65,7 @@
   double timev, timevmin, timevmax;  /* */
   double timestep; /* step for all surfaces */
   double timestep1; /* step for extreme (left and right) surfaces */
+  extern int do_visualize;
   int do_visualise; /* default : no visualisation */
   long number_vis_tr=0; /* counter : number of trajectories, which was visualised */
   long	cancel_vis=0; /* cancel visualisation */

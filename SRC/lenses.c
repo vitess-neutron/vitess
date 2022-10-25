@@ -87,6 +87,9 @@ LenseSecond MyLense;
 Plane       Endpoint;       // plane for flight after lense
 Plane       EndpointRTAL;   // same for visualization
 
+#ifdef VT_GRAPH
+  int do_visualise; /* default : no visualisation */
+#endif
 
 /******************************/
 /** Prototypes               **/

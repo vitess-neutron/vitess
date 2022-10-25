@@ -38,7 +38,7 @@ compile-rocky8:
     OS: Rocky8
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++'
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
 
 compile-rocky9:
   extends: .compile-unix
@@ -47,7 +47,7 @@ compile-rocky9:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++'
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
 
 compile-centos7:
   extends: .compile-unix
@@ -56,7 +56,7 @@ compile-centos7:
     OS: CentOS7
     ARCH: x86_64
   before_script:
-    - yum install -y make gcc 'gcc-c++'
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel
 
 compile-ubuntu:
   extends: .compile-unix
@@ -66,7 +66,7 @@ compile-ubuntu:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++'
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev
 
 compile-darwin:
   extends: .compile-unix
@@ -76,6 +76,17 @@ compile-darwin:
   variables:
     OS: Darwin
     ARCH: x86_64
+  before_script:
+    - curl -fLO 'https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.2/XQuartz-2.8.2.dmg'
+    - sudo hdiutil attach XQuartz-2.8.2.dmg
+    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
+    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
+    - curl -fLO 'https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.gz'
+    - tar xzf libgd-2.3.3.tar.gz
+    - cd libgd-2.3.3
+    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+    - make
+    - sudo make install
 
 compile-windows:
   extends: .compile-base

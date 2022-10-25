@@ -54,6 +54,9 @@ double mu1, mu2,                    //           additional variable for air att
 double RotMatrixMirror[3][3];       //           Rotation matrix corresponding to axis and angle of mirror rotation
 MirrorSecond MyMirror;              //           mirror data obtained from input parameters
 
+#ifdef VT_GRAPH
+  int do_visualise; /* default : no visualisation */
+#endif
 
 /******************************/
 /** Prototypes               **/

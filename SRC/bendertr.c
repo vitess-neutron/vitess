@@ -6,7 +6,7 @@
 
 #ifdef VT_GRAPH
 # include "cpgplot.h"
-  int do_visualise; /* default : no visualisation */
+  extern int do_visualise; /* default : no visualisation */
 #endif
  
 #include "intersection.h"

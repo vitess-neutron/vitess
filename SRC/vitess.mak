@@ -8,6 +8,7 @@
 VERSION_MAJOR = 3
 VERSION_MINOR = 5
 GSLPATH = .\rng
+G2PATH = .\g2-0.72
 
 CC = cl.exe
 CFLAGS = /nologo /MT /W3 /Ox /Oy /GF /I "$(GSLPATH)" /FD /EHsc
@@ -17,6 +18,12 @@ CPPFLAGS = /DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WAR
 LD = link.exe
 LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /NODEFAULTLIB:libc.lib
 LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib vitess.lib libgsl.lib
+
+!ifndef NOG2
+CFLAGS = $(CFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
+LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)"
+LDLIBS = $(LDLIBS) libg2.lib
+!endif
 
 
 ALL = ascii2bin.exe \
@@ -100,6 +107,9 @@ standard_deviation.exe \
 surface_file.exe \
 velselect.exe \
 writeout.exe
+!ifndef NOG2
+ALL = $(ALL) visual.exe
+!endif
 
 COMMON = init.obj \
 general.obj \
@@ -118,6 +128,9 @@ trace.obj \
 threadHelper.obj \
 bender_inter_data.obj \
 sswread.obj
+!ifndef NOG2
+COMMON = $(COMMON) cpgplot.obj
+!endif
 
 
 all: vitess.lib $(ALL)
