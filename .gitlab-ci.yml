@@ -87,6 +87,7 @@ compile-darwin:
     - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
     - make
     - sudo make install
+    - cd ..
 
 compile-windows:
   extends: .compile-base
