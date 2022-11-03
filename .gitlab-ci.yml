@@ -77,16 +77,17 @@ compile-darwin:
     OS: Darwin
     ARCH: x86_64
   before_script:
-    - curl -fLO 'https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.2/XQuartz-2.8.2.dmg'
+    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    - cd vitess-data
     - sudo hdiutil attach XQuartz-2.8.2.dmg
     - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
     - sudo hdiutil detach /Volumes/XQuartz-2.8.2
-    - curl -fLO 'https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.gz'
     - tar xzf libgd-2.3.3.tar.gz
     - cd libgd-2.3.3
     - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
     - make
     - sudo make install
+    - cd ..
     - cd ..
 
 compile-windows:
