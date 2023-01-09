@@ -138,7 +138,7 @@ all: vitess.lib $(ALL)
 clean:
 	-del *.lib *.obj $(ALL)
 
-install: all
+install: $(ALL)
 	copy /Y *.exe ..\MODULES\\
 
 

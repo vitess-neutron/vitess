@@ -12,6 +12,7 @@ stages:
     - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" )
     - if: $CI_COMMIT_TAG
     - when: manual
+      allow_failure: true
   artifacts:
     expire_in: 1 week
 
@@ -135,6 +136,7 @@ package:
     - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" )
     - if: $CI_COMMIT_TAG
     - when: manual
+      allow_failure: true
   script:
     - mkdir Downloads
     - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-x86_64 Windows10-x86; do

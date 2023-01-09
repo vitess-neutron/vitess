@@ -157,27 +157,27 @@ clean:
 	[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 
 .PHONY: install
-install: all
+install: $(ALL)
 	for F in $(ALL); do \
 		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_$(ARCH); \
 	done
 
 
-"$(G2PATH)/libg2.a":
+$(G2PATH)/libg2.a:
 	cd $(G2PATH); ./configure $(G2OPTS)
 	$(MAKE) -C "$(G2PATH)" all
 
-"$(GSLPATH)/libgslran.a":
+$(GSLPATH)/libgslran.a:
 	$(MAKE) -C "$(GSLPATH)" libgslran.a
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
 ifndef NOG2
-cpgplot.o: | "$(G2PATH)/libg2.a"
+cpgplot.o: | $(G2PATH)/libg2.a
 endif
 
-$(ALL): | libvitess.a "$(GSLPATH)/libgslran.a"
+$(ALL): | libvitess.a $(GSLPATH)/libgslran.a
 
 init.o: CPPFLAGS+=-DVVERS='"$(FULLVERSION)"'
 
