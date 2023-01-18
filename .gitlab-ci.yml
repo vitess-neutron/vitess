@@ -90,6 +90,10 @@ compile-darwin:
     - sudo make install
     - cd ..
     - cd ..
+  artifacts:
+    paths:
+      - artifacts-Darwin-x86_64/
+
 
 compile-windows:
   extends: .compile-base
