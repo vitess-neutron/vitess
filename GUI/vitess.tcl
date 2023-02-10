@@ -964,6 +964,7 @@ proc windowCheckErr {{app _}} {
   return 0
 }
 
+
 ### Spacewindow Multiple
 ###
 set a {
@@ -988,12 +989,14 @@ set spaceESET {
   {spc_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ang [1/cm]" "" m} ge0}
 }
 
+
 ### Slit
 set slitESET {
   {dist_slit float "" {"distance\nto slit [cm]" "distance from the origin to slit (along the x-axis)" "" d} ge0}
   {width_slit float "" {"width [cm]" "width of the rectangular slit [cm]" "" W} ge0}
   {hite_slit  float "" {"height [cm]" "height of the rectangular slit [cm]" "" H} ge0}
 }
+
 
 ### Beamstop
 set beamstopESET {
@@ -1007,51 +1010,56 @@ set beamstopESET {
   {hite_stop  float "" {"height [cm]" "height of a rectangular beamstop [cm]" "" H} ge0}
 }
 
+
 ### Grid
 ###
 set gridESET {
   {"Geometry description" header}
+  {gridfile pareditablefile "" {"grid\ndescription" "File that characterizes the positions and sizes of the apertures on the collimation disk" "" I}}
+  {}
+  {circ radio square {"shape of\nthe grid" "Shape of the holes and the collimator disk containing the holes" "" N} {circular square} {1 0}}
+  {keycolor radio no {"Crosstalk\nanalysis" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
+  {}
   {dist float 0 {
-    "distance orig\n<->grid [cm]" "Distance to grid along x-direction  [cm]" "" D} ge0}
-  {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}
-  {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for the grid." "" t} ge0}
-  {outera float 5.0 {
-    "Outer hor size\nor radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}
-  {outerb float 5.0 {
-    "Outer vert size\n[cm]" "Outer vertical size of the grid" "" b} gt0}
-  {shiftver float 0.0 {
-    "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}
+    "distance to\ngrid [cm]" "Distance from the previous module, e.g. the previous item of the grid system, to the current item" "" D} ge0}
   {shifthor float 0.0 {
-    "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}
-  {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}
-  {keycolor radio no {"Crosstalk between\nchannels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
+    "horizontal\nshift [cm]" "horizontal shift of the collimation disk" "" d} ge0}
+  {shiftver float 0.0 {
+    "vertical\nshift [cm]" "vertical shift of the collimation disk, e.g. to consider the gravitation" "" e} ge0}
+  {}
+  {imathick float 0 {"thickness of\nthe disk [cm]" "Thickness of the material used for the collimation disk" "" t} ge0}
+  {outera float 5.0 {
+    "size of\nthe disk [cm]" "For circular outer shape   : radius of the disk\nfor rectangular outer shape: width  of the disk" "" a} gt0}
+  {outerb float 5.0 {
+    "vert. size of\nthe disk [cm]" "For rectangular outer shape: height of the disk" "" b} gt0}
+  {}
 
-  {"Material of a grid" header}
+  {"Material of the grid disk" header}
   {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
   {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}
   {0 1 2 3 4 5 6}}
-  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of a grid." "" C}}
+  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the material of the collimation disk." "" C}}
 
   {"Deviation of parameters" header}
-  {shiftverdev float 0.0 {
-    "vertical shift +-[cm]" "Deviation of vertical shift of the grid, +-[cm]" "" q} ge0}
-  {shifthordev float 0.0 {
-    "horizontal shift +-[cm]" "Deviation of horizontal shift of the grid, +-[cm]" "" y} ge0}
-  {winraddev float 0.0 {
-    "radius of window +-[cm]" "Deviation of the radius of window, +-[cm]" "" h} ge0}
-  {wincenterdev float 0.0 {
-    "center of window +-[cm]" "Deviation of the center position of window, +-[cm]" "" H} ge0}
   {distancedev float 0.0 {
-    "distance orig\n<->grid +-[cm]" "Deviation of the distance orig-grid,  +-[cm]" "" X} ge0}
+    "distance to\ngrid [cm]" "Deviation DelX of the distance from the previous module to the grid, range [X-DelX, X+DelX]" "" X} ge0}
+  {shifthordev float 0.0 {
+    "horizontal\nshift [cm]" "Deviation DelZ of the horizontal position of the collimator disk\nrange [Y-DelZ, Y+DelZ]" "" y} ge0}
+  {shiftverdev float 0.0 {
+    "vertical\nshift [cm]" "Deviation DelY of the vertical position of the collimator disk\nrange [Y-DelY, Y+DelY]" "" q} ge0}
+  {}
+  {winraddev float 0.0 {
+    "size of\nwindow [cm]" "Deviation of the size DelS of the individual apertures in the collimation disk\nrange [S-DelS, S+DelS]" "" h} ge0}
+  {wincenterdev float 0.0 {
+    "center of\nwindow [cm]" "Deviation DelX of the individual apertures in the collimation disk\nrange [X-DelX, X+DelX]" "" H} ge0}
 
-  {"Options Gravity Monochromator" header}
+  {"Option: calculation of position and sizes of the grid system" header}
   {distabs float 0.0 {
-    "calc dist orig\n<->grid [cm]" "Distance for calculation to grid along x-direction  [cm]" "" M} ge0}
+    "Pos. in grid\nsystem [cm]" "Distance from the first item in the grid system to the current item" "" M} ge0}
   {disttotal float 0.0 {
-    "calc total dist [cm]" "Total distance for calculation of grid system along x-direction  [cm]" "" m} ge0}
+    "Half length of\ngrid system [cm]" "Half the distance from the beginning of the grid system to the focal point, usually the detector" "" m} ge0}
   {wavemon float 0.0 {
-    "Monoch Wavelength [A]" "Wavelength of monochromatisation [Ang]" "" n} ge0}
-
+    "standard\nwavelength [A]" "Wavelength for which the grid system is calculated" "" n} ge0}
 }
 
 
@@ -1769,7 +1777,7 @@ set crs_newESET {
   {height float 1 {"height cryst.\nelement [cm]" "Height of the rectangular crystal element."} gt0 "" 1}
   {dspacing float 3.135 {"d-spacing [A]"
     "Lattice distance corresponding to a reflection from a (h,k,l) crystal plane."} gt0 "" 1}
-  {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge1 "" 1}
+  {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge-1 "" 1}
   {"Output frame" header}
   {oframedef radio "standard frame generation"
     {"output frame definition" "Choice if the output frame should be generated 'automatically' or 'by hand'\nAutomatically means along the reflected beam if no transmission is treated. By hand means according the following 5 entries.\nFor rotating monochromators it has to be set by hand.\nFor details see Help|Modules M|ma_focus_new."}

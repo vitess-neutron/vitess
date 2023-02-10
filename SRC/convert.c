@@ -58,7 +58,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_SLIT         : strcpy(sCompName, "Slit");              break;             
 	  case MCN_WINDOW       : strcpy(sCompName, "Window");            break;           
 	  case MCN_WND_MULT     : strcpy(sCompName, "WindowMult");        break;       
-	  case MCN_GRID         : strcpy(sCompName, "WindowGrid");        break;       
+	  case MCN_GRID         : strcpy(sCompName, "Grid");              break;       
 	  case MCN_LENSE        : strcpy(sCompName, "Lens");              break;             
 	  case MCN_MIRROR       : strcpy(sCompName, "Mirror");            break;           
 	  case MCN_MIRROR_POL   : strcpy(sCompName, "MirrorPolarizing");  break; 
@@ -69,6 +69,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_COLL_RADIAL  : strcpy(sCompName, "CollimatorRadial");  break; 
 	  case MCN_COLL_VIRT    : strcpy(sCompName, "CollimatorVirtual"); break;
 	  case MCN_GUIDE        : strcpy(sCompName, "Guide");             break;            
+	  case MCN_GUIDE_IDEAL  : strcpy(sCompName, "GuideIdeal");        break;            
 	  case MCN_BENDER       : strcpy(sCompName, "Bender");            break;           
 	  case MCN_CHOP_DISC    : strcpy(sCompName, "ChopperDisc");       break;      
 	  case MCN_CHOP_FERMI   : strcpy(sCompName, "ChopperFermi");      break;     
@@ -154,7 +155,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "Slit"))              eComp=MCN_SLIT         ;             
   else if (strcmp(sCompName, "Window"))            eComp=MCN_WINDOW       ;           
   else if (strcmp(sCompName, "WindowMult"))        eComp=MCN_WND_MULT     ;       
-  else if (strcmp(sCompName, "WindowGrid"))        eComp=MCN_GRID         ;       
+  else if (strcmp(sCompName, "Grid"))              eComp=MCN_GRID         ;       
   else if (strcmp(sCompName, "Lens"))              eComp=MCN_LENSE        ;             
   else if (strcmp(sCompName, "Mirror"))            eComp=MCN_MIRROR       ;           
   else if (strcmp(sCompName, "MirrorPolarizing"))  eComp=MCN_MIRROR_POL   ; 
@@ -165,6 +166,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "CollimatorRadial"))  eComp=MCN_COLL_RADIAL  ; 
   else if (strcmp(sCompName, "CollimatorVirtual")) eComp=MCN_COLL_VIRT    ;
   else if (strcmp(sCompName, "Guide"))             eComp=MCN_GUIDE        ;            
+  else if (strcmp(sCompName, "GuideIdeal"))        eComp=MCN_GUIDE_IDEAL  ;            
   else if (strcmp(sCompName, "Bender"))            eComp=MCN_BENDER       ;           
   else if (strcmp(sCompName, "ChopperDisc"))       eComp=MCN_CHOP_DISC    ;      
   else if (strcmp(sCompName, "ChopperFermi"))      eComp=MCN_CHOP_FERMI   ;     
@@ -698,8 +700,8 @@ void      ModVsn_ID2Txt(char* sText, const EssModVsn eID)
     case ZANINI_2012     : strcpy(sText, "2012_Zanini"     ); break;
     case SCHOENFELDT_2013: strcpy(sText, "2013_Schoenfeldt"); break;
     case VARHEIGHT_2013  : strcpy(sText, "2013_VarHeight"  ); break;
-    case BUTTERFLY2_2015 : strcpy(sText, "2015_Butterfly1" ); break;
-    case BUTTERFLY1_2016 : strcpy(sText, "2016_Butterfly2" ); break;
+    case BUTTERFLY2_2015 : strcpy(sText, "2015_Butterfly2" ); break;
+    case BUTTERFLY1_2016 : strcpy(sText, "2016_Butterfly1" ); break;
     default  : strcpy(sText, "");
   }
 }
@@ -711,8 +713,8 @@ EssModVsn ModVsn_Txt2ID(const char* sText)
   else if (strcmp(sText, "2012_Zanini"     )==0) eID=ZANINI_2012     ;
   else if (strcmp(sText, "2013_Schoenfeldt")==0) eID=SCHOENFELDT_2013;
   else if (strcmp(sText, "2013_VarHeight"  )==0) eID=VARHEIGHT_2013  ;
-  else if (strcmp(sText, "2015_Butterfly1" )==0) eID=BUTTERFLY2_2015 ;
-  else if (strcmp(sText, "2016_Butterfly2" )==0) eID=BUTTERFLY1_2016 ;
+  else if (strcmp(sText, "2015_Butterfly2" )==0) eID=BUTTERFLY2_2015 ;
+  else if (strcmp(sText, "2016_Butterfly1" )==0) eID=BUTTERFLY1_2016 ;
   
   return eID;
 }

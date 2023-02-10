@@ -43,6 +43,7 @@
 
 #define GUIDEFLIGHT 1
 
+#define ANY_ORDER  -1
 #define ANY_COLOR  -1
 #define NO_COLOR    0
 
