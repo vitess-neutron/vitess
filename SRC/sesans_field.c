@@ -83,9 +83,9 @@ int main(int argc, char **argv)
   PrintModuleName(_eModule, "1.0");
   OwnInit(argc, argv);
 
-  bVisInstalled = FALSE;
+  bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   DECLARE_ABORT;
 

@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = FALSE;
 
   InitVector(pos);    InitVector(dir);
   InitVector(Pos);    InitVector(Dir);

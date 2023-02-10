@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   memset(BinLmts, 0, (BINS+1)*sizeof(double));
   memset(IntSmpl, 0, (BINS+1)*sizeof(double));

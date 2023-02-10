@@ -29,6 +29,7 @@
 /* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                    */
 /* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
 /* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
+/* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -187,7 +188,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   if (bActive)
     HeaderAndParameters();
@@ -1065,7 +1066,7 @@ short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutr
   memset(pMCPLNeutron, '\0', sizeof(mcpl_particle_t));
 
   pMCPLNeutron->pdgcode= NEUTRON_ID;
-  pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit �eV -> MeV
+  pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit microeV -> MeV
   pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
   pMCPLNeutron->weight = pVitNeutron->Probability;
 
@@ -1086,7 +1087,7 @@ short ConvertVitess2MCNPX(McnpxNeutron* pMcnpNeutron, const Neutron* pVitNeutron
 
   CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
   CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
-  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit �eV -> MeV
+  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
   pMcnpNeutron->Counts = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
   pMcnpNeutron->Shakes = 1.0e+05 *pVitNeutron->Time;                              // unit  ms -> shakes = 1.0e-08 s
 
@@ -1101,7 +1102,7 @@ short ConvertVitess2MCNP6(Mcnp6Neutron* pMcnpNeutron, const Neutron* pVitNeutron
   pMcnpNeutron->History = 0.0;
   pMcnpNeutron->ID      = 8.0 * pVitNeutron->Vector[2]/fabs(pVitNeutron->Vector[2]);
   pMcnpNeutron->Counts  = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
-  pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit �eV -> MeV
+  pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
   pMcnpNeutron->Shakes  = 1.0e+05 * pVitNeutron->Time;                             // unit  ms -> shakes = 1.0e-08 s
   pMcnpNeutron->DirX    = pVitNeutron->Vector[0];
   pMcnpNeutron->DirY    = pVitNeutron->Vector[1];

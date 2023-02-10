@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   InitNeutron(&OutNeutron);
   ChanDistIn  =  ChanWin  + BladeWidth;
@@ -283,12 +283,12 @@ void SetGeometry(char* sColor)
 
     for (i=1; i <= stGeometry.nHulls; i++)
     { 
-      stGeometry.pHull[i-1].WidthIn   = (NumChan(i,nChannels)*ChanWin  + NumBlds(i,nChannels)*BladeWidth);
-      stGeometry.pHull[i-1].WidthOut  = (NumChan(i,nChannels)*ChanWout + NumBlds(i,nChannels)*BladeWidth);
-      stGeometry.pHull[i-1].HeightIn  = CollEntrHeight;
-      stGeometry.pHull[i-1].HeightOut = CollExitHeight;
-      stGeometry.pHull[i-1].Length    =     Length/CmprFact;
-      stGeometry.pHull[i-1].vCntr[0]  = 0.5*Length/CmprFact;
+      stGeometry.pHull[i-1].WidthIn   = BlowUp * (NumChan(i,nChannels)*ChanWin  + NumBlds(i,nChannels)*BladeWidth);
+      stGeometry.pHull[i-1].WidthOut  = BlowUp * (NumChan(i,nChannels)*ChanWout + NumBlds(i,nChannels)*BladeWidth);
+      stGeometry.pHull[i-1].HeightIn  = BlowUp * CollEntrHeight;
+      stGeometry.pHull[i-1].HeightOut = BlowUp * CollExitHeight;
+      stGeometry.pHull[i-1].Length    =     Length;
+      stGeometry.pHull[i-1].vCntr[0]  = 0.5*Length;
       stGeometry.pHull[i-1].vCntr[1]  = 0.0;
       stGeometry.pHull[i-1].vCntr[2]  = 0.0;
       stGeometry.pHull[i-1].vNormal[0]= 1.0;

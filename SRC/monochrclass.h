@@ -70,7 +70,7 @@ class Monochromator{
              DimCE0;                   // -i -j -k [cm]   thickness, width and height of a monochromator crystal element
   VtFrameGen eFrame;                   // -F       [-]    flag: 'user defined frame' 1: yes   0: no
   double     d_spacing;                // -S       [cm]   Distance of the (h,k,l) crystal planes
-  int        OrderRefl;                // -N       [-]    Order of Bragg reflection (usually 1)
+  int        nOrderRefl;               // -N       [-]    Order of Bragg reflection (usually 1), -1 means all
                                               
   // Monochromator variables from the  geometry file or from calculation
   std::vector < std::vector<double> >         

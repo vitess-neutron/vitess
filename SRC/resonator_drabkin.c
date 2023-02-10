@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = FALSE;
 
   // local variables
   InitVector(pos);  InitVector(dir);

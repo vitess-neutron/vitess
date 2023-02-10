@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
   
   // initializes arrays
   for (dy=0; dy < nbiny+1; dy++)

@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
   OpenFiles();
 
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   InitArrays();
   ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBunches);

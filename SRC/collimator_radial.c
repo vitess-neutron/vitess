@@ -78,7 +78,8 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  bLengthCmpr   = FALSE;
+  if (bVisInstr) 
+    bBlowUp     = TRUE;
 
   AngCntrAct  = AngCentre;
   AngMinAct   = AngMin;
@@ -299,9 +300,9 @@ void SetGeometry(char* sColor)
     // fprintf(LogFilePtr,"For the radial collimator ry %f, rz %f \n", ry, rz);
     Xi = AngCentre + rz/M_PI*180.0;
 	      
-    stGeometry.pCylSlice[0].Radius     = Distance; 
-    stGeometry.pCylSlice[0].Width      = Distance*(AngWidth+OscWidth)/180.0*M_PI;
-    stGeometry.pCylSlice[0].Height     = EntrHeight;
+    stGeometry.pCylSlice[0].Radius     = BlowUp * Distance; 
+    stGeometry.pCylSlice[0].Width      = BlowUp * Distance*(AngWidth+OscWidth)/180.0*M_PI;
+    stGeometry.pCylSlice[0].Height     = BlowUp * EntrHeight;
     stGeometry.pCylSlice[0].vCntr[0]   = 0.0;
     stGeometry.pCylSlice[0].vCntr[1]   = 0.0;
     stGeometry.pCylSlice[0].vCntr[2]   = 0.0;
@@ -311,9 +312,9 @@ void SetGeometry(char* sColor)
     stGeometry.pCylSlice[0].OpenAngle  = AngWidth+OscWidth;
     stGeometry.pCylSlice[0].Phi        = Xi;
 	      
-    stGeometry.pCylSlice[1].Radius     = Distance+Length; 
-    stGeometry.pCylSlice[1].Width      =(Distance+Length)*(AngWidth+OscWidth)/180.0*M_PI;
-    stGeometry.pCylSlice[1].Height     = ExitHeight;
+    stGeometry.pCylSlice[1].Radius     = BlowUp * Distance+Length; 
+    stGeometry.pCylSlice[1].Width      = BlowUp *(Distance+Length)*(AngWidth+OscWidth)/180.0*M_PI;
+    stGeometry.pCylSlice[1].Height     = BlowUp * ExitHeight;
     stGeometry.pCylSlice[1].vCntr[0]   = 0.0;
     stGeometry.pCylSlice[1].vCntr[1]   = 0.0;
     stGeometry.pCylSlice[1].vCntr[2]   = 0.0;

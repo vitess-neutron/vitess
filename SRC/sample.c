@@ -122,9 +122,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
       stGeometry.nCuboids = 1; 
       
-      stGeometry.pCuboid[0].Length = Sample->SG.Cube.thickness; 
-      stGeometry.pCuboid[0].Width  = Sample->SG.Cube.width;
-      stGeometry.pCuboid[0].Height = Sample->SG.Cube.height;
+      stGeometry.pCuboid[0].Length = BlowUp * Sample->SG.Cube.thickness; 
+      stGeometry.pCuboid[0].Width  = BlowUp * Sample->SG.Cube.width;
+      stGeometry.pCuboid[0].Height = BlowUp * Sample->SG.Cube.height;
       stGeometry.pCuboid[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCuboid[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCuboid[0].vCntr[2]  = Sample->Position[2];
@@ -137,8 +137,8 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
       stGeometry.nCylinders = 1;
 
-      stGeometry.pCylinder[0].Radius = Sample->SG.Cyl.r;
-      stGeometry.pCylinder[0].Length = Sample->SG.Cyl.height;
+      stGeometry.pCylinder[0].Radius    = BlowUp * Sample->SG.Cyl.r;
+      stGeometry.pCylinder[0].Length    = BlowUp * Sample->SG.Cyl.height;
       stGeometry.pCylinder[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCylinder[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCylinder[0].vCntr[2]  = Sample->Position[2];
@@ -148,24 +148,25 @@ void SetSampleGeometry(SampleType *Sample)
       break;
 
     case VT_HOL_CYL:
-      stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
-      stGeometry.nCylinders = 1;
+      stGeometry.pHolCyl  = calloc(1, sizeof(VtHolCyl));
+      stGeometry.nHolCyls = 1;
 
-      stGeometry.pCylinder[0].Radius = Sample->SG.HCyl.r_out;
-      stGeometry.pCylinder[0].Length = Sample->SG.HCyl.h_out;
-      stGeometry.pCylinder[0].vCntr[0]  = Sample->Position[0];
-      stGeometry.pCylinder[0].vCntr[1]  = Sample->Position[1];
-      stGeometry.pCylinder[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCylinder[0].vSymAxis[0] = Sample->Direction[0];
-      stGeometry.pCylinder[0].vSymAxis[1] = Sample->Direction[1];
-      stGeometry.pCylinder[0].vSymAxis[2] = Sample->Direction[2];
+      stGeometry.pHolCyl[0].InnerRadius = BlowUp * Sample->SG.HCyl.r_in;
+      stGeometry.pHolCyl[0].Radius      = BlowUp * Sample->SG.HCyl.r_out;
+      stGeometry.pHolCyl[0].Length      = BlowUp * Sample->SG.HCyl.h_out;
+      stGeometry.pHolCyl[0].vCntr[0]    = Sample->Position[0];
+      stGeometry.pHolCyl[0].vCntr[1]    = Sample->Position[1];
+      stGeometry.pHolCyl[0].vCntr[2]    = Sample->Position[2];
+      stGeometry.pHolCyl[0].vSymAxis[0] = Sample->Direction[0];
+      stGeometry.pHolCyl[0].vSymAxis[1] = Sample->Direction[1];
+      stGeometry.pHolCyl[0].vSymAxis[2] = Sample->Direction[2];
       break;
 
     case VT_SPHERE:
       stGeometry.pSphere = calloc(1, sizeof(VtSphere));
       stGeometry.nSpheres = 1;
 
-      stGeometry.pSphere[0].Radius = Sample->SG.Ball.r;
+      stGeometry.pSphere[0].Radius    = BlowUp * Sample->SG.Ball.r;
       stGeometry.pSphere[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pSphere[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pSphere[0].vCntr[2]  = Sample->Position[2];
@@ -175,15 +176,15 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
       stGeometry.nCuboids = 1; 
       
-      stGeometry.pCuboid[0].Length = 2.; 
-      stGeometry.pCuboid[0].Width  = 2.;
-      stGeometry.pCuboid[0].Height = 2.;
-      stGeometry.pCuboid[0].vCntr[0]  = 1;
-      stGeometry.pCuboid[0].vCntr[1]  = 0;
-      stGeometry.pCuboid[0].vCntr[2]  = 0;
-      stGeometry.pCuboid[0].vNormal[0]= 1.;
-      stGeometry.pCuboid[0].vNormal[1]= 0.;
-      stGeometry.pCuboid[0].vNormal[2]= 0.;
+      stGeometry.pCuboid[0].Length    = 2.0; 
+      stGeometry.pCuboid[0].Width     = 2.0;
+      stGeometry.pCuboid[0].Height    = 2.0;
+      stGeometry.pCuboid[0].vCntr[0]  = 1.0;
+      stGeometry.pCuboid[0].vCntr[1]  = 0.0;
+      stGeometry.pCuboid[0].vCntr[2]  = 0.0;
+      stGeometry.pCuboid[0].vNormal[0]= 1.0;
+      stGeometry.pCuboid[0].vNormal[1]= 0.0;
+      stGeometry.pCuboid[0].vNormal[2]= 0.0;
       break;
   }
   return;

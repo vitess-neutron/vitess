@@ -48,7 +48,7 @@ VtMultWndShape eShape=VT_MWND_AUTO, // kind of window: defined by input file, ci
           eWinShape[101];  
 char*     CollFileName=NULL;
 double    Distance=0.0,         // Distance from origin to the window (along the x-axis)  [cm]
-          OuterRadius=200.0; 
+          OuterRadius=100.0; 
 double    winradius [101],      // radii of circular windows                              [cm]
           ywincenter[101],      // y coordinates: centers of windows                      [cm]
           zwincenter[101],      // z coordinates: centers of windows                      [cm]
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 		
   // Read Input data from window file: Number of lines equals number of holes in multiple window
   // -------------------------------------------------------------------------------------------
@@ -590,23 +590,28 @@ void  EvalInput()
 /*******************************************************/
 void  SetGeometry(char* sColor, int nHoles)
 {
-  int j,
-      nHolesC=0,    // number or circular holes
-      nHolesR=0;    // number of rectangular holes
+  int j=0,
+      iC=0, nHolesC=0,    // index and number or circular holes
+      iR=0, nHolesR=0;    // index and number of rectangular holes
+  double InnerRadius=0.0;
 
   // Geometry data
   if (bVisInstr)
   { 
-    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    sprintf(sVisDescrpt, "   :%s", sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
    
-    for (j=0; j < nHoles; j++)
+    for (j=1; j <= nHoles; j++)
     { 
       if (eWinShape[j]==VT_MWND_CIRCLE)
-        nHolesC++;
+      {  nHolesC++;
+         InnerRadius = fmax(InnerRadius, sqrt(sq(ywincenter[j]) + sq(zwincenter[j])) + winradius[j]);
+      }
       else
-        nHolesR++;
+      {  nHolesR++;
+         InnerRadius = fmax(InnerRadius, sqrt(sq(ywincenter[j]) + sq(zwincenter[j])) + 0.5*sqrt(sq(winwidth[j]) + sq(winheight[j])));
+      }
     }
 
     stGeometry.nHolCyls = nHolesC+1;
@@ -615,43 +620,46 @@ void  SetGeometry(char* sColor, int nHoles)
     stGeometry.pHull    = calloc(nHolesR,   sizeof(VtHull));
 
     // whole plate
-    stGeometry.pHolCyl[0].Radius      = OuterRadius;
-    stGeometry.pHolCyl[0].InnerRadius = OuterRadius * 0.9;
-    stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI)/CmprFact;
-    stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
-    stGeometry.pHolCyl[0].vCntr[1]    = 0.0;
-    stGeometry.pHolCyl[0].vCntr[2]    = 0.0;
-    stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
-    stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
-    stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+    stGeometry.pHolCyl[iC].Radius      = BlowUp * OuterRadius;
+    stGeometry.pHolCyl[iC].InnerRadius = BlowUp * InnerRadius;
+    stGeometry.pHolCyl[iC].Length      = Max(ThicknessO, ThicknessI);
+    stGeometry.pHolCyl[iC].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.);
+    stGeometry.pHolCyl[iC].vCntr[1]    = 0.0;
+    stGeometry.pHolCyl[iC].vCntr[2]    = 0.0;
+    stGeometry.pHolCyl[iC].vSymAxis[0] = 1.0;
+    stGeometry.pHolCyl[iC].vSymAxis[1] = 0.0;
+    stGeometry.pHolCyl[iC].vSymAxis[2] = 0.0;
+    iC++;
 
-    for (j=0; j < nHoles; j++)
+    for (j=1; j <= nHoles; j++)
     { 
       if (eWinShape[j]==VT_MWND_CIRCLE)
       {
-        stGeometry.pHolCyl[0].InnerRadius = winradius[j];
-        stGeometry.pHolCyl[0].Radius      = winradius[j] * 1.1;
-        stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI)/CmprFact;
-        stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
-        stGeometry.pHolCyl[0].vCntr[1]    = ywincenter[j];
-        stGeometry.pHolCyl[0].vCntr[2]    = zwincenter[j];
-        stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
-        stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
-        stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+        stGeometry.pHolCyl[iC].InnerRadius = BlowUp * winradius[j];
+        stGeometry.pHolCyl[iC].Radius      = BlowUp * winradius[j] * 1.25;
+        stGeometry.pHolCyl[iC].Length      = Max(ThicknessO, ThicknessI);
+        stGeometry.pHolCyl[iC].vCntr[0]    = (Distance + stGeometry.pHolCyl[iC].Length/2.);
+        stGeometry.pHolCyl[iC].vCntr[1]    = ywincenter[j];
+        stGeometry.pHolCyl[iC].vCntr[2]    = zwincenter[j];
+        stGeometry.pHolCyl[iC].vSymAxis[0] = 1.0;
+        stGeometry.pHolCyl[iC].vSymAxis[1] = 0.0;
+        stGeometry.pHolCyl[iC].vSymAxis[2] = 0.0;
+        iC++;
       }
       else
       {
-        stGeometry.pHull[0].WidthIn   = winwidth [j];
-        stGeometry.pHull[0].WidthOut  = winwidth [j] * 1.1;
-        stGeometry.pHull[0].HeightIn  = winheight[j];
-        stGeometry.pHull[0].HeightOut = winheight[j] * 1.1;
-        stGeometry.pHull[0].Length    = Max(ThicknessO, ThicknessI)/CmprFact;
-        stGeometry.pHull[0].vCntr[0]  = (Distance + stGeometry.pHull[0].Length/2.)/CmprFact;
-        stGeometry.pHull[0].vCntr[1]  = ywincenter[j];
-        stGeometry.pHull[0].vCntr[2]  = zwincenter[j];
-        stGeometry.pHull[0].vNormal[0]= 1.0;
-        stGeometry.pHull[0].vNormal[1]= 0.0;
-        stGeometry.pHull[0].vNormal[2]= 0.0;
+        stGeometry.pHull[iR].WidthIn   = BlowUp * winwidth [j];
+        stGeometry.pHull[iR].WidthOut  = BlowUp * winwidth [j] * 1.25;
+        stGeometry.pHull[iR].HeightIn  = BlowUp * winheight[j];
+        stGeometry.pHull[iR].HeightOut = BlowUp * winheight[j] * 1.25;
+        stGeometry.pHull[iR].Length    = Max(ThicknessO, ThicknessI);
+        stGeometry.pHull[iR].vCntr[0]  = (Distance + stGeometry.pHull[iR].Length/2.);
+        stGeometry.pHull[iR].vCntr[1]  = ywincenter[j];
+        stGeometry.pHull[iR].vCntr[2]  = zwincenter[j];
+        stGeometry.pHull[iR].vNormal[0]= 1.0;
+        stGeometry.pHull[iR].vNormal[1]= 0.0;
+        stGeometry.pHull[iR].vNormal[2]= 0.0;
+        iR++;
       }
     }
   }

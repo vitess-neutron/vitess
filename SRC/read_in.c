@@ -20,6 +20,7 @@
 /* 1.6  Aug  2022  P. Zakalek      read in of SSW files from MCNP implemented                */
 /* 1.6a Aug  2022  P. Zakalek      removed automatic rotation of MCPL file format            */
 /* 1.6b Aug  2022  P. Zakalek      added option to limit number of read neutrons             */
+/* 1.6c Feb  2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -41,16 +42,16 @@
 void  OwnInit(int argc, char *argv[]);                                             // Reads input parameters and sets global variables
 void  OwnCleanup();                                                                // Does module specific cleanup
 
-short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads VITESS trajectory
-short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads McStas trajectory
-short ReadMcplTraj  (Neutron* pNeutron);                         // Reads MCPL trajectory 
-short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNPX  trajectory
-short ReadSSWTraj(Neutron* pNeutron, int* nTrj, ssw_file_t pFile);  // Reads MCNP SSW trajectory
-short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile); // Reads MCNP6 trajectory
+short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads VITESS trajectory
+short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads McStas trajectory
+short ReadMcplTraj  (Neutron* pNeutron);                              // Reads MCPL trajectory 
+short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNPX  trajectory
+short ReadSSWTraj   (Neutron* pNeutron, int* nTrj, ssw_file_t pFile); // Reads MCNP SSW trajectory
+short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNP6 trajectory
 
 short ConvertMcStas2Vitess(Neutron* pVitNeut, const McNeutron*       pMcNeut);     // Converts McStas to VITESS trajectory
 short ConvertMcpl2Vitess  (Neutron* pVitNeut, const mcpl_particle_t* pMcplPtcl);   // Converts MCPL to VITESS trajectory
-short ConvertSSW2Vitess(Neutron* pVitNeutron, const ssw_particle_t * p);
+short ConvertSSW2Vitess(Neutron* pVitNeutron, const ssw_particle_t * p);           // Converts ssw format of MCNP event files to VITESS trajectory
 
 void  RotMc2Vit  (VectorType* pVitVector, const VectorType* pMcVector);            // Vector transfer from McStas to VITESS co-ordinate system
 void  InitMcNeutr(Neutron* pNeutron);                                              // Initializes a trajectory
@@ -72,20 +73,20 @@ double       FactInt=1.0;                // -I        Factor to normalize to the
 int          iSurface=MISSING;           // -s        surface ID: if given, only neutrons with this ID are considered
 short        iDetectColor=-1;            // -C        Only for VITESS format: Read only events with a given color.
 int          nRep=1;                     // -R        Number of times the input is read
-double   maxEv=-1;                    // -M
+double       maxEv=-1;                   // -M        maximal numver of events read
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf')
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
 extern VtTrace _eTraceMode;              // -t        NO_TRACING     : no tracing
-//           WRITE_TRC_FILES: write trace files for traj. of interest
-//           ONLY_TRC_TRAJ  : simulation only with traj. of interest
+                                         //           WRITE_TRC_FILES: write trace files for traj. of interest
+                                         //           ONLY_TRC_TRAJ  : simulation only with traj. of interest
 
 // Variables determined from input parameters or trajectory data
 FILE*        pInFile[NF_MAX];            //           pointer to input file
 mcpl_file_t  hInFile;                    //           handle to MCPL input file
 ssw_file_t   hSSWFile;                   //           handle to SSW input file
 
-FILE*  LogFile;
+FILE*        LogFile;                    //           this module needs a separate log file to avoid mixing events with log output
 
 // parameter used in different functions
 char         sLine[256]="";              //           one line in an ASCII input file
@@ -99,8 +100,8 @@ char         sHeader[MAX_HEADER]="";     //           string containing the head
 int main(int argc, char **argv)
 {
   short           m=0,              // index of input files
-  iRep=0,           // counter for number of repetitions
-  rc=TRUE;          // return code of the function reading the input file (TRUE/FALSE)
+  iRep=0,                           // counter for number of repetitions
+  rc=TRUE;                          // return code of the function reading the input file (TRUE/FALSE)
   int             nT=0;             // number of trajectories identified
   // char            sLine[256]="";    // one line in input file
   Neutron         InNeutron;
@@ -110,12 +111,12 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.6b");
+  PrintModuleName(_eModule, "1.6c");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
-  // if (bVisInstr) stGeometry.pDescr = "read_in:white";
+  bBlowUp       = FALSE;
+
   InitNeutron(&InNeutron);
   NumNeutRead = 0.0;
 
@@ -532,7 +533,7 @@ short ReadMcnpxTraj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     CopyVector(McnpNeutr.Position, pNeutron->Position);
     CopyVector(McnpNeutr.Vector,   pNeutron->Vector);
 
-    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> \B5eV,  lambda -> energy
+    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> microeV,  lambda -> energy
     pNeutron->Probability = McnpNeutr.Counts * FactInt;                     // normalisation counts -> n/s
     pNeutron->Time        = McnpNeutr.Shakes * 1.0e-05;                     // unit  shakes (=1.0e-08 s) -> ms
 
@@ -672,7 +673,7 @@ short ReadMcnp6Traj(Neutron* pNeutron, int* nTrj, FILE* pFile)
     pNeutron->Vector[1] = McnpNeutr.DirY;
     pNeutron->Vector[2] = sqrt(1 - sq(McnpNeutr.DirX)  - sq(McnpNeutr.DirY)) * eSign;
 
-    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> \B5eV,  lambda -> energy
+    pNeutron->Wavelength  = LAMBDA_FROM_ENERGY(1.0e+12 * McnpNeutr.Energy); // unit MeV -> microeV,  lambda -> energy
     pNeutron->Probability = McnpNeutr.Counts * FactInt;                     // normalisation counts -> n/s
     pNeutron->Time        = McnpNeutr.Shakes * 1.0e-05;                     // unit  shakes (=1.0e-08 s) -> ms
 
@@ -739,7 +740,7 @@ short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParti
     // initialization
     InitMcNeutr(pVitNeutron);
 
-    pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> \B5eV
+    pVitNeutron->Wavelength  = LAMBDA_FROM_ENERGY(pMcplParticle->ekin*1.0e12);    // MeV -> microeV
     pVitNeutron->Time        = pMcplParticle->time;
     pVitNeutron->Probability = pMcplParticle->weight;
 

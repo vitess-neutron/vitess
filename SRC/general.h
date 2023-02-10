@@ -120,7 +120,8 @@ void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
 
-void   InitPlane       (Plane* pPlane);
+void   InitPlane       (Plane*         pPlane);
+void   InitSurface     (SurfaceSecond* pSurface);
 
 /* Basic matrix operation */
 void   Init3x3Matrix     (double Matrix   [3][3]);

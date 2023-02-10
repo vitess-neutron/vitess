@@ -597,10 +597,20 @@ double Area(const VectorType v1, const VectorType v2)
 /* sets plane to (1,0,0,0) */
 void InitPlane(Plane* pPlane)
 {
-  pPlane->A = 1.0;
+  pPlane->A = 1.0;  // normal along x-axis
   pPlane->B = 0.0;
   pPlane->C = 0.0;
   pPlane->D = 0.0;
+}
+
+/* sets 2nd order surface to (0,1,0,0,0,0,0,0,0,0) */
+void InitSurface(SurfaceSecond* pSurface)
+{
+  pSurface->A = 0.0;     pSurface->B = 1.0;  // normal along x-axis
+  pSurface->C = 0.0;     pSurface->D = 0.0;
+  pSurface->E = 0.0;     pSurface->F = 0.0;
+  pSurface->P = 0.0;     pSurface->Q = 0.0;
+  pSurface->R = 0.0;     pSurface->W = 0.0;
 }
 
 

@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
   OpenFiles();
     
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   pPosT   = (double*) calloc(nBins+1,sizeof(double));
   pInt    = (double*) calloc(nBins+1,sizeof(double));

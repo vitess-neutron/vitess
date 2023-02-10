@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   templateMonitor.OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   /* bExclusive = 1: Only neutrons are considered further, 
      which end up in the monitor without being rejected */

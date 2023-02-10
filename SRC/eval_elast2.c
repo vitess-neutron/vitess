@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
 	bpostX = malloc(sizeof(double)*nBinsX+1);
 	memset(bpostX, 0, sizeof(double)*nBinsX+1);

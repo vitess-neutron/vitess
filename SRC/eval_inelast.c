@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   /* calculates TOF channel boundaries and init p_TOF*/
   t[0] = MinTOF ; 

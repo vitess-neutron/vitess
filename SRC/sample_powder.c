@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* Get the unit-cell structure factors |f_N(t)|^2, try the name from paramter input first, then the name from file */
   NumStrucFac = ReadStructureFile(pStrFileNameI, 1, &StrucFac);  

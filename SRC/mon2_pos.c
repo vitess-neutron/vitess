@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   nBunches = ReadNumBnch();
 

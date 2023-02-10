@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
 	DECLARE_ABORT
 
@@ -170,11 +170,11 @@ void SetGeometry(char* sColor)
     stGeometry.nHulls = 1;
 
     stGeometry.pHull[0].Length     = 0.0;
-    stGeometry.pHull[0].WidthIn    = Width;
-    stGeometry.pHull[0].WidthOut   = Width * 3.0;
-    stGeometry.pHull[0].HeightIn   = Height;
-    stGeometry.pHull[0].HeightOut  = Height * 3.0;
-    stGeometry.pHull[0].vCntr[0]   = DistMove/CmprFact;
+    stGeometry.pHull[0].WidthIn    = BlowUp * Width;
+    stGeometry.pHull[0].WidthOut   = BlowUp * Width * 3.0;
+    stGeometry.pHull[0].HeightIn   = BlowUp * Height;
+    stGeometry.pHull[0].HeightOut  = BlowUp * Height * 3.0;
+    stGeometry.pHull[0].vCntr[0]   = DistMove;
     stGeometry.pHull[0].vCntr[1]   = 0.0;
     stGeometry.pHull[0].vCntr[2]   = 0.0;
     stGeometry.pHull[0].vNormal[0] = 1.0;

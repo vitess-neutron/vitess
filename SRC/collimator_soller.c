@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   	bVisInstalled = FALSE;
 	}
 
-  bLengthCmpr = FALSE;
+  bBlowUp = FALSE;
 
 	DECLARE_ABORT;
 

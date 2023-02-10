@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   ReadParameterFile(ParameterFileName);
 
@@ -839,7 +839,8 @@ void DetermineAndLogMirrorShape(int i)
   int widthIndex = -1;
   double height = 0.;
   int heightIndex = -1;
-  int j;
+  int j,
+      k=0;  // index for edges of a triangle
   int numRightAngles[4];
   int counter = 0;
   short isRectangle = 1;	
@@ -972,9 +973,16 @@ void DetermineAndLogMirrorShape(int i)
     AddVector(elementCenterOffset, elementCenterOffsetTemp);
     CopyVector(elementCenterOffset, stGeometry.pRectangle[stGeometry.nRectangles-1].vCntr);
     CopyVector(WallNormal[i], stGeometry.pRectangle[stGeometry.nRectangles-1].vNormal);
-    stGeometry.pRectangle[stGeometry.nRectangles-1].Width = width;
-    stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
     stGeometry.pRectangle[stGeometry.nRectangles-1].rotAngle = rotationAngle/M_PI*180.;
+    // blow up in width and height, not along beamline
+    if (width < 35.0)
+      stGeometry.pRectangle[stGeometry.nRectangles-1].Width  = BlowUp * width;
+    else
+      stGeometry.pRectangle[stGeometry.nRectangles-1].Width  = width;
+    if (height < 35.0)
+      stGeometry.pRectangle[stGeometry.nRectangles-1].Height = BlowUp * height;
+    else
+      stGeometry.pRectangle[stGeometry.nRectangles-1].Height = height;
 
   }
   // Build the quadrangle with tho triangles, if mirror is a triangle, the second one is a line
@@ -1056,6 +1064,9 @@ void DetermineAndLogMirrorShape(int i)
     CopyVector(thirdPoint2, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[2],  WallOffset[i]);
+
+    for (k=0; k < 3; k++)
+      MultiplyByScalar(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[k], BlowUp);
   }
 }
 

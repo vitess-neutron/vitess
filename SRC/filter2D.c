@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   LoadTable();
 
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
 	DECLARE_ABORT
 

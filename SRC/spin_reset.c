@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);    // module specific initialization
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
 	/* redefinition in terms of eigenvectors e.g. 0 % means 50% Up and 50% Down */
 	FracPolDir  = 0.5 + 0.5*PolDegree/100.0;
