@@ -19,6 +19,19 @@ The simulation of a neutron instrument comprises several modules, which represen
 - The first module must be either a neutron source module, or it must read information about the neutron trajectories from a file typically created in an earlier simulation of the preceding part of your instrument, which includes the source module.
 - The last module may be set up to write a file of neutron trajectories.  This makes sense if you wish to use these trajectories in further simulations  as input, e.g., for future studies of parameter distributions of these neutrons.
 
+
+### Requirements
+
+To run the Vitess-GUI you need [Tcl/TK](https://www.tcl-lang.org) 8.6 and [LibGD](https://libgd.org) 2.3. If installed, [Gnuplot](http://www.gnuplot.info) will used for visualization.
+
+To build Vitess on various operating systems you need to install the following packages:
+
+- **Windows:** [Visual Studio](https://visualstudio.microsoft.com) 2017
+- **Mac OS:** [Xcode Command Line Tools](https://developer.apple.com/xcode/resources), [XQuartz](https://www.xquartz.org) and [LibGD](https://libgd.org).
+- **Ubuntu:** `apt-get install make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev`
+- **CentOS:** `dnf install make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel`
+
+
 ### References
 
 The VITESS package is described in the following publications:
