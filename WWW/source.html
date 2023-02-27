@@ -242,10 +242,10 @@
         <td valign="top">beamline<br> </td>
         <td valign="top">
           Name of the beamline or beam-port <br />
-          For the ESS Butterfly-1 moderator, it is used to define the moderator characteristics and to calculate the declination.
-          For all other sources, this is not yet implemented.
+          For the ESS Butterfly-1 moderator, it is used to determine the declination and thus the moderator characteristics.
+          For all other sources and the other ESS moderator models, it has no effect.
         </td>
-        <td valign="top"> </td>
+        <td valign="top"> examples: S3, N2, W7 </td>
         <td valign="top">-B<br>       </td>
       </tr>
       <tr>
@@ -345,7 +345,6 @@
   </table>
 
 
-
   <br />
   <h3>Moderator parameters</h3>
   <p>
@@ -358,6 +357,10 @@
     Analytical functions are only used in the simulation, if the corresponing distribution file is not given, 
     i.e.  the Maxwellian distribution is calculated from the given temperature, only if no 'wavelength distribution file' is given, 
     and the pulse shape is calculated from the given time constants, only if no 'time distribution file' is given. Table  1 gives a survey.
+    <br />
+    For ESS and SNS, the parameters defining wavelength and time characteristics of the pulse are fixed in the program. 
+    For the descriptions Butterfly-1 and Butterfly-2 of the ESS, this is also true for width, height and position. And they always show both moderators.
+    However, the proton pulse length can still be varied and the intensity scaled linearly by varying the power.
   </p>
   <p>
     <table border="1" width="100%">

@@ -108,7 +108,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"eDetUse",  reinterpret_cast<convert_ptr>(&DetUse_Txt2ID)},
      {"eDetMat",  reinterpret_cast<convert_ptr>(&DetAbs_Txt2ID)},
      {"eDetXsec", reinterpret_cast<convert_ptr>(&TubeShape_Txt2ID)},
-//   monitor + filter + eval
+//   monitor
      {"eMon1Par", reinterpret_cast<convert_ptr>(&Mon1Par_Txt2ID)},
      {"eMonNorm", reinterpret_cast<convert_ptr>(&MonNorm_Txt2ID)},
      {"eFormat",  reinterpret_cast<convert_ptr>(&Format2D_Txt2ID)},
@@ -116,6 +116,7 @@ static QMap<QString, int (*)(const char *)> functionMap = {
      {"eParB",    reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
      {"eBrlNorm", reinterpret_cast<convert_ptr>(&BrlNorm_Txt2ID)},
      {"eBrlPar",  reinterpret_cast<convert_ptr>(&BrlPar_Txt2ID)},
+//   filter + eval
      {"eFltPar1", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
      {"eFltPar2", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},
      {"eFltPar3", reinterpret_cast<convert_ptr>(&MonPar_Txt2ID)},

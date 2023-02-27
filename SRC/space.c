@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = FALSE;
   if (bVisInstr)
-  { bLengthCmpr = TRUE;
+  { bBlowUp     = TRUE;
     stGeometry.pDescr = "space";
   }
 

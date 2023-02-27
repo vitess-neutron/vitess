@@ -59,8 +59,10 @@ double	PathThroughBenderGravOrder2(Neutron *ThisNeutron, Bender BenderMy, Bender
   /* For pass in to new channel */
   SurfaceSecond NewSurf, OldSurf;
   long keytemp=0;
- 
- 
+
+  InitSurface(&OldSurf);
+  InitSurface(&NewSurf);
+  
 #ifdef VT_GRAPH 
   if (do_visualise) 
   { 

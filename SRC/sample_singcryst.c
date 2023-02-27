@@ -115,12 +115,11 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   /* Reads sample parameters and combines with input parameters */
-  InitSample  (&stSample);
   SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* Reads the structure factor file */
   ReadStructFile();

@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp     = TRUE;
 
   // allocate for planes + exit plane
   if (! (Guide.Wall = (Plane*) calloc(nPlanes+1, sizeof(Plane))))
@@ -1720,26 +1720,26 @@ void SetGeometry(char* sColor)
 
     for (k=0; k < nPieces; k++)
     {
-      stGeometry.pHull[k].Length     = (pPieces[k+1].Xpce - pPieces[k].Xpce)/CmprFact;
+      stGeometry.pHull[k].Length     = (pPieces[k+1].Xpce - pPieces[k].Xpce);
       stGeometry.pHull[k].vNormal[1] = atan(k * beta);
       stGeometry.pHull[k].vNormal[2] = 0.0;
       stGeometry.pHull[k].vNormal[0] = sqrt(1.0 - sq(stGeometry.pHull[k].vNormal[1]) - sq(stGeometry.pHull[k].vNormal[2]));
-      stGeometry.pHull[k].WidthIn    = 2.0 * pPieces[k].Ypce;
-      stGeometry.pHull[k].HeightIn   = 2.0 * pPieces[k].Zpce;
-      stGeometry.pHull[k].WidthOut   = 2.0 * pPieces[k+1].Ypce;
-      stGeometry.pHull[k].HeightOut  = 2.0 * pPieces[k+1].Zpce;
+      stGeometry.pHull[k].WidthIn    = 2.0 * BlowUp * pPieces[k].Ypce;
+      stGeometry.pHull[k].HeightIn   = 2.0 * BlowUp * pPieces[k].Zpce;
+      stGeometry.pHull[k].WidthOut   = 2.0 * BlowUp * pPieces[k+1].Ypce;
+      stGeometry.pHull[k].HeightOut  = 2.0 * BlowUp * pPieces[k+1].Zpce;
 
       GdPcePos = 0.5 * (pPieces[k].Xpce + pPieces[k + 1].Xpce);
       if (Radius != 0.0)
       {
         if (k == 0)
           GdPcePos0 = GdPcePos;
-        stGeometry.pHull[k].vCntr[0] = Radius/CmprFact * sin((GdPcePos - GdPcePos0) / Radius) + GdPcePos0;
-        stGeometry.pHull[k].vCntr[1] = Radius  *  (1.0 - cos((GdPcePos - GdPcePos0) / Radius));
+        stGeometry.pHull[k].vCntr[0] = Radius *        sin((GdPcePos - GdPcePos0) / Radius) + GdPcePos0;
+        stGeometry.pHull[k].vCntr[1] = Radius * (1.0 - cos((GdPcePos - GdPcePos0) / Radius));
       }
       else
       {
-        stGeometry.pHull[k].vCntr[0] = GdPcePos/CmprFact;
+        stGeometry.pHull[k].vCntr[0] = GdPcePos;
         stGeometry.pHull[k].vCntr[1] = 0.0;
       }
       stGeometry.pHull[k].vCntr[2] = 0.0;

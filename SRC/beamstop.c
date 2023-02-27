@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   DECLARE_ABORT
 
@@ -236,10 +236,10 @@ void SetGeometry(char* sColor)
       stGeometry.pCircle =calloc(1, sizeof(VtCircle));
       stGeometry.nCircles=1; 
       
-      stGeometry.pCircle[0].Radius    = Radius;
+      stGeometry.pCircle[0].Radius    = BlowUp * Radius;
       stGeometry.pCircle[0].AngleBeg  = 0;
       stGeometry.pCircle[0].AngleEnd  = 360;
-      stGeometry.pCircle[0].vCntr[0]  = DistMove/CmprFact;
+      stGeometry.pCircle[0].vCntr[0]  = DistMove;
       stGeometry.pCircle[0].vCntr[1]  = 0.0;
       stGeometry.pCircle[0].vCntr[2]  = 0.0;
       stGeometry.pCircle[0].vNormal[0]= 1.0;
@@ -251,9 +251,9 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle =calloc(1, sizeof(VtRectangle));
       stGeometry.nRectangles=1; 
       
-      stGeometry.pRectangle[0].Width     = Width;
-      stGeometry.pRectangle[0].Height    = Height;
-      stGeometry.pRectangle[0].vCntr[0]  = DistMove/CmprFact;
+      stGeometry.pRectangle[0].Width     = BlowUp * Width;
+      stGeometry.pRectangle[0].Height    = BlowUp * Height;
+      stGeometry.pRectangle[0].vCntr[0]  = DistMove;
       stGeometry.pRectangle[0].vCntr[1]  = 0.0;
       stGeometry.pRectangle[0].vCntr[2]  = 0.0;
       stGeometry.pRectangle[0].vNormal[0]= 1.0;

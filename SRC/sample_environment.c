@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* Now get the nuclear unit-cell structure factors |f_N(t)|^2 */
   if (strlen(sStructFileP) > 0)                                    // try the file name from the input parameters first
@@ -439,8 +439,8 @@ void SetGeometry(char* sColor)
     stGeometry.pCylinder  = (VtCylinder*) calloc(1, sizeof(VtCylinder));
     stGeometry.nCylinders = 1; 
 	      
-    stGeometry.pCylinder[0].Radius     = stEnvironment.SG.HCyl.r_out; 
-    stGeometry.pCylinder[0].Length     = stEnvironment.SG.HCyl.h_out;
+    stGeometry.pCylinder[0].Radius     = BlowUp * stEnvironment.SG.HCyl.r_out; 
+    stGeometry.pCylinder[0].Length     = BlowUp * stEnvironment.SG.HCyl.h_out;
     stGeometry.pCylinder[0].vCntr[0]   = 0.0;
     stGeometry.pCylinder[0].vCntr[1]   = 0.0;
     stGeometry.pCylinder[0].vCntr[2]   = 0.0;

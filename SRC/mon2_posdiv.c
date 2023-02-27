@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   // initializes arrays
   for (iPos=0; iPos <= nBinsPos; iPos++) BinPosY[iPos] = pos_min + (pos_max-pos_min) * iPos / (double)nBinsPos;

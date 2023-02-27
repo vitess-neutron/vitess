@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;  // needs to be done still
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = TRUE;
 
   // loop over all trajectories
   // --------------------------
@@ -625,11 +625,11 @@ void SetGeometry(char* sColor)
 
       for (k=0; k <= Nchannels; k++)
       { 
-        stGeometry.pHull[k].WidthIn   = wallwidth;
-        stGeometry.pHull[k].WidthOut  = wallwidth;
-        stGeometry.pHull[k].HeightIn  = height;
-        stGeometry.pHull[k].HeightOut = height;
-        stGeometry.pHull[k].Length    = depth;
+        stGeometry.pHull[k].WidthIn   = BlowUp * wallwidth;
+        stGeometry.pHull[k].WidthOut  = BlowUp * wallwidth;
+        stGeometry.pHull[k].HeightIn  = BlowUp * height;
+        stGeometry.pHull[k].HeightOut = BlowUp * height;
+        stGeometry.pHull[k].Length    = BlowUp * depth;
         stGeometry.pHull[k].vCntr[0]  = pos_chp[0] + (k - Nchannels/2.0) * chan_dist * sin(theta);
         stGeometry.pHull[k].vCntr[1]  = pos_chp[1] - (k - Nchannels/2.0) * chan_dist * cos(theta);
         stGeometry.pHull[k].vCntr[2]  = pos_chp[2];
@@ -645,9 +645,9 @@ void SetGeometry(char* sColor)
       stGeometry.nCuboids = 1;
       stGeometry.pCuboid  = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
 
-      stGeometry.pCuboid[0].Length     = depth;
-      stGeometry.pCuboid[0].Width      = width;
-      stGeometry.pCuboid[0].Height     = height;
+      stGeometry.pCuboid[0].Length     = BlowUp * depth;
+      stGeometry.pCuboid[0].Width      = BlowUp * width;
+      stGeometry.pCuboid[0].Height     = BlowUp * height;
       stGeometry.pCuboid[0].rotAngle   = 0.0;
       stGeometry.pCuboid[0].vCntr[0]   = pos_chp[0];
       stGeometry.pCuboid[0].vCntr[1]   = pos_chp[1];

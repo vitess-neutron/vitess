@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   DECLARE_ABORT;
   
@@ -489,10 +489,10 @@ void SetGeometryData(char* sColor)
       stGeometry.pEllipsoid[0].vSymAxis[2] = 0.;
       
       stGeometry.pEllipsoid[0].Length = longAxisHor*200.;
-      stGeometry.pEllipsoid[0].Width = shortAxisHor*200.;
-      stGeometry.pEllipsoid[0].Height = shortAxisVer*200.;
-      stGeometry.pEllipsoid[0].Xlow = startPoint*100.;
-      stGeometry.pEllipsoid[0].Xhigh = endPoint*100.;
+      stGeometry.pEllipsoid[0].Width  = BlowUp * shortAxisHor*200.;
+      stGeometry.pEllipsoid[0].Height = BlowUp * shortAxisVer*200.;
+      stGeometry.pEllipsoid[0].Xlow   = startPoint*100.;
+      stGeometry.pEllipsoid[0].Xhigh  = endPoint*100.;
     }
     else if (shapeHor < 2 && shapeVer < 2) 
     {
@@ -507,11 +507,11 @@ void SetGeometryData(char* sColor)
       stGeometry.pHull[0].vNormal[1] = 0.;
       stGeometry.pHull[0].vNormal[2] = 0.;
       
-      stGeometry.pHull[0].Length = lengthGuide*100.;
-      stGeometry.pHull[0].WidthIn = startWidth;
-      stGeometry.pHull[0].WidthOut = endWidth;
-      stGeometry.pHull[0].HeightIn = startHeight;
-      stGeometry.pHull[0].HeightOut = endHeight;
+      stGeometry.pHull[0].Length    = lengthGuide*100.;
+      stGeometry.pHull[0].WidthIn   = BlowUp * startWidth;
+      stGeometry.pHull[0].WidthOut  = BlowUp * endWidth;
+      stGeometry.pHull[0].HeightIn  = BlowUp * startHeight;
+      stGeometry.pHull[0].HeightOut = BlowUp * endHeight;
     }
     else 
     {
@@ -528,11 +528,11 @@ void SetGeometryData(char* sColor)
         stGeometry.pHull[i].vNormal[1] = 0.;
         stGeometry.pHull[i].vNormal[2] = 0.;	
 
-        stGeometry.pHull[i].Length = 50.;
-        stGeometry.pHull[i].WidthIn = 200.*CalculateGuidePoint(startPoint + 0.5*i, 1);
-        stGeometry.pHull[i].WidthOut = 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 1);
-        stGeometry.pHull[i].HeightIn = 200.*CalculateGuidePoint(startPoint + 0.5*i, 2);
-        stGeometry.pHull[i].HeightOut = 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 2);
+        stGeometry.pHull[i].Length    = 50.;
+        stGeometry.pHull[i].WidthIn   = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*i, 1);
+        stGeometry.pHull[i].WidthOut  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 1);
+        stGeometry.pHull[i].HeightIn  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*i, 2);
+        stGeometry.pHull[i].HeightOut = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 2);
       }
 
       double remainingDist = double ((int)(lengthGuide*100.) % 50);
@@ -550,11 +550,11 @@ void SetGeometryData(char* sColor)
         stGeometry.pHull[stGeometry.nHulls - 1].vNormal[1] = 0.;
         stGeometry.pHull[stGeometry.nHulls - 1].vNormal[2] = 0.;	
 	
-        stGeometry.pHull[stGeometry.nHulls - 1].Length = remainingDist;
-        stGeometry.pHull[stGeometry.nHulls - 1].WidthIn = 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 1);
-        stGeometry.pHull[stGeometry.nHulls - 1].WidthOut = 200.*CalculateGuidePoint(endPoint, 1);
-        stGeometry.pHull[stGeometry.nHulls - 1].HeightIn = 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 2);
-        stGeometry.pHull[stGeometry.nHulls - 1].HeightOut = 200.*CalculateGuidePoint(endPoint, 2);
+        stGeometry.pHull[stGeometry.nHulls - 1].Length    = remainingDist;
+        stGeometry.pHull[stGeometry.nHulls - 1].WidthIn   = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 1);
+        stGeometry.pHull[stGeometry.nHulls - 1].WidthOut  = BlowUp * 200.*CalculateGuidePoint(endPoint, 1);
+        stGeometry.pHull[stGeometry.nHulls - 1].HeightIn  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 2);
+        stGeometry.pHull[stGeometry.nHulls - 1].HeightOut = BlowUp * 200.*CalculateGuidePoint(endPoint, 2);
       }
     }
   }

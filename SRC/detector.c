@@ -153,7 +153,8 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);    // module specific initialization
  
   bVisInstalled = TRUE;
-  bLengthCmpr   = FALSE;
+  if (bVisInstr) 
+    bBlowUp     = FALSE;
 
   /* RotMatrix will rotate a Vector to a frame in which the middle of the detector sits on the x-axis,
      i.e. Detector.Direction (cyl-axis for cyl. det) defines new x axis*/
@@ -717,7 +718,7 @@ void SetGeometry(char* sColor)
       {
         stGeometry.pCylSlice[0].Width = Detector.Width;
       }
-      stGeometry.pCylSlice[0].Height = Detector.Height;
+      stGeometry.pCylSlice[0].Height = BlowUp * Detector.Height;
       stGeometry.pCylSlice[0].vCntr[0]  = 0.;
       stGeometry.pCylSlice[0].vCntr[1]  = 0.;
       stGeometry.pCylSlice[0].vCntr[2]  = 0.;
@@ -746,8 +747,8 @@ void SetGeometry(char* sColor)
       stGeometry.nCuboids = 1; 
 	
       stGeometry.pCuboid[0].Length = Detector.Thickness; 
-      stGeometry.pCuboid[0].Width  = Detector.Width;
-      stGeometry.pCuboid[0].Height = Detector.Height;
+      stGeometry.pCuboid[0].Width  = BlowUp * Detector.Width;
+      stGeometry.pCuboid[0].Height = BlowUp * Detector.Height;
 
       stGeometry.pCuboid[0].vCntr[0]  = (Detector.Distance)*cos(Detector.Theta);
       stGeometry.pCuboid[0].vCntr[1]  = (Detector.Distance)*sin(Detector.Theta)*cos(Detector.Phi);

@@ -23,14 +23,14 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
                     long iBnch, long nBnch, double IntMon, long nTrjMon, 
                     int nBinsX, const char* sAxisTitleX, 
                     int nBinsY, const char* sAxisTitleY); 
-int  WriteOutput2D (FILE* fMonitor, int eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
-                    int nBinsX, double* BinPosY, 
-                    int nBinsY, double* BinPosZ, 
-                    double** IntYZ, double** IntYZError, long** nTrajYZ);  
-int  WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
-                    int nBinsX, double* BinPosY, 
-                    int nBinsY, double* BinPosZ, double fNorm,
-                    double** IntYZ, double** IntYZError, long** nTrajYZ);  
+int  WriteOutput2D (FILE* fMonitor, VtFormat2D eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
+                    int nBinsX, double* BinPosX, 
+                    int nBinsY, double* BinPosY, 
+                    double** IntXY, double** IntXYError, long** nTrajXY);  
+int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
+                    int nBinsX, double* BinPosX, 
+                    int nBinsY, double* BinPosY, double fNorm,
+                    double** IntXY, double** IntXYError, long** nTrajXY);  
 
 void printFloatItem(double v, FILE*f);                                                   // Writes one float value to the 2D monitor file
 void OutFmt2Txt    (VtFormat2D eFormat);                                                 // converts 2D output format to text

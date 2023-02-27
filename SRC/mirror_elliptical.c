@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = MISSING;    // needs to be done still
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   CalcAndWritePar();
 

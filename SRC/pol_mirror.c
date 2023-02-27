@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;    // needs to be done still
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   /* transfers guide_field into frame in which guide field is along x-axis */
   // RotVector(RotMatrixField, guide_field) ; 
@@ -271,7 +271,7 @@ void OwnInit(int argc, char *argv[])
         break;
       case 'D':
         ReflDownFileName=&argv[1][2];
-        pReflDownFile = OpenInputFile2(ReflUpFileName, "reflectivity data for spin-down neutrons", "r");;
+        pReflDownFile = OpenInputFile2(ReflDownFileName, "reflectivity data for spin-down neutrons", "r");;
         break;
 
       case 'L':

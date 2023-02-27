@@ -1,5 +1,5 @@
-#ifndef FLIPPER_GRAD_H
-#define FLIPPER_GRAD_H
+#ifndef RES_DRABKIN_H
+#define RES_DRABKIN_H
 
 /************************************/
 /** Definitions, structures, enums **/

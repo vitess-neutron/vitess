@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
   monochrom.OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  bLengthCmpr   = FALSE;
+  if (bVisInstr) 
+    bBlowUp     = FALSE;
 
   /* Reads monochromator parameters and combines with them input parameters */
    monochrom.setMonochrPar();

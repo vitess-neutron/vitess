@@ -55,7 +55,7 @@ char *sInstrInfOut = "instrument.inf"; /* instrument file that is written ('inst
 char *sInstrInfIn  = "instrument.inf"; /* instrument file that is read (default 'instrument.inf') */
 
 McCompID _eModule=MCN_COMP_UNKNOWN;    /* ID of the module                */
-double   CmprFact;           /* Factor, by which the length is compressed for certain modules in the visualization */  
+double   BlowUp;             /* Factor, by which width and height are extended for visualization */  
 long     BufferSize;         /* size of the neutron input and output buffer */
 long     CompressedSize;     /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
 int      CompressionMode;    /* if > 0, data compression mode 1 (nodebug) 2(float) */
@@ -96,7 +96,7 @@ short    bTrace=TRUE,        /* criterion: write trace files             */
          bSepRate =TRUE,     /* criterion: write separate count rates    */
          bTest    =FALSE,    /* criterion: test run (without trajectories)   */
          bVisInstalled=FALSE,/* criterion: visualization routines installed */
-         bLengthCmpr=FALSE,  /* criterion: Length compression active in module, i.e. IAP is also compressed */
+         bBlowUp=FALSE,      /* criterion: blow up active in module, i.e. IAP is also blown up */
          bVisInstr=TRUE,     /* criterion: instrument visualization      */
          bVisTraj =FALSE;    /* criterion: visualization of trajectories */
 double   BlnLen=0.0,         /* [cm] length of beamline from source to origin of this module */
@@ -417,8 +417,8 @@ void Init(int argc, char **argv, const McCompID eModule)
   InputFileName  = NULL;
   OutputFileName = NULL;
   LogFileName    = NULL;
-  ParDir   = NULL;
-  CmprFact       = 1.0;
+  ParDir         = NULL;
+  BlowUp         = 1.0;
   BufferSize     = BUFFER_SIZE;
   OutNeutNum     = 0;
   TracePoints    = FALSE;
@@ -443,7 +443,7 @@ void Init(int argc, char **argv, const McCompID eModule)
       BufferSize = atol(arg);
       break;
     case 'b':                   // determine the length compression factor
-      CmprFact = atof(arg);
+      BlowUp = atof(arg);
       break;
 
     case 'c' :
@@ -1160,8 +1160,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
   RelPos[0] = pNeutron->Position[0]; 
   RelPos[1] = pNeutron->Position[1];
   RelPos[2] = pNeutron->Position[2];
-  if (bLengthCmpr)
-    RelPos[0] /= CmprFact;
+  // if (bLengthCmpr) RelPos[0] /= CmprFact;
   RotBackVector(RotMatrixS, RelPos);
   for (l=0; l<3; l++)
     Wwp.pos[l] = (BegPosS[l] + RelPos[l])/100.0;    // cm -> m

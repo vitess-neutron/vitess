@@ -132,20 +132,20 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
 /*********************************************/
 /* 'WriteOutput2D': Writes 2D monitor file   */
 /*********************************************/
-int WriteOutput2D(FILE* fMonitor, int eFormat, short bWeight, 
-                   int nBinsX, double* BinPosY, 
-                   int nBinsY, double* BinPosZ, 
-                   double** IntYZ, double** IntYZError, long** nTrajYZ) 
+int WriteOutput2D(FILE* fMonitor, VtFormat2D eFormat, short bWeight, 
+                   int nBinsX, double* BinPosX, 
+                   int nBinsY, double* BinPosY, 
+                   double** IntXY, double** IntXYError, long** nTrajXY) 
 {
   return WriteOutput2DB(fMonitor, eFormat, bWeight, 
-                        nBinsX, BinPosY, 
-                        nBinsY, BinPosZ, 1.0, IntYZ, IntYZError, nTrajYZ);
+                        nBinsX, BinPosX, 
+                        nBinsY, BinPosY, 1.0, IntXY, IntXYError, nTrajXY);
 }
   
-int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight, 
-                   int nBinsX, double* BinPosY, 
-                   int nBinsY, double* BinPosZ, double fNorm,
-                   double** IntYZ, double** IntYZError, long** nTrajYZ) 
+int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight, 
+                   int nBinsX, double* BinPosX, 
+                   int nBinsY, double* BinPosY, double fNorm,
+                   double** IntXY, double** IntXYError, long** nTrajXY) 
 {
   int    i=0, j=0, c=0;
   double x=0.0, y=0.0;
@@ -154,18 +154,18 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
   {
     case MATRIX:
       for (i = 0; i < nBinsX; i++)
-        fprintf(fMonitor, "%10.4f   ", (BinPosY[i] + BinPosY[i+1]) / 2.0);
+        fprintf(fMonitor, "%10.4f   ", (BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
       for (j=0; j < nBinsY; j++) 
       {
-        fprintf(fMonitor, "%10.4f  ", (BinPosZ[j]+BinPosZ[j+1]) / 2.0);
+        fprintf(fMonitor, "%10.4f  ", (BinPosY[j]+BinPosY[j+1]) / 2.0);
         for (i=0; i < nBinsX; i++)
         {
           if (bWeight==TRUE)
-            fprintf(fMonitor, "%12.5e ", fNorm*IntYZ[i][j]);
+            fprintf(fMonitor, "%12.5e ", fNorm*IntXY[i][j]);
           else
-            fprintf(fMonitor, "%7ld ", (long)(fNorm*nTrajYZ[i][j]));
+            fprintf(fMonitor, "%7ld ", (long)(fNorm*nTrajXY[i][j]));
         }
         Newline;
       }
@@ -174,11 +174,11 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
     case XYZ:
       for (j=0; j < nBinsY; j++) 
       {
-        y = (BinPosZ[j]+BinPosZ[j+1]) / 2.0;
+        y = (BinPosY[j]+BinPosY[j+1]) / 2.0;
         for (i=0; i < nBinsX; i++) 
         {
-          x = (BinPosY[i]+BinPosY[i+1]) / 2.0;
-          fprintf(fMonitor, "%10.4f %10.4f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntYZ[i][j], fNorm*IntYZError[i][j], (long)(fNorm*nTrajYZ[i][j]));
+          x = (BinPosX[i]+BinPosX[i+1]) / 2.0;
+          fprintf(fMonitor, "%10.4f %10.4f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntXY[i][j], fNorm*IntXYError[i][j], (long)(fNorm*nTrajXY[i][j]));
         }
         Newline;
       }
@@ -186,18 +186,18 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
 
     case MATR_CMPT: 
       for (i = 0; i < nBinsX; i++)
-        PrintFloat((BinPosY[i] + BinPosY[i+1]) / 2.0);
+        PrintFloat((BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
       for (j = 0; j < nBinsY; j++) 
       {
-        PrintItem("%5.3f ", (BinPosZ[j] + BinPosZ[j+1]) / 2.0);
+        PrintItem("%5.3f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
         {
           if (bWeight==TRUE)
-            PrintItem("%5.3E ", fNorm*IntYZ[i][j])
+            PrintItem("%5.3E ", fNorm*IntXY[i][j])
           else
-            PrintInt("%ld ", (long)(fNorm*nTrajYZ[i][j]))
+            PrintInt("%ld ", (long)(fNorm*nTrajXY[i][j]))
         }
         Newline;
       }
@@ -207,18 +207,18 @@ int WriteOutput2DB(FILE* fMonitor, int eFormat, short bWeight,
       for (j = 0; j < nBinsY; j++) 
       {
         double error, binc;
-        y = (BinPosZ[j]+BinPosZ[j+1]) / 2.0;
+        y = (BinPosY[j]+BinPosY[j+1]) / 2.0;
         for (i = 0; i < nBinsX; i++) 
         {
-          c = fNorm*nTrajYZ[i][j];
-          PrintFloat((BinPosY[i]+BinPosY[i+1]) / 2.0);
+          c = fNorm*nTrajXY[i][j];
+          PrintFloat((BinPosX[i]+BinPosX[i+1]) / 2.0);
           PrintFloat(y);
           if (c <= 0)
           { fputs(" 0 0 0\n", fMonitor);
           }
           else 
           {
-            binc  = fNorm*IntYZ[i][j];
+            binc  = fNorm*IntXY[i][j];
             error = binc <= 0 ? 0 : binc * sqrt(1./c);
             PrintItem(" %5.3E ", binc);
             PrintItem("%5.3E ", error);

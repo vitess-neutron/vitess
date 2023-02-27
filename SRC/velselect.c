@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
  
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = TRUE;
 
   DECLARE_ABORT
  
@@ -332,8 +332,8 @@ void SetGeometry(char* sColor)
 
     stGeometry.nHolCyls = 1;
     stGeometry.pHolCyl  = calloc(stGeometry.nHolCyls, sizeof(VtHolCyl));
-    stGeometry.pHolCyl[0].Radius      = RadiusO;
-    stGeometry.pHolCyl[0].InnerRadius = RadiusI;
+    stGeometry.pHolCyl[0].Radius      = BlowUp * RadiusO;
+    stGeometry.pHolCyl[0].InnerRadius = BlowUp * RadiusI;
     stGeometry.pHolCyl[0].Length      = Length;
     stGeometry.pHolCyl[0].vCntr[0]    = Length/2.;
     stGeometry.pHolCyl[0].vCntr[1]    = AxlePosY;
@@ -345,8 +345,8 @@ void SetGeometry(char* sColor)
     if (WndWidth < 100.0 && WndHeight < 100.0)
     { stGeometry.nRectangles = 2;
       stGeometry.pRectangle  = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
-      stGeometry.pRectangle[0].Width    = WndWidth;
-      stGeometry.pRectangle[0].Height   = WndHeight;
+      stGeometry.pRectangle[0].Width    = BlowUp * WndWidth;
+      stGeometry.pRectangle[0].Height   = BlowUp * WndHeight;
       stGeometry.pRectangle[0].rotAngle = 0.0;
       stGeometry.pRectangle[0].vCntr[0] = 0.0;
       stGeometry.pRectangle[0].vCntr[1] = 0.0;
@@ -354,8 +354,8 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle[0].vNormal[0] = 1.0;
       stGeometry.pRectangle[0].vNormal[1] = 0.0;
       stGeometry.pRectangle[0].vNormal[2] = 0.0;
-      stGeometry.pRectangle[1].Width    = WndWidth;
-      stGeometry.pRectangle[1].Height   = WndHeight;
+      stGeometry.pRectangle[1].Width    = BlowUp * WndWidth;
+      stGeometry.pRectangle[1].Height   = BlowUp * WndHeight;
       stGeometry.pRectangle[1].rotAngle = 0.0;
       stGeometry.pRectangle[1].vCntr[0] = Length;
       stGeometry.pRectangle[1].vCntr[1] = 0.0;

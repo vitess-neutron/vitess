@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);    // module specific initialization
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
  
   DECLARE_ABORT;
   

@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   EvalPar_ID2Txt(sOption, eKind); 
   fprintf(LogFilePtr, "Option: %s\n", sOption); 

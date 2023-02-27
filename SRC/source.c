@@ -54,6 +54,7 @@
 /* 1.28  Dez  2020  K. Lieutenant  bunches included                                          */
 /* 1.29  Jan  2021  K. Lieutenant  moderator data readable from input string                 */
 /* 1.30  Feb  2021  K. Lieutenant  trace functions from 'trace.c'                            */
+/* 1.31  Feb  2021  K. Lieutenant  checks of moderator input data                            */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -238,17 +239,28 @@ int main(int argc, char *argv[])
   _eModule = MCN_SOURCE;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.30");
+  PrintModuleName(_eModule, "1.31");
   SrcInit(argc, argv);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   /* reads moderator and ray-tracing data */
   nMod = ModInit(argc, argv);
   if (nMod==0)
     nMod = ReadModData(sModFileName);
+  switch (nMod)
+  {
+    case 0: Error ("Moderator data could not be read"); 
+            break;
+    case 1: if (stSrc.nSource==ESS && (iDataVsn == BUTTERFLY2_2015 || iDataVsn == BUTTERFLY1_2016))
+              Error("2nd set of moderator data missing! (ESS-Butterfly moderator is treated as a combination of thermal and cold moderator)");
+            break;
+    case 2: if (stSrc.nSource==ESS && (iDataVsn == BUTTERFLY2_2015 || iDataVsn == BUTTERFLY1_2016) && stMod[0].ModTemp < stMod[1].ModTemp)
+              Error("ESS-Butterfly moderator requires that moderator 1 is the thermal and moderator 2 is the cold moderator");
+            break;
+  }
   CompleteModData();
 
   LoadTraceFile();
@@ -746,10 +758,10 @@ int main(int argc, char *argv[])
       {
          /* defined by divergence */
          double y=Vran(), z=Vran();
-         if (y < 0.5) Phi   =                           -stTraj[imod].MaxDivY +  2 * y *(stTraj[imod].MaxDivY - stTraj[imod].MinDivY);
-         else         Phi   = 2 * stTraj[imod].MinDivY - stTraj[imod].MaxDivY +  2 * y *(stTraj[imod].MaxDivY - stTraj[imod].MinDivY);
-         if (z < 0.5) Theta =                           -stTraj[imod].MaxDivZ +  2 * z *(stTraj[imod].MaxDivZ - stTraj[imod].MinDivZ);
-         else         Theta = 2 * stTraj[imod].MinDivZ - stTraj[imod].MaxDivZ +  2 * z *(stTraj[imod].MaxDivZ - stTraj[imod].MinDivZ);
+         if (y < 0.5) Phi   =                            stTraj[imod].MaxDivY -  2 * y *(stTraj[imod].MaxDivY - stTraj[imod].MinDivY);
+         else         Phi   = 2 * stTraj[imod].MinDivY + stTraj[imod].MaxDivY -  2 * y *(stTraj[imod].MaxDivY - stTraj[imod].MinDivY);
+         if (z < 0.5) Theta =                            stTraj[imod].MaxDivZ -  2 * z *(stTraj[imod].MaxDivZ - stTraj[imod].MinDivZ);
+         else         Theta = 2 * stTraj[imod].MinDivZ + stTraj[imod].MaxDivZ -  2 * z *(stTraj[imod].MaxDivZ - stTraj[imod].MinDivZ);
          Input.Vector[0] = 1.0 / sqrt(1.0 + sq(tan(Theta)) + sq(tan(Phi)));
          Input.Vector[1] = Input.Vector[0] * tan(Phi);
          Input.Vector[2] = Input.Vector[0] * tan(Theta);
@@ -1193,14 +1205,9 @@ void SrcInit(int argc, char **argv)
   memcpy(&TofWnd, &Endpoint, sizeof(Endpoint));
   TofWnd.D = -TofWndDist;
 
-  // For ESS declination can be calculated from the beamport
-  if (pBeamline!=NULL)
-  { double theta;
-    if (Declination==0.0 && stSrc.nSource==ESS)
-    { theta       = CalcTheta(pBeamline);
-      Declination = CalcDecl (theta);
-    }
-  }
+  // For ESS-Butterfly1 declination can be calculated from the beamport
+  if (pBeamline!=NULL && stSrc.nSource==ESS && iDataVsn == BUTTERFLY1_2016 && Declination==0.0)
+    Declination = CalcDecl(CalcTheta(pBeamline));
 
   // normalise polarization direction
   PolNorm= sqrt(PolVecX*PolVecX + PolVecY*PolVecY + PolVecZ*PolVecZ);
@@ -1383,7 +1390,7 @@ void CompleteModData()
       stMod[1].CntrY = (Declination>0) ? (stMod[0].Width + stMod[1].Width) / 2.0       : -(stMod[0].Width + stMod[1].Width) / 2.0 ;
       stMod[0].Area  = stMod[0].Height * stMod[0].Width;        
       stMod[1].Area  = stMod[1].Height * stMod[1].Width;        
-      iM=2;
+      nMod=2;
 
       fprintf(LogFilePtr,"For ESS moderator description, both thermal and cold moderator are simulated and set to default values: \n"); 
       fprintf(LogFilePtr,"  thermal: at (0.0,%6.2f,0.0), %5.2f cm wide; colour: 1 \n", stMod[0].CntrY, stMod[0].Width);
@@ -1419,31 +1426,33 @@ void CompleteModData()
     // add second cold for the theta=0 view:
     if (iDataVsn==BUTTERFLY2_2015 && fabs(Declination) < 0.01)
     {
-      iM=3;
-      stMod[2].ModTemp = 50.0;
-      stMod[2].Width   =  stMod[1].Width;
-      stMod[2].CntrY   = -stMod[1].CntrY;
-      stMod[2].CntrX   = 0.0;
-      stMod[2].CntrZ   = 0.0;
-      stMod[2].nColour = 2;
-      stMod[2].Height  = stMod[0].Height;
-      stMod[2].Area    = stMod[2].Height * stMod[2].Width; 
+      nMod = 3;
+      stMod[2].nColour    =  2;
+      stMod[2].ModTemp    = 50.0;
+      stMod[2].CntrX      =  0.0;
+      stMod[2].CntrZ      =  0.0;
+      stMod[2].CntrY      =-stMod[1].CntrY;
+      stMod[2].Width      = stMod[1].Width;
+      stMod[2].Height     = stMod[1].Height;
+      stMod[2].PfmcFact   = stMod[1].PfmcFact;
+      stMod[2].nBackground= stMod[1].nBackground;
+
+      stMod[2].Area       = stMod[2].Height * stMod[2].Width; 
         if (iDataVsn==BUTTERFLY1_2016) stMod[2].Area *= cos(Declination*M_PI/180.0);
-      stMod[2].bCircle   = FALSE;
-      stMod[2].Diameter = 0.0;
+      stMod[2].bCircle    = FALSE;
+      stMod[2].Diameter   = 0.0;
       stMod[2].DistModWnd = WindowDist-stMod[2].CntrX;
-      stMod[2].PfmcFact   = stMod[2].PfmcFact;
 
       CopyTrajRange(&stTraj[0], &stTraj[2]);
 
       fprintf(LogFilePtr,"3rd moderator was added because of 90 deg position.\n");
     }
 	
-  // set automatic color option
-  if (  iM==1 && stMod[0].nColour==0
-     || iM==2 && stMod[0].nColour==0 && stMod[1].nColour==0
-     || iM==3 && stMod[0].nColour==0 && stMod[1].nColour==0 && stMod[2].nColour==0) 
-    ColorByLmbd=TRUE;
+    // set automatic color option
+    if (nMod==1 && stMod[0].nColour==0
+     || nMod==2 && stMod[0].nColour==0 && stMod[1].nColour==0
+     || nMod==3 && stMod[0].nColour==0 && stMod[1].nColour==0 && stMod[2].nColour==0) 
+      ColorByLmbd=TRUE;
   }
 
   return;
@@ -1484,39 +1493,39 @@ void SetGeometry(char* sColor)
     for (m=0; m < nMod; m++)
     { 
       if (stMod[m].bCircle)
-      { stGeometry.pCircle[kc].vCntr[0]   = stMod[m].CntrX/CmprFact;
+      { stGeometry.pCircle[kc].vCntr[0]   = stMod[m].CntrX;
         stGeometry.pCircle[kc].vCntr[1]   = stMod[m].CntrY;
         stGeometry.pCircle[kc].vCntr[2]   = stMod[m].CntrZ;
         stGeometry.pCircle[kc].vNormal[0] = dDecCos;
         stGeometry.pCircle[kc].vNormal[1] = dDecSin;
         stGeometry.pCircle[kc].vNormal[2] = 0.0;
-        stGeometry.pCircle[kc].Radius     = stMod[m].Diameter/2.0;
+        stGeometry.pCircle[kc].Radius     = BlowUp * stMod[m].Diameter/2.0;
         stGeometry.pCircle[kc].AngleBeg   =   0.0;
         stGeometry.pCircle[kc].AngleEnd   = 359.99;
         kc++;
       }
       else
-      { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].CntrX/CmprFact;
+      { stGeometry.pRectangle[ks].vCntr[0]   = stMod[m].CntrX;
         stGeometry.pRectangle[ks].vCntr[1]   = stMod[m].CntrY;
         stGeometry.pRectangle[ks].vCntr[2]   = stMod[m].CntrZ;
         stGeometry.pRectangle[ks].vNormal[0] = dDecCos;
         stGeometry.pRectangle[ks].vNormal[1] = dDecSin;
         stGeometry.pRectangle[ks].vNormal[2] = 0.0;
-        stGeometry.pRectangle[ks].Width      = stMod[m].Width;
-        stGeometry.pRectangle[ks].Height     = stMod[m].Height;
+        stGeometry.pRectangle[ks].Width      = BlowUp * stMod[m].Width;
+        stGeometry.pRectangle[ks].Height     = BlowUp * stMod[m].Height;
         ks++;
       }
     }
 
     // Propagation window
-    stGeometry.pRectangle[ks].vCntr[0]   = WindowDist/CmprFact;
+    stGeometry.pRectangle[ks].vCntr[0]   = WindowDist;
     stGeometry.pRectangle[ks].vCntr[1]   = 0.0;
     stGeometry.pRectangle[ks].vCntr[2]   = 0.0;
     stGeometry.pRectangle[ks].vNormal[0] = 1.0;
     stGeometry.pRectangle[ks].vNormal[1] = 0.0;
     stGeometry.pRectangle[ks].vNormal[2] = 0.0;
-    stGeometry.pRectangle[ks].Width      = WindowWidth;
-    stGeometry.pRectangle[ks].Height     = WindowHeight;
+    stGeometry.pRectangle[ks].Width      = BlowUp * WindowWidth;
+    stGeometry.pRectangle[ks].Height     = BlowUp * WindowHeight;
   }
 }
 

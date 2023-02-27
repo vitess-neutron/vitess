@@ -28,7 +28,7 @@
 
 
 /**************************/
-/** Functions prototypes **/
+/** Prototypes           **/
 /**************************/
 void  OwnInit(int argc, char *argv[]);              // Reads input parameters and sets global parameters
 void  OwnCleanup();                                 // Does module specific cleanup
@@ -51,23 +51,23 @@ VectorType TranslOut;                  // -R -E -G  [cm]  position of the new or
 double     AnglOutHoriz=0.0,           // -h       [deg]  horizontal angle of the output frame, relative to input orientation
            AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation    
 
-VectorType DimSM,                         // file   [cm]  size of the rectangular polariser
-           guide_field,                   // file   [Oe]  guide field
-           analysis_dir;                  // file    [-]  analysis direction
-int        NoCh=0;                        // file    [-]  number of channels 
-double     WallTh=0.0;                    // file   [cm]  thickness of the blades dividing the channels
+VectorType DimSM,                      //    file   [cm]  size of the rectangular polariser
+           guide_field,                //    file   [Oe]  guide field
+           analysis_dir;               //    file    [-]  analysis direction
+int        NoCh=0;                     //    file    [-]  number of channels 
+double     WallTh=0.0;                 //    file   [cm]  thickness of the blades dividing the channels
 
 // Data read from file
-double     rupdata  [FLD_SIZE],           // file    [-]  reflectivity data for spin-up neutrons
-           rdowndata[FLD_SIZE];           // file    [-]  reflectivity data for spin-down neutrons
+double     rupdata  [FLD_SIZE],        //    file    [-]  reflectivity data for spin-up neutrons
+           rdowndata[FLD_SIZE];        //    file    [-]  reflectivity data for spin-down neutrons
 
 // Variables determined from input parameters or trajectory data
-double     RotMatrixSM [3][3],            //         [-]  rotation matrix to tranform into the frame of the polarizer
-           RotMatrixOut[3][3],            //         [-]  rotation matrix to tranform into the output frame  
-           RotMatrixField[3][3],          //         [-]  rotation matrix to tranform into the frame of the guide field
-           RotMatrixAnalysis[3][3],       //         [-]  rotation matrix to tranform into the frame of the quantization direction
-           WidthCh=0.0,                   //        [cm]  channel width and 
-           ProbCutoff=0.0;                //         [-]  = wei_min: minimal accepted weight of the neutron trajectory
+double     RotMatrixSM [3][3],         //            [-]  rotation matrix to tranform into the frame of the polarizer
+           RotMatrixOut[3][3],         //            [-]  rotation matrix to tranform into the output frame  
+           RotMatrixField[3][3],       //            [-]  rotation matrix to tranform into the frame of the guide field
+           RotMatrixAnalysis[3][3],    //            [-]  rotation matrix to tranform into the frame of the quantization direction
+           WidthCh=0.0,                //           [cm]  channel width and 
+           ProbCutoff=0.0;             //            [-]  = wei_min: minimal accepted weight of the neutron trajectory
 
 
 /******************************/
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = FALSE;
 
   InitVector(Pos);    InitVector(Dir);
   InitVector(SpinVector);

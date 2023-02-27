@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* Load file S(Q), if needed;  try the name from paramter input first, then the name from file */
   if (eFunction == VT_FR_FILE)

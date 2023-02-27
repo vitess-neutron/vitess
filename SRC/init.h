@@ -18,7 +18,7 @@ extern "C" {
 extern char*    sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
 extern McCompID _eModule;       /* ID of the module                */
-extern double   CmprFact;       /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
+extern double   BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
 extern long     BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron* InputNeutrons;  /* input neutron Buffer */
 extern Neutron* OutputNeutrons; /* output neutron buffer */
@@ -48,7 +48,7 @@ extern long     idum;           /* random number specific */
 extern short    bOldFrame,      /* criterion: new co-ordinate system set for current module */
                 bTest,          /* criterion: test run (without trajectories)   */
                 bVisInstalled,  /* criterion: visualization routines installed  */
-                bLengthCmpr,    /* criterion: module length compressed by 'CmprFact' in visualization  */
+                bBlowUp,        /* criterion: width and height extended by factor 'BlowUp' in visualization  */
                 bVisTraj,       /* criterion: visualization of trajectories     */
                 bVisInstr;      /* criterion: instrument visualization          */
 

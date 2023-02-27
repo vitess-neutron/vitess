@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = TRUE;
 
   // local variables
   for(ind_x = 1; ind_x < FIELD_SIZE_FL; ind_x++) 

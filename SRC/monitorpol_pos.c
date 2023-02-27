@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   // initializes arrays
   for(dy=0; dy < nbiny+1; dy++)

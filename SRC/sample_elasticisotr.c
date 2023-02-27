@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* Reads sample parameters and combines with input parameters */
   InitSample  (&stSample);

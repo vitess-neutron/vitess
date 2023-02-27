@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-  bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   /* Reading chopper file, if no windows are defined in the parameter input */
   nWndInp = WndInit(argc, argv);
@@ -537,10 +537,10 @@ void SetGeometry(char* sColor)
     // stGeometry.pLine    = (VtLine*) calloc(2*nWindows, sizeof(VtLine));
     // stGeometry.nLines   = 2*nWindows; 
 
-    stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D/CmprFact;
-    stGeometry.pCircle[0].vCntr[1]   = CenterY;
-    stGeometry.pCircle[0].vCntr[2]   = CenterZ;
-    stGeometry.pCircle[0].Radius     = stWnd[0].Bottom;
+    stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D;
+    stGeometry.pCircle[0].vCntr[1]   = BlowUp * CenterY;
+    stGeometry.pCircle[0].vCntr[2]   = BlowUp * CenterZ;
+    stGeometry.pCircle[0].Radius     = BlowUp * stWnd[0].Bottom;
     stGeometry.pCircle[0].AngleBeg   =   0.01;
     stGeometry.pCircle[0].AngleEnd   = 359.99;
     stGeometry.pCircle[0].vNormal[0] =   1.0;
@@ -552,12 +552,12 @@ void SetGeometry(char* sColor)
       phi_wnd = 180.0/M_PI * (stWnd[k].Pos + ChopperInitialOffset + Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
       phi_red = RedAngle(phi_wnd, dir);
 
-      stGeometry.pCircle[k+1].Radius     = Radius;
+      stGeometry.pCircle[k+1].Radius     = BlowUp * Radius;
       stGeometry.pCircle[k+1].AngleBeg   = phi_red + 0.5*180.0/M_PI*stWnd[k].Opening;
       stGeometry.pCircle[k+1].AngleEnd   = phi_red - 0.5*180.0/M_PI*stWnd[k].Opening;
-      stGeometry.pCircle[k+1].vCntr[0]   = -Endpoint.D/CmprFact;
-      stGeometry.pCircle[k+1].vCntr[1]   = CenterY;
-      stGeometry.pCircle[k+1].vCntr[2]   = CenterZ;
+      stGeometry.pCircle[k+1].vCntr[0]   = -Endpoint.D;
+      stGeometry.pCircle[k+1].vCntr[1]   = BlowUp * CenterY;
+      stGeometry.pCircle[k+1].vCntr[2]   = BlowUp * CenterZ;
       stGeometry.pCircle[k+1].vNormal[0] = 1.0;
       stGeometry.pCircle[k+1].vNormal[1] = 0.0;
       stGeometry.pCircle[k+1].vNormal[2] = 0.0;

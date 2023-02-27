@@ -478,43 +478,48 @@
   <br><br>
   <h2><font size="+1"> VITESS Module 'grid' to simulate Propagation to a Multi-Aperture Collimator </font></h2>
   <p>
-    The module <b>grid</b> simulates propagation of neutrons from the origin (x=0) to a multi-aperture collimator of circular or rectangular outer shape.
-    This grid collimator represents a plate with multiple rectangular windows transmitting the neutrons.
-    The size of the circular or rectangular plate and the distance from the former module to the plate along the x-axis have to be given by the user.
-    (The plate must be perpendicular to the x-direction.)  <br />
-    The size and center position of each hole (= window) is described in a parameter file, which has to be created by the user.
-    The collimator plate can be shifted horizontally and/or vertically.
-    The vertical shifting is useful to simulate a special 'gravitational monochromator'.
-    The vertical shift can be calculated automatically by the module, if the parameters belonging to 'Options gravity monochromator' are set.
-    Deviations of some parameters from ideal values can be simulated (see 'Deviation of parameters').
-    Non-ideal absorption in the plate can also be treated. The transmission is calculated then as:
+    The module <b>grid</b> simulates the propagation of neutrons from the origin (x=0, previous module, e.g. the previous grid item)
+    to a multi-aperture collimator of rectangular or circular holes and outer shape.
+    This grid collimator represents a disk with multiple rectangular or circular apertures transmitting neutrons.
+    The size of the circular or rectangular disk and the distance from the former module to the current disk (along the x-axis) have to be given by the user.
+    (The disk must be perpendicular to the x-direction.)  <br />
+    The size and center position of each aperture is defined in a parameter file, which has to be created by the user (see example below).
+    The collimator disk can be shifted horizontally and/or vertically. The vertical shifting is useful to consider gravitational effects.<br />
+    Deviations of some parameters from ideal values can be simulated (see table below).
   </p>
-    &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*pathlen)&ensp;<br />
   <p>
+    The vertical shift can be calculated automatically by the module, if the parameters belonging to 'Gravity Option' are set.
+    At the same time, the ideal sizes of the aperatures are calculated from the length of the grid system and the distance between the beginning of the grid system and the current grid.
+    In this case, the file describing the first grid item is sufficient for the whole grid system; otherwise a file has to be written for each grid item.
+  </p>
+  <p>
+    Non-ideal absorption in the plate can also be treated. The transmission is calculated then as:<br /> <br />
+    &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*pathlen)&ensp; <br /> <br /> 
     where 'pathlen' is the length of the path of the neutron in the given material, (which is calculated automatically from the thickness of the material).
     The x-coordinates are reset to 0 (as usual) at the end of the treatment in this module.
-  <p>
+  </p>
 
   <h4>Parameter file defining the holes</h4>
   <p>
     The user has to create a file describing the windows of the grid system. The number of lines is equal to the number of holes in the multiple collimator grid.
     The format of each line is like this: <br />
-    1st column: (y-coordinate): horizontal position of the center of the hole <br />
-    2nd column: (z-coordinate): vertical position of the center of the hole <br />
-    3rd column: half width = half height of the hole
+    1st column: (y-coordinate): horizontal position of the center of the aperture <br />
+    2nd column: (z-coordinate): vertical position of the center of the aperture <br />
+    3rd column: width = height of the hole
+  </p>
   <p>
     <b>Example:</b>
-  <p>
-    4 quadratic holes of 1 x 1 cm² in a distance of 1.2 cm (horizontally and vertically) would look like that: <br />
+    <br>
+    4 quadratic holes of 1 x 1 cm<sup>2</sup> in a distance of 1.2 cm (horizontally and vertically) would look like that: <br />
 <pre>
-#   y     z   halfwidth
+#   y     z   width
 #----------------------
-  -0.6  -0.6   0.5  
-   0.6  -0.6   0.5
-  -0.6   0.6   0.5 
-   0.6   0.6   0.5
+  -0.6  -0.6   1.0  
+   0.6  -0.6   1.0
+  -0.6   0.6   1.0 
+   0.6   0.6   1.0
 </pre>
-  <p>
+  </p>
 
   <h4>Parameters for module 'grid'</h4>
   <table cellpadding="2" cellspacing="2" border="1" width="100%">
@@ -527,59 +532,20 @@
       </tr>
 
       <tr>
-        <td valign="top">Holes description</td>
-        <td valign="top">File that characterizes the positions and sizes of the holes of a grid</td>
+        <td valign="top">holes description</td>
+        <td valign="top">file that characterizes the positions and sizes of the apertures of the grid (see table above)</td>
         <td valign="top"> - </td>
         <td valign="top">-I </td>
       </tr>
 
       <tr>
-        <td valign="top">distance orig  - grid<br>[cm]</td>
-        <td valign="top">distance from origin to grid along the beam direction (x-axis) </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-D </td>
-      </tr>
-
-      <tr>
-        <td valign="top">thickness of material<br>[cm]</td>
-        <td valign="top">Thickness of the material used for the grid </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-t</td>
-      </tr>
-
-      <tr>
-        <td valign="top">outer hor size or radius<br>[cm]</td>
-        <td valign="top">
-          for circular outer shape   : radius of the grid <br />
-          for rectangular outer shape: width of the grid
-        </td>
-        <td valign="top">&gt;0</td>
-        <td valign="top">-a</td>
-      </tr>
-
-      <tr>
-        <td valign="top">outer vert size<br>[cm]</td>
-        <td valign="top">for rectangular outer shape: height of the grid  </td>
-        <td valign="top">&gt;0</td>
-        <td valign="top">-b</td>
-      </tr>
-
-      <tr>
-        <td valign="top">horizontal/vertical shift<br>[cm]</td>
-        <td valign="top">horizontal/vertical shift of the grid  </td>
-        <td valign="top">any</td>
-        <td valign="top">-d<br />-e</td>
-      </tr>
-
-      <tr>
         <td valign="top">shape of the grid</td>
-        <td valign="top">shape of the collimator plate containing the holes</td>
+        <td valign="top">shape of the holes and the collimator disk containing the holes</td>
         <td valign="top">'circular'<br />'square'</td>
         <td valign="top">-N</td>
       </tr>
-
       <tr>
-        <td valign="top">crosstalk between channels tracking</td>
+        <td valign="top">crosstalk analysis</td>
         <td valign="top">
           'yes': analysis of cross-talk between channels within the grid system activated <br />
           'no' : no analysis of cross-talk
@@ -589,19 +555,53 @@
       </tr>
 
       <tr>
+        <td valign="top">distance to grid<br>[cm]</td>
+        <td valign="top">distance from the previous module, e.g. the previous item of the grid system, to the current item (along the beam direction, i.e. x-axis) </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-D </td>
+      </tr>
+      <tr>
+        <td valign="top">horizontal/vertical shift<br>[cm]</td>
+        <td valign="top">horizontal/vertical shift of the collimation disk </td>
+        <td valign="top">any</td>
+        <td valign="top">-d<br />-e</td>
+      </tr>
+
+      <tr>
+        <td valign="top">thickness of the disk<br>[cm]</td>
+        <td valign="top">thickness of the material used for the collimation disk</td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-t</td>
+      </tr>
+      <tr>
+        <td valign="top">size of the grid disk<br>[cm]</td>
+        <td valign="top">
+          for circular outer shape   : radius of the disk <br />
+          for rectangular outer shape: width  of the d�sk
+        </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-a</td>
+      </tr>
+      <tr>
+        <td valign="top">vert. size of the disk<br>[cm]</td>
+        <td valign="top">for rectangular outer shape: height of the disk  </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-b</td>
+      </tr>
+
+      <tr>
         <td valign="top">material description file</td>
         <td valign="top">
           for 'material from file':  <br />
-          File which characterizes the transmission of the (outer) material of the grid plate.
+          File that characterizes the transmission of the material of the collimation disk
         </td>
         <td valign="top"> - </td>
         <td valign="top">-C </td>
       </tr>
-
       <tr>
         <td valign="top">material</td>
         <td valign="top">
-          material of the grid plate: <br />
+          material of the grid disk: <br />
           'from file' needs a 'material description file' as input <br />
           in all other cases the necessary data are in the program
         </td>
@@ -610,68 +610,64 @@
       </tr>
 
       <tr>
-        <td valign="top">Deviation: horizontal/vertical shift<br>[cm]</td>
+        <td valign="top">Deviation: distance to grid<br>[cm]</td>
         <td valign="top">
-          random deviation of horizontal/vertical shift of the grid <br />
-          a linear distribution within [shift-dev_shift, shift+dev_shift] is assumed
-        </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-y<br />-q</td>
-      </tr>
-
-      <tr>
-        <td valign="top">Deviation: radius of window<br>[cm]</td>
-        <td valign="top">
-          random deviation of the size of the apertures in the grid plate  <br />
-          a linear distribution within [radius-dev_radius, radius+dev_radius] is assumed
-        </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-h<br />-H</td>
-      </tr>
-
-      <tr>
-        <td valign="top">Deviation: center of window<br>[cm]</td>
-        <td valign="top">
-          random deviation of the center position of the windows (in the plate) <br />
-          a linear distribution within [pos-dev_pos, po+dev_pos] is assumed
-        </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-h<br />-H</td>
-      </tr>
-
-      <tr>
-        <td valign="top">Deviation: distance orig  - grid<br>[cm]</td>
-        <td valign="top">
-          random deviation from the defined distance between origin and grid  <br />
-          a linear distribution within [distance-dev_dist, distance+dev_dist] is assumed
+          random deviation <i>&Delta;d</i> from the defined distance <i>d</i> between the previous module (e.g. the previous grid item) and the current grid item <br />
+          a linear distribution within [d-&Delta;d, d+&Delta;d] is assumed
         </td>
         <td valign="top">&gt;=0</td>
         <td valign="top"> -X </td>
       </tr>
+      <tr>
+        <td valign="top">Deviation: horizontal/vertical position<br>[cm]</td>
+        <td valign="top">
+          random deviation <i>&Delta;X</i> of the horizontal/vertical position <i>X</i> of the collimator disk<br />
+          a linear distribution within [X-&Delta;X, X+&Delta;X] is assumed
+        </td>
+        <td valign="top">&ge;0</td>
+        <td valign="top">-y<br />-q</td>
+      </tr>
 
       <tr>
-        <td valign="top">Grav.Monochr.: calc dist orig  - grid<br>[cm] </td>
+        <td valign="top">Deviation: size of the window<br>[cm]</td>
         <td valign="top">
-          distance from the end of previous module, usually the previous window        <br />
-          used to calculate the ideal shift of the grid plate for a certain wavelength
+          random deviation <i>&Delta;s</i> of the size <i>s</i> of the individual apertures in the collimation disk <br />
+          a linear distribution within [s-&Delta;s, s+&Delta;s] is assumed
+        </td>
+        <td valign="top">&ge;0</td>
+        <td valign="top">-h<br />-H</td>
+      </tr>
+      <tr>
+        <td valign="top">Deviation: center of window<br>[cm]</td>
+        <td valign="top">
+          random deviation <i>&Delta;x</i> of the center position <i>x</i> of the individual apertures in the collimation disk <br />
+          a linear distribution within [x-&Delta;x, x+&Delta;x] is assumed
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-h<br />-H</td>
+      </tr>
+
+      <tr>
+        <td valign="top">Pos. in grid system<br>[cm] </td>
+        <td valign="top">
+          distance from the first item in the grid system to the current item <br />
+          used to calculate the ideal position of this grid item and the sizes of its apertures
         </td>
         <td valign="top">&gt;0</td>
         <td valign="top"> -M  </td>
       </tr>
-
       <tr>
-        <td valign="top">Grav.Monochr.: calc total dist <br>[cm]        </td>
+        <td valign="top">Half length of grid system<br>[cm]        </td>
         <td valign="top">
-          distance from the beginning of the grid system  <br />
-          used to calculate the ideal shift of the grid plate for a certain wavelength
+          half the distance from the beginning of the grid system to the focal point, usually the detector <br />
+          used to calculate the ideal position of this grid item and the sizes of its apertures
         </td>
         <td valign="top">&gt;0</td>
         <td valign="top"> -m  </td>
       </tr>
-
       <tr>
-        <td valign="top">Grav.Monochr.: Grav.Monoch. wavelength<br>[Å]            </td>
-        <td valign="top">wavelength for which the grid system should be optimized </td>
+        <td valign="top">standard wavelength<br>[Å]            </td>
+        <td valign="top">wavelength for which the grid system is calculated </td>
         <td valign="top">&gt;0</td>
         <td valign="top"> -n  </td>
       </tr>

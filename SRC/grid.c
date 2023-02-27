@@ -18,12 +18,14 @@
 /* 1.1   Oct 2004  S. Manoshin	  Add and correct the deviation of grid system	              */
 /*			                    	    DistanceDev, ShiftHorDev, ShiftVerDev, Pos and Size  hole   */
 /* 1.2   Aug 2019  K. Lieutenant  tidy up and visualization                                   */
+/* 1.2a  Sep 2022  K. Lieutenant  visualization corrected and minor improvements              */
 /**********************************************************************************************/
 
 #include "init.h"
 #include "softabort.h"
 #include "intersection.h"
 #include "bender_inter_data.h"
+#include "convert.h"
 #include "message.h"
 
 
@@ -41,7 +43,7 @@ void  SetGeometry (char* sColor, int nHoles);  // Fills the structure stGeometry
 /******************************/
 long    eKeyMaterial=6;                   // Material of grid element: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 - Bor10,      
                                           //                         4 - Eu,        5 - Silicon,    6 - ideal absorber
-long    eKeyShape=0;                      // Form of grid elements 0 - square form; 1 - circle form 
+VtShape eKeyShape=VT_NO_SHAPE;            // Form of grid elements 0 - square form; 1 - circle form 
 long	  eKeyColorTrack=0;                 // Activate color tracking, default no (0)
 
 char   *sCollFileName=NULL;               // file describing the grid geometry 
@@ -59,7 +61,7 @@ double  WAVS[MAX_MU],                     // lambda and µ-values and thickness o
 double  Thickness=0.1;                    // Thickness of the grid elements
 long    nValF=0;                          // number of attenuation values in file (describing absorption in grid material)
 
-double  winradius [1001],                 // arrays of hole positions and sizes
+double  winsize   [1001],                 // arrays of hole positions and sizes
         ywincenter[1001], 
         zwincenter[1001]; 
 double  OuterRadius=0.0;                  // outer radius for spherical holes
@@ -104,7 +106,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_GRID;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.2a");
   OwnInit(argc, argv);
   MsgInit();
   EvalInput();
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   memset(&Output, '\0', sizeof(Neutron));
      
@@ -175,7 +177,7 @@ int main(int argc, char *argv[])
         key_abs = 0;		  // not absorbed
 
         // shape of grid elements: 0 - square form
-        if (eKeyShape==0) 
+        if (eKeyShape==VT_SQUARE) 
         {
           if ((-0.5*OuterA < NewPositionY)&&(0.5*OuterA > NewPositionY)&&(-0.5*OuterB < NewPositionZ)&&(0.5*OuterB > NewPositionZ))
           {
@@ -183,10 +185,10 @@ int main(int argc, char *argv[])
             key_abs = 1;            // absorbed
             for(j=1; j<=NumberOfHoles; j++) 
             {
-              if ((-0.5*winradius[j] < (NewPositionY-ywincenter[j]))&&   // here the radius means half of the side length of a square
-                  ( 0.5*winradius[j] > (NewPositionY-ywincenter[j]))&&
-                  (-0.5*winradius[j] < (NewPositionZ-zwincenter[j]))&&
-                  ( 0.5*winradius[j] > (NewPositionZ-zwincenter[j]))) 
+              if ((-0.5*winsize[j] < (NewPositionY-ywincenter[j]))&&   // here the radius means half of the side length of a square
+                  ( 0.5*winsize[j] > (NewPositionY-ywincenter[j]))&&
+                  (-0.5*winsize[j] < (NewPositionZ-zwincenter[j]))&&
+                  ( 0.5*winsize[j] > (NewPositionZ-zwincenter[j]))) 
               {
                 key_abs = 0 ;       // not absorbed
                 current_hole = j ;
@@ -205,7 +207,7 @@ int main(int argc, char *argv[])
             {
               dist_squared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) +
                              (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-              if (dist_squared <= winradius[j]*winradius[j]) 
+              if (dist_squared <= winsize[j]*winsize[j]) 
               {
                 key_abs = 0;      // not absorbed
                 current_hole = j ;
@@ -320,7 +322,7 @@ void   OwnInit   (int argc, char *argv[])
           break;	    	    
 	    
         case 'N':
-          eKeyShape = atol(&argv[i][2]); /* Form of grid elements 0 - square form; 1 - circle form */
+          eKeyShape = (VtShape) atoi(&argv[i][2]); /* Form of grid elements 0 - square form; 1 - circle form */
           break;    
         case 'K':
           eKeyColorTrack = atol(&argv[i][2]); 
@@ -379,7 +381,7 @@ void   OwnInit   (int argc, char *argv[])
 /********************************************************/
 void  EvalInput()
 {
-  char    sLine[CHAR_BUF_SMALL]="";
+  char    sLine[CHAR_BUF_SMALL]="", sShape[11]="";
   FILE   *trans_file=NULL;   // file describing the transmission of the grid material 
 	long    i;              // index of arrays for wavelength and attenuation 
   double  TimeOF=0.0;        // TOF of neutron from origin to window
@@ -412,12 +414,11 @@ void  EvalInput()
     exit(-1);
   }
 	
-  if (Thickness <= 0.0)
-  {
-    fprintf(LogFilePtr,"Thickness of the grid elements <= 0.0 !!!");
-    exit(-1);
-  }
-	
+  if (Thickness < 0.0)
+    Error("Thickness of the disk < 0.0");
+  if (Thickness == 0.0 && eKeyMaterial!=6)
+    Error("Thickness of the disk can only be zero for ideal absorber");
+
   if (DistanceDev < 0.0)
   {
     fprintf(LogFilePtr,"Deviation of distance must be positive!!! \n");
@@ -467,14 +468,11 @@ void  EvalInput()
     eKeyMaterial = 6 ;
   }    
     
-  if (eKeyShape == 0)
-  { fprintf(LogFilePtr,"Form of grid elements 0 - square form\n"); 
-  } 	
-  else if (eKeyShape == 1)
-  {
-    fprintf(LogFilePtr,"Form of grid elements 1 - circle form\n"); 
+  Shape_ID2Txt(sShape, eKeyShape);
+  fprintf(LogFilePtr, "Form of the grid elements: %s\n", sShape); 
+
+  if (eKeyShape == VT_CIRCLE)
     OuterRadius = OuterA;
-  }	
 
   fprintf(LogFilePtr,"Window frame material: ");
 
@@ -485,7 +483,7 @@ void  EvalInput()
     case 3:  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
     case 4:  fprintf(LogFilePtr, "Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
     case 5:  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
-    case 6:  fprintf(LogFilePtr, "Ideal absorber \n");                           break;
+    case 6:  fprintf(LogFilePtr, "Ideal absorber \n");                            break;
     default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
   }
 
@@ -617,13 +615,13 @@ short ReadGridFile()
           /* reducing the grid sizes according the converging to the detector */
           ywincenter[i] = ((rdate[0])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev); 
           zwincenter[i] = ((rdate[1])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          winradius [i] = ((rdate[2])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo( 0.0, 1.0)*WinRadiusDev);   
+          winsize   [i] = ((rdate[2])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo( 0.0, 1.0)*WinRadiusDev);   
         }
         else
         {	
           ywincenter[i] = rdate[0] + (MonteCarlo(-1.0, 1.0)*WinCenterDev); 
           zwincenter[i] = rdate[1] + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          winradius [i] = rdate[2] + (MonteCarlo (0.0, 1.0)*WinRadiusDev);	    
+          winsize   [i] = rdate[2] + (MonteCarlo (0.0, 1.0)*WinRadiusDev);	    
         }	
       }
       nHoles = i;
@@ -649,6 +647,8 @@ short ReadGridFile()
 void  SetGeometry(char* sColor, int nHoles)
 {
   int j;
+  double InnerRadius=0.0,                   // sizes of the plate
+         InnerWidth=0.0, InnerHeight=0.0;         
 
   // Geometry data
   if (bVisInstr)
@@ -656,38 +656,49 @@ void  SetGeometry(char* sColor, int nHoles)
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
+
+    for (j=1; j <= nHoles; j++)
+    { 
+      if (eKeyShape==VT_CIRCLE)
+      { InnerRadius = fmax(InnerRadius, sqrt(sq(ywincenter[j]) + sq(zwincenter[j])) + winsize[j]);
+      }
+      else
+      { InnerWidth  = fmax(InnerWidth,  2.0*(ywincenter[j] + 0.5*winsize[j]));
+        InnerHeight = fmax(InnerHeight, 2.0*(zwincenter[j] + 0.5*winsize[j]));
+      }
+    }
    
-    if (eKeyShape==0)   // square 
+    if (eKeyShape==VT_SQUARE)   // square 
     {
       stGeometry.nHulls   = nHoles+1; 
       stGeometry.pHull    = calloc(nHoles+1,   sizeof(VtHull));
 
       // whole plate
-      stGeometry.pHull[0].WidthIn    = OuterA * 0.95;
-      stGeometry.pHull[0].WidthOut   = OuterA;
-      stGeometry.pHull[0].HeightIn   = OuterB * 0.95;
-      stGeometry.pHull[0].HeightOut  = OuterB;
-      stGeometry.pHull[0].Length     = Thickness/CmprFact;
-      stGeometry.pHull[0].vCntr[0]   = (Distance + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
+      stGeometry.pHull[0].WidthIn    = BlowUp * InnerWidth;
+      stGeometry.pHull[0].WidthOut   = BlowUp * OuterA;
+      stGeometry.pHull[0].HeightIn   = BlowUp * InnerHeight;
+      stGeometry.pHull[0].HeightOut  = BlowUp * OuterB;
+      stGeometry.pHull[0].Length     = Thickness;
+      stGeometry.pHull[0].vCntr[0]   = (Distance + stGeometry.pHull[0].Length/2.);
       stGeometry.pHull[0].vCntr[1]   = 0.0;
       stGeometry.pHull[0].vCntr[2]   = 0.0;
       stGeometry.pHull[0].vNormal[0] = 1.0;
       stGeometry.pHull[0].vNormal[1] = 0.0;
       stGeometry.pHull[0].vNormal[2] = 0.0;
 
-      for (j=0; j < nHoles; j++)
+      for (j=1; j<=nHoles; j++)
       {
-        stGeometry.pHull[0].WidthIn   = winradius[j];
-        stGeometry.pHull[0].WidthOut  = winradius[j] * 1.05;
-        stGeometry.pHull[0].HeightIn  = winradius[j];
-        stGeometry.pHull[0].HeightOut = winradius[j] * 1.05;
-        stGeometry.pHull[0].Length    = Thickness/CmprFact;
-        stGeometry.pHull[0].vCntr[0]  = (Distance + stGeometry.pHull[0].Length/2.)/CmprFact;
-        stGeometry.pHull[0].vCntr[1]  = ywincenter[j];
-        stGeometry.pHull[0].vCntr[2]  = zwincenter[j];
-        stGeometry.pHull[0].vNormal[0]= 1.0;
-        stGeometry.pHull[0].vNormal[1]= 0.0;
-        stGeometry.pHull[0].vNormal[2]= 0.0;
+        stGeometry.pHull[j].WidthIn   = BlowUp * winsize[j];
+        stGeometry.pHull[j].WidthOut  = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHull[j].HeightIn  = BlowUp * winsize[j];
+        stGeometry.pHull[j].HeightOut = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHull[j].Length    = Thickness;
+        stGeometry.pHull[j].vCntr[0]  = (Distance + stGeometry.pHull[0].Length/2.);
+        stGeometry.pHull[j].vCntr[1]  = ywincenter[j];
+        stGeometry.pHull[j].vCntr[2]  = zwincenter[j];
+        stGeometry.pHull[j].vNormal[0]= 1.0;
+        stGeometry.pHull[j].vNormal[1]= 0.0;
+        stGeometry.pHull[j].vNormal[2]= 0.0;
       }
     }
     else
@@ -696,27 +707,27 @@ void  SetGeometry(char* sColor, int nHoles)
       stGeometry.pHolCyl  = calloc(nHoles+1, sizeof(VtHolCyl));
 
       // whole plate
-      stGeometry.pHolCyl[0].Radius      = OuterRadius;
-      stGeometry.pHolCyl[0].InnerRadius = OuterRadius * 0.95;
-      stGeometry.pHolCyl[0].Length      = Thickness/CmprFact;
-      stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
+      stGeometry.pHolCyl[0].Radius      = BlowUp * OuterRadius;
+      stGeometry.pHolCyl[0].InnerRadius = BlowUp * InnerRadius;
+      stGeometry.pHolCyl[0].Length      = Thickness;
+      stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.);
       stGeometry.pHolCyl[0].vCntr[1]    = 0.0;
       stGeometry.pHolCyl[0].vCntr[2]    = 0.0;
       stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
       stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
       stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
 
-      for (j=0; j < nHoles; j++)
+      for (j=1; j<=nHoles; j++)
       { 
-        stGeometry.pHolCyl[0].InnerRadius = winradius[j];
-        stGeometry.pHolCyl[0].Radius      = winradius[j] * 1.05;
-        stGeometry.pHolCyl[0].Length      = Thickness/CmprFact;
-        stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
-        stGeometry.pHolCyl[0].vCntr[1]    = ywincenter[j];
-        stGeometry.pHolCyl[0].vCntr[2]    = zwincenter[j];
-        stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
-        stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
-        stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+        stGeometry.pHolCyl[j].InnerRadius = BlowUp * winsize[j];
+        stGeometry.pHolCyl[j].Radius      = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHolCyl[j].Length      = Thickness;
+        stGeometry.pHolCyl[j].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.);
+        stGeometry.pHolCyl[j].vCntr[1]    = BlowUp * ywincenter[j];
+        stGeometry.pHolCyl[j].vCntr[2]    = BlowUp * zwincenter[j];
+        stGeometry.pHolCyl[j].vSymAxis[0] = 1.0;
+        stGeometry.pHolCyl[j].vSymAxis[1] = 0.0;
+        stGeometry.pHolCyl[j].vSymAxis[2] = 0.0;
       }
     }
   }

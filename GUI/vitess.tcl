@@ -790,6 +790,7 @@ set read_inESET {
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {}
   {inrep int 1  {"repetition" "Number of times that the events are read." "" R} ge1}
+  {maxEv float "" {"max events" "Maximum number of events which are read." "" M}}
   {ri_fact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory from the MCNP simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {in_surf int ""  {"surface\nID" "Only for MCNP6: If a surface ID (greater -1) is given, only neutrons with this ID are read from file." "" s} ge-1}
   {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
@@ -811,12 +812,16 @@ set writeoutESET {
   {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
   {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
-  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6} {1 2 3 5}}
+  {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
   {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
   {wofact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
   {outsurf int ""  {"surface\nID" "Only for MCNP6: Number written as surface ID to the output file" "" s}}
+  {}
+  {"SSW output reference file" header}
+  {rfname pareditablefile "" {
+      "SSW\nreference file" "Specifies the name of the SSW reference file to determine the file format." "" r} "" ""}
   {}
   {"VITESS ASCII output selection" header}
   {outCol select Columns {"Columns" "Columns for output" "" c} {{ID 1} {Trace 1} {color 1} {TOF 1} {lambda 1} {counts 1} {Position 1} {Direction 1} {Spin 1}}}
@@ -959,6 +964,7 @@ proc windowCheckErr {{app _}} {
   return 0
 }
 
+
 ### Spacewindow Multiple
 ###
 set a {
@@ -983,12 +989,14 @@ set spaceESET {
   {spc_abs float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section for 1.798 Ang [1/cm]" "" m} ge0}
 }
 
+
 ### Slit
 set slitESET {
   {dist_slit float "" {"distance\nto slit [cm]" "distance from the origin to slit (along the x-axis)" "" d} ge0}
   {width_slit float "" {"width [cm]" "width of the rectangular slit [cm]" "" W} ge0}
   {hite_slit  float "" {"height [cm]" "height of the rectangular slit [cm]" "" H} ge0}
 }
+
 
 ### Beamstop
 set beamstopESET {
@@ -1002,51 +1010,56 @@ set beamstopESET {
   {hite_stop  float "" {"height [cm]" "height of a rectangular beamstop [cm]" "" H} ge0}
 }
 
+
 ### Grid
 ###
 set gridESET {
   {"Geometry description" header}
+  {gridfile pareditablefile "" {"grid\ndescription" "File that characterizes the positions and sizes of the apertures on the collimation disk" "" I}}
+  {}
+  {circ radio square {"shape of\nthe grid" "Shape of the holes and the collimator disk containing the holes" "" N} {circular square} {1 0}}
+  {keycolor radio no {"Crosstalk\nanalysis" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
+  {}
   {dist float 0 {
-    "distance orig\n<->grid [cm]" "Distance to grid along x-direction  [cm]" "" D} ge0}
-  {circ radio circular {"shape of a grid" "" "" N} {circular square} {1 0}}
-  {imathick float 0 {"thickness of\nmaterial [cm]" "Thickness of material, which was used for the grid." "" t} ge0}
-  {outera float 5.0 {
-    "Outer hor size\nor radius  [cm]" "Outer horizontal size or radius in case of circular shape of the grid" "" a} gt0}
-  {outerb float 5.0 {
-    "Outer vert size\n[cm]" "Outer vertical size of the grid" "" b} gt0}
-  {shiftver float 0.0 {
-    "vertical shift [cm]" "vertical shift of the grid, [cm]" "" e} ge0}
+    "distance to\ngrid [cm]" "Distance from the previous module, e.g. the previous item of the grid system, to the current item" "" D} ge0}
   {shifthor float 0.0 {
-    "horizontal shift [cm]" "horizontal shift of the grid, [cm]" "" d} ge0}
-  {gridfile pareditablefile "" {"Holes description" "File which characterizes the positions and sizes of holes of a grid" "" I}}
-  {keycolor radio no {"Crosstalk between\nchannels tracking" "Activate if you want to find the crosstalk between channels of grid system" "" K} {no yes} {0 1}}
+    "horizontal\nshift [cm]" "horizontal shift of the collimation disk" "" d} ge0}
+  {shiftver float 0.0 {
+    "vertical\nshift [cm]" "vertical shift of the collimation disk, e.g. to consider the gravitation" "" e} ge0}
+  {}
+  {imathick float 0 {"thickness of\nthe disk [cm]" "Thickness of the material used for the collimation disk" "" t} ge0}
+  {outera float 5.0 {
+    "size of\nthe disk [cm]" "For circular outer shape   : radius of the disk\nfor rectangular outer shape: width  of the disk" "" a} gt0}
+  {outerb float 5.0 {
+    "vert. size of\nthe disk [cm]" "For rectangular outer shape: height of the disk" "" b} gt0}
+  {}
 
-  {"Material of a grid" header}
+  {"Material of the grid disk" header}
   {mat radio "ideal absorber" {material "Choose material, which was used to produce the collimator" "" c}
   {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}
   {0 1 2 3 4 5 6}}
-  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the outer material of a grid." "" C}}
+  {matfile pareditablefile "" {"material\ndescription file" "File which characterizes the transmission of the material of the collimation disk." "" C}}
 
   {"Deviation of parameters" header}
-  {shiftverdev float 0.0 {
-    "vertical shift +-[cm]" "Deviation of vertical shift of the grid, +-[cm]" "" q} ge0}
-  {shifthordev float 0.0 {
-    "horizontal shift +-[cm]" "Deviation of horizontal shift of the grid, +-[cm]" "" y} ge0}
-  {winraddev float 0.0 {
-    "radius of window +-[cm]" "Deviation of the radius of window, +-[cm]" "" h} ge0}
-  {wincenterdev float 0.0 {
-    "center of window +-[cm]" "Deviation of the center position of window, +-[cm]" "" H} ge0}
   {distancedev float 0.0 {
-    "distance orig\n<->grid +-[cm]" "Deviation of the distance orig-grid,  +-[cm]" "" X} ge0}
+    "distance to\ngrid [cm]" "Deviation DelX of the distance from the previous module to the grid, range [X-DelX, X+DelX]" "" X} ge0}
+  {shifthordev float 0.0 {
+    "horizontal\nshift [cm]" "Deviation DelZ of the horizontal position of the collimator disk\nrange [Y-DelZ, Y+DelZ]" "" y} ge0}
+  {shiftverdev float 0.0 {
+    "vertical\nshift [cm]" "Deviation DelY of the vertical position of the collimator disk\nrange [Y-DelY, Y+DelY]" "" q} ge0}
+  {}
+  {winraddev float 0.0 {
+    "size of\nwindow [cm]" "Deviation of the size DelS of the individual apertures in the collimation disk\nrange [S-DelS, S+DelS]" "" h} ge0}
+  {wincenterdev float 0.0 {
+    "center of\nwindow [cm]" "Deviation DelX of the individual apertures in the collimation disk\nrange [X-DelX, X+DelX]" "" H} ge0}
 
-  {"Options Gravity Monochromator" header}
+  {"Option: calculation of position and sizes of the grid system" header}
   {distabs float 0.0 {
-    "calc dist orig\n<->grid [cm]" "Distance for calculation to grid along x-direction  [cm]" "" M} ge0}
+    "Pos. in grid\nsystem [cm]" "Distance from the first item in the grid system to the current item" "" M} ge0}
   {disttotal float 0.0 {
-    "calc total dist [cm]" "Total distance for calculation of grid system along x-direction  [cm]" "" m} ge0}
+    "Half length of\ngrid system [cm]" "Half the distance from the beginning of the grid system to the focal point, usually the detector" "" m} ge0}
   {wavemon float 0.0 {
-    "Monoch Wavelength [A]" "Wavelength of monochromatisation [Ang]" "" n} ge0}
-
+    "standard\nwavelength [A]" "Wavelength for which the grid system is calculated" "" n} ge0}
 }
 
 
@@ -1764,7 +1777,7 @@ set crs_newESET {
   {height float 1 {"height cryst.\nelement [cm]" "Height of the rectangular crystal element."} gt0 "" 1}
   {dspacing float 3.135 {"d-spacing [A]"
     "Lattice distance corresponding to a reflection from a (h,k,l) crystal plane."} gt0 "" 1}
-  {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge1 "" 1}
+  {reford int 1 {"order of\nreflection" "Order of reflection according to Bragg's Law."} ge-1 "" 1}
   {"Output frame" header}
   {oframedef radio "standard frame generation"
     {"output frame definition" "Choice if the output frame should be generated 'automatically' or 'by hand'\nAutomatically means along the reflected beam if no transmission is treated. By hand means according the following 5 entries.\nFor rotating monochromators it has to be set by hand.\nFor details see Help|Modules M|ma_focus_new."}
@@ -3600,10 +3613,11 @@ set eval_elast2ESET {
   {psel radio "Scattering angle [deg] and wavelength [A]" {
       "evaluation\nparameter" "choose the parameter your interested in for your evaluation" "" k} {"Scattering angle [deg] and wavelength [Ang]" "Scattering angle [deg] and TOF [ms]"} {1 2}}
   {}
+  {ofmt radio "no" {"Matrix" "Choose between 'x y z' format and matrix format for the output ." "" F} {"no" "yes"} {0 1}}
   {psort radio "Intensity" {
-    "Sort by" "choose the sort order in your data file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
+    "Sort by" "choose the sort order in your x y z output file" "" s} {"Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"} {0 1 -1 2 -2 3 -3 4 -4}}
   {evzero radio "no" {
-    "Zeros" "Choose if zero entries shall be written to disk. Writing those results is considerably slower and may result in much bigger files. Memory consumption may increase significantly." "" f} {"no" "yes"} {0 1}}
+    "Zeros" "Choose if zero entries shall be written to your x y z output file. Writing those results is considerably slower and may result in much bigger files. Memory consumption may increase significantly." "" f} {"no" "yes"} {0 1}}
   {}
   {sfile mon2editablefile elast2.eva {
     "spectra\nfile" "the spectra file: it contains the scattering results" "" o}}

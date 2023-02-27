@@ -54,7 +54,7 @@ Monochromator::Monochromator()
 
   eFrame    = VT_NO_FRAME;   // no decision about user defined frame  
   d_spacing = 0.0; 
-  OrderRefl = 0;
+  nOrderRefl= 0;
 
   for (int i = 0; i < 3; i++)
   {
@@ -241,7 +241,7 @@ void Monochromator::OwnInit(int argc, char* argv[])
           d_spacing = atof(&argv[1][2]);
           break;
         case 'N':
-          OrderRefl = atoi(&argv[1][2]);
+          nOrderRefl = atoi(&argv[1][2]);
           break;
 
         // Output frame 
@@ -382,7 +382,7 @@ void Monochromator::setMonochrPar()
       if (DimCE0[1]==0.0 && width !=0.0) DimCE0[1]= width ;
       if (DimCE0[2]==0.0 && height!=0.0) DimCE0[2]= height;
       if (d_spacing==0.0 && dsp   !=0.0) d_spacing = dsp  ;
-      if (OrderRefl==0   && n_ord !=0  ) OrderRefl = n_ord;
+      if (nOrderRefl==0  && n_ord !=0  ) nOrderRefl= n_ord;
       if (Transl[0]==0.0 && out_x !=0.0) Transl[0]= out_x ;
       if (Transl[1]==0.0 && out_y !=0.0) Transl[1]= out_y ;
       if (Transl[2]==0.0 && out_z !=0.0) Transl[2]= out_z ;
@@ -410,7 +410,7 @@ void Monochromator::setMonochrPar()
       CopyVector(DimCE0, DimCE);
 
       /* print parameters to log file for verification */
-      fprintf(LogFilePtr, "  order of reflection = %d,   d-spacing =%9.4f\n",   OrderRefl, d_spacing);
+      fprintf(LogFilePtr, "  order of reflection = %d,   d-spacing =%9.4f\n",   nOrderRefl, d_spacing);
       fprintf(LogFilePtr, "  main position X, Y, Z    : %9.4f, %9.4f, %9.4f\n", PosCE0[0], PosCE0[1], PosCE0[2]);
       fprintf(LogFilePtr, "  thickness, width, height : %9.4f, %9.4f, %9.4f\n", DimCE0[0], DimCE0[1], DimCE0[2]);
       fprintf(LogFilePtr, "  Bragg angles   (hor,vert): %9.4f, %9.4f\n",        BraggHor,  BraggVert);
@@ -579,8 +579,8 @@ void Monochromator::setGeometry(char* sColor)
 	    stGeometry.nCuboids = 1; 
 	
 	    stGeometry.pCuboid[0].Length    = DimCE0[0]; 
-	    stGeometry.pCuboid[0].Width     = DimCE0[1];
-	    stGeometry.pCuboid[0].Height    = DimCE0[2];
+	    stGeometry.pCuboid[0].Width     = BlowUp * DimCE0[1];
+	    stGeometry.pCuboid[0].Height    = BlowUp * DimCE0[2];
 	    stGeometry.pCuboid[0].vCntr[0]  = PosCE0[0];
 	    stGeometry.pCuboid[0].vCntr[1]  = PosCE0[1];
 	    stGeometry.pCuboid[0].vCntr[2]  = PosCE0[2];
@@ -609,8 +609,8 @@ void Monochromator::setGeometry(char* sColor)
 	        RotBackVector(RotMatrixCurrCE , normal);
 
 	        stGeometry.pCuboid[k].Length    = DimCurrCE[0]; 
-	        stGeometry.pCuboid[k].Width     = DimCurrCE[1];
-	        stGeometry.pCuboid[k].Height    = DimCurrCE[2];
+	        stGeometry.pCuboid[k].Width     = BlowUp * DimCurrCE[1];
+	        stGeometry.pCuboid[k].Height    = BlowUp * DimCurrCE[2];
 	        stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
 	        stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
 	        stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
@@ -879,8 +879,10 @@ void  Monochromator::DetermineMosaicAngle(double angleDiff, double mosaicAngle1,
 void Monochromator::processNeutron(Neutron* pNeutIn)
 {
   bool    bHit=false;
-  int     iRep=0,          // index of repetition
-          kHit=0, lHit=0;  // (expected) index of column and row of CE that is hit
+  int     iRep=0,             // index of repetition
+          kHit=0, lHit=0,     // (expected) index of column and row of CE that is hit
+          iOrd=0,             // index of order 
+          minOrd=0, maxOrd=0; // min. and max. order treated
   double  DelX=0.0, V0=0.0, Vx=0.0, Path=0.0;
   Neutron NeutInCE,     // data of the incoming neutron          (in the frame of the refl. plane
           NeutCES,      // data of the neutron on the CE surface (in the frame of the module)
@@ -961,70 +963,82 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
       RotVector    (RotMatrixBragg, NeutPlCE.Vector);   // Vector is now in the frame of the Bragg refl. plane
     }
 
-    for (iRep=0; iRep < nRepete; iRep++) 
+    // if order=-1 is given all orders are treated, loop is left if order gets too high 
+    if (nOrderRefl==ANY_COLOR)
+    { minOrd = 1;
+      maxOrd = 100;
+    }
+    else
+    { minOrd = nOrderRefl;
+      maxOrd = nOrderRefl;
+    }
+
+    for (iOrd=minOrd; iOrd <= maxOrd; iOrd++) 
     {
-      double arg,                   // N lambda / 2 d
-             pi2_bragg,             // pi/2 - Bragg angle   
-             d_rnd = d_spacing;     // randomly varied d-spacing within given range
-
-      // fills structure for reflected neutron
-      CopyNeutron(&NeutPlCE, &NeutRefl);
-      // if (iRep > 0) ChangeNeutronID(&NeutRefl);
-      NeutRefl.Probability /= nRepete;
-
-       /* random d-spacing */     
-      if (d_fwhm > 0) 
+      for (iRep=0; iRep < nRepete; iRep++) 
       {
-        if (d_spr_option==LORENTZIAN) d_rnd = RandomLorentzian(d_spacing, d_fwhm) ;
-        if (d_spr_option==GAUSSIAN)   d_rnd = DistrGauss(d_spacing, d_sigma);  
-      }
+        double arg,                   // N lambda / 2 d
+               pi2_bragg,             // pi/2 - Bragg angle   
+               d_rnd = d_spacing;     // randomly varied d-spacing within given range
+
+        // fills structure for reflected neutron
+        CopyNeutron(&NeutPlCE, &NeutRefl);
+        // if (iRep > 0) ChangeNeutronID(&NeutRefl);
+        NeutRefl.Probability /= nRepete;
+
+         /* random d-spacing */     
+        if (d_fwhm > 0) 
+        {
+          if (d_spr_option==LORENTZIAN) d_rnd = RandomLorentzian(d_spacing, d_fwhm) ;
+          if (d_spr_option==GAUSSIAN)   d_rnd = DistrGauss(d_spacing, d_sigma);  
+        }
                  
-      /* computes reflection angle corresponding to random d-spacindg */
-      arg = NeutRefl.Wavelength * OrderRefl / 2. / d_rnd ;
-      if (arg >= 1.05) return;   /* wavelength too large */
-      if (arg >= 1.00) continue; /* wavelength for the chosen d-spacing too large */
-      pi2_bragg = acos(arg) ;
+        /* computes reflection angle corresponding to random d-spacindg */
+        arg = NeutRefl.Wavelength * iOrd / 2. / d_rnd ;
+        if (arg >= 1.05) return;   /* wavelength too large */
+        if (arg >= 1.00) continue; /* wavelength for the chosen d-spacing too large */
+        pi2_bragg = acos(arg) ;
     
-      // Here the reflection probability is calculated
-      // and the neutron trajectory changes direction after reflection from a mosaic element.
-      NeutRefl.Probability *= calcReflProbAndDir(NeutRefl.Vector, NeutPlCE.Vector, pi2_bragg);   
-      if (NeutRefl.Probability < wei_min) 
-        continue;
+        // Here the reflection probability is calculated
+        // and the neutron trajectory changes direction after reflection from a mosaic element.
+        NeutRefl.Probability *= calcReflProbAndDir(NeutRefl.Vector, NeutPlCE.Vector, pi2_bragg);   
+        if (NeutRefl.Probability < wei_min) 
+          continue;
 
-      // subtract reflection probability from transmission probability   	
-      if (bTransm==TRUE)
-        NeutTrans.Probability -= NeutRefl.Probability;
+        // subtract reflection probability from transmission probability   	
+        if (bTransm==TRUE)
+          NeutTrans.Probability -= NeutRefl.Probability;
 
-      /* computes neutron variables in the initial frame */
-      RotBackVector(RotMatrixBragg, NeutRefl.Vector);
-      RotBackVector(RotMatrixCE,    NeutRefl.Position) ;
-      AddVector    (NeutRefl.Position, PosCE) ;
+        /* computes neutron variables in the initial frame */
+        RotBackVector(RotMatrixBragg, NeutRefl.Vector);
+        RotBackVector(RotMatrixCE,    NeutRefl.Position) ;
+        AddVector    (NeutRefl.Position, PosCE) ;
 
-      /* makes depth correction to get back to the old frame for Depth != 0 */
-      RotBackVector(RotMatrixCE, Depth) ;
-      AddVector    (NeutRefl.Position, Depth) ;
+        /* makes depth correction to get back to the old frame for Depth != 0 */
+        RotBackVector(RotMatrixCE, Depth) ;
+        AddVector    (NeutRefl.Position, Depth) ;
 
-      // fills structure for reflected neutron in output frame
-      CopyNeutron(&NeutRefl, &NeutReflOut);
+        // fills structure for reflected neutron in output frame
+        CopyNeutron(&NeutRefl, &NeutReflOut);
 
-      // trajectory visualization 
-      if (iRep == 0 && Prob > wei_min)
-      {
-        NeutRefl.Probability *= nRepete;
-        WriteIAP(&NeutRefl, VT_REFLECTED); 
+        // trajectory visualization 
+        if (iRep == 0 && Prob > wei_min)
+        {
+          NeutRefl.Probability *= nRepete;
+          WriteIAP(&NeutRefl, VT_REFLECTED); 
+        }
+
+        // Rotate the Vectors to the output frame 
+        if (bTransm==FALSE)
+        { SubVector(NeutReflOut.Position, Transl);
+          RotVector(RotMatrixOut, NeutReflOut.Position);
+          RotVector(RotMatrixOut, NeutReflOut.Vector);
+        }
+
+        /* writes output binary file */
+        WriteNeutron(&NeutReflOut) ;
+        NumOut++ ;
       }
-
-      // Rotate the Vectors to the output frame 
-      if (bTransm==FALSE)
-      { SubVector(NeutReflOut.Position, Transl);
-        RotVector(RotMatrixOut, NeutReflOut.Position);
-        RotVector(RotMatrixOut, NeutReflOut.Vector);
-      }
-
-      /* writes output binary file */
-      WriteNeutron(&NeutReflOut) ;
-      NumOut++ ;
-
     } // end of loop over reflected neutrons
 
     // transmitted neutron

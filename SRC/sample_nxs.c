@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = TRUE;
 
   fprintf(LogFilePtr, "NXS parameter file: %s\n", pNxsFileName);
 

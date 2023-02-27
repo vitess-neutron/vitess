@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
   
 	DECLARE_ABORT
 
@@ -660,10 +660,10 @@ void SetGeometry(char* sColor)
       stGeometry.pHolCyl = calloc(1, sizeof(VtHolCyl));
       stGeometry.nHolCyls = 1;
 
-      stGeometry.pHolCyl[0].InnerRadius = winradius;
-      stGeometry.pHolCyl[0].Radius      = winradius * 3.0;
-      stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI)/CmprFact;
-      stGeometry.pHolCyl[0].vCntr[0]    = (DistMove + stGeometry.pHolCyl[0].Length/2.)/CmprFact;
+      stGeometry.pHolCyl[0].InnerRadius = BlowUp * winradius;
+      stGeometry.pHolCyl[0].Radius      = BlowUp * winradius * 3.0;
+      stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI);
+      stGeometry.pHolCyl[0].vCntr[0]    = (DistMove + stGeometry.pHolCyl[0].Length/2.);
       stGeometry.pHolCyl[0].vCntr[1]    = ywincenter;
       stGeometry.pHolCyl[0].vCntr[2]    = zwincenter;
       stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
@@ -678,12 +678,12 @@ void SetGeometry(char* sColor)
       stGeometry.pHull = calloc(1, sizeof(VtHull));
       stGeometry.nHulls = 1; 
 
-      stGeometry.pHull[0].Length    = Max(ThicknessO, ThicknessI)/CmprFact;
-      stGeometry.pHull[0].WidthIn   = (widthmax  - widthmin);
-      stGeometry.pHull[0].WidthOut  = (widthmax  - widthmin) * 3.0;
-      stGeometry.pHull[0].HeightIn  = (heightmax - heightmin);
-      stGeometry.pHull[0].HeightOut = (heightmax - heightmin) * 3.0;
-      stGeometry.pHull[0].vCntr[0]  = (DistMove + stGeometry.pHull[0].Length/2.)/CmprFact;
+      stGeometry.pHull[0].Length    = Max(ThicknessO, ThicknessI);
+      stGeometry.pHull[0].WidthIn   = BlowUp * (widthmax  - widthmin);
+      stGeometry.pHull[0].WidthOut  = BlowUp * (widthmax  - widthmin) * 3.0;
+      stGeometry.pHull[0].HeightIn  = BlowUp * (heightmax - heightmin);
+      stGeometry.pHull[0].HeightOut = BlowUp * (heightmax - heightmin) * 3.0;
+      stGeometry.pHull[0].vCntr[0]  = (DistMove + stGeometry.pHull[0].Length/2.);
       stGeometry.pHull[0].vCntr[1]  = ywincenter;
       stGeometry.pHull[0].vCntr[2]  = zwincenter;
       stGeometry.pHull[0].vNormal[0]= 1.0;

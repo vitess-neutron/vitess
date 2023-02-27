@@ -7,6 +7,7 @@
 /* 1.1  May 2013  A. Houben      Sample-Detector distance                                    */
 /* 1.2  Aug 2014  A. Houben      Allow output of zero entries in output (helps with MatLab)  */
 /* 1.3  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
+/* 1.4  Sep 2022  K. Lieutenant  2D output                                                   */
 /*********************************************************************************************/
 // --Z1 --U1.0e-25 --G1 --B10000 --PC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector --LC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/vpipelog15 -k1 -oC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.eva -OC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.int -IC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca.inf -n146 -m100 -x0 -X180 -y1.0 -Y4.8 -p1 -w1 -c0 -l4351.4 -T0 -e-1.e10 -E1.e10 -C0 --Fno_file --fC:\Users\ahouben\Documents\POWTEX\Berechnung\mcPOWplot\090113-11_FS_Detector\detector.out -s3 -L80 -D1 -f1
 
@@ -20,11 +21,12 @@
 #include "general.h"
 #include "matrix.h"
 #include "softabort.h"
+#include "mon2_header.h"
 
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define INDEX(x,y) (x*(nbinsY)+y)
+#define INDEX(x,y) (x*(nBinsY)+y)
 
 typedef struct
 {
@@ -45,14 +47,15 @@ VtEvalComb eComb    =VT_NO_ECOMB;// -k  [-]  1=scattering angle and wavelength; 
 VtEvalSort eSortMode=VT_NO_SORT; // -s  [-]  0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse 
 VtAngleSel eScatAng =VT_NO_SEL;  // -D  [-]  TRUE : position information is used (needs more information)  FALSE: direction cosine is used 
 	     
-short  bFullMatrix=FALSE,    // -f  [-]  TRUE: Also lines with zero intensity/counts are written; needs more memory  FALSE: Default: only write non-zero lines 
+short  bFmt2D     =FALSE,    // -F  [-]  TRUE : output file is a 2D matrix     FALSE: x y z format
+       bFullMatrix=FALSE,    // -f  [-]  TRUE: Also lines with zero intensity/counts are written; needs more memory  FALSE: Default: only write non-zero lines 
        bProbActive=TRUE,     // -p  [-]  bProbActive=1 means probabilities activated, else neutron weight is set to 1.0 
        bExclCount =FALSE,    // -c  [-]  TRUE : only neutrons complying with the evaluate requirements are written to the output 
        bTOF       =FALSE,    // -w  [-]  TRUE : time of flight instrument 
-       bTOFcorr   =FALSE;    // -t  [-]  TRUE : correct time to shortest detector distance 
+       bTOFcorr   =FALSE;    // -t  [-]  TRUE : correct time to shortest detector distance
        
-long   nbinsX=0,             // -n  [-]  number of bins in X 
-       nbinsY=0;             // -m  [-]  number of bins in Y 
+long   nBinsX=0,             // -n  [-]  number of bins in X 
+       nBinsY=0;             // -m  [-]  number of bins in Y 
 int    nColour = ANY_COLOR,  // -C  [-]  colour necessary for the trajectory to be regarded  colour -1 means: all trajectories are regarded 
        minColor= ANY_COLOR,  // -a  [-]  neutrons with color >= minColour used  colour -1 means: all trajectories are regarded 
        maxColor= ANY_COLOR;  // -A  [-]  neutrons with color <= maxColour used,  colour -1 means: all trajectories are regarded
@@ -82,19 +85,21 @@ short  bLogBinningX=FALSE,   //          flag: TRUE : binning on x-axis increase
        bLogBinningY=FALSE,   //          flag: TRUE : binning on y-axis increases exponentially    FALSE: linear binning  
        bDeadSpot   =FALSE;   //          flag: TRUE : deadspot exists 
 
+VtFormat2D eFormat=NO_2D_FORMAT;
+
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void CreateBin(BINDATA **bin, double *bpostX, double *bpostY);
-int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
-void OwnInit   (int argc, char *argv[]);
-int comparebinX(const void *a, const void *b);
-int comparebinY(const void *a, const void *b);
-int comparebinInt(const void *a, const void *b);
-int comparebinCnt(const void *a, const void *b);
-int (*comparebin)(const void *a, const void *b) = &comparebinInt;  /*eSortMode=3*/
-int sign(int v);                           /* 1 for >= 0; else -1 */
+void CreateBin    (BINDATA **bin, double *bpostX, double *bpostY);       // Creates the 2D bin beginning at the given (X,Y) edge
+int  FindIndexXY  (double *Xval, double *Yval, int *iBinX, int *iBinY);  // Returns the index of the bin, in which the point (X,Y) lies
+void OwnInit      (int argc, char *argv[]);                              // Reads input parameters and sets global variables                             
+int  comparebinX  (const void *a, const void *b);                        // checks if a->X is larger b->X and returns 1 or -1 depending of sort mode 
+int  comparebinY  (const void *a, const void *b);                        // checks if a->Y is larger b->Y and returns 1 or -1 depending of sort mode 
+int  comparebinInt(const void *a, const void *b);                        // checks if a->Int is larger b->Int and returns 1 or -1 depending of sort mode 
+int  comparebinCnt(const void *a, const void *b);                        // checks if a->Cnt is larger b->Cnt and returns 1 or -1 depending of sort mode 
+int  (*comparebin)(const void *a, const void *b) = &comparebinInt;       // eSortMode=3
+int  sign(int v);                                                        // 1 for >= 0; else -1
 
 
 /******************************/
@@ -110,25 +115,25 @@ int main(int argc, char *argv[])
          TwoTheta=0.0, TwoThetaDeg=0.0, Phi=0.0, 
          prob=0.0;
 
-  int ibinX = 0, ibinY = 0, ibinXY = 0;
+  int iBinX = 0, iBinY = 0, iBinXY = 0;
 
   // reading of input data and initilisation
   // ---------------------------------------
   _eModule=MCN_EVAL2_ELAST;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.9a");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
-	bpostX = malloc(sizeof(double)*nbinsX+1);
-	memset(bpostX, 0, sizeof(double)*nbinsX+1);
-	bpostY = malloc(sizeof(double)*nbinsY+1);
-	memset(bpostY, 0, sizeof(double)*nbinsY+1);
-	bin = malloc(sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
-	memset(bin, 0, sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
+	bpostX = malloc(sizeof(double)*nBinsX+1);
+	memset(bpostX, 0, sizeof(double)*nBinsX+1);
+	bpostY = malloc(sizeof(double)*nBinsY+1);
+	memset(bpostY, 0, sizeof(double)*nBinsY+1);
+	bin = malloc(sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
+	memset(bin, 0, sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
 
 	/* Construction of the Bins */
 	/* logarithmic */
@@ -137,21 +142,21 @@ int main(int argc, char *argv[])
 		//bpostX[0] = (double *)malloc(sizeof(double));
 		bpostX[0] = MinX;
 
-		for(ibinX = 1; bpostX[ibinX-1] < MaxX; ibinX++)
+		for(iBinX = 1; bpostX[iBinX-1] < MaxX; iBinX++)
 		{
-			//bpostX[ibinX] = (double *)malloc(sizeof(double));
-			bpostX[ibinX] = (bpostX[ibinX-1]) * (1.0 + dLogProzX/100.);
+			//bpostX[iBinX] = (double *)malloc(sizeof(double));
+			bpostX[iBinX] = (bpostX[iBinX-1]) * (1.0 + dLogProzX/100.);
 		}
-		nbinsX = ibinX-1;
+		nBinsX = iBinX-1;
 	}
 	/* linear */
 	else
-	{	bintervalX = (MaxX - MinX) / (double)nbinsX;
+	{	bintervalX = (MaxX - MinX) / (double)nBinsX;
 		
-		for(ibinX = 0; ibinX<=nbinsX; ibinX++)
+		for(iBinX = 0; iBinX<=nBinsX; iBinX++)
 		{
-			//bpostX[ibinX] = (double *)malloc(sizeof(double));
-			bpostX[ibinX] = MinX + bintervalX*ibinX;
+			//bpostX[iBinX] = (double *)malloc(sizeof(double));
+			bpostX[iBinX] = MinX + bintervalX*iBinX;
 		}
 	}
 	/* logarithmic */
@@ -160,31 +165,31 @@ int main(int argc, char *argv[])
 		//bpostY[0] = (double *)malloc(sizeof(double));
 		bpostY[0] = MinY;
 
-		for(ibinY = 1; bpostY[ibinY-1] < MaxY; ibinY++)
+		for(iBinY = 1; bpostY[iBinY-1] < MaxY; iBinY++)
 		{
-			//bpostY[ibinY] = (double *)malloc(sizeof(double));
-			bpostY[ibinY] = (bpostY[ibinY-1]) * (1.0 + dLogProzY/100.);
+			//bpostY[iBinY] = (double *)malloc(sizeof(double));
+			bpostY[iBinY] = (bpostY[iBinY-1]) * (1.0 + dLogProzY/100.);
 		}
-		nbinsY = ibinY-1;
+		nBinsY = iBinY-1;
 	}
 	/* linear */
 	else
-	{	bintervalY = (MaxY - MinY) / (double)nbinsY;
+	{	bintervalY = (MaxY - MinY) / (double)nBinsY;
 		
-		for(ibinY = 0; ibinY<=nbinsY; ibinY++)
+		for(iBinY = 0; iBinY<=nBinsY; iBinY++)
 		{
-			//bpostY[ibinY] = (double *)malloc(sizeof(double));
-			bpostY[ibinY] = MinY + bintervalY*ibinY;
+			//bpostY[iBinY] = (double *)malloc(sizeof(double));
+			bpostY[iBinY] = MinY + bintervalY*iBinY;
 		}
 	}
 
   if (bFullMatrix) {
-    for(ibinX = 0; ibinX<(nbinsX); ibinX++)
+    for(iBinX = 0; iBinX<(nBinsX); iBinX++)
 		{	
-			for(ibinY = 0; ibinY<(nbinsY); ibinY++)
+			for(iBinY = 0; iBinY<(nBinsY); iBinY++)
 			{
-				ibinXY = INDEX(ibinX, ibinY);
-				CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
+				iBinXY = INDEX(iBinX, iBinY);
+				CreateBin(&bin[iBinXY], &bpostX[iBinX], &bpostY[iBinY]);
 			}
 		}
   }
@@ -246,20 +251,20 @@ int main(int argc, char *argv[])
 			  switch (eComb) 
 			  {
 				  case VT_SCA_LMBD:	// scattering angle + lambda
-					  ibinXY = FindIndexXY(&TwoThetaDeg, &lambda, &ibinX, &ibinY);
+					  iBinXY = FindIndexXY(&TwoThetaDeg, &lambda, &iBinX, &iBinY);
 					  break;
 				  case VT_SCA_TOF:	// scattering angle + TOF
-					  ibinXY = FindIndexXY(&TwoThetaDeg, &time, &ibinX, &ibinY);
+					  iBinXY = FindIndexXY(&TwoThetaDeg, &time, &iBinX, &iBinY);
 					  break;
 			  }
-			  if (ibinXY >= 0)
+			  if (iBinXY >= 0)
 			  {
-				  if (bin[ibinXY] == NULL)
+				  if (bin[iBinXY] == NULL)
 				  {
-            CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
+            CreateBin(&bin[iBinXY], &bpostX[iBinX], &bpostY[iBinY]);
 				  }
-				  bin[ibinXY]->Counts++;
-				  bin[ibinXY]->Int += prob;
+				  bin[iBinXY]->Counts++;
+				  bin[iBinXY]->Int += prob;
 
 				  bintc += prob;
 			  }
@@ -278,47 +283,79 @@ my_exit:
 	// Spectrum 
 	if (fSpectra != NULL)
 	{
-		// method 1: faster, more memory
-		//Copy data pointers to new 1D-array with no unallocated pointers
-		bin_sorted = malloc(sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
-		ibinX = 0;
-		for (ibinXY = 0; ibinXY < INDEX(nbinsX, nbinsY); ibinXY++)
-		{
-			if (bin[ibinXY] != NULL)
-			{
-				bin_sorted[ibinX] = bin[ibinXY];
-				//bintc_sorted += bin_sorted[ibinX]->Int;
-				ibinX++;
-			}
-		}
-		//fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
-		//bintc_sorted=0.;
-		//Sort
-		if (eSortMode != VT_NO_SORT) qsort(bin_sorted, ibinX, sizeof(BINDATA*), comparebin);
-		//Print spectrum
-		for (ibinY = 0; ibinY < ibinX; ibinY++)
-		{
-			fprintf(fSpectra,"%12g %12g %12g %8ld\n", bin_sorted[ibinY]->X, bin_sorted[ibinY]->Y, bin_sorted[ibinY]->Int, bin_sorted[ibinY]->Counts);
-			bintc_sorted += bin_sorted[ibinY]->Int;
-			free(bin_sorted[ibinY]);
-		}
-		fprintf(LogFilePtr, "total neutron count rate within binning after sorting: %11.4e n/s \n", bintc_sorted);
-		free(bin_sorted);
+    // matrix format
+    if (bFmt2D)
+    { 
+      eFormat = MATRIX;
+      switch (eComb)
+      { case VT_SCA_LMBD: WriteHeader2D(fSpectra, eFormat, "Intensity", bProbActive, nBinsX, "scat_ang/deg", nBinsY, "wavelength/Ang"); break;
+        case VT_SCA_TOF : WriteHeader2D(fSpectra, eFormat, "Intensity", bProbActive, nBinsX, "scat_ang/deg", nBinsY, "TOF/ms"); break;
+        default         : Error("Evaluation parameter unknown");
+      }
+
+      for (iBinX = 0; iBinX < nBinsX; iBinX++)
+        fprintf(fSpectra, "%10.4f   ", (bpostX[iBinX] + bpostX[iBinX+1]) / 2.0);
+      fputc('\n',fSpectra);
+
+      for (iBinY=0; iBinY < nBinsY; iBinY++) 
+      {
+        fprintf(fSpectra, "%10.4f  ", (bpostY[iBinY]+bpostY[iBinY+1]) / 2.0);
+        for (iBinX=0; iBinX < nBinsX; iBinX++)
+        {
+          iBinXY = INDEX(iBinX, iBinY);
+          if (bProbActive==TRUE)
+            fprintf(fSpectra, "%12.5e ", bin[iBinXY]->Int);
+          else
+            fprintf(fSpectra, "%7ld ",   bin[iBinXY]->Counts);
+        }
+        fputc('\n',fSpectra);
+      }
+    }
+    else
+    { // x y z format
+      //
+      // method 1: faster, more memory
+		  //Copy data pointers to new 1D-array with no unallocated pointers
+		  bin_sorted = malloc(sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
+		  iBinX = 0;
+		  for (iBinXY = 0; iBinXY < INDEX(nBinsX, nBinsY); iBinXY++)
+		  {
+			  if (bin[iBinXY] != NULL)
+			  {
+				  bin_sorted[iBinX] = bin[iBinXY];
+				  //bintc_sorted += bin_sorted[iBinX]->Int;
+				  iBinX++;
+			  }
+		  }
+		  //fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
+		  //bintc_sorted=0.;
+		  //Sort
+		  if (eSortMode != VT_NO_SORT) qsort(bin_sorted, iBinX, sizeof(BINDATA*), comparebin);
+		  //Print spectrum
+		  for (iBinY = 0; iBinY < iBinX; iBinY++)
+		  {
+			  fprintf(fSpectra,"%12g %12g %12g %8ld\n", bin_sorted[iBinY]->X, bin_sorted[iBinY]->Y, bin_sorted[iBinY]->Int, bin_sorted[iBinY]->Counts);
+			  bintc_sorted += bin_sorted[iBinY]->Int;
+			  free(bin_sorted[iBinY]);
+		  }
+		  fprintf(LogFilePtr, "total neutron count rate within binning after sorting: %11.4e n/s \n", bintc_sorted);
+		  free(bin_sorted);
 		
-		/*// method 2: takes longer, less memory
+		  /*// method 2: takes longer, less memory
 		
-		//Sort array with unallocated pointers
-		if (eSortMode != VT_NO_SORT) qsort(bin, INDEX(nbinsX, nbinsY)+1, sizeof(BINDATA*), comparebin);
-		for(ibinX = 0; ibinX<(nbinsX); ibinX++)
-		{	
-			for(ibinY = 0; ibinY<(nbinsY); ibinY++)
-			{
-				ibinXY = INDEX(ibinX, ibinY);
-				if (bin[ibinXY] != NULL)
-					fprintf(fSpectra,"%12g %12g %12g %8d\n", bin[ibinXY]->X, bin[ibinXY]->Y, bin[ibinXY]->Int, bin[ibinXY]->Counts);
-				free(bin[ibinXY]);
-			}
-		}*/
+		  //Sort array with unallocated pointers
+		  if (eSortMode != VT_NO_SORT) qsort(bin, INDEX(nBinsX, nBinsY)+1, sizeof(BINDATA*), comparebin);
+		  for(iBinX = 0; iBinX<(nBinsX); iBinX++)
+		  {	
+			  for(iBinY = 0; iBinY<(nBinsY); iBinY++)
+			  {
+				  iBinXY = INDEX(iBinX, iBinY);
+				  if (bin[iBinXY] != NULL)
+					  fprintf(fSpectra,"%12g %12g %12g %8d\n", bin[iBinXY]->X, bin[iBinXY]->Y, bin[iBinXY]->Int, bin[iBinXY]->Counts);
+				  free(bin[iBinXY]);
+			  }
+		  }*/
+    }
 
 		free(bin);
 		fclose(fSpectra);
@@ -332,6 +369,9 @@ my_exit:
 }
 
 
+/***********************************************************/
+/** Creates the 2D bin beginning at the given (X,Y) edge  **/
+/***********************************************************/
 void CreateBin(BINDATA **bin, double *bpostX, double *bpostY)
 {
 	*bin = (BINDATA *)malloc(sizeof(BINDATA));
@@ -348,30 +388,33 @@ void CreateBin(BINDATA **bin, double *bpostX, double *bpostY)
 }
 
 
-int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
+/*****************************************************************/
+/** Returns the index of the bin, in which the point (X,Y) lies **/
+/*****************************************************************/
+int FindIndexXY(double *Xval, double *Yval, int *iBinX, int *iBinY)
 {
-	//int ibinX = -1, ibinY = -1;
-	//int bin = (((MaxX - MinX) / (double)nbinsX)*146+1e-4) / ((MaxX - MinX) / (double)nbinsX);
-	*ibinX = -1;
-	*ibinY = -1;
+	//int iBinX = -1, iBinY = -1;
+	//int bin = (((MaxX - MinX) / (double)nBinsX)*146+1e-4) / ((MaxX - MinX) / (double)nBinsX);
+	*iBinX = -1;
+	*iBinY = -1;
 	if (bLogBinningX){
-		for(*ibinX = 0; *ibinX<nbinsX; (*ibinX)++){
-			if (bpostX[*ibinX] <= *Xval && *Xval < bpostX[(*ibinX)+1])
+		for(*iBinX = 0; *iBinX<nBinsX; (*iBinX)++){
+			if (bpostX[*iBinX] <= *Xval && *Xval < bpostX[(*iBinX)+1])
 				break;
 		}
 	} else
-		*ibinX = (int)floor((*Xval - MinX) / ((MaxX - MinX) / (double)nbinsX));
+		*iBinX = (int)floor((*Xval - MinX) / ((MaxX - MinX) / (double)nBinsX));
 	
 	if (bLogBinningY){
-		for(*ibinY = 0; *ibinY<nbinsY; (*ibinY)++){	
-			if (bpostY[*ibinY] <= *Yval && *Yval < bpostY[(*ibinY)+1])
+		for(*iBinY = 0; *iBinY<nBinsY; (*iBinY)++){	
+			if (bpostY[*iBinY] <= *Yval && *Yval < bpostY[(*iBinY)+1])
 				break;
 		}
 	} else
-		*ibinY = (int)floor((*Yval - MinY) / ((MaxY - MinY) / (double)nbinsY));
+		*iBinY = (int)floor((*Yval - MinY) / ((MaxY - MinY) / (double)nBinsY));
 	
-	if ((*ibinX >= 0) && (*ibinY >= 0) && (*ibinX < nbinsX) && (*ibinY < nbinsY))
-		return INDEX(*ibinX, *ibinY);
+	if ((*iBinX >= 0) && (*iBinY >= 0) && (*iBinX < nBinsX) && (*iBinY < nBinsY))
+		return INDEX(*iBinX, *iBinY);
 	else
 		return -1;
 }
@@ -417,10 +460,10 @@ void OwnInit(int argc, char *argv[])
 					break;
 
 				case 'n':
-					nbinsX = atol(arg); /* number of bins in x direction */
+					nBinsX = atol(arg); /* number of bins in x direction */
 					break;
 				case 'm':
-					nbinsY = atol(arg); /* number of bins in y direction */
+					nBinsY = atol(arg); /* number of bins in y direction */
 					break;
 				case 'x':
 					MinX = atof(arg);   /* lower bound of theta range in x direction  [deg]*/
@@ -446,6 +489,9 @@ void OwnInit(int argc, char *argv[])
 						bLogBinningY = TRUE;
 					break;
 
+				case 'F':
+					bFmt2D      = (short) atoi(arg);  /* if activated, output is written in 2D format instead of x y z format  */
+					break;
 				case 'f':
 					bFullMatrix = (short) atoi(arg);  /* if activated, also non-zero lines are written  */
 					break;
@@ -511,6 +557,11 @@ void OwnInit(int argc, char *argv[])
 
 	// checks
   // ------
+  if (bFmt2D==TRUE && bFullMatrix==FALSE)
+  { bFullMatrix=TRUE;
+    Note("2D format requires all matrix elements; 'Zeros' set to 'no'");
+  }
+
 	if ((bLogBinningX && MinX==0.0) || (bLogBinningY && MinY==0.0))
 		Error("lower bound value must not be zero for logarithmic binning");
 	if (fSpectra == NULL)
@@ -551,7 +602,10 @@ void OwnInit(int argc, char *argv[])
 }
 
 
-
+/*********************************************************************************/
+/** The following functions check if the parameters X, Y, Int or Cnt            **/
+/** are larger in 'a' or in 'b' and returns 1 or -1 depending of the sort mode  **/
+/*********************************************************************************/
 int comparebinX(const void *a, const void *b)
 {
 	const BINDATA *arg1 = *((BINDATA*const*)a);
@@ -661,6 +715,9 @@ int comparebinCnt(const void *a, const void *b)
 }
 
 
+/*******************************************************/
+/**  1 for >= 0; else -1                              **/
+/*******************************************************/
 int sign(int v)
 {
 	return v >= 0 ? 1 : -1;

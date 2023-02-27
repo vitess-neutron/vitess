@@ -7,7 +7,7 @@
 /* the authors.                                                                              */
 /*                                                                                           */
 /* 1.0   Jun 1999  ???             initial version                                           */
-/* 1.1   Mar 2001  K. Lieutenant   headline                                                  */	
+/* 1.1   Mar 2001  K. Lieutenant   headline                                                  */
 /* 1.2   Jan 2004  K. Lieutenant   changes for 'instrument.dat' and changed headline         */
 /* 1.3   Feb 2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
 /* 1.4   Mar 2004  K. Lieutenant   F-Format Option                                           */
@@ -28,6 +28,8 @@
 /* 1.11  Feb 2021  K. Lieutenant   binary output for all data formats                        */
 /* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                    */
 /* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
+/* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
+/* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -37,6 +39,7 @@
 #include "softabort.h"
 #include "convert.h"
 #include "mcpl.h"
+#include "sswread.c"
 
 
 /******************************/
@@ -70,9 +73,12 @@
 /******************************/
 void  OwnInit(int argc, char *argv[]);                                           // Reads input parameters and sets global variables
 void  OwnCleanup();                                                              // Does module specific cleanup
-void  HeaderAndParameters(void);                                                          // Writes header of binary file
+void  HeaderAndParameters(void);                                                 // Writes header of binary file
+void  ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf);        // Helper function for SSW write
+void ssw_update_nparticles(FILE* f, int64_t np1pos, int32_t np1,                 // Helper function for SSW write
+                           int64_t nrsspos, int32_t nrss);
 short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
-                     const VectorType Direction);                                
+                     const VectorType Direction);
 void  VitessParameters();                                                        // Defines format for variables and headline in output file 
 void  McStasParameters();                                                        // Sets output parameters for McStas  
 void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6  
@@ -83,7 +89,7 @@ short ConvertVitess2MCNP6 (Mcnp6Neutron*    pMcnpNeut, const Neutron* pVitNeut);
 short ConvertVitess2MCNPX (McnpxNeutron*    pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNPX trajectory
 
 void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);            // Vector transfer from VITESS to McStas co-ordinate system
-                                                                               
+
 char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name 
 
 
@@ -99,43 +105,56 @@ VtDataFormat eDatFormat=VT_FLOAT;       //  -F   [-]   data format (exponential,
 VtSeparator  eSeparator=VT_BLANK;       //  -S   [-]   separator between columns (space, tab)
 short        iDetectColor = -1;         //  -C   [-]   write out only neutrons with a given color, -1 means any
 short        bF_cID=TRUE,               //  -c   [-]   string containing 9 flags to determine which parameters are written: ID, trace flag, color, TOF, wavelength, intensity, position, direction, spin.
-             bF_cTrc=TRUE,
-             bF_cColor=TRUE,
-             bF_cTOF=TRUE,
-             bF_cLambda=TRUE,
-             bF_cCounts=TRUE,
-             bF_cPosition=TRUE,
-             bF_cDirection=TRUE,
-             bF_cSpin=TRUE;
+bF_cTrc=TRUE,
+        bF_cColor=TRUE,
+        bF_cTOF=TRUE,
+        bF_cLambda=TRUE,
+        bF_cCounts=TRUE,
+        bF_cPosition=TRUE,
+        bF_cDirection=TRUE,
+        bF_cSpin=TRUE;
 
 double       FactInt   = 1.0;           //  -I   [-]   factor to normalize to the source intensity from MCNP data
 int          iSurface  = MISSING;       //  -s   [-]   surface ID written to the event file
 char*        pTitle=NULL;               //  -T   [-]   title of the simulation 
 
 double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
-             filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
-             filtYMin     =-1.0e10,     //  -y   [cm]  minimal horizontal position to be taken into account
-             filtYMax     = 1.0e10,     //  -Y   [cm]  maximal horizontal position to be taken into account
-             filtZMin     =-1.0e10,     //  -z   [cm]  minimal vertical position to be taken into account
-             filtZMax     = 1.0e10,     //  -Z   [cm]  maximal vertical position to be taken into account
-             filtYDivMin  =-1.0e10,     //  -e  [deg]  minimal horizontal divergence to be taken into account
-             filtYDivMax  = 1.0e10,     //  -d  [deg]  maximal horizontal divergence to be taken into account
-             filtZDivMin  =-1.0e10,     //  -E  [deg]  minimal vertical divergence to be taken into account
-             filtZDivMax  = 1.0e10,     //  -D  [deg]  maximal vertical divergence to be taken into account
-             filtDivMin   =-1.0e10,     //  -g  [deg]  minimal divergence to be taken into account
-             filtDivMax   = 1.0e10;     //  -G  [deg]  maximal divergence to be taken into account
+filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
+filtYMin     =-1.0e10,     //  -y   [cm]  minimal horizontal position to be taken into account
+filtYMax     = 1.0e10,     //  -Y   [cm]  maximal horizontal position to be taken into account
+filtZMin     =-1.0e10,     //  -z   [cm]  minimal vertical position to be taken into account
+filtZMax     = 1.0e10,     //  -Z   [cm]  maximal vertical position to be taken into account
+filtYDivMin  =-1.0e10,     //  -e  [deg]  minimal horizontal divergence to be taken into account
+filtYDivMax  = 1.0e10,     //  -d  [deg]  maximal horizontal divergence to be taken into account
+filtZDivMin  =-1.0e10,     //  -E  [deg]  minimal vertical divergence to be taken into account
+filtZDivMax  = 1.0e10,     //  -D  [deg]  maximal vertical divergence to be taken into account
+filtDivMin   =-1.0e10,     //  -g  [deg]  minimal divergence to be taken into account
+filtDivMax   = 1.0e10;     //  -G  [deg]  maximal divergence to be taken into account
 
 // Variables determined from input parameters or trajectory data
 FILE*          pOutFile=NULL;           //             pointer to output file
 mcpl_outfile_t hOutFile;                //             handle to output file for MCPL format
+ssw_file_t    fsswref;                  //           handle to SSW output file
+char*        ssw_rfile=NULL;         //  -r   [-]   SSW reference file file name
+int ssw_reclen;
+int ssw_ssblen;
+int64_t ssw_hdrlen;
+int64_t ssw_np1pos;
+int64_t ssw_nrsspos;
+int ssw_mcnp_type = 0;
+long used = 0;
+long long skipped_nosswtype = 0;
+double ssb[11];
+int32_t orig_np1;
+
 char*          sOutform=NULL;           //             format for the whole line using McStas, MCNP6 or MCNPX
 char*          sHeader =NULL;           //             header: parameters of the event file
 char*          sUnits  =NULL;           //             header: units used in the event file
 short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
-               bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           sVsn[5]="1.13",
-               form[15][15]={"","","","","","","","","","","","","","",""};            
-                                        // formats to print data of the different parameters using VITESS
+bCalcDivZ = FALSE;       //                               or vert. divergence necessary
+char           sVsn[5]="1.14",
+        form[15][15]={"","","","","","","","","","","","","","",""};
+// formats to print data of the different parameters using VITESS
 
 
 /******************************/
@@ -144,9 +163,9 @@ char           sVsn[5]="1.13",
 int main(int argc, char **argv)
 {
   int             i=0,               // index of trajectories
-                  nBytesW=0;         // number of bytes written to output file
-  double          Divy=0.0, 
-                  Divz=0.0, Div=0.0; // divergence of the current trajectory
+  nBytesW=0;         // number of bytes written to output file
+  double          Divy=0.0,
+          Divz=0.0, Div=0.0; // divergence of the current trajectory
   Neutron         OutNeutron;
   McNeutron       OutMcNeutron;
   Mcnp6Neutron    OutMp6Neutron;
@@ -159,6 +178,7 @@ int main(int argc, char **argv)
   memset(&OutMpxNeutron,'\0', sizeof(McnpxNeutron));
   memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
+
   // Initialization 
   // --------------
   _eModule=MCN_WRITEOUT;
@@ -166,47 +186,47 @@ int main(int argc, char **argv)
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, sVsn);
   OwnInit(argc, argv);
-  
+
   bVisInstalled = FALSE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   if (bActive)
     HeaderAndParameters();
- 
+
   DECLARE_ABORT;
 
   // loop over trajectories
   // ----------------------
-	while (ReadNeutrons() != 0)
+  while (ReadNeutrons() != 0)
   {
-    for(i=0; i<NumNeutGot; i++) 
+    for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
 
       // write all trajectories to pipe
-	    WriteNeutron(&(InputNeutrons[i]));
+      WriteNeutron(&(InputNeutrons[i]));
 
       // skip the rest if the module is not active 
-	    if (!bActive) continue;
+      if (!bActive) continue;
 
-	    // Filter wavelength and position
+      // Filter wavelength and position
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	    if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+      if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
 
-	    if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	    if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	    if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	    if (InputNeutrons[i].Position[2] > filtZMax) continue;
-	  
+      if (InputNeutrons[i].Position[1] < filtYMin) continue;
+      if (InputNeutrons[i].Position[1] > filtYMax) continue;
+      if (InputNeutrons[i].Position[2] < filtZMin) continue;
+      if (InputNeutrons[i].Position[2] > filtZMax) continue;
+
       // filter divergence
       CalcDivergence(&Div, &Divy, &Divz, InputNeutrons[i].Vector);
 
-	    if (filtYDivMin >= 0.) if (fabs(Divy) < filtYDivMin) continue;
+      if (filtYDivMin >= 0.) if (fabs(Divy) < filtYDivMin) continue;
       if (filtYDivMax >= 0.) if (fabs(Divy) > filtYDivMax) continue;
       if (filtZDivMin >= 0.) if (fabs(Divz) < filtZDivMin) continue;
-	    if (filtZDivMax >= 0.) if (fabs(Divz) > filtZDivMax) continue;
+      if (filtZDivMax >= 0.) if (fabs(Divz) > filtZDivMax) continue;
       if (filtDivMin  >= 0.) if (fabs(Div)  < filtDivMin)  continue;
-	    if (filtDivMax  >= 0.) if (fabs(Div)  > filtDivMax)  continue;
+      if (filtDivMax  >= 0.) if (fabs(Div)  > filtDivMax)  continue;
 
       // transform to wanted format
       switch (ePrgFormat)
@@ -227,7 +247,7 @@ int main(int argc, char **argv)
       }
 
       // write out neutrons of proper colour
-      if (iDetectColor < 0 || OutNeutron.Color == iDetectColor) 
+      if (iDetectColor < 0 || OutNeutron.Color == iDetectColor)
       {
         switch (ePrgFormat)
         {
@@ -236,11 +256,11 @@ int main(int argc, char **argv)
             { nBytesW = fwrite(&OutMcNeutron, sizeof(McNeutron), 1, pOutFile);
             }
             else
-            { fprintf(pOutFile, sOutform, OutMcNeutron.Weight, 
-			                                    OutMcNeutron.Position[0], OutMcNeutron.Position[1], OutMcNeutron.Position[2],
-			                                    OutMcNeutron.Speed   [0], OutMcNeutron.Speed   [1], OutMcNeutron.Speed   [2],
-		                                      OutMcNeutron.Time,        
-			                                    OutMcNeutron.Spin    [0], OutMcNeutron.Spin    [1], OutMcNeutron.Spin    [2]);
+            { fprintf(pOutFile, sOutform, OutMcNeutron.Weight,
+                      OutMcNeutron.Position[0], OutMcNeutron.Position[1], OutMcNeutron.Position[2],
+                      OutMcNeutron.Speed   [0], OutMcNeutron.Speed   [1], OutMcNeutron.Speed   [2],
+                      OutMcNeutron.Time,
+                      OutMcNeutron.Spin    [0], OutMcNeutron.Spin    [1], OutMcNeutron.Spin    [2]);
             }
             break;
 
@@ -248,14 +268,74 @@ int main(int argc, char **argv)
             mcpl_add_particle(hOutFile, &OutParticle);
             break;
 
+          case VT_SSW_FMT:
+            ++ssb[0];
+            ssb[2] = OutNeutron.Probability;
+            ssb[3] = 1.0e-12 * ENERGY_FROM_LAMBDA(OutNeutron.Wavelength);//change from lambda to MeV
+            ssb[4] = OutNeutron.Time * 1.0e5;//milliseconds to "shakes"
+            ssb[5] = (double) OutNeutron.Position[0];//already in cm
+            ssb[6] = (double) OutNeutron.Position[1];//already in cm
+            ssb[7] = (double) OutNeutron.Position[2];//already in cm
+            ssb[8] = (double) OutNeutron.Vector[0];
+            ssb[9] = (double) OutNeutron.Vector[1];
+
+            int32_t isurf = iSurface;
+            if (!isurf) {
+              Error("No Surface ID given");
+            }
+
+            if (isurf<=0||isurf>1000000) {
+              if (isurf==0&&iSurface==0)
+                Error("Could not determine surface ID: no global surface id specified and particle had no (or empty) userflags");
+              else
+                Error("Surface id must be in range 1..999999");
+            }
+
+            int64_t rawtype;
+            if (ssw_mcnp_type == SSW_MCNP6) {
+              rawtype = conv_mcnp6_pdg2ssw(2112);
+            } else if (ssw_mcnp_type == SSW_MCNPX) {
+              rawtype = conv_mcnpx_pdg2ssw(2112);
+            } else {
+              assert(ssw_mcnp_type == SSW_MCNP5);
+              rawtype = 1;
+            }
+
+            if (ssw_mcnp_type == SSW_MCNP6) {
+              assert(ssw_ssblen==11);
+              ssb[10] = isurf;//Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c)?
+              ssb[1] = rawtype*4;//Shift 2 bits (thus we only create files with those two bits zero!)
+            } else if (ssw_mcnp_type == SSW_MCNPX) {
+              ssb[1] = isurf + 1000000*rawtype;
+              if (ssw_ssblen==11)
+                ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+              //it to 1 (seems to be not used anyway?)
+            } else {
+
+
+              assert(ssw_mcnp_type == SSW_MCNP5);
+              ssb[1] = (isurf + 1000000*rawtype)*8;
+              if (ssw_ssblen==11)
+                ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+              //it to 1 (seems to be not used anyway?)
+            }
+
+            //Sign of ssb[1] is used to store the sign of dirz:
+            assert(ssb[1] >= 1.0);
+            if (OutNeutron.Vector[2]<0.0)
+              ssb[1] = - ssb[1];
+
+            ssw_writerecord(pOutFile,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
+            used += 1;
+
           case VT_MCNPX_FMT:
             if (eDatFormat==VT_BINARY)
             { nBytesW = fwrite(&OutMpxNeutron, sizeof(McnpxNeutron), 1, pOutFile);
             }
             else
             { fprintf(pOutFile, sOutform, OutMpxNeutron.Position[0], OutMpxNeutron.Position[1], OutMpxNeutron.Position[2],
-			                                    OutMpxNeutron.Vector  [0], OutMpxNeutron.Vector  [1], OutMpxNeutron.Vector  [2],
-		                                      OutMpxNeutron.Energy,      OutMpxNeutron.Counts,      OutMpxNeutron.Shakes);
+                      OutMpxNeutron.Vector  [0], OutMpxNeutron.Vector  [1], OutMpxNeutron.Vector  [2],
+                      OutMpxNeutron.Energy,      OutMpxNeutron.Counts,      OutMpxNeutron.Shakes);
             }
             break;
 
@@ -268,9 +348,9 @@ int main(int argc, char **argv)
             }
             else
             { fprintf(pOutFile, sOutform, OutMp6Neutron.History,     OutMp6Neutron.ID,
-                                          OutMp6Neutron.Counts,      OutMp6Neutron.Energy,      OutMp6Neutron.Shakes,
-                                          OutMp6Neutron.Position[0], OutMp6Neutron.Position[1], OutMp6Neutron.Position[2],
-			                                    OutMp6Neutron.DirX,        OutMp6Neutron.DirY,        OutMp6Neutron.Surface);
+                      OutMp6Neutron.Counts,      OutMp6Neutron.Energy,      OutMp6Neutron.Shakes,
+                      OutMp6Neutron.Position[0], OutMp6Neutron.Position[1], OutMp6Neutron.Position[2],
+                      OutMp6Neutron.DirX,        OutMp6Neutron.DirY,        OutMp6Neutron.Surface);
             }
             break;
 
@@ -286,14 +366,14 @@ int main(int argc, char **argv)
               if (bF_cLambda)    {fprintf(pOutFile, form[cLambda], OutNeutron.Wavelength); }
               if (bF_cCounts)    {fprintf(pOutFile, form[cCounts], OutNeutron.Probability); }
               if (bF_cPosition)  {fprintf(pOutFile, form[cPosX],   OutNeutron.Position[0]);
-                                  fprintf(pOutFile, form[cPosY],   OutNeutron.Position[1]);
-                                  fprintf(pOutFile, form[cPosZ],   OutNeutron.Position[2]); }
+                fprintf(pOutFile, form[cPosY],   OutNeutron.Position[1]);
+                fprintf(pOutFile, form[cPosZ],   OutNeutron.Position[2]); }
               if (bF_cDirection) {fprintf(pOutFile, form[cDirX],   OutNeutron.Vector[0]);
-                                  fprintf(pOutFile, form[cDirY],   OutNeutron.Vector[1]);
-                                  fprintf(pOutFile, form[cDirZ],   OutNeutron.Vector[2]); }
+                fprintf(pOutFile, form[cDirY],   OutNeutron.Vector[1]);
+                fprintf(pOutFile, form[cDirZ],   OutNeutron.Vector[2]); }
               if (bF_cSpin)      {fprintf(pOutFile, form[cSpinX],  OutNeutron.Spin[0]);
-                                  fprintf(pOutFile, form[cSpinY],  OutNeutron.Spin[1]);
-                                  fprintf(pOutFile, form[cSpinZ],  OutNeutron.Spin[2]); }
+                fprintf(pOutFile, form[cSpinY],  OutNeutron.Spin[1]);
+                fprintf(pOutFile, form[cSpinZ],  OutNeutron.Spin[2]); }
             }
             break;
 
@@ -301,8 +381,8 @@ int main(int argc, char **argv)
             Error("Data format not (yet) handled");
         }
 
-        if (ePrgFormat!=VT_MCPL_FMT)
-        { 
+        if (ePrgFormat!=VT_MCPL_FMT && ePrgFormat!=VT_SSW_FMT)
+        {
           double nBlocks, rest;
 
           if (eDatFormat!=VT_BINARY)
@@ -316,15 +396,15 @@ int main(int argc, char **argv)
       }
     }
   }
-  
+
   // Do module specific cleanups
- my_exit:
+  my_exit:
   OwnCleanup();
   fprintf(LogFilePtr,"\n");
-  
+
   // Do the general cleanup
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
-  
+
   return 0;
 }
 
@@ -332,16 +412,16 @@ int main(int argc, char **argv)
 /*******************************************************/
 /** Reads input parameters and sets global parameters **/
 /*******************************************************/
-void  OwnInit(int argc, char *argv[]) 
+void  OwnInit(int argc, char *argv[])
 {
-  int         i=0;         // index of parameter list  
+  int         i=0;         // index of parameter list
 
-  for(i=1; i<argc; i++) 
-  { 
-    if(argv[i][0]!='+') 
-    { 
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
       switch(argv[i][1])
-      { 
+      {
         case 'A':
           sOutFileName = &argv[i][2];
           break;
@@ -400,7 +480,9 @@ void  OwnInit(int argc, char *argv[])
         case 'Z':
           filtZMax = atof(&argv[i][2]);       /* filter Z */
           break;
-	    
+        case 'r':
+          ssw_rfile = &argv[i][2];       /* filter Z */
+          break;
         case 'e':
           filtYDivMin = atof(&argv[i][2]);    /* filter DivYMin, -1 means any */
           break;
@@ -431,15 +513,87 @@ void  OwnInit(int argc, char *argv[])
   bCalcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
   if (sOutFileName != NULL)
-  { 
-    if (bActive) 
+  {
+    if (bActive)
     { if (ePrgFormat== VT_MCPL_FMT)
       { hOutFile = mcpl_create_outfile(FullParName(sOutFileName));
       }
       else if (eDatFormat== VT_BINARY)
       { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
       }
-      else  
+      else if (ePrgFormat== VT_SSW_FMT)
+      {
+
+        if (iSurface==0)
+          Error("MCPL file contains no userflags so parameter specifying "
+                "resulting SSW surface ID of particles is mandatory (use -s<ID>).");
+
+        fsswref = ssw_open_file(ssw_rfile);
+
+        //Open reference file and figure out variables like header length, position of
+        //"nparticles"-like variables, fortran record length and mcnp version.
+        ssw_layout(fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen, &ssw_np1pos, &ssw_nrsspos);
+        assert(ssw_np1pos<ssw_hdrlen);
+        assert(ssw_nrsspos<ssw_hdrlen);
+
+        ssw_mcnp_type = 0;
+        if (ssw_is_mcnp6(fsswref)) {
+          ssw_mcnp_type = SSW_MCNP6;
+        } else if (ssw_is_mcnpx(fsswref)) {
+          ssw_mcnp_type = SSW_MCNPX;
+        } else if (ssw_is_mcnp5(fsswref)) {
+          ssw_mcnp_type = SSW_MCNP5;
+        }
+
+        assert(ssw_mcnp_type>0);
+        char ref_mcnpflavour_str[64];
+        ref_mcnpflavour_str[0] = '\0';
+        strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
+
+        int ref_is_gzipped = ssw_is_gzipped(fsswref);
+        ssw_close_file(fsswref);
+
+        //Grab the header:
+        unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
+        assert(hdrbuf);
+        ssw_internal_grabhdr( ssw_rfile, ref_is_gzipped, ssw_hdrlen, hdrbuf );
+
+        orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
+
+        //Clear |np1| and nrss in header to to indicate incomplete info (we will
+        //update just before closing the file):
+        *((int32_t*)(&hdrbuf[ssw_np1pos])) = 0;
+        *((int32_t*)(&hdrbuf[ssw_nrsspos])) = 0;
+
+        printf("Creating (or overwriting) output SSW file.\n");
+
+        //Open new ssw file:
+        pOutFile = fopen(sOutFileName,"wb");
+
+        if (!pOutFile)
+          Error("Problems opening new SSW file");
+
+        //Write header:
+        int nb = fwrite(hdrbuf, 1, ssw_hdrlen, pOutFile);
+        if (nb!=ssw_hdrlen)
+          Error("Problems writing header to new SSW file");
+
+        free(hdrbuf);
+
+        if ( ssw_ssblen != 10 && ssw_ssblen != 11)
+          Error("Unexpected length of ssb record in reference SSW file");
+        if ( (ssw_mcnp_type == SSW_MCNP6) && ssw_ssblen != 11 )
+          Error("Unexpected length of ssb record in reference SSW file (expected 11 for MCNP6 files)");
+
+        //ssb[0] should be history number (starting from 1), but in our case we always
+        //put nhistories=nparticles, so it is simply incrementing by 1 for each particle.
+        ssb[0] = 0.0;
+
+        assert(iSurface>=0&&iSurface<1000000);
+
+
+      }
+      else
       { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
       }
       fprintf(LogFilePtr,"Trajectories written to output file %s\n", FullParName(sOutFileName));
@@ -448,8 +602,8 @@ void  OwnInit(int argc, char *argv[])
     { Note("writeout inactive, no file written");
       bHeader = FALSE;
     }
-  } 
-  else 
+  }
+  else
   { Error("File name missing");
   }
 
@@ -457,13 +611,64 @@ void  OwnInit(int argc, char *argv[])
     Note("Input and output of MCPL data is handled via module 'mcpl' which stores data in binary format.\nChoice of ASCII format ignored.");
 }
 
+void ssw_update_nparticles(FILE* f,
+                           int64_t np1pos, int32_t np1,
+                           int64_t nrsspos, int32_t nrss)
+{
+  //Seek and update np1 and nrss fields at correct location in header:
+  const char * errmsg = "Errors encountered while attempting to update number of particle info in output file.";
+  int64_t savedpos = ftell(f);
+  if (savedpos<0)
+    Error(errmsg);
+  if (fseek( f, np1pos, SEEK_SET ))
+    Error(errmsg);
+  size_t nb = fwrite(&np1, 1, sizeof(np1), f);
+  if (nb != sizeof(np1))
+    Error(errmsg);
+  if (fseek( f, nrsspos, SEEK_SET ))
+    Error(errmsg);
+  nb = fwrite(&nrss, 1, sizeof(nrss), f);
+  if (nb != sizeof(nrss))
+    Error(errmsg);
+  if (fseek( f, savedpos, SEEK_SET ))
+    Error(errmsg);
+}
+
+void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
+{
+  if (reclen==4) {
+    uint32_t rl = lbuf;
+    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+    nb = fwrite(buf, 1, lbuf, outfile);
+    if (nb!=lbuf)
+      Error("write error");
+    nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+  } else {
+    assert(reclen==8);
+    uint64_t rl = lbuf;
+    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+    nb = fwrite(buf, 1, lbuf, outfile);
+    if (nb!=lbuf)
+      Error("write error");
+    nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+  }
+}
+
 void HeaderAndParameters(void)
-{  
-  int         iNum[12]={2,143,32,-50000,-1,0,0,-11,1,299,0,32}; 
-  char        sDate[11]="", sFormat[10]="", 
-              sDateUS[10]="         ", sTime[11]="          ", 
-              sSrcName  [CHAR_BUF_XS]="",    sID[9]="SF_00001", sPrg[9]="VITESS  ", sPrgVsn[9]="3.5  ",
-              sHeadlines[CHAR_BUF_SMALL]="", sTitle[TITLE_LEN+1]="VITESS simulation   ";
+{
+  int         iNum[12]={2,143,32,-50000,-1,0,0,-11,1,299,0,32};
+  char        sDate[11]="", sFormat[10]="",
+          sDateUS[10]="         ", sTime[11]="          ",
+          sSrcName  [CHAR_BUF_XS]="",    sID[9]="SF_00001", sPrg[9]="VITESS  ", sPrgVsn[9]="3.5  ",
+          sHeadlines[CHAR_BUF_SMALL]="", sTitle[TITLE_LEN+1]="VITESS simulation   ";
   Mcnp6Header Head;
   int k;
 
@@ -481,7 +686,7 @@ void HeaderAndParameters(void)
   if (eDatFormat==VT_BINARY)
   {
     switch (ePrgFormat)
-    { 
+    {
       case VT_MCPL_FMT:
         mcpl_hdr_set_srcname    (hOutFile, sSrcName);   /* Name of the generating application         */
         mcpl_hdr_add_comment    (hOutFile, sTitle);     /* Add one or more human-readable comments    */
@@ -539,11 +744,13 @@ void HeaderAndParameters(void)
         Error("MCNPX format not yes properly implemented");
         break;
       case VT_VITESS_FMT:
-	      if (bHeader) 
+        if (bHeader)
           fprintf(pOutFile, "%s", sHeadlines);
         VitessParameters();
         break;
-      default:   
+      case VT_SSW_FMT:
+        break;
+      default:
         Error("Data format not (yet) existent");
     }
   }
@@ -557,12 +764,29 @@ void HeaderAndParameters(void)
 void OwnCleanup()
 {
   /* close the file if it was openend */
-  if (bActive) 
+  if (bActive)
   { if (ePrgFormat== VT_MCPL_FMT)
     {
       mcpl_close_outfile(hOutFile);
+    } else if (ePrgFormat == VT_SSW_FMT){
+
+      int32_t new_nrss = used;
+      int32_t new_np1 = new_nrss;
+
+      if (new_np1==0) {
+        //SSW files must at least have 1 history (but can have 0 particles)
+        printf(LogFilePtr, "WARNING: Input MCPL file has 0 useful particles but we are setting number"
+                           " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
+        new_np1 = 1;
+      }
+      if (orig_np1<0)
+        new_np1 = - new_np1;
+
+      ssw_update_nparticles(pOutFile,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
+
+      fclose(pOutFile);
     }
-    else  
+    else
     { fclose(pOutFile);
     }
   }
@@ -581,14 +805,14 @@ short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const Vecto
 {
   short rc=FALSE;
 
-  if (bCalcDivY) 
+  if (bCalcDivY)
   { *pHorDiv  = atan2(Direction[1], Direction[0]);
     *pHorDiv *= 180.0/M_PI;
     if ((Direction[1]==0.0) && (Direction[0]==0.0))
       *pHorDiv=0.0;
     rc=TRUE;
   }
-  if (bCalcDivZ) 
+  if (bCalcDivZ)
   { *pVrtDiv  = atan2(Direction[2], Direction[0]);
     *pVrtDiv *= 180.0/M_PI;
     if ((Direction[2]==0.0) && (Direction[0]==0.0))
@@ -609,9 +833,9 @@ void VitessParameters()
   const char* pSep=NULL;   // separator
   int         iSep=0;      // index of formats
 
-  if (eSeparator==VT_TABULATOR) 
-    pSep = "\t"; 
-  else if (eSeparator==VT_BLANK) 
+  if (eSeparator==VT_TABULATOR)
+    pSep = "\t";
+  else if (eSeparator==VT_BLANK)
     pSep = " ";
   else
     Error("Separator has unknown value");
@@ -619,9 +843,9 @@ void VitessParameters()
   if (pOutFile)
   {
     if (bHeader) fputs("#", pOutFile);
-    if (eSeparator==VT_TABULATOR) 
+    if (eSeparator==VT_TABULATOR)
     { // Tabular
-      if (eDatFormat==VT_FLOAT) 
+      if (eDatFormat==VT_FLOAT)
       { // float
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ ") }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc") }
@@ -641,7 +865,7 @@ void VitessParameters()
           SP(form[cSpinX],  "%4.1f");     FP("sp_x");
           SP(form[cSpinY],  "%4.1f");     FP("sp_y");
           SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } 
+      }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
@@ -653,7 +877,7 @@ void VitessParameters()
         if (bF_cPosition)  {
           SP(form[cPosX],   "% .5e");     FP("   pos_x   ");
           SP(form[cPosY],   "% .5e");     FP("   pos_y   ");
-          SP(form[cPosZ],   "% .5e");     FP("   pos_z   "); } 
+          SP(form[cPosZ],   "% .5e");     FP("   pos_z   "); }
         if (bF_cDirection) {
           SP(form[cDirX],   "% .5e");     FP(" direction_x");
           SP(form[cDirY],   "% .5e");     FP(" direction_y");
@@ -663,10 +887,10 @@ void VitessParameters()
           SP(form[cSpinY],  "% .5e");     FP("   spin_y  ");
           SP(form[cSpinZ],  "% .5e");     FP("   spin_z  "); }
       }
-    } 
-    else if (eSeparator==VT_BLANK) 
+    }
+    else if (eSeparator==VT_BLANK)
     { // Space
-      if (eDatFormat==VT_FLOAT) 
+      if (eDatFormat==VT_FLOAT)
       { // float
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
@@ -675,15 +899,15 @@ void VitessParameters()
         if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda "); }
         if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate"); }
         if (bF_cPosition)  { SP(form[cPosX],   " %8.4f");    FP("   pos_x");
-                             SP(form[cPosY],   "%8.4f");     FP("   pos_y");
-                             SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
+          SP(form[cPosY],   "%8.4f");     FP("   pos_y");
+          SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
         if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("     dir_x");
-                             SP(form[cDirY],   "%9.6f");     FP("    dir_y");
-                             SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
+          SP(form[cDirY],   "%9.6f");     FP("    dir_y");
+          SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
         if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("   sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } 
+          SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+          SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+      }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
@@ -693,16 +917,16 @@ void VitessParameters()
         if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("       lambda"); }
         if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP(" count_rate"); }
         if (bF_cPosition)  { SP(form[cPosX],   " % .5e");    FP("       pos_x");
-                             SP(form[cPosY],   "% .5e");     FP("       pos_y");
-                             SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
+          SP(form[cPosY],   "% .5e");     FP("       pos_y");
+          SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
         if (bF_cDirection) { SP(form[cDirX],   " % .5e");    FP("     direction_x");
-                             SP(form[cDirY],   "% .5e");     FP(" direction_y");
-                             SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
+          SP(form[cDirY],   "% .5e");     FP(" direction_y");
+          SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
         if (bF_cSpin)      { SP(form[cSpinX],  " % .5e");    FP("    spin_x");
-                             SP(form[cSpinY],  "% .5e");     FP("      spin_y");
-                             SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
+          SP(form[cSpinY],  "% .5e");     FP("      spin_y");
+          SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
       }
-    } 
+    }
     else
     { Error("Separator has unknown value");
     } // end Separator
@@ -718,25 +942,25 @@ void McStasParameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF       P_x  P_y  P_z \n";  
-      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]       [1]  [1]  [1] \n";  
+    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF       P_x  P_y  P_z \n";
+      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]       [1]  [1]  [1] \n";
       sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %4.1f %4.1f %4.1f";
     }
     else
-    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_X           P_Y           P_Z \n";  
-      sUnits   = "#    [n/s]          [cm]          [cm]          [cm]          [m/s]         [m/s]         [m/s]           [s]            [1]           [1]           [1] \n";  
+    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_X           P_Y           P_Z \n";
+      sUnits   = "#    [n/s]          [cm]          [cm]          [cm]          [m/s]         [m/s]         [m/s]           [s]            [1]           [1]           [1] \n";
       sOutform = "%13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e %13.6e %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t  P_x\t P_y\t P_z \n";  
-      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t  [1]\t [1]\t [1] \n";  
+    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t  P_x\t P_y\t P_z \n";
+      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t  [1]\t [1]\t [1] \n";
       sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %4.1f\t%4.1f\t%4.1f";
     }
     else
-    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_X\t      P_Y\t      P_Z \n";  
-      sUnits   = "#     [n/s]\t     [cm]\t      [cm]\t     [cm]\t    [m/s] \t    [m/s] \t    [m/s] \t      [s]\t      [1]\t      [1]\t      [1] \n";  
+    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_X\t      P_Y\t      P_Z \n";
+      sUnits   = "#     [n/s]\t     [cm]\t      [cm]\t     [cm]\t    [m/s] \t    [m/s] \t    [m/s] \t      [s]\t      [1]\t      [1]\t      [1] \n";
       sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }
   }
@@ -749,27 +973,27 @@ void MCNPXParameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# pos_x    pos_y    pos_z      dir_x     dir_y     dir_z          E          counts         time  \n";  
-      sUnits   = "#  [cm]     [cm]     [cm]       [1]       [1]       [1]         [MeV]          [1]        [1e-8s] \n";  
+    { sHeader  = "# pos_x    pos_y    pos_z      dir_x     dir_y     dir_z          E          counts         time  \n";
+      sUnits   = "#  [cm]     [cm]     [cm]       [1]       [1]       [1]         [MeV]          [1]        [1e-8s] \n";
       sOutform = "%8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f  %13.6e %13.6e %13.6e";
     }
     else
     {
-      sHeader  = "#    pos_x         pos_y         pos_z          dir_x         dir_y         dir_z            E           counts          time  \n";  
-      sUnits   = "#     [cm]          [cm]          [cm]           [1]           [1]           [1]           [MeV]           [1]         [1e-8s] \n";  
+      sHeader  = "#    pos_x         pos_y         pos_z          dir_x         dir_y         dir_z            E           counts          time  \n";
+      sUnits   = "#     [cm]          [cm]          [cm]           [1]           [1]           [1]           [MeV]           [1]         [1e-8s] \n";
       sOutform = "%13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e  %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# pos_x  \t   pos_y\t   pos_z\t   dir_x\t   dir_y\t   dir_z\t      E  \t   counts\t    time   \n";  
-      sUnits   = "#  [cm]  \t    [cm]\t    [cm]\t    [1] \t    [1] \t    [1] \t    [MeV]\t     [1] \t   [1e-8s] \n";  
+    { sHeader  = "# pos_x  \t   pos_y\t   pos_z\t   dir_x\t   dir_y\t   dir_z\t      E  \t   counts\t    time   \n";
+      sUnits   = "#  [cm]  \t    [cm]\t    [cm]\t    [1] \t    [1] \t    [1] \t    [MeV]\t     [1] \t   [1e-8s] \n";
       sOutform = "%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.6f\t%13.6e\t%13.6e\t%13.6e";
     }
     else
     {
-      sHeader  = "#    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t    dir_z\t      E  \t    counts\t     time  \n";  
-      sUnits   = "#     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1] \t    [MeV]\t      [1] \t   [1e-8s] \n";  
+      sHeader  = "#    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t    dir_z\t      E  \t    counts\t     time  \n";
+      sUnits   = "#     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1] \t    [MeV]\t      [1] \t   [1e-8s] \n";
       sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }
   }
@@ -782,27 +1006,27 @@ void MCNP6Parameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# History       ID         weight          E            time        pos_x    pos_y    pos_z     dir_x     dir_y    surface \n";  
-      sUnits   = "#                            [1]         [MeV]        [1e-8s]        [cm]     [cm]     [cm]      [1]       [1]       [1]   \n";  
+    { sHeader  = "# History       ID         weight          E            time        pos_x    pos_y    pos_z     dir_x     dir_y    surface \n";
+      sUnits   = "#                            [1]         [MeV]        [1e-8s]        [cm]     [cm]     [cm]      [1]       [1]       [1]   \n";
       sOutform = "%10.0f %10.0f  %13.6e %13.6e %13.6e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.1f";
     }
     else
     {
-      sHeader  = "#   History          ID           weight          E            time          pos_x         pos_y         pos_z          dir_x        surface        dir_z \n";  
-      sUnits   = "#                                  [1]          [MeV]        [1e-8s]          [cm]          [cm]          [cm]           [1]           [1]           [1]  \n";  
+      sHeader  = "#   History          ID           weight          E            time          pos_x         pos_y         pos_z          dir_x        surface        dir_z \n";
+      sUnits   = "#                                  [1]          [MeV]        [1e-8s]          [cm]          [cm]          [cm]           [1]           [1]           [1]  \n";
       sOutform = "%13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "# History\t    ID   \t   weight\t      E  \t     time \t pos_x  \t   pos_y\t   pos_z\t   dir_x \t  dir_y \t surface\t \n";  
-      sUnits   = "#        \t         \t     [1] \t    [MeV]\t   [1e-8s]\t  [cm]  \t    [cm]\t    [cm]\t    [1]  \t   [1]  \t   [1]  \t \n";  
+    { sHeader  = "# History\t    ID   \t   weight\t      E  \t     time \t pos_x  \t   pos_y\t   pos_z\t   dir_x \t  dir_y \t surface\t \n";
+      sUnits   = "#        \t         \t     [1] \t    [MeV]\t   [1e-8s]\t  [cm]  \t    [cm]\t    [cm]\t    [1]  \t   [1]  \t   [1]  \t \n";
       sOutform = "%10.0f\t%10.0f\t%13.6e\t%13.6e\t%13.6e\t%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.1f";
     }
     else
     {
-      sHeader  = "#   History\t      ID \t   weight\t      E  \t     time \t    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t   surface\t \n";  
-      sUnits   = "#          \t         \t     [1] \t    [MeV]\t   [1e-8s]\t     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1]  \t \n";  
+      sHeader  = "#   History\t      ID \t   weight\t      E  \t     time \t    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t   surface\t \n";
+      sUnits   = "#          \t         \t     [1] \t    [MeV]\t   [1e-8s]\t     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1]  \t \n";
       sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }
   }
@@ -814,21 +1038,21 @@ void MCNP6Parameters()
 /***************************************************/
 short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
 {
-	double  velocity;      // velocity of the neutron  [m/s]
+  double  velocity;      // velocity of the neutron  [m/s]
 
-	// initialization			                      
-	memset(pMcNeutron, '\0', sizeof(McNeutron));        
+  // initialization
+  memset(pMcNeutron, '\0', sizeof(McNeutron));
 
-	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
-	pMcNeutron->Time   = pVitNeutron->Time/1000.0;            // unit ms -> s
+  velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
+  pMcNeutron->Time   = pVitNeutron->Time/1000.0;            // unit ms -> s
   pMcNeutron->Weight = pVitNeutron->Probability;
 
-	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
-	RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
-	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
+  RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
+  RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
+  RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
 
-	MultiplyByScalar(pMcNeutron->Speed, velocity);     
-	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
+  MultiplyByScalar(pMcNeutron->Speed, velocity);
+  MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
 
   return(TRUE);
 }
@@ -838,17 +1062,17 @@ short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
 /**************************************************/
 short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron)
 {
-	// initialization			                      
-	memset(pMCPLNeutron, '\0', sizeof(mcpl_particle_t));        
+  // initialization
+  memset(pMCPLNeutron, '\0', sizeof(mcpl_particle_t));
 
-	pMCPLNeutron->pdgcode= NEUTRON_ID;
-	pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit µeV -> MeV
-	pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
-	pMCPLNeutron->weight = pVitNeutron->Probability;
+  pMCPLNeutron->pdgcode= NEUTRON_ID;
+  pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit microeV -> MeV
+  pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
+  pMCPLNeutron->weight = pVitNeutron->Probability;
 
-	RotVit2Mc(&pMCPLNeutron->position,     &pVitNeutron->Position);
-	RotVit2Mc(&pMCPLNeutron->direction,    &pVitNeutron->Vector);
-	RotVit2Mc(&pMCPLNeutron->polarisation, &pVitNeutron->Spin);
+  CopyVector( pVitNeutron->Position, pMCPLNeutron->position);
+  CopyVector(pVitNeutron->Vector, pMCPLNeutron->direction);
+  CopyVector(pVitNeutron->Spin, pMCPLNeutron->polarisation);
 
   return(TRUE);
 }
@@ -858,12 +1082,12 @@ short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutr
 /**************************************************/
 short ConvertVitess2MCNPX(McnpxNeutron* pMcnpNeutron, const Neutron* pVitNeutron)
 {
-	// initialization			                      
-	memset(pMcnpNeutron, '\0', sizeof(McnpxNeutron));        
+  // initialization
+  memset(pMcnpNeutron, '\0', sizeof(McnpxNeutron));
 
   CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
   CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
-  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit µeV -> MeV
+  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
   pMcnpNeutron->Counts = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
   pMcnpNeutron->Shakes = 1.0e+05 *pVitNeutron->Time;                              // unit  ms -> shakes = 1.0e-08 s
 
@@ -872,13 +1096,13 @@ short ConvertVitess2MCNPX(McnpxNeutron* pMcnpNeutron, const Neutron* pVitNeutron
 
 short ConvertVitess2MCNP6(Mcnp6Neutron* pMcnpNeutron, const Neutron* pVitNeutron)
 {
-	// initialization			                      
-	memset(pMcnpNeutron, '\0', sizeof(Mcnp6Neutron));        
+  // initialization
+  memset(pMcnpNeutron, '\0', sizeof(Mcnp6Neutron));
 
   pMcnpNeutron->History = 0.0;
-	pMcnpNeutron->ID      = 8.0 * pVitNeutron->Vector[2]/fabs(pVitNeutron->Vector[2]);
+  pMcnpNeutron->ID      = 8.0 * pVitNeutron->Vector[2]/fabs(pVitNeutron->Vector[2]);
   pMcnpNeutron->Counts  = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
-  pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit µeV -> MeV
+  pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
   pMcnpNeutron->Shakes  = 1.0e+05 * pVitNeutron->Time;                             // unit  ms -> shakes = 1.0e-08 s
   pMcnpNeutron->DirX    = pVitNeutron->Vector[0];
   pMcnpNeutron->DirY    = pVitNeutron->Vector[1];
@@ -896,7 +1120,7 @@ short ConvertVitess2MCNP6(Mcnp6Neutron* pMcnpNeutron, const Neutron* pVitNeutron
 /****************************************************************/
 void RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector)
 {
-	(*pMcVector)[0] = (*pVitVector)[1];
-	(*pMcVector)[1] = (*pVitVector)[2];
-	(*pMcVector)[2] = (*pVitVector)[0];
+  (*pMcVector)[0] = (*pVitVector)[1];
+  (*pMcVector)[1] = (*pVitVector)[2];
+  (*pMcVector)[2] = (*pVitVector)[0];
 }

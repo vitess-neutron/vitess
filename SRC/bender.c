@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
   
   DECLARE_ABORT
 
@@ -1767,7 +1767,7 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 
   if (!bVisInstr) return;
 
-  xStart/=CmprFact; xEnd/=CmprFact;
+  // xStart/=CmprFact; xEnd/=CmprFact;
 
   // fprintf(LogFilePtr,"xStart %f, xEnd %f, yStart %f, yEnd %f, radius %f, entrance height %f, dZ %f \n", xStart, xEnd, yStart, yEnd, radius, entranceHeight, dZ);
 
@@ -1813,11 +1813,11 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
     x2 = sqrt(pow(lengthGeomPiece, 2) - pow(y2 - y1, 2)) + x1; //xStart + radius*sin(angleElem);
     
 
-    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.;
-    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.;
+    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.0;
+    stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.0*BlowUp;
     stGeometry.pRectangle[stGeometry.nRectangles].vCntr[2] = 0;
 
-    angleNorm = atan(-(y2 - y1)/(x2 - x1));
+    angleNorm = atan(-(y2 - y1)*BlowUp/(x2 - x1));
 
     stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
     stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
@@ -1826,7 +1826,7 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
     stGeometry.pRectangle[stGeometry.nRectangles].Width = lengthGeomPiece;
 
     height = entranceHeight + ((1.0*i + 0.5)*lengthGeomPiece)*dZ/totalLength; 
-    stGeometry.pRectangle[stGeometry.nRectangles].Height = height;
+    stGeometry.pRectangle[stGeometry.nRectangles].Height = height*BlowUp;
     stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
 
     stGeometry.nRectangles++;
@@ -1842,17 +1842,17 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
   y2 = yEnd;
   
   stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.;
-  stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.;
+  stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.0*BlowUp;
   stGeometry.pRectangle[stGeometry.nRectangles].vCntr[2] = 0;
     
-  angleNorm = atan(-(y2 - y1)/(x2 - x1));
+  angleNorm = atan(-(y2 - y1)*BlowUp/(x2 - x1));
   
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[2] = 0;
   
-  stGeometry.pRectangle[stGeometry.nRectangles].Width = totalLength - nElements*lengthGeomPiece;
-  stGeometry.pRectangle[stGeometry.nRectangles].Height = entranceHeight + dZ;
+  stGeometry.pRectangle[stGeometry.nRectangles].Width    = totalLength - nElements*lengthGeomPiece;
+  stGeometry.pRectangle[stGeometry.nRectangles].Height   = (entranceHeight + dZ)*BlowUp;
   stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
 
   stGeometry.nRectangles++;
@@ -1865,9 +1865,9 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ)
 {
 
-  VectorType v1 = {xStart/CmprFact, yStart, -entranceHeight/2.};
-  VectorType v2 = {xStart/CmprFact, yStart, entranceHeight/2.};
-  VectorType v3 = {xEnd/CmprFact, yEnd, (entranceHeight + dZ)/2.};
+  VectorType v1 = {xStart, BlowUp * yStart, -BlowUp * entranceHeight/2.};
+  VectorType v2 = {xStart, BlowUp * yStart,  BlowUp * entranceHeight/2.};
+  VectorType v3 = {xEnd,   BlowUp * yEnd,    BlowUp *(entranceHeight + dZ)/2.};
 
   if (!bVisInstr) return;
   
@@ -1887,9 +1887,9 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
 
   stGeometry.nTriangles++;  
 
-  v2[0] = xEnd/CmprFact;
-  v2[1] = xEnd/CmprFact;
-  v2[2] *= -1.;
+  v2[0]  = xEnd;
+  v2[1]  = yEnd*BlowUp;   // orig.: xEnd
+  v2[2] *= -1.0;
 
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][0] = xStart; */
@@ -1934,9 +1934,6 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   double height11, height12, height21, height22;
  
   if (!bVisInstr) return;
-
-  x1Start/=CmprFact; x1End/=CmprFact;
-  x2Start/=CmprFact; x2End/=CmprFact;
 
   // outer left surface
   angle1 = asin((x1End - x1Start)/radius1);
@@ -2010,10 +2007,10 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
     height22 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength2;
 
     //bottom
-    v[0][0] = x11; v[0][1] = y11; v[0][2] =  -height11/2.;
-    v[1][0] = x12; v[1][1] = y12; v[1][2] =  -height12/2.;
-    v[2][0] = x21; v[2][1] = y21; v[2][2] =  -height21/2.;
-    v[3][0] = x22; v[3][1] = y22; v[3][2] =  -height22/2.;
+    v[0][0] = x11; v[0][1] = y11*BlowUp; v[0][2] = -height11/2.0*BlowUp;
+    v[1][0] = x12; v[1][1] = y12*BlowUp; v[1][2] = -height12/2.0*BlowUp;
+    v[2][0] = x21; v[2][1] = y21*BlowUp; v[2][2] = -height21/2.0*BlowUp;
+    v[3][0] = x22; v[3][1] = y22*BlowUp; v[3][2] = -height22/2.0*BlowUp;
 
     DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
     stGeometry.nTriangles++;    
@@ -2072,10 +2069,10 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
 
       }
 
-      v[0][0] = x11; v[0][1] = y11; v[0][2] =  -height11/2.;
-      v[1][0] = x12; v[1][1] = y12; v[1][2] =  -height12/2.;
-      v[2][0] = x21; v[2][1] = y21; v[2][2] =  -height21/2.;
-      v[3][0] = x22; v[3][1] = y22; v[3][2] =  -height22/2.;
+      v[0][0] = x11; v[0][1] = y11*BlowUp; v[0][2] = -height11/2.0*BlowUp;
+      v[1][0] = x12; v[1][1] = y12*BlowUp; v[1][2] = -height12/2.0*BlowUp;
+      v[2][0] = x21; v[2][1] = y21*BlowUp; v[2][2] = -height21/2.0*BlowUp;
+      v[3][0] = x22; v[3][1] = y22*BlowUp; v[3][2] = -height22/2.0*BlowUp;
 
       //bottom
       DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
@@ -2119,10 +2116,10 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   height21 = entranceHeight + nElements2*lengthGeomPiece*dZ/totalLength2;
   height22 = entranceHeight + dZ;
 
-  v[0][0] = x11; v[0][1] = y11; v[0][2] = -height11/2.;
-  v[1][0] = x12; v[1][1] = y12; v[1][2] = -height12/2.;
-  v[2][0] = x21; v[2][1] = y21; v[2][2] = -height21/2.;
-  v[3][0] = x22; v[3][1] = y22; v[3][2] = -height22/2.;
+  v[0][0] = x11; v[0][1] = y11*BlowUp; v[0][2] = -height11/2.0*BlowUp;
+  v[1][0] = x12; v[1][1] = y12*BlowUp; v[1][2] = -height12/2.0*BlowUp;
+  v[2][0] = x21; v[2][1] = y21*BlowUp; v[2][2] = -height21/2.0*BlowUp;
+  v[3][0] = x22; v[3][1] = y22*BlowUp; v[3][2] = -height22/2.0*BlowUp;
   
   //bottom
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);

@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   /* reads file containing sample parameters */
   SetSamplePar(); // ReadParameterFile() ;

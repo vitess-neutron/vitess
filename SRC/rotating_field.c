@@ -126,13 +126,13 @@ int main(int argc, char **argv)
   /* -------------- */
   _eModule=MCN_FIELD_ROT;
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.8");
+  PrintModuleName(_eModule, "1.8a");
   OwnInit(argc, argv);
   EvalInput();
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp = FALSE;
 
   // local variables
   InitVector(Pos);  InitVector(Dir);  InitVector(SpinVector);

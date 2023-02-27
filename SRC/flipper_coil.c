@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = MISSING;
   if (bVisInstr) 
-    bLengthCmpr = FALSE;
+    bBlowUp     = TRUE;
 
   DECLARE_ABORT;
 

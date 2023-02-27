@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
-    bLengthCmpr = TRUE;
+    bBlowUp = TRUE;
 
   /* Get the neutrons from the file */
   DECLARE_ABORT;

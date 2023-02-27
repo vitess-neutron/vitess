@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  bLengthCmpr   = FALSE;
+  bBlowUp       = FALSE;
 
   DECLARE_ABORT;
 
@@ -285,7 +285,7 @@ void OwnCleanup()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
-  // Visualisation of the velocity selector geometry
+  // Visualisation 
   if (bVisInstr)
   { 
     double sy = sin(Radians(AnglAroundY)),
