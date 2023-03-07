@@ -7,8 +7,8 @@
 #include "init.h"
 
 #ifdef VT_GRAPH
-# include "cpgplot.h"
-int do_visualise; /* default : no visualisation */
+  # include "cpgplot.h"
+  extern int do_visualise; /* default : no visualisation */
 #endif
 
 

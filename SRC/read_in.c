@@ -152,7 +152,8 @@ int main(int argc, char **argv)
     while (rc != VT_EOF) {
       rc = ReadSSWTraj(&InNeutron, &nT, hSSWFile);
       if (rc == TRUE){
-        for (int j=0; j<nT; j++) {
+        int j;
+        for (j=0; j<nT; j++) {
           if ((int)maxEv == -1 || NumNeutRead < maxEv) {
             if (j != 0) GetId(&InNeutron.ID);
             NumNeutRead += 1;

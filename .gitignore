@@ -5,3 +5,6 @@
 .so
 .pyc
 __pycache__/
+MODULES/*_Darwin_x86_64
+MODULES/*_Linux_x86_64
+MODULES/*.exe
