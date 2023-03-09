@@ -15,7 +15,7 @@
   <h3> VITESS Module Flipper Coil</h3>
   <p>
     This module simulates a rectangular coil flipper. Inside the coil the field
-    component is homogeneous and in the walls increases/decreases from 0 Oe to
+    component is homogeneous and in the walls increases/decreases from 0 Gauss to
     the value of the coil field component given as input. The guide field is
     added to the total field. This module only rotates the spin vectors belonging
     to trajectories which pass through the rectangular geometry. No attenuation
@@ -68,7 +68,7 @@
         <tr>
           <td>
             guide field <br>
-            [Oe]
+            [Gs]
           </td>
           <td>
             strength of the guide magnetic field which is considered&nbsp;&nbsp;&nbsp;
@@ -79,7 +79,7 @@
         <tr>
           <td>
             coil field component <br>
-            [Oe]
+            [Gs]
           </td>
           <td>
             strength of the coil magnetic field which is considered parallel to
@@ -148,9 +148,9 @@
     Y = Y0 + FieldValue*sin(Omega*(T + TOF) + BeginPhase) <br>
     Z = Z0 <br>
     <br>
-    X0, Y0, Z0 - components of guide magnetic field [Oe=Gauss], <br>
+    X0, Y0, Z0 - components of guide magnetic field [Gauss], <br>
     Omega = 2*PI*omega/1000, omega = [Hz], Omega = [rad/ms], <br>
-    FieldValue - Strength (Amplitude) of rotating magnetic field in Oe=Gauss, <br>
+    FieldValue - Strength (Amplitude) of rotating magnetic field in Gauss, <br>
     BeginPhase in degree <br>
     TOF - time of flight of neutron from preceding modules for rotating field
     phase. <br>
@@ -259,7 +259,7 @@
         <tr>
           <td>
             Strength of rotating magnetic field  <br>
-            [Oe=gauss]
+            [Gs]
           </td>
           <td>Strength(Amplitude) of the rotating magnetic field.</td>
           <td>-d</td>
@@ -367,28 +367,28 @@
 
         <tr>
           <td>
-            Permanent or initial component X, Y and Z [Oe] <br>
+            Permanent or initial component X, Y and Z [Gs] <br>
           </td>
           <td>
             Permanent(for cosine amd permanent laws) or initial(for linear law) value of the X,
-            Y or Z components (projection in the axis 0X, OY, OZ) of the guide magnetic field, Oe=Gauss
+            Y or Z components (projection in the axis 0X, OY, OZ) of the guide magnetic field, Gs=Gauss
           </td>
           <td>-I, -A, -K</td>
         </tr>
 
 
         <tr>
-          <td>Amplitude or final component X, Y and Z [Oe]</td>
+          <td>Amplitude or final component X, Y and Z [Gs]</td>
           <td>
             Amplitude(for cosine law) or final(for linear law) value of the X,Y,Z component
-            (projection in the axis 0X, OY, OZ) of the guide magnetic field, Oe=Gauss
+            (projection in the axis 0X, OY, OZ) of the guide magnetic field, Gs=Gauss
           </td>
           <td>-P -Q -R</td>
         </tr>
 
 
         <tr>
-          <td>Additional random\n magnetic field <br> [Oe]</td>
+          <td>Additional random\n magnetic field <br> [Gs]</td>
           <td>Amplitude of additional random magnetic field</td>
           <td>-q</td>
         </tr>

@@ -1913,29 +1913,29 @@ set polariser_he3ESET {
     {"wavelength\ndependence" "choice between analytical or numerical definition of the wavelength dependence of the polarisation and transmission" "" a}
     {numerical analytical} {0 1}}
   {}
-  {phe3 float 50 {"polarisation\nHe3 [%]" "active if a=1, polarisation of the He3 in %" "" b} gt0 lt100}
-  {polx float 2944.8 {"polarisation\nxsection [barn]" "active if a=1, polarisation cross section of neutrons in He3 in barn" "" c} gt0}
-  {dens float 0.1e19 {"density\nHe3 [1/cm3]" "active if a=1, density of the He3 gas in 1/cm3" "" d} gt0}
+  {phe3 float 50 {"polarisation\nHe3[%]" "polarisation of the He3 in percent\nonly used for analytical determination of polarisation and transmission" "" b} gt0 lt100}
+  {polx float 2945 {"polarisation\nxsection [barn/Ang]" "polarisation cross-section of neutrons with He3 in barn/Ang\nonly used for analytical determination of polarisation and transmission" "" c} gt0}
+  {dens float 1e19 {"density\nHe3 [1/cm^3]" "particle density of the He3 gas in 1/cm^3\nonly used for analytical determination of polarisation and transmission" "" d} gt0}
   {}
   {pfile pareditablefile "" {"polarisation\nfile" "data file for the wavelength dependent polarisation" "" P}}
   {tfile pareditablefile "" {"transmission\nfile" "data file for the wavelength dependent transmission" "" T}}
   {}
-  {x float 100 {"position\nmain X [cm]" "x center position of the cylindrical chamber" "" k}}
-  {y float 0   {"position\nmain Y [cm]" "y center position of the cylindrical chamber" "" l}}
-  {z float 0   {"position\nmain Z [cm]" "z center position of the cylindrical chamber" "" m}}
+  {x float 10 {"position\nmain X [cm]" "x center position of the cylindrical chamber" "" k}}
+  {y float  0 {"position\nmain Y [cm]" "y center position of the cylindrical chamber" "" l}}
+  {z float  0 {"position\nmain Z [cm]" "z center position of the cylindrical chamber" "" m}}
   {}
-  {clen float 100 {"cylinder\nlength [cm]" "length of the cylindrical chamber" "" X} gt0}
-  {crad float 5   {"cylinder\nradius [cm]" " radius of the cylindrical chamber" "" Y} gt0}
+  {clen float 10 {"cylinder\nlength [cm]" "length of the cylindrical chamber along the beamline" "" X} gt0}
+  {crad float 10 {"cylinder\ndiameter [cm]" "diameter of the cylindrical chamber" "" Y} gt0}
   {}
-  {gx float 1 {"guide field\nX [Oe]" "x component of the guide field in Oe" "" G}}
-  {gy float 0 {"guide field\nY [Oe]" "y component of the guide field in Oe" "" H}}
-  {gz float 0 {"guide field\nZ [Oe]" "z component of the guide field in Oe" "" K}}
-  {px float 10 {"pol. field\nX [Oe]" "x component of the field in the chamber which is added to the guide field in Oe" "" M}}
-  {py float 0 {"pol. field\nY [Oe]" "y component of the field in the chamber which is added to the guide field in Oe" "" N}}
-  {pz float 0 {"pol. field\nZ [Oe]" "z component of the field in the chamber which is added to the guide field in Oe" "" O}}
-  {ox float 200 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
-  {oy float 0   {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
-  {oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
+  {gx float  1 {"guide field\nX [Gs]" "x component of the guide field in Gauss" "" G}}
+  {gy float  0 {"guide field\nY [Gs]" "y component of the guide field in Gauss" "" H}}
+  {gz float  0 {"guide field\nZ [Gs]" "z component of the guide field in Gauss" "" K}}
+  {px float 10 {"pol. field\nX [Gs]" "x component of the field in the chamber which is added to the guide field in Gauss" "" M}}
+  {py float  0 {"pol. field\nY [Gs]" "y component of the field in the chamber which is added to the guide field in Gauss" "" N}}
+  {pz float  0 {"pol. field\nZ [Gs]" "z component of the field in the chamber which is added to the guide field in Gauss" "" O}}
+  {ox float 20 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
+  {oy float  0 {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
+  {oz float  0 {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
 }
 
 ### polarising
@@ -1999,9 +1999,9 @@ set polESET {
   {nc int 9    {"number of\nchannels" "number of channels in vertical direction"} ge1}
   {dw float 0.05 {"wall\nwidth [cm" "width of the wall between the channels"} gt0}
   {}
-  {gx float 1 {"guide field\nX [Oe]" "x component of the guide field"}}
-  {gy float 0 {"guide field\nY [Oe]" "y component of the guide field"}}
-  {gz float 0 {"guide field\nZ [Oe]" "z component of the guide field"}}
+  {gx float 1 {"guide field\nX [Gs]" "x component of the guide field"}}
+  {gy float 0 {"guide field\nY [Gs]" "y component of the guide field"}}
+  {gz float 0 {"guide field\nZ [Gs]" "z component of the guide field"}}
   {ax float 1 {"analysis dir.\nX [-]" "x direction vector component of the quantization direction"}}
   {ay float 0 {"analysis dir.\nY [-]" "y direction vector component of the quantization direction"}}
   {az float 0 {"analysis dir.\nZ [-]" "z direction vector component of the quantization direction"}}
@@ -2025,9 +2025,9 @@ set flipper_coilESET {
   {dx float 10 {"dimension\nX [cm]" "dimension of the rectangular coil in X direction" "" X}}
   {dy float 10 {"dimension\nY [cm]" "dimension of the rectangular coil in Y direction" "" Y}}
   {dz float 10 {"dimension\nZ [cm]" "dimension of the rectangular coil in Z direction" "" V}}
-  {gf float 0.9787 {"guide\nfield [Oe]" "strength of the guide magnetic field which is considered parallel to the beam axes" "" G}}
+  {gf float 0.9787 {"guide\nfield [Gs]" "strength of the guide magnetic field which is considered parallel to the beam axes" "" G}}
   {}
-  {cf float 0.9787  {"coil field\ncomponent [Oe]" "strength of the coil magnetic field which is considered parallel to the coil axes" "" H}}
+  {cf float 0.9787  {"coil field\ncomponent [Gs]" "strength of the coil magnetic field which is considered parallel to the coil axes" "" H}}
   {wt float 0.2 {"wall\nthickness [cm]" "thickness of the coil wire (wall)" "" t} ge0}
   {ns float 10 {"field mesh\nsteps" "number of 'boxes' in which the field is devided (max:100)" "" N}}
   {ox float 10 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
@@ -2064,7 +2064,7 @@ set flipper_gradientESET {
   {}
   {rax radio 0X {"rotating field\naxis" "Rotating field around given axis OX, OY or OZ, values 0,1,2" "" M}
     {0X 0Y 0Z} {0 1 2}}
-  {mf float 5000 {"magnetic field\namplitude [Oe]" "Strength or amplitude of the rotating magnetic field, Oe=Gauss" "" d} ge0}
+  {mf float 5000 {"magnetic field\namplitude [Gs]" "Strength or amplitude of the rotating magnetic field, Gs=Gauss" "" d} ge0}
   {rf float 300000 {"rotation\nfrequency [Hz]" "Rotation frequency of the magnetic field" "" w}}
   {chgampl radio sinus {"amplitude\nchanging by" "Amplitude of rotating magnetic field is changing by sinus (with semi-period - appropriate dimensions of rotating field volume) law, permanently and by solinoid formula (not yet active)" "" h}
     {sinus permanent solenoid} {0 1 2}}
@@ -2085,15 +2085,15 @@ set flipper_gradientESET {
   {chgamplgui radio cosinus {"law of changing" "Laws of distribution of guide magnetic field: cosine law (with semi-period - appropriate dimensions of rotating field volume), linearly and pernanently" "" u} {cosinus linear permanent} {0 1 2}}
   {chguidedch radio 0X {"amplitude\nchanging\nalong axis" "Key-Direction for amplitude changing of guide field along given axis OX, OY or OZ, values 0,1,2. Actually if cosinus law of changing was chosen" "" t} {0X 0Y 0Z} {0 1 2}}
 
-  {pmx float 0 {"perm. / initial\ncomponent X [Oe]" "Permanent (for cosine amd permanent laws) or initial (for linear law) value of the X component (projection in the axis 0X) of the guide magnetic field, Oe=Gauss" "" I}}
-  {pmy float 0 {"perm. / initial\ncomponent Y [Oe]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Y component (projection in the axis 0Y) of the guide magnetic field, Oe=Gauss" "" A}}
-  {pmz float 0 {"perm. / initial\ncomponent Z [Oe]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Z component (projection in the axis 0Z) of the guide magnetic field, Oe=Gauss" "" K}}
+  {pmx float 0 {"perm. / initial\ncomponent X [Gs]" "Permanent (for cosine amd permanent laws) or initial (for linear law) value of the X component (projection in the axis 0X) of the guide magnetic field, Gs=Gauss" "" I}}
+  {pmy float 0 {"perm. / initial\ncomponent Y [Gs]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Y component (projection in the axis 0Y) of the guide magnetic field, Gs=Gauss" "" A}}
+  {pmz float 0 {"perm. / initial\ncomponent Z [Gs]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss" "" K}}
 
-  {plmx float 0 {"amplitude or\nfinal X [Oe]" "Amplitude (for cosine law) or final value (for linear law) of the X component (projection in the axis 0X) of the guide magnetic field, Oe=Gauss" "" P}}
-  {plmy float 0 {"amplitude or\nfinal Y [Oe]" "Amplitude (for cosine law) or final value (for linear law) of the Y component (projection in the axis 0Y) of the guide magnetic field, Oe=Gauss" "" Q}}
-  {plmz float 0 {"amplitude or\nfinal Z [Oe]" "Amplitude (for cosine law) or final value (for linear law) of the Z component (projection in the axis 0Z) of the guide magnetic field, Oe=Gauss" "" R}}
+  {plmx float 0 {"amplitude or\nfinal X [Gs]" "Amplitude (for cosine law) or final value (for linear law) of the X component (projection in the axis 0X) of the guide magnetic field, Gs=Gauss" "" P}}
+  {plmy float 0 {"amplitude or\nfinal Y [Gs]" "Amplitude (for cosine law) or final value (for linear law) of the Y component (projection in the axis 0Y) of the guide magnetic field, Gs=Gauss" "" Q}}
+  {plmz float 0 {"amplitude or\nfinal Z [Gs]" "Amplitude (for cosine law) or final value (for linear law) of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss" "" R}}
 
-  {pmde float 0 {"additional random\nmagnetic field, [Oe]" "Amplitude of the additional random magnetic field" "" q} ge0}
+  {pmde float 0 {"additional random\nmagnetic field, [Gs]" "Amplitude of the additional random magnetic field" "" q} ge0}
 
   {"Addition options" header}
   {outkey radio no {"output results" "Output intermediately results of simulations in the file RELATIVE OX axis" "" S} {yes no} {1 0}}
@@ -2125,19 +2125,19 @@ set resonator_drabkinESET {
   {"Periodical Magnetic Field" header}
   {}
   {rax radio 0Y {"periodical field\nparallel of axis" "Periodical field is parallel to the axis OX, OY or OZ, values 0,1,2" "" M} {0X 0Y 0Z} {0 1 2}}
-  {mf float 500 {"magnetic\nfield - amplitude [Oe]" "Strength or amplitude of the periodical magnetic field, Oe=Gauss" "" d} ge0}
+  {mf float 500 {"magnetic\nfield - amplitude [Gs]" "Strength or amplitude of the periodical magnetic field, Gs=Gauss" "" d} ge0}
   {raxdi radio Uniform {"periodical field\nchaning law" "The law of changing of the periodical magnetic field" "" v} {Uniform Sinus Gauss} {0 1 2}}
   {}
   {mfd float 0 {"Deviation of\namplitude [%]" "Deviation of amplitude of the periodical magnetic field in percent" "" a} ge0}
   {distra radio Uniform {"Amplitude distribution" "Distribution of random values: amplitude of the periodical magnetic field" "" e} {Normal Uniform} {0 1}}
-  {mfds float 1 {"Sigma for\ngauss distr. [Oe]" "Sigma for gauss distribution of amplitude of the periodical magnetic field" "" x} gt0}
+  {mfds float 1 {"Sigma for\ngauss distr. [Gs]" "Sigma for gauss distribution of amplitude of the periodical magnetic field" "" x} gt0}
 
   {"Guide Magnetic Field" header}
-  {pmx float 0 {"component\nX [Oe]" "X component (projection in the axis 0X) of the permanent magnetic field, Oe=Gauss" "" I}}
-  {pmy float 0 {"component\nY [Oe]" "Y component (projection in the axis 0Y) of the permanent magnetic field, Oe=Gauss" "" A}}
-  {pmz float 0 {"component\nZ [Oe]" "Z component (projection in the axis 0Z) of the permanent magnetic field, Oe=Gauss" "" K}}
+  {pmx float 0 {"component\nX [Gs]" "X component (projection in the axis 0X) of the permanent magnetic field, Gs=Gauss" "" I}}
+  {pmy float 0 {"component\nY [Gs]" "Y component (projection in the axis 0Y) of the permanent magnetic field, Gs=Gauss" "" A}}
+  {pmz float 0 {"component\nZ [Gs]" "Z component (projection in the axis 0Z) of the permanent magnetic field, Gs=Gauss" "" K}}
 
-  {pmde float 0 {"additional\nrandom\nmagnetic field [Oe]" "Amplitude of the additional random magnetic field" "" q} ge0}
+  {pmde float 0 {"additional\nrandom\nmagnetic field [Gs]" "Amplitude of the additional random magnetic field" "" q} ge0}
 
   {"Addition options" header}
   {outkey radio no {"output results" "Output intermediately results of simulations in the file RELATIVE OX axis" "" S} {yes no} {1 0}}
@@ -2170,9 +2170,9 @@ set precessionfieldESET {
   {dx float 10 {"dimension\nfield X [cm]" "active if homogeneous field, gives x dimension of the precession volume" "" X}}
   {dy float 10 {"dimension\nfield Y [cm]" "active if homogeneous field, gives y dimension of the precession volume" "" Y}}
   {dz float 10 {"dimension\nfield Z [cm]" "active if homogeneous field, gives z dimension of the precession volume" "" V}}
-  {mx float 1 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" T}}
-  {my float 0 {"magnetic\nfield Y [Oe]" "y component of the !magnetic field in Oe" "" G}}
-  {mz float 0 {"magnetic\nfield Z [Oe]" "z component of the magnetic field in Oe" "" H}}
+  {mx float 1 {"magnetic\nfield X [Gs]" "x component of the magnetic field in Gauss" "" T}}
+  {my float 0 {"magnetic\nfield Y [Gs]" "y component of the magnetic field in Gauss" "" G}}
+  {mz float 0 {"magnetic\nfield Z [Gs]" "z component of the magnetic field in Gauss" "" H}}
 }
 
 ### rotating field
@@ -2202,7 +2202,7 @@ set rotating_fieldESET {
   {"Rotating Magnetic Field" header}
   {rax radio 0X {"rotating  field\naxis" "Rotating field around given axis OX, OY or OZ, values 0,1,2" "" M}
   {0X 0Y 0Z} {0 1 2}}
-  {mf float 5000 {"magnetic field\namplitude [Oe]" "Strength or amplitude of the rotating magnetic field, Oe=Gauss" "" d} ge0}
+  {mf float 5000 {"magnetic field\namplitude [Gs]" "Strength or amplitude of the rotating magnetic field, Gs=Gauss" "" d} ge0}
   {rf float 300000 {"rotation\nfrequency [Hz]" "Rotation frequency of the magnetic field" "" w}}
   {bp float 0 {"begin phase\n[deg] " "Initial phase for the rotating magnetic field" "" z}}
   {devamp float 0 {"deviation of\namplitude [%]" "Deviation of amplitude of the rotating magnetic field in percent" "" a} ge0}
@@ -2220,10 +2220,10 @@ set rotating_fieldESET {
   {tofprec radio yes {"TOF from\nprec. module" "Use or do not use the neutrons TOF from preceding modules for the rotating field phase" "" n}
     {yes no} {1 0}}
   {"Permanent Magnetic Field" header}
-  {pmx float 0 {"component\nX [Oe]" "X component (projection in the axis) of the permanent magnetic field, Oe=Gauss" "" I}}
-  {pmy float 0 {"component\nY [Oe]" "Y component (projection in the axis) of the permanent magnetic field, Oe=Gauss" "" A}}
-  {pmz float 0 {"component\nZ [Oe]" "Z component (projection in the axis) of the permanent magnetic field, Oe=Gauss" "" K}}
-  {addrand float 0 {"additional random\nmagnetic field, [Oe]" "Amplitude of the additional random magnetic field" "" q} ge0}
+  {pmx float 0 {"component\nX [Gs]" "X component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" I}}
+  {pmy float 0 {"component\nY [Gs]" "Y component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" A}}
+  {pmz float 0 {"component\nZ [Gs]" "Z component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" K}}
+  {addrand float 0 {"additional random\nmagnetic field, [Gs]" "Amplitude of the additional random magnetic field" "" q} ge0}
   {"Additional Options" header}
   {calcwav float 20.0 {"wavelength\nfor calc. [A]" "Wavelength for caluculation of conditions for PI-flipping" "" W} gt0}
   {ores radio no {"output results" "Output intermediately results of simulations in the file" "" S}
@@ -2241,9 +2241,9 @@ set quadr_fieldESET {
   {"Field range and strength" header}
   {sf_bf pareditablefile field.dat {"field range file" "input file giving the range of the magnetic field" "" P}}
   {}
-  {sf_mx float 0 {"magnetic\nfield X [Oe]" "x component of the magnetic field in Oe" "" F}}
-  {sf_my float 0 {"magnetic\nfield Y [Oe]" "y component of the magnetic field in Oe" "" G}}
-  {sf_mz float 100 {"magnetic\nfield Z [Oe]" "z component of the magnetic field in Oe" "" H}}
+  {sf_mx float 0 {"magnetic\nfield X [Gs]" "x component of the magnetic field in Gauss" "" F}}
+  {sf_my float 0 {"magnetic\nfield Y [Gs]" "y component of the magnetic field in Gauss" "" G}}
+  {sf_mz float 100 {"magnetic\nfield Z [Gs]" "z component of the magnetic field in Gauss" "" H}}
   {"Output frame" header}
   {sf_ox float 50 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" q}}
   {sf_oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
