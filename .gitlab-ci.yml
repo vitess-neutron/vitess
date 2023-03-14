@@ -1,0 +1,155 @@
+variables:
+  VITESS_VERSION: "3.5"
+
+stages:
+  - build
+  - test
+  - package
+
+.compile-base:
+  stage: build
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" )
+    - if: $CI_COMMIT_TAG
+    - when: manual
+      allow_failure: true
+  artifacts:
+    expire_in: 1 week
+
+.compile-unix:
+  extends: .compile-base
+  script:
+    - cd SRC
+    - make
+    - make install
+    - make clean
+    - cd ..
+    - mkdir artifacts-${OS}-${ARCH}
+    - cp -r MODULES artifacts-${OS}-${ARCH}
+  artifacts:
+    paths:
+      - artifacts-${OS}-${ARCH}/
+
+compile-rocky8:
+  extends: .compile-unix
+  rules:
+    - when: on_success
+  image: rockylinux:8
+  variables:
+    OS: Rocky8
+    ARCH: x86_64
+  before_script:
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+
+compile-rocky9:
+  extends: .compile-unix
+  image: rockylinux:9
+  variables:
+    OS: Rocky9
+    ARCH: x86_64
+  before_script:
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+
+compile-centos7:
+  extends: .compile-unix
+  image: centos:7
+  variables:
+    OS: CentOS7
+    ARCH: x86_64
+  before_script:
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel
+
+compile-ubuntu:
+  extends: .compile-unix
+  image: ubuntu:latest
+  variables:
+    OS: Ubuntu
+    ARCH: x86_64
+  before_script:
+    - apt-get update
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev
+
+compile-darwin:
+  extends: .compile-unix
+  image: macos:catalina-xcode
+  tags:
+    - libvirt
+  variables:
+    OS: Darwin
+    ARCH: x86_64
+  before_script:
+    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    - cd vitess-data
+    - sudo hdiutil attach XQuartz-2.8.2.dmg
+    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
+    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
+    - tar xzf libgd-2.3.3.tar.gz
+    - cd libgd-2.3.3
+    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+    - make
+    - sudo make install
+    - cd ..
+    - cd ..
+  artifacts:
+    paths:
+      - artifacts-Darwin-x86_64/
+
+
+compile-windows:
+  extends: .compile-base
+  image: windows_cpp17:10-vc17
+  tags:
+    - libvirt
+  variables:
+    OS: Windows10
+    ARCH: x86
+  script:
+    - cd /c
+    - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
+    - mv vitess-data/tcl /c/
+    - mv vitess-data/gnuplot /c/
+    - cd -
+    - cd SRC
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak install
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak clean
+    - cd ..
+    - mkdir artifacts-${OS}-${ARCH}
+    - cp -r MODULES artifacts-${OS}-${ARCH}/
+    - mkdir -p /c/vitess${VITESS_VERSION}
+    - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
+    - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
+    - cp TOOLS/Output/mysetup.exe artifacts-${OS}-${ARCH}/Vitess${VITESS_VERSION}-${OS}-${ARCH}.exe
+  artifacts:
+    paths:
+      - artifacts-Windows10-x86/
+
+test-rocky8:
+  stage: test
+  image: rockylinux:8
+  needs:
+    - job: compile-rocky8
+  script:
+    - cp -rf artifacts-Rocky8-x86_64/MODULES .
+    - echo "TODO no tests defined yet"
+
+package:
+  stage: package
+  image: rockylinux:8
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" )
+    - if: $CI_COMMIT_TAG
+    - when: manual
+      allow_failure: true
+  script:
+    - mkdir Downloads
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-x86_64 Windows10-x86; do
+        mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
+        cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
+        cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
+        tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
+      done
+    - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe Downloads/
+  artifacts:
+    paths:
+      - Downloads/
