@@ -66,7 +66,7 @@
 
 #define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
 
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */
+#define FREQUENCY_FROM_FIELD(x)  ( 18.324717 * x ) /* rad*kHz from Gauss */
 
 typedef double VectorType[3];
 typedef double DoublePair[2];
@@ -653,6 +653,16 @@ typedef enum
 }
 VtFermiType;
 
+// Devices for polarisation
+// ------------------------
+/* source of polarization 
+typedef enum
+{
+  VT_NO_POL_SRC  =-1,
+  VT_POL_FR_FILE = 0,
+  VT_POL_AS_FCT  = 1
+}
+VtPolSrc;*/
 
 // Samples
 // -------

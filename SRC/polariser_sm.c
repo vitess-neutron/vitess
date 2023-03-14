@@ -7,6 +7,7 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.4  Mar 2023  K. Lieutenant  correction: reading par. and refl. files and minor changes */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -45,11 +46,11 @@ char      *ParameterFileName=NULL,     // -P        [-]   pointer to the name of
           *ReflUpFileName=NULL,        // -U        [-]   pointer to the name of the reflectivity file for spin-up neutrons 
           *ReflDownFileName=NULL;      // -D        [-]   pointer to the name of the reflectivity file for spin-down neutrons
 VectorType PosSM;                      // -a -b -c  [cm]  center position of the rectangular polariser
-double     AngleSMHoriz=0.0,           // -H       [deg]  horizontal rotation angle (about z axis) of the polarizer
-           AngleSMVert=0.0;            // -V       [deg]  vertical (second) rotation angle of the polarizer
+double     AngleSMHoriz=0.0,           // -H       [deg]  horizontal rotation angle (about z axis) of the polarizer - removed !!!
+           AngleSMVert=0.0;            // -V       [deg]  vertical rotation (about y axis) angle of the polarizer
 VectorType TranslOut;                  // -R -E -G  [cm]  position of the new origin  (in the co-ordinate of the old origin)
 double     AnglOutHoriz=0.0,           // -h       [deg]  horizontal angle of the output frame, relative to input orientation
-           AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation    
+           AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation - removed !!!   
 
 VectorType DimSM,                      //    file   [cm]  size of the rectangular polariser
            guide_field,                //    file   [Oe]  guide field
@@ -83,31 +84,35 @@ int main(int argc, char **argv)
   double     szog=0.0,  shift=0.0, 
              PhaseShift=0.0, 
              NumberPrecessions = 0.0,
+             TotNumPrec=0.0,
              IntegralIntensity = 0.0;
   double     LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, 
-             Path, n,                 /* displacement vector*/
-             postop, posbot;
-  Neutron		 Neutrons;
+             Path, n,                 // displacement vector*/
+             postop, posbot;          // position of intersection with polarizer cuboid (postop: position along axis > 0, posbot: position < 0) 
+  Neutron		 OutNeutron, ReflNeutron;
 
   // initialization
   // --------------
   _eModule=MCN_POL_SM;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
+  ReadReflFile(ReflUpFileName,   rupdata);
+  ReadReflFile(ReflDownFileName, rdowndata);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
-    bBlowUp = FALSE;
+    bBlowUp = TRUE;
 
   InitVector(Pos);    InitVector(Dir);
   InitVector(SpinVector);
   InitVector(Path);   InitVector(n);
   InitVector(postop); InitVector(posbot);
 
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron);
+  InitNeutron(&ReflNeutron);
   Init3x3Matrix(LarmorMatrix);
 
   DECLARE_ABORT;
@@ -127,7 +132,6 @@ int main(int argc, char **argv)
       }
       else
       { 
-        /* InputNeutrons[i].Position[0]	= 0.0; */
         TOF  = InputNeutrons[i].Time;
         WL   = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
@@ -147,7 +151,10 @@ int main(int argc, char **argv)
         RotVector(RotMatrixAnalysis, SpinVector);
         CartesianToSpherical(SpinVector, &the, &phi);
 
-        /* select channel and shift vertically to its frame */n[1]=n[2]=0.;n[0]=1.;
+        /* select channel and shift vertically to its frame */
+        // entrance point, plane vertical to x-axis
+        n[0]=1.0; n[1]=n[2]=0.0; 
+
         if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[0]/2., posbot) == TRUE)&&(fabs(posbot[1]) < DimSM[1]/2.)&&(fabs(posbot[2]) < DimSM[2]/2.)&&(Dir[0] > 0.))
         {
           double epsilonZ = (posbot[2] + DimSM[2]/2.) / DimSM[2] * (double) NoCh;
@@ -171,8 +178,9 @@ int main(int argc, char **argv)
           int r=0; 
 
           CHECK;
-          /* reflection on top/bottom */n[0]=n[1]=0.;n[2]=1.;
-	
+          /* reflection on top/bottom */
+          n[2]=1.0; n[0]=n[1]=0.0;	
+
           if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
           {
             /* polarizing */
@@ -229,7 +237,7 @@ int main(int argc, char **argv)
 
         contin:;	
           /* absorption on the sides */
-          n[0]=n[2]=0.0; n[1]=1.0;
+          n[1]=1.0; n[0]=n[2]=0.0; 
 	
           if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.)) {goto getlost;} 
 	        if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.)) {goto getlost;} 
@@ -257,6 +265,16 @@ int main(int argc, char **argv)
         RotBackVector(RotMatrixSM, Dir);
         AddVector(Pos, PosSM);
 
+        /* Write last intersection point - the other intersection points and the absorption points should be added in the m-loop (lines 174 - 246) */
+        if (bVisTraj && Pos[0] > 1.0e-6)           // Pos[0] equal or close to 0.0 means no reflection or absorption in the mirror stack
+        { 
+          CopyNeutron(&InputNeutrons[i], &ReflNeutron);
+          ReflNeutron.Probability = Prob;
+          CopyVector(Pos, ReflNeutron.Position);
+          CopyVector(SpinVector, ReflNeutron.Spin);
+          WriteWWP(&ReflNeutron, VT_REFLECTED);    // direction and TOF not needed
+        }
+
         /* computes neutron variables in the output frame */
         SubVector(Pos, TranslOut);
         RotVector(RotMatrixOut, Pos);
@@ -274,22 +292,23 @@ int main(int argc, char **argv)
         RotVector(RotMatrixField, SpinVector); 
         PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]);  
         NumberPrecessions = PhaseShift/2./M_PI;
+        TotNumPrec       += NumberPrecessions;
 
         FillRotMatrixYX(LarmorMatrix, PhaseShift, 0);
         RotVector    (LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixField, SpinVector);
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        Neutrons = InputNeutrons[i]; 
-        Neutrons.Time = TOF + TOFprec;
-        Neutrons.Probability = Prob;
+        OutNeutron = InputNeutrons[i]; 
+        OutNeutron.Time = TOF + TOFprec;
+        OutNeutron.Probability = Prob;
 
-        CopyVector(Pos, Neutrons.Position);
-        CopyVector(Dir, Neutrons.Vector);
-        CopyVector(SpinVector, Neutrons.Spin);
+        CopyVector(Pos, OutNeutron.Position);
+        CopyVector(Dir, OutNeutron.Vector);
+        CopyVector(SpinVector, OutNeutron.Spin);
 
         /* writes output binary file */
-        WriteNeutron(&Neutrons);
+        WriteNeutron(&OutNeutron);
 
       getlost: ;
       }
@@ -299,6 +318,7 @@ int main(int argc, char **argv)
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
 my_exit:
+  fprintf(LogFilePtr,"av. precession number: %9.2f:\n", TotNumPrec/NumOut);
 
   /* write geometry file */
   SetGeometry("magenta");
@@ -366,7 +386,8 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'H':
-        sscanf(&argv[1][2], "%lf", &AngleSMHoriz);
+        // sscanf(&argv[1][2], "%lf", &AngleSMHoriz);
+        Warning("Parameter 'horizontal offset' removed");
         break;
       case 'V':
         sscanf(&argv[1][2], "%lf", &AngleSMVert);
@@ -384,6 +405,7 @@ void OwnInit(int argc, char *argv[])
 
       case 'h':
         sscanf(&argv[1][2], "%lf", &AnglOutHoriz);
+        // Warning("Parameter 'horiz. rotation angle' removed");
         break;
       case 'v':
         sscanf(&argv[1][2], "%lf", &AnglOutVert);
@@ -404,11 +426,12 @@ void OwnInit(int argc, char *argv[])
     fprintf(LogFilePtr,"\nWARNING: Number of channels must be odd! Set %ld. \n", NoCh);
   }
 		
-  fprintf(LogFilePtr,"	cutoff probability		=     %8.1e\n",  ProbCutoff);
-  fprintf(LogFilePtr,"	position x, y, z		=  %9.4f, %9.4f, %9.4f\n	length, height, width  =  %9.4f, %9.4f, %9.4f\n	offset angle horiz		=  %9.4f\n	offset angle vert		=  %9.4f\n",			
-                     PosSM[0], PosSM[1], PosSM[2], DimSM[0], DimSM[2], DimSM[1], AngleSMHoriz, AngleSMVert);
-  fprintf(LogFilePtr,"	output horizontal angle	= %9.4f\n	output vertical angle	= %9.4f\n	X',Y',Z'			= %9.4f, %9.4f, %9.4f\n", 	
-                     AnglOutHoriz, AnglOutVert, TranslOut[0], TranslOut[1], TranslOut[2]);
+  // fprintf(LogFilePtr,"cutoff probability		=     %8.1e\n",  ProbCutoff);
+  fprintf(LogFilePtr,"center pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", PosSM[0], PosSM[1], PosSM[2]);
+  fprintf(LogFilePtr,"length, height, width: (%9.4f, %9.4f, %9.4f) cm\n", DimSM[0], DimSM[2], DimSM[1]);
+  fprintf(LogFilePtr,"inclination          :  %9.4f deg\n", AngleSMHoriz);
+  fprintf(LogFilePtr,"output pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", TranslOut[0], TranslOut[1], TranslOut[2]); 	
+  fprintf(LogFilePtr,"  and direction      :  %9.4f deg hor.,   %9.4f deg vert.\n",  AnglOutHoriz, AnglOutVert); 
 
   /* converts degs in radian etc. */
   AngleSMHoriz *= M_PI/180.;
@@ -444,12 +467,31 @@ void OwnCleanup()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
+  short iM=0;    // index of mirrors in the stack
+  double DistMirr = DimSM[2]/NoCh;
+
   /* Geometry data */
   if (bVisInstr)
   { 
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
+
+    stGeometry.nRectangles = NoCh + 1;
+    stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+
+    for (iM=0; iM <= NoCh; iM++)
+    {
+      stGeometry.pRectangle[iM].Height    = DimSM[1]*BlowUp;
+      stGeometry.pRectangle[iM].Width     = DimSM[0];
+      stGeometry.pRectangle[iM].rotAngle  = 0.0;
+      stGeometry.pRectangle[iM].vCntr[0]  = PosSM[0] - (DimSM[2]/2.0 - iM*DistMirr) * sin(AngleSMVert);
+      stGeometry.pRectangle[iM].vCntr[1]  = PosSM[1];
+      stGeometry.pRectangle[iM].vCntr[2]  = PosSM[2] + (DimSM[2]/2.0 - iM*DistMirr) * cos(AngleSMVert);
+      stGeometry.pRectangle[iM].vNormal[0]= -sin(AngleSMVert);
+      stGeometry.pRectangle[iM].vNormal[1]=  0.0;
+      stGeometry.pRectangle[iM].vNormal[2]=  cos(AngleSMVert);
+    }
   }
 }
 
@@ -462,13 +504,13 @@ void ReadParameterFile()
   FILE* pFile = OpenInputFile2(ParameterFileName, "Reflectivity data", "r");
 
   /* reads from file by using ReadParF and ReadParComment */
-  DimSM[0]       =ReadParF(pFile); DimSM[2]       =ReadParF(pFile); DimSM[1]       =ReadParF(pFile); ReadParComment(pFile);
+  DimSM[0]       =ReadParF(pFile); DimSM[1]       =ReadParF(pFile); DimSM[2]       =ReadParF(pFile); ReadParComment(pFile);
   NoCh           =ReadParI(pFile); WallTh         =ReadParF(pFile); ReadParComment(pFile);
   guide_field[0] =ReadParF(pFile); guide_field[1] =ReadParF(pFile); guide_field[2] =ReadParF(pFile); ReadParComment(pFile);
   analysis_dir[0]=ReadParF(pFile); analysis_dir[1]=ReadParF(pFile); analysis_dir[2]=ReadParF(pFile); ReadParComment(pFile);
 
   fprintf(LogFilePtr,"\ndata from parameter file: '%s':\n",ParameterFileName);
-  fprintf(LogFilePtr,"	guide_fieldX			=  %9.4f\n	guide_fieldY			=  %9.4f\n	guide_fieldZ			=  %9.4f\n",  guide_field[0], guide_field[1], guide_field[2]);
+  fprintf(LogFilePtr,"guide_field          : (%9.4f, %9.4f, %9.4f\n",  guide_field[0], guide_field[1], guide_field[2]);
 
   fclose(pFile);
 
@@ -481,17 +523,22 @@ void ReadParameterFile()
 /******************************/
 void ReadReflFile(char* sFilename, double* pData)
 { 
-  long count;
+  char   sBuffer[CHAR_BUF_SMALL]="";
+  long count=0;
+  int  nRows=0;
+
   FILE* pFile = OpenInputFile2(sFilename, "Reflectivity data", "r");
 
-  for (count=0; count < FLD_SIZE; count++)
-  {
-    if (fscanf(pFile,"%lf", &pData[count])==EOF)
-    break;
+  nRows=LinesInFile(pFile);
+  if (pFile != NULL)
+  { 
+    for(count=0; count < nRows; count++) 
+    { ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+      StrgScanLF(sBuffer, &pData[10*count], 10*(nRows-count), 0);
+    }
+
+    fclose(pFile);
   }
-
-  fclose(pFile);
-
   return;
 }
 

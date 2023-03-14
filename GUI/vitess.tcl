@@ -1949,7 +1949,7 @@ gSet pol_mirrorESET {
   {pm_dx float 60 {"length [cm]" "length of the polarising mirror (along beam axis)" "" L} gt0 "" 1}
   {pm_dy float 10 {"width or\nheight [cm]" "width or height of the polarising mirror" "" W} gt0 "" 1}
   {"Mirror position and orientation" header}
-  {pm_ori radio y-axis {"rotated about" "choose between horizontal - rotation about y-axis - and vertical orientation - rotation about z-axis - of the mirror" "" O}
+  {pm_ori radio y-axis {"rotated about" "choose between rotation about y-axis (vertical inclination) and rotation about z-axis (horizontal declination) of the mirror" "" O}
     {y-axis z-axis} {0 1}}
   {pm_x float 100 {"position\nX [cm]" "x center position of the polarizing mirror" "" X}}
   {pm_y float 0   {"position\nY [cm]" "y center position of the polarizing mirror" "" Y}}
@@ -1963,7 +1963,7 @@ gSet pol_mirrorESET {
   {pm_ox float 200 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" x}}
   {pm_oy float 0   {"output\nY [cm]" "y position of the output frame (in the input frame)" "" y}}
   {pm_oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" z}}
-  {pm_r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (first rotation)" "" h}}
+  {pm_r1 float 0 {"hor. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (first rotation)" "" h}}
   {pm_r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (second rotation)" "" v}}
 }
 
@@ -1974,18 +1974,18 @@ set polariser_smESET {
     {"parameter\nfile" "" "" P} w pol 1}
   {ufile pareditablefile mirr3+.dat {"Up-reflectivity\nfile" "reflectivity data file for Up neutrons" "" U}}
   {dfile pareditablefile mirr1a.dat {"Down-reflectivit\nfile" "reflectivity data file for Down neutrons" "" D}}
+  {"Center position and orientation" header}
   {}
-  {x float 100 {"position\nX [cm]" "x center position of the rectangular geometry polariser" "" a}}
+  {x float 50 {"position\nX [cm]" "x center position of the rectangular geometry polariser" "" a}}
   {y float 0   {"position\nY [cm]" "y center position of the rectangular geometry polariser" "" b}}
   {z float 0   {"position\nZ [cm]" "z center position of the rectangular geometry polariser" "" c}}
-  {hoff float 0 {"horizontal\noffset [deg]" "rotation angle of the polariser in horizontal (first rotation) direction (0, 0 means parallel to X i.e. beam)" "" H}}
-  {voff float 1 {"vertical\noffset [deg]" "rotation angle of the polariser in vertical (first rotation) direction (0, 0 means parallel to X i.e. beam" "" V}}
-  {}
-  {ox float 200 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" R}}
+  {voff float 0.6 {"vertical\ninclination [deg]" "rotation angle of the polariser in vertical direction (0, 0 means parallel to X i.e. beam" "" V}}
+  {"Output frame" header}
+  {ox float 100 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" R}}
   {oy float 0   {"output\nY [cm]" "y position of the output frame (in the input frame)" "" E}}
   {oz float 0   {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" G}}
-  {r1 float 0 {"horiz. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (0, 0 means parallel to original X)" "" h}}
-  {r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (0, 0 means parallel to original X)" "" v}}
+  {r1 float 0 {"hor. rotation\nangle [deg]" "rotation angle of the output frame in horizontal direction (first rotation, 0, 0 means parallel to original X)" "" h}}
+  {r2 float 0 {"vert. rotation\nangle [deg]" "rotation angle of the output frame in vertical direction (second rotation, 0, 0 means parallel to original X)" "" v}}
 }
 
 
@@ -1993,15 +1993,17 @@ set polariser_smESET {
 ### pol file description
 
 set polESET {
-  {dx float 60 {"dimension\nX [cm]" "length of the polariser"} gt0}
+  {"Size and geometry of the polarizer" header}
+  {dx float 100 {"dimension\nX [cm]" "length of the polariser"} gt0}
   {dy float 10 {"dimension\nY [cm]" "width of the polariser"} gt0}
-  {dz float 10 {"dimension\nZ [cm]" "height of the polariser"} gt0}
-  {nc int 9    {"number of\nchannels" "number of channels in vertical direction"} ge1}
-  {dw float 0.05 {"wall\nwidth [cm" "width of the wall between the channels"} gt0}
-  {}
+  {dz float 5 {"dimension\nZ [cm]" "height of the polariser stack"} gt0}
+  {nc int 5    {"number of\nchannels" "number of channels in vertical direction"} ge1}
+  {dw float 0.05 {"wall\nwidth [cm" "thickness of the material separating the channels"} gt0}
+  {"guide field" header}
   {gx float 1 {"guide field\nX [Gs]" "x component of the guide field"}}
   {gy float 0 {"guide field\nY [Gs]" "y component of the guide field"}}
   {gz float 0 {"guide field\nZ [Gs]" "z component of the guide field"}}
+  {"Analysis direction" header}
   {ax float 1 {"analysis dir.\nX [-]" "x direction vector component of the quantization direction"}}
   {ay float 0 {"analysis dir.\nY [-]" "y direction vector component of the quantization direction"}}
   {az float 0 {"analysis dir.\nZ [-]" "z direction vector component of the quantization direction"}}

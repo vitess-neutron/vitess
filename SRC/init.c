@@ -442,7 +442,7 @@ void Init(int argc, char **argv, const McCompID eModule)
     case 'B':                   // determine the buffer size
       BufferSize = atol(arg);
       break;
-    case 'b':                   // determine the length compression factor
+    case 'b':                   // determine the blow up factor
       BlowUp = atof(arg);
       break;
 

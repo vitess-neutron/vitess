@@ -87,9 +87,9 @@
       <tr>
         <td>
           magnetic field X,Y,Z <br>
-          [Oe]
+          [Gs]
         </td>
-        <td>components of the magnetic field in Oe</td>
+        <td>components of the magnetic field in Gauss</td>
         <td>-T, -G, -H</td>
       </tr>
     </tbody>
@@ -181,8 +181,8 @@
   Y = Y0 + FieldValue*sin(Omega*(T + TOF) + BeginPhase) 
   Z = Z0 
   
-  X0, Y0, Z0: components of permanent magnetic field [Oe=Gauss], 
-  FieldValue: Strength (Amplitude) of rotating magnetic field in Oe=Gauss, 
+  X0, Y0, Z0: components of permanent magnetic field [Gauss], 
+  FieldValue: Strength (Amplitude) of rotating magnetic field in Gauss, 
   TOF       : time of flight of neutron from preceding modules for rotating field phase. 
   Omega     = 2*PI*omega/1000, omega = [Hz], Omega = [rad/ms], 
   BeginPhase in degree 
@@ -285,8 +285,8 @@
         <td>-M</td>
       </tr>
       <tr>
-        <td>Strength of magnetic field  <br>[Oe=Gauss]         </td>
-        <td>Strength(Amplitude) of the rotating magnetic field.</td>
+        <td>Strength of magnetic field  <br>[Gs]         </td>
+        <td>Strength(Amplitude) of the rotating magnetic field in Gauss.</td>
         <td>-d</td>
       </tr>
       <tr>
@@ -338,7 +338,7 @@
       <tr>
         <td>
           Permanent magnetic field components X, Y and Z <br>
-          [Oe]
+          [Gs]
         </td>
         <td>
           Components X, Y, Z of permanent magnetic field, which can be added to
@@ -347,7 +347,7 @@
         <td>-I, -A, -K</td>
       </tr>
       <tr>
-        <td>Additional random\n magnetic field <br> [Oe]</td>
+        <td>Additional random\n magnetic field <br> [Gs]</td>
         <td>Amplitude of additional random magnetic field</td>
         <td>-q</td>
       </tr>
@@ -446,7 +446,7 @@
         <td valign="top">-P </td>
       </tr>
       <tr>
-        <td valign="top">magnetic field X, Y, Z<br>[Oe]</td>
+        <td valign="top">magnetic field X, Y, Z<br>[Gs]</td>
         <td valign="top">
           x-, y- and z-component of the magnetic field inside the edges<br />
           Outside this range, a zero magnetic field is assumed.

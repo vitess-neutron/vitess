@@ -7,6 +7,7 @@
 /* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.4  Feb 2023  K. Lieutenant  correction length and diameter; improved log file output   */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -40,35 +41,36 @@ void  ReadPolAndTrans();                            // Reads polarization and tr
 /** Global Variables         **/
 /******************************/
 // Input parameters
-int        Option=0;                   // -a        [-]    flag: analytical calculation of polarization and tranmission data
-double     polHe3=0.0,                 // -b        [%]    polarisation of the He3 (for analytical calculation)
-           polXsection=0.0,            // -c       [barn]  polarisation cross section of neutrons in He3
-           density=0.0;                // -d      [1/cm3]  density of the He3 gas 
-char      *PolarizationFileName=NULL,  // -P        [-]    pointer to the name of the data file of the wavelength dependent polarisation
-          *TransmissionFileName=NULL;  // -T        [-]    pointer to the name of the data file of the wavelength dependent transmission
-VectorType PosMain,                    // -k -l -m  [cm]   center position of the cylindrical polariser
-           DimMain,                    // -Y    -X  [cm]   radius and length of the cylindrical polariser
-           field_guide,                // -G -H -K  [Oe]   strength of the magnetic guide field
-           field_pol,                  // -M -N -O  [Oe]   field in the polarization chamber (which is added to the guide) 
-           TranslOut;                  // -p -r -s  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+short      bCalc=FALSE;                  // -a        [-]    flag: analytical calculation of polarization and tranmission data
+double     polHe3=0.0,                   // -b        [%]    polarisation of the He3 (for analytical calculation)
+           polXsection=2945.0,           // -c       [barn]  polarisation cross section of 1 Ang neutrons in He3
+           density=0.0;                  // -d      [1/cm3]  density of the He3 gas 
+char      *sPolFile  ="polarization.dat",// -P        [-]    pointer to the name of the data file of the wavelength dependent polarisation
+          *sTransFile="transmission.dat";// -T        [-]    pointer to the name of the data file of the wavelength dependent transmission
+VectorType PosMain,                      // -k -l -m  [cm]   center position of the cylindrical polariser
+           DimMain,                      // -X    -Y  [cm]   length and diameter of the cylindrical polariser
+           field_guide,                  // -G -H -K  [Oe]   strength of the magnetic guide field
+           field_pol,                    // -M -N -O  [Oe]   field in the polarization chamber (which is added to the guide) 
+           TranslOut;                    // -p -r -s  [cm]   position of the new origin  (in the co-ordinate of the old origin)
 
 // Input parameters that are currently not used
-double     AngleMainHoriz=0.0,         //          [deg]   horizontal rotation angle (about z axis) of the polarizer
-           AngleMainVert=0.0;          //          [deg]   vertical (second) rotation angle of the polarizer
-double     AnglOutHoriz=0.0,           //          [deg]   horizontal angle of the output frame, relative to input orientation
-           AnglOutVert=0.0;            //          [deg]   vertical angle of the output frame, relative to input orientation    
+double     AngleMainHoriz=0.0,           //          [deg]   horizontal rotation angle (about z axis) of the polarizer
+           AngleMainVert=0.0;            //          [deg]   vertical (second) rotation angle of the polarizer
+double     AnglOutHoriz=0.0,             //          [deg]   horizontal angle of the output frame, relative to input orientation
+           AnglOutVert=0.0;              //          [deg]   vertical angle of the output frame, relative to input orientation    
 
 // Variables determined from input parameters or trajectory data
-VectorType guide_field_pol;            //           [Oe]   sum of polarization and guide field
-double     RotMatrixMain[3][3],        //           [-]    rotation matrix to tranform into the frame of the polarizer
-           RotMatrixOut [3][3],        //           [-]    rotation matrix to tranform into the output frame  
-           RotMatrixG_Field [3][3],    //           [-]    rotation matrix to tranform into frame of the guide field
-           RotMatrixGM_Field[3][3],    //           [-]    rotation matrix to tranform into frame of guide + polarization field
-           ProbCutoff=0.0;             //           [-]    = wei_min: minimal accepted weight of the neutron trajectory
+char       sOption[13]="";               //                  text for origin of transmission and polarization data (from -a bCalc) 
+VectorType guide_field_pol;              //           [Oe]   sum of polarization and guide field
+double     RotMatrixMain[3][3],          //           [-]    rotation matrix to tranform into the frame of the polarizer
+           RotMatrixOut [3][3],          //           [-]    rotation matrix to tranform into the output frame  
+           RotMatrixG_Field [3][3],      //           [-]    rotation matrix to tranform into frame of the guide field
+           RotMatrixGM_Field[3][3],      //           [-]    rotation matrix to tranform into frame of guide + polarization field
+           ProbCutoff=0.0;               //           [-]    = wei_min: minimal accepted weight of the neutron trajectory
 
 // Data read from file
-double     polardata[FLD_SIZE], 
-           transdata[FLD_SIZE];
+double     aPolData  [FLD_SIZE], 
+           aTransData[FLD_SIZE];
 
 
 /******************************/
@@ -79,9 +81,13 @@ int main(int argc, char **argv)
   long   NumOut=0, i=0 , datanumber=0;
   double TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0, 
          WL=0.0, Prob=0.0, phi=0.0, the=0.0, PhaseShift=0.0, 
-         NumberPrecessions1=0.0, NumberPrecessions2=0.0, NumberPrecessions3=0.0;
+         nPrecessions1=0.0, nTraj1=0, nTotPrec1=0,  // number of precessions of a neutron, 
+         nPrecessions2=0.0, nTraj2=0, nTotPrec2=0,  //   number of trajectories (=neutrons)
+         nPrecessions3=0.0, nTraj3=0, nTotPrec3=0;  //   total number of precessions of the neutrons passing through field i (1,2,3) 
   double pDown=0.0, 
-         IntegralIntensity=0.0; 
+         TotIntensityIn =0.0, TotIntensityOut=0.0,  // incoming and outgoing beam intensity 
+         IntPolarization=0.0,                       // integration of all polarization values 
+         T_avrg, P_avrg;                            // average transmission and polarization 
   double LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, Pos1, Pos2;
   VectorType Path;     /* Path = displacement vector */
@@ -94,12 +100,12 @@ int main(int argc, char **argv)
   _eModule=MCN_POL_HE3;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
-    bBlowUp = FALSE;
+    bBlowUp = TRUE;
 
   InitVector(pos);    InitVector(dir);
   InitVector(Pos);    InitVector(Dir);
@@ -131,6 +137,7 @@ int main(int argc, char **argv)
         TOF = InputNeutrons[i].Time;
         WL = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
+        TotIntensityIn += Prob;
 
         CopyVector(InputNeutrons[i].Position, Pos);
         CopyVector(InputNeutrons[i].Vector, Dir);
@@ -167,7 +174,10 @@ int main(int argc, char **argv)
 
         /* time of precession in the guide field - precession calculated in the field frame */
         TOF1 = fabs(Pos1[0] - Pos[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)); NumberPrecessions1 = PhaseShift/2./M_PI;
+        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)); 
+        nPrecessions1 = PhaseShift/2./M_PI;
+        nTotPrec1 += nPrecessions1;
+        nTraj1++;
 
         FillRotMatrixZY(LarmorMatrix, PhaseShift, 0); 
 
@@ -184,7 +194,10 @@ int main(int argc, char **argv)
         RotVector(RotMatrixGM_Field, SpinVector); 
 
         TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  NumberPrecessions2 = PhaseShift/2./M_PI;
+        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  
+        nPrecessions2 = PhaseShift/2./M_PI;
+        nTotPrec2 += nPrecessions2;
+        nTraj2++;
 
         FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
 
@@ -215,7 +228,10 @@ int main(int argc, char **argv)
         /* time of precession in the guide field again - precession calculated in the field frame */
         RotVector(RotMatrixG_Field, SpinVector);
 
-        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  NumberPrecessions3 = PhaseShift/2./M_PI;
+        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
+        nPrecessions3 = PhaseShift/2./M_PI;
+        nTotPrec3 += nPrecessions3;
+        nTraj3++;
 
         FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
         RotVector(LarmorMatrix, SpinVector);
@@ -224,16 +240,17 @@ int main(int argc, char **argv)
         /* flipping process at some time */ 
         CartesianToSpherical(SpinVector, &the, &phi);
 
-        pDown = sqrt(1. - polardata[datanumber]);
+        pDown = sqrt(1. - aPolData[datanumber]);
         the = 2. * (double) asin(pDown *(double) sin(the/2.));
 
         SphericalToCartesian(SpinVector, &the, &phi);
 
         /* Output matters */
-        Prob *= transdata[datanumber]; 
+        Prob *= aTransData[datanumber]; 
         if(Prob <= ProbCutoff) goto getlost;
 
-        IntegralIntensity += Prob;
+        TotIntensityOut += Prob;
+        IntPolarization += Prob*aPolData[datanumber];
         NumOut++;							/*goto jumpwrite;	jumpwrite :;*/
 
         /* transmit coordinates which were not changed, the rest overwrite below */
@@ -255,9 +272,16 @@ int main(int argc, char **argv)
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
 my_exit:
-  if(NumOut != 0) fprintf(LogFilePtr,"Number of precessions  1   : %lf\n", NumberPrecessions1);
-  if(NumOut != 0) fprintf(LogFilePtr,"Number of precessions  2   : %lf\n", NumberPrecessions2);
-  if(NumOut != 0) fprintf(LogFilePtr,"Number of precessions  3   : %lf\n\n", NumberPrecessions3);
+  P_avrg = IntPolarization/TotIntensityOut;
+  T_avrg = TotIntensityOut/TotIntensityIn; 
+  fprintf(LogFilePtr, "Polarization file: %s %s\n",                      sPolFile,   sOption);
+  fprintf(LogFilePtr, "Transmission file: %s %s\n",                      sTransFile, sOption);
+  if (NumOut > 0) fprintf(LogFilePtr,"Average polarization P: %7.5lf\n", P_avrg);
+  if (NumOut > 0) fprintf(LogFilePtr,"Average transmission T: %7.5lf\n", T_avrg);
+  if (NumOut > 0) fprintf(LogFilePtr,"Figure of merit T*P^2 : %7.5lf\n", T_avrg*sq(P_avrg));
+  if (nTraj1 > 0) fprintf(LogFilePtr,"Average number of precessions before polarizer: %7.2lf\n",   nTotPrec1/nTraj1);
+  if (nTraj2 > 0) fprintf(LogFilePtr,"                              in polarizer    : %7.2lf\n",   nTotPrec2/nTraj2);
+  if (nTraj3 > 0) fprintf(LogFilePtr,"                              after polarizer : %7.2lf\n\n", nTotPrec3/nTraj3);
 
   /* write geometry file */
   SetGeometry("magenta");
@@ -295,8 +319,8 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixGM_Field);
 
   for (j=0; j < FLD_SIZE; j++)
-  { polardata[j] = 0.0;
-    transdata[j] = 0.0;
+  { aPolData[j] = 0.0;
+    aTransData[j] = 0.0;
   }
 
   ProbCutoff= wei_min;
@@ -306,7 +330,7 @@ void OwnInit(int argc, char *argv[])
     switch(argv[1][1])
     {
       case 'a':
-        sscanf(&argv[1][2], "%d", &Option);
+        sscanf(&argv[1][2], "%hd", &bCalc);
         break;
 
       case 'b':
@@ -320,10 +344,10 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'P':
-        PolarizationFileName=&argv[1][2];
+        sPolFile=&argv[1][2];
         break;
       case 'T':
-        TransmissionFileName=&argv[1][2];
+        sTransFile=&argv[1][2];
         break;
 				
       case 'k':
@@ -337,10 +361,10 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'X':
-        sscanf(&argv[1][2], "%lf", &DimMain[2]);
+        sscanf(&argv[1][2], "%lf", &DimMain[2]);  // length of the polarizer
         break;
       case 'Y':
-        sscanf(&argv[1][2], "%lf", &DimMain[0]);
+        sscanf(&argv[1][2], "%lf", &DimMain[0]);  // diameter of the polarizer
         break;
 
       case 'G':
@@ -365,8 +389,8 @@ void OwnInit(int argc, char *argv[])
 
       case 'p':
         sscanf(&argv[1][2], "%lf", &TranslOut[0]);
-        if (TranslOut[0] < (PosMain[0] + DimMain[0]/2.)) 
-        {fprintf(LogFilePtr,"\nERROR: output position must be outside of flipper ! \n\n"); exit (-1);}
+        if (TranslOut[0] < (PosMain[0] + DimMain[2]/2.)) 
+        {fprintf(LogFilePtr,"\nERROR: output position must be beyond the polarizer ! \n\n"); exit (-1);}
         break;
       case 'r':
         sscanf(&argv[1][2], "%lf", &TranslOut[1]);
@@ -406,8 +430,13 @@ void OwnInit(int argc, char *argv[])
   FillRotMatrixZY(RotMatrixGM_Field, roty_gm, rotz_gm); 
 
   /* case: calculation of polarization and transmissiom */
-  if (Option == 1)
-    WritePolAndTrans();
+  if (bCalc == TRUE)
+  { WritePolAndTrans();
+    strncpy(sOption, "calculated", sizeof(sOption)-1);
+  }
+  else
+  { Note("P(lambda) and T(lambda) taken from file.  He-3 polarization, He-3 particle density and polarizer length are not considered");
+  }
 
   ReadPolAndTrans();
  
@@ -433,6 +462,18 @@ void SetGeometry(char* sColor)
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
+
+    stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
+    stGeometry.nCylinders = 1;
+
+    stGeometry.pCylinder[0].Radius      = DimMain[0]/2.0*BlowUp;
+    stGeometry.pCylinder[0].Length      = DimMain[2];
+    stGeometry.pCylinder[0].vCntr[0]    = PosMain[0];
+    stGeometry.pCylinder[0].vCntr[1]    = PosMain[1]*BlowUp;
+    stGeometry.pCylinder[0].vCntr[2]    = PosMain[2]*BlowUp;
+    stGeometry.pCylinder[0].vSymAxis[0] = 1.0;
+    stGeometry.pCylinder[0].vSymAxis[1] = 0.0;
+    stGeometry.pCylinder[0].vSymAxis[2] = 0.0;
   }
 }
 
@@ -448,18 +489,18 @@ void WritePolAndTrans()
   FILE  *pFileP=NULL,
         *pFileT=NULL;
 
-  pFileP=OpenOutputFile(PolarizationFileName, TRUE, "r");
-  pFileT=OpenOutputFile(TransmissionFileName, TRUE, "r");
+  pFileP=OpenOutputFile(sPolFile,   TRUE, "w");
+  pFileT=OpenOutputFile(sTransFile, TRUE, "w");
 
   for (l=0; l < FLD_SIZE; l++)
   {
     wavel = 0.01 * (l+1); /*energy = ENERGY_FROM_LAMBDA(wavel)/1.E6;*/
 
-    Mue = (polXsection * wavel /*5327 * sqrt(0.025/energy)  polarization cross section*/)* 1.E-24  * (density /*2.7E20  atomic density cm-3 at 10 atm pressure*/);
-    Nue = (polHe3/100./*0.50 Polarization of He3*/) * Mue;
+    Mue = (polXsection * wavel )*1.E-24  * density;  /* 5327 * sqrt(0.025/energy)  polarization cross section, barn->cm^2, 2.7E19 particle density cm-3 per atm pressure */
+    Nue = (polHe3/100.0) * Mue;                      /* Polarization of He3*/
 					
-    Polarization = tanh(Nue * DimMain[0]);
-    Transmission = exp(-Mue * DimMain[0]) * cosh(Nue * DimMain[0]);
+    Polarization = tanh(Nue * DimMain[2]);
+    Transmission = exp(-Mue * DimMain[2]) * cosh(Nue * DimMain[2]);
 
     fprintf(pFileP, "  %le \n", Polarization);
     fprintf(pFileT, "  %le \n", Transmission);
@@ -478,21 +519,21 @@ void ReadPolAndTrans()
   long  count=0;
   FILE* pFile=NULL;
   
-  pFile=OpenInputFile2(PolarizationFileName, "polarization data", "r");
+  pFile=OpenInputFile2(sPolFile, "polarization data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
-    if (fscanf(pFile,"%le",&polardata[count])==EOF)
+    if (fscanf(pFile,"%le",&aPolData[count])==EOF)
     break;
   }
   fclose(pFile);
 
 
-  pFile = OpenInputFile2(TransmissionFileName, "transmission data", "r");
+  pFile = OpenInputFile2(sTransFile, "transmission data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
-    if (fscanf(pFile,"%le",&transdata[count])==EOF)
+    if (fscanf(pFile,"%le",&aTransData[count])==EOF)
     break;
   }
   fclose(pFile);

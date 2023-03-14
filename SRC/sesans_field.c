@@ -27,15 +27,17 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void	OwnInit       (int argc, char *argv[]);                                   // Reads input parameters and sets global variables
-void	OwnCleanup    () ;                                                        // Does module specific cleanup
-short ReadFieldArea (const char* sFileName);                                    // Reads the positions of the corners of the field 
-void  SetGeometry   (char* sColor);                                             // Fills the structure stGeometry for visualization 
-short DetermineWalls();                                                         // Determines planes for all walls by calling 'DeterminePlane'
+void	OwnInit       (int argc, char *argv[]);                                      // Reads input parameters and sets global variables
+void	OwnCleanup    () ;                                                           // Does module specific cleanup
+short ReadFieldArea (const char* sFileName);                                       // Reads the positions of the corners of the field
+void  SetGeometry   (char* sColor);                                                // Fills the structure stGeometry for visualization
+short DetermineWalls();                                                            // Determines planes for all walls by calling 'DeterminePlane'
 short DeterminePlane(Plane* wall, VectorType vCorner1, VectorType vCorner2,     
-                                  VectorType vCorner3, VectorType vCorner4);    // Determines plane from the corner positions
-short IsPointInside (VectorType p, short iC1, short iC2, short iC3, short iC4); // Checks if position is inside the field area given by the corners
-void  Invert        (double Ni[NMAX+1][NMAX+1], double Nm[NMAX+1][NMAX+1]);     // Inversion of a matrix (NM to NI)
+                                  VectorType vCorner3, VectorType vCorner4);       // Determines plane from the corner positions
+short IsPointInside (VectorType p, short iC1, short iC2, short iC3, short iC4);    // Checks if position is inside the field area given by the corners
+void  Invert        (double Ni[NMAX+1][NMAX+1], double Nm[NMAX+1][NMAX+1]);        // Inversion of a matrix (NM to NI)
+void  DefineTriangle(VtTriangle* ta, VectorType v1, VectorType v2, VectorType v3); // Creates triangle for visualization from 3 points
+
 
 
 /******************************/
@@ -83,7 +85,7 @@ int main(int argc, char **argv)
   PrintModuleName(_eModule, "1.0");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp     = TRUE;
 
@@ -369,6 +371,22 @@ void SetGeometry(char* sColor)
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
+
+    stGeometry.nTriangles = 12;
+    stGeometry.pTriangle = calloc(stGeometry.nTriangles, sizeof(VtTriangle));
+
+    DefineTriangle(&stGeometry.pTriangle[ 0], vCorner[0], vCorner[1], vCorner[2]);
+    DefineTriangle(&stGeometry.pTriangle[ 1], vCorner[0], vCorner[3], vCorner[2]);
+    DefineTriangle(&stGeometry.pTriangle[ 2], vCorner[0], vCorner[1], vCorner[5]);
+    DefineTriangle(&stGeometry.pTriangle[ 3], vCorner[0], vCorner[4], vCorner[5]);
+    DefineTriangle(&stGeometry.pTriangle[ 4], vCorner[1], vCorner[2], vCorner[6]);
+    DefineTriangle(&stGeometry.pTriangle[ 5], vCorner[1], vCorner[5], vCorner[6]);
+    DefineTriangle(&stGeometry.pTriangle[ 6], vCorner[2], vCorner[3], vCorner[7]);
+    DefineTriangle(&stGeometry.pTriangle[ 7], vCorner[2], vCorner[6], vCorner[7]);
+    DefineTriangle(&stGeometry.pTriangle[ 8], vCorner[0], vCorner[3], vCorner[7]);
+    DefineTriangle(&stGeometry.pTriangle[ 9], vCorner[0], vCorner[4], vCorner[7]);
+    DefineTriangle(&stGeometry.pTriangle[10], vCorner[4], vCorner[5], vCorner[6]);
+    DefineTriangle(&stGeometry.pTriangle[11], vCorner[4], vCorner[7], vCorner[6]);
   }
 }
 
@@ -553,3 +571,13 @@ void Invert(double NI[NMAX+1][NMAX+1], double NM[NMAX+1][NMAX+1])
   }
 }
 
+
+/***************************************************************************/
+/** Creates triangle for visualization from 3 points                      **/
+/***************************************************************************/
+void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorType v3)
+{
+  CopyVector(v1, triangle->vEdges[0]);
+  CopyVector(v2, triangle->vEdges[1]);
+  CopyVector(v3, triangle->vEdges[2]);
+}

@@ -253,6 +253,7 @@ void SetGeometry(char* sColor)
       
       stGeometry.pRectangle[0].Width     = BlowUp * Width;
       stGeometry.pRectangle[0].Height    = BlowUp * Height;
+      stGeometry.pRectangle[0].rotAngle  = 90.0;
       stGeometry.pRectangle[0].vCntr[0]  = DistMove;
       stGeometry.pRectangle[0].vCntr[1]  = 0.0;
       stGeometry.pRectangle[0].vCntr[2]  = 0.0;
