@@ -22,6 +22,7 @@
 /* 1.20    Sep 2009  M. Fromme      adopted to newer vitess environment                     */  
 /* 1.21    Apr 2020  K. Lieutenant  tidy up, new central visualization parameters           */
 /* 1.22    Feb 2021  K. Lieutenant  correction for visualization                            */
+/* 1.23    Mar 2023  K. Lieutenant  visualization included, bugs corrected and output impr. */
 /********************************************************************************************/
 
 #include "softabort.h"
@@ -67,12 +68,12 @@ double RefractInput=1.0;    // -R   [-]  User defined refractive index
 double RefractWave =1.0;    // -C  [Ang] wavelength for the user-defined refactive index
 double AttenInput  =1.0;    // -D [1/cm] user defined macroscopic absorption cross section of the lense 
 double AttScattering=0.0;   // -Q [1/cm] user defined macroscopic scattering cross section of the lense 
-double DiafRadius1 =0.0;    // -m  [cm]  inner radius of diaphragm at the exit of the lense system
-double DiafRadius2 =0.0;    // -M  [cm]  outer radius of diaphragm at the exit of the lense system
+double SlitRadius1 =0.0;    // -m  [cm]  inner radius of diaphragm at the exit of the lense system
+double SlitRadius2 =0.0;    // -M  [cm]  outer radius of diaphragm at the exit of the lense system
 double WaveCalc   =20.0;    // -r  [Ang] Wavelength for focal distance calculation
 
 VectorType 
-PosMain ={0.0, 0.0, 0.0}, // -d -e -k  [cm] center position of the lense 
+PosMain ={0.0, 0.0, 0.0}, // -d -e -k  [cm] center position of the lense (system)
 TransOut={0.0, 0.0, 0.0}; // -s -t -w  [cm] position of the output frame
 
 double Materials[16];       // database with refractive indexes
@@ -84,7 +85,7 @@ double Atten  =1.0;         // Calculated Attenuation coeff for the lense materi
 long  idwin1=0, idwin2=0;   // IDs for plot windows
 
 LenseSecond MyLense;
-Plane       Endpoint;       // plane for flight after lense
+Plane       Endpoint;       // plane for flight after lense to focal point
 Plane       EndpointRTAL;   // same for visualization
 
 #ifdef VT_GRAPH
@@ -95,7 +96,7 @@ Plane       EndpointRTAL;   // same for visualization
 /** Prototypes               **/
 /******************************/
 void  OwnInit(int argc, char *argv[]);      // reads input parameters and sets global parameters
-void  CalcAndWritePar();                    // calculates arrays from input parameters and writes to log file
+void  CalcAndWritePar(int nLenses);         // calculates arrays from input parameters and writes to log file
 void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization    missing
 
 
@@ -121,50 +122,19 @@ int main(int argc, char *argv[])
   InitNeutron(&Output);
   InitNeutron(&OutputRTAL);
 
-  /* DATEBASE: Index delta (for wavelength 1.8 Angs) for diff. materials.
-     C.D. Dewhurst and I. Anderson, ILL
-     Source: http://www.ill.fr/AR-01/p-104.htm				
-     Refractive index can be calculated as (1-delta)
-     Recalculation for other wavelengths: delta_new = wavelength^2*delta/(1.8^2)
-     according:                           delta =(wavelength)^2*(N*Bcoh)/2*PI
-  */
-
-  Materials[1] = 1.28e-6;  Materialsz[1] = 0.00425; /*O*/
-  Materials[2] = 1.60e-6;  Materialsz[2] = 0.0191;  /*CO2*/
-  Materials[3] = 3.88e-6;  Materialsz[3] = 0.051;   /*C*/
-  Materials[4] = 4.95e-6;  Materialsz[4] = 0.116;   /*Be*/
-  Materials[5] = 1.02e-6;  Materialsz[5] = 0.0365;  /*F*/
-  Materials[6] = 1.23e-6;  Materialsz[6] = 0.118;   /*Bi*/
-  Materials[7] = 3.62e-6;  Materialsz[7] = 1.28;    /*MgO*/
-  Materials[8] = 1.60e-6;  Materialsz[8] = 0.573;   /*Pb*/
-  Materials[9] = 1.24e-6;  Materialsz[9] = 0.471;   /*MgF*/
-  Materials[10]= 1.05e-6;  Materialsz[10]= 0.441;   /*SiO2*/ /* DEFAULT */
-  Materials[11]= 1.60e-6;  Materialsz[11]= 0.812;   /*ZrO2*/
-  Materials[12]= 1.19e-6;  Materialsz[12]= 0.615;   /*Mg*/
-  Materials[13]= 1.06e-6;  Materialsz[13]= 0.796;   /*Si*/
-  Materials[14]= 1.55e-6;  Materialsz[14]= 1.2;     /*Zr*/
-  Materials[15]= 1.06e-6;  Materialsz[15]= 1.38;    /*Al*/
-
-  /* attenuation indexes mu[m^-1] for 1.8 Ang, same source
-     mu  = 4*PI*beta/lambda
-
-     GENERAL REFRACTION COEFF: N = 1 - DELTA - I*BETA
-     WHERE DELTA AND BETA ARE DESCRIBED ABOVE	I = sqrt(-1);
-  */
-
   // initialisation
   // --------------
   _eModule=MCN_LENSE;
 
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.22");
+  PrintModuleName(_eModule, "1.23");
 	OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;    // needs to be done still
+  bVisInstalled = TRUE;    
   if (bVisInstr) 
     bBlowUp     = TRUE;
 
-  CalcAndWritePar();
+  CalcAndWritePar(1);
 
   DECLARE_ABORT
 
@@ -196,9 +166,7 @@ int main(int argc, char *argv[])
 	                                          Thickness, Refract, Atten, AttScattering, PosMain, TransOut, wei_min, surfacerough, keygrav, NeutronLoss,
 	                                          Attenkey, CurrentLense, LenseForOut, LenseForOutVis,  ServiceInfoK, COLLFILE, LenseType);
           if (TimeOF1 == -1.0)
-          {
             NeutronLoss = 1;
-          }
 
           TimeOF1t = TimeOF1t + TimeOF1;
         }
@@ -227,12 +195,12 @@ int main(int argc, char *argv[])
         /* activate diaphragm, if necessary */
         keyraytraceALoff = 0;
 
-        if ((DiafRadius1 > 0.0)||(DiafRadius2 > 0.0))
+        if ((SlitRadius1 > 0.0)||(SlitRadius2 > 0.0))
         {
           temp1 =  InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]
                  + InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2];
           temp1 = sqrt(temp1);
-          if ((temp1 < DiafRadius1)||(temp1 > DiafRadius2))
+          if ((temp1 < SlitRadius1)||(temp1 > SlitRadius2))
           {
             keyraytraceALoff = 1;
             continue;
@@ -295,22 +263,15 @@ int main(int argc, char *argv[])
         }
       #endif
 
-        /* Additional flight on focus distance according analytical calculations */
         if (keyfocusflight == 1)
-        {
+        { /* Additional flight on focus distance according analytical calculations or to output position */
           if (Output.Vector[0] <= 0.0) continue;
 
-          TimeOFspace = 0.0;
           if (keygrav == 1)
-          {
             TimeOFspace = NeutronPlaneIntersectionGrav(&Output, Endpoint);
-            if (TimeOFspace < 0.0) continue;
-          }
           else
-          {
             TimeOFspace = NeutronPlaneIntersection1(&Output, Endpoint);
-            if (TimeOFspace < 0.0) continue;
-          }
+          if (TimeOFspace < 0.0) continue;
 
           Output.Time = Output.Time + TimeOFspace;
           Output.Position[0]=0.0;
@@ -333,8 +294,10 @@ int main(int argc, char *argv[])
     }
 #endif
 
+  SetGeometry("green");
+
   /* Do the general cleanup */
-  Cleanup(PosMain[0], PosMain[1], PosMain[2], 0.0, 0.0);
+  Cleanup(Endpoint.D + NumberOfLenses*TransOut[0], TransOut[1], TransOut[2], 0.0, 0.0);
 
   if( ServiceInfoK == 1 ) fprintf(COLLFILE, "\n");
   if( ServiceInfoK == 1 ) fclose(COLLFILE);
@@ -351,6 +314,40 @@ int main(int argc, char *argv[])
 void  OwnInit(int argc, char *argv[])
 {
   int i=0;
+
+  InitPlane(&Endpoint);
+  InitPlane(&EndpointRTAL);
+
+  /* DATEBASE: Index delta (for wavelength 1.8 Angs) for diff. materials.
+     C.D. Dewhurst and I. Anderson, ILL
+     Source: http://www.ill.fr/AR-01/p-104.htm				
+     Refractive index can be calculated as (1-delta)
+     Recalculation for other wavelengths: delta_new = wavelength^2*delta/(1.8^2)
+     according:                           delta =(wavelength)^2*(N*Bcoh)/2*PI
+  */
+
+  Materials[1] = 1.28e-6;  Materialsz[1] = 0.00425; /*O*/
+  Materials[2] = 1.60e-6;  Materialsz[2] = 0.0191;  /*CO2*/
+  Materials[3] = 3.88e-6;  Materialsz[3] = 0.051;   /*C*/
+  Materials[4] = 4.95e-6;  Materialsz[4] = 0.116;   /*Be*/
+  Materials[5] = 1.02e-6;  Materialsz[5] = 0.0365;  /*F*/
+  Materials[6] = 1.23e-6;  Materialsz[6] = 0.118;   /*Bi*/
+  Materials[7] = 3.62e-6;  Materialsz[7] = 1.28;    /*MgO*/
+  Materials[8] = 1.60e-6;  Materialsz[8] = 0.573;   /*Pb*/
+  Materials[9] = 1.24e-6;  Materialsz[9] = 0.471;   /*MgF*/
+  Materials[10]= 1.05e-6;  Materialsz[10]= 0.441;   /*SiO2*/ /* DEFAULT */
+  Materials[11]= 1.60e-6;  Materialsz[11]= 0.812;   /*ZrO2*/
+  Materials[12]= 1.19e-6;  Materialsz[12]= 0.615;   /*Mg*/
+  Materials[13]= 1.06e-6;  Materialsz[13]= 0.796;   /*Si*/
+  Materials[14]= 1.55e-6;  Materialsz[14]= 1.2;     /*Zr*/
+  Materials[15]= 1.06e-6;  Materialsz[15]= 1.38;    /*Al*/
+
+  /* attenuation indexes mu[m^-1] for 1.8 Ang, same source
+     mu  = 4*PI*beta/lambda
+
+     GENERAL REFRACTION COEFF: N = 1 - DELTA - I*BETA
+     WHERE DELTA AND BETA ARE DESCRIBED ABOVE	I = sqrt(-1);
+  */
 
   for(i=1; i<argc; i++) 
   {
@@ -375,23 +372,23 @@ void  OwnInit(int argc, char *argv[])
         break;
 
       case 's':
-        TransOut[0]  =  atof(arg); /* TransOut 0 */
+        TransOut[0] = atof(arg); /* TransOut 0 */
         break;     		
       case 't':
-        TransOut[1]  =  atof(arg); /* TransOut 1 */
+        TransOut[1] = atof(arg); /* TransOut 1 */
         break;
       case 'w':
-        TransOut[2]  =  atof(arg); /* TransOut 2 */
+        TransOut[2] = atof(arg); /* TransOut 2 */
         break;
 
       case 'd':
-        PosMain[0]  =  atof(arg); /* Posmain0: center of the lense x */
+        PosMain[0] = atof(arg); /* Posmain0: center of the lense x */
         break;
       case 'e':
-        PosMain[1]  =  atof(arg); /* Posmain1: center of the lense y */
+        PosMain[1] = atof(arg); /* Posmain1: center of the lense y */
         break;
       case 'k':
-        PosMain[2]  =  atof(arg); /* Posmain2: center of the lense z */
+        PosMain[2] = atof(arg); /* Posmain2: center of the lense z */
         break;
 
       case 'i':
@@ -433,11 +430,11 @@ void  OwnInit(int argc, char *argv[])
         break;
 
       case 'm':
-        DiafRadius1 = atof(arg);
+        SlitRadius1 = atof(arg);
         break;
 
       case 'M':
-        DiafRadius2 = atof(arg);
+        SlitRadius2 = atof(arg);
         break;
 
       case 'y':
@@ -503,7 +500,7 @@ void  OwnInit(int argc, char *argv[])
 /********************************************************************/
 /** calculates arrays from input parameters and writes to log file **/
 /********************************************************************/
-void  CalcAndWritePar()
+void  CalcAndWritePar(int nLenses)
 {
   double   FocalLength=0.0;                                   /* Calculated analytical focal length */
   double   FocalLength_thin=0.0;                              /* Calculated analytical focal length for thin lense */
@@ -514,24 +511,41 @@ void  CalcAndWritePar()
   double   Par1=0.0, Par2=0.0, Shift1=0.0, Shift2=0.0, 
            Sign1=0, Sign2=0.0;                                /* additional parameters */
 
+  /* The code is currently only correct for nLenses=1. For a larger number of lenses, the planes have to be calculated for each lense using Pos[] and Out[] instead
+     of PosMain[] and TransOut[] for all lenses. The following code calculates the positions for 'NumberOfLenses' lenses. 
+
+    VectorType Pos={0.0, 0.0, 0.0},   /* center position of the current lense
+               Out={0.0, 0.0, 0.0};   /* output position of the current lense
+  
+    for(j = 1; j <= NumberOfLenses; j++)
+    {
+      if (j == 1)
+        Pos[0] = PosMain[0] - 0.5*(NumberOfLenses-1.0)*Thickness;
+      else 
+        Pos[0] = 0.5*Thickness;
+
+      CopyVector(Pos,Out);
+      if (j==NumberOfLenses)
+        Out[0] += 0.5*Thickness + (TransOut[0] - PosMain[0] - 0.5 * NumberOfLenses * Thickness); 
+      else
+        Out[0] += 0.5*Thickness;
+    }
+
+    Currently it loops 'NumberOfLenses' times through 'PathThroughLenseOrder2()' always using 'PosMain[]' and 'TransOut[]', i.e. propagating the neutron 'NumberOfLenses' 
+    times from entrance to exit. As a workaround, both the central x position PosMain[0] and the exit position TransOut[0] are divided by 'NumberOfLenses' (see below) and 
+    for 'Cleanup' 'NumberOfLenses' * TransOut[0] is used (see end of main()). That should give nearly the same result.    
+  */
+
   if (ServiceInfoK == 1)
   {
     fprintf(LogFilePtr,"Output the cartesian coordinates of neutrons in the file for lense:  %ld\n", LenseForOut);
 
     if (LenseForOut == 0)
-    {
       fprintf(LogFilePtr,"Output neutrons for all lenses (if it more than one)!\n");
-    }
     if (LenseForOut < 0)
-    {
-      fprintf(LogFilePtr,"Number of the lense for output < 0 : exit! Correct option -v\n");
-      exit(-1);
-    }
+      Error("Number of the lense for output < 0 : exit! Correct option -v\n");
     if (LenseForOut > NumberOfLenses)
-    {
-      fprintf(LogFilePtr,"Number of the lense is more than general number_of_lenses : exit! Correct option -v\n");
-      exit(-1);
-    }
+      Error("Number of the lense is more than general number_of_lenses : exit! Correct option -v\n");
 
     COLLFILE=OpenOutputFile(COLLFILEName, FALSE, "w");
   }
@@ -558,164 +572,61 @@ void  CalcAndWritePar()
   }
 #endif
 
-  if(keygrav == 1)
+  /* check and writeout input data */
+  /* ----------------------------- */ 
+  if (NumberOfLenses <= 0)
+    Error("Number of lenses is <= 0.0");
+
+  if (NumberOfLenses > 1)
   {
-    fprintf(LogFilePtr,"Lense: Gravity is enabled\n");
-  }
-  else
-  {
-    fprintf(LogFilePtr,"Lense: Gravity is disabled\n");
+    PosMain [0] = PosMain[0]  / NumberOfLenses;
+    TransOut[0] = TransOut[0] / NumberOfLenses;
   }
 
-  if (LenseType == 0) fprintf(LogFilePtr,"Lense surfaces have spherical form\n");
-  if (LenseType == 1) fprintf(LogFilePtr,"Lense surfaces have parabolic  form\n");
-  if ((LenseType < 0)||(LenseType > 1))
-  {
-    fprintf(LogFilePtr,"No such geometry form of the lense\n");
-    exit(-1);
+  switch (LenseType)
+  { case 0 : fprintf(LogFilePtr,"%ld spherical lenses\n", NumberOfLenses); break; 
+    case 1 : fprintf(LogFilePtr,"%ld parabolic lenses\n", NumberOfLenses); break; 
+    default: Error("wrong value for 'lense surface geometry'");
   }
-
-  if (NumberOfLenses <= 0.0)
-  {
-    fprintf(LogFilePtr,"Error: Number of lenses is <= 0.0!!! Correct option -I\n");
-    exit(-1);
-  }
-  fprintf(LogFilePtr,"Number of lenses: %ld\n", NumberOfLenses);
-
-  if (WaveCalc <= 0.0)
-  {
-    fprintf(LogFilePtr,"Wavelength %f Angs for calculations <= 0.0, correct the option -r\n", WaveCalc);
-    exit(-1);
-  }
-
   if (NumberOfLenses >= 30)
-  {
-    fprintf(LogFilePtr,"Error: Number of lenses is >= 30. Use with care!!!\n");
-  }
+    Warning("Number of lenses is >= 30. Use with care!");
 
-  if (LenseType == 0)
-  {
+  fprintf(LogFilePtr,"Diameter and thickness     :  %8.3f  %8.3f cm\n", 2.0*RadiusMain, Thickness);
+  fprintf(LogFilePtr,"1st and 2nd focusing radius:  %8.3f  %8.3f cm\n", Radius1, Radius2);
 
-    fprintf(LogFilePtr,"First radius = %f cm Second radius = %f cm Main radius = %f cm\n", Radius1, Radius2, RadiusMain);
-    fprintf(LogFilePtr,"Thickness of the lense = %f  cm\n", Thickness);
+  if (Radius1 == 0.0)
+	  Warning("Radius 1 is set to 0, so the first surface of the lense is a plane");
+  if (Radius2 == 0.0)
+	  Warning("Radius 2 is set to 0, so the first surface of the lense is a plane");
 
-    /* check data */
-
-    if (Radius1 == 0.0)
-	  {
-	    fprintf(LogFilePtr,"Warning! Instead sphere the plane will take place for the first surface of the lenses!\n");
-  	}
-
-    if (Radius2 == 0.0)
-	  {
-	    fprintf(LogFilePtr,"Warning! Instead sphere the plane will take place for the second surface of the lenses!\n");
-	  }
-
-    if (RadiusMain <= 0.0)
-	  {
-	    fprintf(LogFilePtr,"Error: main radius of the lense <= 0.0!!! Correct option -c\n");
-	    exit(-1);
-	  }
-
-    if (Thickness <= 0.0)
-	  {
-	    fprintf(LogFilePtr,"Error: Thickness of the lense <= 0.0!!! Correct option -c\n");
-	    exit(-1);
-	  }
-
-    if (Thickness < 1.0)
-	  {
-	    fprintf(LogFilePtr,"WARNING! The thickness of the lense along main optical axis is SMALL (< 1.0 cm)! Please change it.\n");
-	  }
-
-    if (Thickness < 0.5)
-	  {
-	    fprintf(LogFilePtr,"WARNING! The thickness of the lense along main optical axis is SMALL (< 0.5 cm )! Please change it.\n");
-	  }
-  }
-
-
-  if (LenseType == 1)
-  {
-    fprintf(LogFilePtr,"Parabolic deep  %f cm  %f cm  %f  cm\n",Radius1, Radius2, RadiusMain);
-    fprintf(LogFilePtr,"Thickness of the lense %f  cm\n", Thickness);
-
-    /* check data */
-
-    if (Radius1 == 0.0)
-    {
-      fprintf(LogFilePtr,"Warning! Instead paraboloid the plane will take place for the first surface of the lenses!\n");
-    }
-
-    if (Radius2 == 0.0)
-    {
-      fprintf(LogFilePtr,"Warning! Instead paraboloid the plane will take place for the second surface of the lenses!\n");
-    }
-
-    if (RadiusMain <= 0.0)
-    {
-      fprintf(LogFilePtr,"Error: main radius of the lense <= 0.0!!! Correct option -c\n");
-      exit(-1);
-    }
-
-    if (Thickness <= 0.0)
-    {
-      fprintf(LogFilePtr,"Error: Thickness of the lense <= 0.0!!! Correct option -c\n");
-      exit(-1);
-    }
-
-    if (Thickness < 1.0)
-    {
-      fprintf(LogFilePtr,"WARNING! The thickness of the lense along main optical axis is SMALL (< 1.0 cm)! Please change it.\n");
-    }
-
-    if (Thickness < 0.5)
-    {
-      fprintf(LogFilePtr,"WARNING! The thickness of the lense along main optical axis is SMALL (< 0.5 cm )! Please change it.\n");
-    //		exit(-1);
-    }
-  }
-
+  if (RadiusMain <= 0.0)
+	  Error("Main radius of the lense <= 0.0");
+  if (Thickness <= 0.0)
+	  Error("Thickness of the lense <= 0.0");
+  if (Thickness > TransOut[0])
+	  Error("Distance to the exit of the lense (system) too small for the given number and thickness of the lenses");
+  if (Thickness < 1.0)
+	  Warning("The thickness of the lense along main optical axis is small (< 1.0 cm)");
 
   /* Display material */
   if (MaterialOfLense >= 1 && MaterialOfLense <= 15)
   {
     fprintf(LogFilePtr, "Material of lense:   %s\n", MaterialName[MaterialOfLense - 1]);
-    fprintf(LogFilePtr, "Reading data from DATABASE\n");
   }
 
   else if (MaterialOfLense == 99)
   {
-    /* Material of lense is given by user */
-    fprintf(LogFilePtr,"Refraction coeff is given by user\n");
-    fprintf(LogFilePtr,"Coeff delta = %11.7E   for Wavelength  =  %lf  Angs\n", RefractInput, RefractWave);
-
-    fprintf(LogFilePtr,"Attenuation (absorption part) coeff is given by user\n");
-    fprintf(LogFilePtr,"Coeff mu = %11.7E 1/cm  for Wavelength = %lf  Angst\n", AttenInput, RefractWave);
-
     /* Check the correctness of given datas */
-
     if (RefractWave <= 0.0)
-    {
-      fprintf(LogFilePtr,"Wavelength for refraction coeff <= 0.0!\n");
-      exit(-1);
-    }
+      Error("Wavelength for refraction coefficient <= 0.0!");
     if (RefractInput <= 0.0)
-    {
-      fprintf(LogFilePtr,"Refraction coeff <= 0.0!\n");
-      exit(-1);
-    }
-
+       Error,"Refraction coefficient <= 0.0!\n";
     if (AttenInput < 0.0)
-    {
-      fprintf(LogFilePtr,"Attenuation coeff < 0.0!\n");
-      exit(-1);
-    }
+      Error("Attenuation coeff < 0.0!\n");
   }
   else
   {
-    fprintf(LogFilePtr,"No such material in the database. Values 1...15. Correct option -i\n");
-    exit(-1);
+    Error("No such material in the database. Values 1...15. Correct option -i\n");
   }
 
   /* Calculate delta  */
@@ -723,7 +634,7 @@ void  CalcAndWritePar()
   {
     if (RefractInput <= 1e-50)
     {
-      fprintf(LogFilePtr,"Refract Input value to small, SET to zero NO REFRACTION!\n");
+      Note("Refract Input value too small, it is set to zero. i.e. NO refraction");
       RefractInput = 0.0;
     }
     /* given by user and recalculated for 1.0 angst. */
@@ -744,8 +655,7 @@ void  CalcAndWritePar()
   /*     C.D. Dewhurst and I. Anderson, ILL
 	 Source: http://www.ill.fr/AR-01/p-104.htm				*/
 
-  fprintf(LogFilePtr,"!!! CALCULATATED delta=(1-refraction coeff) = %11.7E FOR wavelength 1.0 Ang\n", Refract);
-  fprintf(LogFilePtr,"!!! CALCULATATED refraction coeff = %11.7E FOR wavelength 1.0 Ang\n", (1.0-Refract));
+  fprintf(LogFilePtr,"Refraction coeff. for 1 Ang: 1 - %10.3e = %9.7f\n", Refract, (1.0-Refract));
 
 
   /* calculate focal distance analytically */
@@ -755,66 +665,50 @@ void  CalcAndWritePar()
 
   if ((Radius1 != 0.0)&&(Radius2 != 0.0))
   {
-    if (LenseType == 0)
+    if (LenseType == 0)  // spherical lens
     {
-      Radius1_c = -1.0*Radius1;  /* adapt datas for the formula */
-      Radius2_c = Radius2;       /* adapt datas for the formula */
-      Refract_c = 1.0 - Refract;  /* adapt datas for the formula */
+      Radius1_c = -1.0*Radius1;   // adapt datas for the formula
+      Radius2_c = Radius2;       
+      Refract_c = 1.0 - Refract;   
       FocalLength_thin = (Refract_c-1.0)*((1.0/Radius1_c) - (1.0/Radius2_c));  /* thin lense */
       if (FocalLength_thin != 0.0)
       {
         FocalLength_thin = 1.0/FocalLength_thin/NumberOfLenses;
         FocalLength_thin = FocalLength_thin/WaveCalc/WaveCalc;
       }
-      fprintf(LogFilePtr,"!!!!!!!\n!!!!!!! For spherical and thin lense: Focal length  %f cm (for %f Angs) and for Number of Lenses = %ld\n",
-      FocalLength_thin, WaveCalc, NumberOfLenses);
-    }
+      fprintf(LogFilePtr,"!Focal length of %ld thin spherical lenses: %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength_thin, WaveCalc);
 
-    if ((LenseType == 1)&&(Radius1 == Radius2))
-	  {
-	    RadiusT = (RadiusMain*RadiusMain)/(Radius1+Radius2); /* source C. Schoroer and B. Lengeler, PRL 94, 054802 (2005) */
-	    FocalLength_thin = RadiusT/(2.0*Refract*NumberOfLenses);  /* thin lense */
-	    FocalLength_thin = FocalLength_thin/WaveCalc/WaveCalc;
-	    fprintf(LogFilePtr,"!!!!!!! For parabolic and thin lense: radius of curvature = %f cm\n", RadiusT);
-	    fprintf(LogFilePtr,"!!!!!!! For parabolic and thin lense: Focal length  %f cm (for %f Angs) and for Number of Lenses = %ld\n",
-		                     FocalLength_thin, WaveCalc, NumberOfLenses);
-	  }
-
-    if (LenseType == 0)
-    {
-      Radius1_c = -1.0*Radius1;  /* adapt datas for the formula */
-      Radius2_c = Radius2;       /* adapt datas for the formula */
-      Refract_c = 1.0 - Refract;  /* adapt datas for the formula */
       if (Refract_c != 0.0)
-      { /* standart formula */
+      { /* standard formula */
         FocalLength = (Refract_c-1.0) * ((1.0/Radius1_c) - (1.0/Radius2_c) + (((Refract_c-1.0)*Thickness)/(Radius1_c*Radius2_c*Refract_c)));
         if (FocalLength != 0.0)
         {
           FocalLength = 1.0/FocalLength/NumberOfLenses;
           FocalLength = FocalLength/WaveCalc/WaveCalc;
-          fprintf(LogFilePtr,"!!!P!!!\n!!!P!!! For spherical lense: Focal length  %f cm (for %f Angs) and for Number of Lenses = %ld\n",
-                             FocalLength, WaveCalc, NumberOfLenses);
+          fprintf(LogFilePtr,"!Focal length of %ld spherical lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
         }
       }
     }
 
+    if ((LenseType == 1)&&(Radius1 == Radius2)) // parabolic lens
+	  {
+	    RadiusT = (RadiusMain*RadiusMain)/(Radius1+Radius2); /* source C. Schoroer and B. Lengeler, PRL 94, 054802 (2005) */
+	    FocalLength_thin = RadiusT/(2.0*Refract*NumberOfLenses);  /* thin lense */
+	    FocalLength_thin = FocalLength_thin/WaveCalc/WaveCalc;
+	    fprintf(LogFilePtr,"Radius of curvature                       : %9.3f cm\n", RadiusT);
+	    fprintf(LogFilePtr,"Focal length of %ld thin parabolic lenses: %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength_thin, WaveCalc);
 
-    if ((LenseType == 1)&&(Radius1 == Radius2))
-    {
-      RadiusT = (RadiusMain*RadiusMain)/(Radius1+Radius2);   /* source C. Schoroer and B. Lengeler, PRL 94, 054802 (2005) */
-      Radius1_c = -1.0*RadiusT;  /* adapt data for the formula */
-      Radius2_c = RadiusT;       /* adapt data for the formula */
-      Refract_c = 1.0 - Refract; /* adapt data for the formula */
+      Radius1_c = -1.0*RadiusT;   // adapt data for the formula */
+      Radius2_c = RadiusT;      
+      Refract_c = 1.0 - Refract; 
       if (Refract_c != 0.0)
-      { /* standart formula */
+      { /* standard formula */
         FocalLength = (Refract_c-1.0) * ((1.0/Radius1_c) - (1.0/Radius2_c) + (((Refract_c-1.0)*Thickness)/(Radius1_c*Radius2_c*Refract_c)));
         if (FocalLength != 0.0)
         {
           FocalLength = 1.0/FocalLength/NumberOfLenses;
           FocalLength = FocalLength/WaveCalc/WaveCalc;
-          fprintf(LogFilePtr,"!!!P!!! For parabolic lense: radius of curvature = %f cm\n", RadiusT);
-          fprintf(LogFilePtr,"!!!P!!! For parabolic lense: Focal length  %f cm (for %f Angs) and for Number of Lenses = %ld\n",
-                             FocalLength, WaveCalc, NumberOfLenses);
+          fprintf(LogFilePtr,"!Focal length of %ld parabolic lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
         }
       }
     }
@@ -887,28 +781,29 @@ void  CalcAndWritePar()
     fprintf(LogFilePtr,"No attenuation in lenses\n");
   }
 
-  if ((DiafRadius1 < 0.0)||(DiafRadius2 < 0.0))
+  if ((SlitRadius1 < 0.0)||(SlitRadius2 < 0.0))
   {
-    fprintf(LogFilePtr,"ILLEGAL parameters: Diafragm with inner radius1 = %f and outer radius2 = %f\n", DiafRadius1, DiafRadius2);
+    fprintf(LogFilePtr,"ILLEGAL parameters: Diaphragm with inner radius1 = %9.3f and outer radius2 = %9.3f\n", SlitRadius1, SlitRadius2);
     exit(-1);
   }
-
-  if (DiafRadius1 > DiafRadius2)
+  if (SlitRadius1 > SlitRadius2)
   {
     fprintf(LogFilePtr,"ERROR! Outer radius is smaller than the Inner radius of the diaphragm\n");
     exit(-1);
   }
-
-  if ((DiafRadius1 > 0.0)||(DiafRadius2 > 0.0))
-    fprintf(LogFilePtr,"Diafragm with inner radius1 = %f and outer radius2 = %f activated\n", DiafRadius1, DiafRadius2);
-
-
-  if ((DiafRadius1 == 0.0)&&(DiafRadius2 == 0.0))
-    fprintf(LogFilePtr,"NO Diafragm with inner radius1 = %f and outer radius2 = %f activated\n", DiafRadius1, DiafRadius2);
+  if ((SlitRadius1 > 0.0)||(SlitRadius2 > 0.0))
+    fprintf(LogFilePtr,"Diaphragm with inner radius1 = %9.3f and outer radius2 = %9.3f activated\n", SlitRadius1, SlitRadius2);
+  if ((SlitRadius1 == 0.0)&&(SlitRadius2 == 0.0))
+    fprintf(LogFilePtr,"NO diaphragm added\n");
 
 
-  /* DESCRIBE THE SPHRERICAL SURFACES OF A LENSE */
+  if (WaveCalc <= 0.0)
+  {
+    fprintf(LogFilePtr,"ERROR: Wavelength %f Ang for calculations <= 0.0\n", WaveCalc);
+    exit(-1);
+  }
 
+  /* DESCRIBE THE SPHERICAL SURFACES OF A LENSE */
   if (LenseType == 0)
   {
     if (Radius1 != 0.0)
@@ -1285,5 +1180,58 @@ void  CalcAndWritePar()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
+  int iL=0;
+
+  sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+  stGeometry.pDescr  =  sVisDescrpt;
+  stGeometry.eModule = _eModule;
+
+  stGeometry.nEllipsoids = NumberOfLenses;
+  stGeometry.pEllipsoid = (VtEllipsoid*) calloc(stGeometry.nEllipsoids, sizeof(VtEllipsoid));
+
+  for (iL=0; iL<NumberOfLenses; iL++)
+  {
+    stGeometry.pEllipsoid[iL].vCntr[0] = 0.5*TransOut[0]*(2*iL+1); // PosMain[0] + (iL - (NumberOfLenses - 1)/2.0)*Thickness;
+    stGeometry.pEllipsoid[iL].vCntr[1] = PosMain[1];
+    stGeometry.pEllipsoid[iL].vCntr[2] = PosMain[2];
+
+    stGeometry.pEllipsoid[iL].vSymAxis[0] = 1.0;
+    stGeometry.pEllipsoid[iL].vSymAxis[1] = 0.0;
+    stGeometry.pEllipsoid[iL].vSymAxis[2] = 0.0;
+      
+    stGeometry.pEllipsoid[iL].Length = Thickness;
+    stGeometry.pEllipsoid[iL].Width  = 2.0*RadiusMain*BlowUp;
+    stGeometry.pEllipsoid[iL].Height = 2.0*RadiusMain*BlowUp;
+    stGeometry.pEllipsoid[iL].Xlow   =-0.499*Thickness;
+    stGeometry.pEllipsoid[iL].Xhigh  = 0.499*Thickness;
+  }
+
+  stGeometry.nHolCyls = 1;
+  stGeometry.pHolCyl  = calloc(stGeometry.nHolCyls, sizeof(VtHolCyl));
+
+  // whole plate
+  stGeometry.pHolCyl[0].Radius      = BlowUp * SlitRadius2 * 2.5;
+  stGeometry.pHolCyl[0].InnerRadius = BlowUp * SlitRadius2;
+  stGeometry.pHolCyl[0].Length      = 0.2;
+  stGeometry.pHolCyl[0].vCntr[0]    = 0.5*TransOut[0]*(2.0*NumberOfLenses-1) + 0.5*Thickness; // PosMain[0] + NumberOfLenses/2.0*Thickness;
+  stGeometry.pHolCyl[0].vCntr[1]    = PosMain[1];
+  stGeometry.pHolCyl[0].vCntr[2]    = PosMain[2];
+  stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
+  stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
+  stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+
+  stGeometry.nCircles=1; 
+  stGeometry.pCircle =calloc(stGeometry.nCircles, sizeof(VtCircle));
+
+  stGeometry.pCircle[0].Radius    = BlowUp * SlitRadius1;
+  stGeometry.pCircle[0].AngleBeg  = 0;
+  stGeometry.pCircle[0].AngleEnd  = 359.99;
+  stGeometry.pCircle[0].vCntr[0]  = stGeometry.pHolCyl[0].vCntr[0];
+  stGeometry.pCircle[0].vCntr[1]  = PosMain[1];
+  stGeometry.pCircle[0].vCntr[2]  = PosMain[2];
+  stGeometry.pCircle[0].vNormal[0]= 1.0;
+  stGeometry.pCircle[0].vNormal[1]= 0.0;
+  stGeometry.pCircle[0].vNormal[2]= 0.0;
+
   return;
 }

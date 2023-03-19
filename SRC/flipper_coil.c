@@ -8,6 +8,7 @@
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  JUL 2004  G. Zsigmond    corrections for tilted flipper option                      */
 /* 1.4  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.5  Mar 2023  K. Lieutenant  visualization                                              */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -82,9 +83,9 @@ int main(int argc, char **argv)
   double IntegralIntensity=0.0,
          RotMatrixField[3][3], 
          LarmorMatrix  [3][3], 
-         NumberPrecessions1=0.0, 
-         NumberPrecessions2=0.0, 
-         NumberPrecessions3=0.0;
+         TotNumPrec1=0.0, NumPrec1=0.0, 
+         TotNumPrec2=0.0, NumPrec2=0.0, 
+         TotNumPrec3=0.0, NumPrec3=0.0;
   double TOF, WL, Prob, 
          TOF1=0.0, TOF2=0.0, TOF3=0.0, 
          PhaseShift=0.0;
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
   _eModule=MCN_FLIP_COIL;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.5");
   OwnInit(argc, argv);
 
   Init3x3Matrix(RotMatrixField);
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
   InitVector(domain_field);
   InitNeutron(&Neutrons);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp     = TRUE;
 
@@ -152,7 +153,8 @@ int main(int argc, char **argv)
 
         /* precession calculated  */
         PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
-        NumberPrecessions1 = PhaseShift/2./M_PI ;
+        NumPrec1 = PhaseShift/2./M_PI ;
+        TotNumPrec1 += NumPrec1;
 
         FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
         RotVector(LarmorMatrix, SpinVector) ;
@@ -173,7 +175,7 @@ int main(int argc, char **argv)
 
         /******************** starts to scan ******************************/
 
-        NumberPrecessions2 = 0 ;
+        NumPrec2 = 0 ;
 
         while (ind_x != (ind_x_max +1))
         {
@@ -212,7 +214,8 @@ int main(int argc, char **argv)
 
           RotVector(RotMatrixField, SpinVector) ;
 
-          PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  NumberPrecessions2 += PhaseShift/2./M_PI ;
+          PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  
+          NumPrec2 += PhaseShift/2./M_PI ;
 
           FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
           RotVector    (LarmorMatrix,   SpinVector) ;
@@ -244,6 +247,8 @@ int main(int argc, char **argv)
         }
 
       exitfield: ;
+        TotNumPrec2 += NumPrec2;
+
         /* Output matters */
         AddVector(Pos, PosMain) ;
 
@@ -262,7 +267,8 @@ int main(int argc, char **argv)
 
         /* precession calculated  */
         PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
-        NumberPrecessions3 = PhaseShift/2./M_PI ;
+        NumPrec3   = PhaseShift/2./M_PI ;
+        TotNumPrec3 += NumPrec3;
 
         FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
         RotVector(LarmorMatrix, SpinVector) ;
@@ -291,10 +297,10 @@ int main(int argc, char **argv)
   // ------------------------------------------------------------
 my_exit:
   /* write to log file */
-	if (NumOut != 0) 
-  { fprintf(LogFilePtr,"Number of precessions  in guide field   : %lf\n", NumberPrecessions1);
-	  fprintf(LogFilePtr,"Number of precessions  in flipper coil  : %lf\n", NumberPrecessions2);
-	  fprintf(LogFilePtr,"Number of precessions  in guide field   : %lf\n", NumberPrecessions3);
+	if (NumOut > 0) 
+  { fprintf(LogFilePtr,"Average number of precessions in guide field : %10.3lf\n", TotNumPrec1/NumOut);
+	  fprintf(LogFilePtr,"Average Number of precessions in flipper coil: %10.3lf\n", TotNumPrec2/NumOut);
+	  fprintf(LogFilePtr,"Average Number of precessions in guide field : %10.3lf\n", TotNumPrec3/NumOut);
   }
   fprintf(LogFilePtr," \n") ;
 
@@ -471,6 +477,19 @@ void SetGeometry(char* sColor)
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
+
+    stGeometry.nCuboids = 1; 
+    stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+      
+    stGeometry.pCuboid[0].Length    = depth; 
+    stGeometry.pCuboid[0].Width     = BlowUp * width;
+    stGeometry.pCuboid[0].Height    = BlowUp * height;
+    stGeometry.pCuboid[0].vCntr[0]  = PosMain[0];
+    stGeometry.pCuboid[0].vCntr[1]  = PosMain[1];
+    stGeometry.pCuboid[0].vCntr[2]  = PosMain[2];
+    stGeometry.pCuboid[0].vNormal[0]= 1.0;
+    stGeometry.pCuboid[0].vNormal[1]= 0.0;
+    stGeometry.pCuboid[0].vNormal[2]= 0.0;
   }
 }
 

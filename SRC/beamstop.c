@@ -9,6 +9,7 @@
 /* 1.0  Apr 2011  K. Lieutenant   initial version                                            */
 /* 1.1  Jul 2019  K. Lieutenant   length compression for visualization                       */
 /* 1.2  Jul 2021  K. Lieutenant   general changes for VITESS 3.5                             */
+/* 1.3  Mar 2023  K. Lieutenant   function and visualization corrected                       */
 /*********************************************************************************************/
 
 #include "convert.h"
@@ -132,14 +133,17 @@ int main(int argc, char *argv[])
         { bOnBeamstop=FALSE;
         }
 
-        /* if beamstop is missed: writeout original data set for 'progation'=no  */
-        /*                                   or new data set for 'progation'=yes */
-        if (!bOnBeamstop)
+        /* if beamstop is hit   : writeout new data set for 'progation'=yes */
+        /* if beamstop is missed: writeout input data for ne */
+        if (bOnBeamstop)
         { 
           if (bProp)
-            WriteNeutron(&TestNeutron);
-          else
-            WriteNeutron(&InputNeutrons[i]);
+          { WriteNeutron(&InputNeutrons[i]);
+            WriteIAP(&TestNeutron, VT_ABSORBED);
+          }
+        }
+        else
+        { WriteNeutron(&InputNeutrons[i]);
         }
       }
     }
@@ -238,7 +242,7 @@ void SetGeometry(char* sColor)
       
       stGeometry.pCircle[0].Radius    = BlowUp * Radius;
       stGeometry.pCircle[0].AngleBeg  = 0;
-      stGeometry.pCircle[0].AngleEnd  = 360;
+      stGeometry.pCircle[0].AngleEnd  = 359.99;
       stGeometry.pCircle[0].vCntr[0]  = DistMove;
       stGeometry.pCircle[0].vCntr[1]  = 0.0;
       stGeometry.pCircle[0].vCntr[2]  = 0.0;

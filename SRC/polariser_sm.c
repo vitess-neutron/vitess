@@ -429,7 +429,7 @@ void OwnInit(int argc, char *argv[])
   // fprintf(LogFilePtr,"cutoff probability		=     %8.1e\n",  ProbCutoff);
   fprintf(LogFilePtr,"center pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", PosSM[0], PosSM[1], PosSM[2]);
   fprintf(LogFilePtr,"length, height, width: (%9.4f, %9.4f, %9.4f) cm\n", DimSM[0], DimSM[2], DimSM[1]);
-  fprintf(LogFilePtr,"inclination          :  %9.4f deg\n", AngleSMHoriz);
+  fprintf(LogFilePtr,"inclination          :  %9.4f deg\n", AngleSMVert);
   fprintf(LogFilePtr,"output pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", TranslOut[0], TranslOut[1], TranslOut[2]); 	
   fprintf(LogFilePtr,"  and direction      :  %9.4f deg hor.,   %9.4f deg vert.\n",  AnglOutHoriz, AnglOutVert); 
 

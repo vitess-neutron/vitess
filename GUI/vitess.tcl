@@ -1002,7 +1002,7 @@ set slitESET {
 set beamstopESET {
   {dist_stop float "" {"distance\nfrom sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop if they hit it" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -2151,23 +2151,9 @@ set resonator_drabkinESET {
 ### precessionfield
 ###
 set precessionfieldESET {
-  {"Common options" header}
-  {bf pareditablefile magneticmap.dat {"field map file" "data file giving the field map which is read in externally" "" P}}
   {"Field options" header}
-  {inh radio inhomogeneous
-    {"field option" "magnetic field option" "" O}
-    {inhomogeneous homogeneous} {1 0}}
-  {}
-  {x float 5 {"position\nmain X [cm]" "center x position of the field map " "" k}}
-  {y float 0 {"position\nmain Y [cm]" "center y position of the field map " "" l}}
-  {z float 0 {"position\nmain Z [cm]" "center z position of the field map " "" m}}
-  {}
-  {ho float 0 {"offset\nhoriz. [deg]" "horizontal (first rotation) rotation angle of the field map" "" i}}
-  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the	field map" "" j}}
-  {}
-  {ox float 10 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
-  {oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
-  {oz float 0  {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
+  {inh radio inhomogeneous {"field option" "magnetic field option" "" O} {inhomogeneous homogeneous} {1 0}}
+  {bf pareditablefile magneticmap.dat {"field map file" "data file giving the field map which is read in externally" "" P}}
   {"Homogeneous field case" header}
   {dx float 10 {"dimension\nfield X [cm]" "active if homogeneous field, gives x dimension of the precession volume" "" X}}
   {dy float 10 {"dimension\nfield Y [cm]" "active if homogeneous field, gives y dimension of the precession volume" "" Y}}
@@ -2175,6 +2161,16 @@ set precessionfieldESET {
   {mx float 1 {"magnetic\nfield X [Gs]" "x component of the magnetic field in Gauss" "" T}}
   {my float 0 {"magnetic\nfield Y [Gs]" "y component of the magnetic field in Gauss" "" G}}
   {mz float 0 {"magnetic\nfield Z [Gs]" "z component of the magnetic field in Gauss" "" H}}
+  {"Geometry" header}
+  {x float 5 {"position\nmain X [cm]" "center x position of the field map " "" k}}
+  {y float 0 {"position\nmain Y [cm]" "center y position of the field map " "" l}}
+  {z float 0 {"position\nmain Z [cm]" "center z position of the field map " "" m}}
+  {ho float 0 {"offset\nhoriz. [deg]" "horizontal (first rotation) rotation angle of the field map" "" i}}
+  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the	field map" "" j}}
+  {"Output frame" header}
+  {ox float 10 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
+  {oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
+  {oz float 0  {"output\nZ [cm]" "z position of the output frame (in the input frame)" "" s}}
 }
 
 ### rotating field
@@ -3902,55 +3898,53 @@ set sm_ensembleESET {
 ### lense
 ###
 set lenseESET {
-  {"Geometry description of a lense" header}
-  {fxxa radio spherical {"Lense surface geometry" "Choose the lense geometry: surfaces" "" K} {spherical parabolic} {0 1}}
-  {fx float 10 {"Cur_Radius1 [cm]" "Spherical lense: Curvature radius of the first surface of a lense" "" a} }
-  {fy float 10 {"Cur_Radius2 [cm]" "Spherical lense: Curvature radius of the second surface of a lense" "" b} }
-  {fz float 10 {"RadiusMain [cm]" "Spherical and parabolic lenses: Radius of the lense: cylindrical surface" "" c} gt0}
-  {tz float 1 {"Thickness [cm]" "Thickness of a lense (both) along center axis" "" A} gt0}
+  {"Geometry description of the lense system" header}
+  {fxxa radio spherical {"Lense surface\ngeometry" "Choose the geometry of the lense surface" "" K} {spherical parabolic} {0 1}}
+  {nx int 5 {"Number of lenses" "Number of lenses in the x direction" "" I} gt0}
+  {fz float 10 {"RadiusMain [cm]" "Radius of the lense: cylindrical surface" "" c} gt0}
+  {tz float 1 {"Thickness [cm]" "Thickness of the lense along the x axis" "" A} gt0}
+  {fx float 10 {"Cur_Radius1 [cm]" "Radius of curvature radius (of the inner part) of the upstream side of the lense" "" a} }
+  {fy float 10 {"Cur_Radius2 [cm]" "Radius of curvature radius (of the inner part) of the downstream side of the lense" "" b} }
+
+  {"Material" header}
+  {rax radio SiO2 {"Lense\nmaterial" "Material of the lense" "" i} {O CO2 C Be F Bi MgO Pb MgF SiO2 ZrO2 Mg Si Zr Al input} {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 99}}
+  {}
+  {mf float 1.0e-6 {"Delta n" "Deviation of the refractive index from 1\nonly considered for 'Lense material'='input" "" R} gt0}
+  {nf float 1.8 {"wavelength\n[Ang]" "Wavelength for which the refractive index is given" "" C} gt0}
+  {}
+  {raxa radio no {"Attenuation\nactivation" "Activate the attenuation inside a lense" "" H} {no yes} {0 1}}
+  {afc float 0.441 {"Absorption [1/cm]" "Attenuation - absorption part coefficient (linear absorption coeff - depends on the wavelength) given by a user, 1/cm" "" D} ge0}
+  {spp float 0.0 {"Scattering [1/cm]" "Attenuation - scattering part coefficient (linear scattering coeff - independent of the wavelength) given by a user, 1/cm" "" Q} ge0}
+  {surwav float 0 {"surface\nroughness [deg]" "This parameter controls the simulation of the surface roughness. Is is the maximal angle of deviation of the surface normal from the ideal normal." "" q} ge0}
 
   {"Position Main" header}
   {px float 5 {"position\ncenter X [cm]" "Center position of a lense" "" d}}
   {py float 0 {"position\ncenter Y [cm]" "Center position of a lense" "" e}}
   {pz float 0 {"position\ncenter Z [cm]" "Center position of a lense" "" k}}
-
+  {"Diaphragm after lenses" header}
+  {diafrad1 float 0.0 {"Inner\nradius [cm]" "Inner radius of a diaphragm at the exit of the lenses" "" m} ge0}
+  {diafrad2 float 0.0 {"Outer\nradius [cm]" "Outer radius of a diaphragm at the exit of the lenses" "" M} ge0}
   {"Output Frame" header}
   {ox float 10 {"output\nframe X [cm]" "Position of the output frame (in the input frame)" "" s}}
   {oy float  0 {"output\nframe Y [cm]" "Position of the output frame (in the input frame)" "" t}}
   {oz float  0 {"output\nframe Z [cm]" "Position of the output frame (in the input frame)" "" w}}
-
-  {"Material" header}
-  {rax radio SiO2 {"Material of a lense" "Material of a lense" "" i} {O CO2 C Be F Bi MgO Pb MgF SiO2 ZrO2 Mg Si Zr Al input} {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 99}}
-  {raxa radio no {"Attenuation activation" "Activate or not the attenuation inside a lense" "" H} {no yes} {0 1}}
-  {mf float 1.05e-6 {"Refract input" "Refractive index given by a user" "" R} gt0}
-  {nf float 1.8 {"Refract wave" "Wavelength for the refractive index given by a user" "" C} gt0}
-  {afc float 0.441 {"Absorption part [1/cm]" "Attenuation - absorption part coefficient (linear absorption coeff - depends from the wavelength) given by a user, 1/cm" "" D} ge0}
-  {spp float 0.0 {"Scattering part [1/cm]" "Attenuation - scattering part coefficient (linear scattering coeff - NOT depends from the wavelength) given by a user, 1/cm" "" Q} ge0}
-  {surwav float 0 {"surface\nroughness [deg]"
-    "This parameter controls the simulation of surface rougness.
-     This value is the maximal angle of deviation of the surface
-     normal from the ideal normal." "" q} ge0}
-  {"Number of lenses" header}
-  {nx int 1 {"Number of lenses" "Number of lenses in the X direction" "" I} gt0}
-  {"Visualisation" header}
-  {visu radio no {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
-  {visuald radio x-windows {"Output device (for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
-  {nxov  int 0 {"Lense number " "Lense number for visualisation (0 - means all lenses)" "" E} ge0}
-  {"Ray-tracing after lenses" header}
-  {visurtal radio no {"Visual ray-tracing\nafter lense" "Activate visualisation after a lense with planes coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
-  {vrtnum  int 10000 {"Number of trajectories" "Number of trajectories for visualisation after lense" "" x} gt0}
-  {vrtalmaxx float 0.0 {"Max X" "Max X value at the ray-tracing picture, 0.0 means autocalculation" "" S} ge0}
-  {"Diaphragm after lenses" header}
-  {diafrad1 float 0.0 {"Inner radius" "Inner radius of diaphragm at the lenses exit" "" m} ge0}
-  {diafrad2 float 0.0 {"Outer radius" "Outer radius of diaphragm at the lenses exit" "" M} ge0}
-  {"Output in the file" header}
-  {outt radio no {"Activate output" "activate output the coordinates in the file for the lense" "" z} {yes no} {1 0}}
-  {nxo  int 0 {"Lense number " "Lense number for output (0 - means all lenses)" "" v} ge0}
-  {dout_filename pareditablefile lensestrj.dat {"File Name" "Name for output file" "" p}}
   {"Focal distance calculation and flight" header}
-  {wavefc float 20.0 {"Wavelength" "Wavelength for focal distance calculation" "" r} gt0}
-  {fligthfcth radio thin {"Choose formula" "Choose analytical formula for focal distance calculations: thin or thick" "" V} {thick thin} {1 0}}
-  {fligthfc radio no {"Activate flight" "activate flight at the focal distance immediately after lenses" "" Y} {yes no} {1 0}}
+  {wavefc float 20.0 {"Wavelength\n[Ang]" "Wavelength for the focal distance calculation" "" r} gt0}
+  {fligthfcth radio thin {"Choose formula" "Choose an analytical formula for the focal distance calculations: thin or thick" "" V} {thick thin} {1 0}}
+  {fligthfc radio no {"Activate flight" "Continue neutron propagation up to the focal distance (instead of to the output position)" "" Y} {yes no} {1 0}}
+
+  {"Visualisation" header}
+  {visu radio no {"Activate\nvisualisation" "activate visualisation" "" y} {yes no} {1 0}}
+  {visuald radio x-windows {"Output device\n(for Unix only)" "Output device for visualisation: x-windows or postscript file" "" l} {x-windows ps-file} {0 1}}
+  {nxov  int 0 {"Lense number " "Index of the lense used for the visualisation (0 - means all lenses)" "" E} ge0}
+  {"Ray-tracing after lenses" header}
+  {visurtal radio no {"Visual ray-tracing\nafter lense" "Activate visualisation after a lense with plane coordinates XZ or XY" "" W} {no XZ XY} {0 1 2}}
+  {vrtnum  int 10000 {"Number of\ntrajectories" "Number of trajectories for visualisation after lense" "" x} gt0}
+  {vrtalmaxx float 0.0 {"Max X" "Maximum X value at the ray-tracing picture, 0.0 means autocalculation" "" S} ge0}
+  {"Output in the file" header}
+  {outt radio no {"Activate output" "activate output of the the coordinates in the file for the lense" "" z} {yes no} {1 0}}
+  {nxo  int 0 {"Lense number" "Index of the lense used for output (0 - means all lenses)" "" v} ge0}
+  {dout_filename pareditablefile lensestrj.dat {"File Name" "Name for output file" "" p}}
 }
 
 ### mirror_elliptical

@@ -10,6 +10,7 @@
 /* 1.03  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                */
 /* 1.04  Jul 2004  G. Zsigmond   change for rotation of the field map                        */
 /* 1.05  May 2020  K. Lieutenant tidy up, new central visualization parameters               */
+/* 1.06  Mar 2023  K. Lieutenant visualization                                               */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -30,10 +31,10 @@
 // input parameters
 char*       FieldFileName=NULL;         // -P        [-]   name of the file containing the map of the inhomogeneous magnetic field
 long        Option=0;                   // -O        [-]   0: homogenenous   1: inhomogeneous   magnetic field
-double      depth =100.0,               // -X        [cm]  x-component of the size of the homogeneous magnetic field 
-            width =100.0,               // -Y        [cm]  y-component of the size of the homogeneous magnetic field 
-            height=100.0;               // -V        [cm]  z-component of the size of the homogeneous magnetic field 
-double      field_hom[3]={1.0,0.0,0.0}; // -T -G -H  [Oe]  x-, y- and z-component of the homogeneous magnetic field
+double      depth =0.0,                 // -X        [cm]  x-component of the size of the homogeneous magnetic field 
+            width =0.0,                 // -Y        [cm]  y-component of the size of the homogeneous magnetic field 
+            height=0.0;                 // -V        [cm]  z-component of the size of the homogeneous magnetic field 
+double      field_hom[3]={1.0,0.0,0.0}; // -T -G -H  [Gs]  x-, y- and z-component of the homogeneous magnetic field
 double      AnglMainHoriz=0.0,          // -i       [deg]  horizontal (first) rotation angle of the magnetic field map
             AnglMainVert =0.0;          // -j       [deg]  vertical (second) rotation angle of the magnetic field map
 VectorType  PosMain,                    // -k -l -m  [cm]  centre of the magnetic field 
@@ -69,10 +70,10 @@ int main(int argc, char **argv)
   _eModule=MCN_FIELD_PREC;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.05");
+  PrintModuleName(_eModule, "1.06");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp     = TRUE;
 
@@ -261,12 +262,12 @@ int main(int argc, char **argv)
  my_exit:
   /* write to log file */
   if (NumOut != 0) 
-    fprintf(LogFilePtr,"\nAverage number of precessions  : %lf\n", NumberPrecessions/NumOut) ;
+    fprintf(LogFilePtr,"Average number of precessions  : %10.3lf\n", NumberPrecessions/NumOut) ;
   else
     fprintf(LogFilePtr," \n") ;
 
   /* write geometry file */
-  SetGeometry("light_blue");
+  SetGeometry("yellow");
   
   /* Do module specific cleanups */
   OwnCleanup(); 
@@ -368,14 +369,6 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 
-	
-  if (PosMain[0] < depth/2.) {fprintf(LogFilePtr,"\nERROR: X position must be larger than depth/2 ! \n\n") ; exit (-1);}
-
-  if (TranslOut[0] < (PosMain[0] + depth/2.)) {fprintf(LogFilePtr,"\nERROR: output position must be outside of field domain ! \n\n") ; exit (-1);}
-
-  if (Option != 1) fprintf(LogFilePtr, "homogeneous field option\n%lf %lf %lf Oe\n", field_hom[0], field_hom[1], field_hom[2]) ;
-  else             fprintf(LogFilePtr, "inhomogeneous field option. Map file: '%s'\n", FieldFileName) ;
-
   /* homogeneous field  */
   if (Option != 1)
   {
@@ -388,6 +381,19 @@ void OwnInit(int argc, char *argv[])
   AnglMainHoriz = AnglMainHoriz*(M_PI)/180.0;
 
   FillRotMatrixZY(RotMatrixMain, AnglMainVert, AnglMainHoriz) ;
+
+  if (Option == 1)  // from file
+  { fprintf(LogFilePtr, "inhomogeneous field from file: '%s'\n", FieldFileName) ;
+    fprintf(LogFilePtr, "length: %9.4f cm\n", depth);
+  }
+  else             // homogeneous
+  { fprintf(LogFilePtr, "homogeneous field:  (%9.3lf %9.3lf %9.3lf) Gs\n", field_hom[0], field_hom[1], field_hom[2]) ;
+    fprintf(LogFilePtr, "length, width, height: (%9.4f, %9.4f, %9.4f) cm\n", depth, width, height);
+  }
+	
+  if (PosMain[0] < depth/2.) {fprintf(LogFilePtr,"\nERROR: X position must be larger than depth/2 ! \n\n") ; exit (-1);}
+
+  if (TranslOut[0] < (PosMain[0] + depth/2.)) {fprintf(LogFilePtr,"\nERROR: output position must be outside of field domain ! \n\n") ; exit (-1);}
 
 }/* End OwnInit */
 
@@ -413,10 +419,13 @@ void readmagneticmap()
   /* read number of matrix lines, columns from first line */
   ind_x_max = ReadParI(FieldMapFile); ind_y_max = ReadParI(FieldMapFile); ind_z_max = ReadParI(FieldMapFile); ReadParComment(FieldMapFile) ;
 
+  depth=0.0;
   /* inhomogeneous field */
   for (ind_x=1; ind_x<(ind_x_max+1); ind_x++) 
-  { for (ind_y=1; ind_y<(ind_y_max+1); ind_y++) 
-    { for (ind_z=1; ind_z<(ind_z_max+1); ind_z++) 
+  { 
+    for (ind_y=1; ind_y<(ind_y_max+1); ind_y++) 
+    { 
+      for (ind_z=1; ind_z<(ind_z_max+1); ind_z++) 
       {
         /* reads position */
         PosDomain_F[0][ind_x][ind_y][ind_z] = ReadParF(FieldMapFile);
@@ -456,6 +465,7 @@ void readmagneticmap()
         ReadParComment(FieldMapFile) ;
       }
     }
+    depth +=  DimDomain_F[0][ind_x][1][1]; 
   }
 
   fclose(FieldMapFile) ;
@@ -525,9 +535,42 @@ void SetGeometry(char* sColor)
   /* Geometry data */
   if (bVisInstr)
   { 
+    int iX=0, iY=0, iZ=0, iM=0;
+    VectorType vOrient={1.0,0.0,0.0}, vCntr={1.0,0.0,0.0};
+
+    RotBackVector(RotMatrixMain, vOrient); 
+
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
-    stGeometry.pDescr  =  sVisDescrpt;
-    stGeometry.eModule = _eModule;
+    stGeometry.pDescr   = sVisDescrpt;
+    stGeometry.eModule  = _eModule;
+
+    stGeometry.nCuboids = ind_x_max * ind_y_max * ind_z_max; 
+    stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+    for (iX=1; iX <= ind_x_max; iX++)
+    { 
+      for (iY=1; iY <= ind_y_max; iY++)
+      { 
+        for (iZ=1; iZ <= ind_z_max; iZ++)
+        { 
+          vCntr[0]  = PosDomain_F[0][iX][iY][iZ];
+          vCntr[1]  = PosDomain_F[1][iX][iY][iZ];
+          vCntr[2]  = PosDomain_F[2][iX][iY][iZ];
+          RotBackVector(RotMatrixMain, vCntr); 
+
+          stGeometry.pCuboid[iM].Length    = DimDomain_F[0][iX][iY][iZ]; 
+          stGeometry.pCuboid[iM].Width     = DimDomain_F[1][iX][iY][iZ] * BlowUp;
+          stGeometry.pCuboid[iM].Height    = DimDomain_F[2][iX][iY][iZ] * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
+          stGeometry.pCuboid[iM].vCntr[1]  = PosMain[1] + vCntr[1];
+          stGeometry.pCuboid[iM].vCntr[2]  = PosMain[2] + vCntr[2];
+          stGeometry.pCuboid[iM].vNormal[0]= vOrient[0];
+          stGeometry.pCuboid[iM].vNormal[1]= vOrient[1];
+          stGeometry.pCuboid[iM].vNormal[2]= vOrient[2];
+          iM++;
+        }
+      }
+    }
   }
 }
 

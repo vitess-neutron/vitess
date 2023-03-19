@@ -3,9 +3,6 @@
 #define	STRING_BUFFER 50
 #define	FIELD_SIZE	100
 
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
-
-
 void		OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global parameters
 void		OwnCleanup();                      // Does module specific cleanup
 void		writemagneticmap();                // writes the magnetic map file
