@@ -106,6 +106,7 @@ switch $tcl_platform(platform) {
     set ExeSuffix _[set s $tcl_platform(os)]
     set m $tcl_platform(machine)
     if {($s == "Linux" || $s == "Darwin") && $m == "x86_64"} {append ExeSuffix _$m}
+    if {( $s == "Darwin") && $m == "arm64"} {append ExeSuffix _$m}
     set KillProg kill
     set PsCheck PsCheckUnix
     set WinPos +50+0
