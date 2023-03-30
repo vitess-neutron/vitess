@@ -562,8 +562,8 @@ void SetGeometry(char* sColor)
           stGeometry.pCuboid[iM].Width     = DimDomain_F[1][iX][iY][iZ] * BlowUp;
           stGeometry.pCuboid[iM].Height    = DimDomain_F[2][iX][iY][iZ] * BlowUp;
           stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
-          stGeometry.pCuboid[iM].vCntr[1]  = PosMain[1] + vCntr[1];
-          stGeometry.pCuboid[iM].vCntr[2]  = PosMain[2] + vCntr[2];
+          stGeometry.pCuboid[iM].vCntr[1]  =(PosMain[1] + vCntr[1]) * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[2]  =(PosMain[2] + vCntr[2]) * BlowUp;
           stGeometry.pCuboid[iM].vNormal[0]= vOrient[0];
           stGeometry.pCuboid[iM].vNormal[1]= vOrient[1];
           stGeometry.pCuboid[iM].vNormal[2]= vOrient[2];

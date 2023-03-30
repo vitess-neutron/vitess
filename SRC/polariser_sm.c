@@ -53,7 +53,7 @@ double     AnglOutHoriz=0.0,           // -h       [deg]  horizontal angle of th
            AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation - removed !!!   
 
 VectorType DimSM,                      //    file   [cm]  size of the rectangular polariser
-           guide_field,                //    file   [Oe]  guide field
+           guide_field,                //    file   [Gs]  guide field
            analysis_dir;               //    file    [-]  analysis direction
 int        NoCh=0;                     //    file    [-]  number of channels 
 double     WallTh=0.0;                 //    file   [cm]  thickness of the blades dividing the channels

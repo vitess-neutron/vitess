@@ -13,6 +13,7 @@
 /* 1.1  Dec 2003  R. Manoshin    Improve algorith for slice changing                        */
 /* 1.2  Feb 2004  R. Manoshin    flipper inclination -  bug solved                          */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.4  Mar 2023  K. Lieutenant  Visualization                                              */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -71,6 +72,7 @@ long       ind_x=0, ind_y=0, ind_z=0;  //           [-]   indices of magnetic fi
 double     Omega=0.0, OmegaInit=0.0,   //        [rad/ms] angular frequency
            phi0=0.0;                   //          [rad]  Rotating magnetic field FieldValue*sin(Omega*t + phi0); initial and current value
 double     PeriodInit;                 //           [ms]  Period of rectangular pulse field 
+double     RotMatrixMain[3][3];        //                 Matrix for the horizontal rotation of the flipper
 
 /* For random amplitude and frequency of rotating (pulse) field */	
 double FieldValueA=0.0, FieldValueB=0.0;                 // Internal variables
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
   double  FieldValue0[3];                        // Additional permanent field to the rotating or initial value for linear changing
   double  PolX[FIELD_SIZE_FL], PolY[FIELD_SIZE_FL], PolZ[FIELD_SIZE_FL], ProbM[FIELD_SIZE_FL],
           FldX[FIELD_SIZE_FL], FldY[FIELD_SIZE_FL], FldZ[FIELD_SIZE_FL], FldM[FIELD_SIZE_FL];
-  double  RotMatrixMain[3][3], RotMatrixField[3][3], LarmorMatrix[3][3];
+  double  RotMatrixField[3][3], LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, Pos1, Pos2, domain_field, PosDomain, DimDomain;
   Neutron	Neutrons, NeutronAdd1, NeutronAdd2;
   Plane   EndPoint1,   EndPoint2;
@@ -119,10 +121,10 @@ int main(int argc, char **argv)
   _eModule=MCN_FLIP_GRAD;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp = TRUE;
 
@@ -733,7 +735,7 @@ my_exit:
   }
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("yellow");
   
   /* Do module specific cleanups */
   OwnCleanup(); 
@@ -1216,9 +1218,44 @@ void SetGeometry(char* sColor)
   /* Geometry data */
   if (bVisInstr)
   { 
+    int        nX=1, nY=1, nZ=1,
+               iX=0, iY=0, iZ=0, iM=0;
+    VectorType vOrient={1.0,0.0,0.0}, vCntr={1.0,0.0,0.0};
+
+    RotBackVector(RotMatrixMain, vOrient); 
+
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
-    stGeometry.pDescr  =  sVisDescrpt;
-    stGeometry.eModule = _eModule;
+    stGeometry.pDescr   = sVisDescrpt;
+    stGeometry.eModule  = _eModule;
+
+    nX = ind_x_max; nY = ind_y_max; nZ = ind_z_max;     // all domains shown   
+    stGeometry.nCuboids = nX * nY * nZ; 
+    stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+    for (iX=1; iX <= nX; iX++)
+    { 
+      for (iY=1; iY <= nY; iY++)
+      { 
+        for (iZ=1; iZ <= nZ; iZ++)
+        { 
+          vCntr[0]  = (2.0*iX-nX-1.0)/(2.0*nX)*depth;
+          vCntr[1]  = (2.0*iY-nY-1.0)/(2.0*nY)*width ;
+          vCntr[2]  = (2.0*iZ-nZ-1.0)/(2.0*nZ)*height;
+          RotBackVector(RotMatrixMain, vCntr); 
+
+          stGeometry.pCuboid[iM].Length    = depth/nX ; 
+          stGeometry.pCuboid[iM].Width     = width/nY  * BlowUp;
+          stGeometry.pCuboid[iM].Height    = height/nZ * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
+          stGeometry.pCuboid[iM].vCntr[1]  =(PosMain[1] + vCntr[1]) * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[2]  =(PosMain[2] + vCntr[2]) * BlowUp;
+          stGeometry.pCuboid[iM].vNormal[0]= vOrient[0];
+          stGeometry.pCuboid[iM].vNormal[1]= vOrient[1];
+          stGeometry.pCuboid[iM].vNormal[2]= vOrient[2];
+          iM++;
+        }
+      }
+    }
   }
 }
 

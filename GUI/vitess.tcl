@@ -2042,51 +2042,44 @@ set flipper_coilESET {
 set BigFrameflipper_gradient 1
 
 set flipper_gradientESET {
-  {"Geometry description of the precession volume" header}
-  {fx float 10 {"common\nfield X [cm]" "X Dimension of the flipper" "" X} gt0}
-  {fy float 10 {"common\nfield Y [cm]" "Y Dimension of the flipper" "" Y} gt0}
-  {fz float 10 {"common\nfield Z [cm]" "Z Dimension of the flipper" "" V} gt0}
-
+  {"Geometry description of the common field" header}
   {px float 5 {"position\ncenter X [cm]" "Center position of the flipper" "" k}}
   {py float 0 {"position\ncenter Y [cm]" "Center position of the flipper" "" l}}
   {pz float 0 {"position\ncenter Z [cm]" "Center position of the flipper" "" m}}
+  {fx float 10 {"size\nfield X [cm]" "Length of the cuboidel of the flipper" "" X} gt0}
+  {fy float 10 {"size\nfield Y [cm]" "Width of the cuboidel of the flipper" "" Y} gt0}
+  {fz float 10 {"size\nfield Z [cm]" "Height of the cuboidel of the flipper" "" V} gt0}
 
-  {"Rotation of Precession Volume" header}
+  {"Number of domains" header}
+  {nx int 4 {"in X\ndirection" "Number of domains in the X direction" "" C} gt0}
+  {ny int 2 {"in Y\ndirection" "Number of domains in the Y direction" "" D} gt0}
+  {nz int 2 {"in Z\ndirection" "Number of domains in the Z direction" "" E} gt0}
+
+  {"Rotation of Precession Volume" header}  
   {rotproc float 0 {"horizontal\noffset [deg]" "Horizontal (around axis OZ) angle of the field volume" "" i}}
 
   {"Output Frame" header}
   {ox float 10 {"output\nframe X [cm]" "Position of the output frame (in the input frame)" "" p}}
   {oy float  0 {"output\nframe Y [cm]" "Position of the output frame (in the input frame)" "" r}}
   {oz float  0 {"output\nframe Z [cm]" "Position of the output frame (in the input frame)" "" s}}
-  {"Number of domains" header}
-  {nx int 4 {"in X\ndirection" "Number of domains in the X direction" "" C} gt0}
-  {ny int 2 {"in Y\ndirection" "Number of domains in the Y direction" "" D} gt0}
-  {nz int 2 {"in Z\ndirection" "Number of domains in the Z direction" "" E} gt0}
-  {"Rotating Magnetic Field" header}
   {}
-  {rax radio 0X {"rotating field\naxis" "Rotating field around given axis OX, OY or OZ, values 0,1,2" "" M}
-    {0X 0Y 0Z} {0 1 2}}
-  {mf float 5000 {"magnetic field\namplitude [Gs]" "Strength or amplitude of the rotating magnetic field, Gs=Gauss" "" d} ge0}
+  {"Rotating Magnetic Field" header}
+  {mf float 5000 {"magnetic field\namplitude [Gs]" "Amplitude of the rotating magnetic field in Gauss" "" d} ge0}
   {rf float 300000 {"rotation\nfrequency [Hz]" "Rotation frequency of the magnetic field" "" w}}
-  {chgampl radio sinus {"amplitude\nchanging by" "Amplitude of rotating magnetic field is changing by sinus (with semi-period - appropriate dimensions of rotating field volume) law, permanently and by solinoid formula (not yet active)" "" h}
-    {sinus permanent solenoid} {0 1 2}}
   {bp float 0 {"begin phase\n[deg] " "Initial phase for the rotating field" "" z}}
-  {raxx radio 0X {"amplitude changing\nalong axis" "Key-Direction for changing of amplitude of rotating field along given axis OX, OY or OZ, values 0,1,2. Actually, if amplitude changing by sinus was chosen" "" y}
-    {0X 0Y 0Z} {0 1 2}}
+  {}
+  {rax radio 0X {"rotating\nfield axis" ""Axis about which the field rotates, X, Y or Z" "" M}  {0X 0Y 0Z} {0 1 2}}
+  {chgampl radio sinus {"amplitude\nchanging by" "Function by which the strength of the rotating magnetic field is changing: sinus, permanent or solinoid (not yet active)" "" h} {sinus permanent solenoid} {0 1 2}}
+  {raxx radio 0X {"amplitude changing\nalong axis" "axis along which the amplitude of the rotating field changes" "" y} {0X 0Y 0Z} {0 1 2}}
   {}
   {mfd float 0 {"deviation of\namplitude [%]" "Deviation of amplitude of the rotating magnetic field in percent" "" a} ge0}
-  {distra radio Uniform {"amplitude distribution" "Distribution of random values: amplitude of the rotating magnetic field" "" e} {Normal Uniform} {0 1}}
   {rfd float 0 {"deviation of\nfrequency [%]" "Deviation of Rotation frequency of the magnetic field in percent" "" b} ge0}
   {}
-  {distrf radio Uniform {"Frequency distribution" "Distribution of random values: frequency of the rotating magnetic field" "" v}
-    {Normal Uniform} {0 1}}
-  {tofprec radio yes {"TOF from\nprec. module" "Use or do not use the neutrons TOF from preceding modules for rotating magnetic field phase" "" n}
-    {yes no} {1 0}}
+  {distra radio Uniform {"amplitude\ndistribution" "Kind of distribution of random values for the amplitude of the rotating magnetic field (see Help|flipper)" "" e} {Normal Uniform} {0 1}}
+  {distrf radio Uniform {fFrequency\ndistribution" "Kind of distribution of random values for the frequency of the rotating magnetic field (see Help|flipper)" "" v} {Normal Uniform} {0 1}}
+  {tofprec radio yes {"TOF from\nprec. module" "Use of TOF for the rotating field phase\n'yes': TOF from preceding modules\n'no' TOF = 0.0" "" n} {yes no} {1 0}}
 
   {"Guide Magnetic Field" header}
-  {chgamplgui radio cosinus {"law of changing" "Laws of distribution of guide magnetic field: cosine law (with semi-period - appropriate dimensions of rotating field volume), linearly and pernanently" "" u} {cosinus linear permanent} {0 1 2}}
-  {chguidedch radio 0X {"amplitude\nchanging\nalong axis" "Key-Direction for amplitude changing of guide field along given axis OX, OY or OZ, values 0,1,2. Actually if cosinus law of changing was chosen" "" t} {0X 0Y 0Z} {0 1 2}}
-
   {pmx float 0 {"perm. / initial\ncomponent X [Gs]" "Permanent (for cosine amd permanent laws) or initial (for linear law) value of the X component (projection in the axis 0X) of the guide magnetic field, Gs=Gauss" "" I}}
   {pmy float 0 {"perm. / initial\ncomponent Y [Gs]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Y component (projection in the axis 0Y) of the guide magnetic field, Gs=Gauss" "" A}}
   {pmz float 0 {"perm. / initial\ncomponent Z [Gs]" "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss" "" K}}
@@ -2096,11 +2089,13 @@ set flipper_gradientESET {
   {plmz float 0 {"amplitude or\nfinal Z [Gs]" "Amplitude (for cosine law) or final value (for linear law) of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss" "" R}}
 
   {pmde float 0 {"additional random\nmagnetic field, [Gs]" "Amplitude of the additional random magnetic field" "" q} ge0}
+  {chgamplgui radio cosinus {"law of changing" "Law of the distribution of guide magnetic field: cosine law (with semi-period correspinding to field size), linearly and pernanently" "" u} {cosinus linear permanent} {0 1 2}}
+  {chguidedch radio 0X {"amplitude\nchanging\nalong axis" "Axis along which the amplitude changes: X, Y or Z." "" t} {0X 0Y 0Z} {0 1 2}}
 
   {"Addition options" header}
-  {outkey radio no {"output results" "Output intermediately results of simulations in the file RELATIVE OX axis" "" S} {yes no} {1 0}}
-  {bfp pareditablefile revp.dat {"output file:\npolarisation" "Name of file for: results - polarisation" "" O}}
-  {bff pareditablefile revm.dat {"output file:\nmagneticfield" "Name of file for output results - magnetic field" "" N}}
+  {outkey radio no {"output results" "Output of intermediate simulation results in a file" "" S} {yes no} {1 0}}
+  {bfp pareditablefile revp.dat {"output file:\npolarisation" "Name of the file for results: polarisation" "" O}}
+  {bff pareditablefile revm.dat {"output file:\nmagneticfield" "Name of the file for results: magnetic field" "" N}}
 }
 
 
@@ -2180,56 +2175,51 @@ set BigFramerotating_field 1
 
 set rotating_fieldESET {
   {"Geometry Description of the Precession Volume" header}
-  {fx float 10 {"dim. of common\nfield X [cm]" "Dimension of the common precession volume" "" X} gt0}
-  {fy float 10 {"dim. of common\nfield Y [cm]" "Dimension of the common precession volume" "" Y} gt0}
-  {fz float 10 {"dim. of common\nfield Z [cm]" "Dimension of the common precession volume" "" V} gt0}
+  {fx float 10 {"dim. of common\nfield X [cm]" "Length of the cuboidel magnetic fields" "" X} gt0}
+  {fy float 10 {"dim. of common\nfield Y [cm]" "Width of the cuboidel magnetic fields" "" Y} gt0}
+  {fz float 10 {"dim. of common\nfield Z [cm]" "Height of the cuboidel magnetic fields" "" V} gt0}
   {px float 5 {"position\nmain X [cm]" "Center position of the field map" "" k}}
   {py float 0 {"position\nmain Y [cm]" "Center position of the field map" "" l}}
   {pz float 0 {"position\nmain Z [cm]" "Center position of the field map" "" m}}
 
   {"Rotation of Precession Volume" header}
-  {rotproc float 0 {"horizontal\noffset [deg]" "Horizontal (around axis OZ) angle of the field volume" "" i}}
+  {rotproc float 0 {"horizontal\noffset [deg]" "Angle by which the magnetic field area is rotated about the Z axis" "" i}}
   {"Output Plane" header}
   {ox float 10 {"output\nX [cm]" "position of the output frame (in the input frame)" "" p}}
   {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" r}}
   {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" s}}
   {"Number of Domains"  header}
-  {nx int 40 {"domains in\nX direction" "Number of domains in the X direction" "" C} gt0}
-  {ny int 20 {"domains in\nY direction" "Number of domains in the Y direction" "" D} gt0}
-  {nz int 20 {"domains in\nZ direction" "Number of domains in the Z direction" "" E} gt0}
+  {nx int 40 {"domains in\nX direction" "Number of domains in X direction" "" C} gt0}
+  {ny int 20 {"domains in\nY direction" "Number of domains in Y direction" "" D} gt0}
+  {nz int 20 {"domains in\nZ direction" "Number of domains in Z direction" "" E} gt0}
+
   {"Rotating Magnetic Field" header}
-  {rax radio 0X {"rotating  field\naxis" "Rotating field around given axis OX, OY or OZ, values 0,1,2" "" M}
-  {0X 0Y 0Z} {0 1 2}}
-  {mf float 5000 {"magnetic field\namplitude [Gs]" "Strength or amplitude of the rotating magnetic field, Gs=Gauss" "" d} ge0}
+  {rax radio 0X {"rotating  field\naxis" "Axis about which the field rotates, X, Y or Z" "" M} {0X 0Y 0Z} {0 1 2}}
+  {tofprec radio yes {"TOF from\nprec. module" "Use of TOF for the rotating field phase\n'yes': TOF from preceding modules\n'no' TOF = 0.0" "" n} {yes no} {1 0}}
+  {mf float 5000 {"magnetic field\namplitude [Gs]" "Strength or amplitude of the rotating magnetic field in Gauss" "" d} ge0}
   {rf float 300000 {"rotation\nfrequency [Hz]" "Rotation frequency of the magnetic field" "" w}}
   {bp float 0 {"begin phase\n[deg] " "Initial phase for the rotating magnetic field" "" z}}
-  {devamp float 0 {"deviation of\namplitude [%]" "Deviation of amplitude of the rotating magnetic field in percent" "" a} ge0}
 
-  {disamp radio uniform {"amplitude\ndistribution" "Distribution of amplitude of the rotating magnetic field along flight direction" "" e}
-    {normal_ran uniform_ran normal uniform from_file} {0 1 2 3 4}}
+  {devamp float 0 {"deviation of\namplitude [%]" "Fluctuation of the amplitude of the rotating magnetic field in percent" "" a} ge0}
+  {disamp radio uniform {"amplitude\ndistribution" "Distribution of the amplitudes of the rotating magnetic field along flight direction (see Help|MagneticField)" "" e} {normal_ran uniform_ran normal uniform from_file} {0 1 2 3 4}}
+  {inampld pareditablefile ampld.dat {"file amplitude\ndistribution" "Name of the file for describing the amplitude distribution " "" t}}
 
-  {inampld pareditablefile ampld.dat {"file amplitude\ndistribution" "Name of file for describing of the amplitude distribution " "" t}}
+  {deffreq float 0 {"deviation of\nfrequency [%]" "Fluctuation of the frequency of the magnetic field in percent" "" b} ge0}
+  {disfreq radio uniform {"frequency\ndistribution" "Distribution of frequencies of the rotating  magnetic field (see Help|MagneticField)" "" v}  {normal_ran uniform_ran uniform} {0 1 2}}
 
-  {deffreq float 0 {"deviation of\nfrequency [%]" "Deviation of Rotation frequency of the magnetic field in percent" "" b} ge0}
+  {"Permanent Magnetic Fields" header}
+  {pmx float 0 {"component\nX [Gs]" "X component (projection in the axis) of the permanent magnetic field in Gauss" "" I}}
+  {pmy float 0 {"component\nY [Gs]" "Y component (projection in the axis) of the permanent magnetic field in Gauss" "" A}}
+  {pmz float 0 {"component\nZ [Gs]" "Z component (projection in the axis) of the permanent magnetic field in Gauss" "" K}}
+  {addrand float 0 {"additional random\nmagnetic field, [Gs]" "Amplitude of a additional random magnetic field" "" q} ge0}
 
-  {disfreq radio uniform {"frequency\ndistribution" "Distribution of frequency of the rotating  magnetic field" "" v}
-    {normal_ran uniform_ran uniform} {0 1 2}}
-
-  {tofprec radio yes {"TOF from\nprec. module" "Use or do not use the neutrons TOF from preceding modules for the rotating field phase" "" n}
-    {yes no} {1 0}}
-  {"Permanent Magnetic Field" header}
-  {pmx float 0 {"component\nX [Gs]" "X component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" I}}
-  {pmy float 0 {"component\nY [Gs]" "Y component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" A}}
-  {pmz float 0 {"component\nZ [Gs]" "Z component (projection in the axis) of the permanent magnetic field, Gs=Gauss" "" K}}
-  {addrand float 0 {"additional random\nmagnetic field, [Gs]" "Amplitude of the additional random magnetic field" "" q} ge0}
   {"Additional Options" header}
-  {calcwav float 20.0 {"wavelength\nfor calc. [A]" "Wavelength for caluculation of conditions for PI-flipping" "" W} gt0}
-  {ores radio no {"output results" "Output intermediately results of simulations in the file" "" S}
-    {yes no} {1 0}}
-  {fieldcalc radio no {"rotating field\ncalculation" "Calculate of amplitude of rotating field according given wavelength (Calc. wavelength) and dimension of common field X (depth), values 0,1" "" x}
+  {calcwav float 20.0 {"wavelength\nfor calc. [A]" "Wavelength for the calculation of conditions for PI-flipping" "" W} gt0}
+  {ores radio no {"output results" "Output of intermediate results of the simulation in a file" "" S} {yes no} {1 0}}
+  {fieldcalc radio no {"rotating field\ncalculation" "Calculation of the amplitude of the rotating field according to the given wavelength ('wavelength for calc.') and the length (X dir.) of the common field" "" x}
     {no yes} {0 1}}
-  {opolout pareditablefile revp.dat {"output file\npolarisation" "Name of file for: results - polarisation" "" O}}
-  {omag pareditablefile revm.dat {"output file\nmagnetic field" "Name of file for output results - magnetic field" "" N}}
+  {opolout pareditablefile revp.dat {"output file\npolarisation" "Name of a file for output results:  polarisation" "" O}}
+  {omag pareditablefile revm.dat {"output file\nmagnetic field" "Name of a file for output result: magnetic field" "" N}}
   {btrap radio no {bootstrap "Use or do not use a bootstrap configuration" "" T} {yes no} {1 0}}
 }
 

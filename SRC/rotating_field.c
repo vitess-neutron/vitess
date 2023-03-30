@@ -18,6 +18,7 @@
 /* 1.7  Mar 2004  S. Manoshin   foil inclination -  bug solved, bootstrap option was added, some restructuration,             */
 /*                              add function for field generation                                                             */
 /* 1.8  May 2020  K. Lieutenant tidy up, new central visualization parameters                                                 */
+/* 1.9  Mar 2023  K. Lieutenant correction and visualization                                                                  */
 /******************************************************************************************************************************/
 
 #include <stdio.h>
@@ -47,7 +48,7 @@ long        ind_x_max=2,                // -C        [-]   number of domains in 
             ind_y_max=2,                // -D        [-]   number of domains in Y axis direction 
             ind_z_max=2;                // -E        [-]   number of domains in Z axis direction 
 char       *Ampld=NULL;                 // -t        [-]   file for describing amplitude distribution of rmf 
-double      FieldValueInit=0.0,         // -d        [Oe]  amplitude of the magnetic field
+double      FieldValueInit=0.0,         // -d        [Gs]  amplitude of the magnetic field
             FieldValueDevPer=0.0,       // -a        [%]   deviation of the amplitude of rotating (or oscillating) magnetic field in %!
             omegainit  =0.0,            // -w        [Hz]  number of rotations per second
             OmegaDevPer=0.0,            // -b        [%]   deviation of the frequency of the rotating field in % 
@@ -56,14 +57,14 @@ int         keyaxis   =0,               // -M        [-]   direction about which
             DevLawAmpl=3,               // -e        [-]   distribution of the amplitude of the rotating field: 0 - Normal_ran, 1 - Uniform_ran, 2 - Normal, 3 - Uniform(default), 4 - from file
             DevLawFreq=2,               // -v        [-]   distribution of the frequency of the rotating field: 0 - Normal_ran, 1 - Uniform_ran, 2 - Uniform (default) 
             keyphase=1;                 // -n        [-]   neutron TOF from preceding modules is used for the rotating field phase: NO, YES
-double      FieldValue0Init[3],         // -I -A -K  [Oe]  x-, y- and z-component  of the permanent magnetic field
-            FieldValue0Dev=0.0,         // -q        [Oe]  amplitude of the additional random magnetic field  
+double      FieldValue0Init[3],         // -I -A -K  [Gs]  x-, y- and z-component  of the permanent magnetic field
+            FieldValue0Dev=0.0,         // -q        [Gs]  amplitude of the additional random magnetic field  
             wavelen=20.0;               // -W       [Ang]  wavelength for calculation
 int         keysph=0,                   // -S        [-]   flag: output of polarisation components during simulation: NO, YES
             keycalculate=0,             // -x        [-]   key for auto caluculation of some parameters, default zero 
             keybootstrap=0;             // -T        [-]   Use or do not use a bootstrap configuration
 
-/* input parameters that are currently not used */double      FieldValueSat=1.0e99;       // -y        [Oe]  Saturation magnetic field, amplitude
+/* input parameters that are currently not used */double      FieldValueSat=1.0e99;       // -y        [Gs]  Saturation magnetic field, amplitude
 int         keyrotos=0;                 // -c        [-]   flag: rotation or osciallation:  0: rotating  1:cos  2: sin
 
 // Variables determined from input parameters or trajectory data
@@ -126,11 +127,11 @@ int main(int argc, char **argv)
   /* -------------- */
   _eModule=MCN_FIELD_ROT;
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.8a");
+  PrintModuleName(_eModule, "1.9");
   OwnInit(argc, argv);
   EvalInput();
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp = FALSE;
 
@@ -226,9 +227,6 @@ int main(int argc, char **argv)
         RotVector(RotMatrixMain, Pos ); 
         RotVector(RotMatrixMain, Dir ); 
 
-        //		fprintf(LogFilePtr,"TOF1  =  %f  \n", TOF1);		
-        //		fprintf(LogFilePtr,"AAAAAA Pos after rot  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
-
         /* looks for first domain if dimension of domain changes only along X axis */
         DimDomain[0] = depth/ind_x_max; 
         DimDomain[1] = width/ind_y_max; 
@@ -251,15 +249,10 @@ int main(int argc, char **argv)
         RR[2] = 0.0;
 	
         /* Use the previous TOF for rotating(os) field, synhro!, corrected */
-	
         if (keyphase == 1)
-        {
           TOFP = InputNeutrons[i].Time + TOF1;
-        }
         else
-        {
           TOFP = 0.0;
-        }
 
         while (ind_x != (ind_x_max +1)) 
         {
@@ -278,39 +271,34 @@ int main(int argc, char **argv)
           if ((ind_x == 1)||(wall_2 == 2)) /* if for changing slice */
           {
             /* Choose the law of amplitude distribution of rotating(os) magnetic field */
-
             switch(DevLawAmpl)
             {
               case 0:
               {
                 /* Perform Gauss randomization the amplitude rotating or oscilating magnetic fields */		
                 if (FieldValueDevPer > 0.0)
-                FieldValue = DistrGauss(FieldValueInit, SigmaField);
+                  FieldValue = DistrGauss(FieldValueInit, SigmaField);
                 break;
               }
-		
               case 1:	
               {
                 /* Perform Uniform randomization the amplitude rotating or oscilating magnetic fields */		
                 if (FieldValueDevPer > 0.0)
-                FieldValue = MonteCarlo(FieldValueA, FieldValueB);
+                  FieldValue = MonteCarlo(FieldValueA, FieldValueB);
                 break;
               }
-		
               case 2:
               {
                 /* Perform Normal distribution of amplitude */
                 FieldValue = FieldValueInit*exp(Pos[0]*Pos[0]/(-2.0*SigmaField*SigmaField));
                 break;
               }
-		
               case 3:
               {
                 /* Perform Uniform distribution of amplitude */
                 FieldValue = FieldValueInit;
                 break;
               }
-		
               case 4:
               {
                 /* Calculate distribution according datas, which was taken from file */
@@ -348,7 +336,6 @@ int main(int argc, char **argv)
 			    
                 break;
               }
-
               default:
               {
                 fprintf(LogFilePtr,"ERROR: No Law! Correct option -e \n");
@@ -366,7 +353,6 @@ int main(int argc, char **argv)
                 Omega = DistrGauss(OmegaInit, SigmaOmega);
                 break;
               }
-		
               case 1:	
               {
                 /* Perform Uniform randomization the frequency of rotating or oscilating magnetic fields */
@@ -374,14 +360,12 @@ int main(int argc, char **argv)
                 Omega = MonteCarlo(OmegaA, OmegaB);
                 break;
               }
-		
               case 2:
               {
                 /* Uniform distribution */
                 Omega = OmegaInit;		
                 break;
               }
-
               default:
               {
                 fprintf(LogFilePtr,"ERROR: No Law! Correct option -v \n");
@@ -389,8 +373,6 @@ int main(int argc, char **argv)
                 break;
               }
             }
-
-            /*    fprintf(LogFilePtr,"FV = %f  Omega = %f  \n", FieldValue, Omega); */
     
             /* Activate permanent magnetic field */
             FieldValue0[0] = FieldValue0Init[0];
@@ -406,9 +388,6 @@ int main(int argc, char **argv)
               FieldValue0[1] = FieldValue0[1] + fabs(FieldValue0Dev)*VY;
               FieldValue0[2] = FieldValue0[2] + fabs(FieldValue0Dev)*VZ;
             }	
-	 
-            //	fprintf(LogFilePtr,"GF  %f  %f  %f \n", FieldValue0[0], FieldValue0[1], FieldValue0[2]);
-            //	fprintf(LogFilePtr,"indx = %d  Pos0w  =  %f  I Pos1 = %f  Pos2 = %f \n", ind_x, Pos[0], Pos1[0], Pos2[0]);
 
             /*	Calculate magnetic field components */        	
             /* 	Activate simulation of bootstrap  */	
@@ -469,19 +448,13 @@ int main(int argc, char **argv)
           {
             domain_field[0] = FieldValueSat;
             if (F_MODULE != 0.0)
-            {
               FieldCorr = FieldValueSat/F_MODULE;
-            }
             else
-            {
               FieldCorr = 0.0;
-            }
           }	
- 	    
 	    
           domain_field[1] = Rrotz;
           domain_field[2] = Rroty;
-          //	    fprintf(LogFilePtr,"Field: roty = %f rotz = %f\n",Rroty,Rrotz);
     
           /* Rotating option */
           FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]); 
@@ -503,11 +476,10 @@ int main(int argc, char **argv)
             if (wall_2 == 0) goto getlost;
 
             /* ordering */
-            if(Pos1[0] > Pos2[0]) 	
-		
-        	  CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2); 	
-		        wall = wall_1;       wall_1 = wall_2;        wall_2 = wall;
-
+            if (Pos1[0] > Pos2[0]) 	
+            { CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2); 	
+		          wall = wall_1;       wall_1 = wall_2;        wall_2 = wall;
+            }
           }
 
           /* moment of arriving at the domain wall, new position */
@@ -569,15 +541,11 @@ int main(int argc, char **argv)
         }
 
       exitfield:;
-
-
         /*******************************************************************************/
         nPrecTot =  nPrecTot + nPrecTrj;
 
         if (Number_NOP != 0.0)
-        {
           nPrecDom =  nPrecDom + nPrecTrj/Number_NOP;
-        }
 
         /* Output matters */
         NumOut++;
@@ -614,9 +582,6 @@ int main(int argc, char **argv)
         Dir[2] = NeutronAdd2.Vector[2];
 		
         TOF = TOF + TOF3;
-
-        //	fprintf(LogFilePtr,"BBBBBB PRECESSION Pos after rota transl X =  %f  Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	
-        //	fprintf(LogFilePtr,"===================================================================================================\n");
 		
         Neutrons.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
         Neutrons.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
@@ -647,7 +612,7 @@ int main(int argc, char **argv)
   { /*
     fprintf(LogFilePtr,"Full Number of precessions  : %f\n", nPrecTrj);
     if (Number_NOP != 0.0)
-      fprintf(LogFilePtr,"Ave Number of precessions  : %f\n", nPrecTrj/Number_NOP); */    fprintf(LogFilePtr,"Average number of precession in resonator : %f\n", nPrecTot/NumOut);    fprintf(LogFilePtr,"Average number of precession per domain   : %f\n", nPrecDom/NumOut);
+      fprintf(LogFilePtr,"Ave Number of precessions  : %f\n", nPrecTrj/Number_NOP); */    fprintf(LogFilePtr,"Average number of precession in resonator : %f\n",   nPrecTot/NumOut);    fprintf(LogFilePtr,"Average number of precession per domain   : %f\n\n", nPrecDom/NumOut);
 	
     if (keysph == 1)	
     {
@@ -686,7 +651,7 @@ int main(int argc, char **argv)
   }
 
   /* write geometry file */
-  SetGeometry("light_blue");
+  SetGeometry("yellow");
   
   /* Do module specific cleanups */
   OwnCleanup(); 
@@ -786,7 +751,7 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'd':
-        sscanf(&argv[1][2], "%lf", &FieldValueInit);   /* magnetic filed, Oe = Gauss */
+        sscanf(&argv[1][2], "%lf", &FieldValueInit);   /* magnetic filed, Gs = Gauss */
         break;
 			
       case 'a':
@@ -819,12 +784,12 @@ void OwnInit(int argc, char *argv[])
 						
       /* Input parameters for permanent magnetic field */
       case 'I':
-        sscanf(&argv[1][2], "%lf", &FieldValue0Init[0]);        /* value in Oe, OX component */
+        sscanf(&argv[1][2], "%lf", &FieldValue0Init[0]);        /* value in Gs, OX component */
         break;      case 'A':
-        sscanf(&argv[1][2], "%lf", &FieldValue0Init[1]);        /* value in Oe, OY component */
+        sscanf(&argv[1][2], "%lf", &FieldValue0Init[1]);        /* value in Gs, OY component */
         break;
       case 'K':
-        sscanf(&argv[1][2], "%lf", &FieldValue0Init[2]);        /* value in Oe, OZ component */
+        sscanf(&argv[1][2], "%lf", &FieldValue0Init[2]);        /* value in Gs, OZ component */
         break;
       case 'q':
         sscanf(&argv[1][2], "%lf", &FieldValue0Dev);
@@ -868,7 +833,7 @@ void EvalInput()
   /* Check initial dates */
   if (keysph == 1)
   {
-    fprintf(LogFilePtr,"Activate output in the file the components of polarisation \n");
+    // fprintf(LogFilePtr,"Activate output in the file the components of polarisation \n");
 	
     if (Monitp == NULL)
       Error("You must define a file for polarisation output (Option -O)"); 
@@ -956,30 +921,10 @@ void EvalInput()
 
   switch(keyrotos)
   {
-    case 0:
-    {
-      fprintf(LogFilePtr,"ACTIVATE ROTATING FIELD \n");
-      break;
-    }
-		
-    case 1:	
-    {
-      fprintf(LogFilePtr,"ACTIVATE COS-OS FIELD \n");
-      break;
-    }
-		    
-    case 2:	
-    {
-      fprintf(LogFilePtr,"ACTIVATE SIN-OS FIELD \n");
-      break;
-    }
-
-    default:
-    {
-      fprintf(LogFilePtr,"ERROR: No field! Correct option -c (Values 0, 1, 2)\n");
-      exit(-1);
-      break;
-    }
+    case 0: fprintf(LogFilePtr,"Rotating field activated \n"); break;
+    case 1:	fprintf(LogFilePtr,"cos-OS field activated \n");   break;
+    case 2:	fprintf(LogFilePtr,"sin-OS field activated \n");   break;
+    default:Error("No field! Correct option -c (Values 0, 1, 2)\n");
   }	
 
   /* Overwrite center position and translation output*/
@@ -1003,26 +948,20 @@ void EvalInput()
   {
     FieldValue0Length = LengthVector(FieldValue0);
     OmegaFV0 = (1000.0/(2.0*(M_PI)))*(FREQUENCY_FROM_FIELD(FieldValue0Length)); 
-    fprintf(LogFilePtr,"!!! NOTE for NRSE users! For RF flipper frequency of rotating magnetic field must be = %f Hz \n", OmegaFV0);
-    fprintf(LogFilePtr,"!!! for permanent magnetic field module  %f  Oe \n",FieldValue0Length);
+    fprintf(LogFilePtr, "NOTE: RF flipper frequency of rotating magnetic field has to be %7.1f Hz for a permanent magnetic field of %7.3f Gs\n", OmegaFV0, FieldValue0Length);
   }	
 
-  OmegaFV0 = (2.0*(M_PI)*fabs(omegainit)/1000.0)/18.324282;
+  OmegaFV0 = (2.0*(M_PI)*fabs(omegainit)/1000.0)/FREQ_B_RATIO;
   if (omegainit != 0.0)
   {
-    fprintf(LogFilePtr,"!!!!!! NOTE for NRSE users! For RF flipper module of permanent magnetic field must be  %f Oe\n",OmegaFV0);
-    fprintf(LogFilePtr,"!!!!!! for frequency  %f  Hz \n", omegainit);
+    fprintf(LogFilePtr, "NOTE: Permanent magnetic field of RF flipper has to be %7.3f Gs for a frequency %7.1f Hz!\n", OmegaFV0, omegainit);
   }
 
   if (wavelen <= 0.0)
-  {
-    fprintf(LogFilePtr,"ERROR: Calc. Wavelength must be positive! \n");
-    exit(-1);
-  }
+    Error("Wavelength must be positive");
 	
-  OmegaFV0 = (M_PI)*395.60346/(wavelen*depth*18.324282);
-  fprintf(LogFilePtr,"!!!!!!!!! Amplitude of rotating field must be %f Oe \n",OmegaFV0);
-  fprintf(LogFilePtr,"!!!!!!!!! for PI flipping and for wavelength %f A \n", wavelen);
+  OmegaFV0 = (M_PI)*395.60346/(wavelen*depth*FREQ_B_RATIO);
+  fprintf(LogFilePtr,"Amplitude of rotating field must be %7.3f Gs for pi flipping and wavelength %6.3f Ang \n", OmegaFV0, wavelen);
 
   /*	end of calculation of resonance condiotion */	
 
@@ -1070,7 +1009,7 @@ void EvalInput()
 		    
     case 2:
     {
-      fprintf(LogFilePtr,"Amplitude of magnetic field has a gauss distribution with sigma = %f Oe \n",SigmaField);
+      fprintf(LogFilePtr,"Amplitude of magnetic field has a gauss distribution with sigma = %f Gs \n",SigmaField);
       break;
     }
 		    
@@ -1243,30 +1182,30 @@ void EvalInput()
     case 0:
     {
       if (keyaxis == 0) 
-        fprintf(LogFilePtr,"Rotating magnetic field activated around X axis H =  %f(X,N) *-cos-sin-[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"Rotating magnetic field about X axis: %7.3f(X,N) Gs * [0, cos(%7.1f(N) * time + %6.3f), sin(...)]\n", FieldValue, Omega, phi0);
       if (keyaxis == 1) 
-        fprintf(LogFilePtr,"Rotating magnetic field activated around Y axis H =  %f(X,N) *-cos-sin-[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);      if (keyaxis == 2) 
-        fprintf(LogFilePtr,"Rotating magnetic field activated around Z axis H =  %f(X,N) *-cos-sin-[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"Rotating magnetic field about Y axis: %7.3f(X,N) Gs * [sin(%7.1f(N) * time + %6.3f), 0, cos(...)]\n", FieldValue, Omega, phi0);      if (keyaxis == 2) 
+        fprintf(LogFilePtr,"Rotating magnetic field about Z axis: %7.3f(X,N) Gs * [cos(%7.1f(N) * time + %6.3f), sin(...), 0]\n", FieldValue, Omega, phi0);
       break;
     }
 		
     case 1:	
     {
       if (keyaxis == 0) 
-        fprintf(LogFilePtr,"COS-OS magnetic field activated parallel X axis H =  %f(X,N) *cos[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"COS-OS magnetic field parallel X axis: %7.3f(X,N) * cos(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);
       if (keyaxis == 1) 
-        fprintf(LogFilePtr,"COS-OS magnetic field activated parallel Y axis H =  %f(X,N) *cos[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);      if (keyaxis == 2) 
-        fprintf(LogFilePtr,"COS-OS magnetic field activated parallel Z axis H =  %f(X,N) *cos[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"COS-OS magnetic field parallel Y axis: %7.3f(X,N) * cos(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);      if (keyaxis == 2) 
+        fprintf(LogFilePtr,"COS-OS magnetic field parallel Z axis: %7.3f(X,N) * cos(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);
       break;
     }
 		    
     case 2:	
     {
       if (keyaxis == 0) 
-        fprintf(LogFilePtr,"SIN-OS magnetic field activated parallel X axis H =  %f(X,N) *sin[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"SIN-OS magnetic field parallel X axis: %7.3f(X,N) * sin(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);
       if (keyaxis == 1) 
-        fprintf(LogFilePtr,"SIN-OS magnetic field activated parallel Y axis H =  %f(X,N) *sin[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);      if (keyaxis == 2) 
-        fprintf(LogFilePtr,"SIN-OS magnetic field activated parallel Z axis H =  %f(X,N) *sin[ %f(N) * Time +  %f ]\n",FieldValue, Omega, phi0);
+        fprintf(LogFilePtr,"SIN-OS magnetic field parallel Y axis: %7.3f(X,N) * sin(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);      if (keyaxis == 2) 
+        fprintf(LogFilePtr,"SIN-OS magnetic field parallel Z axis: %7.3f(X,N) * sin(%7.1f(N) * time + %6.3f)\n", FieldValue, Omega, phi0);
       break;
     }
 
@@ -1293,11 +1232,11 @@ void EvalInput()
 
 
   if (FieldValue0Dev > 0.0) 
-    fprintf(LogFilePtr,"Activate additional random magnetic field with amplitude  %f  Oe \n", FieldValue0Dev);	
+    fprintf(LogFilePtr,"Activate additional random magnetic field with amplitude  %f  Gs \n", FieldValue0Dev);	
 
   if (FieldValueSat != 1e99)
   {
-    fprintf(LogFilePtr,"Module of saturation value =  %f Oe\n", FieldValueSat);
+    fprintf(LogFilePtr,"Module of saturation value =  %f Gs\n", FieldValueSat);
   }
 	
   if (keybootstrap == 1)
@@ -1365,9 +1304,44 @@ void SetGeometry(char* sColor)
   /* Geometry data */
   if (bVisInstr)
   { 
+    int        nX=1, nY=1, nZ=1,
+               iX=0, iY=0, iZ=0, iM=0;
+    VectorType vOrient={1.0,0.0,0.0}, vCntr={1.0,0.0,0.0};
+
+    RotBackVector(RotMatrixMain, vOrient); 
+
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
-    stGeometry.pDescr  =  sVisDescrpt;
-    stGeometry.eModule = _eModule;
+    stGeometry.pDescr   = sVisDescrpt;
+    stGeometry.eModule  = _eModule;
+
+    nX = ind_x_max; nY = ind_y_max; nZ = ind_z_max;     // all domains shown   
+    stGeometry.nCuboids = nX * nY * nZ; 
+    stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+    for (iX=1; iX <= nX; iX++)
+    { 
+      for (iY=1; iY <= nY; iY++)
+      { 
+        for (iZ=1; iZ <= nZ; iZ++)
+        { 
+          vCntr[0]  = (2.0*iX-nX-1.0)/(2.0*nX)*depth;
+          vCntr[1]  = (2.0*iY-nY-1.0)/(2.0*nY)*width ;
+          vCntr[2]  = (2.0*iZ-nZ-1.0)/(2.0*nZ)*height;
+          RotBackVector(RotMatrixMain, vCntr); 
+
+          stGeometry.pCuboid[iM].Length    = depth/nX ; 
+          stGeometry.pCuboid[iM].Width     = width/nY  * BlowUp;
+          stGeometry.pCuboid[iM].Height    = height/nZ * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
+          stGeometry.pCuboid[iM].vCntr[1]  =(PosMain[1] + vCntr[1]) * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[2]  =(PosMain[2] + vCntr[2]) * BlowUp;
+          stGeometry.pCuboid[iM].vNormal[0]= vOrient[0];
+          stGeometry.pCuboid[iM].vNormal[1]= vOrient[1];
+          stGeometry.pCuboid[iM].vNormal[2]= vOrient[2];
+          iM++;
+        }
+      }
+    }
   }
 }
 

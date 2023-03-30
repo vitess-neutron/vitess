@@ -66,6 +66,7 @@
 
 #define MAX_ULONG    4294967295 //  4.295e09  // 2^32 - 1
 
+#define FREQ_B_RATIO         18.324717
 #define FREQUENCY_FROM_FIELD(x)  ( 18.324717 * x ) /* rad*kHz from Gauss */
 
 typedef double VectorType[3];

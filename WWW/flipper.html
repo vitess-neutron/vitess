@@ -112,306 +112,253 @@
       </tbody>
     </table>
   </p>
+  <br />
 
 
   <h3> VITESS Module Flipper_gradient</h3>
   <p>
-    This module simulates spin precessions in the magnetic field of special kind.
-    The first part of such field is a rotating magnetic field. Amplitude of this field
-    must be changing by sinus distribution with semi-period, which is equal of the appropriate
-    dimensions of the rotating field volume. Magnetic field can be rotated around the axises
-    OX or OY or OZ. The axis OX has the direction of neutron flight. Permanent value of
-    amplitude can be given also.<br>
-    The second part of general field is a guide magnetic field. <br>
-
-    The spin
-    precessions are treated classically i.e. this module only rotates the spin
+    This module simulates spin precessions in the magnetic field of a special kind:
+    The first part of such a field is a rotating magnetic field. The amplitude of this field
+    has to have a sinus function with a semi-period corresponding to the dimensions of the rotating field volume.
+    The magnetic field can rotate about the axes X, Y or Z. (The X axis has the direction of the neutron beam).
+    The second part of the general field is a guide magnetic field.
+    A random magnetic field can be added also.<br>
+    <br>
+    The spin precessions are treated classically i.e. this module only rotates the spin
     vectors belonging to trajectories which pass through the rectangular geometry.
-    <br>
-    The random magnetic field can be added also.<br>
-    No attenuation is considered during the flight.  <br>
+    No attenuation is considered during the flight.
+  </p>
 
-    -----------FIRST-PART-----------ROTATING FIELD----------------------<br>
-    <br>
-    FORMULAS OF ROTATION: AROUND AXIS 0X <br>
-    X = X0 <br>
-    Y = Y0 + FieldValue*sin(Omega*(T + TOF) + BeginPhase) <br>
-    Z = Z0 + FieldValue*cos(Omega*(T + TOF) + BeginPhase) <br>
-    <br>
-    FORMULAS OF ROTATION: AROUND AXIS 0Y <br>
-    X = X0 + FieldValue*sin(Omega*(T + TOF) + BeginPhase) <br>
-    Y = Y0 <br>
-    Z = Z0 + FieldValue*cos(Omega*(T + TOF) + BeginPhase) <br>
-    <br>
-    FORMULAS OF ROTATION: AROUND AXIS 0Z <br>
-    X = X0 + FieldValue*cos(Omega*(T + TOF) + BeginPhase) <br>
-    Y = Y0 + FieldValue*sin(Omega*(T + TOF) + BeginPhase) <br>
-    Z = Z0 <br>
-    <br>
-    X0, Y0, Z0 - components of guide magnetic field [Gauss], <br>
-    Omega = 2*PI*omega/1000, omega = [Hz], Omega = [rad/ms], <br>
-    FieldValue - Strength (Amplitude) of rotating magnetic field in Gauss, <br>
-    BeginPhase in degree <br>
-    TOF - time of flight of neutron from preceding modules for rotating field
-    phase. <br>
-    So, if TOF=0 is used: The magnetic field is directed vertically upwards for rotating
-    around of the axis 0X, when NEUTRON WAS LEFT THE MODERATOR SURFACE. <br>
-    Also, if TOF is zero, the rotation of magnetic field and neutron time of
-    flight are NOT SYNHRONIZED and so unsuatible for Spin Echo simulations!!! <br>
+  <pre>
+    -----------FIRST-PART-----------ROTATING FIELD----------------------
+    FORMULAS OF ROTATION: AROUND X AXIS 
+    B_x = B0_x 
+    B_y = B0_y + B_rot*sin(Omega*(T + TOF) + BeginPhase) 
+    B_z = B0_z + B_rot*cos(Omega*(T + TOF) + BeginPhase) 
+  
+    FORMULAS OF ROTATION: AROUND Y AXIS 
+    B_x = B0_x + B_rot*sin(Omega*(T + TOF) + BeginPhase) 
+    B_y = B0_y 
+    B_z = B0_z + B_rot*cos(Omega*(T + TOF) + BeginPhase) 
+  
+    FORMULAS OF ROTATION: AROUND Z AXIS 
+    B_x = B0_x + B_rot*cos(Omega*(T + TOF) + BeginPhase) 
+    B_y = B0_y + B_rot*sin(Omega*(T + TOF) + BeginPhase) 
+    B_z = B0_z 
+  
+    B0_x, B0_y, B0_z: components of permanent magnetic field [Gauss] 
+    B_rot           : strength amplitude) of rotating magnetic field in Gauss  
+    TOF             : time of flight of neutron from preceding modules for rotating field phase  
+    Omega           = 2*PI*omega/1000, omega = [Hz], Omega = [rad/ms]  
+    BeginPhase        in degree 
+  </pre>
+  <p>
+    So for T+TOF=0, the magnetic field is directed vertically upwards for rotation about the X axis.
+    If the 'TOF from the previous module' is not used, TOF is set to zero.
+    In that case, the rotation of magnetic field and the neutron time of
+    flight are NOT SYNCHRONIZED, which is unsuitable e.g. for Spin Echo simulations.
+  </p>
+  <p>
     The amplitude FieldValue can have a 3 types of distributions:<br>
-
     1. sinus law (with semi-period - appropriate dimensions of the magnetic field volume) <br>
     2. permanent law <br>
     3. solinoid formula (not yet active) <br>
-
-
-    -----------SECOND-----PART: GUIDE-MAGNETIC-FIELD--- <br>
-    This part can have a 3 types of distribution too: <br>
-
-    1. cosine law : with semi-period - appropriate dimensions of the magnetic field volume <br>
-    2. linear law : with period - appropriate dimensions of the rotating field volume <br>
-    3. pernanent law <br>
-
-    We have simulated a gradient flipper with such distributions:<br>
-    rotating magnetic field: sinus law <br>
-    guide magnetic field: linear law<br>
-    and have got a good results. <br>
-
-    The frequency of rotating and components of guide magnetic
-    fields can be randomized.
+  </p>
+  <pre>
+    -----------SECOND-----PART: GUIDE-MAGNETIC-FIELD---
+    This part can have 3 types of distributions, too: 
+    1. cosine law : with semi-period - appropriate dimensions of the magnetic field volume 
+    2. linear law : with period - appropriate dimensions of the rotating field volume 
+    3. pernanent law 
+  </pre>
   <p>
-    <h2>Module parameters</h2>
+    We have simulated a gradient flipper with a sinus function for the rotating magnetic field and a linear function for the guide field
+    and have got a good results. 
+    <br>
+    The frequency of the rotating magnetic field and components of the guide magnetic fields can be randomized.
+  </p>
+  <h2>Module parameters</h2>
   <p>
     <table border="1" width="90%">
       <tbody>
         <tr>
-          <td>
-            <b>Parameter</b> <br>
-            <b>Unit</b>
-          </td>
+          <td><b>Parameter</b> <br><b>Unit</b></td>
           <td><b>Description</b></td>
+          <td><b>Range or Values</b></td>
           <td><b>Command option</b></td>
         </tr>
 
         <tr>
-          <td>
-            dimensions of field volume X,Y,Z<br>
-            [cm]
-          </td>
-          <td>X, Y, Z  Dimensions of the flipper </td>
+          <td>common field X,Y,Z<br>[cm]</td>
+          <td>Size of the cuboidel flipper in X, Y, Z direction</td>
+          <td>&gt;0</td>
           <td>-X, -Y, -V</td>
         </tr>
-
         <tr>
-          <td>
-            position main X,Y,Z <br>
-            [cm]
-          </td>
+          <td>position center X,Y,Z <br>[cm]   </td>
           <td>Center position of the flipper.</td>
+          <td>any</td>
           <td>-k, -l, -m</td>
         </tr>
-
-
         <tr>
-          <td>
-            offset horiz. <br>
-            [deg]
-          </td>
+          <td> horizontal offset <br> [deg]</td>
           <td>Horizontal (around vertical axis) rotation angle of the magnetic field volume.</td>
+          <td>-180° - 180°</td>
           <td>-i</td>
         </tr>
 
-
         <tr>
-          <td>
-            output X,Y,Z <br>
-            [cm]
-          </td>
+          <td>output frame X,Y,Z <br>[cm]</td>
           <td>Position of the output frame (in the input frame).</td>
+          <td>any</td>
           <td>-p, -r, -s</td>
         </tr>
-
         <tr>
-          <td>Number of domains in the X direction</td>
-          <td>Number of domains in the X direction (flight direction)</td>
-          <td>-C</td>
-        </tr>
-        <tr>
-          <td>Number of domains in the Y direction</td>
-          <td>Number of domains in the Y direction</td>
-          <td>-D</td>
-        </tr>
-        <tr>
-          <td>Number of domains in the Z direction</td>
-          <td>Number of domains in the Z direction</td>
-          <td>-E</td>
+          <td>number domains in X, Y, Z direction</td>
+          <td>Number of domains in the X direction (flight direction), Y (left) and / (Upwards) direction</td>
+          <td>&ge;1</td>
+          <td>-C, -D, -E</td>
         </tr>
 
-        <tr>
-          <td>Rotating field around given axis</td>
-          <td>
-            Choose rotating field around of a axis OX or OY or OZ , values 0, 1,
-            2 respective
-          </td>
-          <td>-M</td>
-        </tr>
 
         <tr>
-          <td>
-            Strength of rotating magnetic field  <br>
-            [Gs]
-          </td>
-          <td>Strength(Amplitude) of the rotating magnetic field.</td>
+          <td>magnetic field amplitude<br>[Gs]</td>
+          <td>Amplitude of the rotating magnetic field</td>
+          <td>&ge;0</td>
           <td>-d</td>
         </tr>
-
-
         <tr>
-          <td>
-            Frequency of rotating <br>
-            [Hz]
-          </td>
-          <td>Rotation frequency of&nbsp; the magnetic field.</td>
+          <td>rotation frequency<br>[Hz]</td>
+          <td>frequency of the rotating magnetic field.</td>
+          <td>&ge;0</td>
           <td>-w</td>
         </tr>
-
-
         <tr>
-          <td>
-            Begin Phase <br>
-            [degree]
-          </td>
+          <td>begin phase <br>[deg]</td>
           <td>Initial phase for the rotating field.</td>
+          <td>0° - 360°</td>
           <td>-z</td>
         </tr>
 
         <tr>
-          <td>Law of amplitude changing</td>
+          <td>rotating field axis</td>
+          <td>Choice of the axis about which the field is rotating, X, Y or Z</td>
+          <td>0X, 0Y, 0Z</td>
+          <td>-M</td>
+        </tr>
+        <tr>
+          <td>amplitude changing by</td>
           <td>
-            Amplitude of the rotating magnetic field is changing by sinus (with semi-period -
-            appropriate dimensions of rotating field volume) law, permanently and by solinoid
-            formula (not yet active)
+            The strength of the rotating magnetic field varies by sinus function (with semi-period -
+            corresponding to the field size) or by solenoid formula (not yet active) or is constant
           </td>
+          <td>'sinus', 'permanent', 'solenoid'</td>
           <td>-h</td>
         </tr>
-
         <tr>
-          <td>Deviation of amplitude [%]</td>
-          <td>Deviation of amplitude of the rotating magnetic field in percent</td>
-          <td>-a</td>
-        </tr>
-
-        <tr>
-          <td>Axis of amplitude changing</td>
+          <td>amplitude changing along axis</td>
           <td>
-            Key-Direction for changing of amplitude of the rotating field along given axis OX, OY
-            or OZ, values 0,1,2. Actually, if amplitude changing by sinus was chosen
+            Choice of the axis, along which the amplitude of the rotating field changes.
+            Needed if the time dependence 'sinus' is chosen.
           </td>
+          <td>0X, 0Y, 0Z</td>
           <td>-y</td>
         </tr>
 
         <tr>
-          <td>Amplitude distribution</td>
-          <td>
-            Distribution of random values: amplitude of the rotating magnetic field<br>
-            {Normal Uniform} {0 1}
-          </td>
-          <td>-e</td>
+          <td>Deviation of amplitude<br />[%]</td>
+          <td>Deviation of the amplitude of the rotating magnetic field in percent</td>
+          <td>&ge;0.0</td>
+          <td>-a</td>
         </tr>
-
         <tr>
           <td>Deviation of frequency [%]</td>
           <td>Deviation of Rotation frequency of the magnetic field in percent</td>
+          <td>&ge;0.0</td>
           <td>-b</td>
         </tr>
 
         <tr>
-          <td>Frequency distribution</td>
-          <td>
-            Distribution of random values: frequency of the rotating magnetic field
-            <br> {Normal Uniform} {0 1}
-          </td>
+          <td>amplitude distribution</td>
+          <td>Distribution of the amplitude of the rotating magnetic field <br /> see text above</td>
+          <td>'Normal', 'Uniform'</td>
+          <td>-e</td>
+        </tr>
+        <tr>
+          <td>frequency distribution</td>
+          <td>Distribution of the frequency of the rotating magnetic field <br /> see text above </td>
+          <td>'Normal', 'Uniform'</td>
           <td>-v</td>
         </tr>
-
-
         <tr>
-          <td>TOF from preceding modules</td>
+          <td>TOF from prec. module</td>
           <td>
-            Value 1 - use the neutron TOF from preceding modules for  <br>
-            rotating field phase; 0 - No -&gt;  TOF = 0;
+            'yes': use the neutron TOF from the preceding modules for the calculation of the rotating field phase<br>
+            'no' : set TOF = 0;
           </td>
+          <td>'yes', 'no'</td>
           <td>-n</td>
         </tr>
 
 
         <tr>
-          <td>Law of changingof the guide magnetic field</td>
+          <td>perm. / initial component X, Y and Z [Gs] </td>
           <td>
-            Laws of distribution of guide magnetic field: cosine law (with semi-period -
-            appropriate dimensions of rotating field volume), linearly and pernanently
+            Permanent(for cosine amd permanent laws) or initial(for linear law) value of the X,
+            Y or Z components (projection in the axis X, Y, Z) of the guide magnetic field in Gauss
           </td>
-          <td>-u</td>
+          <td>any</td>
+          <td>-I, -A, -K</td>
+        </tr>
+        <tr>
+          <td>Amplitude or final X, Y and Z [Gs]</td>
+          <td>
+            Amplitude(for cosine law) or final(for linear law) value of the X,Y,Z component
+            (projection in the axis X, Y, Z) of the guide magnetic field in Gauss
+          </td>
+          <td>&ge;0.0</td>
+          <td>-P -Q -R</td>
+        </tr>
+        <tr>
+          <td>additional random\n magnetic field <br> [Gs]</td>
+          <td>Amplitude of an additional random magnetic field</td>
+          <td>&ge;0.0</td>
+          <td>-q</td>
         </tr>
 
-
         <tr>
-          <td>Amplitude changing along axis</td>
+          <td>Law of changing</td>
+          <td>Laws of distribution of guide magnetic field: cosine law (with semi-period corresponding to the size of the rotating field), linearly and permanently</td>
+          <td>'cosinus', 'linear', 'permanent'</td>
+          <td>-u</td>
+        </tr>
+        <tr>
+          <td>amplitude changing along axis</td>
           <td>
-            Key-Direction for amplitude changing of guide field along given axis OX, OY or OZ,
-            values 0,1,2. Actually, if cosinus law of changing was given
+            Axis along which the amplitude changes: X, Y or Z. Needed if cosinus law of changing was chosen.
           </td>
+          <td>0X, 0Y, 0Z</td>
           <td>-t</td>
         </tr>
 
 
         <tr>
-          <td>
-            Permanent or initial component X, Y and Z [Gs] <br>
-          </td>
-          <td>
-            Permanent(for cosine amd permanent laws) or initial(for linear law) value of the X,
-            Y or Z components (projection in the axis 0X, OY, OZ) of the guide magnetic field, Gs=Gauss
-          </td>
-          <td>-I, -A, -K</td>
-        </tr>
-
-
-        <tr>
-          <td>Amplitude or final component X, Y and Z [Gs]</td>
-          <td>
-            Amplitude(for cosine law) or final(for linear law) value of the X,Y,Z component
-            (projection in the axis 0X, OY, OZ) of the guide magnetic field, Gs=Gauss
-          </td>
-          <td>-P -Q -R</td>
-        </tr>
-
-
-        <tr>
-          <td>Additional random\n magnetic field <br> [Gs]</td>
-          <td>Amplitude of additional random magnetic field</td>
-          <td>-q</td>
-        </tr>
-
-        <tr>
-          <td> Output results  </td>
-          <td>
-            Output intermediately results of simulations(spin and total magnetic
-            field during flight) in the file  {yes no} {1 0}
-          </td>
-          <td>-S</td>
-        </tr>
-
-        <tr>
           <td>Output file:  polarisation </td>
-          <td>Name of file for: results - polarisation, spin components   </td>
+          <td>Name of the file for output results: polarisation, spin components   </td>
+          <td>   </td>
           <td>-O</td>
         </tr>
-
         <tr>
           <td>Output file: magneticfield  </td>
-          <td>Name of file for output results - total magnetic field components </td>
+          <td>Name of the file for output results: total magnetic field components </td>
+          <td>   </td>
           <td>-N</td>
+        </tr>
+        <tr>
+          <td>Output results  </td>
+          <td>Output of intermediate results of the simulations(spin and total magnetic field during flight) in files</td>
+          <td>'yes', 'no'</td>
+          <td>-S</td>
         </tr>
 
       </tbody>

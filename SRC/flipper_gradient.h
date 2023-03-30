@@ -8,9 +8,6 @@
 #define	FIELD_SIZE	  3000
 #define	FIELD_SIZE_FL	9000
 
-#define	ENERGY_FROM_LAMBDA(x)   ( 81805.048 / x / x ) /* [ueV] */
-#define FREQUENCY_FROM_FIELD(x) ( 18.324282 * x )     /* rad*kHz from Oe=Gauss */ 
-
 
 /**************************/
 /** Functions prototypes **/
