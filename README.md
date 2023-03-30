@@ -7,12 +7,15 @@ Welcome to GitLab Page of the simulation program '**VITESS**' (Virtual Instrumen
 
 ### Latest versions
 
-The current **VITESS** version is 3.4.
+The current **VITESS** version is 3.4. It can be downloaded [here](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
-As new features, it allows reading and writing neutron data in MCLP and MCNPX format and contains the description of the ESS Butterfly-1 moderator. We invite you to download and install the new release and give us feedback on your experiences. Please also take a look at the version history.
+As new features, it allows reading and writing neutron data in MCLP and MCNPX format and contains the description of the ESS Butterfly-1 moderator. We invite you to download and install the new release and give us feedback on your experiences. Please also take a look at the version history. 
+
+**VITESS** 3.5 is in active development. If you are interested in testing it, checkout the develop branch or download an up-to-date snapshot [here](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
 
 
 ### Concept of VITESS
+
 The simulation of a neutron instrument comprises several modules, which represent instrument components like guides or detectors, various helper modules, e.g. frames modifying the coordinate system between two instrument components, and modules for data visualisation and evaluation. All modules can be selected within the GUI. When you run a simulation, such modules are co-working sequentially embedded in a pipe structure:
 
 - Each module processes and then passes neutron data to the following one.
