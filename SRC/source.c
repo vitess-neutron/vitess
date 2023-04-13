@@ -695,12 +695,12 @@ int main(int argc, char *argv[])
          else if (stSrc.nSource==ESS || stSrc.nSource==SNS)
          {  // case ESS, SNS
             if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY2_2015)
-            {  prob = EssModFU_Butterfly2015(pMod->Height, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
+            {  prob = EssModFU_Butterfly2015(pMod->Height,  stSrc.Power, stSrc.PulseFreq, Declination, &Input, stSrc.PulseLength, stMod[0].PfmcFact, stMod[1].PfmcFact);
                prob = prob / pMod->FUAmpMod * pMod->NormInt;
                Input.Color=GetColour_ESSbutterfly2015(Input.Position[1], Declination);
             }
             else if (stSrc.nSource==ESS && iDataVsn == BUTTERFLY1_2016)
-            {  prob = EssModFU_Butterfly2016(pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stMod[0].PfmcFact, stMod[1].PfmcFact);
+            {  prob = EssModFU_Butterfly2016(pMod->ModTemp, stSrc.Power, stSrc.PulseFreq, Declination, &Input, stSrc.PulseLength, stMod[0].PfmcFact, stMod[1].PfmcFact);
                prob = prob / pMod->FUAmpMod * pMod->NormInt;
                if (ColorByLmbd) 
                  Input.Color=GetColour_ESSbutterfly2016(Input.Wavelength);

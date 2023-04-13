@@ -50,8 +50,8 @@ double     Shift=0.0,                         // Position of border between mode
 // ----------
 static double TSC2015_ParaSpectra_BF3cm   (const double lambda, const double theta);
 static double TSC2015_ThermalSpectra_BF3cm(const double lambda, const double theta);
-static double TSC_TimeDist_Final_Thermal  (double time, double lambda, double height);
-static double TSC_TimeDist_Final_Cold     (double time, double lambda, double height);
+static double TSC_TimeDist_Final_Thermal  (double time, double lambda, double height, double pulse_len);
+static double TSC_TimeDist_Final_Cold     (double time, double lambda, double height, double pulse_len);
 
 static double TSC2016_coldx0_BF3cm(const double x0, const double lambda);
 static double TSC2015_coldx0_BF3cm(const double x0, const double theta);
@@ -157,7 +157,8 @@ double EssTotFU2016(const double ModHeight, const double ModTemp,  const double 
 }
 
 
-double EssModFU_Butterfly2015(const double ModHeight, const double Power, const double Freq, const double Declination, const Neutron* pNeutron, const double PfmcThml, const double PfmcCold)                     
+double EssModFU_Butterfly2015(const double ModHeight, const double Power,    const double Freq, const double Declination, const Neutron* pNeutron, 
+                              const double PulseLen,  const double PfmcThml, const double PfmcCold)                     
 /* ModHeight  : [cm]  moderator height 
    Power      : [W]   average source power                             
    Declination: [deg] pulse frequency                             
@@ -193,27 +194,27 @@ double EssModFU_Butterfly2015(const double ModHeight, const double Power, const 
     brightness = ( TSC2015_ParaSpectra_BF3cm(lambda, fabs(theta))
                   *TSC2015_coldy0_BF3cm(y0)
                   *TSC2015_coldx0_BF3cm(x0, fabs(theta))
-                  *TSC_TimeDist_Final_Cold(time,lambda,ModHeight)
+                  *TSC_TimeDist_Final_Cold(time,lambda,ModHeight, PulseLen)
                   *PfmcCold                                               // loss due to engineering details not modeled
                   +
                   TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta))
                   *TSC2015_thmly0_BF3cm(y0)
                   *TSC2015_thmlx0_BF3cm(x0, fabs(theta))
-                  *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight) 
+                  *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen) 
                   *PfmcThml );                                            // loss due to engineering details not modeled
   }
   else if (ModHeight > 5.9 && ModHeight < 6.1)
   { 
     brightness = ( TSC2015_ParaSpectra_BF3cm(lambda, fabs(theta)) * 0.631 // apply factor BF6cm/BF3cm
-		   *TSC2015_coldy0_BF6cm(y0)                                      // parameters calc for 6cm
-		   *TSC2015_coldx0_BF3cm(x0, fabs(theta))                         // same as 3cm
-		   *TSC_TimeDist_Final_Cold(time,lambda,ModHeight)                // same as 3cm
+		   *TSC2015_coldy0_BF6cm(y0)                                          // parameters calc for 6cm
+		   *TSC2015_coldx0_BF3cm(x0, fabs(theta))                             // same as 3cm
+		   *TSC_TimeDist_Final_Cold(time,lambda,ModHeight, PulseLen)          // same as 3cm
 		   *PfmcCold 
            +
 		   TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta)) * 0.689
 		   *TSC2015_thmly0_BF6cm(y0)
 		   *TSC2015_thmlx0_BF3cm(x0, fabs(theta))
-		   *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight)
+		   *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen)
            *PfmcThml ); 
   }
   else
@@ -227,8 +228,8 @@ double EssModFU_Butterfly2015(const double ModHeight, const double Power, const 
   return(brightness);
 }
 
-double EssModFU_Butterfly2016(const double   ModTemp,  const double Power,    const double Freq, const double Declination, 
-                              const Neutron* pNeutron, const double PfmcThml, const double PfmcCold)                     
+double EssModFU_Butterfly2016(const double ModTemp,   const double Power,    const double Freq, const double Declination, const Neutron* pNeutron, 
+                              const double PulseLen,  const double PfmcThml, const double PfmcCold)                     
 /* ModTemp    : [cm]  moderator temperature
    Power      : [W]   average source power                             
    Freq       : [Hz]  pulse frequency
@@ -277,11 +278,11 @@ double EssModFU_Butterfly2016(const double   ModTemp,  const double Power,    co
   if (kappa_thml > 0.0) fyt = TSC2015_thmly0_BF3cm(y0);
   brightness =  kappa_cold
               * TSC2015_ParaSpectra_BF3cm(lambda, fabs(theta))
-              * TSC_TimeDist_Final_Cold(time,lambda, 3.0)
+              * TSC_TimeDist_Final_Cold(time,lambda, 3.0, PulseLen)
               * fxc * fyc * 0.816 * PfmcCold                            // loss due to engineering details not modeled
              +  kappa_thml
               * TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta))
-              * TSC_TimeDist_Final_Thermal(time,lambda, 3.0) 
+              * TSC_TimeDist_Final_Thermal(time,lambda, 3.0, PulseLen) 
               * fxt * fyt * 0.732 * PfmcThml ;                          // loss due to engineering details not modeled
 
   brightness /= Freq;   
@@ -610,24 +611,24 @@ double TSC2015_ThermalSpectra_BF3cm(const double lambda, const double theta){
 }
 
 
-double TSC_TimeDist_Final_Thermal(double time,double lambda,double height)
+double TSC_TimeDist_Final_Thermal(double time,double lambda,double height, double pulse_len)
 {
     double tau;
  
-    if (time<0) return 0;
+    if (time < 0.0) return 0;
     tau=3.00000e-004*(1.23048e-002*lambda*lambda+1.75628e-001*exp(-1.82452e-001*height)+9.27770e-001)*exp(-3.91090e+001*pow(Max(1e-13,lambda+0.987990),-7.65675));
-    if (time<0.0028) return 1/0.0028*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
-    return 1/0.0028*(1-exp(-0.0028/tau))*exp(-(time-0.0028)/tau);
+    if (time < pulse_len) return 1/pulse_len*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
+    return 1/pulse_len*(1-exp(-pulse_len/tau))*exp(-(time-pulse_len)/tau);
 }
 
-double TSC_TimeDist_Final_Cold(double time,double lambda,double height)
+double TSC_TimeDist_Final_Cold(double time,double lambda,double height, double pulse_len)
 {
     double tau;
  
-    if (time<0) return 0;
+    if (time < 0.0) return 0;
     tau=3.00094e-004*(4.15681e-003*lambda*lambda+2.96212e-001*exp(-1.78408e-001*height)+7.77496e-001)*exp(-6.63537e+001*pow(Max(1e-13,lambda+0.9),-8.64455));
-    if(time<0.0028)return 1/0.0028*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
-    return 1/0.0028*(1-exp(-0.0028/tau))*exp(-(time-0.0028)/tau);
+    if (time < pulse_len)return 1/pulse_len*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
+    return 1/pulse_len*(1-exp(-pulse_len/tau))*exp(-(time-pulse_len)/tau);
 }
 
 

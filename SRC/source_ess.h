@@ -5,13 +5,13 @@
 /* Prototypes                                  */
 /***********************************************/
 
-double EssTotFU2015      (const double ModHeight, const double ModTemp, const double Power, const double Freq, const double PulseLen);
-double EssTotFU2016      (const double ModHeight, const double ModTemp, const double Power, const double Freq, const double PulseLen, 
-                          const double PfmcThml, const double PfmcCold);
+double EssTotFU2015      (const double ModHeight, const double ModTemp,  const double Power, const double Freq, const double PulseLen);
+double EssTotFU2016      (const double ModHeight, const double ModTemp,  const double Power, const double Freq, 
+                          const double PulseLen,  const double PfmcThml, const double PfmcCold);
 double EssModFU_Butterfly2015(const double ModHeight, const double Power, const double Freq, const double Declination, const Neutron* pNeutron,
-                              const double PfmcThml, const double PfmcCold);
+                              const double PulseLen, const double PfmcThml, const double PfmcCold);
 double EssModFU_Butterfly2016(const double ModTemp,  const double Power, const double Freq, const double Declination, const Neutron* pNeutron,
-                              const double PfmcThml, const double PfmcCold);
+                              const double PulseLen, const double PfmcThml, const double PfmcCold);
 double GetModWidth_ESSbutterfly2015(const double theta, const double ModTemp);
 double GetModWidth_ESSbutterfly2016(const double theta, const double ModTemp);
 double GetShift_ESSbutterfly2016   (const double theta);
