@@ -12,6 +12,7 @@
 /* 1.3  Dec 2003  R. Manoshin    Improve algorithm for +/- changing		                      */
 /* 1.4  Feb 2004  R. Manoshin    Remove inlination of resonator                             */
 /* 1.5  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.6  Apr 2023  K. Lieutenant  Visualization                                              */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -88,6 +89,7 @@ int main(int argc, char **argv)
   VectorType Pos, Dir, SpinVector, 
              Pos1, Pos2, domain_field, PosDomain, DimDomain;
   VectorType RR, RR1, RR2, RRS;
+  VectorType WWP;                // point where neutron is lost
   Neutron    Neutrons;
   Neutron    NeutronAdd1, NeutronAdd2;
   Plane      EndPoint1, EndPoint2;
@@ -97,15 +99,15 @@ int main(int argc, char **argv)
   // --------------
   _eModule=MCN_RES_DRABKIN;
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.5");
+  PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;
+  bVisInstalled = TRUE;
   if (bVisInstr) 
-    bBlowUp = FALSE;
+    bBlowUp = TRUE;
 
   // local variables
-  InitVector(pos);  InitVector(dir);
+  InitVector(pos);  InitVector(dir);  InitVector(WWP);
   InitVector(Pos);  InitVector(Dir);  InitVector(SpinVector);
   InitVector(Pos1); InitVector(Pos2); InitVector(domain_field);
   InitVector(PosDomain);              InitVector(DimDomain);  
@@ -189,13 +191,20 @@ int main(int argc, char **argv)
         DimDomain[1] = width/ind_y_max; 
         DimDomain[2] = height/ind_z_max; 
 
-        ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2;
-        if ((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost;
-
-        ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2;
-        if ((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost;
-
+        /* finds first domain and writes intersection points */
         ind_x = 1; 
+        ind_y = (long) floor(Pos[1]/DimDomain[1] + (double)ind_y_max/2.0 + 1.0);
+        ind_z = (long) floor(Pos[2]/DimDomain[2] + (double)ind_z_max/2.0 + 1.0);
+        if (ind_y <= 0 || ind_y > ind_y_max) 
+        { WriteIAP(&InputNeutrons[i], VT_OUTSIDE);
+          goto getlost;
+        }
+        if (ind_z <= 0 || ind_z > ind_z_max) 
+        { WriteIAP(&InputNeutrons[i], VT_OUTSIDE);
+          goto getlost;
+        }
+        if (bVisTraj)
+          FindWWP(&WWP, &InputNeutrons[i], PosMain, depth, width, height, VT_EXITED);
 
         /******************** starts to scan ******************************/
         nPrecTrj = 0;
@@ -932,9 +941,42 @@ void SetGeometry(char* sColor)
   /* Geometry data */
   if (bVisInstr)
   { 
+    int        nX=1, nY=1, nZ=1,
+               iX=0, iY=0, iZ=0, iM=0;
+    VectorType vOrient={1.0,0.0,0.0}, 
+               vCntr  ={1.0,0.0,0.0};
+
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
-    stGeometry.pDescr  =  sVisDescrpt;
-    stGeometry.eModule = _eModule;
+    stGeometry.pDescr   = sVisDescrpt;
+    stGeometry.eModule  = _eModule;
+
+    nX = ind_x_max; nY = ind_y_max; nZ = ind_z_max;     // all domains shown   
+    stGeometry.nCuboids = nX * nY * nZ; 
+    stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+    for (iX=1; iX <= nX; iX++)
+    { 
+      for (iY=1; iY <= nY; iY++)
+      { 
+        for (iZ=1; iZ <= nZ; iZ++)
+        { 
+          vCntr[0]  = (2.0*iX-nX-1.0)/(2.0*nX)*depth;
+          vCntr[1]  = (2.0*iY-nY-1.0)/(2.0*nY)*width ;
+          vCntr[2]  = (2.0*iZ-nZ-1.0)/(2.0*nZ)*height;
+
+          stGeometry.pCuboid[iM].Length    = depth/nX ; 
+          stGeometry.pCuboid[iM].Width     = width/nY  * BlowUp;
+          stGeometry.pCuboid[iM].Height    = height/nZ * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
+          stGeometry.pCuboid[iM].vCntr[1]  =(PosMain[1] + vCntr[1]) * BlowUp;
+          stGeometry.pCuboid[iM].vCntr[2]  =(PosMain[2] + vCntr[2]) * BlowUp;
+          stGeometry.pCuboid[iM].vNormal[0]= vOrient[0];
+          stGeometry.pCuboid[iM].vNormal[1]= vOrient[1];
+          stGeometry.pCuboid[iM].vNormal[2]= vOrient[2];
+          iM++;
+        }
+      }
+    }
   }
 }
 
