@@ -949,7 +949,7 @@ long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart
 {
 	int k, n=0;
 	const char *pStr;
-	char sNumber[31];
+	char sNumber[99];
 
 	pStr = sStr;
 	n   -= nStart;

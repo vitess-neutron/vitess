@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_BEAMSTOP;
 
   Init(argc,argv, _eModule);
-	PrintModuleName(_eModule, "1.2");
+	PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;

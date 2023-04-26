@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
                   }
                   else
                   { // estimate point inside the collimator for absorption
-                    // might be exchanged by the position where it hits the blade
+                    // might be exchanged by the position where it hits the blade (cf. collimator.c 150ff)
                     // ----------------------------------------------------------------------			
                     double prc;
                     int k,

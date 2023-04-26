@@ -72,8 +72,7 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
-void WriteWWP         (Neutron* pNeutron, VtReason eReason);
-
+void  WriteWWP        (Neutron* pNeutron, VtReason eReason);
 void  WriteInstrData  (VectorType EndPos);
 long  ReadInstrData   (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
 void  WriteSimData    (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj, long  nBunches);
