@@ -4,13 +4,14 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.00            G. Zsigmond   initial version                                             */
-/* 1.01  Jul 2002  G. Zsigmond   change                                                      */
-/* 1.02  Oct 2002  S. Manoshin   change                                                      */
-/* 1.03  Jan 2004  K. Lieutenant changes for 'instrument.dat'                                */
-/* 1.04  Jul 2004  G. Zsigmond   change for rotation of the field map                        */
-/* 1.05  May 2020  K. Lieutenant tidy up, new central visualization parameters               */
-/* 1.06  Mar 2023  K. Lieutenant visualization                                               */
+/* 1.00            G. Zsigmond    initial version                                            */
+/* 1.01  Jul 2002  G. Zsigmond    change                                                     */
+/* 1.02  Oct 2002  S. Manoshin    change                                                     */
+/* 1.03  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
+/* 1.04  Jul 2004  G. Zsigmond    change for rotation of the field map                       */
+/* 1.05  May 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.06  Mar 2023  K. Lieutenant  visualization                                              */
+/* 1.06a Apr 2023  K. Lieutenant  more field bins along beam, less in y- and z-direction     */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -39,9 +40,9 @@ double      AnglMainHoriz=0.0,          // -i       [deg]  horizontal (first) ro
             AnglMainVert =0.0;          // -j       [deg]  vertical (second) rotation angle of the magnetic field map
 VectorType  PosMain,                    // -k -l -m  [cm]  centre of the magnetic field 
             TranslOut;                  // -p -r -s  [cm]  position of the new origin  (in the co-ordinate of the old origin)
-double      domain_field_F[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], // arrays of strengths, positions and sizes 
-            PosDomain_F   [3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], // of magnetic field elements
-            DimDomain_F   [3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE]; // from file
+double      domain_field_F[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // arrays of strengths, positions and sizes 
+            PosDomain_F   [3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // of magnetic field elements
+            DimDomain_F   [3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z]; // from file
 
 // Variables determined from input parameters or trajectory data
 FILE*  FieldMapFile=NULL;                     //     [-]   pointer to magnetic field map file 
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
   _eModule=MCN_FIELD_PREC;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.06");
+  PrintModuleName(_eModule, "1.06a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -293,9 +294,9 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixMain);
 
   for (j=0; j < 3; j++)
-  { for (k=0; k < FIELD_SIZE; k++)
-    { for (l=0; l < FIELD_SIZE; l++)
-      { for (m=0; m < FIELD_SIZE; m++)
+  { for (k=0; k < FIELD_SIZE_X; k++)
+    { for (l=0; l < FIELD_SIZE_Y; l++)
+      { for (m=0; m < FIELD_SIZE_Z; m++)
         {
           domain_field_F[j][k][l][m]=0.0;
           PosDomain_F   [j][k][l][m]=0.0;
@@ -578,7 +579,7 @@ void SetGeometry(char* sColor)
 /******************************************************************/
 /** copies matrix/vector to 3D array of matrices/vectors or back **/
 /******************************************************************/
-void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], double Result[3][3])
+void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], double Result[3][3])
 {
   long m, l ;
 	
@@ -591,7 +592,7 @@ void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FIELD_SI
   }
 }
 
-void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE])
+void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z])
 {
   long m, l ;
 	
@@ -604,7 +605,7 @@ void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double M
   }
 }
 
-void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE], double Result[3])
+void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], double Result[3])
 {
   long l ;
 
@@ -614,7 +615,7 @@ void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE][F
   }
 }
 
-void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE][FIELD_SIZE][FIELD_SIZE]) 
+void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z]) 
 {
   long l ;
 
