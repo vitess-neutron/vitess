@@ -17,6 +17,7 @@ extern int do_visualise;
 #include <string.h>
 
 #include "intersection.h"
+#include "init.h"
 
 
 /***********************************************************************************/
@@ -31,10 +32,55 @@ VectorType PVector[6] = {{1.0, 0.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
 /* global functions                                                                */
 /***********************************************************************************/
 
+/**********************************************************************************/
+/*  FindWWP() determines the intersection point of an trajectory with a wall and
+              writes it to the trajectory visualization file if a reason is given */
+/**********************************************************************************/
+short FindWWP(VectorType* pWWP, Neutron* pNeutronIn, const VectorType Center, const double Length, const double Width, const double Height, VtReason eReason)
+{
+  short   rc=FALSE, k=0, kMin=-1;
+  Neutron NeutT[4];
+  Plane   Wall [4]; //Left, Right, Top, Bottom;
+  double  Time [4]={-1.0,-1.0,-1.0,-1.0},
+          TimeMin=1.0e10;
+
+  for (k=0; k < 4; k++)
+    InitNeutron(&NeutT[k]);
+
+  // defines the 4 walls
+  Wall[0].A=0.0;  Wall[0].B= 1.0;  Wall[0].C= 0.0;  Wall[0].D=-0.5*Width -Center[1];  // left
+  Wall[1].A=0.0;  Wall[1].B=-1.0;  Wall[1].C= 0.0;  Wall[1].D=-0.5*Width +Center[1];  // right
+  Wall[2].A=0.0;  Wall[2].B= 0.0;  Wall[2].C= 1.0;  Wall[2].D=-0.5*Height-Center[2];  // top
+  Wall[3].A=0.0;  Wall[3].B= 0.0;  Wall[3].C=-1.0;  Wall[3].D=-0.5*Height+Center[2];  // bottom
+
+  // checks which one is hit first
+  for (k=0; k < 4; k++)
+  {
+    CopyNeutron(pNeutronIn, &NeutT[k]);
+    Time[k] = NeutronPlaneIntersection1(&NeutT[k], Wall[k]);
+    if (Time[k] > 0.0 && Time[k] < TimeMin)
+    { kMin = k;
+      TimeMin = Time[k];
+    }
+  }
+
+  // write event, if a reason is given and the first wall is hit before the end of the component
+  if (kMin > -1 && NeutT[kMin].Position[0] < Center[0]+0.5*Length && NeutT[kMin].Position[0] > Center[0]-0.5*Length)
+  { 
+    rc = TRUE;
+    CopyVector(NeutT[kMin].Position, *pWWP);
+    if (eReason!=VT_NO_REASON)
+      WriteWWP(&NeutT[kMin], eReason);
+  }
+
+  return rc;
+}
+
+
 /**************************************************************************************************/
-/* This Function similar NeutronPlaneIntersection, but he is calculate new position of neutron
-   in the plane (update) and RETURN time of flight of neutron
-   Author: Manoshin Sergey,   20.02.01                                                            */
+/* This Function is similar to NeutronLineIntersection, but it propagates the neutron
+   to new position on the plane and returns its time of flight there
+   Author: Manoshin Sergey,   20.02.2001                                                            */
 /**************************************************************************************************/
 double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 {

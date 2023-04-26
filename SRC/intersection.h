@@ -14,7 +14,11 @@
 #define Z(x) ISP[x][2]
 
 
-/* for function 'PathThroughBenderGravOrder2' in module bender */
+/* determines and writes intersection point for visualization */
+/* ----------------------------------------------------------- */
+short FindWWP(VectorType* pWWP, Neutron* pNeutronIn, const VectorType Center, const double Length, const double Width, const double Height, VtReason eReason);
+
+/* for functions 'PathThrough...GravOrder2' in various modules */
 /* ----------------------------------------------------------- */
 double NeutronPlaneAngle2             (const Neutron *, const double, const double, const double);
 double NeutronSurfaceSecIntersectionGr(Neutron *, const SurfaceSecond, const long);
