@@ -1053,6 +1053,7 @@ void WriteEOB()
   OutputBufferFlush(0);  // flush to stream, and give trace marks
 }
 
+
 /**********************************************************************************/
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
 /* 'ReadInstrData()'  reads these data                                            */
@@ -1158,8 +1159,8 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
 
   // Calculate neutron position in the absolute co-ordinate system
   RelPos[0] = pNeutron->Position[0]; 
-  RelPos[1] = pNeutron->Position[1];
-  RelPos[2] = pNeutron->Position[2];
+  RelPos[1] = pNeutron->Position[1]*BlowUp;
+  RelPos[2] = pNeutron->Position[2]*BlowUp;
   // if (bLengthCmpr) RelPos[0] /= CmprFact;
   RotBackVector(RotMatrixS, RelPos);
   for (l=0; l<3; l++)
@@ -1516,7 +1517,7 @@ void WriteSimData(double dTimeMeas, double dLmbdWant, double dFreq, double nTraj
 
 short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBunches)
 {
-  short rcr,rc=FALSE;
+  short rc=FALSE;
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
 
