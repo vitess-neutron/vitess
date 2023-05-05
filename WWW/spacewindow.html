@@ -130,13 +130,13 @@
     For the window frame, there is also the option to choose from a number of absorbing materials.
     <br>
     The file format describing the transmission is: <br />
-  <pre>
+    <pre>
     First column : wavelength  [&Aring;] 
     Second column: attenuation [1/cm] 
   </pre>
 
     For the outer materials, the following options exist
-  <pre>
+    <pre>
     Value 0 - data from file (created by user)
     Value 1 - Gadolinium.
     Value 2 - Cadmium.
@@ -224,7 +224,7 @@
         <td valign="top">
           yes: negative window: absorption inside and transmission outside <br />
           no : normal window:   transmission inside  <br />
-          This option will be removed in VITESS 4. Please, use module <b>beamstop</b> instead.
+          This option may be removed in VITESS 4. You can use module <b>beamstop</b> instead then.
         </td>
         <td valign="top">'no', 'yes' </td>
         <td valign="top">-S          </td>
@@ -233,7 +233,7 @@
         <td valign="top">use previous frame</td>
         <td valign="top">
           yes: origin of the co-ordinate system remains unchanged <br />
-          no : x-ordinate is shifted to the center of the window (default) <br />
+          no : x-ordinate is shifted to the exit of the window (default) <br />
           Prevention of the shift of the origin is necessary for beamstops and windows between sample and detector
         </td>
         <td valign="top">'no', 'yes'  </td>
@@ -242,11 +242,23 @@
 
       <tr>
         <td valign="top">treat color</td>
-        <td valign="top"> filter: Treat only events with given color. A negative number means any color </td>
-        This option will be removed in VITESS 4. Please, use module
-        <b>filter</b> instead.
+        <td valign="top">
+          filter: Treat only events with a given color. A negative number means any color    <br />
+          This option will be removed in VITESS 4. Please, use module <b>filter</b> instead in the future.
+        </td>
         <td valign="top">-1,0, 1 ... </td>
         <td valign="top">-f           </td>
+      </tr>
+      <tr>
+        <td valign="top">remove other colors</td>
+        <td valign="top">
+          defines what to do with trajectories of the wrong color:<br>
+          'yes': remove all trajectories with the wrong color <br />
+          'no' : ignore the window and propagate all neutrons to its exit <br />
+          This option will be removed in VITESS 4. Please, use module <b>filter</b> instead in the future.
+        </td>
+        <td valign="top">-1,0, 1 ... </td>
+        <td valign="top">-d           </td>
       </tr>
 
       <tr>
@@ -257,46 +269,59 @@
           0° negative z-axis, 90° negative y-axis, 180° positive z-axis, 270° positive y-axis, <br>
           A negative value for minimum or maximum means that the whole range is allowed.
         </td>
-        This option will be removed in VITESS 4. Please, use module
-        <b>filter</b> instead.
         <td valign="top">[0°,360°] </td>
         <td valign="top">-p, -P    </td>
       </tr>
 
       <tr>
-        <td valign="top">outer tranmsission file </td>
-        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the frame of the window </td>
+        <td valign="top">outer transmission file </td>
+        <td valign="top">
+          File containing the wavelength dependent attenuation (see desription itn the text) inside the frame of the window <br />
+          This is for the window option only, for the beamstop option, vacuum is assumed around the beamstop material.
+        </td>
         <td valign="top">    </td>
         <td valign="top">-C  </td>
       </tr>
       <tr>
         <td valign="top">thickness of frame<br />[cm] </td>
-        <td valign="top">Thickness of the material used for the absorbing window frame</td>
-        <td valign="top">&gt;= 0 </td>
+        <td valign="top">
+          Thickness of the material used for the absorbing window frame <br />
+          The frame must be at least as thick as the pane. Both, frame and pane are centered around the distance to the origin. (cf. figure below)
+        </td>
+        <td valign="top">&ge; 0 </td>
         <td valign="top">-t      </td>
       </tr>
       <tr>
         <td valign="top">frame material</td>
-        <td valign="top">Material used for the absorbing window frame</td>
+        <td valign="top">
+          Material used for the absorbing window frame<br />
+          This is for the window option only, for the beamstop option, vacuum is assumed around the beamstop material.
+        </td>
         <td valign="top">    </td>
         <td valign="top">-c  </td>
       </tr>
 
       <tr>
         <td valign="top">inner transmission file </td>
-        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the window pane </td>
+        <td valign="top">File containing the wavelength dependent attenuation (see desription itn the text) inside the window pane or the beamstop</td>
         <td valign="top">    </td>
         <td valign="top">-m  </td>
       </tr>
       <tr>
         <td valign="top">thickness of window<br />[cm] </td>
-        <td valign="top">Thickness of the material used for the window pane</td>
-        <td valign="top">&gt;= 0 </td>
+        <td valign="top">
+          Thickness of the material used for the window pane or the beamstop <br />
+          The pane cannot be thicker than the frame. Both, frame and pane are centered around the distance to the origin. (cf. figure below)
+        </td>
+        <td valign="top">&ge; 0 </td>
         <td valign="top">-T      </td>
       </tr>
     </tbody>
   </table>
-
+  
+  <p>
+    <img SRC="ThickWnd.png" width=575></pre>
+  </p>
 
   <br><br>
   <h2><font size="+1"> VITESS Module 'spacewindow_multiple' to simulate Propagation to a Ensemble of Apertures </font></h2>
@@ -494,7 +519,7 @@
   </p>
   <p>
     Non-ideal absorption in the plate can also be treated. The transmission is calculated then as:<br /> <br />
-    &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*pathlen)&ensp; <br /> <br /> 
+    &emsp;&emsp;&emsp;Transmission&emsp;=&emsp;exp(-&mu;*pathlen)&ensp; <br /> <br />
     where 'pathlen' is the length of the path of the neutron in the given material, (which is calculated automatically from the thickness of the material).
     The x-coordinates are reset to 0 (as usual) at the end of the treatment in this module.
   </p>

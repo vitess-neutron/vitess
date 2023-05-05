@@ -285,29 +285,14 @@ rename makeModuleSets {}
 ###
 set inputESET {
   {infilename browsefile "" {"input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -f} r dat}
-
   {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -F}}
+  {defdirectory browsedir "" {"parameter\ndirectory" "This is the one and only directory for parameter files. All these files should reside in one directory, to make the reproduction of a simulation on other systems feasable."} w "" 1 d}
 
-  {defdirectory browsedir "" {
-    "parameter\ndirectory" "This is the one and only directory for parameter files. All these files should reside in one directory, to make the reproduction of a simulation on other systems feasable."} w "" 1 d}
-
-  {random_seed float 1 {
-    "random seed" "random number generator initialization" "" -Z}}
-
-  {random_gen radio ran3 {
-    "random number\ngenerator" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default ran3)"}
-    {ran3 taus gfsr4 mt19937 ranlux} {0 1 2 3 4}}
-
-  {wei_min float 1.0e-25
-    {"min. neutron\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
-
-  {gravity radio on
-    {gravity "simulation includes gravity influence on neutrons or not" "" -G}
-    {on off} {1 0}}
-
-  {helpthreads radio 0 {
-    "helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}
-    {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
+  {random_seed float 1 {"random\nseed" "random number generator initialization" "" -Z}}
+  {random_gen radio ran3 {"random\nnumber" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default ran3)"} {ran3 taus gfsr4 mt19937 ranlux} {0 1 2 3 4}}
+  {wei_min float 1.0e-25 {"minimal\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
+  {gravity radio on {gravity "simulation includes gravity influence on neutrons or not" "" -G} {on off} {1 0}}
+  {helpthreads radio 0 {"helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}  {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
 }
 
 ### Xcontrol defaults
@@ -889,52 +874,37 @@ set frameESET {
 ###
 set winAdd {
   {"Outer Material" header}
-  {mat radio "ideal absorber" {"frame material" "Material used for the absorbing window frame" "" c}
+  {mat radio "ideal absorber" {"frame material" "Material used for the absorbing window frame.\nFor the beamstop option, vacuum is assumed" "" c}
     {"from file" gadolinium cadmium Bor10 Eu Silicon "ideal absorber"}  {0 1 2 3 4 5 6}}
-  {thick float "" {"thickness of\nframe [cm]" "Thickness of the material used for the absorbing window frame" "" t} ge0}
-  {matfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)" "" C}}
+  {thick float "" {"thickness of\nframe [cm]" "Thickness of the material used for the absorbing window frame\nIt is centered around the distance from the origin and cannot be thinner than pane (cf. help file)" "" t} ge0}
+  {matfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window frame (not for beamstop option, see Help file for details)" "" C}}
   {"Inner Material" header}
-  {imathick float "" {"thickness of\nwindow[cm]" "Thickness of the material used for the window pane" "" T} ge0}
-  {imatfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)" "" m}}
+  {imathick float "" {"thickness of\nwindow pane[cm]" "Thickness of the material used for the window pane or for the beamstop\nIt is centered around the distance from the origin and cannot be thicker than frame (cf. help file)" "" T} ge0}
+  {imatfile browsefile "" {"transmission\nfile" "File containing the wavelength dependent attenuation inside the window pane or the beamstop (see Help file for details)" "" m}}
 }
 
 set a {
-  {dist_orig_window float 0 {
-    "distance orig.\n<-> win. [cm]"
-    "distance from origin to window when projecting along the x axis" "" l}}
+  {dist_orig_window float 0 {"distance orig.\n<-> win. [cm]"  "distance from the origin to the center of the window (when projecting along the x axis)" "" l}}
   {circ radio circular {"window shape" "" "" R} {circular rectangular} {1 0}}
   {"circular window coordinates" header}
   {radi float 10 {radius "radius of circular window" "" r} gt0}
   {centy float 0 {"center y" "" "" y} }
   {centz float 0 {"center z" "" "" z} }
   {"rectangular window coordinates" header}
-  {min_y float "" {
-    "min. y [cm]" "minimal y value [cm]" "" w}}
-  {max_y float "" {
-    "max. y [cm]" "maximul y value [cm]" "" W}}
+  {min_y float "" {"min. y [cm]" "minimal y value [cm]" "" w}}
+  {max_y float "" {"max. y [cm]" "maximul y value [cm]" "" W}}
   {}
-  {min_z float "" {
-    "min. z [cm]" "minimal z value [cm]" "" h}}
-  {max_z float "" {
-    "max. z [cm]" "maximal z value [cm]" "" H}}
-  {rotang float "0.0" {
-    "rot. angle [deg]" "rotate window by [deg]" "" A}}
+  {min_z float "" {"min. z [cm]" "minimal z value [cm]" "" h}}
+  {max_z float "" {"max. z [cm]" "maximal z value [cm]" "" H}}
+  {rotang float "0.0" {"rot. angle [deg]" "rotate window by [deg]" "" A}}
   {"Special options" header}
-  {useasbstop radio no {
-    "used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost when it hits the window (and passes otherwise)." "" S}
-    {no yes} {0 1}
-  }
-  {oldframe radio no {
-    "use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F}
-    {no yes} {0 1}
-  }
+  {useasbstop radio no {"used as\nbeamstop" "The spacewindow module can be used as beamstop. If so, the trajectory is lost when it hits the window (and passes otherwise)." "" S} {no yes} {0 1}}
+  {oldframe radio no {"use previous\nframe" "yes: the frame of the previous module is used (default for beamstop)\nno : x-component of frame is shifted to the window plane (default for window)" "" F} {no yes} {0 1}}
   {"Filter options" header}
-  {treatcolor int -1 {
-    "treat color" "Treat only trajectories with the given color. A negative number means any color." "" f}}
-  {phimin float -1 {
-    "min. phi [deg]" "Filter for minimum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" p}}
-  {phimax float -1 {
-    "max. phi [deg]" "Filter for maximum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" P}}
+  {phimin float -1 {"min. phi [deg]" "Filter for minimum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" p}}
+  {phimax float -1 {"max. phi [deg]" "Filter for maximum flight direction phi in yz-plane, range [0,360] deg. A negative value for min. phi or max. phi means no restriction. See Help file for details." "" P}}
+  {treatcolor int -1 {"treat color" "Treat only trajectories with the given color. A negative number means any color." "" f}}
+  {removecol radio yes {"remove other\ncolors" "yes: remove trajectories with wrong color\n no : propagate trajectories with wrong color to the exit of the window" "" d} {no yes} {0 1}}
 }
 
 set spacewindowESET [concat $a $winAdd]
@@ -2068,7 +2038,7 @@ set flipper_gradientESET {
   {rf float 300000 {"rotation\nfrequency [Hz]" "Rotation frequency of the magnetic field" "" w}}
   {bp float 0 {"begin phase\n[deg] " "Initial phase for the rotating field" "" z}}
   {}
-  {rax radio 0X {"rotating\nfield axis" ""Axis about which the field rotates, X, Y or Z" "" M}  {0X 0Y 0Z} {0 1 2}}
+  {rax radio 0X {"rotating\nfield axis" "Axis about which the field rotates, X, Y or Z" "" M}  {0X 0Y 0Z} {0 1 2}}
   {chgampl radio sinus {"amplitude\nchanging by" "Function by which the strength of the rotating magnetic field is changing: sinus, permanent or solinoid (not yet active)" "" h} {sinus permanent solenoid} {0 1 2}}
   {raxx radio 0X {"amplitude changing\nalong axis" "axis along which the amplitude of the rotating field changes" "" y} {0X 0Y 0Z} {0 1 2}}
   {}
@@ -3941,26 +3911,26 @@ set lenseESET {
 ###
 set mirror_ellipticalESET {
   {"Geometry description of the elliptic mirror" header}
-  {fx float 500 {"Semi axis X [cm]" "Semi axis X for elliptic mirror" "" a} ge0}
-  {fy float 50 {"Semi axis Y [cm]" "Semi axis Y for elliptic mirror" "" b} gt0}
-  {fz float 55 {"Semi axis Z [cm]" "Semi axis Z for elliptic mirror" "" c} gt0}
+  {fx float 250 {"Semi axis X [cm]" "Semi axis X for elliptic mirror" "" a} ge0}
+  {fy float  50 {"Semi axis Y [cm]" "Semi axis Y for elliptic mirror" "" b} gt0}
+  {fz float  50 {"Semi axis Z [cm]" "Semi axis Z for elliptic mirror" "" c} gt0}
   {px float 250 {"Center position\nmain X [cm]" "Center position of the elliptic mirror" "" d}}
-  {py float 0 {"Center position\nmain Y [cm]" "Center position of the elliptic mirror" "" e}}
-  {pz float 0 {"Center position\nmain Z [cm]" "Center position of the elliptic mirror" "" k}}
-  {ang float 0.0 {"Rotation angle [deg]" "Rotate mirror (ONLY) around the center of the ellipsoide" "" Q}}
+  {py float   0 {"Center position\nmain Y [cm]" "Center position of the elliptic mirror" "" e}}
+  {pz float   0 {"Center position\nmain Z [cm]" "Center position of the elliptic mirror" "" k}}
+  {ang float  0 {"Rotation angle [deg]" "Rotate mirror (ONLY) around the center of the ellipsoide" "" Q}}
   {ake radio OX {"Rotate around\nthe axis" "Choose the axis of the coordinate system (at the center of the ellisoide) and rotate around this axis" "" g} {OX OY OZ} {0 1 2}}
   {"X, Y and Z Limits for the elliptic mirror" header}
-  {pmx float 0 {"X_MIN [cm]" "X minimum limitation for the elliptic mirror" "" A}}
-  {pmy float 300 {"X_MAX [cm]" "X maximum limitation for the elliptic mirror" "" C}}
-  {pmz float -20 {"Y_MIN [cm]" "Y minimum limitation for the elliptic mirror" "" D}}
-  {pmw float 20 {"Y_MAX [cm]" "Y maximum limitation for the elliptic mirror" "" E}}
-  {pmt float  0 {"Z_MIN [cm]" "Z minimum limitation for the elliptic mirror" "" H}}
-  {pmk float 200 {"Z_MAX [cm]" "Z maximum limitation for the elliptic mirror" "" K}}
+  {pmx float 100 {"X_MIN [cm]" "X minimum limitation for the elliptic mirror" "" A}}
+  {pmz float  20 {"Y_MIN [cm]" "Y minimum limitation for the elliptic mirror" "" D}}
+  {pmt float -30 {"Z_MIN [cm]" "Z minimum limitation for the elliptic mirror" "" H}}
+  {pmy float 400 {"X_MAX [cm]" "X maximum limitation for the elliptic mirror" "" C}}
+  {pmw float  50 {"Y_MAX [cm]" "Y maximum limitation for the elliptic mirror" "" E}}
+  {pmk float  30 {"Z_MAX [cm]" "Z maximum limitation for the elliptic mirror" "" K}}
   {"Output Plane" header}
-  {ox float 510 {"output\nX [cm]" "position of the output frame (in the input frame)" "" s}}
-  {oy float  0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" t}}
-  {oz float  0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" w}}
-  {"Visulalisation" header}
+  {ox float 500 {"output\nX [cm]" "position of the output frame (in the input frame)" "" s}}
+  {oy float   0 {"output\nY [cm]" "position of the output frame (in the input frame)" "" t}}
+  {oz float   0 {"output\nZ [cm]" "position of the output frame (in the input frame)" "" w}}
+  {"Visualisation" header}
   {visu radio yes {"Activate visualisation" "activate visualisation" "" y} {yes no} {1 0}}
   {visuty radio XZ {"Type of visualisation" "choose plane for visualisation" "" Y} {XZ XY YZ} {0 1 2}}
   {visual radio no {"Full visualisation" "Visualisation all neutrons paths or only refleted neutrons from mirror" "" v} {yes no} {1 0}}

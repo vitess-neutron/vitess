@@ -97,7 +97,8 @@ double Interpolation(double Wave,      long Material,
   long   nVal=0,                   // number of given wavelength and attenuation values
          i,                        // index ....
          iIpn=1;                   // index of left side of interval for interpolation
-  short  bVacuum=FALSE;            // flag: no window pane material
+  short  bVacuum=FALSE,            // flag: no window (pane) material
+         bIdeal =FALSE;            // flag: perfectly absorbing material
   
   // Initialize
   // ----------
@@ -139,51 +140,61 @@ double Interpolation(double Wave,      long Material,
     case 6:      // vacuum
       bVacuum = TRUE;
       break;
+
+    case 99:       // ideal absorber
+      bIdeal = TRUE;
+      break;
 	        
     default:
-      fprintf(LogFilePtr,"No such material for interpolation of attenuation data\n");
+      Error("No such material for interpolation of attenuation data");
       break;
   }
 
-  if (bVacuum == 1) 
+  if (bVacuum == TRUE) 
   {
     Mu = 0.0;
+  }    
+  else if (bIdeal == TRUE) 
+  {
+    Mu = 1.0e99;
     return(Mu);
   }    
-    
-  for(i = 0; i < (nVal-1); i++)
-  {
-    if ((Wave >= WAV[i]) && (Wave <= WAV[i+1]))  
-    {
-      X1 = WAV[i];
-      X2 = WAV[i+1];
-      Y1 = MU[i];
-      Y2 = MU[i+1];
-      iIpn = i;
-      break;
-    }
-  } 
-    
-  // Check interval
-  // --------------
-  if (!((Wave >= WAV[iIpn])&&(Wave <= WAV[iIpn+1])))
-  {
-    fprintf(LogFilePtr,"ERROR: Wavelength of neutron is out of the data interval. Exit!\n");
-    return(-10000.0);
-  }	
-    
-  // Linear interpolation
-  // --------------------
-  if (X1 != X2)
-  {
-    Mu = Y1 + ((Y2-Y1)*(Wave-X1)/(X2-X1));
-  }
   else
-  {
-    fprintf(LogFilePtr,"ERROR: Interpolation: Incorrect values for wavelength \n");
-    Mu = -10000.0;
-  }    
- 
+  { 
+    for(i = 0; i < (nVal-1); i++)
+    {
+      if ((Wave >= WAV[i]) && (Wave <= WAV[i+1]))  
+      {
+        X1 = WAV[i];
+        X2 = WAV[i+1];
+        Y1 = MU[i];
+        Y2 = MU[i+1];
+        iIpn = i;
+        break;
+      }
+    } 
+    
+    // Check interval
+    // --------------
+    if (!((Wave >= WAV[iIpn])&&(Wave <= WAV[iIpn+1])))
+    {
+      // fprintf(LogFilePtr,"ERROR: Wavelength of neutron is out of the data interval. Exit!\n");
+      return(-10000.0);
+    }	
+    
+    // Linear interpolation
+    // --------------------
+    if (X1 != X2)
+    {
+      Mu = Y1 + ((Y2-Y1)*(Wave-X1)/(X2-X1));
+    }
+    else
+    {
+      // fprintf(LogFilePtr,"ERROR: Interpolation: Incorrect values for wavelength \n");
+      Mu = -10000.0;
+    }    
+  }
+
   return(Mu);
 }
 

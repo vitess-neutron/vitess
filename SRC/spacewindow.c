@@ -18,6 +18,7 @@
 /* 2.23  May  2010  A. Houben       "Rotation" of square window by counter rot of neutron pos*/
 /* 2.24  Apr  2012  A. Houben       Treat only neutrons with a given color and phi angle     */
 /* 2.25  Aug  2019  K. Lieutenant   tidy up and compression option for visualization         */
+/* 3.0   Apr  2023  K. Lieutenant   re-written                                               */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -32,51 +33,59 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit(int argc, char *argv[]);    // reads input parameters and initializes global variables
-void  EvalInput();                        // Analyses input parameters and prepares attenuation
-void  SetGeometry(char* sColor);          // fills the structure stGeometry for visualization
+void  OwnInit(int argc, char *argv[]);        // reads input parameters and initializes global variables
+void  EvalInput();                            // Analyses input parameters and prepares attenuation
+void  SetGeometry(char* sColor);              // fills the structure stGeometry for visualization
+short IsOutOfWindow(double y, double z);      // checks if the neutron is outside the window
+VtDir GetDir(VectorType Pos, VectorType Dir); // checks if the neutron is moving inward or outward
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
 // Input parameters
-VtShape eWndShape=VT_NO_SHAPE; // -R  [-]   Window shape: VT_CIRCLE circular, VT_SQUARE rectangular  
-short  bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
-       bRemoveOtherCol=TRUE,  // -d  [-]   Flag: Neutrons that are not treated are removed
-       TreatColor = -1;       // -f  [-]   Treat only neutrons with this color
-double DistMove =0.0;         // -l  [cm]  Distance from origin to the window (along the x-axis) 
-double heightmin=0.0,         // -h  [cm]  z-coordinate: bottom of rectangular window            
-       heightmax=0.0,         // -H  [cm]  z-coordinate: top of rectangular window               
-       widthmin =0.0,         // -w  [cm]  y-coordinate: lower frame value of rectangular window 
-       widthmax =0.0,         // -W  [cm]  y-coordinate: higher frame value of rectangular window
-       winradius=0.0,         // -r  [cm]  radius of circular window                             
-       ywincenter=0.0,        // -y  [cm]  y coordinate: center of window                        
-       zwincenter=0.0,        // -z  [cm]  z coordinate: center of window                        
-       rotang = 0.0;          // -A  [rad] Rotation angle (input parameter in [deg])
-double minPhi=-1.0,           // -p  [deg] min. and 
-       maxPhi=370.0;          // -P  [deg] max. angle in y-z-plane
-double ThicknessO=0.0,        // -t  [cm]  thickness of the frame material    
-       ThicknessI=0.0;        // -T  [cm]  thickness of the pane material      
-char	*sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
-char	*sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of the material in the open part of window
-VtWndAbs eMaterialO           // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-          =VT_WABS_IDEAL;     //                                  4 - Eu,        5 - Silicon,    6 - ideal absorber  
+VtShape  eWndShape=VT_NO_SHAPE; // -R  [-]   Window shape: VT_CIRCLE circular, VT_SQUARE rectangular  
+short    bBeamStop=FALSE,       // -S  [-]   Flag: beamstop        TRUE: beamstop, FALSE normal window
+                                // -F  [-]   Flag: keep frame of previous module  (par. 'bOldFrame' from init.c, default for beam stop)  
+         bRemoveOtherCol=TRUE,  // -d  [-]   Flag: Neutrons that are not treated are removed
+         TreatColor = -1;       // -f  [-]   Treat only neutrons with this color
+double   DistMove =0.0;         // -l  [cm]  Distance from origin to the window (along the x-axis) 
+double   heightmin=0.0,         // -h  [cm]  z-coordinate: bottom of rectangular window            
+         heightmax=0.0,         // -H  [cm]  z-coordinate: top of rectangular window               
+         widthmin =0.0,         // -w  [cm]  y-coordinate: lower frame value of rectangular window 
+         widthmax =0.0,         // -W  [cm]  y-coordinate: higher frame value of rectangular window
+         winradius=0.0,         // -r  [cm]  radius of circular window                             
+         ywincenter=0.0,        // -y  [cm]  y coordinate: center of window                        
+         zwincenter=0.0,        // -z  [cm]  z coordinate: center of window                        
+         rotang = 0.0;          // -A  [rad] Rotation angle (input parameter in [deg])
+double   minPhi=-1.0,           // -p  [deg] min. and 
+         maxPhi=370.0;          // -P  [deg] max. angle in y-z-plane
+double   ThicknessO=0.0,        // -t  [cm]  thickness of the frame material    
+         ThicknessI=0.0;        // -T  [cm]  thickness of the pane material      
+char	  *sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
+char	  *sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of the material in the open part of window
+VtWndAbs eMaterialO             // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+          =VT_NO_WABS;          //                                  4 - europium,  5 - silicon,   99 - ideal absorber  
 	                         
 
 // Variables determined from input parameters or trajectory data
-long   KeymaterialI=1;        //           Window pane material:  0 - from file  1 - no(default) 
-FILE	*pTransFileO=NULL;      //           pointer to window frame transmission file 
-FILE  *pTransFileI=NULL;      //           pointer to window pane transmission file 
-double WavO[MAX_MU],          //           wavelength and attenuation values of the frame material 
-       MuO [MAX_MU],          
-       WavI[MAX_MU],          //           wavelength and attenuation values of the pane material 
-       MuI [MAX_MU];          
-long   nValFO=0;              //           number of attenuation values in file (for window frame material)
-long   nValFI=0;              //           number of attenuation values in file (for window pane material)
-Plane  EndPoint,              //           Planes through window for zero thickness and
-       EndPointO,             //             end of the Outer and end of the Inner wall
-       EndPointI;             //           EndPoint.D: distance to window along x-axis         [cm]  
+short  bPane=FALSE;             //           flag: window pane material exists
+FILE	*pTransFileO=NULL;        //           pointer to window frame transmission file 
+FILE  *pTransFileI=NULL;        //           pointer to window pane transmission file 
+double WavO[MAX_MU],            //           wavelength and attenuation values of the frame material 
+       MuO [MAX_MU],            
+       WavI[MAX_MU],            //           wavelength and attenuation values of the pane material 
+       MuI [MAX_MU],
+       Thickness=0.0;           //           maximum of inner and outer thickness
+long   nValFO=0;                //           number of attenuation values in file (for window frame material)
+long   nValFI=0;                //           number of attenuation values in file (for window pane material)
+Plane  BegPoint,                //           Plane through beginning of the window in the frame of the origin
+       EndPoint;                //           Plane through end of the window in the frame of the beginning of the window
+VectorType SizeRI={0.0,0.0,0.0},//           dimension of inner material of a rectangular window with certain thickness
+           SizeRC={0.0,0.0,0.0},//           dimension of the rectangular channel through the outer material
+           SizeCI={0.0,0.0,0.0},//           dimension of inner material of a circular window with certain thickness
+           SizeCC={0.0,0.0,0.0},//           dimension of the circular channel through the outer material
+           Center={0.0,0.0,0.0};//           center of the window in the frame of the beginning of the window
 
 
 /******************************/
@@ -84,34 +93,37 @@ Plane  EndPoint,              //           Planes through window for zero thickn
 /******************************/
 int main(int argc, char *argv[])
 {
-	short   bOutOfWindow=FALSE;
-	long    i=0;               // index of trajectories
+	short   rcI=FALSE,          // flag: neutron passes through inner material
+          rcC=FALSE,          // flag: neutron intersects channel through outer material
+          bOutOfWndBeg=FALSE; // flag: neutron out of entrance area
+	long    i=0;                // index of trajectories
+  double  lenI=0.0,           // path lengths inside inner material
+          lenC=0.0,           //    channel,
+          lenO=0.0,           //    outer material,
+          lenT=0.0;           //    and total length inside window 
+	double  TofBeg=0.0,         // TOF of neutron from origin to window entry
+          TofEnd=0.0;         // TOF of neutron to pass through the window material
+	double  Phi=0.0;            // phi angle of the current trajectory
+  double  lambda=0.0,         // wavelength of the current neutron
+          muI=0.0,  muO=0.0,  // attenuation coefficient of the inner and outer material, which the neutron traverses
+          probI=1.0,probO=1.0;// probabilities of traversing the materials
 
-	double  DistSquared=0.0;   // distance from point of hitting to center of window   
-	double  TimeOF=0.0,        // TOF of neutron from origin to window
-          TOF3=0.0;          // TOF of neutron to pass through window material
-	double  NewPositionY=0.0,  // neutron position in co-ordinate system  rotated by 'rotang'
-          NewPositionZ=0.0, 
-          Phi=0.0;           // phi angle of the current trajectory
-	double  CenterX=0.0,       // center of beam at window
-          CenterY=0.0, 
-          CenterZ=0.0, 
-          SumProb=0.0;
-  double  VelocityReal=0.0,  // velocity of the current neutron
-          N_Wavelength=0.0,  // wavelength of the current neutron
-          mu=0.0,            // attenuation coefficient of the material, that the neutron traverses
-          prob=0.0;          // probability of traversing the material
-
-  Neutron Output;            // trajectory as it is written to the output
-
-  InitNeutron(&Output);
+  VectorType PosBeg={0.0,0.0,0.0},  // window entry
+             Pos1  ={0.0,0.0,0.0},  // channel entry
+             Pos2  ={0.0,0.0,0.0},  // pane entry
+             Pos3  ={0.0,0.0,0.0},  // pane exit
+             Pos4  ={0.0,0.0,0.0},  // channel exit
+             DirBeg={1.0,0.0,0.0};  // direction at window entry
+  Neutron    OutNeutron;            // trajectory as it is written to the output
 
   // Initialisation
   // --------------
+  InitNeutron(&OutNeutron);
+
 	_eModule=MCN_WINDOW;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "2.25");
+  PrintModuleName(_eModule, "3.0");
   OwnInit(argc, argv);
   MsgInit();
   EvalInput();
@@ -130,74 +142,61 @@ int main(int argc, char *argv[])
 		{
 			CHECK
       
-      // Only write out event if EOB line is found, otherwise process trajectory
+      // Only write out event if EOB line is found or if , otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
       { 
-        // Remove neutrons with wrong color
-        // --------------------------------
-        if ((TreatColor >= 0) && (InputNeutrons[i].Color != TreatColor)) 
-        {
-          Output = InputNeutrons[i];
-          if (!bRemoveOtherCol) 
-          {
-    	      WriteIAP(&Output, VT_EXITED);
-    	      WriteNeutron(&Output);
-          }
+        lambda = InputNeutrons[i].Wavelength;
+
+        // Remove neutrons with wrong color, direction or wavelength
+        // ----------------------------------------------------------
+        if (TreatColor >= 0 && InputNeutrons[i].Color != TreatColor && bRemoveOtherCol==TRUE)
+        { 
+          WriteIAP(&InputNeutrons[i], VT_FILTERED);   
           continue;
         }
 			
-        // Remove neutrons with wrong direction ro wavelength
-        // --------------------------------------------------
 			  if (bOldFrame==FALSE)
         {
-			    if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			    if (InputNeutrons[i].Wavelength == 0.0) continue;
-			    VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
-			    if (VelocityReal <= 0.0) continue;
+			    if (InputNeutrons[i].Vector[0] <= 0.0 || lambda <= 0.0) 
+          {
+    	      WriteIAP(&InputNeutrons[i], VT_FILTERED);
+            continue;
+          }
 			  } 
-			  else 
-        {
-			    Output = InputNeutrons[i];			
-			  }
-			
-        // Write intersection point
-        // ------------------------
-			  WriteIAP(&InputNeutrons[i], VT_ENTERED);
+			  /* else 
+        { OutNeutron = InputNeutrons[i];			
+			  }*/
 
-        // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
+        // 	Move neutron to window entrance with or without gravity effect and calculate Time of Flight (ms)
         // ----------------------------------------------------------------------------------------
 			  if (keygrav == 1)
-			    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], EndPoint);
+			    TofBeg = NeutronPlaneIntersectionGrav(&InputNeutrons[i], BegPoint);
 			  else
-				  TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], EndPoint);
+				  TofBeg = NeutronPlaneIntersection1(&InputNeutrons[i], BegPoint);
+
+			  InputNeutrons[i].Time += TofBeg;
+			
+        // Write intersection point
+			  WriteIAP(&InputNeutrons[i], VT_ENTERED);
+
+        // Propagate trajectories withh wrong color to exit, if wished
+        if (TreatColor >= 0 && InputNeutrons[i].Color != TreatColor && bRemoveOtherCol==FALSE)
+        { 
+          CopyNeutron(&InputNeutrons[i], &OutNeutron);
+
+          if (keygrav == 1)
+            TofEnd = NeutronPlaneIntersectionGrav(&OutNeutron, EndPoint);
+          else
+            TofEnd = NeutronPlaneIntersection1(&OutNeutron, EndPoint);
+          OutNeutron.Time += TofEnd;
+          goto write_traj;
+        }
       
-			  // Calculate average position
-        // --------------------------
-			  InputNeutrons[i].Time += (double)TimeOF;
-			  CenterX  += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
-			  CenterY  += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
-			  CenterZ  += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
-			  SumProb  += InputNeutrons[i].Probability;
-			  TOF3 = 0.0;
-
-			  // window test
-        // -----------
-        if (rotang != 0.0) 
-        {   /*x' = x cos f - y sin f
-			        y' = y cos f + x sin f */
-				  NewPositionY = InputNeutrons[i].Position[1] * cos(-rotang) - InputNeutrons[i].Position[2] * sin(-rotang);
-				  NewPositionZ = InputNeutrons[i].Position[2] * cos(-rotang) + InputNeutrons[i].Position[1] * sin(-rotang);
-			  } 
-        else
-        {
-				  NewPositionY = InputNeutrons[i].Position[1];
-				  NewPositionZ = InputNeutrons[i].Position[2];
-			  }
-
+			  // restrict divergence range
         if (minPhi >= 0.0 && maxPhi <= 360.0) 
         { 
           Phi	= (double)atan2(InputNeutrons[i].Vector[1], InputNeutrons[i].Vector[2])*180.0/M_PI+180.;
@@ -208,116 +207,163 @@ int main(int argc, char *argv[])
 	        }
         }
 
-        // Test if window is hit
-        if (eWndShape==VT_CIRCLE)
-        {	DistSquared =  (NewPositionY - ywincenter)*(NewPositionY - ywincenter)
-                       + (NewPositionZ - zwincenter)*(NewPositionZ - zwincenter);
-          if (winradius*winradius < DistSquared)
-            bOutOfWindow=TRUE;
+        // Test whether window is hit
+        bOutOfWndBeg = IsOutOfWindow(InputNeutrons[i].Position[1], InputNeutrons[i].Position[2]);
+
+        // Case 1: zero thickness of window or beamstop
+        if (Thickness == 0.0)
+        {
+          // ok, if out of beamstop or in window
+          if ((bBeamStop==TRUE  && bOutOfWndBeg==TRUE) ||   // outside beamstop
+              (bBeamStop==FALSE && bOutOfWndBeg==FALSE))    // inside window
+          {
+            CopyNeutron(&InputNeutrons[i], &OutNeutron);
+          }
           else
-            bOutOfWindow=FALSE;
-        }
-        else
-        {	if ((widthmin  > NewPositionY) || (widthmax < NewPositionY) ||
-              (heightmin > NewPositionZ) || (heightmax < NewPositionZ)  )
-            bOutOfWindow=TRUE;
-          else
-            bOutOfWindow=FALSE;
+          {
+            WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+	          continue;
+          }
         }
 
-        /* ok, if out of beamstop or in window */
-        if ((bBeamStop==TRUE  && bOutOfWindow==TRUE) ||
-            (bBeamStop==FALSE && bOutOfWindow==FALSE))
-        {
+        // case 2: thick beamstop
+        else if (bBeamStop==TRUE)   
+        { 
+          // calculate the path length inside the inner material and the attenuation
+          CopyVector(InputNeutrons[i].Position, PosBeg);
+          CopyVector(InputNeutrons[i].Vector,   DirBeg);
+          SubVector (PosBeg, Center);
+
+          if (eWndShape==VT_CIRCLE)
+            rcI=IntersectionWithHorCyl(ThicknessI, 2.0*winradius, PosBeg, DirBeg, Pos2, Pos3);
+          else
+            rcI=IntersectionWithRectangular(SizeRI, PosBeg, DirBeg, Pos2, Pos3);
+
+          if (rcI==TRUE)
+          { 
+            lenI = DistVector(Pos2, Pos3);
+            muI = Interpolation(lambda, VT_WABS_FILE, WavI, MuI, nValFI);
+
+            if (muI == -10000.0)
+            { CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+              probI = 0.0;
+            }
+            else
+            { probI = exp(-muI*lenI);
+            }
+          }
+          else          // beamstop is not hit
+          { probI = 1.0;
+          }
+        
+          // Propagate the neutron to end of the window
+          CopyNeutron(&InputNeutrons[i], &OutNeutron);
+
           if (keygrav == 1)
-          {
-            TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
+            TofEnd = NeutronPlaneIntersectionGrav(&OutNeutron, EndPoint);
+          else
+            TofEnd = NeutronPlaneIntersection1(&OutNeutron, EndPoint);
+          
+          OutNeutron.Time        += TofEnd;
+          OutNeutron.Probability *= probI;
+        }
+        
+        // case 3: thick window
+        else 
+        { 
+          // calculate the path length within the inner material and the path length through the channel
+          CopyVector(InputNeutrons[i].Position, PosBeg);
+          CopyVector(InputNeutrons[i].Vector,   DirBeg);
+          SubVector (PosBeg, Center);
+
+          if (eWndShape==VT_CIRCLE)
+          { rcC=IntersectionWithHorCyl(Thickness,  2.0*winradius, PosBeg, DirBeg, Pos1, Pos4);      // channel
+            if (bPane)
+              rcI=IntersectionWithHorCyl(ThicknessI, 2.0*winradius, PosBeg, DirBeg, Pos2, Pos3);      // inner material
           }
           else
-          {
-            TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
+          { rcC=IntersectionWithRectangular(SizeRC, PosBeg, DirBeg, Pos1, Pos4);
+            if (bPane)
+              rcI=IntersectionWithRectangular(SizeRI, PosBeg, DirBeg, Pos2, Pos3);
           }
 
-          if (KeymaterialI == 0)
-          {
-            /* Attenuation during pass of open window material */
-            N_Wavelength = InputNeutrons[i].Wavelength;
-            mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
-            if (mu == -10000.0)
-            { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-              // Error(sBuffer);
-              CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-            }
-            prob = exp(-mu*TOF3*VelocityReal);
-            InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-          }
-
-          if (bOldFrame==FALSE) 
-          {
-            WriteIAP(&InputNeutrons[i], VT_EXITED);
-            InputNeutrons[i].Position[0]=0.0;
-            InputNeutrons[i].Time += (double)TOF3 ;
-            Output = InputNeutrons[i];
-          } 
+          if (rcI==TRUE)
+            lenI = DistVector(Pos2, Pos3);
           else 
+            lenI = 0.0;
+
+          if (rcC==TRUE)
+            lenC = DistVector(Pos1, Pos4);
+          else
+            lenC = 0.0;
+        
+          // Propagate the neutron to end of the window
+          CopyNeutron(&InputNeutrons[i], &OutNeutron);
+
+          if (keygrav == 1)
+            TofEnd = NeutronPlaneIntersectionGrav(&OutNeutron, EndPoint);
+          else
+            TofEnd = NeutronPlaneIntersection1(&OutNeutron, EndPoint);
+          OutNeutron.Time += TofEnd;
+
+          // calculate the length through the outer material
+          lenT = TofEnd * V_FROM_LAMBDA(lambda);
+          lenO = lenT - lenC;
+
+          // complete absorption if length through ideal absorber is greater zero
+          if (eMaterialO == VT_WABS_IDEAL && lenO > 1.0e-06)     // allowing for rounding errors
           {
-            InputNeutrons[i]=Output;
-            WriteIAP(&InputNeutrons[i], VT_EXITED);
+            WriteIAP(&OutNeutron, VT_ABSORBED);
+            OutNeutron.Probability = 0.0;
+            continue;
           }
-          WriteNeutron(&Output);
-        }
-        else /* else, if hitting beamstop or out of window */
-        {
-          if (eMaterialO != VT_WABS_IDEAL)
+          // calculation of attenuation
+          else
           {
-            if (keygrav == 1)
-            {
-              TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            if (bPane && lenI > 0.0)
+            { 
+              muI = Interpolation(lambda, VT_WABS_FILE, WavI, MuI, nValFI);
+              if (muI == -10000.0)
+              { CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+                WriteIAP(&OutNeutron, VT_NO_DATA);
+                OutNeutron.Probability = 0.0;
+                continue;
+              }
+              else
+              { probI = exp(-muI*lenI);
+              }
             }
             else
-            {
-              TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+            { probI = 1.0;
             }
 
-            /* Attenuation during pass through window material */
-            N_Wavelength = InputNeutrons[i].Wavelength;
-            mu = Interpolation(N_Wavelength, eMaterialO, WavO, MuO, nValFO);
-            if (mu == -10000.0)
-            { // sprintf(sBuffer, "Attenuation coefficient of window frame material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-              // Error(sBuffer);
-              CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-            }
-            prob = exp(-mu*TOF3*VelocityReal);
-            InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-            InputNeutrons[i].Time += TOF3;
-            InputNeutrons[i].Position[0]=DistMove;
-            Output = InputNeutrons[i];
-            if (InputNeutrons[i].Probability <= wei_min) 
-            {
-              WriteIAP(&Output, VT_ABSORBED);
-            }
-            else 
-            {
-              WriteIAP(&Output, VT_EXITED);
-              WriteNeutron(&Output);
-            }
-          }
-          else 
-          {
-            if (keygrav == 1)
-            {
-              TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
+            if (lenO > 1.0e-06)
+            { 
+              muO = Interpolation(lambda, eMaterialO, WavO, MuO, nValFO);
+              if (muO == -10000.0)
+              { CountMessageID(WNDO_L_RANGE_TOO_SMALL, OutNeutron.ID);
+                WriteIAP(&OutNeutron, VT_NO_DATA);
+                OutNeutron.Probability = 0.0;
+                continue;
+              }
+              else
+              { probO = exp(-muO*lenO);
+              }
             }
             else
-            {
-              TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
+            { probO = 1.0;
             }
-            InputNeutrons[i].Probability = 0.;
-            InputNeutrons[i].Position[0]=DistMove;
-            InputNeutrons[i].Time += TOF3;
-            WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+            OutNeutron.Probability *= (probI * probO);
           }
         }
+
+      write_traj:
+        WriteIAP(&OutNeutron, VT_EXITED);
+
+        if (bOldFrame==FALSE) 
+          OutNeutron.Position[0]=0.0;
+
+        WriteNeutron(&OutNeutron);
       }
     }
   }
@@ -325,32 +371,19 @@ int main(int argc, char *argv[])
   // Finish: print parameters, write geometry and instrument file, free memory
   // -------------------------------------------------------------------------
 my_exit:
-	if (eWndShape==VT_CIRCLE)
-	  fprintf(LogFilePtr,"Window of %6.2f cm diameter in a distance of %7.2f cm \n", 2.0*winradius, DistMove);
-	else
-	  fprintf(LogFilePtr,"Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", 
-	                     widthmax-widthmin, heightmax-heightmin, DistMove);
+  if (TreatColor >= 0) 
+  { fprintf(LogFilePtr,"Only neutrons with color %hd are treated, ", TreatColor);
+    if (bRemoveOtherCol) fprintf(LogFilePtr,"others are removed\n");
+    else                 fprintf(LogFilePtr,"others are propagated to the end of the window\n");
+  }
+
   PrintMessage(WNDI_L_RANGE_TOO_SMALL, sTransFileNameI, ON);
   PrintMessage(WNDO_L_RANGE_TOO_SMALL, sTransFileNameO, ON);
-
-	if (SumProb != 0.0)
-	{ CenterX   = CenterX/SumProb;
-		CenterY   = CenterY/SumProb;
-		CenterZ   = CenterZ/SumProb;
-		fprintf(LogFilePtr,"Center of beam: X = %f cm Y = %f cm Z = %f cm \n",CenterX, CenterY, CenterZ);
-	}
-	else
-	{ fprintf(LogFilePtr,"No neutrons at the exit of this module \n");
-	}
-
-  if (TreatColor >= 0) fprintf(LogFilePtr,"Only neutrons with color %hd are treated \n", TreatColor);
-
-	fprintf(LogFilePtr," \n");
 
   // fills the structure stGeometry for visualization
 	SetGeometry("blue");
 
-  Cleanup(Max(ThicknessO, ThicknessI)+DistMove, 0.0, 0.0, 0.0, 0.0);
+  Cleanup(DistMove+Thickness/2.0, 0.0, 0.0, 0.0, 0.0);
 
 	return(0);
 }
@@ -361,15 +394,12 @@ my_exit:
 /**************************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-	int   i=0, j=0;
-	short bOFrame=FALSE; /* default for window 'new frame' */
+  int   i=0, j=0, 
+        eMat=-1;        // key for outer material as saved or read from GUI
+	short bOFrame=FALSE;  // default for window 'new frame'
 
   // initialize
 	bOldFrame = -1;      /* no default for frame in general */
-
-  InitPlane(&EndPoint);
-  InitPlane(&EndPointI);
-  InitPlane(&EndPointO);
 
   for(j=0; j<MAX_MU; j++)
 	{	
@@ -385,7 +415,7 @@ void  OwnInit(int argc, char *argv[])
 		if(argv[i][0]!='+')
 		{
 			switch(argv[i][1])
-      	{
+      {
 			case 'l':
 				DistMove = atof(&argv[i][2]);
 				break;
@@ -434,7 +464,11 @@ void  OwnInit(int argc, char *argv[])
 				break;
 
 			case 'c':
-				eMaterialO = (VtWndAbs) atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
+        eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
+        if (eMat==6)
+          eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+        else                           // and for ideal absorption here, in 'grid' and 'window_mult'
+				  eMaterialO = (VtWndAbs) eMat;
         break;
 
 			case 'C':
@@ -484,13 +518,35 @@ void  OwnInit(int argc, char *argv[])
   if (maxPhi < minPhi)
     Error("Maximal phi angle must not be smaller than minimal phi angle");
 
-  if (eWndShape==VT_NO_SHAPE)
-    Error("Shape must be given");
+  // Checks
+  // ------
+	if (DistMove < 0.0 && bOldFrame == FALSE)
+	  Error("Length of space must be >= 0.0");
 
-  // Fill structures defining the planes
-	EndPoint.D  = -1.0 * DistMove;
-	EndPointI.D = -1.0 *(DistMove + ThicknessI);
-	EndPointO.D = -1.0 *(DistMove + ThicknessO);
+  if (ThicknessO < 0.0 || ThicknessI < 0.0)
+	  Error("Value for thickness < 0.0");
+	
+	// Set thicknesses and material
+	if (bBeamStop==TRUE)
+  { 
+    eMaterialO = VT_WABS_VAC;
+    if (ThicknessO > 0.0 && ThicknessO != ThicknessI)
+      Note("Outer thickness not relevant, is ignored");
+    ThicknessO = ThicknessI;
+    Thickness  = ThicknessI;
+  }
+  else
+  {
+    if (ThicknessO < ThicknessI)
+	    Error("The inner material cannot be thicker than the outer material");
+
+    Thickness = Max(ThicknessO, ThicknessI);
+	  if (ThicknessO == 0.0)
+		  eMaterialO = VT_WABS_IDEAL;
+  }
+	
+  if (DistMove < 0.5 * Thickness)
+	  Error("The position of the window must be at least half the thickness material");
 
   return;
 }
@@ -505,61 +561,73 @@ void EvalInput()
 	long i=0,                        // index of arrays for wavelength and attenuation 
 	     nVal=0;                   // number of wavelength and attenuation values in the array
 
-  // Checks
-  // ------
-	if (DistMove < 0.0 && bOldFrame == FALSE)
-	{
-		fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
-		exit(-1);
-	}
+  // Fill structures defining geometry and planes
+  InitPlane(&BegPoint);
+  InitPlane(&EndPoint);
+	BegPoint.D = -1.0 *(DistMove - 0.5*Thickness);
+	EndPoint.D = -1.0 *(DistMove + 0.5*Thickness);
 
-	if (ThicknessO < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of window < 0.0 !!!");
-		exit(-1);
-	}
+  SizeRI[0] = ThicknessI;
+  SizeRI[1] = widthmax  - widthmin;
+  SizeRI[2] = heightmax - heightmin;
+  SizeRC[0] = ThicknessO;
+  SizeRC[1] = widthmax  - widthmin;
+  SizeRC[2] = heightmax - heightmin;
 
-	if (ThicknessI < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of open part of the window < 0.0 !!!");
-		exit(-1);
-	}
+  SizeCI[0] = 2.0*winradius;
+  SizeCI[1] = 0.0;
+  SizeCI[2] = ThicknessI;
+  SizeCC[0] = 2.0*winradius;
+  SizeCC[1] = 0.0;
+  SizeCC[2] = ThicknessO;
 
-	if (ThicknessO != ThicknessI)
-	{
-		fprintf(LogFilePtr,"WARNING: It is recommeded to have outer and inner thickness EQUAL! \n");
-	}
-	
-	// Case: zero thickness
-  // --------------------
-	if (ThicknessO == 0.0)
-	{
-		eMaterialO = VT_WABS_IDEAL;
-	}
-  	if (ThicknessI == 0.0)
-	{
-		KeymaterialI = 1;
-	}
+  Center[0] = DistMove;
+  if (eWndShape==VT_SQUARE)
+  {
+    Center[1] = (widthmax  + widthmin) /2.0;
+    Center[2] = (heightmax + heightmin)/2.0;
+  }
+  else if (eWndShape==VT_CIRCLE)
+  {
+    Center[1] = ywincenter;
+    Center[2] = zwincenter;
+  }
+  else
+  { Error("Window shape not (correctly) defined");
+  }
 	
 	// output text
   // -----------
-  fprintf(LogFilePtr,"Window frame material: ");
+  if (bBeamStop)
+     fprintf(LogFilePtr,"Beamstop ");
+  else 
+     fprintf(LogFilePtr,"Window ");
+	if (eWndShape==VT_CIRCLE)
+	  fprintf(LogFilePtr,"of %5.2f cm diameter in a distance of %6.2f cm", 2.0*winradius, DistMove);
+	else
+	  fprintf(LogFilePtr,"of %5.2f x %5.2f cm (W x H) in a distance of %6.2f cm",
+            widthmax-widthmin, heightmax-heightmin, DistMove);
+  if (eWndShape==VT_SQUARE && rotang > 0.0)
+     fprintf(LogFilePtr," rotated by %6.2f deg", rotang*180.0/M_PI);
+	fprintf(LogFilePtr," \n");
 
+  if (Thickness > 0.0)
+	  fprintf(LogFilePtr,"Thickness: %7.2f cm \n", Thickness);
+
+  fprintf(LogFilePtr,"Outer material: ");
   switch (eMaterialO)
-  { case 0: fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
-    case 1: fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
-    case 2: fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
-    case 3: fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
-    case 4: fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
-    case 5: fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
-    case 6: fprintf(LogFilePtr, "Ideal absorber \n");                           break;
+  { 
+    case VT_WABS_FILE : fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
+    case VT_WABS_GD   : fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
+    case VT_WABS_CD   : fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
+    case VT_WABS_B10  : fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
+    case VT_WABS_EU   : fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
+    case VT_WABS_SI   : fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
+    case VT_WABS_VAC  : fprintf(LogFilePtr, "vacuum \n");                                    break;
+    case VT_WABS_IDEAL: fprintf(LogFilePtr, "Ideal absorber \n");                           break;
+    case VT_NO_WABS   : fprintf(LogFilePtr, "no outer material\n");                         break;
     default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
   }
-
-  if (ThicknessO > 0)
-    fprintf(LogFilePtr,"Thickness of outer material of window %f cm \n", ThicknessO);
-  if (ThicknessI > 0)
-    fprintf(LogFilePtr,"Thickness of inner material of window %f cm \n", ThicknessI);
   
   // window frame material from file
   // -------------------------------
@@ -585,7 +653,7 @@ void EvalInput()
         {
           if (WavO[i+1] < WavO[i])
           {
-            fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file '%s' of the window frame (outer window)\n", sTransFileNameO);
+            fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file '%s' of the outer material\n", sTransFileNameO);
             fprintf(LogFilePtr,"The wavelength values must be in increasing order! \n");
             exit(-1);
           }
@@ -597,19 +665,21 @@ void EvalInput()
     }		
     else
     { 
-      Error("No file name given describing the transmission of the window frame\n");
+      Error("No file name given describing the transmission of the outer material\n");
     }
   }	
 
-  if (eMaterialO !=  VT_WABS_IDEAL) 
-    fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nVal]);
+  if (ThicknessO > 0 && ThicknessO != Thickness)
+    fprintf(LogFilePtr, "Thickness of outer material: %5.2f cm \n", ThicknessO);
+  if (eMaterialO != VT_WABS_IDEAL && eMaterialO != VT_NO_WABS && eMaterialO != VT_WABS_VAC) 
+    fprintf(LogFilePtr, "Usable wavelength range    : %5.2f - %5.2f Ang \n", WavO[1], WavO[nValFO]);
 
   // window pane material from file
   // ------------------------------
-	if (sTransFileNameI != NULL) 
+	if (sTransFileNameI != NULL  && ThicknessI > 0.0) 
 	{
-	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
-	  KeymaterialI = 0; /* activate this material */
+	  fprintf(LogFilePtr,"Material transmission characteristics of inner material read from file:  %s \n", sTransFileNameI);
+	  bPane = TRUE; /* activate this material */
 
     pTransFileI = OpenInputFile(sTransFileNameI,FALSE, "r");
     if (pTransFileI!=NULL)  
@@ -626,7 +696,7 @@ void EvalInput()
       {
         if (WavI[i+1] < WavI[i]) 
         {
-          fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file0 '%s' of the window pane (inner window)\n", sTransFileNameI);
+          fprintf(LogFilePtr,"ERROR: incorrect data in the transmission file0 '%s' of the inner material:\n", sTransFileNameI);
           fprintf(LogFilePtr,"The wavelength values must be in increasing order! \n");
           exit(-1);
         }    
@@ -635,8 +705,10 @@ void EvalInput()
     else
     { Error("Transmission file could not be opened");
     }
-	    
-    fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nValFI]);
+	
+    if (ThicknessI != Thickness)
+      fprintf(LogFilePtr, "Thickness of inner material   : %5.2f cm \n", ThicknessI);
+    fprintf(LogFilePtr, "Usable wavelength range       : %5.2f - %5.2f Ang \n", WavI[1], WavI[nValFI]);
   }
   return;
 }
@@ -657,42 +729,155 @@ void SetGeometry(char* sColor)
 
     if (eWndShape==VT_CIRCLE) 
     {  
-      stGeometry.pHolCyl = calloc(1, sizeof(VtHolCyl));
+      // frame
       stGeometry.nHolCyls = 1;
-
+      stGeometry.pHolCyl  = calloc(1, sizeof(VtHolCyl));
+      stGeometry.pHolCyl[0].Length      = Thickness;
       stGeometry.pHolCyl[0].InnerRadius = BlowUp * winradius;
       stGeometry.pHolCyl[0].Radius      = BlowUp * winradius * 3.0;
-      stGeometry.pHolCyl[0].Length      = Max(ThicknessO, ThicknessI);
-      stGeometry.pHolCyl[0].vCntr[0]    = (DistMove + stGeometry.pHolCyl[0].Length/2.);
-      stGeometry.pHolCyl[0].vCntr[1]    = ywincenter;
-      stGeometry.pHolCyl[0].vCntr[2]    = zwincenter;
+      stGeometry.pHolCyl[0].vCntr[0]    = DistMove;
+      stGeometry.pHolCyl[0].vCntr[1]    = BlowUp * Center[1];
+      stGeometry.pHolCyl[0].vCntr[2]    = BlowUp * Center[2];
       stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
       stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
       stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+
+      // pane
+      if (bPane==TRUE && ThicknessI > 0.0 && ThicknessI < ThicknessO)
+      { stGeometry.nCylinders = 1;
+        stGeometry.pCylinder  = calloc(stGeometry.nCylinders, sizeof(VtCylinder));
+        stGeometry.pCylinder[0].Length      = ThicknessI;
+        stGeometry.pCylinder[0].Radius      = BlowUp * winradius;
+        stGeometry.pCylinder[0].vCntr[0]    = DistMove;
+        stGeometry.pCylinder[0].vCntr[1]    = BlowUp * Center[1];
+        stGeometry.pCylinder[0].vCntr[2]    = BlowUp * Center[2];
+        stGeometry.pCylinder[0].vSymAxis[0] = 1.0;
+        stGeometry.pCylinder[0].vSymAxis[1] = 0.0;
+        stGeometry.pCylinder[0].vSymAxis[2] = 0.0;
+      }
     }
     else 
     {
-      ywincenter = (widthmax  + widthmin) /2.0;
-      zwincenter = (heightmax + heightmin)/2.0;
-
-      stGeometry.pHull = calloc(1, sizeof(VtHull));
+      // frame
       stGeometry.nHulls = 1; 
-
-      stGeometry.pHull[0].Length    = Max(ThicknessO, ThicknessI);
+      stGeometry.pHull = calloc(1, sizeof(VtHull));
+      stGeometry.pHull[0].Length    = Thickness;
       stGeometry.pHull[0].WidthIn   = BlowUp * (widthmax  - widthmin);
       stGeometry.pHull[0].WidthOut  = BlowUp * (widthmax  - widthmin) * 3.0;
       stGeometry.pHull[0].HeightIn  = BlowUp * (heightmax - heightmin);
       stGeometry.pHull[0].HeightOut = BlowUp * (heightmax - heightmin) * 3.0;
-      stGeometry.pHull[0].vCntr[0]  = (DistMove + stGeometry.pHull[0].Length/2.);
-      stGeometry.pHull[0].vCntr[1]  = ywincenter;
-      stGeometry.pHull[0].vCntr[2]  = zwincenter;
+      stGeometry.pHull[0].vCntr[0]  = DistMove;
+      stGeometry.pHull[0].vCntr[1]  = BlowUp * Center[1];
+      stGeometry.pHull[0].vCntr[2]  = BlowUp * Center[2];
       stGeometry.pHull[0].vNormal[0]= 1.0;
       stGeometry.pHull[0].vNormal[1]= 0.0;
       stGeometry.pHull[0].vNormal[2]= 0.0;
       stGeometry.pHull[0].rotAngle  = rotang * 180.0/M_PI;
 
+      // pane
+      if (bPane==TRUE && ThicknessI > 0.0 && ThicknessI < ThicknessO)
+      { stGeometry.nCuboids = 1;
+        stGeometry.pCuboid = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+        stGeometry.pCuboid[0].Length     = ThicknessI;
+        stGeometry.pCuboid[0].Width      = BlowUp * (widthmax  - widthmin) ;
+        stGeometry.pCuboid[0].Height     = BlowUp * (heightmax - heightmin);
+        stGeometry.pCuboid[0].vCntr[0]   = DistMove;
+        stGeometry.pCuboid[0].vCntr[1]   = BlowUp * Center[1];
+        stGeometry.pCuboid[0].vCntr[2]   = BlowUp * Center[2];
+        stGeometry.pCuboid[0].vNormal[0] = 1.0;
+        stGeometry.pCuboid[0].vNormal[1] = 0.0;
+        stGeometry.pCuboid[0].vNormal[2] = 0.0;
+        stGeometry.pCuboid[0].rotAngle   = rotang * 180.0/M_PI;
+      }
+
       // FillRotMatrixZY(rotMatrixPi2, 0, M_PI_2);
       // RotVector(rotMatrixPi2, stGeometry.pCuboid[0].vNormal);
     }
   }
+}
+
+
+/*******************************************************/
+/** checks if the neutron is inside the window        **/
+/*******************************************************/
+short IsOutOfWindow(double Y, double Z)
+{ 
+  short  bOut=FALSE;
+  double DistSquared=0.0, 
+         Ynew=0.0, Znew=0.0;
+
+  if (eWndShape==VT_SQUARE && rotang != 0.0) 
+  {   /*x' = x cos f - y sin f
+			  y' = y cos f + x sin f */
+		Ynew = Y * cos(-rotang) - Z * sin(-rotang);
+		Znew = Y * sin(-rotang) + Z * cos(-rotang);
+	} 
+  else
+  {
+		Ynew = Y;
+		Znew = Z;
+	}
+
+  if (eWndShape==VT_CIRCLE)
+  {	DistSquared = sq(Ynew - ywincenter)
+                + sq(Znew - zwincenter);
+    if (DistSquared > sq(winradius))
+      bOut=TRUE;
+  }
+  else
+  {	if (Ynew < widthmin  || Ynew > widthmax ||
+        Znew < heightmin || Znew > heightmax  )
+      bOut=TRUE;
+  }
+
+  return bOut;
+}
+
+/*******************************************************/
+/** checks if the neutron is moving inward or outward **/
+/*******************************************************/
+VtDir GetDir(VectorType Pos, VectorType Dir)
+{
+  VtDir eDir=VT_NO_DIR;
+
+  if (eWndShape==VT_CIRCLE)
+  {
+    double r = sqrt(sq(Pos[1]) + sq(Pos[2]) / winradius);
+
+    if (r==1.0) // passes through wall
+    { if (Pos[1]*Dir[1] + Pos[2]*Dir[2] > 0.0)
+        eDir = VT_OUT;
+      else
+        eDir = VT_IN;
+    }
+    else if (r < 1.0) // passes through top or bottom wall
+    { eDir = VT_INSIDE;
+    }
+    else
+    { eDir = VT_BEYOND;
+    }
+  }
+  else
+  {
+    if (fabs(Pos[1])==SizeRI[1]) // passes through left or right wall
+    { if (Pos[1]*Dir[1] > 0.0)
+        eDir = VT_OUT;
+      else
+        eDir = VT_IN;
+    }
+    else if (fabs(Pos[2])==SizeRI[2]) // passes through top or bottom wall
+    { if (Pos[2]*Dir[2] > 0.0)
+        eDir = VT_OUT;
+      else
+        eDir = VT_IN;
+    }
+    else if (IsOutOfWindow(Pos[1], Pos[2])==TRUE) // passes through top or bottom wall
+    { eDir = VT_BEYOND;
+    }
+    else
+    { eDir = VT_INSIDE;
+    }
+  }
+    
+  return eDir;
 }

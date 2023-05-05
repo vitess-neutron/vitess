@@ -41,24 +41,35 @@ void  SetGeometry (char* sColor, int nHoles);  // Fills the structure stGeometry
 /******************************/
 /** Global Variables         **/
 /******************************/
-long    eKeyMaterial=6;                   // Material of grid element: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 - Bor10,      
-                                          //                         4 - Eu,        5 - Silicon,    6 - ideal absorber
-VtShape eKeyShape=VT_NO_SHAPE;            // Form of grid elements 0 - square form; 1 - circle form 
-long	  eKeyColorTrack=0;                 // Activate color tracking, default no (0)
+// Input parameters
+char   *sCollFileName=NULL;     // -I  [-]  file describing the grid geometry 
+char	 *sTransFileName=NULL;    // -C  [-]  file describing the transmission of the grid material
+VtWndAbs  eMaterialO            // -c  [-]  material of the grids: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+	         =VT_WABS_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
+VtShape eKeyShape=VT_NO_SHAPE;  // -N  [-]  Form of grid elements 0 - square form; 1 - circle form 
+long	  eKeyColorTrack=0;       // -K  [-]  Activate color tracking = cross-talk analysis, default no (0)
 
-char   *sCollFileName=NULL;               // file describing the grid geometry 
-char	 *sTransFileName=NULL;              // file describing the transmission of the grid material
+double	Distance=0.0,           // -D  [cm] distance from the previous item of the grid
+        ShiftHor=0.0,           // -d  [cm]  horizontal and
+        ShiftVer=0.0,           // -e  [cm]  vertical shift of the grid element
+        Thickness=0.1,          // -t  [cm]  thickness of the plate
+        OuterA=0.0,             // -a  [cm]  radius or width of the plate
+        OuterB=0.0;             // -b  [cm]  height of the plate
 
-double  WinRadiusDev=0.0;                 // Deviation of hole size
-double	WinCenterDev=0.0;                 // Deviation of hole position
-double  ShiftHor=0.0, ShiftVer=0.0;       // Displacement of grid element
-double  ShiftHorDev=0.0, ShiftVerDev=0.0; // Deviation of displacement of grid element
-double  OuterA=0.0, OuterB=0.0;           // Outer Sizes of grid element
-double	Distance=0.0, DistanceDev=0.0;    // Distance and deviation
+double  DistanceDev =0.0,       // -X  [cm]  distance and deviation
+        ShiftHorDev =0.0,       // -y  [cm]  horizontal and
+        ShiftVerDev =0.0,       // -q  [cm]  vertical displacement of a grid element
+        WinRadiusDev=0.0,       // -h  [cm]  deviation of hole size
+       	WinCenterDev=0.0;       // -H  [cm]  deviation of hole position
 
+double	DistanceAbs = 0.0;      // -M  [cm]  absolute distance from first grid element, for simulation of system of grid, [cm]
+double  TotalLength = 0.0;      // -m  [cm]  length of the grid system = half the lenngth from first element to detector
+double  WaveMonoch  = 0.0;      // -n  [Ang] standard wavelength for monochromatisation, if zero disactivated
+        
+                                  
+// Variables determined from input parameters, files or trajectory data
 double  WAVS[MAX_MU],                     // lambda and µ-values and thickness of the grid material 
         MUS [MAX_MU];
-double  Thickness=0.1;                    // Thickness of the grid elements
 long    nValF=0;                          // number of attenuation values in file (describing absorption in grid material)
 
 double  winsize   [1001],                 // arrays of hole positions and sizes
@@ -66,10 +77,6 @@ double  winsize   [1001],                 // arrays of hole positions and sizes
         zwincenter[1001]; 
 double  OuterRadius=0.0;                  // outer radius for spherical holes
 
-// Parameters for Option: 'gravity monochromator'
-double  WaveMonoch = 0.0;                 // Wavelength (Ang) for monokhromatisation, if zero disactivated
-double	DistanceAbs = 0.0;                // absolute distance from first grid, for simulation of system of grid, [cm]
-double  TotalLength = 1200.0;             // total length of grid system, [cm]	    
 
 
 /******************************/
@@ -234,11 +241,11 @@ int main(int argc, char *argv[])
         // -------------------------------------------------------
         if (key_abs == 1) 
         {
-          if (eKeyMaterial == 6)
+          if (eMaterialO == VT_WABS_IDEAL)
           continue;
           /* Attenuation during pass through grid material */
           N_Wavelength = InputNeutrons[i].Wavelength;    
-          mu = Interpolation(N_Wavelength, eKeyMaterial, WAVS, MUS, nValF);
+          mu = Interpolation(N_Wavelength, eMaterialO, WAVS, MUS, nValF);
           if (mu == -10000.0)
           {
             CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
@@ -287,7 +294,8 @@ my_exit:
 /**************************************************************/
 void   OwnInit   (int argc, char *argv[])
 {
-  int i;
+  int i=0,
+      eMat=-1;        // key for outer material as saved or read from GUI
 
   for(i=1; i<argc; i++)
   {
@@ -333,7 +341,11 @@ void   OwnInit   (int argc, char *argv[])
           sTransFileName=&argv[i][2]; 
           break;
         case 'c':
-          eKeyMaterial = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
+          eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
+          if (eMat==6)
+            eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+          else                           // and for ideal absorption here, in 'window' and 'window_mult'
+				    eMaterialO = (VtWndAbs) eMat;
           break;
 
         // Deviations
@@ -416,7 +428,7 @@ void  EvalInput()
 	
   if (Thickness < 0.0)
     Error("Thickness of the disk < 0.0");
-  if (Thickness == 0.0 && eKeyMaterial!=6)
+  if (Thickness == 0.0 && eMaterialO!=VT_WABS_IDEAL)
     Error("Thickness of the disk can only be zero for ideal absorber");
 
   if (DistanceDev < 0.0)
@@ -465,7 +477,7 @@ void  EvalInput()
     fprintf(LogFilePtr, "=====TRACKING OF CROSSTALK OF TRAJECTORIES IS ACTIVATED.=====  \n");
     fprintf(LogFilePtr, "PLEASE SET INITIAL COLOR OF ALL NEUTRONS IN SOURCE ON ZERO     \n");
     fprintf(LogFilePtr, "IDEAL ABSORPTION IS ACTIVATED. \n");
-    eKeyMaterial = 6 ;
+    eMaterialO = VT_WABS_IDEAL ;
   }    
     
   Shape_ID2Txt(sShape, eKeyShape);
@@ -476,14 +488,14 @@ void  EvalInput()
 
   fprintf(LogFilePtr,"Window frame material: ");
 
-  switch (eKeyMaterial)
-  { case 0:  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
-    case 1:  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
-    case 2:  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
-    case 3:  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
-    case 4:  fprintf(LogFilePtr, "Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
-    case 5:  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
-    case 6:  fprintf(LogFilePtr, "Ideal absorber \n");                            break;
+  switch (eMaterialO)
+  { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
+    case VT_WABS_GD   :  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
+    case VT_WABS_CD   :  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
+    case VT_WABS_B10  :  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
+    case VT_WABS_EU   :  fprintf(LogFilePtr, "Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
+    case VT_WABS_SI   :  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
+    case VT_WABS_IDEAL:  fprintf(LogFilePtr, "Ideal absorber \n");                            break;
     default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
   }
 
@@ -544,7 +556,7 @@ void  EvalInput()
   }		
   
 
-  if (eKeyMaterial == 0)
+  if (eMaterialO == VT_WABS_FILE)
   {
     // Read transmission file for grid element
     if (sTransFileName != NULL)

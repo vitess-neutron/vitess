@@ -203,6 +203,8 @@ typedef enum
 	VT_ABSORBED  = 8,    // chopper, guide, collimator
 	VT_EXITED    = 9,    // guide
 	VT_DETECTED  = 10,   // detector
+	VT_FILTERED  = 11,   // filter and others
+	VT_NO_DATA   = 12,   // window, bender etc.
 }
 VtReason;
 
@@ -251,7 +253,8 @@ typedef enum
   VT_NO_DIR = 0,
 	VT_IN     = 1,
 	VT_OUT    = 2,
-	VT_INSIDE = 3
+	VT_INSIDE = 3,
+	VT_BEYOND = 4
 }
 VtDir;
 
@@ -463,13 +466,15 @@ VtAbsMat;
 // absorber material
 typedef enum
 {	
+  VT_NO_WABS    =-1,
   VT_WABS_FILE  = 0,
 	VT_WABS_GD    = 1,
   VT_WABS_CD    = 2,
 	VT_WABS_B10   = 3,
   VT_WABS_EU    = 4,
 	VT_WABS_SI    = 5,
-  VT_WABS_IDEAL = 6
+	VT_WABS_VAC   = 6,
+  VT_WABS_IDEAL = 99,
 }
 VtWndAbs;
 

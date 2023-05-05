@@ -19,6 +19,7 @@
 /* 2.21  Jul  2004  S. Manoshin	    Corrected bug for thick window                           */
 /* 2.22  Dec  2007  K. Lieutenant   Option to use rectangular windows added                  */
 /* 2.23  Aug  2019  K. Lieutenant   tidy up and visualization                                */
+/* 2.24  Mai  2023  K. Lieutenant   correct use of material IDs                              */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -40,38 +41,40 @@ void  SetGeometry(char* sColor, int nHoles);       // fills the structure stGeom
 /******************************/
 /** Global Variables         **/
 /******************************/
-Plane	    Endpoint,         // Planes through window for zero thickness and
-          EndPointO,        // end of the Outer and end of the Inner wall
-	        EndPointI;        // Endpoint.D: distance to window along x-axis        [cm]
-
-VtMultWndShape eShape=VT_MWND_AUTO, // kind of window: defined by input file, circular or rectangular
-          eWinShape[101];  
-char*     CollFileName=NULL;
-double    Distance=0.0,         // Distance from origin to the window (along the x-axis)  [cm]
-          OuterRadius=100.0; 
-double    winradius [101],      // radii of circular windows                              [cm]
-          ywincenter[101],      // y coordinates: centers of windows                      [cm]
-          zwincenter[101],      // z coordinates: centers of windows                      [cm]
-          winwidth  [101],      // widths of rectangular windows                          [cm]
-          winheight [101];      // heights of rectangular windows                         [cm]
-
-long      KeymaterialO=6,       // Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-	                              //                        4 - Eu,        5 - Silicon,    6 - ideal absorber
-          KeymaterialI=1;       // Absorption of open part of window, 1 -no(default) 0 - from file
-
-char  *sTransFileNameO=NULL;    // file describing the transmission of the window frame material
-FILE  *pTransFileO=NULL; 
-double WavO[MAX_MU],            // lambda and µ-values and thickness of the frame material 
-       MuO [MAX_MU], 
-       ThicknessO=0.0;
-long   nValFO=0;                // number of attenuation values in file (for window frame material)
-
-char  *sTransFileNameI=NULL;    // file describing the transmission of the material in the open part of window
-FILE  *pTransFileI=NULL; 
-double WavI[MAX_MU],            // lambda and µ-values and thickness of the inner material 
-       MuI [MAX_MU], 
-       ThicknessI=0.0;
-long   nValFI=0;                // number of attenuation values in file (for window pane material)
+// Input parameters
+VtMultWndShape 
+          eShape=VT_MWND_AUTO;  // -S  [-]  shape of the windows: defined by input file, circular or rectangular
+char*     CollFileName=NULL;    // -I  [-]  file containing the geometry of the windows
+double    Distance=0.0,         // -D  [vm] distance from origin to the window (along the x-axis)  [cm]
+          OuterRadius=100.0;    // -r  [cm] radius of the plate
+char     *sTransFileNameO=NULL; // -C  [-]  file describing the transmission of the window frame material
+double    ThicknessO=0.0;       // -t  [cm] thickness of the window frame material
+VtWndAbs  eMaterialO            // -c  [-]  window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+	         =VT_WABS_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
+char     *sTransFileNameI=NULL; // -m  [-]  file describing the transmission of the material in the open part of the window
+double    ThicknessI=0.0;       // -T  [cm] thickness of the window pane material     
+                                  
+// Variables determined from input parameters, files or trajectory data
+Plane	    Endpoint,             //          Planes through window for zero thickness and
+          EndPointO,            //          end of the Outer and end of the Inner wall
+	        EndPointI;            //          Endpoint.D: distance to window along x-axis        [cm]
+VtMultWndShape eWinShape[101];              
+double    winradius [101],      //          radii of circular windows                              [cm]
+          ywincenter[101],      //          y coordinates: centers of windows                      [cm]
+          zwincenter[101],      //          z coordinates: centers of windows                      [cm]
+          winwidth  [101],      //          widths of rectangular windows                          [cm]
+          winheight [101];      //          heights of rectangular windows                         [cm]
+                                            
+FILE  *pTransFileO=NULL;                    
+double WavO[MAX_MU],            //          lambda and µ-values and thickness of the frame material 
+       MuO [MAX_MU];                        
+long   nValFO=0;                //          number of attenuation values in file (for window frame material)
+                                            
+short  bPane=FALSE;             //          flag: window pane material exists
+FILE  *pTransFileI=NULL;                    
+double WavI[MAX_MU],            //          lambda and µ-values and thickness of the inner material 
+       MuI [MAX_MU];                        
+long   nValFI=0;                //          number of attenuation values in file (for window pane material)
 
 
 /******************************/
@@ -106,7 +109,7 @@ int main(int argc, char *argv[])
   _eModule = MCN_WND_MULT;
   
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "2.23");
+  PrintModuleName(_eModule, "2.24");
   OwnInit(argc, argv);
   MsgInit();
   EvalInput();
@@ -191,7 +194,7 @@ int main(int argc, char *argv[])
 		
           if (key_abs == 1) // absorbed
           {
-            if (KeymaterialO == 6)
+            if (eMaterialO == VT_WABS_IDEAL)
               continue;
 				
             if (keygrav == 1)
@@ -201,7 +204,7 @@ int main(int argc, char *argv[])
   			
             /* Attenuation during pass of window material */
             N_Wavelength = InputNeutrons[i].Wavelength;    
-            mu = Interpolation(N_Wavelength, KeymaterialO, WavO, MuO, nValFO);
+            mu = Interpolation(N_Wavelength, eMaterialO, WavO, MuO, nValFO);
             if (mu == -10000.0)
             { // sprintf(sBuffer, "Attenuation coefficient of plate material could not be determined for wavelength %6.3f Ang", N_Wavelength);
               // Error(sBuffer);
@@ -221,11 +224,11 @@ int main(int argc, char *argv[])
           else
             TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
 
-          if ((KeymaterialI == 0)&&(DistSquared <= OuterRadius*OuterRadius))				 
+          if (bPane==TRUE && (DistSquared <= OuterRadius*OuterRadius))				 
           {
 	          /* Attenuation during pass of open window material */
             N_Wavelength = InputNeutrons[i].Wavelength;    
-            mu = Interpolation(N_Wavelength,KeymaterialI,WavI,MuI,nValFI);
+            mu = Interpolation(N_Wavelength, VT_WABS_FILE, WavI,MuI, nValFI);
             if (mu == -10000.0)
             { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
               // Error(sBuffer);
@@ -286,7 +289,8 @@ my_exit:
 /**************************************************************/
 void  OwnInit   (int argc, char *argv[])
 {
-	int i;
+	int i=0,
+      eMat=-1;        // key for outer material as saved or read from GUI
 
 	for(i=1; i<argc; i++)
 	{
@@ -305,12 +309,16 @@ void  OwnInit   (int argc, char *argv[])
 					OuterRadius = atof(&argv[i][2]);
 					break;
 				case 'S':
-					eShape = (VtMultWndShape) atoi(&argv[i][2]);  // Shape of the individuals apertures: 0 different,  1: circular, 2: rectangular
+					eShape = (VtMultWndShape) atoi(&argv[i][2]);  // Shape of the individual apertures: 0 different,  1: circular, 2: rectangular
 					break;
 
 				case 'c':
-					KeymaterialO = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-					break;
+          eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
+          if (eMat==6)
+            eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+          else                           // and for ideal absorption here, in 'grid' and 'window'
+				    eMaterialO = (VtWndAbs) eMat;
+          break;
 				case 'C':
 					sTransFileNameO=&argv[i][2]; 
 					break;
@@ -477,25 +485,25 @@ void  EvalInput()
   // --------------------
 	if (ThicknessO == 0.0)
 	{
-		KeymaterialO = 6;
+		eMaterialO = VT_WABS_IDEAL;
 	}
 	if (ThicknessI == 0.0)
 	{
-		KeymaterialI = 1;
+		bPane=FALSE;
 	}
 	
 	// output text
   // -----------
   fprintf(LogFilePtr,"Window frame material: ");
 
-  switch (KeymaterialO)
-  { case 0:  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
-    case 1:  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
-    case 2:  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
-    case 3:  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
-    case 4:  fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
-    case 5:  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
-    case 6:  fprintf(LogFilePtr, "Ideal absorber \n");                           break;
+  switch (eMaterialO)
+  { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
+    case VT_WABS_GD   :  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
+    case VT_WABS_CD   :  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
+    case VT_WABS_B10  :  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
+    case VT_WABS_EU   :  fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
+    case VT_WABS_SI   :  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
+    case VT_WABS_IDEAL:  fprintf(LogFilePtr, "Ideal absorber \n");                           break;
     default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
   }
 
@@ -506,7 +514,7 @@ void  EvalInput()
     
   // window frame material from file
   // -------------------------------
-  if (KeymaterialO == 0)
+  if (eMaterialO == VT_WABS_FILE)
   {
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
@@ -544,15 +552,15 @@ void  EvalInput()
     }
   }	
 
-  if (KeymaterialO >= 0 && KeymaterialO < 6) 
+  if (eMaterialO >= VT_WABS_FILE && eMaterialO <= VT_WABS_SI) 
     fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nVal]);
 
   // window pane material from file
   // ------------------------------
-	if (sTransFileNameI != NULL) 
+	if (ThicknessI > 0.0 && sTransFileNameI != NULL) 
 	{
 	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
-	  KeymaterialI = 0; /* activate this material */
+	  bPane=TRUE;     /* activate this material */
 
     pTransFileI = OpenInputFile(sTransFileNameI, FALSE, "r");
     if (pTransFileI!=NULL)  
