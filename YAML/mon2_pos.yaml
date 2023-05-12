@@ -21,6 +21,9 @@ mon2_pos:                 # source module that will be executed
       default: "sample.pos"
       prefix:  "-O"  
    
+  - Title_Par: 
+      type:    "title" 
+      default: "Ranges"
   - WidthMin:              #     -w  "min. y-value\n[cm]"        "left edge position of the monitored area"
       type:    "float" 
       descr:   "min. y-value\n[cm]"
@@ -67,6 +70,9 @@ mon2_pos:                 # source module that will be executed
       column:  2                     
       prefix:  "-z"  
 
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - bProbWt :              #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
       descr:   "probability\nweight" 
@@ -92,6 +98,9 @@ mon2_pos:                 # source module that will be executed
       column:  2                     
       prefix:  "-F"  
 
+  - Title_Filter: 
+      type:    "title" 
+      default: "Filter selection"
   - FlmbdMin:              #     -l  "filter lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "filter lambda\nmin [Ang]"

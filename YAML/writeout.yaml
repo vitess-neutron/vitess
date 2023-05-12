@@ -12,13 +12,15 @@ writeout: 		     # source module that will be executed
       type:    "string" 
       descr:   "name"
 
-  - sInpFil1:                #         -A  "trajectory\noutput file"     "name of the trajectory output file"
+  - Title_Output:
+      type:    "title"
+      default: "Output file choices" 
+  - sOutFile:                #         -A  "trajectory\noutput file"     "name of the trajectory output file"
       type:    "file" 
       descr:   "trajectory\noutput file"
       tooltip: "name of the trajectory output file"
       default: "events.out" 
       prefix:  "-A"
-
   - bActive :               #         -a  "Active?"                     "flag: YES: output file is written   NO: output file is not written
       type:    "switch" 
       descr:   "Active?" 
@@ -26,7 +28,6 @@ writeout: 		     # source module that will be executed
       default: true
       column:  0                     
       prefix:  "-a"  
-
   - bHeader :               
       type:    "switch" 
       descr:   "Header" 
@@ -35,6 +36,9 @@ writeout: 		     # source module that will be executed
       column:  1                     
       prefix:  "-h"  
 
+  - Title_Format:
+      type:    "title"
+      default: "File formats" 
   - ePrgFmt :                #         -f  VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
@@ -44,7 +48,6 @@ writeout: 		     # source module that will be executed
       default:  "VITESS"
       column:  0                     
       prefix:  "-f"
-
   - eDatFmt :                #         -F  VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
@@ -54,7 +57,6 @@ writeout: 		     # source module that will be executed
       default:  "float"
       column:  1                     
       prefix:  "-F"   
-
   - eSepFmt :                #         -S  VtSeparator Separator_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "separator"
@@ -64,6 +66,9 @@ writeout: 		     # source module that will be executed
       column:  2                     
       prefix:  "-S" 
   
+  - Title_Opt:
+      type:    "title"
+      default: "MCNP and SSW options" 
   - FactInt :              
       type:    "float" 
       descr:   "intensity\nfactor"
@@ -78,12 +83,18 @@ writeout: 		     # source module that will be executed
       default: 0
       column:  1                     
       prefix:  "-s"
-  - Beamline:   
+  - sSimName:   
       type:    "string" 
-      descr:   "title"
+      descr:   "Simulation\nname"
       tooltip: "Only for MCNP6: name of the simulation" 
       column:  2                     
       prefix:  "-T"     
+
+  - sSswFile:                #         -r   [-]   SSW reference file name
+      type:    "file" 
+      descr:   "SSW\nref. file"
+      tooltip: "Specifies the name of the SSW reference file to determine the file format"
+      prefix:  "-r"
 
 #  - aParOut :               #         -c  "Columns"  
 #      type:    "string" 
@@ -93,6 +104,9 @@ writeout: 		     # source module that will be executed
 #      column:  0                     
 #      prefix:  "-c"   
    
+  - Title_Filter: 
+      type:    "title" 
+      default: "Filter selection"
   - iDetCol :               #         -C  "writeout color"              "Write only events with a given color. A negative number means any color."
       type:    "int" 
       descr:   "writeout color" 

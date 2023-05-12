@@ -21,6 +21,9 @@ monitor1_pol:            # source module that will be executed
       default: "pol.dat"
       prefix:  "-O"   
     
+  - Title_Par: 
+      type:    "title" 
+      default: "Parameter and range"
   - ePar    :             #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
       type:    "combo" 
       descr:   "variable\nparameter" 
@@ -61,6 +64,9 @@ monitor1_pol:            # source module that will be executed
       column:  2
       prefix:  "-n"  
 
+  - Title_Dir : 
+      type:    "title" 
+      default: "Analysis direction"
   - PolX    :             #     -a  "directon\nx"               "x-component of the quantization direction"
       type:    "float" 
       descr:   "directon\nx"
@@ -83,6 +89,9 @@ monitor1_pol:            # source module that will be executed
       column:  2
       prefix:  "-c"
 
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - bProbWt :             #     -p  "probability\nweight"       "YES: Probability weight   NO: number of trajectories
       type:    "switch" 
       descr:   "probability\nweight" 

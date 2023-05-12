@@ -22,6 +22,9 @@ monitor1D:                    # source module that will be executed
       default: "monitor1D.dat" 
       tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
 
+  - Title_Par: 
+      type:    "title" 
+      default: "Parameter and range"
   - eParA  :                 # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "1st parameter\non x-axis"
@@ -55,7 +58,9 @@ monitor1D:                    # source module that will be executed
       column:  0                     
       prefix:  "-x"  
 
-
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - bProbWt :                 # -p  YES   Display  : YES: Beam intensity   NO: number of trajectories
       type:    "switch" 
       descr:   "probability\nweight" 
@@ -71,7 +76,7 @@ monitor1D:                    # source module that will be executed
       column:  1                     
       prefix:  "-e"  
  
-  - title_FilSelect: 
+  - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
   - LmbdMin :                 # -l       minimum wavelength to be taken into account [Ang]

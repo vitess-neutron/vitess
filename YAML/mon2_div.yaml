@@ -21,6 +21,9 @@ mon2_div:                 # source module that will be executed
       default: "sample.div"
       prefix:  "-O"  
    
+  - Title_Par: 
+      type:    "title" 
+      default: "Ranges"
   - DivYmin :              #     -w  "min. y-value\n[deg]"       "minimal horizontal divergence to be monitored"
       type:    "float" 
       descr:   "min. y-value\n[deg]" 
@@ -66,6 +69,9 @@ mon2_div:                 # source module that will be executed
       column:  2                     
       prefix:  "-z"  
 
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - bProbWt :               #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
       descr:   "probability\nweight" 
@@ -90,6 +96,9 @@ mon2_div:                 # source module that will be executed
       column:  2                     
       prefix:  "-F"  
 
+  - Title_Filter: 
+      type:    "title" 
+      default: "Filter selection"
   - FlmbdMin:              #     -l  "lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda\nmin [Ang]" 

@@ -21,6 +21,9 @@ monitor1:                    # source module that will be executed
       default: "monitor.dat"
       prefix:  "-O"   
 
+  - Title_Par: 
+      type:    "title" 
+      default: "Range"
   - eMon1Par:                 # -k    [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)
       type:    "combo" 
       hidden:  true
@@ -54,6 +57,9 @@ monitor1:                    # source module that will be executed
       column:  2                     
       prefix:  "-n"  
 
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - iColour:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColour >= 0 
                              #                    for bAllFile=TRUE  max. color to which additional monitor files are generated             
       type:    "int" 
@@ -100,7 +106,7 @@ monitor1:                    # source module that will be executed
       tooltip: "Reference input file containing data to normalize the monitor data"
       prefix:  "-R"   
 
-  - title_FilSelect: 
+  - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
   - FtimeMin :                 # -t    [ms]  minimal TOF to be taken into account

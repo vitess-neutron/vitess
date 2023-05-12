@@ -13,7 +13,10 @@ read_in:   		     # source module that will be executed
       type:    "string"
       descr:   "name" 
 
-  - ePrgFmt:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
+  - Title_Format:
+      type:    "title"
+      default: "Format" 
+   - ePrgFmt:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
@@ -31,6 +34,10 @@ read_in:   		     # source module that will be executed
       default:  "float"
       column:  1                     
       prefix:  "-F"   
+
+  - Title_Input:
+      type:    "title"
+      default: "Input files" 
   - File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
       type:    "file" 
       descr:   "ASCII input\nfile 1"
@@ -68,24 +75,31 @@ read_in:   		     # source module that will be executed
       column:  2                     
       prefix:  "-d"   
 
-  - Title_1:
+  - Title_Opt:
       type:    "title"
       default: "Special options" 
   - nInRep:                   # -R     1  Number of times that the events are read 
       type:    "int" 
       descr:   "repetition" 
-      tooltip: "Number of times that the events are read"
+      tooltip: "Number of times that the trajectories are read"
       default: 1
       min:     1
       column:  0                     
       prefix:  "-R" 
+  - nMaxTraj:               
+      type:    "int" 
+      descr:   "max.\ntrajectories"
+      tooltip: "Maximum number of trajectories that are read."
+      column:  1                     
+      prefix:  "-M"   
   - RiFact:                 # -I    1.0  [-] 
       type:    "float" 
       descr:   "intensity\nfactor"
       tooltip: "The weight of each neutron trajectory (from an MCNP simulation) is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnp-events"
       default: 1.0
-      column:  1                     
+      column:  2                     
       prefix:  "-I"   
+
   - nSurface:               
       type:    "int" 
       descr:   "surface\nID" 
@@ -99,7 +113,8 @@ read_in:   		     # source module that will be executed
       tooltip: "Read only events with a given color. A negative number means any color" 
       default: -1
       column:  0                     
-      prefix:  "-C"   
+      prefix:  "-C"
+
   - InstFile:                 # 
       type:    "file" 
       descr:   "instrument\ninput file"

@@ -12,6 +12,10 @@ velselect:
       type:    "string" 
       descr:   "name" 
       column:  0                     
+
+  - Title_Geom: 
+      type:    "title" 
+      default: "Geometry"
   - WndWidth:            # -W  [cm]   width of entrance and exit window
       type:    "float" 
       descr:   "window\nwidth [cm]"  
@@ -54,6 +58,24 @@ velselect:
       column:  2                     
       prefix:  "-i" 
 
+  - AxlePosY:            # -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
+      type:    "float" 
+      descr:   "horizontal\naxle position [cm]"  
+      tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
+      default: 0.0
+      column:  0                     
+      prefix:  "-Y" 
+  - AxlePosZ:            # -Z  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
+      type:    "float" 
+      descr:   "vertical\naxle position [cm]"  
+      tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
+      default: -11.5
+      column:  1                     
+      prefix:  "-Z" 
+
+  - Title_Rot: 
+      type:    "title" 
+      default: "Channels and rotation"
   - Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
       type:    "float" 
       descr:   "rotations\nper sec."  
@@ -85,21 +107,9 @@ velselect:
       column:  0                     
       prefix: "-d"  
 
-  - AxlePosY:            # -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
-      type:    "float" 
-      descr:   "horizontal\naxle position [cm]"  
-      tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
-      default: 0.0
-      column:  0                     
-      prefix:  "-Y" 
-  - AxlePosZ:            # -Z  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
-      type:    "float" 
-      descr:   "vertical\naxle position [cm]"  
-      tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
-      default: -11.5
-      column:  1                     
-      prefix:  "-Z" 
-
+  - Title_Opt: 
+      type:    "title" 
+      default: "Options"
   - bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
       type:    "switch" 
       descr:   "treat neutrons\npassing by"

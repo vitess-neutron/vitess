@@ -13,7 +13,7 @@ frame:			    # source module that will be executed
       descr:   "name"
   - Title_1 : 
       type:    "title" 
-      default: "transformation"
+      default: "Transformation"
   - eSequenc:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
       type:    "combo"  
       descr:   "sequence"
@@ -26,7 +26,7 @@ frame:			    # source module that will be executed
 
   - Title_2 : 
       type:    "title" 
-      default: "rotation"
+      default: "Rotation"
   - RotX    :               # -A   0.0  [deg]  rotation angle about x-axis
       type:    "float" 
       descr:   "rot. angle [deg]\naround x axis" 
@@ -51,7 +51,7 @@ frame:			    # source module that will be executed
 
   - Title_3 : 
       type:    "title" 
-      default: "translation"
+      default: "Translation"
   - TransX  :               # -x   0.0   [cm]  x-component of the translation vector
       type:    "float" 
       descr:   "x [cm]"
@@ -76,7 +76,7 @@ frame:			    # source module that will be executed
 
   - Title_4 : 
       type:    "title" 
-      default: "mirror"
+      default: "Mirror"
   - MirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
       type:    "switch" 
       descr:   "mirror at\nyz plane"

@@ -18,12 +18,16 @@ sample_reflectom:
       descr:   "parameter\nfile"  
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
-  - ReflFile:                 
+
+  - ReflFile:    
       type:    "file" 
       descr:   "reflectivity\nfile"  
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
 
+  - Title_Geom: 
+      type:    "title" 
+      default: "Geometry and options"
   - eMeasMod:                 # VtMeasMode  MeasMode_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "mode" 
@@ -148,7 +152,7 @@ sample_reflectom:
 
   - Title_OffSpec: 
       type:    "title" 
-      default: "Offspecular scattering"
+      default: "Offspecular and incoherent scattering"
   - bOffSpec:           
       type:    "switch" 
       descr:   "offspecular\nscattering" 
@@ -157,9 +161,6 @@ sample_reflectom:
       column:  0                     
       prefix:  "-o"   
 
-  - Title_IncScat: 
-      type:    "title" 
-      default: "Incoherent scattering"
   - bIncScat:               
       type:    "switch" 
       descr:   "incoherent\nscattering" 
@@ -184,6 +185,9 @@ sample_reflectom:
       column:  2                     
       prefix:  "-S"   
 
+  - Title_Det: 
+      type:    "title" 
+      default: "Detector Geometry"
   - DetDist :           
       type:    "float" 
       descr:   "detector\ndistance"
