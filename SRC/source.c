@@ -1060,7 +1060,7 @@ void SrcInit(int argc, char **argv)
             stSrc.eSrcType = (VtSrcType) atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
             break;
           case 'K':
-            stSrc.eSrcKind = (VtSrcKind) atoi(arg); /* 1: CWS; 2: SPSS; 3: LPSS */
+            stSrc.eSrcKind = (VtSrcKind) atoi(arg); /* SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS */
             break;
           case 'N':
             stSrc.pSrcName = arg;

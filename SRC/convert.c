@@ -773,9 +773,9 @@ void         DataFormat_ID2Txt(char* sText, const VtDataFormat eID)
 {
   switch (eID)
   {
-    case VT_EXPONENTIAL: strcpy(sText, "exponential"); break;
-    case VT_FLOAT      : strcpy(sText, "float"      ); break;
-    case VT_BINARY     : strcpy(sText, "binary"     ); break;
+    case VT_EXPONENTIAL: strcpy(sText, "exp"   ); break;
+    case VT_FLOAT      : strcpy(sText, "float" ); break;
+    case VT_BINARY     : strcpy(sText, "binary"); break;
     default  : strcpy(sText, "");
   }
 }
@@ -783,9 +783,9 @@ VtDataFormat DataFormat_Txt2ID(const char* sText)
 {
   VtDataFormat eID=VT_FLOAT;
 
-       if (strcmp(sText, "exponential")==0) eID=VT_EXPONENTIAL;
-  else if (strcmp(sText, "float"      )==0) eID=VT_FLOAT      ;
-  else if (strcmp(sText, "binary"     )==0) eID=VT_BINARY     ;
+       if (strcmp(sText, "exp"   )==0) eID=VT_EXPONENTIAL;
+  else if (strcmp(sText, "float" )==0) eID=VT_FLOAT      ;
+  else if (strcmp(sText, "binary")==0) eID=VT_BINARY     ;
   
   return eID;
 }
@@ -805,7 +805,9 @@ VtSeparator Separator_Txt2ID(const char* sText)
   VtSeparator eID=VT_BLANK;
 
        if (strcmp(sText, "space"    )==0) eID=VT_BLANK    ;
+  else if (strcmp(sText, "Space"    )==0) eID=VT_BLANK    ;
   else if (strcmp(sText, "tabulator")==0) eID=VT_TABULATOR;
+  else if (strcmp(sText, "Tabulator")==0) eID=VT_TABULATOR;
   
   return eID;
 }
@@ -867,8 +869,11 @@ VtWndAbs   WndAbs_Txt2ID(const char* sText)
   else if (strcmp(sText, "gadolinium"    )==0) eID=VT_WABS_GD   ;
   else if (strcmp(sText, "cadmium"       )==0) eID=VT_WABS_CD   ;
   else if (strcmp(sText, "bor10"         )==0) eID=VT_WABS_B10  ;
+  else if (strcmp(sText, "Bor10"         )==0) eID=VT_WABS_B10  ;
   else if (strcmp(sText, "europium"      )==0) eID=VT_WABS_EU   ;
+  else if (strcmp(sText, "Eu"            )==0) eID=VT_WABS_EU   ;
   else if (strcmp(sText, "silicon"       )==0) eID=VT_WABS_SI   ;
+  else if (strcmp(sText, "Silicon"       )==0) eID=VT_WABS_SI   ;
   else if (strcmp(sText, "ideal absorber")==0) eID=VT_WABS_IDEAL;
   
   return eID;
@@ -1044,14 +1049,14 @@ VtListPar   ListPar_Txt2ID(const char* sText)
 {
   VtListPar eID=VT_LIST_PASS_LF;
 
-       if (strcmp(sText, "Trajectories passing the guide end"     )==0) eID=VT_LIST_PASS   ;
-  else if (strcmp(sText, "Trajectories passing the guide end (LF)")==0) eID=VT_LIST_PASS_LF;
-  else if (strcmp(sText, "Only successful reflections"            )==0) eID=VT_LIST_REFL   ;
-  else if (strcmp(sText, "Only successful reflections (LF)"       )==0) eID=VT_LIST_REFL_LF;
-  else if (strcmp(sText, "Traj. with at least 1 reflection"       )==0) eID=VT_LIST_T1SR   ;
-  else if (strcmp(sText, "Traj. with at least 1 reflection (LF)"  )==0) eID=VT_LIST_T1SR_LF;
-  else if (strcmp(sText, "All trajectories"                       )==0) eID=VT_LIST_ALL    ;
-  else if (strcmp(sText, "All trajectories (LF)"                  )==0) eID=VT_LIST_ALL_LF ;
+       if (strcmp(sText, "Trajectories passing the guide end"     )==0) eID=VT_LIST_PASS;
+  else if (strcmp(sText, "Trajectories passing the guide end (LF)")==0 || strcmp(sText, "Trajectories passing the guide end (with linefeed)"                  )==0) eID=VT_LIST_PASS_LF;
+  else if (strcmp(sText, "Only successful reflections"            )==0) eID=VT_LIST_REFL;
+  else if (strcmp(sText, "Only successful reflections (LF)"       )==0 || strcmp(sText, "Only successful reflections (with linefeed)"                         )==0) eID=VT_LIST_REFL_LF;
+  else if (strcmp(sText, "Traj. with at least 1 reflection"       )==0 || strcmp(sText, "Trajectories with at least one successful reflection"                )==0) eID=VT_LIST_T1SR;
+  else if (strcmp(sText, "Traj. with at least 1 reflection (LF)"  )==0 || strcmp(sText, "Trajectories with at least one successful reflection (with linefeed)")==0) eID=VT_LIST_T1SR_LF;
+  else if (strcmp(sText, "All trajectories"                       )==0) eID=VT_LIST_ALL;
+  else if (strcmp(sText, "All trajectories (LF)"                  )==0 || strcmp(sText, "All trajectories (with linefeed)"                                    )==0) eID=VT_LIST_ALL_LF;
   
   return eID;
 }
@@ -1161,9 +1166,9 @@ VtPlotFilt  PlotFilt_Txt2ID(const char* sText)
 {
   VtPlotFilt eID=VT_PLOT_ALL;
 
-       if (strcmp(sText, "all"           )==0) eID=VT_PLOT_ALL ;
-  else if (strcmp(sText, "only scattered")==0) eID=VT_PLOT_SCAT;
-  else if (strcmp(sText, "only died"     )==0) eID=VT_PLOT_DIED;
+       if (strcmp(sText, "all"           )==0 || strcmp(sText, "All"           )==0) eID=VT_PLOT_ALL ;
+  else if (strcmp(sText, "only scattered")==0 || strcmp(sText, "Only scattered")==0) eID=VT_PLOT_SCAT;
+  else if (strcmp(sText, "only died"     )==0 || strcmp(sText, "Only died"     )==0) eID=VT_PLOT_DIED;
   
   return eID;
 }
@@ -1604,6 +1609,7 @@ VtMonNorm MonNorm_Txt2ID(const char* sText)
   VtMonNorm eID = NO_NORM;
 
        if (strcmp(sText, "bin size"      )==0) eID=NORM_BIN_SIZE;
+  else if (strcmp(sText, "yes"           )==0) eID=NORM_BIN_SIZE;
   else if (strcmp(sText, "reference file")==0) eID=NORM_REF_FILE;
   
   return eID;

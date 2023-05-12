@@ -8,6 +8,7 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 sample_reflectom:
+  - category:  "sample"
   - Name    :
       type:    "string"
       descr:   "name" 
@@ -26,22 +27,26 @@ sample_reflectom:
   - eMeasMod:                 # VtMeasMode  MeasMode_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "mode" 
-      tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)" 
-      default: ["sample", "reference"]   
+      tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)"
+      enum:    "VtMeasMode"
+      options: ["sample", "reference"]   
+      default:  "sample"
       column:  0                     
       prefix:  "-O"   
   - eRotAxis:                # VtRotAxis RotAxis_Txt2ID(const char* sText);
       type:    "combo" 
       descr:   "axis of\nrotation"
       tooltip: "rotation axis of the sample, Y or Z"
-      default: ["Y", "Z"]   
+      enum:    "VtRotAxis"
+      options: ["Y", "Z"]   
+      default:  "Y"
       column:  1                     
       prefix:  "-R"   
   - bTreatAl: 
       type:    "switch" 
       descr:   "treat neutrons\nnot reflected"
       tooltip: "YES: neutrons that are not reflected by the sample are treated \nNO : neutrons that are not reflected by the sample are removed (default)" 
-      default: [NO, YES]
+      default: false
       column:  2                     
       prefix:  "-A"     
 
@@ -61,7 +66,9 @@ sample_reflectom:
       type:    "combo" 
       descr:   "substrate\nmaterial"
       tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 
-      default: ["Silicon","B4C","Glass","Other"]
+      enum:    "VtMirrMat"
+      options: ["Other","Silicon","Glass","B4C"]
+      default:  "Silicon"
       column:  0                     
       prefix:  "-M"     
   - SubThick:              
@@ -145,8 +152,8 @@ sample_reflectom:
   - bOffSpec:           
       type:    "switch" 
       descr:   "offspecular\nscattering" 
-      tooltip: "Flag: offspecular scattering (NO YES)"
-      default: [NO, YES]
+      tooltip: "Flag: offspecular scattering is simulated (NO YES)"
+      default: false
       column:  0                     
       prefix:  "-o"   
 
@@ -156,8 +163,8 @@ sample_reflectom:
   - bIncScat:               
       type:    "switch" 
       descr:   "incoherent\nscattering" 
-      tooltip: "Flag: incoherent scattering  (NO YES)"
-      default: [NO, YES]
+      tooltip: "Flag: incoherent scattering is simulated (NO YES)"
+      default: false
       column:  0                     
       prefix:  "-B"   
   - MuIncSca:        
@@ -209,7 +216,9 @@ sample_reflectom:
       type:    "combo" 
       descr:   "frame\ngeneration"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': puts output direction along the reflected beam"
-      default: ["standard frame generation", "user defined frame"]
+      enum:    "VtFrameGen"
+      options: ["user defined frame", "standard frame generation"]
+      default:  "standard frame generation"
       column:  0                     
       prefix:  "-g"     
 

@@ -8,8 +8,9 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 guide_parallel:
+  - category:  "guide"
   - Name: 
-      type:    "string" 
+      type:    "string"
       descr:   "name" 
       column:  0                     
   - Title_Shape : 
@@ -19,14 +20,18 @@ guide_parallel:
       type:    "combo" 
       descr:   "horizontal\nshape"
       tooltip: "shape of the guide in horizontal direction" 
-      default: ["constant","linear","curved","parabolic","elliptic","from file","curved+linear"]
+      enum:    "VtGdeShape"
+      options: ["constant","linear","curved","parabolic","elliptic","from file","curved+linear"]
+      default:  "constant"
       column:  0                     
       prefix:  "-Y"  
   - eShapeZ :                 		# -Z    VtGdeShape  GdeShape_Txt2ID(const char* sText)       
       type:    "combo" 
       descr:   "vertical\nshape"
       tooltip: "shape of the guide in vertical direction"
-      default: ["constant","linear","parabolic","elliptic","from file"]
+      enum:    "VtGdeShape"
+      options: ["constant","linear","parabolic","elliptic","from file"]
+      default:  "constant"
       column:  1                     
       prefix:  "-Z"  
   - sShapeFN:                 		# -S "guide_shape.dat" [-]   name of the file containing the sizes of the guide, output or input file
@@ -198,7 +203,7 @@ guide_parallel:
       type:    "switch" 
       descr:   "abutment\nloss" 
       tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed" 
-      default: [NO,YES]
+      default: false
       column:  0                     
       prefix:  "-a" 
   - AbutLen :           		    # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 
@@ -243,14 +248,18 @@ guide_parallel:
       type:    "combo" 
       descr:   "format" 
       tooltip: "Trajectories to be written out, in each case with or without linefeed\n (see help file for details)" 
-      default: [ "Trajectories passing the guide end (LF)", "Trajectories passing the guide end", "Only successful reflections (LF)", "Only successful reflections", "Traj. with at least 1 reflection (LF)", "Traj. with at least 1 reflection", "All trajectories (LF)", "All trajectories"]
+      enum:    "VtListPar"
+      options: ["Trajectories passing the guide end", "Trajectories passing the guide end (LF)", "Only successful reflections", "Only successful reflections (LF)", "Traj. with at least 1 reflection", "Traj. with at least 1 reflection (LF)", "All trajectories", "All trajectories (LF)"]
+      default:  "Trajectories passing the guide end (LF)"
       column:  0                     
       prefix:  "-O"
   - eLstGeom:               		   # -v    VtListVbs ListVbs_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "geometry\nlist"
       tooltip: "additional trajectories are written at the entry and the exit of the guide ('entry & exit') or each guide piece ('yes')."
-      default: ["no", "yes", "entry & exit"]
+      enum:    "VtListVbs"
+      options: ["no", "yes", "entry & exit"]
+      default:  "no"
       column:  1                     
       prefix:  "-v"  
   - nLstMin :              		   # -e    0     [-]   Minimum number of reflections within the guide for reflection list output 
@@ -308,31 +317,39 @@ guide_parallel:
       type:    "combo" 
       descr:   "filter" 
       tooltip: "Choose which trajectories will be binned. This option is also affected by the format option above!!!\nall events;\nonly scattered neutrons;\nonly died neutrons."
-      default: ["all", "only scattered", "only died"]
+      enum:    "VtPlotFilt"
+      options: ["all", "only scattered", "only died"]
+      default:  "all"
       column:  0                     
       prefix:  "-B"  
   - ePlotX  :               		  # -t    VtPlotPar PlotPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "X values"
       tooltip: "Parameter for the x-axis of the reflection plot"
-      default: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
-               "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
+      enum:    "VtPlotPar"
+      options: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
+                "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
+      default:  "Position X"
       column:  0                     
       prefix:  "-t"  
   - ePlotY  :               		  # -T    VtPlotPar PlotPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "Y values"
       tooltip: "Parameter for the y-axis of the reflection plot"
-      default: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
-               "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
+      enum:    "VtPlotPar"
+      options: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
+                "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
+      default:  "m"
       column:  1                     
       prefix:  "-T"  
   - ePlotPrb:              		  # -V    VtPlotPar PlotPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "Weight"
       tooltip: "Parameter for the weighting function f(x,y) for reflection plot"
-      default: ["none","Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
+      enum:    "VtPlotPar"
+      options: ["none","Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
                "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
+      default:  "Probability"
       column:  2                     
       prefix:  "-V"  
   - nPlotX  :               		  # -k  100     [-]   number of X bins in reflection plot

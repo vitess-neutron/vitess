@@ -8,11 +8,14 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 mon2_pos:                 # source module that will be executed          
+  - category:  "monitor"
   - sName   :                        
       type:    "string" 
       descr:   "name" 
+
   - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
       type:    "file" 
+      plottable: true
       descr:   "monitor file"  
       tooltip: "monitor output file containing intensity as a function of y- and z-position"
       default: "sample.pos"
@@ -40,6 +43,7 @@ mon2_pos:                 # source module that will be executed
       min:     1 
       column:  2                     
       prefix:  "-y"  
+
   - HiteMin :               #     -h  "min. z-value\n[cm]"        "bottom position of the monitored area"
       type:   "float" 
       descr:   "min. z-value\n[cm]" 
@@ -62,28 +66,32 @@ mon2_pos:                 # source module that will be executed
       min:     1
       column:  2                     
       prefix:  "-z"  
+
   - bProbWt :              #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "Display  : YES: Beam intensity   NO: number of trajectories"
       default: "YES"
-      default: [YES,NO]
+      default: true
       column:  0                     
       prefix:  "-p"  
   - bExclude:              #     -e  "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      default: [NO,YES]
+      default: false
       column:  1                     
       prefix:  "-e"  
   - eFormat :              #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "file format" 
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
-      default: ["matrix","xyz","matrix compact","xyz compact", ]
+      enum:     "VtFormat2D"
+      options: ["matrix","xyz","matrix compact","xyz compact"]
+      default:  "matrix"
       column:  2                     
       prefix:  "-F"  
+
   - FlmbdMin:              #     -l  "filter lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "filter lambda\nmin [Ang]"

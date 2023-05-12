@@ -23,7 +23,7 @@ writeout: 		     # source module that will be executed
       type:    "switch" 
       descr:   "Active?" 
       tooltip: "YES: output file is written   NO: output file is not written"
-      default: [YES,NO]
+      default: true
       column:  0                     
       prefix:  "-a"  
 
@@ -31,7 +31,7 @@ writeout: 		     # source module that will be executed
       type:    "switch" 
       descr:   "Header" 
       tooltip: "YES: write header to ASCII file beginning each line with '#'    NO: write only data, no header"
-      default: [YES,NO]
+      default: true
       column:  1                     
       prefix:  "-h"  
 
@@ -39,7 +39,9 @@ writeout: 		     # source module that will be executed
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
-      default: ["VITESS", "McStas", "MCPL", "MCNP6"]   
+      enum:     "VtPrgFormat"
+      options: ["VITESS", "McStas", "MCPL", "MCNP6", "SSW"]
+      default:  "VITESS"
       column:  0                     
       prefix:  "-f"
 
@@ -47,7 +49,9 @@ writeout: 		     # source module that will be executed
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exponential': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
-      default: ["float", "exponential", "binary"]   
+      enum:     "VtDataFormat"
+      default: ["exp", "float", "binary"]   
+      default:  "float"
       column:  1                     
       prefix:  "-F"   
 
@@ -55,6 +59,7 @@ writeout: 		     # source module that will be executed
       type:    "combo" 
       descr:   "separator"
       tooltip: "separator between columns in the ASCII output file"
+      enum:     "VtSeparator"
       default: ["space", "tabulator"]   
       column:  2                     
       prefix:  "-S" 

@@ -14,7 +14,7 @@ spacewindow:
   - Distance:                 # -l    0.0  [cm]  Distance from origin to the window (along the x-axis) 
       type:    "float" 
       descr:   "distance to\nwindow [cm]" 
-      tooltip: "distance from origin to window (along the x-axis)"
+      tooltip: "distance from origin to the center of the window (along the x-axis)"
       default: 0.0
       min:     0.0
       column:  0                     
@@ -93,8 +93,8 @@ spacewindow:
   - bPFrame:                  # -F   NO    [-]   Flag: use previous frame        TRUE: yes, FALSE no
       type:    "switch" 
       descr:   "used previous\nframe"  
-      tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window plane (default)"
-      default: [NO, YES]
+      tooltip: "YES: the co-ordinate system of the previous module is used\nNO : the co-ordinate system is shifted to the window exit (default)"
+      default: false
       column:  0                     
       prefix:  "-F"   
 

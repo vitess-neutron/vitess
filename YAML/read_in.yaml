@@ -8,21 +8,27 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 read_in:   		     # source module that will be executed
+  - category:  "source"
   - Name    : 
       type:    "string"
       descr:   "name" 
+
   - ePrgFmt:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
-      default: ["VITESS", "McStas", "MCPL", "MCNP6"]   
+      enum:     "VtPrgFormat"
+      options: ["VITESS", "McStas", "MCPL", "MCNP6", "SSW"]
+      default:  "VITESS"
       column:  0                     
       prefix:  "-f"   
   - eDatFmt:                 # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exp': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
-      default: ["float", "exponential", "binary"]   
+      enum:     "VtDataFormat"
+      default: ["exp", "float", "binary"]   
+      default:  "float"
       column:  1                     
       prefix:  "-F"   
   - File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
@@ -108,7 +114,9 @@ read_in:   		     # source module that will be executed
       type:    "combo" 
       descr:   "raytracing mode" 
       tooltip: "no tracing\nwrite a files for each traj. of interest\nsimulation only with traj. of interest"
-      default: ["no tracing", "write trace files", "only trace trajectories"]   
+      enum:    "VtTrace"
+      options: ["no tracing", "write trace files", "only trace trajectories"]   
+      default:  "no tracing"
       column:  0                     
       prefix:  "-t"   
 

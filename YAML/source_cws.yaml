@@ -8,31 +8,42 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 source:				       # source module that will be executed
+  - category:  "source"
   - SimName : 
       descr:   "simulation\nname"
       type:    "string"
       default: "First Simulation" 
       column:  0                       
   - eKind   :                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)      SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    "combo"                 # This shall not be selected, but defined by the chosen module   
+      type:    "combo"                 # This shall not be selected, but defined by the chosen module
+      hidden:  true
       descr:   "source type"
+      enum:    "VtSrcKind"
+      options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
       default: "continuous source" 
       prefix:  "-K"     
 
   - titel_0 :                       
       type:    "title" 
       default: "Source, moderator and beamline parameters"
-  - Moderator_cws:
+  - ModData:                     # opens "moderator_cws.yaml"
       type:    "window"
-      descr:   "moderator"
-      tooltip: "moderator description parameter"   
-#     default: "moderator_cws.yaml"
+      descr:   "moderator data"
+      tooltip: "parameters describing the moderator geometry and characteristics"
+      filename: "moderator_cws.yaml"
+  - ModFile :                          # -r         [-]   name of the file containing the IDs for tracing
+      type:    "file"
+      descr:   "moderator file"
+      tooltip: "name of the file containing the moderator parameters\nThis old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters.\nThey will be saved in the instrument file (in yaml format)"
+      prefix:  "-a"
 
   - SrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "source\nname" 
-      default: ["FRM2","ILL","HBS","ESS","CSNS","SNS","ISIS","IPNS"] 
       tooltip: "name of the source"
+      enum:    "VtSrcName"
+      options: ["FRM2","ILL"]
+      default:  "FRM2"
       column:  0                     
       prefix:  "-N"     
   - Power   :                          # -L   2.0  [MW]   average source power
@@ -104,7 +115,9 @@ source:				       # source module that will be executed
       type:    "combo" 
       descr:   "direction\ndefined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
-      default: ["by real window", "by virtual window", "by divergence"] 
+      enum:    "VtDirect"
+      options: ["by divergence", "by real window", "by virtual window"] 
+      default:  "by real window"
       column:  0                     
       prefix:  "-d"     
 
@@ -231,7 +244,9 @@ source:				       # source module that will be executed
       type:    "combo" 
       descr:   "raytracing mode"
       tooltip: "write trace files: writes a file for each trajectries of interest\nonly trace trajectories: simulation only started for trajectories of interest"
-      default: ["no tracing", "write trace files", "only trace trajectories"] 
+      enum:    "VtTrace"
+      options: ["no tracing", "write trace files", "only trace trajectories"]   
+      default:  "no tracing"
       column:  0                     
       prefix:  "-k"     
   - TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing

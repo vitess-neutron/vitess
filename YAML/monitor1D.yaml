@@ -9,6 +9,7 @@
 # prefix: prefix for parameter in pipe
 
 monitor1D:                    # source module that will be executed 
+  - category:  "monitor"
   - Name    :                 
       type:    "string" 
       default: "name"
@@ -16,6 +17,7 @@ monitor1D:                    # source module that will be executed
 
   - sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
       type:    "file" 
+      plottable: true
       descr:   "monitor file" 
       default: "monitor1D.dat" 
       tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
@@ -24,10 +26,10 @@ monitor1D:                    # source module that will be executed
       type:    "combo" 
       descr:   "1st parameter\non x-axis"
       tooltip: "x-axis parameter for the first 1D monitor file"
-      default: ["none","pos_x","pos_y","pos_z","div_y","div_z",
-                "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta",
-                "col_vert","col_hor","color"]
+      enum:    "VtMonPar"
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
+                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
+      default:  "none"
       column:  0                     
       prefix:  "-X"   
   - MinParA :                 # -w          minimal x value for the first 1D monitor file
@@ -58,14 +60,14 @@ monitor1D:                    # source module that will be executed
       type:    "switch" 
       descr:   "probability\nweight" 
       tooltip: "YES: Beam intensity  NO: number of trajectories"
-      default: [YES,NO]
+      default: true
       column:  0                     
       prefix:  "-p"  
   - bExclude:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
       type:    "switch" 
       descr:   "exclusive\ncounts" 
       tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      default: [NO,YES]
+      default: false
       column:  1                     
       prefix:  "-e"  
  
@@ -89,10 +91,10 @@ monitor1D:                    # source module that will be executed
       type:    "combo" 
       descr:   "filter\nparameter 1"  
       tooltip: "filter parameter 1"
-      default: ["none","pos_x","pos_y","pos_z","div_y","div_z",
-                "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta",
-                "col_vert","col_hor","color"]
+      enum:    "VtMonPar"
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
+                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
+      default:  "none"
       column:  0                     
       prefix:  "-I"  
   - MinFilt1:                # -u        minimum value of filter parameter 1 to be taken into account
@@ -111,7 +113,9 @@ monitor1D:                    # source module that will be executed
       type:    "combo" 
       descr:   "filter\ncombination" 
       tooltip: "filter 1 and 2 combined with AND or OR"
-      default: ["AND", "OR"]
+      enum:    "VtFiltComb"
+      options: ["AND", "OR"]
+      default:  "AND"
       column:  0                     
       prefix:  "-C"  
 
@@ -119,10 +123,10 @@ monitor1D:                    # source module that will be executed
       type:    "combo" 
       descr:   "filter\nparameter 2"
       tooltip: "filter parameter 2"
-      default: ["none","pos_x","pos_y","pos_z","div_y","div_z",
-                "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta",
-                "col_vert","col_hor","color"]
+      enum:    "VtMonPar"
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
+                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
+      default:  "none"
       column:  0                    
       prefix:  "-J"  
   - MinFilt2:                 # -v        minimum value of parameter 2 to be taken into account
@@ -145,7 +149,7 @@ monitor1D:                    # source module that will be executed
       type:    "switch" 
       descr:   "Polarisation\nanalysis" 
       tooltip: "YES: polarisation monitored   NO: intensity monitored"
-      default: [NO,YES]
+      default: false
       column:  0                     
       prefix:  "-P"  
 
