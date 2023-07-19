@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -8,12 +8,10 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 slit:
-  - Name    : 
-      type:    "string"
-      descr:   "name" 
+  - category:  "spacewindow"
   - Distance:                
       type:    "float" 
-      descr:   "distance\nto slit [cm]" 
+      descr:   "distance to slit [cm]" 
       tooltip: "distance from origin to slit (along the x-axis)"
       default: 0.0
       min:     0.0

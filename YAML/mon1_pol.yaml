@@ -1,21 +1,19 @@
 #input fields so far:
-#type:    title, file, string, float, int, combo(for selection list),switch (Set: Yes)
+#type:    title, file, string, float, int, switch (yes, no), combo(for selection list),
 #descr:   description of the parameter lable
 #tooltip: detailed description shown when mouse cursor remains over label 
 #default: Value for title, values for selection list, optional default values
-#index:   indexlist for comboBox, if related values not in default order (0,1,2..)
 #min:     minimum value optional
 #max:     maximum value optional
 #column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 #prefix:  prefix for parameter in pipe
 
-monitor1_pol:            # source module that will be executed
-  - sName   :
-      type:    "string"
-      descr:   "name" 
+mon1_pol: 
+  - category:  "monitor"
  
   - sMonFile:             #     -O  "monitor file"              "Monitor output file containing polarisation as a function of the chosen parameter""
       type:    "file"
+      plottable: true
       descr:   "monitor file" 
       tooltip: "monitor output file containing polarisation as a function of the chosen parameter"
       default: "pol.dat"
@@ -26,7 +24,7 @@ monitor1_pol:            # source module that will be executed
       default: "Parameter and range"
   - ePar    :             #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
       type:    "combo" 
-      descr:   "variable\nparameter" 
+      descr:   "variable parameter" 
       tooltip: "ID for the parameter, as a function of which the intensity is shown" 
       enum:    "VtMon1Par"
       options: ["lambda","time","div_y","div_z","pos_y","pos_z"]
@@ -41,23 +39,23 @@ monitor1_pol:            # source module that will be executed
       column:  1
       prefix:  "-C"   
 
-  - MinY    :             #     -m  "min. y-value\n[cm]"        "lower bound value of the monitored range"
+  - MinY    :             #     -m  "min. y-value [cm]"        "lower bound value of the monitored range"
       type:    "float" 
-      descr:   "min. y-value\n[cm]" 
+      descr:   "min. y-value [cm]" 
       tooltip: "lower bound value of the monitored range" 
       default: 0.0
       column:  0
       prefix:  "-m"  
-  - MaxY    :             #     -M  "max. y-value\n[cm]"        "upper bound value of the monitored range"
+  - MaxY    :             #     -M  "max. y-value [cm]"        "upper bound value of the monitored range"
       type:    "float" 
-      descr:   "max. y-value\n[cm]" 
+      descr:   "max. y-value [cm]" 
       tooltip: "upper bound value of the monitored range" 
       column:  1
       default: 10.0
       prefix:  "-M"   
-  - nBins   :             # >=1 -n  "number\nof bins"           "number of monitor channels"
+  - nBins   :             # >=1 -n  "number of bins"           "number of monitor channels"
       type:    "int" 
-      descr:   "number\nof bins" 
+      descr:   "number of bins" 
       tooltip: "number of monitor channels"
       default: 100
       min:     1
@@ -67,23 +65,23 @@ monitor1_pol:            # source module that will be executed
   - Title_Dir : 
       type:    "title" 
       default: "Analysis direction"
-  - PolX    :             #     -a  "directon\nx"               "x-component of the quantization direction"
+  - PolX    :             #     -a  "directon x"               "x-component of the quantization direction"
       type:    "float" 
-      descr:   "directon\nx"
+      descr:   "directon x"
       tooltip: "x-component of the quantization direction" 
       default: 1.0
       column:  0
       prefix:  "-a"
-  - PolY    :             #     -b  "directon\ny"               "y-component of the quantization direction" 
+  - PolY    :             #     -b  "directon y"               "y-component of the quantization direction" 
       type:    "float" 
-      descr:   "directon\ny"  
+      descr:   "directon y"  
       tooltip: "y-component of the quantization direction"  
       default: 0.0
       column:  1
       prefix:  "-b"
-  - PolZ    :             #     -c  "directon\nz"               "z-component of the quantization direction"
+  - PolZ    :             #     -c  "directon z"               "z-component of the quantization direction"
       type:    "float" 
-      descr:   "directon\nz"  
+      descr:   "directon z"  
       tooltip: "z-component of the quantization direction" 
       default: 0.0 
       column:  2
@@ -92,16 +90,17 @@ monitor1_pol:            # source module that will be executed
   - Title_Opt: 
       type:    "title" 
       default: "Options"
-  - bProbWt :             #     -p  "probability\nweight"       "YES: Probability weight   NO: number of trajectories
+  - bProbWt :             #     -p  "probability weight"       "YES: Probability weight   NO: number of trajectories
       type:    "switch" 
-      descr:   "probability\nweight" 
-      tooltip: "Set:        Probability weight\nNot set:  number of trajectories" 
-      default: "YES"
+      descr:   "probability weight" 
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored" 
+      default:  yes
       column:  0
       prefix:  "-p"   
-  - bExclude:             #     -e  "exclusive\ncounts"         "YES: only neutrons meeting the monitor conditions are written   NO: all are written
+  - bExclude:             #     -e  "exclusive counts"         "YES: only neutrons meeting the monitor conditions are written   NO: all are written
       type:    "switch" 
-      descr:   "exclusive\ncounts" 
-      tooltip: "YES: only neutrons meeting the monitor conditions are written\NO:  all are written"
-      column:  1
+      descr:   "exclusive counts" 
+      tooltip: "yes: only trajectories meeting the monitor conditions are written\no : all are written"
+      default:  no
+      column:   1
       prefix:  "-e"

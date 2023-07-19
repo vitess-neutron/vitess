@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -10,10 +10,6 @@
 
 monitor1D:                    # source module that will be executed 
   - category:  "monitor"
-  - Name    :                 
-      type:    "string" 
-      default: "name"
-      column:  0                     
 
   - sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
       type:    "file" 
@@ -27,7 +23,7 @@ monitor1D:                    # source module that will be executed
       default: "Parameter and range"
   - eParA  :                 # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "1st parameter\non x-axis"
+      descr:   "1st parameter on x-axis"
       tooltip: "x-axis parameter for the first 1D monitor file"
       enum:    "VtMonPar"
       options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
@@ -37,21 +33,21 @@ monitor1D:                    # source module that will be executed
       prefix:  "-X"   
   - MinParA :                 # -w          minimal x value for the first 1D monitor file
       type:    "float" 
-      descr:   "min. x value\n1st par." 
+      descr:   "min. x value 1st par." 
       tooltip: "minimal x value for the first 1D monitor file"
       default: 0.0
       column:  0                     
       prefix:  "-w"  
   - MaxParA :                 # -W  10.0   maximal x value for the first 1D monitor file 
       type:    "float" 
-      descr:   "max. x value\n1st par."
+      descr:   "max. x value 1st par."
       tooltip: "maximal x value for the first 1D monitor file"
       default: 10.0
       column:  0                     
       prefix:  "-W"  
   - nBinParA:                 # -x   100    number of x channels for the first 1D monitor file 
       type:    "int" 
-      descr:   "number of bins\n1st par." 
+      descr:   "number of bins 1st par." 
       tooltip: "number of x channels for the first 1D monitor file" 
       default: 100
       min:     1
@@ -63,16 +59,16 @@ monitor1D:                    # source module that will be executed
       default: "Options"
   - bProbWt :                 # -p  YES   Display  : YES: Beam intensity   NO: number of trajectories
       type:    "switch" 
-      descr:   "probability\nweight" 
-      tooltip: "YES: Beam intensity  NO: number of trajectories"
-      default: true
+      descr:   "probability weight" 
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
+      default:  yes
       column:  0                     
       prefix:  "-p"  
   - bExclude:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
       type:    "switch" 
-      descr:   "exclusive\ncounts" 
-      tooltip: "YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      default: false
+      descr:   "exclusive counts" 
+      tooltip: "yes: only trajectories meeting the monitor conditions are written \nno : all trajectories are written"
+      default:  no
       column:  1                     
       prefix:  "-e"  
  
@@ -81,20 +77,20 @@ monitor1D:                    # source module that will be executed
       default: "Filter selection"
   - LmbdMin :                 # -l       minimum wavelength to be taken into account [Ang]
       type:    "float" 
-      descr:   "lambda\nmin [Ang]"  
+      descr:   "lambda min [Ang]"  
       tooltip: "minimum wavelength to be taken into account [Ang]"
       column:  1                     
       prefix:  "-l"   
   - LmbdMax :                 # -L       maximum wavelength to be taken into account [Ang]
       type:    "float" 
-      descr:   "lambda\nmax [A]" 
+      descr:   "lambda max [A]" 
       tooltip: "maximum wavelength to be taken into account [Ang]" 
       column:   2                     
       prefix:  "-L"  
 
   - eFltPar1 :                 # -I VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "filter\nparameter 1"  
+      descr:   "filter parameter 1"  
       tooltip: "filter parameter 1"
       enum:    "VtMonPar"
       options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
@@ -104,19 +100,19 @@ monitor1D:                    # source module that will be executed
       prefix:  "-I"  
   - MinFilt1:                # -u        minimum value of filter parameter 1 to be taken into account
       type:    "float" 
-      descr:   "filter 1\nmin value" 
+      descr:   "filter 1 min value" 
       tooltip: "minimum value of filter parameter 1 to be taken into account"
       column:  1                     
       prefix:  "-u"  
   - MaxFilt1:                 # -U       maximum value of filter parameter 1 to be taken into account 
       type:    "float" 
-      descr:   "filter 1\nmax value" 
+      descr:   "filter 1 max value" 
       column:  2                     
       prefix:  "-U"  
 
   - eFltComb:                 # -C  VtFiltComb FiltComb_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "filter\ncombination" 
+      descr:   "filter combination" 
       tooltip: "filter 1 and 2 combined with AND or OR"
       enum:    "VtFiltComb"
       options: ["AND", "OR"]
@@ -126,7 +122,7 @@ monitor1D:                    # source module that will be executed
 
   - eFltPar2 :                 # -J  VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "filter\nparameter 2"
+      descr:   "filter parameter 2"
       tooltip: "filter parameter 2"
       enum:    "VtMonPar"
       options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
@@ -136,14 +132,14 @@ monitor1D:                    # source module that will be executed
       prefix:  "-J"  
   - MinFilt2:                 # -v        minimum value of parameter 2 to be taken into account
       type:    "float" 
-      descr:   "filter 2\nmin value"  
+      descr:   "filter 2 min value"  
       tooltip: "minimum value of parameter 2 to be taken into account" 
       column:  1                     
       prefix:  "-v"  
   - Maxfilt2:                 # -V        maximum value of parameter 2 to be taken into account
       type:    "float" 
       tooltip: "maximum value of parameter 2 to be taken into account"
-      descr:   "filter 2\nmax value"
+      descr:   "filter 2 max value"
       column:  2                     
       prefix:  "-V"  
 
@@ -152,27 +148,27 @@ monitor1D:                    # source module that will be executed
       default: "Polarisation analysis"
   - bPolAna :                 # -P  NO    YES: polarisation monitored   NO: intensity monitored
       type:    "switch" 
-      descr:   "Polarisation\nanalysis" 
-      tooltip: "YES: polarisation monitored   NO: intensity monitored"
-      default: false
+      descr:   "Polarisation analysis" 
+      tooltip: "yes: polarisation is monitored \nno : intensity is monitored"
+      default:  no
       column:  0                     
       prefix:  "-P"  
 
   - PolDirX :                 # -r        x-component of the vector defining the quantization direction
       type:    "float" 
-      descr:   "direction\nX" 
+      descr:   "direction X" 
       tooltip: "x-component of the vector defining the quantization direction"
       column:  0                     
       prefix:  "-r"  
   - PolDirY :                 # -s        y-component of the vector defining the quantization direction 
       type:    "float" 
-      descr:   "direction\nY" 
+      descr:   "direction Y" 
       tooltip: "y-component of the vector defining the quantization direction"
       column:  1                     
       prefix:  "-s"  
   - PolDirZ :                 # -t        z-component of the vector defining the quantization direction  
       type:    "float" 
-      descr:   "direction\nZ" 
+      descr:   "direction Z" 
       tooltip: "z-component of the vector defining the quantization direction"
       column:  2                     
       prefix:  "-t"  

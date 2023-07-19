@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -8,25 +8,26 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 sample_environment:
-  - Name    :
-      type:    "string"    #   Type:title, file, string, float, int, combo, 
-      descr:   "name"
   - ParFile :                  # -F         [-]    parameter file name 
       type:    "file"    
+      plottable: false
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample environment\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-F"     
   - StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
       type:    "file"    
-      descr:   "structure\nfactor file"
+      plottable: false
+      descr:   "structure factor file"
       tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
       prefix:  "-s"     
   - eDirIO:                  # -r    VtDir DirInOut_Txt2ID(const char* sText)
       type:    "combo"    
       descr:   "direction"
       tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"
-      default: ["in","out"]
-      column:  0       
+      enum:    "VtDir"
+      options:["in","out"]
+      default: "in"
+      column:   0       
       prefix:  "-r"     
   - nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
       type:    "int"    
@@ -87,7 +88,7 @@ sample_environment:
       default: "Scattering"
   - MuScaInc:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
       type:    "float"    
-      descr:   "incoherent scat-\ntering [1/cm]"
+      descr:   "incoherent scattering [1/cm]"
       tooltip: "Macroscopic incoherent scattering cross section of the sample environment material.\nIf a non-zero value is given, incoherent scattering is applied."
       default: 20.0
       min:     0.0
@@ -95,7 +96,7 @@ sample_environment:
       prefix:  "-i"     
   - MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
       type:    "float"    
-      descr:   "total scat-\ntering [1/cm]"
+      descr:   "total scattering [1/cm]"
       tooltip: "Macroscopic total scattering cross section of the sample environment material (used for attenuation)"
       default: 20.0
       min:     0.0
@@ -103,7 +104,7 @@ sample_environment:
       prefix:  "-T"     
   - MuAbs   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
       type:    "float"    
-      descr:   "absorption\n[1/cm]"
+      descr:   "absorption [1/cm]"
       tooltip: "Macroscopic absorption cross section of the sample environment material  (used for attenuation)"
       default: 20.0
       min:     0.0
@@ -111,7 +112,7 @@ sample_environment:
       prefix:  "-m"     
   - UCV     :                  # file 50.0 [Ang^3] unit cell volume of the sample environment material
       type:    "float"    
-      descr:   "unit cell\nvolume [A^3]"
+      descr:   "unit cell volume [A^3]"
       tooltip: "Unit cell volume of the sample environment material"
       default: 20.0
       min:     0.0001

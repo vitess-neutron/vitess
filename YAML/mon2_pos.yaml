@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES ), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -7,11 +7,9 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
-mon2_pos:                 # source module that will be executed          
+
+mon2_pos:        
   - category:  "monitor"
-  - sName   :                        
-      type:    "string" 
-      descr:   "name" 
 
   - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
       type:    "file" 
@@ -24,46 +22,46 @@ mon2_pos:                 # source module that will be executed
   - Title_Par: 
       type:    "title" 
       default: "Ranges"
-  - WidthMin:              #     -w  "min. y-value\n[cm]"        "left edge position of the monitored area"
+  - WidthMin:              #     -w  "min. y-value [cm]"        "left edge position of the monitored area"
       type:    "float" 
-      descr:   "min. y-value\n[cm]"
+      descr:   "min. y-value [cm]"
       tooltip: "left edge position of the monitored area"
       default: -5.0
       column:  0                     
       prefix:  "-w"  
-  - WidthMax:              #     -W  "max. y-value\n[cm]"        "right edge position of the monitored area"
+  - WidthMax:              #     -W  "max. y-value [cm]"        "right edge position of the monitored area"
       type:    "float" 
-      descr:   "max. y-value\n[cm]" 
+      descr:   "max. y-value [cm]" 
       tooltip: "right edge position of the monitored area"
       default: 5.0
       column:  1                     
       prefix:  "-W"  
-  - nBinsY  :              # >=1 -y  "number\nof y-bins"         "number of monitor channels in horizontal direction"
+  - nBinsY  :              # >=1 -y  "number of y-bins"         "number of monitor channels in horizontal direction"
       type:   "int" 
-      descr:   "number\nof y-bins"
+      descr:   "number of y-bins"
       tooltip: "number of monitor channels in horizontal direction"
       default: 50 
       min:     1 
       column:  2                     
       prefix:  "-y"  
 
-  - HiteMin :               #     -h  "min. z-value\n[cm]"        "bottom position of the monitored area"
+  - HiteMin :               #     -h  "min. z-value [cm]"        "bottom position of the monitored area"
       type:   "float" 
-      descr:   "min. z-value\n[cm]" 
+      descr:   "min. z-value [cm]" 
       tooltip: "bottom position of the monitored area"
       default: -5.0 
       column:  0                     
       prefix:  "-h"  
-  - HiteMax :               #     -H  "max. z-value\n[cm]"        "top position of the monitored area"
+  - HiteMax :               #     -H  "max. z-value [cm]"        "top position of the monitored area"
       type:    "float" 
-      descr:   "max. z-value\n[cm]"  
+      descr:   "max. z-value [cm]"  
       tooltip: "top position of the monitored area"
       default: 5.0  
       column:  1                     
       prefix:  "-H"  
-  - nBinsZ  :              # >=1 -z  "number\nof z-bins"         "number of monitor channels in vertical direction"
+  - nBinsZ  :              # >=1 -z  "number of z-bins"         "number of monitor channels in vertical direction"
       type:    "int" 
-      descr:   "number\nof z-bins"  
+      descr:   "number of z-bins"  
       tooltip: "number of monitor channels in vertical direction"
       default: 50 
       min:     1
@@ -73,19 +71,19 @@ mon2_pos:                 # source module that will be executed
   - Title_Opt: 
       type:    "title" 
       default: "Options"
-  - bProbWt :              #     -p  "probability\nweight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+  - bProbWt :              #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
-      descr:   "probability\nweight" 
-      tooltip: "Display  : YES: Beam intensity   NO: number of trajectories"
+      descr:   "probability weight" 
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
       default: "YES"
       default: true
       column:  0                     
       prefix:  "-p"  
-  - bExclude:              #     -e  "exclusive\ncounts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+  - bExclude:              #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
       type:    "switch" 
-      descr:   "exclusive\ncounts" 
-      tooltip: "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      default: false
+      descr:   "exclusive counts" 
+      tooltip: "yes: only trajctories meeting the monitor conditions are written \nno : all trajctories are written"
+      default:  no
       column:  1                     
       prefix:  "-e"  
   - eFormat :              #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
@@ -101,15 +99,15 @@ mon2_pos:                 # source module that will be executed
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
-  - FlmbdMin:              #     -l  "filter lambda\nmin [Ang]"  "minimal wavelength to be taken into account"
+  - FlmbdMin:              #     -l  "filter lambda min [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
-      descr:   "filter lambda\nmin [Ang]"
+      descr:   "filter lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
       column:  0                     
       prefix:  "-l"  
-  - FlmbdMax:              #     -L  "filter lambda\nmax [Ang]"  "maximal wavelength to be taken into account"
+  - FlmbdMax:              #     -L  "filter lambda max [Ang]"  "maximal wavelength to be taken into account"
       type:    "float" 
-      descr:   "filter lambda\nmax [Ang]"
+      descr:   "filter lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"
       column:  1                     
       prefix:  "-L"  

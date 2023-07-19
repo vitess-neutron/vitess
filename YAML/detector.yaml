@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -8,10 +8,6 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 detector:
-  - Name    : 
-      type:    "string"
-      descr:   "name" 
-
   - Title_bas: 
       type:    "title"
       default: "Basic detector properties" 
@@ -54,14 +50,14 @@ detector:
   - Title_flt: 
       type:    "title"
       default: "Filter" 
-  - nMinCol :             		   
+  - nMinCol :
       type:    "int" 
       descr:   "min color"
       tooltip: "Minimal color necessary for the trajectory to be treated (-1 means all)"  
       min:     -1
       column:  0                     
       prefix:  "-q" 
-  - nMaxCol :             	
+  - nMaxCol : 
       type:    "int" 
       descr:   "max color"
       tooltip: "Maximal color necessary for the trajectory to be treated (-1 means all)"  
@@ -78,7 +74,7 @@ detector:
 
   - bKeepCol:           
       type:    "switch" 
-      descr:   "keep\nwrong color"
+      descr:   "keep wrong color"
       tooltip: "If activated, neutrons outside the colour selection will be passed on to the next module untouched. Otherwise, these neutrons are discarded (default). Only relevant if 'min color' and/or 'max color' is used"  
       default: false
       column:  0                     
@@ -98,7 +94,7 @@ detector:
   - ScatVert:               
       type:    "float" 
       descr:   "phi [deg]"
-      tooltip: "Angle between the y-axis and the projection of the vector to the detector center to the yz-plane [0°,180°].\nFor cylindrical geometry phi must be 0° (left) or 180° (right)!"
+      tooltip: "Angle between the y-axis and the projection of the vector to the detector center to the yz-plane [0,180] deg.\nFor cylindrical geometry phi must be 0 deg (left) or 180 deg (right)!"
       min:      0.0
       max:    360.0
       default:  0.0
@@ -107,7 +103,7 @@ detector:
   - ScatHor:        
       type:    "float" 
       descr:   "theta [deg]"
-      tooltip: "Angle between the vector to the detector center and the +x-axis [0°,180°]."
+      tooltip: "Angle between the vector to the detector center and the +x-axis [0,180] deg."
       min:      0.0
       max:    180.0
       default: 0.0
@@ -152,7 +148,7 @@ detector:
       default: "Cell size and resolution" 
   - nRows:  
       type:    "int" 
-      descr:   "number\nof rows"
+      descr:   "number of rows"
       tooltip: "Number of rows partitioning the detector height (hor. tubes or digitalization bins)."  
       default: 1
       min:     1
@@ -160,7 +156,7 @@ detector:
       prefix:  "-r" 
   - nCols:  
       type:    "int" 
-      descr:   "number\nof columns"
+      descr:   "number of columns"
       tooltip: "Number of columns partitioning the detector width (vert. tubes or digitalization bins)"  
       default: 1
       min:     1
@@ -168,7 +164,7 @@ detector:
       prefix:  "-c" 
   - nLayers:  
       type:    "int" 
-      descr:   "number\nof columns"
+      descr:   "number of columns"
       tooltip: "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector) (see also Help file)"  
       default: 1
       min:     1
@@ -177,7 +173,7 @@ detector:
 
   - HorRes  :         
       type:    "float"    
-      descr:   "hor.\nresolution [cm]"
+      descr:   "hor. resolution [cm]"
       tooltip: "Spatial resolution (FWHM) in horizontal direction"
       default: 0.0
       min:     0.0
@@ -185,7 +181,7 @@ detector:
       prefix:  "-u"     
   - VertRes:     
       type:    "float"    
-      descr:   "vert.\nresolution [cm]"
+      descr:   "vert. resolution [cm]"
       tooltip: "spatial resolution (FWHM) in vertical direction"
       default: 0.0
       min:     0.0
@@ -193,7 +189,7 @@ detector:
       prefix:  "-v"     
   - ResX:    
       type:    "float"    
-      descr:   "resolution\nin x [cm]"
+      descr:   "resolution in x [cm]"
       tooltip: "spatial resolution (FWHM) in beam direction"
       default: 0.0
       min:     0.0
@@ -205,12 +201,13 @@ detector:
       default: "Detector efficiency" 
   - EffFile :      
       type:    "file"    
-      descr:   "lambda\nefficiency"
+      plottable: true
+      descr:   "lambda efficiency"
       tooltip: "File containing two columns: wavelength and efficiency.\nIf an efficiency file is given, other efficiency data are ignored."
       prefix:  "-E"     
   - eDetMat:    # Function  VtDetAbs   DetAbs_Txt2ID(const char* sText) 
       type:    "combo" 
-      descr:   "absorber\nmaterial"  
+      descr:   "absorber material"  
       tooltip: "Material that interacts with neutrons and thus determines the (wavelength-dependent) detection efficiency." 
       enum:    "VtDetAbs"
       options: ["BF3 gas","3He gas","solid B10","solid Li6","other"] 
@@ -219,15 +216,15 @@ detector:
       prefix:  "-m"   
   - Par1  :                             
       type:    "float" 
-      descr:   "pressure [bar] or\nlayer thickness [cm]" 
-      tooltip: "He3, BF3: Pressure used to calculate particle density. If gas mixture is	used, give value for absorber component.\nSolid B10 or Li6: layer thickness of converter material."
+      descr:   "pressure [bar] or layer thickness [cm]" 
+      tooltip: "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component.\nSolid B10 or Li6: layer thickness of converter material."
       default: 0.0
       min:     0.0
       column:  0                     
       prefix:  "-p"   
   - Par2  :                             
       type:    "float" 
-      descr:   "gas temperature [K] or\natomic density [1e27/m^3]" 
+      descr:   "gas temperature [K] or atomic density [1e27/m^3]" 
       tooltip: "He3, BF3: Temperature used to calculate particle density.\nSolid B10 or Li6: atomic density of the converter material."
       default: 0.0
       min:     0.0
@@ -235,7 +232,7 @@ detector:
       prefix:  "-k"   
   - EffMod  :                             
       type:    "float" 
-      descr:   "efficiency\nmodifyer" 
+      descr:   "efficiency modifyer" 
       tooltip: "The efficiency calculated from the interaction cross-section with the chosen material or taken from the efficiency file is multiplied by this factor. (See also help file.)"
       default: 1.0
       min:     0.0
@@ -247,7 +244,7 @@ detector:
       default: "Geometry details: Tube detector" 
   - eOrient:  # Function  VtOrient Orient_Txt2ID(const char* sText)     
       type:    "combo" 
-      descr:   "tube\norientation"  
+      descr:   "tube orientation"  
       tooltip: "Orientation of tubes: horizontal means that the cylinder (or tube) axis is parallel to the y axis, vertical means parallel to the z axis. (See also help file.)" 
       enum:    "VtOrient"
       options: ["horizontal", "vertical"]   
@@ -256,7 +253,7 @@ detector:
       prefix:  "-o"   
   - eDetXsec:    # Function  VtTubeShape TubeShape_Txt2ID(const char* sText) 
       type:    "combo" 
-      descr:   "tube\ncross-section"  
+      descr:   "tube cross-section"  
       tooltip: "Choose circular or rectangular cross-section for cylindrical or cubic detectors" 
       enum:    "VtTubeShape"
       options: ["circular", "rectangular"]   
@@ -265,7 +262,7 @@ detector:
       prefix:  "-b"   
   - Thickn:                             
       type:    "float" 
-      descr:   "wall\nthickness [cm]" 
+      descr:   "wall thickness [cm]" 
       tooltip: "Thickness of tube walls\nWalls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering"
       default: 0.0
       min:     0.0
@@ -285,7 +282,7 @@ detector:
   - Phi_n:                             
       type:    "float" 
       descr:   "phi_n [deg]" 
-      tooltip: "Inclined detector surface: phi_n [0°,360°] is the angle between the projection of the back surface normal onto (y',z') plane (analog to phi), (see also help file)"
+      tooltip: "Inclined detector surface: phi_n [0,360] is the angle between the projection of the back surface normal onto (y',z') plane (analog to phi), (see also help file)"
       default: 0.0
       min:     0.0
       max:   360.0
@@ -294,7 +291,7 @@ detector:
   - Theta_n:                             
       type:    "float" 
       descr:   "theta_n [deg]" 
-      tooltip: "Inclined detector surface: theta_n [0°,180°] is the angle between (the backside of) the detector surface normal and the position vector (see also help file)."
+      tooltip: "Inclined detector surface: theta_n [0,180] deg is the angle between (the backside of) the detector surface normal and the position vector (see also help file)."
       default: 0.0
       min:     0.0
       max:    180.0
@@ -306,7 +303,7 @@ detector:
       default: "Geometry details: Cylindrical detector" 
   - eAxis:             #   Function   VtAxis Axis_Txt2ID(const char* sText)       
       type:    "combo" 
-      descr:   "axis\norientation"  
+      descr:   "axis orientation"  
       tooltip: "Orientation of the cylinder axis; it must be parallel to x, y or z axis" 
       enum:    "VtAxis"
       options: ["x", "y", "z"]   
@@ -322,6 +319,7 @@ detector:
       prefix:  "-z"   
   - OutFile :   
       type:    "file"    
+      plottable: false
       descr:   "output file"
       tooltip: "Detecor output in event mode (3D position, time, weight), written by last detector in array.\nIf left blank or the array box is ticked, no output file will be written." 
       prefix:  "-O"     

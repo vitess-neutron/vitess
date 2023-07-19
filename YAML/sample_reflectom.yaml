@@ -9,19 +9,18 @@
 # prefix: prefix for parameter in pipe
 sample_reflectom:
   - category:  "sample"
-  - Name    :
-      type:    "string"
-      descr:   "name" 
 
   - SmplFile:    
       type:    "file" 
-      descr:   "parameter\nfile"  
+      plottable: false
+      descr:   "parameter file"  
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
 
   - ReflFile:    
       type:    "file" 
-      descr:   "reflectivity\nfile"  
+      plottable: true
+      descr:   "reflectivity file"  
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
 
@@ -37,9 +36,9 @@ sample_reflectom:
       default:  "sample"
       column:  0                     
       prefix:  "-O"   
-  - eRotAxis:                # VtRotAxis RotAxis_Txt2ID(const char* sText);
+  - eRotAxis:                 # VtRotAxis RotAxis_Txt2ID(const char* sText);
       type:    "combo" 
-      descr:   "axis of\nrotation"
+      descr:   "axis of rotation"
       tooltip: "rotation axis of the sample, Y or Z"
       enum:    "VtRotAxis"
       options: ["Y", "Z"]   
@@ -48,15 +47,15 @@ sample_reflectom:
       prefix:  "-R"   
   - bTreatAl: 
       type:    "switch" 
-      descr:   "treat neutrons\nnot reflected"
-      tooltip: "YES: neutrons that are not reflected by the sample are treated \nNO : neutrons that are not reflected by the sample are removed (default)" 
-      default: false
-      column:  2                     
+      descr:   "treat neutrons not reflected"
+      tooltip: "yes: neutrons that are not reflected by the sample are treated \nno : neutrons that are not reflected by the sample are removed (default)" 
+      default:  no
+      column:   2                     
       prefix:  "-A"     
 
   - RotAngle:             
       type:    "float" 
-      descr:   "reflection\nangle [deg]"
+      descr:   "reflection angle [deg]"
       tooltip: "The sample is rotated by this angle around the 'axis of rotation'. zero means: parallel to x-axis,i.e. surface normal in z-direction;\n(small) positive angles cause flight directions after reflection with positive y or z components resp." 
       default: 1.0
       min    : 0.0
@@ -68,7 +67,7 @@ sample_reflectom:
       default: "Substrate"
   - eSubsMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
       type:    "combo" 
-      descr:   "substrate\nmaterial"
+      descr:   "substrate material"
       tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 
       enum:    "VtMirrMat"
       options: ["Other","Silicon","Glass","B4C"]
@@ -77,7 +76,7 @@ sample_reflectom:
       prefix:  "-M"     
   - SubThick:              
       type:    "float" 
-      descr:   "substrate\nthickn.[cm]"
+      descr:   "substrate thickn.[cm]"
       tooltip: "Thickness of the substrate on which the sample is put"
       default: 0.0
       min:     0.0
@@ -85,7 +84,7 @@ sample_reflectom:
       column:  0                     
   - SubMuSca:    
       type:    "float" 
-      descr:   "total scat.\ncoeff. [1/cm]"
+      descr:   "total scat. coeff. [1/cm]"
       tooltip: "Macroscopic total scattering cross-section of the substrate material to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
       default: 0.0
       min    : 0.0
@@ -93,7 +92,7 @@ sample_reflectom:
       prefix:  "-s"     
   - SubMuAbs:                
       type:    "float" 
-      descr:   "absorption\ncoeff. [1/cm/Ang]"
+      descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "Macroscopic absorption cross-section of the substrate material (with respect for a wavelength of 1.798 Ang) to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
       default: 0.0
       min    : 0.0
@@ -135,7 +134,7 @@ sample_reflectom:
       column:  0                     
   - SmplWidt:  
       type:    "float" 
-      descr:   "sample\nwidth [cm]"
+      descr:   "sample width [cm]"
       tooltip: "width of the sample  (along y-/z-axis)"
       default: 2.0
       min:     0.0
@@ -143,7 +142,7 @@ sample_reflectom:
       column:  1                     
   - SmplLeng:  
       type:    "float" 
-      descr:   "sample\nlength [cm]"
+      descr:   "sample length [cm]"
       tooltip: "length of the sample (along x-axis for reflection angle 0)."
       default: 5.0
       min:     0.0
@@ -155,22 +154,22 @@ sample_reflectom:
       default: "Offspecular and incoherent scattering"
   - bOffSpec:           
       type:    "switch" 
-      descr:   "offspecular\nscattering" 
-      tooltip: "Flag: offspecular scattering is simulated (NO YES)"
-      default: false
-      column:  0                     
+      descr:   "offspecular scattering" 
+      tooltip: "Flag: offspecular scattering is simulated (yes, no)"
+      default:  no
+      column:   0                     
       prefix:  "-o"   
 
   - bIncScat:               
       type:    "switch" 
-      descr:   "incoherent\nscattering" 
-      tooltip: "Flag: incoherent scattering is simulated (NO YES)"
-      default: false
-      column:  0                     
+      descr:   "incoherent scattering" 
+      tooltip: "Flag: incoherent scattering is simulated (yes, no)"
+      default:  no
+      column:   0                     
       prefix:  "-B"   
   - MuIncSca:        
       type:    "float" 
-      descr:   "inc. cross-\section [1/cm]"
+      descr:   "inc. cross-section [1/cm]"
       tooltip: "macroscopic incoherent scattering cross section of the sample"
       default: 0.0
       min:     0.0
@@ -190,7 +189,7 @@ sample_reflectom:
       default: "Detector Geometry"
   - DetDist :           
       type:    "float" 
-      descr:   "detector\ndistance"
+      descr:   "detector distance"
       tooltip: "distance to the detector (to calculate the solid angle for incoherent scattering)" 
       default: 1.0
       min:     0.0
@@ -198,7 +197,7 @@ sample_reflectom:
       prefix:  "-d"   
   - DetWidth:     
       type:    "float" 
-      descr:   "detector\nwidth"
+      descr:   "detector width"
       tooltip: "width of the detector (to calculate the solid angle for incoherent scattering)"
       default: 0.0
       min:     0.0
@@ -206,7 +205,7 @@ sample_reflectom:
       prefix:  "-p"   
   - DetHite :     
       type:    "float" 
-      descr:   "detector\nheight"
+      descr:   "detector height"
       tooltip: "height of the detector (to calculate solid angle for incoherent scattering)" 
       default: 0.0
       min:     0.0
@@ -218,7 +217,7 @@ sample_reflectom:
       default: "Output frame"
   - eFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "frame\ngeneration"
+      descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': puts output direction along the reflected beam"
       enum:    "VtFrameGen"
       options: ["user defined frame", "standard frame generation"]
@@ -250,14 +249,14 @@ sample_reflectom:
 
   - OutHor   : 
       type:    "float" 
-      descr:   "horizontal\nangle [deg]"
+      descr:   "horizontal angle [deg]"
       tooltip: "horizontal angular coordinate in output frame"
       default: 0.0
       prefix:  "-k"
       column:  0                     
   - OutVert   :   
       type:    "float" 
-      descr:   "vertical\nangle [deg]"
+      descr:   "vertical angle [deg]"
       tooltip: "vertical angular coordinate in output frame"
       default: 0.0
       prefix:  "-K"

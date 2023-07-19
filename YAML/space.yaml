@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -9,10 +9,6 @@
 # prefix: prefix for parameter in pipe
 space:
   - category:  "spacewindow"
-  - Name:
-      descr:   "name" 
-      type:    "string" 
-
   - Distance:      
       type:    "float" 
       descr:   "distance [cm]"
@@ -23,7 +19,7 @@ space:
       prefix:  "-d"     
   - MyScat:     
       type:    "float" 
-      descr:   "total scat-\ntering [1/cm]"
+      descr:   "total scattering [1/cm]"
       tooltip: "macroscopic total scattering coefficient"
       default: 0.0
       min:     0.0
@@ -31,7 +27,7 @@ space:
       prefix:  "-M"     
   - MyAbs:   
       type:    "float" 
-      descr:   "absorption\n[1/cm]"
+      descr:   "absorption [1/cm]"
       tooltip: "macroscopic absorption cross-section for 1.798 Ang" 
       default: 0.0
       min:     0.0

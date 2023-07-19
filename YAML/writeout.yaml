@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -7,17 +7,16 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
-writeout: 		     # source module that will be executed
-  - Name    : 
-      type:    "string" 
-      descr:   "name"
-
+writeout:      # source module that will be executed
+  - category:  "event_handling"
+ 
   - Title_Output:
       type:    "title"
       default: "Output file choices" 
-  - sOutFile:                #         -A  "trajectory\noutput file"     "name of the trajectory output file"
+  - sOutFile:                #         -A  "trajectory output file"     "name of the trajectory output file"
       type:    "file" 
-      descr:   "trajectory\noutput file"
+      plottable: false
+      descr:   "trajectory output file"
       tooltip: "name of the trajectory output file"
       default: "events.out" 
       prefix:  "-A"
@@ -35,7 +34,7 @@ writeout: 		     # source module that will be executed
       default: true
       column:  1                     
       prefix:  "-h"  
-
+ 
   - Title_Format:
       type:    "title"
       default: "File formats" 
@@ -53,7 +52,7 @@ writeout: 		     # source module that will be executed
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exponential': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
       enum:     "VtDataFormat"
-      default: ["exp", "float", "binary"]   
+      options: ["exp", "float", "binary"]   
       default:  "float"
       column:  1                     
       prefix:  "-F"   
@@ -62,7 +61,8 @@ writeout: 		     # source module that will be executed
       descr:   "separator"
       tooltip: "separator between columns in the ASCII output file"
       enum:     "VtSeparator"
-      default: ["space", "tabulator"]   
+      options: ["space", "tabulator"]   
+      default:  "space"   
       column:  2                     
       prefix:  "-S" 
   
@@ -71,31 +71,32 @@ writeout: 		     # source module that will be executed
       default: "MCNP and SSW options" 
   - FactInt :              
       type:    "float" 
-      descr:   "intensity\nfactor"
+      descr:   "intensity factor"
       tooltip: "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'."
       min:     0.0
       column:  0                     
       prefix:  "-I"
   - nSurface:               
       type:    "int" 
-      descr:   "surface\nID" 
+      descr:   "surface ID" 
       tooltip: "Only for MCNP6: Number written as surface ID to the output file" 
       default: 0
       column:  1                     
       prefix:  "-s"
   - sSimName:   
       type:    "string" 
-      descr:   "Simulation\nname"
+      descr:   "Simulation name"
       tooltip: "Only for MCNP6: name of the simulation" 
       column:  2                     
       prefix:  "-T"     
 
   - sSswFile:                #         -r   [-]   SSW reference file name
       type:    "file" 
-      descr:   "SSW\nref. file"
+      plottable: false
+      descr:   "SSW ref. file"
       tooltip: "Specifies the name of the SSW reference file to determine the file format"
       prefix:  "-r"
-
+ 
 #  - aParOut :               #         -c  "Columns"  
 #      type:    "string" 
 #      descr:   "Columns" 
@@ -103,7 +104,7 @@ writeout: 		     # source module that will be executed
 #      default: "111111111"   
 #      column:  0                     
 #      prefix:  "-c"   
-   
+ 
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
@@ -114,45 +115,42 @@ writeout: 		     # source module that will be executed
       column:  0                     
       prefix:  "-C"   
    
-  - FlmbdMin:               #         -l  "lambda\nmin [Ang]"           "minimal wavelength to be taken into account"
+  - FlmbdMin:               #         -l  "lambda min [Ang]"           "minimal wavelength to be taken into account"
       type:    "float" 
-      descr:   "lambda\nmin [Ang]"
+      descr:   "lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
       column:  0                     
       prefix:  "-l"   
-
-  - FlmbdMax:               #         -L  "lambda\nmax [Ang]"           "maximal wavelength to be taken into account"
+  - FlmbdMax:               #         -L  "lambda max [Ang]"           "maximal wavelength to be taken into account"
       type:    "float" 
-      descr:   "lambda\nmax [Ang]"
+      descr:   "lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"
       column:  1                     
       prefix:  "-L"
    
-  - FwidtMin:               #         -u  "y-pos\nmin [cm]"             "minimal horizontal position to be taken into account"
+  - FwidtMin:               #         -u  "y-pos min [cm]"             "minimal horizontal position to be taken into account"
       type:    "float" 
-      descr:   "y-pos\nmin [cm]"
+      descr:   "y-pos min [cm]"
       tooltip: "minimal horizontal position to be taken into account"
       column:  0                     
       prefix:  "-u"   
-
-  - FwidtMax:               #         -U  "y-pos\nmax [cm]"             "maximal horizontal position to be taken into account"
+  - FwidtMax:               #         -U  "y-pos max [cm]"             "maximal horizontal position to be taken into account"
       type:    "float" 
-      descr:   "y-pos\nmax [cm]"
+      descr:   "y-pos max [cm]"
       tooltip: "maximal horizontal position to be taken into account"
       column:  1                     
       prefix:  "-U"   
-
-  - FhiteMin:               #         -v  "z-pos\nmin [cm]"             "minimal vertical position to be taken into account"
+ 
+  - FhiteMin:               #         -v  "z-pos min [cm]"             "minimal vertical position to be taken into account"
       type:    "float" 
-      descr:   "z-pos\nmin [cm]"
+      descr:   "z-pos min [cm]"
       tooltip: "minimal vertical position to be taken into account"
       column:  0                     
       prefix:  "-v"   
-
-  - FhiteMax:               #         -V  "z-pos\nmax [cm]"             "maximal vertical position to be taken into account"
+  - FhiteMax:               #         -V  "z-pos max [cm]"             "maximal vertical position to be taken into account"
       type:    "float" 
-      descr:   "z-pos\nmax [cm]"
+      descr:   "z-pos max [cm]"
       tooltip: "maximal vertical position to be taken into account"
       column:  1                     
-      prefix:  "-V"   
-
+      prefix:  "-V"
+ 

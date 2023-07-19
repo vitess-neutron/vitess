@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -8,17 +8,12 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 velselect:
-  - Name: 
-      type:    "string" 
-      descr:   "name" 
-      column:  0                     
-
   - Title_Geom: 
       type:    "title" 
       default: "Geometry"
   - WndWidth:            # -W  [cm]   width of entrance and exit window
       type:    "float" 
-      descr:   "window\nwidth [cm]"  
+      descr:   "window width [cm]"  
       tooltip: "Width of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
@@ -26,7 +21,7 @@ velselect:
       prefix:  "-W" 
   - WndHite :            # -H  [cm]   height of entrance and exit window
       type:    "float" 
-      descr:   "window\nheight [cm]"  
+      descr:   "window height [cm]"  
       tooltip: "Height of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
@@ -35,7 +30,7 @@ velselect:
 
   - Length  :            # -l   25.0  [cm]   length of the velocity selector 
       type:    "float" 
-      descr:   "length of\nvelselect [cm]"  
+      descr:   "length of velselect [cm]"  
       tooltip: "Length of velocity selector [cm]"
       default: 25.0
       min:     0.00001
@@ -43,7 +38,7 @@ velselect:
       prefix:  "-l" 
   - RadiusO :             # -r   20.0  [cm]   outer radius of the velocity selector 
       type:    "float" 
-      descr:   "outer\nradius [cm]"
+      descr:   "outer radius [cm]"
       tooltip: "Outer radius of the velocity selector"
       min:     0.00001
       default: 14.5
@@ -51,7 +46,7 @@ velselect:
       prefix:  "-r" 
   - RadiusI :             # -i   20.0  [cm]   inner  radius of the velocity selector 
       type:    "float" 
-      descr:   "inner\nradius [cm]"
+      descr:   "inner radius [cm]"
       tooltip: "Radius of the part of the rotor without absorbing blades"
       min:     0.00001
       default: 8.5
@@ -60,14 +55,14 @@ velselect:
 
   - AxlePosY:            # -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
       type:    "float" 
-      descr:   "horizontal\naxle position [cm]"  
+      descr:   "horizontal axle position [cm]"  
       tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
       default: 0.0
       column:  0                     
       prefix:  "-Y" 
   - AxlePosZ:            # -Z  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
       type:    "float" 
-      descr:   "vertical\naxle position [cm]"  
+      descr:   "vertical axle position [cm]"  
       tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
       default: -11.5
       column:  1                     
@@ -78,14 +73,14 @@ velselect:
       default: "Channels and rotation"
   - Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
       type:    "float" 
-      descr:   "rotations\nper sec."  
+      descr:   "rotations per sec."  
       tooltip: "Number of rotations per second"
       default: 212.3 
       column:  0                     
       prefix:  "-s" 
-  - winnum  :                # -w   90     [-]   number of windows 
+  - nChannel:                # -w   90     [-]   number of windows 
       type:    "int" 
-      descr:   "number of\nchannels" 
+      descr:   "number of channels" 
       tooltip: "Number of velocity selector channels"
       default: 72    
       min:     1 
@@ -101,7 +96,7 @@ velselect:
 
   - Spacer  :            # -d    0.0  [cm]   blade thickness   
       type:    "float" 
-      descr:   "spacer\nwidth [cm]"  
+      descr:   "spacer width [cm]"  
       tooltip: "Width of blades separating the channels of the velocity selector"
       default: 0.04
       column:  0                     
@@ -112,9 +107,9 @@ velselect:
       default: "Options"
   - bPass   :                     # -p   YES   [-]   flag: neutrons can pass outside the chopper 
       type:    "switch" 
-      descr:   "treat neutrons\npassing by"
-      tooltip: "NO: neutrons passing outside the rotor are removed\nYES: neutrons passing outside the rotor disc are kept. Warning is given"
-      default: false
-      column:  0                     
+      descr:   "treat neutrons passing by"
+      tooltip: "no : neutrons passing outside the rotor are removed\nyes: neutrons passing outside the rotor disc are kept. Warning is given"
+      default:  no
+      column:   0                     
       prefix:  "-p"     
 

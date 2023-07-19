@@ -5,12 +5,9 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
-frame:			    # source module that will be executed 
-  - Name    : 
-      type:    "string" 
-      descr:   "name"
+frame:      # source module that will be executed
   - Title_1 : 
       type:    "title" 
       default: "Transformation"
@@ -23,32 +20,32 @@ frame:			    # source module that will be executed
       default: "RTM"
       column:  0                     
       prefix:  "-S"     
-
+ 
   - Title_2 : 
       type:    "title" 
       default: "Rotation"
   - RotX    :               # -A   0.0  [deg]  rotation angle about x-axis
       type:    "float" 
-      descr:   "rot. angle [deg]\naround x axis" 
-      tooltip: "rotation angle around Z FIRST rotation [deg]\nNOTE: 90deg means X+  rotated on Y+"
+      descr:   "rot. angle [deg] about x axis" 
+      tooltip: "rotation angle about Z FIRST rotation [deg]\nNOTE: 90deg means X+  rotated on Y+"
       default: 0.0
       column:  0                     
       prefix:  "-A"     
   - RotY    :               # -V   0.0  [deg]  rotation angle about y-axis
       type:    "float" 
-      descr:   "rot. angle [deg]\naround y axis"
-      tooltip: "rotation angle around Y SECOND rotation [deg]\nNOTE: 90deg means X+ rotated on Z+" 
+      descr:   "rot. angle [deg] about y axis"
+      tooltip: "rotation angle about Y SECOND rotation [deg]\nNOTE: 90deg means X+ rotated on Z+" 
       default: 0.0
       column:  1                     
       prefix:  "-V"     
   - RotZ    :               # -H   0.0  [deg]  rotation angle about z-axis
       type:    "float" 
-      descr:   "rot. angle [deg]\naround z axis"
-      tooltip: "rotation angle around X (beam axis) THIRD rotation [deg]\nNOTE: 90deg means Y+  rotated on Z+"
+      descr:   "rot. angle [deg] about z axis"
+      tooltip: "rotation angle about X (beam axis) THIRD rotation [deg]\nNOTE: 90deg means Y+  rotated on Z+"
       default: 0.0
       column:  2                     
       prefix:  "-H"     
-
+ 
   - Title_3 : 
       type:    "title" 
       default: "Translation"
@@ -73,20 +70,20 @@ frame:			    # source module that will be executed
       default: 0.0
       column:  2                    
       prefix:  "-z"     
-
+ 
   - Title_4 : 
       type:    "title" 
       default: "Mirror"
   - MirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
       type:    "switch" 
-      descr:   "mirror at\nyz plane"
+      descr:   "mirror at yz plane"
       tooltip: "mirror x axis (plane yz)"
       default: false
       column:  0                     
       prefix:  "-i"     
   - MirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
       type:    "switch" 
-      descr:   "mirror at\nxz plane"
+      descr:   "mirror at xz plane"
       default: "NO"
       tooltip: "mirror y axis (plane xz)"
       default: false
@@ -94,9 +91,9 @@ frame:			    # source module that will be executed
       prefix:  "-j"     
   - MirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
       type:    "switch" 
-      descr:   "mirror at\nxy plane"
+      descr:   "mirror at xy plane"
       tooltip: "mirror z axis (plane xy)"
       default: false
       column:  2                     
-      prefix:  "-k"     
-
+      prefix:  "-k"   
+ 

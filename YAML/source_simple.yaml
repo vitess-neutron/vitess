@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -7,45 +7,46 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
-source:				       # source module that will be executed
-  - SimName : 
-      descr:   "simulation\nname"
-      type:    "string"
-      default: "First Simulation" 
-      column:  0                       
+
+source_simple:
+  - category:  "source"
   - eKind   :                          # -K       VtSrcKind SrcKind_Txt2ID(const char* sText)   SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
       type:    "combo"                 # This shall not be selected, but defined by the chosen module   
+      hidden:  true
+      descr:   "kind of source"
+      enum:    "VtSrcKind"
+      options:["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
       default: "simple source" 
-      index:   1
       prefix:  "-K"     
 
-  - Moderator_simple:
-      type:    "window"
-      descr:   "moderator"
-      tooltip: "moderator description parameter"   
-#     default: "moderator_simple.yaml"
-
-  - titel_1 :                       
+  - Titel_Sim:                       
       type:    "title" 
       default: "Simulation parameters"
   - nBundle:                            # -n   10 [-]   number of bundles  
       type:    "int" 
-      descr :  "number of\nbundels"  
+      descr :  "number of bundels"  
       tooltip: "number of packages into which the whole simulation is separated"
-      default: 10
+      default: 5
       column:  0                     
       prefix:  "-l"     
   - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
       type:    "float" 
-      descr :  "number of traj.\nper bundle"
+      descr :  "number of traj. per bundle"
       tooltip: "number of neutron trajectories (events) created in each bundle"
       default: 1000000 
       column:  1                     
       prefix:  "-n"     
+  - SimName : 
+      type:    "string"
+      descr:   "simulation name"
+      tooltip: "name or ID of the simulation given by the user (only for indexing)"
+      default: "" 
+      column:  2
+      prefix:  "-I"
 
   - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
       type:    "float" 
-      descr:   "min. wave-\nlength [Ang]"
+      descr:   "min. wavelength [Ang]"
       tooltip: "minimum of the wavelength range"
       min    : 0.0
       default: 1.0
@@ -53,39 +54,63 @@ source:				       # source module that will be executed
       prefix:  "-m"     
   - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
       type:    "float" 
-      descr:   "max. wave-\nlength [Ang]"
+      descr:   "max. wavelength [Ang]"
       tooltip: "maximum of the wavelength range" 
       default: 5.0
       column:  1                     
       prefix:  "-M"     
 
+  - Titel_Mod:                       
+      type:    "title" 
+      default: "Moderator parameters"
+  - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
+      type:    combo       
+      hidden:  true
+      descr:   "source type"
+      enum:    "VtSrcType"
+      options: ["", "CWS"] 
+      default:  "CWS" 
+      prefix:  "-S"     
+  - ModWnd:
+      type:    "window"
+      descr:   "moderator window"
+      tooltip: "parameters describing the moderator geometry and characteristics"   
+      filename:"moderator_simple.yaml"
+  - ModFile :                          # -r         [-]   name of the file containing the IDs for tracing
+      type:    "file"
+      plottable: false
+      descr:   "moderator file"
+      tooltip: "name of the file containing the moderator parameters\nThis old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters.\nThey will be saved in the instrument file (in yaml format)"
+      prefix:  "-a"
+
+  - Titel_Prop :                       
+      type:    "title" 
+      default: "Flight direction and propagation"
   - eDirect :                          # -d  VtDirect Direct_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "direction\ndefined"
+      descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
-      default: ["by real window", "by virtual window", "by divergence"] 
-      column:  0                     
+      enum:    "VtDirect"
+      options: ["by divergence", "by real window", "by virtual window"] 
+      default: "by real window"
+      column:   0                     
       prefix:  "-d"     
-
   - DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
-      descr:   "max. divergence\nx <-> y [deg]"
+      descr:   "max. divergence x <-> y [deg]"
       tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
       column:  0                     
       prefix:  "-y"     
   - DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
-      descr:   "max. divergence\nx <-> z [deg]"
+      descr:   "max. divergence x <-> z [deg]"
       tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
       column:  1                     
       prefix:  "-z"     
 
-  - titel_2 :                       
-      type:    "title" 
-      default: "Propagation"
   - TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
       type:    "float" 
-      descr:   "distance to\nwindow [cm]"
+      descr:   "distance to window [cm]"
       tooltip: "distance moderator - target window" 
       min    :   0.0
       default: 100.0
@@ -93,7 +118,7 @@ source:				       # source module that will be executed
       prefix:  "-D"     
   - TWidth  :                          # -w   3.0  [cm]   width of the target window 
       type:    "float" 
-      descr:   "window\nwidth [cm]"
+      descr:   "window width [cm]"
       tooltip: "width of the target window" 
       min    : 0.0
       default: 3.0
@@ -101,7 +126,7 @@ source:				       # source module that will be executed
       prefix:  "-w"     
   - THeight :                          # -h   3.0  [cm]   height of the target window 
       type:    "float" 
-      descr:   "window\nheight [cm]"
+      descr:   "window height [cm]"
       tooltip: "height of the target window"
       min    : 0.0
       default: 3.0

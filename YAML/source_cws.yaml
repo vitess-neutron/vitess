@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -7,81 +7,45 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
-source:				       # source module that will be executed
+
+source_cws:
   - category:  "source"
-  - SimName : 
-      descr:   "simulation\nname"
-      type:    "string"
-      default: "First Simulation" 
-      column:  0                       
   - eKind   :                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)      SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
       type:    "combo"                 # This shall not be selected, but defined by the chosen module
       hidden:  true
-      descr:   "source type"
+      descr:   "kind of source"
       enum:    "VtSrcKind"
       options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
       default: "continuous source" 
       prefix:  "-K"     
-
-  - titel_0 :                       
-      type:    "title" 
-      default: "Source, moderator and beamline parameters"
-  - ModData:                     # opens "moderator_cws.yaml"
-      type:    "window"
-      descr:   "moderator data"
-      tooltip: "parameters describing the moderator geometry and characteristics"
-      filename: "moderator_cws.yaml"
-  - ModFile :                          # -r         [-]   name of the file containing the IDs for tracing
-      type:    "file"
-      descr:   "moderator file"
-      tooltip: "name of the file containing the moderator parameters\nThis old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters.\nThey will be saved in the instrument file (in yaml format)"
-      prefix:  "-a"
-
-  - SrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "source\nname" 
-      tooltip: "name of the source"
-      enum:    "VtSrcName"
-      options: ["FRM2","ILL"]
-      default:  "FRM2"
-      column:  0                     
-      prefix:  "-N"     
-  - Power   :                          # -L   2.0  [MW]   average source power
-      type:    "float" 
-      descr:   "source power\n[MW]"
-      tooltip: "average source power"
-      default: 2.0
-      column:  1                     
-      prefix:  "-L"     
-  - Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
-      type:    "float" 
-      descr:   "declination\n[deg]"
-      tooltip: "declination between moderator surface normal and propagation window" 
-      default: 0.0
-      column:  2                     
-      prefix:  "-i"     
-
-  - titel_1 :                       
+ 
+  - Titel_Sim:                       
       type:    "title" 
       default: "Simulation parameters"
   - nBundle :                          # -n   10 [-]   number of bundles  
       type:    "int" 
-      descr:   "number of\nbundels"
+      descr:   "number of bundels"
       tooltip: "number of packages into which the whole simulation is separated"
-      default: 10
+      default: 5
       column:  0                     
       prefix:  "-l"     
   - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
       type:    "float" 
-      descr :  "number of traj.\nper bundle"
+      descr :  "number of traj. per bundle"
       tooltip: "number of neutron trajectories (events) created in each bundle"
       default: 1000000 
       column:  1                     
       prefix:  "-n"     
-
+  - SimName : 
+      type:    "string"
+      descr:   "simulation name"
+      tooltip: "name or ID of the simulation given by the user (only for indexing)"
+      default: "" 
+      column:  2
+      prefix:  "-I"
   - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
       type:    "float" 
-      descr:   "min. wave-\nlength [Ang]"
+      descr:   "min. wavelength [Ang]"
       tooltip: "minimum of the wavelength range"
       min    : 0.0
       default: 1.0
@@ -95,10 +59,9 @@ source:				       # source module that will be executed
       default: 0.0
       column:  1                     
       prefix:  "-t"     
-
   - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
       type:    "float" 
-      descr:   "max. wave-\nlength [Ang]"
+      descr:   "max. wavelength [Ang]"
       tooltip: "maximum of the wavelength range" 
       default: 5.0
       column:  0                     
@@ -110,49 +73,108 @@ source:				       # source module that will be executed
       default: 2.0
       column:  1                     
       prefix:  "-T"     
+ 
+  - Titel_Mod :                       
+      type:    "title" 
+      default: "Source, moderator and beamline parameters"
+  - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
+      type:    combo       
+      hidden:  true
+      descr:   "source type"
+      enum:    "VtSrcType"
+      options: ["", "CWS"] 
+      default:  "CWS" 
+      prefix:  "-S"     
+  - SrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
+      type:    "combo" 
+      descr:   "source name" 
+      tooltip: "name of the source"
+      enum:    "VtSrcName"
+      options: ["-", "FRM2","ILL"]
+      default:  "-"
+      column:   0                     
+      prefix:  "-N"     
+  - Power   :                          # -L   2.0  [MW]   average source power
+      type:    "float" 
+      descr:   "source power [MW]"
+      tooltip: "average source power"
+      default: 2.0
+      column:  1                     
+      prefix:  "-L"     
+  - Decl    :                          # -i   0.0  [deg]  declination between moderator surface normal and propagation window 
+      type:    "float" 
+      descr:   "declination [deg]"
+      tooltip: "declination between moderator surface normal and propagation window" 
+      default: 0.0
+      column:  2                     
+      prefix:  "-i"     
 
+  - ModWnd1:
+      type:    "window"
+      descr:   "moderator window 1"
+      tooltip: "parameters describing geometry and characteristics of moderator 1 are given on a separate window"
+      column:  0                     
+      filename:"moderator_cws.yaml"
+  - ModWnd2:
+      type:    "window"
+      descr:   "moderator window 2"
+      tooltip: "parameters describing geometry and characteristics of moderator 2 are given on a separate window"
+      column:  1                     
+      filename:"moderator_cws.yaml"
+  - ModWnd3:
+      type:    "window"
+      descr:   "moderator window 3"
+      tooltip: "parameters describing geometry and characteristics of moderator 3 are given on a separate window"
+      column:  2                     
+      filename:"moderator_cws.yaml"
+  - ModFile :                          # -r         [-]   name of the file containing the IDs for tracing
+      type:    "file"
+      plottable: false
+      descr:   "moderator file"
+      tooltip: "name of the file containing the parameters of all moderators\nThis old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters.\nThey will be saved in the instrument file (in yaml format)"
+      prefix:  "-a"
+  
+  - Titel_Prop :                       
+      type:    "title" 
+      default: "Flight direction and propagation"
   - eDirect :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "direction\ndefined"
+      descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
       enum:    "VtDirect"
       options: ["by divergence", "by real window", "by virtual window"] 
-      default:  "by real window"
-      column:  0                     
+      default: "by real window"
+      column:   0                     
       prefix:  "-d"     
 
   - DivHmin :                          # -y        [deg]  minimum horizontal divergence (absolute value) 
       type:    "float" 
-      descr:   "min. divergence\nx <-> y [deg]"   
+      descr:   "min. divergence x <-> y [deg]"   
       tooltip: "minimum horizontal divergence (absolute value)" 
       column:  0                     
       prefix:  "-b"     
   - DivVmin :                          # -y        [deg]  minimum vertical divergence (absolute value)
       type:    "float"    
-      descr:   "min. divergence\nx <-> z [deg]"
+      descr:   "min. divergence x <-> z [deg]"
       tooltip: "minimum vertical divergence (absolute value)"
       column:  1                     
       prefix:  "-c"     
-
   - DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
-      descr:   "max. divergence\nx <-> y [deg]"
+      descr:   "max. divergence x <-> y [deg]"
       tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
       column:  0                     
       prefix:  "-y"     
   - DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
-      descr:   "max. divergence\nx <-> z [deg]"
+      descr:   "max. divergence x <-> z [deg]"
       tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
       column:  1                     
       prefix:  "-z"     
 
-  - titel_2 :                       
-      type:    "title" 
-      default: "Propagation"
   - TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
       type:    "float" 
-      descr:   "distance to\nwindow [cm]"
+      descr:   "distance to window [cm]"
       tooltip: "distance moderator - target window" 
       min    :   0.0
       default: 100.0
@@ -160,7 +182,7 @@ source:				       # source module that will be executed
       prefix:  "-D"     
   - TWidth  :                          # -w   3.0  [cm]   width of the target window 
       type:    "float" 
-      descr:   "window\nwidth [cm]"
+      descr:   "window width [cm]"
       tooltip: "width of the target window" 
       min    : 0.0
       default: 3.0
@@ -168,41 +190,41 @@ source:				       # source module that will be executed
       prefix:  "-w"     
   - THeight :                          # -h   3.0  [cm]   height of the target window 
       type:    "float" 
-      descr:   "window\nheight [cm]"
+      descr:   "window height [cm]"
       tooltip: "height of the target window"
       min    : 0.0
       default: 3.0
       column:  2                     
       prefix:  "-h"     
-
-  - titel_3 :                       
+ 
+  - Titel_Time :                       
       type:    "title" 
       default: "Time window"
   - TofDist :                          # -s        [cm]   distance moderator - position of time window   
       type:    "float" 
-      descr:   "distance to\ntime window [cm]"
+      descr:   "distance to time window [cm]"
       tooltip: "distance moderator - position of time window"
       column:  0                     
       prefix:  "-s"     
   - TofMin  :                          # -f        [cm]   min TOF allowed in time window  
       type:    "float"    
-      descr:   "min. TOF to\ntime window [ms]"
+      descr:   "min. TOF to time window [ms]"
       tooltip: "min TOF allowed in time window" 
       column:  1                     
       prefix:  "-f"     
   - TofMax  :                          # -F        [cm]   max TOF allowed in time window 
       type:    "float" 
-      descr:   "max. TOF to\ntime window [ms]"
+      descr:   "max. TOF to time window [ms]"
       tooltip: "max TOF allowed in time window" 
       column:  2                     
       prefix:  "-F"     
-
-  - titel_4 :                       
+ 
+  - Titel_Pol :                       
       type:    "title" 
       default: "Polarization"
   - PolVecX :                          # -X        [cm]   x-component of the polarisation 
       type:    "float" 
-      descr:   "polarisation\ndirection X"
+      descr:   "polarisation direction X"
       tooltip: "x-component of the polarisation" 
       column:  0                     
       prefix:  "-X"        
@@ -220,23 +242,23 @@ source:				       # source module that will be executed
       prefix:  "-V"     
   - PolDeg  :                          # -P        [cm]   degree of polarization [%] 
       type:    "float" 
-      descr:   "degree of pola-\nrization [%]"
+      descr:   "degree of polarization [%]"
       tooltip: "degree of polarization [%]" 
       column:  0                     
       prefix:  "-P"     
-
-  - titel_5 :                       
+ 
+  - Titel_Special :                       
       type:    "title" 
       default: "Special simulation parameters"
   - TimeMeas:                          # -A         [s]   time of measurement in second
       type:    "float" 
-      descr:   "time of\nmeasurement [s]"
+      descr:   "time of measurement [s]"
       tooltip: "time of measurement in second (used for detector counts)"
       column:  0                     
       prefix:  "-A"     
   - LmbdWant:                          # -W        [Ang]  desired wavelength           
       type:    "float"   
-      descr:   "desired\nwavelength [Ang]"
+      descr:   "desired wavelength [Ang]"
       tooltip: "desired wavelength (can be used for chopper phasing)" 
       column:  1                     
       prefix:  "-W"     
@@ -251,7 +273,8 @@ source:				       # source module that will be executed
       prefix:  "-k"     
   - TrcFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file" 
+      plottable: false
       descr:   "raytracing file"
       tooltip: "name of the file containing the IDs for tracing"
       prefix:  "-r"     
-
+ 

@@ -8,17 +8,17 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 sample_nxs:
-  - Name    : 
-      type:    "string" 
-      descr:   "name" 
+  - category:  "sample"
 
   - SmplFile:                  # -S         [-]    parameter file name 
       type:    "file"    
+      plottable: false
       descr:   "sample file"
       tooltip: "File containing parameters of the powder sample (size, poition, orientation)\nSee HelpFile 'sample.html'"
       prefix:  "-S"     
   - NxsFile :                  # -s           nxs structure factor file name (of the sample material)
       type:    "file"     
+      plottable: false
       descr:   "nxs parameter\nfile"
       tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
       prefix:  "-s"     
@@ -69,31 +69,31 @@ sample_nxs:
       min:     0.0
       column:  0                     
       prefix:  "-D"     
-  - DelTheta:                 # -d   90.0 [deg]     Theta has to be in the range of [0°,180°]         
+  - DelTheta:                 # -d   90.0 [deg]     Theta has to be in the range of [0 deg,180 deg]         
       type:    "float" 
       descr:   "dtheta (deg]"
-      tooltip: "theta has to be in the range of [0°,180°]"
+      tooltip: "theta has to be in the range of [0,180] deg"
       min:     0.0
       max:     180.0
       default: 90.0
       column:  1                     
       prefix:  "-d"     
-  - Phi     :                # -P  180.0 [deg]     Phi has to be in the range of   [0°,360°] 
+  - Phi     :                # -P  180.0 [deg]     Phi has to be in the range of   [0 deg,360 deg] 
       type:    "float" 
       descr:   "phi [deg]"
       min:     0.0
       max:     360.0
       default: 180.0
-      tooltip: "phi has to be in the range of   [0°,360°]"
+      tooltip: "phi has to be in the range of   [0,360] deg"
       column:  2                     
       prefix:  "-P"  
-  - DelPhi  :                # -p  180.0 [deg]     Example: 30°- 170° scattering angle to the right, +/- 15° in height 
+  - DelPhi  :                # -p  180.0 [deg]     Example: 30 - 170 deg scattering angle to the right, +/- 15 deg in height 
       type:    "float" 
       descr:   "dphi [deg]"
       min:     0.0
       max:     360.0 
       default: 180.0 
-      tooltip: "Example  30°- 170° scattering angle to the right,\n+/- 15° in height"
+      tooltip: "Example  30 - 170 deg scattering angle to the right,\n+/- 15 deg in height"
       column:  0                     
       prefix:  "-p"     
                     

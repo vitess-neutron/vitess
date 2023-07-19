@@ -1,5 +1,5 @@
 #description of input fields
-# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
 # descr: description of the parameter lable
 # tooltip: detailed description shown when mouse cursor remains over label
 # default: optional default value for parameter
@@ -7,17 +7,16 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
-sample_inelast:
-  - Name    : 
-      type:    "string" 
-      descr:   "name" 
+monochromator:
   - ParFile :            
       type:    "file"    
       descr:   "parameter file"
+      plottable: false
       tooltip: "Input file containing parameters of the monochromators\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"     
   - GeomFile:            
       type:    "file"    
+      plottable: false
       descr:   "geometry file"
       tooltip: "File containing positions and orientations of the crystal elements relative to the central element (for details see Help|monochromator)\nIt is an output file if one of the implemented geometries is chosen; otherwise it is used as input defining the arrangement of the crystal elements."
       prefix:  "-G"     
@@ -27,7 +26,7 @@ sample_inelast:
       default: "Operation mode"
   - eMonoTyp:          # use:  VtMonoType  MonoType_Txt2ID(const char* sText)    
       type:    "combo" 
-      descr:   "monochromator\ntype"
+      descr:   "monochromator type"
       tooltip: "Choose between 'reflection' and 'transmission' geometry of the monochromator"
       enum:     VtMonoType
       options: ["reflection", "transmission"]
@@ -36,7 +35,7 @@ sample_inelast:
       prefix:  "-X"     
   - eMonoArr:          # use:  VtMonoArrange MonoArrange_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "monochromator\ngeometry"
+      descr:   "monochromator geometry"
       tooltip: "Defines how the monochromator system is composed, either by calculating the arrangement of the crystal elements (CE), by reading it from file or treating only one crystal element"
       enum:     VtMonoArrange
       options: ["calculated CE array", "CE array from file", "single CE"]
@@ -46,9 +45,9 @@ sample_inelast:
   - bTransm:             
       type:    "switch" 
       descr:   "transmission"
-      tooltip: "NO: neutrons that are not reflected by the crystal lattice are removed\nYES: neutrons that are not reflected will be transmitted and treated in the next module.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged."
-      default: [NO,YES]
-      column:  0                     
+      tooltip: "no: neutrons that are not reflected by the crystal lattice are removed\nyes: neutrons that are not reflected will be transmitted and treated in the next module.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged."
+      default:  no
+      column:   0                     
       prefix:  "-B"     
   - nRepete:           
       type:    "int" 
@@ -64,14 +63,14 @@ sample_inelast:
       default: "Rotation of the monochromator"
   - Freq:                 
       type:    "float" 
-      descr:   "frequency\n[Hz]"
+      descr:   "frequency [Hz]"
       tooltip: "Rotations per second of the monochromator about a vertical axis"
       column:  0                     
       prefix:  "-f"     
   - Phase:                 
       type:    "float" 
-      descr:   "initial\nphase [deg]"
-      tooltip: "orientation of the monochromator at t=0 [deg]\n	phase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection"
+      descr:   "initial phase [deg]"
+      tooltip: "orientation of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is defined by the offset of the Bragg reflection"
       column:  1                     
       prefix:  "-p"     
 
@@ -80,14 +79,14 @@ sample_inelast:
       default: "Crystal properties"
   - MosaHor:                 
       type:    "float" 
-      descr:   "mosaicity\nhor. [deg]"
+      descr:   "mosaicity hor. [deg]"
       tooltip: "Horizontal FWHM component of the 2-dimensional Gaussian mosaic distribution"
       default: 0.4
       column:  0                     
       prefix:  "-m"     
   - MosaVert:                 
       type:    "float" 
-      descr:   "mosaicity\nvert. [deg]"
+      descr:   "mosaicity vert. [deg]"
       tooltip: "Vertical FWHM component of the 2-dimensional Gaussian mosaic distribution"
       default: 0.4
       column:  1                     
@@ -111,7 +110,7 @@ sample_inelast:
       prefix:  "-d"     
   - PeakRefl:            
       type:    "float" 
-      descr:   "peak\nreflectivity"
+      descr:   "peak reflectivity"
       tooltip: "(Experimentally determined) peak reflectivity of this monochromator."
       default: 0.7
       min:     0.000001
@@ -121,14 +120,14 @@ sample_inelast:
 
   - MuScaTot:                 
       type:    "float" 
-      descr:   "scattering\ncoeff. [1/cm]"
+      descr:   "scattering coeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
       default: 0.0
       column:  0                     
       prefix:  "-c"     
   - MuAbs   :      
       type:    "float" 
-      descr:   "absorption\ncoeff. [1/cm]"
+      descr:   "absorption coeff. [1/cm]"
       tooltip: "User defined macroscopic absorption cross section of the sample for 1.798 Ang"
       default: 0.0
       column:  1                     
@@ -139,7 +138,7 @@ sample_inelast:
       default: "Crystal arrangement"
   - eMonoFoc:          # use:  VtMonoFocus MonoFocus_Txt2ID(const char* sText)        
       type:    "combo" 
-      descr:   "focusing\noption"
+      descr:   "focusing option"
       tooltip: "Focusing option for generated monochromator geometries\nFor details see Help|monochromator.\nResult will be written to focus file."
       enum:    "VtMonoFocus"
       options: ["vert. cylinder", "double focussing", "spherical", "constant lambda"]
@@ -148,7 +147,7 @@ sample_inelast:
       prefix:  "-g"     
   - NumHor:       
       type:    "int" 
-      descr:   "number of\ncolumns"
+      descr:   "number of columns"
       tooltip: "The number of columns of the crystal element matrix. 1 for 'vert. cylinder'"
       default: 1
       min:     1
@@ -156,7 +155,7 @@ sample_inelast:
       prefix:  "-H"     
   - NumVert:       
       type:    "int" 
-      descr:   "number of\nrows"
+      descr:   "number of rows"
       tooltip: "The number of rows of the crystal element matrix."
       default: 10
       min:     1
@@ -165,14 +164,14 @@ sample_inelast:
 
   - RadHor:       
       type:    "float" 
-      descr:   "hor.\nradius [cm]"
+      descr:   "hor. radius [cm]"
       tooltip: "Radius of focusing in horizontal direction for a double focusing monochromator. (Zero means infinite radius.)"
       min:     0.0
       column:  0                     
       prefix:  "-s"     
   - RadVert:       
       type:    "float" 
-      descr:   "vert.\nradius [cm]"
+      descr:   "vert. radius [cm]"
       tooltip: "lambda-focusing: distance from the sample center to the bottom row of the crystal elements\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction."
       default: 200.0
       min:     0.0
@@ -180,14 +179,14 @@ sample_inelast:
       prefix:  "-r"     
   - Offset:       
       type:    "float" 
-      descr:   "vert.\noffset [deg]"
+      descr:   "vert. offset [deg]"
       tooltip: "Angular offset of the bottom row of the crystal elements"
       column:  2                     
       prefix:  "-a"     
 
   - GapHor:       
       type:    "float" 
-      descr:   "gap between\ncolumns [cm]"
+      descr:   "gap between columns [cm]"
       tooltip: "Horizontal distance between columns of the crystal elements"
       default: 0.0
       min:     0.0
@@ -195,7 +194,7 @@ sample_inelast:
       prefix:  "-h"     
   - GapVert:       
       type:    "float" 
-      descr:   "gap between\nrows [cm]"
+      descr:   "gap between rows [cm]"
       tooltip: "Vertical distance between rows of crystal elements"
       default: 0.0
       min:     0.0
@@ -204,7 +203,7 @@ sample_inelast:
 
   - DevHor:       
       type:    "float" 
-      descr:   "misaligment\nhor. [deg]"
+      descr:   "misaligment hor. [deg]"
       tooltip: "Horizontal deviation from exact crystal orientation\nValues from [-0.5*deviation,0.5*deviation]"
       default: 0.0
       min:     0.0
@@ -212,7 +211,7 @@ sample_inelast:
       prefix:  "-t"     
   - DevVert:       
       type:    "float" 
-      descr:   "misaligment\nvert. [deg]"
+      descr:   "misaligment vert. [deg]"
       tooltip: "Vertical deviation from exact crystal orientation\nValues from [-0.5*deviation,0.5*deviation]"
       default: 0.0
       min:     0.0
@@ -225,7 +224,7 @@ sample_inelast:
       default: "Properties of the reflecting planes" 
   - dSpacing:       
       type:    "float" 
-      descr:   "d-spacing\n[Ang]"
+      descr:   "d-spacing [Ang]"
       tooltip: "Lattice distance corresponding to a reflection from a (h,k,l) crystal"
       default: 3.135
       min:     0.0000001
@@ -233,7 +232,7 @@ sample_inelast:
       prefix:  "-S"     
   - nOrder:       
       type:    "int" 
-      descr:   "order of\nreflection"
+      descr:   "order of reflection"
       tooltip: "Order of reflection according to Bragg's Law."
       default: 1
       min:     1
@@ -242,28 +241,28 @@ sample_inelast:
 
   - BraggHor:  
       type:    "float" 
-      descr:   "hor. offset\nreflection [deg]"
-      tooltip: "Horizontal offset from backscattering of the crystal planes determining	the Bragg reflection."
+      descr:   "hor. offset reflection [deg]"
+      tooltip: "Horizontal offset from backscattering of the crystal planes determining the Bragg reflection."
       default: 30.0
       column:  0                     
       prefix:  "-l"     
   - BraggVrt:          
       type:    "float" 
-      descr:   "vert. offset\nreflection [deg]"
+      descr:   "vert. offset reflection [deg]"
       tooltip: "Vertical offset from backscattering of the crystal planes determining the Bragg reflection."
       default: 0.0
       column:  1                     
       prefix:  "-L"     
   - SfcHor:  
       type:    "float" 
-      descr:   "hor. offset\nsurface [deg]"
+      descr:   "hor. offset surface [deg]"
       tooltip: "Horizontal offset of the crystal from backscattering considering the attenuation in the crystals\nIt is usually identical with offset from planes (for details see Help|monochromator)"
       default: 30.0
       column:  0                     
       prefix:  "-e"     
   - SfcVrt:    
       type:    "float" 
-      descr:   "vert. offset\nsurface [deg]"
+      descr:   "vert. offset surface [deg]"
       tooltip: "Vertical offset of the crystal from backscattering considering the attenuation in the crystals\nIt is usually identical with offset from planes (for details see Help|monochromator)"
       default: 0.0
       column:  1                     
@@ -321,7 +320,7 @@ sample_inelast:
       default: "Output frame" 
   - eFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
       type:    "combo" 
-      descr:   "frame\ngeneration"
+      descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': creates output direction using the given Bragg angles (see Help|monochromator)"
       enum:    "VtFrameGen"
       options: ["user defined frame", "standard frame generation"]
@@ -353,14 +352,14 @@ sample_inelast:
 
   - OutHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
       type:    "float" 
-      descr:   "horiz. angle\n[deg]"
+      descr:   "horiz. angle [deg]"
       tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. Help|monochromator)"
       default: 60.0
       column:  0                     
       prefix:  "-u"     
   - OutVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
       type:    "float" 
-      descr:   "vert. angle\n[deg]"
+      descr:   "vert. angle [deg]"
       tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. Help|monochromator)"
       default: 0.0
       column:  1                     
